@@ -151,6 +151,23 @@ namespace Bee.Definition.UnitTests.Layouts
         }
 
         [Fact]
+        [DisplayName("ToField/ToColumn 應傳遞 UnitField（UNIT 參照欄名）")]
+        public void ToFieldAndColumn_PropagateUnitField()
+        {
+            var formField = new FormField("order_qty", "數量", FieldDbType.Decimal)
+            {
+                NumberKind = NumberKind.Quantity,
+                UnitField = "qty_uom",
+            };
+
+            var field = LayoutColumnFactory.ToField(formField);
+            var column = LayoutColumnFactory.ToColumn(formField);
+
+            Assert.Equal("qty_uom", field.UnitField);
+            Assert.Equal("qty_uom", column.UnitField);
+        }
+
+        [Fact]
         [DisplayName("ToColumn Width=0 應保留 0 表示 auto/未設")]
         public void ToColumn_WidthZero_StaysZero()
         {

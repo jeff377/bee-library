@@ -137,5 +137,48 @@ namespace Bee.Definition.UnitTests.Forms
 
             Assert.Equal("local_currency", clone.CurrencyField);
         }
+
+        [Fact]
+        [DisplayName("UnitField XML round-trip 應保留 UNIT 參照欄名")]
+        public void UnitField_XmlRoundtrip_Preserved()
+        {
+            var original = new FormField("order_qty", "數量", FieldDbType.Decimal)
+            {
+                NumberKind = NumberKind.Quantity,
+                UnitField = "qty_uom",
+            };
+
+            var xml = XmlCodec.Serialize(original);
+            var restored = XmlCodec.Deserialize<FormField>(xml);
+
+            Assert.NotNull(restored);
+            Assert.Equal("qty_uom", restored!.UnitField);
+        }
+
+        [Fact]
+        [DisplayName("UnitField 為空預設值時序列化應省略屬性")]
+        public void UnitField_Empty_OmitsXmlAttribute()
+        {
+            var field = new FormField("col", "欄", FieldDbType.String);
+
+            var xml = XmlCodec.Serialize(field);
+
+            Assert.DoesNotContain("UnitField=", xml);
+        }
+
+        [Fact]
+        [DisplayName("Clone 應複製 UnitField")]
+        public void Clone_CopiesUnitField()
+        {
+            var original = new FormField("order_qty", "數量", FieldDbType.Decimal)
+            {
+                NumberKind = NumberKind.Quantity,
+                UnitField = "qty_uom",
+            };
+
+            var clone = original.Clone();
+
+            Assert.Equal("qty_uom", clone.UnitField);
+        }
     }
 }

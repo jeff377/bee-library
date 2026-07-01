@@ -23,6 +23,8 @@ namespace Bee.ObjectCaching.UnitTests
             public void SaveDbCategorySettings(DbCategorySettings settings) => throw new NotImplementedException();
             public CurrencySettings? GetCurrencySettings() => throw new NotImplementedException();
             public void SaveCurrencySettings(CurrencySettings settings) => throw new NotImplementedException();
+            public UnitSettings? GetUnitSettings() => throw new NotImplementedException();
+            public void SaveUnitSettings(UnitSettings settings) => throw new NotImplementedException();
             public ProgramSettings? GetProgramSettings() => throw new NotImplementedException();
             public void SaveProgramSettings(ProgramSettings settings) => throw new NotImplementedException();
             public TableSchema? GetTableSchema(string categoryId, string tableName) => throw new NotImplementedException();

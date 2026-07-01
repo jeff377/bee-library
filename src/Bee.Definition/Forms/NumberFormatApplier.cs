@@ -45,7 +45,10 @@ namespace Bee.Definition.Forms
         /// plan-numeric-multicurrency.md §2.1 / §3.2). Instead, an amount field with no explicit
         /// <see cref="FormField.CurrencyField"/> inherits the master document currency field
         /// (<see cref="FormSchema.CurrencyField"/>) so every amount carries a concrete currency
-        /// reference for the UI to resolve against. Company and system-fixed kinds are baked here.
+        /// reference for the UI to resolve against. Likewise, <see cref="DecimalsSource.Unit"/>
+        /// quantities/weights that bind a <see cref="FormField.UnitField"/> are not baked (runtime by
+        /// unit); unbound ones fall back to the company decimals and are baked. Company and system-fixed
+        /// kinds are baked here.
         /// </remarks>
         /// <param name="schema">The schema to bake (mutated in place — pass a clone).</param>
         /// <param name="company">The current company, or <c>null</c> to use framework defaults.</param>
@@ -63,7 +66,8 @@ namespace Bee.Definition.Forms
                     // Explicit author-supplied format wins and is preserved.
                     if (StringUtilities.IsNotEmpty(field.NumberFormat)) { continue; }
 
-                    if (NumberKindProfile.GetDecimalsSource(field.NumberKind) == DecimalsSource.Currency)
+                    var source = NumberKindProfile.GetDecimalsSource(field.NumberKind);
+                    if (source == DecimalsSource.Currency)
                     {
                         // Runtime-resolved by currency; do not bake a format. Stamp the effective
                         // currency-reference field so the UI knows which field holds this amount's currency.
@@ -71,6 +75,11 @@ namespace Bee.Definition.Forms
                             field.CurrencyField = schema.CurrencyField;
                         continue;
                     }
+
+                    // Quantities/weights bound to a unit field are runtime-resolved by unit — do not bake.
+                    // Without a bound unit, they fall back to the company decimals and are baked here.
+                    if (source == DecimalsSource.Unit && StringUtilities.IsNotEmpty(field.UnitField))
+                        continue;
 
                     field.NumberFormat = NumberFormatResolver.ResolveFormat(field.NumberKind, company);
                 }

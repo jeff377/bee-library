@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UnitSettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<UnitItem Code="PCS" Decimals="0" Dimension="count" Name="Pieces" />
+	<UnitItem Code="BOX" Decimals="0" Dimension="count" Name="Box" />
+	<UnitItem Code="KG" Decimals="3" Dimension="weight" Name="Kilogram" />
+	<UnitItem Code="G" Decimals="0" Dimension="weight" Name="Gram" />
+	<UnitItem Code="TON" Decimals="3" Dimension="weight" Name="Metric Ton" />
+	<UnitItem Code="L" Decimals="3" Dimension="volume" Name="Litre" />
+	<UnitItem Code="ML" Decimals="0" Dimension="volume" Name="Millilitre" />
+	<UnitItem Code="M" Decimals="2" Dimension="length" Name="Metre" />
+	<UnitItem Code="CM" Decimals="1" Dimension="length" Name="Centimetre" />
+</UnitSettings>

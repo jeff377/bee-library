@@ -43,6 +43,8 @@ namespace Bee.Hosting.UnitTests
         public void SaveDbCategorySettings(DbCategorySettings settings) { }
         public CurrencySettings? GetCurrencySettings() => null;
         public void SaveCurrencySettings(CurrencySettings settings) { }
+        public UnitSettings? GetUnitSettings() => null;
+        public void SaveUnitSettings(UnitSettings settings) { }
         public ProgramSettings? GetProgramSettings() => null;
         public void SaveProgramSettings(ProgramSettings settings) { }
         public TableSchema? GetTableSchema(string categoryId, string tableName) => null;

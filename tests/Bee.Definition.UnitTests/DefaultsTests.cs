@@ -19,13 +19,14 @@ namespace Bee.Definition.UnitTests
         // - 4 Language resources (Department/Employee × en-US/zh-TW)
         // - 1 DbCategorySettings.xml (minimal — st_* only, no ft_project)
         // - 1 CurrencySettings.xml (curated system currency master)
+        // - 1 UnitSettings.xml (curated system unit-of-measure master)
         // - 1 SystemSettings.xml (template with sensible defaults)
         // - 1 DatabaseSettings.xml (empty stub — connection strings are deployment-specific)
-        // Total: 23
-        private const int ExpectedEmbeddedCount = 23;
+        // Total: 24
+        private const int ExpectedEmbeddedCount = 24;
 
         [Fact]
-        [DisplayName("ListEmbedded 應回傳 23 個框架預設檔（11 st_* + 2 FormSchema + 2 FormLayout + 4 Language + 1 DbCategorySettings + 1 CurrencySettings + 1 SystemSettings + 1 DatabaseSettings）")]
+        [DisplayName("ListEmbedded 應回傳 24 個框架預設檔（11 st_* + 2 FormSchema + 2 FormLayout + 4 Language + 1 DbCategorySettings + 1 CurrencySettings + 1 UnitSettings + 1 SystemSettings + 1 DatabaseSettings）")]
         public void ListEmbedded_ReturnsExpectedCount()
         {
             var files = Defaults.ListEmbedded();
@@ -46,6 +47,7 @@ namespace Bee.Definition.UnitTests
         [Theory]
         [InlineData("DbCategorySettings.xml")]
         [InlineData("CurrencySettings.xml")]
+        [InlineData("UnitSettings.xml")]
         [InlineData("SystemSettings.xml")]
         [InlineData("DatabaseSettings.xml")]
         [InlineData("TableSchema/common/st_user.TableSchema.xml")]
@@ -93,6 +95,18 @@ namespace Bee.Definition.UnitTests
             Assert.Equal(2, settings.GetDecimals("USD"));
             Assert.Equal(0, settings.GetDecimals("JPY"));
             Assert.Equal(3, settings.GetDecimals("BHD"));
+        }
+
+        [Fact]
+        [DisplayName("OpenEmbedded 對 UnitSettings.xml 可 deserialize 且位數依單位（KG=3、PCS=0）")]
+        public void OpenEmbedded_UnitSettings_DeserializesWithUnitDecimals()
+        {
+            var settings = XmlCodec.Deserialize<UnitSettings>(ReadEmbedded("UnitSettings.xml"));
+
+            Assert.NotNull(settings);
+            Assert.NotEmpty(settings!);
+            Assert.Equal(3, settings.GetDecimals("KG"));
+            Assert.Equal(0, settings.GetDecimals("PCS"));
         }
 
         [Fact]

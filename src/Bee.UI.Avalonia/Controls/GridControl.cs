@@ -129,6 +129,15 @@ namespace Bee.UI.Avalonia.Controls
         public string DefaultCurrencyCode { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the client-side unit-of-measure master used for per-cell decimal resolution of
+        /// <see cref="NumberKind.Quantity"/> / <see cref="NumberKind.Weight"/> columns that bind a unit
+        /// field. When <c>null</c> (the default), such columns use their delivered
+        /// <see cref="LayoutFieldBase.NumberFormat"/> unchanged — unit awareness is off. Cells whose
+        /// bound unit field is empty also keep the delivered (company-fallback) format.
+        /// </summary>
+        public UnitSettings? UnitSettings { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="GridControl"/> with a hidden
         /// toolbar and a read-only, single-selection inner grid.
         /// </summary>
@@ -1076,29 +1085,42 @@ namespace Bee.UI.Avalonia.Controls
             return CellValueFormatter.Format(dataRow[column.FieldName], column.DisplayFormat, numberFormat);
         }
 
-        // Amount columns are not baked at delivery — resolve their format from the row's currency and the
-        // client currency master. Other kinds (and the no-currency-master case) keep the delivered format.
+        // Reference-bound columns (amounts by currency, quantities/weights by unit) are not baked at
+        // delivery — resolve their format from the row's reference value and the client master. Other
+        // kinds (and the no-master / no-reference cases) keep the delivered format.
         private string ResolveCellNumberFormat(DataRow dataRow, LayoutColumn column)
         {
-            if (column.NumberKind != NumberKind.Amount || CurrencySettings is null)
-                return column.NumberFormat;
+            var source = NumberKindProfile.GetDecimalsSource(column.NumberKind);
 
-            string code = ResolveCellCurrencyCode(dataRow, column);
-            return NumberFormatResolver.ResolveFormat(
-                NumberKind.Amount, new RoundingContext { CurrencySettings = CurrencySettings }, code);
+            if (source == DecimalsSource.Currency && CurrencySettings is not null)
+            {
+                string code = ResolveCellReferenceCode(dataRow, column.CurrencyField, DefaultCurrencyCode);
+                return NumberFormatResolver.ResolveFormat(
+                    column.NumberKind, new RoundingContext { CurrencySettings = CurrencySettings }, code);
+            }
+
+            if (source == DecimalsSource.Unit && UnitSettings is not null)
+            {
+                string code = ResolveCellReferenceCode(dataRow, column.UnitField, string.Empty);
+                if (StringUtilities.IsNotEmpty(code))
+                    return NumberFormatResolver.ResolveFormat(
+                        column.NumberKind, new RoundingContext { UnitSettings = UnitSettings }, code);
+            }
+
+            return column.NumberFormat;
         }
 
-        // Per-row currency priority: the column's currency-key field on this row → the grid's default
-        // (master document / company) currency. Empty resolves to the framework fallback downstream.
-        private string ResolveCellCurrencyCode(DataRow dataRow, LayoutColumn column)
+        // Per-row reference code: the column's reference field (currency key / unit) on this row →
+        // the supplied fallback. Empty resolves to the framework fallback downstream.
+        private static string ResolveCellReferenceCode(DataRow dataRow, string referenceField, string fallback)
         {
-            if (StringUtilities.IsNotEmpty(column.CurrencyField)
-                && dataRow.Table.Columns.Contains(column.CurrencyField))
+            if (StringUtilities.IsNotEmpty(referenceField)
+                && dataRow.Table.Columns.Contains(referenceField))
             {
-                string rowCode = ValueUtilities.CStr(dataRow[column.CurrencyField]);
+                string rowCode = ValueUtilities.CStr(dataRow[referenceField]);
                 if (StringUtilities.IsNotEmpty(rowCode)) { return rowCode; }
             }
-            return DefaultCurrencyCode;
+            return fallback;
         }
 
         private void OnSelectionChangedCore(object? sender, SelectionChangedEventArgs e)

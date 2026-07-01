@@ -33,6 +33,7 @@ namespace Bee.Api.Core.MessagePack
                     new CollectionBaseFormatter<CurrencySettings, CurrencyItem>(), // CurrencySettings as array
                     new CollectionBaseFormatter<CompanyCashRounding, CashRoundingItem>(), // CompanyCashRounding as array
                     new CollectionBaseFormatter<CompanyAllowedCurrencies, AllowedCurrencyItem>(), // CompanyAllowedCurrencies as array
+                    new CollectionBaseFormatter<UnitSettings, UnitItem>(), // UnitSettings as array
                     SafeTypelessFormatter.Instance      // Type-validated polymorphic formatter
                 },
                 new IFormatterResolver[]

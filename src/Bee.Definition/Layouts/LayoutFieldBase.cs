@@ -97,6 +97,17 @@ namespace Bee.Definition.Layouts
         public string CurrencyField { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the name of the field that holds this quantity/weight field's unit-of-measure
+        /// code (a SAP UNIT reference), propagated from <see cref="Forms.FormField.UnitField"/>. Drives
+        /// per-cell unit-aware decimal resolution at runtime (see plan-numeric-uom.md §3.2c).
+        /// </summary>
+        [Category(PropertyCategories.Data)]
+        [XmlAttribute]
+        [Description("Name of the field holding this quantity/weight field's unit code (SAP UNIT reference).")]
+        [DefaultValue("")]
+        public string UnitField { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets a value indicating whether this field is visible.
         /// Layout-level visibility: false means the field exists in the layout
         /// (e.g. for grid row binding) but is not rendered.

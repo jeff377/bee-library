@@ -89,6 +89,21 @@ namespace Bee.Definition.Storage
         void SaveCurrencySettings(CurrencySettings settings) => SaveDefine(DefineType.CurrencySettings, settings);
 
         /// <summary>
+        /// Gets the system-level unit-of-measure master.
+        /// </summary>
+        /// <remarks>
+        /// Default implementation delegates to <see cref="GetDefine"/>; <c>CacheDefineAccess</c>
+        /// overrides it with its cache path.
+        /// </remarks>
+        UnitSettings GetUnitSettings() => (UnitSettings)GetDefine(DefineType.UnitSettings);
+
+        /// <summary>
+        /// Saves the system-level unit-of-measure master.
+        /// </summary>
+        /// <param name="settings">The unit master.</param>
+        void SaveUnitSettings(UnitSettings settings) => SaveDefine(DefineType.UnitSettings, settings);
+
+        /// <summary>
         /// Gets the database category settings.
         /// </summary>
         DbCategorySettings GetDbCategorySettings();

@@ -65,6 +65,21 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
+        [DisplayName("IDefineAccess.GetUnitSettings 應讀回框架預設單位主檔（storage→cache→access 全鏈）")]
+        public void GetUnitSettings_ReturnsFrameworkUnitMaster()
+        {
+            var access = _fx.GetRequiredService<IDefineAccess>();
+
+            // SharedDefinePath 物化自 embedded 框架預設，含 UnitSettings.xml（curated 單位）。
+            var units = access.GetUnitSettings();
+
+            Assert.NotNull(units);
+            Assert.NotEmpty(units);
+            Assert.Equal(3, units.GetDecimals("KG"));
+            Assert.Equal(0, units.GetDecimals("PCS"));
+        }
+
+        [Fact]
         [DisplayName("BeeTestFixture.GetRequiredService 應可解析 PathOptions singleton")]
         public void GetRequiredService_PathOptions_MatchesFixture()
         {

@@ -43,6 +43,10 @@ namespace Bee.Definition
         public string GetCurrencySettingsFilePath()
             => System.IO.Path.Combine(DefinePath, "CurrencySettings.xml");
 
+        /// <summary>Gets the absolute path of <c>UnitSettings.xml</c>.</summary>
+        public string GetUnitSettingsFilePath()
+            => System.IO.Path.Combine(DefinePath, "UnitSettings.xml");
+
         /// <summary>Gets the absolute path of <c>PermissionModels.xml</c>.</summary>
         public string GetPermissionModelsFilePath()
             => System.IO.Path.Combine(DefinePath, "PermissionModels.xml");

@@ -401,6 +401,12 @@ Server-side rounding uses the currency-aware overloads with a `RoundingContext` 
 
 The currency decimals are **system-wide** (in `CurrencySettings`); only the **cash-rounding unit** is company-overridable (`CompanyInfo.CashRounding`). The per-company `CompanyInfo.AllowedCurrencies` whitelist bounds which currencies a document may pick (empty = all system currencies).
 
+### Units of measure: quantities/weights resolve by their unit at runtime
+
+`Quantity` / `Weight` decimals follow the **unit of measure**, not the company (KG = 3, PCS = 0 — like SAP T006), exactly parallel to amounts and currency. The unit master is the system-level define **`UnitSettings`** (`DefineType.UnitSettings`, curated table; each `UnitItem` stores its `Decimals` directly). It ships to the client through the ordinary `GetDefine` channel; a missing master falls back to the framework default.
+
+Each quantity/weight field binds a **unit field** (SAP UNIT) via `FormField.UnitField` (there is no master-level unit — units are per row). The resolution priority is: **bound `UnitField` value → company decimals → framework default**. At delivery, `Bake` does not bake fields that bind a `UnitField` (runtime by unit); unbound quantity/weight fields fall back to the company decimals and are baked. Server-side rounding uses `RoundByKind(value, kind, ctx, unitCode)` with a `RoundingContext` carrying `UnitSettings`; round-then-sum holds per unit (a mixed-unit column has no meaningful total). The grid and `NumericEdit` resolve the unit per cell/row the same way as currency (`AmountColumnSummary` gates a mixed-unit footer total just like mixed currency).
+
 ### DB storage precision is a capacity ceiling, not a display/calc setting
 
 Numeric columns use `Decimal` with a single framework-wide high scale (e.g. `Scale=8`), independent of any company or currency decimals — so there is no per-company/per-currency `ALTER`. The display decimals (`NumberFormat`) and the calculation decimals (`RoundByKind`) are orthogonal to the DB scale; the scale only bounds how much precision the column can hold.

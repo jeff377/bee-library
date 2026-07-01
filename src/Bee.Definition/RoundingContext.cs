@@ -6,9 +6,9 @@ namespace Bee.Definition
     /// <summary>
     /// Carries the session/system inputs that <see cref="NumberFormatResolver"/> needs to resolve
     /// reference-aware decimal places and rounding: the current company (for company-level decimals,
-    /// the default/home currency, and cash-rounding overrides) and the system currency master
-    /// (for per-currency natural decimals). Both are optional — a resolver call with neither falls
-    /// back to framework defaults. The unit-of-measure master is added by the uom increment.
+    /// the default/home currency, and cash-rounding overrides), the system currency master
+    /// (for per-currency natural decimals), and the system unit-of-measure master (for per-unit
+    /// decimals). All are optional — a resolver call with none falls back to framework defaults.
     /// </summary>
     public sealed class RoundingContext
     {
@@ -24,6 +24,12 @@ namespace Bee.Definition
         /// (amounts then fall back to framework-default decimals).
         /// </summary>
         public CurrencySettings? CurrencySettings { get; init; }
+
+        /// <summary>
+        /// Gets the system unit-of-measure master, or <c>null</c> when no unit master is deployed
+        /// (quantities/weights then fall back to the company decimals).
+        /// </summary>
+        public UnitSettings? UnitSettings { get; init; }
 
         /// <summary>
         /// Creates a context carrying only a company (no currency master). Convenience for

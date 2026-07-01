@@ -44,6 +44,10 @@ namespace Bee.Definition
         /// <summary>
         /// System-level currency master (currency decimals and natural minor units).
         /// </summary>
-        CurrencySettings
+        CurrencySettings,
+        /// <summary>
+        /// System-level unit-of-measure master (unit display decimals).
+        /// </summary>
+        UnitSettings
     }
 }

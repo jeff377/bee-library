@@ -52,19 +52,45 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// </summary>
         public string DefaultCurrencyCode { get; set; } = string.Empty;
 
-        // Amounts are not baked at delivery — when a currency master is supplied, resolve the format at
-        // runtime from the bound row's currency. Otherwise prefer the delivered layout format (baked per
-        // company), falling back to the schema field's format for ambient (field-name-only) binds.
+        /// <summary>
+        /// Gets or sets the client unit-of-measure master for runtime decimal resolution of
+        /// <see cref="NumberKind.Quantity"/> / <see cref="NumberKind.Weight"/> fields that bind a unit
+        /// field. When <c>null</c>, the delivered/baked format is used — unit awareness is off.
+        /// </summary>
+        public UnitSettings? UnitSettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fallback unit code used when the bound row carries no unit-field value
+        /// (host-driven, for the single-record form where the row's unit is known to the host).
+        /// </summary>
+        public string DefaultUnitCode { get; set; } = string.Empty;
+
+        // Reference-bound fields (amounts by currency, quantities/weights by unit) are not baked at
+        // delivery — when the matching master is supplied, resolve the format at runtime from the bound
+        // row's reference value. Otherwise prefer the delivered layout format (baked per company),
+        // falling back to the schema field's format for ambient (field-name-only) binds.
         private string NumberFormat
         {
             get
             {
                 var layoutField = Binder.LayoutField;
-                if (CurrencySettings is not null && layoutField?.NumberKind == NumberKind.Amount)
-                    return NumberFormatResolver.ResolveFormat(
-                        NumberKind.Amount,
-                        new RoundingContext { CurrencySettings = CurrencySettings },
-                        ResolveCurrencyCode(layoutField));
+                if (layoutField is not null)
+                {
+                    var source = NumberKindProfile.GetDecimalsSource(layoutField.NumberKind);
+                    if (source == DecimalsSource.Currency && CurrencySettings is not null)
+                        return NumberFormatResolver.ResolveFormat(
+                            layoutField.NumberKind,
+                            new RoundingContext { CurrencySettings = CurrencySettings },
+                            ResolveReferenceCode(layoutField.CurrencyField, DefaultCurrencyCode));
+
+                    if (source == DecimalsSource.Unit && UnitSettings is not null)
+                    {
+                        string code = ResolveReferenceCode(layoutField.UnitField, DefaultUnitCode);
+                        if (StringUtilities.IsNotEmpty(code))
+                            return NumberFormatResolver.ResolveFormat(
+                                layoutField.NumberKind, new RoundingContext { UnitSettings = UnitSettings }, code);
+                    }
+                }
 
                 return layoutField?.NumberFormat is { Length: > 0 } layoutFormat
                     ? layoutFormat
@@ -72,18 +98,19 @@ namespace Bee.UI.Avalonia.Controls.Editors
             }
         }
 
-        // Per-row currency: the field's currency-key field value on the bound row → the default currency.
-        private string ResolveCurrencyCode(LayoutFieldBase layoutField)
+        // Per-row reference code: the field's reference field (currency key / unit) value on the bound
+        // row → the supplied fallback.
+        private string ResolveReferenceCode(string referenceField, string fallback)
         {
             var row = Binder.TargetRow;
             if (row is not null
-                && StringUtilities.IsNotEmpty(layoutField.CurrencyField)
-                && row.Table.Columns.Contains(layoutField.CurrencyField))
+                && StringUtilities.IsNotEmpty(referenceField)
+                && row.Table.Columns.Contains(referenceField))
             {
-                string code = ValueUtilities.CStr(row[layoutField.CurrencyField]);
+                string code = ValueUtilities.CStr(row[referenceField]);
                 if (StringUtilities.IsNotEmpty(code)) { return code; }
             }
-            return DefaultCurrencyCode;
+            return fallback;
         }
 
         /// <inheritdoc />

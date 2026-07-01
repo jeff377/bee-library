@@ -70,6 +70,29 @@ namespace Bee.Definition.Storage
         }
 
         /// <summary>
+        /// Gets the system-level unit-of-measure master. Returns <c>null</c> when the file does not
+        /// exist — a missing unit master is a normal scenario, so callers fall back to framework
+        /// defaults (see plan-numeric-uom.md).
+        /// </summary>
+        public UnitSettings? GetUnitSettings()
+        {
+            string filePath = _paths.GetUnitSettingsFilePath();
+            if (!File.Exists(filePath))
+                return null;
+            return XmlCodec.DeserializeFromFile<UnitSettings>(filePath);
+        }
+
+        /// <summary>
+        /// Saves the system-level unit-of-measure master.
+        /// </summary>
+        /// <param name="settings">The unit master.</param>
+        public void SaveUnitSettings(UnitSettings settings)
+        {
+            string filePath = _paths.GetUnitSettingsFilePath();
+            XmlCodec.SerializeToFile(settings, filePath);
+        }
+
+        /// <summary>
         /// Gets the program settings.
         /// </summary>
         public ProgramSettings? GetProgramSettings()

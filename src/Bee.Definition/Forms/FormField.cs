@@ -172,6 +172,18 @@ namespace Bee.Definition.Forms
         public string CurrencyField { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the name of the field that holds this quantity/weight field's unit-of-measure
+        /// code (a SAP UNIT reference). Applies to <see cref="Definition.NumberKind.Quantity"/> /
+        /// <see cref="Definition.NumberKind.Weight"/> fields: when set, the decimal places resolve from
+        /// that field's current unit. Empty falls back to the company decimals (see plan-numeric-uom.md §1.4).
+        /// </summary>
+        [Category(PropertyCategories.Data)]
+        [XmlAttribute]
+        [Description("Name of the field holding this quantity/weight field's unit code (SAP UNIT reference).")]
+        [DefaultValue("")]
+        public string UnitField { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the program ID of the related program.
         /// </summary>
         [XmlAttribute]
@@ -408,6 +420,7 @@ namespace Bee.Definition.Forms
                 NumberFormat = NumberFormat,
                 NumberKind = NumberKind,
                 CurrencyField = CurrencyField,
+                UnitField = UnitField,
                 RelationProgId = RelationProgId,
                 LookupProgId = LookupProgId,
                 DisplayFields = DisplayFields,

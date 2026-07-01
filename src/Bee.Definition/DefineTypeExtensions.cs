@@ -16,6 +16,7 @@ namespace Bee.Definition
             { DefineType.FormLayout,       "Bee.Definition.Layouts.FormLayout" },
             { DefineType.PermissionModels, "Bee.Definition.Settings.PermissionModels" },
             { DefineType.CurrencySettings, "Bee.Definition.Settings.CurrencySettings" },
+            { DefineType.UnitSettings,     "Bee.Definition.Settings.UnitSettings" },
         };
 
         /// <summary>

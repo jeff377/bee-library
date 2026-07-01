@@ -5,9 +5,10 @@ namespace Bee.Definition
     /// <summary>
     /// Resolves reference-aware decimal places, display format strings, and value rounding for a
     /// <see cref="NumberKind"/>. Amounts (<see cref="DecimalsSource.Currency"/>) resolve their decimals
-    /// from the currency master by the reference currency code; company and system-fixed kinds resolve
-    /// as in the core increment. The unit-of-measure source still falls back to the company table until
-    /// the uom increment replaces that fallback.
+    /// from the currency master by the reference currency code, and quantities/weights
+    /// (<see cref="DecimalsSource.Unit"/>) resolve from the unit master by the reference unit code;
+    /// company and system-fixed kinds resolve as in the core increment. A reference kind with no
+    /// resolvable code (or no master deployed) falls back to the company decimals.
     /// </summary>
     public static class NumberFormatResolver
     {
@@ -42,7 +43,16 @@ namespace Bee.Definition
                 return ctx.Company?.GetDecimals(kind) ?? NumberKindProfile.GetDefaultDecimals(kind);
             }
 
-            // Company, plus Unit which falls back to the company table until the uom increment.
+            if (source == DecimalsSource.Unit)
+            {
+                // Quantities/weights resolve from the bound unit; with no unit code (or no unit master)
+                // they fall back to the company decimals (else the framework default).
+                if (ctx.UnitSettings != null && !string.IsNullOrEmpty(refCode))
+                    return ctx.UnitSettings.GetDecimals(refCode!);
+                return ctx.Company?.GetDecimals(kind) ?? NumberKindProfile.GetDefaultDecimals(kind);
+            }
+
+            // Company source.
             return ctx.Company?.GetDecimals(kind) ?? NumberKindProfile.GetDefaultDecimals(kind);
         }
 

@@ -122,6 +122,21 @@ namespace Bee.Db.Storage
         }
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// Like the currency master, a missing unit master returns <c>null</c> (not an error) —
+        /// callers fall back to framework-default decimals.
+        /// </remarks>
+        public UnitSettings? GetUnitSettings()
+            => ReadOptional<UnitSettings>(BaseCustomizeId, SingletonKey);
+
+        /// <inheritdoc/>
+        public void SaveUnitSettings(UnitSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+            Write(settings, SingletonKey);
+        }
+
+        /// <inheritdoc/>
         public ProgramSettings? GetProgramSettings()
             => ReadRequired<ProgramSettings>(BaseCustomizeId, SingletonKey);
 

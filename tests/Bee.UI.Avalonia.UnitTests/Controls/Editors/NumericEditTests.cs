@@ -165,5 +165,65 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             Assert.Equal("1234.567", editor.Text);
         }
+
+        // --- 計量單位 runtime 解析 ---
+
+        private static UnitSettings Units() =>
+        [
+            new UnitItem("PCS", 0, "count", "Pieces"),
+            new UnitItem("KG", 3, "weight", "Kilogram"),
+        ];
+
+        private static FormDataObject BuildQtyDataObject()
+        {
+            var schema = new FormSchema("Order", "Order");
+            var master = schema.Tables!.Add("Order", "Order");
+            master.Fields!.Add("qty", "Qty", FieldDbType.Decimal);
+            var dataObject = new FormDataObject(schema);
+            dataObject.InitializeNewMaster();
+            return dataObject;
+        }
+
+        private static LayoutField QtyKindField()
+            => new() { FieldName = "qty", NumberKind = NumberKind.Quantity, UnitField = "qty_uom" };
+
+        [Fact]
+        [DisplayName("設 UnitSettings + 預設單位 KG → 數量欄顯 3 位")]
+        public void Quantity_WithUnit_FormatsByDefaultUnit_Kg()
+        {
+            var dataObject = BuildQtyDataObject();
+            dataObject.SetField("qty", "12.345");
+            var editor = new NumericEdit { UnitSettings = Units(), DefaultUnitCode = "KG" };
+
+            editor.Bind(dataObject, QtyKindField());
+
+            Assert.Equal("12.345", editor.Text); // KG → 3 位
+        }
+
+        [Fact]
+        [DisplayName("同資料改單位 PCS → 數量欄改顯 0 位")]
+        public void Quantity_WithUnit_FormatsByDefaultUnit_Pcs()
+        {
+            var dataObject = BuildQtyDataObject();
+            dataObject.SetField("qty", "12.345");
+            var editor = new NumericEdit { UnitSettings = Units(), DefaultUnitCode = "PCS" };
+
+            editor.Bind(dataObject, QtyKindField());
+
+            Assert.Equal("12", editor.Text); // PCS → 0 位
+        }
+
+        [Fact]
+        [DisplayName("未設 UnitSettings 時數量欄不做單位解析（無 baked → 顯原值）")]
+        public void Quantity_NoUnitSettings_ShowsRaw()
+        {
+            var dataObject = BuildQtyDataObject();
+            dataObject.SetField("qty", "12.345");
+            var editor = new NumericEdit(); // 未設 UnitSettings
+
+            editor.Bind(dataObject, QtyKindField());
+
+            Assert.Equal("12.345", editor.Text);
+        }
     }
 }

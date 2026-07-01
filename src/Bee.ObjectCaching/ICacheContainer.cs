@@ -29,6 +29,9 @@ namespace Bee.ObjectCaching
         /// <summary>The system-level currency master cache.</summary>
         CurrencySettingsCache CurrencySettings { get; }
 
+        /// <summary>The system-level unit-of-measure master cache.</summary>
+        UnitSettingsCache UnitSettings { get; }
+
         /// <summary>The table schema cache, keyed by category id and table name.</summary>
         TableSchemaCache TableSchema { get; }
 

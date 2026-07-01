@@ -99,6 +99,8 @@ namespace Bee.ObjectCaching
                     return this.GetDbCategorySettings();
                 case DefineType.CurrencySettings:
                     return this.GetCurrencySettings();
+                case DefineType.UnitSettings:
+                    return this.GetUnitSettings();
                 case DefineType.TableSchema:
                     ValidateKeys(defineType, keys, 2);
                     return this.GetTableSchema(keys![0], keys[1]);
@@ -155,6 +157,9 @@ namespace Bee.ObjectCaching
                     break;
                 case DefineType.CurrencySettings:
                     this.SaveCurrencySettings((defineObject as CurrencySettings)!);
+                    break;
+                case DefineType.UnitSettings:
+                    this.SaveUnitSettings((defineObject as UnitSettings)!);
                     break;
                 case DefineType.TableSchema:
                     if (keys == null || keys.Length != 1)
@@ -295,6 +300,25 @@ namespace Bee.ObjectCaching
             // Save the currency master through the active storage, then invalidate the cache.
             _storage.SaveCurrencySettings(settings);
             _cache.CurrencySettings.Remove();
+        }
+
+        /// <summary>
+        /// Gets the system-level unit-of-measure master.
+        /// </summary>
+        public UnitSettings GetUnitSettings()
+        {
+            return _cache.UnitSettings.Get()!;
+        }
+
+        /// <summary>
+        /// Saves the system-level unit-of-measure master.
+        /// </summary>
+        /// <param name="settings">The unit master.</param>
+        public void SaveUnitSettings(UnitSettings settings)
+        {
+            // Save the unit master through the active storage, then invalidate the cache.
+            _storage.SaveUnitSettings(settings);
+            _cache.UnitSettings.Remove();
         }
 
         /// <summary>

@@ -33,6 +33,17 @@ namespace Bee.Definition.Storage
         void SaveCurrencySettings(CurrencySettings settings);
 
         /// <summary>
+        /// Gets the system-level unit-of-measure master.
+        /// </summary>
+        UnitSettings? GetUnitSettings();
+
+        /// <summary>
+        /// Saves the system-level unit-of-measure master.
+        /// </summary>
+        /// <param name="settings">The unit master.</param>
+        void SaveUnitSettings(UnitSettings settings);
+
+        /// <summary>
         /// Gets the program settings.
         /// </summary>
         ProgramSettings? GetProgramSettings();

@@ -120,6 +120,34 @@ namespace Bee.Definition.UnitTests.Forms
         }
 
         [Fact]
+        [DisplayName("Bake 綁 UnitField 的數量欄不 bake（runtime 依單位解析）")]
+        public void Bake_QuantityWithUnitField_NotBaked()
+        {
+            var field = new FormField("order_qty", "數量", FieldDbType.Decimal)
+            {
+                NumberKind = NumberKind.Quantity,
+                UnitField = "qty_uom",
+            };
+            var schema = SchemaWith(field);
+
+            NumberFormatApplier.Bake(schema, null);
+
+            Assert.Equal(string.Empty, schema.Tables!["Order"].Fields!["order_qty"].NumberFormat);
+        }
+
+        [Fact]
+        [DisplayName("Bake 未綁 UnitField 的數量欄退公司位數並 bake（框架 Quantity N0）")]
+        public void Bake_QuantityWithoutUnitField_BakedFromCompany()
+        {
+            var field = new FormField("order_qty", "數量", FieldDbType.Decimal) { NumberKind = NumberKind.Quantity };
+            var schema = SchemaWith(field);
+
+            NumberFormatApplier.Bake(schema, null);
+
+            Assert.Equal("N0", schema.Tables!["Order"].Fields!["order_qty"].NumberFormat);
+        }
+
+        [Fact]
         [DisplayName("Bake NumberKind=None 欄位略過，不套格式")]
         public void Bake_NoneKind_Skipped()
         {

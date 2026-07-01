@@ -47,6 +47,7 @@ namespace Avalonia.DemoCenter.Modules
             new ListModeModule(),
             new NumberFormatModule(),
             new MultiCurrencyModule(),
+            new MultiUnitModule(),
             // Master-Detail.
             new MasterDetailModule(),
         ];

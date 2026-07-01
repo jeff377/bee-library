@@ -23,6 +23,7 @@ namespace Bee.Definition.Layouts
             NumberFormat = field.NumberFormat,
             NumberKind = field.NumberKind,
             CurrencyField = field.CurrencyField,
+            UnitField = field.UnitField,
             ReadOnly = field.ReadOnly,
             Required = field.Required,
         };
@@ -41,6 +42,7 @@ namespace Bee.Definition.Layouts
             NumberFormat = field.NumberFormat,
             NumberKind = field.NumberKind,
             CurrencyField = field.CurrencyField,
+            UnitField = field.UnitField,
             ReadOnly = field.ReadOnly,
             Required = field.Required,
         };
