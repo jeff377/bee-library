@@ -45,6 +45,7 @@ namespace Avalonia.DemoCenter.Modules
             new EditFormModule(),
             new AmbientGridModule(),
             new ListModeModule(),
+            new NumberFormatModule(),
             // Master-Detail.
             new MasterDetailModule(),
         ];

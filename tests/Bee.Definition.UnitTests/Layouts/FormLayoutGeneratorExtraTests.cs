@@ -47,7 +47,7 @@ namespace Bee.Definition.UnitTests.Layouts
         [InlineData(FieldDbType.DateTime, ControlType.DateEdit)]
         [InlineData(FieldDbType.Text, ControlType.MemoEdit)]
         [InlineData(FieldDbType.String, ControlType.TextEdit)]
-        [InlineData(FieldDbType.Integer, ControlType.TextEdit)]
+        [InlineData(FieldDbType.Integer, ControlType.NumericEdit)]
         [DisplayName("GetFormLayout 明細表 ControlType=Auto 應依 DbType 推導 ControlType")]
         public void GetFormLayout_DetailTable_AutoControlType_MapsDbTypeToControlType(
             FieldDbType dbType, ControlType expected)

@@ -1043,22 +1043,7 @@ namespace Bee.UI.Avalonia.Controls
             if (row is null) return string.Empty;
             var dataRow = row.Row;
             if (!dataRow.Table.Columns.Contains(fieldName)) return string.Empty;
-            var raw = dataRow[fieldName];
-            if (raw is null || raw == DBNull.Value) return string.Empty;
-
-            if (!string.IsNullOrEmpty(displayFormat) && raw is IFormattable formattableDisplay)
-                return formattableDisplay.ToString(displayFormat, CultureInfo.InvariantCulture);
-            if (!string.IsNullOrEmpty(numberFormat) && raw is IFormattable formattableNumber)
-                return formattableNumber.ToString(numberFormat, CultureInfo.InvariantCulture);
-
-            return raw switch
-            {
-                DateTime dt => dt.TimeOfDay == TimeSpan.Zero
-                    ? dt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-                    : dt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
-                IFormattable f => f.ToString(null, CultureInfo.InvariantCulture),
-                _ => raw.ToString() ?? string.Empty,
-            };
+            return CellValueFormatter.Format(dataRow[fieldName], displayFormat, numberFormat);
         }
 
         private void OnSelectionChangedCore(object? sender, SelectionChangedEventArgs e)

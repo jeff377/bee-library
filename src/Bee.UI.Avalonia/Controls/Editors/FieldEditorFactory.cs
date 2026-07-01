@@ -25,6 +25,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 ControlType.MemoEdit => new MemoEdit(),
                 ControlType.DropDownEdit => new DropDownEdit(),
                 ControlType.ButtonEdit => new ButtonEdit(),
+                ControlType.NumericEdit => new NumericEdit(),
                 _ => new TextEdit(),
             };
         }

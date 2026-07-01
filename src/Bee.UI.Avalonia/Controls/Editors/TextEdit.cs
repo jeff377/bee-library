@@ -144,12 +144,19 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// </summary>
         protected virtual bool ShouldWriteBackText => true;
 
+        /// <summary>
+        /// Resolves the value written back to the bound field on commit. The base editor writes
+        /// the raw <see cref="TextBox.Text"/>; numeric editors override this to parse the display
+        /// text and write the underlying value at full precision (never the rounded display form).
+        /// </summary>
+        protected virtual string? GetWriteBackValue() => Text;
+
         // Commit on leaving the control. Programmatic refreshes (RefreshFromSource) never
         // reach here, so they cannot echo back.
         private void OnEditorLostFocus(object? sender, RoutedEventArgs e)
         {
             if (ShouldWriteBackText)
-                _binder.WriteBack(Text);
+                _binder.WriteBack(GetWriteBackValue());
         }
 
         // Enter commits on single-line editors; multi-line ones (MemoEdit sets AcceptsReturn)
@@ -157,7 +164,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         private void OnEditorKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter && !AcceptsReturn && ShouldWriteBackText)
-                _binder.WriteBack(Text);
+                _binder.WriteBack(GetWriteBackValue());
         }
 
         /// <inheritdoc />

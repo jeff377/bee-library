@@ -28,8 +28,11 @@ namespace Bee.Definition.UnitTests.Layouts
         [InlineData(FieldDbType.DateTime, ControlType.DateEdit)]
         [InlineData(FieldDbType.Text, ControlType.MemoEdit)]
         [InlineData(FieldDbType.String, ControlType.TextEdit)]
-        [InlineData(FieldDbType.Integer, ControlType.TextEdit)]
-        [InlineData(FieldDbType.Decimal, ControlType.TextEdit)]
+        [InlineData(FieldDbType.Short, ControlType.NumericEdit)]
+        [InlineData(FieldDbType.Integer, ControlType.NumericEdit)]
+        [InlineData(FieldDbType.Long, ControlType.NumericEdit)]
+        [InlineData(FieldDbType.Decimal, ControlType.NumericEdit)]
+        [InlineData(FieldDbType.Currency, ControlType.NumericEdit)]
         [InlineData(FieldDbType.Guid, ControlType.TextEdit)]
         [DisplayName("ResolveControlType Auto 時應依 DbType 推導預設控制型態")]
         public void ResolveControlType_Auto_MapsDbType(FieldDbType dbType, ControlType expected)

@@ -20,6 +20,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         [InlineData(ControlType.YearMonthEdit, typeof(YearMonthEdit))]
         [InlineData(ControlType.DropDownEdit, typeof(DropDownEdit))]
         [InlineData(ControlType.CheckEdit, typeof(CheckEdit))]
+        [InlineData(ControlType.NumericEdit, typeof(NumericEdit))]
         [InlineData(ControlType.Auto, typeof(TextEdit))]
         [DisplayName("FieldEditorFactory 依 ControlType 建立對應編輯器（Auto fallback 為 TextEdit）")]
         public void Create_ControlType_ReturnsMatchingEditor(ControlType controlType, Type expectedType)
@@ -38,6 +39,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         [InlineData(typeof(YearMonthEdit), typeof(DatePicker))]
         [InlineData(typeof(DropDownEdit), typeof(ComboBox))]
         [InlineData(typeof(CheckEdit), typeof(CheckBox))]
+        [InlineData(typeof(NumericEdit), typeof(TextBox))]
         [DisplayName("各編輯器 StyleKeyOverride 指向原生基底（防隱形控件回歸）")]
         public void StyleKeyOverride_Editor_PointsToNativeBase(Type editorType, Type expectedStyleKey)
         {

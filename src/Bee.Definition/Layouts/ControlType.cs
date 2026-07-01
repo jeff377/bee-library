@@ -36,6 +36,11 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Check box.
         /// </summary>
-        CheckEdit
+        CheckEdit,
+        /// <summary>
+        /// Numeric input box: culture-aware parsing, right-aligned, and formatted on blur
+        /// per the field's <c>NumberFormat</c> while editing at full precision on focus.
+        /// </summary>
+        NumericEdit
     }
 }

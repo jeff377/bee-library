@@ -1,6 +1,6 @@
 # 計畫：數值處理核心（NumberKind + 公司位數 + round-then-sum）
 
-**狀態：🚧 進行中（2026-07-01）**
+**狀態：✅ 已完成（2026-07-01）**
 
 > 執行增量 1/3，最先做。設計理由、SAP/Odoo 對照見 [plan-numeric-formatting.md](plan-numeric-formatting.md)（設計總覽）。
 > 本 plan 不含幣別/單位的「參照欄綁定」——金額暫走公司預設位數（單一幣別）、數量/重量走公司位數；多幣別見 [plan-numeric-multicurrency.md](plan-numeric-multicurrency.md)、計量單位見 [plan-numeric-uom.md](plan-numeric-uom.md)。
@@ -9,7 +9,9 @@
 |------|------|------|
 | 1 | 定義模型：`NumberKind`/`RoundingPolicy`/`NumberKindProfile`、`CompanyNumberFormats`、`FormField`/`LayoutFieldBase` 帶 `NumberKind` | ✅ 已完成（2026-07-01） |
 | 2 | 邏輯：交付時依公司 bake 顯示格式；BO round-then-sum（捨到公司/框架位數） | ✅ 已完成（2026-07-01） |
-| 3 | UI（Avalonia）：`NumericEdit` + 基礎 Grid 格式化 + DemoCenter 範例 | 📝 待做 |
+| 3 | UI（Avalonia）：`NumericEdit` + 基礎 Grid 格式化 + DemoCenter 範例 | ✅ 已完成（2026-07-01） |
+
+> **階段 3 落地note（2026-07-01）**：`ControlType.NumericEdit` + `LayoutColumnFactory` 對 Short/Integer/Long/Decimal/Currency 的 Auto 解析為 NumericEdit；`NumericEdit`（繼承 TextEdit，focus 顯完整精度 / blur 依 NumberFormat / GetWriteBackValue 解析回寫完整精度、顯示捨入不回寫 / 右對齊 / 無效輸入保留前值）；`FieldEditorFactory` 接線；`CellValueFormatter` 抽出、GridControl.FormatCell 與 NumericEdit 共用（基礎 Grid 直接吃階段 2 已 bake 的欄級 NumberFormat，無需改）。Avalonia 302 測試綠（+NumericEditTests 6、FieldEditorFactory/StyleKey 各 +1）；Definition 781 綠。DemoCenter `NumberFormatModule`（各 NumberKind 不同位數 + 公司 A/B 位數切換 + in-cell NumericEdit 編輯）已建並註冊；順帶修 DemoCenter 自 iOS AOT Add→擴充方法後的既有編譯 rot（csproj 加 global `using Bee.Definition.Collections`）。samples 不觸發 CI，需 `-c Debug` 目視驗證。
 
 > **階段 2 落地note（2026-07-01）**：`NumberFormatResolver`（Bee.Definition）= `ResolveDecimals`/`ResolveFormat`/`RoundByKind`（Round=AwayFromZero、Preserve 原值、SystemFixed 忽略公司覆寫、Company/Currency/Unit 退 company/框架）。`NumberFormatApplier.Bake(FormSchema, CompanyInfo?)`（Bee.Definition.Forms）在 `SystemBusinessObject.LoadAndLocalizeSchema` 的 clone 上 bake `FormField.NumberFormat`（explicit 優先、None 略過、不 mutate 快取；`HasNumericField` 保留 anonymous 非數值 schema 免 clone 的最佳化）。cookbook 增「Numeric Semantics, Company Decimals, and Rounding」節。Definition 778 測試全綠；GetFormSchema/GetFormLayout round-trip 無回歸（EnterCompany 失敗為既有無-docker 環境性）。
 

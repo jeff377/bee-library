@@ -25,6 +25,13 @@
     <ProjectReference Include="..\..\src\Bee.UI.Avalonia\Bee.UI.Avalonia.csproj" />
   </ItemGroup>
 
+  <!-- The convenience collection Add(key, text) overloads live in extension classes under
+       Bee.Definition.Collections (moved there for iOS/AOT XmlSerializer compatibility). Expose
+       them project-wide so the sample modules can keep using the terse Add form. -->
+  <ItemGroup>
+    <Using Include="Bee.Definition.Collections" />
+  </ItemGroup>
+
   <!-- Embed each module's own .cs as a resource so the View Source panel reads the
        real, current source (never drifts from what runs). The files stay compiled
        as usual; this only adds a parallel embedded copy. -->

@@ -64,6 +64,8 @@ namespace Bee.Definition.Layouts
                 FieldDbType.Boolean => ControlType.CheckEdit,
                 FieldDbType.DateTime => ControlType.DateEdit,
                 FieldDbType.Text => ControlType.MemoEdit,
+                FieldDbType.Short or FieldDbType.Integer or FieldDbType.Long
+                    or FieldDbType.Decimal or FieldDbType.Currency => ControlType.NumericEdit,
                 _ => ControlType.TextEdit,
             };
 
