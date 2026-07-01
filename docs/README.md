@@ -31,6 +31,7 @@ This directory contains the public-facing developer documentation for the Bee.NE
 | [Framework-Reserved Names](framework-reserved-names.md) | Registry of `st_*` system tables and reserved `progId`s owned by the framework |
 | [DatabaseSettings & DbCategorySettings Guide](database-settings-guide.md) | Structure, access patterns, and runtime behavior of the two database-related settings files |
 | [Database Schema Upgrade](database-schema-upgrade.md) | Schema upgrade workflow and strategy |
+| [Database Dialect Differences (DDL)](database-dialect-differences.md) | Cross-dialect DDL rules and exceptions (defaults, nullability, quoting, AutoIncrement); why text/numeric columns are NOT NULL |
 
 ## Design Concepts
 

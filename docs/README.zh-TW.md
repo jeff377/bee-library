@@ -31,6 +31,7 @@
 | [框架保留命名](framework-reserved-names.zh-TW.md) | 框架擁有的 `st_*` 系統表與保留 `progId` registry |
 | [DatabaseSettings 與 DbCategorySettings 指引](database-settings-guide.zh-TW.md) | 兩個資料庫相關設定檔的結構、存取方式與運作流程 |
 | [資料庫 Schema 升級](database-schema-upgrade.zh-TW.md) | Schema 升級流程與策略 |
+| [資料庫方言差異（DDL）](database-dialect-differences.zh-TW.md) | 跨方言的 DDL 規則與例外（預設值、nullability、引號、AutoIncrement）；文字/數值欄為何 NOT NULL |
 
 ## 設計概念
 
