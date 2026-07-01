@@ -74,6 +74,21 @@ namespace Bee.Definition.Storage
         void SavePermissionModels(PermissionModels models) => SaveDefine(DefineType.PermissionModels, models);
 
         /// <summary>
+        /// Gets the system-level currency master.
+        /// </summary>
+        /// <remarks>
+        /// Default implementation delegates to <see cref="GetDefine"/>; <c>CacheDefineAccess</c>
+        /// overrides it with its cache path.
+        /// </remarks>
+        CurrencySettings GetCurrencySettings() => (CurrencySettings)GetDefine(DefineType.CurrencySettings);
+
+        /// <summary>
+        /// Saves the system-level currency master.
+        /// </summary>
+        /// <param name="settings">The currency master.</param>
+        void SaveCurrencySettings(CurrencySettings settings) => SaveDefine(DefineType.CurrencySettings, settings);
+
+        /// <summary>
         /// Gets the database category settings.
         /// </summary>
         DbCategorySettings GetDbCategorySettings();

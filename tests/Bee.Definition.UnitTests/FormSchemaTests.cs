@@ -31,6 +31,31 @@ namespace Bee.Definition.UnitTests
             Assert.Contains("CategoryId=\"sales\"", xml);
         }
 
+        [Fact]
+        [DisplayName("FormSchema CurrencyField 應透過 XmlAttribute 序列化往返")]
+        public void CurrencyField_RoundTripsThroughXml()
+        {
+            var schema = new FormSchema("Order", "訂單") { CategoryId = "company", CurrencyField = "sys_currency" };
+
+            var xml = XmlCodec.Serialize(schema);
+            var restored = XmlCodec.Deserialize<FormSchema>(xml);
+
+            Assert.NotNull(restored);
+            Assert.Equal("sys_currency", restored!.CurrencyField);
+            Assert.Contains("CurrencyField=\"sys_currency\"", xml);
+        }
+
+        [Fact]
+        [DisplayName("FormSchema CurrencyField 為空預設值時序列化應省略屬性")]
+        public void CurrencyField_Empty_OmitsXmlAttribute()
+        {
+            var schema = new FormSchema("Demo", "示範") { CategoryId = "sales" };
+
+            var xml = XmlCodec.Serialize(schema);
+
+            Assert.DoesNotContain("CurrencyField=", xml);
+        }
+
 
         [Fact]
         [DisplayName("FormSchema 建立部門表單定義應包含有效的主檔表")]

@@ -22,6 +22,17 @@ namespace Bee.Definition.Storage
         void SaveDbCategorySettings(DbCategorySettings settings);
 
         /// <summary>
+        /// Gets the system-level currency master.
+        /// </summary>
+        CurrencySettings? GetCurrencySettings();
+
+        /// <summary>
+        /// Saves the system-level currency master.
+        /// </summary>
+        /// <param name="settings">The currency master.</param>
+        void SaveCurrencySettings(CurrencySettings settings);
+
+        /// <summary>
         /// Gets the program settings.
         /// </summary>
         ProgramSettings? GetProgramSettings();

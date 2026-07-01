@@ -98,6 +98,9 @@ namespace Bee.Repository.UnitTests
             string colName = dbType.QuoteIdentifier("sys_name");
             string colDbId = dbType.QuoteIdentifier("company_database_id");
             string colNumFmt = dbType.QuoteIdentifier("number_formats_xml");
+            string colDefCur = dbType.QuoteIdentifier("default_currency");
+            string colCashRnd = dbType.QuoteIdentifier("cash_rounding_xml");
+            string colAllowCur = dbType.QuoteIdentifier("allowed_currencies_xml");
             string colEnabled = dbType.QuoteIdentifier("enabled");
             string colUserRowId = dbType.QuoteIdentifier("user_rowid");
             string colCompanyRowId = dbType.QuoteIdentifier("company_rowid");
@@ -109,12 +112,13 @@ namespace Bee.Repository.UnitTests
                            : "SYSTIMESTAMP";
             string disabledLiteral = dbType == DatabaseType.PostgreSQL ? "FALSE" : "0";
 
-            // number_formats_xml is NOT NULL; MySQL TEXT columns can't carry a DEFAULT, so the value
-            // must be supplied explicitly (empty string) rather than relying on a DB-side default.
+            // number_formats_xml / cash_rounding_xml / allowed_currencies_xml are NOT NULL Text columns
+            // and default_currency is NOT NULL String; MySQL TEXT columns can't carry a DEFAULT, so the
+            // values must be supplied explicitly (empty strings) rather than relying on a DB-side default.
             var insertCompany = new DbCommandSpec(DbCommandKind.NonQuery,
-                $"INSERT INTO {tblCompany} ({colRowId}, {colSysId}, {colName}, {colDbId}, {colNumFmt}, {colEnabled}, {colInsTime}) " +
-                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {disabledLiteral}, {nowExpr})",
-                companyRowId, companyId, "停用公司", "common", string.Empty);
+                $"INSERT INTO {tblCompany} ({colRowId}, {colSysId}, {colName}, {colDbId}, {colNumFmt}, {colDefCur}, {colCashRnd}, {colAllowCur}, {colEnabled}, {colInsTime}) " +
+                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {{5}}, {{6}}, {{7}}, {disabledLiteral}, {nowExpr})",
+                companyRowId, companyId, "停用公司", "common", string.Empty, string.Empty, string.Empty, string.Empty);
             dbAccess.Execute(insertCompany);
 
             // 取 user '001' rowid

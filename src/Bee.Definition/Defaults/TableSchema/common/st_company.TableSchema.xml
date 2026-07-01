@@ -8,6 +8,9 @@
 		<DbField FieldName="company_database_id" Caption="公司資料庫識別" DbType="String" Length="50" />
 		<DbField FieldName="customize_id" Caption="客製化代碼" DbType="String" Length="50" />
 		<DbField FieldName="number_formats_xml" Caption="數值格式設定" DbType="Text" />
+		<DbField FieldName="default_currency" Caption="本幣幣別" DbType="String" Length="10" />
+		<DbField FieldName="cash_rounding_xml" Caption="現金捨入設定" DbType="Text" />
+		<DbField FieldName="allowed_currencies_xml" Caption="可用幣別設定" DbType="Text" />
 		<DbField FieldName="enabled" Caption="啟用" DbType="Boolean" DefaultValue="1" />
 		<DbField FieldName="sys_insert_time" Caption="寫入時間" DbType="DateTime" />
 	</Fields>

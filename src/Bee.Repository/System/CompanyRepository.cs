@@ -45,9 +45,12 @@ namespace Bee.Repository.System
             string colDbId = dbType.QuoteIdentifier("company_database_id");
             string colCustId = dbType.QuoteIdentifier("customize_id");
             string colNumFmt = dbType.QuoteIdentifier("number_formats_xml");
+            string colDefCur = dbType.QuoteIdentifier("default_currency");
+            string colCashRnd = dbType.QuoteIdentifier("cash_rounding_xml");
+            string colAllowCur = dbType.QuoteIdentifier("allowed_currencies_xml");
             string colEnabled = dbType.QuoteIdentifier("enabled");
 
-            string sql = $"SELECT {colId}, {colName}, {colDbId}, {colCustId}, {colNumFmt} \n" +
+            string sql = $"SELECT {colId}, {colName}, {colDbId}, {colCustId}, {colNumFmt}, {colDefCur}, {colCashRnd}, {colAllowCur} \n" +
                          $"FROM {tbl} \n" +
                          $"WHERE {colId} = {{0}} AND {colEnabled} = {{1}}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, companyId, true);
@@ -61,13 +64,24 @@ namespace Bee.Repository.System
             var numberFormats = StringUtilities.IsEmpty(numberFormatsXml)
                 ? []
                 : XmlCodec.Deserialize<CompanyNumberFormats>(numberFormatsXml) ?? [];
+            string cashRoundingXml = ValueUtilities.CStr(row["cash_rounding_xml"]);
+            var cashRounding = StringUtilities.IsEmpty(cashRoundingXml)
+                ? []
+                : XmlCodec.Deserialize<CompanyCashRounding>(cashRoundingXml) ?? [];
+            string allowedCurrenciesXml = ValueUtilities.CStr(row["allowed_currencies_xml"]);
+            var allowedCurrencies = StringUtilities.IsEmpty(allowedCurrenciesXml)
+                ? []
+                : XmlCodec.Deserialize<CompanyAllowedCurrencies>(allowedCurrenciesXml) ?? [];
             return new CompanyInfo
             {
                 CompanyId = ValueUtilities.CStr(row["sys_id"]),
                 CompanyName = ValueUtilities.CStr(row["sys_name"]),
                 CompanyDatabaseId = ValueUtilities.CStr(row["company_database_id"]),
                 CustomizeId = ValueUtilities.CStr(row["customize_id"]),
-                NumberFormats = numberFormats
+                NumberFormats = numberFormats,
+                DefaultCurrency = ValueUtilities.CStr(row["default_currency"]),
+                CashRounding = cashRounding,
+                AllowedCurrencies = allowedCurrencies
             };
         }
     }

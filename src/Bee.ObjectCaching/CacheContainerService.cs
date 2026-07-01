@@ -46,6 +46,7 @@ namespace Bee.ObjectCaching
             ProgramSettings = new ProgramSettingsCache(storage, paths, CachePrefix);
             PermissionModels = new PermissionModelsCache(paths, CachePrefix);
             DbCategorySettings = new DbCategorySettingsCache(storage, paths, CachePrefix);
+            CurrencySettings = new CurrencySettingsCache(storage, paths, CachePrefix);
             TableSchema = new TableSchemaCache(storage, paths, CachePrefix);
             FormSchema = new FormSchemaCache(storage, paths, CachePrefix);
             FormLayout = new FormLayoutCache(storage, paths, CachePrefix);
@@ -60,7 +61,7 @@ namespace Bee.ObjectCaching
             // Adding a new cache above automatically makes it invalidatable — no extra registration.
             IEvictableCache[] caches =
             [
-                SystemSettings, DatabaseSettings, ProgramSettings, DbCategorySettings,
+                SystemSettings, DatabaseSettings, ProgramSettings, DbCategorySettings, CurrencySettings,
                 TableSchema, FormSchema, FormLayout, LanguageResource, SessionInfo, CompanyInfo,
                 PermissionModels, CompanyRolePermissions, DepartmentTree
             ];
@@ -92,6 +93,9 @@ namespace Bee.ObjectCaching
 
         /// <inheritdoc/>
         public DbCategorySettingsCache DbCategorySettings { get; }
+
+        /// <inheritdoc/>
+        public CurrencySettingsCache CurrencySettings { get; }
 
         /// <inheritdoc/>
         public TableSchemaCache TableSchema { get; }

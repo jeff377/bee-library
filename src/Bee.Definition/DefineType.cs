@@ -40,6 +40,10 @@ namespace Bee.Definition
         /// <summary>
         /// Permission model registry (model + actions + record-scope strategies).
         /// </summary>
-        PermissionModels
+        PermissionModels,
+        /// <summary>
+        /// System-level currency master (currency decimals and natural minor units).
+        /// </summary>
+        CurrencySettings
     }
 }

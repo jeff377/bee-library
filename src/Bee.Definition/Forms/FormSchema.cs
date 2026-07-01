@@ -110,6 +110,19 @@ namespace Bee.Definition.Forms
         public string CategoryId { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the name of the master field that holds the document currency code (by
+        /// convention <c>sys_currency</c>). Amount fields with no explicit
+        /// <see cref="FormField.CurrencyField"/> resolve their currency from this field; detail amount
+        /// fields read the master row's value. Empty falls back to the company default currency
+        /// (see plan-numeric-multicurrency.md §1.4).
+        /// </summary>
+        [XmlAttribute]
+        [Category(PropertyCategories.Data)]
+        [Description("Name of the master field holding the document currency code (SAP CUKY, convention sys_currency).")]
+        [DefaultValue("")]
+        public string CurrencyField { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the list field collection string, with multiple fields separated by commas.
         /// </summary>
         [XmlAttribute]

@@ -18,13 +18,14 @@ namespace Bee.Definition.UnitTests
         // - 2 FormLayouts (Department, Employee)
         // - 4 Language resources (Department/Employee × en-US/zh-TW)
         // - 1 DbCategorySettings.xml (minimal — st_* only, no ft_project)
+        // - 1 CurrencySettings.xml (curated system currency master)
         // - 1 SystemSettings.xml (template with sensible defaults)
         // - 1 DatabaseSettings.xml (empty stub — connection strings are deployment-specific)
-        // Total: 22
-        private const int ExpectedEmbeddedCount = 22;
+        // Total: 23
+        private const int ExpectedEmbeddedCount = 23;
 
         [Fact]
-        [DisplayName("ListEmbedded 應回傳 22 個框架預設檔（11 st_* + 2 FormSchema + 2 FormLayout + 4 Language + 1 DbCategorySettings + 1 SystemSettings + 1 DatabaseSettings）")]
+        [DisplayName("ListEmbedded 應回傳 23 個框架預設檔（11 st_* + 2 FormSchema + 2 FormLayout + 4 Language + 1 DbCategorySettings + 1 CurrencySettings + 1 SystemSettings + 1 DatabaseSettings）")]
         public void ListEmbedded_ReturnsExpectedCount()
         {
             var files = Defaults.ListEmbedded();
@@ -44,6 +45,7 @@ namespace Bee.Definition.UnitTests
 
         [Theory]
         [InlineData("DbCategorySettings.xml")]
+        [InlineData("CurrencySettings.xml")]
         [InlineData("SystemSettings.xml")]
         [InlineData("DatabaseSettings.xml")]
         [InlineData("TableSchema/common/st_user.TableSchema.xml")]
@@ -78,6 +80,19 @@ namespace Bee.Definition.UnitTests
 
             Assert.NotNull(schema);
             Assert.Equal("Department", schema!.ProgId);
+        }
+
+        [Fact]
+        [DisplayName("OpenEmbedded 對 CurrencySettings.xml 可 deserialize 且位數依幣別（JPY=0、USD=2、BHD=3）")]
+        public void OpenEmbedded_CurrencySettings_DeserializesWithCurrencyDecimals()
+        {
+            var settings = XmlCodec.Deserialize<CurrencySettings>(ReadEmbedded("CurrencySettings.xml"));
+
+            Assert.NotNull(settings);
+            Assert.NotEmpty(settings!);
+            Assert.Equal(2, settings.GetDecimals("USD"));
+            Assert.Equal(0, settings.GetDecimals("JPY"));
+            Assert.Equal(3, settings.GetDecimals("BHD"));
         }
 
         [Fact]
@@ -153,7 +168,7 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
-        [DisplayName("MaterializeTo 對空目錄寫出 20 個檔（含子目錄結構）")]
+        [DisplayName("MaterializeTo 對空目錄寫出全部框架預設檔（含子目錄結構）")]
         public void MaterializeTo_EmptyDirectory_WritesAllFiles()
         {
             var tempDir = CreateTempDir();

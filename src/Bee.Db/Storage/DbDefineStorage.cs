@@ -20,9 +20,9 @@ namespace Bee.Db.Storage
     /// observe the change via the notification table and evict the corresponding cache.
     /// </summary>
     /// <remarks>
-    /// Covers the six DB-storable definition types (<c>DbCategorySettings</c>, <c>TableSchema</c>,
-    /// <c>FormSchema</c>, <c>FormLayout</c>, <c>Language</c>; <c>ProgramSettings</c> arrives with a
-    /// later phase). <c>SystemSettings</c> / <c>DatabaseSettings</c> remain file-based (startup
+    /// Covers the DB-storable definition types (<c>DbCategorySettings</c>, <c>ProgramSettings</c>,
+    /// <c>CurrencySettings</c>, <c>TableSchema</c>, <c>FormSchema</c>, <c>FormLayout</c>,
+    /// <c>Language</c>). <c>SystemSettings</c> / <c>DatabaseSettings</c> remain file-based (startup
     /// bootstrap) and never reach this storage.
     /// <para>
     /// <c>define_type</c> is the cached type's name (<c>typeof(T).Name</c>), so it equals the cache
@@ -101,6 +101,17 @@ namespace Bee.Db.Storage
 
         /// <inheritdoc/>
         public void SaveDbCategorySettings(DbCategorySettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+            Write(settings, SingletonKey);
+        }
+
+        /// <inheritdoc/>
+        public CurrencySettings? GetCurrencySettings()
+            => ReadRequired<CurrencySettings>(BaseCustomizeId, SingletonKey);
+
+        /// <inheritdoc/>
+        public void SaveCurrencySettings(CurrencySettings settings)
         {
             ArgumentNullException.ThrowIfNull(settings);
             Write(settings, SingletonKey);

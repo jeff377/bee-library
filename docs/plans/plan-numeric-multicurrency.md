@@ -1,6 +1,6 @@
 # 計畫：多幣別數值（CurrencySettings + CUKY 綁定 + 現金捨入 + 本幣）
 
-**狀態：📝 待做（2026-06-21）**
+**狀態：🚧 進行中（2026-07-01）**
 
 > 執行增量 2/3，相依 [plan-numeric-core.md](plan-numeric-core.md)。設計理由、SAP/Odoo 對照見 [plan-numeric-formatting.md](plan-numeric-formatting.md)（設計總覽 §1.3、§1.4、§1.5、§2.1–2.3、§3.2、§3.2b、§3.2c）。
 > 本 plan 引入「**參照欄綁定**」通用機制（金額→幣別），計量單位 plan 將重用之。
@@ -20,9 +20,11 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 定義：`CurrencySettings`(define)、`FormSchema.CurrencyField` + `FormField.CurrencyField`、`CompanyInfo` 本幣/現金捨入/可用幣別 | 📝 待做 |
+| 1 | 定義：`CurrencySettings`(define)、`FormSchema.CurrencyField` + `FormField.CurrencyField`、`CompanyInfo` 本幣/現金捨入/可用幣別 | ✅ 已完成（2026-07-01） |
 | 2 | 邏輯：金額依各 CUKY 欄 round-then-sum、兩層捨入（小數 + 現金捨入）、定義 ship client | 📝 待做 |
 | 3 | UI：金額 runtime 幣別解析、Grid per-cell 幣別感知 + 混幣不合計、DemoCenter 多幣別 | 📝 待做 |
+
+> **階段 1 落地 note（2026-07-01）**：CurrencySettings 採**集合衍生**（`CurrencySettings : MessagePackCollectionBase<CurrencyItem>`，`[XmlRoot("CurrencySettings")]` 讓 XML/DB 存檔根節點可讀；`CurrencyItem : MessagePackCollectionItem` `[Key(100+)]` Code/Numeric/Rounding/Symbol/Name 五欄；`GetRounding`/`GetDecimals`（`DecimalsFromRounding` decimal-safe 迴圈反推）/`Find`）。IDefineStorage 雙模式 12 接點仿 `DbCategorySettings`（`DefineType.CurrencySettings`+`DefineTypeExtensions`、File/Db storage、`PathOptions.GetCurrencySettingsFilePath`、`CurrencySettingsCache`、`ICacheContainer`+`CacheContainerService`、`CacheDefineAccess` 分派、`Defaults/CurrencySettings.xml` curated 10 幣別含 BHD 3 位）；**`IDefineAccess.Get/SaveCurrencySettings` 用 default 介面方法**（仿 `PermissionModels` 委派 `GetDefine`/`SaveDefine`，省 ~10 個 stub churn），`CacheDefineAccess` 覆寫走快取路徑。`CompanyInfo` 尾端加 `[Key(5)]DefaultCurrency`/`[Key(6)]CashRounding`(`CompanyCashRounding`)/`[Key(7)]AllowedCurrencies`(`CompanyAllowedCurrencies`)+`GetCashRounding`/`GetAllowedCurrencies`；三個新集合各在 `MessagePackCodec.Options` 註冊 `CollectionBaseFormatter`。`st_company` 加 `default_currency`(String NOT NULL)/`cash_rounding_xml`/`allowed_currencies_xml`(Text NOT NULL)，同步 Defaults+tests/Define TableSchema、`CompanyRepository.GetById` SELECT+反序列化、SharedDatabaseState+4 個測試 helper INSERT 補齊帶 `''`。`FormField.CurrencyField`+`FormSchema.CurrencyField`（僅 CurrencyField，UnitField 留 uom 增量）+`LayoutFieldBase.CurrencyField`+`LayoutColumnFactory` 傳遞+`FormField.Clone`。全 15 test 專案綠（Definition 811、Api.Core 312）。**環境雷**：加 NOT NULL 欄觸發持久容器 st_company **table rebuild**，暴露 core `number_formats_xml` 本機 ALTER-ADD 遺留的 nullable-drift（rebuild 重申 NOT NULL 撞既有 NULL 列）→ `SharedDatabaseState` setup skip → EnterCompany 測試連帶失敗；解法：`DROP TABLE st_company`（4 容器）讓 fixture fresh 重建，CI fresh-CREATE 無此問題（見 [[tableschema-addcolumn-allownull]]）。
 
 ## 階段 1：定義（總覽 §1.3、§1.4、§1.5）
 

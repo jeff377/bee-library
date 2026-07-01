@@ -32,9 +32,9 @@ namespace Bee.Business.UnitTests
             var rowId = Guid.NewGuid();
             string enabledLiteral = enabled ? "1" : "0";
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
-                "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, number_formats_xml, enabled, sys_insert_time) " +
-                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {enabledLiteral}, GETDATE())",
-                rowId, companyId, "BO 測試公司", CompanyDbId, string.Empty);
+                "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, number_formats_xml, default_currency, cash_rounding_xml, allowed_currencies_xml, enabled, sys_insert_time) " +
+                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {{5}}, {{6}}, {{7}}, {enabledLiteral}, GETDATE())",
+                rowId, companyId, "BO 測試公司", CompanyDbId, string.Empty, string.Empty, string.Empty, string.Empty);
             Common().Execute(insert);
             return rowId;
         }
@@ -43,9 +43,9 @@ namespace Bee.Business.UnitTests
         {
             var rowId = Guid.NewGuid();
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
-                "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, customize_id, number_formats_xml, enabled, sys_insert_time) " +
-                "VALUES ({0}, {1}, {2}, {3}, {4}, {5}, 1, GETDATE())",
-                rowId, companyId, "BO 客製測試公司", CompanyDbId, customizeId, string.Empty);
+                "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, customize_id, number_formats_xml, default_currency, cash_rounding_xml, allowed_currencies_xml, enabled, sys_insert_time) " +
+                "VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, 1, GETDATE())",
+                rowId, companyId, "BO 客製測試公司", CompanyDbId, customizeId, string.Empty, string.Empty, string.Empty, string.Empty);
             Common().Execute(insert);
             return rowId;
         }

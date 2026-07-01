@@ -26,6 +26,9 @@ namespace Bee.ObjectCaching
         /// <summary>The database category settings cache.</summary>
         DbCategorySettingsCache DbCategorySettings { get; }
 
+        /// <summary>The system-level currency master cache.</summary>
+        CurrencySettingsCache CurrencySettings { get; }
+
         /// <summary>The table schema cache, keyed by category id and table name.</summary>
         TableSchemaCache TableSchema { get; }
 

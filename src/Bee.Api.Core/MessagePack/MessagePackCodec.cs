@@ -1,4 +1,5 @@
 using Bee.Definition;
+using Bee.Definition.Settings;
 using Bee.Definition.Filters;
 using Bee.Definition.Organization;
 using Bee.Definition.Serialization;
@@ -29,6 +30,9 @@ namespace Bee.Api.Core.MessagePack
                     new CollectionBaseFormatter<SortFieldCollection, SortField>(),     // SortFieldCollection as array
                     new CollectionBaseFormatter<DepartmentNodeCollection, DepartmentNode>(), // DepartmentNodeCollection as array
                     new CollectionBaseFormatter<CompanyNumberFormats, NumberFormatItem>(), // CompanyNumberFormats as array
+                    new CollectionBaseFormatter<CurrencySettings, CurrencyItem>(), // CurrencySettings as array
+                    new CollectionBaseFormatter<CompanyCashRounding, CashRoundingItem>(), // CompanyCashRounding as array
+                    new CollectionBaseFormatter<CompanyAllowedCurrencies, AllowedCurrencyItem>(), // CompanyAllowedCurrencies as array
                     SafeTypelessFormatter.Instance      // Type-validated polymorphic formatter
                 },
                 new IFormatterResolver[]

@@ -36,6 +36,12 @@ namespace Bee.Repository.UnitTests
             // Seed ships no number_formats_xml, so the override table reads back empty and every
             // kind falls back to the framework default.
             Assert.Empty(result.NumberFormats);
+            // Seed ships no default_currency / cash_rounding_xml / allowed_currencies_xml either, so
+            // the local currency reads back empty and both currency tables read back empty across
+            // all dialects (the empty-string columns deserialize to empty collections).
+            Assert.Equal(string.Empty, result.DefaultCurrency);
+            Assert.Empty(result.CashRounding);
+            Assert.Empty(result.AllowedCurrencies);
         }
 
         [DbFact(DatabaseType.SQLServer)]
@@ -105,6 +111,9 @@ namespace Bee.Repository.UnitTests
             string colName = dbType.QuoteIdentifier("sys_name");
             string colDbId = dbType.QuoteIdentifier("company_database_id");
             string colNumFmt = dbType.QuoteIdentifier("number_formats_xml");
+            string colDefCur = dbType.QuoteIdentifier("default_currency");
+            string colCashRnd = dbType.QuoteIdentifier("cash_rounding_xml");
+            string colAllowCur = dbType.QuoteIdentifier("allowed_currencies_xml");
             string colEnabled = dbType.QuoteIdentifier("enabled");
             string colInsTime = dbType.QuoteIdentifier("sys_insert_time");
             string nowExpr = dbType == DatabaseType.PostgreSQL || dbType == DatabaseType.SQLite ? "CURRENT_TIMESTAMP"
@@ -113,12 +122,13 @@ namespace Bee.Repository.UnitTests
                            : "SYSTIMESTAMP";
             string disabledLiteral = dbType == DatabaseType.PostgreSQL ? "FALSE" : "0";
 
-            // number_formats_xml is NOT NULL; MySQL TEXT columns can't carry a DEFAULT, so the value
-            // must be supplied explicitly (empty string) rather than relying on a DB-side default.
+            // number_formats_xml / cash_rounding_xml / allowed_currencies_xml are NOT NULL Text columns
+            // and default_currency is NOT NULL String; MySQL TEXT columns can't carry a DEFAULT, so the
+            // values must be supplied explicitly (empty strings) rather than relying on a DB-side default.
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
-                $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colDbId}, {colNumFmt}, {colEnabled}, {colInsTime}) " +
-                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {disabledLiteral}, {nowExpr})",
-                Guid.NewGuid(), companyId, "停用測試公司", "common", string.Empty);
+                $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colDbId}, {colNumFmt}, {colDefCur}, {colCashRnd}, {colAllowCur}, {colEnabled}, {colInsTime}) " +
+                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {{5}}, {{6}}, {{7}}, {disabledLiteral}, {nowExpr})",
+                Guid.NewGuid(), companyId, "停用測試公司", "common", string.Empty, string.Empty, string.Empty, string.Empty);
             dbAccess.Execute(insert);
 
             try

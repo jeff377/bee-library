@@ -134,6 +134,23 @@ namespace Bee.Definition.UnitTests.Layouts
         }
 
         [Fact]
+        [DisplayName("ToField/ToColumn 應傳遞 CurrencyField（CUKY 參照欄名）")]
+        public void ToFieldAndColumn_PropagateCurrencyField()
+        {
+            var formField = new FormField("home_amount", "本幣金額", FieldDbType.Decimal)
+            {
+                NumberKind = NumberKind.Amount,
+                CurrencyField = "local_currency",
+            };
+
+            var field = LayoutColumnFactory.ToField(formField);
+            var column = LayoutColumnFactory.ToColumn(formField);
+
+            Assert.Equal("local_currency", field.CurrencyField);
+            Assert.Equal("local_currency", column.CurrencyField);
+        }
+
+        [Fact]
         [DisplayName("ToColumn Width=0 應保留 0 表示 auto/未設")]
         public void ToColumn_WidthZero_StaysZero()
         {

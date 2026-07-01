@@ -64,6 +64,14 @@ namespace Bee.Definition.Storage
         public DbCategorySettings? GetDbCategorySettings()
             => throw new NotSupportedException("The customization-override layer does not serve DbCategorySettings.");
 
+        /// <summary>Not supported — the override layer never owns the currency master.</summary>
+        public CurrencySettings? GetCurrencySettings()
+            => throw new NotSupportedException("The customization-override layer does not serve CurrencySettings.");
+
+        /// <summary>Not supported — the override layer is strictly read-only.</summary>
+        public void SaveCurrencySettings(CurrencySettings settings)
+            => throw new NotSupportedException(ReadOnlyMessage);
+
         /// <summary>Not supported — the override layer never owns table schema.</summary>
         public TableSchema? GetTableSchema(string categoryId, string tableName)
             => throw new NotSupportedException("The customization-override layer does not serve TableSchema.");

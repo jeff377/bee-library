@@ -94,5 +94,48 @@ namespace Bee.Definition.UnitTests.Forms
             Assert.True(clone.ReadOnly);
             Assert.True(clone.Required);
         }
+
+        [Fact]
+        [DisplayName("CurrencyField XML round-trip 應保留 CUKY 參照欄名")]
+        public void CurrencyField_XmlRoundtrip_Preserved()
+        {
+            var original = new FormField("home_amount", "本幣金額", FieldDbType.Decimal)
+            {
+                NumberKind = NumberKind.Amount,
+                CurrencyField = "local_currency",
+            };
+
+            var xml = XmlCodec.Serialize(original);
+            var restored = XmlCodec.Deserialize<FormField>(xml);
+
+            Assert.NotNull(restored);
+            Assert.Equal("local_currency", restored!.CurrencyField);
+        }
+
+        [Fact]
+        [DisplayName("CurrencyField 為空預設值時序列化應省略屬性")]
+        public void CurrencyField_Empty_OmitsXmlAttribute()
+        {
+            var field = new FormField("col", "欄", FieldDbType.String);
+
+            var xml = XmlCodec.Serialize(field);
+
+            Assert.DoesNotContain("CurrencyField=", xml);
+        }
+
+        [Fact]
+        [DisplayName("Clone 應複製 CurrencyField")]
+        public void Clone_CopiesCurrencyField()
+        {
+            var original = new FormField("home_amount", "本幣金額", FieldDbType.Decimal)
+            {
+                NumberKind = NumberKind.Amount,
+                CurrencyField = "local_currency",
+            };
+
+            var clone = original.Clone();
+
+            Assert.Equal("local_currency", clone.CurrencyField);
+        }
     }
 }

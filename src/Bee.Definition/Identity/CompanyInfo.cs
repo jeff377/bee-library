@@ -1,4 +1,5 @@
 using Bee.Base;
+using Bee.Definition.Settings;
 using MessagePack;
 
 namespace Bee.Definition.Identity
@@ -78,6 +79,52 @@ namespace Bee.Definition.Identity
         public int GetDecimals(NumberKind kind)
         {
             return NumberFormats.FindDecimals(kind) ?? NumberKindProfile.GetDefaultDecimals(kind);
+        }
+
+        /// <summary>
+        /// Gets or sets the company's default (local/home) currency code — an ISO 4217 alpha-3 code
+        /// matching a <c>CurrencySettings</c> entry. Empty means unset (amounts with no resolvable
+        /// currency fall back to the framework default of two decimals). Loaded from the
+        /// <c>default_currency</c> column by <c>CompanyRepository</c>.
+        /// </summary>
+        [Key(5)]
+        public string DefaultCurrency { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the company-level cash-rounding override table (SAP T001R-style). Empty means
+        /// no extra cash rounding — final amounts stay at each currency's natural minor unit. Loaded
+        /// from the <c>cash_rounding_xml</c> column by <c>CompanyRepository</c>.
+        /// </summary>
+        [Key(6)]
+        public CompanyCashRounding CashRounding { get; set; } = [];
+
+        /// <summary>
+        /// Gets or sets the company's allowed-currency whitelist. Empty means every system currency is
+        /// usable. Drives the currency drop-down options on documents. Loaded from the
+        /// <c>allowed_currencies_xml</c> column by <c>CompanyRepository</c>.
+        /// </summary>
+        [Key(7)]
+        public CompanyAllowedCurrencies AllowedCurrencies { get; set; } = [];
+
+        /// <summary>
+        /// Gets the effective cash-rounding unit for the specified currency: the company override when
+        /// present, otherwise the currency's natural minor unit from <paramref name="currencySettings"/>.
+        /// </summary>
+        /// <param name="currencyCode">The ISO 4217 alpha-3 currency code.</param>
+        /// <param name="currencySettings">The system currency master used for the natural-unit fallback.</param>
+        public decimal GetCashRounding(string currencyCode, CurrencySettings currencySettings)
+        {
+            return CashRounding.GetCashRounding(currencyCode, currencySettings);
+        }
+
+        /// <summary>
+        /// Gets the effective list of usable currency codes: the company whitelist when non-empty,
+        /// otherwise every code defined in <paramref name="currencySettings"/>.
+        /// </summary>
+        /// <param name="currencySettings">The system currency master used when the whitelist is empty.</param>
+        public IReadOnlyList<string> GetAllowedCurrencies(CurrencySettings currencySettings)
+        {
+            return AllowedCurrencies.GetAllowedCurrencies(currencySettings);
         }
 
         /// <summary>

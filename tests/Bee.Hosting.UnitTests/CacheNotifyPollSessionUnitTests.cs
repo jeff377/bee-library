@@ -28,6 +28,7 @@ namespace Bee.Hosting.UnitTests
             public ProgramSettingsCache ProgramSettings => throw new NotImplementedException();
             public PermissionModelsCache PermissionModels => throw new NotImplementedException();
             public DbCategorySettingsCache DbCategorySettings => throw new NotImplementedException();
+            public CurrencySettingsCache CurrencySettings => throw new NotImplementedException();
             public TableSchemaCache TableSchema => throw new NotImplementedException();
             public FormSchemaCache FormSchema => throw new NotImplementedException();
             public FormLayoutCache FormLayout => throw new NotImplementedException();

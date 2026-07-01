@@ -97,6 +97,8 @@ namespace Bee.ObjectCaching
                     return this.GetPermissionModels();
                 case DefineType.DbCategorySettings:
                     return this.GetDbCategorySettings();
+                case DefineType.CurrencySettings:
+                    return this.GetCurrencySettings();
                 case DefineType.TableSchema:
                     ValidateKeys(defineType, keys, 2);
                     return this.GetTableSchema(keys![0], keys[1]);
@@ -150,6 +152,9 @@ namespace Bee.ObjectCaching
                     break;
                 case DefineType.DbCategorySettings:
                     this.SaveDbCategorySettings((defineObject as DbCategorySettings)!);
+                    break;
+                case DefineType.CurrencySettings:
+                    this.SaveCurrencySettings((defineObject as CurrencySettings)!);
                     break;
                 case DefineType.TableSchema:
                     if (keys == null || keys.Length != 1)
@@ -271,6 +276,25 @@ namespace Bee.ObjectCaching
             // Save database category settings, then invalidate the cache
             _storage.SaveDbCategorySettings(settings);
             _cache.DbCategorySettings.Remove();
+        }
+
+        /// <summary>
+        /// Gets the system-level currency master.
+        /// </summary>
+        public CurrencySettings GetCurrencySettings()
+        {
+            return _cache.CurrencySettings.Get()!;
+        }
+
+        /// <summary>
+        /// Saves the system-level currency master.
+        /// </summary>
+        /// <param name="settings">The currency master.</param>
+        public void SaveCurrencySettings(CurrencySettings settings)
+        {
+            // Save the currency master through the active storage, then invalidate the cache.
+            _storage.SaveCurrencySettings(settings);
+            _cache.CurrencySettings.Remove();
         }
 
         /// <summary>

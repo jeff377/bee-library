@@ -159,6 +159,19 @@ namespace Bee.Definition.Forms
         public NumberKind NumberKind { get; set; } = NumberKind.None;
 
         /// <summary>
+        /// Gets or sets the name of the field that holds this amount field's currency code (a SAP
+        /// CUKY reference). Applies to <see cref="Definition.NumberKind.Amount"/> fields: when set,
+        /// the amount's decimal places resolve from that field's current currency. Empty falls back to
+        /// the master document currency (<see cref="FormSchema.CurrencyField"/>), then the company
+        /// default currency (see plan-numeric-multicurrency.md §1.4).
+        /// </summary>
+        [Category(PropertyCategories.Data)]
+        [XmlAttribute]
+        [Description("Name of the field holding this amount field's currency code (SAP CUKY reference).")]
+        [DefaultValue("")]
+        public string CurrencyField { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the program ID of the related program.
         /// </summary>
         [XmlAttribute]
@@ -394,6 +407,7 @@ namespace Bee.Definition.Forms
                 DisplayFormat = DisplayFormat,
                 NumberFormat = NumberFormat,
                 NumberKind = NumberKind,
+                CurrencyField = CurrencyField,
                 RelationProgId = RelationProgId,
                 LookupProgId = LookupProgId,
                 DisplayFields = DisplayFields,

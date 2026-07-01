@@ -39,6 +39,10 @@ namespace Bee.Definition
         public string GetDbCategorySettingsFilePath()
             => System.IO.Path.Combine(DefinePath, "DbCategorySettings.xml");
 
+        /// <summary>Gets the absolute path of <c>CurrencySettings.xml</c>.</summary>
+        public string GetCurrencySettingsFilePath()
+            => System.IO.Path.Combine(DefinePath, "CurrencySettings.xml");
+
         /// <summary>Gets the absolute path of <c>PermissionModels.xml</c>.</summary>
         public string GetPermissionModelsFilePath()
             => System.IO.Path.Combine(DefinePath, "PermissionModels.xml");

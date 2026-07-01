@@ -86,6 +86,17 @@ namespace Bee.Definition.Layouts
         public NumberKind NumberKind { get; set; } = NumberKind.None;
 
         /// <summary>
+        /// Gets or sets the name of the field that holds this amount field's currency code (a SAP
+        /// CUKY reference), propagated from <see cref="Forms.FormField.CurrencyField"/>. Drives
+        /// per-cell currency-aware decimal resolution at runtime (see plan-numeric-multicurrency.md §3.2c).
+        /// </summary>
+        [Category(PropertyCategories.Data)]
+        [XmlAttribute]
+        [Description("Name of the field holding this amount field's currency code (SAP CUKY reference).")]
+        [DefaultValue("")]
+        public string CurrencyField { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets a value indicating whether this field is visible.
         /// Layout-level visibility: false means the field exists in the layout
         /// (e.g. for grid row binding) but is not rendered.

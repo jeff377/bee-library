@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CurrencySettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<CurrencyItem Code="USD" Numeric="840" Rounding="0.01" Symbol="$" Name="US Dollar" />
+	<CurrencyItem Code="EUR" Numeric="978" Rounding="0.01" Symbol="€" Name="Euro" />
+	<CurrencyItem Code="JPY" Numeric="392" Rounding="1" Symbol="¥" Name="Japanese Yen" />
+	<CurrencyItem Code="GBP" Numeric="826" Rounding="0.01" Symbol="£" Name="Pound Sterling" />
+	<CurrencyItem Code="CNY" Numeric="156" Rounding="0.01" Symbol="¥" Name="Renminbi" />
+	<CurrencyItem Code="TWD" Numeric="901" Rounding="0.01" Symbol="NT$" Name="New Taiwan Dollar" />
+	<CurrencyItem Code="HKD" Numeric="344" Rounding="0.01" Symbol="HK$" Name="Hong Kong Dollar" />
+	<CurrencyItem Code="KRW" Numeric="410" Rounding="1" Symbol="₩" Name="South Korean Won" />
+	<CurrencyItem Code="BHD" Numeric="048" Rounding="0.001" Symbol="BD" Name="Bahraini Dinar" />
+	<CurrencyItem Code="CHF" Numeric="756" Rounding="0.01" Symbol="CHF" Name="Swiss Franc" />
+</CurrencySettings>

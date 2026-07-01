@@ -89,9 +89,9 @@ namespace Bee.Business.UnitTests
             var grantRowId = Guid.NewGuid();
 
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
-                "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, number_formats_xml, enabled, sys_insert_time) " +
-                "VALUES ({0}, {1}, {2}, {3}, {4}, 1, GETDATE())",
-                companyRowId, companyId, "Lifecycle B", CompanyDbId, string.Empty));
+                "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, number_formats_xml, default_currency, cash_rounding_xml, allowed_currencies_xml, enabled, sys_insert_time) " +
+                "VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, 1, GETDATE())",
+                companyRowId, companyId, "Lifecycle B", CompanyDbId, string.Empty, string.Empty, string.Empty, string.Empty));
 
             var userLookup = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT sys_rowid FROM st_user WHERE sys_id = {0}", "001"));

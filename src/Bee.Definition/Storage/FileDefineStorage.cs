@@ -47,6 +47,26 @@ namespace Bee.Definition.Storage
         }
 
         /// <summary>
+        /// Gets the system-level currency master.
+        /// </summary>
+        public CurrencySettings? GetCurrencySettings()
+        {
+            string filePath = _paths.GetCurrencySettingsFilePath();
+            ValidateFilePath(filePath);
+            return XmlCodec.DeserializeFromFile<CurrencySettings>(filePath);
+        }
+
+        /// <summary>
+        /// Saves the system-level currency master.
+        /// </summary>
+        /// <param name="settings">The currency master.</param>
+        public void SaveCurrencySettings(CurrencySettings settings)
+        {
+            string filePath = _paths.GetCurrencySettingsFilePath();
+            XmlCodec.SerializeToFile(settings, filePath);
+        }
+
+        /// <summary>
         /// Gets the program settings.
         /// </summary>
         public ProgramSettings? GetProgramSettings()
