@@ -4,6 +4,22 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.13.0]
+
+> Bee.NET 仍處 pre-stable 演進階段。本版新增 ERP 級數值層：欄位上的語意 `NumberKind` 驅動顯示格式、捨入策略與小數位數來源 —— **round-then-sum** 合計、逐欄 **多幣別**（SAP CUKY 式，JPY=0 / USD=2 / BHD=3）與 **計量單位**（SAP UNIT 式，KG=3 / PCS=0）位數皆於 runtime 解析，並附 Avalonia `NumericEdit` 編輯器。所有新增皆向後相容（新成員預設空；`CompanyInfo` 尾端加 MessagePack key）。無破壞性變更。[ADR-026](docs/adr/adr-026-numeric-semantics-rounding.md)
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.13.0.zh-TW.md](docs/changelogs/4.13.0.zh-TW.md)
+
+### 新增
+
+- `Bee.Definition`：`FormField` 與 `LayoutFieldBase` 上的 `NumberKind` 語意（`Quantity` / `Weight` / `Amount` / `Percent` / `UnitPrice` / `Cost` / `ExchangeRate`），驅動顯示格式、捨入策略與位數來源。[ADR-026](docs/adr/adr-026-numeric-semantics-rounding.md)
+- `Bee.Definition`：`NumberFormatResolver`（`ResolveDecimals` / `ResolveFormat` / `RoundByKind` / `RoundCash`）與 `NumberFormatApplier.Bake` —— round-then-sum 合計、兩層捨入（幣別/單位自然小數 + 選配現金捨入）、顯示格式 bake 於 per-call schema clone（絕不 mutate 快取）。
+- `Bee.Definition`：`CurrencySettings` 幣別主檔（`DefineType.CurrencySettings`，curated ISO 4217，SAP TCURX 式），透過 `FormField.CurrencyField` / `FormSchema.CurrencyField` 逐欄綁定；金額位數跟幣別走。
+- `Bee.Definition`：`UnitSettings` 計量單位主檔（`DefineType.UnitSettings`，SAP T006 式），透過 `FormField.UnitField` 逐欄綁定；數量／重量位數跟單位走。
+- `Bee.Definition`：`CompanyInfo` 新增 `NumberFormats`、`DefaultCurrency`、`CashRounding`、`AllowedCurrencies`（`[Key(4)]`–`[Key(7)]`），由四個新 `st_company` 欄位承載；空值退框架預設。
+- `Bee.UI.Avalonia`：`NumericEdit` 編輯器（`ControlType.NumericEdit`）—— focus 顯完整精度、blur 依 `NumberFormat` 格式化、右對齊、顯示捨入絕不回寫。
+- `Bee.UI.Avalonia`：`GridControl` per-cell 幣別／單位感知格式化（逐列解析 `CurrencyField` / `UnitField`）與 `AmountColumnSummary` 混幣／混單位合計 helper。
+
 ## [4.12.1]
 
 > Bee.NET 仍處 pre-stable 演進階段。本 patch 在 `Bee.Definition` 內嵌 trimmer descriptor，讓定義型別圖在 full trim / AOT 下保留，補完 4.12.0 起步的 Avalonia **iOS** / **Android** Release 打包路徑（4.12.0 讓同一批型別可於 reflection-only XmlSerializer 反序列化）。無破壞性變更。

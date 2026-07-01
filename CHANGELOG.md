@@ -4,6 +4,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.13.0]
+
+> Bee.NET remains in pre-stable evolution. This release adds an ERP-grade numeric layer: a semantic `NumberKind` on fields drives the display format, the rounding policy, and where the decimal places come from — with **round-then-sum** totals, per-field **multi-currency** (SAP CUKY-style, JPY=0 / USD=2 / BHD=3) and **unit-of-measure** (SAP UNIT-style, KG=3 / PCS=0) decimals resolved at runtime, and an Avalonia `NumericEdit` editor. All additions are backward compatible (new members default to empty; `CompanyInfo` gains tail-appended MessagePack keys). No breaking changes. [ADR-026](docs/adr/adr-026-numeric-semantics-rounding.md)
+
+📄 Full notes & design context: [docs/changelogs/4.13.0.md](docs/changelogs/4.13.0.md)
+
+### Added
+
+- `Bee.Definition`: `NumberKind` semantic (`Quantity` / `Weight` / `Amount` / `Percent` / `UnitPrice` / `Cost` / `ExchangeRate`) on `FormField` and `LayoutFieldBase`, driving display format, rounding policy, and decimals source. [ADR-026](docs/adr/adr-026-numeric-semantics-rounding.md)
+- `Bee.Definition`: `NumberFormatResolver` (`ResolveDecimals` / `ResolveFormat` / `RoundByKind` / `RoundCash`) and `NumberFormatApplier.Bake` — round-then-sum totals, two-layer rounding (natural currency / unit decimals + optional cash rounding), display format baked onto a per-call schema clone (cache never mutated).
+- `Bee.Definition`: `CurrencySettings` currency master (`DefineType.CurrencySettings`, curated ISO 4217, SAP TCURX-style) with per-field binding via `FormField.CurrencyField` / `FormSchema.CurrencyField`; amount decimals follow the currency.
+- `Bee.Definition`: `UnitSettings` unit-of-measure master (`DefineType.UnitSettings`, SAP T006-style) with per-field binding via `FormField.UnitField`; quantity / weight decimals follow the unit.
+- `Bee.Definition`: `CompanyInfo` gains `NumberFormats`, `DefaultCurrency`, `CashRounding`, `AllowedCurrencies` (`[Key(4)]`–`[Key(7)]`), backed by four new `st_company` columns; empty values fall back to framework defaults.
+- `Bee.UI.Avalonia`: `NumericEdit` editor (`ControlType.NumericEdit`) — shows full precision on focus, formats per `NumberFormat` on blur, right-aligned, display rounding never written back.
+- `Bee.UI.Avalonia`: `GridControl` per-cell currency / unit-aware formatting (resolves each row's `CurrencyField` / `UnitField`) and `AmountColumnSummary` mixed-currency / mixed-unit total helper.
+
 ## [4.12.1]
 
 > Bee.NET remains in pre-stable evolution. This patch ships an embedded trimmer descriptor in `Bee.Definition` so the definition type graph survives full trim / AOT, completing the Avalonia **iOS** / **Android** Release-packaging path begun in 4.12.0 (which made the same types deserialize under the reflection-only XmlSerializer). No breaking changes.
