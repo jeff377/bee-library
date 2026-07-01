@@ -107,8 +107,12 @@ namespace Bee.Db.Storage
         }
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// Like the language resource, a missing currency master returns <c>null</c> (not an error) —
+        /// callers fall back to framework-default decimals.
+        /// </remarks>
         public CurrencySettings? GetCurrencySettings()
-            => ReadRequired<CurrencySettings>(BaseCustomizeId, SingletonKey);
+            => ReadOptional<CurrencySettings>(BaseCustomizeId, SingletonKey);
 
         /// <inheritdoc/>
         public void SaveCurrencySettings(CurrencySettings settings)

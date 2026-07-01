@@ -29,17 +29,61 @@ namespace Bee.Definition.UnitTests.Forms
         }
 
         [Fact]
-        [DisplayName("Bake 對 NumberKind 欄套用框架預設格式（null company）")]
+        [DisplayName("Bake 對 Company/SystemFixed 欄套用框架預設格式；Currency（金額）不 bake")]
         public void Bake_NullCompany_FrameworkFormat()
         {
             var schema = SchemaWith(
-                new FormField("amount", "金額", FieldDbType.Decimal) { NumberKind = NumberKind.Amount },
-                new FormField("rate", "匯率", FieldDbType.Decimal) { NumberKind = NumberKind.ExchangeRate });
+                new FormField("disc", "折扣", FieldDbType.Decimal) { NumberKind = NumberKind.Percent },
+                new FormField("rate", "匯率", FieldDbType.Decimal) { NumberKind = NumberKind.ExchangeRate },
+                new FormField("amount", "金額", FieldDbType.Decimal) { NumberKind = NumberKind.Amount });
 
             NumberFormatApplier.Bake(schema, null);
 
-            Assert.Equal("N2", schema.Tables!["Order"].Fields!["amount"].NumberFormat);
+            Assert.Equal("P2", schema.Tables!["Order"].Fields!["disc"].NumberFormat);
             Assert.Equal("N5", schema.Tables!["Order"].Fields!["rate"].NumberFormat);
+            // Currency amounts resolve at runtime by their currency, so they are not baked.
+            Assert.Equal(string.Empty, schema.Tables!["Order"].Fields!["amount"].NumberFormat);
+        }
+
+        [Fact]
+        [DisplayName("Bake 金額欄不 bake，且無 CurrencyField 時繼承主檔幣別欄")]
+        public void Bake_AmountField_NotBaked_InheritsMasterCurrencyField()
+        {
+            var schema = SchemaWith(new FormField("amount", "金額", FieldDbType.Decimal) { NumberKind = NumberKind.Amount });
+            schema.CurrencyField = "sys_currency";
+
+            NumberFormatApplier.Bake(schema, null);
+
+            var field = schema.Tables!["Order"].Fields!["amount"];
+            Assert.Equal(string.Empty, field.NumberFormat);
+            Assert.Equal("sys_currency", field.CurrencyField);
+        }
+
+        [Fact]
+        [DisplayName("Bake 金額欄已指定 CurrencyField 時不被主檔幣別欄覆蓋")]
+        public void Bake_AmountField_ExplicitCurrencyField_NotOverwritten()
+        {
+            var schema = SchemaWith(new FormField("home_amount", "本幣金額", FieldDbType.Decimal)
+            {
+                NumberKind = NumberKind.Amount,
+                CurrencyField = "local_currency",
+            });
+            schema.CurrencyField = "sys_currency";
+
+            NumberFormatApplier.Bake(schema, null);
+
+            Assert.Equal("local_currency", schema.Tables!["Order"].Fields!["home_amount"].CurrencyField);
+        }
+
+        [Fact]
+        [DisplayName("Bake 主檔無幣別欄時金額欄 CurrencyField 維持空")]
+        public void Bake_AmountField_NoMasterCurrencyField_LeavesEmpty()
+        {
+            var schema = SchemaWith(new FormField("amount", "金額", FieldDbType.Decimal) { NumberKind = NumberKind.Amount });
+
+            NumberFormatApplier.Bake(schema, null);
+
+            Assert.Equal(string.Empty, schema.Tables!["Order"].Fields!["amount"].CurrencyField);
         }
 
         [Fact]
@@ -102,14 +146,15 @@ namespace Bee.Definition.UnitTests.Forms
         [DisplayName("Bake 只動傳入實例，來源 schema（模擬快取）不受污染")]
         public void Bake_DoesNotAffectSourceSchema()
         {
-            var source = SchemaWith(new FormField("amount", "金額", FieldDbType.Decimal) { NumberKind = NumberKind.Amount });
+            // 用 Percent（Company 來源、會 bake）驗證污染隔離；Amount 不 bake 不適合此測試。
+            var source = SchemaWith(new FormField("disc", "折扣", FieldDbType.Decimal) { NumberKind = NumberKind.Percent });
 
             // 模擬交付流程：clone 後才 bake，來源保持空 NumberFormat
             var clone = source.Clone();
             NumberFormatApplier.Bake(clone, null);
 
-            Assert.Equal(string.Empty, source.Tables!["Order"].Fields!["amount"].NumberFormat);
-            Assert.Equal("N2", clone.Tables!["Order"].Fields!["amount"].NumberFormat);
+            Assert.Equal(string.Empty, source.Tables!["Order"].Fields!["disc"].NumberFormat);
+            Assert.Equal("P2", clone.Tables!["Order"].Fields!["disc"].NumberFormat);
         }
     }
 }

@@ -47,12 +47,15 @@ namespace Bee.Definition.Storage
         }
 
         /// <summary>
-        /// Gets the system-level currency master.
+        /// Gets the system-level currency master. Returns <c>null</c> when the file does not exist —
+        /// a missing currency master is a normal scenario (unlike <see cref="GetDbCategorySettings"/>),
+        /// so callers fall back to framework-default decimals (see plan-numeric-multicurrency.md).
         /// </summary>
         public CurrencySettings? GetCurrencySettings()
         {
             string filePath = _paths.GetCurrencySettingsFilePath();
-            ValidateFilePath(filePath);
+            if (!File.Exists(filePath))
+                return null;
             return XmlCodec.DeserializeFromFile<CurrencySettings>(filePath);
         }
 

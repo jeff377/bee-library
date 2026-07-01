@@ -49,6 +49,22 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
+        [DisplayName("IDefineAccess.GetCurrencySettings 應讀回框架預設幣別主檔（storage→cache→access 全鏈）")]
+        public void GetCurrencySettings_ReturnsFrameworkCurrencyMaster()
+        {
+            var access = _fx.GetRequiredService<IDefineAccess>();
+
+            // SharedDefinePath 物化自 embedded 框架預設，含 CurrencySettings.xml（curated 10 幣別）。
+            var currencies = access.GetCurrencySettings();
+
+            Assert.NotNull(currencies);
+            Assert.NotEmpty(currencies);
+            Assert.Equal(2, currencies.GetDecimals("USD"));
+            Assert.Equal(0, currencies.GetDecimals("JPY"));
+            Assert.Equal(3, currencies.GetDecimals("BHD"));
+        }
+
+        [Fact]
         [DisplayName("BeeTestFixture.GetRequiredService 應可解析 PathOptions singleton")]
         public void GetRequiredService_PathOptions_MatchesFixture()
         {
