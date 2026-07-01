@@ -364,7 +364,7 @@ Available comparison operators: `Equal`, `Like`, `Contains`, `StartsWith`, `Betw
 
 ## Numeric Semantics, Company Decimals, and Rounding
 
-Numeric fields declare a semantic **`NumberKind`** on `FormField` (propagated to `LayoutFieldBase`). The kind drives three things — the display format, whether the value is rounded on write, and where the decimal places come from. The members and framework defaults are the signed-off contract in [plan-numeric-core.md](plans/plan-numeric-core.md).
+Numeric fields declare a semantic **`NumberKind`** on `FormField` (propagated to `LayoutFieldBase`). The kind drives three things — the display format, whether the value is rounded on write, and where the decimal places come from. The members, framework defaults, and the design rationale (why round-then-sum, why amounts resolve at runtime, why DB scale is orthogonal) are the signed-off contract in [ADR-026](adr/adr-026-numeric-semantics-rounding.md).
 
 | `NumberKind` | Rounding policy | Decimals source | Framework default | Use |
 |-------------|-----------------|-----------------|:-----------------:|-----|
@@ -379,7 +379,7 @@ Numeric fields declare a semantic **`NumberKind`** on `FormField` (propagated to
 ### Two rules that are easy to get wrong
 
 - **Round-then-sum (ERP invariant).** For `Round` kinds, a total must equal the **sum of already-rounded details**, never a full-precision sum rounded once at the end. Round each detail with `NumberFormatResolver.RoundByKind(value, kind, company)` — or the currency-aware `RoundByKind(value, kind, ctx, refCode)` for amounts (below) — then add the rounded values. This guarantees `Σ details == total`.
-- **Preserve never writes a rounded value.** `UnitPrice` / `Cost` / `ExchangeRate` are stored at input precision; their decimals are display-only. `RoundByKind` returns these values unchanged. Rounding a source value injects error downstream — do not do it. (For API import, the only hard boundary is DB scale; see the persistence-boundary note in [plan-numeric-formatting.md](plans/plan-numeric-formatting.md) §2.4.)
+- **Preserve never writes a rounded value.** `UnitPrice` / `Cost` / `ExchangeRate` are stored at input precision; their decimals are display-only. `RoundByKind` returns these values unchanged. Rounding a source value injects error downstream — do not do it. (For API import, the only hard boundary is DB scale; see the persistence-boundary decision D6 in [ADR-026](adr/adr-026-numeric-semantics-rounding.md).)
 
 ### Display format is baked at delivery
 
