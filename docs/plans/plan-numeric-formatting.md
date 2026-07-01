@@ -5,7 +5,7 @@
 | 執行 plan | 範圍 | 相依 | 狀態 |
 |-----------|------|------|------|
 | [plan-numeric-core.md](plan-numeric-core.md) | **核心（其他類）**：`NumberKind`/`RoundingPolicy`/`NumberKindProfile`、`CompanyNumberFormats`（公司位數）、round-then-sum、交付 bake、`NumericEdit`、基礎 Grid。涵蓋數量/重量（公司層）、Percent、單價/成本（preserve）、匯率（系統固定）、金額（公司預設、單一幣別） | — | 📝 待做 |
-| [plan-numeric-multicurrency.md](plan-numeric-multicurrency.md) | **幣別**：`CurrencySettings`(TCURX)、per-field CUKY 綁定、本幣/現金捨入(T001R)/可用幣別、reference-binding 機制、Grid 幣別感知 + 混幣不合計 | core | 📝 待做 |
+| [plan-numeric-multicurrency.md](plan-numeric-multicurrency.md) | **幣別**：`CurrencySettings`(TCURX)、per-field CUKY 綁定、本幣/現金捨入(T001R)/可用幣別、reference-binding 機制、Grid 幣別感知 + 混幣不合計 | core | ✅ 已完成（2026-07-01） |
 | [plan-numeric-uom.md](plan-numeric-uom.md) | **計量單位**：`UnitSettings`(T006)、per-field UNIT 綁定（重用 reference-binding）、Grid 單位感知 + 混單位不合計 | multicurrency | 📝 待做 |
 
 > 下方 §1–§3 為**完整設計細節**（三層展開），3 個執行 plan 是其垂直切片並回引本文件對應節次與「背景 / SAP·Odoo 對照 / 核心設計原則」的決策理由。

@@ -46,6 +46,7 @@ namespace Avalonia.DemoCenter.Modules
             new AmbientGridModule(),
             new ListModeModule(),
             new NumberFormatModule(),
+            new MultiCurrencyModule(),
             // Master-Detail.
             new MasterDetailModule(),
         ];

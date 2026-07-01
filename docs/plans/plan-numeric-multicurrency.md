@@ -1,6 +1,6 @@
 # 計畫：多幣別數值（CurrencySettings + CUKY 綁定 + 現金捨入 + 本幣）
 
-**狀態：🚧 進行中（2026-07-01）**
+**狀態：✅ 已完成（2026-07-01）**
 
 > 執行增量 2/3，相依 [plan-numeric-core.md](plan-numeric-core.md)。設計理由、SAP/Odoo 對照見 [plan-numeric-formatting.md](plan-numeric-formatting.md)（設計總覽 §1.3、§1.4、§1.5、§2.1–2.3、§3.2、§3.2b、§3.2c）。
 > 本 plan 引入「**參照欄綁定**」通用機制（金額→幣別），計量單位 plan 將重用之。
@@ -22,7 +22,13 @@
 |------|------|------|
 | 1 | 定義：`CurrencySettings`(define)、`FormSchema.CurrencyField` + `FormField.CurrencyField`、`CompanyInfo` 本幣/現金捨入/可用幣別 | ✅ 已完成（2026-07-01） |
 | 2 | 邏輯：金額依各 CUKY 欄 round-then-sum、兩層捨入（小數 + 現金捨入）、定義 ship client | ✅ 已完成（2026-07-01） |
-| 3 | UI：金額 runtime 幣別解析、Grid per-cell 幣別感知 + 混幣不合計、DemoCenter 多幣別 | 📝 待做 |
+| 3 | UI：金額 runtime 幣別解析、Grid per-cell 幣別感知 + 混幣不合計、DemoCenter 多幣別 | ✅ 已完成（2026-07-01） |
+
+> **階段 3 落地 note（2026-07-01）**：`GridControl` 加 per-instance `CurrencySettings` + `DefaultCurrencyCode` 屬性（null＝關閉幣別感知、退欄級 baked 格式，向後相容）；新增 `FormatCellForColumn`（金額欄逐格：讀 `row.Row[column.CurrencyField]`＝該列 CUKY 值 → `NumberFormatResolver.ResolveFormat(Amount, ctx, code)`；空退 `DefaultCurrencyCode`），把三個顯示呼叫點（list-mode 單欄、interactive read-only、swap-cell ShowDisplay）改走它；`FormatCell` 靜態版保留給 composite/bool/lookup。改幣別＝host 更新值 + 既有 `RefreshRows()`。`NumericEdit` 同加 `CurrencySettings`+`DefaultCurrencyCode`：Amount 欄 runtime 由 `Binder.TargetRow[CurrencyField]`（detail）或 `DefaultCurrencyCode`（master，host 驅動）解析，null＝維持原 baked 行為。**混幣合計走 helper 非 GridControl footer**（依 scope 決策，現有 grid 無 footer 基礎設施）：新增 `AmountColumnSummary.TryComputeTotal`（全同幣回合計、混幣回 null；本幣欄欄內同幣＝恆合計）。DemoCenter 加 `MultiCurrencyModule`（原幣欄綁 sys_currency、本幣欄綁 local_currency、單據貨幣 USD↔JPY 切換即 reformat、手提 footer 用 helper）並註冊。測試（Avalonia +12）：per-cell USD/JPY/BHD 位數、列幣別空退預設、無 CurrencySettings 退 baked、幣別勝 baked；NumericEdit 依幣別；AmountColumnSummary 混幣/同幣/本幣/大小寫。全 15 test 專案綠（Avalonia 314、Definition 831）。samples 不觸發 CI，`-c Debug` 目視。
+
+## ✅ 三階段全數完成
+
+多幣別增量 2/3 完成。`CurrencySettings`(define)、per-field CUKY、兩層捨入、本幣、Grid per-cell 幣別感知、混幣合計 helper、DemoCenter、cookbook「Multi-currency」節皆落地。下一增量：計量單位（[plan-numeric-uom.md](plan-numeric-uom.md)），重用本增量的 reference-binding 機制（`CurrencyField` → `UnitField`）。
 
 > **階段 2 落地 note（2026-07-01）**：resolver 走「**擴既有入口、不另起**」——`RoundingContext{Company, CurrencySettings}`（uom 增量再加 UnitSettings），`NumberFormatResolver` 加 currency-aware overload `ResolveDecimals/ResolveFormat/RoundByKind(kind, ctx, refCode)`：Currency 源以 refCode（CUKY 欄幣別）查 `CurrencySettings.GetDecimals`，refCode 空退公司 `DefaultCurrency`、再退框架 2；新增 `RoundCash(total, currencyCode, ctx)`（捨到 `company.GetCashRounding` 因子最近倍數、AwayFromZero，caller 記 `diff=payable−total`）。core 的 company-only overload `(kind, company)` 保留為 back-compat（委派 `RoundingContext.ForCompany`），既有呼叫零改。`NumberFormatApplier.Bake` 改：**Currency 源（Amount）不 bake NumberFormat**（runtime 由 UI 依幣別解析），改把 `schema.CurrencyField`（主檔 sys_currency）stamp 到無 `CurrencyField` 的金額欄（＝「解析後的參照欄名」，供 §3.2c UI）；Company/SystemFixed 仍 bake。**ship client 零新碼**：`CurrencySettings` 未被 `SystemBusinessObject.GetDefine` gating（僅擋 SystemSettings/DatabaseSettings），client 走既有 `GetDefineAsync<CurrencySettings>(DefineType.CurrencySettings)`（XML 傳）即得。**修正 stage 1 遺漏**：`GetCurrencySettings` 改 optional（File→File.Exists 檢查回 null、Db→ReadOptional），對齊 compat「無定義→fallback 2 位」。無既有 order BO，故階段 2＝擴 resolver+Bake+cookbook+測試（20 個新測；含 USD/JPY/BHD 位數、round-then-sum 不變式、現金捨入 0.05+diff、本幣、Preserve、fixture 全鏈 GetCurrencySettings）。cookbook 增「Multi-currency」節。全 15 test 專案綠（Definition 831）。
 

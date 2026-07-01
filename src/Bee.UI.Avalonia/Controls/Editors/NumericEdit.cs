@@ -1,6 +1,9 @@
 using System.Globalization;
 using Avalonia.Media;
+using Bee.Base;
+using Bee.Definition;
 using Bee.Definition.Layouts;
+using Bee.Definition.Settings;
 
 namespace Bee.UI.Avalonia.Controls.Editors
 {
@@ -34,12 +37,54 @@ namespace Bee.UI.Avalonia.Controls.Editors
             LostFocus += (_, _) => Text = FormatForDisplay(_rawValue);
         }
 
-        // Prefer the delivered layout format (already baked per company), falling back to the schema
-        // field's format for ambient (field-name-only) binds that carry no layout field.
-        private string NumberFormat =>
-            Binder.LayoutField?.NumberFormat is { Length: > 0 } layoutFormat
-                ? layoutFormat
-                : Binder.FormField?.NumberFormat ?? string.Empty;
+        /// <summary>
+        /// Gets or sets the client currency master for runtime decimal resolution of
+        /// <see cref="NumberKind.Amount"/> fields. When <c>null</c> (the default), the editor uses the
+        /// delivered/baked format — currency awareness is off, so existing non-amount behaviour is
+        /// unchanged. Hosts set this (with <see cref="DefaultCurrencyCode"/>) to format amounts by the
+        /// bound row's currency (see plan-numeric-multicurrency.md §3.2).
+        /// </summary>
+        public CurrencySettings? CurrencySettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fallback currency code used when the bound row carries no currency-key field
+        /// value (the master document / company default currency).
+        /// </summary>
+        public string DefaultCurrencyCode { get; set; } = string.Empty;
+
+        // Amounts are not baked at delivery — when a currency master is supplied, resolve the format at
+        // runtime from the bound row's currency. Otherwise prefer the delivered layout format (baked per
+        // company), falling back to the schema field's format for ambient (field-name-only) binds.
+        private string NumberFormat
+        {
+            get
+            {
+                var layoutField = Binder.LayoutField;
+                if (CurrencySettings is not null && layoutField?.NumberKind == NumberKind.Amount)
+                    return NumberFormatResolver.ResolveFormat(
+                        NumberKind.Amount,
+                        new RoundingContext { CurrencySettings = CurrencySettings },
+                        ResolveCurrencyCode(layoutField));
+
+                return layoutField?.NumberFormat is { Length: > 0 } layoutFormat
+                    ? layoutFormat
+                    : Binder.FormField?.NumberFormat ?? string.Empty;
+            }
+        }
+
+        // Per-row currency: the field's currency-key field value on the bound row → the default currency.
+        private string ResolveCurrencyCode(LayoutFieldBase layoutField)
+        {
+            var row = Binder.TargetRow;
+            if (row is not null
+                && StringUtilities.IsNotEmpty(layoutField.CurrencyField)
+                && row.Table.Columns.Contains(layoutField.CurrencyField))
+            {
+                string code = ValueUtilities.CStr(row[layoutField.CurrencyField]);
+                if (StringUtilities.IsNotEmpty(code)) { return code; }
+            }
+            return DefaultCurrencyCode;
+        }
 
         /// <inheritdoc />
         protected override void RefreshFromSource()

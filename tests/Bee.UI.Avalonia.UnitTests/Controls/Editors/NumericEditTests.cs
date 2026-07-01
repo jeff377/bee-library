@@ -2,8 +2,10 @@ using System.ComponentModel;
 using Avalonia.Input;
 using Avalonia.Media;
 using Bee.Base.Data;
+using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
+using Bee.Definition.Settings;
 using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 
@@ -112,6 +114,56 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var editor = new NumericEdit();
 
             Assert.Equal(TextAlignment.Right, editor.TextAlignment);
+        }
+
+        // --- 多幣別 runtime 解析 ---
+
+        private static CurrencySettings Currencies() =>
+        [
+            new CurrencyItem("USD", 0.01m, "$", "US Dollar"),
+            new CurrencyItem("JPY", 1m, "¥", "Japanese Yen"),
+        ];
+
+        private static LayoutField AmountKindField()
+            => new() { FieldName = "amount", NumberKind = NumberKind.Amount };
+
+        [Fact]
+        [DisplayName("設 CurrencySettings + 預設幣別 → 金額欄依幣別位數顯示（JPY 0 位）")]
+        public void Amount_WithCurrency_FormatsByDefaultCurrency_Jpy()
+        {
+            var dataObject = BuildDataObject();
+            dataObject.SetField("amount", "1234.567");
+            var editor = new NumericEdit { CurrencySettings = Currencies(), DefaultCurrencyCode = "JPY" };
+
+            editor.Bind(dataObject, AmountKindField());
+
+            Assert.Equal("1,235", editor.Text); // JPY → 0 位
+        }
+
+        [Fact]
+        [DisplayName("同資料改幣別 USD → 金額欄改顯 2 位")]
+        public void Amount_WithCurrency_FormatsByDefaultCurrency_Usd()
+        {
+            var dataObject = BuildDataObject();
+            dataObject.SetField("amount", "1234.567");
+            var editor = new NumericEdit { CurrencySettings = Currencies(), DefaultCurrencyCode = "USD" };
+
+            editor.Bind(dataObject, AmountKindField());
+
+            Assert.Equal("1,234.57", editor.Text); // USD → 2 位
+        }
+
+        [Fact]
+        [DisplayName("未設 CurrencySettings 時金額欄不做幣別解析（無 baked → 顯原值）")]
+        public void Amount_NoCurrencySettings_ShowsRaw()
+        {
+            var dataObject = BuildDataObject();
+            dataObject.SetField("amount", "1234.567");
+            var editor = new NumericEdit(); // 未設 CurrencySettings
+
+            editor.Bind(dataObject, AmountKindField());
+
+            Assert.Equal("1234.567", editor.Text);
         }
     }
 }

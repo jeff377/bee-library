@@ -6,9 +6,11 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Bee.Base;
 using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
+using Bee.Definition.Settings;
 using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 
@@ -108,6 +110,23 @@ namespace Bee.UI.Avalonia.Controls
             FormScope.DataObjectProperty.Changed.AddClassHandler<GridControl>((o, _) => o._binder.OnBindingContextChanged());
             FormScope.FormModeProperty.Changed.AddClassHandler<GridControl>((o, e) => o.SetControlState((SingleFormMode)e.NewValue!));
         }
+
+        /// <summary>
+        /// Gets or sets the client-side currency master used for per-cell decimal resolution of
+        /// <see cref="NumberKind.Amount"/> columns. When <c>null</c> (the default), amount columns use
+        /// their delivered <see cref="LayoutFieldBase.NumberFormat"/> unchanged — currency awareness is off.
+        /// Hosts set this once the currency master is available and call <see cref="RefreshRows"/> after
+        /// changing the document currency (see plan-numeric-multicurrency.md §3.2c).
+        /// </summary>
+        public CurrencySettings? CurrencySettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fallback currency code for amount cells whose row carries no currency-key
+        /// field (for example a detail grid sharing the master document currency, or a grid with no
+        /// per-row currency column). The per-row currency field (<see cref="LayoutFieldBase.CurrencyField"/>)
+        /// wins when present; this is the "master document currency / company default" fallback.
+        /// </summary>
+        public string DefaultCurrencyCode { get; set; } = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of <see cref="GridControl"/> with a hidden
@@ -612,7 +631,7 @@ namespace Bee.UI.Avalonia.Controls
                     (row, _) => new TextBlock
                     {
                         Text = textFields.Length == 0
-                            ? FormatCell(row, fieldName, displayFormat, numberFormat)
+                            ? FormatCellForColumn(row, column)
                             : ComposeDisplayText(row, textFields, displayFormat, numberFormat),
                         Margin = new Thickness(8, 4),
                     },
@@ -818,7 +837,7 @@ namespace Bee.UI.Avalonia.Controls
             {
                 return new TextBlock
                 {
-                    Text = FormatCell(rowView, column.FieldName, column.DisplayFormat, column.NumberFormat),
+                    Text = FormatCellForColumn(rowView, column),
                     Margin = new Thickness(8, 4),
                     VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
                 };
@@ -846,7 +865,7 @@ namespace Bee.UI.Avalonia.Controls
 
             void ShowDisplay() => host.Content = new TextBlock
             {
-                Text = FormatCell(rowView, column.FieldName, column.DisplayFormat, column.NumberFormat),
+                Text = FormatCellForColumn(rowView, column),
                 Margin = new Thickness(8, 4),
                 VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
             };
@@ -1044,6 +1063,42 @@ namespace Bee.UI.Avalonia.Controls
             var dataRow = row.Row;
             if (!dataRow.Table.Columns.Contains(fieldName)) return string.Empty;
             return CellValueFormatter.Format(dataRow[fieldName], displayFormat, numberFormat);
+        }
+
+        // Currency-aware cell text: an Amount column resolves its decimals per row from the referenced
+        // currency (see ResolveCellNumberFormat); every other column uses the column's delivered formats.
+        private string FormatCellForColumn(DataRowView? row, LayoutColumn column)
+        {
+            if (row is null) return string.Empty;
+            var dataRow = row.Row;
+            if (!dataRow.Table.Columns.Contains(column.FieldName)) return string.Empty;
+            string numberFormat = ResolveCellNumberFormat(dataRow, column);
+            return CellValueFormatter.Format(dataRow[column.FieldName], column.DisplayFormat, numberFormat);
+        }
+
+        // Amount columns are not baked at delivery — resolve their format from the row's currency and the
+        // client currency master. Other kinds (and the no-currency-master case) keep the delivered format.
+        private string ResolveCellNumberFormat(DataRow dataRow, LayoutColumn column)
+        {
+            if (column.NumberKind != NumberKind.Amount || CurrencySettings is null)
+                return column.NumberFormat;
+
+            string code = ResolveCellCurrencyCode(dataRow, column);
+            return NumberFormatResolver.ResolveFormat(
+                NumberKind.Amount, new RoundingContext { CurrencySettings = CurrencySettings }, code);
+        }
+
+        // Per-row currency priority: the column's currency-key field on this row → the grid's default
+        // (master document / company) currency. Empty resolves to the framework fallback downstream.
+        private string ResolveCellCurrencyCode(DataRow dataRow, LayoutColumn column)
+        {
+            if (StringUtilities.IsNotEmpty(column.CurrencyField)
+                && dataRow.Table.Columns.Contains(column.CurrencyField))
+            {
+                string rowCode = ValueUtilities.CStr(dataRow[column.CurrencyField]);
+                if (StringUtilities.IsNotEmpty(rowCode)) { return rowCode; }
+            }
+            return DefaultCurrencyCode;
         }
 
         private void OnSelectionChangedCore(object? sender, SelectionChangedEventArgs e)
