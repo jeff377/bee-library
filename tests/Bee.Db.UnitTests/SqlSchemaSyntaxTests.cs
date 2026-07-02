@@ -52,7 +52,7 @@ namespace Bee.Db.UnitTests
         [InlineData(FieldDbType.Long, "[bigint]")]
         [InlineData(FieldDbType.Currency, "[decimal](19,4)")]
         [InlineData(FieldDbType.Date, "[date]")]
-        [InlineData(FieldDbType.DateTime, "[datetime]")]
+        [InlineData(FieldDbType.DateTime, "[datetime2](7)")]
         [InlineData(FieldDbType.Guid, "[uniqueidentifier]")]
         [InlineData(FieldDbType.Binary, "[varbinary](max)")]
         [DisplayName("SQL Server ConvertDbType 應回傳各型別對應的 SQL Server 型別字串")]

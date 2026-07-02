@@ -20,7 +20,8 @@ namespace Bee.Db.UnitTests
         [InlineData("DECIMAL", 19, 4, 0, FieldDbType.Currency)]
         [InlineData("DECIMAL", 12, 3, 0, FieldDbType.Decimal)]
         [InlineData("DATE", 0, 0, 0, FieldDbType.Date)]
-        [InlineData("DATETIME", 0, 0, 0, FieldDbType.DateTime)]
+        [InlineData("DATETIME", 0, 3, 0, FieldDbType.DateTime)]
+        [InlineData("DATETIME2", 0, 7, 0, FieldDbType.DateTime)]
         [InlineData("UNIQUEIDENTIFIER", 0, 0, 0, FieldDbType.Guid)]
         [InlineData("VARBINARY", 0, 0, 0, FieldDbType.Binary)]
         [InlineData("XML", 0, 0, 0, FieldDbType.Unknown)]
@@ -54,6 +55,7 @@ namespace Bee.Db.UnitTests
         [InlineData("BIT", "((1))", "", "1")]
         [InlineData("DATE", "(getdate())", "", "getdate()")]
         [InlineData("DATETIME", "(getdate())", "", "getdate()")]
+        [InlineData("DATETIME2", "(getdate())", "", "getdate()")]
         [InlineData("UNIQUEIDENTIFIER", "(newid())", "", "newid()")]
         [DisplayName("ParseDBDefaultValue 應依型別剝除外層括號或前綴")]
         public void ParseDBDefaultValue_StripsWrappers(

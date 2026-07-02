@@ -164,6 +164,40 @@ namespace Bee.Definition.UnitTests.Database
         }
 
         [Fact]
+        [DisplayName("Compare DateTime 定義端 scale 未設應正規化為 7 與 datetime2(7) 相符")]
+        public void Compare_DateTimeDefinedScaleUnset_MatchesDatetime2()
+        {
+            // Defined field carries no explicit scale (XML never sets it); the real datetime2(7)
+            // column reverse-maps to scale 7. Normalization makes them compare equal.
+            var defined = new DbField("created_at", "Created", FieldDbType.DateTime);
+            var real = new DbField("created_at", "Created", FieldDbType.DateTime) { Scale = 7 };
+
+            Assert.True(defined.Compare(real));
+        }
+
+        [Fact]
+        [DisplayName("Compare DateTime 定義端 datetime2(7) 與既有 datetime(scale 3) 不符應回傳 false")]
+        public void Compare_DateTimeDefinedVsLegacyDatetime_ReturnsFalse()
+        {
+            // Legacy `datetime` reverse-maps to scale 3; a defined datetime2 normalizes to 7,
+            // so the comparer detects a difference and drives the in-place ALTER upgrade.
+            var defined = new DbField("created_at", "Created", FieldDbType.DateTime);
+            var real = new DbField("created_at", "Created", FieldDbType.DateTime) { Scale = 3 };
+
+            Assert.False(defined.Compare(real));
+        }
+
+        [Fact]
+        [DisplayName("Compare DateTime 兩端皆 datetime2(7) 應收斂為相符")]
+        public void Compare_DateTimeBothDatetime2_ReturnsTrue()
+        {
+            var a = new DbField("created_at", "Created", FieldDbType.DateTime) { Scale = 7 };
+            var b = new DbField("created_at", "Created", FieldDbType.DateTime) { Scale = 7 };
+
+            Assert.True(a.Compare(b));
+        }
+
+        [Fact]
         [DisplayName("Compare DefaultValue 不同應回傳 false")]
         public void Compare_DifferentDefaultValue_ReturnsFalse()
         {

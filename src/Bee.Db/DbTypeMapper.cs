@@ -25,7 +25,10 @@ namespace Bee.Db
             if (type == typeof(short)) return DbType.Int16;
             if (type == typeof(byte)) return DbType.Byte;
             if (type == typeof(bool)) return DbType.Boolean;
-            if (type == typeof(DateTime)) return DbType.DateTime;
+            // Map to DateTime2 (not DateTime) so the full .NET DateTime range and 100 ns precision
+            // survive the parameter layer. DbType.DateTime would round to ~3.33 ms and reject
+            // pre-1753 values before transmission, defeating datetime2 columns on SQL Server.
+            if (type == typeof(DateTime)) return DbType.DateTime2;
             if (type == typeof(decimal)) return DbType.Decimal;
             if (type == typeof(double)) return DbType.Double;
             if (type == typeof(float)) return DbType.Single;

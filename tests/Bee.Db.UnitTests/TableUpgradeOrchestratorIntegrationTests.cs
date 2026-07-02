@@ -71,6 +71,26 @@ namespace Bee.Db.UnitTests
             return Convert.ToInt32(result.Scalar!, System.Globalization.CultureInfo.InvariantCulture);
         }
 
+        private string GetColumnTypeName(string tableName, string columnName)
+        {
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
+            var spec = new DbCommandSpec(DbCommandKind.Scalar,
+                "SELECT TYPE_NAME(system_type_id) FROM sys.columns WHERE object_id = OBJECT_ID({0}) AND name = {1}",
+                tableName, columnName);
+            var result = dbAccess.Execute(spec);
+            return Convert.ToString(result.Scalar!, System.Globalization.CultureInfo.InvariantCulture)!;
+        }
+
+        private int GetColumnScale(string tableName, string columnName)
+        {
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
+            var spec = new DbCommandSpec(DbCommandKind.Scalar,
+                "SELECT scale FROM sys.columns WHERE object_id = OBJECT_ID({0}) AND name = {1}",
+                tableName, columnName);
+            var result = dbAccess.Execute(spec);
+            return Convert.ToInt32(result.Scalar!, System.Globalization.CultureInfo.InvariantCulture);
+        }
+
         private UpgradePlan PlanFor(string tableName, TableSchema define, UpgradeOptions? options = null)
         {
             var provider = new Providers.SqlServer.SqlTableSchemaProvider(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
@@ -217,6 +237,50 @@ namespace Bee.Db.UnitTests
 
                 Assert.Equal(UpgradeExecutionMode.NoChange, plan2.Mode);
                 Assert.False(CreateOrchestrator().Execute(plan2, DatabaseId));
+            }
+            finally
+            {
+                DropIfExists(tableName);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("整合：既有 datetime 欄位應走 ALTER 升級為 datetime2(7)，資料保留")]
+        public void Execute_LegacyDatetimeColumn_UpgradesToDatetime2()
+        {
+            const string tableName = "st_orch_dt2_test";
+            DropIfExists(tableName);
+            try
+            {
+                // Create a table with a legacy `datetime` column via raw SQL (the framework now
+                // emits datetime2, so the legacy state must be constructed directly).
+                var dbAccess = _fx.NewDbAccess(DatabaseId);
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"CREATE TABLE [{tableName}] (" +
+                    "[sys_rowid] [uniqueidentifier] NOT NULL DEFAULT (newid()) PRIMARY KEY, " +
+                    "[created_at] [datetime] NOT NULL DEFAULT (getdate()));"));
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"INSERT INTO [{tableName}] (sys_rowid, created_at) VALUES (NEWID(), '2026-07-02T10:00:00');"));
+
+                Assert.Equal("datetime", GetColumnTypeName(tableName, "created_at"));
+
+                // Defined schema declares the column as DateTime → forward map is datetime2(7).
+                var define = new TableSchema { TableName = tableName };
+                define.Fields!.Add("sys_rowid", "Row ID", FieldDbType.Guid);
+                define.Fields!.Add("created_at", "Created", FieldDbType.DateTime);
+                define.Indexes!.AddPrimaryKey("sys_rowid");
+
+                var plan = PlanFor(tableName, define);
+                Assert.Equal(UpgradeExecutionMode.Alter, plan.Mode);
+                CreateOrchestrator().Execute(plan, DatabaseId);
+
+                // Column upgraded to datetime2(7); existing row preserved.
+                Assert.Equal("datetime2", GetColumnTypeName(tableName, "created_at"));
+                Assert.Equal(7, GetColumnScale(tableName, "created_at"));
+                Assert.Equal(1, CountRows(tableName));
+
+                // Re-planning against the same definition now converges to NoChange.
+                Assert.Equal(UpgradeExecutionMode.NoChange, PlanFor(tableName, define).Mode);
             }
             finally
             {

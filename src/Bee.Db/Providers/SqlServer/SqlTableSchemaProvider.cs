@@ -242,6 +242,12 @@ namespace Bee.Db.Providers.SqlServer
                 dbField.Scale = row.GetFieldValue<int>("Decimals");
             }
 
+            // Capture the fractional-seconds precision for DateTime columns so the schema
+            // comparer can distinguish legacy `datetime` (scale 3) from `datetime2` (scale 7)
+            // and drive the in-place upgrade.
+            if (dbField.DbType == FieldDbType.DateTime)
+                dbField.Scale = row.GetFieldValue<int>("Decimals");
+
             string originalDefaultValue = SqlSchemaSyntax.GetDefaultValueExpression(dbField.DbType);  // Get the built-in default value
             dbField.DefaultValue = ParseDBDefaultValue(row.GetFieldValue<string>("DbType"), row.GetFieldValue<string>("DefaultValue"), originalDefaultValue);
             return dbField;
@@ -283,6 +289,7 @@ namespace Bee.Db.Providers.SqlServer
                 case "DATE":
                     return FieldDbType.Date;
                 case "DATETIME":
+                case "DATETIME2":
                     return FieldDbType.DateTime;
                 case "UNIQUEIDENTIFIER":
                     return FieldDbType.Guid;
@@ -321,6 +328,7 @@ namespace Bee.Db.Providers.SqlServer
                     break;
                 case "DATE":
                 case "DATETIME":
+                case "DATETIME2":
                 case "UNIQUEIDENTIFIER":
                     defaultValue = defaultValue.LeftRightCut("(", ")");
                     break;

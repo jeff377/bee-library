@@ -174,6 +174,16 @@ namespace Bee.Definition.Database
             // Compare precision and scale for Decimal type
             if ((DbType == FieldDbType.Decimal) && (Precision != source.Precision || Scale != source.Scale))
                 return false;
+            // Compare fractional-seconds precision for DateTime. An unset scale normalizes to the
+            // canonical `datetime2` precision (7), so a legacy `datetime` column (scale 3) differs
+            // from a defined `datetime2` column and triggers an in-place ALTER upgrade.
+            if (DbType == FieldDbType.DateTime)
+            {
+                int definedScale = Scale > 0 ? Scale : 7;
+                int actualScale = source.Scale > 0 ? source.Scale : 7;
+                if (definedScale != actualScale)
+                    return false;
+            }
             // Compare default value
             if (!StringUtilities.IsEquals(DefaultValue, source.DefaultValue)) { return false; }
 

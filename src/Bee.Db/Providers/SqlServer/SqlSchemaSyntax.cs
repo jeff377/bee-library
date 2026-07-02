@@ -62,7 +62,7 @@ namespace Bee.Db.Providers.SqlServer
                 case FieldDbType.Date:
                     return "[date]";
                 case FieldDbType.DateTime:
-                    return "[datetime]";
+                    return "[datetime2](7)";
                 case FieldDbType.Guid:
                     return "[uniqueidentifier]";
                 case FieldDbType.Binary:
