@@ -424,6 +424,37 @@ namespace Bee.Db.UnitTests
             Assert.Equal(dbType, DbCommandSpec.NormalizeDbType(DatabaseType.Oracle, dbType));
         }
 
+        [Fact]
+        [DisplayName("NormalizeDbType：SQL Server 上 DbType.DateTime 應改寫為 DbType.DateTime2")]
+        public void NormalizeDbType_SqlServerDateTime_RewrittenToDateTime2()
+        {
+            // datetime2 保留 .NET DateTime 完整範圍與 100 ns 精度；DbType.DateTime 會在參數層
+            // round 成 ms 並對 pre-1753 拋 SqlDateTimeOverflow。
+            Assert.Equal(DbType.DateTime2, DbCommandSpec.NormalizeDbType(DatabaseType.SQLServer, DbType.DateTime));
+        }
+
+        [Theory]
+        [InlineData(DatabaseType.PostgreSQL)]
+        [InlineData(DatabaseType.MySQL)]
+        [InlineData(DatabaseType.SQLite)]
+        [InlineData(DatabaseType.Oracle)]
+        [DisplayName("NormalizeDbType：非 SQL Server DB 上 DbType.DateTime 應原值傳回（避免跨 provider 回歸）")]
+        public void NormalizeDbType_NonSqlServerDateTime_PassThrough(DatabaseType dbType)
+        {
+            Assert.Equal(DbType.DateTime, DbCommandSpec.NormalizeDbType(dbType, DbType.DateTime));
+        }
+
+        [Theory]
+        [InlineData(DbType.String)]
+        [InlineData(DbType.Int32)]
+        [InlineData(DbType.Guid)]
+        [InlineData(DbType.Decimal)]
+        [DisplayName("NormalizeDbType：SQL Server 上非 DateTime DbType 應原值傳回")]
+        public void NormalizeDbType_SqlServerNonDateTime_PassThrough(DbType dbType)
+        {
+            Assert.Equal(dbType, DbCommandSpec.NormalizeDbType(DatabaseType.SQLServer, dbType));
+        }
+
         #endregion
     }
 }

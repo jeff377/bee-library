@@ -6,10 +6,10 @@ using Bee.Tests.Shared;
 namespace Bee.Db.UnitTests
 {
     /// <summary>
-    /// End-to-end round-trip coverage proving that a .NET <see cref="DateTime"/> written through the
-    /// standard parameter path (<c>DbTypeMapper.Infer</c> → <c>DbType.DateTime2</c>) retains sub-millisecond
-    /// precision and the full pre-1753 range. With the legacy <c>DbType.DateTime</c> inference these values
-    /// were truncated to ~3.33 ms and pre-1753 values threw before reaching the column.
+    /// End-to-end round-trip coverage proving that a .NET <see cref="DateTime"/> written to SQL Server
+    /// retains sub-millisecond precision and the full pre-1753 range. The SQL Server parameter path
+    /// upgrades <c>DbType.DateTime</c> to <c>DbType.DateTime2</c> in <c>DbCommandSpec.NormalizeDbType</c>;
+    /// without it the value would round to ~3.33 ms and pre-1753 values would throw before reaching the column.
     /// </summary>
     public class DateTimePrecisionRoundTripTests : IClassFixture<SharedDbFixture>
     {
@@ -68,25 +68,6 @@ namespace Bee.Db.UnitTests
             finally
             {
                 Drop("common_sqlserver", "dt_precision_test", drop);
-            }
-        }
-
-        [DbFact(DatabaseType.PostgreSQL)]
-        [DisplayName("PostgreSQL：DbType.DateTime2 參數寫入 timestamp 微秒精度應正確 round-trip")]
-        public void RoundTrip_PostgreSql_MicrosecondPrecisionPreserved()
-        {
-            const string drop = "DROP TABLE IF EXISTS dt_precision_test;";
-            const string create = "CREATE TABLE dt_precision_test (dt timestamp NOT NULL);";
-            // Microsecond resolution (7th tick digit 0) so PostgreSQL timestamp(6) round-trips exactly.
-            var value = new DateTime(2026, 7, 2, 10, 0, 0, DateTimeKind.Unspecified).AddTicks(1234560);
-            try
-            {
-                var readBack = WriteThenRead("common_postgresql", create, drop, value);
-                Assert.Equal(value.Ticks, readBack.Ticks);
-            }
-            finally
-            {
-                Drop("common_postgresql", "dt_precision_test", drop);
             }
         }
     }

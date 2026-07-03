@@ -153,17 +153,26 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// Normalizes a parameter <see cref="DbType"/> for the target provider. Oracle.ManagedDataAccess
-        /// rejects <c>DbType.Guid</c> on <see cref="System.Data.Common.DbParameter.DbType"/> assignment
-        /// (Oracle has no native UUID type — the framework maps <see cref="Bee.Base.Data.FieldDbType.Guid"/>
-        /// to <c>RAW(16)</c>); rewrite to <see cref="DbType.Binary"/> for Oracle. This pairs with
-        /// <see cref="NormalizeParameterValue"/>, which converts the value side from <see cref="Guid"/>
-        /// to <c>byte[]</c>.
+        /// Normalizes a parameter <see cref="DbType"/> for the target provider. Two provider-specific
+        /// rewrites are applied:
+        /// <list type="bullet">
+        /// <item>Oracle.ManagedDataAccess rejects <c>DbType.Guid</c> on
+        /// <see cref="System.Data.Common.DbParameter.DbType"/> assignment (Oracle has no native UUID type —
+        /// the framework maps <see cref="Bee.Base.Data.FieldDbType.Guid"/> to <c>RAW(16)</c>); rewrite to
+        /// <see cref="DbType.Binary"/> for Oracle. This pairs with <see cref="NormalizeParameterValue"/>,
+        /// which converts the value side from <see cref="Guid"/> to <c>byte[]</c>.</item>
+        /// <item>SQL Server upgrades <c>DbType.DateTime</c> to <c>DbType.DateTime2</c> so the full .NET
+        /// <see cref="DateTime"/> range and 100 ns precision survive the parameter layer (plain
+        /// <c>DbType.DateTime</c> rounds to ~3.33 ms and rejects pre-1753 values before transmission).
+        /// Applied SQL Server-only so PostgreSQL/Oracle DateTime handling is unaffected.</item>
+        /// </list>
         /// </summary>
         internal static DbType NormalizeDbType(DatabaseType databaseType, DbType dbType)
         {
             if (databaseType == DatabaseType.Oracle && dbType == DbType.Guid)
                 return DbType.Binary;
+            if (databaseType == DatabaseType.SQLServer && dbType == DbType.DateTime)
+                return DbType.DateTime2;
             return dbType;
         }
 

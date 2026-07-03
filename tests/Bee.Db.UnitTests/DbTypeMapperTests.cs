@@ -16,7 +16,7 @@ namespace Bee.Db.UnitTests
             { (short)1, DbType.Int16 },
             { (byte)1, DbType.Byte },
             { true, DbType.Boolean },
-            { new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), DbType.DateTime2 },
+            { new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), DbType.DateTime },
             { 1.5m, DbType.Decimal },
             { 1.5d, DbType.Double },
             { 1.5f, DbType.Single },
