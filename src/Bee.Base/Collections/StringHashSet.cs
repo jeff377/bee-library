@@ -1,7 +1,7 @@
 ﻿namespace Bee.Base.Collections
 {
     /// <summary>
-    /// A case-insensitive string collection that does not allow duplicate entries.
+    /// A case-insensitive (ordinal) string collection that does not allow duplicate entries.
     /// </summary>
     public class StringHashSet : HashSet<string>
     {
@@ -10,7 +10,7 @@
         /// <summary>
         /// Initializes a new instance of <see cref="StringHashSet"/>.
         /// </summary>
-        public StringHashSet() : base(StringComparer.InvariantCultureIgnoreCase)
+        public StringHashSet() : base(StringComparer.OrdinalIgnoreCase)
         { }
 
         #endregion

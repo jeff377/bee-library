@@ -68,16 +68,22 @@ namespace Bee.Base
         #region Equality / Containment (default IgnoreCase)
 
         /// <summary>
-        /// Determines whether two strings are equal. Defaults to case-insensitive comparison —
-        /// the framework convention for ERP business logic.
+        /// Determines whether two strings are equal using ordinal comparison. Defaults to
+        /// case-insensitive — the framework convention for ERP identifiers and business logic.
         /// </summary>
+        /// <remarks>
+        /// Ordinal (culture-independent) comparison is intentional. These strings are identifiers
+        /// (field names, prog ids, keys), not display text, so comparison must not depend on the
+        /// current locale. A culture-aware comparison would, for example, treat `ID` and `id` as
+        /// unequal under the Turkish locale.
+        /// </remarks>
         /// <param name="s1">The first string.</param>
         /// <param name="s2">The second string.</param>
         /// <param name="ignoreCase">Whether to ignore case (default <c>true</c>).</param>
         public static bool IsEquals(string? s1, string? s2, bool ignoreCase = true)
             => string.Equals(s1, s2, ignoreCase
-                ? StringComparison.CurrentCultureIgnoreCase
-                : StringComparison.CurrentCulture);
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal);
 
         /// <summary>
         /// Determines whether the string equals any member of the comparison set

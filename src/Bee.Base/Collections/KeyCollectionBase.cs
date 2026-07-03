@@ -18,7 +18,7 @@ namespace Bee.Base.Collections
         /// <summary>
         /// Initializes a new instance of <see cref="KeyCollectionBase{T}"/>.
         /// </summary>
-        public KeyCollectionBase() : base(StringComparer.CurrentCultureIgnoreCase)
+        public KeyCollectionBase() : base(StringComparer.OrdinalIgnoreCase)
         {
         }
 

@@ -1,7 +1,7 @@
 ﻿namespace Bee.Base.Collections
 {
     /// <summary>
-    /// A key-value collection with case-insensitive string keys.
+    /// A key-value collection with case-insensitive (ordinal) string keys.
     /// </summary>
     /// <typeparam name="T">The type of the values.</typeparam>
     public class Dictionary<T> : Dictionary<string, T>
@@ -9,6 +9,6 @@
         /// <summary>
         /// Initializes a new instance of <see cref="Dictionary{T}"/>.
         /// </summary>
-        public Dictionary() : base(StringComparer.CurrentCultureIgnoreCase) { }
+        public Dictionary() : base(StringComparer.OrdinalIgnoreCase) { }
     }
 }
