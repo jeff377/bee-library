@@ -2,17 +2,17 @@
 
 # Permission & Authorization Guide
 
-Bee.NET permissions span **three dimensions**:
+Bee.NET permissions span **three dimensions**, applied at **two enforcement points** — the **back end** is the authoritative security boundary; the **front end** degrades UI elements as a UX affordance (never a security boundary):
 
-| Dimension | Question | Enforced by | Driven by |
-|-----------|----------|-------------|-----------|
-| **Action** | Can this user perform this *action* on the model? | **Back end (authoritative)** | role grants (action mask) |
-| **Record (row)** | On *which rows* may they do it? | **Back end (authoritative)** | per-action scope strategy + the user's identity/department |
-| **Field (column)** | May they *see / edit* this sensitive field? | **Front end (UX degradation)** | sensitive category + capability snapshot |
+| Dimension | Question | Back end | Front end |
+|-----------|----------|----------|-----------|
+| **Action** | Can this user perform this *action* on the model? | ✅ authoritative gate — `Can(model, action)` | ✅ toolbar command / button state |
+| **Record (row)** | On *which rows* may they do it? | ✅ authoritative scope filter + write re-query | — |
+| **Field (column)** | May they *see / edit* this sensitive field? | — *(not masked server-side)* | ✅ hide / lock sensitive fields |
 
-The first two are the **security boundary** — enforced at the method layer, entirely from in-memory snapshots at request time (the database is touched only when loading the caches, at login, on `EnterCompany`, or when configuration changes). The third is a **front-end affordance**: it hides or locks sensitive fields in the standard UI so users are not shown data they lack permission for, but it is not itself a data boundary (see the caveat in [section 10](#10-enabling-capability-in-a-host-app-opt-in)).
+The **Action** dimension applies at *both* points: the back end enforces it at the method layer (the real boundary), and the front end mirrors it as command/button state so users are not offered actions they cannot perform. **Record** is back-end only. **Field** is front-end only — a UX affordance, not a data boundary (see the caveat in [section 10](#10-enabling-capability-in-a-host-app-opt-in)).
 
-Authorization is **orthogonal** to `ApiAccessControlAttribute` (which governs encryption level and whether login is required). See [ADR-019](adr/adr-019-permission-authorization-model.md) for the design rationale.
+Both back-end dimensions run entirely from in-memory snapshots at request time (the database is touched only when loading the caches, at login, on `EnterCompany`, or when configuration changes). Authorization is **orthogonal** to `ApiAccessControlAttribute` (which governs encryption level and whether login is required). See [ADR-019](adr/adr-019-permission-authorization-model.md) for the design rationale.
 
 ---
 
@@ -138,9 +138,9 @@ Multiple roles **OR-merge** (capabilities accrue). A failing check throws `Forbi
 
 ---
 
-# Part 2 — Front-end capability (Field permission)
+# Part 2 — Front-end capability (Action commands + Field)
 
-The front end degrades UI elements from a per-model **capability snapshot**, so users are not shown commands or sensitive data they lack permission for. This is **UX only** — the back end (Part 1) remains the authoritative boundary.
+The front end degrades UI elements from a per-model **capability snapshot**, so users are not offered commands or shown sensitive data they lack permission for. It surfaces **two** of the three dimensions: the **Action** dimension as toolbar command / button state, and the **Field** dimension as sensitive-field hiding / locking. This is **UX only** — the back end (Part 1) remains the authoritative boundary.
 
 ## 6. Mark sensitive fields
 
