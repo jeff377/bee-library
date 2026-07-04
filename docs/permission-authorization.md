@@ -8,7 +8,7 @@ Bee.NET permissions span **three dimensions**, applied at **two enforcement poin
 |-----------|----------|----------|-----------|
 | **Action** | Can this user perform this *action* on the model? | ✅ authoritative gate — `Can(model, action)` | ✅ toolbar command / button state |
 | **Record (row)** | On *which rows* may they do it? | ✅ authoritative scope filter + write re-query | — |
-| **Field (column)** | May they *see / edit* this sensitive field? | — *(not masked server-side)* | ✅ hide / lock sensitive fields |
+| **Field (column)** | May they *see* / *edit* this sensitive field? | — *(not masked server-side)* | ✅ hide (no `Read`) / lock (no `Update`) |
 
 The **Action** dimension applies at *both* points: the back end enforces it at the method layer (the real boundary), and the front end mirrors it as command/button state so users are not offered actions they cannot perform. **Record** is back-end only. **Field** is front-end only — a UX affordance, not a data boundary (see the caveat in [section 10](#10-enabling-capability-in-a-host-app-opt-in)).
 
@@ -157,9 +157,11 @@ The Field dimension is **opt-in**: mark only the fields that need controlling. M
 Each non-`None` category maps **by convention** to a permission model whose id equals the category name (`Cost` → the `"Cost"` model). These are ordinary entries in the same `PermissionModels` registry — declare and grant them like any other model. `PermissionBindingValidator` fails at load time if a marked category has no matching model.
 
 ```sql
--- Whoever may see and edit cost data, company-wide:
+-- A viewer may see cost but not change it (Read only); an editor may change it (Read + Update).
+-- Editing requires Read too — Update without Read leaves the field hidden.
 INSERT INTO st_role_grant (role_id, model_id, action, scope) VALUES
   ('CostViewer', 'Cost', 2 /*Read*/,   1 /*All*/),
+  ('CostEditor', 'Cost', 2 /*Read*/,   1 /*All*/),
   ('CostEditor', 'Cost', 4 /*Update*/, 1 /*All*/);
 ```
 
@@ -179,7 +181,15 @@ On `EnterCompany`, the back end computes the per-model action mask for the sessi
 Two element kinds consume the resolver:
 
 - **Commands** (toolbar buttons). Each button is tagged at creation with the `PermissionAction` it needs (`New`→`Create`, `Save`→`Create|Update`, `Delete`→`Delete`, `View`→`Read`); the resolver's `Can(...)` checks the form's `PermissionModelId` with **any-of** semantics (`Save` shows if the user holds either `Create` or `Update`). An un-permitted button is hidden. This is the front-end **projection of the Action dimension** as UX.
-- **Sensitive fields.** `ResolveField(...)` reads the field's `SensitiveCategory`, looks up the category model, and degrades: **no `Read` → hidden; `Read` but no `Update` → read-only** (hidden wins over read-only). Applied to master fields and detail grid columns alike.
+- **Sensitive fields.** `ResolveField(...)` reads the field's `SensitiveCategory`, looks up the category model, and degrades on **two independent sub-gates** — `Read` controls *visibility*, `Update` controls *editability* — so a field can be viewable but not editable. Applied to master fields and detail grid columns alike.
+
+  | `<category>.Read` | `<category>.Update` | Result |
+  |:---:|:---:|---|
+  | ✗ | (either) | **Hidden** — the column is not rendered |
+  | ✓ | ✗ | **Visible, read-only** — *e.g. see the cost, cannot change it* |
+  | ✓ | ✓ | **Visible, editable** |
+
+  Hidden wins over read-only — there is no point marking editability on a field you cannot see.
 
 > **Detail grid actions (add/edit/delete rows) are not capability-gated.** A detail belongs to the same aggregate as its master, so whether its rows can be edited follows the form's edit mode — and the permission to enter that edit mode was already enforced by the toolbar command. Only the grid's sensitive *columns* are degraded.
 
