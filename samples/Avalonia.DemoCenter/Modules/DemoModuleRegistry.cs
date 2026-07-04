@@ -5,6 +5,7 @@ using Avalonia.DemoCenter.Modules.Grids;
 using Avalonia.DemoCenter.Modules.Layouts;
 using Avalonia.DemoCenter.Modules.Lookup;
 using Avalonia.DemoCenter.Modules.MasterDetail;
+using Avalonia.DemoCenter.Modules.Permissions;
 using Avalonia.DemoCenter.Modules.ReadOnlyRequired;
 
 namespace Avalonia.DemoCenter.Modules
@@ -50,6 +51,8 @@ namespace Avalonia.DemoCenter.Modules
             new MultiUnitModule(),
             // Master-Detail.
             new MasterDetailModule(),
+            // 權限 Capability (front-end permission degradation).
+            new PermissionCapabilityModule(),
         ];
     }
 }
