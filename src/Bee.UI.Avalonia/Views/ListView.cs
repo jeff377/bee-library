@@ -8,8 +8,11 @@ using Bee.Api.Client.Connectors;
 using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
+using Bee.Definition.Settings;
 using Bee.UI.Avalonia.Controls;
+using Bee.UI.Avalonia.Permissions;
 using Bee.UI.Core;
+using Bee.UI.Core.Permissions;
 
 namespace Bee.UI.Avalonia.Views
 {
@@ -80,16 +83,22 @@ namespace Bee.UI.Avalonia.Views
             _errorLabel = new TextBlock { Foreground = Brushes.Red, IsVisible = false };
             _loadingLabel = new TextBlock { Text = "Loading…", IsVisible = true };
 
+            // Tag each command with the permission action it requires; the capability resolver
+            // hides an un-permitted button. Untagged controls stay visible (opt-in).
             _viewButton = new Button { Content = "View", IsEnabled = false };
+            PermissionScope.SetAction(_viewButton, PermissionAction.Read);
             _viewButton.Click += (_, _) => OnViewClicked();
 
             _newButton = new Button { Content = "New", IsEnabled = false };
+            PermissionScope.SetAction(_newButton, PermissionAction.Create);
             _newButton.Click += (_, _) => OnNewClicked();
 
             _editButton = new Button { Content = "Edit", IsEnabled = false };
+            PermissionScope.SetAction(_editButton, PermissionAction.Update);
             _editButton.Click += (_, _) => OnEditClicked();
 
             _deleteButton = new Button { Content = "Delete", IsEnabled = false };
+            PermissionScope.SetAction(_deleteButton, PermissionAction.Delete);
             _deleteButton.Click += async (_, _) => await OnDeleteClickedAsync().ConfigureAwait(true);
 
             var toolbar = new StackPanel
@@ -403,6 +412,9 @@ namespace Bee.UI.Avalonia.Views
             _loadingLabel.IsVisible = false;
 
             var listLayout = Schema!.GetListLayout();
+            // Degrade the freshly generated list layout before binding: sensitive columns the user
+            // cannot Read drop out. No-op when no company context is active.
+            LayoutCapabilityApplier.ApplyGrid(listLayout, Schema!, ClientInfo.Capabilities);
             // Columns render immediately; rows arrive with the first ReloadAsync.
             _grid.Bind(listLayout, rows: null);
 
@@ -492,7 +504,19 @@ namespace Bee.UI.Avalonia.Views
             _viewButton.IsEnabled = _initialized && !_isBusy && hasSelection;
             _editButton.IsEnabled = _initialized && !_isBusy && hasSelection;
             _deleteButton.IsEnabled = _initialized && !_isBusy && hasSelection;
+
+            // Capability gate (independent of selection/busy): hide a command the user cannot perform.
+            _viewButton.IsVisible = CanCommand(_viewButton);
+            _newButton.IsVisible = CanCommand(_newButton);
+            _editButton.IsVisible = CanCommand(_editButton);
+            _deleteButton.IsVisible = CanCommand(_deleteButton);
         }
+
+        // Resolves whether the button's tagged PermissionAction is permitted for the current schema
+        // and cached capability snapshot. Untagged buttons and a missing schema resolve to permitted.
+        private bool CanCommand(Control button)
+            => Schema is null
+               || ElementCapabilityResolver.Default.Can(Schema, PermissionScope.GetAction(button), ClientInfo.Capabilities);
 
         private void ReportError(Exception ex)
         {

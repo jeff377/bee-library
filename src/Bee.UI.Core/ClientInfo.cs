@@ -18,6 +18,7 @@ namespace Bee.UI.Core
         private static SystemApiConnector? _systemConnector;
         private static ClientDefineAccess? _defineAccess;
         private static Guid _accessToken = Guid.Empty;
+        private static IReadOnlyDictionary<string, PermissionAction>? _capabilities;
 
         /// <summary>
         /// Command-line arguments parsed at <see cref="InitializeAsync(IUIViewService, SupportedConnectTypes)"/>.
@@ -73,6 +74,10 @@ namespace Bee.UI.Core
                     _accessToken = value;
                     _systemConnector = null;
                     _defineAccess = null;
+                    // A new (or cleared) token means a different identity — the cached capability
+                    // snapshot no longer applies. Reset to null so degradation is disabled until
+                    // the next EnterCompany populates it.
+                    _capabilities = null;
                 }
             }
         }
@@ -148,6 +153,40 @@ namespace Bee.UI.Core
         /// Authenticated user information set by <see cref="ApplyLoginResult"/>.
         /// </summary>
         public static UserInfo? UserInfo { get; private set; }
+
+        /// <summary>
+        /// The per-model capability snapshot for the entered company, or <c>null</c> when no company
+        /// context is active (before <see cref="ApplyEnterCompanyResult"/>, or after
+        /// <see cref="ClearCompanyContext"/> / a token change).
+        /// </summary>
+        /// <remarks>
+        /// <c>null</c> means capability enforcement is inactive and the element capability resolver
+        /// leaves every element at full capability — so an app that never enters a company (or does
+        /// not use permissions) renders unchanged. When non-null, a model absent from the map means
+        /// no permission on that model. This is UX degradation only; the backend remains the
+        /// authoritative security boundary.
+        /// </remarks>
+        public static IReadOnlyDictionary<string, PermissionAction>? Capabilities => _capabilities;
+
+        /// <summary>
+        /// Caches the capability snapshot from an <c>EnterCompany</c> response. The host calls this
+        /// after <c>SystemApiConnector.EnterCompanyAsync</c> (alongside <see cref="ResetDefineCache"/>).
+        /// </summary>
+        /// <param name="response">The EnterCompany response carrying the capability snapshot.</param>
+        public static void ApplyEnterCompanyResult(EnterCompanyResponse response)
+        {
+            ArgumentNullException.ThrowIfNull(response);
+            _capabilities = response.Capabilities;
+        }
+
+        /// <summary>
+        /// Clears the cached capability snapshot. The host calls this on <c>LeaveCompany</c>
+        /// (alongside <see cref="ResetDefineCache"/>) so a stale snapshot never leaks across companies.
+        /// </summary>
+        public static void ClearCompanyContext()
+        {
+            _capabilities = null;
+        }
 
         private static void SetConnectType(ConnectType connectType, string endpoint)
         {

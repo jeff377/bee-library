@@ -1,5 +1,6 @@
 using Bee.Api.Contracts;
 using Bee.Definition.Identity;
+using Bee.Definition.Settings;
 
 namespace Bee.Business.System
 {
@@ -12,5 +13,11 @@ namespace Bee.Business.System
         /// Gets or sets the company information that was bound to the session.
         /// </summary>
         public CompanyInfo Company { get; set; } = new CompanyInfo();
+
+        /// <summary>
+        /// Gets or sets the per-model allowed action mask (capability snapshot) for the session's
+        /// roles in the entered company. Copied to the wire response by <c>ApiOutputConverter</c>.
+        /// </summary>
+        public Dictionary<string, PermissionAction> Capabilities { get; set; } = [];
     }
 }

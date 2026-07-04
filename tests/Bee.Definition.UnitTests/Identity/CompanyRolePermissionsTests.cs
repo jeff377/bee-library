@@ -80,6 +80,44 @@ namespace Bee.Definition.UnitTests.Identity
         }
 
         [Fact]
+        [DisplayName("GetAllowedByModel 回傳每個 model 的 OR 合併 mask（多角色累加）")]
+        public void GetAllowedByModel_MultiRole_OrMergesPerModel()
+        {
+            var perms = Build();
+
+            var map = perms.GetAllowedByModel(s_buyerManager);
+
+            Assert.Equal(PermissionAction.Read | PermissionAction.Update | PermissionAction.Delete, map["PurchaseOrder"]);
+            Assert.Equal(PermissionAction.Read, map["Vendor"]);
+        }
+
+        [Fact]
+        [DisplayName("GetAllowedByModel 只含使用者有 grant 的 model；無 grant 的 model 不出現")]
+        public void GetAllowedByModel_OnlyGrantedModels()
+        {
+            var perms = Build();
+
+            var map = perms.GetAllowedByModel(s_buyer);
+
+            Assert.True(map.ContainsKey("PurchaseOrder"));
+            Assert.True(map.ContainsKey("Vendor"));
+            Assert.False(map.ContainsKey("Requisition"));
+            // 只持有 Buyer → PurchaseOrder 不含 Manager 的 Delete
+            Assert.False(map["PurchaseOrder"].HasFlag(PermissionAction.Delete));
+        }
+
+        [Fact]
+        [DisplayName("GetAllowedByModel 空角色回傳空字典")]
+        public void GetAllowedByModel_NoRoles_ReturnsEmpty()
+        {
+            var perms = Build();
+
+            var map = perms.GetAllowedByModel([]);
+
+            Assert.Empty(map);
+        }
+
+        [Fact]
         [DisplayName("GetEffectiveScopes 單一角色回傳該 (model, action) 的 scope")]
         public void GetEffectiveScopes_SingleRole_ReturnsScope()
         {

@@ -6,10 +6,13 @@ using Avalonia.Media;
 using Bee.Api.Client.Connectors;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
+using Bee.Definition.Settings;
 using Bee.UI.Avalonia.Controls;
 using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
+using Bee.UI.Avalonia.Permissions;
 using Bee.UI.Core;
+using Bee.UI.Core.Permissions;
 
 namespace Bee.UI.Avalonia.Views
 {
@@ -106,6 +109,9 @@ namespace Bee.UI.Avalonia.Views
             _errorLabel = new TextBlock { Foreground = Brushes.Red, IsVisible = false };
 
             _saveButton = new Button { Content = "Save" };
+            // Save persists via Create (Add mode) or Update (Edit mode); any-of semantics show it
+            // when the user holds either. Cancel / Back are navigation, not permission-controlled.
+            PermissionScope.SetAction(_saveButton, PermissionAction.Create | PermissionAction.Update);
             _saveButton.Click += async (_, _) => await OnSaveClickedAsync().ConfigureAwait(true);
 
             _cancelButton = new Button { Content = "Cancel" };
@@ -319,6 +325,10 @@ namespace Bee.UI.Avalonia.Views
 
             _dataObject = new FormDataObject(Schema, FormConnector);
             _formLayout = Schema.GetFormLayout();
+            // Degrade the freshly generated layout against the cached capability snapshot before it
+            // renders: hide sensitive fields without Read, mark them read-only without Update, and
+            // intersect detail grid actions. No-op when no company context is active.
+            LayoutCapabilityApplier.Apply(_formLayout, Schema, ClientInfo.Capabilities);
             return true;
         }
 
@@ -376,12 +386,22 @@ namespace Bee.UI.Avalonia.Views
         private void UpdateToolbarState()
         {
             var editing = FormMode != SingleFormMode.View;
-            _saveButton.IsVisible = editing;
-            _cancelButton.IsVisible = editing;
-            _backButton.IsVisible = !editing;
+            // Visibility combines the form mode with the command capability: a button hidden by
+            // mode stays hidden, and a mode-visible button is further hidden when the user lacks
+            // its permission action (Cancel / Back are untagged, so capability leaves them alone).
+            _saveButton.IsVisible = editing && CanCommand(_saveButton);
+            _cancelButton.IsVisible = editing && CanCommand(_cancelButton);
+            _backButton.IsVisible = !editing && CanCommand(_backButton);
 
             _saveButton.IsEnabled = editing && !_isBusy && _dataObject?.MasterRow is not null;
         }
+
+        // Resolves whether the button's tagged PermissionAction is permitted for the current schema
+        // and cached capability snapshot. Untagged buttons (Action == None) and a missing schema
+        // resolve to permitted, so this only ever hides a genuinely un-permitted command.
+        private bool CanCommand(Control button)
+            => Schema is null
+               || ElementCapabilityResolver.Default.Can(Schema, PermissionScope.GetAction(button), ClientInfo.Capabilities);
 
         // ---- Record rendering (master sections + detail grids) ----
 

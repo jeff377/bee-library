@@ -62,6 +62,30 @@ namespace Bee.Definition.Identity
         }
 
         /// <summary>
+        /// Returns the OR-merged allowed action mask per model for the given roles — the full
+        /// capability snapshot handed to the client on <c>EnterCompany</c>. Only models the roles
+        /// hold at least one grant on appear as keys; a model absent from the result means no
+        /// permission (the client resolver treats an absent model as denied). Freshly built each
+        /// call, so the caller owns the returned dictionary.
+        /// </summary>
+        /// <param name="roleIds">The role business ids the user holds (e.g. <c>SessionInfo.Roles</c>).</param>
+        public Dictionary<string, PermissionAction> GetAllowedByModel(IEnumerable<string> roleIds)
+        {
+            ArgumentNullException.ThrowIfNull(roleIds);
+            var roleSet = roleIds as ISet<string> ?? new HashSet<string>(roleIds);
+
+            // Model ids are identifiers → Ordinal comparison (culture-invariant, fastest).
+            var result = new Dictionary<string, PermissionAction>(StringComparer.Ordinal);
+            foreach (var grant in Grants)
+            {
+                if (!roleSet.Contains(grant.RoleId)) { continue; }
+                result.TryGetValue(grant.ModelId, out var current);
+                result[grant.ModelId] = current | grant.Action;
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Returns the record-scope strategies the given roles grant for the (model, action) — one per
         /// role that grants the action (layer-2 input). The strategies are raw grant values (may be
         /// <see cref="ScopeStrategy.Inherit"/>); the resolver resolves <c>Inherit</c> against the

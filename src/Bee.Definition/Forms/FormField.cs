@@ -345,6 +345,20 @@ namespace Bee.Definition.Forms
         public ScopeRole ScopeRole { get; set; } = ScopeRole.None;
 
         /// <summary>
+        /// Gets or sets the data-sensitivity classification that gates this field's client-side
+        /// visibility and editability. Opt-in: the default <see cref="Forms.SensitiveCategory.None"/>
+        /// means the field is not permission-controlled. A non-<c>None</c> value binds the field to
+        /// the corresponding well-known permission model (see
+        /// <see cref="SensitiveCategoryExtensions.ToPermissionModelId"/>); the client capability
+        /// resolver hides the field without <c>Read</c> and makes it read-only without <c>Update</c>.
+        /// </summary>
+        [XmlAttribute]
+        [Category(PropertyCategories.Data)]
+        [Description("Data-sensitivity classification gating field visibility (Read) and editability (Update).")]
+        [DefaultValue(SensitiveCategory.None)]
+        public SensitiveCategory SensitiveCategory { get; set; } = SensitiveCategory.None;
+
+        /// <summary>
         /// Gets the form table that owns this field.
         /// </summary>
         [Browsable(false)]
@@ -430,6 +444,7 @@ namespace Bee.Definition.Forms
                 Width = Width,
                 LangEnumName = LangEnumName,
                 ScopeRole = ScopeRole,
+                SensitiveCategory = SensitiveCategory,
             };
             if (_relationFieldMappings != null)
                 foreach (var mapping in _relationFieldMappings)

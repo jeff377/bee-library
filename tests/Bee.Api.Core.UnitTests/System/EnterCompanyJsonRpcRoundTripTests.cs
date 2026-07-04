@@ -71,6 +71,9 @@ namespace Bee.Api.Core.UnitTests.System
             Assert.NotNull(result.Company);
             Assert.Equal("C001", result.Company.CompanyId);
             Assert.Equal("測試公司", result.Company.CompanyName);
+            // ApiOutputConverter must copy the capability snapshot through the Result → Response
+            // reflection copy (empty when the seed grants the user nothing, but never null).
+            Assert.NotNull(result.Capabilities);
 
             // SessionInfo.CompanyId 已寫入
             var session = _fx.GetRequiredService<ISessionInfoService>().Get(accessToken);

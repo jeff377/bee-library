@@ -1,23 +1,49 @@
 # 計畫：前端權限 Capability（element 細粒度降級）
 
-**狀態：📝 擬定中（2026-06-06）— blocked，待前置依賴完成**
+**狀態：✅ 已完成（2026-07-03）— Bee.UI.Avalonia 實作落地；分類 gate 全公司一致。DB 綁定測試待 CI 驗證**
 
-> 這是一份**設計紀要**，不是可執行的實作 plan。整套 ERP 權限的前端最後一塊（element→action 綁定 + 逐元素降級）目前**刻意延後**，因為它的綁定面（宣告式工具列／命令 element）在前端尚不存在。本文件記下探勘結論與已拍板的設計決策，等前置依賴完成後再展開完整實作 plan，避免思路流失與返工。
+> **實作完成摘要（2026-07-03）**
+> - 後端：`CompanyRolePermissions.GetAllowedByModel` 算 per-model mask；`EnterCompany` 填 `EnterCompanyResult.Capabilities`；經 `ApiOutputConverter` 自動 copy 到 `EnterCompanyResponse.Capabilities`（`[Key(101)]`，三棲）。
+> - 定義：`FormField.SensitiveCategory`（平行 `ScopeRole`）＋ `SensitiveCategoryExtensions.ToPermissionModelId`（well-known model 慣例單一來源）＋ `FormSchema.FindField` 反查＋ `PermissionBindingValidator` 載入期驗證。
+> - Client：`ClientInfo.Capabilities`（nullable，null=未啟用→全放行）＋ `ApplyEnterCompanyResult` / `ClearCompanyContext`；`Bee.UI.Core.Permissions.IElementCapabilityResolver` + `ElementCapabilityResolver`（純函式）。
+> - Avalonia：`PermissionScope` AttachedProperty（按鈕建立時自帶 action）＋ `LayoutCapabilityApplier`（對**每視圖新生成**的 layout 就地降級，不動快取定義）；`FormView` / `ListView` 標按鈕 + 套用。
+> - 測試：resolver 13、CompanyRolePermissions/PermissionBinding 27、EnterCompany MessagePack 5，全綠；Avalonia 320 無回歸。DB 綁定的 `EnterCompanyJsonRpc` / `SystemBusinessObjectEnterCompany` 本機無 docker 故 fail（連線字串 null），待 CI（有 DB service container）驗證。
+> - **消費端 opt-in**：host app 需在 `EnterCompanyAsync` 後呼叫 `ClientInfo.ApplyEnterCompanyResult(response)`（並在 `LeaveCompany` 呼叫 `ClearCompanyContext`），且後端定義 `Amount`/`Cost`/`PersonalData` well-known model 並授 grant，capability 才生效；未接時一切照舊（向後相容）。
+
+> 前身為 blocked 的設計紀要。**改用 `src/Bee.UI.Avalonia` 作為消費端、且命令按鈕於建立時自帶 opt-in `PermissionAction` 屬性後，原 blocker 完全消除**：按鈕不必先在 FormLayout 模型化——framework 建立工具列時直接給每顆按鈕對應的 `PermissionAction`（未設 = 不控管），capability 層掃一遍讀屬性設 `IsVisible`。標準與自訂命令走同一機制。三項待決議題已於 2026-07-03 拍板（見下）。
+>
+> **FormLayout 宣告式命令模型自此與權限脫鉤**——只在「命令需資料驅動定義（非程式建立）」時才需要，屬另案，不再是本 plan 的前置。故本 plan 收斂為**單一可執行 plan**（不再分 blocked 階段）。
 
 ---
 
-## 為什麼延後（核心判斷）
+## 為什麼 blocker 消除了（核心判斷）
 
-本任務核心 = 「element→action 綁定」+「逐元素降級」。但前端現在**沒有可綁的 element**：
+原 plan 延後的理由是「前端沒有可綁的 element（工具列 hardcode）」。這個顧慮建立在一個隱含假設上：**權限綁定面必須在 FormLayout 定義裡**。改採「按鈕控件自帶屬性」後，這個假設不成立——綁定面在**建立按鈕的程式碼現場**，framework 建工具列時給值即可：
 
-- **工具列按鈕是 hardcode** — `src/Bee.Web.Blazor.Server/Components/FormPage.razor` 的 New / Save / Delete 直接寫死在 razor，只受 `_isBusy` 與資料狀態控制，**不是** `FormLayout` 裡的宣告式 element。沒有「按鈕 element」可掛 `PermissionAction`。
-- **唯一成熟的 element 是欄位 / Grid** — `LayoutField` / `LayoutColumn`（有 `Visible` / `ReadOnly`）、`LayoutGrid`（有 `AllowActions`）。但 capability 最關鍵的降級對象是「動作按鈕」，而按鈕還沒模型化。
-- **依賴順序被倒過來** — 應先讓「工具列／命令」成為 `FormLayout` 的宣告式模型（像 `LayoutField` / `LayoutGrid` 那樣有 `Id` / `Caption` / `Action`），capability 才有穩定綁定面。現在做＝綁在 hardcode 按鈕上，工具列模型化時整段 element→action 重做。
-- **`不為假設的未來建類`**（CLAUDE.md code-style）— capability 資料骨幹雖 UI-agnostic、可先做，但目前**零消費端**；在沒有消費端驗證 payload 形狀前定死 `EnterCompanyResponse` 的 capability 結構，有把形狀猜錯、返工的風險。
+```csharp
+// FormView / ListView 建工具列時（示意）
+_newButton    = new Button { Content = "New" };
+_deleteButton = new Button { Content = "Delete" };
+PermissionScope.SetAction(_newButton,    PermissionAction.Create);   // 建立時自帶
+PermissionScope.SetAction(_deleteButton, PermissionAction.Delete);   // 未設 → 不控管
+// ...capability 載入後，單次掃描套 IsVisible
+```
 
-### 前置依賴（解除 blocked 的條件）
+各降級對象在 Avalonia 的落地面：
 
-**先做「工具列／命令宣告式模型」**：把 New / Save / Delete 及未來自訂命令（Print / Export / Approve…）變成 `FormLayout` 內的宣告式 element，每顆有 `Id` / `Caption`（以及 capability 要用的 action 綁定面）。這份模型落地後，本 plan 才展開為可執行的實作 plan。
+| 降級對象 | 綁定面 | Avalonia 現況 / 佐證 | 落地方式 |
+|---------|--------|---------------------|---------|
+| 命令按鈕（標準 + 自訂） | **建立時自帶 `PermissionAction`**（opt-in，未設=不控管） | 按鈕為固定已知欄位（[ListView.cs:83](../../src/Bee.UI.Avalonia/Views/ListView.cs)、[FormView.cs:108](../../src/Bee.UI.Avalonia/Views/FormView.cs)） | AttachedProperty + 單次掃描設 `IsVisible` |
+| 欄位可見 / 唯讀 | `FormField.SensitiveCategory`（FormSchema 中樞） | `FormView.EnumerateFields`（[FormView.cs:581](../../src/Bee.UI.Avalonia/Views/FormView.cs)）篩 Visible、`FieldEditorBinder.IsLayoutReadOnly`（[FieldEditorBinder.cs:84](../../src/Bee.UI.Avalonia/Controls/Editors/FieldEditorBinder.cs)）讀 ReadOnly | bind 時合成 |
+| Grid 動作 | `LayoutGrid.AllowActions` | `GridControl.UpdateControlState`（[GridControl.cs:473](../../src/Bee.UI.Avalonia/Controls/GridControl.cs)） | `AllowActions & capMask` |
+
+**三個讓它乾淨落地的關鍵**：
+
+1. **屬性掛在 UI 控件、建立時給值** → 按鈕免在 FormLayout 模型化；標準/自訂命令同一機制；未設 = 不控管，向後相容。
+2. **FormView / ListView 已全程走 `ClientInfo.Resolve*` hook**（[ListView.cs:267–277](../../src/Bee.UI.Avalonia/Views/ListView.cs)）→ capability 快照掛 `ClientInfo`、resolver 放 `Bee.UI.Core`（Avalonia 已 ProjectReference），是現成注入縫。
+3. **降級套用不 mutate 快取定義**（守 definition-immutability）→ bind 時合成：`有效可見 = layout.Visible && cap.Visible`、`有效唯讀 = layout.ReadOnly || cap.ReadOnly`、`Grid 動作 = AllowActions & capMask`、按鈕 `IsVisible = cap.Can(action)`。
+
+> **屬性放 UI 控件（而非 FormLayout）的取捨**：綁定面在建立現場最輕、無需定義模型；代價是各 UI（Avalonia / 未來 MAUI / Blazor）各自實作「讀屬性設可見」的 glue。但**判定邏輯（`Can(model, action)`）仍單點在 `Bee.UI.Core` resolver**，各 UI 只消費結果——符合既有分層。
 
 ---
 
@@ -35,26 +61,19 @@
 
 **關鍵觀察**：`SystemBusinessObject.EnterCompany` 是天然載具——它此刻已持有 `snapshot` 與 `Roles`，正是算出「per-model action mask」並掛上回應的點。client 已呼叫 `EnterCompanyAsync`（`src/Bee.Api.Client/Connectors/SystemApiConnector.cs:292`），所以 **capability 搭 EnterCompany 這班車＝零額外往返**。
 
-> ADR-019 第 69 行已明載：「前端 capability（element 細粒度降級）為獨立關注點…元素層按鈕→action 的降級屬前端 capability，另案。」本 plan 即該「另案」。
-
 ---
 
-## 前端現況（探勘結論）
+## 前端現況（Avalonia，探勘結論）
 
 | 項目 | 位置 | 現況 |
 |------|------|------|
-| 前端身分資訊 | `src/Bee.UI.Core/ClientInfo.cs`（`UserInfo`） | **只有 `UserId` / `UserName` / `Culture` / `TimeZone`，無 Roles / grants** |
-| 客戶端 session 載具 | `ClientInfo`（static） | `AccessToken` / `UserInfo`；`ApplyLoginResult` 設定 |
-| EnterCompany 回應 | `src/Bee.Api.Core/Messages/System/EnterCompanyResponse.cs` | 目前只回 `CompanyInfo Company`（`[Key(100)]`） |
-| 工具列按鈕 | `FormPage.razor` 15–17 行 | New / Save / Delete **hardcode**，僅 `_isBusy` 控制 |
-| 欄位降級綁定點 | `src/Bee.Definition/Layouts/LayoutFieldBase.cs` | `Visible`（74 行）/ `ReadOnly`（83 行），Blazor 已讀取 |
-| Grid 降級綁定點 | `src/Bee.Definition/Layouts/LayoutGrid.cs` | `AllowActions`（`GridControlAllowActions` flags：Add/Edit/Delete） |
-| 欄位渲染 | `src/Bee.Web.Blazor.Server/Components/DynamicForm.razor(.cs)` | 篩 `Visible==true`、`readonly/disabled=@field.ReadOnly` |
-| Grid 渲染 | `src/Bee.Web.Blazor.Server/Components/DynamicGrid.razor.cs` | `VisibleColumns` 篩 `Visible==true` |
-| 後端 resolver 風格參考 | `src/Bee.Business/Permission/ScopeResolver.cs` | 純函式、DI 注入多服務 → CapabilityResolver 仿照 |
-| 前端 DI | `src/Bee.Web.Blazor.Server/DependencyInjection/BeeBlazorServiceCollectionExtensions.cs` | `AddBeeBlazor`、`BeeApiConnectorFactory` |
-
-**結論**：前端目前完全沒有權限資訊；降級綁定點（欄位 `Visible`/`ReadOnly`、Grid `AllowActions`）已就緒，但**動作按鈕尚未模型化**。
+| 前端身分資訊 | `src/Bee.UI.Core/ClientInfo.cs`（`UserInfo`） | 只有 `UserId` / `UserName` / `Culture` / `TimeZone`，**無 Roles / capability 快照** |
+| 客戶端 session 載具 | `ClientInfo`（static） | `AccessToken` / `UserInfo`；capability 快照擬掛此處 |
+| EnterCompany 回應 | `src/Bee.Api.Core/Messages/System/EnterCompanyResponse.cs` | 目前只回 `CompanyInfo Company`（`[Key(100)]`），擬加 capability mask |
+| 表單/列表 host | `src/Bee.UI.Avalonia/Views/FormView.cs`、`ListView.cs` | 全程走 `ClientInfo.Resolve*` hook；工具列按鈕為固定已知欄位 |
+| 欄位降級點 | `FormView.EnumerateFields`（篩 Visible）、`FieldEditorBinder.IsLayoutReadOnly`（讀 ReadOnly） | ✅ 已就緒，capability 合成即可 |
+| Grid 降級點 | `GridControl.UpdateControlState`（讀 `AllowActions`）、`EnumerateVisibleColumns`（篩 Visible） | ✅ 已就緒，交集即可 |
+| Resolver 歸屬 | `src/Bee.UI.Core` | Avalonia / 未來 MAUI / Blazor 共用，各 UI 只消費結果 |
 
 ---
 
@@ -62,90 +81,108 @@
 
 | 決策 | 結論 |
 |------|------|
-| **按鈕降級（無權時）** | **隱藏** —— 無權的工具列按鈕 / Grid 內聯動作直接不渲染（`Visible=false`）。 |
-| **欄位權限控管是選擇性（opt-in）** | **只有敏感欄需要標記控管；絕大多數欄位不控管**，照 layout 正常顯示與編輯。未標記欄位永遠不參與 capability 降級——避免「整 model 一致」讓逐欄判定淪為無意義的全有全無。 |
-| **敏感欄用「具名分類」標記** | `FormField` 上加一個**敏感分類列舉**（如 `SensitiveCategory`：`None` / `Amount` 金額 / `Cost` 成本 / `PersonalData` 個資，可擴充），**平行既有的 `ScopeRole`**（同為 `[XmlAttribute]` + `[DefaultValue(None)]` 的 enum）。表單設計者只挑語意分類、不發明 id；列舉有限 → 可載入期驗證。 |
-| **單一真相源在 FormSchema 中樞** | `SensitiveCategory` **只標在 `FormField`（FormSchema）**，不複製到 `LayoutField`。`FormSchema` 是定義中樞（驅動 UI / DB / 驗證），敏感分類一處定義、處處讀：本案的 UI 降級、未來的 DB 端遮罩、驗證皆從此處取。resolver 以 `FormSchema` + `FieldName` 反查（前端開表單時 `FormSchema` 與 `FormLayout` 同在手邊，零額外成本），避免兩處標記漂移。 |
-| **欄位降級（兩階,依 Read / Update）** | 被標記的敏感欄受 **Read / Update 兩個 action** 控管：**無 `Read` → 隱藏（`Visible=false`）**、**無 `Update` → 唯讀（`ReadOnly=true`）**。隱藏優先於唯讀（連看都不能看就不必談能不能改）。FormLayout 產生 UI，隱藏只是不輸出該欄，成本極低。 |
-| **CapabilityResolver 歸屬層** | **`Bee.UI.Core`**（UI-agnostic）—— Blazor / MAUI / WinForms 共用同一套解析；各 UI 元件只消費結果。對齊後端 `ScopeResolver` 的純函式風格。 |
-| **scope 是否參與前端 capability** | **否** —— capability 純 action-level（能不能做此動作），record scope（哪些列）留後端權威 re-query。前端只做 UX 降級，安全邊界在後端（ADR-019 約束 #4）。 |
+| **消費端** | **`Bee.UI.Avalonia`**（繼承式控件）。Resolver 仍在 `Bee.UI.Core`（UI-agnostic），Avalonia / 未來 MAUI / Blazor 共用。 |
+| **命令權限綁定** | **按鈕於建立時自帶 opt-in `PermissionAction` 屬性**（AttachedProperty）。framework 建工具列時給值（New→Create、Save→Create\|Update、Delete→Delete）；自訂命令同法；**未設 = 不控管**。 |
+| **按鈕降級（無權時）** | **隱藏** —— 無權的工具列按鈕 / Grid 內聯動作直接不渲染（`IsVisible=false`）。 |
+| **欄位權限控管是選擇性（opt-in）** | **只有敏感欄需要標記控管；絕大多數欄位不控管**，照 layout 正常顯示與編輯。未標記欄位永遠不參與 capability 降級。 |
+| **敏感欄用「具名分類」標記** | `FormField` 上加**敏感分類列舉** `SensitiveCategory`（`None` / `Amount` / `Cost` / `PersonalData`，可擴充），**平行既有 `ScopeRole`**（`[XmlAttribute]` + `[DefaultValue(None)]`）。設計者只挑語意分類、不發明 id；列舉有限 → 可載入期驗證。 |
+| **單一真相源在 FormSchema 中樞** | `SensitiveCategory` **只標在 `FormField`（FormSchema）**，不複製到 `LayoutField`。resolver 以 `FormSchema` + `FieldName` 反查（前端開表單時兩者同在手邊，零額外成本）。 |
+| **欄位降級（兩階，依 Read / Update）** | 敏感欄受 **Read / Update** 控管：無 `Read` → 隱藏、無 `Update` → 唯讀。隱藏優先於唯讀。 |
+| **scope 不參與前端 capability** | capability 純 action-level；record scope（哪些列）留後端權威 re-query。前端只做 UX 降級，安全邊界在後端（ADR-019 約束 #4）。 |
 
-> **敏感分類是與主表單 model 正交的獨立 gate**：敏感欄的可見性需要「與主表單 model **不同**的 gate」——使用者有 `PurchaseOrder.Read`（看得到採購單），但「成本」欄看不看得到是另一回事，由**敏感分類**（`Cost`）的 Read 決定。為什麼用「分類」而非「每欄一個任意 model id」：金額 / 成本 / 個資是**資料分類**語意（能看成本的人到哪都能看成本、有個資權的人到哪都能看個資），全公司一致、跨表單共用一次授權，比逐欄發明 model id 更貼 ERP 實務、更好治理、可載入期驗證。`SensitiveCategory` 與 `FormField.ScopeRole` 形狀完全一致（enum + `[XmlAttribute]` + `[DefaultValue(None)]`），是現成 pattern 的複製。**未標記（`None`）→ 不控管**（預設放行），向後相容、漸進導入。
+### 三項待決議題已拍板（2026-07-03）
 
-## 待決議題（實作 plan 展開時定案）
+| 議題 | 定案 | 理由 |
+|------|------|------|
+| **議題 1：capability 資料怎麼到前端** | **案 A — 後端算好遮罩** | EnterCompany 時後端用 `CompanyRolePermissions` 算 `Dictionary<modelId, PermissionAction>`，附在 `EnterCompanyResponse`，client 快取於 `ClientInfo`，resolver 純查表。傳輸小、grant 不外洩、OR-merge 邏輯單點。 |
+| **議題 2：element→action 綁定** | **按鈕建立時自帶 opt-in `PermissionAction` 屬性** | 綁定面在建立現場、掛 UI 控件（AttachedProperty），不需 FormLayout 命令模型；標準與自訂命令同一機制；未設 = 不控管。判定邏輯仍單點在 `Bee.UI.Core` resolver。 |
+| **議題 3：敏感分類接授權 gate** | **案 A — 分類即 well-known permission model** | 每個分類對應約定的 `PermissionModel` id，grant 照 `(role, 分類 model, action)` 授，resolver 複用 `Can` / `GetAllowed`。後端零新增 enforcement 維度，完全複用 ADR-019 基建。 |
 
-### 議題 1：capability 資料怎麼到前端（兩案皆零額外往返，差在計算地點）
+> **敏感分類是與主表單 model 正交的獨立 gate**：使用者有 `PurchaseOrder.Read`（看得到採購單），但「成本」欄看不看得到由**敏感分類**（`Cost`）的 Read 決定。用「分類」而非「逐欄任意 model id」：金額/成本/個資是**資料分類**語意，全公司一致、跨表單共用一次授權，貼 ERP 實務、可載入期驗證。未標記（`None`）→ 不控管（預設放行），向後相容。
 
-| 案 | 作法 | 優點 | 缺點 |
-|----|------|------|------|
-| **A：後端算好遮罩** | EnterCompany 時後端用 `CompanyRolePermissions` 算出 `Dictionary<modelId, PermissionAction>`（有效 action mask），附在 `EnterCompanyResponse`；client 快取於 `ClientInfo`，CapabilityResolver 純查表 | 傳輸最小；grant 細節不外洩到前端；前端不重複後端 OR-merge 邏輯 | 後端多算一份「全 model mask」；payload 形狀要先定 |
-| **B：傳原料前端自算** | 後端把該 user 的 grant rows + roles 整包給前端，CapabilityResolver 在前端 OR-merge | 更貼近後端 `GetAllowed` 邏輯；後端不需預算全 model | grant 結構暴露到前端；傳輸較大；前端要複製合併邏輯（易與後端漂移） |
-
-> 傾向 A（傳輸小、不外洩、邏輯單點），但待實作時連同 payload 形狀一起定案。
-
-### 議題 2：element→action 綁定方式（與前置依賴「工具列模型」綁定）
-
-| 案 | 作法 | 優點 | 缺點 |
-|----|------|------|------|
-| **約定式** | 標準工具列固定對應：New→Create、Save→Create\|Update、Delete→Delete；敏感欄（opt-in）→{Read 控可見、Update 控可編輯}；Grid 沿用 `AllowActions` 對應 Add/Edit/Delete | 改動最小、涵蓋現有 CRUD | 自訂命令（Print/Export/Approve）無處宣告 |
-| **約定式 + 宣告式 override** | 以約定為底，FormLayout 按鈕 element 可選擇性標 `Action`；未標走約定 | 擴充性好、改動中等 | 需要工具列 element 已模型化 |
-| **純宣告式** | 每顆按鈕 element 顯式宣告 `PermissionAction` | 最彈性 | 改動最大；強依賴工具列模型 |
-
-> 本議題**直接依賴前置依賴**（工具列宣告式模型）。模型怎麼設計，決定這裡走哪案。
-
-### 議題 3：敏感分類怎麼接到授權 gate（觸及後端）
-
-**已定向**：`FormField` 加 `SensitiveCategory` 列舉（`None` / `Amount` / `Cost` / `PersonalData`…，可擴充），平行 `ScopeRole`。剩下要定案「分類 → 授權判定」怎麼接：
-
-| 案 | 作法 | 優點 | 缺點 |
-|----|------|------|------|
-| **A：分類即 permission model（well-known id）** | 每個分類對應一個約定的 `PermissionModel` id（`Amount` / `Cost` / `PersonalData`）；grant 照 `(role, 分類model, action)` 授；resolver 直接複用 `Can` / `GetAllowed` | 後端**零新增 enforcement 維度**，完全複用既有 model / grant / 快取；前端 capability mask 自然含這幾個分類 | 分類列舉與 well-known model id 要保持對齊（載入期驗證可顧） |
-| **B：獨立「欄位敏感授權」維度** | 新增一張 grant 表 / 一組 service 專管分類授權 | 概念上與業務 model 分開 | 多一套 enforcement + 快取 + 失效鏈，重複造輪、維護成本高 |
-
-> 傾向 **A**：分類就是一組**資料分類用的 permission model**，沿用 ADR-019 全套基建，後端只需定義這幾個 well-known model 並授 grant。
-
-子決策（A 之下，定案時敲定）：
-- **分類 gate 的廣度**：全公司一致（`Cost` 一個 gate 管全部表單，資料分類語意，傾向此）vs 綁業務實體（`PurchaseOrderCost` / `SalesOrderCost` 分開）。
-- **分類列舉的歸屬**：放 `Bee.Definition`（與 `ScopeRole` 同處）。
+**議題 3 子決策**：
+- **分類 gate 廣度**：全公司一致（`Cost` 一個 gate 管全部表單，傾向此）vs 綁業務實體 —— 展開時最終敲定。
+- **分類列舉歸屬**：`Bee.Definition`（與 `ScopeRole` 同處）。
 - **載入期驗證**：`PermissionBindingValidator` 補一條——`SensitiveCategory` 非 `None` 的欄，其對應 well-known model 必須存在於 `PermissionModels`。
 
 ---
 
-## CapabilityResolver 草圖（待前置完成後細化）
+## 實作範圍（跨檔改動）
+
+### 1. 後端算 mask（議題 1 案 A）
+
+- `src/Bee.Api.Core/Messages/System/EnterCompanyResponse.cs`：加 `Dictionary<string, PermissionAction> Capabilities`（新 `[Key(101)]`），三棲序列化（XML/JSON/MessagePack）+ round-trip 測試。
+- `src/Bee.Business/System/SystemBusinessObject.cs`（`EnterCompany`，142 行附近）：以手邊 `snapshot` + `sessionInfo.Roles`，對相關 model（含敏感分類 well-known model）逐一 `GetAllowed` OR-merge，填 `Capabilities`。
+- contract / wire 對齊（依 `bee-add-bo-method` 慣例）。
+
+### 2. 前端快取 + resolver（Bee.UI.Core）
+
+- `src/Bee.UI.Core/ClientInfo.cs`：`EnterCompanyAsync` 回來後把 `Capabilities` 快取（唯讀快照，清 session 時一併清）。
+- 新增 `IElementCapabilityResolver` + 實作於 `Bee.UI.Core`（純函式，對齊後端 `ScopeResolver` 風格）：
+  - `Can(FormSchema schema, PermissionAction action, snapshot)` → bool（`schema.PermissionModelId` 空 → 全放行）
+  - `ResolveField(FormSchema schema, string fieldName, snapshot)` → `FieldCapability { Visible, ReadOnly }`（`SensitiveCategory == None` → 全放行）
+  - `ResolveGridActions(LayoutGrid grid, FormSchema schema, snapshot)` → 交集後的 `GridControlAllowActions`
+
+### 3. Avalonia 消費端（自帶屬性 + 合成，不 mutate 定義）
+
+- **命令按鈕**：新增 `PermissionScope` AttachedProperty（`src/Bee.UI.Avalonia`），承載 `PermissionAction`；`ListView`（83 行）/`FormView`（108 行）建按鈕時給值；capability 載入後單次掃描工具列，對非 `None` 的按鈕設 `IsVisible = resolver.Can(schema, action, snapshot)`。
+- **敏感欄位**：`FormView.EnumerateFields`（581 行）與 `FieldEditorBinder`（84 行）合成 `layout.Visible && cap.Visible` / `layout.ReadOnly || cap.ReadOnly`。
+- **Grid**：`GridControl.UpdateControlState`（473 行）以 `AllowActions & capMask` 設按鈕；敏感欄比照欄位規則，`EnumerateVisibleColumns`（1135 行）合成可見性。
+
+### 4. 敏感分類定義 + 驗證
+
+- `src/Bee.Definition`：新增 `SensitiveCategory` 列舉；`FormField` 加對應 `[XmlAttribute]` + `[DefaultValue(None)]` 屬性（平行 `ScopeRole`）。
+- `PermissionBindingValidator` 補載入期驗證（非 `None` → 對應 well-known model 必須存在）。
+- 後端定義 well-known 分類 model（`Amount` / `Cost` / `PersonalData`）並可授 grant。
+
+### 5. 測試
+
+- `EnterCompanyResponse` 三棲 round-trip（含 `Capabilities`）。
+- `CapabilityResolver` 純函式單元測試（各分類 Read/Update 組合、model 無權、`None` 放行、命令 `Can`）。
+- Avalonia glue 測試（按鈕 `IsVisible`、欄位 Visible AND / ReadOnly OR、Grid 交集）。
+
+---
+
+## 非本 plan 範圍（已脫鉤）
+
+- **FormLayout 宣告式命令模型**：命令若要**資料驅動定義**（設計者在定義檔宣告自訂命令，而非程式建立）才需要，與權限降級脫鉤，屬另案。本 plan 的自訂命令走「程式建立時自帶屬性」即可。
+- **record scope 前端化**：留後端權威 re-query，前端只做 action-level UX 降級。
+
+---
+
+## CapabilityResolver 草圖
 
 ```
 // Bee.UI.Core（UI-agnostic）
 IElementCapabilityResolver
-  // 按鈕／命令
-  ElementCapability ResolveCommand(FormSchema schema, <command>, capabilitySnapshot)
-    // 1. schema.PermissionModelId 取得 modelId（空 → 不套權限，全放行）
-    // 2. command → PermissionAction（依議題 2 定案的綁定方式）
-    // 3. 查 capabilitySnapshot 得 allowed mask
-    // 4. 無權 → Visible=false（按鈕隱藏政策）
+  // 命令（按鈕自帶 PermissionAction，UI glue 呼叫）
+  bool Can(FormSchema schema, PermissionAction action, snapshot)
+    // schema.PermissionModelId 空 → true（不套權限）
+    // 否則查 snapshot mask 是否含 action
 
-  // 欄位（opt-in：只有 SensitiveCategory != None 的敏感欄才控管）
-  FieldCapability ResolveField(FormSchema schema, string fieldName, capabilitySnapshot)
-    // 0. 由 schema 反查 FormField（單一真相源在 FormSchema 中樞,不讀 LayoutField）
-    // 1. formField.SensitiveCategory == None → 不控管,直接放行（Visible 照 layout、可編輯）
-    // 2. 非 None → 分類對應的 well-known model 查 mask：
-    //    無 Read → Visible=false（優先）；有 Read 但無 Update → ReadOnly=true
+  // 欄位（opt-in：只有 SensitiveCategory != None 才控管）
+  FieldCapability ResolveField(FormSchema schema, string fieldName, snapshot)
+    // 0. 由 schema 反查 FormField（單一真相源，不讀 LayoutField）
+    // 1. SensitiveCategory == None → 放行
+    // 2. 非 None → 分類 well-known model 查 mask：
+    //    無 Read → Visible=false（優先）；有 Read 無 Update → ReadOnly=true
+
+  // Grid 動作
+  GridControlAllowActions ResolveGridActions(LayoutGrid grid, FormSchema schema, snapshot)
+    // grid.AllowActions & capMask（無權的 Add/Edit/Delete 遮掉）
 ```
 
-消費端（Blazor 起步，MAUI/WinForms 後續）：
-- 工具列按鈕：`ResolveCommand` → 無權不渲染。
-- `DynamicForm` 欄位：`ResolveField` → **僅敏感欄**參與；無 `Read` 時不輸出該欄（`Visible=false`）、無 `Update` 時 `ReadOnly=true`；其餘欄位照 layout。
-- `DynamicGrid` / `LayoutGrid`：敏感欄比照欄位規則；Grid 動作以 `AllowActions` 交集 capability，遮掉無權的 Add/Edit/Delete。
+消費端（Avalonia）：按鈕讀 `PermissionScope.Action` → `Can` → 設 `IsVisible`；欄位/Grid 合成套用，**不 mutate 快取定義**。
 
 ---
 
 ## 後續步驟
 
-1. **（前置）** 擬「工具列／命令宣告式模型」plan 並實作 —— 解除本 plan blocked 的條件。
-2. 前置完成後，把本設計紀要展開為可執行實作 plan：定案議題 1 / 2 的 payload 與綁定，列出跨檔改動（`EnterCompanyResponse` + contract、`SystemBusinessObject.EnterCompany`、`ClientInfo` 客戶端快取、`Bee.UI.Core` CapabilityResolver、Blazor 元件消費）、測試與 round-trip。
-3. 實作落地後更新本 plan 狀態列為 ✅，並補對應 ADR / 使用者指南「非目標」段落的轉正。
+1. 使用者確認本 plan 方向 → 展開實作（先敲定議題 3 子決策：分類 gate 廣度）。
+2. 落地後更新狀態列為 ✅，補對應 ADR / 使用者指南「非目標」段落轉正。
 
 ## 參考
 
 - [ADR-019：權限授權模型](../adr/adr-019-permission-authorization-model.md)（第 69、140 行標明 capability 為另案）
 - [權限與授權指南](../permission-authorization.zh-TW.md)
-- 封存 plan：`docs/archive/plan-erp-permission.md`、`plan-permission-line-b.md`、`plan-record-scope-enforcement.md`、`plan-org-department-tree.md`
+- Avalonia 是 UI 架構試點：先在 `Bee.UI.Avalonia` 定稿，再移植 MAUI / Blazor。

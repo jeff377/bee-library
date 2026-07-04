@@ -1,5 +1,6 @@
 using Bee.Api.Contracts;
 using Bee.Definition.Identity;
+using Bee.Definition.Settings;
 using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
@@ -15,5 +16,14 @@ namespace Bee.Api.Core.Messages.System
         /// </summary>
         [Key(100)]
         public CompanyInfo Company { get; set; } = new CompanyInfo();
+
+        /// <summary>
+        /// Gets or sets the per-model allowed action mask (capability snapshot) for the session's
+        /// roles in the entered company. The client caches this on <c>ClientInfo</c> and its element
+        /// capability resolver reads it to degrade toolbar commands, grid actions, and sensitive
+        /// fields. A model absent from the map means no permission.
+        /// </summary>
+        [Key(101)]
+        public Dictionary<string, PermissionAction> Capabilities { get; set; } = [];
     }
 }

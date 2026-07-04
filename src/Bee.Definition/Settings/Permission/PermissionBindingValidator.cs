@@ -29,8 +29,29 @@ namespace Bee.Definition.Settings
                 errors.AddRange(ValidateModelIdReference(schema, models));
                 errors.AddRange(ValidateDetailScopeRoles(schema));
                 errors.AddRange(ValidateMasterScopeColumns(schema));
+                errors.AddRange(ValidateSensitiveCategories(schema, models));
             }
             return errors;
+        }
+
+        // A field marked with a non-None SensitiveCategory binds to a well-known permission model
+        // (the category name). That model must exist in the registry, otherwise the field would be
+        // silently un-gated (absent model resolves to no permission on the client). Applies to every
+        // table — sensitivity is data classification, not a master-only scope role.
+        private static IEnumerable<string> ValidateSensitiveCategories(FormSchema schema, PermissionModels models)
+        {
+            if (schema.Tables == null) { yield break; }
+            foreach (FormTable table in schema.Tables)
+            {
+                if (table.Fields == null) { continue; }
+                foreach (FormField field in table.Fields)
+                {
+                    if (field.SensitiveCategory == SensitiveCategory.None) { continue; }
+                    string modelId = field.SensitiveCategory.ToPermissionModelId();
+                    if (models.Models == null || !models.Models.Contains(modelId))
+                        yield return $"Form '{schema.ProgId}': field '{table.TableName}.{field.FieldName}' has SensitiveCategory '{field.SensitiveCategory}' but its well-known model '{modelId}' does not exist in the permission registry.";
+                }
+            }
         }
 
         // PermissionModelId must reference an existing model (when declared).

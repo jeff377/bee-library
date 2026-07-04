@@ -165,6 +165,10 @@ namespace Bee.Business.System
             var rolePermissionService = Services.GetRequiredService<IRolePermissionService>();
             var snapshot = rolePermissionService.Get(args.CompanyId);
             sessionInfo.Roles = snapshot?.GetUserRoleIds(sessionInfo.UserId).ToList() ?? [];
+            // Compute the per-model capability snapshot once, here, where the roles and the
+            // permission snapshot are both in hand — the client caches it to degrade UI elements
+            // without any extra round-trip (see plan-permission-capability.md).
+            var capabilities = snapshot?.GetAllowedByModel(sessionInfo.Roles) ?? [];
             // Snapshot the user's record-scope identity (user/employee/department row ids) so
             // layer-2 scope filtering runs from the session without re-hitting the database.
             var employeeResolver = Services.GetRequiredService<IEmployeeContextResolver>();
@@ -174,7 +178,7 @@ namespace Bee.Business.System
             sessionInfo.DeptRowId = employeeContext.DeptRowId;
             SessionInfoService.Set(sessionInfo);
 
-            return new EnterCompanyResult { Company = companyInfo };
+            return new EnterCompanyResult { Company = companyInfo, Capabilities = capabilities };
         }
 
         /// <summary>

@@ -196,6 +196,23 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
+        /// Finds a field definition by name, treating this schema as the single source of truth
+        /// for field metadata (such as <see cref="FormField.SensitiveCategory"/>) that is not
+        /// copied onto the generated layout. Searches the master table when <paramref name="tableName"/>
+        /// is empty, otherwise the named table. Returns <c>null</c> when the table or field is absent.
+        /// </summary>
+        /// <param name="fieldName">The field name to find.</param>
+        /// <param name="tableName">The owning table name; empty resolves to the master table.</param>
+        public FormField? FindField(string fieldName, string tableName = "")
+        {
+            FormTable? table = StringUtilities.IsEmpty(tableName)
+                ? MasterTable
+                : (Tables != null && Tables.Contains(tableName) ? Tables[tableName] : null);
+            if (table?.Fields == null || !table.Fields.Contains(fieldName)) { return null; }
+            return table.Fields[fieldName];
+        }
+
+        /// <summary>
         /// Gets the form layout for this schema.
         /// </summary>
         /// <param name="layoutId">The layout ID to assign to the generated layout.</param>

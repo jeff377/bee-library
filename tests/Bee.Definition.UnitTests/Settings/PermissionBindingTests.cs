@@ -153,5 +153,73 @@ namespace Bee.Definition.UnitTests.Settings
 
             Assert.Contains(errors, e => e.Contains("detail table") && e.Contains("PO001_Item"));
         }
+
+        [Fact]
+        [DisplayName("FormField.SensitiveCategory 應透過 XmlAttribute 序列化往返")]
+        public void FormField_SensitiveCategory_RoundTrips()
+        {
+            var schema = BuildForm();
+            schema.Tables!["PO001"].Fields!.Add("total_cost", "成本", FieldDbType.Decimal).SensitiveCategory = SensitiveCategory.Cost;
+
+            var xml = XmlCodec.Serialize(schema);
+            var restored = XmlCodec.Deserialize<FormSchema>(xml);
+
+            Assert.Contains("SensitiveCategory=\"Cost\"", xml);
+            Assert.Equal(SensitiveCategory.Cost, restored!.Tables!["PO001"].Fields!["total_cost"].SensitiveCategory);
+        }
+
+        [Fact]
+        [DisplayName("FormField.SensitiveCategory 為 None 時 XML 不應輸出該屬性")]
+        public void FormField_SensitiveCategoryNone_OmittedFromXml()
+        {
+            var schema = new FormSchema("PO001", "採購單") { CategoryId = "company" };
+            schema.Tables!.Add("PO001", "採購單").Fields!.Add("sys_id", "單號", FieldDbType.String);
+
+            var xml = XmlCodec.Serialize(schema);
+
+            Assert.DoesNotContain("SensitiveCategory=", xml);
+        }
+
+        [Fact]
+        [DisplayName("FormField.Clone 應保留 SensitiveCategory")]
+        public void FormField_Clone_PreservesSensitiveCategory()
+        {
+            var schema = BuildForm();
+            schema.Tables!["PO001"].Fields!.Add("total_cost", "成本", FieldDbType.Decimal).SensitiveCategory = SensitiveCategory.Cost;
+
+            var clone = schema.Clone();
+
+            Assert.Equal(SensitiveCategory.Cost, clone.Tables!["PO001"].Fields!["total_cost"].SensitiveCategory);
+        }
+
+        [Fact]
+        [DisplayName("Validator 敏感分類對應的 well-known model 不存在應回報錯誤")]
+        public void Validate_SensitiveCategoryWithoutModel_ReturnsError()
+        {
+            var schema = BuildForm();
+            schema.Tables!["PO001"].Fields!.Add("total_cost", "成本", FieldDbType.Decimal).SensitiveCategory = SensitiveCategory.Cost;
+            var schemas = new FormSchema[] { schema };
+
+            // BuildRegistry 只有 PurchaseOrder，沒有 well-known 的 Cost model → 應報錯
+            var errors = PermissionBindingValidator.Validate(schemas, BuildRegistry());
+
+            Assert.Contains(errors, e => e.Contains("Cost") && e.Contains("total_cost"));
+        }
+
+        [Fact]
+        [DisplayName("Validator 敏感分類 well-known model 存在時應通過")]
+        public void Validate_SensitiveCategoryWithModel_ReturnsEmpty()
+        {
+            var schema = BuildForm();
+            schema.Tables!["PO001"].Fields!.Add("total_cost", "成本", FieldDbType.Decimal).SensitiveCategory = SensitiveCategory.Cost;
+            var schemas = new FormSchema[] { schema };
+
+            var registry = BuildRegistry();
+            registry.Models!.Add("Cost", "成本");
+
+            var errors = PermissionBindingValidator.Validate(schemas, registry);
+
+            Assert.Empty(errors);
+        }
     }
 }

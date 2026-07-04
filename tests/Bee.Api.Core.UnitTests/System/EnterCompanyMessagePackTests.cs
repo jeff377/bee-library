@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Api.Core.MessagePack;
 using Bee.Api.Core.Messages.System;
 using Bee.Definition.Identity;
+using Bee.Definition.Settings;
 
 namespace Bee.Api.Core.UnitTests.System
 {
@@ -59,6 +60,41 @@ namespace Bee.Api.Core.UnitTests.System
             Assert.Equal("C001", restored!.Company.CompanyId);
             Assert.Equal("Acme", restored.Company.CompanyName);
             Assert.Equal("biz_shared_01", restored.Company.CompanyDatabaseId);
+        }
+
+        [Fact]
+        [DisplayName("EnterCompanyResponse.Capabilities 應 round-trip 保留每個 model 的 action mask")]
+        public void EnterCompanyResponse_RoundTrip_PreservesCapabilities()
+        {
+            var response = new EnterCompanyResponse
+            {
+                Company = new CompanyInfo { CompanyId = "C001" },
+                Capabilities = new Dictionary<string, PermissionAction>
+                {
+                    ["PurchaseOrder"] = PermissionAction.Read | PermissionAction.Update,
+                    ["Cost"] = PermissionAction.Read,
+                }
+            };
+
+            var bytes = MessagePackCodec.Serialize(response);
+            var restored = MessagePackCodec.Deserialize<EnterCompanyResponse>(bytes);
+
+            Assert.NotNull(restored);
+            Assert.Equal(PermissionAction.Read | PermissionAction.Update, restored!.Capabilities["PurchaseOrder"]);
+            Assert.Equal(PermissionAction.Read, restored.Capabilities["Cost"]);
+        }
+
+        [Fact]
+        [DisplayName("EnterCompanyResponse 預設 Capabilities 應 round-trip 為空字典")]
+        public void EnterCompanyResponse_DefaultCapabilities_RoundTripEmpty()
+        {
+            var response = new EnterCompanyResponse { Company = new CompanyInfo { CompanyId = "C001" } };
+
+            var bytes = MessagePackCodec.Serialize(response);
+            var restored = MessagePackCodec.Deserialize<EnterCompanyResponse>(bytes);
+
+            Assert.NotNull(restored);
+            Assert.Empty(restored!.Capabilities);
         }
     }
 }
