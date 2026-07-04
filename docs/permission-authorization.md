@@ -2,16 +2,23 @@
 
 # Permission & Authorization Guide
 
-Bee.NET authorization is **two-layer** and decoupled from forms:
+Bee.NET permissions span **three dimensions**:
 
-| Layer | Question | Driven by |
-|-------|----------|-----------|
-| **Layer 1 — action gate** | Can this user perform this *action* on the model? | role grants (action mask) |
-| **Layer 2 — record scope** | On *which rows* may they do it? | per-action scope strategy + the user's identity/department |
+| Dimension | Question | Enforced by | Driven by |
+|-----------|----------|-------------|-----------|
+| **Action** | Can this user perform this *action* on the model? | **Back end (authoritative)** | role grants (action mask) |
+| **Record (row)** | On *which rows* may they do it? | **Back end (authoritative)** | per-action scope strategy + the user's identity/department |
+| **Field (column)** | May they *see / edit* this sensitive field? | **Front end (UX degradation)** | sensitive category + capability snapshot |
 
-Both run entirely from in-memory snapshots at request time — the database is touched only when loading the caches, at login, on `EnterCompany`, or when configuration changes. Authorization is **orthogonal** to `ApiAccessControlAttribute` (which governs encryption level and whether login is required).
+The first two are the **security boundary** — enforced at the method layer, entirely from in-memory snapshots at request time (the database is touched only when loading the caches, at login, on `EnterCompany`, or when configuration changes). The third is a **front-end affordance**: it hides or locks sensitive fields in the standard UI so users are not shown data they lack permission for, but it is not itself a data boundary (see the caveat in [section 10](#10-enabling-capability-in-a-host-app-opt-in)).
 
-See [ADR-019](adr/adr-019-permission-authorization-model.md) for the design rationale.
+Authorization is **orthogonal** to `ApiAccessControlAttribute` (which governs encryption level and whether login is required). See [ADR-019](adr/adr-019-permission-authorization-model.md) for the design rationale.
+
+---
+
+# Part 1 — Back-end enforcement (Action + Record)
+
+The Action and Record dimensions are the authoritative gate. Both run entirely from in-memory snapshots and are decoupled from forms.
 
 ## 1. Define permission models
 
@@ -56,7 +63,7 @@ Rules:
 
 - `ScopeRole` is **master-table only**. Marking it on a detail table is a load-time validation error (`PermissionBindingValidator`) — record scope is decided on the master record; details follow it.
 - At most one `Owner` and one `Dept` column per master table.
-- An empty `PermissionModelId` makes the form **unscoped** — both layers are skipped (gradual adoption / backward compatible).
+- An empty `PermissionModelId` makes the form **unscoped** — both back-end layers are skipped (gradual adoption / backward compatible).
 
 ## 3. Grant roles
 
@@ -129,12 +136,80 @@ Multiple roles **OR-merge** (capabilities accrue). A failing check throws `Forbi
 - **Multi-role merge**: if *any* role grants `All` for the action → no filter; otherwise the restrictive strategies are **OR-unioned**.
 - The `Own` owner column may hold either a user row id or an employee row id (e.g. the *creator* vs the *employee on a leave form*); the `IN {UserRowId, EmployeeRowId}` set covers both, and a user need not map to an employee.
 
-## 6. Caching & invalidation
+---
+
+# Part 2 — Front-end capability (Field permission)
+
+The front end degrades UI elements from a per-model **capability snapshot**, so users are not shown commands or sensitive data they lack permission for. This is **UX only** — the back end (Part 1) remains the authoritative boundary.
+
+## 6. Mark sensitive fields
+
+The Field dimension is **opt-in**: mark only the fields that need controlling. Most fields carry no marker and always render per their layout.
+
+```xml
+<FormField FieldName="unit_cost" Caption="Unit Cost" SensitiveCategory="Cost" />
+```
+
+`SensitiveCategory` (default `None` = not controlled) is a **named, finite classification** — `Amount`, `Cost`, `PersonalData` — parallel to `ScopeRole`. The designer picks a category rather than inventing an id, so the set is validated at load time. It applies to **any field**, master or detail grid column.
+
+## 7. Well-known category models
+
+Each non-`None` category maps **by convention** to a permission model whose id equals the category name (`Cost` → the `"Cost"` model). These are ordinary entries in the same `PermissionModels` registry — declare and grant them like any other model. `PermissionBindingValidator` fails at load time if a marked category has no matching model.
+
+```sql
+-- Whoever may see and edit cost data, company-wide:
+INSERT INTO st_role_grant (role_id, model_id, action, scope) VALUES
+  ('CostViewer', 'Cost', 2 /*Read*/,   1 /*All*/),
+  ('CostEditor', 'Cost', 4 /*Update*/, 1 /*All*/);
+```
+
+The category gate is **company-wide and orthogonal to the form's own model**: seeing a `Cost` column depends on `Cost.Read`, *independent* of `PurchaseOrder.Read`. A user may be permitted to read purchase orders yet still have their cost columns hidden. This matches ERP practice — cost/amount/PII visibility is a data-classification concern that should be consistent across every form, granted once.
+
+## 8. How the capability snapshot reaches the client
+
+On `EnterCompany`, the back end computes the per-model action mask for the session's roles (`CompanyRolePermissions.GetAllowedByModel`) and returns it on `EnterCompanyResponse.Capabilities` — a `Dictionary<modelId, PermissionAction>` — riding the existing `EnterCompany` round-trip, so there is **no extra request**. Only models the user holds a grant on appear in the map.
+
+## 9. How the client degrades
+
+`ClientInfo.Capabilities` caches the snapshot (nullable), and `Bee.UI.Core.Permissions.ElementCapabilityResolver` (a pure, UI-agnostic resolver) reads it:
+
+- **`null` → capability inactive → nothing is degraded.** An app that never enters a company, or does not use permissions, renders exactly as before.
+- **Non-null → active.** A model absent from the map means *no permission* on it.
+
+Two element kinds consume the resolver:
+
+- **Commands** (toolbar buttons). Each button is tagged at creation with the `PermissionAction` it needs (`New`→`Create`, `Save`→`Create|Update`, `Delete`→`Delete`, `View`→`Read`); the resolver's `Can(...)` checks the form's `PermissionModelId` with **any-of** semantics (`Save` shows if the user holds either `Create` or `Update`). An un-permitted button is hidden. This is the front-end **projection of the Action dimension** as UX.
+- **Sensitive fields.** `ResolveField(...)` reads the field's `SensitiveCategory`, looks up the category model, and degrades: **no `Read` → hidden; `Read` but no `Update` → read-only** (hidden wins over read-only). Applied to master fields and detail grid columns alike.
+
+> **Detail grid actions (add/edit/delete rows) are not capability-gated.** A detail belongs to the same aggregate as its master, so whether its rows can be edited follows the form's edit mode — and the permission to enter that edit mode was already enforced by the toolbar command. Only the grid's sensitive *columns* are degraded.
+
+Degradation never mutates cached definitions: the client applies it to the per-view generated layout, narrowing visibility/editability only.
+
+## 10. Enabling capability in a host app (opt-in)
+
+Capability is **inert until wired**, so existing apps are unaffected. To turn it on:
+
+1. Declare the well-known category models (`Amount` / `Cost` / `PersonalData`) in `PermissionModels` and grant them (section 7).
+2. After `SystemApiConnector.EnterCompanyAsync`, hand the response to the client cache:
+   ```csharp
+   var response = await ClientInfo.SystemApiConnector.EnterCompanyAsync(companyId);
+   ClientInfo.ApplyEnterCompanyResult(response);   // caches the capability snapshot
+   ClientInfo.ResetDefineCache();                  // (existing) drop stale tenant defines
+   ```
+3. On `LeaveCompany`, clear it: `ClientInfo.ClearCompanyContext();`.
+
+> **Caveat — the Field dimension is UX, not a data boundary.** `GetList` / `GetData` still return the sensitive column's value; the client merely hides or locks it. A client that bypasses the standard UI could still receive the raw value over the API. Treat field permission as *presentation*. Anything that must never leave the server belongs behind an **Action** or **Record** boundary (Part 1), or its own permission model — not solely a `SensitiveCategory`. Server-side column masking is a separate future concern (see Non-goals).
+
+---
+
+## Caching & invalidation
 
 - Role/grant/user-role tables load into a per-company `CompanyRolePermissions` cache; the department tree into a per-company `DepartmentTree` cache. Both are DB-sourced and evicted via the common cache-notify poller.
 - `SessionInfo` holds the request-time snapshot (`Roles`, `UserRowId`, `EmployeeRowId`, `DeptRowId`), populated at `EnterCompany`, cleared at `LeaveCompany` / `Logout`.
+- The client capability snapshot (`ClientInfo.Capabilities`) is also point-in-time: populated at `EnterCompany`, cleared on `LeaveCompany` / token change. Re-enter the company to refresh it after a grant change.
 - Snapshots are point-in-time: configuration changed mid-session is reflected for cache-backed checks (`Can` reads the live cache) but role/employee/department snapshots on an already-entered session update on the next `EnterCompany`.
 
 ## Non-goals
 
-- **Element-level capability** (button → action degradation in the UI) is a separate front-end concern; the back end enforces at the method layer and does not rely on the front end.
+- **Declarative custom-command model** — standard toolbar commands are tagged in code (section 9); Print / Export / Approve as *data-defined* `FormLayout` elements are not modelled yet. When added, custom commands will carry their own opt-in `PermissionAction`.
+- **Back-end field masking** — the Field dimension is front-end UX. Server-side masking of sensitive columns (so their values never leave the server) is not yet implemented; use an Action/Record boundary for hard data confidentiality today.

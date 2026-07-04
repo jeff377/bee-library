@@ -66,7 +66,7 @@ Bee.NET 原本只有**身分驗證**（[ADR-012](adr-012-session-company-context
 - ✅ **與 form/table 解耦**：一個 model 多個 progId 共用一次授權。
 - ⚠️ **快照語意**：`Roles` / employee / dept 在已進公司的 session 是快照，配置中途變動不即時反映（可接受；需即時可加重進公司刷新或 cache-notify）。
 - ⚠️ **fail-closed 邊界**：scope 需要的欄缺失或身分為空 → 不匹配任何列（安全預設）+ 載入期驗證緩解。
-- 🚧 **前端 capability（element 細粒度降級）為獨立關注點**：層一在後端方法層 enforce、不靠前端；元素層按鈕→action 的降級屬前端 capability，另案。
+- ✅ **前端 capability（element 細粒度降級）為獨立關注點，已實作（2026-07-03）**：層一／層二仍在後端方法層權威 enforce、不靠前端。前端另加**第三維度「欄權限」**——工具列命令按鈕投影動作維度、敏感欄位（`FormField.SensitiveCategory` → well-known 分類 model）依 Read/Update 降級；capability 快照搭 `EnterCompany` 回傳（`EnterCompanyResponse.Capabilities`）、快取於 `ClientInfo.Capabilities`、由 `Bee.UI.Core.Permissions.ElementCapabilityResolver` 解析。**純 UX、非資料邊界**（後端未遮罩敏感欄值）。詳見[使用者指南第二部分](../permission-authorization.zh-TW.md#第二部分--前端-capability欄權限)。
 
 ## 參考
 
