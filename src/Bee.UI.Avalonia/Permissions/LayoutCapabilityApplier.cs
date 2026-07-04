@@ -6,12 +6,17 @@ using Bee.UI.Core.Permissions;
 namespace Bee.UI.Avalonia.Permissions
 {
     /// <summary>
-    /// Applies a client capability snapshot onto a freshly generated layout by degrading its
-    /// sensitive fields and grid actions in place. Safe to mutate because the layout is generated
-    /// per view (via <c>FormSchema.GetFormLayout</c> / <c>GetListLayout</c>), not the cached
-    /// <see cref="FormSchema"/>: capability only narrows — hides fields, marks them read-only, and
-    /// removes grid actions — never widens what the layout already allows.
+    /// Applies a client capability snapshot onto a freshly generated layout by hiding / marking
+    /// read-only its sensitive fields in place. Safe to mutate because the layout is generated per
+    /// view (via <c>FormSchema.GetFormLayout</c> / <c>GetListLayout</c>), not the cached
+    /// <see cref="FormSchema"/>: capability only narrows, never widens.
     /// </summary>
+    /// <remarks>
+    /// Detail grid actions (Add / Edit / Delete rows) are deliberately NOT gated here. A detail grid
+    /// belongs to the same aggregate as its master, so whether its rows can be edited follows the
+    /// form's edit mode — permission is already enforced upstream at the toolbar commands (entering
+    /// Add / Edit requires the master model's Create / Update). Only sensitive columns are degraded.
+    /// </remarks>
     internal static class LayoutCapabilityApplier
     {
         /// <summary>
@@ -35,14 +40,13 @@ namespace Bee.UI.Avalonia.Permissions
         }
 
         /// <summary>
-        /// Degrades a single grid: intersects its allowed actions with the form model's capability
-        /// and hides / marks read-only any sensitive columns. No-op when the snapshot is <c>null</c>.
+        /// Hides / marks read-only any sensitive columns of a single grid. No-op when the snapshot
+        /// is <c>null</c>. Grid actions are not touched — they follow the form's edit mode.
         /// </summary>
         public static void ApplyGrid(LayoutGrid? grid, FormSchema? schema, IReadOnlyDictionary<string, PermissionAction>? capabilities)
         {
             if (grid == null || schema == null || capabilities == null) { return; }
 
-            grid.AllowActions = ElementCapabilityResolver.Default.ResolveGridActions(grid, schema, capabilities);
             ApplyFields(grid.Columns, schema, grid.TableName, capabilities);
         }
 

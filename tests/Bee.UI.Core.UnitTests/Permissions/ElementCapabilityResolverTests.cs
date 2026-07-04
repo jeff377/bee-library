@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
-using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.UI.Core.Permissions;
 
@@ -137,29 +136,6 @@ namespace Bee.UI.Core.UnitTests.Permissions
             var cap = s_resolver.ResolveField(BuildSchema(), "total_cost", tableName: "", capabilities: null);
 
             Assert.Equal(FieldCapability.Allowed, cap);
-        }
-
-        [Fact]
-        [DisplayName("ResolveGridActions 以 model mask 交集：只有 Create 則僅保留 Add")]
-        public void ResolveGridActions_IntersectsWithMask()
-        {
-            var grid = new LayoutGrid("PO001_Item", "明細") { AllowActions = GridControlAllowActions.All };
-            var caps = Caps(("PurchaseOrder", PermissionAction.Create | PermissionAction.Read));
-
-            var result = s_resolver.ResolveGridActions(grid, BuildSchema(), caps);
-
-            Assert.Equal(GridControlAllowActions.Add, result);
-        }
-
-        [Fact]
-        [DisplayName("ResolveGridActions 快照為 null 原樣回傳宣告值")]
-        public void ResolveGridActions_NullSnapshot_ReturnsDeclared()
-        {
-            var grid = new LayoutGrid("PO001_Item", "明細") { AllowActions = GridControlAllowActions.All };
-
-            var result = s_resolver.ResolveGridActions(grid, BuildSchema(), capabilities: null);
-
-            Assert.Equal(GridControlAllowActions.All, result);
         }
     }
 }

@@ -1,11 +1,10 @@
 using Bee.Definition.Forms;
-using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 
 namespace Bee.UI.Core.Permissions
 {
     /// <summary>
-    /// Resolves the client-side capability of UI elements (commands, fields, grid actions) from a
+    /// Resolves the client-side capability of UI elements (commands and sensitive fields) from a
     /// per-model permission snapshot. UI-agnostic and pure: every method takes the capability
     /// snapshot as a parameter (typically <see cref="ClientInfo.Capabilities"/>) so the same logic
     /// serves every front end while each UI applies the result its own way.
@@ -39,16 +38,5 @@ namespace Bee.UI.Core.Permissions
         /// <param name="tableName">The owning table name; empty resolves to the master table.</param>
         /// <param name="capabilities">The per-model capability snapshot, or <c>null</c> when inactive.</param>
         FieldCapability ResolveField(FormSchema schema, string fieldName, string tableName, IReadOnlyDictionary<string, PermissionAction>? capabilities);
-
-        /// <summary>
-        /// Intersects a grid's declared <see cref="LayoutGrid.AllowActions"/> with the form model's
-        /// capability: Add requires <c>Create</c>, Edit requires <c>Update</c>, Delete requires
-        /// <c>Delete</c>. Returns the declared actions unchanged when the snapshot is <c>null</c> or
-        /// the form declares no permission model.
-        /// </summary>
-        /// <param name="grid">The grid layout declaring the allowed actions.</param>
-        /// <param name="schema">The form schema whose permission model gates the grid.</param>
-        /// <param name="capabilities">The per-model capability snapshot, or <c>null</c> when inactive.</param>
-        GridControlAllowActions ResolveGridActions(LayoutGrid grid, FormSchema schema, IReadOnlyDictionary<string, PermissionAction>? capabilities);
     }
 }

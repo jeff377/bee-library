@@ -326,8 +326,9 @@ namespace Bee.UI.Avalonia.Views
             _dataObject = new FormDataObject(Schema, FormConnector);
             _formLayout = Schema.GetFormLayout();
             // Degrade the freshly generated layout against the cached capability snapshot before it
-            // renders: hide sensitive fields without Read, mark them read-only without Update, and
-            // intersect detail grid actions. No-op when no company context is active.
+            // renders: hide sensitive fields without Read and mark them read-only without Update
+            // (detail grid actions follow the form's edit mode, not permission). No-op when no
+            // company context is active.
             LayoutCapabilityApplier.Apply(_formLayout, Schema, ClientInfo.Capabilities);
             return true;
         }

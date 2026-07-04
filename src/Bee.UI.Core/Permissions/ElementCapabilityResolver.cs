@@ -1,5 +1,4 @@
 using Bee.Definition.Forms;
-using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 
 namespace Bee.UI.Core.Permissions
@@ -43,22 +42,6 @@ namespace Bee.UI.Core.Permissions
             if ((mask & PermissionAction.Read) == PermissionAction.None) { return new FieldCapability(Visible: false, ReadOnly: true); }
             if ((mask & PermissionAction.Update) == PermissionAction.None) { return new FieldCapability(Visible: true, ReadOnly: true); }
             return FieldCapability.Allowed;
-        }
-
-        /// <inheritdoc />
-        public GridControlAllowActions ResolveGridActions(LayoutGrid grid, FormSchema schema, IReadOnlyDictionary<string, PermissionAction>? capabilities)
-        {
-            var actions = grid?.AllowActions ?? GridControlAllowActions.None;
-            if (capabilities == null) { return actions; }
-            string modelId = schema?.PermissionModelId ?? string.Empty;
-            if (string.IsNullOrEmpty(modelId)) { return actions; }
-
-            var mask = capabilities.TryGetValue(modelId, out var allowed) ? allowed : PermissionAction.None;
-            var result = GridControlAllowActions.None;
-            if (actions.HasFlag(GridControlAllowActions.Add) && (mask & PermissionAction.Create) != PermissionAction.None) { result |= GridControlAllowActions.Add; }
-            if (actions.HasFlag(GridControlAllowActions.Edit) && (mask & PermissionAction.Update) != PermissionAction.None) { result |= GridControlAllowActions.Edit; }
-            if (actions.HasFlag(GridControlAllowActions.Delete) && (mask & PermissionAction.Delete) != PermissionAction.None) { result |= GridControlAllowActions.Delete; }
-            return result;
         }
     }
 }
