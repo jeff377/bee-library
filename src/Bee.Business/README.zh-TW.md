@@ -21,7 +21,6 @@
 - `IBusinessObject` -- 基底介面，公開 `ExecFunc`（需驗證）與 `ExecFuncAnonymous`（匿名存取）進入點
 - `ExecFuncArgs` / `ExecFuncResult` -- 自訂函式分派的輸入/輸出契約
 - `ExecFuncAccessControlAttribute` -- 方法層級 Attribute，宣告每個函式的身分驗證需求
-- `BusinessFunc` -- 商業邏輯操作的輔助工具
 
 ### 系統操作
 
@@ -50,7 +49,7 @@
 | `IBusinessObject` | BO 基底介面（`ExecFunc`、`ExecFuncAnonymous`） |
 | `ISystemBusinessObject` | 系統操作（`CreateSession`、`GetDefine`、`SaveDefine`） |
 | `IFormBusinessObject` | 表單層級商業邏輯介面 |
-| `BusinessObjectProvider` | 建立 BO 實例的工廠 |
+| `BusinessObjectFactory` | 建立 BO 實例的工廠 |
 | `LoginAttemptTracker` | 連續失敗後的帳戶鎖定 |
 | `AccessTokenValidationProvider` | 存取權杖驗證 |
 | `StaticApiEncryptionKeyProvider` | 固定加密金鑰策略 |
@@ -62,7 +61,7 @@
 ## 設計慣例
 
 - **命令模式（Command Pattern）** -- `ExecFunc` 透過反射以名稱調用方法，動態分派自訂商業邏輯。
-- **工廠模式（Factory Pattern）** -- `BusinessObjectProvider` 根據存取權杖與上下文建立 `SystemBusinessObject` 和 `FormBusinessObject` 實例。
+- **工廠模式（Factory Pattern）** -- `BusinessObjectFactory` 根據存取權杖與上下文建立 `SystemBusinessObject` 和 `FormBusinessObject` 實例。
 - **樣板方法模式（Template Method）** -- `BusinessObject` 基底類別定義執行骨架，子類別覆寫 `DoExecFunc()` 實作特定邏輯。
 - **策略模式（Strategy Pattern）** -- 加密金鑰提供者（`StaticApiEncryptionKeyProvider` / `DynamicApiEncryptionKeyProvider`）為可替換的實作。
 - **Attribute 驅動存取控制** -- `ExecFuncAccessControlAttribute` 宣告每個方法的身分驗證需求，於分派時檢查。
@@ -84,7 +83,7 @@ Bee.Business/
                     # CacheDataSourceProvider
   Security/         # LoginAttemptTracker（記憶體內帳戶鎖定追蹤器）
   Validator/        # AccessTokenValidationProvider
-  *.cs（根目錄）     # BusinessObject、BusinessObjectProvider、IBusinessObject、
-                    # IExecFuncHandler、BusinessFunc、ExecFuncArgs、ExecFuncResult、
+  *.cs（根目錄）     # BusinessObject、BusinessObjectFactory、IBusinessObject、
+                    # IExecFuncHandler、ExecFuncArgs、ExecFuncResult、
                     # BusinessArgs、BusinessResult
 ```

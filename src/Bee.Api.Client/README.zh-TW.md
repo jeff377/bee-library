@@ -38,7 +38,7 @@
 
 ### 快取定義存取
 
-- `RemoteDefineAccess` 透過 API 實作 `IDefineAccess`，快取已擷取的定義（SystemSettings、DatabaseSettings、FormSchema、FormLayout 等），避免重複的網路呼叫。
+- `ClientDefineAccess` 透過 API 實作 `IDefineAccess`，快取已擷取的定義（SystemSettings、DatabaseSettings、FormSchema、FormLayout 等），避免重複的網路呼叫。
 
 ### 應用程式上下文
 
@@ -59,7 +59,7 @@
 | `IJsonRpcProvider` | JSON-RPC 傳輸策略介面 |
 | `LocalApiProvider` | 行程內提供者，透過 `JsonRpcExecutor` |
 | `RemoteApiProvider` | HTTP 提供者，附帶 API 金鑰與 Bearer 權杖標頭 |
-| `RemoteDefineAccess` | 透過 API 實作 `IDefineAccess`，含快取機制 |
+| `ClientDefineAccess` | 透過 API 實作 `IDefineAccess`，含快取機制 |
 | `ApiConnectValidator` | 驗證端點並判斷連線類型 |
 | `ConnectType` | 列舉：`Local`、`Remote` |
 | `SupportedConnectTypes` | 旗標列舉：`Local`、`Remote`、`Both` |
@@ -91,5 +91,5 @@ Bee.Api.Client/
     LocalApiProvider.cs     # 行程內提供者
     RemoteApiProvider.cs    # HTTP 提供者
   DefineAccess/
-    RemoteDefineAccess.cs          # 透過 API 實作快取式 IDefineAccess
+    ClientDefineAccess.cs          # 透過 API 實作快取式 IDefineAccess
 ```

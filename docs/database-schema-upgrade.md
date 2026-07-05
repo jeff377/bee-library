@@ -104,7 +104,7 @@ Internally the upgrade is split into three stages, each callable in isolation:
 | `AddIndexChange` | Create an index |
 | `DropIndexChange` | Drop an index |
 
-It also carries `DescriptionChanges` (MS_Description / extended-property synchronization).
+It also carries `DescriptionChanges` (MS_Description / extended-property synchronization). Description / extended-property synchronization is currently applied on **SQL Server only**; other dialects skip this step (see Stage 5 in §7).
 
 ### UpgradePlan (Execution Plan)
 
@@ -131,12 +131,16 @@ The following changes are handled with `ALTER TABLE` in seconds, without copying
 - Adding / dropping an index
 - Narrowing a column length (requires `AllowColumnNarrowing = true`)
 
-### Two cases that trigger a rebuild (SQL Server)
+### Cases that trigger a rebuild
+
+The table below uses **SQL Server as the example**; each dialect classifies changes into Alter / Rebuild / NotSupported by its own rules.
 
 | Category | Examples |
 |----------|----------|
 | **Cross-family type change** | `String → Integer`, numeric → `Date`, `Boolean → anything else`, `Binary → non-Binary`, `Guid ↔ String` |
 | **AutoIncrement state toggle** | Plain column ↔ IDENTITY column (SQL Server `ALTER COLUMN` cannot toggle IDENTITY) |
+
+> **SQLite** is the extreme case: its `ALTER TABLE` supports only `ADD` / `RENAME` / `DROP COLUMN`, so **any** change to a column's type, nullability, or default triggers a rebuild.
 
 **Rebuild mechanism**: create a temporary table → `INSERT INTO tmp SELECT FROM original` → drop the old table → rename. For large tables (tens of millions of rows) this can take from minutes to hours and holds a table-level lock for the duration.
 
@@ -216,6 +220,8 @@ Stage 3: AddColumns         Add new columns
 Stage 4: CreateIndexes      Create new indexes; recreate ones dropped in Stage 1
 Stage 5: SyncDescriptions   Sync extended properties (MS_Description)
 ```
+
+> Stage 5 (`SyncDescriptions`) runs on **SQL Server only** — the orchestrator skips it for every other dialect, so no description / extended-property SQL is emitted there.
 
 ### Failure behaviour
 

@@ -8,7 +8,7 @@
 
 - **層級**：API 層（裝載）
 - **下游**（依賴此專案）：應用程式（使用者繼承控制器）
-- **上游**（此專案依賴）：`Bee.Api.Core`
+- **上游**（此專案依賴）：`Bee.Hosting`（`Bee.Api.Core` 由 `Bee.Hosting` 遞移帶入）
 
 ## 目標框架
 
@@ -62,7 +62,7 @@
 - **樣板方法模式** -- `PostAsync` 定義管線骨架；`ReadRequestAsync`、`ValidateAuthorization`、`HandleRequestAsync` 與 `CreateErrorResponse` 皆為 `virtual`，可選擇性覆寫。
 - **開發與正式環境錯誤訊息區分** -- 例外詳細資訊僅在 `IsDevelopment` 為 `true` 時公開，防止正式環境資訊洩漏。
 - **不直接依賴 DI 容器** -- 服務從 `HttpContext.RequestServices` 解析，控制器可在任何 ASP.NET Core 主機中運作，無需額外設定。
-- **外部相依**：`Microsoft.AspNetCore.Mvc.Core`（v2.3.0）。
+- **外部相依**：`FrameworkReference: Microsoft.AspNetCore.App`。
 
 ## 目錄結構
 

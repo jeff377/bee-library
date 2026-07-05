@@ -180,7 +180,7 @@
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
 | `ICacheContainer` | 快取容器介面 | DI 註冊的容器，集中持有所有快取單例（FormSchema、TableSchema、DatabaseSettings、SessionInfo、CompanyInfo 等）；預設實作為 `CacheContainerService` |
-| `LocalDefineAccess` | 本機定義存取 | 透過本機快取存取定義資料的實作 |
+| `CacheDefineAccess` | 本機定義存取 | 透過本機快取存取定義資料的實作 |
 | `FormSchemaCache` | 表單結構定義快取 | `FormSchema` 物件的快取容器 |
 | `KeyObjectCache<T>` | 鍵值物件快取 | 以鍵值為索引的泛型物件快取基礎類別。內含負向快取：`CreateInstance` 回 null 時記入哨兵值並設短 TTL（預設 5 分鐘絕對過期），避免重複查詢同一無效 key 反覆觸發 create 路徑 |
 | `ISessionInfoService` | Session 資訊服務介面 | `SessionInfoCache` 的存取包裝；由 `Login` 寫入、`EnterCompany` / `LeaveCompany` 變動、`Logout` 移除 |
@@ -192,7 +192,7 @@
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `RemoteDefineAccess` | 遠端定義存取 | 透過遠端 API 存取定義資料的實作 |
+| `ClientDefineAccess` | 遠端定義存取 | 透過遠端 API 存取定義資料的實作 |
 
 ---
 

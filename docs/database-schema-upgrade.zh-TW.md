@@ -104,7 +104,7 @@ bool upgraded = builder.Execute("company", "st_employee", new UpgradeOptions
 | `AddIndexChange` | 新增索引 |
 | `DropIndexChange` | 刪除索引 |
 
-另含 `DescriptionChanges`（MS_Description / extended property 同步）。
+另含 `DescriptionChanges`（MS_Description / extended property 同步）。description / extended property 同步目前**僅 SQL Server** 執行，其餘方言略過此步驟（見 §7 Stage 5）。
 
 ### UpgradePlan（執行計畫）
 
@@ -131,12 +131,16 @@ foreach (var sql in plan.AllStatements)
 - 新增 / 刪除索引
 - 縮小長度（需要 `AllowColumnNarrowing=true`）
 
-### 觸發 Rebuild 的兩類情境（SQL Server）
+### 觸發 Rebuild 的情境
+
+下表**以 SQL Server 為例**；各方言各自有把變更分類為 Alter / Rebuild / NotSupported 的規則。
 
 | 類型 | 範例 |
 |------|------|
 | **欄位型別跨 family 變更** | `String → Integer`、數值 → `Date`、`Boolean → 任何其他`、`Binary → 非 Binary`、`Guid ↔ String` |
 | **AutoIncrement 狀態切換** | 一般欄位 ↔ IDENTITY 欄位（SQL Server `ALTER COLUMN` 無法改 IDENTITY 屬性） |
+
+> **SQLite** 是極端案例：其 `ALTER TABLE` 僅支援 `ADD` / `RENAME` / `DROP COLUMN`，因此**任何**欄位型別、nullability 或 default 的變更都需重建。
 
 **Rebuild 機制**：建臨時表 → `INSERT INTO tmp SELECT FROM original` → drop 舊表 → rename。大資料表（千萬筆）耗時可達數十分鐘到小時，期間表級鎖定。
 
@@ -216,6 +220,8 @@ Stage 3: AddColumns         新增欄位
 Stage 4: CreateIndexes      建新索引、重建先前刪除的
 Stage 5: SyncDescriptions   extended property（MS_Description）同步
 ```
+
+> Stage 5（`SyncDescriptions`）**僅 SQL Server** 執行 —— 其餘方言 orchestrator 直接略過此 stage，不會產生 description / extended property 相關 SQL。
 
 ### 失敗行為
 

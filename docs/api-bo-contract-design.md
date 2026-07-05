@@ -115,16 +115,16 @@ public class LoginArgs : BusinessArgs, ILoginRequest
 API and BO parameter properties are identical; no Args / Result types are needed.
 
 **Types to create:** Contract interfaces + API contract types
-**BO method signature:** Use contract interfaces for parameters and return types
+**BO method signature:** Use the concrete `XxxArgs` / `XxxResult` types for parameters and return types
 
 ```csharp
-public ILoginResponse Login(ILoginRequest request)
+public LoginResult Login(LoginArgs args)
 {
-    // Executor passes LoginRequest; BO-to-BO calls can also pass LoginRequest directly
-    return new LoginResponse
+    // The executor passes a LoginArgs; BO-to-BO calls also pass LoginArgs directly.
+    return new LoginResult
     {
         AccessToken = Guid.NewGuid(),
-        UserId = request.UserId
+        UserId = args.UserId
     };
 }
 ```
@@ -145,10 +145,10 @@ public class LoginArgs : BusinessArgs, ILoginRequest
     public bool IsAutoLogin { get; set; }  // BO-specific
 }
 
-// BO method uses pattern matching to access extra properties
-public ILoginResponse Login(ILoginRequest request)
+// BO method takes the concrete args type, so the extra property is directly available
+public LoginResult Login(LoginArgs args)
 {
-    bool isAutoLogin = request is LoginArgs args && args.IsAutoLogin;
+    bool isAutoLogin = args.IsAutoLogin;
     // ...
 }
 ```
@@ -202,15 +202,18 @@ Clients **should not reference** and **do not need** `BusinessArgs`, `BusinessRe
 
 ### Method Signatures
 
-BO method parameters and return types should use **contract interfaces**, not concrete implementation types:
+BO method parameters and return types use the **concrete `XxxArgs` / `XxxResult` types**, including in the BO interface declarations (`ISystemBusinessObject`, `IFormBusinessObject`):
 
 ```csharp
-// Correct: use contract interfaces
-public ILoginResponse Login(ILoginRequest request) { ... }
-
-// Avoid: binding to concrete types
+// BO method (and its interface declaration) use concrete types
 public LoginResult Login(LoginArgs args) { ... }
 ```
+
+The contract interfaces (`ILoginRequest` / `ILoginResponse`, etc.) still exist and
+are **implemented** by the `XxxArgs` / `XxxResult` types (and the API `XxxRequest` /
+`XxxResponse` types) — e.g. `LoginArgs : BusinessArgs, ILoginRequest`. They provide
+the shared property contract and cross-layer independence, but the interfaces are
+**not used in method signatures**; the signatures bind to the concrete types.
 
 ### Response Mapping
 
@@ -245,9 +248,9 @@ Using `GetOrder` as an example:
    - `GetOrderResponse.cs` — inherits `ApiResponse`, implements `IGetOrderResponse`, with MessagePack
 
 3. **Implement BO method**
-   - Method signature uses `IGetOrderRequest` / `IGetOrderResponse`
-   - If BO-specific properties are needed, create `GetOrderArgs` / `GetOrderResult`
+   - Method signature uses the concrete `GetOrderArgs` / `GetOrderResult` types
    - Naming must follow the `{Action}Args` / `{Action}Result` convention so that `ApiOutputConverter` can auto-map `GetOrderResult` → `GetOrderResponse`
+   - The args / result types implement the contract interfaces (`GetOrderArgs : BusinessArgs, IGetOrderRequest`, etc.) for cross-layer property sharing
 
 4. **Update client Connector** (if needed)
    - Add a corresponding method using `GetOrderRequest` / `GetOrderResponse`

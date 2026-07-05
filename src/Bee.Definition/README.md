@@ -27,8 +27,8 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 - **Structured filter & sort model** — `FilterCondition` and `FilterGroup` compose a tree-based query model with factory methods (`Equal`, `Contains`, `Between`, `In`, etc.) for type-safe query building.
 - **Dual serialization support** — types are annotated for both MessagePack (high-performance binary) and XML serialization, enabling efficient API transport and human-readable configuration files.
 - **DI-injected runtime services** — interfaces such as `IDefineAccess`, `ISessionInfoService`, `IDatabaseSettingsProvider`, `IApiEncryptionKeyProvider`, and `IAccessTokenValidator` are defined here and registered through `AddBeeFramework` at host startup, decoupling Definition from concrete implementations.
-- **Security contracts** — interfaces like `IAccessTokenValidationProvider` and `IApiEncryptionKeyProvider` define security boundaries without imposing implementation details.
-- **DefineType-driven CRUD** — the `DefineType` enum and `DefineFunc` utility map definition categories to CLR types, enabling generic load/save through `IDefineAccess` and `IDefineStorage`.
+- **Security contracts** — interfaces like `IAccessTokenValidator` and `IApiEncryptionKeyProvider` define security boundaries without imposing implementation details.
+- **DefineType-driven CRUD** — the `DefineType` enum and the `DefineTypeExtensions.ToClrType()` extension method map definition categories to CLR types, enabling generic load/save through `IDefineAccess` and `IDefineStorage`.
 - **Centralized settings model** — `SystemSettings`, `DatabaseSettings`, `ProgramSettings`, and `MenuSettings` provide a typed configuration surface that replaces ad-hoc key-value lookups. `ProgramSettings` doubles as the ProgId registry and binds each ProgId to its concrete BO via `ProgramItem.BusinessObject` (empty falls back to the base `FormBusinessObject`).
 - **Tenant customization overlay** — `ICustomizeDefineReader` + `CustomizeOnlyStorage` provide a per-tenant read-only override layer over base definitions, for Language / FormLayout / ProgramSettings only, driven by `SessionInfo.CustomizeId`. The base cache is never mutated; lookups overlay per key / progId / whole-file without merging (see [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md)).
 
@@ -47,8 +47,8 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 | `IDefineAccess` / `IDefineStorage` | Definition load/save contracts |
 | `ICustomizeDefineReader` | Tenant customization-override reader (Language / FormLayout / ProgramSettings) |
 | `CustomizeOnlyStorage` / `CustomizeOnlyPathOptions` | Strict read-only storage for the customization layer (`{CustomizePath}/{customizeId}/...`, missing file → null) |
-| `IBusinessObjectProvider` | Factory contract for business object creation |
-| `DefineFunc` | Utility for DefineType-to-CLR-type resolution |
+| `IBusinessObjectFactory` | Factory contract for business object creation |
+| `DefineTypeExtensions.ToClrType()` | Extension method for DefineType-to-CLR-type resolution |
 | `BackendDefaultTypes` | String constants for default provider type names |
 | `DefineType` | Enum categorizing all definition kinds (FormSchema, TableSchema, Settings, etc.) |
 
@@ -57,7 +57,7 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 - **MessagePack `[Key]` + XML `[XmlElement]` dual annotation** — every serializable property carries both attributes to support binary and XML channels.
 - **Replaceable services via XML registry** — `BackendComponents` (in `SystemSettings.xml`) declares the concrete type name for each replaceable interface (`IDefineAccess`, `ISessionInfoService`, etc.). `AddBeeFramework` reads the registry at startup and registers the configured types in the DI container; `BackendDefaultTypes` holds the framework-default type-name constants.
 - **Factory methods on FilterCondition** — prefer `FilterCondition.Equal(...)` over `new FilterCondition { ... }` for readability and consistency.
-- **DefineType enum as dispatch key** — `DefineFunc.GetDefineType()` maps enum values to CLR types, enabling generic definition CRUD without hard-coding type references.
+- **DefineType enum as dispatch key** — `DefineTypeExtensions.ToClrType()` maps enum values to CLR types, enabling generic definition CRUD without hard-coding type references.
 - **XML doc comments in English** — all public APIs carry English XML documentation to ensure IntelliSense readability for NuGet consumers worldwide.
 - **Nullable Reference Types enabled** — the project opts into NRT (`<Nullable>enable</Nullable>`) and treats warnings as errors, enforcing null-safety at compile time.
 
@@ -78,7 +78,7 @@ Bee.Definition/
                     ControlType, ColumnControlType, GridControlAllowActions, SingleFormMode,
                     IUIControl, IBindFieldControl, IBindTableControl
   Logging/          ILogWriter, LogEntry, LogEntryType, LogOptions
-  Security/         IAccessTokenValidationProvider, IApiEncryptionKeyProvider,
+  Security/         IAccessTokenValidator, IApiEncryptionKeyProvider,
                     MasterKeyProvider, MasterKeySourceType,
                     ApiAccessRequirement, ApiProtectionLevel
   Serialization/    Custom MessagePack formatters
@@ -86,11 +86,11 @@ Bee.Definition/
   Sorting/          SortField, SortFieldCollection, SortDirection
   Storage/          IDefineAccess, ICustomizeDefineReader, CustomizeOnlyStorage (and friends)
   (root)            Cross-cutting infrastructure:
-                    BackendDefaultTypes, DefineFunc, DefineType,
+                    BackendDefaultTypes, DefineTypeExtensions, DefineType,
                     GlobalEvents, PropertyCategories,
                     SysFields, SysFuncIDs, SysProgIds, SystemActions,
                     ApplicationType, InitializeOptions, PathOptions, CustomizeOnlyPathOptions,
-                    IDatabaseSettingsProvider, IBusinessObjectProvider,
+                    IDatabaseSettingsProvider, IBusinessObjectFactory,
                     ICacheDataSourceProvider, IEnterpriseObjectService
 ```
 

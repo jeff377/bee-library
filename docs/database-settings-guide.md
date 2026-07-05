@@ -206,14 +206,14 @@ Example:
 
 `DatabaseServer.Password` and `DatabaseItem.Password` are encrypted automatically during XML serialization:
 
-- **Encryption**: AES-CBC-HMAC (key derived from the configured `ConfigEncryptionKey`, threaded into `LocalDefineAccess` via ctor injection at `AddBeeFramework` time)
+- **Encryption**: AES-CBC-HMAC (key derived from the configured `ConfigEncryptionKey`, threaded into `CacheDefineAccess` via ctor injection at `AddBeeFramework` time)
 - **Storage format**: `enc:` prefix + Base64-encoded ciphertext
-- **Timing**:
-  - Before serialization (`BeforeSerialize`): unencrypted Passwords are encrypted automatically
-  - After deserialization (`AfterDeserialize`): Passwords starting with `enc:` are decrypted automatically
+- **Timing**: `CacheDefineAccess` invokes the cryptor on save/load:
+  - On save (`EncryptInPlace`): unencrypted Passwords are encrypted automatically
+  - On load (`DecryptInPlace`): Passwords starting with `enc:` are decrypted automatically
 - **Behavior**: if `ConfigEncryptionKey` is empty, encryption / decryption is skipped (plaintext storage, development environments only)
 
-Implementation: [`DatabaseSettings.cs`](../src/Bee.Definition/Settings/DatabaseSettings/DatabaseSettings.cs) — `BeforeSerialize` / `AfterDeserialize` / `DecryptPassword`.
+Implementation: [`DatabaseSettingsCryptor.cs`](../src/Bee.Definition/Settings/DatabaseSettings/DatabaseSettingsCryptor.cs) — `EncryptInPlace` / `DecryptInPlace`.
 
 ---
 
@@ -288,19 +288,19 @@ public class MyService(IDefineAccess defineAccess)
 }
 ```
 
-`IDefineAccess` is registered as a singleton during `AddBeeFramework`, defaulting to `LocalDefineAccess` (file system); projects can configure `RemoteDefineAccess` (via API) through the XML `Components` registry.
+`IDefineAccess` is registered as a singleton during `AddBeeFramework`, defaulting to `CacheDefineAccess` (file system); projects can configure `RemoteDefineAccess` (via API) through the XML `Components` registry.
 
 ### 4.2 Caching
 
-Both settings are held centrally by the DI-registered [`ICacheContainer`](../src/Bee.ObjectCaching/ICacheContainer.cs) (default implementation `CacheContainerService`), with `Lazy<T>` lazy initialization:
+Both settings are held centrally by the DI-registered [`ICacheContainer`](../src/Bee.ObjectCaching/ICacheContainer.cs) (default implementation `CacheContainerService`). The holders are the cache objects themselves; loading is lazy per key on a cache miss (the underlying `ObjectCache<T>` calls `CreateInstance()` the first time a key is requested):
 
 | Cache | Holder |
 |-------|--------|
-| `DatabaseSettings` | `ICacheContainer.DatabaseSettings` (`Lazy<DatabaseSettingsCache>`) |
-| `DbCategorySettings` | `ICacheContainer.DbCategorySettings` (`Lazy<DbCategorySettingsCache>`) |
+| `DatabaseSettings` | `ICacheContainer.DatabaseSettings` (`DatabaseSettingsCache`) |
+| `DbCategorySettings` | `ICacheContainer.DbCategorySettings` (`DbCategorySettingsCache`) |
 
 Behavior:
-- **20-second sliding expiration**: reloaded if not accessed for 20 seconds
+- **20-minute sliding expiration**: reloaded if not accessed for 20 minutes
 - **File change monitoring**: cache is invalidated automatically when the underlying file changes
 - **Save-then-invalidate**: calling `Save*` immediately clears the corresponding cache; the next `Get*` reloads
 
@@ -322,7 +322,7 @@ foreach (var table in company.Tables!) { ... }
 | Settings | Accessible via remote API? |
 |----------|----------------------------|
 | DatabaseSettings | ❌ No (contains sensitive connection info; `SystemBusinessObject.GetDefine` rejects non-local calls) |
-| DbCategorySettings | ✅ Yes (no sensitive data; can be retrieved via `RemoteDefineAccess`) |
+| DbCategorySettings | ✅ Yes (no sensitive data; can be retrieved via `ClientDefineAccess`) |
 
 ---
 
@@ -342,7 +342,7 @@ Every FormSchema must declare its category:
 </FormSchema>
 ```
 
-When persisting, [`LocalDefineAccess.SaveFormSchema`](../src/Bee.ObjectCaching/LocalDefineAccess.cs) enforces that `CategoryId` is non-empty (via [`TableSchemaGenerator.GetCategoryId`](../src/Bee.Definition/Database/TableSchemaGenerator.cs)); otherwise it throws `InvalidOperationException`.
+When persisting, [`CacheDefineAccess.SaveFormSchema`](../src/Bee.ObjectCaching/CacheDefineAccess.cs) enforces that `CategoryId` is non-empty (via [`TableSchemaGenerator.GetCategoryId`](../src/Bee.Definition/Database/TableSchemaGenerator.cs)); otherwise it throws `InvalidOperationException`.
 
 ### 5.2 TableSchema Output Path
 

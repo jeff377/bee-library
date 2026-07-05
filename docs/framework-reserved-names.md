@@ -30,7 +30,7 @@ The `st_` prefix means "framework-owned table". It is **orthogonal to which data
 | Table | Purpose |
 |-------|---------|
 | `st_role` | Role definitions ([ADR-019](adr/adr-019-permission-authorization-model.md)). |
-| `st_role_grant` | Role-to-resource grants (per progId / action). |
+| `st_role_grant` | Role-to-resource grants (per model / action). |
 | `st_user_role` | User-to-role bindings. |
 | `st_department` | Organisational departments. |
 | `st_employee` | Employees (links a common-DB `st_user` to a per-company organisational position). |

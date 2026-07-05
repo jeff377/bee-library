@@ -7,7 +7,7 @@
 
 ## Initialization Order Constraints
 
-The framework registers itself in the standard `IServiceCollection` DI container; framework services are resolved through ctor injection rather than static entry points. Host startup must run the following four steps in order:
+The framework registers itself in the standard `IServiceCollection` DI container; framework services are resolved through ctor injection rather than static entry points. Host startup must run the following five steps in order:
 
 1. `var paths = new PathOptions { DefinePath = "..." }` — locate definition files
 2. `var settings = SystemSettingsLoader.Load(paths)` — read `SystemSettings.xml` (boot-time only; runtime cached access goes through DI-resolved `IDefineAccess`)

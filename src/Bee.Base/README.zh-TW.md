@@ -18,9 +18,9 @@
 
 ### 型別轉換與字串工具
 
-- `BaseFunc` -- 安全型別轉換，支援預設值回退（`CInt`、`CStr`、`CBool` 等）
-- `StrFunc` -- 字串操作輔助方法（編碼、格式化、比較）
-- `DateTimeFunc` -- 日期工具，包含民國曆支援
+- `ValueUtilities` -- 安全型別轉換，支援預設值回退（`CInt`、`CStr`、`CBool` 等）
+- `StringExtensions` / `StringUtilities` -- 字串操作輔助方法（編碼、格式化、比較）
+- `DateTimeExtensions` -- 日期工具，包含民國曆支援
 
 ### 加密與安全
 
@@ -32,9 +32,9 @@
 
 ### 序列化與壓縮
 
-- `SerializeFunc` -- 統一的 XML / JSON 序列化，採用 `System.Text.Json`
+- `XmlCodec` / `JsonCodec` -- 統一的 XML / JSON 序列化，採用 `System.Text.Json`
 - `XmlSerializerCache` -- 快取 XML 序列化器實例，避免重複反射
-- `GzipFunc` -- Gzip 壓縮 / 解壓縮，用於 Payload 處理
+- `Gzip` -- Gzip 壓縮 / 解壓縮，用於 Payload 處理
 
 ### 集合
 
@@ -50,7 +50,7 @@
 ### 追蹤與診斷
 
 - `Tracer` / `TraceContext` -- 結構化診斷追蹤
-- `TraceListener` / `TraceWriter` -- 可插拔的追蹤輸出目標
+- `TraceListener` / `ITraceWriter` -- 可插拔的追蹤輸出目標
 
 ### 背景服務
 
@@ -61,12 +61,12 @@
 
 | 類別 / 介面 | 用途 |
 |-------------|------|
-| `BaseFunc` | 安全型別轉換（含預設值） |
-| `StrFunc` | 字串編碼、格式化、比較 |
-| `DateTimeFunc` | 日期工具與民國曆 |
+| `ValueUtilities` | 安全型別轉換（含預設值） |
+| `StringExtensions` / `StringUtilities` | 字串編碼、格式化、比較 |
+| `DateTimeExtensions` | 日期工具與民國曆 |
 | `AesCbcHmacCryptor` | 認證式對稱加密 |
 | `PasswordHasher` | 密碼雜湊（PBKDF2-SHA256） |
-| `SerializeFunc` | XML / JSON 序列化 |
+| `XmlCodec` / `JsonCodec` | XML / JSON 序列化 |
 | `IObjectSerialize` | 序列化提供者介面 |
 | `IKeyObject` | 跨層鍵值實體介面 |
 | `Tracer` | 診斷追蹤進入點 |
@@ -74,7 +74,7 @@
 
 ## 設計慣例
 
-- **靜態工具類別** -- `BaseFunc`、`StrFunc`、`DateTimeFunc` 以靜態方法公開功能，不持有實例狀態。
+- **靜態工具類別** -- `ValueUtilities`、`StringUtilities`、`DateTimeExtensions` 以靜態方法公開功能，不持有實例狀態。
 - **常數時間比較** -- `CompareBytes` 用於 HMAC / 雜湊驗證，防止時序攻擊（Timing Attack）。
 - **雙框架條件編譯** -- 使用 `#if NETSTANDARD2_0` 處理不同執行階段 API 的差異。
 - **介面導向擴充** -- 序列化透過 `IObjectSerialize` 與 `IObjectSerializeProcess` 抽象化。
@@ -90,7 +90,7 @@ Bee.Base/
   Data/                # DataTable/DataSet 擴充、FieldDbType、DbTypeConverter
   Security/            # AES、RSA、PBKDF2、檔案雜湊工具
   Serialization/       # JSON/XML 序列化、GZip 壓縮
-  Tracing/             # Tracer、TraceContext、TraceListener、TraceWriter
-  *.cs（根目錄）        # BaseFunc、StrFunc、DateTimeFunc、FileFunc、HttpFunc、
+  Tracing/             # Tracer、TraceContext、TraceListener、ITraceWriter
+  *.cs（根目錄）        # ValueUtilities、StringExtensions、StringUtilities、DateTimeExtensions、FileUtilities、HttpUtilities、
                        # IPValidator、SysInfo、IKeyObject 等
 ```

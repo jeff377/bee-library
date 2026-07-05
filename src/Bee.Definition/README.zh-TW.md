@@ -27,8 +27,8 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 - **結構化篩選與排序模型** — `FilterCondition` 與 `FilterGroup` 組成樹狀查詢模型，並提供工廠方法（`Equal`、`Contains`、`Between`、`In` 等），實現型別安全的查詢建構。
 - **雙軌序列化支援** — 型別同時標註 MessagePack（高效能二進位）與 XML 序列化屬性，兼顧 API 傳輸效率與人類可讀的組態檔案。
 - **DI 注入的執行時期服務** — `IDefineAccess`、`ISessionInfoService`、`IDatabaseSettingsProvider`、`IApiEncryptionKeyProvider`、`IAccessTokenValidator` 等介面在此宣告，於 host 啟動時由 `AddBeeFramework` 註冊到 DI 容器，使 Definition 層與具體實作解耦。
-- **安全合約** — `IAccessTokenValidationProvider`、`IApiEncryptionKeyProvider` 等介面定義安全邊界，不強制綁定實作細節。
-- **DefineType 驅動的 CRUD** — `DefineType` 列舉與 `DefineFunc` 工具類別將定義類別對應至 CLR 型別，透過 `IDefineAccess` 與 `IDefineStorage` 實現泛型載入/儲存。
+- **安全合約** — `IAccessTokenValidator`、`IApiEncryptionKeyProvider` 等介面定義安全邊界，不強制綁定實作細節。
+- **DefineType 驅動的 CRUD** — `DefineType` 列舉與 `DefineTypeExtensions.ToClrType()` 擴充方法將定義類別對應至 CLR 型別，透過 `IDefineAccess` 與 `IDefineStorage` 實現泛型載入/儲存。
 - **集中式設定模型** — `SystemSettings`、`DatabaseSettings`、`ProgramSettings` 與 `MenuSettings` 提供具型別的組態介面，取代零散的鍵值查詢。`ProgramSettings` 同時兼任 ProgId 註冊表,透過 `ProgramItem.BusinessObject` 將每個 ProgId 綁定到對應的 BO 實作(未填則 fallback 回 `FormBusinessObject`)。
 - **多租戶客製化覆蓋層** — `ICustomizeDefineReader` + `CustomizeOnlyStorage` 在 base 定義之上提供 per-租戶唯讀覆蓋層，僅服務 Language / FormLayout / ProgramSettings 三類，由 `SessionInfo.CustomizeId` 驅動。base 快取永不異動；疊加以 key / progId / 整檔粒度擇一、不合併（見 [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md)）。
 
@@ -47,8 +47,8 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 | `IDefineAccess` / `IDefineStorage` | 定義載入/儲存合約 |
 | `ICustomizeDefineReader` | 租戶客製化覆蓋讀取器（Language / FormLayout / ProgramSettings） |
 | `CustomizeOnlyStorage` / `CustomizeOnlyPathOptions` | 客製化層的嚴格只讀儲存（`{CustomizePath}/{customizeId}/...`，無檔回 null） |
-| `IBusinessObjectProvider` | 商業物件建立的工廠合約 |
-| `DefineFunc` | DefineType 至 CLR 型別的解析工具 |
+| `IBusinessObjectFactory` | 商業物件建立的工廠合約 |
+| `DefineTypeExtensions.ToClrType()` | DefineType 至 CLR 型別的解析擴充方法 |
 | `BackendDefaultTypes` | 預設 Provider 型別名稱的字串常數 |
 | `DefineType` | 列舉所有定義種類（FormSchema、TableSchema、Settings 等） |
 
@@ -57,7 +57,7 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 - **MessagePack `[Key]` + XML `[XmlElement]` 雙重標註** — 每個可序列化屬性同時攜帶兩種屬性標籤，以支援二進位與 XML 兩種通道。
 - **以 XML 註冊表選擇可替換服務** — `BackendComponents`（位於 `SystemSettings.xml`）為每個可替換介面（`IDefineAccess`、`ISessionInfoService` 等）宣告對應的具體型別名稱。`AddBeeFramework` 在啟動時讀取註冊表，將設定的型別註冊到 DI 容器；`BackendDefaultTypes` 持有框架預設型別名稱常數。
 - **FilterCondition 的工廠方法** — 偏好使用 `FilterCondition.Equal(...)` 而非 `new FilterCondition { ... }`，以提升可讀性與一致性。
-- **DefineType 列舉作為分派鍵** — `DefineFunc.GetDefineType()` 將列舉值對應至 CLR 型別，實現泛型定義 CRUD，無需硬編碼型別參考。
+- **DefineType 列舉作為分派鍵** — `DefineTypeExtensions.ToClrType()` 將列舉值對應至 CLR 型別，實現泛型定義 CRUD，無需硬編碼型別參考。
 - **XML 文件註解使用英文** — 所有公開 API 皆附帶英文 XML 文件，確保 NuGet 使用者在 IntelliSense 中的可讀性。
 - **啟用 Nullable Reference Types** — 專案啟用 NRT（`<Nullable>enable</Nullable>`）並將警告視為錯誤，在編譯時期強制 null 安全性。
 
@@ -78,7 +78,7 @@ Bee.Definition/
                     ControlType、ColumnControlType、GridControlAllowActions、SingleFormMode、
                     IUIControl、IBindFieldControl、IBindTableControl
   Logging/          ILogWriter、LogEntry、LogEntryType、LogOptions
-  Security/         IAccessTokenValidationProvider、IApiEncryptionKeyProvider、
+  Security/         IAccessTokenValidator、IApiEncryptionKeyProvider、
                     MasterKeyProvider、MasterKeySourceType、
                     ApiAccessRequirement、ApiProtectionLevel
   Serialization/    自訂 MessagePack 格式化器
@@ -86,11 +86,11 @@ Bee.Definition/
   Sorting/          SortField、SortFieldCollection、SortDirection
   Storage/          IDefineAccess、ICustomizeDefineReader、CustomizeOnlyStorage 等
   （根目錄）         跨切面基礎設施：
-                    BackendDefaultTypes、DefineFunc、DefineType、
+                    BackendDefaultTypes、DefineTypeExtensions、DefineType、
                     GlobalEvents、PropertyCategories、
                     SysFields、SysFuncIDs、SysProgIds、SystemActions、
                     ApplicationType、InitializeOptions、PathOptions、CustomizeOnlyPathOptions、
-                    IDatabaseSettingsProvider、IBusinessObjectProvider、
+                    IDatabaseSettingsProvider、IBusinessObjectFactory、
                     ICacheDataSourceProvider、IEnterpriseObjectService
 ```
 

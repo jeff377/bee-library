@@ -7,7 +7,7 @@
 
 ## 初始化順序限制
 
-框架透過標準的 `IServiceCollection` DI 容器註冊；框架服務以 ctor 注入解析，不再使用靜態入口點。Host 啟動必須依以下四步進行：
+框架透過標準的 `IServiceCollection` DI 容器註冊；框架服務以 ctor 注入解析，不再使用靜態入口點。Host 啟動必須依以下五步進行：
 
 1. `var paths = new PathOptions { DefinePath = "..." }` — 指向定義檔目錄
 2. `var settings = SystemSettingsLoader.Load(paths)` — 讀取 `SystemSettings.xml`（boot-time only；runtime 快取存取走 DI 注入的 `IDefineAccess`）

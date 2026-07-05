@@ -21,7 +21,6 @@
 - `IBusinessObject` -- base interface exposing `ExecFunc` (authenticated) and `ExecFuncAnonymous` (anonymous) entry points
 - `ExecFuncArgs` / `ExecFuncResult` -- input/output contracts for custom function dispatch
 - `ExecFuncAccessControlAttribute` -- method-level attribute declaring authentication requirements per function
-- `BusinessFunc` -- helper utilities for business logic operations
 
 ### System Operations
 
@@ -50,7 +49,7 @@
 | `IBusinessObject` | Base BO interface (`ExecFunc`, `ExecFuncAnonymous`) |
 | `ISystemBusinessObject` | System operations (`CreateSession`, `GetDefine`, `SaveDefine`) |
 | `IFormBusinessObject` | Form-level business logic interface |
-| `BusinessObjectProvider` | Factory for creating BO instances |
+| `BusinessObjectFactory` | Factory for creating BO instances |
 | `LoginAttemptTracker` | Account lockout after consecutive failures |
 | `AccessTokenValidationProvider` | Access token validation |
 | `StaticApiEncryptionKeyProvider` | Fixed encryption key strategy |
@@ -62,7 +61,7 @@
 ## Design Conventions
 
 - **Command Pattern** -- `ExecFunc` invokes methods by name via reflection, dispatching custom business logic dynamically.
-- **Factory Pattern** -- `BusinessObjectProvider` creates `SystemBusinessObject` and `FormBusinessObject` instances with access token and context.
+- **Factory Pattern** -- `BusinessObjectFactory` creates `SystemBusinessObject` and `FormBusinessObject` instances with access token and context.
 - **Template Method** -- `BusinessObject` base class defines the execution skeleton; subclasses override `DoExecFunc()` for specific logic.
 - **Strategy Pattern** -- encryption key providers (`StaticApiEncryptionKeyProvider` / `DynamicApiEncryptionKeyProvider`) are interchangeable implementations.
 - **Attribute-driven access control** -- `ExecFuncAccessControlAttribute` declares per-method authentication requirements, checked at dispatch time.
@@ -84,7 +83,7 @@ Bee.Business/
                     # CacheDataSourceProvider
   Security/         # LoginAttemptTracker (in-memory account-lockout tracker)
   Validator/        # AccessTokenValidationProvider
-  *.cs (root)       # BusinessObject, BusinessObjectProvider, IBusinessObject,
-                    # IExecFuncHandler, BusinessFunc, ExecFuncArgs, ExecFuncResult,
+  *.cs (root)       # BusinessObject, BusinessObjectFactory, IBusinessObject,
+                    # IExecFuncHandler, ExecFuncArgs, ExecFuncResult,
                     # BusinessArgs, BusinessResult
 ```

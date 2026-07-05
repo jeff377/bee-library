@@ -40,9 +40,9 @@
 
 ## 影響
 
-- `Bee.Api.Core/Transformer/MessagePackPayloadSerializer.cs`：預設 Payload 序列化器
+- `Bee.Api.Core/Transformers/MessagePackPayloadSerializer.cs`：預設 Payload 序列化器
 - `Bee.Api.Core/MessagePack/`：自訂 Formatter（DataSet、DataTable 等 ADO.NET 型別）
 - `Bee.Api.Core/MessagePack/SafeMessagePackSerializerOptions.cs`：型別白名單機制
-- `Bee.Api.Core/ApiContractRegistry.cs`：API 型別註冊
+- `Bee.Api.Core/Registry/ApiContractRegistry.cs`：API 型別註冊
 - `Bee.Definition` 的集合型別（FilterCondition、PackageUpdateQuery 等）也使用 MessagePack 序列化
 - API Payload 格式分三級：Plain（無編碼）、Encoded（MessagePack + GZip）、Encrypted（MessagePack + GZip + AES）

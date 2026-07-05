@@ -147,7 +147,7 @@ namespace Bee.Db.Providers.SqlServer
 
         private static string BuildAddDefaultConstraintStatement(string tableName, DbField newField, string defaultExpression)
         {
-            string constraintName = $"DF_{tableName}_{newField.FieldName}";
+            string constraintName = $"df_{tableName}_{newField.FieldName}";
             return $"ALTER TABLE {SqlSchemaSyntax.QuoteName(tableName)} ADD CONSTRAINT {SqlSchemaSyntax.QuoteName(constraintName)} DEFAULT ({defaultExpression}) FOR {SqlSchemaSyntax.QuoteName(newField.FieldName)};";
         }
 

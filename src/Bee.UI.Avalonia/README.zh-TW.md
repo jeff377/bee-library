@@ -18,8 +18,7 @@ Avalonia 桌面控制項套件（Windows / macOS / Linux）。以一組深度綁
 
 | 元件 | 說明 |
 |---|---|
-| `FormView` | 頂層容器：列表（`GridControl`）+ 主檔表單（`DynamicForm`）+ New / Save / Delete 工具列。host 只設 `ProgId` 時自動向 `ClientInfo` 解析 `Schema` / `FormConnector` / `AccessToken`。 |
-| `DynamicForm` | 渲染 `FormLayout` 的主檔 sections（每個 `LayoutField` 一個 field editor），其後渲染明細（`FormLayout.Details`）；`DetailEditMode` 決定明細編輯模型。 |
+| `FormView` | 頂層容器：列表（`GridControl`）+ 主檔／明細表單 + New / Save / Delete 工具列。直接渲染 `FormLayout` 的主檔 sections（每個 `LayoutField` 一個 field editor），其後渲染明細（`FormLayout.Details`）——沒有獨立的 `DynamicForm` 控件；`DetailEditMode` 決定明細編輯模型。host 只設 `ProgId` 時自動向 `ClientInfo` 解析 `Schema` / `FormConnector` / `AccessToken`。 |
 | `GridControl` | 繼承 `DataGrid`、由 `LayoutGrid` 驅動；實作 `IBindTableControl` / `IUIControl`。cell 顯示走 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>`（見 ADR-020）。 |
 | Field editors（`TextEdit` / `MemoEdit` / `ButtonEdit` / `DateEdit` / `YearMonthEdit` / `DropDownEdit` / `CheckEdit`） | 與 `ControlType` 一一對應；繼承原生控件並實作 `IBindFieldControl` / `IUIControl`，自動套用 `FormField` metadata（MaxLength、ListItems）。 |
 | `FormScope` | 可繼承的 attached properties（`DataObject` / `FormMode`）：容器設一次，子孫編輯器憑 `FieldName` 自動綁定。 |

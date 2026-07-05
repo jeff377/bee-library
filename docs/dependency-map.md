@@ -53,6 +53,7 @@ graph BT
   Db --> Definition
   RepoAbs --> Definition
   Caching --> Definition
+  Caching --> RepoAbs
   Business --> Contracts
   Business --> Definition
   Business --> RepoAbs

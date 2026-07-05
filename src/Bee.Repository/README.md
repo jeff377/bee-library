@@ -7,7 +7,7 @@
 ## Architecture Position
 
 - **Layer**: Data Access Layer (implementation)
-- **Downstream** (dependents): Applications (via `RepositoryInfo` injection)
+- **Downstream** (dependents): Applications (repositories resolved via DI-registered factories)
 - **Upstream** (dependencies): `Bee.Db`, `Bee.Repository.Abstractions`
 
 ## Target Framework
@@ -25,7 +25,7 @@
 
 ### Database Operations
 
-- `DatabaseRepository` -- connection testing with parameter substitution (`{@DbName}`, `{@UserId}`, `{@Password}`)
+- `DatabaseRepository` (`internal`) -- connection testing with parameter substitution (`{@DbName}`, `{@UserId}`, `{@Password}`); exposed only through `IDatabaseRepository`, aggregated internally by `SystemRepositoryFactory`, not a public API
 - Schema upgrades via `TableSchemaBuilder` for FormSchema-driven table management
 
 ### Form Data Access
@@ -43,7 +43,6 @@
 | Class | Purpose |
 |-------|---------|
 | `SessionRepository` | Session CRUD against `st_session` / `st_user` tables |
-| `DatabaseRepository` | Connection testing and schema migration |
 | `DataFormRepository` | Data form data access implementation |
 | `ReportFormRepository` | Report form data access implementation |
 | `SystemRepositoryFactory` | Default `ISystemRepositoryFactory` implementation |

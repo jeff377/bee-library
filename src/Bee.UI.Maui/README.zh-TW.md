@@ -8,7 +8,7 @@
 
 **層級**：UI（行動 / 跨平台）
 
-屬於 `Bee.UI.*` 家族：透過 `ClientInfo` 靜態單例（`Bee.UI.Core`）連接後端，採 per-process token 模型。依賴 `Bee.UI.Core`，並由其帶入 `Bee.Api.Client`（連接器）與 `Bee.Definition`（schema 與 layout）。
+屬於 `Bee.UI.*` 家族：透過 `ClientInfo` 靜態單例（`Bee.UI.Core`）連接後端，採 per-process token 模型。依賴 `Bee.UI.Core`，並由其參照 `Bee.Api.Client`（連接器）；`Bee.Definition`（schema 與 layout）則經 `Bee.Api.Client → Bee.Api.Core → Bee.Definition` 遞移帶入。
 
 ## 目標框架
 

@@ -30,7 +30,7 @@
 | 表名 | 用途 |
 |------|------|
 | `st_role` | 角色定義（[ADR-019](adr/adr-019-permission-authorization-model.md)）。 |
-| `st_role_grant` | 角色↔資源授權（per progId / action）。 |
+| `st_role_grant` | 角色↔資源授權（per model / action）。 |
 | `st_user_role` | 使用者↔角色綁定。 |
 | `st_department` | 組織部門。 |
 | `st_employee` | 員工（連結 common DB 的 `st_user` 至 per-company 的組織位置）。 |

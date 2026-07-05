@@ -98,7 +98,7 @@ sequenceDiagram
 
     E->>E: Parse Method into ProgId + Action
     E->>E: Restore Payload Decrypt Decompress Deserialize
-    E->>B: Build BO via BusinessObjectProvider
+    E->>B: Build BO via BusinessObjectFactory
     E->>E: ApiAccessValidator validates access
     E->>E: ApiInputConverter converts argument types
     E->>B: Reflection-invoke Action method
@@ -208,28 +208,32 @@ public class SystemExecFuncHandler
 
 ```csharp
 // Form-level
-var connector = new FormApiConnector("Employee", accessToken);
-var result = connector.ExecFunc("Hello", new ParameterCollection());
+var connector = new FormApiConnector(accessToken, "Employee");
+var response = await connector.ExecFuncAsync(new ExecFuncRequest { FuncId = "Hello" });
 
 // System-level
 var sysConnector = new SystemApiConnector(accessToken);
-var result = sysConnector.ExecFunc("UpgradeTableSchema", new ParameterCollection
+var response = await sysConnector.ExecFuncAsync(new ExecFuncRequest
 {
-    { "DatabaseId", "main" },
-    { "DbName", "MyDb" },
-    { "TableName", "Employee" }
+    FuncId = "UpgradeTableSchema",
+    Parameters = new ParameterCollection
+    {
+        { "DatabaseId", "main" },
+        { "DbName", "MyDb" },
+        { "TableName", "Employee" }
+    }
 });
 ```
 
 ### Execution Flow
 
 ```text
-Client: connector.ExecFunc("Hello", params)
-  → ApiConnector.Execute<ExecFuncResult>("ExecFunc", args)
+Client: await connector.ExecFuncAsync(new ExecFuncRequest { FuncId = "Hello" })
+  → ApiConnector.ExecuteAsync<ExecFuncResponse>("ExecFunc", args)
   → JsonRpcRequest { method: "Employee.ExecFunc" }
   → JsonRpcExecutor calls FormBusinessObject.ExecFunc()
   → BusinessObject.DoExecFunc()
-  → BusinessFunc.InvokeExecFunc()
+  → handler.InvokeExecFunc()  // ExecFuncHandlerExtensions extension method
     → handler.GetType().GetMethod("Hello")  // reflection lookup
     → check [ExecFuncAccessControl] attribute
     → method.Invoke(handler, args, result)  // reflection invocation
@@ -312,7 +316,7 @@ public class CustomerBo : FormBusinessObject
         : base(ctx, accessToken, progId, isLocalCall) { }
 
     // Override hooks or add custom methods exposed via [ApiAccessControl].
-    public override SaveResult SaveData(SaveArgs args) { /* custom logic */ }
+    public override SaveResult Save(SaveArgs args) { /* custom logic */ }
 }
 ```
 

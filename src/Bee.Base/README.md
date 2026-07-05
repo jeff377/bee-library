@@ -18,9 +18,9 @@
 
 ### Type Conversion & String Utilities
 
-- `BaseFunc` -- safe type conversions with fallback defaults (`CInt`, `CStr`, `CBool`, etc.)
-- `StrFunc` -- string manipulation helpers (encoding, formatting, comparison)
-- `DateTimeFunc` -- date utilities including ROC (Minguo) calendar support
+- `ValueUtilities` -- safe type conversions with fallback defaults (`CInt`, `CStr`, `CBool`, etc.)
+- `StringExtensions` / `StringUtilities` -- string manipulation helpers (encoding, formatting, comparison)
+- `DateTimeExtensions` -- date utilities including ROC (Minguo) calendar support
 
 ### Cryptography & Security
 
@@ -32,9 +32,9 @@
 
 ### Serialization & Compression
 
-- `SerializeFunc` -- unified XML / JSON serialization via `System.Text.Json`
+- `XmlCodec` / `JsonCodec` -- unified XML / JSON serialization via `System.Text.Json`
 - `XmlSerializerCache` -- cached XML serializer instances to avoid repeated reflection
-- `GzipFunc` -- Gzip compression / decompression for payload handling
+- `Gzip` -- Gzip compression / decompression for payload handling
 
 ### Collections
 
@@ -50,7 +50,7 @@
 ### Tracing & Diagnostics
 
 - `Tracer` / `TraceContext` -- structured diagnostic tracing
-- `TraceListener` / `TraceWriter` -- pluggable trace output targets
+- `TraceListener` / `ITraceWriter` -- pluggable trace output targets
 
 ### Background Services
 
@@ -61,12 +61,12 @@
 
 | Class / Interface | Purpose |
 |-------------------|---------|
-| `BaseFunc` | Safe type conversion with defaults |
-| `StrFunc` | String encoding, formatting, comparison |
-| `DateTimeFunc` | Date utilities and ROC calendar |
+| `ValueUtilities` | Safe type conversion with defaults |
+| `StringExtensions` / `StringUtilities` | String encoding, formatting, comparison |
+| `DateTimeExtensions` | Date utilities and ROC calendar |
 | `AesCbcHmacCryptor` | Authenticated symmetric encryption |
 | `PasswordHasher` | Password hashing (PBKDF2-SHA256) |
-| `SerializeFunc` | XML / JSON serialization |
+| `XmlCodec` / `JsonCodec` | XML / JSON serialization |
 | `IObjectSerialize` | Serialization provider interface |
 | `IKeyObject` | Keyed entity interface used across layers |
 | `Tracer` | Diagnostic trace entry point |
@@ -74,7 +74,7 @@
 
 ## Design Conventions
 
-- **Static utility classes** -- `BaseFunc`, `StrFunc`, `DateTimeFunc` expose functionality as static methods; no instance state.
+- **Static utility classes** -- `ValueUtilities`, `StringUtilities`, `DateTimeExtensions` expose functionality as static methods; no instance state.
 - **Constant-time comparison** -- `CompareBytes` is used for HMAC / hash validation to prevent timing attacks.
 - **Dual-framework conditional compilation** -- `#if NETSTANDARD2_0` guards are used where runtime APIs diverge.
 - **Interface-based extensibility** -- serialization is abstracted via `IObjectSerialize` and `IObjectSerializeProcess`.
@@ -90,7 +90,7 @@ Bee.Base/
   Data/                # DataTable/DataSet extensions, FieldDbType, DbTypeConverter
   Security/            # AES, RSA, PBKDF2, file hash utilities
   Serialization/       # JSON/XML serialization, GZip compression
-  Tracing/             # Tracer, TraceContext, TraceListener, TraceWriter
-  *.cs (root)          # BaseFunc, StrFunc, DateTimeFunc, FileFunc, HttpFunc,
+  Tracing/             # Tracer, TraceContext, TraceListener, ITraceWriter
+  *.cs (root)          # ValueUtilities, StringExtensions, StringUtilities, DateTimeExtensions, FileUtilities, HttpUtilities,
                        # IPValidator, SysInfo, IKeyObject, etc.
 ```

@@ -8,7 +8,7 @@ Cross-platform .NET MAUI control library (iOS / Android / Mac Catalyst / Windows
 
 **Layer**: UI (mobile / cross-platform)
 
-Belongs to the `Bee.UI.*` family: connects to the backend through the `ClientInfo` static singleton (`Bee.UI.Core`) with a per-process token model. Depends on `Bee.UI.Core`, which brings `Bee.Api.Client` for connectors and `Bee.Definition` for schemas and layouts.
+Belongs to the `Bee.UI.*` family: connects to the backend through the `ClientInfo` static singleton (`Bee.UI.Core`) with a per-process token model. Depends on `Bee.UI.Core`, which references `Bee.Api.Client` for connectors; `Bee.Definition` (schemas and layouts) then flows in transitively through `Bee.Api.Client → Bee.Api.Core → Bee.Definition`.
 
 ## Target Framework
 

@@ -115,16 +115,16 @@ public class LoginArgs : BusinessArgs, ILoginRequest
 API 與 BO 的參數屬性完全相同，不需要建立 Args / Result 型別。
 
 **需要建立的型別：** 合約介面 + API 合約型別
-**BO 方法簽章：** 參數與回傳型別使用合約介面
+**BO 方法簽章：** 參數與回傳型別使用具體 `XxxArgs` / `XxxResult` 型別
 
 ```csharp
-public ILoginResponse Login(ILoginRequest request)
+public LoginResult Login(LoginArgs args)
 {
-    // Executor 傳入 LoginRequest，BO-to-BO 呼叫也可直接傳入 LoginRequest
-    return new LoginResponse
+    // Executor 傳入 LoginArgs，BO-to-BO 呼叫也直接傳入 LoginArgs
+    return new LoginResult
     {
         AccessToken = Guid.NewGuid(),
-        UserId = request.UserId
+        UserId = args.UserId
     };
 }
 ```
@@ -145,10 +145,10 @@ public class LoginArgs : BusinessArgs, ILoginRequest
     public bool IsAutoLogin { get; set; }  // BO 專用
 }
 
-// BO 方法透過模式比對取得額外屬性
-public ILoginResponse Login(ILoginRequest request)
+// BO 方法直接以具體 args 型別為參數，額外屬性可直接取用
+public LoginResult Login(LoginArgs args)
 {
-    bool isAutoLogin = request is LoginArgs args && args.IsAutoLogin;
+    bool isAutoLogin = args.IsAutoLogin;
     // ...
 }
 ```
@@ -202,15 +202,17 @@ Console.WriteLine(response.AccessToken);
 
 ### 方法簽章
 
-BO 方法的參數與回傳型別使用**合約介面**，不綁定具體實作類別：
+BO 方法的參數與回傳型別使用**具體 `XxxArgs` / `XxxResult` 型別**，BO 介面宣告（`ISystemBusinessObject`、`IFormBusinessObject`）也一樣是具體型別：
 
 ```csharp
-// 正確：使用合約介面
-public ILoginResponse Login(ILoginRequest request) { ... }
-
-// 避免：綁定具體型別
+// BO 方法（及其介面宣告）皆使用具體型別
 public LoginResult Login(LoginArgs args) { ... }
 ```
+
+合約介面（`ILoginRequest` / `ILoginResponse` 等）仍然存在，且由 `XxxArgs` / `XxxResult`
+型別（以及 API 的 `XxxRequest` / `XxxResponse` 型別）**實作** —— 例如
+`LoginArgs : BusinessArgs, ILoginRequest`。它們提供共用屬性合約與跨層獨立性，但
+**不用於方法簽章**；簽章綁定具體型別。
 
 ### 回應映射
 
@@ -245,9 +247,9 @@ public LoginResult Login(LoginArgs args) { ... }
    - `GetOrderResponse.cs` — 繼承 `ApiResponse`，實作 `IGetOrderResponse`，標記 MessagePack
 
 3. **實作 BO 方法**
-   - 方法簽章使用 `IGetOrderRequest` / `IGetOrderResponse`
-   - 若需要 BO 專用屬性，另建 `GetOrderArgs` / `GetOrderResult`
+   - 方法簽章使用具體 `GetOrderArgs` / `GetOrderResult` 型別
    - 必須遵守 `{Action}Args` / `{Action}Result` 命名慣例，`ApiOutputConverter` 才能自動將 `GetOrderResult` 對應至 `GetOrderResponse`
+   - args / result 型別實作對應合約介面（`GetOrderArgs : BusinessArgs, IGetOrderRequest` 等），提供跨層屬性共用
 
 4. **更新用戶端 Connector**（若需要）
    - 在 Connector 中新增對應方法，使用 `GetOrderRequest` / `GetOrderResponse`

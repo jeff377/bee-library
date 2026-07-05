@@ -167,7 +167,7 @@ The complete catalog (with `[ApiAccessControl]` per method) lives at
 | Category | Methods |
 |----------|---------|
 | Anonymous | `System.Ping`, `System.GetCommonConfiguration`, `System.Login`, `System.CreateSession` |
-| Authenticated — Session | `System.EnterCompany`, `System.LeaveCompany`, `System.Logout` |
+| Authenticated — Session | `System.EnterCompany`, `System.LeaveCompany`, `System.Logout`, `System.GetDepartmentTree` |
 | Authenticated — Definition | `System.GetDefine`, `System.SaveDefine` (SystemSettings / DatabaseSettings are local-call-only); `System.GetFormSchema`, `System.GetFormLayout`, `System.GetLanguage` (JSON-native, JS-preferred) |
 | Authenticated — Form CRUD | `<ProgId>.GetList`, `GetNewData`, `GetData`, `Save`, `Delete` |
 | **Not for JS** | `System.CheckPackageUpdate`, `System.GetPackage` (Encoded, .NET runtime use) |
@@ -211,6 +211,7 @@ Method names are **case-sensitive** — `system.ping` will not dispatch.
 | `-32001` | `Unauthorized` | Token missing, invalid, or expired | Re-login |
 | `-32002` | `CompanyNotEntered` | Method needs company context | Call `System.EnterCompany` first |
 | `-32003` | `CompanyAccessDenied` | User has no rights to this company | Display denial, switch company |
+| `-32004` | `PermissionDenied` | Authenticated but no rights for this model/action | Display denial |
 | `-32099` | `UserMessage` | Business-rule violation (validation, auth, domain rule) | Display `message` to user |
 
 For anything in the user-facing range (`-32099` especially), `message` is safe to
@@ -382,7 +383,7 @@ export const formApi = (progId: string) => ({
   getData: (rowId: string) =>
     rpcCall<{ dataSet: DataSet }>(`${progId}.GetData`, { rowId }),
   save: (dataSet: DataSet) =>
-    rpcCall<{ dataSet: DataSet; affectedRows: number }>(`${progId}.Save`, { dataSet }),
+    rpcCall<{ dataSet: DataSet; affectedRows: Record<string, number> }>(`${progId}.Save`, { dataSet }),
   delete: (rowId: string) =>
     rpcCall<{ rowsAffected: number }>(`${progId}.Delete`, { rowId }),
 });

@@ -8,7 +8,7 @@
 
 - **Layer**: API Layer (hosting)
 - **Downstream** (dependents): Applications (user inherits the controller)
-- **Upstream** (dependencies): `Bee.Api.Core`
+- **Upstream** (dependencies): `Bee.Hosting` (which transitively brings in `Bee.Api.Core`)
 
 ## Target Frameworks
 
@@ -62,7 +62,7 @@
 - **Template Method Pattern** -- `PostAsync` defines the pipeline skeleton; `ReadRequestAsync`, `ValidateAuthorization`, `HandleRequestAsync`, and `CreateErrorResponse` are all `virtual` for selective overriding.
 - **Development vs. Production error messages** -- exception details are exposed only when `IsDevelopment` is `true`, preventing information leakage in production.
 - **No direct dependency on DI container** -- services are resolved from `HttpContext.RequestServices` so the controller works in any ASP.NET Core host without additional setup.
-- **External dependency**: `Microsoft.AspNetCore.Mvc.Core` (v2.3.0).
+- **External dependency**: `FrameworkReference: Microsoft.AspNetCore.App`.
 
 ## Directory Structure
 

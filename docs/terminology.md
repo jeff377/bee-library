@@ -180,7 +180,7 @@ This document provides a standard term reference for technical writing, ensuring
 | English | 中文 | Description |
 |---------|------|-------------|
 | `ICacheContainer` | 快取容器介面 | DI-registered container that centrally holds all cache singletons (FormSchema, TableSchema, DatabaseSettings, SessionInfo, CompanyInfo, etc.); default implementation `CacheContainerService` |
-| `LocalDefineAccess` | 本機定義存取 | Implementation that accesses definition data via local cache |
+| `CacheDefineAccess` | 本機定義存取 | Implementation that accesses definition data via local cache |
 | `FormSchemaCache` | 表單結構定義快取 | Cache container for `FormSchema` objects |
 | `KeyObjectCache<T>` | 鍵值物件快取 | Generic base class for object caches indexed by key. Includes negative caching: `CreateInstance` returning null is recorded as a sentinel for a short TTL (default 5 min absolute), so repeated lookups of unknown keys do not re-invoke the create path |
 | `ISessionInfoService` | Session 資訊服務介面 | Access wrapper around `SessionInfoCache`; populated by `Login`, mutated by `EnterCompany` / `LeaveCompany`, removed by `Logout` |
@@ -192,7 +192,7 @@ This document provides a standard term reference for technical writing, ensuring
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `RemoteDefineAccess` | 遠端定義存取 | Implementation that accesses definition data via the remote API |
+| `ClientDefineAccess` | 遠端定義存取 | Implementation that accesses definition data via the remote API |
 
 ---
 

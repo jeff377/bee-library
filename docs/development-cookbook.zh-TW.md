@@ -93,7 +93,7 @@ sequenceDiagram
 
     E->>E: 解析 Method 為 ProgId + Action
     E->>E: 還原 Payload 解密 解壓 反序列化
-    E->>B: 建立 BO via BusinessObjectProvider
+    E->>B: 建立 BO via BusinessObjectFactory
     E->>E: ApiAccessValidator 驗證存取權限
     E->>E: ApiInputConverter 轉換參數型別
     E->>B: 反射呼叫 Action 方法
@@ -203,28 +203,32 @@ public class SystemExecFuncHandler
 
 ```csharp
 // 表單層級
-var connector = new FormApiConnector("Employee", accessToken);
-var result = connector.ExecFunc("Hello", new ParameterCollection());
+var connector = new FormApiConnector(accessToken, "Employee");
+var response = await connector.ExecFuncAsync(new ExecFuncRequest { FuncId = "Hello" });
 
 // 系統層級
 var sysConnector = new SystemApiConnector(accessToken);
-var result = sysConnector.ExecFunc("UpgradeTableSchema", new ParameterCollection
+var response = await sysConnector.ExecFuncAsync(new ExecFuncRequest
 {
-    { "DatabaseId", "main" },
-    { "DbName", "MyDb" },
-    { "TableName", "Employee" }
+    FuncId = "UpgradeTableSchema",
+    Parameters = new ParameterCollection
+    {
+        { "DatabaseId", "main" },
+        { "DbName", "MyDb" },
+        { "TableName", "Employee" }
+    }
 });
 ```
 
 ### 執行流程
 
 ```text
-Client: connector.ExecFunc("Hello", params)
-  → ApiConnector.Execute<ExecFuncResult>("ExecFunc", args)
+Client: await connector.ExecFuncAsync(new ExecFuncRequest { FuncId = "Hello" })
+  → ApiConnector.ExecuteAsync<ExecFuncResponse>("ExecFunc", args)
   → JsonRpcRequest { method: "Employee.ExecFunc" }
   → JsonRpcExecutor 呼叫 FormBusinessObject.ExecFunc()
   → BusinessObject.DoExecFunc()
-  → BusinessFunc.InvokeExecFunc()
+  → handler.InvokeExecFunc()  // ExecFuncHandlerExtensions 擴充方法
     → handler.GetType().GetMethod("Hello")  // 反射取得方法
     → 檢查 [ExecFuncAccessControl] 屬性
     → method.Invoke(handler, args, result)  // 反射呼叫
@@ -307,7 +311,7 @@ public class CustomerBo : FormBusinessObject
         : base(ctx, accessToken, progId, isLocalCall) { }
 
     // 覆寫鉤子或新增以 [ApiAccessControl] 公開的客製方法。
-    public override SaveResult SaveData(SaveArgs args) { /* 客製邏輯 */ }
+    public override SaveResult Save(SaveArgs args) { /* 客製邏輯 */ }
 }
 ```
 
@@ -356,6 +360,55 @@ var filter = new FilterGroup(LogicalOperator.And)
 ```
 
 可用的比較運算子：`Equal`、`Like`、`Contains`、`StartsWith`、`Between`、`In`、`GreaterThan`、`LessThan` 等。
+
+## 數值語意、公司小數位與捨入
+
+數值欄位在 `FormField` 上宣告一個語意化的 **`NumberKind`**（會傳遞到 `LayoutFieldBase`）。這個 kind 驅動三件事 —— 顯示格式、寫入時是否捨入、以及小數位數的來源。各成員、框架預設值，以及設計理由（為何 round-then-sum、為何金額於執行時解析、為何 DB scale 與此正交）為已簽核的合約，見 [ADR-026](adr/adr-026-numeric-semantics-rounding.md)。
+
+| `NumberKind` | 捨入策略 | 小數位來源 | 框架預設 | 用途 |
+|-------------|---------|-----------|:-------:|-----|
+| `Quantity` / `Weight` | `Round` | `Unit`（回退至公司） | 0 / 3 | 數量、重量 |
+| `Amount` | `Round` | `Currency`（回退至公司） | 2 | 金額、稅額、合計 |
+| `Percent` | `Round` | `Company` | 2 | 百分比 |
+| `UnitPrice` / `Cost` | `Preserve` | `Company`（僅顯示用） | 4 | 單價、成本 |
+| `ExchangeRate` | `Preserve` | `SystemFixed` | 5 | 匯率 |
+
+> `Currency` 來源由多幣別增量（見下）解析；`Unit` 來源在單位（unit-of-measure）增量取代該回退之前，仍回退至公司覆寫表。列舉與上表不變。
+
+### 兩條容易寫錯的規則
+
+- **Round-then-sum（ERP 不變量）。** 對 `Round` 類 kind，合計必須等於**已個別捨入的明細之和**，絕不是全精度加總後才在最後捨入一次。每筆明細先以 `NumberFormatResolver.RoundByKind(value, kind, company)` 捨入 —— 金額則用幣別感知的 `RoundByKind(value, kind, ctx, refCode)`（見下）—— 再把已捨入的值相加。這保證 `Σ 明細 == 合計`。
+- **`Preserve` 絕不寫入捨入後的值。** `UnitPrice` / `Cost` / `ExchangeRate` 以輸入精度儲存；其小數位僅供顯示。`RoundByKind` 對這些值原樣返回。對來源值捨入會把誤差注入下游 —— 不要這麼做。（就 API 匯入而言，唯一的硬邊界是 DB scale；見 [ADR-026](adr/adr-026-numeric-semantics-rounding.md) 中的持久化邊界決策 D6。）
+
+### 顯示格式於交付時烘焙（bake）
+
+`SystemBusinessObject.LoadAndLocalizeSchema` 複製（clone）快取的 `FormSchema` 並呼叫 `NumberFormatApplier.Bake(clone, company)`，對每個沒有明確格式的 `NumberKind` 欄位設定 `FormField.NumberFormat`（例如 `"N2"`、`"P4"`、`"N5"`）。作者自行提供的 `NumberFormat` 永遠優先。快取的 schema 絕不被異動 —— 烘焙只在每次呼叫的 clone 上執行（見該方法的不可變性註解）。
+
+由於格式是從 session 公司的小數位解析而來，同一份 schema 交付給兩家公司可能帶有不同格式（例如 `Percent` 為 `P2` vs `P4`）。`SystemFixed` 類 kind（`ExchangeRate`）忽略任何公司覆寫，永遠使用框架預設。
+
+### 多幣別：金額於執行時依其幣別解析
+
+`Amount` 的小數位跟隨**幣別**而非公司（JPY = 0、USD = 2、BHD = 3 —— 類似 SAP TCURX）。幣別主檔為系統層級定義 **`CurrencySettings`**（`DefineType.CurrencySettings`，精選的 ISO 4217 表；每個 `CurrencyItem` 帶有一個 `Rounding` 自然最小單位，小數位由此導出）。它透過一般的 `GetDefine` 通道送達 client；主檔缺漏也沒關係 —— 金額此時回退至框架預設 2。
+
+每個金額欄位透過 `FormField.CurrencyField` 綁定一個**幣別 key 欄位**（SAP CUKY）；主單據幣別位於 `FormSchema.CurrencyField`（慣例為 `sys_currency`）。金額幣別的解析優先序為：**明確的 `CurrencyField` → 主檔 `sys_currency` → 公司 `DefaultCurrency` → 框架 2**。明細金額欄位讀取主列的幣別。交付時，`Bake` **不烘焙** `Amount` 格式（其小數位依執行時的幣別值而定 —— UI 逐列解析）；改為把有效的幣別參照欄位標記到每個金額欄位上，讓 UI 知道要監看哪個欄位。
+
+伺服器端捨入使用帶 `RoundingContext`（`Company` + `CurrencySettings`）的幣別感知多載：
+
+- **逐明細：** `NumberFormatResolver.RoundByKind(value, NumberKind.Amount, ctx, currencyCode)` 捨入至該幣別的自然小數位。照常 round-then-sum —— 原幣與本位幣金額各自獨立捨入至其幣別。
+- **本位幣：** `home_amount = RoundByKind(amount × rate, Amount, ctx, homeCurrency)` —— 已捨入的原幣金額乘上全精度（preserve）匯率，再捨入至本位幣的小數位。本位幣預設為 `CompanyInfo.DefaultCurrency`。
+- **最終現金捨入（選用）：** `RoundCash(total, currencyCode, ctx)` 把最終應付金額對齊到公司的逐幣別現金捨入單位（SAP T001R、`CompanyInfo.CashRounding`，例如 CHF → 0.05）；未覆寫時維持該幣別的自然單位（不額外捨入）。刻意產生的差額 `payable − total` 由呼叫端記入捨入科目。
+
+幣別小數位為**系統層級**（在 `CurrencySettings` 中）；只有**現金捨入單位**可由公司覆寫（`CompanyInfo.CashRounding`）。逐公司的 `CompanyInfo.AllowedCurrencies` 白名單限定一張單據可選用哪些幣別（空 = 所有系統幣別）。
+
+### 計量單位：數量／重量於執行時依其單位解析
+
+`Quantity` / `Weight` 的小數位跟隨**計量單位**而非公司（KG = 3、PCS = 0 —— 類似 SAP T006），與金額對幣別完全平行。單位主檔為系統層級定義 **`UnitSettings`**（`DefineType.UnitSettings`，精選表；每個 `UnitItem` 直接儲存其 `Decimals`）。它透過一般的 `GetDefine` 通道送達 client；主檔缺漏則回退至框架預設。
+
+每個數量／重量欄位透過 `FormField.UnitField` 綁定一個**單位欄位**（SAP UNIT）（沒有主檔層級的單位 —— 單位是逐列的）。解析優先序為：**綁定的 `UnitField` 值 → 公司小數位 → 框架預設**。交付時，`Bake` 不烘焙綁定 `UnitField` 的欄位（執行時依單位）；未綁定的數量／重量欄位回退至公司小數位並被烘焙。伺服器端捨入使用帶有攜帶 `UnitSettings` 之 `RoundingContext` 的 `RoundByKind(value, kind, ctx, unitCode)`；round-then-sum 逐單位成立（混合單位的欄不存在有意義的合計）。Grid 與 `NumericEdit` 以與幣別相同的方式逐格／逐列解析單位（`AmountColumnSummary` 就像處理混合幣別一樣，對混合單位的頁尾合計設限）。
+
+### DB 儲存精度是容量上限，不是顯示／計算設定
+
+數值欄位使用 `Decimal`，搭配單一框架層級的高 scale（例如 `Scale=8`），與任何公司或幣別小數位無關 —— 因此沒有逐公司／逐幣別的 `ALTER`。顯示小數位（`NumberFormat`）與計算小數位（`RoundByKind`）與 DB scale 正交；scale 只限定該欄位能容納多少精度。
 
 ## 跨 process 快取失效
 

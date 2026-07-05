@@ -38,7 +38,7 @@
 
 ### Cached Definition Access
 
-- `RemoteDefineAccess` implements `IDefineAccess` over the API, caching retrieved definitions (SystemSettings, DatabaseSettings, FormSchema, FormLayout, etc.) to avoid redundant network calls.
+- `ClientDefineAccess` implements `IDefineAccess` over the API, caching retrieved definitions (SystemSettings, DatabaseSettings, FormSchema, FormLayout, etc.) to avoid redundant network calls.
 
 ### Application Context
 
@@ -59,7 +59,7 @@
 | `IJsonRpcProvider` | Strategy interface for JSON-RPC transport |
 | `LocalApiProvider` | In-process provider via `JsonRpcExecutor` |
 | `RemoteApiProvider` | HTTP-based provider with API key and Bearer token headers |
-| `RemoteDefineAccess` | `IDefineAccess` implementation with caching over the API |
+| `ClientDefineAccess` | `IDefineAccess` implementation with caching over the API |
 | `ApiConnectValidator` | Validates endpoints and determines connection type |
 | `ConnectType` | Enum: `Local`, `Remote` |
 | `SupportedConnectTypes` | Flags enum: `Local`, `Remote`, `Both` |
@@ -91,5 +91,5 @@ Bee.Api.Client/
     LocalApiProvider.cs     # In-process provider
     RemoteApiProvider.cs    # HTTP-based provider
   DefineAccess/
-    RemoteDefineAccess.cs          # Cached IDefineAccess over API
+    ClientDefineAccess.cs          # Cached IDefineAccess over API
 ```

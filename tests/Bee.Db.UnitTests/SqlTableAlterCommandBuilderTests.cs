@@ -139,7 +139,7 @@ namespace Bee.Db.UnitTests
             Assert.Equal(3, statements.Count);
             Assert.Contains("DROP CONSTRAINT", statements[0]);
             Assert.Contains("ALTER COLUMN [name] [nvarchar](100) NOT NULL", statements[1]);
-            Assert.Contains("ADD CONSTRAINT [DF_st_demo_name] DEFAULT", statements[2]);
+            Assert.Contains("ADD CONSTRAINT [df_st_demo_name] DEFAULT", statements[2]);
         }
 
         [Fact]
@@ -167,7 +167,7 @@ namespace Bee.Db.UnitTests
             Assert.Equal(2, statements.Count);
             Assert.Contains("DROP CONSTRAINT", statements[0]);
             Assert.DoesNotContain(statements, s => s.Contains("ALTER COLUMN"));
-            Assert.Contains("ADD CONSTRAINT [DF_st_demo_code] DEFAULT", statements[1]);
+            Assert.Contains("ADD CONSTRAINT [df_st_demo_code] DEFAULT", statements[1]);
         }
 
         // ---------- AddIndex statements ----------

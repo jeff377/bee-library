@@ -4,7 +4,7 @@
 
 Bee.NET 是一套模組化的 .NET 企業應用程式框架，以 NuGet 套件形式發布。採用 JSON-RPC 2.0 API 模式，強調安全性、可插拔序列化與跨平台相容性。
 
-- **版本**：4.0.1（`src/Directory.Build.props`）
+- **版本**：4.13.0（`src/Directory.Build.props`）
 - **授權**：MIT
 - **主要目標框架**：`net10.0`（全部專案）
 
@@ -110,7 +110,7 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 實作任何功能或模組前，請先閱讀以下文件：
 
 - **架構總覽**：`docs/architecture-overview.md`
-- **相依性全景圖**：`docs/dependency-map.md` — 11 個專案的相依關係與分層
+- **相依性全景圖**：`docs/dependency-map.md` — 17 個專案的相依關係與分層
 - **開發指引**：`docs/development-cookbook.md` — 初始化流程、請求管線、ExecFunc 模式、FormSchema 驅動開發
 - **開發限制**：`docs/development-constraints.md` — 初始化順序、跨層禁止事項、例外處理規則
 - **架構決策紀錄**：`docs/adr/` — 重要設計決策的背景與理由

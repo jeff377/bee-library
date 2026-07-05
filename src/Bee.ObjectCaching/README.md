@@ -8,7 +8,7 @@
 
 - **Layer**: Infrastructure (caching)
 - **Downstream** (dependents): Applications, `Bee.Business` (indirectly)
-- **Upstream** (dependencies): `Bee.Definition`, `Microsoft.Extensions.Caching.Memory`, `Microsoft.Extensions.FileProviders.Physical`
+- **Upstream** (dependencies): `Bee.Definition`, `Microsoft.Extensions.Caching.Memory`
 
 ## Target Framework
 
@@ -24,10 +24,9 @@
 - `FormLayoutCache` -- caches UI layout metadata
 - `ProgramSettingsCache` / `DbCategorySettingsCache` -- caches program and DB category settings
 
-### Session & Runtime Caching
+### Session Caching
 
 - `SessionInfoCache` -- caches authenticated session data to avoid repeated DB lookups
-- `ViewStateCache` -- caches transient view state during user interactions
 
 ### Cache Infrastructure
 
@@ -35,10 +34,6 @@
 - `KeyObjectCache<T>` -- keyed cache base class for objects identified by a string key
 - `ICacheProvider` / `MemoryCacheProvider` -- pluggable cache storage provider
 - `CacheItemPolicy` / `CacheTimeKind` -- expiration configuration (default: 20-minute sliding window)
-
-### Cache Invalidation
-
-- File-based invalidation -- `IChangeToken` from `PhysicalFileProvider` evicts cache entries when underlying definition files change
 
 ### Services
 
@@ -54,12 +49,12 @@
 
 | Class / Interface | Purpose |
 |-------------------|---------|
-| `CacheFunc` | Static facade -- `GetSystemSettings`, `GetFormSchema`, `GetSessionInfo`, etc. |
-| `CacheContainer` | Lazy singleton that manages all cache instances |
+| `ICacheContainer` | DI-injected contract exposing every cache instance (`SystemSettingsCache`, `FormSchemaCache`, `SessionInfoCache`, etc.) |
+| `CacheContainerService` | `ICacheContainer` implementation, registered as a Singleton by `AddBeeFramework` |
 | `ObjectCache<T>` | Single-object cache base class |
 | `KeyObjectCache<T>` | Keyed cache base class |
 | `ICacheProvider` | Cache storage provider interface |
-| `LocalDefineAccess` | `IDefineAccess` implementation that reads definitions from local cache (with optional customization overlay) |
+| `CacheDefineAccess` | `IDefineAccess` implementation that reads definitions from local cache (with optional customization overlay) |
 | `ICacheContainerProvider` / `CacheContainerProvider` | Per-`CustomizeId` override cache container provider |
 | `CustomizeDefineReader` | Tenant customization-override reader (`ICustomizeDefineReader`) |
 | `CacheItemPolicy` | Expiration and eviction configuration |
@@ -67,11 +62,9 @@
 
 ## Design Conventions
 
-- **Facade Pattern** -- `CacheFunc` exposes a flat static API, hiding `CacheContainer` and individual cache classes from callers.
+- **DI injection** -- consumers ctor-inject `ICacheContainer`; the `CacheContainerService` implementation is registered as a Singleton by `AddBeeFramework`, so callers reach the individual cache classes through the injected contract rather than a static facade.
 - **Template Method Pattern** -- `ObjectCache<T>` subclasses override `GetPolicy`, `GetKey`, and `CreateInstance` to define caching behavior without modifying the base retrieval logic.
-- **Lazy Singleton** -- `CacheContainer` uses `Lazy<T>` to defer initialization until first access.
 - **Key normalization** -- all cache keys are converted to lowercase using `ToLowerInvariant()` to ensure case-insensitive, culture-invariant lookups.
-- **File-based invalidation** -- `IChangeToken` produced by `PhysicalFileProvider` evicts cache entries when the source definition files change. (Database-driven invalidation is planned but not yet implemented.)
 - **Backing store** -- `MemoryCacheProvider` wraps `Microsoft.Extensions.Caching.Memory.IMemoryCache`; the public `CacheItemPolicy` is mapped internally to `MemoryCacheEntryOptions`.
 - **Nullable reference types** enabled (`<Nullable>enable</Nullable>`).
 
@@ -83,11 +76,10 @@ Bee.ObjectCaching/
                # FormSchemaCache, FormLayoutCache, ProgramSettingsCache,
                # DbCategorySettingsCache
   Database/    # SessionInfoCache
-  Runtime/     # ViewStateCache
   Providers/   # ICacheProvider, MemoryCacheProvider
   Services/    # SessionInfoService, EnterpriseObjectService
-  *.cs (root)  # CacheFunc, CacheContainer, ObjectCache, KeyObjectCache,
+  *.cs (root)  # ICacheContainer, CacheContainerService, ObjectCache, KeyObjectCache,
                # CacheItemPolicy, CacheTimeKind, CacheInfo,
-               # LocalDefineAccess,
+               # CacheDefineAccess,
                # CacheContainerProvider, CustomizeDefineReader
 ```

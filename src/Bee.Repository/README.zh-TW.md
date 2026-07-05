@@ -7,7 +7,7 @@
 ## 架構定位
 
 - **層級**：資料存取層（實作）
-- **下游**（依賴此專案者）：應用程式（透過 `RepositoryInfo` 注入）
+- **下游**（依賴此專案者）：應用程式（repository 由 DI 註冊的 factory 解析注入）
 - **上游**（此專案依賴）：`Bee.Db`、`Bee.Repository.Abstractions`
 
 ## 目標框架
@@ -25,7 +25,7 @@
 
 ### 資料庫操作
 
-- `DatabaseRepository` -- 連線測試，支援參數替換（`{@DbName}`、`{@UserId}`、`{@Password}`）
+- `DatabaseRepository`（`internal`）-- 連線測試，支援參數替換（`{@DbName}`、`{@UserId}`、`{@Password}`）；僅透過 `IDatabaseRepository` 對外公開，由 `SystemRepositoryFactory` 內部聚合，非公開 API
 - 透過 `TableSchemaBuilder` 進行結構升級，配合 FormSchema 驅動的資料表管理
 
 ### 表單資料存取
@@ -43,7 +43,6 @@
 | 類別 | 用途 |
 |------|------|
 | `SessionRepository` | 針對 `st_session` / `st_user` 資料表的 Session CRUD |
-| `DatabaseRepository` | 連線測試與結構遷移 |
 | `DataFormRepository` | 資料表單資料存取實作 |
 | `ReportFormRepository` | 報表表單資料存取實作 |
 | `SystemRepositoryFactory` | 預設 `ISystemRepositoryFactory` 實作 |

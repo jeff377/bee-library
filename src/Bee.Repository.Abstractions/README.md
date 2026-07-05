@@ -31,9 +31,9 @@
 - `IDataFormRepository` -- repository interface for data form CRUD operations
 - `IReportFormRepository` -- repository interface for report form query operations
 
-### Static Service Locator
+### Database Routing Contract
 
-- `RepositoryInfo` -- static entry point that exposes `SystemFactory` and `FormFactory`, automatically initialized from `BackendConfiguration`
+- `IRepositoryDatabaseRouter` -- resolves the physical databaseId a repository should use for a logical `DbScope` (`Common` / `Log` / `Company`) and the current session's access token
 
 ## Key Public APIs
 
@@ -45,22 +45,21 @@
 | `IFormRepositoryFactory` | Factory to resolve form repositories by ProgId |
 | `IDataFormRepository` | Contract for data form data access |
 | `IReportFormRepository` | Contract for report form data access |
-| `RepositoryInfo` | Static service locator for provider instances |
+| `IRepositoryDatabaseRouter` | Resolves the physical databaseId for a logical `DbScope` and access token |
 
 ## Design Conventions
 
 - **Repository Pattern** -- each domain concern (session, database, form) has a dedicated repository interface.
 - **Provider / Factory Pattern** -- `ISystemRepositoryFactory` aggregates repositories; `IFormRepositoryFactory` acts as a factory resolving repositories by ProgId.
-- **Static Service Locator** -- `RepositoryInfo` reads `BackendConfiguration` at static initialization and creates provider instances via reflection (`BaseFunc.CreateInstance`), with configurable fallback to default types.
-- **Configuration-driven instantiation** -- provider type names are specified in `BackendConfiguration.Components`; custom implementations can replace defaults without code changes.
+- **Passive contracts, injected via DI** -- this project defines contracts only; there is no static holder or service locator. Concrete implementations are registered in the DI container and injected where needed, rather than resolved from a static entry point or read from a static `BackendConfiguration`.
 - **Nullable reference types** enabled (`<Nullable>enable</Nullable>`).
 
 ## Directory Structure
 
 ```
 Bee.Repository.Abstractions/
-  Form/                # IDataFormRepository, IReportFormRepository
-  Factories/            # ISystemRepositoryFactory, IFormRepositoryFactory
-  System/              # ISessionRepository, IDatabaseRepository
-  RepositoryInfo.cs    # Static service locator for provider instances
+  Form/                          # IDataFormRepository, IReportFormRepository
+  Factories/                     # ISystemRepositoryFactory, IFormRepositoryFactory
+  System/                        # ISessionRepository, IDatabaseRepository
+  IRepositoryDatabaseRouter.cs   # DB routing contract (DbScope -> databaseId)
 ```

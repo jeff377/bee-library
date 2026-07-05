@@ -206,14 +206,14 @@ DatabaseSettings
 
 `DatabaseServer.Password` 與 `DatabaseItem.Password` 在 XML 序列化時自動加密：
 
-- **加密方式**：AES-CBC-HMAC（金鑰由 `ConfigEncryptionKey` 提供，於 `AddBeeFramework` 時 ctor 注入給 `LocalDefineAccess`）
+- **加密方式**：AES-CBC-HMAC（金鑰由 `ConfigEncryptionKey` 提供，於 `AddBeeFramework` 時 ctor 注入給 `CacheDefineAccess`）
 - **儲存格式**：`enc:` + Base64 編碼的密文
-- **時機**：
-  - 序列化前（`BeforeSerialize`）：將未加密的 Password 自動加密
-  - 反序列化後（`AfterDeserialize`）：將 `enc:` 開頭的 Password 自動解密
+- **時機**：由 `CacheDefineAccess` 於存/讀時呼叫 cryptor：
+  - 存檔時（`EncryptInPlace`）：將未加密的 Password 自動加密
+  - 讀取時（`DecryptInPlace`）：將 `enc:` 開頭的 Password 自動解密
 - **行為**：若 `ConfigEncryptionKey` 為空，跳過加解密（明文儲存，僅限開發環境）
 
-實作位置：[`DatabaseSettings.cs`](../src/Bee.Definition/Settings/DatabaseSettings/DatabaseSettings.cs) `BeforeSerialize` / `AfterDeserialize` / `DecryptPassword`。
+實作位置：[`DatabaseSettingsCryptor.cs`](../src/Bee.Definition/Settings/DatabaseSettings/DatabaseSettingsCryptor.cs) `EncryptInPlace` / `DecryptInPlace`。
 
 ---
 
@@ -288,19 +288,19 @@ public class MyService(IDefineAccess defineAccess)
 }
 ```
 
-`IDefineAccess` 由 `AddBeeFramework` 註冊為 singleton，預設 `LocalDefineAccess`（檔案系統）；專案可透過 XML `Components` 設定改為 `RemoteDefineAccess`（透過 API 取得）。
+`IDefineAccess` 由 `AddBeeFramework` 註冊為 singleton，預設 `CacheDefineAccess`（檔案系統）；專案可透過 XML `Components` 設定改為 `RemoteDefineAccess`（透過 API 取得）。
 
 ### 4.2 快取機制
 
-兩個 settings 由 DI 註冊的 [`ICacheContainer`](../src/Bee.ObjectCaching/ICacheContainer.cs)（預設實作 `CacheContainerService`）集中持有，採 `Lazy<T>` 延遲建立：
+兩個 settings 由 DI 註冊的 [`ICacheContainer`](../src/Bee.ObjectCaching/ICacheContainer.cs)（預設實作 `CacheContainerService`）集中持有；持有者即快取物件本身，載入為 cache-miss 時 per-key 惰性載入（底層 `ObjectCache<T>` 於某個 key 首次被要求時呼叫 `CreateInstance()`）：
 
 | 快取 | 持有者 |
 |------|--------|
-| `DatabaseSettings` | `ICacheContainer.DatabaseSettings`（`Lazy<DatabaseSettingsCache>`） |
-| `DbCategorySettings` | `ICacheContainer.DbCategorySettings`（`Lazy<DbCategorySettingsCache>`） |
+| `DatabaseSettings` | `ICacheContainer.DatabaseSettings`（`DatabaseSettingsCache`） |
+| `DbCategorySettings` | `ICacheContainer.DbCategorySettings`（`DbCategorySettingsCache`） |
 
 行為：
-- **20 秒 sliding expiration**：未存取超過 20 秒則重新載入
+- **20 分鐘 sliding expiration**：未存取超過 20 分鐘則重新載入
 - **檔案變更監測**：底層檔案異動時快取自動失效
 - **存檔即失效**：呼叫 `Save*` 後立即清除對應快取，下次 `Get*` 重新載入
 
@@ -322,7 +322,7 @@ foreach (var table in company.Tables!) { ... }
 | Settings | 可從 API 遠端存取？ |
 |----------|-------------------|
 | DatabaseSettings | ❌ 否（含敏感連線資訊，`SystemBusinessObject.GetDefine` 會拒絕非 local call） |
-| DbCategorySettings | ✅ 是（無敏感資料，可透過 `RemoteDefineAccess` 取得） |
+| DbCategorySettings | ✅ 是（無敏感資料，可透過 `ClientDefineAccess` 取得） |
 
 ---
 
@@ -342,7 +342,7 @@ foreach (var table in company.Tables!) { ... }
 </FormSchema>
 ```
 
-落檔時由 [`LocalDefineAccess.SaveFormSchema`](../src/Bee.ObjectCaching/LocalDefineAccess.cs) 強制檢查 `CategoryId` 非空（透過 [`TableSchemaGenerator.GetCategoryId`](../src/Bee.Definition/Database/TableSchemaGenerator.cs)），否則拋 `InvalidOperationException`。
+落檔時由 [`CacheDefineAccess.SaveFormSchema`](../src/Bee.ObjectCaching/CacheDefineAccess.cs) 強制檢查 `CategoryId` 非空（透過 [`TableSchemaGenerator.GetCategoryId`](../src/Bee.Definition/Database/TableSchemaGenerator.cs)），否則拋 `InvalidOperationException`。
 
 ### 5.2 TableSchema 落檔路徑
 
