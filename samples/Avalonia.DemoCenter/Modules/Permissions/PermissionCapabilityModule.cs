@@ -1,25 +1,31 @@
+using System.Data;
 using Avalonia.Controls;
 using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.DemoCenter.Modules.DataEditors;
+using Bee.Base.Data;
 using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.UI.Avalonia.Controls;
+using Bee.UI.Avalonia.DataObjects;
 using Bee.UI.Core.Permissions;
 
 namespace Avalonia.DemoCenter.Modules.Permissions
 {
     /// <summary>
-    /// Interactive front-end permission (capability) simulator. The left panel fakes the role
-    /// grants that <c>EnterCompany</c> would normally return; the right panel is a mock purchase-order
-    /// form whose toolbar commands and sensitive fields degrade live through the <em>real</em>
+    /// Interactive front-end permission (capability) simulator over a master-detail form. The left
+    /// panel fakes the role grants that <c>EnterCompany</c> would normally return; the right panel is
+    /// a mock purchase order (master fields + a real detail <see cref="GridControl"/>) whose toolbar
+    /// commands and sensitive fields degrade live through the <em>real</em>
     /// <see cref="ElementCapabilityResolver"/> — no back end involved.
     /// </summary>
     /// <remarks>
     /// The capability snapshot is just a <c>Dictionary&lt;modelId, PermissionAction&gt;</c>, so a demo
-    /// can fabricate it in memory and exercise the exact same resolver the shipped views use. This is
-    /// UX only: in a real app the snapshot arrives from the server on <c>EnterCompany</c> and the back
-    /// end remains the authoritative boundary.
+    /// can fabricate it in memory and exercise the exact same resolver the shipped views use. Field
+    /// permission spans both tables: the master's <c>承辦人身分證</c> (PersonalData) and the detail
+    /// grid's <c>單價</c> (Cost) column each degrade by their category — the resolver reverse-looks-up
+    /// the <see cref="FormField.SensitiveCategory"/> from the schema by (table, field). UX only; in a
+    /// real app the snapshot comes from the server and the back end stays authoritative.
     /// </remarks>
     public sealed class PermissionCapabilityModule : DemoModuleBase
     {
@@ -27,25 +33,27 @@ namespace Avalonia.DemoCenter.Modules.Permissions
         public override string Category => "權限 Capability";
 
         /// <inheritdoc/>
-        public override string Title => "互動權限模擬器";
+        public override string Title => "互動權限模擬器（主檔／明細）";
 
         /// <inheritdoc/>
         public override string Description =>
-            "左側勾選模擬角色授權（等同 EnterCompany 回傳的 capability 快照），右側「採購單」表單即時降級："
-            + "無權的工具列命令隱藏、敏感欄依 Read/Update 呈現 隱藏 / 唯讀 / 可編輯 三態。"
-            + "關掉「啟用 capability」→ 快照為 null → 全放行（未進公司 / 未用權限的預設行為）。";
+            "左側勾選模擬角色授權（等同 EnterCompany 回傳的 capability 快照），右側「採購單」主檔＋明細即時降級："
+            + "無權的工具列命令隱藏；主檔敏感欄（承辦人身分證＝PersonalData）依 Read/Update 呈現 隱藏／唯讀／可編輯；"
+            + "明細 Grid 的敏感欄（單價＝Cost）無 Read 時整欄隱藏。關掉「啟用 capability」→ 快照 null → 全放行。";
 
-        // The form's own permission model, plus two well-known sensitive-category models.
         private const string FormModel = "PurchaseOrder";
         private const string CostModel = "Cost";
         private const string PiiModel = "PersonalData";
+        private const string MasterTable = "PO001";
+        private const string DetailTable = "PO001_Item";
 
         /// <inheritdoc/>
         public override Control BuildView()
         {
             var schema = BuildSchema();
+            var detailData = BuildData(schema);
 
-            // ---- Right: the mock form (toolbar commands + fields) ----
+            // ---- Right: master fields + a real detail grid ----
             var newBtn = MakeCommand("New", PermissionAction.Create);
             var saveBtn = MakeCommand("Save", PermissionAction.Create | PermissionAction.Update);
             var deleteBtn = MakeCommand("Delete", PermissionAction.Delete);
@@ -55,22 +63,30 @@ namespace Avalonia.DemoCenter.Modules.Permissions
 
             var idField = MakeField("sys_id", "單號");
             var vendorField = MakeField("vendor", "供應商");
-            var costField = MakeField("unit_cost", "單價（成本）");     // SensitiveCategory=Cost
-            var pidField = MakeField("handler_id", "承辦人身分證");     // SensitiveCategory=PersonalData
-            var fields = new[] { idField, vendorField, costField, pidField };
+            var handlerField = MakeField("handler_id", "承辦人身分證");   // SensitiveCategory=PersonalData
+            var masterFields = new[] { idField, vendorField, handlerField };
 
-            var formBody = new StackPanel { Spacing = 10, Children = { toolbar, idField.Row, vendorField.Row, costField.Row, pidField.Row } };
-            var formSection = DataEditorParts.Section("採購單 PO001（PermissionModelId = PurchaseOrder）", null, formBody);
+            var masterBody = new StackPanel { Spacing = 10, Children = { toolbar, idField.Row, vendorField.Row, handlerField.Row } };
+            var detailHost = new Border { MinHeight = 150 };   // holds the (re)built detail grid
+
+            var formBody = new StackPanel
+            {
+                Spacing = 12,
+                Children =
+                {
+                    DataEditorParts.Section("主檔 PO001（PermissionModelId = PurchaseOrder）", null, masterBody),
+                    DataEditorParts.Section("明細 PO001_Item（GridControl，單價欄 = Cost）", null, detailHost),
+                },
+            };
 
             // ---- Left: simulated grant toggles ----
             var active = new CheckBox { Content = "啟用 capability（否則快照為 null → 全放行）", IsChecked = true };
 
-            // Default scenario shows all three degradation kinds at once: Delete hidden (no Delete
-            // grant), cost visible but read-only (Read without Update), PII hidden (no Read).
+            // Default scenario shows every degradation kind: Delete hidden, PII read-only, cost hidden.
             var poCreate = Grant("Create", on: true); var poRead = Grant("Read", on: true);
             var poUpdate = Grant("Update", on: true); var poDelete = Grant("Delete");
-            var costRead = Grant("Read", on: true); var costUpdate = Grant("Update");
-            var piiRead = Grant("Read"); var piiUpdate = Grant("Update");
+            var costRead = Grant("Read"); var costUpdate = Grant("Update");
+            var piiRead = Grant("Read", on: true); var piiUpdate = Grant("Update");
 
             var grantsPanel = new StackPanel
             {
@@ -80,35 +96,38 @@ namespace Avalonia.DemoCenter.Modules.Permissions
                 {
                     active,
                     GrantSection("採購單 model（PurchaseOrder）— 驅動工具列命令", poCreate, poRead, poUpdate, poDelete),
-                    GrantSection("成本分類（Cost）— 驅動「單價」欄", costRead, costUpdate),
-                    GrantSection("個資分類（PersonalData）— 驅動「身分證」欄", piiRead, piiUpdate),
+                    GrantSection("個資分類（PersonalData）— 驅動主檔「身分證」欄", piiRead, piiUpdate),
+                    GrantSection("成本分類（Cost）— 驅動明細「單價」欄", costRead, costUpdate),
                 },
             };
 
-            // Recompute the snapshot and re-apply capability to every command and field.
             void Refresh()
             {
                 IReadOnlyDictionary<string, PermissionAction>? snapshot = active.IsChecked == true
                     ? new Dictionary<string, PermissionAction>(StringComparer.Ordinal)
                     {
                         [FormModel] = Mask((poCreate, PermissionAction.Create), (poRead, PermissionAction.Read), (poUpdate, PermissionAction.Update), (poDelete, PermissionAction.Delete)),
-                        [CostModel] = Mask((costRead, PermissionAction.Read), (costUpdate, PermissionAction.Update)),
                         [PiiModel] = Mask((piiRead, PermissionAction.Read), (piiUpdate, PermissionAction.Update)),
+                        [CostModel] = Mask((costRead, PermissionAction.Read), (costUpdate, PermissionAction.Update)),
                     }
                     : null; // null snapshot = capability inactive = allow all (the resolver's safe default).
 
-                // Commands: a button carries the action it needs (PermissionScope); hide it when not permitted.
+                // Commands: each button carries the action it needs (PermissionScope); hide it when not permitted.
                 foreach (var btn in commands)
                     btn.IsVisible = ElementCapabilityResolver.Default.Can(schema, PermissionScope.GetAction(btn), snapshot);
 
-                // Fields: sensitive ones degrade by SensitiveCategory; normal ones resolve to "allowed".
-                foreach (var f in fields)
+                // Master fields: sensitive ones degrade by SensitiveCategory (table = master).
+                foreach (var f in masterFields)
                 {
-                    var cap = ElementCapabilityResolver.Default.ResolveField(schema, f.FieldName, tableName: string.Empty, snapshot);
-                    f.Row.IsVisible = cap.Visible;                       // no Read → hidden
-                    f.Editor.IsReadOnly = cap.ReadOnly;                  // Read but no Update → read-only
-                    f.Editor.Opacity = cap.ReadOnly ? 0.55 : 1.0;        // visual cue for the read-only state
+                    var cap = ElementCapabilityResolver.Default.ResolveField(schema, f.FieldName, tableName: MasterTable, snapshot);
+                    f.Row.IsVisible = cap.Visible;
+                    f.Editor.IsReadOnly = cap.ReadOnly;
+                    f.Editor.Opacity = cap.ReadOnly ? 0.55 : 1.0;
                 }
+
+                // Detail grid: rebuild from a fresh layout with capability applied to its columns
+                // (table = detail). This mirrors LayoutCapabilityApplier, which is internal to the lib.
+                detailHost.Child = BuildDetailGrid(schema, detailData, snapshot);
             }
 
             active.IsCheckedChanged += (_, _) => Refresh();
@@ -121,21 +140,62 @@ namespace Avalonia.DemoCenter.Modules.Permissions
                 Orientation = Orientation.Horizontal,
                 Spacing = 24,
                 Margin = new Thickness(4),
-                Children = { DataEditorParts.Section("模擬授權（capability 快照）", null, grantsPanel), formSection },
+                Children = { DataEditorParts.Section("模擬授權（capability 快照）", null, grantsPanel), formBody },
             };
             return new ScrollViewer { Content = root };
         }
 
-        // Builds an in-code FormSchema: a PurchaseOrder-bound form with two sensitive fields.
+        // Master PO001 (with a PersonalData field) + detail PO001_Item (with a Cost column).
         private static FormSchema BuildSchema()
         {
-            var schema = new FormSchema("PO001", "採購單") { PermissionModelId = FormModel };
-            var table = schema.Tables!.Add("PO001", "採購單");
-            table.Fields!.Add("sys_id", "單號", Bee.Base.Data.FieldDbType.String);
-            table.Fields!.Add("vendor", "供應商", Bee.Base.Data.FieldDbType.String);
-            table.Fields!.Add("unit_cost", "單價", Bee.Base.Data.FieldDbType.Decimal).SensitiveCategory = SensitiveCategory.Cost;
-            table.Fields!.Add("handler_id", "承辦人身分證", Bee.Base.Data.FieldDbType.String).SensitiveCategory = SensitiveCategory.PersonalData;
+            var schema = new FormSchema(MasterTable, "採購單") { PermissionModelId = FormModel };
+
+            var master = schema.Tables!.Add(MasterTable, "採購單");
+            master.Fields!.Add("sys_id", "單號", FieldDbType.String);
+            master.Fields!.Add("vendor", "供應商", FieldDbType.String);
+            master.Fields!.Add("handler_id", "承辦人身分證", FieldDbType.String).SensitiveCategory = SensitiveCategory.PersonalData;
+
+            var detail = schema.Tables.Add(DetailTable, "明細");
+            detail.Fields!.Add("item_name", "品項", FieldDbType.String);
+            detail.Fields!.Add("qty", "數量", FieldDbType.Integer);
+            detail.Fields!.Add("unit_cost", "單價", FieldDbType.Decimal).SensitiveCategory = SensitiveCategory.Cost;
+
             return schema;
+        }
+
+        private static FormDataObject BuildData(FormSchema schema)
+        {
+            var data = new FormDataObject(schema);
+            data.InitializeNewMaster();
+            data.SetField("sys_id", "PO-2026-001");
+            data.SetField("vendor", "宏碁股份有限公司");
+            data.SetField("handler_id", "A123456789");
+
+            var items = data.DataSet.Tables[DetailTable]!;
+            items.Rows.Add("螺絲 M4", 100, 3.5m);
+            items.Rows.Add("墊片 8mm", 50, 1.2m);
+            return data;
+        }
+
+        // Builds a fresh detail grid each refresh: a fresh layout with capability applied to its
+        // columns (narrowing only), then bound. Fresh layout means re-granting Cost.Read re-shows the column.
+        private static Control BuildDetailGrid(FormSchema schema, FormDataObject data, IReadOnlyDictionary<string, PermissionAction>? snapshot)
+        {
+            var layout = new LayoutGrid(DetailTable, "明細");
+            layout.Columns!.Add(new LayoutColumn("item_name", "品項", ControlType.TextEdit));
+            layout.Columns.Add(new LayoutColumn("qty", "數量", ControlType.TextEdit));
+            layout.Columns.Add(new LayoutColumn("unit_cost", "單價", ControlType.TextEdit));
+
+            foreach (var column in layout.Columns)
+            {
+                var cap = ElementCapabilityResolver.Default.ResolveField(schema, column.FieldName, DetailTable, snapshot);
+                if (!cap.Visible) { column.Visible = false; }
+                if (cap.ReadOnly) { column.ReadOnly = true; }
+            }
+
+            var grid = new GridControl { MinHeight = 140 };
+            grid.Bind(data, layout);
+            return grid;
         }
 
         private static Button MakeCommand(string text, PermissionAction action)
@@ -147,7 +207,7 @@ namespace Avalonia.DemoCenter.Modules.Permissions
 
         private static FieldRow MakeField(string fieldName, string caption)
         {
-            var editor = new TextBox { Text = caption, MinWidth = 200 };
+            var editor = new TextBox { MinWidth = 200 };
             var row = new StackPanel
             {
                 Spacing = 2,
