@@ -39,7 +39,8 @@ namespace Avalonia.DemoCenter.Modules.Permissions
         public override string Description =>
             "左側勾選模擬角色授權（等同 EnterCompany 回傳的 capability 快照），右側「採購單」主檔＋明細即時降級："
             + "無權的工具列命令隱藏；主檔敏感欄（承辦人身分證＝PersonalData）依 Read/Update 呈現 隱藏／唯讀／可編輯；"
-            + "明細 Grid 的敏感欄（單價＝Cost）無 Read 時整欄隱藏。關掉「啟用 capability」→ 快照 null → 全放行。";
+            + "明細 Grid 的敏感欄（單價＝Cost）無 Read 時整欄隱藏。預設全授權（完整表單）——"
+            + "取消勾選觀察對應元素即時降級；關掉「啟用 capability」→ 快照 null → 全放行。";
 
         private const string FormModel = "PurchaseOrder";
         private const string CostModel = "Cost";
@@ -82,11 +83,12 @@ namespace Avalonia.DemoCenter.Modules.Permissions
             // ---- Left: simulated grant toggles ----
             var active = new CheckBox { Content = "啟用 capability（否則快照為 null → 全放行）", IsChecked = true };
 
-            // Default scenario shows every degradation kind: Delete hidden, PII read-only, cost hidden.
+            // Everything granted by default → the full form shows on open; uncheck a grant to
+            // watch that command / field degrade live.
             var poCreate = Grant("Create", on: true); var poRead = Grant("Read", on: true);
-            var poUpdate = Grant("Update", on: true); var poDelete = Grant("Delete");
-            var costRead = Grant("Read"); var costUpdate = Grant("Update");
-            var piiRead = Grant("Read", on: true); var piiUpdate = Grant("Update");
+            var poUpdate = Grant("Update", on: true); var poDelete = Grant("Delete", on: true);
+            var costRead = Grant("Read", on: true); var costUpdate = Grant("Update", on: true);
+            var piiRead = Grant("Read", on: true); var piiUpdate = Grant("Update", on: true);
 
             var grantsPanel = new StackPanel
             {
@@ -135,13 +137,16 @@ namespace Avalonia.DemoCenter.Modules.Permissions
                 cb.IsCheckedChanged += (_, _) => Refresh();
             Refresh();
 
-            var root = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 24,
-                Margin = new Thickness(4),
-                Children = { DataEditorParts.Section("模擬授權（capability 快照）", null, grantsPanel), formBody },
-            };
+            // Two bounded columns (grants | form) so the detail DataGrid gets a real width and lays
+            // out all its columns, instead of being starved inside an unbounded horizontal stack.
+            var root = new Grid { Margin = new Thickness(4), ColumnSpacing = 24 };
+            root.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+            root.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            var grantsSection = DataEditorParts.Section("模擬授權（capability 快照）", null, grantsPanel);
+            Grid.SetColumn(grantsSection, 0);
+            Grid.SetColumn(formBody, 1);
+            root.Children.Add(grantsSection);
+            root.Children.Add(formBody);
             return new ScrollViewer { Content = root };
         }
 
