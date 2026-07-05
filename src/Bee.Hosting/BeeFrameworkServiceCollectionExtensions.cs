@@ -6,8 +6,10 @@ using Bee.Business.Providers;
 using Bee.Db;
 using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
+using Bee.Hosting.Audit;
 using Bee.Hosting.CacheNotify;
 using Bee.Definition;
+using Bee.Definition.Logging;
 using Bee.ObjectCaching;
 using Bee.ObjectCaching.Services;
 using Bee.Definition.Identity;
@@ -122,6 +124,30 @@ namespace Bee.Hosting
             if (configuration.CacheNotifyOptions.Enabled)
             {
                 services.AddHostedService<CacheNotifyPoller>();
+            }
+
+            // 6d. Audit-trail (data-history) logging. Opt-in: when disabled every consumer gets the
+            //     no-op writer so IAuditLogWriter is always injectable with zero behavioural change.
+            //     When enabled, the background writer batches to the log database; hosts without an
+            //     IHost (e.g. in-process local) set UseBackgroundWriter=false for synchronous writes.
+            services.AddSingleton(configuration.AuditLogOptions);
+            if (configuration.AuditLogOptions.Enabled)
+            {
+                services.AddSingleton<IAuditLogSink, AuditLogDbSink>();
+                if (configuration.AuditLogOptions.UseBackgroundWriter)
+                {
+                    services.AddSingleton<AuditLogWriterService>();
+                    services.AddSingleton<IAuditLogWriter>(sp => sp.GetRequiredService<AuditLogWriterService>());
+                    services.AddHostedService(sp => sp.GetRequiredService<AuditLogWriterService>());
+                }
+                else
+                {
+                    services.AddSingleton<IAuditLogWriter, SynchronousAuditLogWriter>();
+                }
+            }
+            else
+            {
+                services.AddSingleton<IAuditLogWriter>(NullAuditLogWriter.Instance);
             }
 
             // 5. Replaceable core services. Lifetimes default to Singleton in Phase 4 —

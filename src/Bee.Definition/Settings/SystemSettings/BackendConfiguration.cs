@@ -45,6 +45,14 @@ namespace Bee.Definition.Settings
         public CacheNotifyOptions CacheNotifyOptions { get; set; } = new CacheNotifyOptions();
 
         /// <summary>
+        /// Audit-trail (data-history) logging options. Disabled by default.
+        /// </summary>
+        [Category("AuditLog")]
+        [Description("Audit-trail (data-history) logging options.")]
+        [Browsable(false)]
+        public AuditLogOptions AuditLogOptions { get; set; } = new AuditLogOptions();
+
+        /// <summary>
         /// Object description.
         /// </summary>
         public override string ToString()
