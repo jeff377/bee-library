@@ -62,7 +62,7 @@ A `FormSchema` declares which model it consumes, and marks which **master-table*
 Rules:
 
 - `ScopeRole` is **master-table only**. Marking it on a detail table is a load-time validation error (`PermissionBindingValidator`) — record scope is decided on the master record; details follow it.
-- At most one `Owner` and one `Dept` column per master table.
+- **A master table may mark multiple `Owner` / `Dept` columns** — each contributes an OR branch. For example a transfer form marks both a from-department (`from_dept`) and a to-department (`to_dept`), so *both* departments' managers can see the record.
 - An empty `PermissionModelId` makes the form **unscoped** — both back-end layers are skipped (gradual adoption / backward compatible).
 
 ## 3. Grant roles
@@ -133,6 +133,7 @@ Multiple roles **OR-merge** (capabilities accrue). A failing check throws `Forbi
 | `Inherit` | the model's per-action default (else its Read scope, else `All`) |
 
 - `Dept` / `DeptAndSub` **implicitly include `Own`** — a user always sees records they own.
+- **Multiple scope columns**: when the master marks several `Owner` / `Dept` columns, the strategy **OR-unions across all of them** — e.g. a transfer form's `from_dept` and `to_dept` each `IN` the subtree, so a record shows to a manager of either department.
 - **Multi-role merge**: if *any* role grants `All` for the action → no filter; otherwise the restrictive strategies are **OR-unioned**.
 - The `Own` owner column may hold either a user row id or an employee row id (e.g. the *creator* vs the *employee on a leave form*); the `IN {UserRowId, EmployeeRowId}` set covers both, and a user need not map to an employee.
 

@@ -44,14 +44,14 @@ namespace Bee.Business.Permission
             if (scopes.Count == 0 || session == null) { return DenyAll(formSchema); }
 
             var master = formSchema?.MasterTable;
-            var ownerField = master?.GetOwnerField()?.FieldName;
-            var deptField = master?.GetDeptField()?.FieldName;
+            var ownerFields = FieldNames(master?.GetOwnerFields());
+            var deptFields = FieldNames(master?.GetDeptFields());
             var ownerIds = OwnerIdentities(session);
 
             var nodes = new List<FilterNode>();
             foreach (var scope in scopes)
             {
-                var node = BuildScopePredicate(scope, session, ownerField, deptField, ownerIds);
+                var node = BuildScopePredicate(scope, session, ownerFields, deptFields, ownerIds);
                 if (node != null) { nodes.Add(node); }
             }
             if (nodes.Count == 0) { return DenyAll(formSchema); }
@@ -108,48 +108,76 @@ namespace Bee.Business.Permission
 
         // ---- read-side predicates ----
 
-        private FilterNode? BuildScopePredicate(ScopeStrategy scope, SessionInfo session, string? ownerField, string? deptField, IReadOnlyList<object> ownerIds)
+        // Builds the OR-union predicate for a scope. Owner and Dept may each be marked on MORE THAN
+        // ONE master column (e.g. a transfer form's from/to department, so both departments' managers
+        // see the record); every marked column contributes one flat OR branch. Dept / DeptAndSub also
+        // OR-in Own so a user always sees records they own.
+        private FilterNode? BuildScopePredicate(ScopeStrategy scope, SessionInfo session, IReadOnlyList<string> ownerFields, IReadOnlyList<string> deptFields, IReadOnlyList<object> ownerIds)
         {
-            return scope switch
+            var parts = new List<FilterNode>();
+            switch (scope)
             {
-                ScopeStrategy.Own => OwnPredicate(ownerField, ownerIds),
-                ScopeStrategy.Dept => OrParts(DeptEqualPredicate(deptField, session.DeptRowId), OwnPredicate(ownerField, ownerIds)),
-                ScopeStrategy.DeptAndSub => OrParts(DeptSubtreePredicate(deptField, session), OwnPredicate(ownerField, ownerIds)),
-                _ => null,
-            };
+                case ScopeStrategy.Own:
+                    AddOwn(parts, ownerFields, ownerIds);
+                    break;
+                case ScopeStrategy.Dept:
+                    AddDeptEqual(parts, deptFields, session.DeptRowId);
+                    AddOwn(parts, ownerFields, ownerIds);
+                    break;
+                case ScopeStrategy.DeptAndSub:
+                    AddDeptSubtree(parts, deptFields, session);
+                    AddOwn(parts, ownerFields, ownerIds);
+                    break;
+                default:
+                    return null;
+            }
+            return AnyOf(parts);
         }
 
-        // ownerField IN (UserRowId, EmployeeRowId). An empty id set renders as "1 = 0" (deny).
-        private static FilterCondition? OwnPredicate(string? ownerField, IReadOnlyList<object> ownerIds)
+        // Each owner column: ownerField IN (UserRowId, EmployeeRowId). An empty id set renders as
+        // "1 = 0" (deny), so an owner-less identity never matches on that column (fail-closed).
+        private static void AddOwn(List<FilterNode> parts, IReadOnlyList<string> ownerFields, IReadOnlyList<object> ownerIds)
         {
-            if (string.IsNullOrEmpty(ownerField)) { return null; }
-            return new FilterCondition { FieldName = ownerField, Operator = ComparisonOperator.In, Value = ownerIds };
+            foreach (var ownerField in ownerFields)
+                parts.Add(new FilterCondition { FieldName = ownerField, Operator = ComparisonOperator.In, Value = ownerIds });
         }
 
-        private static FilterCondition? DeptEqualPredicate(string? deptField, Guid deptRowId)
+        // Each dept column: deptField = DeptRowId.
+        private static void AddDeptEqual(List<FilterNode> parts, IReadOnlyList<string> deptFields, Guid deptRowId)
         {
-            if (string.IsNullOrEmpty(deptField) || deptRowId == Guid.Empty) { return null; }
-            return FilterCondition.Equal(deptField, deptRowId);
+            if (deptRowId == Guid.Empty) { return; }
+            foreach (var deptField in deptFields)
+                parts.Add(FilterCondition.Equal(deptField, deptRowId));
         }
 
-        private FilterCondition? DeptSubtreePredicate(string? deptField, SessionInfo session)
+        // Each dept column: deptField IN (department + descendants). The subtree is expanded once.
+        private void AddDeptSubtree(List<FilterNode> parts, IReadOnlyList<string> deptFields, SessionInfo session)
         {
-            if (string.IsNullOrEmpty(deptField) || session.DeptRowId == Guid.Empty) { return null; }
+            if (deptFields.Count == 0 || session.DeptRowId == Guid.Empty) { return; }
             var tree = _departmentTreeService.Get(session.CompanyId!);
             var subtree = tree?.GetSelfAndDescendants(session.DeptRowId) ?? [];
-            if (subtree.Count == 0) { return null; }
+            if (subtree.Count == 0) { return; }
             var values = new List<object>(subtree.Count);
             foreach (var id in subtree) { values.Add(id); }
-            return new FilterCondition { FieldName = deptField, Operator = ComparisonOperator.In, Value = values };
+            foreach (var deptField in deptFields)
+                parts.Add(new FilterCondition { FieldName = deptField, Operator = ComparisonOperator.In, Value = values });
         }
 
-        private static FilterNode? OrParts(FilterNode? a, FilterNode? b)
+        private static FilterNode? AnyOf(List<FilterNode> parts)
         {
-            var parts = new List<FilterNode>(2);
-            if (a != null) { parts.Add(a); }
-            if (b != null) { parts.Add(b); }
             if (parts.Count == 0) { return null; }
             return parts.Count == 1 ? parts[0] : FilterGroup.Any(parts.ToArray());
+        }
+
+        private static List<string> FieldNames(IReadOnlyList<FormField>? fields)
+        {
+            var list = new List<string>();
+            if (fields != null)
+            {
+                foreach (var field in fields)
+                    if (!string.IsNullOrEmpty(field.FieldName)) { list.Add(field.FieldName); }
+            }
+            return list;
         }
 
         // Always-false node ("<field> IN ()" → "1 = 0"). Uses a field guaranteed to be in the master

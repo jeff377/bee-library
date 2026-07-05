@@ -11,9 +11,11 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Validates a set of form schemas against the permission registry. Returns one
         /// message per violation (empty when valid). Checks that each form's
-        /// <see cref="FormSchema.PermissionModelId"/> references an existing model, and that
-        /// a form's master table marks at most one <see cref="ScopeRole.Owner"/> column and
-        /// at most one <see cref="ScopeRole.Dept"/> column.
+        /// <see cref="FormSchema.PermissionModelId"/> references an existing model, that record-scope
+        /// roles are marked on the master table only, and that sensitive-category fields reference an
+        /// existing well-known model. A master table may mark any number of
+        /// <see cref="ScopeRole.Owner"/> / <see cref="ScopeRole.Dept"/> columns — the scope predicate
+        /// OR-unions them (e.g. a transfer form's from/to department).
         /// </summary>
         /// <param name="schemas">The form schemas to validate.</param>
         /// <param name="models">The permission model registry.</param>
@@ -28,7 +30,6 @@ namespace Bee.Definition.Settings
             {
                 errors.AddRange(ValidateModelIdReference(schema, models));
                 errors.AddRange(ValidateDetailScopeRoles(schema));
-                errors.AddRange(ValidateMasterScopeColumns(schema));
                 errors.AddRange(ValidateSensitiveCategories(schema, models));
             }
             return errors;
@@ -76,20 +77,6 @@ namespace Bee.Definition.Settings
                 if (table.Fields != null && table.Fields.Any(field => field.ScopeRole != ScopeRole.None))
                     yield return $"Form '{schema.ProgId}': detail table '{table.TableName}' marks a ScopeRole column; record scope is master-only.";
             }
-        }
-
-        // The master table may mark at most one Owner column and one Dept column.
-        private static IEnumerable<string> ValidateMasterScopeColumns(FormSchema schema)
-        {
-            var master = schema.MasterTable;
-            if (master?.Fields == null) { yield break; }
-
-            int owners = master.Fields.Count(field => field.ScopeRole == ScopeRole.Owner);
-            int depts = master.Fields.Count(field => field.ScopeRole == ScopeRole.Dept);
-            if (owners > 1)
-                yield return $"Form '{schema.ProgId}': master table marks {owners} Owner columns; at most one is allowed.";
-            if (depts > 1)
-                yield return $"Form '{schema.ProgId}': master table marks {depts} Dept columns; at most one is allowed.";
         }
     }
 }

@@ -129,6 +129,37 @@ namespace Bee.Business.UnitTests.Permission
             AssertIn(FindByField(group, "buyer_rowid"), "buyer_rowid", s_user, s_employee);
         }
 
+        [Fact]
+        [DisplayName("多個 Dept 欄 → 各 dept 欄 IN 子樹 以 OR 聯集，再 OR Own（調職單調出/調入部門）")]
+        public void ResolveFilter_MultipleDeptFields_OrUnion()
+        {
+            var session = Session(s_user, s_employee, s_dept, "Buyer");
+            var resolver = Build(session, [new("Buyer", Model, PermissionAction.Read, ScopeStrategy.DeptAndSub)], DeptTree());
+
+            var node = resolver.ResolveFilter(session.AccessToken, Model, PermissionAction.Read, TransferSchema());
+
+            // Flat OR: from_dept IN 子樹, to_dept IN 子樹, buyer_rowid IN 身分 —— 兩部門主管都看得到。
+            var group = Assert.IsType<FilterGroup>(node);
+            Assert.Equal(LogicalOperator.Or, group.Operator);
+            Assert.Equal(3, group.Nodes.Count);
+            AssertIn(FindByField(group, "from_dept"), "from_dept", s_dept, s_subDept);
+            AssertIn(FindByField(group, "to_dept"), "to_dept", s_dept, s_subDept);
+            AssertIn(FindByField(group, "buyer_rowid"), "buyer_rowid", s_user, s_employee);
+        }
+
+        // A transfer form: master marks two Dept columns (from / to) plus one Owner.
+        private static FormSchema TransferSchema()
+        {
+            var schema = new FormSchema { ProgId = "PO001", PermissionModelId = Model };
+            var table = new FormTable("PO001", "調職單");
+            table.Fields!.Add(new FormField { FieldName = "sys_rowid" });
+            table.Fields.Add(new FormField { FieldName = "buyer_rowid", ScopeRole = ScopeRole.Owner });
+            table.Fields.Add(new FormField { FieldName = "from_dept", ScopeRole = ScopeRole.Dept });
+            table.Fields.Add(new FormField { FieldName = "to_dept", ScopeRole = ScopeRole.Dept });
+            schema.Tables!.Add(table);
+            return schema;
+        }
+
         // ---- read-side: multi-role merge ----
 
         [Fact]

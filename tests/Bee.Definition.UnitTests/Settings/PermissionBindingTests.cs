@@ -125,17 +125,27 @@ namespace Bee.Definition.UnitTests.Settings
         }
 
         [Fact]
-        [DisplayName("Validator 主表多個 Owner 欄應回報錯誤")]
-        public void Validate_MultipleOwnerColumns_ReturnsError()
+        [DisplayName("Validator 主表多個 Owner 欄應通過（OR 聯集，不再限制單欄）")]
+        public void Validate_MultipleOwnerColumns_Allowed()
         {
             var schema = BuildForm();
-            var extra = schema.Tables!["PO001"].Fields!.Add("creator_rowid", "建立者", FieldDbType.Guid);
-            extra.ScopeRole = ScopeRole.Owner;
-            var schemas = new FormSchema[] { schema };
+            schema.Tables!["PO001"].Fields!.Add("creator_rowid", "建立者", FieldDbType.Guid).ScopeRole = ScopeRole.Owner;
 
-            var errors = PermissionBindingValidator.Validate(schemas, BuildRegistry());
+            var errors = PermissionBindingValidator.Validate([schema], BuildRegistry());
 
-            Assert.Contains(errors, e => e.Contains("Owner"));
+            Assert.Empty(errors);
+        }
+
+        [Fact]
+        [DisplayName("Validator 主表多個 Dept 欄應通過（調職單調出/調入部門）")]
+        public void Validate_MultipleDeptColumns_Allowed()
+        {
+            var schema = BuildForm();
+            schema.Tables!["PO001"].Fields!.Add("to_dept_rowid", "調入部門", FieldDbType.Guid).ScopeRole = ScopeRole.Dept;
+
+            var errors = PermissionBindingValidator.Validate([schema], BuildRegistry());
+
+            Assert.Empty(errors);
         }
 
         [Fact]

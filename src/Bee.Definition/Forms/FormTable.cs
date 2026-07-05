@@ -86,14 +86,31 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
-        /// Gets the field marked <see cref="ScopeRole.Owner"/> (resolved by the <c>Own</c> record-scope
-        /// strategy), or <c>null</c> when no field carries that role.
+        /// Gets every field marked <see cref="ScopeRole.Owner"/> (resolved by the <c>Own</c>
+        /// record-scope strategy). A master table may mark more than one owner column — for example a
+        /// form whose creator and a co-owner should both see the record — and the scope predicate
+        /// OR-unions them. Returns an empty list when no field carries the role.
+        /// </summary>
+        public IReadOnlyList<FormField> GetOwnerFields() => FindScopeFields(ScopeRole.Owner);
+
+        /// <summary>
+        /// Gets every field marked <see cref="ScopeRole.Dept"/> (resolved by the <c>Dept</c> /
+        /// <c>DeptAndSub</c> record-scope strategies). A master table may mark more than one department
+        /// column — for example a transfer form's from-department and to-department, so both
+        /// departments' managers can see the record — and the scope predicate OR-unions them. Returns
+        /// an empty list when no field carries the role.
+        /// </summary>
+        public IReadOnlyList<FormField> GetDeptFields() => FindScopeFields(ScopeRole.Dept);
+
+        /// <summary>
+        /// Gets the first field marked <see cref="ScopeRole.Owner"/>, or <c>null</c> when none.
+        /// Prefer <see cref="GetOwnerFields"/>; this convenience returns only the first of possibly many.
         /// </summary>
         public FormField? GetOwnerField() => FindScopeField(ScopeRole.Owner);
 
         /// <summary>
-        /// Gets the field marked <see cref="ScopeRole.Dept"/> (resolved by the <c>Dept</c> /
-        /// <c>DeptAndSub</c> record-scope strategies), or <c>null</c> when no field carries that role.
+        /// Gets the first field marked <see cref="ScopeRole.Dept"/>, or <c>null</c> when none.
+        /// Prefer <see cref="GetDeptFields"/>; this convenience returns only the first of possibly many.
         /// </summary>
         public FormField? GetDeptField() => FindScopeField(ScopeRole.Dept);
 
@@ -105,6 +122,17 @@ namespace Bee.Definition.Forms
                 if (field.ScopeRole == role) { return field; }
             }
             return null;
+        }
+
+        private IReadOnlyList<FormField> FindScopeFields(ScopeRole role)
+        {
+            if (Fields == null) { return []; }
+            var list = new List<FormField>();
+            foreach (var field in Fields)
+            {
+                if (field.ScopeRole == role) { list.Add(field); }
+            }
+            return list;
         }
 
         /// <summary>
