@@ -133,7 +133,7 @@ jobs:
         echo "SQL Server did not become ready in time" >&2
         exit 1
 
-    - name: Create test databases (common + company)
+    - name: Create test databases (common + company + log)
       env:
         SA_PASSWORD: BeeTest_Password123!
         MYSQL_ROOT_PASSWORD: BeeTest_Password123!
@@ -141,15 +141,20 @@ jobs:
       run: |
         # SQL Server：sa 可建任何 DB
         /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P "$SA_PASSWORD" -C -Q \
-          "IF DB_ID('common') IS NULL CREATE DATABASE common; IF DB_ID('company') IS NULL CREATE DATABASE company;"
-        # PostgreSQL：service container 已建 common；補建 company（testuser 為 superuser）
+          "IF DB_ID('common') IS NULL CREATE DATABASE common; IF DB_ID('company') IS NULL CREATE DATABASE company; IF DB_ID('log') IS NULL CREATE DATABASE log;"
+        # PostgreSQL：service container 已建 common；補建 company + log（testuser 為 superuser）
         psql -h 127.0.0.1 -U testuser -d postgres -c \
           "SELECT 1 FROM pg_database WHERE datname='company'" | grep -q '1 row' || \
           psql -h 127.0.0.1 -U testuser -d postgres -c 'CREATE DATABASE company OWNER testuser'
-        # MySQL：service container 已建 common；補建 company + grant testuser（需 root）
+        psql -h 127.0.0.1 -U testuser -d postgres -c \
+          "SELECT 1 FROM pg_database WHERE datname='log'" | grep -q '1 row' || \
+          psql -h 127.0.0.1 -U testuser -d postgres -c 'CREATE DATABASE log OWNER testuser'
+        # MySQL：service container 已建 common；補建 company + log + grant testuser（需 root）
         mysql -h 127.0.0.1 -u root -p"$MYSQL_ROOT_PASSWORD" -e \
           "CREATE DATABASE IF NOT EXISTS company; \
+           CREATE DATABASE IF NOT EXISTS log; \
            GRANT ALL PRIVILEGES ON company.* TO 'testuser'@'%'; \
+           GRANT ALL PRIVILEGES ON log.* TO 'testuser'@'%'; \
            FLUSH PRIVILEGES;"
 
     # Strict build（analyzer gate）：未經 SonarScanner 包覆，TreatWarningsAsErrors
