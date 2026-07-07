@@ -91,5 +91,40 @@ namespace Bee.Hosting.UnitTests
         [DbFact(DatabaseType.PostgreSQL)]
         [DisplayName("PostgreSQL：異動記錄寫入 st_log_change 後可讀回")]
         public void ChangeLog_PostgreSQL_RoundTrip() => RunChangeRoundTrip(DatabaseType.PostgreSQL);
+
+        private void RunAccessRoundTrip(DatabaseType databaseType)
+        {
+            var databaseId = TestDbConventions.GetDatabaseId(databaseType, "log");
+            var factory = _fx.GetRequiredService<IDbAccessFactory>();
+            var dbAccess = factory.Create(databaseId);
+
+            var rowId = Guid.NewGuid();
+            var entry = new AccessAuditEntry
+            {
+                SysRowId = rowId,
+                UserId = "demo",
+                UserName = "Demo User",
+                CompanyId = "c1",
+                CompanyName = "Company One",
+                ProgId = "Order",
+                RowKey = Guid.NewGuid().ToString(),
+            };
+
+            dbAccess.Execute(AuditLogDbSink.BuildInsert(entry));
+
+            var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
+                "SELECT COUNT(*) FROM st_log_access WHERE sys_rowid={0}", rowId));
+            var count = Convert.ToInt64(result.Scalar, CultureInfo.InvariantCulture);
+
+            Assert.Equal(1L, count);
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：檢視記錄寫入 st_log_access 後可讀回")]
+        public void AccessLog_SqlServer_RoundTrip() => RunAccessRoundTrip(DatabaseType.SQLServer);
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("PostgreSQL：檢視記錄寫入 st_log_access 後可讀回")]
+        public void AccessLog_PostgreSQL_RoundTrip() => RunAccessRoundTrip(DatabaseType.PostgreSQL);
     }
 }

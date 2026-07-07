@@ -134,4 +134,4 @@ WriteChangeAudit(changes, ProgId, ...);                  // commit 後、best-ef
 
 ## 9. 相依與後續
 - 前置：項 0（已完成）、項 1（已完成，`AuditEntry`/schema 慣例）。
-- 完成後接：**項 3 執行記錄**（掛 `JsonRpcExecutor` 單一收斂點）。
+- 完成後接：**項 3 檢視記錄**（opt-in 敏感欄讀取）。執行記錄已移至項 5（暫緩，範圍待決定）。

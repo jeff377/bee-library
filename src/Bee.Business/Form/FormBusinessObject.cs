@@ -195,6 +195,11 @@ namespace Bee.Business.Form
             var repository = CreateDataFormRepository(ProgId);
             var dataSet = repository.GetData(args.RowId, ResolveScopeFilter(PermissionAction.Read));
 
+            // Record the detail view (who viewed which record). Opt-in and best-effort; field-level
+            // detail is intentionally not recorded — a detail view loads the whole record.
+            if (dataSet != null && AccessAuditEnabled())
+                WriteAccessAudit(args.RowId, ProgId + ".GetData");
+
             return new GetDataResult { DataSet = dataSet };
         }
 
@@ -365,21 +370,30 @@ namespace Bee.Business.Form
             => $"<DeletedRow table=\"{masterTableName}\" sys_rowid=\"{rowKey}\" />";
 
         /// <summary>
-        /// Builds a <see cref="ChangeAuditEntry"/> from the session (denormalised who / company) and
-        /// the supplied change payload, and writes it best-effort through <see cref="IAuditLogWriter"/>.
+        /// Resolves the denormalised audit identity (who / company display values) from the session,
+        /// so log rows stay self-sufficient without joining the user / company tables.
         /// </summary>
-        private void WriteChangeAudit(ChangeKind changeKind, string? rowKey, string changesXml, string masterTableName, string source)
+        private (string? userId, string? userName, string? companyId, string? companyName) ResolveAuditIdentity()
         {
             var session = SessionInfoService.Get(AccessToken);
             var companyId = session?.CompanyId;
             string? companyName = null;
             if (!string.IsNullOrEmpty(companyId))
                 companyName = Services.GetService<ICompanyInfoService>()?.Get(companyId)?.CompanyName;
+            return (session?.UserId, session?.UserName, companyId, companyName);
+        }
 
+        /// <summary>
+        /// Builds a <see cref="ChangeAuditEntry"/> from the session (denormalised who / company) and
+        /// the supplied change payload, and writes it best-effort through <see cref="IAuditLogWriter"/>.
+        /// </summary>
+        private void WriteChangeAudit(ChangeKind changeKind, string? rowKey, string changesXml, string masterTableName, string source)
+        {
+            var (userId, userName, companyId, companyName) = ResolveAuditIdentity();
             Services.GetService<IAuditLogWriter>()?.Write(new ChangeAuditEntry
             {
-                UserId = session?.UserId,
-                UserName = session?.UserName,
+                UserId = userId,
+                UserName = userName,
                 CompanyId = companyId,
                 CompanyName = companyName,
                 AccessToken = AccessToken,
@@ -389,6 +403,32 @@ namespace Bee.Business.Form
                 ChangeKind = changeKind,
                 IsSensitive = false,
                 ChangesXml = changesXml,
+                Source = source,
+            });
+        }
+
+        /// <summary>
+        /// Whether read/access auditing is enabled (global + access category).
+        /// </summary>
+        private bool AccessAuditEnabled()
+            => Services.GetService<AuditLogOptions>() is { Enabled: true, AccessEnabled: true };
+
+        /// <summary>
+        /// Writes an <see cref="AccessAuditEntry"/> recording that the given record was viewed
+        /// (who + prog_id + row_key), best-effort through <see cref="IAuditLogWriter"/>.
+        /// </summary>
+        private void WriteAccessAudit(Guid rowId, string source)
+        {
+            var (userId, userName, companyId, companyName) = ResolveAuditIdentity();
+            Services.GetService<IAuditLogWriter>()?.Write(new AccessAuditEntry
+            {
+                UserId = userId,
+                UserName = userName,
+                CompanyId = companyId,
+                CompanyName = companyName,
+                AccessToken = AccessToken,
+                ProgId = ProgId,
+                RowKey = rowId.ToString(),
                 Source = source,
             });
         }

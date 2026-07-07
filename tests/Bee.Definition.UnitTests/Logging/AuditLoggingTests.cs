@@ -119,6 +119,29 @@ namespace Bee.Definition.UnitTests.Logging
         }
 
         [Fact]
+        [DisplayName("AccessAuditEntry 目標表與 prog_id/row_key 欄位正確（不記欄位）")]
+        public void AccessAuditEntry_ColumnsAndTable()
+        {
+            var entry = new AccessAuditEntry
+            {
+                UserId = "demo",
+                UserName = "Demo User",
+                ProgId = "Order",
+                RowKey = "abc",
+            };
+
+            var map = entry.GetColumns().ToDictionary(c => c.Name, c => c.Value);
+
+            Assert.Equal("st_log_access", entry.TableName);
+            Assert.Equal("Order", map["prog_id"]);
+            Assert.Equal("abc", map["row_key"]);
+            Assert.Equal("demo", map["user_id"]);
+            Assert.Equal("Demo User", map["user_name"]);
+            // Record-level only — no field-level column.
+            Assert.False(map.ContainsKey("sensitive_fields"));
+        }
+
+        [Fact]
         [DisplayName("DataSet DiffGram 序列化應保留修改欄位的新舊值（changes_xml 設計核心）")]
         public void DiffGram_PreservesOldAndNewValues()
         {
