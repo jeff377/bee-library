@@ -21,7 +21,9 @@
 			</Tables>
 		</DbCategory>
 		<DbCategory Id="log" DisplayName="Log database">
-			<Tables />
+			<Tables>
+				<TableItem TableName="st_log_login" DisplayName="Login log" />
+			</Tables>
 		</DbCategory>
 	</Categories>
 </DbCategorySettings>

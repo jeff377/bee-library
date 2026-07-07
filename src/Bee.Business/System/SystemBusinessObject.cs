@@ -6,7 +6,9 @@ using Bee.Definition.Attributes;
 using Bee.Definition.Forms;
 using Bee.Definition.Language;
 using Bee.Definition.Layouts;
+using Bee.Definition.Logging;
 using Bee.Definition.Organization;
+using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
 using Bee.Definition.Identity;
@@ -78,12 +80,16 @@ namespace Bee.Business.System
 
             // 0. Check if the account is locked out due to excessive failed attempts
             if (tracker != null && tracker.IsLockedOut(args.UserId))
+            {
+                WriteLoginAudit(LoginEvent.LockedOut, args.UserId, null, null, "Account temporarily locked.", LoginSource);
                 throw new UnauthorizedAccessException("Account is temporarily locked due to too many failed login attempts. Please try again later.");
+            }
 
             // 1. Authenticate credentials and retrieve the user name
             if (!AuthenticateUser(args, out var userName))
             {
                 tracker?.RecordFailure(args.UserId);
+                WriteLoginAudit(LoginEvent.LoginFailed, args.UserId, null, null, "Invalid username or password.", LoginSource);
                 throw new UnauthorizedAccessException("Invalid username or password.");
             }
 
@@ -104,6 +110,7 @@ namespace Bee.Business.System
                 ApiEncryptionKey = encryptionKey
             };
             SessionInfoService.Set(sessionInfo);
+            WriteLoginAudit(LoginEvent.LoginSucceeded, sessionInfo.UserId, sessionInfo.UserName, sessionInfo.AccessToken, null, LoginSource);
 
             // 4. Return the encrypted key and access token
             string encryptedKey = string.Empty;
@@ -231,6 +238,7 @@ namespace Bee.Business.System
                 SessionInfoService.Set(sessionInfo);
             }
 
+            WriteLoginAudit(LoginEvent.Logout, sessionInfo?.UserId, sessionInfo?.UserName, AccessToken, null, LogoutSource);
             SessionInfoService.Remove(AccessToken);
             return new LogoutResult();
         }
@@ -250,6 +258,30 @@ namespace Bee.Business.System
             sessionInfo.UserRowId = Guid.Empty;
             sessionInfo.EmployeeRowId = Guid.Empty;
             sessionInfo.DeptRowId = Guid.Empty;
+        }
+
+        private const string LoginSource = "System.Login";
+        private const string LogoutSource = "System.Logout";
+
+        /// <summary>
+        /// Writes a login-axis audit entry when audit logging and its login category are both
+        /// enabled. Resolved through the <see cref="IBeeContext.Services"/> escape hatch (same
+        /// pattern as <see cref="ILoginAttemptTracker"/>); a no-op when disabled.
+        /// </summary>
+        private void WriteLoginAudit(LoginEvent loginEvent, string? userId, string? userName, Guid? accessToken, string? failReason, string source)
+        {
+            var options = Services.GetService<AuditLogOptions>();
+            if (options is not { Enabled: true, LoginEnabled: true }) { return; }
+
+            Services.GetService<IAuditLogWriter>()?.Write(new LoginAuditEntry
+            {
+                Event = loginEvent,
+                UserId = userId,
+                UserName = userName,
+                AccessToken = accessToken,
+                FailReason = failReason,
+                Source = source,
+            });
         }
 
         /// <summary>

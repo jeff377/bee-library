@@ -29,7 +29,9 @@
 			</Tables>
 		</DbCategory>
 		<DbCategory Id="log" DisplayName="日誌資料庫">
-			<Tables />
+			<Tables>
+				<TableItem TableName="st_log_login" DisplayName="登入記錄" />
+			</Tables>
 		</DbCategory>
 	</Categories>
 </DbCategorySettings>

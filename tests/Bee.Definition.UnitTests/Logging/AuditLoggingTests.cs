@@ -21,15 +21,17 @@ namespace Bee.Definition.UnitTests.Logging
         }
 
         [Fact]
-        [DisplayName("GetColumns 應含共通欄位並附加子類欄位")]
+        [DisplayName("GetColumns 應含共通欄位（含去正規化 user_name/company_name）並附加子類欄位")]
         public void GetColumns_IncludesCommonAndSubclassColumns()
         {
-            var userRowId = Guid.NewGuid();
+            var rowId = Guid.NewGuid();
             var entry = new TestAuditEntry
             {
-                UserRowId = userRowId,
+                SysRowId = rowId,
                 UserId = "demo",
+                UserName = "Demo User",
                 CompanyId = "c1",
+                CompanyName = "Company One",
                 Source = "Test.Action",
                 Extra = "x",
             };
@@ -37,21 +39,25 @@ namespace Bee.Definition.UnitTests.Logging
             var map = entry.GetColumns().ToDictionary(c => c.Name, c => c.Value);
 
             Assert.Equal("st_log_test", entry.TableName);
+            Assert.Equal(rowId, map["sys_rowid"]);
             Assert.True(map.ContainsKey("log_time"));
-            Assert.Equal(userRowId, map["user_rowid"]);
             Assert.Equal("demo", map["user_id"]);
+            Assert.Equal("Demo User", map["user_name"]);
             Assert.Equal("c1", map["company_id"]);
+            Assert.Equal("Company One", map["company_name"]);
             Assert.Equal("Test.Action", map["source"]);
             Assert.Equal("x", map["extra"]);
+            // Log rows are self-sufficient — no bare user_rowid that would need a join.
+            Assert.False(map.ContainsKey("user_rowid"));
         }
 
         [Fact]
-        [DisplayName("GetColumns 順序：log_time 為第一欄、子類欄位在最後")]
+        [DisplayName("GetColumns 順序：sys_rowid 為第一欄、子類欄位在最後")]
         public void GetColumns_OrdersCommonFirstThenSubclass()
         {
             var columns = new TestAuditEntry { Extra = "x" }.GetColumns();
 
-            Assert.Equal("log_time", columns[0].Name);
+            Assert.Equal("sys_rowid", columns[0].Name);
             Assert.Equal("extra", columns[^1].Name);
         }
 
@@ -62,6 +68,27 @@ namespace Bee.Definition.UnitTests.Logging
             var entry = new TestAuditEntry();
 
             Assert.Equal(DateTimeKind.Utc, entry.LogTimeUtc.Kind);
+        }
+
+        [Fact]
+        [DisplayName("LoginAuditEntry 目標表與 event/fail_reason 欄位正確")]
+        public void LoginAuditEntry_ColumnsAndTable()
+        {
+            var entry = new LoginAuditEntry
+            {
+                UserId = "demo",
+                UserName = "Demo User",
+                Event = LoginEvent.LoginFailed,
+                FailReason = "Invalid username or password.",
+            };
+
+            var map = entry.GetColumns().ToDictionary(c => c.Name, c => c.Value);
+
+            Assert.Equal("st_log_login", entry.TableName);
+            Assert.Equal((int)LoginEvent.LoginFailed, map["event"]);
+            Assert.Equal("Invalid username or password.", map["fail_reason"]);
+            Assert.Equal("demo", map["user_id"]);
+            Assert.Equal("Demo User", map["user_name"]);
         }
 
         [Fact]

@@ -3,31 +3,50 @@ namespace Bee.Definition.Logging
     /// <summary>
     /// Base type for a single audit-trail entry (one row in a <c>st_log_*</c> table). Subclasses
     /// declare their target table and axis-specific columns (login / change / exec / access); the
-    /// common columns shared by every axis — who, when, where, and the request correlation id —
-    /// live here.
+    /// common columns shared by every axis live here.
     /// </summary>
+    /// <remarks>
+    /// Log rows are self-sufficient: log tables are queried without joining other tables (the log
+    /// database is physically separate from the common / company databases, so a cross-database
+    /// join is not even possible). Identifiers are therefore stored denormalised — <c>user_id</c> +
+    /// <c>user_name</c>, <c>company_id</c> + <c>company_name</c> — rather than a bare row id that
+    /// would require a join to resolve.
+    /// </remarks>
     public abstract class AuditEntry
     {
+        /// <summary>Gets the unique row id. Defaults to a new <see cref="Guid"/>.</summary>
+        public Guid SysRowId { get; init; } = Guid.NewGuid();
+
         /// <summary>
         /// Gets the event time in UTC. Defaults to the moment the entry is created, which for
         /// synchronous capture equals the event time.
         /// </summary>
         public DateTime LogTimeUtc { get; init; } = DateTime.UtcNow;
 
-        /// <summary>Gets the acting user's row id (common-database <c>st_user</c>), when known.</summary>
-        public Guid? UserRowId { get; init; }
-
         /// <summary>
-        /// Gets the acting user's login id. Retained even when <see cref="UserRowId"/> is unknown
-        /// (for example a failed login attempt), aligning with the SAP <c>USERNAME</c> convention.
+        /// Gets the acting user's login id (self-sufficient identifier). Retained even when the
+        /// display name is unknown (for example a failed login), aligning with the SAP
+        /// <c>USERNAME</c> convention.
         /// </summary>
         public string? UserId { get; init; }
 
         /// <summary>
-        /// Gets the tenant context. Null for pre-company events such as a login before
-        /// <c>EnterCompany</c>; used to distinguish companies when all logs share one log database.
+        /// Gets the acting user's denormalised display name, so the log row is readable without
+        /// joining the common-database <c>st_user</c> table.
+        /// </summary>
+        public string? UserName { get; init; }
+
+        /// <summary>
+        /// Gets the tenant code (self-sufficient). Null for pre-company events such as a login
+        /// before <c>EnterCompany</c>.
         /// </summary>
         public string? CompanyId { get; init; }
+
+        /// <summary>
+        /// Gets the denormalised company display name, so the log row is readable without a
+        /// cross-database join to the common-database <c>st_company</c> table.
+        /// </summary>
+        public string? CompanyName { get; init; }
 
         /// <summary>Gets the session correlation token, when the event occurs within a session.</summary>
         public Guid? AccessToken { get; init; }
@@ -49,17 +68,20 @@ namespace Bee.Definition.Logging
 
         /// <summary>
         /// Builds the ordered column list for the INSERT: the common columns first, then the
-        /// subclass-specific columns appended by <see cref="AddColumns"/>.
+        /// subclass-specific columns appended by <see cref="AddColumns"/>. The auto-increment
+        /// <c>sys_no</c> is database-generated and intentionally omitted.
         /// </summary>
         /// <returns>The columns to insert, in a stable order.</returns>
         public IReadOnlyList<AuditColumn> GetColumns()
         {
             var columns = new List<AuditColumn>(16)
             {
+                new("sys_rowid", SysRowId),
                 new("log_time", LogTimeUtc),
-                new("user_rowid", UserRowId),
                 new("user_id", UserId),
+                new("user_name", UserName),
                 new("company_id", CompanyId),
+                new("company_name", CompanyName),
                 new("access_token", AccessToken),
                 new("trace_id", TraceId),
                 new("client_ip", ClientIp),

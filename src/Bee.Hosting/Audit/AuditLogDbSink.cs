@@ -65,7 +65,7 @@ namespace Bee.Hosting.Audit
         /// order; values bind positionally through <c>{@Parameters}</c>, with null mapped to
         /// <see cref="DBNull.Value"/> so nullable columns are written as SQL NULL.
         /// </summary>
-        private static DbCommandSpec BuildInsert(AuditEntry entry)
+        internal static DbCommandSpec BuildInsert(AuditEntry entry)
         {
             var columns = entry.GetColumns();
 
