@@ -23,6 +23,7 @@
 		<DbCategory Id="log" DisplayName="Log database">
 			<Tables>
 				<TableItem TableName="st_log_login" DisplayName="Login log" />
+				<TableItem TableName="st_log_change" DisplayName="Data change log" />
 			</Tables>
 		</DbCategory>
 	</Categories>

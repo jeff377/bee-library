@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.Data;
+using System.Globalization;
 using Bee.Definition.Logging;
 using Bee.Definition.Settings;
 
@@ -89,6 +91,68 @@ namespace Bee.Definition.UnitTests.Logging
             Assert.Equal("Invalid username or password.", map["fail_reason"]);
             Assert.Equal("demo", map["user_id"]);
             Assert.Equal("Demo User", map["user_name"]);
+        }
+
+        [Fact]
+        [DisplayName("ChangeAuditEntry 目標表與 prog_id/table_name/row_key/change_kind/is_sensitive/changes_xml 欄位正確")]
+        public void ChangeAuditEntry_ColumnsAndTable()
+        {
+            var entry = new ChangeAuditEntry
+            {
+                ProgId = "Employee",
+                ChangeTableName = "st_employee",
+                RowKey = "abc",
+                ChangeKind = ChangeKind.Update,
+                IsSensitive = false,
+                ChangesXml = "<diffgr:diffgram />",
+            };
+
+            var map = entry.GetColumns().ToDictionary(c => c.Name, c => c.Value);
+
+            Assert.Equal("st_log_change", entry.TableName);
+            Assert.Equal("Employee", map["prog_id"]);
+            Assert.Equal("st_employee", map["table_name"]);
+            Assert.Equal("abc", map["row_key"]);
+            Assert.Equal((int)ChangeKind.Update, map["change_kind"]);
+            Assert.False((bool)map["is_sensitive"]!);
+            Assert.Equal("<diffgr:diffgram />", map["changes_xml"]);
+        }
+
+        [Fact]
+        [DisplayName("DataSet DiffGram 序列化應保留修改欄位的新舊值（changes_xml 設計核心）")]
+        public void DiffGram_PreservesOldAndNewValues()
+        {
+            var ds = new DataSet("form");
+            var table = ds.Tables.Add("st_test");
+            table.Columns.Add("sys_rowid", typeof(string));
+            table.Columns.Add("amount", typeof(int));
+            var row = table.Rows.Add("r1", 100);
+            ds.AcceptChanges();     // baseline: row Unchanged
+            row["amount"] = 200;    // modify → old 100 / new 200
+
+            using var changes = ds.GetChanges();
+            Assert.NotNull(changes);
+
+            string xml;
+            using (var writer = new StringWriter(CultureInfo.InvariantCulture))
+            {
+                changes!.WriteXml(writer, XmlWriteMode.DiffGram);
+                xml = writer.ToString();
+            }
+
+            var restored = new DataSet("form");
+            var rtable = restored.Tables.Add("st_test");
+            rtable.Columns.Add("sys_rowid", typeof(string));
+            rtable.Columns.Add("amount", typeof(int));
+            using (var reader = new StringReader(xml))
+            {
+                restored.ReadXml(reader, XmlReadMode.DiffGram);
+            }
+
+            var restoredRow = restored.Tables["st_test"]!.Rows[0];
+            Assert.Equal(DataRowState.Modified, restoredRow.RowState);
+            Assert.Equal(200, restoredRow["amount", DataRowVersion.Current]);
+            Assert.Equal(100, restoredRow["amount", DataRowVersion.Original]);
         }
 
         [Fact]

@@ -1,4 +1,5 @@
 using System.Data;
+using System.Globalization;
 using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Exceptions;
@@ -7,6 +8,7 @@ using Bee.Definition.Attributes;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Definition.Identity;
+using Bee.Definition.Logging;
 using Bee.Definition.Paging;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
@@ -217,7 +219,21 @@ namespace Bee.Business.Form
             // record persists with it.)
             if (HasExistingMasterWrite(args.DataSet))
                 EnforceWriteScope(args.DataSet, repository);
+
+            // Capture the change set (before/after) and the master key/kind before Save, because
+            // the ADO.NET adapter calls AcceptChanges on success and discards RowState / original
+            // values. Only pay the cost when change auditing is enabled.
+            var masterTableName = DefineAccess.GetFormSchema(ProgId).MasterTable?.TableName ?? string.Empty;
+            bool auditChange = ChangeAuditEnabled();
+            using var changes = auditChange ? args.DataSet.GetChanges() : null;
+            var (rowKey, changeKind) = auditChange
+                ? ExtractMasterChange(args.DataSet, masterTableName)
+                : (null, ChangeKind.Update);
+
             var (refreshed, affected) = repository.Save(args.DataSet);
+
+            if (auditChange && changes != null)
+                WriteChangeAudit(changeKind, rowKey, SerializeDiffGram(changes), masterTableName, ProgId + ".Save");
 
             return new SaveResult
             {
@@ -237,10 +253,147 @@ namespace Bee.Business.Form
             Authorize(PermissionAction.Delete);
 
             var repository = CreateDataFormRepository(ProgId);
-            var rowsAffected = repository.Delete(args.RowId, ResolveScopeFilter(PermissionAction.Delete));
+            var scopeFilter = ResolveScopeFilter(PermissionAction.Delete);
+
+            // Snapshot the record (master + details) before deleting so the audit captures its full
+            // before-image. Only load when change auditing is enabled — the direct-delete path stays
+            // read-free otherwise.
+            bool auditChange = ChangeAuditEnabled();
+            var snapshot = auditChange ? repository.GetData(args.RowId, scopeFilter) : null;
+
+            var rowsAffected = repository.Delete(args.RowId, scopeFilter);
+
+            if (auditChange && rowsAffected > 0)
+                WriteDeleteAudit(snapshot, args.RowId);
 
             return new DeleteResult { RowsAffected = rowsAffected };
         }
+
+        #region 異動記錄（audit trail）
+
+        /// <summary>
+        /// Whether data-change auditing is enabled (global + change category). Resolved through the
+        /// <see cref="IBeeContext.Services"/> escape hatch; false gates out all capture work.
+        /// </summary>
+        private bool ChangeAuditEnabled()
+            => Services.GetService<AuditLogOptions>() is { Enabled: true, ChangeEnabled: true };
+
+        /// <summary>
+        /// Reads the master row's key and derives the <see cref="ChangeKind"/> from its state. Must be
+        /// called before <c>Save</c> applies the changes (which resets RowState).
+        /// </summary>
+        private static (string? rowKey, ChangeKind kind) ExtractMasterChange(DataSet dataSet, string masterTableName)
+        {
+            if (string.IsNullOrEmpty(masterTableName) || !dataSet.Tables.Contains(masterTableName))
+                return (null, ChangeKind.Update);
+
+            var table = dataSet.Tables[masterTableName]!;
+            if (table.Rows.Count == 0 || !table.Columns.Contains(SysFields.RowId))
+                return (null, ChangeKind.Update);
+
+            var row = table.Rows[0];
+            var kind = row.RowState switch
+            {
+                DataRowState.Added => ChangeKind.Insert,
+                DataRowState.Deleted => ChangeKind.Delete,
+                _ => ChangeKind.Update,
+            };
+            var version = row.RowState == DataRowState.Deleted ? DataRowVersion.Original : DataRowVersion.Current;
+            return (ValueUtilities.CStr(row[SysFields.RowId, version]), kind);
+        }
+
+        /// <summary>
+        /// Serialises the changed rows to a DataSet DiffGram, which carries both the current and the
+        /// original (before) values. Plain <c>WriteXml</c> would only write current values.
+        /// </summary>
+        private static string SerializeDiffGram(DataSet changes)
+        {
+            using var writer = new StringWriter(CultureInfo.InvariantCulture);
+            changes.WriteXml(writer, XmlWriteMode.DiffGram);
+            return writer.ToString();
+        }
+
+        /// <summary>
+        /// Writes the delete audit. When the pre-delete <paramref name="snapshot"/> is available its
+        /// rows are marked deleted and serialised as a DiffGram before-image (full deleted content);
+        /// otherwise the deleted key alone is recorded.
+        /// </summary>
+        private void WriteDeleteAudit(DataSet? snapshot, Guid rowId)
+        {
+            var masterTableName = DefineAccess.GetFormSchema(ProgId).MasterTable?.TableName ?? string.Empty;
+            var rowKey = rowId.ToString();
+
+            string xml = MinimalDeleteXml(masterTableName, rowKey);
+            if (snapshot != null && HasAnyRows(snapshot))
+            {
+                MarkAllRowsDeleted(snapshot);
+                using var changes = snapshot.GetChanges();
+                if (changes != null)
+                    xml = SerializeDiffGram(changes);
+            }
+
+            WriteChangeAudit(ChangeKind.Delete, rowKey, xml, masterTableName, ProgId + ".Delete");
+        }
+
+        /// <summary>Marks every row in every table as deleted so <c>GetChanges</c> yields the before-image.</summary>
+        private static void MarkAllRowsDeleted(DataSet dataSet)
+        {
+            foreach (DataTable table in dataSet.Tables)
+            {
+                // Iterate backwards: Delete() on an Added row removes it immediately; loaded rows are
+                // Unchanged so this is defensive.
+                for (int i = table.Rows.Count - 1; i >= 0; i--)
+                {
+                    var row = table.Rows[i];
+                    if (row.RowState != DataRowState.Deleted)
+                        row.Delete();
+                }
+            }
+        }
+
+        private static bool HasAnyRows(DataSet dataSet)
+        {
+            foreach (DataTable table in dataSet.Tables)
+            {
+                if (table.Rows.Count > 0)
+                    return true;
+            }
+            return false;
+        }
+
+        private static string MinimalDeleteXml(string masterTableName, string rowKey)
+            => $"<DeletedRow table=\"{masterTableName}\" sys_rowid=\"{rowKey}\" />";
+
+        /// <summary>
+        /// Builds a <see cref="ChangeAuditEntry"/> from the session (denormalised who / company) and
+        /// the supplied change payload, and writes it best-effort through <see cref="IAuditLogWriter"/>.
+        /// </summary>
+        private void WriteChangeAudit(ChangeKind changeKind, string? rowKey, string changesXml, string masterTableName, string source)
+        {
+            var session = SessionInfoService.Get(AccessToken);
+            var companyId = session?.CompanyId;
+            string? companyName = null;
+            if (!string.IsNullOrEmpty(companyId))
+                companyName = Services.GetService<ICompanyInfoService>()?.Get(companyId)?.CompanyName;
+
+            Services.GetService<IAuditLogWriter>()?.Write(new ChangeAuditEntry
+            {
+                UserId = session?.UserId,
+                UserName = session?.UserName,
+                CompanyId = companyId,
+                CompanyName = companyName,
+                AccessToken = AccessToken,
+                ProgId = ProgId,
+                ChangeTableName = masterTableName,
+                RowKey = rowKey,
+                ChangeKind = changeKind,
+                IsSensitive = false,
+                ChangesXml = changesXml,
+                Source = source,
+            });
+        }
+
+        #endregion
 
         #region 權限驗證（層一 model+action gate）
 

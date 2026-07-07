@@ -31,6 +31,7 @@
 		<DbCategory Id="log" DisplayName="日誌資料庫">
 			<Tables>
 				<TableItem TableName="st_log_login" DisplayName="登入記錄" />
+				<TableItem TableName="st_log_change" DisplayName="異動記錄" />
 			</Tables>
 		</DbCategory>
 	</Categories>

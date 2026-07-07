@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableSchema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DbName="log" TableName="st_log_change" DisplayName="異動記錄">
+	<Fields>
+		<DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
+		<DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
+		<DbField FieldName="log_time" Caption="事件時刻" DbType="DateTime" />
+		<DbField FieldName="user_id" Caption="使用者帳號" DbType="String" Length="50" AllowNull="true" />
+		<DbField FieldName="user_name" Caption="使用者名稱" DbType="String" Length="100" AllowNull="true" />
+		<DbField FieldName="company_id" Caption="公司代碼" DbType="String" Length="50" AllowNull="true" />
+		<DbField FieldName="company_name" Caption="公司名稱" DbType="String" Length="100" AllowNull="true" />
+		<DbField FieldName="access_token" Caption="存取令牌" DbType="Guid" AllowNull="true" />
+		<DbField FieldName="trace_id" Caption="關聯識別" DbType="Guid" AllowNull="true" />
+		<DbField FieldName="client_ip" Caption="來源位址" DbType="String" Length="45" AllowNull="true" />
+		<DbField FieldName="source" Caption="來源標記" DbType="String" Length="100" AllowNull="true" />
+		<DbField FieldName="prog_id" Caption="業務物件" DbType="String" Length="50" />
+		<DbField FieldName="table_name" Caption="主表名稱" DbType="String" Length="50" />
+		<DbField FieldName="row_key" Caption="主檔識別" DbType="String" Length="50" AllowNull="true" />
+		<DbField FieldName="change_kind" Caption="異動類型" DbType="Integer" />
+		<DbField FieldName="is_sensitive" Caption="敏感資料" DbType="Boolean" DefaultValue="0" />
+		<DbField FieldName="changes_xml" Caption="異動內容" DbType="Text" />
+	</Fields>
+	<Indexes>
+		<DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+			<IndexFields>
+				<IndexField FieldName="sys_no" />
+			</IndexFields>
+		</DbTableIndex>
+		<DbTableIndex Name="rx_{0}" Unique="true">
+			<IndexFields>
+				<IndexField FieldName="sys_rowid" />
+			</IndexFields>
+		</DbTableIndex>
+		<DbTableIndex Name="ix_st_log_change_row_key">
+			<IndexFields>
+				<IndexField FieldName="row_key" />
+			</IndexFields>
+		</DbTableIndex>
+	</Indexes>
+</TableSchema>
