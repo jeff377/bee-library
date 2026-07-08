@@ -7,8 +7,9 @@
 | 1 | 記錄異動歷程：`GetRecordHistory(progId, rowKey)` + DiffGram 還原（全還原版） | ✅ 已完成（2026-07-08） |
 | 2a | change 軸清單/明細二段式：`GetChangeLog`（清單）+ `GetChangeDetail`（明細還原）+ `GetRecordHistory` 改標頭清單（共用明細）；`LogQueryArgs` + 分頁 | ✅ 已完成（2026-07-08） |
 | 2b | 其餘軸清單：`GetLoginLog` / `GetAccessLog` / `GetApiAnomalyLog` / `GetDbAnomalyLog`（沿用 2a 的 typed filter + 分頁基礎） | ✅ 已完成（2026-07-08） |
-| 3 | 異常監控細分、跨年 `log_YYYY` 聚合、權限強化 | 📝 待做 |
+| 3 | 進階（有需求再做）：異常監控細分、權限強化 | 📝 待做 |
 
+> **跨年 `log_YYYY` 聚合已移出範圍**（2026-07-08）：延後到實際出現年份分庫需求再做（見 §3 Q4）。
 > **Phase 2a 會回頭調整 Phase 1 已上線的 `GetRecordHistory` 合約**：從「全還原歷程」改為「標頭清單 + `GetChangeDetail` 取單筆明細」（見 §3 Q2 補充、§8 設計）。因套件未發佈、無外部使用者，此 breaking change 可接受。
 
 > 稽核軌跡的**讀取側**。寫入側（項 0–4）已完成、上線；設計理由見 [ADR-027](../adr/adr-027-audit-trail.md)、母計畫 [plan-audit-trail.md](plan-audit-trail.md)。
@@ -51,7 +52,7 @@
   - **明細**（`GetChangeDetail(sysRowId)`）以 `st_log_change.sys_rowid`（Guid）為鍵取單筆，才還原該筆 `changes_xml` 為結構化 before/after（`List<RecordFieldChange>`，沿用 `ChangeDiffGramReader`）。
   - **Phase 1 的 `GetRecordHistory` 一併改為標頭清單**（headers-only + `PagingInfo`），明細統一走 `GetChangeDetail`；原「全還原」版與 `RecordHistoryEntry` typed DTO 退場（`RecordFieldChange` 保留給明細）。分界原則：*未受限的跨記錄查詢用清單+明細；單筆記錄查詢也走清單*（全軸一致）。
 - **Q3 DiffGram 還原 → server 端還原為結構化 before/after**：回傳結構化「表 → 列 → 欄位（舊值 / 新值）」，client 零解析、可跨前端。**實作細節**（實測修正）：寫入側 `WriteXml(XmlWriteMode.DiffGram)` 產出的是**無 schema** 的 DiffGram，`DataSet.ReadXml` 讀不回（回 0 tables）。故還原改以 `XDocument` 直接解析 DiffGram（`data` block 為 current、`diffgr:before` 為 original，以 `diffgr:id` 配對；insert / update / delete 三態）——見 `ChangeDiffGramReader`。**仍 AOT 安全**：走 `XDocument` / `XmlReader`（XXE 已 hardening），非 `XmlSerializer` 反射路徑，ADR-025 的 trim/AOT 雷不適用。
-- **Q4 log DB 路由 → 先單一 log DB**：查詢固定走 `DbScope.Log → "log"`（同寫入側）。年份分庫 `log_YYYY` 的跨年聚合列為 Phase 3。
+- **Q4 log DB 路由 → 單一 log DB（跨年聚合已移出範圍）**：查詢固定走 `DbScope.Log → "log"`（同寫入側）。年份分庫 `log_YYYY` 的跨年讀取聚合**延後、非本計畫範圍**——待實際出現分庫寫入需求再另案評估（讀取端需聚合多個 `DatabaseItem`）。
 - **Q5 權限 → `Authenticated` + `AuditLog` 權限 gate**：BO 方法標 `[ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]`，方法內再以 `IAuthorizationService.Can(AccessToken, "AuditLog", PermissionAction.Read)` 檢查——須被授予稽核讀取權的角色才可查，避免一般使用者讀他人軌跡。此檢查為 company-scoped（需先 `EnterCompany`、`SessionInfo.Roles` 已快照）。
 - **Q6 分頁 → 強制分頁 + 預設 `log_time DESC`**：列表查詢重用 `PagingInfo`，回傳帶分頁資訊；`PageSize` 伺服器端 clamp 上限；查詢須帶時間 / 鍵條件避免全表掃。`GetRecordHistory` 依 `prog_id + row_key` 已天然限縮。
 - **Q7 read-only → 純唯讀**：只提供查詢，不提供任何改寫（log append-only）。retention / 清理屬寫入 / 管理面，另案。
