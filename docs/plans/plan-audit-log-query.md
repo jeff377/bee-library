@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | 記錄異動歷程：`GetRecordHistory(progId, rowKey)` + DiffGram 還原（全還原版） | ✅ 已完成（2026-07-08） |
 | 2a | change 軸清單/明細二段式：`GetChangeLog`（清單）+ `GetChangeDetail`（明細還原）+ `GetRecordHistory` 改標頭清單（共用明細）；`LogQueryArgs` + 分頁 | ✅ 已完成（2026-07-08） |
-| 2b | 其餘軸清單：`GetLoginLog` / `GetAccessLog` / `GetAnomalyLog`（沿用 2a 的 `LogQueryArgs` + 分頁基礎） | 📝 待做 |
+| 2b | 其餘軸清單：`GetLoginLog` / `GetAccessLog` / `GetApiAnomalyLog` / `GetDbAnomalyLog`（沿用 2a 的 typed filter + 分頁基礎） | ✅ 已完成（2026-07-08） |
 | 3 | 異常監控細分、跨年 `log_YYYY` 聚合、權限強化 | 📝 待做 |
 
 > **Phase 2a 會回頭調整 Phase 1 已上線的 `GetRecordHistory` 合約**：從「全還原歷程」改為「標頭清單 + `GetChangeDetail` 取單筆明細」（見 §3 Q2 補充、§8 設計）。因套件未發佈、無外部使用者，此 breaking change 可接受。
@@ -139,6 +139,21 @@ Q1 定案為專屬 BO 軸，故 Phase 1 除方法本身外需新增一條 BO 軸
 - 同步更新 wire DTO、client connector（`GetChangeLogAsync` / `GetChangeDetailAsync` / 改版 `GetRecordHistoryAsync`）、`BoApiSurfaceTests` baseline（+2 方法）、`api-method-reference`(+zh-TW)、既有 Phase 1 測試。
 
 **新增/異動檔案（預估）**：`LogActions`(+2)、contracts（`IGetChangeLog*`/`IGetChangeDetail*` + `ChangeDetail` 結果型別）、`Messages/AuditLog` wire、`Bee.Business/AuditLog`（args/result/BO 方法）、`IAuditLogRepository`(+GetChangeLog/GetChangeById/分頁)、`AuditLogRepository`、client、測試。
+
+## 9. Phase 2b 設計（login / access / anomaly 清單）
+
+沿用 2a 的 typed filter + `PagingOptions` + `LimitBuilder` 分頁基礎（repository 內抽 `WhereBuilder` + `QueryPage` 共用），四軸各一 typed 方法：
+
+| 方法 | 表 | typed filter |
+|------|----|-------------|
+| `GetLoginLog` | `st_log_login` | FromUtc / ToUtc / UserId / Event(LoginEvent) |
+| `GetAccessLog` | `st_log_access` | FromUtc / ToUtc / UserId / ProgId / RowKey |
+| `GetApiAnomalyLog` | `st_log_anomaly_api` | FromUtc / ToUtc / UserId / Method / Kind(AnomalyKind) |
+| `GetDbAnomalyLog` | `st_log_anomaly_db` | FromUtc / ToUtc / DatabaseId / Kind(AnomalyKind) |
+
+**決策：異常 API/DB 拆兩方法（非 `GetAnomalyLog(layer)`）**：對齊 ADR-027 D6「API/DB 分表」——兩表視角/欄位不同（API 有 method + who；DB 有 database_id + command、**無 who/company**），兩個 typed 方法比單一 layer enum + union 欄位更清楚。`GetDbAnomalyLog` 因表無 company 欄，為**跨公司基礎設施檢視**（仍受 `AuditLog` Read gate）；其餘三軸依 session company 過濾。
+
+**共用回應型別**：四方法皆回 `LogListResponse` / `LogListResult`（`DataTable? Table` + `PagingInfo? Paging`）——形狀相同、`DataTable` 自帶各表欄位（同 `GetList` 慣例），省 3 組重複 DTO。（2a 的 `GetChangeLog` 保留自有 `GetChangeLogResponse`，未回頭合併；`GetRecordHistory` 因多帶 `ProgId`/`RowKey` 亦自有型別。）
 
 ## 6. 相依與約束
 

@@ -86,6 +86,88 @@ namespace Bee.Hosting.UnitTests
         [DisplayName("PostgreSQL：GetChangeLog 排序/過濾/分頁 + GetChangeById 應正確")]
         public void ChangeLog_PostgreSQL() => RunChangeLogQuery(DatabaseType.PostgreSQL);
 
+        private void RunOtherAxisQueries(DatabaseType databaseType)
+        {
+            var databaseId = TestDbConventions.GetDatabaseId(databaseType, "log");
+            var connectionManager = _fx.GetRequiredService<IDbConnectionManager>();
+            var dbAccess = new Bee.Db.DbAccess(databaseId, connectionManager);
+            var repository = new AuditLogRepository(connectionManager, databaseId);
+
+            // Login: write one failed-login for a unique user, read it back by user + event filter.
+            var loginUser = "u_" + Guid.NewGuid().ToString("N");
+            dbAccess.Execute(AuditLogDbSink.BuildInsert(new LoginAuditEntry
+            {
+                SysRowId = Guid.NewGuid(),
+                LogTimeUtc = new DateTime(2026, 7, 8, 1, 0, 0, DateTimeKind.Utc),
+                UserId = loginUser,
+                UserName = "U",
+                Event = LoginEvent.LoginFailed,
+                FailReason = "bad password",
+            }));
+            var loginPage = repository.GetLoginLog(
+                new LoginLogQuery { UserId = loginUser, Event = LoginEvent.LoginFailed },
+                new PagingOptions { PageSize = 10, IncludeTotalCount = true });
+            Assert.Single(loginPage.Table.Rows);
+            Assert.Equal(1, loginPage.Paging.TotalCount);
+
+            // Access: write one record-view for a unique prog+row.
+            var accessRow = Guid.NewGuid().ToString();
+            dbAccess.Execute(AuditLogDbSink.BuildInsert(new AccessAuditEntry
+            {
+                SysRowId = Guid.NewGuid(),
+                LogTimeUtc = new DateTime(2026, 7, 8, 1, 0, 0, DateTimeKind.Utc),
+                UserId = "demo",
+                UserName = "Demo",
+                ProgId = "Order",
+                RowKey = accessRow,
+            }));
+            var accessPage = repository.GetAccessLog(
+                new AccessLogQuery { ProgId = "Order", RowKey = accessRow }, new PagingOptions { PageSize = 10 });
+            Assert.Single(accessPage.Table.Rows);
+
+            // API anomaly: write one Slow for a unique method.
+            var method = "M_" + Guid.NewGuid().ToString("N");
+            dbAccess.Execute(AuditLogDbSink.BuildInsert(new ApiAnomalyEntry
+            {
+                SysRowId = Guid.NewGuid(),
+                LogTimeUtc = new DateTime(2026, 7, 8, 1, 0, 0, DateTimeKind.Utc),
+                UserId = "demo",
+                Method = method,
+                Kind = AnomalyKind.Slow,
+                ElapsedMs = 5000,
+                ThresholdMs = 3000,
+            }));
+            var apiPage = repository.GetApiAnomalyLog(
+                new ApiAnomalyLogQuery { Method = method, Kind = AnomalyKind.Slow }, new PagingOptions { PageSize = 10 });
+            Assert.Single(apiPage.Table.Rows);
+
+            // DB anomaly: write one Timeout for a unique database id (no company dimension).
+            var dbId = "d_" + Guid.NewGuid().ToString("N");
+            dbAccess.Execute(AuditLogDbSink.BuildInsert(new DbAnomalyEntry
+            {
+                SysRowId = Guid.NewGuid(),
+                LogTimeUtc = new DateTime(2026, 7, 8, 1, 0, 0, DateTimeKind.Utc),
+                DatabaseId = dbId,
+                Command = "UPDATE ft_order SET amount={0}",
+                Kind = AnomalyKind.Timeout,
+                ElapsedMs = 30000,
+                ErrorType = "DbException",
+                ErrorMessage = "timeout expired",
+            }));
+            var dbPage = repository.GetDbAnomalyLog(
+                new DbAnomalyLogQuery { DatabaseId = dbId, Kind = AnomalyKind.Timeout }, new PagingOptions { PageSize = 10 });
+            Assert.Single(dbPage.Table.Rows);
+            Assert.True(dbPage.Table.Columns.Contains("command"));
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：GetLoginLog / GetAccessLog / GetApiAnomalyLog / GetDbAnomalyLog 過濾應正確")]
+        public void OtherAxes_SqlServer() => RunOtherAxisQueries(DatabaseType.SQLServer);
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("PostgreSQL：GetLoginLog / GetAccessLog / GetApiAnomalyLog / GetDbAnomalyLog 過濾應正確")]
+        public void OtherAxes_PostgreSQL() => RunOtherAxisQueries(DatabaseType.PostgreSQL);
+
         private static ChangeAuditEntry ChangeEntry(Guid sysRowId, string progId, string rowKey, string companyId, ChangeKind kind, DateTime logTimeUtc)
             => new ChangeAuditEntry
             {

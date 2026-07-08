@@ -97,6 +97,10 @@ The change axis uses a **list / detail** split: the list methods return lightwei
 | `GetRecordHistory` | Encrypted | Authenticated | A page of one record's change-event headers (all `st_log_change` events for a `ProgId` + `RowKey`, newest first). Returns a header `DataTable` + `PagingInfo`. |
 | `GetChangeLog` | Encrypted | Authenticated | A filtered, paged list of `st_log_change` event headers across records (typed filter: time range / user / progId / rowKey / change-kind). Returns a header `DataTable` + `PagingInfo`. |
 | `GetChangeDetail` | Encrypted | Authenticated | One change event's `changes_xml` DiffGram restored server-side into structured field-level before/after values, keyed by the event's `SysRowId`. |
+| `GetLoginLog` | Encrypted | Authenticated | Filtered, paged list of `st_log_login` event headers (time / user / event). Returns a header `DataTable` + `PagingInfo`. |
+| `GetAccessLog` | Encrypted | Authenticated | Filtered, paged list of `st_log_access` record-view headers (time / user / progId / rowKey). Returns a header `DataTable` + `PagingInfo`. |
+| `GetApiAnomalyLog` | Encrypted | Authenticated | Filtered, paged list of `st_log_anomaly_api` headers (time / user / method / anomaly-kind). Returns a header `DataTable` + `PagingInfo`. |
+| `GetDbAnomalyLog` | Encrypted | Authenticated | Filtered, paged list of `st_log_anomaly_db` headers (time / databaseId / anomaly-kind). A cross-company infrastructure view (`st_log_anomaly_db` has no company). Returns a header `DataTable` + `PagingInfo`. |
 
 ## Audit side-effects
 

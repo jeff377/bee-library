@@ -1,6 +1,5 @@
 using System.Data;
 using System.Globalization;
-using System.Text;
 using Bee.Db;
 using Bee.Db.Dml;
 using Bee.Db.Manager;
@@ -19,13 +18,24 @@ namespace Bee.Repository.AuditLog
         /// <summary>The framework-wide upper bound for <see cref="PagingOptions.PageSize"/>.</summary>
         private const int MaxPageSize = 1000;
 
-        // Header columns for list queries — deliberately excludes changes_xml (heavy; fetched per row
-        // via GetChangeById). Compile-time constant, no user input, safe to inline.
+        // Header column lists per axis — deliberately exclude any heavy payload (e.g. the change axis'
+        // changes_xml). All are compile-time constants (no user input), safe to inline into SELECTs.
         private const string ChangeHeaderColumns =
             "sys_rowid, log_time, user_id, user_name, company_id, company_name, prog_id, row_key, change_kind, is_sensitive, source";
 
-        // Detail columns — header plus the raw DiffGram payload for a single-row fetch.
         private const string ChangeDetailColumns = ChangeHeaderColumns + ", changes_xml";
+
+        private const string LoginHeaderColumns =
+            "sys_rowid, log_time, user_id, user_name, company_id, company_name, client_ip, source, event, fail_reason";
+
+        private const string AccessHeaderColumns =
+            "sys_rowid, log_time, user_id, user_name, company_id, company_name, client_ip, source, prog_id, row_key";
+
+        private const string ApiAnomalyHeaderColumns =
+            "sys_rowid, log_time, user_id, user_name, company_id, company_name, client_ip, source, method, anomaly_kind, elapsed_ms, threshold_ms, error_type, error_message";
+
+        private const string DbAnomalyHeaderColumns =
+            "sys_rowid, log_time, database_id, command, anomaly_kind, elapsed_ms, threshold_ms, affected_rows, result_rows, error_type, error_message";
 
         private readonly IDbConnectionManager _connectionManager;
         private readonly string _databaseId;
@@ -49,59 +59,15 @@ namespace Bee.Repository.AuditLog
         public AuditLogPage GetChangeLog(ChangeLogQuery query, PagingOptions paging)
         {
             ArgumentNullException.ThrowIfNull(query);
-            ArgumentNullException.ThrowIfNull(paging);
-
-            var dbType = _connectionManager.GetConnectionInfo(_databaseId).DatabaseType;
-            var dbAccess = new DbAccess(_databaseId, _connectionManager);
-            var (where, values) = BuildChangeWhere(query);
-
-            int pageSize = Math.Clamp(paging.PageSize, 1, MaxPageSize);
-            int page = Math.Max(paging.Page, 1);
-            int skip = (page - 1) * pageSize;
-
-            int? totalCount = null;
-            if (paging.IncludeTotalCount)
-            {
-                var countSql = "SELECT COUNT(*) FROM st_log_change" + where;
-                var scalar = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar, countSql, values)).Scalar;
-                totalCount = Convert.ToInt32(scalar, CultureInfo.InvariantCulture);
-            }
-
-            // Probe one extra row when no COUNT is requested, so HasMore is known without a round-trip.
-            int take = paging.IncludeTotalCount ? pageSize : pageSize + 1;
-            // OFFSET/FETCH (SQL Server / Oracle) requires a deterministic ORDER BY; log_time DESC with
-            // the auto-increment sys_no as tiebreak is stable even when timestamps collide.
-            string limit = new LimitBuilder(dbType).Build(skip, take);
-            string sql = "SELECT " + ChangeHeaderColumns + " FROM st_log_change" + where +
-                " ORDER BY log_time DESC, sys_no DESC" + (limit.Length > 0 ? " " + limit : string.Empty);
-            var table = dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable, sql, values)).Table ?? new DataTable();
-
-            bool hasMore;
-            if (paging.IncludeTotalCount)
-            {
-                hasMore = totalCount > skip + table.Rows.Count;
-            }
-            else
-            {
-                hasMore = table.Rows.Count > pageSize;
-                if (hasMore)
-                {
-                    // Trim the probe row so the caller never sees the extra record.
-                    table.Rows.RemoveAt(table.Rows.Count - 1);
-                }
-            }
-
-            return new AuditLogPage
-            {
-                Table = table,
-                Paging = new PagingInfo
-                {
-                    Page = page,
-                    PageSize = pageSize,
-                    TotalCount = totalCount,
-                    HasMore = hasMore,
-                },
-            };
+            var where = new WhereBuilder()
+                .Eq("company_id", query.CompanyId)
+                .Eq("prog_id", query.ProgId)
+                .Eq("row_key", query.RowKey)
+                .Eq("user_id", query.UserId)
+                .Eq("change_kind", (int?)query.ChangeKind)
+                .Gte("log_time", query.FromUtc)
+                .Lte("log_time", query.ToUtc);
+            return QueryPage("st_log_change", ChangeHeaderColumns, where, paging);
         }
 
         /// <inheritdoc/>
@@ -118,35 +84,170 @@ namespace Bee.Repository.AuditLog
             return table != null && table.Rows.Count > 0 ? table : null;
         }
 
-        /// <summary>
-        /// Builds the parameterised WHERE clause for a change-log query. Column names and operators are
-        /// compile-time constants; every value binds through a positional <c>{n}</c> placeholder, never
-        /// string-formatted into the SQL.
-        /// </summary>
-        private static (string Where, object[] Values) BuildChangeWhere(ChangeLogQuery query)
+        /// <inheritdoc/>
+        public AuditLogPage GetLoginLog(LoginLogQuery query, PagingOptions paging)
         {
-            var clauses = new List<string>();
-            var values = new List<object>();
+            ArgumentNullException.ThrowIfNull(query);
+            var where = new WhereBuilder()
+                .Eq("company_id", query.CompanyId)
+                .Eq("user_id", query.UserId)
+                .Eq("event", (int?)query.Event)
+                .Gte("log_time", query.FromUtc)
+                .Lte("log_time", query.ToUtc);
+            return QueryPage("st_log_login", LoginHeaderColumns, where, paging);
+        }
 
-            void Add(string columnAndOperator, object value)
+        /// <inheritdoc/>
+        public AuditLogPage GetAccessLog(AccessLogQuery query, PagingOptions paging)
+        {
+            ArgumentNullException.ThrowIfNull(query);
+            var where = new WhereBuilder()
+                .Eq("company_id", query.CompanyId)
+                .Eq("prog_id", query.ProgId)
+                .Eq("row_key", query.RowKey)
+                .Eq("user_id", query.UserId)
+                .Gte("log_time", query.FromUtc)
+                .Lte("log_time", query.ToUtc);
+            return QueryPage("st_log_access", AccessHeaderColumns, where, paging);
+        }
+
+        /// <inheritdoc/>
+        public AuditLogPage GetApiAnomalyLog(ApiAnomalyLogQuery query, PagingOptions paging)
+        {
+            ArgumentNullException.ThrowIfNull(query);
+            var where = new WhereBuilder()
+                .Eq("company_id", query.CompanyId)
+                .Eq("user_id", query.UserId)
+                .Eq("method", query.Method)
+                .Eq("anomaly_kind", (int?)query.Kind)
+                .Gte("log_time", query.FromUtc)
+                .Lte("log_time", query.ToUtc);
+            return QueryPage("st_log_anomaly_api", ApiAnomalyHeaderColumns, where, paging);
+        }
+
+        /// <inheritdoc/>
+        public AuditLogPage GetDbAnomalyLog(DbAnomalyLogQuery query, PagingOptions paging)
+        {
+            ArgumentNullException.ThrowIfNull(query);
+            // st_log_anomaly_db carries no who / company (DbAccess has no session context), so this is a
+            // cross-company infrastructure view — no company scope filter is possible or applied.
+            var where = new WhereBuilder()
+                .Eq("database_id", query.DatabaseId)
+                .Eq("anomaly_kind", (int?)query.Kind)
+                .Gte("log_time", query.FromUtc)
+                .Lte("log_time", query.ToUtc);
+            return QueryPage("st_log_anomaly_db", DbAnomalyHeaderColumns, where, paging);
+        }
+
+        /// <summary>
+        /// Runs a paged, <c>log_time DESC, sys_no DESC</c>-ordered SELECT of <paramref name="columns"/>
+        /// from <paramref name="table"/> filtered by <paramref name="where"/>. Table and column names are
+        /// compile-time constants; filter values bind through <c>{n}</c> placeholders. Paging reuses the
+        /// dialect <see cref="LimitBuilder"/>; when the total count is not requested a probe row computes
+        /// <c>HasMore</c> without an extra round-trip.
+        /// </summary>
+        private AuditLogPage QueryPage(string table, string columns, WhereBuilder where, PagingOptions paging)
+        {
+            ArgumentNullException.ThrowIfNull(paging);
+
+            var dbType = _connectionManager.GetConnectionInfo(_databaseId).DatabaseType;
+            var dbAccess = new DbAccess(_databaseId, _connectionManager);
+            var (whereSql, values) = where.Build();
+
+            int pageSize = Math.Clamp(paging.PageSize, 1, MaxPageSize);
+            int page = Math.Max(paging.Page, 1);
+            int skip = (page - 1) * pageSize;
+
+            int? totalCount = null;
+            if (paging.IncludeTotalCount)
             {
-                clauses.Add(columnAndOperator + " {" + values.Count.ToString(CultureInfo.InvariantCulture) + "}");
-                values.Add(value);
+                var countSql = "SELECT COUNT(*) FROM " + table + whereSql;
+                var scalar = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar, countSql, values)).Scalar;
+                totalCount = Convert.ToInt32(scalar, CultureInfo.InvariantCulture);
             }
 
-            if (!string.IsNullOrEmpty(query.CompanyId)) { Add("company_id =", query.CompanyId); }
-            if (!string.IsNullOrEmpty(query.ProgId)) { Add("prog_id =", query.ProgId); }
-            if (!string.IsNullOrEmpty(query.RowKey)) { Add("row_key =", query.RowKey); }
-            if (!string.IsNullOrEmpty(query.UserId)) { Add("user_id =", query.UserId); }
-            if (query.ChangeKind.HasValue) { Add("change_kind =", (int)query.ChangeKind.Value); }
-            if (query.FromUtc.HasValue) { Add("log_time >=", query.FromUtc.Value); }
-            if (query.ToUtc.HasValue) { Add("log_time <=", query.ToUtc.Value); }
+            // Probe one extra row when no COUNT is requested, so HasMore is known without a round-trip.
+            // OFFSET/FETCH (SQL Server / Oracle) requires a deterministic ORDER BY; log_time DESC with the
+            // auto-increment sys_no as tiebreak is stable even when timestamps collide.
+            int take = paging.IncludeTotalCount ? pageSize : pageSize + 1;
+            string limit = new LimitBuilder(dbType).Build(skip, take);
+            string sql = "SELECT " + columns + " FROM " + table + whereSql +
+                " ORDER BY log_time DESC, sys_no DESC" + (limit.Length > 0 ? " " + limit : string.Empty);
+            var resultTable = dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable, sql, values)).Table ?? new DataTable();
 
-            if (clauses.Count == 0) { return (string.Empty, Array.Empty<object>()); }
+            bool hasMore;
+            if (paging.IncludeTotalCount)
+            {
+                hasMore = totalCount > skip + resultTable.Rows.Count;
+            }
+            else
+            {
+                hasMore = resultTable.Rows.Count > pageSize;
+                if (hasMore)
+                {
+                    // Trim the probe row so the caller never sees the extra record.
+                    resultTable.Rows.RemoveAt(resultTable.Rows.Count - 1);
+                }
+            }
 
-            var sb = new StringBuilder(" WHERE ");
-            sb.Append(string.Join(" AND ", clauses));
-            return (sb.ToString(), values.ToArray());
+            return new AuditLogPage
+            {
+                Table = resultTable,
+                Paging = new PagingInfo
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                    HasMore = hasMore,
+                },
+            };
+        }
+
+        /// <summary>
+        /// Accumulates AND-combined SQL predicates over compile-time-constant column names, binding each
+        /// value to a positional <c>{n}</c> placeholder so nothing is string-formatted into the SQL.
+        /// Fluent <see cref="Eq(string, string)"/> / <see cref="Gte"/> / <see cref="Lte"/> skip null
+        /// (or empty-string) values, so an unset filter simply adds no clause.
+        /// </summary>
+        private sealed class WhereBuilder
+        {
+            private readonly List<string> _clauses = [];
+            private readonly List<object> _values = [];
+
+            public WhereBuilder Eq(string column, string? value)
+            {
+                if (!string.IsNullOrEmpty(value)) { Add(column, "=", value); }
+                return this;
+            }
+
+            public WhereBuilder Eq(string column, int? value)
+            {
+                if (value.HasValue) { Add(column, "=", value.Value); }
+                return this;
+            }
+
+            public WhereBuilder Gte(string column, DateTime? value)
+            {
+                if (value.HasValue) { Add(column, ">=", value.Value); }
+                return this;
+            }
+
+            public WhereBuilder Lte(string column, DateTime? value)
+            {
+                if (value.HasValue) { Add(column, "<=", value.Value); }
+                return this;
+            }
+
+            private void Add(string column, string op, object value)
+            {
+                _clauses.Add(column + " " + op + " {" + _values.Count.ToString(CultureInfo.InvariantCulture) + "}");
+                _values.Add(value);
+            }
+
+            public (string Where, object[] Values) Build()
+                => _clauses.Count == 0
+                    ? (string.Empty, Array.Empty<object>())
+                    : (" WHERE " + string.Join(" AND ", _clauses), _values.ToArray());
         }
     }
 }

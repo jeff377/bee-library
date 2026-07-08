@@ -74,5 +74,41 @@ namespace Bee.Api.Client.Connectors
             var request = new GetChangeDetailRequest { SysRowId = sysRowId };
             return await ExecuteAsync<GetChangeDetailResponse>(LogActions.GetChangeDetail, request).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// Asynchronously gets a filtered, paged list of <c>st_log_login</c> event headers.
+        /// </summary>
+        /// <param name="request">The login-log list request (typed filter + optional paging).</param>
+        public virtual async Task<LogListResponse> GetLoginLogAsync(GetLoginLogRequest request)
+        {
+            return await ExecuteAsync<LogListResponse>(LogActions.GetLoginLog, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously gets a filtered, paged list of <c>st_log_access</c> record-view headers.
+        /// </summary>
+        /// <param name="request">The access-log list request (typed filter + optional paging).</param>
+        public virtual async Task<LogListResponse> GetAccessLogAsync(GetAccessLogRequest request)
+        {
+            return await ExecuteAsync<LogListResponse>(LogActions.GetAccessLog, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously gets a filtered, paged list of <c>st_log_anomaly_api</c> API-anomaly headers.
+        /// </summary>
+        /// <param name="request">The API-anomaly list request (typed filter + optional paging).</param>
+        public virtual async Task<LogListResponse> GetApiAnomalyLogAsync(GetApiAnomalyLogRequest request)
+        {
+            return await ExecuteAsync<LogListResponse>(LogActions.GetApiAnomalyLog, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously gets a filtered, paged list of <c>st_log_anomaly_db</c> DB-anomaly headers.
+        /// </summary>
+        /// <param name="request">The DB-anomaly list request (typed filter + optional paging).</param>
+        public virtual async Task<LogListResponse> GetDbAnomalyLogAsync(GetDbAnomalyLogRequest request)
+        {
+            return await ExecuteAsync<LogListResponse>(LogActions.GetDbAnomalyLog, request).ConfigureAwait(false);
+        }
     }
 }

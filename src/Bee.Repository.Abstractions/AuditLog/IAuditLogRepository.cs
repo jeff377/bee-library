@@ -32,5 +32,34 @@ namespace Bee.Repository.Abstractions.AuditLog
         /// </param>
         /// <returns>A one-row <see cref="DataTable"/>, or <c>null</c> when no such row is in scope.</returns>
         DataTable? GetChangeById(Guid sysRowId, string? companyId);
+
+        /// <summary>
+        /// Reads a page of <c>st_log_login</c> event headers matching <paramref name="query"/>, newest first.
+        /// </summary>
+        /// <param name="query">The typed, AND-combined filter (all fields optional).</param>
+        /// <param name="paging">The page request.</param>
+        AuditLogPage GetLoginLog(LoginLogQuery query, PagingOptions paging);
+
+        /// <summary>
+        /// Reads a page of <c>st_log_access</c> record-view headers matching <paramref name="query"/>, newest first.
+        /// </summary>
+        /// <param name="query">The typed, AND-combined filter (all fields optional).</param>
+        /// <param name="paging">The page request.</param>
+        AuditLogPage GetAccessLog(AccessLogQuery query, PagingOptions paging);
+
+        /// <summary>
+        /// Reads a page of <c>st_log_anomaly_api</c> API-anomaly headers matching <paramref name="query"/>, newest first.
+        /// </summary>
+        /// <param name="query">The typed, AND-combined filter (all fields optional).</param>
+        /// <param name="paging">The page request.</param>
+        AuditLogPage GetApiAnomalyLog(ApiAnomalyLogQuery query, PagingOptions paging);
+
+        /// <summary>
+        /// Reads a page of <c>st_log_anomaly_db</c> DB-anomaly headers matching <paramref name="query"/>, newest first.
+        /// A cross-company infrastructure view (the table carries no company).
+        /// </summary>
+        /// <param name="query">The typed, AND-combined filter (all fields optional).</param>
+        /// <param name="paging">The page request.</param>
+        AuditLogPage GetDbAnomalyLog(DbAnomalyLogQuery query, PagingOptions paging);
     }
 }

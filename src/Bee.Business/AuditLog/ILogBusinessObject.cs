@@ -25,5 +25,21 @@ namespace Bee.Business.AuditLog
         /// </summary>
         /// <param name="args">The input arguments carrying the event's <c>SysRowId</c>.</param>
         GetChangeDetailResult GetChangeDetail(GetChangeDetailArgs args);
+
+        /// <summary>Gets a filtered, paged list of <c>st_log_login</c> event headers.</summary>
+        /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
+        LogListResult GetLoginLog(GetLoginLogArgs args);
+
+        /// <summary>Gets a filtered, paged list of <c>st_log_access</c> record-view headers.</summary>
+        /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
+        LogListResult GetAccessLog(GetAccessLogArgs args);
+
+        /// <summary>Gets a filtered, paged list of <c>st_log_anomaly_api</c> API-anomaly headers.</summary>
+        /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
+        LogListResult GetApiAnomalyLog(GetApiAnomalyLogArgs args);
+
+        /// <summary>Gets a filtered, paged list of <c>st_log_anomaly_db</c> DB-anomaly headers.</summary>
+        /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
+        LogListResult GetDbAnomalyLog(GetDbAnomalyLogArgs args);
     }
 }

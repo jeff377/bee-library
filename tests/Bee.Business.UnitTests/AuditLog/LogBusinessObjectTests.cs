@@ -161,6 +161,71 @@ namespace Bee.Business.UnitTests.AuditLog
                 bo.GetChangeDetail(new GetChangeDetailArgs { SysRowId = Guid.NewGuid() }));
         }
 
+        // ---- login / access / anomaly lists ----
+
+        [Fact]
+        [DisplayName("GetLoginLog 應回清單 + 分頁，並透傳 event / user filter")]
+        public void GetLoginLog_Authorized_PassesFilter()
+        {
+            var repo = new StubAuditLogRepository(HeaderPage(2));
+            var result = Bo(repo).GetLoginLog(new GetLoginLogArgs { UserId = "demo", Event = LoginEvent.LoginFailed });
+
+            Assert.Equal(2, result.Table!.Rows.Count);
+            var q = Assert.IsType<LoginLogQuery>(repo.LastListQuery);
+            Assert.Equal("demo", q.UserId);
+            Assert.Equal(LoginEvent.LoginFailed, q.Event);
+        }
+
+        [Fact]
+        [DisplayName("GetAccessLog 應回清單 + 分頁，並透傳 progId / rowKey filter")]
+        public void GetAccessLog_Authorized_PassesFilter()
+        {
+            var repo = new StubAuditLogRepository(HeaderPage(1));
+            var result = Bo(repo).GetAccessLog(new GetAccessLogArgs { ProgId = "Order", RowKey = "R-9" });
+
+            Assert.Single(result.Table!.Rows);
+            var q = Assert.IsType<AccessLogQuery>(repo.LastListQuery);
+            Assert.Equal("Order", q.ProgId);
+            Assert.Equal("R-9", q.RowKey);
+        }
+
+        [Fact]
+        [DisplayName("GetApiAnomalyLog 應回清單，並透傳 method / kind filter")]
+        public void GetApiAnomalyLog_Authorized_PassesFilter()
+        {
+            var repo = new StubAuditLogRepository(HeaderPage(3));
+            var result = Bo(repo).GetApiAnomalyLog(new GetApiAnomalyLogArgs { Method = "Order.Save", Kind = AnomalyKind.Slow });
+
+            Assert.Equal(3, result.Table!.Rows.Count);
+            var q = Assert.IsType<ApiAnomalyLogQuery>(repo.LastListQuery);
+            Assert.Equal("Order.Save", q.Method);
+            Assert.Equal(AnomalyKind.Slow, q.Kind);
+        }
+
+        [Fact]
+        [DisplayName("GetDbAnomalyLog 應回清單，並透傳 databaseId / kind filter")]
+        public void GetDbAnomalyLog_Authorized_PassesFilter()
+        {
+            var repo = new StubAuditLogRepository(HeaderPage(1));
+            var result = Bo(repo).GetDbAnomalyLog(new GetDbAnomalyLogArgs { DatabaseId = "company", Kind = AnomalyKind.Timeout });
+
+            Assert.Single(result.Table!.Rows);
+            var q = Assert.IsType<DbAnomalyLogQuery>(repo.LastListQuery);
+            Assert.Equal("company", q.DatabaseId);
+            Assert.Equal(AnomalyKind.Timeout, q.Kind);
+        }
+
+        [Fact]
+        [DisplayName("清單方法未授權應丟 UnauthorizedAccessException")]
+        public void ListMethods_NotAuthorized_Throw()
+        {
+            var bo = Bo(new StubAuditLogRepository(HeaderPage(0)), authorized: false);
+            Assert.Throws<UnauthorizedAccessException>(() => bo.GetLoginLog(new GetLoginLogArgs()));
+            Assert.Throws<UnauthorizedAccessException>(() => bo.GetAccessLog(new GetAccessLogArgs()));
+            Assert.Throws<UnauthorizedAccessException>(() => bo.GetApiAnomalyLog(new GetApiAnomalyLogArgs()));
+            Assert.Throws<UnauthorizedAccessException>(() => bo.GetDbAnomalyLog(new GetDbAnomalyLogArgs()));
+        }
+
         // ---- helpers ----
 
         private static DataTable HeaderTable()
@@ -230,6 +295,7 @@ namespace Bee.Business.UnitTests.AuditLog
             public ChangeLogQuery? LastQuery { get; private set; }
             public PagingOptions? LastPaging { get; private set; }
             public Guid? LastDetailId { get; private set; }
+            public object? LastListQuery { get; private set; }
 
             public StubAuditLogRepository(AuditLogPage page, DataTable? detail = null)
             {
@@ -249,6 +315,11 @@ namespace Bee.Business.UnitTests.AuditLog
                 LastDetailId = sysRowId;
                 return _detail;
             }
+
+            public AuditLogPage GetLoginLog(LoginLogQuery query, PagingOptions paging) { LastListQuery = query; LastPaging = paging; return _page; }
+            public AuditLogPage GetAccessLog(AccessLogQuery query, PagingOptions paging) { LastListQuery = query; LastPaging = paging; return _page; }
+            public AuditLogPage GetApiAnomalyLog(ApiAnomalyLogQuery query, PagingOptions paging) { LastListQuery = query; LastPaging = paging; return _page; }
+            public AuditLogPage GetDbAnomalyLog(DbAnomalyLogQuery query, PagingOptions paging) { LastListQuery = query; LastPaging = paging; return _page; }
         }
 
         private sealed class StubAuditLogRepositoryFactory : IAuditLogRepositoryFactory

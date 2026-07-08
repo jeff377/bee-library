@@ -131,6 +131,99 @@ namespace Bee.Business.AuditLog
             };
         }
 
+        /// <summary>
+        /// Gets a filtered, paged list of <c>st_log_login</c> event headers.
+        /// </summary>
+        /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual LogListResult GetLoginLog(GetLoginLogArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            EnsureAuditReadAllowed();
+
+            var query = new LoginLogQuery
+            {
+                FromUtc = args.FromUtc,
+                ToUtc = args.ToUtc,
+                UserId = args.UserId,
+                Event = args.Event,
+                CompanyId = CurrentCompanyId(),
+            };
+            return ToResult(Repository().GetLoginLog(query, args.Paging ?? new PagingOptions()));
+        }
+
+        /// <summary>
+        /// Gets a filtered, paged list of <c>st_log_access</c> record-view headers.
+        /// </summary>
+        /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual LogListResult GetAccessLog(GetAccessLogArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            EnsureAuditReadAllowed();
+
+            var query = new AccessLogQuery
+            {
+                FromUtc = args.FromUtc,
+                ToUtc = args.ToUtc,
+                UserId = args.UserId,
+                ProgId = args.ProgId,
+                RowKey = args.RowKey,
+                CompanyId = CurrentCompanyId(),
+            };
+            return ToResult(Repository().GetAccessLog(query, args.Paging ?? new PagingOptions()));
+        }
+
+        /// <summary>
+        /// Gets a filtered, paged list of <c>st_log_anomaly_api</c> API-anomaly headers.
+        /// </summary>
+        /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual LogListResult GetApiAnomalyLog(GetApiAnomalyLogArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            EnsureAuditReadAllowed();
+
+            var query = new ApiAnomalyLogQuery
+            {
+                FromUtc = args.FromUtc,
+                ToUtc = args.ToUtc,
+                UserId = args.UserId,
+                Method = args.Method,
+                Kind = args.Kind,
+                CompanyId = CurrentCompanyId(),
+            };
+            return ToResult(Repository().GetApiAnomalyLog(query, args.Paging ?? new PagingOptions()));
+        }
+
+        /// <summary>
+        /// Gets a filtered, paged list of <c>st_log_anomaly_db</c> DB-anomaly headers.
+        /// </summary>
+        /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
+        /// <remarks>
+        /// <c>st_log_anomaly_db</c> carries no company, so this is a cross-company infrastructure view;
+        /// it is still gated behind the <c>AuditLog</c> read permission.
+        /// </remarks>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual LogListResult GetDbAnomalyLog(GetDbAnomalyLogArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            EnsureAuditReadAllowed();
+
+            var query = new DbAnomalyLogQuery
+            {
+                FromUtc = args.FromUtc,
+                ToUtc = args.ToUtc,
+                DatabaseId = args.DatabaseId,
+                Kind = args.Kind,
+            };
+            return ToResult(Repository().GetDbAnomalyLog(query, args.Paging ?? new PagingOptions()));
+        }
+
+        /// <summary>Maps a repository <see cref="AuditLogPage"/> to the shared list result.</summary>
+        private static LogListResult ToResult(AuditLogPage page)
+            => new LogListResult { Table = page.Table, Paging = page.Paging };
+
         /// <summary>Resolves the log-scoped repository from the DI escape hatch.</summary>
         private IAuditLogRepository Repository()
             => Services.GetRequiredService<IAuditLogRepositoryFactory>().CreateAuditLogRepository();

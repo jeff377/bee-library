@@ -103,6 +103,31 @@ namespace Bee.Api.Core.UnitTests.AuditLog
             Assert.Equal(ChangeKind.Insert, result.ChangeKind);
         }
 
+        [Theory]
+        [InlineData("GetLoginLog")]
+        [InlineData("GetAccessLog")]
+        [InlineData("GetApiAnomalyLog")]
+        [InlineData("GetDbAnomalyLog")]
+        [DisplayName("AuditLog 各清單 action 經 executor 應派發並回 LogListResponse")]
+        public void ListActions_ThroughJsonRpc_ReturnLogListResponse(string action)
+        {
+            var repo = new StubAuditLogRepository(HeaderPage(2), null);
+            object request = action switch
+            {
+                "GetLoginLog" => new GetLoginLogRequest { UserId = "demo", Event = LoginEvent.LoginFailed },
+                "GetAccessLog" => new GetAccessLogRequest { ProgId = "Order" },
+                "GetApiAnomalyLog" => new GetApiAnomalyLogRequest { Kind = AnomalyKind.Slow },
+                _ => new GetDbAnomalyLogRequest { DatabaseId = "company", Kind = AnomalyKind.Timeout },
+            };
+
+            var response = Dispatch(repo, action, request);
+
+            Assert.Null(response.Error);
+            var result = Assert.IsType<LogListResponse>(response.Result!.Value);
+            Assert.Equal(2, result.Table!.Rows.Count);
+            Assert.NotNull(result.Paging);
+        }
+
         private static DataTable HeaderTable(bool withChangesXml = false)
         {
             var t = new DataTable("st_log_change");
@@ -155,6 +180,10 @@ namespace Bee.Api.Core.UnitTests.AuditLog
             public StubAuditLogRepository(AuditLogPage page, DataTable? detail) { _page = page; _detail = detail; }
             public AuditLogPage GetChangeLog(ChangeLogQuery query, PagingOptions paging) => _page;
             public DataTable? GetChangeById(Guid sysRowId, string? companyId) => _detail;
+            public AuditLogPage GetLoginLog(LoginLogQuery query, PagingOptions paging) => _page;
+            public AuditLogPage GetAccessLog(AccessLogQuery query, PagingOptions paging) => _page;
+            public AuditLogPage GetApiAnomalyLog(ApiAnomalyLogQuery query, PagingOptions paging) => _page;
+            public AuditLogPage GetDbAnomalyLog(DbAnomalyLogQuery query, PagingOptions paging) => _page;
         }
 
         private sealed class StubAuditLogRepositoryFactory : IAuditLogRepositoryFactory

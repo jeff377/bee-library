@@ -22,5 +22,25 @@ namespace Bee.Definition
         /// Gets one change event's restored field-level before/after detail (by its <c>sys_rowid</c>).
         /// </summary>
         public const string GetChangeDetail = "GetChangeDetail";
+
+        /// <summary>
+        /// Gets a filtered, paged list of <c>st_log_login</c> event headers.
+        /// </summary>
+        public const string GetLoginLog = "GetLoginLog";
+
+        /// <summary>
+        /// Gets a filtered, paged list of <c>st_log_access</c> record-view headers.
+        /// </summary>
+        public const string GetAccessLog = "GetAccessLog";
+
+        /// <summary>
+        /// Gets a filtered, paged list of <c>st_log_anomaly_api</c> API-anomaly headers.
+        /// </summary>
+        public const string GetApiAnomalyLog = "GetApiAnomalyLog";
+
+        /// <summary>
+        /// Gets a filtered, paged list of <c>st_log_anomaly_db</c> DB-anomaly headers.
+        /// </summary>
+        public const string GetDbAnomalyLog = "GetDbAnomalyLog";
     }
 }

@@ -125,6 +125,50 @@ namespace Bee.Api.Core.UnitTests.AuditLog
         }
 
         [Fact]
+        [DisplayName("GetLoginLogRequest 應 round-trip 還原 nullable LoginEvent + 分頁")]
+        public void GetLoginLogRequest_RoundTrip()
+        {
+            var request = new GetLoginLogRequest
+            {
+                UserId = "demo",
+                Event = LoginEvent.LockedOut,
+                Paging = new PagingOptions { Page = 3, PageSize = 20 },
+            };
+
+            var restored = MessagePackCodec.Deserialize<GetLoginLogRequest>(MessagePackCodec.Serialize(request));
+
+            Assert.NotNull(restored);
+            Assert.Equal("demo", restored!.UserId);
+            Assert.Equal(LoginEvent.LockedOut, restored.Event);
+            Assert.Null(restored.FromUtc);
+            Assert.Equal(3, restored.Paging!.Page);
+        }
+
+        [Fact]
+        [DisplayName("LogListResponse 帶 DataTable + PagingInfo 應 round-trip（login/access/anomaly 共用）")]
+        public void LogListResponse_RoundTrip()
+        {
+            var table = new DataTable("st_log_login");
+            table.Columns.Add("sys_rowid", typeof(Guid));
+            table.Columns.Add("event", typeof(int));
+            var id = Guid.NewGuid();
+            table.Rows.Add(id, (int)LoginEvent.LoginSucceeded);
+
+            var response = new LogListResponse
+            {
+                Table = table,
+                Paging = new PagingInfo { Page = 1, PageSize = 50, TotalCount = 1, HasMore = false },
+            };
+
+            var restored = MessagePackCodec.Deserialize<LogListResponse>(MessagePackCodec.Serialize(response));
+
+            Assert.NotNull(restored);
+            Assert.Single(restored!.Table!.Rows);
+            Assert.Equal(id, (Guid)restored.Table.Rows[0]["sys_rowid"]);
+            Assert.Equal(1, restored.Paging!.TotalCount);
+        }
+
+        [Fact]
         [DisplayName("GetChangeDetailResponse 空 Fields 應 round-trip 且不 NRE")]
         public void GetChangeDetailResponse_EmptyFields_RoundTrip()
         {
