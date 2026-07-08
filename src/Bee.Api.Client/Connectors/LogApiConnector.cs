@@ -1,6 +1,7 @@
 using Bee.Api.Core.Messages;
 using Bee.Api.Core.Messages.AuditLog;
 using Bee.Definition;
+using Bee.Definition.Paging;
 
 namespace Bee.Api.Client.Connectors
 {
@@ -41,15 +42,37 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Asynchronously gets a record's change history (all <c>st_log_change</c> events for a
-        /// <c>progId</c> + <c>rowKey</c>), each with restored before/after field values.
+        /// Asynchronously gets a page of one record's change-event headers (all <c>st_log_change</c>
+        /// events for a <c>progId</c> + <c>rowKey</c>, newest first). Fetch a single event's before/after
+        /// detail with <see cref="GetChangeDetailAsync"/>.
         /// </summary>
         /// <param name="progId">The business object (program) id whose record history is requested.</param>
         /// <param name="rowKey">The master record key (its <c>sys_rowid</c>).</param>
-        public virtual async Task<GetRecordHistoryResponse> GetRecordHistoryAsync(string progId, string rowKey)
+        /// <param name="paging">The paging request; <c>null</c> applies the server default page.</param>
+        public virtual async Task<GetRecordHistoryResponse> GetRecordHistoryAsync(string progId, string rowKey, PagingOptions? paging = null)
         {
-            var request = new GetRecordHistoryRequest { ProgId = progId, RowKey = rowKey };
+            var request = new GetRecordHistoryRequest { ProgId = progId, RowKey = rowKey, Paging = paging };
             return await ExecuteAsync<GetRecordHistoryResponse>(LogActions.GetRecordHistory, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously gets a filtered, paged list of <c>st_log_change</c> event headers across records.
+        /// </summary>
+        /// <param name="request">The change-log list request (typed filter + optional paging).</param>
+        public virtual async Task<GetChangeLogResponse> GetChangeLogAsync(GetChangeLogRequest request)
+        {
+            return await ExecuteAsync<GetChangeLogResponse>(LogActions.GetChangeLog, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously gets one change event's restored field-level before/after detail, by its log
+        /// row id (<c>st_log_change.sys_rowid</c>).
+        /// </summary>
+        /// <param name="sysRowId">The change event's log row id.</param>
+        public virtual async Task<GetChangeDetailResponse> GetChangeDetailAsync(Guid sysRowId)
+        {
+            var request = new GetChangeDetailRequest { SysRowId = sysRowId };
+            return await ExecuteAsync<GetChangeDetailResponse>(LogActions.GetChangeDetail, request).ConfigureAwait(false);
         }
     }
 }

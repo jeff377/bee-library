@@ -1,10 +1,12 @@
+using System.Data;
 using Bee.Api.Contracts;
+using Bee.Definition.Paging;
 using MessagePack;
 
 namespace Bee.Api.Core.Messages.AuditLog
 {
     /// <summary>
-    /// API response for the get-record-history operation.
+    /// API response for the get-record-history operation: a page of change-event headers for one record.
     /// </summary>
     [MessagePackObject]
     public class GetRecordHistoryResponse : ApiResponse, IGetRecordHistoryResponse
@@ -22,14 +24,17 @@ namespace Bee.Api.Core.Messages.AuditLog
         public string RowKey { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the change events for the record, ordered by <c>log_time</c> descending.
+        /// Gets or sets the change-event header rows for the record, ordered by <c>log_time</c> descending.
         /// </summary>
         [Key(102)]
-        public List<RecordHistoryEntry> Changes { get; set; } = [];
+        public DataTable? Table { get; set; }
 
-        /// <inheritdoc/>
-        IReadOnlyList<RecordHistoryEntry> IGetRecordHistoryResponse.Changes => Changes;
+        /// <summary>
+        /// Gets or sets the paging metadata for this page.
+        /// </summary>
+        [Key(103)]
+        public PagingInfo? Paging { get; set; }
 
-        // Add new fields starting from Key(103).
+        // Add new fields starting from Key(104).
     }
 }

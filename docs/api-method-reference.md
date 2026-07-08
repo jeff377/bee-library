@@ -90,9 +90,13 @@ Per-program BO instance, accessed as `<progId>.<action>` over the wire
 
 Read-only queries over the `st_log_*` audit tables (the *read* side of the audit trail; the write side is the side-effects below). Dispatched as `AuditLog.<action>`. Every action is gated behind the `AuditLog` permission model (a `Read` grant is required) so a general user cannot read another's trail, and results are scoped to the caller's current company.
 
+The change axis uses a **list / detail** split: the list methods return lightweight event *headers* (paged `DataTable`, no DiffGram); the DiffGram is restored on demand per event via `GetChangeDetail`.
+
 | Method | Protection | Auth | Purpose |
 |--------|------------|------|---------|
-| `GetRecordHistory` | Encrypted | Authenticated | Change history of one record (all `st_log_change` events for a `ProgId` + `RowKey`), newest first, each event's `changes_xml` DiffGram restored server-side into structured field-level before/after values. |
+| `GetRecordHistory` | Encrypted | Authenticated | A page of one record's change-event headers (all `st_log_change` events for a `ProgId` + `RowKey`, newest first). Returns a header `DataTable` + `PagingInfo`. |
+| `GetChangeLog` | Encrypted | Authenticated | A filtered, paged list of `st_log_change` event headers across records (typed filter: time range / user / progId / rowKey / change-kind). Returns a header `DataTable` + `PagingInfo`. |
+| `GetChangeDetail` | Encrypted | Authenticated | One change event's `changes_xml` DiffGram restored server-side into structured field-level before/after values, keyed by the event's `SysRowId`. |
 
 ## Audit side-effects
 

@@ -1,4 +1,5 @@
 using System.Data;
+using Bee.Definition.Paging;
 
 namespace Bee.Repository.Abstractions.AuditLog
 {
@@ -10,18 +11,26 @@ namespace Bee.Repository.Abstractions.AuditLog
     public interface IAuditLogRepository
     {
         /// <summary>
-        /// Reads all <c>st_log_change</c> rows for one record (a <c>progId</c> plus its master
-        /// <c>row_key</c>), ordered by <c>log_time</c> descending (newest first). Each row still
-        /// carries its raw <c>changes_xml</c> DiffGram for the caller to restore.
+        /// Reads a page of <c>st_log_change</c> event headers matching <paramref name="query"/>, ordered
+        /// by <c>log_time</c> descending (newest first, with <c>sys_no</c> as a deterministic tiebreak).
+        /// Header columns only — the <c>changes_xml</c> DiffGram is intentionally excluded; fetch a
+        /// single event's detail with <see cref="GetChangeById"/> when needed.
         /// </summary>
-        /// <param name="progId">The business object (program) id.</param>
-        /// <param name="rowKey">The master record key (its <c>sys_rowid</c>).</param>
+        /// <param name="query">The typed, AND-combined filter (all fields optional).</param>
+        /// <param name="paging">The page request (page / size / whether to include the total count).</param>
+        /// <returns>The header rows plus paging metadata.</returns>
+        AuditLogPage GetChangeLog(ChangeLogQuery query, PagingOptions paging);
+
+        /// <summary>
+        /// Reads a single <c>st_log_change</c> row by its <c>sys_rowid</c>, including the raw
+        /// <c>changes_xml</c> DiffGram for the caller to restore.
+        /// </summary>
+        /// <param name="sysRowId">The log row's unique id (<c>st_log_change.sys_rowid</c>).</param>
         /// <param name="companyId">
-        /// When non-empty, restricts the result to rows whose denormalised <c>company_id</c> matches,
-        /// so a caller can only read their own company's trail; when <c>null</c>/empty, no company
-        /// restriction is applied.
+        /// When non-empty, additionally requires the row's denormalised <c>company_id</c> to match, so a
+        /// caller cannot read another company's event by id.
         /// </param>
-        /// <returns>The matching change rows as a <see cref="DataTable"/>; empty when none match.</returns>
-        DataTable GetRecordChangeHistory(string progId, string rowKey, string? companyId);
+        /// <returns>A one-row <see cref="DataTable"/>, or <c>null</c> when no such row is in scope.</returns>
+        DataTable? GetChangeById(Guid sysRowId, string? companyId);
     }
 }

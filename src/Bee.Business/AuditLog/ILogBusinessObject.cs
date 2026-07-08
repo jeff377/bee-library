@@ -8,10 +8,22 @@ namespace Bee.Business.AuditLog
     public interface ILogBusinessObject : IBusinessObject
     {
         /// <summary>
-        /// Gets a record's change history (all <c>st_log_change</c> events for a <c>progId</c> +
-        /// <c>rowKey</c>), each with its DiffGram restored into structured before/after field values.
+        /// Gets a page of one record's change-event headers (all <c>st_log_change</c> events for a
+        /// <c>progId</c> + <c>rowKey</c>, newest first).
         /// </summary>
-        /// <param name="args">The input arguments carrying the target <c>ProgId</c> and <c>RowKey</c>.</param>
+        /// <param name="args">The input arguments carrying <c>ProgId</c>, <c>RowKey</c> and optional paging.</param>
         GetRecordHistoryResult GetRecordHistory(GetRecordHistoryArgs args);
+
+        /// <summary>
+        /// Gets a filtered, paged list of <c>st_log_change</c> event headers across records.
+        /// </summary>
+        /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
+        GetChangeLogResult GetChangeLog(GetChangeLogArgs args);
+
+        /// <summary>
+        /// Gets one change event's restored field-level before/after detail, by its log row id.
+        /// </summary>
+        /// <param name="args">The input arguments carrying the event's <c>SysRowId</c>.</param>
+        GetChangeDetailResult GetChangeDetail(GetChangeDetailArgs args);
     }
 }

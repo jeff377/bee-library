@@ -1,8 +1,12 @@
+using System.Data;
+using Bee.Definition.Paging;
+
 namespace Bee.Api.Contracts
 {
     /// <summary>
-    /// Contract interface for the get-record-history response: the queried record identity plus its
-    /// change events, newest first, each with restored before/after field values.
+    /// Contract interface for the get-record-history response: the queried record identity plus a page
+    /// of its change-event headers (newest first). Field-level before/after detail is fetched per event
+    /// via get-change-detail — the list itself does not restore the DiffGram.
     /// </summary>
     public interface IGetRecordHistoryResponse
     {
@@ -17,8 +21,13 @@ namespace Bee.Api.Contracts
         string RowKey { get; }
 
         /// <summary>
-        /// Gets the change events for the record, ordered by <c>log_time</c> descending (newest first).
+        /// Gets the change-event header rows for the record, ordered by <c>log_time</c> descending.
         /// </summary>
-        IReadOnlyList<RecordHistoryEntry> Changes { get; }
+        DataTable? Table { get; }
+
+        /// <summary>
+        /// Gets the paging metadata for this page.
+        /// </summary>
+        PagingInfo? Paging { get; }
     }
 }

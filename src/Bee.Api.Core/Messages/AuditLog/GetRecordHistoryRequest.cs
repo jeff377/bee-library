@@ -1,4 +1,5 @@
 using Bee.Api.Contracts;
+using Bee.Definition.Paging;
 using MessagePack;
 
 namespace Bee.Api.Core.Messages.AuditLog
@@ -21,6 +22,12 @@ namespace Bee.Api.Core.Messages.AuditLog
         [Key(101)]
         public string RowKey { get; set; } = string.Empty;
 
-        // Add new fields starting from Key(102).
+        /// <summary>
+        /// Gets or sets the paging request; <c>null</c> applies the server default page.
+        /// </summary>
+        [Key(102)]
+        public PagingOptions? Paging { get; set; }
+
+        // Add new fields starting from Key(103).
     }
 }

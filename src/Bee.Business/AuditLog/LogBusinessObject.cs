@@ -1,12 +1,12 @@
-using System.Data;
 using Bee.Base;
-using Bee.Api.Contracts;
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Definition.Identity;
 using Bee.Definition.Logging;
+using Bee.Definition.Paging;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
+using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
 
 namespace Bee.Business.AuditLog
@@ -14,8 +14,15 @@ namespace Bee.Business.AuditLog
     /// <summary>
     /// Audit-log business object (<c>AuditLog</c> axis): read-only queries over the <c>st_log_*</c>
     /// audit tables in the log database. Every action is gated behind the <c>AuditLog</c> permission
-    /// model so a general user cannot read another's trail, and no action mutates the append-only log.
+    /// model so a general user cannot read another's trail, results are scoped to the caller's current
+    /// company, and no action mutates the append-only log.
     /// </summary>
+    /// <remarks>
+    /// The change axis follows a list / detail split: <see cref="GetChangeLog"/> and
+    /// <see cref="GetRecordHistory"/> return lightweight event headers (no DiffGram), and
+    /// <see cref="GetChangeDetail"/> restores one event's <c>changes_xml</c> into structured
+    /// before/after values on demand.
+    /// </remarks>
     public class LogBusinessObject : BusinessObject, ILogBusinessObject
     {
         /// <summary>
@@ -29,16 +36,11 @@ namespace Bee.Business.AuditLog
         { }
 
         /// <summary>
-        /// Gets a record's change history: every <c>st_log_change</c> event for the given
-        /// <c>ProgId</c> + <c>RowKey</c>, newest first, with each event's <c>changes_xml</c> DiffGram
-        /// restored into structured before/after field values.
+        /// Gets a page of one record's change-event headers (every <c>st_log_change</c> event for the
+        /// given <c>ProgId</c> + <c>RowKey</c>, newest first). Field-level detail is fetched per event
+        /// via <see cref="GetChangeDetail"/>.
         /// </summary>
-        /// <param name="args">The input arguments carrying the target <c>ProgId</c> and <c>RowKey</c>.</param>
-        /// <remarks>
-        /// Requires the <see cref="PermissionAction.Read"/> grant on the <c>AuditLog</c> permission
-        /// model. The result is restricted to the caller's current company (the denormalised
-        /// <c>company_id</c> on the log row), so a user only sees their own company's trail.
-        /// </remarks>
+        /// <param name="args">The input arguments carrying <c>ProgId</c>, <c>RowKey</c> and optional paging.</param>
         [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
         public virtual GetRecordHistoryResult GetRecordHistory(GetRecordHistoryArgs args)
         {
@@ -48,48 +50,103 @@ namespace Bee.Business.AuditLog
             if (string.IsNullOrWhiteSpace(args.RowKey))
                 throw new ArgumentException("RowKey is required.", nameof(args));
 
-            // Permission gate: only roles granted audit-read may query the trail.
-            var authorization = Services.GetRequiredService<IAuthorizationService>();
-            if (!authorization.Can(AccessToken, SysProgIds.AuditLog, PermissionAction.Read))
-                throw new UnauthorizedAccessException("Not authorized to read the audit log.");
+            EnsureAuditReadAllowed();
 
-            // Scope to the caller's current company so cross-company trails are not exposed.
-            var companyId = SessionInfoService.Get(AccessToken)?.CompanyId;
-
-            var repository = Services.GetRequiredService<IAuditLogRepositoryFactory>().CreateAuditLogRepository();
-            var table = repository.GetRecordChangeHistory(args.ProgId, args.RowKey, companyId);
-
-            var changes = new List<RecordHistoryEntry>(table.Rows.Count);
-            foreach (DataRow row in table.Rows)
+            var query = new ChangeLogQuery
             {
-                changes.Add(BuildEntry(row));
-            }
+                ProgId = args.ProgId,
+                RowKey = args.RowKey,
+                CompanyId = CurrentCompanyId(),
+            };
+            var page = Repository().GetChangeLog(query, args.Paging ?? new PagingOptions());
 
             return new GetRecordHistoryResult
             {
                 ProgId = args.ProgId,
                 RowKey = args.RowKey,
-                Changes = changes,
+                Table = page.Table,
+                Paging = page.Paging,
             };
         }
 
         /// <summary>
-        /// Maps one <c>st_log_change</c> row to a <see cref="RecordHistoryEntry"/>, restoring its
-        /// DiffGram payload into field-level before/after changes.
+        /// Gets a filtered, paged list of <c>st_log_change</c> event headers across records.
         /// </summary>
-        private static RecordHistoryEntry BuildEntry(DataRow row)
+        /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual GetChangeLogResult GetChangeLog(GetChangeLogArgs args)
         {
-            return new RecordHistoryEntry
+            ArgumentNullException.ThrowIfNull(args);
+
+            EnsureAuditReadAllowed();
+
+            var query = new ChangeLogQuery
+            {
+                FromUtc = args.FromUtc,
+                ToUtc = args.ToUtc,
+                UserId = args.UserId,
+                ProgId = args.ProgId,
+                RowKey = args.RowKey,
+                ChangeKind = args.ChangeKind,
+                CompanyId = CurrentCompanyId(),
+            };
+            var page = Repository().GetChangeLog(query, args.Paging ?? new PagingOptions());
+
+            return new GetChangeLogResult { Table = page.Table, Paging = page.Paging };
+        }
+
+        /// <summary>
+        /// Gets one change event's restored field-level before/after detail, by its log row id.
+        /// </summary>
+        /// <param name="args">The input arguments carrying the event's <c>SysRowId</c>.</param>
+        /// <remarks>
+        /// Throws <see cref="InvalidOperationException"/> when no such event exists within the caller's
+        /// company scope (a listed row that has since been partitioned away, or an out-of-scope id).
+        /// </remarks>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual GetChangeDetailResult GetChangeDetail(GetChangeDetailArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            if (args.SysRowId == Guid.Empty)
+                throw new ArgumentException("SysRowId is required.", nameof(args));
+
+            EnsureAuditReadAllowed();
+
+            var table = Repository().GetChangeById(args.SysRowId, CurrentCompanyId())
+                ?? throw new InvalidOperationException("Change record not found.");
+            var row = table.Rows[0];
+
+            return new GetChangeDetailResult
             {
                 SysRowId = ValueUtilities.CGuid(row["sys_rowid"]),
                 LogTime = ReadUtc(row["log_time"]),
                 UserId = ReadNullableString(row["user_id"]),
                 UserName = ReadNullableString(row["user_name"]),
+                ProgId = ReadNullableString(row["prog_id"]),
+                RowKey = ReadNullableString(row["row_key"]),
                 ChangeKind = (ChangeKind)ValueUtilities.CInt(row["change_kind"]),
                 IsSensitive = ValueUtilities.CBool(row["is_sensitive"]),
                 Source = ReadNullableString(row["source"]),
                 Fields = ChangeDiffGramReader.Read(ReadNullableString(row["changes_xml"])),
             };
+        }
+
+        /// <summary>Resolves the log-scoped repository from the DI escape hatch.</summary>
+        private IAuditLogRepository Repository()
+            => Services.GetRequiredService<IAuditLogRepositoryFactory>().CreateAuditLogRepository();
+
+        /// <summary>Resolves the caller's current company id (denormalised query scope); null when none.</summary>
+        private string? CurrentCompanyId() => SessionInfoService.Get(AccessToken)?.CompanyId;
+
+        /// <summary>
+        /// Enforces the audit-read permission gate: only roles granted <see cref="PermissionAction.Read"/>
+        /// on the <c>AuditLog</c> model may query the trail.
+        /// </summary>
+        private void EnsureAuditReadAllowed()
+        {
+            var authorization = Services.GetRequiredService<IAuthorizationService>();
+            if (!authorization.Can(AccessToken, SysProgIds.AuditLog, PermissionAction.Read))
+                throw new UnauthorizedAccessException("Not authorized to read the audit log.");
         }
 
         /// <summary>Reads a log-time column as a UTC <see cref="DateTime"/> (the write side stores UTC).</summary>

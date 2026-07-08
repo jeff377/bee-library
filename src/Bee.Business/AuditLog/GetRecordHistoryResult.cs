@@ -1,9 +1,11 @@
+using System.Data;
 using Bee.Api.Contracts;
+using Bee.Definition.Paging;
 
 namespace Bee.Business.AuditLog
 {
     /// <summary>
-    /// Output result for retrieving a record's change history.
+    /// Output result for retrieving a page of a record's change-event headers.
     /// </summary>
     public class GetRecordHistoryResult : BusinessResult, IGetRecordHistoryResponse
     {
@@ -18,12 +20,13 @@ namespace Bee.Business.AuditLog
         public string RowKey { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the change events for the record, newest first, each with restored before/after
-        /// field values.
+        /// Gets or sets the change-event header rows for the record, ordered by <c>log_time</c> descending.
         /// </summary>
-        public List<RecordHistoryEntry> Changes { get; set; } = [];
+        public DataTable? Table { get; set; }
 
-        /// <inheritdoc/>
-        IReadOnlyList<RecordHistoryEntry> IGetRecordHistoryResponse.Changes => Changes;
+        /// <summary>
+        /// Gets or sets the paging metadata for this page.
+        /// </summary>
+        public PagingInfo? Paging { get; set; }
     }
 }

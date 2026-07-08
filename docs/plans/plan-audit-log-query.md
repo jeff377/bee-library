@@ -4,9 +4,12 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 記錄異動歷程：`GetRecordHistory(progId, rowKey)` + DiffGram 還原 | ✅ 已完成（2026-07-08） |
-| 2 | 各 log 表通用列表查詢（change / login / access / anomaly）+ 分頁 + 排序 | 📝 待做 |
+| 1 | 記錄異動歷程：`GetRecordHistory(progId, rowKey)` + DiffGram 還原（全還原版） | ✅ 已完成（2026-07-08） |
+| 2a | change 軸清單/明細二段式：`GetChangeLog`（清單）+ `GetChangeDetail`（明細還原）+ `GetRecordHistory` 改標頭清單（共用明細）；`LogQueryArgs` + 分頁 | ✅ 已完成（2026-07-08） |
+| 2b | 其餘軸清單：`GetLoginLog` / `GetAccessLog` / `GetAnomalyLog`（沿用 2a 的 `LogQueryArgs` + 分頁基礎） | 📝 待做 |
 | 3 | 異常監控細分、跨年 `log_YYYY` 聚合、權限強化 | 📝 待做 |
+
+> **Phase 2a 會回頭調整 Phase 1 已上線的 `GetRecordHistory` 合約**：從「全還原歷程」改為「標頭清單 + `GetChangeDetail` 取單筆明細」（見 §3 Q2 補充、§8 設計）。因套件未發佈、無外部使用者，此 breaking change 可接受。
 
 > 稽核軌跡的**讀取側**。寫入側（項 0–4）已完成、上線；設計理由見 [ADR-027](../adr/adr-027-audit-trail.md)、母計畫 [plan-audit-trail.md](plan-audit-trail.md)。
 > Q1–Q7 已於 2026-07-08 逐項定案（見 §3 決策紀錄），Phase 1 進入實作。
@@ -42,7 +45,11 @@
 ## 3. 設計決策紀錄（2026-07-08 定案）
 
 - **Q1 查詢層形狀 → 專屬 `LogBusinessObject`**：新增保留 progId（`AuditLog`，登記於 `SysProgIds`），集中所有 log 查詢方法。理由：語意集中、可掛獨立權限模型、與 System 軸（login / define）職責分離。需新增一條 BO 軸（`LogActions` 常數類、`ILogBusinessObject`、`BoFactory` 註冊）。
-- **Q2 方法集 → 每軸 typed 方法 + 共通 `LogQueryArgs`**：`GetRecordHistory(progId, rowKey)`（情境 1，結構化）、`GetChangeLog` / `GetLoginLog` / `GetAccessLog` / `GetAnomalyLog`（各 typed，`filter + paging + sort`）。合約面清楚、每軸欄位語意明確。**Phase 1 只做 `GetRecordHistory`**，列表查詢併入 Phase 2。
+- **Q2 方法集 → 每軸 typed 方法 + 共通 `LogQueryArgs`**：`GetRecordHistory(progId, rowKey)`（情境 1）、`GetChangeLog` / `GetLoginLog` / `GetAccessLog` / `GetAnomalyLog`（各 typed，`filter + paging + sort`）。合約面清楚、每軸欄位語意明確。**Phase 1 只做 `GetRecordHistory`**，列表查詢併入 Phase 2。
+- **Q2 補充（2026-07-08，Phase 2a 定案）→ change 軸改「清單 / 明細」二段式**：異動記錄量體大、逐列還原 DiffGram 昂貴且 payload 爆，故 change 軸拆兩段：
+  - **清單**（`GetChangeLog` / 及改版後的 `GetRecordHistory`）**只回事件標頭**（who / when / kind / progId / rowKey / source / is_sensitive），**不還原 `changes_xml`**；回傳 **`DataTable` + `PagingInfo`**（對齊 `GetList` 慣例）。
+  - **明細**（`GetChangeDetail(sysRowId)`）以 `st_log_change.sys_rowid`（Guid）為鍵取單筆，才還原該筆 `changes_xml` 為結構化 before/after（`List<RecordFieldChange>`，沿用 `ChangeDiffGramReader`）。
+  - **Phase 1 的 `GetRecordHistory` 一併改為標頭清單**（headers-only + `PagingInfo`），明細統一走 `GetChangeDetail`；原「全還原」版與 `RecordHistoryEntry` typed DTO 退場（`RecordFieldChange` 保留給明細）。分界原則：*未受限的跨記錄查詢用清單+明細；單筆記錄查詢也走清單*（全軸一致）。
 - **Q3 DiffGram 還原 → server 端還原為結構化 before/after**：回傳結構化「表 → 列 → 欄位（舊值 / 新值）」，client 零解析、可跨前端。**實作細節**（實測修正）：寫入側 `WriteXml(XmlWriteMode.DiffGram)` 產出的是**無 schema** 的 DiffGram，`DataSet.ReadXml` 讀不回（回 0 tables）。故還原改以 `XDocument` 直接解析 DiffGram（`data` block 為 current、`diffgr:before` 為 original，以 `diffgr:id` 配對；insert / update / delete 三態）——見 `ChangeDiffGramReader`。**仍 AOT 安全**：走 `XDocument` / `XmlReader`（XXE 已 hardening），非 `XmlSerializer` 反射路徑，ADR-025 的 trim/AOT 雷不適用。
 - **Q4 log DB 路由 → 先單一 log DB**：查詢固定走 `DbScope.Log → "log"`（同寫入側）。年份分庫 `log_YYYY` 的跨年聚合列為 Phase 3。
 - **Q5 權限 → `Authenticated` + `AuditLog` 權限 gate**：BO 方法標 `[ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]`，方法內再以 `IAuthorizationService.Can(AccessToken, "AuditLog", PermissionAction.Read)` 檢查——須被授予稽核讀取權的角色才可查，避免一般使用者讀他人軌跡。此檢查為 company-scoped（需先 `EnterCompany`、`SessionInfo.Roles` 已快照）。
@@ -108,6 +115,30 @@ Q1 定案為專屬 BO 軸，故 Phase 1 除方法本身外需新增一條 BO 軸
 **測試 + surface**
 - wire round-trip（`tests/Bee.Api.Core.UnitTests/AuditLog/`）、executor dispatch（stub repo，驗新 `AuditLog` 分支）、BO 邏輯 + DiffGram 還原 + 權限 gate（`tests/Bee.Business.UnitTests/AuditLog/`，stub repo）、`[DbFact]` repo 真 DB（`tests/Bee.Hosting.UnitTests/AuditLogQueryDbFactTests.cs`，SQL Server + PostgreSQL）
 - `docs/api-method-reference.md`(+zh-TW) 加 AuditLog 軸；`framework-reserved-names.md`(+zh-TW) §2 登記 `AuditLog` progId；`BoApiSurfaceTests` baseline 加 `LogBusinessObject.GetRecordHistory`
+
+## 8. Phase 2a 設計（change 軸清單/明細 + Phase 1 realignment）
+
+**方法集（`AuditLog` 軸，`LogActions`）**
+
+| 方法 | 形狀 | 說明 |
+|------|------|------|
+| `GetChangeLog(GetChangeLogArgs)` | `DataTable` + `PagingInfo` | 跨記錄的異動事件清單（標頭欄），依 filter + 分頁 + `log_time DESC`。 |
+| `GetRecordHistory(GetRecordHistoryArgs)` | `DataTable` + `PagingInfo` | **改版**：單筆記錄（`progId`+`rowKey`）的異動事件清單（標頭欄）+ 分頁。等同 `GetChangeLog` 以 `progId`+`rowKey` 限縮，但保留為高價值具名便捷 API。 |
+| `GetChangeDetail(GetChangeDetailArgs)` | typed（header + `List<RecordFieldChange>`） | 以 `sysRowId`（`st_log_change.sys_rowid`）取單筆，還原 `changes_xml` 為結構化 before/after。 |
+
+**清單標頭欄位（DataTable）**：`sys_rowid`、`log_time`、`user_id`、`user_name`、`company_id`、`company_name`、`prog_id`、`row_key`、`change_kind`、`is_sensitive`、`source`（**不含** `changes_xml`）。
+
+**filter 形狀（定案：typed 欄位，非 `FilterNode`）**：log 表非 FormSchema-driven，無 `FilterNode→SQL` builder 可重用；且 Q6 要求「查詢須帶時間/鍵條件避免全表掃」。故 `GetChangeLogArgs` 用**明確 typed 欄位**：`FromUtc?` / `ToUtc?` / `UserId?` / `ProgId?` / `RowKey?` / `ChangeKind?` + 分頁（`Page` / `PageSize` / `IncludeTotalCount`）。直接對映索引欄、杜絕任意/昂貴查詢與注入面，較 `FilterNode` 簡單安全。
+
+**分頁**：重用 `PagingInfo`；repo 依 dialect 產生 `OFFSET/FETCH`（SQL Server / Oracle）或 `LIMIT/OFFSET`（PostgreSQL / MySQL），`PageSize` clamp 上限；`IncludeTotalCount=true` 時另跑一次 `COUNT(*)` 填 `TotalCount`，否則以「多取一列」判 `HasMore`。實作時先找既有 dialect 分頁 helper（Form `GetList` 路徑），無則加最小 log 專用分頁。
+
+**Phase 1 realignment（同 PR 一起改）**
+- `GetRecordHistory` 回傳改為 `DataTable` + `PagingInfo`（標頭清單），移除「全還原」行為。
+- 退場：`RecordHistoryEntry` DTO、`GetRecordHistoryResult.Changes(List<RecordHistoryEntry>)`；保留 `RecordFieldChange`（給 `GetChangeDetail`）。
+- `ChangeDiffGramReader` 保留、改由 `GetChangeDetail` 呼叫。
+- 同步更新 wire DTO、client connector（`GetChangeLogAsync` / `GetChangeDetailAsync` / 改版 `GetRecordHistoryAsync`）、`BoApiSurfaceTests` baseline（+2 方法）、`api-method-reference`(+zh-TW)、既有 Phase 1 測試。
+
+**新增/異動檔案（預估）**：`LogActions`(+2)、contracts（`IGetChangeLog*`/`IGetChangeDetail*` + `ChangeDetail` 結果型別）、`Messages/AuditLog` wire、`Bee.Business/AuditLog`（args/result/BO 方法）、`IAuditLogRepository`(+GetChangeLog/GetChangeById/分頁)、`AuditLogRepository`、client、測試。
 
 ## 6. 相依與約束
 
