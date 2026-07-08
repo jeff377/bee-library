@@ -1,6 +1,6 @@
 # 計畫：稽核日誌查詢（`st_log_*` 讀取 / 檢視）
 
-**狀態：🚧 進行中（2026-07-08）**
+**狀態：✅ 已完成（2026-07-08）** — 讀取側主體（情境 1–5）交付完畢；`AuditLog` 軸共 10 個查詢方法。下方「延後」項為有需求再另案，非本計畫範圍。
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -8,7 +8,7 @@
 | 2a | change 軸清單/明細二段式：`GetChangeLog`（清單）+ `GetChangeDetail`（明細還原）+ `GetRecordHistory` 改標頭清單（共用明細）；`LogQueryArgs` + 分頁 | ✅ 已完成（2026-07-08） |
 | 2b | 其餘軸清單：`GetLoginLog` / `GetAccessLog` / `GetApiAnomalyLog` / `GetDbAnomalyLog`（沿用 2a 的 typed filter + 分頁基礎） | ✅ 已完成（2026-07-08） |
 | 3a | 異常彙總：`GetApiAnomalySummary` / `GetDbAnomalySummary` / `GetTopApiMethods`（標準 `GROUP BY`，無 dialect 時間桶） | ✅ 已完成（2026-07-08） |
-| 3 | 進階（有需求再做）：異常趨勢（Trend，需 dialect 時間桶 helper）、權限強化 | 📝 待做 |
+| — | 延後（有需求再另案，非本計畫範圍）：異常趨勢圖（需 `DateBucketBuilder` dialect helper）、權限強化（auditor 角色 / 欄位級遮罩，等實際 UI/角色需求）、跨年 `log_YYYY` 聚合 | ⏸️ 延後 |
 
 > **跨年 `log_YYYY` 聚合已移出範圍**（2026-07-08）：延後到實際出現年份分庫需求再做（見 §3 Q4）。
 > **Phase 2a 會回頭調整 Phase 1 已上線的 `GetRecordHistory` 合約**：從「全還原歷程」改為「標頭清單 + `GetChangeDetail` 取單筆明細」（見 §3 Q2 補充、§8 設計）。因套件未發佈、無外部使用者，此 breaking change 可接受。
