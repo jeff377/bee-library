@@ -82,7 +82,17 @@ This document provides a standard term reference for technical writing, ensuring
 | `LogOptions` | 日誌選項 | Configuration parameters for logging behavior |
 | `ConsoleLogWriter` | Console 日誌寫入器 | Implementation that writes logs to the console |
 | `NullLogWriter` | 空日誌寫入器 | Default no-op implementation, avoiding null checks |
-| `DbAccessAnomalyLogOptions` | 資料庫存取異常日誌選項 | Logging configuration for database access anomalies |
+| `DbAccessAnomalyLogOptions` | 資料庫存取異常日誌選項 | Logging configuration for database access anomalies (thresholds consumed by the DB anomaly recorder) |
+| `IAuditLogWriter` | 稽核日誌寫入介面 | The single entry point for writing audit-trail entries to the log database (background/batch or synchronous, best-effort) |
+| `AuditEntry` | 稽核記錄基底 | Abstract base for one audit-trail row; carries the common who/when/where columns, subclasses add axis-specific columns |
+| `AuditColumn` | 稽核欄位 | A name/value pair an `AuditEntry` contributes to its INSERT |
+| `NullAuditLogWriter` | 空稽核寫入器 | No-op `IAuditLogWriter` used when audit logging is disabled |
+| `LoginAuditEntry` | 登入稽核記錄 | Entry for `st_log_login` (login / logout / failure / lockout) |
+| `ChangeAuditEntry` | 異動稽核記錄 | Entry for `st_log_change` (data change, DataSet DiffGram before/after) |
+| `AccessAuditEntry` | 檢視稽核記錄 | Entry for `st_log_access` (record view) |
+| `ApiAnomalyEntry` | API 異常記錄 | Entry for `st_log_anomaly_api` (API error / timeout / slow) |
+| `DbAnomalyEntry` | DB 異常記錄 | Entry for `st_log_anomaly_db` (DB error / timeout / slow / large-row) |
+| `AuditLogOptions` | 稽核日誌選項 | Opt-in audit-log configuration (per-axis enable, background writer, thresholds) on `BackendConfiguration` |
 
 ### Definition Access
 
@@ -250,6 +260,9 @@ This document provides a standard term reference for technical writing, ensuring
 | `DatabaseType` | 資料庫類型 | `SqlServer`, `MySql`, `PostgreSql`, ... |
 | `SchemaUpgradeAction` | 結構升級動作 | Upgrade strategy for database structural changes |
 | `LogEntryType` | 日誌記錄類型 | `Information`, `Warning`, `Error` |
+| `LoginEvent` | 登入事件 | `LoginSucceeded`, `LoginFailed`, `LockedOut`, `Logout` (recorded in `st_log_login`) |
+| `ChangeKind` | 異動類型 | `Insert`, `Update`, `Delete` (recorded in `st_log_change`) |
+| `AnomalyKind` | 異常類型 | `Error`, `Timeout`, `Slow`, `LargeAffected`, `LargeResult` (recorded in `st_log_anomaly_*`) |
 
 ---
 

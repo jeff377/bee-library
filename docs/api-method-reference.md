@@ -86,6 +86,18 @@ Per-program BO instance, accessed as `<progId>.<action>` over the wire
 | `Save` | Public | Authenticated | Persists a `DataSet` by dispatching INSERT / UPDATE / DELETE per row's `RowState`. |
 | `Delete` | Public | Authenticated | Deletes one master row directly by `RowId`. |
 
+## Audit side-effects
+
+When the corresponding `AuditLogOptions` category is enabled (opt-in, off by default), these methods write an audit-trail row best-effort — the log write never changes the method result. See [Framework-Reserved Names §1.3](framework-reserved-names.md).
+
+| Method | Log table | Recorded |
+|--------|-----------|----------|
+| `System.Login` / `System.Logout` | `st_log_login` | Login success / failure / lockout / logout |
+| `Form.Save` | `st_log_change` | Data change (DataSet DiffGram before/after) |
+| `Form.Delete` | `st_log_change` | Delete with the deleted record's before-image |
+| `Form.GetData` | `st_log_access` | Record view (who viewed which record) |
+| *any API call* | `st_log_anomaly_api` | API Error / Timeout / Slow |
+
 ## See also
 
 - [API Contract & BO Parameter Design](api-bo-contract-design.md) — Layered design rationale for Contract / Args / Result

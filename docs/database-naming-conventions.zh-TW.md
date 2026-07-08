@@ -15,6 +15,7 @@
 - **避免** 使用 PascalCase 或 camelCase，因為部分資料庫（例如 PostgreSQL、Oracle）在有引號時會區分大小寫。  
 - 所有 **資料表** 與 **欄位名稱** 均使用 **小寫字母**。  
 - 系統層級表（例如設定、登入、稽核等）以 `st_` 開頭。  
+- 稽核軌跡／日誌表以 `st_log_*` 命名（例如 `st_log_login`、`st_log_change`），屬 `log` 分類——見 [框架保留命名 §1.3](framework-reserved-names.zh-TW.md)。  
 - 業務／表單層級表以 `ft_` 開頭。  
 
 ---

@@ -419,3 +419,4 @@ Common patterns discovered during each AnyCode customization can be distilled ba
 | **UI definition** | FormLayout (not XAML) | Designed for standardized ERP layouts; constrained structure, more concise syntax |
 | **DB maintenance** | TableSchema derivation + adjustable | Auto-sync with definitions; DBA can still independently optimize indexes and types |
 | **Architecture hybrid** | N-Tier + Clean Arch + MVVM | Borrowing the most suitable concepts for ERP from each; not forcing pure theoretical application |
+| **Audit trail** | Opt-in `st_log_*` tables via `IAuditLogWriter` (`AuditLogOptions`) | Six-axis data trail — login / change (DiffGram before-after) / access / API+DB anomaly; background, best-effort, self-sufficient (denormalised) log rows |

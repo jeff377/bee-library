@@ -82,6 +82,18 @@ per-program BO 實體，wire 上以 `<progId>.<action>` 派發（例如 `Employe
 | `Save` | Public | Authenticated | 將 `DataSet` 持久化，依每列 `RowState` dispatch INSERT / UPDATE / DELETE。 |
 | `Delete` | Public | Authenticated | 依 `RowId` 直接刪除單筆主檔列。 |
 
+## 稽核副作用
+
+當對應的 `AuditLogOptions` 類別啟用時（opt-in，預設關閉），以下方法會 best-effort 寫一筆稽核記錄——寫 log 不影響方法結果。見 [框架保留命名 §1.3](framework-reserved-names.zh-TW.md)。
+
+| 方法 | Log 表 | 記錄內容 |
+|------|--------|---------|
+| `System.Login` / `System.Logout` | `st_log_login` | 登入成功 / 失敗 / 鎖定 / 登出 |
+| `Form.Save` | `st_log_change` | 資料異動（DataSet DiffGram 新舊值） |
+| `Form.Delete` | `st_log_change` | 刪除，含被刪記錄的 before-image |
+| `Form.GetData` | `st_log_access` | 檢視記錄（誰看了哪筆） |
+| *任何 API 呼叫* | `st_log_anomaly_api` | API 錯誤 / 逾時 / 過久 |
+
 ## 參考
 
 - [API 合約 & BO 參數設計](api-bo-contract-design.zh-TW.md) — Contract / Args / Result 分層設計原理

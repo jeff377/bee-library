@@ -15,6 +15,7 @@ A unified naming style avoids cross-database case and semantic inconsistencies a
 - **Avoid** PascalCase or camelCase, since some databases (e.g. PostgreSQL, Oracle) become case-sensitive when identifiers are quoted.
 - All **table** and **column** names use **lowercase letters**.
 - System-level tables (settings, login, audit, etc.) use the `st_` prefix.
+- Audit-trail / log tables are named `st_log_*` (e.g. `st_log_login`, `st_log_change`) and belong to the `log` category — see [Framework-Reserved Names §1.3](framework-reserved-names.md).
 - Business / form-level tables use the `ft_` prefix.
 
 ---

@@ -415,3 +415,4 @@ flowchart LR
 | **介面定義** | FormLayout（非 XAML） | 專為 ERP 制式版面；結構收斂，語法更簡潔 |
 | **DB 維護** | TableSchema 推導 + 可調整 | 自動同步定義；DBA 仍可獨立最佳化索引與型別 |
 | **架構混合** | N-Tier + Clean Arch + MVVM | 各取最適合 ERP 的概念；不強迫純理論套用 |
+| **稽核軌跡** | opt-in `st_log_*` 表，經 `IAuditLogWriter`（`AuditLogOptions`） | 六軸資料軌跡——登入／異動（DiffGram 新舊值）／檢視／API+DB 異常；背景、best-effort、自足（去正規化）的 log 列 |

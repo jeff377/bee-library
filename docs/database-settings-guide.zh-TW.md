@@ -64,8 +64,10 @@ DatabaseItem  CategoryId="common"   DbName=erp ──┐
 DatabaseItem  CategoryId="company"  DbName=erp ──┼──► erp（含 st_user、st_session、
 DatabaseItem  CategoryId="log"      DbName=erp ──┘     st_company、st_user_company、
                                                        st_department、st_employee、
-                                                       ft_project、log tables）
+                                                       ft_project、st_log_* 稽核表）
 ```
+
+> `st_log_*` = 框架 opt-in 的稽核表（`st_log_login`、`st_log_change`、`st_log_access`、`st_log_anomaly_api`、`st_log_anomaly_db`）；後續情境圖以「log tables」略稱。見 [框架保留命名 §1.3](framework-reserved-names.zh-TW.md)。
 
 **狀況 2：分散部署（三個實體資料庫，各對應一個邏輯分類）**
 
@@ -256,13 +258,13 @@ DbCategorySettings
 |---------|------|--------|
 | `common` | 共用資料庫 — 跨公司共用的系統表 | `st_user`、`st_session`、`st_company`、`st_user_company` |
 | `company` | 公司資料庫 — 業務資料、各公司獨立 | `st_department`、`st_employee`、`ft_project` |
-| `log` | 日誌資料庫 — 寫入頻繁的稽核 / 操作記錄 | （視應用而定） |
+| `log` | 日誌資料庫 — 寫入頻繁的資料軌跡 / 操作記錄 | `st_log_login`、`st_log_change`、`st_log_access`、`st_log_anomaly_api`、`st_log_anomaly_db`（opt-in）＋ 應用自訂 |
 
 > 各分類下框架擁有的完整表清單，見 [框架保留命名](framework-reserved-names.zh-TW.md)。
 
 **`common` 為框架硬性契約**：必須存在且 `DatabaseItem.Id == CategoryId == "common"`（由 `services.AddBeeFramework` 啟動時驗證；SessionRepository 等系統服務以固定 `databaseId = "common"` 路由）。常數定義見 [`DbCategoryIds`](../src/Bee.Definition/Database/DbCategoryIds.cs)。
 
-`company` 與 `log` 兩類為框架預設提供的邏輯分類，使用慣例由業務決定（單租戶可不部署 `log`，多租戶可加自訂分類）；自訂分類時，FormSchema 與 DatabaseItem 中的 `CategoryId` 必須對得上 `DbCategorySettings` 中宣告的分類 Id。
+`company` 與 `log` 兩類為框架預設提供的邏輯分類。框架在 `log` 分類提供 opt-in 的 `st_log_*` 稽核表（由 `AuditLogOptions` 控制、預設關閉）；單租戶只有在停用稽核時才可不部署 `log`，業務亦可自加 log 表或自訂分類（多租戶可加自訂分類）。自訂分類時，FormSchema 與 DatabaseItem 中的 `CategoryId` 必須對得上 `DbCategorySettings` 中宣告的分類 Id。
 
 ---
 

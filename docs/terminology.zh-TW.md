@@ -82,7 +82,17 @@
 | `LogOptions` | 日誌選項 | 日誌行為的設定參數 |
 | `ConsoleLogWriter` | Console 日誌寫入器 | 將日誌輸出至 Console 的實作 |
 | `NullLogWriter` | 空日誌寫入器 | 不執行任何操作的預設實作，避免 null 檢查 |
-| `DbAccessAnomalyLogOptions` | 資料庫存取異常日誌選項 | 資料庫異常存取行為的日誌設定 |
+| `DbAccessAnomalyLogOptions` | 資料庫存取異常日誌選項 | 資料庫異常存取行為的日誌設定（門檻由 DB 異常記錄器消費） |
+| `IAuditLogWriter` | 稽核日誌寫入介面 | 寫入稽核軌跡記錄到 log 資料庫的唯一入口（背景批次或同步，best-effort） |
+| `AuditEntry` | 稽核記錄基底 | 單筆稽核記錄的抽象基底；承載共通 who/when/where 欄位，子類再加各軸專屬欄位 |
+| `AuditColumn` | 稽核欄位 | `AuditEntry` 提供給 INSERT 的一組欄名/值 |
+| `NullAuditLogWriter` | 空稽核寫入器 | 稽核停用時使用的 no-op `IAuditLogWriter` |
+| `LoginAuditEntry` | 登入稽核記錄 | `st_log_login` 的記錄（登入 / 登出 / 失敗 / 鎖定） |
+| `ChangeAuditEntry` | 異動稽核記錄 | `st_log_change` 的記錄（資料異動，DataSet DiffGram 新舊值） |
+| `AccessAuditEntry` | 檢視稽核記錄 | `st_log_access` 的記錄（檢視某筆記錄） |
+| `ApiAnomalyEntry` | API 異常記錄 | `st_log_anomaly_api` 的記錄（API 錯誤 / 逾時 / 過久） |
+| `DbAnomalyEntry` | DB 異常記錄 | `st_log_anomaly_db` 的記錄（DB 錯誤 / 逾時 / 過久 / 大量列數） |
+| `AuditLogOptions` | 稽核日誌選項 | opt-in 稽核日誌設定（各軸開關、背景寫入、門檻），掛在 `BackendConfiguration` |
 
 ### 定義存取
 
@@ -250,6 +260,9 @@
 | `DatabaseType` | 資料庫類型 | `SqlServer`、`MySql`、`PostgreSql` … |
 | `SchemaUpgradeAction` | 結構升級動作 | 資料庫結構變更時的升級策略 |
 | `LogEntryType` | 日誌記錄類型 | `Information`（資訊）、`Warning`（警告）、`Error`（錯誤） |
+| `LoginEvent` | 登入事件 | `LoginSucceeded`、`LoginFailed`、`LockedOut`、`Logout`（記於 `st_log_login`） |
+| `ChangeKind` | 異動類型 | `Insert`、`Update`、`Delete`（記於 `st_log_change`） |
+| `AnomalyKind` | 異常類型 | `Error`、`Timeout`、`Slow`、`LargeAffected`、`LargeResult`（記於 `st_log_anomaly_*`） |
 
 ---
 

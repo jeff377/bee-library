@@ -64,8 +64,10 @@ DatabaseItem  CategoryId="common"   DbName=erp ──┐
 DatabaseItem  CategoryId="company"  DbName=erp ──┼──► erp (contains st_user, st_session,
 DatabaseItem  CategoryId="log"      DbName=erp ──┘     st_company, st_user_company,
                                                        st_department, st_employee,
-                                                       ft_project, log tables)
+                                                       ft_project, st_log_* audit tables)
 ```
+
+> `st_log_*` = the framework's opt-in audit tables (`st_log_login`, `st_log_change`, `st_log_access`, `st_log_anomaly_api`, `st_log_anomaly_db`); the later scenarios abbreviate them as "log tables". See [Framework-Reserved Names §1.3](framework-reserved-names.md).
 
 **Scenario 2: Distributed deployment (three physical DBs, one per logical category)**
 
@@ -256,13 +258,13 @@ The framework uses three default logical categories:
 |-------------|---------|----------------|
 | `common` | Shared database — system tables shared across companies | `st_user`, `st_session`, `st_company`, `st_user_company` |
 | `company` | Company database — business data, separate per company | `st_department`, `st_employee`, `ft_project` |
-| `log` | Log database — audit / operation records with frequent writes | (depends on the application) |
+| `log` | Log database — audit trail / operation records with frequent writes | `st_log_login`, `st_log_change`, `st_log_access`, `st_log_anomaly_api`, `st_log_anomaly_db` (opt-in) + application-defined |
 
 > For the canonical list of framework-owned tables in each category, see [Framework-Reserved Names](framework-reserved-names.md).
 
 **`common` is a framework-mandated contract**: it must exist and `DatabaseItem.Id == CategoryId == "common"` (enforced at startup by `services.AddBeeFramework`; system services such as `SessionRepository` route through the fixed `databaseId = "common"`). See the [`DbCategoryIds`](../src/Bee.Definition/Database/DbCategoryIds.cs) constants.
 
-`company` and `log` are default logical categories provided by the framework; usage is left to the business (a single-tenant setup may skip `log`, multi-tenant setups may add custom categories). For custom categories, the `CategoryId` in FormSchema and DatabaseItem must match a category id declared in `DbCategorySettings`.
+`company` and `log` are default logical categories provided by the framework. The framework ships opt-in `st_log_*` audit tables in the `log` category (off by default via `AuditLogOptions`); a single-tenant setup may skip `log` only when auditing stays disabled, and the business may add its own log tables or custom categories (multi-tenant setups may add custom categories). For custom categories, the `CategoryId` in FormSchema and DatabaseItem must match a category id declared in `DbCategorySettings`.
 
 ---
 
