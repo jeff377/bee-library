@@ -41,5 +41,17 @@ namespace Bee.Business.AuditLog
         /// <summary>Gets a filtered, paged list of <c>st_log_anomaly_db</c> DB-anomaly headers.</summary>
         /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
         LogListResult GetDbAnomalyLog(GetDbAnomalyLogArgs args);
+
+        /// <summary>Gets API-anomaly counts grouped by anomaly kind (monitoring summary).</summary>
+        /// <param name="args">The input arguments carrying the optional time window.</param>
+        LogAggregateResult GetApiAnomalySummary(GetApiAnomalySummaryArgs args);
+
+        /// <summary>Gets DB-anomaly counts grouped by anomaly kind (monitoring summary).</summary>
+        /// <param name="args">The input arguments carrying the optional time window.</param>
+        LogAggregateResult GetDbAnomalySummary(GetDbAnomalySummaryArgs args);
+
+        /// <summary>Gets the top API methods by anomaly count (monitoring hot-spots).</summary>
+        /// <param name="args">The input arguments carrying the optional time window and top-N.</param>
+        LogAggregateResult GetTopApiMethods(GetTopApiMethodsArgs args);
     }
 }

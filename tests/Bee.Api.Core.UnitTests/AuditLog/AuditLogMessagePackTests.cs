@@ -169,6 +169,38 @@ namespace Bee.Api.Core.UnitTests.AuditLog
         }
 
         [Fact]
+        [DisplayName("GetTopApiMethodsRequest 應 round-trip 還原時間窗 + TopN")]
+        public void GetTopApiMethodsRequest_RoundTrip()
+        {
+            var from = new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc);
+            var request = new GetTopApiMethodsRequest { FromUtc = from, TopN = 25 };
+
+            var restored = MessagePackCodec.Deserialize<GetTopApiMethodsRequest>(MessagePackCodec.Serialize(request));
+
+            Assert.NotNull(restored);
+            Assert.Equal(from, restored!.FromUtc);
+            Assert.Null(restored.ToUtc);
+            Assert.Equal(25, restored.TopN);
+        }
+
+        [Fact]
+        [DisplayName("LogAggregateResponse 帶聚合 DataTable 應 round-trip（summary/topN 共用）")]
+        public void LogAggregateResponse_RoundTrip()
+        {
+            var table = new DataTable("agg");
+            table.Columns.Add("anomaly_kind", typeof(int));
+            table.Columns.Add("event_count", typeof(long));
+            table.Rows.Add((int)ChangeKind.Update, 42L);
+
+            var restored = MessagePackCodec.Deserialize<LogAggregateResponse>(
+                MessagePackCodec.Serialize(new LogAggregateResponse { Table = table }));
+
+            Assert.NotNull(restored);
+            Assert.Single(restored!.Table!.Rows);
+            Assert.Equal(42L, (long)restored.Table.Rows[0]["event_count"]);
+        }
+
+        [Fact]
         [DisplayName("GetChangeDetailResponse 空 Fields 應 round-trip 且不 NRE")]
         public void GetChangeDetailResponse_EmptyFields_RoundTrip()
         {

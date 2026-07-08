@@ -128,6 +128,29 @@ namespace Bee.Api.Core.UnitTests.AuditLog
             Assert.NotNull(result.Paging);
         }
 
+        [Theory]
+        [InlineData("GetApiAnomalySummary")]
+        [InlineData("GetDbAnomalySummary")]
+        [InlineData("GetTopApiMethods")]
+        [DisplayName("AuditLog 各聚合 action 經 executor 應派發並回 LogAggregateResponse")]
+        public void AggregateActions_ThroughJsonRpc_ReturnLogAggregateResponse(string action)
+        {
+            var repo = new StubAuditLogRepository(HeaderPage(0), null);
+            object request = action switch
+            {
+                "GetApiAnomalySummary" => new GetApiAnomalySummaryRequest(),
+                "GetDbAnomalySummary" => new GetDbAnomalySummaryRequest(),
+                _ => new GetTopApiMethodsRequest { TopN = 5 },
+            };
+
+            var response = Dispatch(repo, action, request);
+
+            Assert.Null(response.Error);
+            var result = Assert.IsType<LogAggregateResponse>(response.Result!.Value);
+            Assert.NotNull(result.Table);
+            Assert.Single(result.Table!.Rows);
+        }
+
         private static DataTable HeaderTable(bool withChangesXml = false)
         {
             var t = new DataTable("st_log_change");
@@ -184,6 +207,11 @@ namespace Bee.Api.Core.UnitTests.AuditLog
             public AuditLogPage GetAccessLog(AccessLogQuery query, PagingOptions paging) => _page;
             public AuditLogPage GetApiAnomalyLog(ApiAnomalyLogQuery query, PagingOptions paging) => _page;
             public AuditLogPage GetDbAnomalyLog(DbAnomalyLogQuery query, PagingOptions paging) => _page;
+
+            private static DataTable Agg() { var t = new DataTable("agg"); t.Columns.Add("anomaly_kind", typeof(int)); t.Rows.Add((int)AnomalyKind.Slow); return t; }
+            public DataTable GetApiAnomalySummary(DateTime? fromUtc, DateTime? toUtc, string? companyId) => Agg();
+            public DataTable GetDbAnomalySummary(DateTime? fromUtc, DateTime? toUtc) => Agg();
+            public DataTable GetTopApiMethods(DateTime? fromUtc, DateTime? toUtc, int topN, string? companyId) => Agg();
         }
 
         private sealed class StubAuditLogRepositoryFactory : IAuditLogRepositoryFactory

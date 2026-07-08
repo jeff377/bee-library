@@ -61,5 +61,25 @@ namespace Bee.Repository.Abstractions.AuditLog
         /// <param name="query">The typed, AND-combined filter (all fields optional).</param>
         /// <param name="paging">The page request.</param>
         AuditLogPage GetDbAnomalyLog(DbAnomalyLogQuery query, PagingOptions paging);
+
+        /// <summary>
+        /// Aggregates <c>st_log_anomaly_api</c> counts by <c>anomaly_kind</c> over an optional time window,
+        /// scoped to <paramref name="companyId"/> when non-empty. Returns <c>anomaly_kind</c> / <c>event_count</c>.
+        /// </summary>
+        DataTable GetApiAnomalySummary(DateTime? fromUtc, DateTime? toUtc, string? companyId);
+
+        /// <summary>
+        /// Aggregates <c>st_log_anomaly_db</c> counts by <c>anomaly_kind</c> over an optional time window.
+        /// A cross-company infrastructure summary (the table carries no company). Returns
+        /// <c>anomaly_kind</c> / <c>event_count</c>.
+        /// </summary>
+        DataTable GetDbAnomalySummary(DateTime? fromUtc, DateTime? toUtc);
+
+        /// <summary>
+        /// Returns the top-<paramref name="topN"/> API methods by <c>st_log_anomaly_api</c> count over an
+        /// optional time window, scoped to <paramref name="companyId"/> when non-empty. Returns
+        /// <c>method</c> / <c>event_count</c> / <c>max_elapsed_ms</c>, busiest first.
+        /// </summary>
+        DataTable GetTopApiMethods(DateTime? fromUtc, DateTime? toUtc, int topN, string? companyId);
     }
 }

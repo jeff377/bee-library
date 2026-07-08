@@ -101,6 +101,9 @@ The change axis uses a **list / detail** split: the list methods return lightwei
 | `GetAccessLog` | Encrypted | Authenticated | Filtered, paged list of `st_log_access` record-view headers (time / user / progId / rowKey). Returns a header `DataTable` + `PagingInfo`. |
 | `GetApiAnomalyLog` | Encrypted | Authenticated | Filtered, paged list of `st_log_anomaly_api` headers (time / user / method / anomaly-kind). Returns a header `DataTable` + `PagingInfo`. |
 | `GetDbAnomalyLog` | Encrypted | Authenticated | Filtered, paged list of `st_log_anomaly_db` headers (time / databaseId / anomaly-kind). A cross-company infrastructure view (`st_log_anomaly_db` has no company). Returns a header `DataTable` + `PagingInfo`. |
+| `GetApiAnomalySummary` | Encrypted | Authenticated | API-anomaly counts grouped by `anomaly_kind` over an optional time window (monitoring summary). Returns an aggregate `DataTable` (`anomaly_kind` / `event_count`), unpaged. |
+| `GetDbAnomalySummary` | Encrypted | Authenticated | DB-anomaly counts grouped by `anomaly_kind` over an optional time window. Cross-company infrastructure summary. Returns an aggregate `DataTable` (`anomaly_kind` / `event_count`), unpaged. |
+| `GetTopApiMethods` | Encrypted | Authenticated | Busiest API methods by anomaly count over an optional time window (monitoring hot-spots). Returns an aggregate `DataTable` (`method` / `event_count` / `max_elapsed_ms`), top-N. |
 
 ## Audit side-effects
 

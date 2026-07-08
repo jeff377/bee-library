@@ -53,13 +53,16 @@ namespace Bee.Business.UnitTests
             new ApiSurfaceEntry("FormBusinessObject", "Save",       ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated),
 
             // Audit-log axis — LogBusinessObject (read-only queries over st_log_*).
-            new ApiSurfaceEntry("LogBusinessObject", "GetAccessLog",     ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
-            new ApiSurfaceEntry("LogBusinessObject", "GetApiAnomalyLog", ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
-            new ApiSurfaceEntry("LogBusinessObject", "GetChangeDetail",  ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
-            new ApiSurfaceEntry("LogBusinessObject", "GetChangeLog",     ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
-            new ApiSurfaceEntry("LogBusinessObject", "GetDbAnomalyLog",  ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
-            new ApiSurfaceEntry("LogBusinessObject", "GetLoginLog",      ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
-            new ApiSurfaceEntry("LogBusinessObject", "GetRecordHistory", ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("LogBusinessObject", "GetAccessLog",        ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("LogBusinessObject", "GetApiAnomalyLog",    ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("LogBusinessObject", "GetApiAnomalySummary",ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("LogBusinessObject", "GetChangeDetail",     ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("LogBusinessObject", "GetChangeLog",        ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("LogBusinessObject", "GetDbAnomalyLog",     ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("LogBusinessObject", "GetDbAnomalySummary", ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("LogBusinessObject", "GetLoginLog",         ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("LogBusinessObject", "GetRecordHistory",    ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("LogBusinessObject", "GetTopApiMethods",    ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
 
             // System axis — SystemBusinessObject (system-level operations).
             new ApiSurfaceEntry("SystemBusinessObject", "CheckPackageUpdate",     ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous),

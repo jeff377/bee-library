@@ -220,6 +220,49 @@ namespace Bee.Business.AuditLog
             return ToResult(Repository().GetDbAnomalyLog(query, args.Paging ?? new PagingOptions()));
         }
 
+        /// <summary>
+        /// Gets API-anomaly counts grouped by anomaly kind over an optional time window (monitoring summary).
+        /// </summary>
+        /// <param name="args">The input arguments carrying the optional time window.</param>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual LogAggregateResult GetApiAnomalySummary(GetApiAnomalySummaryArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            EnsureAuditReadAllowed();
+            var table = Repository().GetApiAnomalySummary(args.FromUtc, args.ToUtc, CurrentCompanyId());
+            return new LogAggregateResult { Table = table };
+        }
+
+        /// <summary>
+        /// Gets DB-anomaly counts grouped by anomaly kind over an optional time window (monitoring summary).
+        /// </summary>
+        /// <param name="args">The input arguments carrying the optional time window.</param>
+        /// <remarks>
+        /// <c>st_log_anomaly_db</c> carries no company, so this is a cross-company infrastructure summary;
+        /// it is still gated behind the <c>AuditLog</c> read permission.
+        /// </remarks>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual LogAggregateResult GetDbAnomalySummary(GetDbAnomalySummaryArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            EnsureAuditReadAllowed();
+            var table = Repository().GetDbAnomalySummary(args.FromUtc, args.ToUtc);
+            return new LogAggregateResult { Table = table };
+        }
+
+        /// <summary>
+        /// Gets the top API methods by anomaly count over an optional time window (monitoring hot-spots).
+        /// </summary>
+        /// <param name="args">The input arguments carrying the optional time window and top-N.</param>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual LogAggregateResult GetTopApiMethods(GetTopApiMethodsArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            EnsureAuditReadAllowed();
+            var table = Repository().GetTopApiMethods(args.FromUtc, args.ToUtc, args.TopN, CurrentCompanyId());
+            return new LogAggregateResult { Table = table };
+        }
+
         /// <summary>Maps a repository <see cref="AuditLogPage"/> to the shared list result.</summary>
         private static LogListResult ToResult(AuditLogPage page)
             => new LogListResult { Table = page.Table, Paging = page.Paging };

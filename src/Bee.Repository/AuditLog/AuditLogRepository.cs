@@ -139,6 +139,60 @@ namespace Bee.Repository.AuditLog
             return QueryPage("st_log_anomaly_db", DbAnomalyHeaderColumns, where, paging);
         }
 
+        /// <summary>The upper bound for a top-N aggregate request.</summary>
+        private const int MaxTopN = 100;
+
+        /// <inheritdoc/>
+        public DataTable GetApiAnomalySummary(DateTime? fromUtc, DateTime? toUtc, string? companyId)
+        {
+            var where = new WhereBuilder()
+                .Eq("company_id", companyId)
+                .Gte("log_time", fromUtc)
+                .Lte("log_time", toUtc);
+            var (whereSql, values) = where.Build();
+            string sql = "SELECT anomaly_kind, COUNT(*) AS event_count FROM st_log_anomaly_api" + whereSql +
+                " GROUP BY anomaly_kind ORDER BY COUNT(*) DESC";
+            return ExecuteQuery(sql, values);
+        }
+
+        /// <inheritdoc/>
+        public DataTable GetDbAnomalySummary(DateTime? fromUtc, DateTime? toUtc)
+        {
+            // st_log_anomaly_db carries no company — a cross-company infrastructure summary.
+            var where = new WhereBuilder()
+                .Gte("log_time", fromUtc)
+                .Lte("log_time", toUtc);
+            var (whereSql, values) = where.Build();
+            string sql = "SELECT anomaly_kind, COUNT(*) AS event_count FROM st_log_anomaly_db" + whereSql +
+                " GROUP BY anomaly_kind ORDER BY COUNT(*) DESC";
+            return ExecuteQuery(sql, values);
+        }
+
+        /// <inheritdoc/>
+        public DataTable GetTopApiMethods(DateTime? fromUtc, DateTime? toUtc, int topN, string? companyId)
+        {
+            int take = Math.Clamp(topN, 1, MaxTopN);
+            var dbType = _connectionManager.GetConnectionInfo(_databaseId).DatabaseType;
+            var where = new WhereBuilder()
+                .Eq("company_id", companyId)
+                .Gte("log_time", fromUtc)
+                .Lte("log_time", toUtc);
+            var (whereSql, values) = where.Build();
+            // ORDER BY the COUNT(*) expression (not the alias) so every dialect accepts it; the top-N is
+            // the dialect LIMIT/FETCH, which requires the ORDER BY that is already present.
+            string limit = new LimitBuilder(dbType).Build(null, take);
+            string sql = "SELECT method, COUNT(*) AS event_count, MAX(elapsed_ms) AS max_elapsed_ms FROM st_log_anomaly_api" +
+                whereSql + " GROUP BY method ORDER BY COUNT(*) DESC" + (limit.Length > 0 ? " " + limit : string.Empty);
+            return ExecuteQuery(sql, values);
+        }
+
+        /// <summary>Executes a read-only DataTable query against the log database.</summary>
+        private DataTable ExecuteQuery(string sql, object[] values)
+        {
+            var dbAccess = new DbAccess(_databaseId, _connectionManager);
+            return dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable, sql, values)).Table ?? new DataTable();
+        }
+
         /// <summary>
         /// Runs a paged, <c>log_time DESC, sys_no DESC</c>-ordered SELECT of <paramref name="columns"/>
         /// from <paramref name="table"/> filtered by <paramref name="where"/>. Table and column names are

@@ -42,5 +42,20 @@ namespace Bee.Definition
         /// Gets a filtered, paged list of <c>st_log_anomaly_db</c> DB-anomaly headers.
         /// </summary>
         public const string GetDbAnomalyLog = "GetDbAnomalyLog";
+
+        /// <summary>
+        /// Gets API-anomaly counts grouped by anomaly kind (monitoring summary).
+        /// </summary>
+        public const string GetApiAnomalySummary = "GetApiAnomalySummary";
+
+        /// <summary>
+        /// Gets DB-anomaly counts grouped by anomaly kind (monitoring summary).
+        /// </summary>
+        public const string GetDbAnomalySummary = "GetDbAnomalySummary";
+
+        /// <summary>
+        /// Gets the top API methods by anomaly count (monitoring hot-spots).
+        /// </summary>
+        public const string GetTopApiMethods = "GetTopApiMethods";
     }
 }

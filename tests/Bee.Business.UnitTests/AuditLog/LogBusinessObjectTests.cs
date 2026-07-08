@@ -226,6 +226,47 @@ namespace Bee.Business.UnitTests.AuditLog
             Assert.Throws<UnauthorizedAccessException>(() => bo.GetDbAnomalyLog(new GetDbAnomalyLogArgs()));
         }
 
+        // ---- anomaly aggregates (Phase 3a) ----
+
+        [Fact]
+        [DisplayName("GetApiAnomalySummary 應回聚合 Table")]
+        public void GetApiAnomalySummary_Authorized_ReturnsTable()
+        {
+            var repo = new StubAuditLogRepository(HeaderPage(0));
+            var result = Bo(repo).GetApiAnomalySummary(new GetApiAnomalySummaryArgs());
+            Assert.Same(repo.AggregateResult, result.Table);
+        }
+
+        [Fact]
+        [DisplayName("GetDbAnomalySummary 應走 DB 聚合（無 company scope）")]
+        public void GetDbAnomalySummary_Authorized_UsesDbSummary()
+        {
+            var repo = new StubAuditLogRepository(HeaderPage(0));
+            var result = Bo(repo).GetDbAnomalySummary(new GetDbAnomalySummaryArgs());
+            Assert.Same(repo.AggregateResult, result.Table);
+            Assert.True(repo.DbSummaryCalled);
+        }
+
+        [Fact]
+        [DisplayName("GetTopApiMethods 應把 TopN 透傳給 repository")]
+        public void GetTopApiMethods_Authorized_PassesTopN()
+        {
+            var repo = new StubAuditLogRepository(HeaderPage(0));
+            var result = Bo(repo).GetTopApiMethods(new GetTopApiMethodsArgs { TopN = 7 });
+            Assert.Same(repo.AggregateResult, result.Table);
+            Assert.Equal(7, repo.LastTopN);
+        }
+
+        [Fact]
+        [DisplayName("聚合方法未授權應丟 UnauthorizedAccessException")]
+        public void AggregateMethods_NotAuthorized_Throw()
+        {
+            var bo = Bo(new StubAuditLogRepository(HeaderPage(0)), authorized: false);
+            Assert.Throws<UnauthorizedAccessException>(() => bo.GetApiAnomalySummary(new GetApiAnomalySummaryArgs()));
+            Assert.Throws<UnauthorizedAccessException>(() => bo.GetDbAnomalySummary(new GetDbAnomalySummaryArgs()));
+            Assert.Throws<UnauthorizedAccessException>(() => bo.GetTopApiMethods(new GetTopApiMethodsArgs()));
+        }
+
         // ---- helpers ----
 
         private static DataTable HeaderTable()
@@ -320,6 +361,13 @@ namespace Bee.Business.UnitTests.AuditLog
             public AuditLogPage GetAccessLog(AccessLogQuery query, PagingOptions paging) { LastListQuery = query; LastPaging = paging; return _page; }
             public AuditLogPage GetApiAnomalyLog(ApiAnomalyLogQuery query, PagingOptions paging) { LastListQuery = query; LastPaging = paging; return _page; }
             public AuditLogPage GetDbAnomalyLog(DbAnomalyLogQuery query, PagingOptions paging) { LastListQuery = query; LastPaging = paging; return _page; }
+
+            public DataTable AggregateResult { get; } = new DataTable("agg");
+            public int? LastTopN { get; private set; }
+            public bool DbSummaryCalled { get; private set; }
+            public DataTable GetApiAnomalySummary(DateTime? fromUtc, DateTime? toUtc, string? companyId) => AggregateResult;
+            public DataTable GetDbAnomalySummary(DateTime? fromUtc, DateTime? toUtc) { DbSummaryCalled = true; return AggregateResult; }
+            public DataTable GetTopApiMethods(DateTime? fromUtc, DateTime? toUtc, int topN, string? companyId) { LastTopN = topN; return AggregateResult; }
         }
 
         private sealed class StubAuditLogRepositoryFactory : IAuditLogRepositoryFactory

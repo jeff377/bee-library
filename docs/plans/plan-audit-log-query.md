@@ -7,7 +7,8 @@
 | 1 | 記錄異動歷程：`GetRecordHistory(progId, rowKey)` + DiffGram 還原（全還原版） | ✅ 已完成（2026-07-08） |
 | 2a | change 軸清單/明細二段式：`GetChangeLog`（清單）+ `GetChangeDetail`（明細還原）+ `GetRecordHistory` 改標頭清單（共用明細）；`LogQueryArgs` + 分頁 | ✅ 已完成（2026-07-08） |
 | 2b | 其餘軸清單：`GetLoginLog` / `GetAccessLog` / `GetApiAnomalyLog` / `GetDbAnomalyLog`（沿用 2a 的 typed filter + 分頁基礎） | ✅ 已完成（2026-07-08） |
-| 3 | 進階（有需求再做）：異常監控細分、權限強化 | 📝 待做 |
+| 3a | 異常彙總：`GetApiAnomalySummary` / `GetDbAnomalySummary` / `GetTopApiMethods`（標準 `GROUP BY`，無 dialect 時間桶） | ✅ 已完成（2026-07-08） |
+| 3 | 進階（有需求再做）：異常趨勢（Trend，需 dialect 時間桶 helper）、權限強化 | 📝 待做 |
 
 > **跨年 `log_YYYY` 聚合已移出範圍**（2026-07-08）：延後到實際出現年份分庫需求再做（見 §3 Q4）。
 > **Phase 2a 會回頭調整 Phase 1 已上線的 `GetRecordHistory` 合約**：從「全還原歷程」改為「標頭清單 + `GetChangeDetail` 取單筆明細」（見 §3 Q2 補充、§8 設計）。因套件未發佈、無外部使用者，此 breaking change 可接受。
@@ -155,6 +156,24 @@ Q1 定案為專屬 BO 軸，故 Phase 1 除方法本身外需新增一條 BO 軸
 **決策：異常 API/DB 拆兩方法（非 `GetAnomalyLog(layer)`）**：對齊 ADR-027 D6「API/DB 分表」——兩表視角/欄位不同（API 有 method + who；DB 有 database_id + command、**無 who/company**），兩個 typed 方法比單一 layer enum + union 欄位更清楚。`GetDbAnomalyLog` 因表無 company 欄，為**跨公司基礎設施檢視**（仍受 `AuditLog` Read gate）；其餘三軸依 session company 過濾。
 
 **共用回應型別**：四方法皆回 `LogListResponse` / `LogListResult`（`DataTable? Table` + `PagingInfo? Paging`）——形狀相同、`DataTable` 自帶各表欄位（同 `GetList` 慣例），省 3 組重複 DTO。（2a 的 `GetChangeLog` 保留自有 `GetChangeLogResponse`，未回頭合併；`GetRecordHistory` 因多帶 `ProgId`/`RowKey` 亦自有型別。）
+
+## 10. Phase 3a 設計（異常彙總：Summary + TopN）
+
+把異常從逐筆清單（2b）提升到監控用的**彙總**檢視。將「異常監控細分」再拆一次：**3a 彙總（純標準 `GROUP BY`，低成本，現做）** vs **趨勢圖（時間桶，需 dialect helper，延後）**。
+
+**方法集（`AuditLog` 軸）**
+
+| 方法 | SQL | 回傳欄 | scope |
+|------|-----|--------|-------|
+| `GetApiAnomalySummary(from, to)` | `st_log_anomaly_api` `GROUP BY anomaly_kind` `COUNT(*)` | `anomaly_kind` / `event_count` | company-scoped |
+| `GetDbAnomalySummary(from, to)` | `st_log_anomaly_db` `GROUP BY anomaly_kind` `COUNT(*)` | `anomaly_kind` / `event_count` | 跨公司（表無 company） |
+| `GetTopApiMethods(from, to, topN)` | `st_log_anomaly_api` `GROUP BY method` `COUNT(*)` + `MAX(elapsed_ms)`，`ORDER BY COUNT(*) DESC` 取前 N | `method` / `event_count` / `max_elapsed_ms` | company-scoped |
+
+- 回傳一律 `DataTable`（維度欄 + 指標欄），**無分頁**（聚合後有界；異常本就 opt-in + 門檻驅動、量體受控）。共用結果型別 `LogAggregateResult` / `LogAggregateResponse`（`DataTable? Table`）。
+- WHERE 重用 2b 的 `WhereBuilder`（`log_time` 範圍 + API 的 `company_id`）；`ORDER BY COUNT(*) DESC` 用**運算式**（不靠 alias，跨方言安全）；TopN 用既有 `LimitBuilder`（clamp `1..100`）。
+- 全方法沿用 `AuditLog` Read gate；純唯讀。
+
+**分界（3a vs 延後）**：Summary/TopN 只用標準 `GROUP BY` + `COUNT/MAX`，跨方言無雷；**時間分桶趨勢**（`date_trunc` / `CONVERT(date)` / `DATE()` / `TRUNC` 各家不同）需另做 `DateBucketBuilder` dialect helper，故留待實際要畫趨勢圖時再做。DB 端 top-by-`database_id` 亦屬可選未來（資料庫數少，Summary 已足）。
 
 ## 6. 相依與約束
 

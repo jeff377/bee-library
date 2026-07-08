@@ -110,5 +110,32 @@ namespace Bee.Api.Client.Connectors
         {
             return await ExecuteAsync<LogListResponse>(LogActions.GetDbAnomalyLog, request).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// Asynchronously gets API-anomaly counts grouped by anomaly kind (monitoring summary).
+        /// </summary>
+        /// <param name="request">The summary request (optional time window).</param>
+        public virtual async Task<LogAggregateResponse> GetApiAnomalySummaryAsync(GetApiAnomalySummaryRequest request)
+        {
+            return await ExecuteAsync<LogAggregateResponse>(LogActions.GetApiAnomalySummary, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously gets DB-anomaly counts grouped by anomaly kind (monitoring summary).
+        /// </summary>
+        /// <param name="request">The summary request (optional time window).</param>
+        public virtual async Task<LogAggregateResponse> GetDbAnomalySummaryAsync(GetDbAnomalySummaryRequest request)
+        {
+            return await ExecuteAsync<LogAggregateResponse>(LogActions.GetDbAnomalySummary, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously gets the top API methods by anomaly count (monitoring hot-spots).
+        /// </summary>
+        /// <param name="request">The top-N request (optional time window + <c>TopN</c>).</param>
+        public virtual async Task<LogAggregateResponse> GetTopApiMethodsAsync(GetTopApiMethodsRequest request)
+        {
+            return await ExecuteAsync<LogAggregateResponse>(LogActions.GetTopApiMethods, request).ConfigureAwait(false);
+        }
     }
 }
