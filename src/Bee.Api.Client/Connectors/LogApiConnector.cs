@@ -1,7 +1,6 @@
 using Bee.Api.Core.Messages;
 using Bee.Api.Core.Messages.AuditLog;
 using Bee.Definition;
-using Bee.Definition.Paging;
 
 namespace Bee.Api.Client.Connectors
 {
@@ -42,21 +41,10 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Asynchronously gets a page of one record's change-event headers (all <c>st_log_change</c>
-        /// events for a <c>progId</c> + <c>rowKey</c>, newest first). Fetch a single event's before/after
-        /// detail with <see cref="GetChangeDetailAsync"/>.
-        /// </summary>
-        /// <param name="progId">The business object (program) id whose record history is requested.</param>
-        /// <param name="rowKey">The master record key (its <c>sys_rowid</c>).</param>
-        /// <param name="paging">The paging request; <c>null</c> applies the server default page.</param>
-        public virtual async Task<GetRecordHistoryResponse> GetRecordHistoryAsync(string progId, string rowKey, PagingOptions? paging = null)
-        {
-            var request = new GetRecordHistoryRequest { ProgId = progId, RowKey = rowKey, Paging = paging };
-            return await ExecuteAsync<GetRecordHistoryResponse>(LogActions.GetRecordHistory, request).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Asynchronously gets a filtered, paged list of <c>st_log_change</c> event headers across records.
+        /// Asynchronously gets a filtered, paged list of <c>st_log_change</c> event headers across records
+        /// (e.g. a form's changes over a period, a user's changes over a period, or one record's history via
+        /// <c>ProgId</c> + <c>RowKey</c>). Fetch a single event's before/after detail with
+        /// <see cref="GetChangeDetailAsync"/>.
         /// </summary>
         /// <param name="request">The change-log list request (typed filter + optional paging).</param>
         public virtual async Task<GetChangeLogResponse> GetChangeLogAsync(GetChangeLogRequest request)

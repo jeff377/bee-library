@@ -14,7 +14,7 @@ namespace Bee.Business.UnitTests.AuditLog
 {
     /// <summary>
     /// <see cref="LogBusinessObject"/> 的 BO 層行為測試（stub repository，不接實體 DB）：
-    /// 清單方法（<c>GetRecordHistory</c> / <c>GetChangeLog</c>）回標頭 + 分頁、filter 透傳；
+    /// 清單方法（<c>GetChangeLog</c> 等）回標頭 + 分頁、filter 透傳；
     /// 明細方法（<c>GetChangeDetail</c>）把 changes_xml DiffGram 還原為結構化 before/after、
     /// 查無資料丟例外；三方法皆有權限 gate 與參數驗證。
     /// </summary>
@@ -31,47 +31,6 @@ namespace Bee.Business.UnitTests.AuditLog
                 (typeof(IAuthorizationService), new FakeAuth(authorized)),
                 (typeof(IAuditLogRepositoryFactory), new StubAuditLogRepositoryFactory(repo)));
             return new LogBusinessObject(ctx, Guid.NewGuid());
-        }
-
-        // ---- GetRecordHistory (headers list) ----
-
-        [Fact]
-        [DisplayName("GetRecordHistory 應回標頭清單 + 分頁，並把 ProgId/RowKey 透傳為查詢條件")]
-        public void GetRecordHistory_Authorized_ReturnsHeaderPage()
-        {
-            var rowKey = Guid.NewGuid().ToString();
-            var repo = new StubAuditLogRepository(HeaderPage(1));
-            var bo = Bo(repo);
-
-            var result = bo.GetRecordHistory(new GetRecordHistoryArgs { ProgId = ProgId, RowKey = rowKey });
-
-            Assert.Equal(ProgId, result.ProgId);
-            Assert.Equal(rowKey, result.RowKey);
-            Assert.NotNull(result.Table);
-            Assert.Single(result.Table!.Rows);
-            Assert.NotNull(result.Paging);
-            Assert.Equal(ProgId, repo.LastQuery!.ProgId);
-            Assert.Equal(rowKey, repo.LastQuery.RowKey);
-        }
-
-        [Fact]
-        [DisplayName("GetRecordHistory 未授權應丟 UnauthorizedAccessException")]
-        public void GetRecordHistory_NotAuthorized_Throws()
-        {
-            var bo = Bo(new StubAuditLogRepository(HeaderPage(0)), authorized: false);
-            Assert.Throws<UnauthorizedAccessException>(() =>
-                bo.GetRecordHistory(new GetRecordHistoryArgs { ProgId = ProgId, RowKey = "r1" }));
-        }
-
-        [Theory]
-        [InlineData("", "r1")]
-        [InlineData("Employee", "")]
-        [DisplayName("GetRecordHistory 缺 ProgId 或 RowKey 應丟 ArgumentException")]
-        public void GetRecordHistory_MissingKey_Throws(string progId, string rowKey)
-        {
-            var bo = Bo(new StubAuditLogRepository(HeaderPage(0)));
-            Assert.Throws<ArgumentException>(() =>
-                bo.GetRecordHistory(new GetRecordHistoryArgs { ProgId = progId, RowKey = rowKey }));
         }
 
         // ---- GetChangeLog (filtered list) ----

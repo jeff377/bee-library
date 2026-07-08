@@ -61,7 +61,6 @@ namespace Bee.Business.UnitTests
             new ApiSurfaceEntry("LogBusinessObject", "GetDbAnomalyLog",     ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("LogBusinessObject", "GetDbAnomalySummary", ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("LogBusinessObject", "GetLoginLog",         ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
-            new ApiSurfaceEntry("LogBusinessObject", "GetRecordHistory",    ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("LogBusinessObject", "GetTopApiMethods",    ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
 
             // System axis — SystemBusinessObject (system-level operations).

@@ -86,12 +86,11 @@ per-program BO 實體，wire 上以 `<progId>.<action>` 派發（例如 `Employe
 
 對 `st_log_*` 稽核表的唯讀查詢（稽核軌跡的**讀取**側；寫入側即下方副作用）。以 `AuditLog.<action>` 派發。每個 action 皆以 `AuditLog` 權限模型 gate（需 `Read` 授權），避免一般使用者讀他人軌跡，結果並限縮於呼叫者當前公司。
 
-change 軸採**清單 / 明細**二段式：清單方法只回輕量事件**標頭**（分頁 `DataTable`，不含 DiffGram）；DiffGram 由 `GetChangeDetail` 依單筆事件按需還原。
+change 軸採**清單 / 明細**二段式：`GetChangeLog` 只回輕量事件**標頭**（分頁 `DataTable`，不含 DiffGram）；DiffGram 由 `GetChangeDetail` 依單筆事件按需還原。
 
 | 方法 | Protection | Auth | 用途 |
 |------|------------|------|------|
-| `GetRecordHistory` | Encrypted | Authenticated | 單筆記錄的異動事件標頭（某 `ProgId` + `RowKey` 的所有 `st_log_change` 事件，最新在前），一頁。回傳標頭 `DataTable` + `PagingInfo`。 |
-| `GetChangeLog` | Encrypted | Authenticated | 跨記錄的 `st_log_change` 事件標頭清單，依 typed filter（時間範圍 / 使用者 / progId / rowKey / 異動類型）+ 分頁。回傳標頭 `DataTable` + `PagingInfo`。 |
+| `GetChangeLog` | Encrypted | Authenticated | `st_log_change` 事件標頭清單，依 typed filter（時間範圍 / 使用者 / progId / rowKey / 異動類型）+ 分頁。典型用法：某表單某期間的異動（`ProgId` + 時間範圍）、某人某期間的異動（`UserId` + 時間範圍）、或單筆記錄歷程（`ProgId` + `RowKey`）。回傳標頭 `DataTable` + `PagingInfo`。 |
 | `GetChangeDetail` | Encrypted | Authenticated | 以事件 `SysRowId` 取單筆，將其 `changes_xml` DiffGram 由伺服器端還原為結構化的欄位級新舊值。 |
 | `GetLoginLog` | Encrypted | Authenticated | `st_log_login` 事件標頭的過濾分頁清單（時間 / 使用者 / event）。回傳標頭 `DataTable` + `PagingInfo`。 |
 | `GetAccessLog` | Encrypted | Authenticated | `st_log_access` 檢視記錄標頭的過濾分頁清單（時間 / 使用者 / progId / rowKey）。回傳標頭 `DataTable` + `PagingInfo`。 |

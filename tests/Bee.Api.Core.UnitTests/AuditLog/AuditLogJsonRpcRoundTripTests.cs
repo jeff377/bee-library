@@ -61,20 +61,6 @@ namespace Bee.Api.Core.UnitTests.AuditLog
         }
 
         [Fact]
-        [DisplayName("AuditLog.GetRecordHistory 經 executor 應派發到 LogBusinessObject 並回標頭 DataTable")]
-        public void GetRecordHistory_ThroughJsonRpc_DispatchesToLogBo()
-        {
-            var repo = new StubAuditLogRepository(HeaderPage(1), null);
-            var response = Dispatch(repo, LogActions.GetRecordHistory,
-                new GetRecordHistoryRequest { ProgId = "Employee", RowKey = "R-1" });
-
-            Assert.Null(response.Error);
-            var result = Assert.IsType<GetRecordHistoryResponse>(response.Result!.Value);
-            Assert.Equal("Employee", result.ProgId);
-            Assert.Single(result.Table!.Rows);
-        }
-
-        [Fact]
         [DisplayName("AuditLog.GetChangeLog 經 executor 應派發並回標頭 DataTable + 分頁")]
         public void GetChangeLog_ThroughJsonRpc_Dispatches()
         {

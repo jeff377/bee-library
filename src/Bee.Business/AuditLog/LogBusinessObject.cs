@@ -18,10 +18,9 @@ namespace Bee.Business.AuditLog
     /// company, and no action mutates the append-only log.
     /// </summary>
     /// <remarks>
-    /// The change axis follows a list / detail split: <see cref="GetChangeLog"/> and
-    /// <see cref="GetRecordHistory"/> return lightweight event headers (no DiffGram), and
-    /// <see cref="GetChangeDetail"/> restores one event's <c>changes_xml</c> into structured
-    /// before/after values on demand.
+    /// The change axis follows a list / detail split: <see cref="GetChangeLog"/> returns lightweight
+    /// event headers (no DiffGram), and <see cref="GetChangeDetail"/> restores one event's
+    /// <c>changes_xml</c> into structured before/after values on demand.
     /// </remarks>
     public class LogBusinessObject : BusinessObject, ILogBusinessObject
     {
@@ -36,43 +35,15 @@ namespace Bee.Business.AuditLog
         { }
 
         /// <summary>
-        /// Gets a page of one record's change-event headers (every <c>st_log_change</c> event for the
-        /// given <c>ProgId</c> + <c>RowKey</c>, newest first). Field-level detail is fetched per event
-        /// via <see cref="GetChangeDetail"/>.
-        /// </summary>
-        /// <param name="args">The input arguments carrying <c>ProgId</c>, <c>RowKey</c> and optional paging.</param>
-        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
-        public virtual GetRecordHistoryResult GetRecordHistory(GetRecordHistoryArgs args)
-        {
-            ArgumentNullException.ThrowIfNull(args);
-            if (string.IsNullOrWhiteSpace(args.ProgId))
-                throw new ArgumentException("ProgId is required.", nameof(args));
-            if (string.IsNullOrWhiteSpace(args.RowKey))
-                throw new ArgumentException("RowKey is required.", nameof(args));
-
-            EnsureAuditReadAllowed();
-
-            var query = new ChangeLogQuery
-            {
-                ProgId = args.ProgId,
-                RowKey = args.RowKey,
-                CompanyId = CurrentCompanyId(),
-            };
-            var page = Repository().GetChangeLog(query, args.Paging ?? new PagingOptions());
-
-            return new GetRecordHistoryResult
-            {
-                ProgId = args.ProgId,
-                RowKey = args.RowKey,
-                Table = page.Table,
-                Paging = page.Paging,
-            };
-        }
-
-        /// <summary>
         /// Gets a filtered, paged list of <c>st_log_change</c> event headers across records.
         /// </summary>
         /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
+        /// <remarks>
+        /// Typical uses: a form's changes over a period (<c>ProgId</c> + time range), or a user's changes
+        /// over a period (<c>UserId</c> + time range). Setting <c>ProgId</c> + <c>RowKey</c> narrows it to a
+        /// single record's history. Field-level before/after detail for any listed row is fetched via
+        /// <see cref="GetChangeDetail"/>.
+        /// </remarks>
         [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
         public virtual GetChangeLogResult GetChangeLog(GetChangeLogArgs args)
         {

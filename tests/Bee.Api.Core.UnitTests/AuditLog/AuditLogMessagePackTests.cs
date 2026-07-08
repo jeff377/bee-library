@@ -67,30 +67,6 @@ namespace Bee.Api.Core.UnitTests.AuditLog
         }
 
         [Fact]
-        [DisplayName("GetRecordHistoryResponse 帶 DataTable + PagingInfo 應 round-trip")]
-        public void GetRecordHistoryResponse_RoundTrip()
-        {
-            var table = new DataTable("st_log_change");
-            table.Columns.Add("sys_rowid", typeof(Guid));
-            table.Rows.Add(Guid.NewGuid());
-
-            var response = new GetRecordHistoryResponse
-            {
-                ProgId = "Employee",
-                RowKey = "R-1",
-                Table = table,
-                Paging = new PagingInfo { Page = 1, PageSize = 50, HasMore = false },
-            };
-
-            var restored = MessagePackCodec.Deserialize<GetRecordHistoryResponse>(MessagePackCodec.Serialize(response));
-
-            Assert.NotNull(restored);
-            Assert.Equal("Employee", restored!.ProgId);
-            Assert.Equal("R-1", restored.RowKey);
-            Assert.Single(restored.Table!.Rows);
-        }
-
-        [Fact]
         [DisplayName("GetChangeDetailResponse 帶巢狀 Fields 應完整 round-trip")]
         public void GetChangeDetailResponse_RoundTrip_PreservesFields()
         {

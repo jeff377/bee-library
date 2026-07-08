@@ -7,14 +7,9 @@ namespace Bee.Definition
     public static class LogActions
     {
         /// <summary>
-        /// Gets a page of a single record's change-event headers (all <c>st_log_change</c> rows for a
-        /// <c>progId</c> + <c>rowKey</c>, newest first). Field-level detail is fetched per event via
+        /// Gets a filtered, paged list of <c>st_log_change</c> event headers across records (form + period,
+        /// user + period, or one record via progId + rowKey). Field-level detail per event is fetched via
         /// <see cref="GetChangeDetail"/>.
-        /// </summary>
-        public const string GetRecordHistory = "GetRecordHistory";
-
-        /// <summary>
-        /// Gets a filtered, paged list of <c>st_log_change</c> event headers across records.
         /// </summary>
         public const string GetChangeLog = "GetChangeLog";
 

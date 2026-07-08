@@ -8,14 +8,9 @@ namespace Bee.Business.AuditLog
     public interface ILogBusinessObject : IBusinessObject
     {
         /// <summary>
-        /// Gets a page of one record's change-event headers (all <c>st_log_change</c> events for a
-        /// <c>progId</c> + <c>rowKey</c>, newest first).
-        /// </summary>
-        /// <param name="args">The input arguments carrying <c>ProgId</c>, <c>RowKey</c> and optional paging.</param>
-        GetRecordHistoryResult GetRecordHistory(GetRecordHistoryArgs args);
-
-        /// <summary>
-        /// Gets a filtered, paged list of <c>st_log_change</c> event headers across records.
+        /// Gets a filtered, paged list of <c>st_log_change</c> event headers across records (e.g. a form's
+        /// changes over a period, a user's changes over a period, or one record's history via
+        /// <c>ProgId</c> + <c>RowKey</c>).
         /// </summary>
         /// <param name="args">The input arguments carrying the typed filter and optional paging.</param>
         GetChangeLogResult GetChangeLog(GetChangeLogArgs args);

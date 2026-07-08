@@ -11,7 +11,7 @@
 | — | 延後（有需求再另案，非本計畫範圍）：異常趨勢圖（需 `DateBucketBuilder` dialect helper）、權限強化（auditor 角色 / 欄位級遮罩，等實際 UI/角色需求）、跨年 `log_YYYY` 聚合 | ⏸️ 延後 |
 
 > **跨年 `log_YYYY` 聚合已移出範圍**（2026-07-08）：延後到實際出現年份分庫需求再做（見 §3 Q4）。
-> **Phase 2a 會回頭調整 Phase 1 已上線的 `GetRecordHistory` 合約**：從「全還原歷程」改為「標頭清單 + `GetChangeDetail` 取單筆明細」（見 §3 Q2 補充、§8 設計）。因套件未發佈、無外部使用者，此 breaking change 可接受。
+> **`GetRecordHistory` 最終移除**（2026-07-08，收尾）：`GetChangeLog`（帶 `ProgId`+`RowKey`）+ `GetChangeDetail` 已完整涵蓋，冗餘故拔除。單筆記錄歷程改用 `GetChangeLog`。演進歷程：Phase 1「全還原」→ Phase 2a「標頭清單 + 共用明細」→ 收尾移除。`AuditLog` 軸方法數 10 → 9。
 
 > 稽核軌跡的**讀取側**。寫入側（項 0–4）已完成、上線；設計理由見 [ADR-027](../adr/adr-027-audit-trail.md)、母計畫 [plan-audit-trail.md](plan-audit-trail.md)。
 > Q1–Q7 已於 2026-07-08 逐項定案（見 §3 決策紀錄），Phase 1 進入實作。
