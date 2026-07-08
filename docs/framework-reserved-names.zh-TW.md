@@ -12,7 +12,7 @@
 
 ## 1. 系統表（`st_*`）
 
-`st_` 前綴語意為「框架所有的表」，**與該表所在的資料庫位置正交**：`st_*` 表可以位於 common 資料庫，也可以位於 per-company 資料庫——重點是「誰擁有」而不是「住哪裡」。
+`st_` 前綴語意為「框架所有的表」，**與該表所在的資料庫位置正交**：`st_*` 表可以位於 common 資料庫、per-company 資料庫，也可以位於 log 資料庫——重點是「誰擁有」而不是「住哪裡」。
 
 ### 1.1 Common 資料庫（全域共用）
 
@@ -36,6 +36,18 @@
 | `st_employee` | 員工（連結 common DB 的 `st_user` 至 per-company 的組織位置）。 |
 
 > `st_department` / `st_employee` 雖位於公司資料庫，但仍是 **框架所有**（record-scope 與組織樹功能所需），不是業務資料。Per-company 業務表請使用 `ft_` 前綴。
+
+### 1.3 Log 資料庫（資料軌跡）
+
+| 表名 | 用途 |
+|------|------|
+| `st_log_login` | 登入事件（成功 / 失敗 / 鎖定 / 登出）。 |
+| `st_log_change` | 異動記錄——一次 Save / Delete 一列，`changes_xml` 承載 DataSet DiffGram 新舊值。 |
+| `st_log_access` | 檢視記錄（誰看了哪筆記錄）。 |
+| `st_log_anomaly_api` | API 層異常（Error / Timeout / Slow）——哪個動作偏離正常。 |
+| `st_log_anomaly_db` | DB 層異常（Error / Timeout / Slow / 大量列數）——哪個資料庫 + 指令偏離正常。 |
+
+> Log 表**預設關閉（opt-in）**且自足：去正規化觸發者的 user / company，查詢不需跨資料庫 join（log 資料庫實體分離）。log 資料庫可依年份分庫（`log_2024`、`log_2025`…），當年度可寫、歷史唯讀。
 
 ---
 

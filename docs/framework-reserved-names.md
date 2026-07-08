@@ -12,7 +12,7 @@
 
 ## 1. System tables (`st_*`)
 
-The `st_` prefix means "framework-owned table". It is **orthogonal to which database** the table lives in: an `st_*` table can live in the common database or the per-company database — what matters is who owns it.
+The `st_` prefix means "framework-owned table". It is **orthogonal to which database** the table lives in: an `st_*` table can live in the common database, the per-company database, or the log database — what matters is who owns it.
 
 ### 1.1 Common database (shared globally)
 
@@ -36,6 +36,18 @@ The `st_` prefix means "framework-owned table". It is **orthogonal to which data
 | `st_employee` | Employees (links a common-DB `st_user` to a per-company organisational position). |
 
 > `st_department` / `st_employee` live in the company database despite their `st_` prefix — they are **framework-owned** (the record-scope and organisation tree features need them), not business data. Per-company business tables should use the `ft_` prefix.
+
+### 1.3 Log database (audit trail)
+
+| Table | Purpose |
+|-------|---------|
+| `st_log_login` | Login events (success / failure / lockout / logout). |
+| `st_log_change` | Data-change records — one row per Save / Delete carrying a DataSet DiffGram before/after payload. |
+| `st_log_access` | Record-view access records (who viewed which record). |
+| `st_log_anomaly_api` | API-layer anomalies (Error / Timeout / Slow) — which action deviated. |
+| `st_log_anomaly_db` | DB-layer anomalies (Error / Timeout / Slow / large-row) — which database + command deviated. |
+
+> Log tables are **opt-in** (off by default) and self-sufficient: they denormalise the acting user / company so a query never joins across databases (the log database is physically separate). The log database can be year-partitioned (`log_2024`, `log_2025`, …) with the current year writable and history read-only.
 
 ---
 
