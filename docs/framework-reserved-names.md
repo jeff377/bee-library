@@ -47,7 +47,7 @@ The `st_` prefix means "framework-owned table". It is **orthogonal to which data
 | `st_log_anomaly_api` | API-layer anomalies (Error / Timeout / Slow) — which action deviated. |
 | `st_log_anomaly_db` | DB-layer anomalies (Error / Timeout / Slow / large-row) — which database + command deviated. |
 
-> Log tables are **opt-in** (off by default) and self-sufficient: they denormalise the acting user / company so a query never joins across databases (the log database is physically separate). The log database can be year-partitioned (`log_2024`, `log_2025`, …) with the current year writable and history read-only.
+> Log tables are **opt-in** (off by default) and self-sufficient: they denormalise the acting user / company so a query never joins across databases (the log database is physically separate). The log database can be year-partitioned (`log_2024`, `log_2025`, …) with the current year writable and history read-only. Design rationale: [ADR-027](adr/adr-027-audit-trail.md).
 
 ---
 

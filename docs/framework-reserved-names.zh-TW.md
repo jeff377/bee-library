@@ -47,7 +47,7 @@
 | `st_log_anomaly_api` | API 層異常（Error / Timeout / Slow）——哪個動作偏離正常。 |
 | `st_log_anomaly_db` | DB 層異常（Error / Timeout / Slow / 大量列數）——哪個資料庫 + 指令偏離正常。 |
 
-> Log 表**預設關閉（opt-in）**且自足：去正規化觸發者的 user / company，查詢不需跨資料庫 join（log 資料庫實體分離）。log 資料庫可依年份分庫（`log_2024`、`log_2025`…），當年度可寫、歷史唯讀。
+> Log 表**預設關閉（opt-in）**且自足：去正規化觸發者的 user / company，查詢不需跨資料庫 join（log 資料庫實體分離）。log 資料庫可依年份分庫（`log_2024`、`log_2025`…），當年度可寫、歷史唯讀。設計理由見 [ADR-027](adr/adr-027-audit-trail.md)。
 
 ---
 
