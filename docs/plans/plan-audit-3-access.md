@@ -97,4 +97,4 @@ return new GetDataResult { DataSet = dataSet };
 
 ## 7. 相依與後續
 - 前置：項 0（已完成）。
-- 完成後接：項 4 系統/錯誤（選配）；項 5 執行記錄（暫緩、範圍待決定）。
+- 完成後接：項 4 執行記錄（暫緩，範圍待決定）。軸⑤系統/錯誤已移出稽核範圍（observability，走 ILogger）。
