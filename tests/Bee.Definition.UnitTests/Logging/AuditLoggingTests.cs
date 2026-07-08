@@ -142,6 +142,58 @@ namespace Bee.Definition.UnitTests.Logging
         }
 
         [Fact]
+        [DisplayName("ApiAnomalyEntry：目標表 + method/kind/timing 欄位，含共通 who 欄")]
+        public void ApiAnomalyEntry_Columns()
+        {
+            var entry = new ApiAnomalyEntry
+            {
+                UserId = "demo",
+                Method = "Order.Save",
+                Kind = AnomalyKind.Slow,
+                ElapsedMs = 5000,
+                ThresholdMs = 3000,
+            };
+
+            var map = entry.GetColumns().ToDictionary(c => c.Name, c => c.Value);
+
+            Assert.Equal("st_log_anomaly_api", entry.TableName);
+            Assert.Equal("Order.Save", map["method"]);
+            Assert.Equal((int)AnomalyKind.Slow, map["anomaly_kind"]);
+            Assert.Equal(5000, map["elapsed_ms"]);
+            Assert.Equal(3000, map["threshold_ms"]);
+            Assert.True(map.ContainsKey("user_id"));   // API layer has session context
+        }
+
+        [Fact]
+        [DisplayName("DbAnomalyEntry：精簡（無 who/company），保留 database_id/command/kind")]
+        public void DbAnomalyEntry_LeanColumns()
+        {
+            var entry = new DbAnomalyEntry
+            {
+                DatabaseId = "company",
+                Command = "UPDATE ft_order SET amount={0}",
+                Kind = AnomalyKind.Timeout,
+                ElapsedMs = 30000,
+                ErrorType = "SqlException",
+                ErrorMessage = "timeout expired",
+            };
+
+            var map = entry.GetColumns().ToDictionary(c => c.Name, c => c.Value);
+
+            Assert.Equal("st_log_anomaly_db", entry.TableName);
+            Assert.Equal("company", map["database_id"]);
+            Assert.Equal("UPDATE ft_order SET amount={0}", map["command"]);
+            Assert.Equal((int)AnomalyKind.Timeout, map["anomaly_kind"]);
+            // Keeps the always-columns.
+            Assert.True(map.ContainsKey("sys_rowid"));
+            Assert.True(map.ContainsKey("log_time"));
+            // Lean: no who / company / source columns (DbAccess has no session).
+            Assert.False(map.ContainsKey("user_id"));
+            Assert.False(map.ContainsKey("company_id"));
+            Assert.False(map.ContainsKey("source"));
+        }
+
+        [Fact]
         [DisplayName("DataSet DiffGram 序列化應保留修改欄位的新舊值（changes_xml 設計核心）")]
         public void DiffGram_PreservesOldAndNewValues()
         {

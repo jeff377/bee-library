@@ -33,6 +33,8 @@
 				<TableItem TableName="st_log_login" DisplayName="登入記錄" />
 				<TableItem TableName="st_log_change" DisplayName="異動記錄" />
 				<TableItem TableName="st_log_access" DisplayName="檢視記錄" />
+				<TableItem TableName="st_log_anomaly_api" DisplayName="API 異常記錄" />
+				<TableItem TableName="st_log_anomaly_db" DisplayName="DB 異常記錄" />
 			</Tables>
 		</DbCategory>
 	</Categories>

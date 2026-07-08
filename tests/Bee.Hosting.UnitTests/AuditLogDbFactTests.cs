@@ -126,5 +126,67 @@ namespace Bee.Hosting.UnitTests
         [DbFact(DatabaseType.PostgreSQL)]
         [DisplayName("PostgreSQL：檢視記錄寫入 st_log_access 後可讀回")]
         public void AccessLog_PostgreSQL_RoundTrip() => RunAccessRoundTrip(DatabaseType.PostgreSQL);
+
+        private void RunApiAnomalyRoundTrip(DatabaseType databaseType)
+        {
+            var factory = _fx.GetRequiredService<IDbAccessFactory>();
+            var dbAccess = factory.Create(TestDbConventions.GetDatabaseId(databaseType, "log"));
+
+            var rowId = Guid.NewGuid();
+            var entry = new ApiAnomalyEntry
+            {
+                SysRowId = rowId,
+                UserId = "demo",
+                UserName = "Demo User",
+                Method = "Order.Save",
+                Kind = AnomalyKind.Slow,
+                ElapsedMs = 5000,
+                ThresholdMs = 3000,
+            };
+            dbAccess.Execute(AuditLogDbSink.BuildInsert(entry));
+
+            var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
+                "SELECT COUNT(*) FROM st_log_anomaly_api WHERE sys_rowid={0}", rowId));
+            Assert.Equal(1L, Convert.ToInt64(result.Scalar, CultureInfo.InvariantCulture));
+        }
+
+        private void RunDbAnomalyRoundTrip(DatabaseType databaseType)
+        {
+            var factory = _fx.GetRequiredService<IDbAccessFactory>();
+            var dbAccess = factory.Create(TestDbConventions.GetDatabaseId(databaseType, "log"));
+
+            var rowId = Guid.NewGuid();
+            var entry = new DbAnomalyEntry
+            {
+                SysRowId = rowId,
+                DatabaseId = "company",
+                Command = "UPDATE ft_order SET amount={0}",
+                Kind = AnomalyKind.Timeout,
+                ElapsedMs = 30000,
+                ErrorType = "DbException",
+                ErrorMessage = "timeout expired",
+            };
+            dbAccess.Execute(AuditLogDbSink.BuildInsert(entry));
+
+            var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
+                "SELECT COUNT(*) FROM st_log_anomaly_db WHERE sys_rowid={0}", rowId));
+            Assert.Equal(1L, Convert.ToInt64(result.Scalar, CultureInfo.InvariantCulture));
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：API 異常寫入 st_log_anomaly_api 後可讀回")]
+        public void ApiAnomaly_SqlServer_RoundTrip() => RunApiAnomalyRoundTrip(DatabaseType.SQLServer);
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("PostgreSQL：API 異常寫入 st_log_anomaly_api 後可讀回")]
+        public void ApiAnomaly_PostgreSQL_RoundTrip() => RunApiAnomalyRoundTrip(DatabaseType.PostgreSQL);
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：DB 異常寫入 st_log_anomaly_db 後可讀回")]
+        public void DbAnomaly_SqlServer_RoundTrip() => RunDbAnomalyRoundTrip(DatabaseType.SQLServer);
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("PostgreSQL：DB 異常寫入 st_log_anomaly_db 後可讀回")]
+        public void DbAnomaly_PostgreSQL_RoundTrip() => RunDbAnomalyRoundTrip(DatabaseType.PostgreSQL);
     }
 }

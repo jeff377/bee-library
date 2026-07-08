@@ -1,8 +1,12 @@
+using System.Diagnostics;
 using System.Reflection;
 using Bee.Base.Exceptions;
 using Bee.Base.Tracing;
 using Bee.Definition;
+using Bee.Definition.Identity;
+using Bee.Definition.Logging;
 using Bee.Definition.Security;
+using Bee.Definition.Settings;
 using Bee.Api.Core.Validator;
 using Bee.Api.Core.Conversion;
 using Bee.Api.Core.Messages;
@@ -19,6 +23,9 @@ namespace Bee.Api.Core.JsonRpc
         private readonly IBusinessObjectFactory _boFactory;
         private readonly IAccessTokenValidator _tokenValidator;
         private readonly IApiEncryptionKeyProvider _keyProvider;
+        private readonly IAuditLogWriter? _anomalyWriter;
+        private readonly AuditLogOptions? _auditOptions;
+        private readonly ISessionInfoService? _sessionService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonRpcExecutor"/> class.
@@ -26,14 +33,26 @@ namespace Bee.Api.Core.JsonRpc
         /// <param name="boFactory">The business-object factory.</param>
         /// <param name="tokenValidator">The access-token validator.</param>
         /// <param name="keyProvider">The API encryption key provider.</param>
+        /// <param name="anomalyWriter">
+        /// Optional audit writer for API anomaly records; null disables API anomaly logging.
+        /// Supplied by DI; direct construction (e.g. tests) may omit it.
+        /// </param>
+        /// <param name="auditOptions">Optional audit-log options (anomaly enable + API slow threshold).</param>
+        /// <param name="sessionService">Optional session lookup for the acting user (denormalised who).</param>
         public JsonRpcExecutor(
             IBusinessObjectFactory boFactory,
             IAccessTokenValidator tokenValidator,
-            IApiEncryptionKeyProvider keyProvider)
+            IApiEncryptionKeyProvider keyProvider,
+            IAuditLogWriter? anomalyWriter = null,
+            AuditLogOptions? auditOptions = null,
+            ISessionInfoService? sessionService = null)
         {
             _boFactory = boFactory ?? throw new ArgumentNullException(nameof(boFactory));
             _tokenValidator = tokenValidator ?? throw new ArgumentNullException(nameof(tokenValidator));
             _keyProvider = keyProvider ?? throw new ArgumentNullException(nameof(keyProvider));
+            _anomalyWriter = anomalyWriter;
+            _auditOptions = auditOptions;
+            _sessionService = sessionService;
         }
 
         /// <summary>
@@ -72,6 +91,7 @@ namespace Bee.Api.Core.JsonRpc
         {
             var ctx = Tracer.Start(TraceLayers.ApiServer, string.Empty, name: request.Method);
             var response = new JsonRpcResponse(request);
+            var stopwatch = AnomalyEnabled ? Stopwatch.StartNew() : null;
             try
             {
                 var format = request.Params.Format;
@@ -95,6 +115,7 @@ namespace Bee.Api.Core.JsonRpc
                 response.Result = new JsonRpcResult { Value = value };
                 ApiPayloadConverter.TransformTo(response.Result, format, apiEncryptionKey);
                 Tracer.End(ctx);
+                LogApiSlowAnomaly(request.Method, stopwatch);
             }
             catch (Exception ex)
             {
@@ -105,9 +126,70 @@ namespace Bee.Api.Core.JsonRpc
                 var (code, message) = MapException(rootEx);
                 response.Error = new JsonRpcError((int)code, message);
                 Tracer.End(ctx, TraceStatus.Error, rootEx.Message);
+                LogApiFailureAnomaly(request.Method, rootEx, stopwatch);
             }
             return response;
         }
+
+        #region 異常記錄（anomaly detection）
+
+        private bool AnomalyEnabled =>
+            _anomalyWriter != null && _sessionService != null
+            && _auditOptions is { Enabled: true, AnomalyEnabled: true };
+
+        /// <summary>Records a Slow anomaly when a completed call exceeds the configured threshold.</summary>
+        private void LogApiSlowAnomaly(string method, Stopwatch? stopwatch)
+        {
+            if (stopwatch == null || _auditOptions == null) { return; }
+            stopwatch.Stop();
+            int threshold = _auditOptions.ApiSlowThresholdMs;
+            if (threshold > 0 && stopwatch.ElapsedMilliseconds > threshold)
+                WriteApiAnomaly(method, AnomalyKind.Slow, stopwatch.ElapsedMilliseconds, thresholdMs: threshold);
+        }
+
+        /// <summary>Records an Error / Timeout anomaly for a failed call.</summary>
+        private void LogApiFailureAnomaly(string method, Exception rootEx, Stopwatch? stopwatch)
+        {
+            if (stopwatch == null) { return; }
+            stopwatch.Stop();
+            var kind = IsTimeout(rootEx) ? AnomalyKind.Timeout : AnomalyKind.Error;
+            WriteApiAnomaly(method, kind, stopwatch.ElapsedMilliseconds,
+                errorType: rootEx.GetType().Name, errorMessage: SanitizeMessage(rootEx.Message));
+        }
+
+        private void WriteApiAnomaly(string method, AnomalyKind kind, long elapsedMs,
+            int? thresholdMs = null, string? errorType = null, string? errorMessage = null)
+        {
+            if (_anomalyWriter == null || _sessionService == null) { return; }
+            var session = _sessionService.Get(AccessToken);
+            _anomalyWriter.Write(new ApiAnomalyEntry
+            {
+                UserId = session?.UserId,
+                UserName = session?.UserName,
+                CompanyId = session?.CompanyId,
+                AccessToken = AccessToken == Guid.Empty ? null : AccessToken,
+                Method = method,
+                Kind = kind,
+                ElapsedMs = elapsedMs > int.MaxValue ? int.MaxValue : (int)elapsedMs,
+                ThresholdMs = thresholdMs,
+                ErrorType = errorType,
+                ErrorMessage = errorMessage,
+                Source = method,
+            });
+        }
+
+        private static bool IsTimeout(Exception ex)
+            => ex is TimeoutException
+               || ex.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase);
+
+        private static string SanitizeMessage(string message)
+        {
+            // Message text only (no stack trace); flattened and capped.
+            var oneLine = message.Replace('\r', ' ').Replace('\n', ' ');
+            return oneLine.Length <= 1000 ? oneLine : oneLine[..1000];
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets the API encryption key.

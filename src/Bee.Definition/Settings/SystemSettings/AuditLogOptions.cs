@@ -88,6 +88,25 @@ namespace Bee.Definition.Settings
         public bool AccessEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether anomaly records (API + DB errors, timeouts, slow
+        /// executions) are captured. Volume is naturally low (anomalies only). Off by default.
+        /// </summary>
+        [Category("AuditLog")]
+        [Description("Whether anomaly records (API + DB errors / timeouts / slow) are captured.")]
+        [DefaultValue(false)]
+        public bool AnomalyEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the elapsed-time threshold in milliseconds above which a completed API call
+        /// is recorded as a <c>Slow</c> anomaly. A value less than or equal to 0 disables the
+        /// API slow check.
+        /// </summary>
+        [Category("AuditLog")]
+        [Description("Elapsed-time threshold (ms) above which an API call is recorded as Slow. <=0 disables.")]
+        [DefaultValue(3000)]
+        public int ApiSlowThresholdMs { get; set; } = 3000;
+
+        /// <summary>
         /// Object description.
         /// </summary>
         public override string ToString()

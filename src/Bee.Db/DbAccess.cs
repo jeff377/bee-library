@@ -1,9 +1,11 @@
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using Bee.Base.Data;
 
 using Bee.Db.Manager;
 using Bee.Definition.Database;
+using Bee.Definition.Logging;
 
 namespace Bee.Db
 {
@@ -13,9 +15,13 @@ namespace Bee.Db
     public class DbAccess
     {
         private const int DefaultCommandTimeout = 30;
+        private const int MaxLoggedMessageLength = 1000;
         private readonly DbConnection? _externalConnection = null;
         private readonly string _connectionString = string.Empty;
         private readonly int _maxCommandTimeout;
+        private readonly string _databaseId = string.Empty;
+        private readonly IAuditLogWriter? _anomalyWriter;
+        private readonly DbAccessAnomalyLogOptions? _anomalyOptions;
 
         #region 建構函式
 
@@ -36,7 +42,13 @@ namespace Bee.Db
         /// Typically supplied by <see cref="IDbAccessFactory"/> at the host level
         /// (e.g. 30 sec for mobile API, 60 sec for web, 120 sec for batch service).
         /// </param>
-        public DbAccess(string databaseId, IDbConnectionManager connectionManager, int maxCommandTimeout = 0)
+        /// <param name="anomalyWriter">
+        /// Optional audit writer for DB anomaly records (Error / Timeout / Slow / large-row);
+        /// null disables DB anomaly logging.
+        /// </param>
+        /// <param name="anomalyOptions">Optional DB anomaly thresholds and level.</param>
+        public DbAccess(string databaseId, IDbConnectionManager connectionManager, int maxCommandTimeout = 0,
+            IAuditLogWriter? anomalyWriter = null, DbAccessAnomalyLogOptions? anomalyOptions = null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             ArgumentNullException.ThrowIfNull(connectionManager);
@@ -47,6 +59,9 @@ namespace Bee.Db
             Provider = connInfo.Provider;
             _connectionString = connInfo.ConnectionString;
             _maxCommandTimeout = maxCommandTimeout;
+            _databaseId = databaseId;
+            _anomalyWriter = anomalyWriter;
+            _anomalyOptions = anomalyOptions;
         }
 
         /// <summary>
@@ -129,21 +144,21 @@ namespace Bee.Db
         {
             ArgumentNullException.ThrowIfNull(command);
 
-            using (var scope = CreateScope())
+            return RunWithAnomalyDetection(command, () =>
             {
-                switch (command.Kind)
-                {
-                    case DbCommandKind.NonQuery:
-                        return ExecuteNonQueryCore(command, scope.Connection!, null);
-                    case DbCommandKind.Scalar:
-                        return ExecuteScalarCore(command, scope.Connection!, null);
-                    case DbCommandKind.DataTable:
-                        return ExecuteDataTableCore(command, scope.Connection!, null);
-                    default:
-                        throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
-                }
-            }
+                using var scope = CreateScope();
+                return DispatchExecute(command, scope.Connection!, null);
+            });
         }
+
+        private DbCommandResult DispatchExecute(DbCommandSpec command, DbConnection connection, DbTransaction? transaction)
+            => command.Kind switch
+            {
+                DbCommandKind.NonQuery => ExecuteNonQueryCore(command, connection, transaction),
+                DbCommandKind.Scalar => ExecuteScalarCore(command, connection, transaction),
+                DbCommandKind.DataTable => ExecuteDataTableCore(command, connection, transaction),
+                _ => throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}."),
+            };
 
         /// <summary>
         /// Executes a database command using the specified <see cref="DbTransaction"/> on an external connection.
@@ -159,17 +174,93 @@ namespace Bee.Db
             var conn = transaction.Connection
                        ?? throw new InvalidOperationException("Transaction has no associated connection.");
 
-            switch (command.Kind)
+            return RunWithAnomalyDetection(command, () => DispatchExecute(command, conn, transaction));
+        }
+
+        /// <summary>
+        /// Runs <paramref name="exec"/>, detecting and recording anomalies (Error / Timeout on
+        /// failure, Slow / LargeAffected / LargeResult on success). A no-op wrapper when anomaly
+        /// logging is disabled. Anomaly writes are best-effort and never alter the command outcome.
+        /// </summary>
+        private DbCommandResult RunWithAnomalyDetection(DbCommandSpec command, Func<DbCommandResult> exec)
+        {
+            if (_anomalyWriter == null || _anomalyOptions == null
+                || _anomalyOptions.Level == DbAccessAnomalyLogLevel.None)
             {
-                case DbCommandKind.NonQuery:
-                    return ExecuteNonQueryCore(command, conn, transaction);
-                case DbCommandKind.Scalar:
-                    return ExecuteScalarCore(command, conn, transaction);
-                case DbCommandKind.DataTable:
-                    return ExecuteDataTableCore(command, conn, transaction);
-                default:
-                    throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
+                return exec();
             }
+
+            var stopwatch = Stopwatch.StartNew();
+            try
+            {
+                var result = exec();
+                stopwatch.Stop();
+                LogSuccessAnomalies(command, result, stopwatch.ElapsedMilliseconds);
+                return result;
+            }
+            catch (DbException ex)
+            {
+                stopwatch.Stop();
+                LogFailureAnomaly(command, ex, stopwatch.ElapsedMilliseconds);
+                throw;
+            }
+        }
+
+        private void LogSuccessAnomalies(DbCommandSpec command, DbCommandResult result, long elapsedMs)
+        {
+            // Slow / large-row are "abnormal but succeeded" — only recorded at Warning level.
+            if (_anomalyOptions!.Level != DbAccessAnomalyLogLevel.Warning) { return; }
+
+            int slowThresholdMs = _anomalyOptions.ExecutionTimeThreshold > 0
+                ? _anomalyOptions.ExecutionTimeThreshold * 1000 : 0;
+            if (slowThresholdMs > 0 && elapsedMs > slowThresholdMs)
+                WriteDbAnomaly(command, AnomalyKind.Slow, elapsedMs, thresholdMs: slowThresholdMs);
+
+            if (_anomalyOptions.AffectedRowThreshold > 0 && result.RowsAffected > _anomalyOptions.AffectedRowThreshold)
+                WriteDbAnomaly(command, AnomalyKind.LargeAffected, elapsedMs, affectedRows: result.RowsAffected);
+
+            int resultRows = result.Table?.Rows.Count ?? 0;
+            if (_anomalyOptions.ResultRowThreshold > 0 && resultRows > _anomalyOptions.ResultRowThreshold)
+                WriteDbAnomaly(command, AnomalyKind.LargeResult, elapsedMs, resultRows: resultRows);
+        }
+
+        private void LogFailureAnomaly(DbCommandSpec command, DbException ex, long elapsedMs)
+        {
+            var kind = IsTimeout(ex, elapsedMs, command) ? AnomalyKind.Timeout : AnomalyKind.Error;
+            WriteDbAnomaly(command, kind, elapsedMs,
+                errorType: ex.GetType().Name, errorMessage: SanitizeMessage(ex.Message));
+        }
+
+        private bool IsTimeout(DbException ex, long elapsedMs, DbCommandSpec command)
+        {
+            if (ex.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase)) { return true; }
+            int timeoutSec = ResolveTimeout(command.CommandTimeout);
+            return timeoutSec > 0 && elapsedMs >= (long)timeoutSec * 1000 * 9 / 10;
+        }
+
+        private void WriteDbAnomaly(DbCommandSpec command, AnomalyKind kind, long elapsedMs,
+            int? thresholdMs = null, int? affectedRows = null, int? resultRows = null,
+            string? errorType = null, string? errorMessage = null)
+        {
+            _anomalyWriter!.Write(new DbAnomalyEntry
+            {
+                DatabaseId = _databaseId,
+                Command = command.CommandText,   // {0} template only — never the parameter values
+                Kind = kind,
+                ElapsedMs = elapsedMs > int.MaxValue ? int.MaxValue : (int)elapsedMs,
+                ThresholdMs = thresholdMs,
+                AffectedRows = affectedRows,
+                ResultRows = resultRows,
+                ErrorType = errorType,
+                ErrorMessage = errorMessage,
+            });
+        }
+
+        private static string SanitizeMessage(string message)
+        {
+            // Provider error text only (no stack trace, no parameter values); flattened and capped.
+            var oneLine = message.Replace('\r', ' ').Replace('\n', ' ');
+            return oneLine.Length <= MaxLoggedMessageLength ? oneLine : oneLine[..MaxLoggedMessageLength];
         }
 
         /// <summary>

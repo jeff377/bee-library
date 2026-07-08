@@ -25,6 +25,8 @@
 				<TableItem TableName="st_log_login" DisplayName="Login log" />
 				<TableItem TableName="st_log_change" DisplayName="Data change log" />
 				<TableItem TableName="st_log_access" DisplayName="Data access log" />
+				<TableItem TableName="st_log_anomaly_api" DisplayName="API anomaly log" />
+				<TableItem TableName="st_log_anomaly_db" DisplayName="DB anomaly log" />
 			</Tables>
 		</DbCategory>
 	</Categories>

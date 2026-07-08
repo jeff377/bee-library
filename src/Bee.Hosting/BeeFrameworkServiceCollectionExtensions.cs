@@ -109,7 +109,16 @@ namespace Bee.Hosting
             services.AddSingleton<IDbConnectionManager>(sp =>
                 new DbConnectionManagerService(sp.GetRequiredService<IDatabaseSettingsProvider>()));
             services.AddSingleton<IDbAccessFactory>(sp =>
-                new DbAccessFactory(sp.GetRequiredService<IDbConnectionManager>()));
+            {
+                // DB anomaly logging (opt-in). Lazy writer resolver breaks the construction cycle
+                // IDbAccessFactory → IAuditLogWriter → AuditLogDbSink → IDbAccessFactory.
+                var audit = configuration.AuditLogOptions;
+                Func<IAuditLogWriter?>? anomalyWriterFactory =
+                    audit.AnomalyEnabled ? () => sp.GetService<IAuditLogWriter>() : null;
+                var anomalyOptions = audit.AnomalyEnabled ? configuration.LogOptions.DbAccess : null;
+                return new DbAccessFactory(
+                    sp.GetRequiredService<IDbConnectionManager>(), 0, anomalyWriterFactory, anomalyOptions);
+            });
 
             // 6b. Cache-notify bump primitive — stateless; builds dialect SQL per call and runs
             //     it on the caller's transaction. No consumer wired yet (poller / business

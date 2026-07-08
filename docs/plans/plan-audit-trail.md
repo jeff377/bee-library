@@ -12,13 +12,12 @@
 | 1 | 登入記錄 | ① | `st_log_login` | [plan-audit-1-login.md](plan-audit-1-login.md) | ✅ 已完成 |
 | 2 | 異動記錄（含安全⑥） | ③(+⑥) | `st_log_change`（DiffGram `changes_xml` 單表）；EAV `st_log_change_field` 選配 | [plan-audit-2-change.md](plan-audit-2-change.md) | ✅ 已完成 |
 | 3 | 檢視記錄 | ② | `st_log_access` | [plan-audit-3-access.md](plan-audit-3-access.md) | ✅ 已完成 |
-| 4 | 執行記錄（範圍/必要性待決定） | ④ | `st_log_exec` | *(待決定)* | 🅿️ 暫緩（最後決定） |
-| — | ~~系統/錯誤~~（軸⑤）| ⑤ | — | — | ❌ 移出稽核範圍（見下） |
+| 4 | 異常記錄（API + DB 分表） | ④/⑤ | `st_log_anomaly_api` + `st_log_anomaly_db` | [plan-audit-4-anomaly.md](plan-audit-4-anomaly.md) | ✅ 已完成 |
 
-- 六軸→收斂成「基礎設施 + 登入 + 異動(+安全⑥) + 檢視 + 執行(暫緩)」。**軸⑤系統/錯誤已移出**稽核範圍。
-- 排程：**0 ✅ → 1 登入 ✅ → 2 異動 ✅ → 3 檢視 ✅ →**（4 執行記錄：暫緩，最後決定）。每項流程固定：**出細部 plan → 逐點定案 → 執行**。
-- **軸⑤系統/錯誤移出稽核範圍**：系統/錯誤本質是 **observability（維運/除錯），非業務資料軌跡**。框架既有 `ILogWriter`/`LogEntry` + host `ILogger`（→ 檔案/Seq/APM）即其歸屬；`Tracer`/`TraceContext` 是**開發階段偵錯執行流程**用，不可作為稽核來源。對齊 SAP System Log（SM21）/ Odoo `ir.logging` 與業務稽核分離的定位。業務相關錯誤已被涵蓋（登入失敗→項 1；API 錯誤→項 4 exec error 欄）。故**不建 `st_log_trace` 稽核表**。
-- **執行記錄（項 4）暫緩原因**：全記每次 `JsonRpcExecutor` 呼叫量體過大，且與項 1（登入）/項 2（異動）重複。SAP（SAL 選擇性 filter、STAD 短期統計、SLG1 opt-in）與 Odoo（ir.logging opt-in、OCA per-rule、read 昂貴）都**不全記**。若日後做，方向為**選擇性/可設定**（例：只記非 CRUD 業務動作 + 錯誤，排除讀取與已覆蓋的 Save/Delete/Login），對齊框架既有 `DbAccessAnomalyLogOptions` 只記異常的哲學。範圍待最後決定。
+- 六軸→收斂成「基礎設施 + 登入① + 異動③(+安全⑥) + 檢視② + 異常④⑤」。
+- 排程：**0 ✅ → 1 登入 ✅ → 2 異動 ✅ → 3 檢視 ✅ →** 4 異常（討論定案中）。每項流程固定：**出細部 plan → 逐點定案 → 執行**。
+- **軸⑤系統/錯誤重新定義為「異常記錄」**（原「移出/observability」判斷已修正）：針對 **API + DB 的異常**（Error 錯誤 / Timeout 逾時 / Slow 過久）持久化，供 bug 追蹤 + 效能調校。逾時獨立於錯誤（infra/效能訊號，非 code bug）。實作框架既有但**未實作**的 `DbAccessAnomalyLogOptions` + 擴到 API 層。詳見 [plan-audit-4-anomaly.md](plan-audit-4-anomaly.md)。
+- **「執行記錄全記」取消**：異常記錄取代之——全記的價值部分＝異常（已涵蓋），且與登入/異動重複；audit 面由登入/異動/檢視涵蓋。`Tracer`/`TraceContext`（dev-time 偵錯執行流程）不作稽核來源。純技術 observability 仍走 `ILogWriter`/host `ILogger`（→ 檔案/Seq/APM），與業務稽核分離（對齊 SAP SM21 / Odoo ir.logging）。
 - **未來增強：per-form 稽核規則（涵蓋項 2 異動 + 項 3 檢視）**：目前異動/檢視皆「全記所有表單」。未來加一份 admin 執行期規則（「哪些 progId 要做異動/檢視記錄」，per-form、per-操作），對齊 **Odoo `auditlog.rule`**（管理員挑表單、不改程式）。SAP 對照：Change Documents 開發期旗標 / RAL 管理員設定。預設維持全記以相容。
 - 完成一項回頭把本表狀態更新為 ✅；全部完成後補 [framework-reserved-names.md](../framework-reserved-names.md) §1 的 log 分類。
 

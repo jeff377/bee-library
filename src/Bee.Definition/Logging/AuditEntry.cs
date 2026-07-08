@@ -78,17 +78,27 @@ namespace Bee.Definition.Logging
             {
                 new("sys_rowid", SysRowId),
                 new("log_time", LogTimeUtc),
-                new("user_id", UserId),
-                new("user_name", UserName),
-                new("company_id", CompanyId),
-                new("company_name", CompanyName),
-                new("access_token", AccessToken),
-                new("trace_id", TraceId),
-                new("client_ip", ClientIp),
-                new("source", Source),
             };
+            AddCommonColumns(columns);
             AddColumns(columns);
             return columns;
+        }
+
+        /// <summary>
+        /// Appends the common identity / context columns (who, company, session, source). Overridable
+        /// so a purely technical entry — such as a DB anomaly with no session — can omit them.
+        /// </summary>
+        /// <param name="columns">The column list to append to.</param>
+        protected virtual void AddCommonColumns(IList<AuditColumn> columns)
+        {
+            columns.Add(new AuditColumn("user_id", UserId));
+            columns.Add(new AuditColumn("user_name", UserName));
+            columns.Add(new AuditColumn("company_id", CompanyId));
+            columns.Add(new AuditColumn("company_name", CompanyName));
+            columns.Add(new AuditColumn("access_token", AccessToken));
+            columns.Add(new AuditColumn("trace_id", TraceId));
+            columns.Add(new AuditColumn("client_ip", ClientIp));
+            columns.Add(new AuditColumn("source", Source));
         }
 
         /// <summary>

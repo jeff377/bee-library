@@ -1,4 +1,6 @@
 using Bee.Db.Manager;
+using Bee.Definition.Database;
+using Bee.Definition.Logging;
 
 namespace Bee.Db
 {
@@ -32,6 +34,8 @@ namespace Bee.Db
     {
         private readonly IDbConnectionManager _connectionManager;
         private readonly int _maxCommandTimeout;
+        private readonly Func<IAuditLogWriter?>? _anomalyWriterFactory;
+        private readonly DbAccessAnomalyLogOptions? _anomalyOptions;
 
         /// <summary>
         /// Initializes a new <see cref="DbAccessFactory"/>.
@@ -41,14 +45,32 @@ namespace Bee.Db
         /// Per-app upper bound applied to each <see cref="System.Data.Common.DbCommand.CommandTimeout"/>;
         /// 0 (default) disables the cap.
         /// </param>
-        public DbAccessFactory(IDbConnectionManager connectionManager, int maxCommandTimeout = 0)
+        /// <param name="anomalyWriterFactory">
+        /// Optional lazy resolver for the DB-anomaly audit writer; null disables DB anomaly logging.
+        /// Lazy (a factory, not the instance) to break the construction cycle
+        /// <c>IDbAccessFactory → IAuditLogWriter → AuditLogDbSink → IDbAccessFactory</c>.
+        /// </param>
+        /// <param name="anomalyOptions">Optional DB anomaly thresholds / level.</param>
+        public DbAccessFactory(IDbConnectionManager connectionManager, int maxCommandTimeout = 0,
+            Func<IAuditLogWriter?>? anomalyWriterFactory = null, DbAccessAnomalyLogOptions? anomalyOptions = null)
         {
             _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
             _maxCommandTimeout = maxCommandTimeout;
+            _anomalyWriterFactory = anomalyWriterFactory;
+            _anomalyOptions = anomalyOptions;
         }
 
         /// <inheritdoc/>
         public DbAccess Create(string databaseId)
-            => new DbAccess(databaseId, _connectionManager, _maxCommandTimeout);
+        {
+            // The log database's own DbAccess must not anomaly-log — an anomaly write goes through
+            // DbAccess against the log DB again, which would recurse. Everything else gets detection.
+            bool logSelf = string.Equals(databaseId, DbCategoryIds.Log, StringComparison.Ordinal);
+            if (logSelf)
+                return new DbAccess(databaseId, _connectionManager, _maxCommandTimeout);
+
+            return new DbAccess(databaseId, _connectionManager, _maxCommandTimeout,
+                _anomalyWriterFactory?.Invoke(), _anomalyOptions);
+        }
     }
 }
