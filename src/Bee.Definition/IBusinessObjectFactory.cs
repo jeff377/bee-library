@@ -25,5 +25,12 @@ namespace Bee.Definition
         /// <param name="progId">The program ID.</param>
         /// <param name="isLocalCall">Indicates whether the call originates from a local source.</param>
         object CreateFormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true);
+
+        /// <summary>
+        /// Creates the audit-log business object (read-only queries over the <c>st_log_*</c> tables).
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="isLocalCall">Indicates whether the call originates from a local source.</param>
+        object CreateLogBusinessObject(Guid accessToken, bool isLocalCall = true);
     }
 }

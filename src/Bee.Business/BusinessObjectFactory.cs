@@ -1,4 +1,5 @@
 using Bee.Business.Form;
+using Bee.Business.AuditLog;
 using Bee.Business.System;
 using Bee.Definition;
 using Bee.Definition.Identity;
@@ -69,6 +70,17 @@ namespace Bee.Business
             var type = _resolver.Resolve(progId);
             var ctx = BuildContext();
             return Activator.CreateInstance(type, ctx, accessToken, progId, isLocalCall)!;
+        }
+
+        /// <summary>
+        /// Creates the audit-log business logic object (read-only queries over the <c>st_log_*</c> tables).
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="isLocalCall">Whether the call originates from a local source.</param>
+        public object CreateLogBusinessObject(Guid accessToken, bool isLocalCall = true)
+        {
+            var ctx = BuildContext();
+            return new LogBusinessObject(ctx, accessToken, isLocalCall);
         }
 
         private BeeContext BuildContext() => new BeeContext

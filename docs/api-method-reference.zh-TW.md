@@ -82,6 +82,14 @@ per-program BO 實體，wire 上以 `<progId>.<action>` 派發（例如 `Employe
 | `Save` | Public | Authenticated | 將 `DataSet` 持久化，依每列 `RowState` dispatch INSERT / UPDATE / DELETE。 |
 | `Delete` | Public | Authenticated | 依 `RowId` 直接刪除單筆主檔列。 |
 
+## 軸：Audit Log（`LogBusinessObject`）
+
+對 `st_log_*` 稽核表的唯讀查詢（稽核軌跡的**讀取**側；寫入側即下方副作用）。以 `AuditLog.<action>` 派發。每個 action 皆以 `AuditLog` 權限模型 gate（需 `Read` 授權），避免一般使用者讀他人軌跡，結果並限縮於呼叫者當前公司。
+
+| 方法 | Protection | Auth | 用途 |
+|------|------------|------|------|
+| `GetRecordHistory` | Encrypted | Authenticated | 單筆記錄的異動歷程（某 `ProgId` + `RowKey` 的所有 `st_log_change` 事件），最新在前；每筆事件的 `changes_xml` DiffGram 由伺服器端還原為結構化的欄位級新舊值。 |
+
 ## 稽核副作用
 
 當對應的 `AuditLogOptions` 類別啟用時（opt-in，預設關閉），以下方法會 best-effort 寫一筆稽核記錄——寫 log 不影響方法結果。見 [框架保留命名 §1.3](framework-reserved-names.zh-TW.md)。

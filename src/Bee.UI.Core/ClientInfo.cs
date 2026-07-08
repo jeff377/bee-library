@@ -113,6 +113,16 @@ namespace Bee.UI.Core
         }
 
         /// <summary>
+        /// Creates an audit-log API connector (read-only queries over the <c>st_log_*</c> tables).
+        /// </summary>
+        public static LogApiConnector CreateLogApiConnector()
+        {
+            return ApiClientInfo.ConnectType == ConnectType.Local
+                ? new LogApiConnector(AccessToken)
+                : new LogApiConnector(ApiClientInfo.Endpoint, AccessToken);
+        }
+
+        /// <summary>
         /// Definition-data accessor. Recreated whenever the endpoint changes.
         /// </summary>
         public static ClientDefineAccess DefineAccess

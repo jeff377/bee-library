@@ -56,6 +56,7 @@ The `st_` prefix means "framework-owned table". It is **orthogonal to which data
 ### 2.1 System axis
 
 - **`System`** (formalised as `Bee.Definition.SysProgIds.System`) — the singleton entry point for the system-level business object (`SystemBusinessObject`). All framework-level actions that are not form-scoped (login, ping, get-define, etc.) are dispatched here.
+- **`AuditLog`** (formalised as `Bee.Definition.SysProgIds.AuditLog`) — the singleton entry point for the audit-log business object (`LogBusinessObject`): read-only queries over the `st_log_*` tables. Also serves as the permission model id gating audit-trail reads.
 
 See [API Method Reference §Axis: System](api-method-reference.md#axis-system-systembusinessobject) for the full action list.
 
@@ -77,7 +78,7 @@ See [API Method Reference §Axis: Form](api-method-reference.md#axis-form-formbu
 When extending bee-library or building applications on top of it:
 
 - **Use `ft_` for your own business tables.** Never `st_` — that prefix is reserved for the framework. (See [Database Naming Conventions](database-naming-conventions.md).)
-- **Avoid reserved `progId`s** for your own forms — `System`, `Department`, `Employee` are taken. Pick distinct progIds; convention is `PascalCase`, often prefixed with your module abbreviation.
+- **Avoid reserved `progId`s** for your own forms — `System`, `AuditLog`, `Department`, `Employee` are taken. Pick distinct progIds; convention is `PascalCase`, often prefixed with your module abbreviation.
 - **To extend a framework table** (e.g. add a custom column to `st_employee`): drop a same-named `.TableSchema.xml` in your application's `DefinePath`. The framework reads only from `DefinePath` at runtime; your file is the single source the framework sees. The framework's embedded defaults are not consulted at runtime — they exist only for one-shot extraction via the API below.
 - **To get the base XML to start customising from** — three options, in order of typical preference:
     - **Programmatic API** (canonical): `Bee.Definition.Defaults.MaterializeTo("./Define")` writes every embedded framework default XML into the given directory. Skip-existing by default — re-runs are safe and won't clobber your customisations. See `Bee.Definition.Defaults` in [`src/Bee.Definition/Defaults.cs`](../src/Bee.Definition/Defaults.cs).

@@ -211,6 +211,11 @@ namespace Bee.Hosting
             services.AddSingleton<IFormRepositoryFactory>(sp =>
                 CreateConfigurableService<IFormRepositoryFactory>(sp,
                     components.FormRepositoryFactory, BackendDefaultTypes.FormRepositoryFactory));
+            // Audit-log reads target the log database (DbScope.Log); its factory needs only the
+            // connection manager, so it is registered directly rather than via the configurable path.
+            services.AddSingleton<IAuditLogRepositoryFactory>(sp =>
+                new Bee.Repository.Factories.AuditLogRepositoryFactory(
+                    sp.GetRequiredService<IDbConnectionManager>()));
 
             // Repositories that ctor-inject into upstream services (CompanyInfoService,
             // EnterCompany permission check). Owned by the factory but exposed to DI so

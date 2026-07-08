@@ -56,6 +56,7 @@
 ### 2.1 系統軸
 
 - **`System`**（formalize 為 `Bee.Definition.SysProgIds.System`）—— 系統層級 business object（`SystemBusinessObject`）的單例 entry point。所有與特定 form 無關的框架層級 action（登入、ping、取定義等）皆由此 dispatch。
+- **`AuditLog`**（formalize 為 `Bee.Definition.SysProgIds.AuditLog`）—— 稽核日誌 business object（`LogBusinessObject`）的單例 entry point：對 `st_log_*` 表的唯讀查詢。同時作為 gate 稽核讀取的權限模型 id。
 
 完整 action 清單見 [API 方法參考 §軸：System](api-method-reference.zh-TW.md)。
 
@@ -77,7 +78,7 @@
 擴充 bee-library 或在其上建立應用時：
 
 - **自家業務表用 `ft_` 前綴**，不要用 `st_`（保留給框架）。詳見 [資料庫命名規範](database-naming-conventions.zh-TW.md)。
-- **避開保留的 `progId`**——`System`、`Department`、`Employee` 已被框架使用。自家 progId 請取不同名稱；慣例為 `PascalCase`，常以模組縮寫前綴。
+- **避開保留的 `progId`**——`System`、`AuditLog`、`Department`、`Employee` 已被框架使用。自家 progId 請取不同名稱；慣例為 `PascalCase`，常以模組縮寫前綴。
 - **要擴充框架表**（例如為 `st_employee` 加自訂欄位）：在應用程式的 `DefinePath` 中放一份同名 `.TableSchema.xml`。runtime 框架只讀 `DefinePath`，這份檔就是框架實際看到的唯一來源。框架內 embedded 預設 runtime 不會參與——只供下方 API 一次性匯出使用。
 - **取得 base XML 起手**——三種途徑，按一般偏好排序：
     - **程式碼層 API**（canonical）：`Bee.Definition.Defaults.MaterializeTo("./Define")` 把所有 embedded 框架預設 XML 寫入指定目錄。預設 skip-existing，重複跑安全、不會覆蓋你的客製。詳見 [`src/Bee.Definition/Defaults.cs`](../src/Bee.Definition/Defaults.cs)。

@@ -320,6 +320,8 @@ namespace Bee.Api.Core.JsonRpc
 
             if (progId == SysProgIds.System)
                 return _boFactory.CreateSystemBusinessObject(accessToken, IsLocalCall);
+            else if (progId == SysProgIds.AuditLog)
+                return _boFactory.CreateLogBusinessObject(accessToken, IsLocalCall);
             else
                 return _boFactory.CreateFormBusinessObject(accessToken, progId, IsLocalCall);
         }

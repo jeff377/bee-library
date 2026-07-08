@@ -52,6 +52,9 @@ namespace Bee.Business.UnitTests
             new ApiSurfaceEntry("FormBusinessObject", "GetNewData", ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("FormBusinessObject", "Save",       ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated),
 
+            // Audit-log axis — LogBusinessObject (read-only queries over st_log_*).
+            new ApiSurfaceEntry("LogBusinessObject", "GetRecordHistory", ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+
             // System axis — SystemBusinessObject (system-level operations).
             new ApiSurfaceEntry("SystemBusinessObject", "CheckPackageUpdate",     ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous),
             new ApiSurfaceEntry("SystemBusinessObject", "CreateSession",          ApiProtectionLevel.Public,  ApiAccessRequirement.Anonymous),

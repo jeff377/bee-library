@@ -86,6 +86,14 @@ Per-program BO instance, accessed as `<progId>.<action>` over the wire
 | `Save` | Public | Authenticated | Persists a `DataSet` by dispatching INSERT / UPDATE / DELETE per row's `RowState`. |
 | `Delete` | Public | Authenticated | Deletes one master row directly by `RowId`. |
 
+## Axis: Audit Log (`LogBusinessObject`)
+
+Read-only queries over the `st_log_*` audit tables (the *read* side of the audit trail; the write side is the side-effects below). Dispatched as `AuditLog.<action>`. Every action is gated behind the `AuditLog` permission model (a `Read` grant is required) so a general user cannot read another's trail, and results are scoped to the caller's current company.
+
+| Method | Protection | Auth | Purpose |
+|--------|------------|------|---------|
+| `GetRecordHistory` | Encrypted | Authenticated | Change history of one record (all `st_log_change` events for a `ProgId` + `RowKey`), newest first, each event's `changes_xml` DiffGram restored server-side into structured field-level before/after values. |
+
 ## Audit side-effects
 
 When the corresponding `AuditLogOptions` category is enabled (opt-in, off by default), these methods write an audit-trail row best-effort — the log write never changes the method result. See [Framework-Reserved Names §1.3](framework-reserved-names.md).

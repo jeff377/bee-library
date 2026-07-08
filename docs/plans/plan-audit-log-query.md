@@ -1,9 +1,15 @@
 # 計畫：稽核日誌查詢（`st_log_*` 讀取 / 檢視）
 
-**狀態：📝 擬定中（2026-07-08）**
+**狀態：🚧 進行中（2026-07-08）**
+
+| 階段 | 範圍 | 狀態 |
+|------|------|------|
+| 1 | 記錄異動歷程：`GetRecordHistory(progId, rowKey)` + DiffGram 還原 | ✅ 已完成（2026-07-08） |
+| 2 | 各 log 表通用列表查詢（change / login / access / anomaly）+ 分頁 + 排序 | 📝 待做 |
+| 3 | 異常監控細分、跨年 `log_YYYY` 聚合、權限強化 | 📝 待做 |
 
 > 稽核軌跡的**讀取側**。寫入側（項 0–4）已完成、上線；設計理由見 [ADR-027](../adr/adr-027-audit-trail.md)、母計畫 [plan-audit-trail.md](plan-audit-trail.md)。
-> 本 plan 提供「查詢 / 檢視稽核記錄」的 API；**待逐項定案後再實作**（沿用專案「出細部 plan → 逐點定案 → 執行」節奏）。
+> Q1–Q7 已於 2026-07-08 逐項定案（見 §3 決策紀錄），Phase 1 進入實作。
 
 ---
 
@@ -33,20 +39,15 @@
 
 ---
 
-## 3. 設計要點與待定案
+## 3. 設計決策紀錄（2026-07-08 定案）
 
-- **Q1 查詢層形狀**：
-  - (a) 專屬 `LogBusinessObject`（新 progId，如 `Log` / `AuditLog`）集中所有查詢方法（**建議**，語意集中、獨立權限）。
-  - (b) 併入 `SystemBusinessObject` 加方法。
-  - (c) 每張 log 表一個 read-only `FormSchema` + 標準 `GetList`（重用既有 grid；但 log 在 `log` scope、且 `changes_xml` 需特別呈現，read-only 表較難處理 DiffGram 還原）。
-- **Q2 方法集**（建議起手）：`GetRecordHistory(progId, rowKey)`（情境 1）、`GetChangeLog(filter)`、`GetLoginLog(filter)`、`GetAccessLog(filter)`、`GetAnomalyLog(filter, layer)`。共通 `LogQueryArgs`（filter + paging + sort）。
-- **Q3 DiffGram 還原**：`changes_xml` → 結構化新舊值——
-  - (a) **server 端解回 DataSet**，回傳結構化 before/after（欄位 → 舊值 / 新值）（**建議**，client 零解析、可跨前端；注意 AOT/XmlSerializer 相容見 ADR-025）。
-  - (b) 回傳原始 `changes_xml`，由 client 解。
-- **Q4 log DB 路由 / 跨年**：先**單一 log DB**（`DbScope.Log` → 固定 `"log"`）；年份分庫（`log_YYYY`）跨年聚合列為後續（讀取端聚合多 DatabaseItem，見 [database-settings-guide 情境 4](../database-settings-guide.md)）。
-- **Q5 權限**：稽核查詢的存取控制——auditor 角色 / 專屬 permission model（`ApiAccessControl` + 權限模型），**唯讀**。避免一般使用者讀他人軌跡。
-- **Q6 分頁 / 上限**：大量記錄必分頁（重用 `PagingInfo`）；預設排序 `log_time DESC`；查詢須有時間 / 鍵條件避免全表掃。
-- **Q7 read-only**：純查詢，不提供任何改寫（log append-only）。
+- **Q1 查詢層形狀 → 專屬 `LogBusinessObject`**：新增保留 progId（`AuditLog`，登記於 `SysProgIds`），集中所有 log 查詢方法。理由：語意集中、可掛獨立權限模型、與 System 軸（login / define）職責分離。需新增一條 BO 軸（`LogActions` 常數類、`ILogBusinessObject`、`BoFactory` 註冊）。
+- **Q2 方法集 → 每軸 typed 方法 + 共通 `LogQueryArgs`**：`GetRecordHistory(progId, rowKey)`（情境 1，結構化）、`GetChangeLog` / `GetLoginLog` / `GetAccessLog` / `GetAnomalyLog`（各 typed，`filter + paging + sort`）。合約面清楚、每軸欄位語意明確。**Phase 1 只做 `GetRecordHistory`**，列表查詢併入 Phase 2。
+- **Q3 DiffGram 還原 → server 端還原為結構化 before/after**：回傳結構化「表 → 列 → 欄位（舊值 / 新值）」，client 零解析、可跨前端。**實作細節**（實測修正）：寫入側 `WriteXml(XmlWriteMode.DiffGram)` 產出的是**無 schema** 的 DiffGram，`DataSet.ReadXml` 讀不回（回 0 tables）。故還原改以 `XDocument` 直接解析 DiffGram（`data` block 為 current、`diffgr:before` 為 original，以 `diffgr:id` 配對；insert / update / delete 三態）——見 `ChangeDiffGramReader`。**仍 AOT 安全**：走 `XDocument` / `XmlReader`（XXE 已 hardening），非 `XmlSerializer` 反射路徑，ADR-025 的 trim/AOT 雷不適用。
+- **Q4 log DB 路由 → 先單一 log DB**：查詢固定走 `DbScope.Log → "log"`（同寫入側）。年份分庫 `log_YYYY` 的跨年聚合列為 Phase 3。
+- **Q5 權限 → `Authenticated` + `AuditLog` 權限 gate**：BO 方法標 `[ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]`，方法內再以 `IAuthorizationService.Can(AccessToken, "AuditLog", PermissionAction.Read)` 檢查——須被授予稽核讀取權的角色才可查，避免一般使用者讀他人軌跡。此檢查為 company-scoped（需先 `EnterCompany`、`SessionInfo.Roles` 已快照）。
+- **Q6 分頁 → 強制分頁 + 預設 `log_time DESC`**：列表查詢重用 `PagingInfo`，回傳帶分頁資訊；`PageSize` 伺服器端 clamp 上限；查詢須帶時間 / 鍵條件避免全表掃。`GetRecordHistory` 依 `prog_id + row_key` 已天然限縮。
+- **Q7 read-only → 純唯讀**：只提供查詢，不提供任何改寫（log append-only）。retention / 清理屬寫入 / 管理面，另案。
 
 ---
 
@@ -69,6 +70,44 @@
 | 3 | 異常監控查詢、跨年 `log_YYYY` 聚合、權限強化 |
 
 ---
+
+## 7. Phase 1 實作分解（`GetRecordHistory` + 新 `AuditLog` 軸）
+
+Q1 定案為專屬 BO 軸，故 Phase 1 除方法本身外需新增一條 BO 軸接線（skill 只涵蓋 System/Form 兩軸）。
+
+**新軸接線**
+- `src/Bee.Definition/SysProgIds.cs` — 加 `AuditLog` 保留 progId（兼作權限 modelId）
+- `src/Bee.Definition/LogActions.cs` — 新增，`GetRecordHistory` 常數
+- `src/Bee.Definition/IBusinessObjectFactory.cs` — 加 `CreateLogBusinessObject(token, isLocalCall)`
+- `src/Bee.Business/BusinessObjectFactory.cs` — 實作 `CreateLogBusinessObject`
+- `src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs` — dispatch 加 `AuditLog` 分支
+
+> **命名注意**：資料夾一律用 `AuditLog/`（對映命名空間 `...AuditLog`），**不要**用 `Log/` —— `.gitignore` 的 `[Ll]og/` 規則會把任何 `Log/` 目錄整個忽略掉（`git status` 看不到、CI 缺檔）。`AuditLog` 亦對齊 progId / 軸名，與 `Messages/System`、`Messages/Form` 一致。
+
+**合約 + wire**（巢狀結構化型別放 `Bee.Api.Contracts`，比照 `PackageUpdateInfo`）
+- `Bee.Api.Contracts/IGetRecordHistoryRequest.cs`、`IGetRecordHistoryResponse.cs`
+- `Bee.Api.Contracts/RecordHistoryEntry.cs`（一筆 `st_log_change` 事件：header + `List<RecordFieldChange>`）
+- `Bee.Api.Contracts/RecordFieldChange.cs`（單欄 before/after：TableName、RowKey、RowState、FieldName、OldValue、NewValue）
+- `Bee.Api.Core/Messages/AuditLog/GetRecordHistoryRequest.cs`、`GetRecordHistoryResponse.cs`
+
+**BO**
+- `Bee.Business/AuditLog/GetRecordHistoryArgs.cs`、`GetRecordHistoryResult.cs`
+- `Bee.Business/AuditLog/LogBusinessObject.cs`（`[ApiAccessControl(Encrypted,Authenticated)]` + `IAuthorizationService.Can(token,"AuditLog",Read)` gate + 依 session company 過濾）
+- `Bee.Business/AuditLog/ILogBusinessObject.cs`
+- `Bee.Business/AuditLog/ChangeDiffGramReader.cs`（`XDocument` 直接解析 DiffGram → `List<RecordFieldChange>`；schemaless DiffGram `DataSet.ReadXml` 解不回，非 XmlSerializer 路徑）
+
+**Repository（log scope）**
+- `Bee.Repository.Abstractions/AuditLog/IAuditLogRepository.cs`、`Factories/IAuditLogRepositoryFactory.cs`
+- `Bee.Repository/AuditLog/AuditLogRepository.cs`（ctor 接 `IDbConnectionManager` + `databaseId`；`SELECT ... FROM st_log_change WHERE prog_id={0} AND row_key={1} [AND company_id={2}] ORDER BY log_time DESC`，參數化）
+- `Bee.Repository/Factories/AuditLogRepositoryFactory.cs`（`CreateAuditLogRepository()` → databaseId = `DbCategoryIds.Log`）
+- `Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs` — 註冊 `IAuditLogRepositoryFactory`
+
+**Client**
+- `Bee.Api.Client/Connectors/LogApiConnector.cs`（`GetRecordHistoryAsync`；progId = `SysProgIds.AuditLog`）+ `ClientInfo.CreateLogApiConnector()`
+
+**測試 + surface**
+- wire round-trip（`tests/Bee.Api.Core.UnitTests/AuditLog/`）、executor dispatch（stub repo，驗新 `AuditLog` 分支）、BO 邏輯 + DiffGram 還原 + 權限 gate（`tests/Bee.Business.UnitTests/AuditLog/`，stub repo）、`[DbFact]` repo 真 DB（`tests/Bee.Hosting.UnitTests/AuditLogQueryDbFactTests.cs`，SQL Server + PostgreSQL）
+- `docs/api-method-reference.md`(+zh-TW) 加 AuditLog 軸；`framework-reserved-names.md`(+zh-TW) §2 登記 `AuditLog` progId；`BoApiSurfaceTests` baseline 加 `LogBusinessObject.GetRecordHistory`
 
 ## 6. 相依與約束
 
