@@ -225,26 +225,69 @@ namespace Bee.Business.Form
             if (HasExistingMasterWrite(args.DataSet))
                 EnforceWriteScope(args.DataSet, repository);
 
-            // Capture the change set (before/after) and the master key/kind before Save, because
-            // the ADO.NET adapter calls AcceptChanges on success and discards RowState / original
-            // values. Only pay the cost when change auditing is enabled.
-            var masterTableName = DefineAccess.GetFormSchema(ProgId).MasterTable?.TableName ?? string.Empty;
+            var schema = DefineAccess.GetFormSchema(ProgId);
+            var context = new SaveContext(args, args.DataSet, repository, schema);
+
+            // Business extension point before persistence (field defaults / computation / validation).
+            DoBeforeSave(context);
+
+            // Capture the change set (before/after) and the master key/kind before persistence,
+            // because the ADO.NET adapter calls AcceptChanges on success and discards RowState /
+            // original values. Runs after DoBeforeSave so the audit reflects any computed values.
+            // Only pay the cost when change auditing is enabled.
+            var masterTableName = schema.MasterTable?.TableName ?? string.Empty;
             bool auditChange = ChangeAuditEnabled();
             using var changes = auditChange ? args.DataSet.GetChanges() : null;
             var (rowKey, changeKind) = auditChange
                 ? ExtractMasterChange(args.DataSet, masterTableName)
                 : (null, ChangeKind.Update);
 
-            var (refreshed, affected) = repository.Save(args.DataSet);
+            DoSave(context);
 
             if (auditChange && changes != null)
                 WriteChangeAudit(changeKind, rowKey, SerializeDiffGram(changes), masterTableName, ProgId + ".Save");
 
+            DoAfterSave(context);
+
             return new SaveResult
             {
-                DataSet = refreshed,
-                AffectedRows = affected,
+                DataSet = context.RefreshedDataSet,
+                AffectedRows = context.AffectedRows,
             };
+        }
+
+        /// <summary>
+        /// Business extension point invoked before persistence, after authorization and write-scope
+        /// checks. The base implementation applies the schema-driven rule engine (default-value and
+        /// computed-field expressions, then <c>BeforeSave</c> validation rules). Overrides should call
+        /// <c>base.DoBeforeSave(context)</c> first, then add custom logic.
+        /// </summary>
+        /// <param name="context">The save context.</param>
+        protected virtual void DoBeforeSave(SaveContext context)
+        {
+            // Base rule-engine wiring is introduced in a later step of this feature.
+        }
+
+        /// <summary>
+        /// Persists the data set. The base implementation dispatches INSERT / UPDATE / DELETE per row
+        /// state through the repository and records the refreshed data set and affected-row counts on
+        /// <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context">The save context.</param>
+        protected virtual void DoSave(SaveContext context)
+        {
+            var (refreshed, affected) = context.Repository.Save(context.DataSet);
+            context.RefreshedDataSet = refreshed;
+            context.AffectedRows = affected;
+        }
+
+        /// <summary>
+        /// Business extension point invoked after persistence and change-audit write. The base
+        /// implementation does nothing; override to run post-save side effects.
+        /// </summary>
+        /// <param name="context">The save context.</param>
+        protected virtual void DoAfterSave(SaveContext context)
+        {
         }
 
         /// <summary>
@@ -259,19 +302,57 @@ namespace Bee.Business.Form
 
             var repository = CreateDataFormRepository(ProgId);
             var scopeFilter = ResolveScopeFilter(PermissionAction.Delete);
+            var context = new DeleteContext(args, repository, scopeFilter);
 
             // Snapshot the record (master + details) before deleting so the audit captures its full
-            // before-image. Only load when change auditing is enabled — the direct-delete path stays
-            // read-free otherwise.
+            // before-image (and, once wired, so BeforeDelete rules can evaluate against it). Only
+            // load when change auditing is enabled — the direct-delete path stays read-free otherwise.
             bool auditChange = ChangeAuditEnabled();
-            var snapshot = auditChange ? repository.GetData(args.RowId, scopeFilter) : null;
+            if (auditChange)
+                context.Snapshot = repository.GetData(args.RowId, scopeFilter);
 
-            var rowsAffected = repository.Delete(args.RowId, scopeFilter);
+            // Business extension point before deletion (BeforeDelete guard rules).
+            DoBeforeDelete(context);
 
-            if (auditChange && rowsAffected > 0)
-                WriteDeleteAudit(snapshot, args.RowId);
+            DoDelete(context);
 
-            return new DeleteResult { RowsAffected = rowsAffected };
+            if (auditChange && context.RowsAffected > 0)
+                WriteDeleteAudit(context.Snapshot, args.RowId);
+
+            DoAfterDelete(context);
+
+            return new DeleteResult { RowsAffected = context.RowsAffected };
+        }
+
+        /// <summary>
+        /// Business extension point invoked before deletion, after authorization. The base
+        /// implementation applies the schema-driven <c>BeforeDelete</c> guard rules against
+        /// <see cref="DeleteContext.Snapshot"/>. Overrides should call
+        /// <c>base.DoBeforeDelete(context)</c> first, then add custom logic.
+        /// </summary>
+        /// <param name="context">The delete context.</param>
+        protected virtual void DoBeforeDelete(DeleteContext context)
+        {
+            // Base rule-engine wiring is introduced in a later step of this feature.
+        }
+
+        /// <summary>
+        /// Deletes the record. The base implementation deletes the master row (cascading to details)
+        /// through the repository and records the affected-row count on <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context">The delete context.</param>
+        protected virtual void DoDelete(DeleteContext context)
+        {
+            context.RowsAffected = context.Repository.Delete(context.Args.RowId, context.ScopeFilter);
+        }
+
+        /// <summary>
+        /// Business extension point invoked after deletion and delete-audit write. The base
+        /// implementation does nothing; override to run post-delete side effects.
+        /// </summary>
+        /// <param name="context">The delete context.</param>
+        protected virtual void DoAfterDelete(DeleteContext context)
+        {
         }
 
         #region 異動記錄（audit trail）

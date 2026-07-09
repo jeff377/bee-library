@@ -121,21 +121,45 @@ FormSchema
 - **後端資料橋接**（`Bee.Business` 內，非共用專案）：把 `DataRow` 依 `ExpressionPolicy` 轉成 `variables` 字典交給 evaluator，算出全精度結果後委派 `NumberFormatResolver.RoundByKind` 捨入再寫回 `DataRow`。此橋接才碰 `DataSet` 與 `CompanyInfo`，故留在後端。
 - 單元測試：運算正確性、型別對映、null→預設、委派 `RoundByKind` 捨入（各 NumberKind 位數、Preserve、round-then-sum）、快取命中、`DetectIdentifiers` 相依圖、沙箱（未註冊識別字/反射 → parse 期擋下）。
 
-### 3. BO 生命週期整合（schema 驅動、零 per-form 程式碼）
+### 3. BO 生命週期整合：Save / Delete 模板方法重構（schema 驅動、零 per-form 程式碼）
 
-在 `FormBusinessObject` 基底新增 protected virtual hook，並由基底**依 FormSchema 自動套用**——一般 CRUD 表單完全不需寫 BO；自訂 BO 仍可 override 疊加程式規則。
+把 `FormBusinessObject.Save` / `Delete` 重構為**模板方法**：框架關注點（授權 / 記錄範圍 / 稽核）固定在編排層，中間開三個 `protected virtual` 覆寫點；基底實作依 FormSchema 自動套用規則引擎——一般 CRUD 表單零 BO 程式碼，自訂 BO 覆寫 `Do*` 疊加。
 
-**`Save`（:212，`AuthorizeSave` 之後、`repository.Save` 之前）依序：**
+**設計決策（2026-07-09 確認）**
+- 框架關注點（`AuthorizeSave` / `EnforceWriteScope` / change-audit 快照與寫入）**留在編排層固定、不可覆寫** → 子類無法因覆寫誤拿掉安全/稽核。
+- `Do*` 方法收 **Context 物件**（`SaveContext` / `DeleteContext`，承載 args / DataSet / repository / schema / 結果槽），日後擴充不改簽章、`DoAfter*` 看得到結果。
+- `Save` / `Delete` **保持 `public virtual`（附加式、不破壞既有外部覆寫）**；`Do*` 為推薦擴充點。
+- **為何拆三段而非 override 整個 `Save`**：三個子方法把業務邏輯的控管點（前置 / 持久化 / 後置）明確標定，框架日後擴增功能時改動落在編排層或特定 `Do*`，不會與子類別「override 整包 `Save`」互相打架；子類也只覆寫需要的那一段、其餘沿用框架實作。
 
-1. **預設值運算式** — 對 `Added` 列，套用有 `DefaultValueExpression` 的欄位（僅在欄位為空時填）。
-2. **欄位運算** — 對 `Added` + `Modified` 列，重算所有有 `ValueExpression` 的欄位，依 Scale 捨入回填。master、detail 各表逐列處理。
-3. **存檔前驗證** — 依序求值 `Trigger=BeforeSave` 的 `FormRule`；首個 `Condition=false` → `throw UserMessageException(Message)` 中斷。
+**`Save` 編排層順序（框架固定 = 【】）**
+1. 參數檢查
+2. 【`AuthorizeSave` + 條件式 `EnforceWriteScope`】
+3. `DoBeforeSave(ctx)` — base：規則引擎（見下）
+4. 【change-audit 快照】（在計算後、寫入前，`GetChanges` 反映計算結果）
+5. `DoSave(ctx)` — base：`repository.Save` → `ctx.RefreshedDataSet` / `AffectedRows`
+6. 【change-audit 寫入】
+7. `DoAfterSave(ctx)` — base：no-op
+8. 回傳 `SaveResult`（取自 ctx）
 
-**`Delete`（:255，`repository.Delete` 之前）：**
+base `DoBeforeSave` 依序（委派 `IFormRuleProcessor`）：
+- **預設值運算式** — 對 `Added` 列，套用有 `DefaultValueExpression` 的欄位（僅在欄位為空時填）。
+- **欄位運算** — 對 `Added` + `Modified` 列，重算有 `ValueExpression` 的欄位，全精度求值後委派 `NumberFormatResolver.RoundByKind` 捨入回填；master / detail 各表逐列。
+- **存檔前驗證** — 依 `Order` 求值 `Trigger=BeforeSave` 的 `FormRule`（先 `When` 適用性、再 `Condition`）；首個違規 `throw UserMessageException(Message)` 中斷。
 
-- 先 `repository.GetData(rowId)` 載入該筆 → 求值 `Trigger=BeforeDelete` 的 `FormRule` → 違規 `throw UserMessageException`。（多一次讀取，可接受；註記於 ADR。）
+**`Delete` 編排層順序**
+1. 參數檢查
+2. 【`Authorize(Delete)` + 解析 scope filter】
+3. 【載入刪前快照一次】（稽核 或 有 `BeforeDelete` 規則時才載，放 `ctx.Snapshot` 共用）
+4. `DoBeforeDelete(ctx)` — base：對 `ctx.Snapshot` 求值 `Trigger=BeforeDelete` 規則 → 違規 `throw UserMessageException`
+5. `DoDelete(ctx)` — base：`repository.Delete` → `ctx.RowsAffected`
+6. 【delete-audit 寫入】
+7. `DoAfterDelete(ctx)` — base：no-op
 
-實作以一個 `IFormRuleProcessor`（Bee.Business 內、注入 `IExpressionEvaluator` + `IDefineAccess`）承載上述邏輯，基底 `Save`/`Delete` 呼叫它。DI 註冊 evaluator 與 processor。
+**覆寫慣例**：子類 `override DoBeforeSave(ctx)` 時**先呼叫 `base.DoBeforeSave(ctx)`**（取得規則引擎），再疊自訂邏輯。
+
+**規則處理器**：`IFormRuleProcessor`（Bee.Business 內，注入 `IExpressionEvaluator` + `IDefineAccess` + 捨入所需 company/number context）承載預設值 / 計算 / 驗證。DI 註冊 `IExpressionEvaluator`→`DynamicExpressoEvaluator`（singleton）與 processor。
+
+**示範遷移**：`apps/Bee.Northwind` 的 `OrderBO.Save`（現為 override Save：Validate + ComputeAmounts + AssignOrderNumber + status 規則）遷移到新結構——金額計算改 `ValueExpression`、金額>0 / 狀態轉移改 `FormRule`，剩餘不可宣告化的（`AssignOrderNumber`、查存量狀態）進 `DoBeforeSave` override。作為零/少程式碼的實證（PR4）。
 
 ### 4. 沙箱與安全模型
 
@@ -154,7 +178,7 @@ FormSchema
 |----|------|------|---------|
 | PR1 | 1a | 定義層 + XML 序列化往返測試 | `FormField.cs`、新 `FormRule.cs` / `FormRuleCollection.cs` / `FormRuleTrigger.cs`、`FormSchema.cs`（`FormRuleCollection` 與 `FormTableCollection` 同走 `KeyCollectionBase`；FormSchema **以 XML 為唯一傳輸序列化路徑**——後端 `XmlCodec.Serialize` → 前端 `XmlCodec.Deserialize`，不涉 JSON / MessagePack 物件路徑） |
 | PR2 | 1b | `Bee.Expressions` **可攜共用**專案（引擎/快取/policy/相依分析/沙箱）+ 單元測試 | 新 `src/Bee.Expressions/*`、slnx 整合、`Directory.Build.props` |
-| PR3 | 1c | BO 生命週期整合（4 類規則）+ `IFormRuleProcessor` + DataRow 橋接 + DI + 測試 | `FormBusinessObject.cs`、新 `IFormRuleProcessor` / 實作、DI 註冊 |
+| PR3 | 1c | Save/Delete 模板方法重構（`DoBeforeSave`/`DoSave`/`DoAfterSave` + Delete 對應，Context 物件、框架關注點編排層固定）+ `IFormRuleProcessor`（4 類規則、DataRow 橋接、委派 `RoundByKind`）+ DI + 測試 | `FormBusinessObject.cs`、新 `SaveContext`/`DeleteContext`、`IFormRuleProcessor` / 實作、DI 註冊 |
 | PR4 | 1d | 文件 + Northwind 示範 + ADR | `docs/adr/00xx-expression-rule-engine.md`、Northwind FormSchema、README |
 | PR5 | 2 | Avalonia 前端即時運算：欄位變更 → 相依圖 → 共用引擎重算 → 更新綁定 | Avalonia form 綁定層、DataRow↔ViewModel 橋接；含 WASM/行動端 AOT 實測 |
 
