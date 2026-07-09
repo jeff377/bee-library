@@ -1,6 +1,6 @@
 # 計畫：自訂運算式與規則引擎（減少 BO 手寫程式碼）
 
-**狀態：🚧 進行中（2026-07-09）— Phase 1（後端）已全數完成；Phase 2（Avalonia 前端即時運算）待做**
+**狀態：🚧 進行中（2026-07-09）— Phase 1（後端）已全數完成；Phase 2（Avalonia 前端即時運算）進行中**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -8,7 +8,10 @@
 | 1b | `Bee.Expressions`**可攜共用**求值引擎（DynamicExpresso 封裝 + 快取 + 沙箱 + 型別/null + 相依分析） | ✅ 已完成（2026-07-09） |
 | 1c | BO 生命週期整合：Save/Delete 模板方法 + `IFormRuleProcessor`（預設值 / 欄位運算 / 存檔前驗證 / 刪除前檢查，schema 驅動、零 per-form 程式碼） | ✅ 已完成（2026-07-09） |
 | 1d | 文件（ADR-028 + expression-rules.md）+ Northwind OrderBO 遷移示範 | ✅ 已完成（2026-07-09） |
-| 2 | 前端即時運算（首要目標 **Avalonia**）：欄位變更即時重算，共用同一引擎與政策 | 📝 待做 |
+| 5a | 抽共用 row-level 計算器（`FormExpressionCalculator`）+ 相依圖 + 前端服務骨架 + 測試 | ✅ 已完成（2026-07-09） |
+| 5b | 綁定接線：訂閱 `FieldValueChanged` 重算回寫 + guard + `DefaultValueExpression` | 📝 待做 |
+| 5c | （可選）Tier 2：client 取 `CurrencySettings`/`UnitSettings` 逐位對齊 | 📝 待做 |
+| 5d | WASM/行動端 AOT 實測 + graceful degrade + Northwind demo-smoke | 📝 待做 |
 
 > **Phase 1（後端）** 涵蓋四類規則：**欄位運算（計算欄）**、**存檔前驗證**、**刪除前檢查**、**欄位預設值運算式**，執行於伺服器端存檔/刪除前。
 > **Phase 2（前端即時運算）** 讓使用者在 Avalonia UI 邊打邊看到計算結果；**後端仍為權威**，前端即時運算為 UX 加分、不影響正確性。
@@ -201,13 +204,11 @@ base `DoBeforeSave` 依序（委派 `IFormRuleProcessor`）：
 | 捨入設定注入（**缺口**） | `GridControl.CurrencySettings/UnitSettings`（L121/138）、`NumericEdit`（L47/60）有 setter 但 **`FormView` 從未注入**；`ClientDefineAccess` **無** `GetCurrencySettings/GetUnitSettings` | client 端目前拿不到公司/幣別/單位位數 → 見 PR 5a 前置 |
 | csproj | `src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj` | 已引用 `Bee.Definition`；**未引用 `Bee.Expressions`** → 需新增 |
 
-### 設計決策（實作前確認）
+### 設計決策（2026-07-09 確認）
 
-1. **共用重算邏輯 vs 前端自寫**：後端 `FormRuleProcessor.ApplyComputed` / `BuildVariables` / `ResolveRefCode` 是伺服器端（Bee.Business，不可被 UI 參考）。為**杜絕漂移**（尤其 `ResolveRefCode` 的幣別/單位碼解析），建議**抽出可共用的 row-level 計算器**（新元件，參考 `Bee.Definition` + `Bee.Expressions` + `System.Data`），後端 `FormRuleProcessor` 與前端同時委派它。替代方案：前端自寫一份，靠共用 `ExpressionPolicy` + `RoundByKind` 保證數值一致（glue 仍可能漂移）。**傾向抽共用**。
-2. **client 捨入 fidelity 分級**：
-   - **Tier 1（先做）**：前端用**框架預設位數**（`NumberKind` 預設：Amount 2、Quantity 0…）捨入預覽，不取公司/幣別/單位覆蓋 → 免動 client API，快速可用；與最終值僅在「公司自訂位數」邊緣情境有差，存檔由後端校正。
-   - **Tier 2**：新增 client 取得 `CurrencySettings`/`UnitSettings`（+ 公司位數）→ 注入 `RoundingContext` → 與後端逐位一致。
-3. **re-entrancy**：重算回寫計算欄會再觸發 `FieldValueChanged`；需 re-entrancy guard（計算欄自身不觸發再重算、或維護「計算中」旗標），並避開 `BeginRowEdit` 壓制窗口。
+1. **共用重算邏輯落點 → 抽到 `Bee.Definition.Forms`（採用）**：後端 `FormRuleProcessor` 的計算核心（`ApplyDefaults`/`ApplyComputed`/`ValidateRules`/`BuildVariables`/`ResolveRefCode`）是**純函式**，只依賴 `System.Data` + `Bee.Definition`（`FormSchema`/`NumberFormatResolver`/`RoundingContext`）+ `Bee.Expressions`，無任何 server-only 相依。`Bee.Definition.Forms` 已有 `FormRowDefaults`（schema 驅動、操作 `DataRow`、前後端共用）的前例，故新增 `FormExpressionCalculator` 於此；`Bee.Definition` 加 `Bee.Expressions` ProjectReference（`Bee.Expressions` 僅依賴 `Bee.Base`，無循環）。後端 `FormRuleProcessor` 瘦身為 adapter（保留 `IFormRuleProcessor` + DI + `RoundingContext` 組裝 + `UserMessageException` 轉譯），前端即時運算服務委派同一 calculator → 杜絕漂移、免開新專案。
+2. **client 捨入 fidelity → Tier 1 先做（採用）**：前端用**框架預設位數**（`NumberKind` 預設：Amount 2、Quantity 0…；`RoundingContext` 三個來源皆 null → `NumberFormatResolver` 自動 fallback 框架預設）捨入預覽，免動 client API、快速可用；與最終值僅在「公司自訂位數」邊緣情境有差，存檔由後端校正。**Tier 2（5c 可選）**：新增 client 取得 `CurrencySettings`/`UnitSettings`（+ 公司位數）→ 注入 `RoundingContext` → 與後端逐位一致。
+3. **re-entrancy → 計算中旗標 + 計算欄不當觸發源 + 依附 CommitRowEdit 重播（採用）**：即時運算服務內維護 `_recomputing` 旗標，重算回寫計算欄再觸發的 `FieldValueChanged` 於旗標開啟時忽略；相依圖只由「非計算欄來源」驅動（計算欄自身變動不再引發重算）；`BeginRowEdit` 壓制窗口內事件本被 ADO.NET 壓住，改在 `CommitRowEdit` 重播時一併重算，不特別侵入壓制窗口。
 
 ### 相依驅動重算
 

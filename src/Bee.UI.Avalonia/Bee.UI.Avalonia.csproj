@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Bee.UI.Core\Bee.UI.Core.csproj" />
     <ProjectReference Include="..\Bee.Api.Client\Bee.Api.Client.csproj" />
     <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />
+    <ProjectReference Include="..\Bee.Expressions\Bee.Expressions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
