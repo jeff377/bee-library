@@ -131,3 +131,4 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 @rules/security.md
 @rules/sonarcloud.md
 @rules/maui.md
+@rules/avalonia.md
