@@ -11,10 +11,13 @@ namespace Bee.Northwind.Server.BusinessObjects;
 
 /// <summary>
 /// Application-layer business object for the <c>Order</c> form — the demo's deliberate
-/// "pro-code boundary" example. Everything else in Bee.Northwind is pure definition-driven
-/// CRUD; <see cref="OrderBO"/> overrides <see cref="GetNewData"/> and <see cref="Save"/> to add
-/// the four rules a generic form cannot express: order-number generation, status transitions,
-/// required-field validation, and authoritative amount calculation.
+/// "pro-code boundary" example. Most of the order's logic is now declarative: the line
+/// <c>amount</c> is a computed field (<c>ValueExpression</c>) and the required-field checks are
+/// <c>FormRule</c>s in <c>Order.FormSchema.xml</c>. This class overrides <see cref="GetNewData"/>
+/// to seed the order date and <see cref="DoBeforeSave"/> only for the rules a per-row expression
+/// cannot yet express: the at-least-one-detail aggregate, the master total (a cross-row SUM), the
+/// status-transition guard (needs the stored status), and order-number generation (needs the
+/// database sequence).
 /// </summary>
 /// <remarks>
 /// Registered for progId <c>Order</c> via <c>Define/ProgramSettings.xml</c>; the framework's
@@ -52,20 +55,20 @@ public sealed class OrderBO : FormBusinessObject
     }
 
     /// <inheritdoc/>
-    public override SaveResult Save(SaveArgs args)
+    protected override void DoBeforeSave(SaveContext context)
     {
-        ArgumentNullException.ThrowIfNull(args);
-        var dataSet = args.DataSet
-            ?? throw new ArgumentException("Save requires a non-null DataSet.", nameof(args));
+        // Declarative rules run first: the per-line amount (ValueExpression) and the customer /
+        // product / quantity required-field checks (FormRule) declared in Order.FormSchema.xml.
+        base.DoBeforeSave(context);
 
+        var dataSet = context.DataSet;
         var master = OrderDataSet.MasterRow(dataSet);
-        OrderDataSet.Validate(dataSet);
-        EnforceStatusRules(dataSet, master);
-        AssignOrderNumber(master);
-        OrderDataSet.ComputeAmounts(dataSet);
 
-        // Hand the validated, amount-stamped DataSet to the framework's RowState-driven persistence.
-        return base.Save(args);
+        // The rules a per-row field expression cannot yet express stay in code:
+        OrderDataSet.RequireAtLeastOneDetail(dataSet);   // aggregate — needs a detail-line count
+        EnforceStatusRules(dataSet, master);             // needs the stored status from the database
+        AssignOrderNumber(master);                       // needs the database number sequence
+        OrderDataSet.ComputeTotal(dataSet);              // aggregate — SUM of the rounded line amounts
     }
 
     /// <summary>

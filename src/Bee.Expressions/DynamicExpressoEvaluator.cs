@@ -38,6 +38,10 @@ namespace Bee.Expressions
         /// </summary>
         private static void RegisterHelperFunctions(Interpreter interpreter)
         {
+            // Expose Guid so expressions can test key/reference fields (for example
+            // `customer_rowid != Guid.Empty`). Guid is a value type with no IO surface.
+            interpreter.Reference(typeof(Guid));
+
             interpreter.SetFunction("Today", (Func<DateTime>)(() => DateTime.Today));
             interpreter.SetFunction("Now", (Func<DateTime>)(() => DateTime.Now));
             interpreter.SetFunction("IsNullOrEmpty", (Func<string?, bool>)string.IsNullOrEmpty);

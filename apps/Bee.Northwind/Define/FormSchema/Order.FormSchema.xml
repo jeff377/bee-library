@@ -63,10 +63,20 @@
         <FormField FieldName="ref_product_id" Caption="Product Code" DbType="String" Type="RelationField" />
         <FormField FieldName="ref_product_name" Caption="Product Name" DbType="String" Type="RelationField" />
         <FormField FieldName="quantity" Caption="Quantity" DbType="Integer" />
-        <FormField FieldName="unit_price" Caption="Unit Price" DbType="Currency" />
+        <FormField FieldName="unit_price" Caption="Unit Price" DbType="Currency" NumberKind="UnitPrice" />
         <FormField FieldName="discount" Caption="Discount" DbType="Decimal" />
-        <FormField FieldName="amount" Caption="Amount" DbType="Currency" ReadOnly="true" />
+        <FormField FieldName="amount" Caption="Amount" DbType="Currency" NumberKind="Amount" ReadOnly="true" ValueExpression="quantity * unit_price * (1 - discount)" />
       </Fields>
     </FormTable>
   </Tables>
+  <!-- Declarative validation rules evaluated before save (see docs/expression-rules.md).
+       The line amount above is a computed field (ValueExpression); these rules replace the
+       per-row required-field checks OrderBO used to enforce in code. Aggregate checks (at
+       least one detail line, the master total) and the status-transition guard that needs the
+       stored status stay in OrderBO.DoBeforeSave — they are not yet expressible per row. -->
+  <Rules>
+    <FormRule RuleId="customer_required" Condition="customer_rowid != Guid.Empty" Message="Please select a customer for the order." />
+    <FormRule RuleId="product_required" TargetTable="OrderDetail" Condition="product_rowid != Guid.Empty" Message="Every detail line must select a product." />
+    <FormRule RuleId="quantity_positive" TargetTable="OrderDetail" Condition="quantity &gt; 0" Message="Every detail line must have a quantity greater than zero." />
+  </Rules>
 </FormSchema>

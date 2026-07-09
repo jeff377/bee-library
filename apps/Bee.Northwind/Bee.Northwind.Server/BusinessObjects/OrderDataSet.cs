@@ -55,52 +55,38 @@ internal static class OrderDataSet
     }
 
     /// <summary>
-    /// Required-field validation: a customer, at least one detail line, and every line with a
-    /// product and a positive quantity. Each violation raises a user-facing message.
+    /// Aggregate validation the declarative rule model cannot yet express: an order must have at
+    /// least one detail line. Per-row required-field checks (customer, product, positive quantity)
+    /// are now declarative <c>FormRule</c>s in <c>Order.FormSchema.xml</c>.
     /// </summary>
-    public static void Validate(DataSet dataSet)
+    public static void RequireAtLeastOneDetail(DataSet dataSet)
     {
-        var master = MasterRow(dataSet);
-        if (ValueUtilities.CGuid(master["customer_rowid"]) == Guid.Empty)
-            throw new UserMessageException("Please select a customer for the order.");
-
-        var details = ActiveDetails(dataSet).ToList();
-        if (details.Count == 0)
+        if (!ActiveDetails(dataSet).Any())
             throw new UserMessageException("The order must have at least one detail line.");
-
-        foreach (var row in details)
-        {
-            if (ValueUtilities.CGuid(row["product_rowid"]) == Guid.Empty)
-                throw new UserMessageException("Every detail line must select a product.");
-            if (ValueUtilities.CInt(row["quantity"]) <= 0)
-                throw new UserMessageException("Every detail line must have a quantity greater than zero.");
-        }
     }
 
     /// <summary>
-    /// Recomputes every line amount and the master total from quantity, unit price, and discount —
-    /// authoritatively, so a forged client total never persists. Returns the computed total.
+    /// Sums the (already computed and rounded) line amounts into the master total — authoritatively,
+    /// so a forged client total never persists. Returns the computed total.
     /// </summary>
     /// <remarks>
-    /// Each computed value is written back only when it actually differs from the current cell.
-    /// Assigning an equal value through the <c>DataRow</c> indexer still flips an Unchanged row to
-    /// Modified, which on save would reach the framework's UPDATE builder with no changed columns
-    /// and raise "UPDATE would be empty". Reloading and re-saving an order must not mark untouched
-    /// detail lines dirty.
+    /// The per-line <c>amount</c> is computed by the framework rule engine from the field's
+    /// <c>ValueExpression</c> (rounded per <c>NumberKind</c>) before this runs, so summing the
+    /// rounded lines preserves the round-then-sum invariant. This aggregate stays in code because
+    /// a cross-row SUM is not yet expressible as a field expression.
+    ///
+    /// The total is written back only when it actually differs from the current cell. Assigning an
+    /// equal value through the <c>DataRow</c> indexer still flips an Unchanged master to Modified,
+    /// which on save would reach the framework's UPDATE builder with no changed columns and raise
+    /// "UPDATE would be empty".
     /// </remarks>
-    public static decimal ComputeAmounts(DataSet dataSet)
+    public static decimal ComputeTotal(DataSet dataSet)
     {
         var master = MasterRow(dataSet);
         decimal total = 0m;
         foreach (var row in ActiveDetails(dataSet))
         {
-            var amount = OrderRules.LineAmount(
-                ValueUtilities.CInt(row["quantity"]),
-                ValueUtilities.CDecimal(row["unit_price"]),
-                ValueUtilities.CDecimal(row["discount"]));
-            if (ValueUtilities.CDecimal(row["amount"]) != amount)
-                row["amount"] = amount;
-            total += amount;
+            total += ValueUtilities.CDecimal(row["amount"]);
         }
         if (ValueUtilities.CDecimal(master["total_amount"]) != total)
             master["total_amount"] = total;

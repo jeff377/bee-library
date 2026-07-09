@@ -50,13 +50,6 @@ internal static class OrderRules
     public static bool DetailsLocked(string storedStatus) => StatusRank(storedStatus) >= StatusRank(StatusConfirmed);
 
     /// <summary>
-    /// The line amount: <c>quantity × unitPrice × (1 - discount)</c>. <paramref name="discount"/>
-    /// is a fraction (0.10 = 10% off).
-    /// </summary>
-    public static decimal LineAmount(int quantity, decimal unitPrice, decimal discount)
-        => quantity * unitPrice * (1m - discount);
-
-    /// <summary>
     /// Builds the next order number for a year-month, formatted <c>ORD-yyyyMM-NNN</c>.
     /// <paramref name="currentMax">currentMax</paramref> is the highest existing number for that
     /// month (e.g. <c>"ORD-202606-007"</c>) or <c>null</c> when the month has none yet; the

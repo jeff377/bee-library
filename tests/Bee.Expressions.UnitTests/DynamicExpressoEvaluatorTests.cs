@@ -94,6 +94,18 @@ namespace Bee.Expressions.UnitTests
             Assert.Equal(21m, second);
         }
 
+        [Theory]
+        [InlineData("11111111-1111-1111-1111-111111111111", true)]
+        [InlineData("00000000-0000-0000-0000-000000000000", false)]
+        [DisplayName("Guid 支援：customer_rowid != Guid.Empty 依值回傳")]
+        public void Evaluate_GuidComparison_ReturnsExpected(string guid, bool expected)
+        {
+            var result = _evaluator.Evaluate<bool>(
+                "customer_rowid != Guid.Empty", Vars(("customer_rowid", Guid.Parse(guid))));
+
+            Assert.Equal(expected, result);
+        }
+
         [Fact]
         [DisplayName("沙箱：存取未註冊型別（System.IO.File）應拋 ExpressionEvaluationException")]
         public void Evaluate_UnregisteredType_ThrowsExpressionEvaluationException()

@@ -1,4 +1,5 @@
 using Bee.Business;
+using Bee.Business.AuditLog;
 using Bee.Definition;
 using Bee.Definition.Identity;
 using Bee.Definition.Language;
@@ -46,6 +47,13 @@ public sealed class NorthwindBusinessObjectFactory : IBusinessObjectFactory
         var type = _resolver.Resolve(progId);
         var ctx = BuildContext();
         return Activator.CreateInstance(type, ctx, accessToken, progId, isLocalCall)!;
+    }
+
+    /// <inheritdoc/>
+    public object CreateLogBusinessObject(Guid accessToken, bool isLocalCall = true)
+    {
+        var ctx = BuildContext();
+        return new LogBusinessObject(ctx, accessToken, isLocalCall);
     }
 
     private BeeContext BuildContext() => new()
