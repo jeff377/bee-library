@@ -610,6 +610,125 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         /// Overrides the <c>Resolve*</c> hooks so tests never read <c>ClientInfo</c>, and
         /// surfaces the <c>OnFormModeChanged</c> hook for assertions.
         /// </summary>
+        // ---- live recomputation wiring (Phase 2 PR5b) ----
+
+        private const string OrderProgId = "Order";
+
+        private static FormSchema BuildComputedSchema(bool withDetail = false)
+        {
+            var schema = new FormSchema(OrderProgId, OrderProgId);
+            var master = schema.Tables!.Add(OrderProgId, OrderProgId);
+            master.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
+            master.Fields.Add("price", "Price", FieldDbType.Currency);
+            master.Fields.Add("qty", "Qty", FieldDbType.Decimal);
+            master.Fields!.Add(new FormField("amount", "Amount", FieldDbType.Currency)
+            {
+                NumberKind = NumberKind.Amount,
+                ValueExpression = "price * qty",
+                ReadOnly = true,
+            });
+            master.Fields!.Add(new FormField("order_date", "Order Date", FieldDbType.DateTime)
+            {
+                DefaultValueExpression = "Today()",
+            });
+            if (withDetail)
+            {
+                var detail = schema.Tables!.Add("OrderItem", "Items");
+                detail.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
+                detail.Fields.Add(SysFields.MasterRowId, "Master Row Id", FieldDbType.Guid);
+                detail.Fields.Add("price", "Price", FieldDbType.Currency);
+                detail.Fields.Add("qty", "Qty", FieldDbType.Decimal);
+                detail.Fields!.Add(new FormField("amount", "Amount", FieldDbType.Currency)
+                {
+                    NumberKind = NumberKind.Amount,
+                    ValueExpression = "price * qty",
+                    ReadOnly = true,
+                });
+            }
+            return schema;
+        }
+
+        private static DataTable BuildOrderMasterTable(Guid rowId, decimal price, decimal qty, decimal amount)
+        {
+            var master = new DataTable(OrderProgId);
+            master.Columns.Add(SysFields.RowId, typeof(Guid));
+            master.Columns.Add("price", typeof(decimal));
+            master.Columns.Add("qty", typeof(decimal));
+            master.Columns.Add("amount", typeof(decimal));
+            master.Columns.Add("order_date", typeof(DateTime));
+            master.Rows.Add(rowId, price, qty, amount, DBNull.Value);
+            return master;
+        }
+
+        [Fact]
+        [DisplayName("編輯 master 來源欄即時重算計算欄（amount = price * qty）")]
+        public async Task LiveRecompute_MasterSourceEdit_RecomputesComputedField()
+        {
+            var rowId = Guid.NewGuid();
+            var dataSet = new DataSet(OrderProgId);
+            dataSet.Tables.Add(BuildOrderMasterTable(rowId, price: 10m, qty: 2m, amount: 20m));
+            dataSet.AcceptChanges();
+            var connector = new FakeFormApiConnector
+            {
+                GetDataHandler = _ => new GetDataResponse { DataSet = dataSet },
+            };
+            var view = new TestFormView { Schema = BuildComputedSchema(), FormConnector = connector };
+
+            await view.EditAsync(rowId);
+            view.DataObject!.SetField("qty", "5");
+
+            Assert.Equal(50m, view.DataObject!.MasterRow!["amount"]);
+        }
+
+        [Fact]
+        [DisplayName("NewAsync 後 master 空欄以 DefaultValueExpression 即時填入（order_date = Today()）")]
+        public async Task LiveRecompute_NewAsync_AppliesDefaultValueExpression()
+        {
+            var connector = new FakeFormApiConnector
+            {
+                GetNewDataHandler = () =>
+                {
+                    var dataSet = new DataSet(OrderProgId);
+                    dataSet.Tables.Add(BuildOrderMasterTable(Guid.NewGuid(), price: 0m, qty: 0m, amount: 0m));
+                    return new GetNewDataResponse { DataSet = dataSet };
+                },
+            };
+            var view = new TestFormView { Schema = BuildComputedSchema(), FormConnector = connector };
+
+            await view.NewAsync();
+
+            Assert.Equal(DateTime.Today, view.DataObject!.MasterRow!["order_date"]);
+        }
+
+        [Fact]
+        [DisplayName("編輯 detail 來源欄即時重算 detail 計算欄（回寫至 DataRow）")]
+        public async Task LiveRecompute_DetailSourceEdit_RecomputesDetailComputedField()
+        {
+            var rowId = Guid.NewGuid();
+            var dataSet = new DataSet(OrderProgId);
+            dataSet.Tables.Add(BuildOrderMasterTable(rowId, price: 0m, qty: 0m, amount: 0m));
+            var detail = new DataTable("OrderItem");
+            detail.Columns.Add(SysFields.RowId, typeof(Guid));
+            detail.Columns.Add(SysFields.MasterRowId, typeof(Guid));
+            detail.Columns.Add("price", typeof(decimal));
+            detail.Columns.Add("qty", typeof(decimal));
+            detail.Columns.Add("amount", typeof(decimal));
+            detail.Rows.Add(Guid.NewGuid(), rowId, 7m, 2m, 14m);
+            dataSet.Tables.Add(detail);
+            dataSet.AcceptChanges();
+            var connector = new FakeFormApiConnector
+            {
+                GetDataHandler = _ => new GetDataResponse { DataSet = dataSet },
+            };
+            var view = new TestFormView { Schema = BuildComputedSchema(withDetail: true), FormConnector = connector };
+
+            await view.EditAsync(rowId);
+            var detailRow = view.DataObject!.DataSet.Tables["OrderItem"]!.Rows[0];
+            view.DataObject!.SetField(detailRow, "qty", "4");
+
+            Assert.Equal(28m, detailRow["amount"]);
+        }
+
         private sealed class TestFormView : FormView
         {
             public int ModeChangedCount { get; private set; }

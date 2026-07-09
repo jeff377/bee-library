@@ -124,6 +124,41 @@ namespace Bee.UI.Avalonia.DataObjects
             }
         }
 
+        /// <summary>
+        /// Prepares a freshly created <paramref name="row"/> for display: fills its default-value
+        /// expressions (empty fields only), then recomputes all computed fields so any default feeding a
+        /// computed field is reflected at once. Returns the fields whose value changed. The whole pass runs
+        /// under the re-entrancy guard, so the write-backs raise no nested recompute.
+        /// </summary>
+        /// <param name="tableName">The name of the table the row belongs to (master or detail).</param>
+        /// <param name="row">The new row to initialize.</param>
+        /// <returns>The names of the fields that were filled or computed.</returns>
+        public IReadOnlyList<string> InitializeNewRow(string tableName, DataRow row)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
+            ArgumentNullException.ThrowIfNull(row);
+
+            var formTable = _schema.Tables?.GetOrDefault(tableName);
+            if (formTable?.Fields is null) { return []; }
+
+            _recomputing = true;
+            try
+            {
+                var changed = new List<string>();
+                changed.AddRange(_calculator.ApplyDefaultRow(formTable, row));
+                foreach (var field in _calculator.ApplyComputedRow(_schema, formTable, row, _roundingContext))
+                {
+                    if (!changed.Contains(field, StringComparer.OrdinalIgnoreCase))
+                        changed.Add(field);
+                }
+                return changed;
+            }
+            finally
+            {
+                _recomputing = false;
+            }
+        }
+
         private IReadOnlyDictionary<string, IReadOnlyList<string>> GetDependencyMap(FormTable formTable)
         {
             if (!_dependencyByTable.TryGetValue(formTable.TableName, out var map))

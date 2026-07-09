@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Bee.Api.Client.Connectors;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
@@ -79,6 +80,11 @@ namespace Bee.UI.Avalonia.Views
         private readonly StackPanel _formHost;
         private FormDataObject? _dataObject;
         private FormLayout? _formLayout;
+        // Client-side live recomputation of computed fields; created once with the data object.
+        private FormLiveComputation? _liveComputation;
+        // Detail grids by table name, repopulated on every Rebuild so a live recompute of a detail
+        // row can refresh the matching grid (realized cells do not track later DataRow writes).
+        private readonly Dictionary<string, GridControl> _detailGrids = new(StringComparer.OrdinalIgnoreCase);
         private bool _isBusy;
         // Last applied compact-layout state. Crossing the width threshold rebuilds the form so
         // master fields reflow (multi-column <-> single) and detail grids re-render in the
@@ -268,6 +274,13 @@ namespace Bee.UI.Avalonia.Views
             await RunGuardedAsync(async () =>
             {
                 await _dataObject!.NewAsync().ConfigureAwait(true);
+                // The server's GetNewData seeds columns but does not evaluate DefaultValueExpression;
+                // apply the display-layer defaults (and recompute) so the blank master row shows them
+                // at once. The master row does not raise RowAdded (it is populated before the event
+                // bridge attaches), so seed it explicitly here.
+                var master = _dataObject.MasterRow;
+                if (master is not null)
+                    _liveComputation?.InitializeNewRow(_dataObject.MasterTable.TableName, master);
                 FormMode = SingleFormMode.Add;
             }).ConfigureAwait(true);
         }
@@ -324,6 +337,12 @@ namespace Bee.UI.Avalonia.Views
             if (Schema is null || FormConnector is null) return false;
 
             _dataObject = new FormDataObject(Schema, FormConnector);
+            // Live preview: recompute computed fields as the user edits. Subscribed once — the data
+            // object keeps these events across DataSet replacements (Load / New / Save). Tier 1 uses
+            // framework-default decimal places; the server rounds authoritatively on save.
+            _liveComputation = new FormLiveComputation(Schema);
+            _dataObject.FieldValueChanged += OnLiveFieldValueChanged;
+            _dataObject.RowAdded += OnLiveRowAdded;
             _formLayout = Schema.GetFormLayout();
             // Degrade the freshly generated layout against the cached capability snapshot before it
             // renders: hide sensitive fields without Read and mark them read-only without Update
@@ -404,11 +423,58 @@ namespace Bee.UI.Avalonia.Views
             => Schema is null
                || ElementCapabilityResolver.Default.Can(Schema, PermissionScope.GetAction(button), ClientInfo.Capabilities);
 
+        // ---- Live recomputation of computed fields ----
+
+        /// <summary>
+        /// Recomputes the edited row's computed fields on every field change. The write-backs re-raise
+        /// <see cref="FormDataObject.FieldValueChanged"/>; the live-computation guard makes this handler a
+        /// no-op for those echoes, so a single edit yields one recompute pass. Master field editors
+        /// re-pull through their own subscription; a detail grid's realized cells do not, so the matching
+        /// grid is refreshed.
+        /// </summary>
+        private void OnLiveFieldValueChanged(object? sender, FieldValueChangedEventArgs e)
+        {
+            if (_liveComputation is null || _liveComputation.IsRecomputing) { return; }
+            var changed = _liveComputation.Recompute(e.TableName, e.FieldName, e.Row);
+            if (changed.Count > 0)
+                RefreshDetailGrid(e.TableName);
+        }
+
+        /// <summary>
+        /// Initializes a newly added detail row: fills its default-value expressions and computes its
+        /// computed fields so it renders complete. The master row is seeded in <see cref="NewAsync"/>
+        /// instead (it is populated before the event bridge attaches and raises no <c>RowAdded</c>).
+        /// </summary>
+        private void OnLiveRowAdded(object? sender, RowChangedEventArgs e)
+        {
+            if (_liveComputation is null) { return; }
+            var changed = _liveComputation.InitializeNewRow(e.TableName, e.Row);
+            if (changed.Count > 0)
+                RefreshDetailGrid(e.TableName);
+        }
+
+        /// <summary>
+        /// Refreshes the detail grid bound to <paramref name="tableName"/>, if one is rendered. Master
+        /// changes need no refresh (field editors re-pull themselves). Posted to the dispatcher so the
+        /// refresh runs after the current cell-edit commit unwinds, not re-entering the grid's edit
+        /// pipeline.
+        /// </summary>
+        private void RefreshDetailGrid(string tableName)
+        {
+            if (_dataObject is not null &&
+                string.Equals(tableName, _dataObject.MasterTable.TableName, StringComparison.OrdinalIgnoreCase))
+                return;
+            if (!_detailGrids.TryGetValue(tableName, out var grid)) { return; }
+            Dispatcher.UIThread.Post(grid.RefreshRows, DispatcherPriority.Background);
+        }
+
         // ---- Record rendering (master sections + detail grids) ----
 
         private void Rebuild()
         {
             _formHost.Children.Clear();
+            // Grids are recreated below; drop the stale references before repopulating.
+            _detailGrids.Clear();
             if (_formLayout is null || _dataObject is null) return;
 
             // Build against the current width so the first render (which may run before any Bounds
@@ -516,6 +582,8 @@ namespace Bee.UI.Avalonia.Views
             // layout, the data object and the editing model (responsive — see EffectiveDetailEditMode).
             var grid = new GridControl { MinHeight = 120, EditMode = EffectiveDetailEditMode() };
             grid.Bind(_dataObject!, layout);
+            // Track by table name so a live recompute of a detail row can refresh this grid.
+            _detailGrids[layout.TableName] = grid;
             stack.Children.Add(grid);
 
             return new Border
