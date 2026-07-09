@@ -1,0 +1,188 @@
+# 計畫：自訂運算式與規則引擎（減少 BO 手寫程式碼）
+
+**狀態：🚧 進行中（2026-07-09）**
+
+| 階段 | 範圍 | 狀態 |
+|------|------|------|
+| 1a | 定義層：`FormField` 運算式屬性 + `FormRule` 規則集合 + 序列化往返 | ✅ 已完成（2026-07-09） |
+| 1b | `Bee.Expressions`**可攜共用**求值引擎（DynamicExpresso 封裝 + 快取 + 沙箱 + 型別/null/捨入 + 相依分析） | 📝 待做 |
+| 1c | BO 生命週期整合：預設值 / 欄位運算 / 存檔前驗證 / 刪除前檢查（schema 驅動、零 per-form 程式碼） | 📝 待做 |
+| 1d | 文件 + Northwind 示範（明細 金額=單價×數量 + 一條驗證）+ ADR | 📝 待做 |
+| 2 | 前端即時運算（首要目標 **Avalonia**）：欄位變更即時重算，共用同一引擎與政策 | 📝 待做 |
+
+> **Phase 1（後端）** 涵蓋四類規則：**欄位運算（計算欄）**、**存檔前驗證**、**刪除前檢查**、**欄位預設值運算式**，執行於伺服器端存檔/刪除前。
+> **Phase 2（前端即時運算）** 讓使用者在 Avalonia UI 邊打邊看到計算結果；**後端仍為權威**，前端即時運算為 UX 加分、不影響正確性。
+> Phase 1 的引擎專案**一開始就設成前後端可攜共用**，Phase 2 不需回頭重構。
+
+## 背景與目標
+
+目前業務邏輯（欄位運算、存檔/刪除前檢查）必須在自訂 BO 以 C# 手寫。痛點：
+
+- 簡單如「金額 = 單價 × 數量」也要開一個 BO override `Save`。
+- 客戶無法自訂驗證條件與錯誤訊息（改邏輯就要改程式、重編、重佈）。
+
+目標：以**宣告式運算式**（存在 FormSchema 定義檔）取代大量 BO 樣板碼，並讓客戶可自訂：
+
+- **欄位運算**：`金額 = 單價 * 數量`（存檔前重算、回填、依欄位 Scale 捨入）。
+- **存檔前驗證**：條件不通過 → 顯示錯誤訊息、中斷存檔。
+- **刪除前檢查**：條件不通過 → 中斷刪除。
+- **欄位預設值運算式**：新增資料時以運算式產生預設值。
+
+## 現況探勘結論（動筆前已確認）
+
+- **定義層是綠地**：`FormField`（`src/Bee.Definition/Forms/FormField.cs`）目前只有 `ReadOnly` / `Required` / `DefaultValue`（字面值），**無** expression / formula / validation 載體。`FieldType.VirtualField` enum 值存在但無對應運算式欄位。
+- **BO 缺生命週期 hook**：框架**沒有** `BeforeSave` / `ValidateData` / `BeforeDelete` 分離點。現況唯一做法是 override `FormBusinessObject.Save` / `Delete`。本計畫會順帶補上這些 hook。
+  - `Save`（`src/Bee.Business/Form/FormBusinessObject.cs:212`）流程：`AuthorizeSave`（權限）→ `EnforceWriteScope`（記錄範圍）→ `repository.Save(dataSet)` → 以 master `sys_rowid` 重讀回傳。**插入點：`AuthorizeSave` 之後、`repository.Save` 之前**。
+  - `Delete`（:255）只拿到 `rowId` + `scopeFilter`，**不含 DataSet**；刪除前檢查需先 `repository.GetData(rowId)` 載入該筆再求值。
+- **資料載體**：DataSet（1 master + N detail，detail 以 `sys_master_rowid` 關連 master `sys_rowid`）。欄位讀寫已有 `row.GetFieldValue<T>(col)`（`src/Bee.Base/Data/DataRowExtensions.cs`）、原生 `row["field"]`。系統欄常數 `SysFields.RowId` / `MasterRowId`。
+- **中斷 + 訊息機制已就緒**：`throw new UserMessageException(msg)`（`src/Bee.Base/Exceptions/UserMessageException.cs`）＝框架指定的「面向使用者業務中斷訊號」，JSON-RPC 以 `JsonRpcErrorCode.UserMessage` 回傳原訊息。驗證不通過即用它中斷。
+- **序列化慣例**：定義類別以 `[XmlAttribute]` 持久化、JSON 走 System.Text.Json、MessagePack 走 contractless；集合繼承 `KeyCollectionBase<T>` / 項目繼承 `KeyCollectionItem`，MessagePack 集合須顯式註冊 `CollectionBaseFormatter`（見 `bee-serialization` skill 與 `src/Bee.Api.Core/MessagePack/FormatterResolver.cs`）。
+
+## 引擎選型：DynamicExpresso（已確認）
+
+NuGet 套件 `DynamicExpresso.Core`（MIT）。選它的理由：
+
+- **C# 語法子集直譯器** — `UnitPrice * Quantity`、`Amount > 0`、`string.IsNullOrEmpty(Name)` 直接可寫，貼近開發者與客戶直覺。
+- **安全可控** — 預設不曝露任何型別/識別字；未註冊的識別字在 parse 期即報錯。反射、IO、`Type`、`Activator` 全不註冊 → 天然沙箱。
+- **可快取** — `Interpreter.Parse(expr, parameters…)` 產出 `Lambda`（編譯後 delegate），parse-once、逐列 `Invoke`。
+- **輕量** — 無 Roslyn 啟動與記憶體成本；比 NCalc 更貼近 C# 語法、函式擴充能力更強。
+
+引擎以 `IExpressionEvaluator` 抽象包裝，DynamicExpresso 僅出現在單一實作類別 → 可替換、可測、且未來前端可共用同一抽象。
+
+## 設計
+
+### 1. 定義模型（運算式存哪裡）
+
+**A. 欄位級 — 掛在 `FormField`（新增兩個 `[XmlAttribute]` 屬性）**
+
+| 屬性 | 型別 | 語意 |
+|------|------|------|
+| `ValueExpression` | `string?` | 計算欄運算式。存檔前重算並回填此欄（通常搭配 `ReadOnly=true`）。首階段為**已儲存欄**（真實 DbField），非虛擬欄。 |
+| `DefaultValueExpression` | `string?` | 新增資料時以運算式產生預設值。與既有字面值 `DefaultValue` 互補；兩者並存時運算式優先。 |
+
+**B. 規則級 — 新增 `FormRule` / `FormRuleCollection`，掛在 `FormSchema`**
+
+驗證/檢查不綁單一欄位、需看整列（或整個 DataSet）並產生錯誤訊息，故獨立為規則集合：
+
+```
+FormSchema
+  └── Rules : FormRuleCollection?          // 新增
+        └── FormRule (: KeyCollectionItem)
+              ├── RuleId       (string, =Key)
+              ├── Trigger      (FormRuleTrigger enum)   // 首階段：BeforeSave / BeforeDelete
+              ├── TargetTable  (string?)                // 針對哪個 DataTable；空=master
+              ├── When         (string?)                // 適用條件；空=一律套用；false=略過此規則
+              ├── Condition    (string)                 // 必須為 true 才通過；false=違規
+              ├── Message      (string)                 // 不通過顯示的訊息（可為 LanguageResource key）
+              ├── Enabled      (bool, default true)
+              └── Order        (int)                    // 多規則求值順序
+```
+
+- **兩段式判斷**：
+  1. **`When`（適用條件）** — 決定「這條規則現在**該不該檢查**」。
+     - 空 / null → **一律套用**（無適用條件）。
+     - 求值為 `false` → **略過此規則**（視同通過，不檢查 `Condition`）。
+     - 求值為 `true` → 進入第 2 步。
+  2. **`Condition`（驗證條件）** — 「**必須成立**的條件」。求值為 `false` → 違規 → `throw UserMessageException(Message)`。
+- **範例**：「訂單已核准時，金額必須大於 0」→ `When = Status == "Approved"`、`Condition = Amount > 0`、`Message = "已核准訂單金額必須大於 0"`。狀態非 Approved 的單據則此規則自動略過。
+- `When` 與 `Condition` 共用同一求值 context（欄位變數、Session、白名單函式），皆須回傳 `bool`。兩者都放共用 `Bee.Expressions` 走同一沙箱與政策。
+- **detail 規則**：`TargetTable` 指向 detail 表時，`When` + `Condition` 對該表**逐列**求值，任一列適用且驗證不通過即中斷（訊息可帶列號，後續強化）。
+- `FormRuleTrigger` enum（首階段兩值，後續加 `BeforeInsert` / `BeforeUpdate`）；依 `code-style` 集合語意 enum 末尾加 `s` 的規範，enum 名用單數 `FormRuleTrigger`（單一觸發點，非旗標集合）。
+- **命名**：適用性 guard 欄位取名 `When`，對齊 .NET 生態 FluentValidation `.When()` 慣例、對設定者友善。刻意不用 `Precondition`——Design by Contract 中「precondition 不成立＝錯誤」，與本設計「`When` 不成立＝略過（非錯誤）」語意相反，易誤導。`When`（資料條件）與 `Trigger`（存檔/刪除生命週期事件）分工明確、不混淆。
+- **為何用結構化 `When` 而非內嵌蘊含式**：`When + Condition` 邏輯上等價於單一 `!When || Condition`，但後者對客戶/顧問設定者易靜默寫反（漏 `!`、`&&`/`||` 混淆、`When && Condition` 反向擋掉非適用單據）。結構化兩格：(1) 降低蘊含邏輯寫錯率；(2) 利於未來設定 UI 逐格輸入與驗證；(3) 可分辨「不適用而略過」與「通過」兩種狀態，供稽核與 Phase 2 前端動態提示。`When` 選填 → 簡單規則零負擔，等同單一 `Condition`。`Condition` 本身仍可用 `?:` / 函式做更細判斷，兩者不衝突。
+
+**序列化**：`FormSchema` 以 **XML 為唯一傳輸序列化路徑**（後端 `XmlCodec.Serialize` → 前端 `XmlCodec.Deserialize<FormSchema>`），不涉 JSON / MessagePack 物件路徑。`FormField` 兩屬性走 `[XmlAttribute]`；`FormRule` 為 `KeyCollectionItem`（無參數 ctor + `[XmlAttribute]` 純量），`FormRuleCollection : KeyCollectionBase<FormRule>` 與 `FormTableCollection` 同構——無需改 `FormatterResolver`。附 XML round-trip 測試。
+
+### 2. 求值引擎（新專案 `src/Bee.Expressions/`，**前後端可攜共用**）
+
+**專案定位**：`net10.0`、**不依賴任何 server-only 型別**（不引用 Bee.Business / Bee.Repository / DB / DataSet-persist 相關）。DynamicExpresso 相依只出現在此專案。`Bee.Business`（後端）與未來各前端（Avalonia 等）**引用同一份引擎與同一份政策** → 前端即時算與後端存檔前重算**逐位一致，不會漂移**。輸入以中性的「變數名→值」對映 + 期望回傳型別表達，故可攜。
+
+- **`IExpressionEvaluator`**（抽象）
+  - `object? Evaluate(string expression, IReadOnlyDictionary<string, object?> variables, Type returnType)`
+  - 便利多載：`T Evaluate<T>(...)`
+- **`DynamicExpressoEvaluator`**（唯一引擎實作）
+  - **編譯快取**：以 `(expression text + 參數簽章)` 為 key 快取 `Lambda`；參數簽章由 schema 欄位集合推導 → 同一 FormSchema 的同一運算式全程只 parse 一次。前後端各自持有快取。
+  - **沙箱**：只註冊「欄位變數 + 白名單函式（`Math`、字串/日期常用、ERP helper）+ 唯讀 Session context」。反射/IO/型別載入一律不註冊。
+- **`ExpressionPolicy`（型別/null，前後端共用同一份，杜絕漂移）**
+  - **型別對映**：`FieldDbType → CLR`（沿用既有 `src/Bee.Base/Data/DbTypeConverter.cs`；String→string、Integer→int、Decimal/Currency→decimal、Date/DateTime→DateTime、Boolean→bool、Guid→Guid、Long→long、Short→short）。
+  - **null 政策**：空值 → 該型別 CLR 預設（數值 0、字串空字串）。對齊「文字/數值欄偏好 NOT NULL + 預設 0/空」的資料模型（記憶 `tableschema-addcolumn-allownull`），讓 `單價*數量` 遇空值算 0 而非爆 null。
+  - **求值產出全精度**：引擎只算出全精度 `decimal`，**本身不做捨入**（保持對 NumberKind/公司無知、乾淨可攜）。捨入在寫回步驟委派既有數值子系統（見下）。
+- **捨入：委派既有 `NumberFormatResolver.RoundByKind`（不自建、不用 `DbField.Scale`）**
+  - `DbField.Scale` 是建表 DDL 精度，與業務捨入是兩套系統——**不可**拿來當捨入依據。
+  - 計算欄全精度結果寫回 DataRow 前，呼叫 `NumberFormatResolver.RoundByKind(raw, field.NumberKind, roundingContext, refCode)`（`src/Bee.Definition/NumberFormatResolver.cs`）。
+    - `refCode`：Amount 取該列 `field.CurrencyField` 幣別碼、Quantity/Weight 取 `field.UnitField` 單位碼（同一 DataRow 讀得到）。
+    - `roundingContext`（`RoundingContext`）：後端由 `CompanyInfo` 組；前端由已 bake/已載入定義組。
+  - 免費繼承：每種 `NumberKind` 不同小數位、公司可調位數、幣別/單位 master 驅動、**round-then-sum 不變式**、`UnitPrice/Cost/ExchangeRate` 用 `Preserve` 保留精度——全部沿用現成。
+  - `NumberFormatResolver` 位於 `Bee.Definition`（前端本就載入）→ Phase 2 前端預覽捨入 = 後端存檔捨入，一致性順帶成立。
+  - 目前實際 midpoint 模式為單一四捨五入（AwayFromZero）；多捨入模式（銀行家/無條件捨去/進位）屬數值子系統另案，運算式引擎解耦、屆時自動受益（見「延後範圍」）。
+- **相依分析（供前端知道「改哪個欄要重算哪個欄」）**
+  - 用 DynamicExpresso `Interpreter.DetectIdentifiers(expr)` 取出運算式引用的欄位 → 從 schema 建「來源欄位 → 受影響計算欄」相依圖。
+  - 後端 Phase 1 用不到相依圖（存檔前一次全算），但此分析放共用專案、Phase 1 就實作 + 測試，Phase 2 前端直接取用。
+- **後端資料橋接**（`Bee.Business` 內，非共用專案）：把 `DataRow` 依 `ExpressionPolicy` 轉成 `variables` 字典交給 evaluator，算出全精度結果後委派 `NumberFormatResolver.RoundByKind` 捨入再寫回 `DataRow`。此橋接才碰 `DataSet` 與 `CompanyInfo`，故留在後端。
+- 單元測試：運算正確性、型別對映、null→預設、委派 `RoundByKind` 捨入（各 NumberKind 位數、Preserve、round-then-sum）、快取命中、`DetectIdentifiers` 相依圖、沙箱（未註冊識別字/反射 → parse 期擋下）。
+
+### 3. BO 生命週期整合（schema 驅動、零 per-form 程式碼）
+
+在 `FormBusinessObject` 基底新增 protected virtual hook，並由基底**依 FormSchema 自動套用**——一般 CRUD 表單完全不需寫 BO；自訂 BO 仍可 override 疊加程式規則。
+
+**`Save`（:212，`AuthorizeSave` 之後、`repository.Save` 之前）依序：**
+
+1. **預設值運算式** — 對 `Added` 列，套用有 `DefaultValueExpression` 的欄位（僅在欄位為空時填）。
+2. **欄位運算** — 對 `Added` + `Modified` 列，重算所有有 `ValueExpression` 的欄位，依 Scale 捨入回填。master、detail 各表逐列處理。
+3. **存檔前驗證** — 依序求值 `Trigger=BeforeSave` 的 `FormRule`；首個 `Condition=false` → `throw UserMessageException(Message)` 中斷。
+
+**`Delete`（:255，`repository.Delete` 之前）：**
+
+- 先 `repository.GetData(rowId)` 載入該筆 → 求值 `Trigger=BeforeDelete` 的 `FormRule` → 違規 `throw UserMessageException`。（多一次讀取，可接受；註記於 ADR。）
+
+實作以一個 `IFormRuleProcessor`（Bee.Business 內、注入 `IExpressionEvaluator` + `IDefineAccess`）承載上述邏輯，基底 `Save`/`Delete` 呼叫它。DI 註冊 evaluator 與 processor。
+
+### 4. 沙箱與安全模型
+
+- 運算式來源＝**DefinePath 定義檔（管理者/客戶於設計期撰寫）**，非終端使用者即時輸入 → 威脅模型為「設定錯誤/惡意設定」，風險中低。
+- 仍以白名單沙箱防止意外資料存取：只曝露欄位變數 + 白名單函式 + 唯讀 Session；不曝露反射、IO、DB、`Type`、`Activator`。
+- 運算式僅為**表達式**（無迴圈/無語句），ReDoS 風險低；如日後開放高風險函式再評估求值 timeout。
+- 遵守 `scanning.md`：不以字串拼接組 SQL（本引擎不碰 SQL）、不 catch 基底 `Exception`（parse/eval 失敗捕捉 DynamicExpresso 專屬例外並轉 `UserMessageException` 或設定錯誤例外）。
+
+### 5. i18n
+
+`FormRule.Message` 首階段支援「字面訊息」與「LanguageResource key」兩種：非空且能於現有語系資源解析到 → 用資源值，否則用字面。沿用既有 `FormSchemaLocalizer` 慣例（`bee-scaffold-from-formschema` skill 的 sub-key 規範）。
+
+## 交付切分（PR）
+
+| PR | 階段 | 內容 | 主要檔案 |
+|----|------|------|---------|
+| PR1 | 1a | 定義層 + XML 序列化往返測試 | `FormField.cs`、新 `FormRule.cs` / `FormRuleCollection.cs` / `FormRuleTrigger.cs`、`FormSchema.cs`（`FormRuleCollection` 與 `FormTableCollection` 同走 `KeyCollectionBase`；FormSchema **以 XML 為唯一傳輸序列化路徑**——後端 `XmlCodec.Serialize` → 前端 `XmlCodec.Deserialize`，不涉 JSON / MessagePack 物件路徑） |
+| PR2 | 1b | `Bee.Expressions` **可攜共用**專案（引擎/快取/policy/相依分析/沙箱）+ 單元測試 | 新 `src/Bee.Expressions/*`、slnx 整合、`Directory.Build.props` |
+| PR3 | 1c | BO 生命週期整合（4 類規則）+ `IFormRuleProcessor` + DataRow 橋接 + DI + 測試 | `FormBusinessObject.cs`、新 `IFormRuleProcessor` / 實作、DI 註冊 |
+| PR4 | 1d | 文件 + Northwind 示範 + ADR | `docs/adr/00xx-expression-rule-engine.md`、Northwind FormSchema、README |
+| PR5 | 2 | Avalonia 前端即時運算：欄位變更 → 相依圖 → 共用引擎重算 → 更新綁定 | Avalonia form 綁定層、DataRow↔ViewModel 橋接；含 WASM/行動端 AOT 實測 |
+
+每個 PR 於本機 `dotnet build` + `dotnet test` 通過後直接推 main（依 `pull-request.md` 桌面環境慣例）。
+
+## Phase 2 前端即時運算設計要點（先記、實作時展開）
+
+- **定義免費共用**：`ValueExpression` 在 FormSchema，前端 `GetDefineAsync<FormSchema>` 已載入，不需另傳。
+- **引擎共用**：前端引用 `Bee.Expressions`，用同一 `ExpressionPolicy`（型別/null）+ 同一 `NumberFormatResolver.RoundByKind`（NumberKind 捨入）→ 前端顯示值 = 後端存檔值。
+- **相依驅動重算**：欄位變更 → 查相依圖（`DetectIdentifiers` 建）→ 只重算受影響計算欄 → 更新綁定（Avalonia：hook property-changed，注意記憶 `avalonia-defineeditor-gotchas` 提到「程式設值不觸發控件事件」，重算後回寫要走能觸發 UI 更新的路徑）。
+- **後端為權威**：前端即時算是 UX；存檔時後端 schema 驅動重算為準。前端沒算/算不了 → 最壞退回無即時預覽，**正確性不受影響**。
+- **AOT 風險分級**：Avalonia 桌面 ✅；Avalonia WASM / 行動端 AOT 因 DynamicExpresso 走 `Expression.Compile()` 需實測（同記憶 `mobile-trim-half-a-solved` / `ios-xmlserializer-ambiguous-add` 那類 AOT 雷）。免實機重現法：進入點設 `IsDynamicCodeSupported=false` 開關強制走 reflection-only 路徑先驗。不行則 graceful degrade。
+
+## 延後範圍（本計畫不做，另案）
+
+- **其他前端即時運算**（Blazor / MAUI）：Phase 2 先做 Avalonia，其餘沿用同一共用引擎後補。
+- **虛擬顯示計算欄**（`FieldType.VirtualField`，不落 DB、讀取時算）：需整合讀取路徑。
+- **`BeforeInsert` / `BeforeUpdate`** 更細觸發點。
+- **跨列 / 明細聚合**（`SUM(detail.Amount)`、detail 讀 master 欄位如 `Master.CurrencyRate`）。
+- **多捨入模式**（銀行家捨入 / 無條件捨去 / 無條件進位）：屬數值子系統擴充（`RoundingPolicy` → `RoundingMode`、`NumberKindProfile`），與運算式引擎解耦；本計畫計算欄委派單一四捨五入，屆時新增模式後自動受益。
+- 求值 timeout / 高風險函式白名單擴充。
+
+## 已定案決策（2026-07-09 全數確認）
+
+1. **運算式引擎**：DynamicExpresso（`DynamicExpresso.Core`）。
+2. **執行位置**：後端為權威（Phase 1）；Avalonia 前端即時預覽（Phase 2）；引擎專案前後端可攜共用。
+3. **規則適用性 guard 命名**：`When`（對齊 FluentValidation `.When()`；不用 `Precondition`）。
+4. **規則判斷語意**：`When` 空 → 一律套用、`false` → 略過整條規則；`Condition` 為 true 即通過、`false` 即違規。
+5. **計算欄捨入**：委派既有 `NumberFormatResolver.RoundByKind`（依 `NumberKind`），繼承公司/幣別/單位可調位數與 round-then-sum；不自建、不用 `DbField.Scale`。多捨入模式屬數值子系統另案。
+6. **null 求值政策**：`DBNull → 型別預設值（0/空字串）`。若某些欄位語意上「null ≠ 0」需另設旗標，列後續。
+7. **新專案命名**：`Bee.Expressions`（求值引擎屬基礎設施層）。

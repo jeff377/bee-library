@@ -129,6 +129,30 @@ namespace Bee.Definition.Forms
         public string DefaultValue { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the expression that computes this field's value. When set, the rule engine
+        /// recomputes the field before save (from the same row's other fields) and writes the
+        /// rounded result back — so a computed column such as an order line amount needs no
+        /// hand-written business-object code. Typically paired with <see cref="ReadOnly"/>.
+        /// Empty means the field carries no computation.
+        /// </summary>
+        [XmlAttribute]
+        [Category(PropertyCategories.Data)]
+        [Description("Expression computing this field's value; recomputed before save.")]
+        [DefaultValue("")]
+        public string ValueExpression { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the expression that produces this field's default value for a new row.
+        /// Evaluated by the rule engine when a record is created; takes precedence over the literal
+        /// <see cref="DefaultValue"/> when set. Empty means no expression-based default.
+        /// </summary>
+        [XmlAttribute]
+        [Category(PropertyCategories.Data)]
+        [Description("Expression producing this field's default value for new rows.")]
+        [DefaultValue("")]
+        public string DefaultValueExpression { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the display format string.
         /// </summary>
         [Category(PropertyCategories.Data)]
@@ -430,6 +454,8 @@ namespace Bee.Definition.Forms
                 ControlType = ControlType,
                 MaxLength = MaxLength,
                 DefaultValue = DefaultValue,
+                ValueExpression = ValueExpression,
+                DefaultValueExpression = DefaultValueExpression,
                 DisplayFormat = DisplayFormat,
                 NumberFormat = NumberFormat,
                 NumberKind = NumberKind,

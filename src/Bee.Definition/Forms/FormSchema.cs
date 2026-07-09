@@ -16,6 +16,7 @@ namespace Bee.Definition.Forms
     public class FormSchema : IObjectSerializeFile
     {
         private FormTableCollection? _tables = null;
+        private FormRuleCollection? _rules = null;
 
         #region Constructors
 
@@ -56,6 +57,7 @@ namespace Bee.Definition.Forms
         {
             SerializeState = serializeState;
             _tables?.SetSerializeState(serializeState);
+            _rules?.SetSerializeState(serializeState);
         }
 
         /// <summary>
@@ -196,6 +198,25 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
+        /// Gets the business rule collection evaluated by the rule engine at save/delete
+        /// lifecycle points (field validation and lifecycle guards). Field computation and
+        /// default-value expressions are declared on the fields themselves
+        /// (<see cref="FormField.ValueExpression"/> / <see cref="FormField.DefaultValueExpression"/>).
+        /// </summary>
+        [Description("Business rule collection.")]
+        [DefaultValue(null)]
+        public FormRuleCollection? Rules
+        {
+            get
+            {
+                // Return null if the collection is empty during serialization
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _rules!)) { return null; }
+                if (_rules == null) { _rules = new FormRuleCollection(this); }
+                return _rules;
+            }
+        }
+
+        /// <summary>
         /// Finds a field definition by name, treating this schema as the single source of truth
         /// for field metadata (such as <see cref="FormField.SensitiveCategory"/>) that is not
         /// copied onto the generated layout. Searches the master table when <paramref name="tableName"/>
@@ -278,6 +299,7 @@ namespace Bee.Definition.Forms
             var copy = new FormSchema(ProgId, DisplayName)
             {
                 CategoryId = CategoryId,
+                CurrencyField = CurrencyField,
                 ListFields = ListFields,
                 LookupFields = LookupFields,
                 PermissionModelId = PermissionModelId,
@@ -285,6 +307,9 @@ namespace Bee.Definition.Forms
             if (_tables != null)
                 foreach (var table in _tables)
                     copy.Tables!.Add(table.Clone());
+            if (_rules != null)
+                foreach (var rule in _rules)
+                    copy.Rules!.Add(rule.Clone());
             return copy;
         }
 
