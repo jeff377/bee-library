@@ -94,22 +94,12 @@ namespace Bee.UI.Avalonia.DataObjects
             // A computed field changing is the result of a recompute, never a trigger for one.
             if (IsComputedField(formTable, changedField)) { return []; }
 
-            _recomputing = true;
-            try
+            return RunGuarded(() =>
             {
                 // Skip the whole pass when no computed field references the changed field.
                 if (!GetDependencyMap(formTable).ContainsKey(changedField)) { return []; }
                 return _calculator.ApplyComputedRow(_schema, formTable, row, _roundingContext);
-            }
-            catch (ExpressionEvaluationException)
-            {
-                Degrade();
-                return [];
-            }
-            finally
-            {
-                _recomputing = false;
-            }
+            });
         }
 
         /// <summary>
@@ -129,20 +119,7 @@ namespace Bee.UI.Avalonia.DataObjects
             var formTable = _schema.Tables?.GetOrDefault(tableName);
             if (formTable?.Fields is null) { return []; }
 
-            _recomputing = true;
-            try
-            {
-                return _calculator.ApplyDefaultRow(formTable, row);
-            }
-            catch (ExpressionEvaluationException)
-            {
-                Degrade();
-                return [];
-            }
-            finally
-            {
-                _recomputing = false;
-            }
+            return RunGuarded(() => _calculator.ApplyDefaultRow(formTable, row));
         }
 
         /// <summary>
@@ -163,8 +140,7 @@ namespace Bee.UI.Avalonia.DataObjects
             var formTable = _schema.Tables?.GetOrDefault(tableName);
             if (formTable?.Fields is null) { return []; }
 
-            _recomputing = true;
-            try
+            return RunGuarded(() =>
             {
                 var changed = new List<string>();
                 changed.AddRange(_calculator.ApplyDefaultRow(formTable, row));
@@ -174,8 +150,41 @@ namespace Bee.UI.Avalonia.DataObjects
                         changed.Add(field);
                 }
                 return changed;
+            });
+        }
+
+        /// <summary>
+        /// Runs a recompute pass under the re-entrancy guard, degrading to a no-op on a deterministic
+        /// failure. A definition-authored expression that fails to parse/evaluate
+        /// (<see cref="ExpressionEvaluationException"/>) or a cell value that cannot be coerced to its
+        /// field type (<see cref="FormatException"/> / <see cref="InvalidCastException"/> /
+        /// <see cref="OverflowException"/> — for example a malformed GUID key stored as text) would
+        /// otherwise surface inside a <c>FieldValueChanged</c> handler and break the form, so it disables
+        /// preview for the session and lets the server compute the fields authoritatively on save.
+        /// </summary>
+        private IReadOnlyList<string> RunGuarded(Func<IReadOnlyList<string>> compute)
+        {
+            _recomputing = true;
+            try
+            {
+                return compute();
             }
             catch (ExpressionEvaluationException)
+            {
+                Degrade();
+                return [];
+            }
+            catch (FormatException)
+            {
+                Degrade();
+                return [];
+            }
+            catch (InvalidCastException)
+            {
+                Degrade();
+                return [];
+            }
+            catch (OverflowException)
             {
                 Degrade();
                 return [];

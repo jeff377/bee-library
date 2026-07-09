@@ -78,5 +78,39 @@ namespace Bee.Expressions.UnitTests
             Assert.IsType<decimal>(result);
             Assert.Equal(5m, result);
         }
+
+        [Fact]
+        [DisplayName("CoerceValue：string 值餵入 Guid 欄應解析為 Guid（wire/SQLite 把 GUID 存為 TEXT）")]
+        public void CoerceValue_StringToGuid_Parses()
+        {
+            var id = Guid.NewGuid();
+
+            var result = ExpressionPolicy.CoerceValue(id.ToString(), FieldDbType.Guid);
+
+            Assert.IsType<Guid>(result);
+            Assert.Equal(id, result);
+        }
+
+        [Fact]
+        [DisplayName("CoerceValue：Guid 值餵入 Guid 欄原值返回")]
+        public void CoerceValue_GuidToGuid_ReturnsSameValue()
+        {
+            var id = Guid.NewGuid();
+
+            var result = ExpressionPolicy.CoerceValue(id, FieldDbType.Guid);
+
+            Assert.Equal(id, result);
+        }
+
+        [Fact]
+        [DisplayName("CoerceValue：base64 string 值餵入 Binary 欄應解為 byte[]")]
+        public void CoerceValue_Base64ToBinary_Decodes()
+        {
+            var bytes = new byte[] { 1, 2, 3, 4 };
+
+            var result = ExpressionPolicy.CoerceValue(Convert.ToBase64String(bytes), FieldDbType.Binary);
+
+            Assert.Equal(bytes, Assert.IsType<byte[]>(result));
+        }
     }
 }

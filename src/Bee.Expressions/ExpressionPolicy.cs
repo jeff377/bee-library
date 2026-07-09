@@ -35,6 +35,13 @@ namespace Bee.Expressions
             var clrType = DbTypeConverter.ToType(dbType);
             if (value is null || value is DBNull) { return DefaultOf(clrType); }
             if (clrType.IsInstanceOfType(value)) { return value; }
+            // `Guid` and `byte[]` are not `IConvertible`, so `Convert.ChangeType` throws for them. A
+            // wire-deserialized or SQLite-sourced cell frequently arrives as a string (GUIDs are stored
+            // as TEXT, binary as base64), so parse those forms explicitly before the general path. This
+            // matters on the client even for a numeric-only expression, because the variable map exposes
+            // every column of the row — including a `Guid` key column an expression never references.
+            if (clrType == typeof(Guid)) { return Guid.Parse(value.ToString()!); }
+            if (clrType == typeof(byte[])) { return Convert.FromBase64String(value.ToString()!); }
             // The value's runtime type differs from the field's CLR type (for example an int cell
             // feeding a decimal field). Convert when possible; incompatible types surface as an
             // InvalidCastException from the framework, which the caller treats as a config error.

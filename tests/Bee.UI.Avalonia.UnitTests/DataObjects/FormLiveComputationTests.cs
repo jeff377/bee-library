@@ -134,6 +134,42 @@ namespace Bee.UI.Avalonia.UnitTests.DataObjects
         }
 
         [Fact]
+        [DisplayName("重現 Northwind：string 型別的 Guid 鍵欄不使數值計算欄崩潰（wire/SQLite GUID 存 TEXT）")]
+        public void Recompute_StringTypedGuidKeyColumn_DoesNotThrow()
+        {
+            var schema = new FormSchema("Order", "Order") { CategoryId = "company" };
+            var detail = schema.Tables!.Add("OrderDetail", "Order Details");
+            detail.Fields!.Add(new FormField("product_rowid", "Product", FieldDbType.Guid));
+            detail.Fields.Add(new FormField("quantity", "Quantity", FieldDbType.Decimal) { NumberKind = NumberKind.Quantity });
+            detail.Fields.Add(new FormField("unit_price", "Unit Price", FieldDbType.Currency) { NumberKind = NumberKind.UnitPrice });
+            detail.Fields.Add(new FormField("discount", "Discount", FieldDbType.Decimal));
+            detail.Fields.Add(new FormField("amount", "Amount", FieldDbType.Currency)
+            {
+                NumberKind = NumberKind.Amount,
+                ValueExpression = "quantity * unit_price * (1 - discount)",
+                ReadOnly = true,
+            });
+            var live = new FormLiveComputation(schema);
+
+            // product_rowid arrives as a *string* column (SQLite stores GUIDs as TEXT and the wire keeps
+            // that), even though the schema field is Guid — the exact shape that crashed the demo.
+            var data = new DataTable("OrderDetail");
+            data.Columns.Add("product_rowid", typeof(string));
+            data.Columns.Add("quantity", typeof(decimal));
+            data.Columns.Add("unit_price", typeof(decimal));
+            data.Columns.Add("discount", typeof(decimal));
+            data.Columns.Add("amount", typeof(decimal));
+            data.Rows.Add(Guid.NewGuid().ToString(), 10m, 14m, 0.05m, 0m);
+
+            var exception = Record.Exception(() => live.Recompute("OrderDetail", "quantity", data.Rows[0]));
+
+            Assert.Null(exception);
+            Assert.False(live.IsDegraded);
+            // 10 * 14 * (1 - 0.05) = 133.00
+            Assert.Equal(133m, data.Rows[0]["amount"]);
+        }
+
+        [Fact]
         [DisplayName("Graceful degrade：運算式求值失敗不拋例外、停用預覽，後續重算 no-op")]
         public void Recompute_EvaluationFailure_DegradesGracefully()
         {
