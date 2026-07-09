@@ -180,17 +180,56 @@ base `DoBeforeSave` 依序（委派 `IFormRuleProcessor`）：
 | PR2 | 1b | `Bee.Expressions` **可攜共用**專案（引擎/快取/policy/相依分析/沙箱）+ 單元測試 | 新 `src/Bee.Expressions/*`、slnx 整合、`Directory.Build.props` |
 | PR3 | 1c | Save/Delete 模板方法重構（`DoBeforeSave`/`DoSave`/`DoAfterSave` + Delete 對應，Context 物件、框架關注點編排層固定）+ `IFormRuleProcessor`（4 類規則、DataRow 橋接、委派 `RoundByKind`）+ DI + 測試 | `FormBusinessObject.cs`、新 `SaveContext`/`DeleteContext`、`IFormRuleProcessor` / 實作、DI 註冊 |
 | PR4 | 1d | 文件 + Northwind 示範 + ADR | `docs/adr/00xx-expression-rule-engine.md`、Northwind FormSchema、README |
-| PR5 | 2 | Avalonia 前端即時運算：欄位變更 → 相依圖 → 共用引擎重算 → 更新綁定 | Avalonia form 綁定層、DataRow↔ViewModel 橋接；含 WASM/行動端 AOT 實測 |
+| 5a–5d | 2 | Avalonia 前端即時運算（詳見下方「Phase 2 執行級規格」）：加 `Bee.Expressions` 參考 + 相依圖 + 共用 row-level 計算器（5a）；訂閱 `FormDataObject.FieldValueChanged` 重算回寫 + `DefaultValueExpression`（5b）；client 取捨入設定 Tier 2（5c）；AOT 實測 + demo-smoke（5d）| `Bee.UI.Avalonia`（`FormDataObject`/`FormView`/`GridControl`/`NumericEdit`）、`ClientDefineAccess`、共用計算器 |
 
 每個 PR 於本機 `dotnet build` + `dotnet test` 通過後直接推 main（依 `pull-request.md` 桌面環境慣例）。
 
-## Phase 2 前端即時運算設計要點（先記、實作時展開）
+## Phase 2 前端即時運算（Avalonia）— 執行級規格
 
-- **定義免費共用**：`ValueExpression` 在 FormSchema，前端 `GetDefineAsync<FormSchema>` 已載入，不需另傳。
-- **引擎共用**：前端引用 `Bee.Expressions`，用同一 `ExpressionPolicy`（型別/null）+ 同一 `NumberFormatResolver.RoundByKind`（NumberKind 捨入）→ 前端顯示值 = 後端存檔值。
-- **相依驅動重算**：欄位變更 → 查相依圖（`DetectIdentifiers` 建）→ 只重算受影響計算欄 → 更新綁定（Avalonia：hook property-changed，注意記憶 `avalonia-defineeditor-gotchas` 提到「程式設值不觸發控件事件」，重算後回寫要走能觸發 UI 更新的路徑）。
-- **後端為權威**：前端即時算是 UX；存檔時後端 schema 驅動重算為準。前端沒算/算不了 → 最壞退回無即時預覽，**正確性不受影響**。
-- **AOT 風險分級**：Avalonia 桌面 ✅；Avalonia WASM / 行動端 AOT 因 DynamicExpresso 走 `Expression.Compile()` 需實測（同記憶 `mobile-trim-half-a-solved` / `ios-xmlserializer-ambiguous-add` 那類 AOT 雷）。免實機重現法：進入點設 `IsDynamicCodeSupported=false` 開關強制走 reflection-only 路徑先驗。不行則 graceful degrade。
+> 探勘結論見對話記錄；以下為可直接開工的實作規格。目標：使用者在表單/明細編輯欄位時，計算欄即時反映（邊打邊算），共用後端同一引擎與政策；**後端存檔前重算仍為唯一權威**，前端算不了最壞退回無預覽、不影響正確性。
+
+### 現有架構關鍵點（探勘所得）
+
+| 面向 | 位置 | 說明 |
+|------|------|------|
+| 資料承載 | `src/Bee.UI.Avalonia/DataObjects/FormDataObject.cs` | 持有單筆 `DataSet`（1 master + N detail），無 ViewModel；欄位直接綁 DataRow |
+| **統一變更事件** | `FormDataObject.FieldValueChanged`（L117） | 由 ADO.NET `ColumnChanged` bridge 發出，**master / detail / lookup / 程式寫入全涵蓋** → 即時運算的唯一訂閱入口。EventArgs 帶 `TableName / FieldName / Value / Row` |
+| 取 FormField（帶 `ValueExpression`） | `FormDataObject.GetFormField(table, field)`（L347） | 編輯器綁的是 `LayoutField`（不帶運算式），運算式在 schema 層 `FormField` |
+| master 回寫 + UI 更新 | `FormDataObject.SetField(...)` → 觸發 `FieldValueChanged` → 各編輯器 `FieldEditorBinder.OnFieldValueChanged`（L290）`RefreshFromSource` | **master 欄位程式回寫會自動刷新顯示**（走 property-changed，非控件事件）|
+| detail cell 回寫 | `GridControl.WriteCell`（L1043）→ `row[col]=` | 同觸發 `FieldValueChanged`；**但 realized cell 不追蹤後續 DataRow 寫入 → 明細計算欄回寫後須呼叫 `GridControl.RefreshRows()`（L340）** |
+| row-edit 壓制窗口 | `FormDataObject.BeginRowEdit`/`CommitRowEdit`（L236/252） | ADO.NET `BeginEdit` 期間事件被 `_rowsInEdit`（L29）壓住，`CommitRowEdit` 才重播 → dialog 內即時算需考慮此窗口 |
+| 捨入設定注入（**缺口**） | `GridControl.CurrencySettings/UnitSettings`（L121/138）、`NumericEdit`（L47/60）有 setter 但 **`FormView` 從未注入**；`ClientDefineAccess` **無** `GetCurrencySettings/GetUnitSettings` | client 端目前拿不到公司/幣別/單位位數 → 見 PR 5a 前置 |
+| csproj | `src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj` | 已引用 `Bee.Definition`；**未引用 `Bee.Expressions`** → 需新增 |
+
+### 設計決策（實作前確認）
+
+1. **共用重算邏輯 vs 前端自寫**：後端 `FormRuleProcessor.ApplyComputed` / `BuildVariables` / `ResolveRefCode` 是伺服器端（Bee.Business，不可被 UI 參考）。為**杜絕漂移**（尤其 `ResolveRefCode` 的幣別/單位碼解析），建議**抽出可共用的 row-level 計算器**（新元件，參考 `Bee.Definition` + `Bee.Expressions` + `System.Data`），後端 `FormRuleProcessor` 與前端同時委派它。替代方案：前端自寫一份，靠共用 `ExpressionPolicy` + `RoundByKind` 保證數值一致（glue 仍可能漂移）。**傾向抽共用**。
+2. **client 捨入 fidelity 分級**：
+   - **Tier 1（先做）**：前端用**框架預設位數**（`NumberKind` 預設：Amount 2、Quantity 0…）捨入預覽，不取公司/幣別/單位覆蓋 → 免動 client API，快速可用；與最終值僅在「公司自訂位數」邊緣情境有差，存檔由後端校正。
+   - **Tier 2**：新增 client 取得 `CurrencySettings`/`UnitSettings`（+ 公司位數）→ 注入 `RoundingContext` → 與後端逐位一致。
+3. **re-entrancy**：重算回寫計算欄會再觸發 `FieldValueChanged`；需 re-entrancy guard（計算欄自身不觸發再重算、或維護「計算中」旗標），並避開 `BeginRowEdit` 壓制窗口。
+
+### 相依驅動重算
+
+- 用 `IExpressionEvaluator.GetReferencedVariables`（`DetectIdentifiers`）從 schema 建「來源欄位 → 受影響計算欄」相依圖（每 FormSchema 建一次、快取）。
+- `FieldValueChanged(field)` → 查相依圖取受影響計算欄 → 依相依拓樸/宣告順序重算 → `SetField`（master）或 `row[col]=` + `RefreshRows()`（detail）。
+- **DefaultValueExpression**：`FormDataObject.NewAsync` 產生新列後，對有 `DefaultValueExpression` 的空欄即時套用（顯示層預設，與後端存檔預設互補）。
+
+### AOT 風險分級
+
+- **Avalonia 桌面** ✅ 無虞。
+- **Avalonia WASM / 行動端 AOT**：DynamicExpresso 走 `Expression.Compile()`，AOT 目標需實測（同記憶 `mobile-trim-half-a-solved` / `ios-xmlserializer-ambiguous-add`）。免實機重現法：進入點設 `AppContext.SetSwitch("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", false)` 強制 reflection-only 先驗。不行則 **graceful degrade**（該平台不即時算，存檔由後端補）——因後端為權威，正確性不受影響。
+
+### PR 切分
+
+| PR | 範圍 |
+|----|------|
+| 5a | 前置：`Bee.UI.Avalonia` 加 `Bee.Expressions` 參考；（Tier 1）建立前端即時運算服務骨架 + 相依圖（`DetectIdentifiers`）+ 抽共用 row-level 計算器（決策 1）+ 單元測試（前端算值 = `FormRuleProcessor` 同輸入結果）|
+| 5b | 綁定接線：訂閱 `FormDataObject.FieldValueChanged` → 重算 → 回寫（master 自動刷新、detail 補 `RefreshRows()`）+ re-entrancy guard + row-edit 壓制窗口處理；`DefaultValueExpression` 於 `NewAsync` 即時套用 |
+| 5c | （Tier 2，可選）client 取得 `CurrencySettings`/`UnitSettings` + 公司位數 → `FormView` 注入 `GridControl`/`NumericEdit` + 即時運算 `RoundingContext` → 前端預覽逐位對齊後端 |
+| 5d | WASM / 行動端 AOT 實測（`IsDynamicCodeSupported=false` 桌面重現 + 實機/模擬器）+ graceful degrade；Northwind 明細金額即時預覽端到端驗證（demo-smoke）|
+
+每個 PR 於本機 build + test（含 Avalonia head 建置）通過後推 main。
 
 ## 延後範圍（本計畫不做，另案）
 
