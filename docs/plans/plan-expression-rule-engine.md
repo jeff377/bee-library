@@ -1,6 +1,6 @@
 # 計畫：自訂運算式與規則引擎（減少 BO 手寫程式碼）
 
-**狀態：🚧 進行中（2026-07-09）— Phase 1（後端）全數完成；Phase 2（Avalonia 前端即時運算）核心 5a–5d(A) 全數完成並通過 CI，僅剩 5d-B（Northwind demo-smoke 端到端驗收）待做**
+**狀態：✅ 已完成（2026-07-09）— Phase 1（後端）+ Phase 2（Avalonia 前端即時運算，5a–5d）全數完成並通過 CI；Northwind 明細即時運算 + 存檔使用者實測正常**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -11,7 +11,7 @@
 | 5a | 抽共用 row-level 計算器（`FormExpressionCalculator`）+ 相依圖 + 前端服務骨架 + 測試 | ✅ 已完成（2026-07-09） |
 | 5b | 綁定接線：訂閱 `FieldValueChanged` 重算回寫 + guard + `DefaultValueExpression` | ✅ 已完成（2026-07-09） |
 | 5c | Tier 2：client 取 `CurrencySettings`/`UnitSettings` 逐位對齊 | ✅ 已完成（2026-07-09） |
-| 5d | WASM/行動端 AOT 實測 + graceful degrade + Northwind demo-smoke | 🚧 A（AOT 實測 + degrade）✅ 已完成（2026-07-09）；B（demo-smoke）待驗收 |
+| 5d | WASM/行動端 AOT 實測 + graceful degrade + Northwind demo-smoke | ✅ 已完成（2026-07-09）— A（AOT 實測 + degrade）；B（Northwind 明細即時運算 + 存檔）使用者實測正常 |
 
 > **Phase 1（後端）** 涵蓋四類規則：**欄位運算（計算欄）**、**存檔前驗證**、**刪除前檢查**、**欄位預設值運算式**，執行於伺服器端存檔/刪除前。
 > **Phase 2（前端即時運算）** 讓使用者在 Avalonia UI 邊打邊看到計算結果；**後端仍為權威**，前端即時運算為 UX 加分、不影響正確性。
