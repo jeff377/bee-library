@@ -1,5 +1,6 @@
 using System.Data;
 using Bee.Definition.Filters;
+using Bee.Definition.Forms;
 using Bee.Repository.Abstractions.Form;
 
 namespace Bee.Business.Form
@@ -17,11 +18,13 @@ namespace Bee.Business.Form
         /// <param name="args">The delete arguments.</param>
         /// <param name="repository">The resolved form repository.</param>
         /// <param name="scopeFilter">The record-scope filter applied to the delete.</param>
-        public DeleteContext(DeleteArgs args, IDataFormRepository repository, FilterNode? scopeFilter)
+        /// <param name="schema">The form schema driving delete rules.</param>
+        public DeleteContext(DeleteArgs args, IDataFormRepository repository, FilterNode? scopeFilter, FormSchema schema)
         {
             Args = args;
             Repository = repository;
             ScopeFilter = scopeFilter;
+            Schema = schema;
         }
 
         /// <summary>
@@ -38,6 +41,11 @@ namespace Bee.Business.Form
         /// Gets the record-scope filter applied to the delete.
         /// </summary>
         public FilterNode? ScopeFilter { get; }
+
+        /// <summary>
+        /// Gets the form schema driving delete rules.
+        /// </summary>
+        public FormSchema Schema { get; }
 
         /// <summary>
         /// Gets or sets the pre-delete snapshot of the record (master + details). Loaded once and

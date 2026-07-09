@@ -1,8 +1,10 @@
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Business;
+using Bee.Business.Form;
 using Bee.Business.Permission;
 using Bee.Business.Providers;
+using Bee.Expressions;
 using Bee.Db;
 using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
@@ -181,6 +183,11 @@ namespace Bee.Hosting
                     components.CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider));
             services.AddSingleton<IEnterpriseObjectService>(_ => CreateOrDefault<IEnterpriseObjectService>(
                 components.EnterpriseObjectService, BackendDefaultTypes.EnterpriseObjectService));
+
+            // Expression engine + form rule processor. Both are stateless singletons; the evaluator
+            // caches compiled expressions process-wide, so a single instance is preferred.
+            services.AddSingleton<IExpressionEvaluator, DynamicExpressoEvaluator>();
+            services.AddSingleton<IFormRuleProcessor, FormRuleProcessor>();
 
             // 6. IApiEncryptionKeyProvider — Static needs the configured key byte[]; Dynamic
             //    needs ISessionInfoService. Phase 5/6 unifies via IOptions<T> + DI ctor.

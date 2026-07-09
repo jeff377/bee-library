@@ -265,7 +265,7 @@ namespace Bee.Business.Form
         /// <param name="context">The save context.</param>
         protected virtual void DoBeforeSave(SaveContext context)
         {
-            // Base rule-engine wiring is introduced in a later step of this feature.
+            RuleProcessor.ApplyBeforeSave(context.Schema, context.DataSet, BuildRoundingContext());
         }
 
         /// <summary>
@@ -302,13 +302,14 @@ namespace Bee.Business.Form
 
             var repository = CreateDataFormRepository(ProgId);
             var scopeFilter = ResolveScopeFilter(PermissionAction.Delete);
-            var context = new DeleteContext(args, repository, scopeFilter);
+            var schema = DefineAccess.GetFormSchema(ProgId);
+            var context = new DeleteContext(args, repository, scopeFilter, schema);
 
             // Snapshot the record (master + details) before deleting so the audit captures its full
-            // before-image (and, once wired, so BeforeDelete rules can evaluate against it). Only
-            // load when change auditing is enabled — the direct-delete path stays read-free otherwise.
+            // before-image and BeforeDelete rules can evaluate against it. Load once, only when the
+            // audit or a BeforeDelete rule needs it — the direct-delete path stays read-free otherwise.
             bool auditChange = ChangeAuditEnabled();
-            if (auditChange)
+            if (auditChange || HasBeforeDeleteRules(schema))
                 context.Snapshot = repository.GetData(args.RowId, scopeFilter);
 
             // Business extension point before deletion (BeforeDelete guard rules).
@@ -333,7 +334,8 @@ namespace Bee.Business.Form
         /// <param name="context">The delete context.</param>
         protected virtual void DoBeforeDelete(DeleteContext context)
         {
-            // Base rule-engine wiring is introduced in a later step of this feature.
+            if (context.Snapshot != null)
+                RuleProcessor.ApplyBeforeDelete(context.Schema, context.Snapshot);
         }
 
         /// <summary>
@@ -353,6 +355,45 @@ namespace Bee.Business.Form
         /// <param name="context">The delete context.</param>
         protected virtual void DoAfterDelete(DeleteContext context)
         {
+        }
+
+        private IFormRuleProcessor? _ruleProcessor;
+
+        /// <summary>
+        /// Gets the rule processor that evaluates this form's field expressions and rules.
+        /// </summary>
+        private IFormRuleProcessor RuleProcessor
+            => _ruleProcessor ??= Services.GetRequiredService<IFormRuleProcessor>();
+
+        /// <summary>
+        /// Returns true when the schema declares any enabled <c>BeforeDelete</c> rule.
+        /// </summary>
+        private static bool HasBeforeDeleteRules(FormSchema schema)
+            => schema.Rules != null &&
+               schema.Rules.Any(r => r.Enabled && r.Trigger == FormRuleTrigger.BeforeDelete);
+
+        /// <summary>
+        /// Builds the rounding context used to round computed numeric fields, from the current
+        /// session's company and the currency/unit settings.
+        /// </summary>
+        private RoundingContext BuildRoundingContext()
+        {
+            return new RoundingContext
+            {
+                Company = ResolveCompanyInfo(),
+                CurrencySettings = DefineAccess.GetCurrencySettings(),
+                UnitSettings = DefineAccess.GetUnitSettings(),
+            };
+        }
+
+        /// <summary>
+        /// Resolves the current session's <see cref="CompanyInfo"/>, or null when no company is bound.
+        /// </summary>
+        private CompanyInfo? ResolveCompanyInfo()
+        {
+            var session = SessionInfoService.Get(AccessToken);
+            if (session == null || string.IsNullOrEmpty(session.CompanyId)) { return null; }
+            return Services.GetService<ICompanyInfoService>()?.Get(session.CompanyId);
         }
 
         #region 異動記錄（audit trail）
