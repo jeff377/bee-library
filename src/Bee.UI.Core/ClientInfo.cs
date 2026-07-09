@@ -19,6 +19,7 @@ namespace Bee.UI.Core
         private static ClientDefineAccess? _defineAccess;
         private static Guid _accessToken = Guid.Empty;
         private static IReadOnlyDictionary<string, PermissionAction>? _capabilities;
+        private static CompanyInfo? _company;
 
         /// <summary>
         /// Command-line arguments parsed at <see cref="InitializeAsync(IUIViewService, SupportedConnectTypes)"/>.
@@ -179,23 +180,34 @@ namespace Bee.UI.Core
         public static IReadOnlyDictionary<string, PermissionAction>? Capabilities => _capabilities;
 
         /// <summary>
-        /// Caches the capability snapshot from an <c>EnterCompany</c> response. The host calls this
-        /// after <c>SystemApiConnector.EnterCompanyAsync</c> (alongside <see cref="ResetDefineCache"/>).
+        /// Gets the current company entered through <c>EnterCompany</c>, or <c>null</c> when no company
+        /// context is active. Carries the company-level decimal-place overrides and default (home)
+        /// currency used to round computed numeric fields client-side (see plan-expression-rule-engine.md
+        /// Phase 2 Tier 2). Read-only UX aid; the server rounds authoritatively on save.
         /// </summary>
-        /// <param name="response">The EnterCompany response carrying the capability snapshot.</param>
+        public static CompanyInfo? Company => _company;
+
+        /// <summary>
+        /// Caches the capability snapshot and company info from an <c>EnterCompany</c> response. The host
+        /// calls this after <c>SystemApiConnector.EnterCompanyAsync</c> (alongside <see cref="ResetDefineCache"/>).
+        /// </summary>
+        /// <param name="response">The EnterCompany response carrying the capability snapshot and company.</param>
         public static void ApplyEnterCompanyResult(EnterCompanyResponse response)
         {
             ArgumentNullException.ThrowIfNull(response);
             _capabilities = response.Capabilities;
+            _company = response.Company;
         }
 
         /// <summary>
-        /// Clears the cached capability snapshot. The host calls this on <c>LeaveCompany</c>
-        /// (alongside <see cref="ResetDefineCache"/>) so a stale snapshot never leaks across companies.
+        /// Clears the cached capability snapshot and company info. The host calls this on
+        /// <c>LeaveCompany</c> (alongside <see cref="ResetDefineCache"/>) so a stale snapshot never leaks
+        /// across companies.
         /// </summary>
         public static void ClearCompanyContext()
         {
             _capabilities = null;
+            _company = null;
         }
 
         private static void SetConnectType(ConnectType connectType, string endpoint)

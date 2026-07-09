@@ -9,6 +9,7 @@ using Bee.Base.Data;
 using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
+using Bee.Definition.Settings;
 using Bee.UI.Avalonia.Controls;
 using Bee.UI.Avalonia.Views;
 using Bee.UI.Avalonia.Controls.Editors;
@@ -729,6 +730,55 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             Assert.Equal(28m, detailRow["amount"]);
         }
 
+        [Fact]
+        [DisplayName("Tier 2：注入 CurrencySettings 後計算欄依幣別位數捨入（BHD 3 位，Tier 1 為 2 位）")]
+        public async Task LiveRecompute_Tier2Currency_RoundsByCurrencyDecimals()
+        {
+            var rowId = Guid.NewGuid();
+            var schema = new FormSchema(OrderProgId, OrderProgId);
+            var master = schema.Tables!.Add(OrderProgId, OrderProgId);
+            master.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
+            master.Fields.Add("curr", "Currency", FieldDbType.String);
+            master.Fields.Add("price", "Price", FieldDbType.Currency);
+            master.Fields.Add("qty", "Qty", FieldDbType.Decimal);
+            master.Fields!.Add(new FormField("amount", "Amount", FieldDbType.Currency)
+            {
+                NumberKind = NumberKind.Amount,
+                CurrencyField = "curr",
+                ValueExpression = "price * qty",
+                ReadOnly = true,
+            });
+
+            var table = new DataTable(OrderProgId);
+            table.Columns.Add(SysFields.RowId, typeof(Guid));
+            table.Columns.Add("curr", typeof(string));
+            table.Columns.Add("price", typeof(decimal));
+            table.Columns.Add("qty", typeof(decimal));
+            table.Columns.Add("amount", typeof(decimal));
+            table.Rows.Add(rowId, "BHD", 2.1235m, 2m, 4.247m);
+            var dataSet = new DataSet(OrderProgId);
+            dataSet.Tables.Add(table);
+            dataSet.AcceptChanges();
+
+            var connector = new FakeFormApiConnector
+            {
+                GetDataHandler = _ => new GetDataResponse { DataSet = dataSet },
+            };
+            var currencies = new CurrencySettings { new CurrencyItem("BHD", 0.001m) };
+            var view = new TestFormView
+            {
+                Schema = schema,
+                FormConnector = connector,
+                RoundingContextOverride = new RoundingContext { CurrencySettings = currencies },
+            };
+
+            await view.EditAsync(rowId);
+            // price 2.1235 * qty 1 = 2.1235 → BHD 3 位、away-from-zero → 2.124（Tier 1 兩位會是 2.12）
+            view.DataObject!.SetField("qty", "1");
+
+            Assert.Equal(2.124m, view.DataObject!.MasterRow!["amount"]);
+        }
+
         private sealed class TestFormView : FormView
         {
             public int ModeChangedCount { get; private set; }
@@ -760,6 +810,12 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
                 => throw new InvalidOperationException("ClientInfo fallback must not be reached in unit tests.");
 
             protected override Guid ResolveAccessToken() => Guid.Empty;
+
+            /// <summary>Injects a rounding context for live preview without touching the static ClientInfo.</summary>
+            public RoundingContext? RoundingContextOverride { get; set; }
+
+            protected override Task<RoundingContext> ResolveRoundingContextAsync()
+                => Task.FromResult(RoundingContextOverride ?? new RoundingContext());
 
             protected override void OnFormModeChanged(SingleFormMode formMode)
             {

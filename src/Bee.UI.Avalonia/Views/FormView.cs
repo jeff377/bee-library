@@ -5,6 +5,8 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Bee.Api.Client.Connectors;
+using Bee.Base.Exceptions;
+using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
@@ -82,6 +84,9 @@ namespace Bee.UI.Avalonia.Views
         private FormLayout? _formLayout;
         // Client-side live recomputation of computed fields; created once with the data object.
         private FormLiveComputation? _liveComputation;
+        // Reference-aware rounding context (Tier 2) resolved once at init: rounds computed previews and
+        // formats amount/quantity cells to the same decimals the server uses. Empty = framework defaults.
+        private RoundingContext _roundingContext = new();
         // Detail grids by table name, repopulated on every Rebuild so a live recompute of a detail
         // row can refresh the matching grid (realized cells do not track later DataRow writes).
         private readonly Dictionary<string, GridControl> _detailGrids = new(StringComparer.OrdinalIgnoreCase);
@@ -304,6 +309,44 @@ namespace Bee.UI.Avalonia.Views
         protected virtual Guid ResolveAccessToken() => ClientInfo.AccessToken;
 
         /// <summary>
+        /// Resolves the rounding context used to round live-preview computed fields and format
+        /// amount/quantity cells (Tier 2). The default pulls the currency/unit masters through the cached
+        /// <see cref="ClientInfo.DefineAccess"/> and the company from <see cref="ClientInfo.Company"/>;
+        /// each part is optional and degrades to framework-default decimal places when absent. Override
+        /// to supply a context without touching the static <see cref="ClientInfo"/> (the unit tests do).
+        /// </summary>
+        protected virtual async Task<RoundingContext> ResolveRoundingContextAsync()
+        {
+            return new RoundingContext
+            {
+                Company = ClientInfo.Company,
+                CurrencySettings = await TryResolveSettingAsync(ClientInfo.DefineAccess.GetCurrencySettingsAsync)
+                    .ConfigureAwait(true),
+                UnitSettings = await TryResolveSettingAsync(ClientInfo.DefineAccess.GetUnitSettingsAsync)
+                    .ConfigureAwait(true),
+            };
+        }
+
+        // Best-effort fetch of an optional definition master: a missing master already returns null, and
+        // a permission/API error must not break the form — live preview simply falls back to
+        // framework-default decimals for that kind (the server still rounds authoritatively on save).
+        private static async Task<T?> TryResolveSettingAsync<T>(Func<Task<T>> fetch) where T : class
+        {
+            try
+            {
+                return await fetch().ConfigureAwait(true);
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+            catch (ForbiddenException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Called after the form mode changed and was broadcast to the scope. Refreshes the
         /// mode-dependent toolbar.
         /// </summary>
@@ -338,9 +381,11 @@ namespace Bee.UI.Avalonia.Views
 
             _dataObject = new FormDataObject(Schema, FormConnector);
             // Live preview: recompute computed fields as the user edits. Subscribed once — the data
-            // object keeps these events across DataSet replacements (Load / New / Save). Tier 1 uses
-            // framework-default decimal places; the server rounds authoritatively on save.
-            _liveComputation = new FormLiveComputation(Schema);
+            // object keeps these events across DataSet replacements (Load / New / Save). The rounding
+            // context (Tier 2: currency/unit masters + company decimals) aligns previews to the server;
+            // the server still rounds authoritatively on save.
+            _roundingContext = await ResolveRoundingContextAsync().ConfigureAwait(true);
+            _liveComputation = new FormLiveComputation(Schema, _roundingContext);
             _dataObject.FieldValueChanged += OnLiveFieldValueChanged;
             _dataObject.RowAdded += OnLiveRowAdded;
             _formLayout = Schema.GetFormLayout();
@@ -566,6 +611,13 @@ namespace Bee.UI.Avalonia.Views
         private Control BuildInputControl(LayoutField field)
         {
             var editor = FieldEditorFactory.Create(field.ControlType);
+            // Currency/unit-aware cell decimals (Tier 2), set before Bind so the first render uses them.
+            if (editor is NumericEdit numeric)
+            {
+                numeric.CurrencySettings = _roundingContext.CurrencySettings;
+                numeric.UnitSettings = _roundingContext.UnitSettings;
+                numeric.DefaultCurrencyCode = _roundingContext.Company?.DefaultCurrency ?? string.Empty;
+            }
             ((IFieldEditor)editor).Bind(_dataObject!, field);
             return editor;
         }
@@ -581,6 +633,10 @@ namespace Bee.UI.Avalonia.Views
             // The grid carries its own icon toolbar and edit-form flow; the form only supplies the
             // layout, the data object and the editing model (responsive — see EffectiveDetailEditMode).
             var grid = new GridControl { MinHeight = 120, EditMode = EffectiveDetailEditMode() };
+            // Currency/unit-aware cell decimals (Tier 2), set before Bind so the first render uses them.
+            grid.CurrencySettings = _roundingContext.CurrencySettings;
+            grid.UnitSettings = _roundingContext.UnitSettings;
+            grid.DefaultCurrencyCode = _roundingContext.Company?.DefaultCurrency ?? string.Empty;
             grid.Bind(_dataObject!, layout);
             // Track by table name so a live recompute of a detail row can refresh this grid.
             _detailGrids[layout.TableName] = grid;

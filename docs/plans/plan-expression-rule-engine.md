@@ -10,7 +10,7 @@
 | 1d | 文件（ADR-028 + expression-rules.md）+ Northwind OrderBO 遷移示範 | ✅ 已完成（2026-07-09） |
 | 5a | 抽共用 row-level 計算器（`FormExpressionCalculator`）+ 相依圖 + 前端服務骨架 + 測試 | ✅ 已完成（2026-07-09） |
 | 5b | 綁定接線：訂閱 `FieldValueChanged` 重算回寫 + guard + `DefaultValueExpression` | ✅ 已完成（2026-07-09） |
-| 5c | （可選）Tier 2：client 取 `CurrencySettings`/`UnitSettings` 逐位對齊 | 📝 待做 |
+| 5c | Tier 2：client 取 `CurrencySettings`/`UnitSettings` 逐位對齊 | ✅ 已完成（2026-07-09） |
 | 5d | WASM/行動端 AOT 實測 + graceful degrade + Northwind demo-smoke | 📝 待做 |
 
 > **Phase 1（後端）** 涵蓋四類規則：**欄位運算（計算欄）**、**存檔前驗證**、**刪除前檢查**、**欄位預設值運算式**，執行於伺服器端存檔/刪除前。

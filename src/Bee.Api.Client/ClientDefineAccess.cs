@@ -230,6 +230,26 @@ namespace Bee.Api.Client
             return GetDefineAsync<LanguageResource>(DefineType.Language, new string[] { lang, ns });
         }
 
+        /// <summary>
+        /// Asynchronously gets the system currency master (per-currency decimal places). Returns
+        /// <c>null</c> when no currency master is deployed, in which case amounts fall back to
+        /// framework-default decimal places.
+        /// </summary>
+        public Task<CurrencySettings> GetCurrencySettingsAsync()
+        {
+            return GetDefineAsync<CurrencySettings>(DefineType.CurrencySettings);
+        }
+
+        /// <summary>
+        /// Asynchronously gets the system unit-of-measure master (per-unit decimal places). Returns
+        /// <c>null</c> when no unit master is deployed, in which case quantities/weights fall back to
+        /// framework-default decimal places.
+        /// </summary>
+        public Task<UnitSettings> GetUnitSettingsAsync()
+        {
+            return GetDefineAsync<UnitSettings>(DefineType.UnitSettings);
+        }
+
         #endregion
 
         #region 儲存（Save）

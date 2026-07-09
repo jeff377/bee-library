@@ -80,6 +80,29 @@ namespace Bee.Api.Client.UnitTests
         }
 
         [Fact]
+        [DisplayName("ClientDefineAccess.GetCurrencySettingsAsync 本機連線應可取得（未部署則回 null，不拋例外）")]
+        public async Task GetCurrencySettingsAsync_LocalConnector_DoesNotThrow()
+        {
+            var access = CreateAccess();
+
+            // 幣別 master 未必部署於測試 Define fixture；無論回傳值或 null，取用路徑皆不應拋例外。
+            var exception = await Record.ExceptionAsync(() => access.GetCurrencySettingsAsync());
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        [DisplayName("ClientDefineAccess.GetUnitSettingsAsync 本機連線應可取得（未部署則回 null，不拋例外）")]
+        public async Task GetUnitSettingsAsync_LocalConnector_DoesNotThrow()
+        {
+            var access = CreateAccess();
+
+            var exception = await Record.ExceptionAsync(() => access.GetUnitSettingsAsync());
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
         [DisplayName("ClientDefineAccess.GetTableSchemaAsync 本機連線應回傳資料表結構定義")]
         public async Task GetTableSchemaAsync_LocalConnector_ReturnsTableSchema()
         {
