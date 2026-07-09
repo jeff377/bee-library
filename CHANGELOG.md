@@ -4,6 +4,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.14.0]
+
+> Bee.NET remains in pre-stable evolution. This release adds two subsystems: a **declarative expression & rule engine** (new `Bee.Expressions` package — computed fields, before-save/delete validation rules, and Avalonia client-side live preview, all schema-driven with zero per-form code) [ADR-028](docs/adr/adr-028-expression-rule-engine.md), and an **audit-trail / log-query subsystem** (six-axis `st_log_*`: login / change / access / anomaly, with `DataSet` DiffGram change capture and a background writer) [ADR-027](docs/adr/adr-027-audit-trail.md). It also **canonicalizes in-memory `DataSet` column names to lowercase** [ADR-029](docs/adr/adr-029-lowercase-field-names.md) — a wire-visible change (JSON / MessagePack keys, e.g. `SYS_ROWID` → `sys_rowid`): external JS/TS clients must switch to lowercase keys, and the `UppercaseColumnNames` extension is renamed. .NET consumers are unaffected (column lookups are case-insensitive). Per pre-stable policy this ships as a minor although the wire/API change is technically breaking.
+
+📄 Full notes & design context: [docs/changelogs/4.14.0.md](docs/changelogs/4.14.0.md)
+
+### Added
+
+- `Bee.Expressions` (new package): portable expression evaluator (`IExpressionEvaluator` / `DynamicExpressoEvaluator`, DynamicExpresso-backed, sandboxed) with compile caching, `ExpressionPolicy` type/null mapping, and dependency analysis — shared by the server and UI so a field computed on the client matches the server. [ADR-028](docs/adr/adr-028-expression-rule-engine.md)
+- `Bee.Definition`: `FormField.ValueExpression` (computed field) and `DefaultValueExpression`, plus a `FormRule` / `FormRuleCollection` on `FormSchema` (`When` / `Condition` / `Message` / `Trigger` = `BeforeSave` | `BeforeDelete`); shared `FormExpressionCalculator`. [ADR-028](docs/adr/adr-028-expression-rule-engine.md)
+- `Bee.Business`: `FormBusinessObject.Save` / `Delete` refactored into template methods (`DoBeforeSave` / `DoSave` / `DoAfterSave` + delete equivalents) with `IFormRuleProcessor` applying schema-driven defaults, computed fields (rounded via `NumberFormatResolver`), and validation rules — general CRUD forms need zero BO code. [ADR-028](docs/adr/adr-028-expression-rule-engine.md)
+- `Bee.UI.Avalonia`: client-side live recomputation of computed fields as the user edits (`FormLiveComputation`), with a Tier 2 currency/unit rounding context and graceful degrade; `DefaultValueExpression` applied to new rows. [ADR-028](docs/adr/adr-028-expression-rule-engine.md)
+- `Bee.Business` / `Bee.Repository`: audit-trail subsystem — six-axis `st_log_*` (`login` / `change` / `access` / `anomaly_api` / `anomaly_db`), `IAuditLogWriter` background writer, and `DataSet` DiffGram before/after capture on save/delete. [ADR-027](docs/adr/adr-027-audit-trail.md)
+- `Bee.Business` / `Bee.Api.*`: audit log query read side — `GetChangeLog` / `GetChangeDetail` (change axis, list + detail two-stage), login / access / anomaly lists, and anomaly summary (`Summary` + Top-N). [ADR-027](docs/adr/adr-027-audit-trail.md)
+- `Bee.UI.Avalonia` / `Bee.UI.Core`: front-end permission **capability** — element-level degradation (hidden without Read, read-only without Update) from the `EnterCompany` capability snapshot; `ClientInfo.Company` and `ClientDefineAccess.GetCurrencySettingsAsync` / `GetUnitSettingsAsync`.
+- `Bee.Definition`: record-scope permission supports multiple Owner / Dept fields (OR union).
+
+### Changed
+
+- `Bee.Base` / data (**breaking — wire & public API**): in-memory `DataSet` column names are canonicalized to **lowercase** (`DataTableExtensions.AddColumn`, and `LowercaseColumnNames` at the `DbAccess` read boundary, unifying provider casing). JSON / MessagePack payload column keys change from uppercase to lowercase (e.g. `SYS_ROWID` → `sys_rowid`); the `UppercaseColumnNames` extension is renamed to `LowercaseColumnNames`. [ADR-029](docs/adr/adr-029-lowercase-field-names.md)
+- `Bee.Db`: SQL Server `DateTime` columns migrated from `datetime` to `datetime2(7)` (sub-millisecond precision + pre-1753 range); the `datetime2` parameter rewrite is scoped to SQL Server only.
+- `Bee.Base`: string-key case-insensitive comparisons converged to `OrdinalIgnoreCase` (culture-independent; avoids the Turkish-I hazard).
+
+### Fixed
+
+- `Bee.Expressions`: the variable map is keyed by the declared `FormField.FieldName`, so expressions resolve against uppercase-stored `DataColumn` names instead of failing with an unknown identifier on save; `ExpressionPolicy.CoerceValue` handles string-typed `Guid` / `byte[]` columns and maps an empty-string GUID to `Guid.Empty` (SQLite stores GUIDs as TEXT).
+
+### Upgrade
+
+External JS/TS clients reading `DataSet` JSON by literal column key must switch to lowercase:
+
+```diff
+- const rowId = row.current.SYS_ROWID;
++ const rowId = row.current.sys_rowid;
+```
+
+.NET callers of the renamed column-name extension:
+
+```diff
+- dataTable.UppercaseColumnNames();
++ dataTable.LowercaseColumnNames();
+```
+
 ## [4.13.0]
 
 > Bee.NET remains in pre-stable evolution. This release adds an ERP-grade numeric layer: a semantic `NumberKind` on fields drives the display format, the rounding policy, and where the decimal places come from — with **round-then-sum** totals, per-field **multi-currency** (SAP CUKY-style, JPY=0 / USD=2 / BHD=3) and **unit-of-measure** (SAP UNIT-style, KG=3 / PCS=0) decimals resolved at runtime, and an Avalonia `NumericEdit` editor. All additions are backward compatible (new members default to empty; `CompanyInfo` gains tail-appended MessagePack keys). No breaking changes. [ADR-026](docs/adr/adr-026-numeric-semantics-rounding.md)

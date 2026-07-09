@@ -4,6 +4,49 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.14.0]
+
+> Bee.NET 仍處 pre-stable 演進階段。本版新增兩大子系統：**宣告式運算式與規則引擎**（新套件 `Bee.Expressions` —— 計算欄、存檔/刪除前驗證規則、Avalonia 前端即時預覽，全 schema 驅動、一般表單零 BO 程式碼）[ADR-028](docs/adr/adr-028-expression-rule-engine.md)，以及**稽核軌跡 / 日誌查詢子系統**（六軸 `st_log_*`：登入 / 異動 / 檢視 / 異常，以 `DataSet` DiffGram 擷取異動、背景寫入）[ADR-027](docs/adr/adr-027-audit-trail.md)。並將**記憶體 `DataSet` 欄名正規化為小寫** [ADR-029](docs/adr/adr-029-lowercase-field-names.md) —— 此為 wire 可見變更（JSON / MessagePack key，如 `SYS_ROWID` → `sys_rowid`）：外部 JS/TS client 須改用小寫 key，`UppercaseColumnNames` 擴充方法更名。.NET 消費端不受影響（欄名查找大小寫無關）。依 pre-stable 政策以 minor 發佈，雖然此 wire/API 變更嚴格而言屬破壞性。
+
+📄 完整說明與設計脈絡：[docs/changelogs/4.14.0.zh-TW.md](docs/changelogs/4.14.0.zh-TW.md)
+
+### 新增
+
+- `Bee.Expressions`（新套件）：可攜求值引擎（`IExpressionEvaluator` / `DynamicExpressoEvaluator`，DynamicExpresso 封裝、沙箱化），含編譯快取、`ExpressionPolicy` 型別/null 對映與相依分析 —— 前後端共用，前端算值與後端一致。[ADR-028](docs/adr/adr-028-expression-rule-engine.md)
+- `Bee.Definition`：`FormField.ValueExpression`（計算欄）與 `DefaultValueExpression`，以及 `FormSchema` 上的 `FormRule` / `FormRuleCollection`（`When` / `Condition` / `Message` / `Trigger` = `BeforeSave` | `BeforeDelete`）；共用 `FormExpressionCalculator`。[ADR-028](docs/adr/adr-028-expression-rule-engine.md)
+- `Bee.Business`：`FormBusinessObject.Save` / `Delete` 重構為模板方法（`DoBeforeSave` / `DoSave` / `DoAfterSave` + 刪除對應），`IFormRuleProcessor` 依 schema 套用預設值、計算欄（經 `NumberFormatResolver` 捨入）與驗證規則 —— 一般 CRUD 表單零 BO 程式碼。[ADR-028](docs/adr/adr-028-expression-rule-engine.md)
+- `Bee.UI.Avalonia`：編輯時前端即時重算計算欄（`FormLiveComputation`），含 Tier 2 幣別/單位捨入 context 與 graceful degrade；新列套用 `DefaultValueExpression`。[ADR-028](docs/adr/adr-028-expression-rule-engine.md)
+- `Bee.Business` / `Bee.Repository`：稽核軌跡子系統 —— 六軸 `st_log_*`（`login` / `change` / `access` / `anomaly_api` / `anomaly_db`）、`IAuditLogWriter` 背景寫入、存檔/刪除以 `DataSet` DiffGram 擷取前後影像。[ADR-027](docs/adr/adr-027-audit-trail.md)
+- `Bee.Business` / `Bee.Api.*`：稽核日誌查詢讀取側 —— `GetChangeLog` / `GetChangeDetail`（異動軸清單 + 明細二段式）、登入/檢視/異常清單、異常彙總（`Summary` + Top-N）。[ADR-027](docs/adr/adr-027-audit-trail.md)
+- `Bee.UI.Avalonia` / `Bee.UI.Core`：前端權限 **capability** —— 元件級降級（無 Read 隱藏、無 Update 唯讀），來源為 `EnterCompany` capability 快照；`ClientInfo.Company` 與 `ClientDefineAccess.GetCurrencySettingsAsync` / `GetUnitSettingsAsync`。
+- `Bee.Definition`：record scope 權限支援多個 Owner / Dept 欄（OR 聯集）。
+
+### 變更
+
+- `Bee.Base` / data（**破壞性 —— wire 與公開 API**）：記憶體 `DataSet` 欄名正規化為**小寫**（`DataTableExtensions.AddColumn`，以及 `DbAccess` 讀取邊界的 `LowercaseColumnNames`，統一各 provider 大小寫）。JSON / MessagePack payload 欄名 key 由大寫改小寫（如 `SYS_ROWID` → `sys_rowid`）；`UppercaseColumnNames` 擴充方法更名為 `LowercaseColumnNames`。[ADR-029](docs/adr/adr-029-lowercase-field-names.md)
+- `Bee.Db`：SQL Server `DateTime` 欄由 `datetime` 遷移至 `datetime2(7)`（亞毫秒精度 + pre-1753 範圍）；`datetime2` 參數改寫僅限 SQL Server。
+- `Bee.Base`：字串 key 的大小寫無關比較統一收斂為 `OrdinalIgnoreCase`（文化無關；避開 Turkish-I 隱患）。
+
+### 修正
+
+- `Bee.Expressions`：變數表以宣告的 `FormField.FieldName` 為 key，使運算式能對應大寫儲存的 `DataColumn` 欄名，不再於存檔時因未知識別字失敗；`ExpressionPolicy.CoerceValue` 處理 string 型 `Guid` / `byte[]` 欄，並將空字串 GUID 對映為 `Guid.Empty`（SQLite 以 TEXT 儲存 GUID）。
+
+### 升級指引
+
+以字面欄名 key 讀取 `DataSet` JSON 的外部 JS/TS client 須改用小寫：
+
+```diff
+- const rowId = row.current.SYS_ROWID;
++ const rowId = row.current.sys_rowid;
+```
+
+呼叫已更名欄名擴充方法的 .NET 端：
+
+```diff
+- dataTable.UppercaseColumnNames();
++ dataTable.LowercaseColumnNames();
+```
+
 ## [4.13.0]
 
 > Bee.NET 仍處 pre-stable 演進階段。本版新增 ERP 級數值層：欄位上的語意 `NumberKind` 驅動顯示格式、捨入策略與小數位數來源 —— **round-then-sum** 合計、逐欄 **多幣別**（SAP CUKY 式，JPY=0 / USD=2 / BHD=3）與 **計量單位**（SAP UNIT 式，KG=3 / PCS=0）位數皆於 runtime 解析，並附 Avalonia `NumericEdit` 編輯器。所有新增皆向後相容（新成員預設空；`CompanyInfo` 尾端加 MessagePack key）。無破壞性變更。[ADR-026](docs/adr/adr-026-numeric-semantics-rounding.md)
