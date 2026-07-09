@@ -269,29 +269,35 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
-        /// Builds the expression variable map for a row: every column exposed by its column name,
-        /// coerced to a non-null value of the field's CLR type.
+        /// Builds the expression variable map for a row, coercing each column to a non-null value of its
+        /// field's CLR type. Variables are keyed by the schema field's declared name (its casing), not by
+        /// the <see cref="DataColumn"/> name: the framework's <c>DataTableExtensions.AddColumn</c> stores
+        /// column names uppercased, but expressions reference fields by their declared (typically
+        /// lower-case) name and the engine's identifiers are case-sensitive — so keying by the column name
+        /// would leave <c>quantity</c> unresolved against a <c>QUANTITY</c> column. Columns with no schema
+        /// field fall back to their column name (nothing references them).
         /// </summary>
         private static Dictionary<string, object?> BuildVariables(DataRow row, FormTable formTable)
         {
             var variables = new Dictionary<string, object?>(StringComparer.Ordinal);
             foreach (DataColumn column in row.Table.Columns)
             {
-                variables[column.ColumnName] = ExpressionPolicy.CoerceValue(
-                    row[column], ResolveFieldDbType(formTable, column));
+                var field = ResolveField(formTable, column.ColumnName);
+                var name = field?.FieldName ?? column.ColumnName;
+                var dbType = field?.DbType ?? DbTypeConverter.ToFieldDbType(column.DataType);
+                variables[name] = ExpressionPolicy.CoerceValue(row[column], dbType);
             }
             return variables;
         }
 
         /// <summary>
-        /// Resolves a column's <see cref="FieldDbType"/> from the schema field when present, otherwise
-        /// from the column's CLR type.
+        /// Resolves the schema field for a column by name (case-insensitive, matching
+        /// <see cref="DataColumnCollection"/> lookup), or null when the table has no such field.
         /// </summary>
-        private static FieldDbType ResolveFieldDbType(FormTable formTable, DataColumn column)
+        private static FormField? ResolveField(FormTable formTable, string columnName)
         {
-            if (formTable.Fields != null && formTable.Fields.Contains(column.ColumnName))
-                return formTable.Fields[column.ColumnName].DbType;
-            return DbTypeConverter.ToFieldDbType(column.DataType);
+            return formTable.Fields != null && formTable.Fields.Contains(columnName)
+                ? formTable.Fields[columnName] : null;
         }
 
         /// <summary>

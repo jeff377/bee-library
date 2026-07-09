@@ -136,6 +136,56 @@ namespace Bee.Definition.UnitTests.Forms
         }
 
         [Fact]
+        [DisplayName("大寫欄名（AddColumn 存大寫）下運算式仍解析：變數以宣告欄名為 key，非 DataColumn 名")]
+        public void ApplyComputedRow_UppercaseColumnNames_StillResolvesIdentifiers()
+        {
+            var schema = BuildOrderSchema();
+            // The framework's AddColumn stores column names uppercased; expressions use the declared
+            // (lower-case) field names. DynamicExpresso identifiers are case-sensitive, so this shape
+            // (the real wire/DataSet shape) must still resolve.
+            var table = new DataTable("Order");
+            table.Columns.Add("PRICE", typeof(decimal));
+            table.Columns.Add("QTY", typeof(decimal));
+            table.Columns.Add("AMOUNT", typeof(decimal));
+            table.Columns.Add("TAX", typeof(decimal));
+            table.Columns.Add("STATUS", typeof(string));
+            var row = table.NewRow();
+            row["PRICE"] = 10m;
+            row["QTY"] = 3m;
+            row["STATUS"] = "Draft";
+            table.Rows.Add(row);
+
+            var ex = Record.Exception(() =>
+                _calculator.ApplyComputedRow(schema, schema.MasterTable!, table.Rows[0], new RoundingContext()));
+
+            Assert.Null(ex);
+            Assert.Equal(30m, table.Rows[0]["amount"]);   // DataRow lookup is case-insensitive
+            Assert.Equal(1.5m, table.Rows[0]["tax"]);
+        }
+
+        [Fact]
+        [DisplayName("大寫欄名下 ValidateRules 仍解析規則識別字（customer_rowid != Guid.Empty 型）")]
+        public void ValidateRules_UppercaseColumnNames_StillResolvesIdentifiers()
+        {
+            var schema = BuildOrderSchema();
+            schema.Rules!.Add("amount_positive", "amount > 0", "金額必須大於 0");
+            var table = new DataTable("Order");
+            table.Columns.Add("PRICE", typeof(decimal));
+            table.Columns.Add("QTY", typeof(decimal));
+            table.Columns.Add("AMOUNT", typeof(decimal));
+            table.Columns.Add("TAX", typeof(decimal));
+            table.Columns.Add("STATUS", typeof(string));
+            table.Rows.Add(10m, 2m, 20m, 1m, "Draft");
+            var dataSet = new DataSet("Order");
+            dataSet.Tables.Add(table);
+
+            var ex = Record.Exception(() =>
+                _calculator.ValidateRules(schema, dataSet, FormRuleTrigger.BeforeSave));
+
+            Assert.Null(ex);   // amount=20 > 0 → passes; must not throw UnknownIdentifier
+        }
+
+        [Fact]
         [DisplayName("BuildDependencyMap：price / qty → amount；amount → tax（來源欄對映受影響計算欄）")]
         public void BuildDependencyMap_MapsSourceToComputed()
         {

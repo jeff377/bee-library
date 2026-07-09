@@ -172,6 +172,32 @@ namespace Bee.UI.Avalonia.UnitTests.DataObjects
         }
 
         [Fact]
+        [DisplayName("大寫欄名（真實 DataSet 形狀）：以大寫欄名觸發仍重算，不 degrade（識別字大小寫）")]
+        public void Recompute_UppercaseColumnNames_StillRecomputes()
+        {
+            var live = new FormLiveComputation(BuildOrderSchema());
+            // AddColumn stores column names uppercased; the change event carries that casing too.
+            var table = new DataTable("Order");
+            table.Columns.Add("SYS_ROWID", typeof(Guid));
+            table.Columns.Add("PRICE", typeof(decimal));
+            table.Columns.Add("QTY", typeof(decimal));
+            table.Columns.Add("AMOUNT", typeof(decimal));
+            table.Columns.Add("ORDER_DATE", typeof(DateTime));
+            table.Columns.Add("STATUS", typeof(string));
+            var row = table.NewRow();
+            row["PRICE"] = 10m;
+            row["QTY"] = 3m;
+            row["STATUS"] = "Draft";
+            table.Rows.Add(row);
+
+            var changed = live.Recompute("Order", "QTY", table.Rows[0]);
+
+            Assert.False(live.IsDegraded);
+            Assert.Equal(30m, table.Rows[0]["amount"]);
+            Assert.Contains("amount", changed);
+        }
+
+        [Fact]
         [DisplayName("Graceful degrade：運算式求值失敗不拋例外、停用預覽，後續重算 no-op")]
         public void Recompute_EvaluationFailure_DegradesGracefully()
         {
