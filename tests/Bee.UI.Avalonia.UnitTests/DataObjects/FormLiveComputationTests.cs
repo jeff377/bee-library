@@ -152,14 +152,16 @@ namespace Bee.UI.Avalonia.UnitTests.DataObjects
             var live = new FormLiveComputation(schema);
 
             // product_rowid arrives as a *string* column (SQLite stores GUIDs as TEXT and the wire keeps
-            // that), even though the schema field is Guid — the exact shape that crashed the demo.
+            // that), even though the schema field is Guid — the exact shape that crashed the demo. An
+            // *empty* product_rowid (a line with no product selected yet) must coerce to Guid.Empty, not
+            // throw from Guid.Parse("") — otherwise the recompute degrades and stops previewing.
             var data = new DataTable("OrderDetail");
             data.Columns.Add("product_rowid", typeof(string));
             data.Columns.Add("quantity", typeof(decimal));
             data.Columns.Add("unit_price", typeof(decimal));
             data.Columns.Add("discount", typeof(decimal));
             data.Columns.Add("amount", typeof(decimal));
-            data.Rows.Add(Guid.NewGuid().ToString(), 10m, 14m, 0.05m, 0m);
+            data.Rows.Add(string.Empty, 10m, 14m, 0.05m, 0m);
 
             var exception = Record.Exception(() => live.Recompute("OrderDetail", "quantity", data.Rows[0]));
 

@@ -40,8 +40,19 @@ namespace Bee.Expressions
             // as TEXT, binary as base64), so parse those forms explicitly before the general path. This
             // matters on the client even for a numeric-only expression, because the variable map exposes
             // every column of the row — including a `Guid` key column an expression never references.
-            if (clrType == typeof(Guid)) { return Guid.Parse(value.ToString()!); }
-            if (clrType == typeof(byte[])) { return Convert.FromBase64String(value.ToString()!); }
+            // An empty/whitespace string is the field's empty value (an unset key, a text-typed GUID
+            // column with no selection), so it maps to the type default rather than throwing from a
+            // `Guid.Parse("")` / `FromBase64String("")` — matching the null/DBNull policy above.
+            if (clrType == typeof(Guid))
+            {
+                var text = value.ToString();
+                return string.IsNullOrWhiteSpace(text) ? Guid.Empty : Guid.Parse(text);
+            }
+            if (clrType == typeof(byte[]))
+            {
+                var text = value.ToString();
+                return string.IsNullOrEmpty(text) ? Array.Empty<byte>() : Convert.FromBase64String(text);
+            }
             // The value's runtime type differs from the field's CLR type (for example an int cell
             // feeding a decimal field). Convert when possible; incompatible types surface as an
             // InvalidCastException from the framework, which the caller treats as a config error.

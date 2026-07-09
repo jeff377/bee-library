@@ -112,5 +112,25 @@ namespace Bee.Expressions.UnitTests
 
             Assert.Equal(bytes, Assert.IsType<byte[]>(result));
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [DisplayName("CoerceValue：空/空白 string 餵入 Guid 欄回 Guid.Empty（未選的鍵、TEXT 型別空 GUID 欄，不 Parse 拋錯）")]
+        public void CoerceValue_EmptyStringToGuid_ReturnsEmptyGuid(string value)
+        {
+            var result = ExpressionPolicy.CoerceValue(value, FieldDbType.Guid);
+
+            Assert.Equal(Guid.Empty, result);
+        }
+
+        [Fact]
+        [DisplayName("CoerceValue：空 string 餵入 Binary 欄回空陣列（不 FromBase64String 拋錯）")]
+        public void CoerceValue_EmptyStringToBinary_ReturnsEmptyArray()
+        {
+            var result = ExpressionPolicy.CoerceValue(string.Empty, FieldDbType.Binary);
+
+            Assert.Empty(Assert.IsType<byte[]>(result));
+        }
     }
 }
