@@ -145,6 +145,35 @@ The "all-lowercase + snake_case" naming convention in sections 1–4 corresponds
 
 ---
 
+## 6️⃣ Field-Name Consistency Across Layers (Definition / Data / UI)
+
+The lowercase rule is **not limited to the physical database** — it is the single canonical spelling of a field name **at every layer**. A field is written the same way everywhere:
+
+| Layer | Where the name appears | Rule |
+|-------|------------------------|------|
+| **Definition** | `FormField.FieldName`, `DbField.FieldName`, `TableSchema` columns | lowercase `snake_case` |
+| **Data (physical)** | database table columns | lowercase `snake_case` (§1–2) |
+| **Data (in-memory)** | `DataSet` / `DataTable` `DataColumn.ColumnName` | lowercase `snake_case` |
+| **Expressions** | identifiers in `FormField.ValueExpression` / `FormRule.Condition` (see [expression-rules.md](expression-rules.md)) | the exact declared `FieldName` (lowercase) |
+| **UI** | field-editor / grid-column binding keys | lowercase `snake_case` |
+
+### Why one casing everywhere
+
+Several subsystems match a field **by its name, case-sensitively** — most notably the expression engine (its identifiers are case-sensitive) and, historically, UI control data-binding. If the same field is spelled `quantity` in one layer and `QUANTITY` in another, those subsystems fail to resolve it (an unknown-identifier error, a silently unbound control). Committing to **one canonical lowercase spelling — the database's — across all layers** removes the entire class of case-mismatch defects at the source, rather than patching each case-sensitive consumer.
+
+> **Authoring guidance**: write field names in lowercase `snake_case` everywhere — schema, layouts, and expressions alike — and never depend on a particular casing when matching a name in code (use case-insensitive lookup; `DataColumnCollection` indexers already are).
+
+### Transitional note: in-memory DataSet column casing
+
+The framework has historically stored **in-memory `DataSet` column names in UPPERCASE** — a normalization originally introduced to satisfy a case-sensitive UI-binding path (the framework uppercases columns on database read and in `DataTableExtensions.AddColumn`). This is the one place the "lowercase everywhere" rule is not yet met, and it leaks onto the wire: JSON / MessagePack payload keys are the (uppercase) `DataColumn.ColumnName`, and clients read them by that casing.
+
+Aligning in-memory `DataSet` column names to lowercase is therefore a **breaking wire change**, ratified as the target state by **[ADR-029](adr/adr-029-lowercase-field-names.md)** and executed via **[plan-dataset-lowercase-columns.md](plans/plan-dataset-lowercase-columns.md)**. Until that migration lands:
+
+- Code that matches column names **must do so case-insensitively** (`DataColumnCollection` lookups already are; the expression engine binds variables by `FormField.FieldName`, not the raw `DataColumn.ColumnName`).
+- New public documentation and definitions still follow the lowercase rule — the deviation is purely the in-memory storage casing, not the authored contract.
+
+---
+
 ## ✅ Conclusion
 
 A unified naming convention ensures clarity and consistency in database structure, lowers communication cost during development and maintenance, and improves reliability and extensibility when integrating across systems.

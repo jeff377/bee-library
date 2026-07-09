@@ -146,6 +146,35 @@ Oracle 是 outlier：framework 在 emit DDL/DML 時將識別符 `.ToUpperInvaria
 
 ---
 
+## 6️⃣ 跨層欄名一致性（定義 / 資料 / UI）
+
+小寫規則**不限於實體資料庫**——它是欄名在**每一層**唯一的標準寫法。同一個欄位，各處寫法一致：
+
+| 層級 | 欄名出現處 | 規則 |
+|------|-----------|------|
+| **定義** | `FormField.FieldName`、`DbField.FieldName`、`TableSchema` 欄位 | 小寫 `snake_case` |
+| **資料（實體）** | 資料庫表欄位 | 小寫 `snake_case`（§1–2） |
+| **資料（記憶體）** | `DataSet` / `DataTable` 的 `DataColumn.ColumnName` | 小寫 `snake_case` |
+| **運算式** | `FormField.ValueExpression` / `FormRule.Condition` 內的識別字（見 [expression-rules.md](expression-rules.md)） | 精確的宣告 `FieldName`（小寫） |
+| **UI** | 欄位編輯器／表格欄的繫結 key | 小寫 `snake_case` |
+
+### 為何全系統只用一種大小寫
+
+有數個子系統以**欄名字串、且區分大小寫**做比對——最典型是運算式引擎（識別字區分大小寫），以及早期的 UI 控制項資料繫結。若同一欄位在某層寫 `quantity`、另一層是 `QUANTITY`，這些子系統就解析不到（未知識別字錯誤、控制項靜默未繫結）。**在所有層一律採單一標準小寫（即資料庫的寫法）**，能從源頭消除整類大小寫落差問題，而不必逐一為每個區分大小寫的消費端打補丁。
+
+> **撰寫指引**：schema、layout、運算式各處一律用小寫 `snake_case` 寫欄名；程式中比對欄名時**絕不依賴特定大小寫**（改用大小寫無關查找；`DataColumnCollection` 索引器本就大小寫無關）。
+
+### 過渡說明：記憶體 DataSet 欄名大小寫
+
+框架長年將**記憶體中的 `DataSet` 欄名存為大寫**——這個正規化最初是為了配合某個區分大小寫的 UI 繫結路徑（框架在讀取資料庫時、以及 `DataTableExtensions.AddColumn` 內把欄名轉大寫）。這是「全層小寫」規則**唯一尚未達成**之處，且會洩漏到 wire：JSON / MessagePack payload 的 key 就是（大寫的）`DataColumn.ColumnName`，前端也照該大小寫讀取。
+
+因此，將記憶體 `DataSet` 欄名對齊小寫是一項 **破壞性的 wire 變更**，以 **[ADR-029](adr/adr-029-lowercase-field-names.md)** 拍板為目標狀態，並經 **[plan-dataset-lowercase-columns.md](plans/plan-dataset-lowercase-columns.md)** 執行。在該遷移落地前：
+
+- 比對欄名的程式**必須大小寫無關**（`DataColumnCollection` 查找本就如此；運算式引擎以 `FormField.FieldName` 而非原始 `DataColumn.ColumnName` 綁定變數）。
+- 新的公開文件與定義仍一律遵循小寫規則——偏離的只是記憶體儲存的大小寫，不是作者撰寫的契約。
+
+---
+
 ## ✅ 結語  
 
 統一的命名規範可確保資料庫結構清晰、一致，降低開發與維護的溝通成本，並在多系統整合時提升可靠性與擴充性。  
