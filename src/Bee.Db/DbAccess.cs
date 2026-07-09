@@ -406,7 +406,7 @@ namespace Bee.Db
                     adapter.SelectCommand = cmd;
                     adapter.Fill(table);
                 }
-                table.UppercaseColumnNames();
+                table.LowercaseColumnNames();
                 return DbCommandResult.ForTable(table);
             }
         }
@@ -811,7 +811,7 @@ namespace Bee.Db
                 {
                     var table = new DataTable("DataTable");
                     table.Load(reader);
-                    table.UppercaseColumnNames();
+                    table.LowercaseColumnNames();
                     return DbCommandResult.ForTable(table);
                 }
             }

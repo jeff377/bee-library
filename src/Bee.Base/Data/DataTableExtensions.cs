@@ -18,8 +18,11 @@ namespace Bee.Base.Data
         /// <param name="dateTimeMode">The <see cref="DataSetDateTime"/> mode for DateTime columns.</param>
         private static DataColumn AddColumn(this DataTable table, string fieldName, string caption, Type dataType, object defaultValue, DataSetDateTime dateTimeMode = DataSetDateTime.Unspecified)
         {
-            // Column names are stored in uppercase
-            var column = new DataColumn(fieldName.ToUpper(), dataType);
+            // Column names are canonicalized to lowercase so the in-memory DataSet matches the
+            // lowercase field name used at every other layer (database, FormField, expressions, UI) —
+            // see ADR-029. Invariant lowercasing keeps ASCII snake_case identifiers stable and avoids
+            // the Turkish-I hazard of a culture-aware fold.
+            var column = new DataColumn(fieldName.ToLowerInvariant(), dataType);
             column.DefaultValue = defaultValue;
 
             if (dataType == typeof(DateTime))
@@ -126,13 +129,16 @@ namespace Bee.Base.Data
         }
 
         /// <summary>
-        /// Converts all column names in the table to uppercase.
+        /// Canonicalizes all column names in the table to lowercase, so a table read from any database
+        /// provider (Oracle returns uppercase, PostgreSQL lowercase, …) exposes the single lowercase
+        /// field name used at every other layer — see ADR-029. Invariant lowercasing avoids the
+        /// Turkish-I hazard of a culture-aware fold on ASCII snake_case identifiers.
         /// </summary>
         /// <param name="dataTable">The target table.</param>
-        public static void UppercaseColumnNames(this DataTable dataTable)
+        public static void LowercaseColumnNames(this DataTable dataTable)
         {
             foreach (DataColumn column in dataTable.Columns)
-                column.ColumnName = column.ColumnName.ToUpper();
+                column.ColumnName = column.ColumnName.ToLowerInvariant();
         }
     }
 }

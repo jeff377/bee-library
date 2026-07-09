@@ -164,14 +164,13 @@ Oracle 是 outlier：framework 在 emit DDL/DML 時將識別符 `.ToUpperInvaria
 
 > **撰寫指引**：schema、layout、運算式各處一律用小寫 `snake_case` 寫欄名；程式中比對欄名時**絕不依賴特定大小寫**（改用大小寫無關查找；`DataColumnCollection` 索引器本就大小寫無關）。
 
-### 過渡說明：記憶體 DataSet 欄名大小寫
+### 歷史說明：記憶體 DataSet 欄名大小寫
 
-框架長年將**記憶體中的 `DataSet` 欄名存為大寫**——這個正規化最初是為了配合某個區分大小寫的 UI 繫結路徑（框架在讀取資料庫時、以及 `DataTableExtensions.AddColumn` 內把欄名轉大寫）。這是「全層小寫」規則**唯一尚未達成**之處，且會洩漏到 wire：JSON / MessagePack payload 的 key 就是（大寫的）`DataColumn.ColumnName`，前端也照該大小寫讀取。
+框架**曾長年將記憶體中的 `DataSet` 欄名存為大寫**——這個正規化最初是為了配合某個區分大小寫的 UI 繫結路徑（讀取資料庫時、以及 `DataTableExtensions.AddColumn` 內把欄名轉大寫）。它會洩漏到 wire，因此舊的 JSON / MessagePack 封包（及據此撰寫的 client）使用大寫 key，如 `SYS_ROWID`。
 
-因此，將記憶體 `DataSet` 欄名對齊小寫是一項 **破壞性的 wire 變更**，以 **[ADR-029](adr/adr-029-lowercase-field-names.md)** 拍板為目標狀態，並經 **[plan-dataset-lowercase-columns.md](plans/plan-dataset-lowercase-columns.md)** 執行。在該遷移落地前：
+依 **[ADR-029](adr/adr-029-lowercase-field-names.md)**，記憶體 `DataSet` 欄名**現已正規化為小寫**（`DataTableExtensions.AddColumn` 與 `LowercaseColumnNames`，於 `DbAccess` 讀取邊界套用），使所有層——以及 wire——一律呈現單一小寫欄名。此為**破壞性 wire 變更**：JSON / MessagePack payload key 現為小寫（如 `sys_rowid`），第一方 client 已同步更新。見 [plan-dataset-lowercase-columns.md](plans/plan-dataset-lowercase-columns.md)。
 
-- 比對欄名的程式**必須大小寫無關**（`DataColumnCollection` 查找本就如此；運算式引擎以 `FormField.FieldName` 而非原始 `DataColumn.ColumnName` 綁定變數）。
-- 新的公開文件與定義仍一律遵循小寫規則——偏離的只是記憶體儲存的大小寫，不是作者撰寫的契約。
+由於框架內所有欄名比對皆大小寫無關（`DataColumnCollection` 查找；運算式引擎以 `FormField.FieldName` 綁定），透過 C# 堆疊讀取舊的大寫封包仍可運作；只有區分大小寫的外部消費端（例如 JS/TS client 以字面 key 讀 `row.current.SYS_ROWID`）需改用小寫 key。
 
 ---
 

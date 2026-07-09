@@ -1,14 +1,14 @@
 # 計畫：DataSet 欄名全小寫（定義 / 資料 / UI 三者一致，消除大小寫例外）
 
-**狀態：📝 擬定中（2026-07-09）**
+**狀態：🚧 進行中（2026-07-09）— 程式遷移完成並經 SQLite 真 DB 驗證；剩多 DB provider 容器全回歸 + 發佈時 CHANGELOG breaking 條目**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 0 | 探勘稽核：鎖定所有「大寫來源」與「依賴大寫的消費端」（UI 各 head 繫結大小寫、JS/TS 前端、wire、持久化） | 📝 待做 |
-| 1 | 決策定案：遷移策略（全小寫 vs 全面 case-insensitive）、wire 相容決策、版本邊界 | 📝 待做 |
-| 2 | 核心切換：`AddColumn` / `DbAccess` 正規化改小寫 + `UppercaseColumnNames` → `LowercaseColumnNames` | 📝 待做 |
-| 3 | wire 與序列化對齊（JSON + MessagePack 兩格式）+ JS/TS 前端同步 | 📝 待做 |
-| 4 | 持久化資料相容（change-audit DiffGram 歷史）+ 全 repo 回歸（5 DB provider × 各 UI head） | 📝 待做 |
+| 0 | 探勘稽核：鎖定所有「大寫來源」與「依賴大寫的消費端」 | ✅ 已完成（2026-07-09）— C# 端 0 處大寫字面比較（皆走大小寫無關 DataColumnCollection）；消費端僅第一方 JS |
+| 1 | 決策定案：策略、wire 相容、版本邊界 | ✅ 已完成 — 由 [ADR-029](../adr/adr-029-lowercase-field-names.md) 拍板全小寫、breaking wire 變更 |
+| 2 | 核心切換：`AddColumn` / `DbAccess` 正規化改小寫 + `UppercaseColumnNames` → `LowercaseColumnNames` | ✅ 已完成（2026-07-09） |
+| 3 | wire 與序列化對齊 + JS/TS 前端同步 | ✅ 已完成 — JSON/MessagePack converter 直出 `ColumnName` 故自動小寫；`Web.Js.Demo/app.js` 已改小寫 key |
+| 4 | 持久化相容 + 全 repo 回歸 | 🚧 SQLite 真 DB 驗證通過（Bee.Db 209 / Bee.Repository 10）；audit 歷史以「讀取端大小寫無關」相容；**待**：SQL Server/PG/MySQL/Oracle 容器全回歸 + 發佈時 CHANGELOG 標 breaking |
 
 > **本計畫不含實作**，是動工前的評估與規劃。當前的「運算式欄名大小寫」bug **已於 commit 96821c04 以解耦方式修好**（運算式綁 `FormField.FieldName`，與 DataSet 儲存大小寫無關），**與本遷移相互獨立**——本計畫是為了根治「大小寫敏感的名稱比對」這一類反覆咬人的問題，讓定義 / 資料 / UI 三者欄名天生一致。
 

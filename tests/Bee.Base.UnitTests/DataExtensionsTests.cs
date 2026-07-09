@@ -112,13 +112,13 @@ namespace Bee.Base.UnitTests
     public class DataTableExtensionsTests
     {
         [Fact]
-        [DisplayName("AddColumn 以 FieldDbType 加入欄位，欄名轉大寫並套用預設值")]
-        public void AddColumn_FieldDbType_AppliesDefaultsAndUppercase()
+        [DisplayName("AddColumn 以 FieldDbType 加入欄位，欄名轉小寫並套用預設值")]
+        public void AddColumn_FieldDbType_AppliesDefaultsAndLowercase()
         {
             var table = new DataTable();
-            var col = table.AddColumn("name", FieldDbType.String);
+            var col = table.AddColumn("Name", FieldDbType.String);
 
-            Assert.Equal("NAME", col.ColumnName);
+            Assert.Equal("name", col.ColumnName);
             Assert.Equal(typeof(string), col.DataType);
             Assert.Equal(string.Empty, col.DefaultValue);
             Assert.False(col.AllowDBNull);
@@ -129,9 +129,9 @@ namespace Bee.Base.UnitTests
         public void AddColumn_WithExplicitDefault_SetsAllowDbNull()
         {
             var table = new DataTable();
-            var col = table.AddColumn("id", FieldDbType.Integer, 0);
+            var col = table.AddColumn("Id", FieldDbType.Integer, 0);
 
-            Assert.Equal("ID", col.ColumnName);
+            Assert.Equal("id", col.ColumnName);
             Assert.Equal(0, col.DefaultValue);
             Assert.False(col.AllowDBNull);
         }
@@ -164,11 +164,11 @@ namespace Bee.Base.UnitTests
             table.AddColumn("id", FieldDbType.Integer);
             table.AddColumn("code", FieldDbType.String);
 
-            table.SetPrimaryKey("ID,CODE");
+            table.SetPrimaryKey("ID,CODE");   // resolved case-insensitively against lowercase columns
 
             Assert.Equal(2, table.PrimaryKey.Length);
-            Assert.Equal("ID", table.PrimaryKey[0].ColumnName);
-            Assert.Equal("CODE", table.PrimaryKey[1].ColumnName);
+            Assert.Equal("id", table.PrimaryKey[0].ColumnName);
+            Assert.Equal("code", table.PrimaryKey[1].ColumnName);
         }
 
         [Fact]
@@ -185,17 +185,17 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("UppercaseColumnNames 應將所有欄位名轉為大寫")]
-        public void UppercaseColumnNames_ConvertsAllColumnsToUpperCase()
+        [DisplayName("LowercaseColumnNames 應將所有欄位名轉為小寫")]
+        public void LowercaseColumnNames_ConvertsAllColumnsToLowerCase()
         {
             var table = new DataTable();
-            table.Columns.Add("name", typeof(string));
-            table.Columns.Add("age", typeof(int));
+            table.Columns.Add("NAME", typeof(string));
+            table.Columns.Add("Age", typeof(int));
 
-            table.UppercaseColumnNames();
+            table.LowercaseColumnNames();
 
-            Assert.Equal("NAME", table.Columns[0].ColumnName);
-            Assert.Equal("AGE", table.Columns[1].ColumnName);
+            Assert.Equal("name", table.Columns[0].ColumnName);
+            Assert.Equal("age", table.Columns[1].ColumnName);
         }
     }
 

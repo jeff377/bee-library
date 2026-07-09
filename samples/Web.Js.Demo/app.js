@@ -83,11 +83,11 @@ function renderRowList(table) {
         .map((n) => {
           const v = r.current[n];
           const display = v === null || v === undefined ? '' : String(v);
-          const cls = n === 'SYS_ROWID' ? 'rowid' : '';
+          const cls = n === 'sys_rowid' ? 'rowid' : '';
           return `<td class="${cls}">${display}</td>`;
         })
         .join('');
-      const rowId = r.current.SYS_ROWID ?? '';
+      const rowId = r.current.sys_rowid ?? '';
       const actionCell = `<td><button data-rowid="${rowId}" class="fill-rowid">Fill Row ID</button></td>`;
       return `<tr>${cells}${actionCell}</tr>`;
     })
@@ -123,7 +123,7 @@ $('btn-getdata').addEventListener('click', () => {
 $('btn-insert-sample').addEventListener('click', async () => {
   // Self-contained Save demo:
   //   1. GetNewData → blank DataSet skeleton with state="Added"
-  //   2. Fill SYS_ID / SYS_NAME / HIRE_DATE with a timestamped sample
+  //   2. Fill sys_id / sys_name / hire_date with a timestamped sample
   //   3. POST back to Save
   const newResult = await run('Insert Sample [1/2] GetNewData', () =>
     employee.getNewData(),
@@ -139,10 +139,10 @@ $('btn-insert-sample').addEventListener('click', async () => {
 
   const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
   const row = masterTable.rows[0];
-  row.current.SYS_ID = `J${stamp}`;
-  row.current.SYS_NAME = `JS Demo ${new Date().toLocaleTimeString()}`;
-  row.current.HIRE_DATE = new Date().toISOString().slice(0, 10) + 'T00:00:00';
-  row.current.IS_ACTIVE = true;
+  row.current.sys_id = `J${stamp}`;
+  row.current.sys_name = `JS Demo ${new Date().toLocaleTimeString()}`;
+  row.current.hire_date = new Date().toISOString().slice(0, 10) + 'T00:00:00';
+  row.current.is_active = true;
 
   await run('Insert Sample [2/2] Save', () => employee.save(dataSet));
 });
@@ -186,7 +186,7 @@ $('btn-form-new').addEventListener('click', async () => {
   }
   try {
     const result = await employee.getNewData();
-    log('GetNewData (for form)', { rowId: result.dataSet?.tables?.[0]?.rows?.[0]?.current?.SYS_ROWID });
+    log('GetNewData (for form)', { rowId: result.dataSet?.tables?.[0]?.rows?.[0]?.current?.sys_rowid });
     _formController.bindDataSet(result.dataSet);
   } catch (err) {
     logError('Form New', err);

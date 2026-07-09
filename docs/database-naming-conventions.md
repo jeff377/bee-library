@@ -163,14 +163,13 @@ Several subsystems match a field **by its name, case-sensitively** — most nota
 
 > **Authoring guidance**: write field names in lowercase `snake_case` everywhere — schema, layouts, and expressions alike — and never depend on a particular casing when matching a name in code (use case-insensitive lookup; `DataColumnCollection` indexers already are).
 
-### Transitional note: in-memory DataSet column casing
+### Historical note: in-memory DataSet column casing
 
-The framework has historically stored **in-memory `DataSet` column names in UPPERCASE** — a normalization originally introduced to satisfy a case-sensitive UI-binding path (the framework uppercases columns on database read and in `DataTableExtensions.AddColumn`). This is the one place the "lowercase everywhere" rule is not yet met, and it leaks onto the wire: JSON / MessagePack payload keys are the (uppercase) `DataColumn.ColumnName`, and clients read them by that casing.
+The framework **historically stored in-memory `DataSet` column names in UPPERCASE** — a normalization originally introduced to satisfy a case-sensitive UI-binding path (columns were uppercased on database read and in `DataTableExtensions.AddColumn`). This leaked onto the wire, so old JSON / MessagePack captures (and any client written against them) use uppercase keys such as `SYS_ROWID`.
 
-Aligning in-memory `DataSet` column names to lowercase is therefore a **breaking wire change**, ratified as the target state by **[ADR-029](adr/adr-029-lowercase-field-names.md)** and executed via **[plan-dataset-lowercase-columns.md](plans/plan-dataset-lowercase-columns.md)**. Until that migration lands:
+Per **[ADR-029](adr/adr-029-lowercase-field-names.md)**, in-memory `DataSet` column names are now **canonicalized to lowercase** (`DataTableExtensions.AddColumn` and `LowercaseColumnNames`, applied at the database-read boundary in `DbAccess`), so all layers — and the wire — expose the single lowercase field name. This was a **breaking wire change**: JSON / MessagePack payload keys are now lowercase (e.g. `sys_rowid`); first-party clients were updated in lockstep. See [plan-dataset-lowercase-columns.md](plans/plan-dataset-lowercase-columns.md).
 
-- Code that matches column names **must do so case-insensitively** (`DataColumnCollection` lookups already are; the expression engine binds variables by `FormField.FieldName`, not the raw `DataColumn.ColumnName`).
-- New public documentation and definitions still follow the lowercase rule — the deviation is purely the in-memory storage casing, not the authored contract.
+Because all in-framework column-name matching is case-insensitive (`DataColumnCollection` lookups; the expression engine binds by `FormField.FieldName`), reading an old uppercase-keyed capture through the C# stack still works; only case-sensitive external consumers (e.g. a JS/TS client reading `row.current.SYS_ROWID` by literal key) must switch to the lowercase key.
 
 ---
 

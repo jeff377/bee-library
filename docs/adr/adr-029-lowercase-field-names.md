@@ -4,7 +4,7 @@
 
 已採納（2026-07-09）
 
-> 原則即刻生效（欄名一律小寫 `snake_case`）。唯一尚未達成之處是「記憶體 `DataSet` 欄名」目前仍存大寫；將其對齊小寫是破壞性 wire 變更，執行細節與階段見 `docs/plans/plan-dataset-lowercase-columns.md`。
+> 原則即刻生效（欄名一律小寫 `snake_case`）。記憶體 `DataSet` 欄名已由大寫**遷移為小寫**（`AddColumn` / `LowercaseColumnNames` 於 `DbAccess` 讀取邊界套用），此為破壞性 wire 變更、第一方 client 已同步；執行與剩餘回歸見 `docs/plans/plan-dataset-lowercase-columns.md`。
 
 ## 背景
 
@@ -44,10 +44,11 @@
 ## 後果
 
 - **正向**：欄名全系統只有一種寫法；消除「大小寫敏感名稱比對」整類 bug 的根源；新子系統無需各自解耦；wire 上的欄名對齊 DB / schema，對前端消費端長期更直覺（`row.current.sys_rowid`）。
-- **待執行（破壞性）**：記憶體 `DataSet` 欄名由大寫改小寫是 **wire breaking change**——影響 JSON + MessagePack 兩種 payload 的 key、第一方與第三方 JS/TS 前端、以及變更稽核既有 DiffGram 歷史（欄名大寫）。須：
-  - 於 **major 版本邊界**釋出並同版更新所有第一方前端，CHANGELOG 標 breaking + 附遷移指南。
-  - 稽核既有資料以「解析端相容新舊大小寫」處理，不回填改寫不可變的稽核歷史。
-  - **前置稽核**：先證實各 UI head（WinForms / Blazor / Avalonia / MAUI）的欄位繫結皆已大小寫無關；若某 head 仍區分大小寫，該處須先改為大小寫無關，否則全小寫遷移在該 head 不成立。
+- **已執行（破壞性）**：記憶體 `DataSet` 欄名由大寫改小寫是 **wire breaking change**——影響 JSON + MessagePack 兩種 payload 的 key、第一方與第三方 JS/TS 前端、以及變更稽核既有 DiffGram 歷史（欄名大寫）。落地情形：
+  - 核心切換（`AddColumn` / `LowercaseColumnNames` / `DbAccess`）＋第一方前端（`Web.Js.Demo`）已同步；wire converter 直出 `ColumnName` 故自動小寫。
+  - 稽核既有資料以「解析端相容新舊大小寫」處理（下游比對本就大小寫無關），不回填改寫不可變的稽核歷史。
+  - **前置稽核已完成**：C# 端 0 處大寫字面比較（皆走大小寫無關 `DataColumnCollection`）；Avalonia head 繫結大小寫無關；其餘 UI head（WinForms / Blazor / MAUI）尚未實作，趁此時遷移使其天生一致。
+  - **剩餘**：多 DB provider 容器全回歸（SQLite 已驗證）；**發佈時**於 CHANGELOG 標 breaking + 附遷移指南（依 `releasing.md`，CHANGELOG 累積至發版統整）。
 - **執行載體**：`docs/plans/plan-dataset-lowercase-columns.md`（含 Phase 0 稽核 → 決策 → 核心切換 → wire/前端 → 相容回歸）。
 
 ## 相關
