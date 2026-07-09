@@ -31,6 +31,7 @@ namespace Bee.UI.Avalonia.DataObjects
         private readonly Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<string>>> _dependencyByTable
             = new(StringComparer.OrdinalIgnoreCase);
         private bool _recomputing;
+        private bool _degraded;
 
         /// <summary>
         /// Initializes a new instance of <see cref="FormLiveComputation"/>.
@@ -60,6 +61,14 @@ namespace Bee.UI.Avalonia.DataObjects
         public bool IsRecomputing => _recomputing;
 
         /// <summary>
+        /// Gets a value indicating whether live computation has degraded to a no-op after an evaluation
+        /// failure. A definition-authored expression that fails to parse or evaluate is deterministic, so
+        /// rather than throw on every keystroke the service disables client-side preview for the session
+        /// and lets the server compute the fields authoritatively on save.
+        /// </summary>
+        public bool IsDegraded => _degraded;
+
+        /// <summary>
         /// Recomputes the computed fields of <paramref name="row"/> when <paramref name="changedField"/> is a
         /// source that some computed field depends on, returning the fields whose value changed. A no-op
         /// (returns empty) when a recompute is already in progress, when the changed field is itself a
@@ -75,21 +84,27 @@ namespace Bee.UI.Avalonia.DataObjects
             ArgumentException.ThrowIfNullOrWhiteSpace(changedField);
             ArgumentNullException.ThrowIfNull(row);
 
-            // A recompute's own write-backs re-raise the change event; do not recurse.
-            if (_recomputing) { return []; }
+            // A recompute's own write-backs re-raise the change event; do not recurse. Once degraded,
+            // preview stays off for the session (the server computes on save).
+            if (_recomputing || _degraded) { return []; }
 
             var formTable = _schema.Tables?.GetOrDefault(tableName);
             if (formTable?.Fields is null) { return []; }
 
             // A computed field changing is the result of a recompute, never a trigger for one.
             if (IsComputedField(formTable, changedField)) { return []; }
-            // Skip the whole pass when no computed field references the changed field.
-            if (!GetDependencyMap(formTable).ContainsKey(changedField)) { return []; }
 
             _recomputing = true;
             try
             {
+                // Skip the whole pass when no computed field references the changed field.
+                if (!GetDependencyMap(formTable).ContainsKey(changedField)) { return []; }
                 return _calculator.ApplyComputedRow(_schema, formTable, row, _roundingContext);
+            }
+            catch (ExpressionEvaluationException)
+            {
+                Degrade();
+                return [];
             }
             finally
             {
@@ -110,6 +125,7 @@ namespace Bee.UI.Avalonia.DataObjects
             ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
             ArgumentNullException.ThrowIfNull(row);
 
+            if (_degraded) { return []; }
             var formTable = _schema.Tables?.GetOrDefault(tableName);
             if (formTable?.Fields is null) { return []; }
 
@@ -117,6 +133,11 @@ namespace Bee.UI.Avalonia.DataObjects
             try
             {
                 return _calculator.ApplyDefaultRow(formTable, row);
+            }
+            catch (ExpressionEvaluationException)
+            {
+                Degrade();
+                return [];
             }
             finally
             {
@@ -138,6 +159,7 @@ namespace Bee.UI.Avalonia.DataObjects
             ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
             ArgumentNullException.ThrowIfNull(row);
 
+            if (_degraded) { return []; }
             var formTable = _schema.Tables?.GetOrDefault(tableName);
             if (formTable?.Fields is null) { return []; }
 
@@ -152,6 +174,11 @@ namespace Bee.UI.Avalonia.DataObjects
                         changed.Add(field);
                 }
                 return changed;
+            }
+            catch (ExpressionEvaluationException)
+            {
+                Degrade();
+                return [];
             }
             finally
             {
@@ -168,6 +195,10 @@ namespace Bee.UI.Avalonia.DataObjects
             }
             return map;
         }
+
+        // Latches live computation off after a deterministic evaluation failure (a bad definition-authored
+        // expression). The form stays usable and the server computes the affected fields on save.
+        private void Degrade() => _degraded = true;
 
         private static bool IsComputedField(FormTable formTable, string fieldName)
         {

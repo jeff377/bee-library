@@ -134,6 +134,36 @@ namespace Bee.UI.Avalonia.UnitTests.DataObjects
         }
 
         [Fact]
+        [DisplayName("Graceful degrade：運算式求值失敗不拋例外、停用預覽，後續重算 no-op")]
+        public void Recompute_EvaluationFailure_DegradesGracefully()
+        {
+            var schema = new FormSchema("Order", "Order") { CategoryId = "company" };
+            var table = schema.Tables!.Add("Order", "Order");
+            table.Fields!.Add(new FormField("qty", "Qty", FieldDbType.Decimal));
+            // 參照不存在欄位 → 求值時 parse 失敗（unknown identifier）
+            table.Fields!.Add(new FormField("amount", "Amount", FieldDbType.Currency)
+            {
+                ValueExpression = "qty * nonexistent_field",
+                ReadOnly = true,
+            });
+            var live = new FormLiveComputation(schema);
+
+            var data = new DataTable("Order");
+            data.Columns.Add("qty", typeof(decimal));
+            data.Columns.Add("amount", typeof(decimal));
+            data.Rows.Add(3m, 0m);
+
+            // 求值失敗不應拋例外（波及 ADO.NET 事件會弄壞表單）
+            var exception = Record.Exception(() => live.Recompute("Order", "qty", data.Rows[0]));
+            Assert.Null(exception);
+            Assert.True(live.IsDegraded);
+
+            // 停用後後續重算為 no-op
+            var again = live.Recompute("Order", "qty", data.Rows[0]);
+            Assert.Empty(again);
+        }
+
+        [Fact]
         [DisplayName("Recompute：欄名大小寫不敏感（事件欄名大小寫可能異於 schema）")]
         public void Recompute_FieldNameCaseInsensitive()
         {

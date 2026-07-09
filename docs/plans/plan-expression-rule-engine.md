@@ -11,7 +11,7 @@
 | 5a | 抽共用 row-level 計算器（`FormExpressionCalculator`）+ 相依圖 + 前端服務骨架 + 測試 | ✅ 已完成（2026-07-09） |
 | 5b | 綁定接線：訂閱 `FieldValueChanged` 重算回寫 + guard + `DefaultValueExpression` | ✅ 已完成（2026-07-09） |
 | 5c | Tier 2：client 取 `CurrencySettings`/`UnitSettings` 逐位對齊 | ✅ 已完成（2026-07-09） |
-| 5d | WASM/行動端 AOT 實測 + graceful degrade + Northwind demo-smoke | 📝 待做 |
+| 5d | WASM/行動端 AOT 實測 + graceful degrade + Northwind demo-smoke | 🚧 A（AOT 實測 + degrade）✅ 已完成（2026-07-09）；B（demo-smoke）待驗收 |
 
 > **Phase 1（後端）** 涵蓋四類規則：**欄位運算（計算欄）**、**存檔前驗證**、**刪除前檢查**、**欄位預設值運算式**，執行於伺服器端存檔/刪除前。
 > **Phase 2（前端即時運算）** 讓使用者在 Avalonia UI 邊打邊看到計算結果；**後端仍為權威**，前端即時運算為 UX 加分、不影響正確性。
@@ -219,7 +219,8 @@ base `DoBeforeSave` 依序（委派 `IFormRuleProcessor`）：
 ### AOT 風險分級
 
 - **Avalonia 桌面** ✅ 無虞。
-- **Avalonia WASM / 行動端 AOT**：DynamicExpresso 走 `Expression.Compile()`，AOT 目標需實測（同記憶 `mobile-trim-half-a-solved` / `ios-xmlserializer-ambiguous-add`）。免實機重現法：進入點設 `AppContext.SetSwitch("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", false)` 強制 reflection-only 先驗。不行則 **graceful degrade**（該平台不即時算，存檔由後端補）——因後端為權威，正確性不受影響。
+- **Avalonia WASM / 行動端 AOT** ✅ **已實測可行（2026-07-09）**：以 `RuntimeHostConfigurationOption` 設 `System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported=false`（桌面 CLR 重現 iOS/WASM AOT 的 reflection-only 路徑）跑 `DynamicExpressoEvaluator` —— `Evaluate` 計算欄、`Evaluate<bool>` 條件規則、`GetReferencedVariables` 全部正確：`Expression.Compile()` 在無動態碼時自動退回**直譯器**。故行動端/WASM 即時運算**無需停用**。
+- **graceful degrade（已實作，非為 AOT）**：`FormLiveComputation` 對 `ExpressionEvaluationException`（客戶撰寫的運算式語法/識別字錯誤）latch 停用預覽（`IsDegraded`），避免在 `FieldValueChanged` handler 內拋例外波及 ADO.NET 事件、弄壞表單；停用後該 session 不再即時算，欄位由後端存檔時權威計算。
 
 ### PR 切分
 
