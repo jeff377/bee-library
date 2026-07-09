@@ -41,6 +41,7 @@ For the full developer documentation index, see [docs/README.md](docs/README.md)
 |---|---|
 | **Bee.Base.dll** | Core utilities such as serialization, encryption, and general-purpose helpers. |
 | **Bee.Definition.dll** | Defines system-wide structured types including FormSchema, field schemas, and layout configurations. |
+| **Bee.Expressions.dll** | Portable, sandboxed expression evaluator (DynamicExpresso-backed) for computed fields and validation rules; shared by backend save and Avalonia client live preview so both sides compute identically. |
 | **Bee.Api.Contracts.dll** | Shared data contracts (request/response models) used by both frontend and backend. |
 | **Bee.Api.Core.dll** | Encapsulates API support such as model definitions, payload encryption, and serialization pipeline. |
 

@@ -200,6 +200,7 @@ jobs:
     - name: Pack NuGet packages (驗證用，不推送)
       run: |
         dotnet pack src/Bee.Base/Bee.Base.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.Expressions/Bee.Expressions.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Definition/Bee.Definition.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Db/Bee.Db.csproj --configuration Release --output ./nupkgs --no-build

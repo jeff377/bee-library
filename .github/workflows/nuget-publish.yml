@@ -62,6 +62,7 @@ jobs:
         $ErrorActionPreference = 'Stop'
         $ver = "${{ steps.version.outputs.VERSION }}"
         dotnet pack src/Bee.Base/Bee.Base.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Expressions/Bee.Expressions.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Definition/Bee.Definition.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Db/Bee.Db.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver

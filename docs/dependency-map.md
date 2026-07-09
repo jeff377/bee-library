@@ -2,7 +2,7 @@
 
 [繁體中文](dependency-map.zh-TW.md)
 
-This document visualizes the dependencies among the 17 `src/` projects of the Bee.NET framework.
+This document visualizes the dependencies among the 18 `src/` projects of the Bee.NET framework.
 
 **How to read**: an arrow A → B means "A depends on B"; the diagram is laid out bottom-up, with the most foundational packages (no dependencies) at the bottom.
 
@@ -12,6 +12,7 @@ This document visualizes the dependencies among the 17 `src/` projects of the Be
 graph BT
   subgraph Infrastructure
     Base["Bee.Base"]
+    Expressions["Bee.Expressions"]
     Definition["Bee.Definition"]
     Caching["Bee.ObjectCaching"]
   end
@@ -49,6 +50,11 @@ graph BT
   end
 
   Definition --> Base
+  Expressions --> Base
+  Definition --> Expressions
+  Business --> Expressions
+  Hosting --> Expressions
+  UIAvalonia --> Expressions
   Contracts --> Definition
   Db --> Definition
   RepoAbs --> Definition
@@ -79,6 +85,7 @@ graph BT
 | Project | External Packages |
 |---------|-------------------|
 | Bee.Base | *(none)* |
+| Bee.Expressions | DynamicExpresso.Core 2.x |
 | Bee.Definition | MessagePack 3.x, Microsoft.Extensions.Localization.Abstractions 10.x |
 | Bee.Db | *(none)* |
 | Bee.ObjectCaching | Microsoft.Extensions.Caching.Memory 10.x, Microsoft.Extensions.FileProviders.Physical 10.x |
@@ -108,6 +115,7 @@ Also under `tools/` but not on NuGet:
 ## Architectural Notes
 
 - **Bee.Base** is the lowest-level foundation package with no internal dependencies.
+- **Bee.Expressions** is a portable, sandboxed expression evaluator (DynamicExpresso-backed) that depends only on `Bee.Base`. It is shared by `Bee.Definition` (the `FormExpressionCalculator`), `Bee.Business` (the rule processor), `Bee.Hosting` (DI registration), and `Bee.UI.Avalonia` (client-side live preview), so a field computed on the client matches what the server writes on save. See [adr-028](adr/adr-028-expression-rule-engine.md).
 - **Bee.Definition** is the most depended-on project, with 6 direct dependents (Contracts, Db, RepoAbs, Caching, Business, Core).
 - **Bee.Hosting** is the composition root: it consolidates the backend services (`Bee.Api.Core`, `Bee.Business`, `Bee.Repository`, `Bee.ObjectCaching`) behind a single `AddBeeFramework` extension on `IServiceCollection`, with no ASP.NET Core dependency. Non-web hosts (WinForms, Console, Worker Service) reference it directly.
 - **Bee.Api.AspNetCore** is the ASP.NET Core integration layer (`UseBeeFramework` middleware + `ApiServiceController`); it pulls in `Bee.Hosting` transitively, so web hosts get DI registration plus middleware in one package reference.

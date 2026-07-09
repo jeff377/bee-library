@@ -2,7 +2,7 @@
 
 [English](dependency-map.md)
 
-本文件以視覺化方式呈現 Bee.NET 框架中 17 個 `src/` 專案之間的相依關係。
+本文件以視覺化方式呈現 Bee.NET 框架中 18 個 `src/` 專案之間的相依關係。
 
 **閱讀方式**：箭頭方向 A → B 表示「A 依賴 B」；圖表由下而上排列，最底層為無相依性的基礎套件。
 
@@ -12,6 +12,7 @@
 graph BT
   subgraph 基礎設施層
     Base["Bee.Base"]
+    Expressions["Bee.Expressions"]
     Definition["Bee.Definition"]
     Caching["Bee.ObjectCaching"]
   end
@@ -49,6 +50,11 @@ graph BT
   end
 
   Definition --> Base
+  Expressions --> Base
+  Definition --> Expressions
+  Business --> Expressions
+  Hosting --> Expressions
+  UIAvalonia --> Expressions
   Contracts --> Definition
   Db --> Definition
   RepoAbs --> Definition
@@ -79,6 +85,7 @@ graph BT
 | 專案 | 外部套件 |
 |------|----------|
 | Bee.Base | *(none)* |
+| Bee.Expressions | DynamicExpresso.Core 2.x |
 | Bee.Definition | MessagePack 3.x、Microsoft.Extensions.Localization.Abstractions 10.x |
 | Bee.Db | *(none)* |
 | Bee.ObjectCaching | Microsoft.Extensions.Caching.Memory 10.x、Microsoft.Extensions.FileProviders.Physical 10.x |
@@ -108,6 +115,7 @@ graph BT
 ## 架構要點
 
 - **Bee.Base** 為最底層基礎套件，無任何內部相依性。
+- **Bee.Expressions** 為可攜、沙箱化的運算式求值引擎（DynamicExpresso 封裝），只依賴 `Bee.Base`。由 `Bee.Definition`（`FormExpressionCalculator`）、`Bee.Business`（規則處理器）、`Bee.Hosting`（DI 註冊）與 `Bee.UI.Avalonia`（前端即時預覽）共用，使前端算值與後端存檔一致。見 [adr-028](adr/adr-028-expression-rule-engine.md)。
 - **Bee.Definition** 為被依賴次數最多的專案，共有 6 個直接相依者（Contracts、Db、RepoAbs、Caching、Business、Core）。
 - **Bee.Hosting** 為 composition root：將後端服務（`Bee.Api.Core`、`Bee.Business`、`Bee.Repository`、`Bee.ObjectCaching`）整合於一個 `IServiceCollection.AddBeeFramework` 擴充入口，不依賴 ASP.NET Core。非 web 宿主（WinForms、Console、Worker Service）直接引用此套件。
 - **Bee.Api.AspNetCore** 為 ASP.NET Core 整合層（`UseBeeFramework` middleware 與 `ApiServiceController`），透過遞移引用 `Bee.Hosting`，使 web 宿主一次引用即取得 DI 註冊與 middleware。

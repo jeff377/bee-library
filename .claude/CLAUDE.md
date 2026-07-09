@@ -110,7 +110,7 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 實作任何功能或模組前，請先閱讀以下文件：
 
 - **架構總覽**：`docs/architecture-overview.md`
-- **相依性全景圖**：`docs/dependency-map.md` — 17 個專案的相依關係與分層
+- **相依性全景圖**：`docs/dependency-map.md` — 18 個專案的相依關係與分層
 - **開發指引**：`docs/development-cookbook.md` — 初始化流程、請求管線、ExecFunc 模式、FormSchema 驅動開發
 - **開發限制**：`docs/development-constraints.md` — 初始化順序、跨層禁止事項、例外處理規則
 - **架構決策紀錄**：`docs/adr/` — 重要設計決策的背景與理由
