@@ -174,8 +174,8 @@ namespace Bee.Business.Permission
             var list = new List<string>();
             if (fields != null)
             {
-                foreach (var field in fields)
-                    if (!string.IsNullOrEmpty(field.FieldName)) { list.Add(field.FieldName); }
+                foreach (var field in fields.Where(field => !string.IsNullOrEmpty(field.FieldName)))
+                    list.Add(field.FieldName);
             }
             return list;
         }

@@ -226,9 +226,11 @@ namespace Bee.Definition.Forms
         /// <param name="tableName">The owning table name; empty resolves to the master table.</param>
         public FormField? FindField(string fieldName, string tableName = "")
         {
-            FormTable? table = StringUtilities.IsEmpty(tableName)
-                ? MasterTable
-                : (Tables != null && Tables.Contains(tableName) ? Tables[tableName] : null);
+            FormTable? table;
+            if (StringUtilities.IsEmpty(tableName))
+                table = MasterTable;
+            else
+                table = Tables != null && Tables.Contains(tableName) ? Tables[tableName] : null;
             if (table?.Fields == null || !table.Fields.Contains(fieldName)) { return null; }
             return table.Fields[fieldName];
         }

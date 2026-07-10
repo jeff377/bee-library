@@ -18,6 +18,11 @@ namespace Bee.Repository.AuditLog
         /// <summary>The framework-wide upper bound for <see cref="PagingOptions.PageSize"/>.</summary>
         private const int MaxPageSize = 1000;
 
+        // Frequently used filter column names (bound as {n} placeholders, never inlined into SQL).
+        private const string ColCompanyId = "company_id";
+        private const string ColUserId = "user_id";
+        private const string ColLogTime = "log_time";
+
         // Header column lists per axis — deliberately exclude any heavy payload (e.g. the change axis'
         // changes_xml). All are compile-time constants (no user input), safe to inline into SELECTs.
         private const string ChangeHeaderColumns =
@@ -60,13 +65,13 @@ namespace Bee.Repository.AuditLog
         {
             ArgumentNullException.ThrowIfNull(query);
             var where = new WhereBuilder()
-                .Eq("company_id", query.CompanyId)
+                .Eq(ColCompanyId, query.CompanyId)
                 .Eq("prog_id", query.ProgId)
                 .Eq("row_key", query.RowKey)
-                .Eq("user_id", query.UserId)
+                .Eq(ColUserId, query.UserId)
                 .Eq("change_kind", (int?)query.ChangeKind)
-                .Gte("log_time", query.FromUtc)
-                .Lte("log_time", query.ToUtc);
+                .Gte(ColLogTime, query.FromUtc)
+                .Lte(ColLogTime, query.ToUtc);
             return QueryPage("st_log_change", ChangeHeaderColumns, where, paging);
         }
 
@@ -89,11 +94,11 @@ namespace Bee.Repository.AuditLog
         {
             ArgumentNullException.ThrowIfNull(query);
             var where = new WhereBuilder()
-                .Eq("company_id", query.CompanyId)
-                .Eq("user_id", query.UserId)
+                .Eq(ColCompanyId, query.CompanyId)
+                .Eq(ColUserId, query.UserId)
                 .Eq("event", (int?)query.Event)
-                .Gte("log_time", query.FromUtc)
-                .Lte("log_time", query.ToUtc);
+                .Gte(ColLogTime, query.FromUtc)
+                .Lte(ColLogTime, query.ToUtc);
             return QueryPage("st_log_login", LoginHeaderColumns, where, paging);
         }
 
@@ -102,12 +107,12 @@ namespace Bee.Repository.AuditLog
         {
             ArgumentNullException.ThrowIfNull(query);
             var where = new WhereBuilder()
-                .Eq("company_id", query.CompanyId)
+                .Eq(ColCompanyId, query.CompanyId)
                 .Eq("prog_id", query.ProgId)
                 .Eq("row_key", query.RowKey)
-                .Eq("user_id", query.UserId)
-                .Gte("log_time", query.FromUtc)
-                .Lte("log_time", query.ToUtc);
+                .Eq(ColUserId, query.UserId)
+                .Gte(ColLogTime, query.FromUtc)
+                .Lte(ColLogTime, query.ToUtc);
             return QueryPage("st_log_access", AccessHeaderColumns, where, paging);
         }
 
@@ -116,12 +121,12 @@ namespace Bee.Repository.AuditLog
         {
             ArgumentNullException.ThrowIfNull(query);
             var where = new WhereBuilder()
-                .Eq("company_id", query.CompanyId)
-                .Eq("user_id", query.UserId)
+                .Eq(ColCompanyId, query.CompanyId)
+                .Eq(ColUserId, query.UserId)
                 .Eq("method", query.Method)
                 .Eq("anomaly_kind", (int?)query.Kind)
-                .Gte("log_time", query.FromUtc)
-                .Lte("log_time", query.ToUtc);
+                .Gte(ColLogTime, query.FromUtc)
+                .Lte(ColLogTime, query.ToUtc);
             return QueryPage("st_log_anomaly_api", ApiAnomalyHeaderColumns, where, paging);
         }
 
@@ -134,8 +139,8 @@ namespace Bee.Repository.AuditLog
             var where = new WhereBuilder()
                 .Eq("database_id", query.DatabaseId)
                 .Eq("anomaly_kind", (int?)query.Kind)
-                .Gte("log_time", query.FromUtc)
-                .Lte("log_time", query.ToUtc);
+                .Gte(ColLogTime, query.FromUtc)
+                .Lte(ColLogTime, query.ToUtc);
             return QueryPage("st_log_anomaly_db", DbAnomalyHeaderColumns, where, paging);
         }
 
@@ -146,9 +151,9 @@ namespace Bee.Repository.AuditLog
         public DataTable GetApiAnomalySummary(DateTime? fromUtc, DateTime? toUtc, string? companyId)
         {
             var where = new WhereBuilder()
-                .Eq("company_id", companyId)
-                .Gte("log_time", fromUtc)
-                .Lte("log_time", toUtc);
+                .Eq(ColCompanyId, companyId)
+                .Gte(ColLogTime, fromUtc)
+                .Lte(ColLogTime, toUtc);
             var (whereSql, values) = where.Build();
             string sql = "SELECT anomaly_kind, COUNT(*) AS event_count FROM st_log_anomaly_api" + whereSql +
                 " GROUP BY anomaly_kind ORDER BY COUNT(*) DESC";
@@ -160,8 +165,8 @@ namespace Bee.Repository.AuditLog
         {
             // st_log_anomaly_db carries no company — a cross-company infrastructure summary.
             var where = new WhereBuilder()
-                .Gte("log_time", fromUtc)
-                .Lte("log_time", toUtc);
+                .Gte(ColLogTime, fromUtc)
+                .Lte(ColLogTime, toUtc);
             var (whereSql, values) = where.Build();
             string sql = "SELECT anomaly_kind, COUNT(*) AS event_count FROM st_log_anomaly_db" + whereSql +
                 " GROUP BY anomaly_kind ORDER BY COUNT(*) DESC";
@@ -174,9 +179,9 @@ namespace Bee.Repository.AuditLog
             int take = Math.Clamp(topN, 1, MaxTopN);
             var dbType = _connectionManager.GetConnectionInfo(_databaseId).DatabaseType;
             var where = new WhereBuilder()
-                .Eq("company_id", companyId)
-                .Gte("log_time", fromUtc)
-                .Lte("log_time", toUtc);
+                .Eq(ColCompanyId, companyId)
+                .Gte(ColLogTime, fromUtc)
+                .Lte(ColLogTime, toUtc);
             var (whereSql, values) = where.Build();
             // ORDER BY the COUNT(*) expression (not the alias) so every dialect accepts it; the top-N is
             // the dialect LIMIT/FETCH, which requires the ORDER BY that is already present.

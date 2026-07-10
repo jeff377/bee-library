@@ -56,24 +56,33 @@ namespace Bee.Definition.Forms
                 if (formTable.Fields == null) { continue; }
                 var dataTable = FindDataTable(dataSet, formTable.TableName);
                 if (dataTable == null) { continue; }
+                ApplyTableFieldExpressions(formTable, dataTable, schema, roundingContext);
+            }
+        }
 
-                var defaultFields = formTable.Fields
-                    .Where(f => StringUtilities.IsNotEmpty(f.DefaultValueExpression)).ToList();
-                var computedFields = formTable.Fields
-                    .Where(f => StringUtilities.IsNotEmpty(f.ValueExpression)).ToList();
-                if (defaultFields.Count == 0 && computedFields.Count == 0) { continue; }
+        /// <summary>
+        /// Applies the default-value and value expressions of one table to its data rows: fills defaults on
+        /// added rows and recomputes value-expression fields on added/modified rows.
+        /// </summary>
+        private void ApplyTableFieldExpressions(FormTable formTable, DataTable dataTable, FormSchema schema,
+            RoundingContext roundingContext)
+        {
+            var defaultFields = formTable.Fields!
+                .Where(f => StringUtilities.IsNotEmpty(f.DefaultValueExpression)).ToList();
+            var computedFields = formTable.Fields!
+                .Where(f => StringUtilities.IsNotEmpty(f.ValueExpression)).ToList();
+            if (defaultFields.Count == 0 && computedFields.Count == 0) { return; }
 
-                foreach (DataRow row in dataTable.Rows)
-                {
-                    var state = row.RowState;
-                    if (state is DataRowState.Deleted or DataRowState.Detached) { continue; }
+            foreach (DataRow row in dataTable.Rows)
+            {
+                var state = row.RowState;
+                if (state is DataRowState.Deleted or DataRowState.Detached) { continue; }
 
-                    if (state == DataRowState.Added && defaultFields.Count > 0)
-                        ApplyDefaults(row, formTable, defaultFields);
+                if (state == DataRowState.Added && defaultFields.Count > 0)
+                    ApplyDefaults(row, formTable, defaultFields);
 
-                    if (state is DataRowState.Added or DataRowState.Modified && computedFields.Count > 0)
-                        ApplyComputed(row, formTable, schema, computedFields, roundingContext);
-                }
+                if (state is DataRowState.Added or DataRowState.Modified && computedFields.Count > 0)
+                    ApplyComputed(row, formTable, schema, computedFields, roundingContext);
             }
         }
 
@@ -105,20 +114,29 @@ namespace Bee.Definition.Forms
                 if (formTable == null) { continue; }
                 var dataTable = FindDataTable(dataSet, formTable.TableName);
                 if (dataTable == null) { continue; }
+                ValidateRuleRows(rule, formTable, dataTable);
+            }
+        }
 
-                foreach (DataRow row in dataTable.Rows)
+        /// <summary>
+        /// Evaluates a single rule against every live row of its table; a row that passes the rule's
+        /// applicability guard (<see cref="FormRule.When"/>) but fails its condition aborts with the message.
+        /// </summary>
+        /// <exception cref="UserMessageException">A row's condition fails; carries the rule message.</exception>
+        private void ValidateRuleRows(FormRule rule, FormTable formTable, DataTable dataTable)
+        {
+            foreach (DataRow row in dataTable.Rows)
+            {
+                if (row.RowState is DataRowState.Deleted or DataRowState.Detached) { continue; }
+
+                var variables = BuildVariables(row, formTable);
+                if (StringUtilities.IsNotEmpty(rule.When) &&
+                    !_evaluator.Evaluate<bool>(rule.When, variables))
                 {
-                    if (row.RowState is DataRowState.Deleted or DataRowState.Detached) { continue; }
-
-                    var variables = BuildVariables(row, formTable);
-                    if (StringUtilities.IsNotEmpty(rule.When) &&
-                        !_evaluator.Evaluate<bool>(rule.When, variables))
-                    {
-                        continue;
-                    }
-                    if (!_evaluator.Evaluate<bool>(rule.Condition, variables))
-                        throw new UserMessageException(rule.Message);
+                    continue;
                 }
+                if (!_evaluator.Evaluate<bool>(rule.Condition, variables))
+                    throw new UserMessageException(rule.Message);
             }
         }
 
@@ -305,7 +323,7 @@ namespace Bee.Definition.Forms
         /// decimal places when rounding a computed numeric field; null for other kinds.
         /// </summary>
         private static string? ResolveRefCode(FormField field, FormSchema schema,
-            IReadOnlyDictionary<string, object?> variables)
+            Dictionary<string, object?> variables)
         {
             string? codeField = field.NumberKind switch
             {

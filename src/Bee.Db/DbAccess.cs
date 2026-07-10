@@ -151,15 +151,6 @@ namespace Bee.Db
             });
         }
 
-        private DbCommandResult DispatchExecute(DbCommandSpec command, DbConnection connection, DbTransaction? transaction)
-            => command.Kind switch
-            {
-                DbCommandKind.NonQuery => ExecuteNonQueryCore(command, connection, transaction),
-                DbCommandKind.Scalar => ExecuteScalarCore(command, connection, transaction),
-                DbCommandKind.DataTable => ExecuteDataTableCore(command, connection, transaction),
-                _ => throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}."),
-            };
-
         /// <summary>
         /// Executes a database command using the specified <see cref="DbTransaction"/> on an external connection.
         /// Use this overload when you need explicit transaction control; the command is bound to the given transaction.
@@ -176,6 +167,15 @@ namespace Bee.Db
 
             return RunWithAnomalyDetection(command, () => DispatchExecute(command, conn, transaction));
         }
+
+        private DbCommandResult DispatchExecute(DbCommandSpec command, DbConnection connection, DbTransaction? transaction)
+            => command.Kind switch
+            {
+                DbCommandKind.NonQuery => ExecuteNonQueryCore(command, connection, transaction),
+                DbCommandKind.Scalar => ExecuteScalarCore(command, connection, transaction),
+                DbCommandKind.DataTable => ExecuteDataTableCore(command, connection, transaction),
+                _ => throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}."),
+            };
 
         /// <summary>
         /// Runs <paramref name="exec"/>, detecting and recording anomalies (Error / Timeout on

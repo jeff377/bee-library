@@ -589,9 +589,7 @@ namespace Bee.UI.Avalonia.Controls
         private DataGridTemplateColumn BuildColumn(LayoutColumn column)
         {
             // Capture per-column metadata into locals so each cell template closure
-            // resolves the correct field name / display format regardless of when
-            // the template fires.
-            var fieldName = column.FieldName;
+            // resolves the correct display format regardless of when the template fires.
             var displayFormat = column.DisplayFormat;
             var numberFormat = column.NumberFormat;
 

@@ -124,7 +124,7 @@ namespace Bee.Definition.Forms
             return null;
         }
 
-        private IReadOnlyList<FormField> FindScopeFields(ScopeRole role)
+        private List<FormField> FindScopeFields(ScopeRole role)
         {
             if (Fields == null) { return []; }
             var list = new List<FormField>();

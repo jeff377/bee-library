@@ -57,6 +57,18 @@ namespace Bee.Definition
         }
 
         /// <summary>
+        /// Resolves the decimal places for the kind using company/framework sources only (no currency
+        /// reference). Amounts fall back to the company default currency when a currency master is set,
+        /// otherwise to framework defaults.
+        /// </summary>
+        /// <param name="kind">The number kind.</param>
+        /// <param name="company">The current company, or <c>null</c> when there is no company context.</param>
+        public static int ResolveDecimals(NumberKind kind, CompanyInfo? company)
+        {
+            return ResolveDecimals(kind, RoundingContext.ForCompany(company), null);
+        }
+
+        /// <summary>
         /// Resolves the .NET display format string for the kind (for example <c>"N2"</c> / <c>"P2"</c>),
         /// using <see cref="ResolveDecimals(NumberKind, RoundingContext, string?)"/>.
         /// </summary>
@@ -66,6 +78,16 @@ namespace Bee.Definition
         public static string ResolveFormat(NumberKind kind, RoundingContext ctx, string? refCode = null)
         {
             return NumberKindProfile.BuildFormatString(kind, ResolveDecimals(kind, ctx, refCode));
+        }
+
+        /// <summary>
+        /// Resolves the .NET display format string for the kind using company/framework sources only.
+        /// </summary>
+        /// <param name="kind">The number kind.</param>
+        /// <param name="company">The current company, or <c>null</c> when there is no company context.</param>
+        public static string ResolveFormat(NumberKind kind, CompanyInfo? company)
+        {
+            return NumberKindProfile.BuildFormatString(kind, ResolveDecimals(kind, company));
         }
 
         /// <summary>
@@ -86,6 +108,18 @@ namespace Bee.Definition
                 return value;
 
             return Math.Round(value, ResolveDecimals(kind, ctx, refCode), MidpointRounding.AwayFromZero);
+        }
+
+        /// <summary>
+        /// Rounds a value using company/framework sources only (no currency reference). See
+        /// <see cref="RoundByKind(decimal, NumberKind, RoundingContext, string?)"/> for the policy.
+        /// </summary>
+        /// <param name="value">The value to round.</param>
+        /// <param name="kind">The number kind.</param>
+        /// <param name="company">The current company, or <c>null</c> when there is no company context.</param>
+        public static decimal RoundByKind(decimal value, NumberKind kind, CompanyInfo? company)
+        {
+            return RoundByKind(value, kind, RoundingContext.ForCompany(company), null);
         }
 
         /// <summary>
@@ -123,42 +157,6 @@ namespace Bee.Definition
             if (ctx.Company != null && ctx.CurrencySettings != null)
                 return ctx.Company.GetCashRounding(currencyCode, ctx.CurrencySettings);
             return ctx.CurrencySettings?.GetRounding(currencyCode) ?? Settings.CurrencySettings.FallbackRounding;
-        }
-
-        // ----- Company-only API (core increment; no currency) -----
-
-        /// <summary>
-        /// Resolves the decimal places for the kind using company/framework sources only (no currency
-        /// reference). Amounts fall back to the company default currency when a currency master is set,
-        /// otherwise to framework defaults.
-        /// </summary>
-        /// <param name="kind">The number kind.</param>
-        /// <param name="company">The current company, or <c>null</c> when there is no company context.</param>
-        public static int ResolveDecimals(NumberKind kind, CompanyInfo? company)
-        {
-            return ResolveDecimals(kind, RoundingContext.ForCompany(company), null);
-        }
-
-        /// <summary>
-        /// Resolves the .NET display format string for the kind using company/framework sources only.
-        /// </summary>
-        /// <param name="kind">The number kind.</param>
-        /// <param name="company">The current company, or <c>null</c> when there is no company context.</param>
-        public static string ResolveFormat(NumberKind kind, CompanyInfo? company)
-        {
-            return NumberKindProfile.BuildFormatString(kind, ResolveDecimals(kind, company));
-        }
-
-        /// <summary>
-        /// Rounds a value using company/framework sources only (no currency reference). See
-        /// <see cref="RoundByKind(decimal, NumberKind, RoundingContext, string?)"/> for the policy.
-        /// </summary>
-        /// <param name="value">The value to round.</param>
-        /// <param name="kind">The number kind.</param>
-        /// <param name="company">The current company, or <c>null</c> when there is no company context.</param>
-        public static decimal RoundByKind(decimal value, NumberKind kind, CompanyInfo? company)
-        {
-            return RoundByKind(value, kind, RoundingContext.ForCompany(company), null);
         }
     }
 }

@@ -48,7 +48,7 @@ namespace Bee.Expressions.UnitTests
         {
             var result = ExpressionPolicy.CoerceValue(null, FieldDbType.Boolean);
 
-            Assert.Equal(false, result);
+            Assert.False((bool)result!);
         }
 
         [Fact]

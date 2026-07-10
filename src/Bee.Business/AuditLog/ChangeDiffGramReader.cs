@@ -51,18 +51,7 @@ namespace Bee.Business.AuditLog
             var dataBlock = root.Elements().FirstOrDefault(e => e.Name.Namespace != diff);
             var beforeBlock = root.Elements(diff + "before").FirstOrDefault();
 
-            // Index the before-image rows by their diffgr:id so modified rows can be paired with their
-            // originals and any unpaired before-row can be recognised as a delete.
-            var beforeById = new Dictionary<string, XElement>(StringComparer.Ordinal);
-            if (beforeBlock != null)
-            {
-                foreach (var row in beforeBlock.Elements())
-                {
-                    var id = row.Attribute(diff + "id")?.Value;
-                    if (id != null) { beforeById[id] = row; }
-                }
-            }
-
+            var beforeById = IndexBeforeRows(beforeBlock, diff);
             var matchedBeforeIds = new HashSet<string>(StringComparer.Ordinal);
 
             if (dataBlock != null)
@@ -73,7 +62,35 @@ namespace Bee.Business.AuditLog
                 }
             }
 
-            // Before-rows with no matching current row are deletes: emit their before-image.
+            AppendUnmatchedDeletes(result, beforeById, matchedBeforeIds);
+            return result;
+        }
+
+        /// <summary>
+        /// Indexes the before-image rows by their <c>diffgr:id</c> so modified rows can be paired with
+        /// their originals and any unpaired before-row can be recognised as a delete.
+        /// </summary>
+        private static Dictionary<string, XElement> IndexBeforeRows(XElement? beforeBlock, XNamespace diff)
+        {
+            var beforeById = new Dictionary<string, XElement>(StringComparer.Ordinal);
+            if (beforeBlock != null)
+            {
+                foreach (var row in beforeBlock.Elements())
+                {
+                    var id = row.Attribute(diff + "id")?.Value;
+                    if (id != null) { beforeById[id] = row; }
+                }
+            }
+            return beforeById;
+        }
+
+        /// <summary>
+        /// Emits the before-image of every before-row that has no matching current row — those rows are
+        /// deletes.
+        /// </summary>
+        private static void AppendUnmatchedDeletes(List<RecordFieldChange> result,
+            Dictionary<string, XElement> beforeById, HashSet<string> matchedBeforeIds)
+        {
             foreach (var pair in beforeById)
             {
                 if (matchedBeforeIds.Contains(pair.Key)) { continue; }
@@ -86,8 +103,6 @@ namespace Bee.Business.AuditLog
                     result.Add(Field(row.Name.LocalName, rowKey, ChangeKind.Delete, column.Key, column.Value, null));
                 }
             }
-
-            return result;
         }
 
         private static void AppendCurrentRow(List<RecordFieldChange> result, XNamespace diff, XElement row,

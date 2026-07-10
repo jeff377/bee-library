@@ -19,18 +19,14 @@ namespace Bee.Definition.Forms
         public static bool HasNumericField(FormSchema schema)
         {
             ArgumentNullException.ThrowIfNull(schema);
-            if (schema.Tables == null) { return false; }
-
-            foreach (var table in schema.Tables)
-            {
-                if (table.Fields == null) { continue; }
-                foreach (var field in table.Fields)
-                {
-                    if (field.NumberKind != NumberKind.None) { return true; }
-                }
-            }
-            return false;
+            return EnumerateFields(schema).Any(field => field.NumberKind != NumberKind.None);
         }
+
+        /// <summary>Enumerates every field across all tables of the schema (skipping empty tables).</summary>
+        private static IEnumerable<FormField> EnumerateFields(FormSchema schema)
+            => (schema.Tables ?? Enumerable.Empty<FormTable>())
+                .Where(table => table.Fields != null)
+                .SelectMany(table => table.Fields!);
 
         /// <summary>
         /// Bakes <see cref="FormField.NumberFormat"/> onto every field with a semantic
@@ -55,34 +51,29 @@ namespace Bee.Definition.Forms
         public static void Bake(FormSchema schema, CompanyInfo? company)
         {
             ArgumentNullException.ThrowIfNull(schema);
-            if (schema.Tables == null) { return; }
 
-            foreach (var table in schema.Tables)
+            foreach (var field in EnumerateFields(schema))
             {
-                if (table.Fields == null) { continue; }
-                foreach (var field in table.Fields)
+                if (field.NumberKind == NumberKind.None) { continue; }
+                // Explicit author-supplied format wins and is preserved.
+                if (StringUtilities.IsNotEmpty(field.NumberFormat)) { continue; }
+
+                var source = NumberKindProfile.GetDecimalsSource(field.NumberKind);
+                if (source == DecimalsSource.Currency)
                 {
-                    if (field.NumberKind == NumberKind.None) { continue; }
-                    // Explicit author-supplied format wins and is preserved.
-                    if (StringUtilities.IsNotEmpty(field.NumberFormat)) { continue; }
-
-                    var source = NumberKindProfile.GetDecimalsSource(field.NumberKind);
-                    if (source == DecimalsSource.Currency)
-                    {
-                        // Runtime-resolved by currency; do not bake a format. Stamp the effective
-                        // currency-reference field so the UI knows which field holds this amount's currency.
-                        if (StringUtilities.IsEmpty(field.CurrencyField) && StringUtilities.IsNotEmpty(schema.CurrencyField))
-                            field.CurrencyField = schema.CurrencyField;
-                        continue;
-                    }
-
-                    // Quantities/weights bound to a unit field are runtime-resolved by unit — do not bake.
-                    // Without a bound unit, they fall back to the company decimals and are baked here.
-                    if (source == DecimalsSource.Unit && StringUtilities.IsNotEmpty(field.UnitField))
-                        continue;
-
-                    field.NumberFormat = NumberFormatResolver.ResolveFormat(field.NumberKind, company);
+                    // Runtime-resolved by currency; do not bake a format. Stamp the effective
+                    // currency-reference field so the UI knows which field holds this amount's currency.
+                    if (StringUtilities.IsEmpty(field.CurrencyField) && StringUtilities.IsNotEmpty(schema.CurrencyField))
+                        field.CurrencyField = schema.CurrencyField;
+                    continue;
                 }
+
+                // Quantities/weights bound to a unit field are runtime-resolved by unit — do not bake.
+                // Without a bound unit, they fall back to the company decimals and are baked here.
+                if (source == DecimalsSource.Unit && StringUtilities.IsNotEmpty(field.UnitField))
+                    continue;
+
+                field.NumberFormat = NumberFormatResolver.ResolveFormat(field.NumberKind, company);
             }
         }
     }

@@ -144,10 +144,10 @@ namespace Bee.UI.Avalonia.DataObjects
             {
                 var changed = new List<string>();
                 changed.AddRange(_calculator.ApplyDefaultRow(formTable, row));
-                foreach (var field in _calculator.ApplyComputedRow(_schema, formTable, row, _roundingContext))
+                foreach (var field in _calculator.ApplyComputedRow(_schema, formTable, row, _roundingContext)
+                             .Where(field => !changed.Contains(field, StringComparer.OrdinalIgnoreCase)))
                 {
-                    if (!changed.Contains(field, StringComparer.OrdinalIgnoreCase))
-                        changed.Add(field);
+                    changed.Add(field);
                 }
                 return changed;
             });
