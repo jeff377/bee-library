@@ -214,21 +214,21 @@ namespace Bee.Db
             int slowThresholdMs = _anomalyOptions.ExecutionTimeThreshold > 0
                 ? _anomalyOptions.ExecutionTimeThreshold * 1000 : 0;
             if (slowThresholdMs > 0 && elapsedMs > slowThresholdMs)
-                WriteDbAnomaly(command, AnomalyKind.Slow, elapsedMs, thresholdMs: slowThresholdMs);
+                WriteDbAnomaly(command, AnomalyKind.Slow, elapsedMs, new DbAnomalyDetail { ThresholdMs = slowThresholdMs });
 
             if (_anomalyOptions.AffectedRowThreshold > 0 && result.RowsAffected > _anomalyOptions.AffectedRowThreshold)
-                WriteDbAnomaly(command, AnomalyKind.LargeAffected, elapsedMs, affectedRows: result.RowsAffected);
+                WriteDbAnomaly(command, AnomalyKind.LargeAffected, elapsedMs, new DbAnomalyDetail { AffectedRows = result.RowsAffected });
 
             int resultRows = result.Table?.Rows.Count ?? 0;
             if (_anomalyOptions.ResultRowThreshold > 0 && resultRows > _anomalyOptions.ResultRowThreshold)
-                WriteDbAnomaly(command, AnomalyKind.LargeResult, elapsedMs, resultRows: resultRows);
+                WriteDbAnomaly(command, AnomalyKind.LargeResult, elapsedMs, new DbAnomalyDetail { ResultRows = resultRows });
         }
 
         private void LogFailureAnomaly(DbCommandSpec command, DbException ex, long elapsedMs)
         {
             var kind = IsTimeout(ex, elapsedMs, command) ? AnomalyKind.Timeout : AnomalyKind.Error;
             WriteDbAnomaly(command, kind, elapsedMs,
-                errorType: ex.GetType().Name, errorMessage: SanitizeMessage(ex.Message));
+                new DbAnomalyDetail { ErrorType = ex.GetType().Name, ErrorMessage = SanitizeMessage(ex.Message) });
         }
 
         private bool IsTimeout(DbException ex, long elapsedMs, DbCommandSpec command)
@@ -238,9 +238,7 @@ namespace Bee.Db
             return timeoutSec > 0 && elapsedMs >= (long)timeoutSec * 1000 * 9 / 10;
         }
 
-        private void WriteDbAnomaly(DbCommandSpec command, AnomalyKind kind, long elapsedMs,
-            int? thresholdMs = null, int? affectedRows = null, int? resultRows = null,
-            string? errorType = null, string? errorMessage = null)
+        private void WriteDbAnomaly(DbCommandSpec command, AnomalyKind kind, long elapsedMs, DbAnomalyDetail detail = default)
         {
             _anomalyWriter!.Write(new DbAnomalyEntry
             {
@@ -248,12 +246,26 @@ namespace Bee.Db
                 Command = command.CommandText,   // {0} template only — never the parameter values
                 Kind = kind,
                 ElapsedMs = elapsedMs > int.MaxValue ? int.MaxValue : (int)elapsedMs,
-                ThresholdMs = thresholdMs,
-                AffectedRows = affectedRows,
-                ResultRows = resultRows,
-                ErrorType = errorType,
-                ErrorMessage = errorMessage,
+                ThresholdMs = detail.ThresholdMs,
+                AffectedRows = detail.AffectedRows,
+                ResultRows = detail.ResultRows,
+                ErrorType = detail.ErrorType,
+                ErrorMessage = detail.ErrorMessage,
             });
+        }
+
+        /// <summary>
+        /// Optional per-kind detail for a <see cref="DbAnomalyEntry"/>: each anomaly kind sets only the
+        /// fields it carries (threshold for Slow, affected/result rows for the large-* kinds, error
+        /// type/message for failures), leaving the rest null.
+        /// </summary>
+        private readonly struct DbAnomalyDetail
+        {
+            public int? ThresholdMs { get; init; }
+            public int? AffectedRows { get; init; }
+            public int? ResultRows { get; init; }
+            public string? ErrorType { get; init; }
+            public string? ErrorMessage { get; init; }
         }
 
         private static string SanitizeMessage(string message)

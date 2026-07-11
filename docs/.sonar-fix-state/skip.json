@@ -1,24 +1,5 @@
 {
-  "issues": {
-    "AZ9FoBs75MKGNBbcXfvb": {
-      "rule": "external_roslyn:CA2263",
-      "severity": "INFO",
-      "component": "tests/Bee.Expressions.UnitTests/DynamicExpressoEvaluatorTests.cs",
-      "line": 45,
-      "message": "Prefer the generic overload 'Evaluate<T>' instead of 'Evaluate(string, ..., System.Type)'.",
-      "reason": "此測試（Evaluate_IntExpressionToDecimalReturn_Converts）刻意驗證 Type 參數多載的行為（執行期 Type 決定回傳型別轉換），改用泛型多載會失去對該 API surface 的覆蓋。泛型多載另有專屬測試。建議於 SonarCloud UI 標 Won't Fix。",
-      "lastAttempt": "2026-07-11"
-    },
-    "AZ8_xHwxwVbTbOD22Hgf": {
-      "rule": "csharpsquid:S107",
-      "severity": "MAJOR",
-      "component": "src/Bee.Db/DbAccess.cs",
-      "line": 241,
-      "message": "Method has 8 parameters, which is greater than the 7 authorized.",
-      "reason": "WriteDbAnomaly 為 private helper，8 個參數多為互斥的具名選用參數（thresholdMs / affectedRows / resultRows / errorType / errorMessage 依 AnomalyKind 只填其一）。抽成參數物件會多一層轉換卻無呼叫端受益（僅 3 個內部呼叫者）。屬重構判斷題，非通用規則，暫緩；如日後新增 anomaly 欄位再一併抽 struct。",
-      "lastAttempt": "2026-07-11"
-    }
-  },
+  "issues": {},
   "files": {},
   "humanReview": {
     "AZ4q3OyZfdkBgWhNTwf5": {
@@ -38,24 +19,6 @@
       "message": "Rename the enumeration 'PermissionAction' to match the regular expression: '^([A-Z]{1,3}[a-z0-9]+)*([A-Z]{2})?s$'.",
       "reason": "False Positive。PermissionAction 雖為 [Flags]，但每個成員是單一動作；全部公開 API（IAuthorizationService.Can、FormBusinessObject.Authorize、PermissionRule.Add/ctor）皆傳單一 action，PermissionAction.Read 在每個呼叫端讀起來自然。集合語意由成員名（AllowedActions 等）承載而非型別名。BCL 有單數 [Flags] 前例（FileAccess、FileShare）。曾於 25146aad 改複數後評估呼叫端可讀性，於本次 revert 回單數。請於 SonarCloud UI 標 False Positive。",
       "lastAttempt": "2026-06-05"
-    },
-    "AZ9GDtRd2_hJXYqpD_zW": {
-      "rule": "csharpsquid:S125",
-      "severity": "MAJOR",
-      "component": "src/Bee.UI.Avalonia/Views/FormView.cs",
-      "line": 385,
-      "message": "Remove this commented out code.",
-      "reason": "False Positive。此為 EnsureInitializedAsync 內說明 live-preview / rounding context 對齊 server 的 WHY 註解（英文完整句），非被註解掉的程式碼。S125 對英文 WHY 註解誤判率高。請於 SonarCloud UI 標 False Positive。",
-      "lastAttempt": "2026-07-11"
-    },
-    "AZ9F_MV62VNfffgJBdZV": {
-      "rule": "csharpsquid:S125",
-      "severity": "MAJOR",
-      "component": "src/Bee.UI.Avalonia/Views/FormView.cs",
-      "line": 282,
-      "message": "Remove this commented out code.",
-      "reason": "False Positive。此為 NewAsync 內說明「GetNewData 不評估 DefaultValueExpression、需顯式 seed master row」的 WHY 註解（英文完整句），非被註解掉的程式碼。請於 SonarCloud UI 標 False Positive。",
-      "lastAttempt": "2026-07-11"
     }
   }
 }

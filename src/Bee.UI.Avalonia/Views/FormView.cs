@@ -279,10 +279,10 @@ namespace Bee.UI.Avalonia.Views
             await RunGuardedAsync(async () =>
             {
                 await _dataObject!.NewAsync().ConfigureAwait(true);
-                // The server's GetNewData seeds columns but does not evaluate DefaultValueExpression;
-                // apply the display-layer defaults (and recompute) so the blank master row shows them
-                // at once. The master row does not raise RowAdded (it is populated before the event
-                // bridge attaches), so seed it explicitly here.
+                // The server's `GetNewData` seeds columns but does not evaluate the
+                // `DefaultValueExpression`. Apply the display-layer defaults (and recompute) so the blank
+                // master row shows them at once. The master row does not raise `RowAdded` because it is
+                // populated before the event bridge attaches, so seed it explicitly here.
                 var master = _dataObject.MasterRow;
                 if (master is not null)
                     _liveComputation?.InitializeNewRow(_dataObject.MasterTable.TableName, master);
@@ -380,10 +380,10 @@ namespace Bee.UI.Avalonia.Views
             if (Schema is null || FormConnector is null) return false;
 
             _dataObject = new FormDataObject(Schema, FormConnector);
-            // Live preview: recompute computed fields as the user edits. Subscribed once — the data
-            // object keeps these events across DataSet replacements (Load / New / Save). The rounding
-            // context (Tier 2: currency/unit masters + company decimals) aligns previews to the server;
-            // the server still rounds authoritatively on save.
+            // Live preview recomputes computed fields as the user edits. It is subscribed once because the
+            // data object keeps these events across `DataSet` replacements on Load, New, and Save. The
+            // rounding context (Tier 2 currency and unit masters plus company decimals) aligns previews to
+            // the server, which still rounds authoritatively on save.
             _roundingContext = await ResolveRoundingContextAsync().ConfigureAwait(true);
             _liveComputation = new FormLiveComputation(Schema, _roundingContext);
             _dataObject.FieldValueChanged += OnLiveFieldValueChanged;

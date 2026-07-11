@@ -42,7 +42,7 @@ namespace Bee.Expressions.UnitTests
         [DisplayName("回傳型別轉換：int 運算結果轉為 decimal 回傳型別")]
         public void Evaluate_IntExpressionToDecimalReturn_Converts()
         {
-            var result = _evaluator.Evaluate("qty * 2", Vars(("qty", 3)), typeof(decimal));
+            var result = _evaluator.Evaluate<decimal>("qty * 2", Vars(("qty", 3)));
 
             Assert.IsType<decimal>(result);
             Assert.Equal(6m, result);
