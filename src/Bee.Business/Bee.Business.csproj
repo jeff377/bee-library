@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Bee.Business.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Bee.Api.Contracts\Bee.Api.Contracts.csproj" />
     <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />
     <ProjectReference Include="..\Bee.Expressions\Bee.Expressions.csproj" />
