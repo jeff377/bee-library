@@ -1,5 +1,3 @@
-using Avalonia;
-
 namespace Avalonia.DemoCenter
 {
     /// <summary>

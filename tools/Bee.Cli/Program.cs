@@ -1,5 +1,4 @@
 using System.Reflection;
-using Bee.Definition;
 
 namespace Bee.Cli;
 

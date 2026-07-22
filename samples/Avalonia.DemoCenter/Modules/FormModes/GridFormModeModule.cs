@@ -3,7 +3,6 @@ using Avalonia.Media;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls;
 using Bee.UI.Avalonia.Controls.Editors;
-using Bee.UI.Avalonia.DataObjects;
 using Avalonia.DemoCenter.Modules.Views;
 
 namespace Avalonia.DemoCenter.Modules.FormModes

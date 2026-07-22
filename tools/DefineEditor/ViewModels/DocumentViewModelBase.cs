@@ -1,7 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Bee.DefineEditor.Models;
 using Bee.DefineEditor.Services;

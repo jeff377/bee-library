@@ -1,6 +1,5 @@
 using System.Globalization;
 using Avalonia;
-using Avalonia.Data;
 using Avalonia.Markup.Xaml;
 using Bee.DefineEditor.Services;
 

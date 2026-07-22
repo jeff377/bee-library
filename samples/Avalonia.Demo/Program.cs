@@ -1,4 +1,3 @@
-using Avalonia;
 using Bee.Api.Client;
 using Bee.UI.Avalonia.Storage;
 using Bee.UI.Core;

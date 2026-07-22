@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Bee.UI.Avalonia.Views;
 
