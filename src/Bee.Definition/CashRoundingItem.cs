@@ -11,7 +11,7 @@ namespace Bee.Definition
     /// final payable amount of a document, distinct from the currency's natural minor unit.
     /// </summary>
     [Description("Company cash-rounding override item.")]
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class CashRoundingItem : MessagePackCollectionItem
     {
         /// <summary>
@@ -35,7 +35,6 @@ namespace Bee.Definition
         /// Gets or sets the ISO 4217 alpha-3 currency code this override applies to.
         /// </summary>
         [XmlAttribute]
-        [Key(100)]
         public string CurrencyCode { get; set; } = string.Empty;
 
         /// <summary>
@@ -43,7 +42,6 @@ namespace Bee.Definition
         /// <c>0.05</c> to round to the nearest five cents).
         /// </summary>
         [XmlAttribute]
-        [Key(101)]
         public decimal Unit { get; set; }
     }
 }

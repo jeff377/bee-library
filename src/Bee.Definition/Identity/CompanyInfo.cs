@@ -16,7 +16,7 @@ namespace Bee.Definition.Identity
     /// <c>"log"</c> databaseId (see <c>DbScope.Log</c> in plan-bo-repo-db-routing),
     /// so there is no per-company log database id property.
     /// </remarks>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class CompanyInfo : IKeyObject
     {
         #region IKeyObject Interface
@@ -34,20 +34,17 @@ namespace Bee.Definition.Identity
         /// <summary>
         /// Gets or sets the company id (unique key).
         /// </summary>
-        [Key(0)]
         public string CompanyId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the company display name.
         /// </summary>
-        [Key(1)]
         public string CompanyName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the logical <c>DatabaseSettings</c> id used for the
         /// company-category database during this session.
         /// </summary>
-        [Key(2)]
         public string CompanyDatabaseId { get; set; } = string.Empty;
 
         /// <summary>
@@ -59,7 +56,6 @@ namespace Bee.Definition.Identity
         /// <c>customize_id</c> column by <c>CompanyRepository</c>; <c>EnterCompany</c> copies it
         /// into <c>SessionInfo.CustomizeId</c> for the session's customization overlay.
         /// </remarks>
-        [Key(3)]
         public string CustomizeId { get; set; } = string.Empty;
 
         /// <summary>
@@ -68,7 +64,6 @@ namespace Bee.Definition.Identity
         /// <c>CompanyRepository</c>; carries Percent and UnitPrice/Cost display decimals plus the
         /// Quantity/Weight fallback when no unit is bound (see plan-numeric-core.md).
         /// </summary>
-        [Key(4)]
         public CompanyNumberFormats NumberFormats { get; set; } = [];
 
         /// <summary>
@@ -87,7 +82,6 @@ namespace Bee.Definition.Identity
         /// currency fall back to the framework default of two decimals). Loaded from the
         /// <c>default_currency</c> column by <c>CompanyRepository</c>.
         /// </summary>
-        [Key(5)]
         public string DefaultCurrency { get; set; } = string.Empty;
 
         /// <summary>
@@ -95,7 +89,6 @@ namespace Bee.Definition.Identity
         /// no extra cash rounding — final amounts stay at each currency's natural minor unit. Loaded
         /// from the <c>cash_rounding_xml</c> column by <c>CompanyRepository</c>.
         /// </summary>
-        [Key(6)]
         public CompanyCashRounding CashRounding { get; set; } = [];
 
         /// <summary>
@@ -103,7 +96,6 @@ namespace Bee.Definition.Identity
         /// usable. Drives the currency drop-down options on documents. Loaded from the
         /// <c>allowed_currencies_xml</c> column by <c>CompanyRepository</c>.
         /// </summary>
-        [Key(7)]
         public CompanyAllowedCurrencies AllowedCurrencies { get; set; } = [];
 
         /// <summary>

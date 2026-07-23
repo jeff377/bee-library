@@ -6,7 +6,7 @@ namespace Bee.Definition.Sorting
     /// <summary>
     /// A sort field definition.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class SortField : MessagePackCollectionItem
     {
         /// <summary>
@@ -32,13 +32,11 @@ namespace Bee.Definition.Sorting
         /// <summary>
         /// Gets or sets the field name or SQL expression.
         /// </summary>
-        [Key(100)]
         public string FieldName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the sort direction.
         /// </summary>
-        [Key(101)]
         public SortDirection Direction { get; set; }
     }
 }

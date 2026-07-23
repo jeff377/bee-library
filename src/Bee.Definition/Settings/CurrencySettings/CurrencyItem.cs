@@ -11,7 +11,7 @@ namespace Bee.Definition.Settings
     /// independent of company); the company layer may only override the final cash-rounding unit.
     /// </summary>
     [Description("System-level currency definition item.")]
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class CurrencyItem : MessagePackCollectionItem
     {
         /// <summary>
@@ -42,7 +42,6 @@ namespace Bee.Definition.Settings
         /// <c>BHD</c>). This is the lookup key.
         /// </summary>
         [XmlAttribute]
-        [Key(100)]
         public string Code { get; set; } = string.Empty;
 
         /// <summary>
@@ -50,7 +49,6 @@ namespace Bee.Definition.Settings
         /// stored for reference and interchange.
         /// </summary>
         [XmlAttribute]
-        [Key(101)]
         public string Numeric { get; set; } = string.Empty;
 
         /// <summary>
@@ -60,21 +58,18 @@ namespace Bee.Definition.Settings
         /// company cash-rounding policy (see <c>CompanyCashRounding</c>).
         /// </summary>
         [XmlAttribute]
-        [Key(102)]
         public decimal Rounding { get; set; } = 0.01m;
 
         /// <summary>
         /// Gets or sets the display symbol (for example <c>$</c>, <c>¥</c>).
         /// </summary>
         [XmlAttribute]
-        [Key(103)]
         public string Symbol { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the display name (for example <c>US Dollar</c>).
         /// </summary>
         [XmlAttribute]
-        [Key(104)]
         public string Name { get; set; } = string.Empty;
     }
 }

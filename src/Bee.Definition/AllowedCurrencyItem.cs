@@ -10,7 +10,7 @@ namespace Bee.Definition
     /// <see cref="CompanyAllowedCurrencies"/>. Holds one ISO 4217 alpha-3 currency code.
     /// </summary>
     [Description("Company allowed-currency whitelist item.")]
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class AllowedCurrencyItem : MessagePackCollectionItem
     {
         /// <summary>
@@ -32,7 +32,6 @@ namespace Bee.Definition
         /// Gets or sets the ISO 4217 alpha-3 currency code.
         /// </summary>
         [XmlAttribute]
-        [Key(100)]
         public string Code { get; set; } = string.Empty;
     }
 }

@@ -10,7 +10,7 @@ namespace Bee.Definition.Organization
     /// rows are assembled into this nested shape by <see cref="DepartmentTree"/>; the load-time
     /// parent pointer lives on <see cref="DepartmentRow"/>, not here.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class DepartmentNode : MessagePackCollectionItem
     {
         /// <summary>
@@ -34,27 +34,22 @@ namespace Bee.Definition.Organization
         }
 
         /// <summary>Gets or sets the department row id (<c>st_department.sys_rowid</c>).</summary>
-        [Key(100)]
         [XmlAttribute]
         public Guid RowId { get; set; }
 
         /// <summary>Gets or sets the department business id (<c>sys_id</c>).</summary>
-        [Key(101)]
         [XmlAttribute]
         public string DeptId { get; set; } = string.Empty;
 
         /// <summary>Gets or sets the department name (<c>sys_name</c>).</summary>
-        [Key(102)]
         [XmlAttribute]
         public string DeptName { get; set; } = string.Empty;
 
         /// <summary>Gets or sets the manager (employee) row id.</summary>
-        [Key(103)]
         [XmlAttribute]
         public Guid ManagerRowId { get; set; }
 
         /// <summary>Gets or sets the child department nodes; <c>null</c> for a leaf.</summary>
-        [Key(104)]
         [XmlArrayItem(typeof(DepartmentNode))]
         public DepartmentNodeCollection? Children { get; set; }
 

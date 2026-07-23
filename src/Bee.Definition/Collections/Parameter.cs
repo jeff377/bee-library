@@ -8,7 +8,7 @@ namespace Bee.Definition.Collections
     /// <summary>
     /// A parameter item.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     [DefaultProperty("Value")]
     public class Parameter : MessagePackKeyCollectionItem
     {
@@ -36,7 +36,6 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets or sets the parameter name.
         /// </summary>
-        [Key(100)]
         public string Name
         {
             get { return base.Key; }
@@ -46,7 +45,6 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets or sets the parameter value.
         /// </summary>
-        [Key(101)]
         [MessagePackFormatter(typeof(SafeTypelessFormatter))]
         public object? Value { get; set; } = null;
 

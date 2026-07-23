@@ -10,7 +10,7 @@ namespace Bee.Definition
     /// Held in <see cref="CompanyNumberFormats"/>.
     /// </summary>
     [Description("Company number-format override item.")]
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class NumberFormatItem : MessagePackCollectionItem
     {
         /// <summary>
@@ -34,14 +34,12 @@ namespace Bee.Definition
         /// Gets or sets the number kind this override applies to.
         /// </summary>
         [XmlAttribute]
-        [Key(100)]
         public NumberKind Kind { get; set; } = NumberKind.None;
 
         /// <summary>
         /// Gets or sets the decimal places for this kind.
         /// </summary>
         [XmlAttribute]
-        [Key(101)]
         public int Decimals { get; set; }
     }
 }

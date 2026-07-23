@@ -17,7 +17,7 @@ namespace Bee.Definition.Organization
     /// The nested forest is immutable after construction; the index is a read-only derivation (built
     /// once under a lock), so a cached instance is never mutated by queries.
     /// </remarks>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class DepartmentTree : IKeyObject
     {
         /// <summary>
@@ -39,12 +39,10 @@ namespace Bee.Definition.Organization
         }
 
         /// <summary>Gets or sets the company id (cache key).</summary>
-        [Key(100)]
         [XmlAttribute]
         public string CompanyId { get; set; } = string.Empty;
 
         /// <summary>Gets or sets the root department nodes (each nests its children); the serialised state.</summary>
-        [Key(101)]
         [XmlArrayItem(typeof(DepartmentNode))]
         public DepartmentNodeCollection? Roots { get; set; }
 

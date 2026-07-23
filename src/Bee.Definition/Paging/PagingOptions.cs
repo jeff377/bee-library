@@ -15,20 +15,18 @@ namespace Bee.Definition.Paging
     /// <c>PageSize + 1</c> probe to compute <c>HasMore</c> without an extra COUNT query.</item>
     /// </list>
     /// </remarks>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class PagingOptions
     {
         /// <summary>
         /// Gets or sets the 1-based page index. Values below 1 are clamped to 1 on the server.
         /// </summary>
-        [Key(0)]
         public int Page { get; set; } = 1;
 
         /// <summary>
         /// Gets or sets the number of rows per page. Values above the framework cap are
         /// clamped on the server; values below 1 are clamped to 1.
         /// </summary>
-        [Key(1)]
         public int PageSize { get; set; } = 50;
 
         /// <summary>
@@ -36,7 +34,6 @@ namespace Bee.Definition.Paging
         /// matching row count. Defaults to <c>false</c> because COUNT is an additional
         /// round-trip; <c>HasMore</c> alone is sufficient for most UI flows.
         /// </summary>
-        [Key(2)]
         public bool IncludeTotalCount { get; set; }
     }
 }

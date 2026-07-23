@@ -11,7 +11,7 @@ namespace Bee.Definition.Settings
     /// independent of company; quantities and weights resolve their decimals from the bound unit.
     /// </summary>
     [Description("System-level unit-of-measure definition item.")]
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class UnitItem : MessagePackCollectionItem
     {
         /// <summary>
@@ -42,7 +42,6 @@ namespace Bee.Definition.Settings
         /// This is the lookup key.
         /// </summary>
         [XmlAttribute]
-        [Key(100)]
         public string Code { get; set; } = string.Empty;
 
         /// <summary>
@@ -50,7 +49,6 @@ namespace Bee.Definition.Settings
         /// <c>KG</c> = 3, <c>PCS</c> = 0).
         /// </summary>
         [XmlAttribute]
-        [Key(101)]
         public int Decimals { get; set; }
 
         /// <summary>
@@ -58,14 +56,12 @@ namespace Bee.Definition.Settings
         /// <c>volume</c> / <c>count</c>. Used for UI grouping only.
         /// </summary>
         [XmlAttribute]
-        [Key(102)]
         public string Dimension { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the display name (for example <c>Kilogram</c>).
         /// </summary>
         [XmlAttribute]
-        [Key(103)]
         public string Name { get; set; } = string.Empty;
     }
 }
