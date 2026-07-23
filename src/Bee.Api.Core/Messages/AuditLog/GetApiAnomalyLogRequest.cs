@@ -1,4 +1,4 @@
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.AuditLog;
 using Bee.Definition.Logging;
 using Bee.Definition.Paging;
 using MessagePack;

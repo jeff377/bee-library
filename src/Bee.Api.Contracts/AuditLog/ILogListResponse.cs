@@ -1,7 +1,7 @@
 using System.Data;
 using Bee.Definition.Paging;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.AuditLog
 {
     /// <summary>
     /// Shared contract for a paged audit-log list response: a page of event-header rows plus paging

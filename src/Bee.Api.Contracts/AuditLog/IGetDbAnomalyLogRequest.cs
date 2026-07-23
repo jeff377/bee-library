@@ -1,7 +1,7 @@
 using Bee.Definition.Logging;
 using Bee.Definition.Paging;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.AuditLog
 {
     /// <summary>
     /// Contract interface for the DB-anomaly list request (typed, AND-combined filter over

@@ -1,6 +1,6 @@
 using Bee.Definition.Logging;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.AuditLog
 {
     /// <summary>
     /// Contract interface for the get-change-detail response: one change event's denormalised header

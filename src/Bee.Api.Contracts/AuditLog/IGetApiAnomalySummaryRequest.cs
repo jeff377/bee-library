@@ -1,4 +1,4 @@
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.AuditLog
 {
     /// <summary>
     /// Contract interface for the API-anomaly summary request: counts <c>st_log_anomaly_api</c> events

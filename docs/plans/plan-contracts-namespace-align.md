@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | System 軸:介面 + DTO 移入 `System/`,修消費端 using | ✅ 已完成(2026-07-23) |
 | 2 | Form 軸:介面移入 `Form/`,修消費端 using | ✅ 已完成(2026-07-23) |
-| 3 | AuditLog 軸:介面 + DTO 移入 `AuditLog/`,修消費端 using | 📝 待做 |
+| 3 | AuditLog 軸:介面 + DTO 移入 `AuditLog/`,修消費端 using | ✅ 已完成(2026-07-23) |
 | 4 | 文件 / CHANGELOG breaking-change 記錄 + ADR | 📝 待做 |
 
 ## 背景

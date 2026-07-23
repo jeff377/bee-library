@@ -1,6 +1,6 @@
 using System.Data;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.AuditLog
 {
     /// <summary>
     /// Shared contract for an audit-log aggregate response: a bounded, unpaged summary result set

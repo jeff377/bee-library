@@ -1,7 +1,7 @@
 using Bee.Definition.Logging;
 using MessagePack;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.AuditLog
 {
     /// <summary>
     /// One field's before/after values within a single changed row of a record-change event.

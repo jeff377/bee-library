@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Data;
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.AuditLog;
 using Bee.Api.Core.MessagePack;
 using Bee.Api.Core.Messages.AuditLog;
 using Bee.Definition.Logging;

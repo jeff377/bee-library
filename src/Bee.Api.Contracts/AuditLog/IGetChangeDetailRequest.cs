@@ -1,4 +1,4 @@
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.AuditLog
 {
     /// <summary>
     /// Contract interface for the get-change-detail request: identifies one change event by its log

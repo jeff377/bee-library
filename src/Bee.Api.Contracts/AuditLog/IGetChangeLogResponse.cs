@@ -1,7 +1,7 @@
 using System.Data;
 using Bee.Definition.Paging;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.AuditLog
 {
     /// <summary>
     /// Contract interface for the change-log list response: a page of <c>st_log_change</c> event

@@ -1,4 +1,4 @@
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.AuditLog
 {
     /// <summary>
     /// Contract interface for the top-API-methods request: the busiest API methods by

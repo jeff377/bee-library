@@ -1,5 +1,5 @@
 using System.Data;
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.AuditLog;
 using Bee.Definition.Paging;
 using MessagePack;
 

@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.AuditLog;
 using Bee.Business.AuditLog;
 using Bee.Definition.Logging;
 

@@ -1,12 +1,14 @@
+using Bee.Definition.Logging;
 using Bee.Definition.Paging;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.AuditLog
 {
     /// <summary>
-    /// Contract interface for the access-log list request (typed, AND-combined filter over
-    /// <c>st_log_access</c> headers). All filter fields optional; scoped to the caller's company.
+    /// Contract interface for the change-log list request: a typed, AND-combined filter over the
+    /// <c>st_log_change</c> event headers plus optional paging. All filter fields are optional; the
+    /// query is scoped to the caller's current company server-side.
     /// </summary>
-    public interface IGetAccessLogRequest
+    public interface IGetChangeLogRequest
     {
         /// <summary>Gets the inclusive lower bound on the event time (UTC); <c>null</c> means no lower bound.</summary>
         DateTime? FromUtc { get; }
@@ -20,8 +22,11 @@ namespace Bee.Api.Contracts
         /// <summary>Gets the business object (program) id filter; <c>null</c> means any program.</summary>
         string? ProgId { get; }
 
-        /// <summary>Gets the viewed record key filter; <c>null</c> means any record.</summary>
+        /// <summary>Gets the master record key filter; <c>null</c> means any record.</summary>
         string? RowKey { get; }
+
+        /// <summary>Gets the change-kind filter; <c>null</c> means any kind.</summary>
+        ChangeKind? ChangeKind { get; }
 
         /// <summary>Gets the paging request; <c>null</c> applies the server default page.</summary>
         PagingOptions? Paging { get; }

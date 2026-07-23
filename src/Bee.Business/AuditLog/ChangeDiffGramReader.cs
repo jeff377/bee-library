@@ -1,6 +1,6 @@
 using System.Xml;
 using System.Xml.Linq;
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.AuditLog;
 using Bee.Definition;
 using Bee.Definition.Logging;
 
