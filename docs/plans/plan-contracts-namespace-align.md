@@ -1,13 +1,13 @@
 # 計畫:Bee.Api.Contracts 合約介面命名空間按 BO 軸對齊
 
-**狀態:🚧 進行中(2026-07-23)**
+**狀態:✅ 已完成(2026-07-23)**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | System 軸:介面 + DTO 移入 `System/`,修消費端 using | ✅ 已完成(2026-07-23) |
 | 2 | Form 軸:介面移入 `Form/`,修消費端 using | ✅ 已完成(2026-07-23) |
 | 3 | AuditLog 軸:介面 + DTO 移入 `AuditLog/`,修消費端 using | ✅ 已完成(2026-07-23) |
-| 4 | 文件:Contracts README(雙語)✅;CHANGELOG 併發版 draft;ADR 待定 | 🚧 進行中 |
+| 4 | 文件:Contracts README(雙語)✅;CHANGELOG 併發版 draft;ADR 使用者決定不新增 | ✅ 已完成(2026-07-23) |
 
 ## 背景
 
@@ -103,7 +103,7 @@ DTO(1):`RecordFieldChange`
 
 - **Contracts README(雙語)**:✅ 已更新 —— 新增「軸分命名空間」設計慣例、重畫目錄結構為 System/Form/AuditLog 子資料夾 + ExecFunc 留根。
 - **CHANGELOG**:**不現在起 major 段落**。目前 CHANGELOG 頂部為已發布的 4.14.0(minor);本破壞性變更綁下一個 major,而該 major 尚未起段落(adr-030 property-name key 那批亦未進)。依 releasing 慣例「累積到發版時用 `/changelog-draft` 掃 commit 統整」,三個 commit 皆帶 `refactor(contracts)!:` + `BREAKING CHANGE:` footer,發版 draft 時會被掃到。
-- **ADR**:待使用者決定是否新增獨立 ADR。決議脈絡已存於本 plan 與 commit footer;獨立 ADR 對「命名空間重組」而言較既有 ADR 顆粒度重,故預設不建、由使用者拍板。
+- **ADR**:使用者決定**不新增**獨立 ADR。決議脈絡存於本 plan 與 commit footer;命名空間重組對既有 ADR 顆粒度而言偏輕。
 - **綁 major**:此變更隨下一個 major tag 發佈,不進 patch/minor。
 
 ## 尚未決策 / 待確認
