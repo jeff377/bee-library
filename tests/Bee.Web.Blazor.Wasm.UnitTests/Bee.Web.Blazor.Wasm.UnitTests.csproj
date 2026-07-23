@@ -11,6 +11,9 @@
 
   <ItemGroup>
     <PackageReference Include="bunit" Version="2.7.2" />
+    <!-- Pin AngleSharp above the transitive 1.4.0 that bunit 2.7.2 pulls in:
+         GHSA-pgww-w46g-26qg affects < 1.5.0 and fails the NuGetAudit gate. -->
+    <PackageReference Include="AngleSharp" Version="1.5.2" />
     <PackageReference Include="coverlet.collector" Version="8.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
