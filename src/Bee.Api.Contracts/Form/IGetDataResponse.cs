@@ -1,6 +1,6 @@
 using System.Data;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.Form
 {
     /// <summary>
     /// Contract interface for the GetData response.

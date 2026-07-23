@@ -1,4 +1,4 @@
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.Form;
 using Bee.Definition.Paging;
 
 namespace Bee.Business.Form

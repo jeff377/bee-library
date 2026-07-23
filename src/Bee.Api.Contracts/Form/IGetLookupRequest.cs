@@ -1,6 +1,6 @@
 using Bee.Definition.Paging;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.Form
 {
     /// <summary>
     /// Contract interface for the GetLookup request.

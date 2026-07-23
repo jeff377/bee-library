@@ -2,7 +2,7 @@ using Bee.Definition.Filters;
 using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.Form
 {
     /// <summary>
     /// Contract interface for the GetList request.

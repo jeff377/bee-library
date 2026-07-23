@@ -1,4 +1,4 @@
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.Form;
 using Bee.Definition.Filters;
 using Bee.Definition.Paging;
 using Bee.Definition.Sorting;

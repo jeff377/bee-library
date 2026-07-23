@@ -1,4 +1,4 @@
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.Form;
 using MessagePack;
 
 namespace Bee.Api.Core.Messages.Form
