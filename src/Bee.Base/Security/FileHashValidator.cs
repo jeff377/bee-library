@@ -40,7 +40,7 @@ namespace Bee.Base.Security
             for (int i = 0; i < bytes.Length; i++)
             {
                 try { bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16); }
-                catch { return null; }
+                catch (Exception ex) when (ex is FormatException or OverflowException) { return null; }
             }
             return bytes;
         }

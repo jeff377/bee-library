@@ -65,8 +65,11 @@ namespace Bee.Base.Security
                     return FixedTimeEquals(storedHash, computedHash);
                 }
             }
-            catch
+            catch (Exception ex) when (ex is FormatException or OverflowException or ArgumentException)
             {
+                // A malformed stored hash (bad base64, unparsable iteration count, invalid
+                // PBKDF2 parameters) means the password cannot match — fail closed. Unexpected
+                // exceptions are left to propagate rather than masquerading as a wrong password.
                 return false;
             }
         }

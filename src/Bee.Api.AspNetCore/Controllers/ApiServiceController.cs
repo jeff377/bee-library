@@ -25,7 +25,9 @@ namespace Bee.Api.AspNetCore.Controllers
         /// Gets a value indicating whether the current environment is the development environment.
         /// </summary>
         protected bool IsDevelopment =>
-            HttpContext.RequestServices.GetRequiredService<IHostEnvironment>().IsDevelopment();
+            // Default to false (production) when the environment cannot be resolved, so error
+            // detail stays hidden by default rather than leaking on a misconfigured host.
+            HttpContext.RequestServices?.GetService<IHostEnvironment>()?.IsDevelopment() ?? false;
 
         /// <summary>
         /// Handles HTTP POST requests and executes the corresponding API service.
@@ -102,8 +104,11 @@ namespace Bee.Api.AspNetCore.Controllers
             catch (JsonRpcException) { throw; }
             catch (Exception ex)
             {
+                // Do not leak the parser's internal message to callers in production; surface it
+                // only under development, consistent with HandleRequestAsync's error handling.
+                string detail = IsDevelopment ? $": {ex.Message}" : string.Empty;
                 throw new JsonRpcException(StatusCodes.Status400BadRequest,
-                    JsonRpcErrorCode.ParseError, $"Invalid JSON format: {ex.Message}");
+                    JsonRpcErrorCode.ParseError, $"Invalid JSON format{detail}");
             }
         }
 

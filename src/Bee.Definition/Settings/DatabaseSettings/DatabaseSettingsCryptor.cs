@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using Bee.Base;
 using Bee.Base.Security;
@@ -84,8 +85,11 @@ namespace Bee.Definition.Settings
                 byte[] plain = AesCbcHmacCryptor.Decrypt(encrypted, aesKey, hmacKey);
                 return Encoding.UTF8.GetString(plain);
             }
-            catch
+            catch (Exception ex) when (ex is FormatException or CryptographicException)
             {
+                // A malformed or tampered ciphertext (bad base64, HMAC mismatch, invalid length)
+                // decrypts to nothing — fail closed. AesCbcHmacCryptor raises CryptographicException
+                // on every integrity failure, so unexpected exceptions still propagate.
                 return string.Empty;
             }
         }

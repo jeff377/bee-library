@@ -40,7 +40,7 @@ namespace Bee.Repository.System
             string sql = "INSERT INTO st_session \n" +
                                  "(access_token, session_user_xml, sys_insert_time, sys_invalid_time) \n" +
                                  "VALUES (" + CommandTextVariable.Parameters + ")";
-            var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, sessionUser.AccessToken, xml, DateTime.Now, sessionUser.EndTime);
+            var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, sessionUser.AccessToken, xml, DateTime.UtcNow, sessionUser.EndTime);
             var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
             dbAccess.Execute(command);
         }
