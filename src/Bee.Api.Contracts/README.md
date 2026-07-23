@@ -65,6 +65,7 @@
 
 ## Design Conventions
 
+- **Axis-based namespaces** -- interfaces are grouped into `System` / `Form` / `AuditLog` sub-namespaces that mirror the `Bee.Business.*` and `Bee.Api.Core.Messages.*` layers, so a contract, its message implementation, and its business object share the same axis. The generic cross-BO `IExecFunc*` dispatch contract stays at the root `Bee.Api.Contracts` (mirroring the root-level `ExecFunc*` implementation in `Bee.Api.Core.Messages`).
 - **Pure interface definitions** -- each API operation is defined as an `IXxxRequest` / `IXxxResponse` pair; no implementation logic in this project.
 - **MessagePack serialization** -- data classes such as `PackageUpdateInfo` use `[MessagePackObject]` and `[Key(n)]` attributes for high-performance binary serialization.
 - **RSA-based security** -- the login contract includes `ClientPublicKey` (client-generated) and `ApiEncryptionKey` (server-generated) for secure key exchange.
@@ -73,18 +74,24 @@
 
 ## Directory Structure
 
+Interfaces are organized into axis sub-folders (folder = sub-namespace); the cross-BO
+`IExecFunc*` pair stays at the root.
+
 ```
 Bee.Api.Contracts/
-  ILoginRequest.cs / ILoginResponse.cs
-  ICreateSessionRequest.cs / ICreateSessionResponse.cs
-  IPingRequest.cs / IPingResponse.cs
-  IGetDefineRequest.cs / IGetDefineResponse.cs
-  ISaveDefineRequest.cs / ISaveDefineResponse.cs
-  IExecFuncRequest.cs / IExecFuncResponse.cs
-  IGetCommonConfigurationRequest.cs / IGetCommonConfigurationResponse.cs
-  ICheckPackageUpdateRequest.cs / ICheckPackageUpdateResponse.cs
-  IGetPackageRequest.cs / IGetPackageResponse.cs
-  PackageUpdateQuery.cs
-  PackageUpdateInfo.cs
-  PackageDelivery.cs
+  IExecFuncRequest.cs / IExecFuncResponse.cs          # root — cross-BO generic dispatch
+  System/                                             # namespace Bee.Api.Contracts.System
+    ILoginRequest.cs / ILoginResponse.cs
+    ICreateSessionRequest.cs / ICreateSessionResponse.cs
+    IPingRequest.cs / IPingResponse.cs
+    IEnterCompany* / ILeaveCompany* / IGetLanguage*
+    IGetDefine* / ISaveDefine* / IGetFormSchema* / IGetFormLayout* / IGetDepartmentTreeResponse
+    IGetCommonConfiguration* / ICheckPackageUpdate* / IGetPackage*
+    PackageUpdateQuery.cs / PackageUpdateInfo.cs / PackageDelivery.cs
+  Form/                                               # namespace Bee.Api.Contracts.Form
+    IGetList* / IGetData* / IGetNewData* / ISave* / IDelete* / IGetLookup*
+  AuditLog/                                           # namespace Bee.Api.Contracts.AuditLog
+    IGetChangeLog* / IGetChangeDetail* / IGetAccessLog* / IGetLoginLog*
+    IGetApiAnomaly* / IGetDbAnomaly* / IGetTopApiMethodsRequest
+    ILogListResponse.cs / ILogAggregateResponse.cs / RecordFieldChange.cs
 ```
