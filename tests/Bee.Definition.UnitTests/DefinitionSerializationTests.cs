@@ -18,20 +18,22 @@ namespace Bee.Definition.UnitTests
         /// <param name="isJson">測試 JSON 序列化。</param>
         private static void SerializeObject<T>(object value, bool isXml = true, bool isJson = true)
         {
-            object? value2;
-            // XML 序列化
+            // XML 序列化：round-trip 後再序列化應與原字串一致，才證明所有欄位都被還原
+            // （只驗 NotNull 會讓「欄位序列化時遺失」的情況假綠燈通過）。
             if (isXml)
             {
                 string xml = XmlCodec.Serialize(value);
-                value2 = XmlCodec.Deserialize<T>(xml);
+                var value2 = XmlCodec.Deserialize<T>(xml);
                 Assert.NotNull(value2);
+                Assert.Equal(xml, XmlCodec.Serialize(value2!));
             }
-            // JSON 序列化
+            // JSON 序列化：同樣以 re-serialize 相等驗證還原保真度。
             if (isJson)
             {
                 string json = JsonCodec.Serialize(value);
-                value2 = JsonCodec.Deserialize<T>(json);
+                var value2 = JsonCodec.Deserialize<T>(json);
                 Assert.NotNull(value2);
+                Assert.Equal(json, JsonCodec.Serialize(value2!));
             }
         }
 
