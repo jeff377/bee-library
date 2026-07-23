@@ -1,4 +1,4 @@
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.System;
 using Bee.Definition.Forms;
 
 namespace Bee.Business.System

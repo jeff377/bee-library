@@ -1,5 +1,5 @@
 using Bee.Definition;
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.System;
 
 namespace Bee.Business.System
 {

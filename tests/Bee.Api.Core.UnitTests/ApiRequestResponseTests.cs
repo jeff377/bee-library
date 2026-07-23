@@ -22,7 +22,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.IsType<ApiRequest>(request, exactMatch: false);
-            Assert.IsType<Bee.Api.Contracts.ILoginRequest>(request, exactMatch: false);
+            Assert.IsType<Bee.Api.Contracts.System.ILoginRequest>(request, exactMatch: false);
             Assert.Equal("admin", request.UserId);
             Assert.Equal("pass123", request.Password);
         }
@@ -40,7 +40,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.IsType<ApiResponse>(response, exactMatch: false);
-            Assert.IsType<Bee.Api.Contracts.ILoginResponse>(response, exactMatch: false);
+            Assert.IsType<Bee.Api.Contracts.System.ILoginResponse>(response, exactMatch: false);
             Assert.Equal(token, response.AccessToken);
         }
 

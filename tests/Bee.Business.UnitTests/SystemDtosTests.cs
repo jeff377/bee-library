@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.System;
 using Bee.Business.System;
 using Bee.Definition;
 

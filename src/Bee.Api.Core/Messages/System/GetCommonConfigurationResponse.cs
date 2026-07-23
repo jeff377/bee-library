@@ -1,4 +1,4 @@
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.System;
 using MessagePack;
 
 namespace Bee.Api.Core.Messages.System

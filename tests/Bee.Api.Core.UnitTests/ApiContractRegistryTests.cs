@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using Bee.Api.Core.Messages.System;
-using Bee.Api.Contracts;
+using Bee.Api.Contracts.System;
 using Bee.Api.Core.Registry;
 
 namespace Bee.Api.Core.UnitTests
