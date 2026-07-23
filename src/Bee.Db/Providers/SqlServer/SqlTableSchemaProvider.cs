@@ -262,7 +262,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="length">The data length.</param>
         public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int dataScale, int length)
         {
-            switch ((dataType ?? string.Empty).ToUpper())
+            switch ((dataType ?? string.Empty).ToUpperInvariant())
             {
                 case "NCHAR":
                     return FieldDbType.String;
@@ -309,7 +309,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="originalDefaultValue">The built-in default value.</param>
         public static string ParseDBDefaultValue(string dataType, string defaultValue, string originalDefaultValue)
         {
-            switch ((dataType ?? string.Empty).ToUpper())
+            switch ((dataType ?? string.Empty).ToUpperInvariant())
             {
                 case "CHAR":
                 case "VARCHAR":

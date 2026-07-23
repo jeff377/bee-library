@@ -22,7 +22,7 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Initializes a new instance of <see cref="MessagePackKeyCollectionBase{T}"/>.
         /// </summary>
-        public MessagePackKeyCollectionBase() : base(StringComparer.CurrentCultureIgnoreCase)
+        public MessagePackKeyCollectionBase() : base(StringComparer.OrdinalIgnoreCase)
         {
         }
 

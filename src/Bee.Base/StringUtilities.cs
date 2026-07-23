@@ -105,8 +105,8 @@ namespace Bee.Base
         {
             if (s is null) return false;
             return s.Contains(value, ignoreCase
-                ? StringComparison.CurrentCultureIgnoreCase
-                : StringComparison.CurrentCulture);
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -120,8 +120,8 @@ namespace Bee.Base
         {
             if (s is null) return false;
             return s.StartsWith(prefix, ignoreCase
-                ? StringComparison.CurrentCultureIgnoreCase
-                : StringComparison.CurrentCulture);
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -135,8 +135,8 @@ namespace Bee.Base
         {
             if (s is null) return false;
             return s.EndsWith(suffix, ignoreCase
-                ? StringComparison.CurrentCultureIgnoreCase
-                : StringComparison.CurrentCulture);
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -151,8 +151,8 @@ namespace Bee.Base
         {
             if (s is null) return -1;
             return s.IndexOf(value, ignoreCase
-                ? StringComparison.CurrentCultureIgnoreCase
-                : StringComparison.CurrentCulture);
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -167,8 +167,8 @@ namespace Bee.Base
         {
             if (s is null) return -1;
             return s.LastIndexOf(value, ignoreCase
-                ? StringComparison.CurrentCultureIgnoreCase
-                : StringComparison.CurrentCulture);
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal);
         }
 
         #endregion

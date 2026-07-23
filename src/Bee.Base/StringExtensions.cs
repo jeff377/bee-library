@@ -21,7 +21,7 @@ namespace Bee.Base
         {
             int pos = string.IsNullOrEmpty(s)
                 ? -1
-                : s.IndexOf(delimiter, StringComparison.CurrentCultureIgnoreCase);
+                : s.IndexOf(delimiter, StringComparison.OrdinalIgnoreCase);
             (left, right) = SliceAt(s, pos, delimiter.Length);
         }
 
@@ -37,7 +37,7 @@ namespace Bee.Base
         {
             int pos = string.IsNullOrEmpty(s)
                 ? -1
-                : s.LastIndexOf(delimiter, StringComparison.CurrentCultureIgnoreCase);
+                : s.LastIndexOf(delimiter, StringComparison.OrdinalIgnoreCase);
             (left, right) = SliceAt(s, pos, delimiter.Length);
         }
 
@@ -60,7 +60,7 @@ namespace Bee.Base
         public static string LeftCut(this string? s, string prefix)
         {
             if (string.IsNullOrEmpty(s)) return string.Empty;
-            return s.StartsWith(prefix, StringComparison.CurrentCultureIgnoreCase)
+            return s.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
                 ? s.Substring(prefix.Length)
                 : s;
         }
@@ -74,7 +74,7 @@ namespace Bee.Base
         public static string RightCut(this string? s, string suffix)
         {
             if (string.IsNullOrEmpty(s)) return string.Empty;
-            return s.EndsWith(suffix, StringComparison.CurrentCultureIgnoreCase)
+            return s.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)
                 ? s.Substring(0, s.Length - suffix.Length)
                 : s;
         }

@@ -256,7 +256,7 @@ namespace Bee.Db.Providers.PostgreSql
         /// <param name="length">The character maximum length (0 when not applicable).</param>
         public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int dataScale, int length)
         {
-            switch ((dataType ?? string.Empty).ToLower())
+            switch ((dataType ?? string.Empty).ToLowerInvariant())
             {
                 case "character":
                 case "char":
@@ -322,7 +322,7 @@ namespace Bee.Db.Providers.PostgreSql
 
             // For string-like types: strip the surrounding single quotes and unescape doubled quotes.
             string normalized;
-            switch ((dataType ?? string.Empty).ToLower())
+            switch ((dataType ?? string.Empty).ToLowerInvariant())
             {
                 case "character":
                 case "char":

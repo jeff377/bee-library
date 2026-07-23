@@ -285,7 +285,7 @@ namespace Bee.Db.Providers.Sqlite
         /// </summary>
         public static FieldDbType MapToFieldDbType(string baseType, bool isPrimaryKey)
         {
-            string normalized = (baseType ?? string.Empty).ToUpper();
+            string normalized = (baseType ?? string.Empty).ToUpperInvariant();
             switch (normalized)
             {
                 case "VARCHAR":

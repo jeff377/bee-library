@@ -255,7 +255,7 @@ namespace Bee.Db.Providers.MySql
         /// </remarks>
         public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int dataScale, int length)
         {
-            switch ((dataType ?? string.Empty).ToLower())
+            switch ((dataType ?? string.Empty).ToLowerInvariant())
             {
                 case "char":
                     return length == 36 ? FieldDbType.Guid : FieldDbType.String;

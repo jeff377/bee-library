@@ -377,7 +377,7 @@ namespace Bee.Db.Providers.Oracle
         /// </summary>
         private static string NormalizeDataTypeName(string dataType)
         {
-            string lower = (dataType ?? string.Empty).ToLower().Trim();
+            string lower = (dataType ?? string.Empty).ToLowerInvariant().Trim();
             int parenStart = lower.IndexOf('(');
             if (parenStart < 0) return lower;
             int parenEnd = lower.IndexOf(')', parenStart);
