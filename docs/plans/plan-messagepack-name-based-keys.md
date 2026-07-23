@@ -1,14 +1,14 @@
 # 計畫：MessagePack 合約改採 property-name key（keyAsPropertyName）
 
-**狀態：📝 擬定中（2026-07-22）— 待 go/no-go 決策**
+**狀態：🚧 Phase 0 完成（2026-07-22）— Phase 1+ 待 go/no-go 決策**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 0 | AOT 反射-only 冒煙 + 範圍決定（阻塞後續） | 📝 待做 |
-| 1 | opt-out membership 稽核（90 型別 public 屬性掃描） | 📝 待做 |
-| 2 | 逐檔轉換 `[MessagePackObject]` → `keyAsPropertyName` + 移除 `[Key(n)]` | 📝 待做 |
-| 3 | 回歸與相容性驗證 + changelog/版本 | 📝 待做 |
-| 4 | （條件式）導入 MessagePack source generator | 📝 待評估 |
+| 0 | AOT 反射-only 冒煙 + 範圍決定（阻塞後續） | ✅ 已完成（source-gen 非前置；見下方結果） |
+| 1 | opt-out membership 稽核（90 型別 public 屬性掃描） | 📝 待 go/no-go |
+| 2 | 逐檔轉換 `[MessagePackObject]` → `keyAsPropertyName` + 移除 `[Key(n)]` | 📝 待 go/no-go |
+| 3 | 回歸與相容性驗證 + changelog/版本 | 📝 待 go/no-go |
+| 4 | （條件式）導入 MessagePack source generator | ❎ 經 Phase 0 判定**不需要** |
 
 ## 背景與決定脈絡
 
@@ -51,14 +51,31 @@
 - 執行前先跑 **Phase 0**（AOT 冒煙 + 範圍決定），再由使用者對「是否值得這個 breaking change」正式 go/no-go。
 - 若暫緩：現況 hybrid 可正常運作，只需靠既有記憶與 code review 避開整數-key footgun。
 
-## Phase 0：AOT 反射-only 冒煙 + 範圍決定（阻塞後續）
+## Phase 0：AOT 反射-only 冒煙 + 範圍決定（✅ 已完成 2026-07-22）
 
-先確定「現有 Emit-based resolver 在 AOT 下是否本就可行」，因為這決定 migration 範圍：
+先確定「現有 resolver 在 AOT（無 Emit）下是否本就可行」，因為這決定 migration 範圍。
 
-- 用 `AppContext.SetSwitch("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", false)` 桌面重現（見 [[mobile-trim-half-a-solved]] 的方法），對現有 `MessagePackCodec` 跑既有 **`ApiContractSerializationTests`**（剛完成的 114 tests，天然可複用為 AOT 冒煙）。
-- 判定：
-  - **現有 Emit resolver 在 AOT-repro 下就掛** → 本 migration **必須併上 source generator**（Phase 4 升為必做）；此時 B（keyAsPropertyName 保留標記）正是 source-gen 的前提，migration 與 AOT 修復合流。
-  - **通過** → source-gen 可延後，migration 純屬性轉換。
+**做法**：獨立 console（scratchpad），以 `runtimeconfig` 的
+`System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported = false`
++ 進入點第一行 `AppContext.SetSwitch(...)` 重現行動端 AOT 的 reflection-only 路徑，
+對 `MessagePackPayloadSerializer`（= `MessagePackCodec` 同一 resolver 鏈）跑合約 round-trip。
+用獨立 console 而非 xUnit：避免同進程其他 MessagePack 測試先觸發 Emit resolver 靜態初始化，使開關失效。
+
+**結果**（`IsDynamicCodeSupported = False` 確認生效）：
+
+| 型別 | 鍵策略 | 結果 |
+|------|--------|------|
+| `LoginRequest` | 整數 `[Key]` | ✅ 113 bytes round-trip |
+| `CheckPackageUpdateResponse` | 整數 `[Key]` + 集合 | ✅ 131 bytes round-trip |
+| `KeyAsPropertyNameSample` | **`keyAsPropertyName`（migration 目標）** | ✅ 42 bytes round-trip |
+
+**結論**：**MessagePack 3.x 有 reflection-based（非 Emit）fallback**，`IsDynamicCodeSupported=false` 下對
+整數 key **與** keyAsPropertyName **兩者皆正常 round-trip**。→ **source generator 不是 migration 的前置條件**（Phase 4 判定不需要）。migration（若做）單純是屬性轉換。此與 [[dynamicexpresso-aot-reflection-only-ok]] 同一 pattern（AOT 退直譯/反射而非硬失敗）。
+
+**此 repro 尚未涵蓋（誠實界定）**：
+
+- **Trimming（half-A）**：桌面 repro 無 trimming。reflection-based formatter 需要合約成員 metadata 被保留；full-trim NativeAOT/iOS 若砍掉 `Bee.Api.Core.Messages` 成員，reflection formatter 仍可能失敗。此為 **trimming 覆蓋**問題，**與鍵策略無關**（整數 key 的 reflection formatter 有相同需求），且獨立於本 migration。`Bee.Definition` 已有 ILLink.Descriptors（[[mobile-trim-half-a-solved]]）；`Bee.Api.Core.Messages` 是否需比照為另案。
+- **iOS 實機**：Mono AOT 反射邊界仍未於實機驗證。
 
 ## Phase 1：opt-out membership 稽核
 

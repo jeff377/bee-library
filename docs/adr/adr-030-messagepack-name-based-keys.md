@@ -34,6 +34,7 @@
 - **消滅跨繼承 key 編號協調**：不再需要 base `[Key(0)]` / derived `[Key(100+)]` 的避撞規劃。
 - **統一心智模型**：JSON 與 MessagePack 皆以「屬性名」為 wire 合約，一套規則。
 - **保留 source generator 退路**：keyAsPropertyName 仍需 `[MessagePackObject]` 標記，日後行動端 AOT 若被逼上 source-gen，標記已在位，不必回頭全補。純去標記的 contractless 會**關掉這道門**（source-gen 需要標記），故不採。
+  - **註（Phase 0，2026-07-22）**：plan 的 AOT 冒煙已證實 MessagePack 3.x 在 `IsDynamicCodeSupported=false`（無 Emit）下有 **reflection-based fallback**，整數 key 與 keyAsPropertyName **皆正常 round-trip** —— 故 source-gen **並非現行必需**，此條「退路」的急迫性下降。惟保留標記仍是**低成本保險**（免費保留 source-gen 選項），且 B 另外三條理由（消滅 footgun、消滅編號協調、統一心智）不受影響，故決策維持 B。
 
 ## 取捨
 
