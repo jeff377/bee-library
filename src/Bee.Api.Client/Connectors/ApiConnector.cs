@@ -76,6 +76,8 @@ namespace Bee.Api.Client.Connectors
             }
             catch (Exception ex)
             {
+                // Boundary: record any failure of the remote/local call on the trace span, then
+                // rethrow unchanged (preserving the stack). A catch-all is intentional here.
                 Tracer.End(ctx, TraceStatus.Error, ex.Message);
                 throw;
             }

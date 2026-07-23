@@ -220,6 +220,11 @@ capability **未接線前一律 inert**，既有 app 不受影響。要啟用：
 - 前端 capability 快照（`ClientInfo.Capabilities`）同為某時間點：`EnterCompany` 填入、`LeaveCompany` / 換 token 時清除。授權變更後需重新 `EnterCompany` 才會刷新。
 - 快照為某時間點：改配置對「走快取的判定」即時反映（`Can` 現查快取）；已進公司 session 的 role/employee/部門快照於下次 `EnterCompany` 更新。
 
+## 傳輸與憑證強化（正式環境）
+
+- **強制 HTTPS。** 登入請求以 `PayloadFormat.Encoded`（序列化 + 壓縮 + Base64，**非加密**）承載密碼；RSA 握手只保護 server 回傳的 session key。因此傳輸機密性完全仰賴 TLS。正式環境所有端點務必以 HTTPS 提供（並啟用 HSTS），切勿以純 HTTP 暴露 JSON-RPC 端點。
+- **覆寫 API 金鑰驗證器。** 預設 `ApiAuthorizationValidator` 只檢查 `X-Api-Key` 標頭非空、不驗其值 —— 真正的認證走 Bearer access token。若將 API 金鑰當作存取閘門，請覆寫 `ApiServiceOptions.AuthorizationValidator`，以常數時間比對對照設定的金鑰集。預設驗證器仍在使用時，`UseBeeFramework` 會記錄啟動警告。
+
 ## 非目標
 
 - **宣告式自訂命令模型** — 標準工具列命令目前於程式碼標記（第 9 節）；把 Print / Export / Approve 做成*資料驅動*的 `FormLayout` element 尚未模型化。未來加入時，自訂命令會自帶 opt-in 的 `PermissionAction`。

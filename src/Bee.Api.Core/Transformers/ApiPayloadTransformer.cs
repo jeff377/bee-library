@@ -25,6 +25,9 @@
             }
             catch (Exception ex)
             {
+                // Boundary: the serializer and compressor are pluggable, so any provider-specific
+                // failure is translated into one uniform pipeline error while preserving the inner
+                // exception for diagnostics. A catch-all is intentional here.
                 throw new InvalidOperationException("An error occurred during the data encoding process.", ex);
             }
         }
@@ -55,6 +58,8 @@
             }
             catch (Exception ex)
             {
+                // Boundary: mirrors Encode — any pluggable decompressor/deserializer failure is
+                // translated into one uniform pipeline error, preserving the inner exception.
                 throw new InvalidOperationException("An error occurred during the data decoding process.", ex);
             }
         }

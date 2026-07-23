@@ -5,6 +5,15 @@ namespace Bee.Api.Core.Authorization
     /// <summary>
     /// Provides default API key and authorization validation logic.
     /// </summary>
+    /// <remarks>
+    /// WARNING: The default API key check only verifies that the <c>X-Api-Key</c> header is
+    /// non-empty; it does NOT validate the key's value. Real authentication is enforced by the
+    /// Bearer access token for methods that require authorization. Production hosts that rely on
+    /// the API key as an access gate must override this validator (or
+    /// <c>ApiServiceOptions.AuthorizationValidator</c>) to compare the key against a configured
+    /// set using a constant-time comparison. <c>UseBeeFramework</c> logs a startup warning while
+    /// this default validator is still in place.
+    /// </remarks>
     public class ApiAuthorizationValidator : IApiAuthorizationValidator
     {
         /// <summary>
@@ -40,7 +49,9 @@ namespace Bee.Api.Core.Authorization
                 return ApiAuthorizationResult.Fail(JsonRpcErrorCode.InvalidRequest, "Invalid authorization context.");
             }
 
-            // Validate that an API key is present
+            // Validate that an API key is present.
+            // NOTE: This checks presence only, not the key's value. See the class remarks — override
+            // this validator to compare the key against a configured set for production access control.
             if (string.IsNullOrWhiteSpace(context.ApiKey))
             {
                 return ApiAuthorizationResult.Fail(JsonRpcErrorCode.InvalidRequest, "Missing or invalid API key.");

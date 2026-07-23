@@ -220,6 +220,11 @@ Capability is **inert until wired**, so existing apps are unaffected. To turn it
 - The client capability snapshot (`ClientInfo.Capabilities`) is also point-in-time: populated at `EnterCompany`, cleared on `LeaveCompany` / token change. Re-enter the company to refresh it after a grant change.
 - Snapshots are point-in-time: configuration changed mid-session is reflected for cache-backed checks (`Can` reads the live cache) but role/employee/department snapshots on an already-entered session update on the next `EnterCompany`.
 
+## Transport & credential hardening (production)
+
+- **Require HTTPS.** The login request carries the password under `PayloadFormat.Encoded` (serialize + compress + Base64 — *not* encryption); the RSA handshake only protects the session key the server returns. Transport confidentiality therefore rests entirely on TLS. Serve every production endpoint over HTTPS (and enable HSTS); never expose the JSON-RPC endpoint over plain HTTP.
+- **Override the API key validator.** The default `ApiAuthorizationValidator` only checks that the `X-Api-Key` header is non-empty, not its value — real authentication runs on the Bearer access token. If you treat the API key as an access gate, override `ApiServiceOptions.AuthorizationValidator` to compare the key against a configured set with a constant-time comparison. `UseBeeFramework` logs a startup warning while the default validator is in place.
+
 ## Non-goals
 
 - **Declarative custom-command model** — standard toolbar commands are tagged in code (section 9); Print / Export / Approve as *data-defined* `FormLayout` elements are not modelled yet. When added, custom commands will carry their own opt-in `PermissionAction`.
