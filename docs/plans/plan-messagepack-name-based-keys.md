@@ -1,13 +1,15 @@
 # 計畫：MessagePack 合約改採 property-name key（keyAsPropertyName）
 
-**狀態：🚧 Phase 0 完成（2026-07-22）— Phase 1+ 待 go/no-go 決策**
+**狀態：⏸️ 暫緩（2026-07-22）— Phase 0 完成；go/no-go 決議「綁下一個 major 一起發」，Phase 1+ 暫不執行**
+
+> **go/no-go 決議（2026-07-22）**：Phase 0 讓 migration 更便宜（免 source-gen），但未改變主成本 —— 這是對已發佈套件的 breaking wire change，而頭號好處（跨型別 reinterpret）bee 未使用。決議**不做獨立 breaking release，綁進下一個規劃中的 major 版本一起執行**。現況 hybrid 可正常運作。ADR-030 維持「提議中」。
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 0 | AOT 反射-only 冒煙 + 範圍決定（阻塞後續） | ✅ 已完成（source-gen 非前置；見下方結果） |
-| 1 | opt-out membership 稽核（90 型別 public 屬性掃描） | 📝 待 go/no-go |
-| 2 | 逐檔轉換 `[MessagePackObject]` → `keyAsPropertyName` + 移除 `[Key(n)]` | 📝 待 go/no-go |
-| 3 | 回歸與相容性驗證 + changelog/版本 | 📝 待 go/no-go |
+| 1 | opt-out membership 稽核（90 型別 public 屬性掃描） | ⏸️ 暫緩（綁下一個 major） |
+| 2 | 逐檔轉換 `[MessagePackObject]` → `keyAsPropertyName` + 移除 `[Key(n)]` | ⏸️ 暫緩（綁下一個 major） |
+| 3 | 回歸與相容性驗證 + changelog/版本 | ⏸️ 暫緩（綁下一個 major） |
 | 4 | （條件式）導入 MessagePack source generator | ❎ 經 Phase 0 判定**不需要** |
 
 ## 背景與決定脈絡

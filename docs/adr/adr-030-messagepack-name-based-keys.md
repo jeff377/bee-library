@@ -2,7 +2,9 @@
 
 ## 狀態
 
-**提議中（Proposed，2026-07-22）** —— 本 ADR 記錄「合約鍵策略改為 name-based」的決策方向與取捨，**尚未執行**。這是對已發佈套件的 breaking wire change，執行與否由 go/no-go 閘門決定，實施步驟見 [plan-messagepack-name-based-keys.md](../plans/plan-messagepack-name-based-keys.md)。採納後本狀態轉為「已採納」並回頭修正 [ADR-004](adr-004-messagepack-payload.md)。
+**提議中（Proposed，2026-07-22）** —— 本 ADR 記錄「合約鍵策略改為 name-based」的決策方向與取捨，**尚未執行**。這是對已發佈套件的 breaking wire change，實施步驟見 [plan-messagepack-name-based-keys.md](../plans/plan-messagepack-name-based-keys.md)。採納並執行後，本狀態轉為「已採納」並回頭修正 [ADR-004](adr-004-messagepack-payload.md)。
+
+> **go/no-go 決議（2026-07-22）**：**暫緩，綁進下一個規劃中的 major 版本一起執行**。理由：Phase 0 已證實 source-gen 非前置（migration 更便宜），但未改變主成本（對已發佈套件的 breaking wire change）與「頭號好處 bee 未使用」的事實；不宜為此做獨立 breaking release。現況 hybrid（整數 key）可正常運作，本 ADR 維持提議中直到隨 major 版本落地。
 
 本 ADR 重新評估 [ADR-004](adr-004-messagepack-payload.md) 「Schema Evolution：`[Key]` 支援欄位新增/移除」一節所隱含的**整數鍵**策略，不改變「MessagePack 作為 API Payload 格式」本身的決策。
 
