@@ -8,13 +8,12 @@ namespace Bee.Api.Core.Messages.System
     /// <summary>
     /// API response for the EnterCompany operation.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class EnterCompanyResponse : ApiResponse, IEnterCompanyResponse
     {
         /// <summary>
         /// Gets or sets the company information that was bound to the session.
         /// </summary>
-        [Key(100)]
         public CompanyInfo Company { get; set; } = new CompanyInfo();
 
         /// <summary>
@@ -23,7 +22,6 @@ namespace Bee.Api.Core.Messages.System
         /// capability resolver reads it to degrade toolbar commands, grid actions, and sensitive
         /// fields. A model absent from the map means no permission.
         /// </summary>
-        [Key(101)]
         public Dictionary<string, PermissionAction> Capabilities { get; set; } = [];
     }
 }

@@ -7,7 +7,7 @@ namespace Bee.Api.Core.Messages.Form
     /// <summary>
     /// API response for the form Save operation.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class SaveResponse : ApiResponse, ISaveResponse
     {
         /// <summary>
@@ -15,14 +15,12 @@ namespace Bee.Api.Core.Messages.Form
         /// server-generated columns and resets all surviving rows to
         /// <c>RowState == Unchanged</c>.
         /// </summary>
-        [Key(100)]
         public DataSet? DataSet { get; set; }
 
         /// <summary>
         /// Gets or sets the per-table affected-row counts (table name → rows
         /// touched).
         /// </summary>
-        [Key(101)]
         public Dictionary<string, int> AffectedRows { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 }

@@ -35,7 +35,6 @@ namespace Bee.Api.Core.Messages
         /// <summary>
         /// Gets or sets the parameter collection.
         /// </summary>
-        [Key(0)]
         public ParameterCollection? Parameters
         {
             get

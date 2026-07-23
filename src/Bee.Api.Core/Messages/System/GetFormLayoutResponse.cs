@@ -7,14 +7,13 @@ namespace Bee.Api.Core.Messages.System
     /// <summary>
     /// API response for the get form layout operation.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class GetFormLayoutResponse : ApiResponse, IGetFormLayoutResponse
     {
         /// <summary>
         /// Gets or sets the form layout as a typed object (serialised as a JSON
         /// tree on the Plain wire format).
         /// </summary>
-        [Key(100)]
         public FormLayout? Layout { get; set; }
     }
 }

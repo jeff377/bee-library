@@ -7,7 +7,7 @@ namespace Bee.Api.Core.Messages.Form
     /// <summary>
     /// API response for the form GetNewData operation.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class GetNewDataResponse : ApiResponse, IGetNewDataResponse
     {
         /// <summary>
@@ -15,7 +15,6 @@ namespace Bee.Api.Core.Messages.Form
         /// carries one <c>Added</c> row seeded with FormSchema defaults and a
         /// server-issued <c>sys_rowid</c>.
         /// </summary>
-        [Key(100)]
         public DataSet? DataSet { get; set; }
     }
 }

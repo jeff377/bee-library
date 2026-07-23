@@ -6,13 +6,12 @@ namespace Bee.Api.Core.Messages.System
     /// <summary>
     /// API response for the get definition operation.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class GetDefineResponse : ApiResponse, IGetDefineResponse
     {
         /// <summary>
         /// Gets or sets the definition XML content.
         /// </summary>
-        [Key(100)]
         public string Xml { get; set; } = string.Empty;
     }
 }

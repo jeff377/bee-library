@@ -8,19 +8,17 @@ namespace Bee.Api.Core.Messages.Form
     /// <summary>
     /// API response for the form GetList operation.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class GetListResponse : ApiResponse, IGetListResponse
     {
         /// <summary>
         /// Gets or sets the result rows.
         /// </summary>
-        [Key(100)]
         public DataTable? Table { get; set; }
 
         /// <summary>
         /// Gets or sets the paging metadata; <c>null</c> when the query was unpaged.
         /// </summary>
-        [Key(101)]
         public PagingInfo? Paging { get; set; }
     }
 }

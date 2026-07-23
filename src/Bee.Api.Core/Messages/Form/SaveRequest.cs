@@ -7,7 +7,7 @@ namespace Bee.Api.Core.Messages.Form
     /// <summary>
     /// API request for the form Save operation.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class SaveRequest : ApiRequest, ISaveRequest
     {
         /// <summary>
@@ -15,7 +15,6 @@ namespace Bee.Api.Core.Messages.Form
         /// <c>RowState</c> dispatches to INSERT / UPDATE / DELETE on the
         /// server.
         /// </summary>
-        [Key(100)]
         public DataSet? DataSet { get; set; }
     }
 }

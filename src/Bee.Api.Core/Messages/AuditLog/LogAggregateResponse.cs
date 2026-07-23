@@ -9,11 +9,10 @@ namespace Bee.Api.Core.Messages.AuditLog
     /// unpaged summary result set. The <see cref="Table"/> carries whichever dimension / metric columns
     /// the aggregate projects.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class LogAggregateResponse : ApiResponse, ILogAggregateResponse
     {
         /// <summary>Gets or sets the aggregate result rows.</summary>
-        [Key(100)]
         public DataTable? Table { get; set; }
 
         // Add new fields starting from Key(101).

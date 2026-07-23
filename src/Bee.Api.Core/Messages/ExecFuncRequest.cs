@@ -6,7 +6,7 @@ namespace Bee.Api.Core.Messages
     /// <summary>
     /// API request type for executing a custom method.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class ExecFuncRequest : ApiRequest, IExecFuncRequest
     {
         /// <summary>
@@ -27,7 +27,6 @@ namespace Bee.Api.Core.Messages
         /// <summary>
         /// Gets or sets the custom method identifier.
         /// </summary>
-        [Key(100)]
         public string FuncId { get; set; } = string.Empty;
     }
 }
