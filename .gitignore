@@ -23,11 +23,9 @@ docs/archive/
 # Blog posts (published on HackMD, not synced to GitHub)
 docs/blogs/
 
-# Personal Claude skills (author-specific, not synced to GitHub)
-.claude/skills/
-
-# Personal Claude slash commands (author-specific, not synced to GitHub)
-.claude/commands/
+# Claude skills 與 slash commands 預設入版控（repo 工程慣例知識，同 .claude/rules/）
+# 僅具名排除真正 author-specific 的項目
+.claude/skills/hackmd-blog/
 
 # Claude Code agent worktrees (transient, local-only)
 .claude/worktrees/
