@@ -4,6 +4,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.15.0]
+
+> Bee.NET remains in pre-stable evolution. This release is a **wire & API consolidation** ahead of stabilization. MessagePack contract serialization moves from positional integer keys to **property-name keys**, so JSON and MessagePack now share one name-based wire contract and the constructor-order / cross-inheritance key-numbering footgun is gone [ADR-030](docs/adr/adr-030-messagepack-name-based-keys.md). Separately, the API **contract interfaces are reorganized into per-axis namespaces** (`Bee.Api.Contracts.System` / `.Form` / `.AuditLog`) to match the existing implementation layers. Both changes are technically breaking — the wire format and `using` statements respectively — but ship as a minor under the pre-stable policy, as there are no external consumers yet.
+
+📄 Full notes & design context: [docs/changelogs/4.15.0.md](docs/changelogs/4.15.0.md)
+
+### Changed
+
+- `Bee.Api.Core` / `Bee.Definition` (**breaking — wire**): 72 contract types (57 `Bee.Api.Core.Messages` request/response types + 15 `Bee.Definition` / `Bee.Api.Contracts` DTOs and non-`[Union]` collection items) switch from integer `[Key(n)]` to `[MessagePackObject(keyAsPropertyName: true)]`; the MessagePack payload changes from a positional array to a property-name map, matching JSON. Deliberately excluded (kept on integer keys): `[Union]` polymorphic types (`FilterNode` / `FilterCondition` / `FilterGroup`), collection containers, and `SerializableData*` DataSet/DataTable plumbing. [ADR-030](docs/adr/adr-030-messagepack-name-based-keys.md)
+- `Bee.Api.Contracts` (**breaking — source**): the System / Form / AuditLog contract interfaces (and their DTOs) move out of the root namespace into `Bee.Api.Contracts.System` / `.Form` / `.AuditLog`, aligning with the already axis-split `Bee.Business.*` and `Bee.Api.Core.Messages.*` layers; the root namespace retains only the cross-BO `ExecFunc` request/response. Source-level only — serialization implementation namespaces are unchanged, so there is no wire impact.
+
+### Upgrade
+
+External consumers referencing the moved contract interfaces update their `using` directives to the per-axis namespace:
+
+```diff
+- using Bee.Api.Contracts;
++ using Bee.Api.Contracts.System;   // ILoginRequest, IPingRequest, …
++ using Bee.Api.Contracts.Form;     // IGetListRequest, ISaveRequest, …
++ using Bee.Api.Contracts.AuditLog; // change-axis contracts, RecordFieldChange
+```
+
+The MessagePack wire-format change requires no code change, but client and server must run the same (or a compatible) version — old positional-key payloads are not readable by the new name-based formatters.
+
 ## [4.14.0]
 
 > Bee.NET remains in pre-stable evolution. This release adds two subsystems: a **declarative expression & rule engine** (new `Bee.Expressions` package — computed fields, before-save/delete validation rules, and Avalonia client-side live preview, all schema-driven with zero per-form code) [ADR-028](docs/adr/adr-028-expression-rule-engine.md), and an **audit-trail / log-query subsystem** (six-axis `st_log_*`: login / change / access / anomaly, with `DataSet` DiffGram change capture and a background writer) [ADR-027](docs/adr/adr-027-audit-trail.md). It also **canonicalizes in-memory `DataSet` column names to lowercase** [ADR-029](docs/adr/adr-029-lowercase-field-names.md) — a wire-visible change (JSON / MessagePack keys, e.g. `SYS_ROWID` → `sys_rowid`): external JS/TS clients must switch to lowercase keys, and the `UppercaseColumnNames` extension is renamed. .NET consumers are unaffected (column lookups are case-insensitive). Per pre-stable policy this ships as a minor although the wire/API change is technically breaking.

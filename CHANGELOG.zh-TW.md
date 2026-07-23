@@ -4,6 +4,30 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.15.0]
+
+> Bee.NET 仍處 pre-stable 演進階段。本版是發版前的 **wire 與 API 收斂**。MessagePack 合約序列化由位置式整數鍵改為 **property-name key**,使 JSON 與 MessagePack 共用同一份以屬性名為準的 wire 合約,並消除建構子順序 / 跨繼承 key 編號的 footgun [ADR-030](docs/adr/adr-030-messagepack-name-based-keys.md)。另外,API **合約介面依軸分入命名空間**(`Bee.Api.Contracts.System` / `.Form` / `.AuditLog`),對齊既有的實作層。兩項變更技術上皆屬破壞性 —— 分別是 wire 格式與 `using` —— 但依 pre-stable 政策以 minor 發佈,因目前尚無外部消費者。
+
+📄 完整說明與設計脈絡:[docs/changelogs/4.15.0.zh-TW.md](docs/changelogs/4.15.0.zh-TW.md)
+
+### 變更
+
+- `Bee.Api.Core` / `Bee.Definition`(**破壞性 —— wire**):72 個合約型別(57 個 `Bee.Api.Core.Messages` request/response + 15 個 `Bee.Definition` / `Bee.Api.Contracts` DTO 與非 `[Union]` 集合 item)由整數 `[Key(n)]` 改為 `[MessagePackObject(keyAsPropertyName: true)]`;MessagePack payload 由位置式陣列改為屬性名 map,與 JSON 一致。刻意排除(維持整數鍵):`[Union]` 多型型別(`FilterNode` / `FilterCondition` / `FilterGroup`)、集合容器、以及 `SerializableData*` DataSet/DataTable plumbing。[ADR-030](docs/adr/adr-030-messagepack-name-based-keys.md)
+- `Bee.Api.Contracts`(**破壞性 —— source**):System / Form / AuditLog 三軸合約介面(及其 DTO)由根命名空間移入 `Bee.Api.Contracts.System` / `.Form` / `.AuditLog`,對齊已軸分的 `Bee.Business.*` 與 `Bee.Api.Core.Messages.*` 層;根命名空間僅保留跨 BO 的 `ExecFunc` request/response。純 source-level —— 序列化實作類別命名空間不變,對 wire 無影響。
+
+### 升級指引
+
+參照被搬移合約介面的外部消費者,將 `using` 更新至對應軸命名空間:
+
+```diff
+- using Bee.Api.Contracts;
++ using Bee.Api.Contracts.System;   // ILoginRequest, IPingRequest, …
++ using Bee.Api.Contracts.Form;     // IGetListRequest, ISaveRequest, …
++ using Bee.Api.Contracts.AuditLog; // 異動軸合約, RecordFieldChange
+```
+
+MessagePack wire 格式變更不需改程式碼,但 client 與 server 必須跑相同(或相容)版本 —— 舊的位置式鍵 payload 無法被新的 name-based formatter 讀取。
+
 ## [4.14.0]
 
 > Bee.NET 仍處 pre-stable 演進階段。本版新增兩大子系統：**宣告式運算式與規則引擎**（新套件 `Bee.Expressions` —— 計算欄、存檔/刪除前驗證規則、Avalonia 前端即時預覽，全 schema 驅動、一般表單零 BO 程式碼）[ADR-028](docs/adr/adr-028-expression-rule-engine.md)，以及**稽核軌跡 / 日誌查詢子系統**（六軸 `st_log_*`：登入 / 異動 / 檢視 / 異常，以 `DataSet` DiffGram 擷取異動、背景寫入）[ADR-027](docs/adr/adr-027-audit-trail.md)。並將**記憶體 `DataSet` 欄名正規化為小寫** [ADR-029](docs/adr/adr-029-lowercase-field-names.md) —— 此為 wire 可見變更（JSON / MessagePack key，如 `SYS_ROWID` → `sys_rowid`）：外部 JS/TS client 須改用小寫 key，`UppercaseColumnNames` 擴充方法更名。.NET 消費端不受影響（欄名查找大小寫無關）。依 pre-stable 政策以 minor 發佈，雖然此 wire/API 變更嚴格而言屬破壞性。
