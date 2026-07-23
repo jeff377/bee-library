@@ -1,16 +1,20 @@
 # 計畫：MessagePack 合約改採 property-name key（keyAsPropertyName）
 
-**狀態：⏸️ 暫緩（2026-07-22）— Phase 0 完成；go/no-go 決議「綁下一個 major 一起發」，Phase 1+ 暫不執行**
+**狀態：✅ 已完成（2026-07-22）— 程式碼已轉換並驗證；CHANGELOG/版本待發佈流程**
 
-> **go/no-go 決議（2026-07-22）**：Phase 0 讓 migration 更便宜（免 source-gen），但未改變主成本 —— 這是對已發佈套件的 breaking wire change，而頭號好處（跨型別 reinterpret）bee 未使用。決議**不做獨立 breaking release，綁進下一個規劃中的 major 版本一起執行**。現況 hybrid 可正常運作。ADR-030 維持「提議中」。
+> **go/no-go 決議（2026-07-22，定案）**：**立即執行**。**目前無外部實際消費者** → breaking wire change 無相容性成本，暫緩理由消失。決策紀錄見 [ADR-030](../adr/adr-030-messagepack-name-based-keys.md)（已採納）。
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 0 | AOT 反射-only 冒煙 + 範圍決定（阻塞後續） | ✅ 已完成（source-gen 非前置；見下方結果） |
-| 1 | opt-out membership 稽核（90 型別 public 屬性掃描） | ⏸️ 暫緩（綁下一個 major） |
-| 2 | 逐檔轉換 `[MessagePackObject]` → `keyAsPropertyName` + 移除 `[Key(n)]` | ⏸️ 暫緩（綁下一個 major） |
-| 3 | 回歸與相容性驗證 + changelog/版本 | ⏸️ 暫緩（綁下一個 major） |
-| 4 | （條件式）導入 MessagePack source generator | ❎ 經 Phase 0 判定**不需要** |
+| 0 | AOT 反射-only 冒煙 + 範圍決定 | ✅ 已完成（source-gen 非前置） |
+| 1 | opt-out membership 稽核 | ✅ 已完成（無 analyzer 但 runtime 保證全成員已標註；0 裸成員） |
+| 2 | 逐檔轉換（category-aware，非全 90） | ✅ 已完成（Batch 1：57 合約；Batch 2：15 DTO/item） |
+| 3 | 回歸驗證 + 文件 | ✅ 測試/build 全過、ADR 已更新；⏳ CHANGELOG/版本 bump 留發佈流程 |
+| 4 | （條件式）MessagePack source generator | ❎ Phase 0 判定不需要 |
+
+> **⚠️ 關鍵實作發現 —— `[Union]` ⊥ `keyAsPropertyName`**：`[Union]` 多型以整數鍵陣列 + 型別判別碼序列化，**無法**改 keyAsPropertyName。故「全 90 轉」不可能，最終 category-aware。全 repo 唯一 `[Union]` 型別為 `FilterNode`（+ FilterCondition/FilterGroup），永久維持整數 key。完整範圍表見 ADR-030「執行結果與最終範圍」。
+
+> **驗證結果**：Definition 序列化 **201** + Api.Core 序列化/合約/Filter **237** 全過（含 114 個雙格式合約 round-trip）；全 solution Release build **0 error / 0 warning**。DB 相依 end-to-end 測試因本機 Docker 未啟動未跑（`sql2025` 不可用），經 stash 對照確認與本改動無關。
 
 ## 背景與決定脈絡
 

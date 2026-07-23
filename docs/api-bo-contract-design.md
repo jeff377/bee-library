@@ -57,25 +57,29 @@ namespace Bee.Api.Contracts
 
 Inherit `ApiRequest` / `ApiResponse`, implement contract interfaces, and carry MessagePack serialization attributes. Clients use these types to send requests and receive responses.
 
+Contract types use **property-name keys** (`[MessagePackObject(keyAsPropertyName: true)]`): members are keyed by their property name on the wire, matching the JSON contract and removing the fragile integer-key coordination. Do not add `[Key(int)]`; use `[IgnoreMember]` to exclude a member, and `[Key("name")]` only when the wire name must differ from the property name. See [ADR-030](adr/adr-030-messagepack-name-based-keys.md).
+
 ```csharp
-[MessagePackObject]
+[MessagePackObject(keyAsPropertyName: true)]
 public class LoginRequest : ApiRequest, ILoginRequest
 {
-    [Key(100)] public string UserId { get; set; } = string.Empty;
-    [Key(101)] public string Password { get; set; } = string.Empty;
-    [Key(102)] public string ClientPublicKey { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string ClientPublicKey { get; set; } = string.Empty;
 }
 
-[MessagePackObject]
+[MessagePackObject(keyAsPropertyName: true)]
 public class LoginResponse : ApiResponse, ILoginResponse
 {
-    [Key(100)] public Guid AccessToken { get; set; } = Guid.Empty;
-    [Key(101)] public DateTime ExpiredAt { get; set; }
-    [Key(102)] public string ApiEncryptionKey { get; set; } = string.Empty;
-    [Key(103)] public string UserId { get; set; } = string.Empty;
-    [Key(104)] public string UserName { get; set; } = string.Empty;
+    public Guid AccessToken { get; set; } = Guid.Empty;
+    public DateTime ExpiredAt { get; set; }
+    public string ApiEncryptionKey { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
 }
 ```
+
+> **Exception — `[Union]` polymorphic hierarchies** (e.g. `FilterNode`) keep integer `[Key]` + `[Union]`, because `[Union]` is incompatible with `keyAsPropertyName`.
 
 ### BO Parameter Types (Bee.Business)
 

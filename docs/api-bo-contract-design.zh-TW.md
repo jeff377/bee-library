@@ -57,25 +57,29 @@ namespace Bee.Api.Contracts
 
 繼承 `ApiRequest` / `ApiResponse`，實作合約介面，標記 MessagePack 序列化屬性。用戶端透過這些型別發送請求與接收回應。
 
+合約型別採**屬性名為鍵**（`[MessagePackObject(keyAsPropertyName: true)]`）：成員以屬性名作為 wire 鍵，與 JSON 合約一致，並消除脆弱的整數鍵編號協調。**不要**加 `[Key(int)]`；排除成員用 `[IgnoreMember]`，僅在 wire 名需與屬性名不同時用 `[Key("name")]`。見 [ADR-030](adr/adr-030-messagepack-name-based-keys.md)。
+
 ```csharp
-[MessagePackObject]
+[MessagePackObject(keyAsPropertyName: true)]
 public class LoginRequest : ApiRequest, ILoginRequest
 {
-    [Key(100)] public string UserId { get; set; } = string.Empty;
-    [Key(101)] public string Password { get; set; } = string.Empty;
-    [Key(102)] public string ClientPublicKey { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string ClientPublicKey { get; set; } = string.Empty;
 }
 
-[MessagePackObject]
+[MessagePackObject(keyAsPropertyName: true)]
 public class LoginResponse : ApiResponse, ILoginResponse
 {
-    [Key(100)] public Guid AccessToken { get; set; } = Guid.Empty;
-    [Key(101)] public DateTime ExpiredAt { get; set; }
-    [Key(102)] public string ApiEncryptionKey { get; set; } = string.Empty;
-    [Key(103)] public string UserId { get; set; } = string.Empty;
-    [Key(104)] public string UserName { get; set; } = string.Empty;
+    public Guid AccessToken { get; set; } = Guid.Empty;
+    public DateTime ExpiredAt { get; set; }
+    public string ApiEncryptionKey { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
 }
 ```
+
+> **例外 —— `[Union]` 多型階層**（如 `FilterNode`）維持整數 `[Key]` + `[Union]`，因 `[Union]` 與 `keyAsPropertyName` 不相容。
 
 ### BO 參數型別（Bee.Business）
 

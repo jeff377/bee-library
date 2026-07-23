@@ -2,11 +2,28 @@
 
 ## 狀態
 
-**提議中（Proposed，2026-07-22）** —— 本 ADR 記錄「合約鍵策略改為 name-based」的決策方向與取捨，**尚未執行**。這是對已發佈套件的 breaking wire change，實施步驟見 [plan-messagepack-name-based-keys.md](../plans/plan-messagepack-name-based-keys.md)。採納並執行後，本狀態轉為「已採納」並回頭修正 [ADR-004](adr-004-messagepack-payload.md)。
+**已採納（Accepted，2026-07-22）** —— 決策已執行。合約與多數 DTO / 集合 item 型別改為 name-based（`keyAsPropertyName`）；`[Union]` 多型階層等為記錄在案的例外（見「執行結果與最終範圍」）。實施步驟與驗證見 [plan-messagepack-name-based-keys.md](../plans/plan-messagepack-name-based-keys.md)。
 
-> **go/no-go 決議（2026-07-22）**：**暫緩，綁進下一個規劃中的 major 版本一起執行**。理由：Phase 0 已證實 source-gen 非前置（migration 更便宜），但未改變主成本（對已發佈套件的 breaking wire change）與「頭號好處 bee 未使用」的事實；不宜為此做獨立 breaking release。現況 hybrid（整數 key）可正常運作，本 ADR 維持提議中直到隨 major 版本落地。
+> **go/no-go 決議（2026-07-22，定案）**：**立即執行**。關鍵事實 —— **目前無外部實際消費者**，故 breaking wire change 無相容性成本；先前「綁下一個 major」的暫緩理由（相容性衝擊）消失。以極低代價拿下「消滅 ctor-order footgun + 消滅跨繼承 key 編號協調 + 統一 JSON/MessagePack 心智」。
 
 本 ADR 重新評估 [ADR-004](adr-004-messagepack-payload.md) 「Schema Evolution：`[Key]` 支援欄位新增/移除」一節所隱含的**整數鍵**策略，不改變「MessagePack 作為 API Payload 格式」本身的決策。
+
+## 執行結果與最終範圍（2026-07-22）
+
+實作發現 **`[Union]` 多型與 `keyAsPropertyName` 根本不相容**（Union 以整數鍵陣列 + 型別判別碼序列化），故「全 90 型別轉換」不可能，最終採 **category-aware** 範圍：
+
+| 類別 | 處置 | 型別 |
+|------|------|------|
+| 合約 Request/Response | ✅ 轉 keyAsPropertyName | 57 個 `Bee.Api.Core.Messages.*`（+ `ApiMessageBase.Parameters` 移除 `[Key(0)]`） |
+| 純 DTO | ✅ 轉 | PackageUpdateInfo/Query、RecordFieldChange、CompanyInfo、DepartmentTree、Paging* |
+| 非-Union 集合 item | ✅ 轉（footgun 消滅點） | *Item、SortField、DepartmentNode、Parameter |
+| **`[Union]` 多型階層** | ❌ **永久例外**（整數鍵） | FilterNode / FilterCondition / FilterGroup |
+| 集合容器 | ➖ 不受影響（走自訂 formatter / proxy） | MessagePackCollectionBase/KeyCollectionBase 子型別 |
+| DataSet/DataTable wire plumbing | ➖ 維持整數鍵 | SerializableData* |
+
+**約束記錄**：`[Union]` 型別**不得**改 `keyAsPropertyName`。新增多型 MessagePack 階層時沿用整數 `[Key]` + `[Union]`。
+
+**驗證**：Phase 0 AOT 冒煙（reflection-only 下 keyAsPropertyName OK）；Definition 序列化 201 + Api.Core 序列化/合約 237 全過；全 solution Release build 0 error / 0 warning。（DB 相依 end-to-end 測試因本機 Docker 未啟動未跑，與序列化改動無關。）
 
 ## 背景
 
