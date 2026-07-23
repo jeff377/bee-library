@@ -251,7 +251,9 @@ public class DbAccessFactoryTests { ... }
 
 ### 目前仍存在的窄序列化
 
-Phase 7 後全 repo 0 處 `[Collection("...")]` 序列化要求；測試以 fixture-scoped DI instance 取代 process-wide static，race 風險已自然消除。
+多數測試已改以 fixture-scoped DI instance 取代 process-wide static，race 風險自然消除。實測（2026-07）全 repo 仍有 **20 處** `[Collection("...")]` 序列化，全部用於保護尚未 DI 化的 process-wide static：`ClientInfoState`（`ClientInfo.*`，12 處）、`SysInfoStatic`（`SysInfo.*`，3 處）、`ClientInfo`（MAUI 端 `ClientInfo.*`，3 處）、`ApiClientInfoState`（`ApiClientInfo.*`，2 處）。這些 static 重構為可注入後即可移除。
+
+> 注意：`SysInfoStatic` 與 `ClientInfo` 目前**無對應 `CollectionDefinition`**（xUnit 隱式分組仍運作，但建議補上定義或改用已定義名稱，避免打錯字時不會有編譯錯）。
 
 ## 共享 fixture 檔案隔離
 

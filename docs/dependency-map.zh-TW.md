@@ -27,8 +27,11 @@ graph BT
     Business["Bee.Business"]
   end
 
-  subgraph API 層
+  subgraph SharedContracts [共用契約層]
     Contracts["Bee.Api.Contracts"]
+  end
+
+  subgraph API 層
     Core["Bee.Api.Core"]
     Hosting["Bee.Hosting"]
     AspNet["Bee.Api.AspNetCore"]
@@ -75,6 +78,8 @@ graph BT
   Client --> Core
   UICore --> Client
   UIAvalonia --> UICore
+  UIAvalonia --> Client
+  UIAvalonia --> Definition
   UIMaui --> UICore
   BlazorSrv --> Client
   BlazorWasm --> Client
@@ -117,6 +122,7 @@ graph BT
 - **Bee.Base** 為最底層基礎套件，無任何內部相依性。
 - **Bee.Expressions** 為可攜、沙箱化的運算式求值引擎（DynamicExpresso 封裝），只依賴 `Bee.Base`。由 `Bee.Definition`（`FormExpressionCalculator`）、`Bee.Business`（規則處理器）、`Bee.Hosting`（DI 註冊）與 `Bee.UI.Avalonia`（前端即時預覽）共用，使前端算值與後端存檔一致。見 [adr-028](adr/adr-028-expression-rule-engine.md)。
 - **Bee.Definition** 為被依賴次數最多的專案，共有 6 個直接相依者（Contracts、Db、RepoAbs、Caching、Business、Core）。
+- **Bee.Api.Contracts** 是共用契約／抽象層，並非應用層級的 API 專案。雖名為「API」，但 `Bee.Business` 與 `Bee.Api.Core` 都相依於它（`Business → Contracts`、`Core → Contracts`），故其位置在兩者**之下** —— 圖上歸入 **共用契約層**，而非 API 應用層。
 - **Bee.Hosting** 為 composition root：將後端服務（`Bee.Api.Core`、`Bee.Business`、`Bee.Repository`、`Bee.ObjectCaching`）整合於一個 `IServiceCollection.AddBeeFramework` 擴充入口，不依賴 ASP.NET Core。非 web 宿主（WinForms、Console、Worker Service）直接引用此套件。
 - **Bee.Api.AspNetCore** 為 ASP.NET Core 整合層（`UseBeeFramework` middleware 與 `ApiServiceController`），透過遞移引用 `Bee.Hosting`，使 web 宿主一次引用即取得 DI 註冊與 middleware。
 - 用戶端（Bee.Api.Client）與伺服器端（Bee.Api.AspNetCore）皆透過 **Bee.Api.Core** 共享協定邏輯，確保序列化與加解密行為一致。

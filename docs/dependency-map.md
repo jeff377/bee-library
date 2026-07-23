@@ -27,8 +27,11 @@ graph BT
     Business["Bee.Business"]
   end
 
-  subgraph API
+  subgraph SharedContracts [Shared Contracts]
     Contracts["Bee.Api.Contracts"]
+  end
+
+  subgraph API
     Core["Bee.Api.Core"]
     Hosting["Bee.Hosting"]
     AspNet["Bee.Api.AspNetCore"]
@@ -75,6 +78,8 @@ graph BT
   Client --> Core
   UICore --> Client
   UIAvalonia --> UICore
+  UIAvalonia --> Client
+  UIAvalonia --> Definition
   UIMaui --> UICore
   BlazorSrv --> Client
   BlazorWasm --> Client
@@ -117,6 +122,7 @@ Also under `tools/` but not on NuGet:
 - **Bee.Base** is the lowest-level foundation package with no internal dependencies.
 - **Bee.Expressions** is a portable, sandboxed expression evaluator (DynamicExpresso-backed) that depends only on `Bee.Base`. It is shared by `Bee.Definition` (the `FormExpressionCalculator`), `Bee.Business` (the rule processor), `Bee.Hosting` (DI registration), and `Bee.UI.Avalonia` (client-side live preview), so a field computed on the client matches what the server writes on save. See [adr-028](adr/adr-028-expression-rule-engine.md).
 - **Bee.Definition** is the most depended-on project, with 6 direct dependents (Contracts, Db, RepoAbs, Caching, Business, Core).
+- **Bee.Api.Contracts** is a shared contract/abstraction layer, not an application-level API project. Despite the "API" name, both `Bee.Business` and `Bee.Api.Core` depend on it (`Business → Contracts`, `Core → Contracts`), so it sits *below* them — the diagram groups it under **Shared Contracts** rather than the API application layer.
 - **Bee.Hosting** is the composition root: it consolidates the backend services (`Bee.Api.Core`, `Bee.Business`, `Bee.Repository`, `Bee.ObjectCaching`) behind a single `AddBeeFramework` extension on `IServiceCollection`, with no ASP.NET Core dependency. Non-web hosts (WinForms, Console, Worker Service) reference it directly.
 - **Bee.Api.AspNetCore** is the ASP.NET Core integration layer (`UseBeeFramework` middleware + `ApiServiceController`); it pulls in `Bee.Hosting` transitively, so web hosts get DI registration plus middleware in one package reference.
 - Both the client (Bee.Api.Client) and the server (Bee.Api.AspNetCore) share protocol logic via **Bee.Api.Core**, ensuring consistent serialization and encryption behavior.

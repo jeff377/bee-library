@@ -30,10 +30,10 @@ Contract Interface (ILoginRequest / ILoginResponse)   <-- Single source of truth
 
 ### Contract Interfaces (Bee.Api.Contracts)
 
-Define the property contracts for API method inputs and outputs. Contain only read-only properties with no serialization attributes.
+Define the property contracts for API method inputs and outputs. Contain only read-only properties with no serialization attributes. Interfaces are split by axis into `Bee.Api.Contracts.System` / `.Form` / `.AuditLog`; the root `Bee.Api.Contracts` namespace holds only cross-axis types (`IExecFuncRequest` / `IExecFuncResponse`).
 
 ```csharp
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.System
 {
     public interface ILoginRequest
     {
@@ -53,7 +53,7 @@ namespace Bee.Api.Contracts
 }
 ```
 
-### API Contract Types (Bee.Api.Core.System)
+### API Contract Types (Bee.Api.Core.Messages.System)
 
 Inherit `ApiRequest` / `ApiResponse`, implement contract interfaces, and carry MessagePack serialization attributes. Clients use these types to send requests and receive responses.
 

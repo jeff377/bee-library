@@ -30,10 +30,10 @@
 
 ### 合約介面（Bee.Api.Contracts）
 
-定義 API 方法輸入與輸出的屬性合約，只包含唯讀屬性，不含任何序列化標記。
+定義 API 方法輸入與輸出的屬性合約，只包含唯讀屬性，不含任何序列化標記。介面依軸分入 `Bee.Api.Contracts.System` / `.Form` / `.AuditLog`；root 的 `Bee.Api.Contracts` 命名空間只保留跨軸共用型別（`IExecFuncRequest` / `IExecFuncResponse`）。
 
 ```csharp
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.System
 {
     public interface ILoginRequest
     {
@@ -53,7 +53,7 @@ namespace Bee.Api.Contracts
 }
 ```
 
-### API 合約型別（Bee.Api.Core.System）
+### API 合約型別（Bee.Api.Core.Messages.System）
 
 繼承 `ApiRequest` / `ApiResponse`，實作合約介面，標記 MessagePack 序列化屬性。用戶端透過這些型別發送請求與接收回應。
 

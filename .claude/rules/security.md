@@ -20,6 +20,17 @@ if (hmac == expected) { ... }
 - 使用 `RsaCryptor` 類別，不直接操作底層 API
 - 金鑰由 `AesCbcHmacKeyGenerator` 產生，不手動建構
 
+## 安全型別分層（原語 vs 政策）
+
+安全相關型別依「密碼學原語 vs 安全政策」分居兩層，找型別時先判斷屬於哪一類：
+
+| 層 | 位置 | 內容 | 範例 |
+|----|------|------|------|
+| **原語** | `Bee.Base/Security/` | 無狀態的密碼學運算 | `AesCbcHmacCryptor`、`RsaCryptor`、`PasswordHasher`、`FileHashValidator`、`AesCbcHmacKeyGenerator` |
+| **政策 / 金鑰協定** | `Bee.Definition/Security/` | 金鑰來源、存取政策、驗證協定 | `MasterKeyProvider`、`EncryptionKeyProtector`、`IAccessTokenValidator`、`ILoginAttemptTracker` |
+
+分界原則：純運算（給定輸入算出輸出、無業務語意）放 `Bee.Base`；牽涉「金鑰從哪來、誰能存取、如何驗證」的政策放 `Bee.Definition`。
+
 ## API 存取控制
 
 ### 三層保護等級（`ProtectionLevel`）
