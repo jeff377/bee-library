@@ -116,7 +116,10 @@ namespace Bee.Definition.Filters
         /// </summary>
         public static FilterCondition In(string field, IEnumerable<object> values)
         {
-            return new FilterCondition { FieldName = field, Operator = ComparisonOperator.In, Value = values };
+            // Materialize to object[] so the value round-trips through the MessagePack typeless
+            // formatter: its whitelist allows System.Object[] but not arbitrary IEnumerable
+            // implementations (e.g. List<object>), which would otherwise fail deserialization.
+            return new FilterCondition { FieldName = field, Operator = ComparisonOperator.In, Value = values.ToArray() };
         }
 
         /// <summary>

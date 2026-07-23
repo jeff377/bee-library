@@ -58,7 +58,14 @@ namespace Bee.Definition.Serialization
             "System.Guid",
             "System.Byte[]",
             "System.DBNull",
-            "System.Data.DataTable"
+            "System.Data.DataTable",
+            // In-clause filter values (e.g. `field IN (a, b, c)`) ride over the wire as an
+            // `object[]`, so both the array and its `System.Object` element descriptor must be
+            // allowed. This does not widen the deserialization gadget surface: every array element
+            // is still recursively validated against this same whitelist, so only already-trusted
+            // primitives (`String`, `Int32`, `Guid`, and the like) can populate the array.
+            "System.Object",
+            "System.Object[]"
         };
 
         /// <summary>

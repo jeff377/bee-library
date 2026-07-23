@@ -52,6 +52,22 @@ namespace Bee.Api.Core.UnitTests.Filters
         }
 
         [Fact]
+        [DisplayName("SPIKE：FilterCondition.In MessagePack round-trip 應保留清單值")]
+        public void RoundTrip_InCondition_PreservesValues()
+        {
+            FilterNode original = FilterCondition.In("sys_id", new object[] { "E001", "E002", "E003" });
+
+            var serializer = new MessagePackPayloadSerializer();
+            byte[] bytes = serializer.Serialize(original, typeof(FilterNode));
+            var restored = (FilterCondition)serializer.Deserialize(bytes, typeof(FilterNode))!;
+
+            Assert.Equal("sys_id", restored.FieldName);
+            Assert.Equal(ComparisonOperator.In, restored.Operator);
+            var values = Assert.IsAssignableFrom<IEnumerable<object>>(restored.Value).ToList();
+            Assert.Equal(new object[] { "E001", "E002", "E003" }, values);
+        }
+
+        [Fact]
         [DisplayName("SPIKE：SortFieldCollection MessagePack round-trip 應保留欄位與方向")]
         public void RoundTrip_SortFieldCollection_PreservesValues()
         {
