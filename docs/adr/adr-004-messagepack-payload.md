@@ -4,6 +4,8 @@
 
 已採納
 
+> **註（2026-07-22）**：本 ADR「MessagePack 作為 API Payload 格式」的決策維持不變；惟下方「理由 › Schema Evolution」所隱含的**整數 `[Key]` 鍵策略**，正由 [ADR-030](adr-030-messagepack-name-based-keys.md) 重新評估（改採 property-name key / `keyAsPropertyName`）。ADR-030 目前為提議中，尚未執行。
+
 ## 背景
 
 框架使用三種序列化格式，各有明確用途：
