@@ -232,7 +232,11 @@ namespace Bee.Base.BackgroundServices
             while (this.Status == BackgroundServiceStatus.Running && !this.TaskQueue!.IsEmpty && this.TaskQueue.TryDequeue(out BackgroundAction? backgroundAction))
             {
                 Debug.WriteLine($"Available thread count: {this.Semaphore!.CurrentCount}");
-                this.Semaphore.Wait(); // Limit maximum concurrency
+                // Limit maximum concurrency. Cancellation is opted out of deliberately: the loop
+                // already exits through the Status check above and the caller's token, and a token
+                // here would throw OperationCanceledException into the caller's catch-all, reporting
+                // a normal shutdown as a service error.
+                this.Semaphore.Wait(CancellationToken.None);
                 // Create a CancellationTokenSource for each task to set a timeout
                 CancellationTokenSource cts = new CancellationTokenSource(backgroundAction.Timeout);
 
@@ -258,7 +262,9 @@ namespace Bee.Base.BackgroundServices
                         Debug.WriteLine($"Task faulted with exception: {t.Exception?.Message}");
                     }
                     cts.Dispose();
-                });
+                // This continuation owns the disposal of cts, so it must always run. Passing a
+                // cancellable token would skip it on cancellation and leak the token source.
+                }, CancellationToken.None);
             }
         }
 
