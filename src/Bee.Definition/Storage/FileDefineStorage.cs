@@ -216,21 +216,26 @@ namespace Bee.Definition.Storage
 
         /// <inheritdoc/>
         /// <remarks>
-        /// Resolves through the same <see cref="PathOptions"/> instance the getters use, so a cache
-        /// watches exactly the file this storage would read. A define whose keys are missing yields
-        /// nothing to watch rather than throwing — an unwatched entry still expires on its sliding window.
+        /// Resolves through the same <see cref="PathOptions"/> instance the getters use, so a consumer
+        /// watches exactly the file this storage would read. A define whose keys are missing reports no
+        /// signal rather than throwing — an unwatched entry still expires on its time-based window.
         /// </remarks>
-        public string[] GetChangeMonitorPaths(DefineType defineType, params string[] keys) => defineType switch
+        public DefineChangeSource GetChangeSource(DefineType defineType, params string[] keys)
         {
-            DefineType.DbCategorySettings => [_paths.GetDbCategorySettingsFilePath()],
-            DefineType.CurrencySettings => [_paths.GetCurrencySettingsFilePath()],
-            DefineType.UnitSettings => [_paths.GetUnitSettingsFilePath()],
-            DefineType.ProgramSettings => [_paths.GetProgramSettingsFilePath()],
-            DefineType.FormSchema when keys.Length >= 1 => [_paths.GetFormSchemaFilePath(keys[0])],
-            DefineType.FormLayout when keys.Length >= 1 => [_paths.GetFormLayoutFilePath(keys[0])],
-            DefineType.TableSchema when keys.Length >= 2 => [_paths.GetTableSchemaFilePath(keys[0], keys[1])],
-            DefineType.Language when keys.Length >= 2 => [_paths.GetLanguageFilePath(keys[0], keys[1])],
-            _ => []
-        };
+            string[]? filePaths = defineType switch
+            {
+                DefineType.DbCategorySettings => [_paths.GetDbCategorySettingsFilePath()],
+                DefineType.CurrencySettings => [_paths.GetCurrencySettingsFilePath()],
+                DefineType.UnitSettings => [_paths.GetUnitSettingsFilePath()],
+                DefineType.ProgramSettings => [_paths.GetProgramSettingsFilePath()],
+                DefineType.FormSchema when keys.Length >= 1 => [_paths.GetFormSchemaFilePath(keys[0])],
+                DefineType.FormLayout when keys.Length >= 1 => [_paths.GetFormLayoutFilePath(keys[0])],
+                DefineType.TableSchema when keys.Length >= 2 => [_paths.GetTableSchemaFilePath(keys[0], keys[1])],
+                DefineType.Language when keys.Length >= 2 => [_paths.GetLanguageFilePath(keys[0], keys[1])],
+                _ => null
+            };
+
+            return filePaths is null ? DefineChangeSource.None : new DefineChangeSource { FilePaths = filePaths };
+        }
     }
 }

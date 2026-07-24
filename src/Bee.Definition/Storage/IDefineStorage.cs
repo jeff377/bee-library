@@ -106,19 +106,21 @@ namespace Bee.Definition.Storage
         void SaveLanguage(LanguageResource resource);
 
         /// <summary>
-        /// Returns the file paths whose modification invalidates the cached define, or an empty
-        /// array when this storage has no watchable file backing.
+        /// Returns the signal by which a consumer can tell that the specified define has changed.
         /// </summary>
         /// <remarks>
-        /// Lets a cache declare its file dependency without knowing which storage implementation
-        /// backs it. A storage that publishes invalidation by other means — the DB storage writes
-        /// to the cache-notify table instead — inherits this default and reports nothing to watch.
+        /// Each implementation reports whatever its own backing provides — a file-backed storage
+        /// reports the files to watch, a database-backed storage reports its cache-notify key. This
+        /// lets a consumer (typically a cache) react to changes without knowing which storage
+        /// implementation it is talking to. The default reports no signal, so an implementation that
+        /// offers none needs no code.
         /// </remarks>
-        /// <param name="defineType">The define type being cached.</param>
+        /// <param name="defineType">The define type in question.</param>
         /// <param name="keys">
         /// The define keys, in the same order the matching getter takes them (for example
         /// <c>progId</c> for a form schema, or <c>categoryId</c> then <c>tableName</c> for a table schema).
         /// </param>
-        string[] GetChangeMonitorPaths(DefineType defineType, params string[] keys) => [];
+        DefineChangeSource GetChangeSource(DefineType defineType, params string[] keys)
+            => DefineChangeSource.None;
     }
 }

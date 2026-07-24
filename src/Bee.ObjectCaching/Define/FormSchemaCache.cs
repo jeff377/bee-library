@@ -33,8 +33,7 @@ namespace Bee.ObjectCaching.Define
             string progId = key;
             // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            var monitorPaths = _storage.GetChangeMonitorPaths(DefineType.FormSchema, progId);
-            policy.ChangeMonitorFilePaths = monitorPaths.Length > 0 ? monitorPaths : null;
+            policy.ChangeMonitorFilePaths = _storage.GetChangeSource(DefineType.FormSchema, progId).FilePaths;
             return policy;
         }
 

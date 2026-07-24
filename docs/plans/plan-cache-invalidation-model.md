@@ -105,21 +105,41 @@ private sealed class CacheNotifyToken : IChangeToken
 
 `KeyObjectCache<T>` / `ObjectCache<T>` 在建立 policy 時自動帶入 `CacheGroup + ":" + key`，**個別快取類不需宣告 DB 相依**，新增快取自動具備。
 
-### 5. storage 回答檔案相依（階段 1）
+### 5. storage 報告自己的變更訊號
 
-`IDefineStorage` 加預設介面方法，DB storage 繼承預設回傳空：
-
-```csharp
-string[] GetChangeMonitorPaths(DefineType defineType, params string[] keys) => [];
-```
-
-`FileDefineStorage` 覆寫，沿用其內部既有的 `_paths.GetXxxFilePath()`。快取端改為：
+`IDefineStorage` 加預設介面方法，回傳**中性描述子**而非檔案路徑：
 
 ```csharp
-policy.ChangeMonitorFilePaths = _storage.GetChangeMonitorPaths(DefineType.FormSchema, key);
+// Bee.Definition.Storage
+public readonly record struct DefineChangeSource
+{
+    public string[]? FilePaths { get; init; }   // 檔案背後
+    public string? NotifyKey { get; init; }     // DB 背後
+    public static DefineChangeSource None => default;
+}
+
+// IDefineStorage
+DefineChangeSource GetChangeSource(DefineType defineType, params string[] keys)
+    => DefineChangeSource.None;
 ```
 
-型別判斷完全消失。採預設介面方法而非新介面，是因為專案已有此用法（`IFormBoTypeResolver.Resolve(customizeId, progId) => Resolve(progId)`），且對既有實作者非 breaking。
+| 實作 | 回報 |
+|------|------|
+| `FileDefineStorage` | `FilePaths`（沿用其內部既有的 `_paths.GetXxxFilePath()`） |
+| `DbDefineStorage` | `NotifyKey`（階段 2） |
+| `CustomizeOnlyStorage` | `FilePaths`（若決定補監控，見下） |
+
+快取端翻譯成 policy：
+
+```csharp
+policy.ChangeMonitorFilePaths = _storage.GetChangeSource(DefineType.FormSchema, key).FilePaths;
+```
+
+**為何是描述子而非直接傳 `CacheItemPolicy`**：`CacheItemPolicy` 屬 `Bee.ObjectCaching`，而 `IDefineStorage` 屬 `Bee.Definition`，現有方向是 `Bee.ObjectCaching → Bee.Definition`。把 policy 傳進介面等於要求反向相依而成環。跨層傳遞的應是「這個定義怎麼知道它變了」（storage 對自身儲存方式的知識），而非「快取政策怎麼設」（快取層的決策）——型別命名刻意避開 `Cache` 字眼即為守住此界線。
+
+**為何是單一描述子而非多個方法**：若階段 2 另加 `GetChangeNotifyKey`，則每個實作都會對其中一個方法回報「沒有」，不對稱加倍。單一描述子讓每個實作只填自己那一格。
+
+採預設介面方法而非新介面，是因為專案已有此用法（`IFormBoTypeResolver.Resolve(customizeId, progId) => Resolve(progId)`），且對既有實作者非 breaking。
 
 ## 階段拆解
 
@@ -135,7 +155,8 @@ policy.ChangeMonitorFilePaths = _storage.GetChangeMonitorPaths(DefineType.FormSc
 實作補充兩點：
 
 - 各快取的 `PathOptions` 欄位已移除（改為僅於建構子驗證非 null），因為它在階段 1 後唯一用途消失，留著會觸發 IDE0052。建構子簽章維持不變，非 breaking。
-- `ChangeMonitorFilePaths` **維持 `null` 語意**（無監控路徑時指派 null 而非空陣列）。原先直接指派空陣列雖與 provider 行為等價，卻使既有測試 `GetPolicy_NonFileDefineStorage_NoChangeMonitorFilePaths` 失敗——該測試斷言 null。改測試以遷就實作違反本階段「零行為變更」的驗收標準，故選擇保留 null。
+- `ChangeMonitorFilePaths` **維持 `null` 語意**（無監控路徑時為 null 而非空陣列）。最初版本直接指派空陣列，雖與 provider 行為等價，卻使既有測試 `GetPolicy_NonFileDefineStorage_NoChangeMonitorFilePaths` 失敗——該測試斷言 null。改測試以遷就實作違反本階段「零行為變更」的驗收標準，故保留 null；改用 `DefineChangeSource` 後 `FilePaths` 本身可為 null，此語意自然成立、不需額外判斷。
+- 介面初版為 `string[] GetChangeMonitorPaths(...)`，於同日調整為回傳 `DefineChangeSource`。原因：檔案形狀的簽章會讓 DB 實作永遠回報空值，且階段 2 勢必要再改介面。因該方法尚未隨任何版本發布（`v4.15.0` tag 早於此變更），趁未發版調整形狀零成本。
 
 ### 待決：`CustomizeOnlyStorage` 目前沒有檔案監控
 
