@@ -1,4 +1,15 @@
 {
+  "extraKnownMarketplaces": {
+    "jeff377-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "jeff377/claude-plugins"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "plan-workflow@jeff377-plugins": true
+  },
   "permissions": {
     "allow": [
       "Write(.claude/**)",

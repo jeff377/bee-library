@@ -62,7 +62,8 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 4. **Plan 執行完畢時，立刻在文件頂部標記完成狀態**
 5. 由使用者要求時才將計畫文件移至 `docs/archive/` 封存（此目錄已 gitignored）
 
-> 狀態列格式、多階段 plan 的階段表格、封存細節 → 見 `plan-write` skill。
+> 狀態列格式、多階段 plan 的階段表格、封存細節 → 見 `/plan-workflow:plan-write` skill
+> （由 `jeff377-plugins` marketplace 的 `plan-workflow` plugin 提供，已於 `.claude/settings.json` 宣告啟用）。
 
 ## 架構參考
 

@@ -25,9 +25,12 @@
 
 | Skill | 一句話用途 |
 |-------|-----------|
-| **plan-write** | 撰寫 / 更新 `docs/plans/` 計畫文件的狀態列與階段表格格式 |
 | **changelog-draft** | 整理自上一版 tag 至 HEAD 的雙語 CHANGELOG 草稿 |
 | **demo-smoke** | 對 samples/ 的 demo 跑端到端冒煙測試 |
+
+> **`plan-write` 已移出本目錄**，改由 `jeff377-plugins` marketplace 的 `plan-workflow` plugin 提供
+> （呼叫為 `/plan-workflow:plan-write`；marketplace 與啟用宣告在 `.claude/settings.json`）。
+> repo 只保留單一來源，避免本地副本與 plugin 版 drift。
 
 ## 新增 skill
 
