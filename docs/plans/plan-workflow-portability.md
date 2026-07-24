@@ -171,11 +171,14 @@ claude-plugins/                    ← 這個 repo 即 marketplace
 
 確認 `/plan-workflow:plan-write` 可呼叫、且請 Claude 擬計畫時會產出正確狀態列。
 
-### 2.6 bee-library 是否改用 plugin（未定，見下）
+### 2.6 bee-library 是否改用 plugin
 
-plugin skill 與本地 `.claude/skills/plan-write/` 會並存不覆蓋，兩份必然 drift，故須擇一。
-但「刪本地 skill + 改 CLAUDE.md gate 指標為 `/plan-workflow:plan-write`」會動到已發佈的 bee-library，
-且應在確認 install 成功之後才做。**列為獨立決策，待使用者拍板**（保留本地 / 遷移至 plugin）。
+**決定（2026-07-24）：先保留本地 `.claude/skills/plan-write/`，暫不遷移。**
+待 2.5 終端驗收確認 install 裝得起來、skill 觸發正常後，再議是否刪本地 skill、
+把 CLAUDE.md gate 指標改為 `/plan-workflow:plan-write`。
+
+> 已知代價：在遷移前，本地 skill 與 plugin 版是兩份，需留意規則若有更動要手動同步兩處。
+> 兩者目前內容一致（差別僅 plugin 版拿掉了 bee 特定的 gitignore 假設）。
 
 ## 階段 3：多人 repo 的落地調整
 
