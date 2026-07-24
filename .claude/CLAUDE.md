@@ -66,16 +66,11 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 
 ## 架構參考
 
-實作任何功能或模組前，請先閱讀以下文件：
+實作任何功能或模組前，先讀 `docs/README.md` —— 公開文件的入口索引（架構總覽、開發指引與限制、
+資料庫、設計概念，皆雙語、分類列表），再依索引開對應文件。設計決策的背景見 `docs/adr/`；
+進行中 / 已完成的規劃見 `docs/plans/`；各套件細節見各 `src/` 專案的 `README.md`。
 
-- **架構總覽**：`docs/architecture-overview.md`
-- **相依性全景圖**：`docs/dependency-map.md` — 18 個專案的相依關係與分層
-- **開發指引**：`docs/development-cookbook.md` — 初始化流程、請求管線、ExecFunc 模式、FormSchema 驅動開發
-- **開發限制**：`docs/development-constraints.md` — 初始化順序、跨層禁止事項、例外處理規則
-- **架構決策紀錄**：`docs/adr/` — 重要設計決策的背景與理由
-- **各專案說明**：每個 `src/` 專案目錄內的 `README.md`
-
-重點摘要：
+核心心智模型（實作時的定錨，細節見上述文件）：
 - **FormSchema** 為定義中樞，同時驅動 UI（FormLayout）、資料庫（DbTable）與驗證規則
 - **DataSet** 為跨層 DTO，承載 Master-Detail 資料，不含邏輯
 - **Business Object（BO）** 負責業務邏輯，不直接存取資料庫
