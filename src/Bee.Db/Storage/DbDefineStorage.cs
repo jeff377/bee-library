@@ -3,6 +3,7 @@ using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
+using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Language;
@@ -279,7 +280,7 @@ namespace Bee.Db.Storage
             var dbAccess = new DbAccess(connection, databaseType);
             dbAccess.Execute(BuildUpsertSpec(databaseType, defineType, defineKey, xml), transaction);
 
-            CacheNotify.Touch($"{defineType}:{defineKey}", transaction, databaseType);
+            CacheNotify.Touch(BuildNotifyKey(defineType, defineKey), transaction, databaseType);
 
             transaction.Commit();
         }
@@ -329,6 +330,39 @@ namespace Bee.Db.Storage
             };
 
             return new DbCommandSpec(DbCommandKind.NonQuery, commandText, defineType, BaseCustomizeId, defineKey, content);
+        }
+
+        /// <summary>
+        /// Builds the cache-notify key for a define. Single source of the convention, shared by the
+        /// write path and <see cref="GetChangeSource"/> so the two can never drift apart.
+        /// </summary>
+        private static string BuildNotifyKey(string defineTypeName, string defineKey)
+            => $"{defineTypeName}:{defineKey}";
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Reports the very cache-notify key this storage touches when the define is written, built
+        /// through the same key helpers, so a consumer never reconstructs the convention itself.
+        /// There is no file to watch — invalidation travels through the notify table instead.
+        /// </remarks>
+        public DefineChangeSource GetChangeSource(DefineType defineType, params string[] keys)
+        {
+            string? notifyKey = defineType switch
+            {
+                DefineType.DbCategorySettings => BuildNotifyKey(nameof(DbCategorySettings), SingletonKey),
+                DefineType.CurrencySettings => BuildNotifyKey(nameof(CurrencySettings), SingletonKey),
+                DefineType.UnitSettings => BuildNotifyKey(nameof(UnitSettings), SingletonKey),
+                DefineType.ProgramSettings => BuildNotifyKey(nameof(ProgramSettings), SingletonKey),
+                DefineType.FormSchema when keys.Length >= 1 => BuildNotifyKey(nameof(FormSchema), keys[0]),
+                DefineType.FormLayout when keys.Length >= 1 => BuildNotifyKey(nameof(FormLayout), keys[0]),
+                DefineType.TableSchema when keys.Length >= 2
+                    => BuildNotifyKey(nameof(TableSchema), TableSchemaKey(keys[0], keys[1])),
+                DefineType.Language when keys.Length >= 2
+                    => BuildNotifyKey(nameof(LanguageResource), LanguageKey(keys[0], keys[1])),
+                _ => null
+            };
+
+            return notifyKey is null ? DefineChangeSource.None : new DefineChangeSource { NotifyKey = notifyKey };
         }
     }
 }

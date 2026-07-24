@@ -31,7 +31,9 @@ namespace Bee.ObjectCaching.Define
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             // The storage decides what to watch: file storage returns its backing file, the DB storage
             // returns nothing and invalidates through the cache-notify table instead.
-            policy.ChangeMonitorFilePaths = _storage.GetChangeSource(DefineType.ProgramSettings).FilePaths;
+            var changeSource = _storage.GetChangeSource(DefineType.ProgramSettings);
+            policy.ChangeMonitorFilePaths = changeSource.FilePaths;
+            policy.ChangeNotifyKey = changeSource.NotifyKey;
             return policy;
         }
 

@@ -24,6 +24,16 @@ namespace Bee.ObjectCaching
         public static ICacheProvider Provider { get; set; } = new MemoryCacheProvider();
 
         /// <summary>
+        /// Gets or sets the store of observed cache-notify versions.
+        /// </summary>
+        /// <value>
+        /// Defaults to an in-memory <see cref="CacheNotifyVersionStore"/>. The cache-notify poller
+        /// writes into it; entries carrying a <see cref="CacheItemPolicy.ChangeNotifyKey"/> read from
+        /// it to detect out-of-process changes. Settable so tests can isolate their own instance.
+        /// </value>
+        public static ICacheNotifyVersionStore NotifyVersions { get; set; } = new CacheNotifyVersionStore();
+
+        /// <summary>
         /// Initializes the cache provider from the backend configuration.
         /// Called by <c>CacheBootstrapper</c> (registered by <c>AddBeeFramework</c>) after
         /// settings are loaded.

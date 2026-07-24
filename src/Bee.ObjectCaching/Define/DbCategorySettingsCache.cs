@@ -29,7 +29,9 @@ namespace Bee.ObjectCaching.Define
         protected override CacheItemPolicy GetPolicy()
         {
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            policy.ChangeMonitorFilePaths = _storage.GetChangeSource(DefineType.DbCategorySettings).FilePaths;
+            var changeSource = _storage.GetChangeSource(DefineType.DbCategorySettings);
+            policy.ChangeMonitorFilePaths = changeSource.FilePaths;
+            policy.ChangeNotifyKey = changeSource.NotifyKey;
             return policy;
         }
 

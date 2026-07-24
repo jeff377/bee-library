@@ -33,7 +33,9 @@ namespace Bee.ObjectCaching.Define
             string layoutId = key;
             // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            policy.ChangeMonitorFilePaths = _storage.GetChangeSource(DefineType.FormLayout, layoutId).FilePaths;
+            var changeSource = _storage.GetChangeSource(DefineType.FormLayout, layoutId);
+            policy.ChangeMonitorFilePaths = changeSource.FilePaths;
+            policy.ChangeNotifyKey = changeSource.NotifyKey;
             return policy;
         }
 

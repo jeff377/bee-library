@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | storage 回答檔案相依，消除 `is FileDefineStorage` 型別判斷 | ✅ 已完成（2026-07-24） |
-| 2 | DB 相依進 `CacheItemPolicy`（notify token 模型） | 📝 待做 |
+| 2 | DB 相依進 `CacheItemPolicy`（notify token 模型） | ✅ 已完成（2026-07-24） |
 | 3 | 退役 group 註冊表（`_evictableByGroup` / `TryEvict` / `CacheGroup`） | 📝 待裁決（breaking） |
 
 ## 背景
@@ -101,9 +101,11 @@ private sealed class CacheNotifyToken : IChangeToken
 
 刻意沿用惰性設計：`FileModificationToken` 的註解已說明「不用背景計時器可避免計時器搶在讀取前逐出」的競態，DB 版沒有理由背離。
 
-### 4. 基底類自動填 `ChangeNotifyKey`
+### 4. `ChangeNotifyKey` 由 storage 回報，不由基底推導
 
-`KeyObjectCache<T>` / `ObjectCache<T>` 在建立 policy 時自動帶入 `CacheGroup + ":" + key`，**個別快取類不需宣告 DB 相依**，新增快取自動具備。
+原構想是讓 `KeyObjectCache<T>` / `ObjectCache<T>` 以 `CacheGroup + ":" + key` 自動推導。**實作時否決此法**：快取的成員 key 與 `DbDefineStorage` 的 `defineKey` 是兩套各自獨立的字串慣例（例如 `TableSchemaKey(categoryId, tableName)` 產生 `"{cat}.{table}"`，快取則以 `SplitLeft(".")` 拆解），今日格式相同純屬巧合——正是本計畫要消除的脆弱點。
+
+改由 `DbDefineStorage.GetChangeSource` 回報，它與寫入端共用同一個 `BuildNotifyKey` 私有方法，兩側**不可能漂移**。
 
 ### 5. storage 報告自己的變更訊號
 
@@ -174,6 +176,14 @@ policy.ChangeMonitorFilePaths = _storage.GetChangeSource(DefineType.FormSchema, 
 - `CacheNotifyPollSession` 改寫版本表（**暫時同時保留 `TryEvict` 呼叫**，兩條路並行以降風險）。
 - 快取基底自動填 `ChangeNotifyKey`。
 - 驗收：新增測試驗「版本遞增後下次讀取取得新值」；既有 cache-notify 測試全過。
+
+**執行結果（2026-07-24）**：全 16 個測試專案通過、既有測試一行未改、建置 0 警告。新增 6 個測試（版本遞增後失效／未遞增保留／無關 key 不影響／未設 key 不受影響／版本表兩則）。
+
+實作補充：
+
+- 版本表以 `CacheInfo.NotifyVersions`（靜態可設屬性）提供，與既有的 `CacheInfo.Provider` 同一 ambient 風格；`MemoryCacheProvider` 由 `CacheInfo.Initialize` 依設定型別建立，無法走建構子注入，故不採 DI。可設值讓測試替換。
+- 新測試以 GUID 產生獨一無二的 notify key，因此不需序列化或替換靜態狀態即可平行安全 —— 避免再增加 `[Collection]` 序列化（見 `testing.md`）。
+- `DbDefineStorage.Write` 的 `Touch` 亦改走 `BuildNotifyKey`，與 `GetChangeSource` 共用同一組 key 產生邏輯。
 
 ### 階段 3 — 退役 group 註冊表（breaking，需裁決）
 

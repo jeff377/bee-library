@@ -42,5 +42,16 @@
         /// Gets or sets the array of directory and file paths to monitor for changes.
         /// </summary>
         public string[]? ChangeMonitorFilePaths { get; set; } = null;
+
+        /// <summary>
+        /// Cache-notify key (<c>"{group}:{entity}"</c>) whose version bump invalidates this entry;
+        /// <c>null</c> when the entry has no notification-based dependency.
+        /// </summary>
+        /// <remarks>
+        /// The database-backed counterpart to <see cref="ChangeMonitorFilePaths"/>: a file-backed
+        /// entry watches files, a database-backed entry watches the notify version that other
+        /// processes bump when they write. Both are evaluated the same lazy way, on read.
+        /// </remarks>
+        public string? ChangeNotifyKey { get; set; } = null;
     }
 }

@@ -37,7 +37,9 @@ namespace Bee.ObjectCaching.Define
 
             // Default: sliding expiration of 20 minutes (matches other Define caches).
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            policy.ChangeMonitorFilePaths = _storage.GetChangeSource(DefineType.Language, lang, ns).FilePaths;
+            var changeSource = _storage.GetChangeSource(DefineType.Language, lang, ns);
+            policy.ChangeMonitorFilePaths = changeSource.FilePaths;
+            policy.ChangeNotifyKey = changeSource.NotifyKey;
             return policy;
         }
 

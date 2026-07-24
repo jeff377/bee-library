@@ -108,6 +108,9 @@ namespace Bee.ObjectCaching.Providers
                 }
             }
 
+            if (!string.IsNullOrEmpty(policy.ChangeNotifyKey))
+                options.AddExpirationToken(new CacheNotifyToken(policy.ChangeNotifyKey));
+
             return options;
         }
 
@@ -162,6 +165,40 @@ namespace Bee.ObjectCaching.Providers
                 {
                     if (_hasChanged) return true;
                     _hasChanged = GetWriteTime(_filePath) != _initialWriteTime;
+                    return _hasChanged;
+                }
+            }
+
+            public bool ActiveChangeCallbacks => false;
+
+            public IDisposable RegisterChangeCallback(Action<object?> callback, object? state)
+                => CancellationToken.None.Register(callback!, state);
+        }
+
+        /// <summary>
+        /// Lazy cache-notify change token: compares the current observed version for a notify key
+        /// against the snapshot taken at construction. Deliberately mirrors
+        /// <see cref="FileModificationToken"/> — no background timer, detection happens on read —
+        /// so notification-backed entries behave exactly like file-backed ones.
+        /// </summary>
+        private sealed class CacheNotifyToken : IChangeToken
+        {
+            private readonly string _notifyKey;
+            private readonly long _initialVersion;
+            private volatile bool _hasChanged;
+
+            public CacheNotifyToken(string notifyKey)
+            {
+                _notifyKey = notifyKey;
+                _initialVersion = CacheInfo.NotifyVersions.GetVersion(notifyKey);
+            }
+
+            public bool HasChanged
+            {
+                get
+                {
+                    if (_hasChanged) return true;
+                    _hasChanged = CacheInfo.NotifyVersions.GetVersion(_notifyKey) != _initialVersion;
                     return _hasChanged;
                 }
             }

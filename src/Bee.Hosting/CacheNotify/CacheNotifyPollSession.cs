@@ -129,10 +129,15 @@ namespace Bee.Hosting.CacheNotify
                 long version = Convert.ToInt64(row[1], CultureInfo.InvariantCulture);
                 DateTime updateTime = Convert.ToDateTime(row[2], CultureInfo.InvariantCulture);
 
-                // Idempotent across the overlap window: evict only on a strictly higher version.
+                // Idempotent across the overlap window: act only on a strictly higher version.
                 _mirror.TryGetValue(cacheKey, out long mirrored);
                 if (version > mirrored)
                 {
+                    // Publish the version so entries carrying this notify key expire on next read.
+                    CacheInfo.NotifyVersions.SetVersion(cacheKey, version);
+
+                    // Group-registry eviction, retained in parallel while the notify-key model beds
+                    // in; it covers caches that do not yet declare a ChangeNotifyKey.
                     _container.TryEvict(cacheKey);
                     _mirror[cacheKey] = version;
                 }
