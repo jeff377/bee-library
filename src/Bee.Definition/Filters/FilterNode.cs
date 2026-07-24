@@ -17,7 +17,12 @@ namespace Bee.Definition.Filters
         /// <summary>
         /// Gets the node kind.
         /// </summary>
-        [Key(10)]
+        /// <remarks>
+        /// Not carried over the MessagePack wire: the concrete node type is already resolved by the
+        /// <c>[Union]</c> tag, and this property is a get-only discriminator that each subclass
+        /// computes, so serializing it would only add redundant bytes that cannot be restored.
+        /// </remarks>
+        [IgnoreMember]
         public abstract FilterNodeKind Kind { get; }
     }
 }

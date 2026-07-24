@@ -25,6 +25,8 @@ namespace Bee.Business.Security
         private readonly ConcurrentDictionary<string, AttemptInfo> _attempts
             = new ConcurrentDictionary<string, AttemptInfo>(StringComparer.OrdinalIgnoreCase);
 
+        private readonly TimeProvider _timeProvider;
+
         /// <summary>
         /// Gets the maximum number of consecutive failed attempts before lockout.
         /// </summary>
@@ -49,14 +51,31 @@ namespace Bee.Business.Security
         /// <param name="maxFailedAttempts">The maximum number of consecutive failed attempts before lockout.</param>
         /// <param name="lockoutDuration">The duration of the lockout period.</param>
         public LoginAttemptTracker(int maxFailedAttempts, TimeSpan lockoutDuration)
+            : this(maxFailedAttempts, lockoutDuration, TimeProvider.System)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoginAttemptTracker"/> class with the specified
+        /// policy and time source.
+        /// </summary>
+        /// <param name="maxFailedAttempts">The maximum number of consecutive failed attempts before lockout.</param>
+        /// <param name="lockoutDuration">The duration of the lockout period.</param>
+        /// <param name="timeProvider">
+        /// The time source used to evaluate lockout expiry. Inject a fake provider in tests so lockout
+        /// windows advance by logical time instead of the wall clock.
+        /// </param>
+        public LoginAttemptTracker(int maxFailedAttempts, TimeSpan lockoutDuration, TimeProvider timeProvider)
         {
             if (maxFailedAttempts <= 0)
                 throw new ArgumentOutOfRangeException(nameof(maxFailedAttempts), "Must be greater than zero.");
             if (lockoutDuration <= TimeSpan.Zero)
                 throw new ArgumentOutOfRangeException(nameof(lockoutDuration), "Must be greater than zero.");
+            ArgumentNullException.ThrowIfNull(timeProvider);
 
             MaxFailedAttempts = maxFailedAttempts;
             LockoutDuration = lockoutDuration;
+            _timeProvider = timeProvider;
         }
 
         /// <inheritdoc />
@@ -69,7 +88,7 @@ namespace Bee.Business.Security
                 return false;
 
             // If lockout has expired, clean up and return false
-            if (info.LockedUntilUtc.HasValue && info.LockedUntilUtc.Value <= DateTime.UtcNow)
+            if (info.LockedUntilUtc.HasValue && info.LockedUntilUtc.Value <= _timeProvider.GetUtcNow().UtcDateTime)
             {
                 _attempts.TryRemove(userId, out _);
                 return false;
@@ -112,7 +131,7 @@ namespace Bee.Business.Security
         private AttemptInfo IncrementFailure(AttemptInfo existing)
         {
             // If currently locked and lockout hasn't expired, keep the lockout
-            if (existing.LockedUntilUtc.HasValue && existing.LockedUntilUtc.Value > DateTime.UtcNow)
+            if (existing.LockedUntilUtc.HasValue && existing.LockedUntilUtc.Value > _timeProvider.GetUtcNow().UtcDateTime)
                 return existing;
 
             int newCount = existing.FailedCount + 1;
@@ -120,7 +139,7 @@ namespace Bee.Business.Security
 
             if (newCount >= MaxFailedAttempts)
             {
-                lockedUntil = DateTime.UtcNow.Add(LockoutDuration);
+                lockedUntil = _timeProvider.GetUtcNow().UtcDateTime.Add(LockoutDuration);
             }
 
             return new AttemptInfo

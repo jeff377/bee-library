@@ -42,20 +42,35 @@ namespace Bee.Business.UnitTests
 
         [Fact]
         [DisplayName("鎖定期間過後應自動解鎖")]
-        public async Task IsLockedOut_AfterLockoutExpires_ReturnsFalse()
+        public void IsLockedOut_AfterLockoutExpires_ReturnsFalse()
         {
-            // Use a very short lockout duration for testing
-            var tracker = new LoginAttemptTracker(3, TimeSpan.FromMilliseconds(50));
+            // 以可推進的假時鐘取代真實牆鐘：原本用 50ms 鎖定視窗 + Task.Delay，在 2-core CI 的
+            // 排程壓力下可能在「應鎖定」斷言前就過期而 flaky。改以邏輯時間推進即無此風險。
+            var clock = new AdvanceableTimeProvider(new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
+            var tracker = new LoginAttemptTracker(3, TimeSpan.FromMinutes(15), clock);
 
             for (int i = 0; i < 3; i++)
                 tracker.RecordFailure("user01");
 
             Assert.True(tracker.IsLockedOut("user01"));
 
-            // Wait for lockout to expire
-            await Task.Delay(100);
+            clock.Advance(TimeSpan.FromMinutes(16));
 
             Assert.False(tracker.IsLockedOut("user01"));
+        }
+
+        /// <summary>
+        /// 可手動推進的時鐘，用於以邏輯時間驗證鎖定到期。
+        /// </summary>
+        private sealed class AdvanceableTimeProvider : TimeProvider
+        {
+            private DateTimeOffset _utcNow;
+
+            public AdvanceableTimeProvider(DateTimeOffset start) => _utcNow = start;
+
+            public override DateTimeOffset GetUtcNow() => _utcNow;
+
+            public void Advance(TimeSpan delta) => _utcNow = _utcNow.Add(delta);
         }
 
         [Fact]

@@ -69,7 +69,6 @@ Bee.Definition/
   Collections/      ListItem、Parameter、PropertyCollection
   Database/         TableSchema、DbField、DbFieldCollection、DbTableIndex、
                     DatabaseType、FieldType、DbAccessAnomalyLogLevel、DbUpgradeAction
-  Documents/        IExcelHelper（文件格式 helper 抽象）
   Filters/          FilterCondition、FilterGroup、FilterNode、FilterNodeKind、
                     ComparisonOperator、LogicalOperator
   Forms/            FormSchema、FormField、FormFieldCollection、FormTable
