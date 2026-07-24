@@ -1,10 +1,10 @@
 # 計畫：plan 工作流可攜化（抽 skill → plugin 散佈）
 
-**狀態：📝 擬定中（2026-07-24）**
+**狀態：🚧 進行中（2026-07-24）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 本 repo 抽出 `plan-write` skill、CLAUDE.md 瘦成 gate | 📝 待做 |
+| 1 | 本 repo 抽出 `plan-write` skill、CLAUDE.md 瘦成 gate | ✅ 已完成（2026-07-24） |
 | 2 | 包成 `plan-workflow` plugin，供其他 repo 安裝 | 📝 待做 |
 | 3 | 多人共同開發 repo 的落地調整（CONTRIBUTING、版控、負責人） | 📝 待做 |
 
