@@ -52,11 +52,6 @@
 - `Tracer` / `TraceContext` -- structured diagnostic tracing
 - `TraceListener` / `ITraceWriter` -- pluggable trace output targets
 
-### Background Services
-
-- `BackgroundService` -- base class for long-running asynchronous workers
-- `BackgroundAction` -- lightweight fire-and-forget task wrapper
-
 ## Key Public APIs
 
 | Class / Interface | Purpose |
@@ -70,7 +65,6 @@
 | `IObjectSerialize` | Serialization provider interface |
 | `IKeyObject` | Keyed entity interface used across layers |
 | `Tracer` | Diagnostic trace entry point |
-| `BackgroundService` | Async background worker base class |
 
 ## Design Conventions
 
@@ -85,7 +79,6 @@
 ```
 Bee.Base/
   Attributes/          # TreeNodeAttribute, TreeNodeIgnoreAttribute
-  BackgroundServices/  # BackgroundService, BackgroundAction
   Collections/         # KeyCollectionBase<T>, StringHashSet, CollectionExtensions
   Data/                # DataTable/DataSet extensions, FieldDbType, DbTypeConverter
   Security/            # AES, RSA, PBKDF2, file hash utilities
