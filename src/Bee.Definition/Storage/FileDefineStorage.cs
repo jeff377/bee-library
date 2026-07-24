@@ -213,5 +213,24 @@ namespace Bee.Definition.Storage
             if (!File.Exists(filePath))
                 throw new FileNotFoundException($"The file {filePath} does not exist.");
         }
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Resolves through the same <see cref="PathOptions"/> instance the getters use, so a cache
+        /// watches exactly the file this storage would read. A define whose keys are missing yields
+        /// nothing to watch rather than throwing — an unwatched entry still expires on its sliding window.
+        /// </remarks>
+        public string[] GetChangeMonitorPaths(DefineType defineType, params string[] keys) => defineType switch
+        {
+            DefineType.DbCategorySettings => [_paths.GetDbCategorySettingsFilePath()],
+            DefineType.CurrencySettings => [_paths.GetCurrencySettingsFilePath()],
+            DefineType.UnitSettings => [_paths.GetUnitSettingsFilePath()],
+            DefineType.ProgramSettings => [_paths.GetProgramSettingsFilePath()],
+            DefineType.FormSchema when keys.Length >= 1 => [_paths.GetFormSchemaFilePath(keys[0])],
+            DefineType.FormLayout when keys.Length >= 1 => [_paths.GetFormLayoutFilePath(keys[0])],
+            DefineType.TableSchema when keys.Length >= 2 => [_paths.GetTableSchemaFilePath(keys[0], keys[1])],
+            DefineType.Language when keys.Length >= 2 => [_paths.GetLanguageFilePath(keys[0], keys[1])],
+            _ => []
+        };
     }
 }

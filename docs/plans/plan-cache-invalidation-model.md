@@ -4,7 +4,7 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | storage 回答檔案相依，消除 `is FileDefineStorage` 型別判斷 | 📝 待做 |
+| 1 | storage 回答檔案相依，消除 `is FileDefineStorage` 型別判斷 | ✅ 已完成（2026-07-24） |
 | 2 | DB 相依進 `CacheItemPolicy`（notify token 模型） | 📝 待做 |
 | 3 | 退役 group 註冊表（`_evictableByGroup` / `TryEvict` / `CacheGroup`） | 📝 待裁決（breaking） |
 
@@ -129,6 +129,22 @@ policy.ChangeMonitorFilePaths = _storage.GetChangeMonitorPaths(DefineType.FormSc
 - 8 個快取類的 `GetPolicy` 改用之。
 - **保留** `PathOptions` 建構子參數不動（移除屬 breaking ctor 變更，另案評估）。
 - 驗收：`grep "is FileDefineStorage"` 為 0；既有測試全過。
+
+**執行結果（2026-07-24）**：8 處型別判斷歸零，全 16 個測試專案通過、既有測試一行未改、建置 0 警告。
+
+實作補充兩點：
+
+- 各快取的 `PathOptions` 欄位已移除（改為僅於建構子驗證非 null），因為它在階段 1 後唯一用途消失，留著會觸發 IDE0052。建構子簽章維持不變，非 breaking。
+- `ChangeMonitorFilePaths` **維持 `null` 語意**（無監控路徑時指派 null 而非空陣列）。原先直接指派空陣列雖與 provider 行為等價，卻使既有測試 `GetPolicy_NonFileDefineStorage_NoChangeMonitorFilePaths` 失敗——該測試斷言 null。改測試以遷就實作違反本階段「零行為變更」的驗收標準，故選擇保留 null。
+
+### 待決：`CustomizeOnlyStorage` 目前沒有檔案監控
+
+`CustomizeOnlyStorage`（租戶客製覆蓋層）**不繼承** `FileDefineStorage`，因此舊的 `is FileDefineStorage` 對它一律為 false ——
+**租戶客製層的定義快取從未有過檔案監控，只靠 20 分鐘滑動過期**。它同樣是檔案背後的 storage，此缺口在階段 1 之前就存在。
+
+階段 1 刻意**不改變**此行為（維持零行為變更）：`CustomizeOnlyStorage` 未覆寫 `GetChangeMonitorPaths`，繼承預設回傳空。
+
+若要補上，只需讓它覆寫該方法（以其 `CustomizeOnlyPathOptions` 解析路徑）——但那會讓租戶快取**開始**監控檔案，屬行為變更，需獨立評估其對檔案控制代碼數與效能的影響。
 
 ### 階段 2 — DB 相依進 policy（核心，additive）
 

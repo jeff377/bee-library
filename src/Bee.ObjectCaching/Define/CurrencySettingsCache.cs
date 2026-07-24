@@ -10,18 +10,17 @@ namespace Bee.ObjectCaching.Define
     public class CurrencySettingsCache : ObjectCache<CurrencySettings>
     {
         private readonly IDefineStorage _storage;
-        private readonly PathOptions _paths;
 
         /// <summary>
         /// Initializes a new instance of <see cref="CurrencySettingsCache"/>.
         /// </summary>
         /// <param name="storage">The define storage backing this cache.</param>
-        /// <param name="paths">Path options used for file-change monitoring when <paramref name="storage"/> is a <see cref="FileDefineStorage"/>.</param>
+        /// <param name="paths">Retained for constructor compatibility; the monitored file paths now come from <paramref name="storage"/>. Still validated as non-null.</param>
         /// <param name="cachePrefix">Per-owner cache namespace (see <see cref="ObjectCache{T}"/>).</param>
         public CurrencySettingsCache(IDefineStorage storage, PathOptions paths, string cachePrefix = "") : base(cachePrefix)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
-            _paths = paths ?? throw new ArgumentNullException(nameof(paths));
+            ArgumentNullException.ThrowIfNull(paths);
         }
 
         /// <summary>
@@ -30,10 +29,10 @@ namespace Bee.ObjectCaching.Define
         protected override CacheItemPolicy GetPolicy()
         {
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            // File storage uses file-watch for cross-process invalidation; the DB storage relies on
-            // the cache-notify table instead, so no file path is monitored there.
-            if (_storage is FileDefineStorage)
-                policy.ChangeMonitorFilePaths = new string[] { _paths.GetCurrencySettingsFilePath() };
+            // The storage decides what to watch: file storage returns its backing file, the DB storage
+            // returns nothing and invalidates through the cache-notify table instead.
+            var monitorPaths = _storage.GetChangeMonitorPaths(DefineType.CurrencySettings);
+            policy.ChangeMonitorFilePaths = monitorPaths.Length > 0 ? monitorPaths : null;
             return policy;
         }
 

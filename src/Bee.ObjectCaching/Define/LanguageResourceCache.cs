@@ -13,18 +13,17 @@ namespace Bee.ObjectCaching.Define
     public class LanguageResourceCache : KeyObjectCache<LanguageResource>
     {
         private readonly IDefineStorage _storage;
-        private readonly PathOptions _paths;
 
         /// <summary>
         /// Initializes a new instance of <see cref="LanguageResourceCache"/>.
         /// </summary>
         /// <param name="storage">The define storage backing this cache.</param>
-        /// <param name="paths">Path options used for file-change monitoring when <paramref name="storage"/> is a <see cref="FileDefineStorage"/>.</param>
+        /// <param name="paths">Retained for constructor compatibility; the monitored file paths now come from <paramref name="storage"/>. Still validated as non-null.</param>
         /// <param name="cachePrefix">Per-owner cache namespace (see <see cref="KeyObjectCache{T}"/>).</param>
         public LanguageResourceCache(IDefineStorage storage, PathOptions paths, string cachePrefix = "") : base(cachePrefix)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
-            _paths = paths ?? throw new ArgumentNullException(nameof(paths));
+            ArgumentNullException.ThrowIfNull(paths);
         }
 
         /// <summary>
@@ -38,8 +37,8 @@ namespace Bee.ObjectCaching.Define
 
             // Default: sliding expiration of 20 minutes (matches other Define caches).
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            if (_storage is FileDefineStorage)
-                policy.ChangeMonitorFilePaths = new string[] { _paths.GetLanguageFilePath(lang, ns) };
+            var monitorPaths = _storage.GetChangeMonitorPaths(DefineType.Language, lang, ns);
+            policy.ChangeMonitorFilePaths = monitorPaths.Length > 0 ? monitorPaths : null;
             return policy;
         }
 
