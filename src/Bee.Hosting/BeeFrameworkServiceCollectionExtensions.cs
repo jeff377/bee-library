@@ -127,10 +127,10 @@ namespace Bee.Hosting
             //     repositories arrive in later stages); registered now so it is injectable.
             services.AddSingleton<ICacheNotifyService, CacheNotifyService>();
 
-            // 6c. Cache-notify polling hosted service. Evictions dispatch by convention through
-            //     ICacheContainer.TryEvict (cache group → owned cache), so no route table is
-            //     registered here. The poller is only registered when enabled; hosts without an
-            //     IHost (e.g. unit-test service providers) simply never start the hosted service.
+            // 6c. Cache-notify polling hosted service. The poller publishes observed versions to
+            //     CacheInfo.NotifyVersions; each cache entry carrying a matching ChangeNotifyKey
+            //     expires on its next read. The poller is only registered when enabled; hosts without
+            //     an IHost (e.g. unit-test service providers) simply never start the hosted service.
             services.AddSingleton(configuration.CacheNotifyOptions);
             if (configuration.CacheNotifyOptions.Enabled)
             {
