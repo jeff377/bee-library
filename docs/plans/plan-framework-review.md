@@ -1,12 +1,12 @@
 # 計畫：框架全面 review 與重構路線圖
 
-**狀態：🚧 進行中（2026-07-23）**
+**狀態：✅ 已完成（2026-07-24）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | P0 | 正確性／功能風險（wire 反序列化、識別碼比對文化、空洞測試） | ✅ 已完成（2026-07-23） |
 | P1 | 安全與序列化標籤一致性 | ✅ 已完成（2026-07-23） |
-| P2 | 結構重構（Bee.Definition 職責拆分、大檔／一檔多型別） | 📝 待做 |
+| P2 | 結構重構（Bee.Definition 職責拆分、大檔／一檔多型別） | ✅ 已完成（2026-07-24） |
 | P3 | 文件漂移修正 | ✅ 已完成（2026-07-24） |
 | P4 | 慣例裁決與次要補強 | ✅ 已完成（2026-07-24） |
 
@@ -82,8 +82,8 @@
 
 - **位置**：`src/Bee.Definition/Storage/`（`FileDefineStorage` 檔案 IO）、`src/Bee.Definition/Security/`（`MasterKeyProvider`/`EncryptionKeyProtector` 安全金鑰）
 - **問題**：`Bee.Definition`（~1.5 萬行）是全圖最被依賴專案（6 個直接下游），是 Clean Architecture 的 Domain Core，卻同時承載檔案 IO 與安全金鑰管理（非「定義資料」）。每個消費者被迫透過相依鏈拉進 IO + 安全金鑰的 API surface，弱化「Domain Core 最純淨最穩定」意圖。
-- **建議**：介面留在 Definition、**實作外移** —— `Storage/` 抽到獨立基礎設施套件或 `Bee.Definition.Storage` 子套件；`Security/` 具體實作下沉至 `Bee.Base.Security` 旁，Definition 只留 enum/介面（`ApiProtectionLevel`/`IAccessTokenValidator`）。屬較大工程,建議獨立立案分批進行。
-- **附帶（低）**：`Bee.Definition` 根目錄 40+ 散置頂層檔（`DbScope.cs`/`RoundingPolicy.cs`/`NumberKind.cs`/`SysProgIds.cs`…約 1826 行）可自然分組（`Numbers/`、`Actions/`），重構時順手處理（注意命名空間對映或用資料夾邏輯分組例外）。
+- **處置（已定案）**：獨立立案為 [plan-bee-definition-split.md](plan-bee-definition-split.md) 並收斂完成。**實質目標（消除相依洩漏）已達成**——`Bee.ObjectCaching` 的 `is FileDefineStorage` 具象型別洩漏已由 [plan-cache-invalidation-model.md](plan-cache-invalidation-model.md) 階段 1 消除（非 breaking）。**IO/Security 實作的物理外移裁決不執行**：搬移的 breaking 面（`FileDefineStorage` 經組件限定型別名字串動態載入，搬走會使字串在執行期失效、且可能已序列化進既有部署設定）遠高於效益（僅 2.3% 程式碼的物理位置），以資料夾 + convention 標明分層即可。詳見該 plan。
+- **附帶（低，未做）**：`Bee.Definition` 根目錄 40+ 散置頂層檔（`DbScope.cs`/`RoundingPolicy.cs`/`NumberKind.cs`/`SysProgIds.cs`…約 1826 行）可自然分組（`Numbers/`、`Actions/`）—— 純內聚性優化，非急迫，留待日後順手處理。
 
 ### P2-2. 一檔多型別（違反「一型別一檔」）
 

@@ -1,12 +1,12 @@
 # 計畫：Bee.Definition 職責拆分（Storage IO / Security 實作外移）
 
-**狀態：🚧 進行中（2026-07-24）**
+**狀態：✅ 已完成（2026-07-24）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 消除 `is FileDefineStorage` 能力洩漏 → **已移交** [plan-cache-invalidation-model.md](plan-cache-invalidation-model.md) 階段 1 | ✅ 已完成（2026-07-24，於該計畫執行） |
-| 2 | 檔案 IO 實作外移至獨立套件（breaking，需版本規劃） | 📝 待裁決 |
-| 3 | Security 實作歸屬重新確認（可能不動） | 📝 待裁決 |
+| 2 | 檔案 IO 實作外移 | ✅ 裁決不執行（採 C：不搬，2026-07-24） |
+| 3 | Security 實作歸屬 | ✅ 裁決維持現狀（2026-07-24） |
 
 ## 背景
 
@@ -86,35 +86,23 @@ if (_storage is FileDefineStorage)   // ProgramSettingsCache / FormSchemaCache /
 - **非 breaking**（只新增介面、不改既有簽章）。
 - 完成後，`Bee.ObjectCaching` 不再認識 `FileDefineStorage` 具象型別 —— 階段 2 的最大阻礙消失，且即使階段 2 永不執行，這個修正本身仍是淨改善。
 
-### 階段 2 — 檔案 IO 實作外移（需先裁決）
+### 階段 2 — 檔案 IO 實作外移（✅ 裁決：不執行，採 C）
 
-把 `FileDefineStorage` + `CustomizeOnlyStorage`（344 行）移至新套件（暫名 `Bee.Definition.Storage`）。介面（`IDefineAccess` / `IDefineStorage` / `ICustomizeDefineReader`）留在 `Bee.Definition`。
+**裁決（2026-07-24）：採 C（不搬）。** 階段 1 完成後重新評估，依下列四點論證定案：
 
-相容性策略三選一：
+1. **階段 1 已零成本兌現拆分的主要目的。** 真正讓上層「被迫認識 IO」的具體洩漏（`Bee.ObjectCaching` 8 處 `is FileDefineStorage`）已於階段 1 消除且非 breaking。生產碼現對檔案 storage 具象型別 0 引用。剩下的「IO 實作實體位在 Bee.Definition 組件內」是**物理封裝位置**問題，對消費者不可見，不再是相依洩漏。
+2. **搬移的 breaking 面比原估嚴重一級。** 實測發現 `FileDefineStorage` 的預設是透過**組件限定型別名字串**動態載入：`BackendDefaultTypes.DefineStorage = "Bee.Definition.Storage.FileDefineStorage, Bee.Definition"`。搬到新組件會使此字串在**執行期**失效（非編譯錯誤），且該字串可能已**序列化進既有部署的 `BackendConfiguration` 定義檔** —— 使搬移從「來源相容 breaking」升級為「二進位 + 資料相容 breaking」。
+3. **效益/成本嚴重不對稱。** 真正搬走的是 `FileDefineStorage`(217) + `CustomizeOnlyStorage`(127) = 344 行，佔 Bee.Definition 15,003 行的 **2.3%**。用此換二進位+資料相容 breaking + 新套件維護，不划算。
+4. **唯一殘餘耦合不在 Bee.Definition。** `CacheContainerProvider:41` 仍 `new CustomizeOnlyStorage`（1 處），若日後要再收斂應處理此點，但與「Bee.Definition 職責純度」無關、屬低優先。
 
-| 策略 | 作法 | 代價 |
-|------|------|------|
-| **A. 直接搬 + major 版號** | 搬走，CHANGELOG 標 breaking，發 5.0.0 | 外部使用者需改 `using` 並加套件參照 |
-| **B. 型別轉送過渡** | 新套件承載實作，`Bee.Definition` 加 `[TypeForwardedTo]` 並參照新套件，下一個 major 移除轉送 | **`Bee.Definition` 反而多一條對新套件的相依**，Domain Core 在過渡期並未變純淨，等於延後而非解決 |
-| **C. 不搬** | 維持現狀，以資料夾與文件標明職責分層 | 架構純度不變，但零成本零風險 |
+處置：保留 IO 實作於 `Bee.Definition/Storage/`，以資料夾 + 文件標明「介面是 Domain Core 契約、實作是基礎設施」。若未來出現強驅動（例如要出不含檔案 IO 的精簡 Domain 套件），再以 major 版重啟，屆時連同組件限定字串的遷移一併規劃。
 
-> **策略 B 的陷阱值得特別註明**：type forwarding 要求舊組件參照新組件，這與「把 IO 移出 Domain Core」的目標方向相反。它只在「先讓外部使用者無痛、下一個 major 再斷」的情境下有意義。
+原三策略比較表（A 直接搬+major／B 型別轉送過渡／C 不搬）保留於 git 歷史。B 的陷阱備忘：type forwarding 要求舊組件參照新組件，與「把 IO 移出 Domain Core」方向相反，只在「延後 breaking」情境下有意義。
 
-### 階段 3 — Security 實作歸屬（需先裁決）
+### 階段 3 — Security 實作歸屬（✅ 裁決：維持現狀）
 
-依「關鍵發現 2」，先在兩個互斥立場中擇一：
+**裁決（2026-07-24）：維持現狀，不外移。** `MasterKeyProvider` / `EncryptionKeyProtector` 是政策/金鑰層，`security.md`（P3-5 已定）明訂「政策與金鑰協定屬 `Bee.Definition`」——它們待在此處是正確的，非夾帶。體檢 M2「Security 實作下沉 Bee.Base」與此 convention 互斥，以 convention 為準。體檢 plan 的 M2 該項視為「由 convention 解決」。
 
-- **維持現狀**（依 `security.md` 已定 convention，政策層本就屬 `Bee.Definition`）→ 階段 3 直接關閉，並在體檢 plan 註記 M2 該項已由 convention 解決。
-- **仍要外移** → 需同時修訂 `security.md` 的分界定義，否則規範與實作再度脫節。
+## 結論
 
-## 建議執行順序
-
-1. **先做階段 1**（非 breaking、獨立有價值、解除階段 2 阻礙）。
-2. 階段 1 落地後，重新評估階段 2 的效益——屆時 `Bee.Definition` 對上層已無具象型別洩漏，「IO 實作留在同一組件」的實際危害會比現在更小，可能得出「不搬也可以」的結論。
-3. 階段 3 屬 convention 裁決，與階段 1/2 無相依，可獨立決定。
-
-## 待裁決事項
-
-- **階段 2 相容性策略**：A（直接搬 + major）／B（型別轉送過渡）／C（不搬）。
-- **階段 3 立場**：維持現狀（依現有 convention）／外移並同步修訂 `security.md`。
-- 若採 A 或 B，需確認目標版本號與發版時程（現行 4.15.0）。
+**整份計畫收斂完成**：階段 1 已執行（於快取計畫）；階段 2 裁決不執行（採 C）；階段 3 裁決維持現狀。Bee.Definition 職責純度的**實質目標**（消除相依洩漏）已由階段 1 達成；IO/Security 實作的物理位置維持不動，以文件與 convention 標明分層。
