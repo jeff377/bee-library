@@ -36,6 +36,10 @@ namespace Bee.Api.Core.MessagePack
                     new CollectionBaseFormatter<UnitSettings, UnitItem>(), // UnitSettings as array
                     SafeTypelessFormatter.Instance      // Type-validated polymorphic formatter
                 },
+                // IMPORTANT: every MessagePackCollectionBase<> collection must be registered above.
+                // FormatterResolver below looks like an automatic fallback for them but is unreachable
+                // (ContractlessStandardResolver precedes it) — see its remarks. An unregistered
+                // collection serializes as empty with no error.
                 new IFormatterResolver[]
                 {
                     ContractlessStandardResolver.Instance, // Contractless resolver (without unsafe Typeless support)

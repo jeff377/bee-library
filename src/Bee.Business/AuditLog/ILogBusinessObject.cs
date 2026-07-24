@@ -5,6 +5,12 @@ namespace Bee.Business.AuditLog
     /// <c>st_log_*</c> tables). Exists so other BOs can resolve it through
     /// <c>IBusinessObjectFactory</c> and query the audit trail without binding to the concrete class.
     /// </summary>
+    /// <remarks>
+    /// NOTE: This axis seam currently has no internal BO-to-BO consumers — it is reserved for future
+    /// cross-BO audit queries. That is also why there is no <c>CreateLogBO</c> factory extension
+    /// alongside <c>CreateFormBO</c> / <c>CreateSystemBO</c>: adding one now would only introduce
+    /// another API with no callers. Add it together with the first real consumer.
+    /// </remarks>
     public interface ILogBusinessObject : IBusinessObject
     {
         /// <summary>

@@ -9,6 +9,13 @@ namespace Bee.Api.Core.Registry
     /// When a BO method returns a pure POCO that implements a contract interface,
     /// this registry maps it to the corresponding API type (with MessagePack attributes) for serialization.
     /// </summary>
+    /// <remarks>
+    /// NOTE: No production code calls <see cref="Register{TContract,TApi}"/> today — every real wire type
+    /// already carries <c>[MessagePackObject]</c> and short-circuits before the mapping is consulted, so
+    /// the map is always empty and the conversion path is inert. This type is kept as reserved API
+    /// surface for the "BO returns a pure POCO" scenario; treat it as not-yet-active infrastructure
+    /// rather than a mechanism already in effect.
+    /// </remarks>
     public static class ApiContractRegistry
     {
         private static readonly ConcurrentDictionary<Type, ContractMapping> _mappings = new ConcurrentDictionary<Type, ContractMapping>();
