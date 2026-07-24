@@ -20,7 +20,7 @@ namespace Bee.ObjectCaching
     /// <summary>
     /// Base class for caching same-type objects accessed by key.
     /// </summary>
-    public abstract class KeyObjectCache<T> : IEvictableCache where T : class
+    public abstract class KeyObjectCache<T> where T : class
     {
         private readonly string _cachePrefix;
 
@@ -110,9 +110,9 @@ namespace Bee.ObjectCaching
             var value = CreateInstance(key);
             if (value != null)
             {
-                CacheInfo.Provider.Set(cacheKey, value, GetPolicy(key));
+                CacheInfo.Provider.Set(cacheKey, value, BuildPolicy(key));
             }
-            else if (GetNegativePolicy(key) is { } negPolicy)
+            else if (BuildNegativePolicy(key) is { } negPolicy)
             {
                 CacheInfo.Provider.Set(cacheKey, KeyObjectCacheSentinel.MissMarker, negPolicy);
             }
@@ -127,7 +127,7 @@ namespace Bee.ObjectCaching
         public virtual void Set(string key, T value)
         {
             string cacheKey = GetCacheKey(key);
-            CacheInfo.Provider.Set(cacheKey, value!, GetPolicy(key));
+            CacheInfo.Provider.Set(cacheKey, value!, BuildPolicy(key));
         }
 
         /// <summary>
@@ -153,12 +153,40 @@ namespace Bee.ObjectCaching
         }
 
         /// <summary>
-        /// Gets the cache group used by convention-based eviction routing; defaults to the cached
-        /// type's name (e.g. <c>"CompanyInfo"</c>). Override only when the notification group differs.
+        /// Gets the cache group forming the prefix of each entry's <c>"group:entity"</c> notify key;
+        /// defaults to the cached type's name (e.g. <c>"CompanyInfo"</c>). Override only when the
+        /// notification group differs.
         /// </summary>
         public virtual string CacheGroup => typeof(T).Name;
 
-        /// <inheritdoc/>
-        void IEvictableCache.Evict(string entity) => Remove(entity);
+        /// <summary>
+        /// Returns the policy from <see cref="GetPolicy(string)"/> with a default cache-notify
+        /// dependency applied when the subclass did not set one.
+        /// </summary>
+        /// <remarks>
+        /// The default is the <c>"group:entity"</c> convention writers use with
+        /// <c>ICacheNotifyService.Touch</c>. A subclass whose storage reports an authoritative key
+        /// (the define caches) has already set it, and that value is kept.
+        /// </remarks>
+        /// <param name="key">The member key.</param>
+        private CacheItemPolicy BuildPolicy(string key)
+        {
+            var policy = GetPolicy(key);
+            policy.ChangeNotifyKey ??= CacheGroup + ":" + key;
+            return policy;
+        }
+
+        /// <summary>
+        /// Returns the negative (miss-marker) policy with the same default notify dependency, so a
+        /// cached miss also clears once the entry is created elsewhere.
+        /// </summary>
+        /// <param name="key">The member key.</param>
+        private CacheItemPolicy? BuildNegativePolicy(string key)
+        {
+            var policy = GetNegativePolicy(key);
+            if (policy != null)
+                policy.ChangeNotifyKey ??= CacheGroup + ":" + key;
+            return policy;
+        }
     }
 }

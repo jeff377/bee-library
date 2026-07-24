@@ -1,12 +1,12 @@
 # 計畫：快取失效模型統一（檔案相依 + DB 相依皆進 CacheItemPolicy）
 
-**狀態：📝 擬定中（2026-07-24）**
+**狀態：✅ 已完成（2026-07-24）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | storage 回答檔案相依，消除 `is FileDefineStorage` 型別判斷 | ✅ 已完成（2026-07-24） |
 | 2 | DB 相依進 `CacheItemPolicy`（notify token 模型） | ✅ 已完成（2026-07-24） |
-| 3 | 退役 group 註冊表（`_evictableByGroup` / `TryEvict` / `CacheGroup`） | 📝 待裁決（breaking） |
+| 3 | 退役 group 註冊表（`_evictableByGroup` / `TryEvict` / `IEvictableCache`） | ✅ 已完成（2026-07-24） |
 
 ## 背景
 
@@ -107,6 +107,8 @@ private sealed class CacheNotifyToken : IChangeToken
 
 改由 `DbDefineStorage.GetChangeSource` 回報，它與寫入端共用同一個 `BuildNotifyKey` 私有方法，兩側**不可能漂移**。
 
+**階段 3 補充**：基底推導最終仍以「**預設值**」的形式加入——因為註冊表退役後，非定義快取（`CompanyInfo`／`DepartmentTree` 等）沒有 storage 可問，其 key 慣例由外部寫入端的 `Touch(...)` 決定，正是 `{group}:{entity}`。兩者並存且不衝突：基底填預設，storage 回報的權威值優先（`??=`）。
+
 ### 5. storage 報告自己的變更訊號
 
 `IDefineStorage` 加預設介面方法，回傳**中性描述子**而非檔案路徑：
@@ -185,7 +187,23 @@ policy.ChangeMonitorFilePaths = _storage.GetChangeSource(DefineType.FormSchema, 
 - 新測試以 GUID 產生獨一無二的 notify key，因此不需序列化或替換靜態狀態即可平行安全 —— 避免再增加 `[Collection]` 序列化（見 `testing.md`）。
 - `DbDefineStorage.Write` 的 `Touch` 亦改走 `BuildNotifyKey`，與 `GetChangeSource` 共用同一組 key 產生邏輯。
 
-### 階段 3 — 退役 group 註冊表（breaking，需裁決）
+### 階段 3 — 退役 group 註冊表（已完成，未走過渡期）
+
+**執行結果（2026-07-24）**：全 16 個測試專案通過、建置 0 警告。使用者裁決「無外部消費者，直接移除，不需 `[Obsolete]` 過渡」。
+
+盤點時發現移除的前置條件比預期多，已一併處理：
+
+- **7 個快取原本只靠註冊表失效**（`SystemSettings`／`DatabaseSettings`／`SessionInfo`／`CompanyInfo`／`PermissionModels`／`CompanyRolePermissions`／`DepartmentTree`），直接移除會使其失去失效能力。改由 `ObjectCache<T>` / `KeyObjectCache<T>` 基底自動填入預設 `ChangeNotifyKey`（keyed 用 `{group}:{key}`、單例用 `{group}:*`），定義快取由 storage 回報的權威值優先。負向（miss marker）項目同樣帶上 notify key，因此快取的「查無」也會在他處建立後失效。
+- **`CacheNotifyPoller` 不再需要 `ICacheContainer`**：它只發布版本，改為不注入任何快取參考。副效果是版本異動現在會使**所有容器**（含 per-tenant／per-fixture 前綴容器）中帶相同 notify key 的項目失效，而舊的單一注入容器永遠碰不到那些。
+- 移除 `ICacheContainer.TryEvict`、`IEvictableCache`（整個檔）、`CacheContainerService._evictableByGroup` 與手寫的 15 個快取陣列。`CacheGroup` **保留**——它現在是組 notify key 的來源。
+- 刪除 `CacheContainerTryEvictTests.cs`（19 處引用，測的正是已移除的分派行為）；4 個 Hosting 測試檔配合新簽章調整，並移除兩個已失效的「container 為 null 應擲例外」測試與連帶的 stub 死碼。
+- 改寫 `CompanyInfoService`／`DepartmentTreeService`／`RolePermissionService` 的 XML 註解——它們原本明文描述 `TryEvict` 分派路徑。
+
+**行為變更（已知並接受）**：單例快取的 notify key 現在必須**完全比對**。舊行為下 `TryEvict("SystemSettings:任何字串")` 都能逐出（拆出 group 後 entity 對單例無意義），現在只有 `{group}:*` 有效。框架自身的寫入端本就使用 `"*"`（`DbDefineStorage.SingletonKey`），但外部寫入端若曾使用其他 entity 字串，需改為 `{group}:*`。
+
+> 端到端驗證：`DbDefineCacheInvalidationTests` 以真實 SQL Server／PostgreSQL 跑跨節點情境（節點 B 寫入 → 節點 A poll → 重載新版）通過，證實版本式失效在實際資料庫上可運作。
+
+### 原階段 3 規劃（保留供對照）
 
 - 移除 `_evictableByGroup` 硬編陣列、`IEvictableCache.Evict`、`ICacheContainer.TryEvict`、`CacheGroup`（或保留 `CacheGroup` 僅供組 notify key）。
 - `ICacheContainer.TryEvict` 為公開 API，**需先標 `[Obsolete]` 一個版本**再移除。

@@ -11,8 +11,9 @@ namespace Bee.ObjectCaching.Services
     /// </summary>
     /// <remarks>
     /// Cross-process invalidation: a writer that changes role/grant/user-role config in a company
-    /// database must bump the common cache-notify row <c>"CompanyRolePermissions:{companyId}"</c>;
-    /// the poller then dispatches it through <see cref="ICacheContainer.TryEvict(string)"/>.
+    /// database must bump the common cache-notify row <c>"CompanyRolePermissions:{companyId}"</c> —
+    /// the key must match exactly, since the cached entry carries it as its <c>ChangeNotifyKey</c>.
+    /// The poller publishes the observed version, expiring the entry on its next read.
     /// </remarks>
     public class RolePermissionService : IRolePermissionService
     {

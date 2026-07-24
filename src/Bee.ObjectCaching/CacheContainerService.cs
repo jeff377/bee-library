@@ -57,21 +57,7 @@ namespace Bee.ObjectCaching
             CompanyRolePermissions = new CompanyRolePermissionsCache(CachePrefix);
             DepartmentTree = new DepartmentTreeCache(CachePrefix);
 
-            // Convention-based eviction dispatch: index every owned cache by its CacheGroup so the
-            // poller can invalidate "group:entity" keys without a hand-maintained route table.
-            // Adding a new cache above automatically makes it invalidatable — no extra registration.
-            IEvictableCache[] caches =
-            [
-                SystemSettings, DatabaseSettings, ProgramSettings, DbCategorySettings, CurrencySettings, UnitSettings,
-                TableSchema, FormSchema, FormLayout, LanguageResource, SessionInfo, CompanyInfo,
-                PermissionModels, CompanyRolePermissions, DepartmentTree
-            ];
-            _evictableByGroup = new Dictionary<string, IEvictableCache>(StringComparer.OrdinalIgnoreCase);
-            foreach (var cache in caches)
-                _evictableByGroup[cache.CacheGroup] = cache;
         }
-
-        private readonly Dictionary<string, IEvictableCache> _evictableByGroup;
 
         /// <summary>
         /// The namespace prefix used by every cache instance this container owns.
@@ -125,21 +111,5 @@ namespace Bee.ObjectCaching
         /// <inheritdoc/>
         public DepartmentTreeCache DepartmentTree { get; }
 
-        /// <inheritdoc/>
-        public bool TryEvict(string cacheKey)
-        {
-            if (string.IsNullOrEmpty(cacheKey)) return false;
-
-            // Split on the first ':' into group + entity; the entity may itself contain ':'.
-            int separator = cacheKey.IndexOf(':');
-            if (separator <= 0) return false;
-
-            string cacheGroup = cacheKey.Substring(0, separator);
-            string entity = cacheKey.Substring(separator + 1);
-
-            if (!_evictableByGroup.TryGetValue(cacheGroup, out var cache)) return false;
-            cache.Evict(entity);
-            return true;
-        }
     }
 }

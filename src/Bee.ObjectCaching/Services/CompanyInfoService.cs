@@ -12,10 +12,10 @@ namespace Bee.ObjectCaching.Services
     /// Cross-process / multi-node invalidation: this service does not watch <c>st_company</c> for
     /// changes. A writer that modifies a company in a way that matters to the cache must, in the
     /// same transaction, bump the notification row via
-    /// <c>ICacheNotifyService.Touch("CompanyInfo:{companyId}", tx)</c>. The cache-notify poller then
-    /// dispatches that key through <see cref="ICacheContainer.TryEvict(string)"/> (cache group
-    /// <c>CompanyInfo</c> → <see cref="ICacheContainer.CompanyInfo"/>), evicting the stale entry so
-    /// the next <see cref="Get(string)"/> reloads from <c>st_company</c>. There is no in-framework
+    /// <c>ICacheNotifyService.Touch("CompanyInfo:{companyId}", tx)</c> — the key must match exactly,
+    /// since each cached entry carries it as its <c>ChangeNotifyKey</c>. The cache-notify poller
+    /// publishes the observed version, which expires the entry on its next read so the following
+    /// <see cref="Get(string)"/> reloads from <c>st_company</c>. There is no in-framework
     /// <c>st_company</c> writer today; company master data is maintained externally.
     /// </remarks>
     public class CompanyInfoService : ICompanyInfoService

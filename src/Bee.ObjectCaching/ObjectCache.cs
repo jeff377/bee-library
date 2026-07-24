@@ -3,7 +3,7 @@ namespace Bee.ObjectCaching
     /// <summary>
     /// Base class for single-object caches.
     /// </summary>
-    public abstract class ObjectCache<T> : IEvictableCache where T : class
+    public abstract class ObjectCache<T> where T : class
     {
         private readonly string _cachePrefix;
 
@@ -32,6 +32,23 @@ namespace Bee.ObjectCaching
         {
             // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
+            return policy;
+        }
+
+        /// <summary>
+        /// Returns the policy from <see cref="GetPolicy"/> with a default cache-notify dependency
+        /// applied when the subclass did not set one.
+        /// </summary>
+        /// <remarks>
+        /// A single-object cache has one entry, so its notify key is the group with the
+        /// <c>"*"</c> entity — the same convention the framework's own writers use. A subclass whose
+        /// storage reports an authoritative key (the define caches) has already set
+        /// <see cref="CacheItemPolicy.ChangeNotifyKey"/>, and that value is kept.
+        /// </remarks>
+        private CacheItemPolicy BuildPolicy()
+        {
+            var policy = GetPolicy();
+            policy.ChangeNotifyKey ??= CacheGroup + ":*";
             return policy;
         }
 
@@ -68,7 +85,7 @@ namespace Bee.ObjectCaching
             var value = CreateInstance();
             if (value != null)
             {
-                CacheInfo.Provider.Set(key, value!, GetPolicy());
+                CacheInfo.Provider.Set(key, value!, BuildPolicy());
             }
             return value;
         }
@@ -80,7 +97,7 @@ namespace Bee.ObjectCaching
         public virtual void Set(T value)
         {
             string key = GetKey();
-            CacheInfo.Provider.Set(key, value!, GetPolicy());
+            CacheInfo.Provider.Set(key, value!, BuildPolicy());
         }
 
         /// <summary>
@@ -93,15 +110,9 @@ namespace Bee.ObjectCaching
         }
 
         /// <summary>
-        /// Gets the cache group used by convention-based eviction routing; defaults to the cached
-        /// type's name. Override only when the notification group differs.
+        /// Gets the cache group forming the prefix of this cache's <c>"group:entity"</c> notify key;
+        /// defaults to the cached type's name. Override only when the notification group differs.
         /// </summary>
         public virtual string CacheGroup => typeof(T).Name;
-
-        /// <summary>
-        /// Evicts this single-object cache. The <paramref name="entity"/> portion is ignored —
-        /// there is one entry — so any bump for this group (conventionally <c>"group:*"</c>) clears it.
-        /// </summary>
-        void IEvictableCache.Evict(string entity) => Remove();
     }
 }

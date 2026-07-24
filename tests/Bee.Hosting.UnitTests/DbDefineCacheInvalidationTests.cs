@@ -36,7 +36,7 @@ namespace Bee.Hosting.UnitTests
             string nodeAPrefix = "nodeA_" + Guid.NewGuid().ToString("N");
             var storageA = new DbDefineStorage(connectionManager, cacheNotify, databaseId);
             var containerA = new CacheContainerService(storageA, _fx.PathOptions, nodeAPrefix);
-            var session = new CacheNotifyPollSession(databaseId, dbAccessFactory, containerA, marginSeconds: 5);
+            var session = new CacheNotifyPollSession(databaseId, dbAccessFactory, marginSeconds: 5);
 
             string progId = "E2E_" + Guid.NewGuid().ToString("N");
 
@@ -55,8 +55,8 @@ namespace Bee.Hosting.UnitTests
             var storageB = new DbDefineStorage(connectionManager, cacheNotify, databaseId);
             storageB.SaveFormSchema(new FormSchema(progId, "v2"));
 
-            // Node A's next poll sees the higher version, evicts its cached entry via convention
-            // dispatch, and the next read reloads v2 from the database.
+            // Node A's next poll sees the higher version and publishes it; the cached entry carries
+            // that notify key, so it expires on the next read, which reloads v2 from the database.
             session.Poll();
             Assert.Equal("v2", containerA.FormSchema.Get(progId)!.DisplayName);
         }

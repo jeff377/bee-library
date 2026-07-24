@@ -3,9 +3,6 @@ using System.Reflection;
 using Bee.Db;
 using Bee.Definition.Settings;
 using Bee.Hosting.CacheNotify;
-using Bee.ObjectCaching;
-using Bee.ObjectCaching.Database;
-using Bee.ObjectCaching.Define;
 using Microsoft.Extensions.Logging;
 
 namespace Bee.Hosting.UnitTests
@@ -31,33 +28,12 @@ namespace Bee.Hosting.UnitTests
                 Exception? exception, Func<TState, Exception?, string> formatter) { }
         }
 
-        private sealed class StubCacheContainer : ICacheContainer
-        {
-            public SystemSettingsCache SystemSettings => throw new NotImplementedException();
-            public DatabaseSettingsCache DatabaseSettings => throw new NotImplementedException();
-            public ProgramSettingsCache ProgramSettings => throw new NotImplementedException();
-            public PermissionModelsCache PermissionModels => throw new NotImplementedException();
-            public DbCategorySettingsCache DbCategorySettings => throw new NotImplementedException();
-            public CurrencySettingsCache CurrencySettings => throw new NotImplementedException();
-            public UnitSettingsCache UnitSettings => throw new NotImplementedException();
-            public TableSchemaCache TableSchema => throw new NotImplementedException();
-            public FormSchemaCache FormSchema => throw new NotImplementedException();
-            public FormLayoutCache FormLayout => throw new NotImplementedException();
-            public LanguageResourceCache LanguageResource => throw new NotImplementedException();
-            public SessionInfoCache SessionInfo => throw new NotImplementedException();
-            public CompanyInfoCache CompanyInfo => throw new NotImplementedException();
-            public CompanyRolePermissionsCache CompanyRolePermissions => throw new NotImplementedException();
-            public DepartmentTreeCache DepartmentTree => throw new NotImplementedException();
-            public bool TryEvict(string cacheKey) => false;
-        }
-
-        private static readonly ICacheContainer s_container = new StubCacheContainer();
         private static readonly ILogger<CacheNotifyPoller> s_logger = new StubLogger();
 
         private static CacheNotifyPoller MakePoller(CacheNotifyOptions options)
         {
             var factory = new ThrowingDbFactory(new InvalidOperationException("sim poll error"));
-            return new CacheNotifyPoller(factory, s_container, options, s_logger);
+            return new CacheNotifyPoller(factory, options, s_logger);
         }
 
         private static async Task InvokeExecuteAsync(CacheNotifyPoller poller, CancellationToken token)

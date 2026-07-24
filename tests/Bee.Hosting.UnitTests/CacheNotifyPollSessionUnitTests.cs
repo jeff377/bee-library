@@ -3,9 +3,6 @@ using System.Reflection;
 using Bee.Db;
 using Bee.Definition.Database;
 using Bee.Hosting.CacheNotify;
-using Bee.ObjectCaching;
-using Bee.ObjectCaching.Database;
-using Bee.ObjectCaching.Define;
 
 namespace Bee.Hosting.UnitTests
 {
@@ -21,28 +18,7 @@ namespace Bee.Hosting.UnitTests
             public DbAccess Create(string databaseId) => throw new NotImplementedException();
         }
 
-        private sealed class StubCacheContainer : ICacheContainer
-        {
-            public SystemSettingsCache SystemSettings => throw new NotImplementedException();
-            public DatabaseSettingsCache DatabaseSettings => throw new NotImplementedException();
-            public ProgramSettingsCache ProgramSettings => throw new NotImplementedException();
-            public PermissionModelsCache PermissionModels => throw new NotImplementedException();
-            public DbCategorySettingsCache DbCategorySettings => throw new NotImplementedException();
-            public CurrencySettingsCache CurrencySettings => throw new NotImplementedException();
-            public UnitSettingsCache UnitSettings => throw new NotImplementedException();
-            public TableSchemaCache TableSchema => throw new NotImplementedException();
-            public FormSchemaCache FormSchema => throw new NotImplementedException();
-            public FormLayoutCache FormLayout => throw new NotImplementedException();
-            public LanguageResourceCache LanguageResource => throw new NotImplementedException();
-            public SessionInfoCache SessionInfo => throw new NotImplementedException();
-            public CompanyInfoCache CompanyInfo => throw new NotImplementedException();
-            public CompanyRolePermissionsCache CompanyRolePermissions => throw new NotImplementedException();
-            public DepartmentTreeCache DepartmentTree => throw new NotImplementedException();
-            public bool TryEvict(string cacheKey) => false;
-        }
-
         private static readonly IDbAccessFactory s_factory = new StubDbFactory();
-        private static readonly ICacheContainer s_container = new StubCacheContainer();
         private static readonly object[] s_unknownDbTypeArg = [(DatabaseType)999];
 
         // --- 建構子防衛式斷言 ---
@@ -52,7 +28,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NullDatabaseId_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPollSession(null!, s_factory, s_container, marginSeconds: 0));
+                new CacheNotifyPollSession(null!, s_factory, marginSeconds: 0));
         }
 
         [Fact]
@@ -60,7 +36,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_WhitespaceDatabaseId_ThrowsArgumentException()
         {
             Assert.Throws<ArgumentException>(() =>
-                new CacheNotifyPollSession("   ", s_factory, s_container, marginSeconds: 0));
+                new CacheNotifyPollSession("   ", s_factory, marginSeconds: 0));
         }
 
         [Fact]
@@ -68,15 +44,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NullDbAccessFactory_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPollSession("test_db", null!, s_container, marginSeconds: 0));
-        }
-
-        [Fact]
-        [DisplayName("CacheNotifyPollSession 建構子 container 為 null 應拋 ArgumentNullException")]
-        public void Constructor_NullContainer_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPollSession("test_db", s_factory, null!, marginSeconds: 0));
+                new CacheNotifyPollSession("test_db", null!, marginSeconds: 0));
         }
 
         [Fact]
@@ -84,7 +52,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NegativeMarginSeconds_CreatesInstanceWithoutThrowing()
         {
             var exception = Record.Exception(() =>
-                new CacheNotifyPollSession("test_db", s_factory, s_container, marginSeconds: -1));
+                new CacheNotifyPollSession("test_db", s_factory, marginSeconds: -1));
             Assert.Null(exception);
         }
 

@@ -1,7 +1,6 @@
 using System.Data.Common;
 using Bee.Db;
 using Bee.Definition.Settings;
-using Bee.ObjectCaching;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -22,21 +21,24 @@ namespace Bee.Hosting.CacheNotify
     public sealed class CacheNotifyPoller : BackgroundService
     {
         private readonly IDbAccessFactory _dbAccessFactory;
-        private readonly ICacheContainer _container;
         private readonly CacheNotifyOptions _options;
         private readonly ILogger<CacheNotifyPoller> _logger;
 
         /// <summary>
         /// Initializes a new <see cref="CacheNotifyPoller"/>.
         /// </summary>
+        /// <remarks>
+        /// Takes no cache reference: the poller only publishes observed versions to
+        /// <c>CacheInfo.NotifyVersions</c>, and every cache entry carrying a matching
+        /// <c>ChangeNotifyKey</c> expires itself on next read — including entries in per-tenant or
+        /// per-fixture containers, which a single injected container could never have reached.
+        /// </remarks>
         public CacheNotifyPoller(
             IDbAccessFactory dbAccessFactory,
-            ICacheContainer container,
             CacheNotifyOptions options,
             ILogger<CacheNotifyPoller> logger)
         {
             _dbAccessFactory = dbAccessFactory ?? throw new ArgumentNullException(nameof(dbAccessFactory));
-            _container = container ?? throw new ArgumentNullException(nameof(container));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -45,7 +47,7 @@ namespace Bee.Hosting.CacheNotify
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var session = new CacheNotifyPollSession(
-                _options.DatabaseId, _dbAccessFactory, _container, _options.MarginSeconds);
+                _options.DatabaseId, _dbAccessFactory, _options.MarginSeconds);
 
             int intervalSeconds = _options.IntervalSeconds > 0 ? _options.IntervalSeconds : 5;
             using var timer = new PeriodicTimer(TimeSpan.FromSeconds(intervalSeconds));

@@ -41,7 +41,6 @@ namespace Bee.Hosting.CacheNotify
 
         private readonly IDbAccessFactory _dbAccessFactory;
         private readonly string _databaseId;
-        private readonly ICacheContainer _container;
         private readonly TimeSpan _margin;
 
         private readonly Dictionary<string, long> _mirror = new(StringComparer.Ordinal);
@@ -53,27 +52,23 @@ namespace Bee.Hosting.CacheNotify
         /// </summary>
         /// <param name="databaseId">The database whose <c>st_cache_notify</c> table is polled.</param>
         /// <param name="dbAccessFactory">Factory for the database access object.</param>
-        /// <param name="container">The cache container that dispatches evictions by cache group.</param>
         /// <param name="marginSeconds">The overlap safety margin in seconds.</param>
         public CacheNotifyPollSession(
             string databaseId,
             IDbAccessFactory dbAccessFactory,
-            ICacheContainer container,
             int marginSeconds)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             ArgumentNullException.ThrowIfNull(dbAccessFactory);
-            ArgumentNullException.ThrowIfNull(container);
 
             _databaseId = databaseId;
             _dbAccessFactory = dbAccessFactory;
-            _container = container;
             _margin = TimeSpan.FromSeconds(marginSeconds < 0 ? 0 : marginSeconds);
         }
 
         /// <summary>
         /// Performs one polling cycle. The first call only takes the baseline cursor; later calls
-        /// fetch the incremental delta and route evictions for keys whose version advanced.
+        /// fetch the incremental delta and publish versions for keys whose version advanced.
         /// </summary>
         public void Poll()
         {
@@ -133,12 +128,8 @@ namespace Bee.Hosting.CacheNotify
                 _mirror.TryGetValue(cacheKey, out long mirrored);
                 if (version > mirrored)
                 {
-                    // Publish the version so entries carrying this notify key expire on next read.
+                    // Publish the version; entries carrying this notify key expire on next read.
                     CacheInfo.NotifyVersions.SetVersion(cacheKey, version);
-
-                    // Group-registry eviction, retained in parallel while the notify-key model beds
-                    // in; it covers caches that do not yet declare a ChangeNotifyKey.
-                    _container.TryEvict(cacheKey);
                     _mirror[cacheKey] = version;
                 }
 

@@ -4,9 +4,6 @@ using System.Reflection;
 using Bee.Db;
 using Bee.Definition.Settings;
 using Bee.Hosting.CacheNotify;
-using Bee.ObjectCaching;
-using Bee.ObjectCaching.Database;
-using Bee.ObjectCaching.Define;
 using Microsoft.Extensions.Logging;
 
 namespace Bee.Hosting.UnitTests
@@ -41,28 +38,7 @@ namespace Bee.Hosting.UnitTests
                 Func<TState, Exception?, string> formatter) { }
         }
 
-        private sealed class StubCacheContainer : ICacheContainer
-        {
-            public SystemSettingsCache SystemSettings => throw new NotImplementedException();
-            public DatabaseSettingsCache DatabaseSettings => throw new NotImplementedException();
-            public ProgramSettingsCache ProgramSettings => throw new NotImplementedException();
-            public PermissionModelsCache PermissionModels => throw new NotImplementedException();
-            public DbCategorySettingsCache DbCategorySettings => throw new NotImplementedException();
-            public CurrencySettingsCache CurrencySettings => throw new NotImplementedException();
-            public UnitSettingsCache UnitSettings => throw new NotImplementedException();
-            public TableSchemaCache TableSchema => throw new NotImplementedException();
-            public FormSchemaCache FormSchema => throw new NotImplementedException();
-            public FormLayoutCache FormLayout => throw new NotImplementedException();
-            public LanguageResourceCache LanguageResource => throw new NotImplementedException();
-            public SessionInfoCache SessionInfo => throw new NotImplementedException();
-            public CompanyInfoCache CompanyInfo => throw new NotImplementedException();
-            public CompanyRolePermissionsCache CompanyRolePermissions => throw new NotImplementedException();
-            public DepartmentTreeCache DepartmentTree => throw new NotImplementedException();
-            public bool TryEvict(string cacheKey) => false;
-        }
-
         private static readonly IDbAccessFactory s_factory = new StubDbFactory();
-        private static readonly ICacheContainer s_container = new StubCacheContainer();
         private static readonly CacheNotifyOptions s_options = new();
         private static readonly ILogger<CacheNotifyPoller> s_logger = new StubLogger();
 
@@ -71,7 +47,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_ValidArguments_CreatesInstance()
         {
             var exception = Record.Exception(() =>
-                new CacheNotifyPoller(s_factory, s_container, s_options, s_logger));
+                new CacheNotifyPoller(s_factory, s_options, s_logger));
             Assert.Null(exception);
         }
 
@@ -80,15 +56,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NullDbAccessFactory_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPoller(null!, s_container, s_options, s_logger));
-        }
-
-        [Fact]
-        [DisplayName("CacheNotifyPoller 建構子 container 為 null 應拋 ArgumentNullException")]
-        public void Constructor_NullContainer_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPoller(s_factory, null!, s_options, s_logger));
+                new CacheNotifyPoller(null!, s_options, s_logger));
         }
 
         [Fact]
@@ -96,7 +64,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NullOptions_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPoller(s_factory, s_container, null!, s_logger));
+                new CacheNotifyPoller(s_factory, null!, s_logger));
         }
 
         [Fact]
@@ -104,7 +72,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NullLogger_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPoller(s_factory, s_container, s_options, null!));
+                new CacheNotifyPoller(s_factory, s_options, null!));
         }
 
         [Fact]
@@ -112,8 +80,8 @@ namespace Bee.Hosting.UnitTests
         public void SafePoll_SessionThrowsInvalidOperationException_DoesNotPropagate()
         {
             var throwingFactory = new ThrowingDbFactory(new InvalidOperationException("simulated db error"));
-            var session = new CacheNotifyPollSession("test_db", throwingFactory, s_container, marginSeconds: 0);
-            var poller = new CacheNotifyPoller(s_factory, s_container, s_options, s_logger);
+            var session = new CacheNotifyPollSession("test_db", throwingFactory, marginSeconds: 0);
+            var poller = new CacheNotifyPoller(s_factory, s_options, s_logger);
 
             var safePollMethod = typeof(CacheNotifyPoller).GetMethod(
                 "SafePoll", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -128,8 +96,8 @@ namespace Bee.Hosting.UnitTests
         public void SafePoll_SessionThrowsDbException_DoesNotPropagate()
         {
             var throwingFactory = new ThrowingDbFactory(new FakeDbException("simulated db provider exception"));
-            var session = new CacheNotifyPollSession("test_db", throwingFactory, s_container, marginSeconds: 0);
-            var poller = new CacheNotifyPoller(s_factory, s_container, s_options, s_logger);
+            var session = new CacheNotifyPollSession("test_db", throwingFactory, marginSeconds: 0);
+            var poller = new CacheNotifyPoller(s_factory, s_options, s_logger);
 
             var safePollMethod = typeof(CacheNotifyPoller).GetMethod(
                 "SafePoll", BindingFlags.NonPublic | BindingFlags.Instance);

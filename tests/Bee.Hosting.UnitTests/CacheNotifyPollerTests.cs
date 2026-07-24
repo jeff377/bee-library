@@ -45,7 +45,7 @@ namespace Bee.Hosting.UnitTests
             var databaseId = TestDbConventions.GetDatabaseId(databaseType);
             var factory = _fx.GetRequiredService<IDbAccessFactory>();
             var container = _fx.GetRequiredService<ICacheContainer>();
-            return new CacheNotifyPollSession(databaseId, factory, container, marginSeconds: 5);
+            return new CacheNotifyPollSession(databaseId, factory, marginSeconds: 5);
         }
 
         private CompanyInfo SeedCompany(string companyId)
