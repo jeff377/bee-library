@@ -1,10 +1,10 @@
 # 計畫：Bee.Definition 職責拆分（Storage IO / Security 實作外移）
 
-**狀態：📝 擬定中（2026-07-24）**
+**狀態：🚧 進行中（2026-07-24）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 消除 `is FileDefineStorage` 能力洩漏 → **已移交** [plan-cache-invalidation-model.md](plan-cache-invalidation-model.md) 階段 1 | 📝 待做（見該計畫） |
+| 1 | 消除 `is FileDefineStorage` 能力洩漏 → **已移交** [plan-cache-invalidation-model.md](plan-cache-invalidation-model.md) 階段 1 | ✅ 已完成（2026-07-24，於該計畫執行） |
 | 2 | 檔案 IO 實作外移至獨立套件（breaking，需版本規劃） | 📝 待裁決 |
 | 3 | Security 實作歸屬重新確認（可能不動） | 📝 待裁決 |
 
@@ -62,10 +62,17 @@ if (_storage is FileDefineStorage)   // ProgramSettingsCache / FormSchemaCache /
 
 ## 方案
 
-### 階段 1 — 消除能力洩漏（**已移交獨立計畫**）
+### 階段 1 — 消除能力洩漏（✅ 已完成，於獨立計畫執行）
 
 > 後續追查發現此項的根因不只是型別判斷，而是「`CacheItemPolicy` 只表達檔案相依、DB 相依散在快取類之外」的模型不完整。已獨立立案為
-> **[plan-cache-invalidation-model.md](plan-cache-invalidation-model.md)**，其階段 1 即為本項；本計畫階段 2 的前提由該計畫提供。
+> **[plan-cache-invalidation-model.md](plan-cache-invalidation-model.md)** 並**全數執行完畢**（三階段皆 ✅）。
+>
+> **實際採用的做法與下方原始建議不同**：既非 (a) 的布林能力屬性、也非 (b) 的 opt-in 介面，而是在 `IDefineStorage` 加**預設介面方法**回傳中性描述子
+> `DefineChangeSource`（`FilePaths` / `NotifyKey` 兩格，各實作只填自己那一格）。理由是 (b) 仍保留一個 `is` 判斷、且以「檔案」命名的能力介面會把檔案形狀寫進抽象，
+> 導致 DB 實作永遠回報空值；描述子讓 `DbDefineStorage` 也有話可說（回報 cache-notify 鍵）。
+>
+> **結果**：`grep "is FileDefineStorage"` 為 0；`Bee.ObjectCaching` 不再認識任何 storage 具象型別，本計畫階段 2 的最大阻礙已消除。
+>
 > 以下保留原始分析供對照。
 
 把 8 處 `is FileDefineStorage` 改為能力導向抽象。兩種寫法擇一：
