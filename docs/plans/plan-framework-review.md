@@ -8,7 +8,7 @@
 | P1 | 安全與序列化標籤一致性 | ✅ 已完成（2026-07-23） |
 | P2 | 結構重構（Bee.Definition 職責拆分、大檔／一檔多型別） | 📝 待做 |
 | P3 | 文件漂移修正 | ✅ 已完成（2026-07-24） |
-| P4 | 觀察／待你裁決（慣例豁免、次要補測） | 📝 待討論 |
+| P4 | 慣例裁決與次要補強 | ✅ 已完成（2026-07-24） |
 
 ## 背景
 
@@ -128,16 +128,21 @@
 
 ---
 
-## P4 — 觀察／待你裁決
+## P4 — 慣例裁決與次要補強
 
-這些屬慣例判斷或次要補強，需你決定方向而非直接動手：
+裁決結果與處置：
 
-- **`XxxCollection` + `XxxCollectionExtensions` 同檔（20 檔）**：跨全框架一致的刻意慣例，擴充類與集合緊密耦合。嚴格看違反一型別一檔。→ **請裁決**：認定為「緊密耦合特殊原因」正式豁免（寫進 code-style），或統一拆檔。不宜單獨挑幾檔拆（會造成慣例不一致）。
-- **`enum` + 主型別同檔**：`LoginAuditEntry.cs`（`LoginEvent` enum）、`ChangeAuditEntry.cs`、`BeeBlazorOptions.cs`（`BeeBlazorProviderMode`）、`ApiPayloadJsonConverter.cs`（converter + factory）落在「極小 enum 群／緊密耦合輔助型別」豁免灰帶。→ **請裁決**統一拆檔或明列豁免。
-- **命名**：`IExcelHelper`（`src/Bee.Definition/Documents/IExcelHelper.cs:8`）用已過時的 `Helper` 後綴，建議改 `IExcelWorkbook`/`IExcelDocument`；同檔 `sPassword`（`:31`，Hungarian 前綴）→ `password`、`topRowisDisplayName`（`:37`）→ `topRowIsDisplayName`、`leftColumnIndex `（`:45,52` XML 註解尾隨空白）。
-- **重複實作**：`ListView.cs:434` 與 `FormPage.cs:371` 的欄位去重 `seen` HashSet 邏輯重複（Avalonia/Maui 平行邏輯，待 Maui 移植定案後抽共用）；5 個 `*TableSchemaProvider` 的型別對映 switch 結構近似（各 DB 型別集不同難全合併，至少抽共用 normalize 步驟，順帶修 P0-2d）。
-- **次要補測**：`LoginAttemptTracker`（`tests/…/LoginAttemptTrackerTests.cs:44-58`）50ms 鎖定視窗依賴真實牆鐘,2-core CI 有 flaky 風險 → 導入 `TimeProvider` + `FakeTimeProvider`（同類：`MemoryCacheProviderTests`、`AuditLogWriterServiceTests`、`CacheNotifyServiceTests`）；`Bee.Api.Contracts`/`Bee.Repository.Abstractions` 具象 DTO（`PackageUpdateInfo`/`RecordFieldChange`/各 `*Query`）若上 wire 應補三棲 round-trip 測試。
-- **序列化次要**：物件型 response（`GetFormSchemaResponse`/`GetFormLayoutResponse`/`GetLanguageResponse`）走 MessagePack 反射 contractless 但只有 in-process dispatch 測試、無真正 byte round-trip（行動端 AOT 最脆弱面），建議各加 byte round-trip 並在 `IsDynamicCodeSupported=false` 驗一次；`FilterNode.Kind`（`:20-21`）get-only 計算欄卻帶 `[Key(10)]`，多型判別已由 `[Union]` tag 承擔，`Kind` 上 wire 冗餘 → 加 `[IgnoreMember]`。
+- **`XxxCollection` + `XxxCollectionExtensions` 同檔（20 檔）** → **裁決：正式豁免、維持同檔**。關鍵脈絡：這些擴充類全是**單一 `Add` 便利多載**，因 `KeyCollectionBase<T>` / `MessagePackKeyCollectionBase<T>` 子類只能公開一個 public instance `Add`（XmlSerializer reflection-only 路徑在 iOS/AOT 以 `Type.GetMethod("Add")` 解析，多載會擲 `AmbiguousMatchException`）而被迫外置——語意上仍是該集合自己的 API。已於 `~/.claude/rules/code-style.md`「一型別一檔」新增具名例外，並註明一般用途擴充類不可援引。
+- **`enum` + 主型別同檔** → **裁決：統一拆檔**。`LoginEvent`、`ChangeKind`、`BeeBlazorProviderMode`、`ApiPayloadJsonConverterFactory` 各自獨立成檔；code-style 同步補「單一 enum 陪著主型別不算標記群、應拆檔」。
+- **`IExcelHelper`** → **裁決：移除**。89 行公開介面、全 repo 零實作零呼叫，屬「不為假設的未來建類」。已刪除並同步雙語 README。**屬公開 API 移除，發版時須列入 CHANGELOG breaking change。**
+- **`FilterNode.Kind`** → 已由 `[Key(10)]` 改 `[IgnoreMember]`（多型判別已由 `[Union]` tag 承擔）。
+- **`LoginAttemptTracker`** → 已導入 `TimeProvider`（預設 `TimeProvider.System`），到期測試改可推進假時鐘，消除 50ms 視窗的 CI flaky。同類仍待處理：`MemoryCacheProviderTests`、`AuditLogWriterServiceTests`、`CacheNotifyServiceTests`。
+- **wire round-trip 補測** → 已補物件型 response（`GetFormSchema`/`Layout`/`Language`）MessagePack byte round-trip（實測通過）與 `Bee.Api.Contracts` 具象 DTO 的 MessagePack + JSON round-trip。查證後修正原判斷：`Bee.Repository.Abstractions` 的 7 個 DTO **無 MessagePack 標記、不上 wire**（伺服端內部查詢/結果型別），不需 wire 測試。
+
+仍未處理（移交後續）：
+
+- **重複實作**：`ListView.cs:434` 與 `FormPage.cs:371` 的欄位去重 `seen` HashSet 邏輯重複（Avalonia/Maui 平行邏輯，待 Maui 移植定案後抽共用）；5 個 `*TableSchemaProvider` 的型別對映 switch 結構近似（各 DB 型別集不同難全合併，至少可抽共用 normalize 步驟）。
+- **`IsDynamicCodeSupported=false` 下的 AOT 路徑驗證**：物件型 response 的 byte round-trip 已過，但尚未在強制 reflection-only 模式下再驗一次。
 
 ---
 
