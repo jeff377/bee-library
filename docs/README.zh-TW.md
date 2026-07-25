@@ -40,6 +40,7 @@
 | [API ↔ BO 契約設計](api-bo-contract-design.zh-TW.md) | API 契約三層分離（Contracts / API Type / BO Type） |
 | [API 方法參考](api-method-reference.zh-TW.md) | 透過 JSON-RPC 對外公開的所有 BO 方法單頁總覽，含 `[ApiAccessControl]` 設定與用途 |
 | [FormMap](formmap.zh-TW.md) | Bee.Db 採用的資料庫存取模式，以 FormSchema 為單位動態產生 SQL |
+| [日曆日與時間點的欄位語意](date-semantics.zh-TW.md) | `FieldDbType.Date` 欄位如何在 wire 上自我描述、.NET 與 JS/TS 端如何讀取，以及自寫 SQL 時如何宣告 |
 
 ---
 

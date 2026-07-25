@@ -40,6 +40,7 @@ This directory contains the public-facing developer documentation for the Bee.NE
 | [API ↔ BO Contract Design](api-bo-contract-design.md) | Three-tier API contract separation (Contracts / API Type / BO Type) |
 | [API Method Reference](api-method-reference.md) | Single-page table of every BO method exposed through JSON-RPC, with `[ApiAccessControl]` settings + purpose |
 | [FormMap](formmap.md) | Bee.Db's data access pattern, dynamically generating SQL from FormSchema |
+| [Calendar-Day vs Instant Column Semantics](date-semantics.md) | How a `FieldDbType.Date` column describes itself on the wire, reading it from .NET and JS/TS, and declaring it for hand-written SQL |
 
 ---
 

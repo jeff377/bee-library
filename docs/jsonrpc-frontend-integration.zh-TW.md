@@ -274,6 +274,11 @@ export interface LoginResponse {
 
 export interface DataTableColumn {
   name: string;
+  /**
+   * 宣告的 FieldDbType，例如 'String' | 'Date' | 'DateTime' | 'Decimal' | 'Guid'。
+   * 'Date' 表示日曆日——不顯示時刻，且不要透過瀏覽器時區位移。
+   * 見 docs/date-semantics.zh-TW.md。
+   */
   type: string;
   allowNull: boolean;
   readOnly: boolean;

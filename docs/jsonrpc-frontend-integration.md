@@ -282,6 +282,11 @@ export interface LoginResponse {
 
 export interface DataTableColumn {
   name: string;
+  /**
+   * The declared FieldDbType, e.g. 'String' | 'Date' | 'DateTime' | 'Decimal' | 'Guid'.
+   * 'Date' means a calendar day — render it without a time of day and do NOT shift it
+   * through the browser timezone. See docs/date-semantics.md.
+   */
   type: string;
   allowNull: boolean;
   readOnly: boolean;
