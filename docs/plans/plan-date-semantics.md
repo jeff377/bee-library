@@ -1,14 +1,32 @@
 # Plan：日曆日語意的顯式標記（`FieldDbType.Date` 貫通 wire）
 
-**狀態：📝 擬定中（2026-07-25）**
+**狀態：✅ 已完成（2026-07-25）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 標記基礎建設：`DataColumn.ExtendedProperties` 標記讀寫 helper + **MessagePack 與 JSON 兩份 wire 實作各兩向承接** + `AddColumn` 自動標記 | 📝 待做 |
-| 2 | SQL 讀取路徑（T3）：路徑一 Repository 依 schema 標記；路徑二 `SetDateColumns` + `DbCommandSpec.DateColumns` | 📝 待做 |
-| 3 | 取值層：`ValueUtilities.CDate` 回傳型別改 `DateOnly`（breaking，見 T5） | 📝 待做 |
+| 1 | 標記基礎建設：`DataColumn.ExtendedProperties` 標記讀寫 helper + **MessagePack 與 JSON 兩份 wire 實作各兩向承接** + `AddColumn` 自動標記 | ✅ 已完成 |
+| 2 | SQL 讀取路徑（T3）：路徑一 Repository 依 schema 標記；路徑二 `SetDateColumns` + `DbCommandSpec.DateColumns` | ✅ 已完成 |
+| 3 | 取值層：`ValueUtilities.CDate` 回傳型別改 `DateOnly`（breaking，見 T5） | ✅ 已完成 |
 
 > 三階段**可分別開發、分別發布**，無互鎖出貨約束（此為改採標記方案後最大的成本改善之一）。
+
+## 實作結果（2026-07-25）
+
+commit：`fddb38f6`（階段 1）、`c7782308`（階段 2）、`c5578a42`（階段 3）。
+全 solution build 0 警告 0 錯誤，全測試套件 4,855 通過 / 1 skip。新增測試 33 項。
+
+與 plan 的差異（皆為實作期發現，非設計變更）：
+
+| 項目 | plan 原文 | 實作 | 原因 |
+|------|----------|------|------|
+| helper 命名 | `ResolveFieldDbType` / `ApplyFieldDbType` | 同，另加 `GetDeclaredFieldDbType` | 測試需區分「未標記」與「標記值恰等於反推值」 |
+| `DbCommandKind` 驗證位置 | 「用於其他 kind 時應擲例外」 | 移至 `DbCommandSpec.CreateCommand` | 原訂的套用點在 `ExecuteDataTableCore` 內，`Scalar` / `NonQuery` **根本走不到**，放那裡等於宣告了卻無聲無效。`CreateCommand` 是所有執行路徑的共同必經處 |
+| 路徑一的標記載體 | 「`DataFormRepository` 依 schema 後處理」 | 抽成 `FormTableExtensions.ApplyFieldDbTypes` 公開擴充方法 | BO 自訂 schema 驅動查詢同樣需要；放 `Bee.Definition` 可重用 |
+| 標記範圍 | 聚焦 `FieldDbType.Date` | 通用 `FieldDbType` 標記 | helper 的自然形狀即通用。順帶修好同樣被 CLR 型別抹平的 `Text`/`String`、`Currency`/`Decimal`、`AutoIncrement`/`Integer` 三組；因 `ToType` 對這些值的結果不變，用戶端重建的 CLR 型別完全不受影響 |
+| `CDateTime` | plan 未提 | 新增 `DateOnly` 分支 | `CDate` 改回傳 `DateOnly` 後兩者需對稱；且 `DateOnly.ToString()` 為文化相依，落入字串路徑只在 culture 恰好一致時才成立 |
+
+`ExistsInScope` 不標記（只做存在判斷、不回傳表格給呼叫端）。
+`BuildEmptyDataTable` 不需另外處理（走 `AddColumn(FieldDbType)`，階段 1 已自動標記）。
 
 > 目標：讓 `FieldDbType.Date` 的「日曆日 vs 時間點」語意從定義層一路貫通到 `DataSet` 儲存格與
 > wire payload（**MessagePack 與 JSON 兩種格式皆然**），使 schema-less 消費端
