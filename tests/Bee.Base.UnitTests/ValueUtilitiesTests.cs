@@ -381,21 +381,39 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("CDate 只保留日期部分")]
+        [DisplayName("CDate 應捨去時刻並回傳 DateOnly")]
         public void CDate_ReturnsDatePortionOnly()
         {
             var input = new DateTime(2026, 4, 18, 15, 30, 45, DateTimeKind.Unspecified);
             var result = ValueUtilities.CDate(input);
-            Assert.Equal(new DateTime(2026, 4, 18, 0, 0, 0, DateTimeKind.Unspecified), result);
+            Assert.Equal(new DateOnly(2026, 4, 18), result);
         }
 
         [Fact]
-        [DisplayName("CDate 應取得日期部分(時間為零)")]
-        public void CDate_ReturnsDateOnly()
+        [DisplayName("CDate 應可解析日期字串為 DateOnly")]
+        public void CDate_ParsesDateString()
         {
             var result = ValueUtilities.CDate("20150312");
-            Assert.Equal(new DateTime(2015, 3, 12), result);
-            Assert.Equal(TimeSpan.Zero, result.TimeOfDay);
+            Assert.Equal(new DateOnly(2015, 3, 12), result);
+        }
+
+        [Fact]
+        [DisplayName("CDate 於無法轉換的值應回傳指定的 DateOnly 預設值")]
+        public void CDate_UnparsableValue_ReturnsDefault()
+        {
+            var fallback = new DateOnly(2026, 1, 1);
+            Assert.Equal(fallback, ValueUtilities.CDate(DBNull.Value, fallback));
+            Assert.Equal(fallback, ValueUtilities.CDate(string.Empty, fallback));
+        }
+
+        [Fact]
+        [DisplayName("CDateTime 應直接接受 DateOnly，不經由文化相依的字串路徑")]
+        public void CDateTime_AcceptsDateOnly()
+        {
+            // DateOnly.ToString() 依 CurrentCulture 產生格式，以 InvariantCulture 回頭 parse
+            // 只在兩者恰好一致時才成立，故必須在字串路徑之前處理。
+            var result = ValueUtilities.CDateTime(new DateOnly(2026, 7, 25));
+            Assert.Equal(new DateTime(2026, 7, 25, 0, 0, 0, DateTimeKind.Unspecified), result);
         }
 
         // ---- CGuid ----

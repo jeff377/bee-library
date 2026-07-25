@@ -382,6 +382,9 @@ namespace Bee.Base
             if (IsNullOrDBNull(value)) { return defaultValue; }
             if (StringUtilities.IsEmpty(value)) { return defaultValue; }
             if (value is DateTime dt) { return dt; }
+            // Handled before the string path: `DateOnly.ToString()` is culture-dependent, so parsing it
+            // back with `InvariantCulture` succeeds only where the two formats happen to agree.
+            if (value is DateOnly date) { return date.ToDateTime(TimeOnly.MinValue); }
             if (DateTime.TryParse(CStr(value), CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)) { return parsed; }
 
             try
@@ -451,13 +454,21 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// Converts the specified value to a date (date portion only).
+        /// Converts the specified value to a calendar day, discarding any time of day.
         /// </summary>
         /// <param name="value">The value to convert.</param>
         /// <param name="defaultValue">The default value.</param>
-        public static DateTime CDate(object value, DateTime defaultValue = default)
+        /// <remarks>
+        /// Returns <see cref="DateOnly"/> so a calendar day is distinguishable from an instant at the
+        /// point of use, the same distinction the definition layer draws between
+        /// <c>FieldDbType.Date</c> and <c>FieldDbType.DateTime</c>. Use
+        /// <see cref="CDateTime(object, DateTime)"/> when a <see cref="DateTime"/> is wanted — notably
+        /// when writing back into a <see cref="System.Data.DataColumn"/>, which stores calendar-day
+        /// columns as <see cref="DateTime"/> and rejects a <see cref="DateOnly"/> value.
+        /// </remarks>
+        public static DateOnly CDate(object value, DateOnly defaultValue = default)
         {
-            return CDateTime(value, defaultValue).Date;
+            return DateOnly.FromDateTime(CDateTime(value, defaultValue.ToDateTime(TimeOnly.MinValue)));
         }
 
         #endregion

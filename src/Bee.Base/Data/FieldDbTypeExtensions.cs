@@ -54,7 +54,11 @@ namespace Bee.Base.Data
                 case FieldDbType.Currency:
                     return ValueUtilities.CDecimal(value);
                 case FieldDbType.Date:
-                    return ValueUtilities.CDate(value);
+                    // Deliberately not `CDate`, which returns `DateOnly`. A calendar-day column is a
+                    // `DateTime` column carrying a marker, and a `DataColumn` of that type rejects a
+                    // `DateOnly` value outright — `DateOnly` does not implement `IConvertible`, so the
+                    // usual conversion never runs.
+                    return ValueUtilities.CDateTime(value).Date;
                 case FieldDbType.DateTime:
                     return ValueUtilities.CDateTime(value);
                 case FieldDbType.Guid:
