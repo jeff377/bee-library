@@ -322,7 +322,7 @@ Oracle `TIMESTAMP`、MySQL `DATETIME`、SQLite `TEXT`），時區轉換不交給
 
 ## 5. 獨立前置小修：`SafeTypelessFormatter` 白名單補 `System.DateOnly`
 
-**不排入本 plan 階段，應獨立先出。**
+**✅ 已完成（2026-07-25，commit `f43f578d`）** —— 獨立於本 plan 階段先行出貨。
 
 `SafeTypelessFormatter` 的白名單（`src/Bee.Definition/Serialization/SafeTypelessFormatter.cs:42-68`）
 列有 `System.DateTime` / `System.DateTimeOffset` / `System.TimeSpan`，**沒有 `System.DateOnly`**。
@@ -332,5 +332,9 @@ MessagePack 3.1.7 本身已內建 `DateOnlyFormatter`，卡點純粹在白名單
 任何人寫 `FilterCondition.Equal("hire_date", ValueUtilities.CDate(x))` 就會在 wire 反序列化被擋。
 與本 plan 無關，只是 D4 的 `FilterCondition` 規則會讓它變成必經之路。
 
-範圍：補白名單 + MessagePack / JSON 兩條路徑的 round-trip 測試
-（JSON 側需另確認 `object?` 宣告型別下 System.Text.Json 的多型行為）。
+**JSON 路徑實測後確認無需修正**：`object?` 宣告型別下 System.Text.Json 對所有型別一律還原為
+`JsonElement`（`DateTime` / `int` 亦然），非 `DateOnly` 特有；wire 上 `"2026-07-25"` 與
+`"2026-07-25T00:00:00Z"` 本就可區分。
+
+> **對 D4 的意義**：Connector 的轉換發生在**序列化之前**（用戶端進出點），此時看到的是真正的
+> CLR 型別（`DateOnly` vs `DateTime`），型別抹平發生在其後。「值型別自我描述」的機制因此成立。
