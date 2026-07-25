@@ -92,7 +92,7 @@ namespace Bee.Repository.Form
             if (paging == null)
             {
                 var spec = builder.BuildSelect(ProgId, resolvedSelectFields, filter, sortFields);
-                return new DataFormListResult { Table = dbAccess.Execute(spec).Table };
+                return new DataFormListResult { Table = MarkFromSchema(dbAccess.Execute(spec).Table, _schema.MasterTable) };
             }
 
             // Paged path: clamp PageSize, supply a deterministic ORDER BY, run optional
@@ -117,7 +117,7 @@ namespace Bee.Repository.Form
 
             int take = paging.IncludeTotalCount ? pageSize : pageSize + 1;
             var pagedSpec = builder.BuildSelect(ProgId, resolvedSelectFields, filter, effectiveSort, skip, take);
-            var table = dbAccess.Execute(pagedSpec).Table!;
+            var table = MarkFromSchema(dbAccess.Execute(pagedSpec).Table, _schema.MasterTable)!;
 
             bool hasMore;
             if (paging.IncludeTotalCount)
@@ -210,7 +210,7 @@ namespace Bee.Repository.Form
             // an out-of-scope row reads as "not found" (null).
             var masterFilter = CombineWithScope(FilterCondition.Equal(SysFields.RowId, rowId), scopeFilter);
             var masterSpec = builder.BuildSelect(ProgId, string.Empty, masterFilter);
-            var masterDataTable = dbAccess.Execute(masterSpec).Table;
+            var masterDataTable = MarkFromSchema(dbAccess.Execute(masterSpec).Table, _schema.MasterTable);
             if (masterDataTable == null || masterDataTable.Rows.Count == 0)
                 return null;
 
@@ -222,10 +222,12 @@ namespace Bee.Repository.Form
             var masterRowId = CoerceToGuid(masterDataTable.Rows[0][SysFields.RowId]);
             var detailFilter = FilterCondition.Equal(SysFields.MasterRowId, masterRowId);
 
-            foreach (var detailTableName in EnumerateDetailTables().Select(detail => detail.TableName))
+            foreach (var detail in EnumerateDetailTables())
             {
+                var detailTableName = detail.TableName;
                 var detailSpec = builder.BuildSelect(detailTableName, string.Empty, detailFilter);
-                var detailDataTable = dbAccess.Execute(detailSpec).Table ?? new DataTable(detailTableName);
+                var detailDataTable = MarkFromSchema(dbAccess.Execute(detailSpec).Table, detail)
+                    ?? new DataTable(detailTableName);
                 detailDataTable.TableName = detailTableName;
                 dataSet.Tables.Add(detailDataTable);
             }
@@ -351,6 +353,23 @@ namespace Bee.Repository.Form
             yield return masterTable;
             foreach (var detail in EnumerateDetailTables())
                 yield return detail;
+        }
+
+        /// <summary>
+        /// Replays the schema's declared field types over a table read from the database.
+        /// </summary>
+        /// <param name="table">The table returned by the query; null passes through.</param>
+        /// <param name="formTable">The form table describing the query shape.</param>
+        /// <remarks>
+        /// A provider reports a calendar-day column as `DateTime`, indistinguishable from an instant.
+        /// Marking here keeps a table read from SQL describing itself the same way as one built from
+        /// the schema by <see cref="BuildEmptyDataTable"/>, whose `AddColumn` calls mark as they build.
+        /// </remarks>
+        private static DataTable? MarkFromSchema(DataTable? table, FormTable? formTable)
+        {
+            if (table != null && formTable != null)
+                formTable.ApplyFieldDbTypes(table);
+            return table;
         }
 
         private static DataTable BuildEmptyDataTable(FormTable formTable)

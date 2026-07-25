@@ -1,5 +1,6 @@
 using Bee.Base;
 using Bee.Base.Collections;
+using Bee.Base.Data;
 using System.Data;
 using System.Data.Common;
 using System.Text;
@@ -99,6 +100,24 @@ namespace Bee.Db
         public DbParameterSpecCollection Parameters { get; } = [];
 
         /// <summary>
+        /// Gets or sets the columns of the result set that hold a calendar day rather than an instant.
+        /// </summary>
+        /// <remarks>
+        /// ADO.NET reports a `date` column as `System.DateTime`, which loses the distinction the
+        /// definition layer makes between <see cref="FieldDbType.Date"/> and
+        /// <see cref="FieldDbType.DateTime"/>. Queries the framework generates from a schema are marked
+        /// from that schema; a hand-written query has no schema to consult, so declare its calendar-day
+        /// columns here and <see cref="DbAccess"/> marks them on the returned table.
+        /// <para>
+        /// Applies only to <see cref="DbCommandKind.DataTable"/>. Setting it on any other kind is
+        /// rejected at execution time rather than ignored, because a declaration that silently does
+        /// nothing is the failure this option exists to prevent. Column names are matched
+        /// case-insensitively, and a name that matches no column raises an error.
+        /// </para>
+        /// </remarks>
+        public List<string> DateColumns { get; } = [];
+
+        /// <summary>
         /// Creates a <see cref="DbCommand"/> instance configured with the current <see cref="DbCommandSpec"/> settings.
         /// </summary>
         /// <param name="databaseType">The database type.</param>
@@ -108,6 +127,16 @@ namespace Bee.Db
             if (connection == null) throw new ArgumentNullException(nameof(connection), "Connection cannot be null.");
             if (string.IsNullOrWhiteSpace(CommandText))
                 throw new InvalidOperationException("CommandText cannot be null or empty.");
+            // Checked here rather than where the marks are applied, because a kind that returns no
+            // table never reaches that code — the declaration would then be silently inert, which is
+            // the failure `DateColumns` exists to prevent. Every execution path builds its command
+            // through this method, so this is the one gate all of them pass.
+            if (DateColumns.Count > 0 && Kind != DbCommandKind.DataTable)
+            {
+                throw new InvalidOperationException(
+                    $"{nameof(DateColumns)} applies only to {nameof(DbCommandKind.DataTable)} commands; " +
+                    $"this command is {Kind}.");
+            }
 
             string parameterPrefix = databaseType.GetParameterPrefix();
             var cmd = connection.CreateCommand();

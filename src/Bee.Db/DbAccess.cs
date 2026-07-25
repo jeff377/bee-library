@@ -419,8 +419,25 @@ namespace Bee.Db
                     adapter.Fill(table);
                 }
                 table.LowercaseColumnNames();
+                ApplyDateColumns(command, table);
                 return DbCommandResult.ForTable(table);
             }
+        }
+
+        /// <summary>
+        /// Marks the columns declared in <see cref="DbCommandSpec.DateColumns"/> as calendar-day columns.
+        /// </summary>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="table">The table just built from the result set.</param>
+        /// <remarks>
+        /// Called after `LowercaseColumnNames` so the declared names match the canonical lowercase form.
+        /// Declaring the option on a kind that returns no table is rejected earlier, in
+        /// <see cref="DbCommandSpec.CreateCommand"/>.
+        /// </remarks>
+        private static void ApplyDateColumns(DbCommandSpec command, DataTable table)
+        {
+            if (command.DateColumns.Count == 0) { return; }
+            table.SetDateColumns([.. command.DateColumns]);
         }
 
         /// <summary>
