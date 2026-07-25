@@ -4,14 +4,15 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 標記基礎建設：`DataColumn.ExtendedProperties` 標記讀寫 + `SerializableDataTable` 兩向承接 + `AddColumn` 自動標記 | 📝 待做 |
+| 1 | 標記基礎建設：`DataColumn.ExtendedProperties` 標記讀寫 helper + **MessagePack 與 JSON 兩份 wire 實作各兩向承接** + `AddColumn` 自動標記 | 📝 待做 |
 | 2 | SQL 讀取路徑（T3）：路徑一 Repository 依 schema 標記；路徑二 `SetDateColumns` + `DbCommandSpec.DateColumns` | 📝 待做 |
 | 3 | 取值層：`ValueUtilities.CDate` 回傳型別改 `DateOnly`（breaking，見 T5） | 📝 待做 |
 
 > 三階段**可分別開發、分別發布**，無互鎖出貨約束（此為改採標記方案後最大的成本改善之一）。
 
 > 目標：讓 `FieldDbType.Date` 的「日曆日 vs 時間點」語意從定義層一路貫通到 `DataSet` 儲存格與
-> wire payload，使 schema-less 消費端（報表 / AnyCode / JS client）不必另取 schema 也能判別。
+> wire payload（**MessagePack 與 JSON 兩種格式皆然**），使 schema-less 消費端
+> （報表 / AnyCode / JS client）不必另取 schema 也能判別。
 > **由定義產生的 SQL 由框架負責標記；呼叫端自寫的 SQL 由呼叫端宣告**（T3 兩路徑）。
 >
 > 本 plan 與 [plan-datetime-timezone.md](plan-datetime-timezone.md) 是**兩個獨立議題**，
@@ -82,16 +83,49 @@ var dbType = column.GetFieldDbType();      // 未標記時回傳 null
 > `DataColumn` 上走 `ObjectStorage` 嚴格型別比對，會打斷框架自己的字串寫回繫結層，
 > 且永久失去 `RowFilter` / `Compute`。
 
-### T2：`SerializableDataTable` 兩個方向都承接標記
+### T2：**兩種 wire 格式**都要承接標記 ★
 
-| 方向 | 位置 | 變更 |
-|------|------|------|
-| 序列化 | `SerializableDataTable.cs:78` | `DataType` 來源改為「**優先讀 `ExtendedProperties` 標記，未標記才 `ToFieldDbType(col.DataType)` 反推**」 |
-| 反序列化 | `SerializableDataTable.cs:152` | 依 `ToType(dataType)` 建欄後，**把 wire 的 `FieldDbType` 寫回 `ExtendedProperties`** |
+wire 序列化有 **MessagePack 與 JSON 兩種**（由 `PayloadFormat` 決定上線哪個），
+而它們是**兩份平行實作、且位於不同套件**——`DataTableJsonConverter.cs:408` 的註解
+自己寫著「same logic as `SerializableDataTable.ToDataTable`」。**任一份漏改，該格式的
+payload 就失去日曆日語意**，且症狀只在切換 `PayloadFormat` 時才浮現。
 
-`ExtendedProperties` 本身不上 wire（它是本地的），語意由既有的 `SerializableDataColumn.DataType`
-欄位承載；反序列化時再落回用戶端的 `ExtendedProperties`。兩端因此對稱：
-**伺服端標記什麼，用戶端就拿到什麼。**
+| 格式 | 套件 | 序列化（反推 `FieldDbType`） | 反序列化（`ToType` 建欄） |
+|------|------|---------------------------|------------------------|
+| MessagePack | `Bee.Api.Core` | `SerializableDataTable.cs:78` | `SerializableDataTable.cs:152` |
+| JSON | `Bee.Base` | `DataTableJsonConverter.cs:40` | `DataTableJsonConverter.cs:385`（+ `:242` 值轉換 lookup） |
+
+四處各自的變更：
+
+- **序列化側**（`:78` / `:40`）：`FieldDbType` 來源改為「**優先讀 `ExtendedProperties` 標記，
+  未標記才 `ToFieldDbType(col.DataType)` 反推**」。
+- **反序列化側**（`:152` / `:385`）：依 `ToType(dataType)` 建欄後，
+  **把 wire 的 `FieldDbType` 寫回 `ExtendedProperties`**。
+
+> `DataSetJsonConverter` 透過 `options` 委派給 `DataTableJsonConverter`（`DataSetJsonConverter.cs:29`），
+> 不需另行改動；MessagePack 側的 `DataSetFormatter` 同理走 `SerializableDataSet` → `SerializableDataTable`。
+
+**兩份實作必須共用同一份語意決策。** 為避免兩邊邏輯日後分歧，
+「優先讀標記、未標記才反推」與其反向操作各抽成**單一 helper**，兩份 converter 都呼叫：
+
+```csharp
+// Bee.Base.Data.DataColumnExtensions
+public static FieldDbType ResolveFieldDbType(this DataColumn column);       // 讀：標記優先，回退反推
+public static void ApplyFieldDbType(this DataColumn column, FieldDbType);   // 寫：建欄後落標記
+```
+
+放在 `Bee.Base.Data` 是**必要條件**而非偏好：JSON converter 在 `Bee.Base`、
+MessagePack formatter 在 `Bee.Api.Core`，只有 `Bee.Base` 是兩者共同的下層。
+
+`ExtendedProperties` 本身不上 wire（它是本地的），語意由兩種格式**各自既有的欄位**承載
+（MessagePack 的 `SerializableDataColumn.DataType`、JSON 的 `"type"` 字串）；
+反序列化時再落回用戶端的 `ExtendedProperties`。兩端因此對稱：
+**伺服端標記什麼，用戶端就拿到什麼，且與 `PayloadFormat` 無關。**
+
+> **兩種格式都不需新增 wire 欄位。** MessagePack 的 `[Key(1)] DataType` 本來就是 `FieldDbType`；
+> JSON 的 `"type"` 本來就寫 `FieldDbType` 的字串名（`DataTableJsonConverter.cs:40`、
+> 讀回於 `:212` `Enum.Parse<FieldDbType>`）。兩者都只是**填入的值變準確**，
+> payload 結構與大小不變，既有 client 不受影響。
 
 ### T3：SQL 取回的 `DataTable` 也必須帶標記 ★
 
@@ -212,10 +246,14 @@ public static DateOnly CDate(object value, DateOnly defaultValue = default)
 
 | 位置 | 變更 |
 |------|------|
-| `DataColumnExtensions`（新增或併入既有檔） | `SetFieldDbType(this DataColumn, FieldDbType)` / `GetFieldDbType(this DataColumn)`，內部用單一 `ExtendedProperties` key 常數，不散落 magic string |
-| `SerializableDataTable.cs:78`（序列化） | `DataType` 改為優先讀標記，未標記才 `ToFieldDbType(col.DataType)` |
-| `SerializableDataTable.cs:152`（反序列化） | 建欄後把 wire 的 `FieldDbType` 寫回 `ExtendedProperties` |
-| `DataTableExtensions.AddColumn` | 建欄時順手寫入標記（T4） |
+| `Bee.Base.Data.DataColumnExtensions`（新增） | `ResolveFieldDbType` / `ApplyFieldDbType`（讀寫兩個 helper），內部用單一 `ExtendedProperties` key 常數，不散落 magic string。**必須放 `Bee.Base`**——它是 JSON（`Bee.Base`）與 MessagePack（`Bee.Api.Core`）兩份實作的共同下層 |
+| `SerializableDataTable.cs:78`（MessagePack 序列化） | `DataType` 改為 `col.ResolveFieldDbType()` |
+| `SerializableDataTable.cs:152`（MessagePack 反序列化） | 建欄後 `dc.ApplyFieldDbType(col.DataType)` |
+| `DataTableJsonConverter.cs:40`（JSON 序列化） | `"type"` 改為 `col.ResolveFieldDbType().ToString()` |
+| `DataTableJsonConverter.cs:385`（JSON 反序列化） | 建欄後 `dc.ApplyFieldDbType(col.FieldType)` |
+| `DataTableJsonConverter.cs:242`（JSON 值轉換 lookup） | 檢查即可——`ToType` 對 `Date` 仍回 `typeof(DateTime)`，值轉換行為不變 |
+| `DataTableExtensions.AddColumn`（**三個** `FieldDbType` 多載，`:61` / `:75` / `:89`） | 建欄時順手寫入標記（T4）。三個多載最終收斂至同一個 `Type` 版本，宜先收斂再統一標記，避免漏掉其中一個 |
+| `FormExpressionCalculator.cs:305` | 現況 `field?.DbType ?? ToFieldDbType(column.DataType)`；改走 `ResolveFieldDbType()` 後，schema-less 的運算式計算也能取得正確語意（順帶受益，非必要範圍） |
 | `DbTypeConverter` | **不動**（`ToType(Date)` 維持 `typeof(DateTime)`） |
 
 ### 3.2 SQL 讀取路徑（階段 2）
@@ -239,13 +277,21 @@ public static DateOnly CDate(object value, DateOnly defaultValue = default)
 
 ### 驗證
 
-- **wire 自我描述**：`Date` 欄位經 round-trip 後，`SerializableDataColumn.DataType`
-  應為 `FieldDbType.Date` 而非 `DateTime`；用戶端重建後的 `DataColumn` 應帶回標記。
+- **wire 自我描述，兩種格式各驗一次** ★：`Date` 欄位經 round-trip 後標記應保住——
+  MessagePack 驗 `SerializableDataColumn.DataType`、JSON 驗 `"type"` 字串，
+  兩者都應為 `FieldDbType.Date` 而非 `DateTime`；用戶端重建後的 `DataColumn` 應帶回標記。
+  **測試須對 `PayloadFormat` 的兩種取值各跑一遍**——兩份平行實作漏改一份是本 plan 最可能的失誤，
+  只驗其中一種格式抓不出來。
+- **格式間一致性**：同一個 `DataTable` 分別經 JSON 與 MessagePack round-trip 後，
+  欄位標記應完全相同。這條直接釘住「兩份實作不分歧」。
 - **兩路徑同構**：schema 驅動查詢與 `SetDateColumns` 標記過的自訂 SQL，產出的 wire payload
   對同一欄位應標成相同的 `FieldDbType`。
-- **未標記時的回退**：無標記的 `DateTime` 欄仍應標成 `FieldDbType.DateTime`（行為不變）。
-- 三棲序列化 round-trip：XML / JSON / MessagePack。
-  （`ExtendedProperties` 不參與 XML 持久化，需確認 `DataSet.WriteXml` 路徑不受影響。）
+- **未標記時的回退**：無標記的 `DateTime` 欄仍應標成 `FieldDbType.DateTime`（行為不變），
+  兩種格式皆然。
+- **payload 結構不變**：兩種格式的 wire 欄位集合與大小不因本 plan 改變，
+  只有 `FieldDbType` 的值變準確；既有 client 反序列化不受影響。
+- XML 持久化（`XmlCodec` / `DataSet.WriteXml`）**不涉及 `FieldDbType` 反推**（全 repo 無此路徑），
+  但 `ExtendedProperties` 不參與 XML，需確認持久化 → 讀回後標記遺失不造成非預期行為。
 - **回歸**：`DataColumn.DataType` 未變更，既有 `DataTable` 行為（欄名小寫、RowState、
   繫結層字串寫回、`RowFilter` / `Sort` / `Compute`）應完全不變——這是本方案相對原案的核心優勢，
   需有測試把它釘住。
@@ -264,6 +310,10 @@ public static DateOnly CDate(object value, DateOnly defaultValue = default)
   但代價是 §6 所列的破壞面。
 - **`CDate` 簽章 breaking 外溢至外部使用者**——source + binary breaking，
   但為編譯期錯誤（非 runtime），且呼叫端稀少。
+- **JSON 與 MessagePack 兩份平行實作漏改一份** ★——本 plan 最可能的實作失誤。
+  症狀是只有其中一種 `PayloadFormat` 的 payload 帶語意，另一種靜默退回反推；
+  且部署上通常只跑一種格式，切換時才炸。緩解：語意決策抽成單一 helper（T2），
+  加上「格式間一致性」測試（見驗證節）。
 - **`ExtendedProperties` 在 `DataTable` 複製 / 合併時的保留行為**——
   `DataTable.Copy()` / `Clone()` 保留 `ExtendedProperties`，但 `Merge()`、`DataView.ToTable()`、
   `Select()` 後自行組表等路徑需逐一確認，漏失處會靜默退回「反推 CLR 型別」。
