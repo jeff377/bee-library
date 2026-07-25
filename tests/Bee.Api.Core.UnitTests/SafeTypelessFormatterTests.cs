@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Api.Core.MessagePack;
 using Bee.Definition.Collections;
+using Bee.Definition.Filters;
 using Bee.Definition.Serialization;
 
 namespace Bee.Api.Core.UnitTests
@@ -57,12 +58,40 @@ namespace Bee.Api.Core.UnitTests
             Assert.Equal("value", restoredChild["Nested"].Value);
         }
 
+        [Fact(DisplayName = "ParameterCollection 允許 DateOnly 序列化（日曆日語意的 filter 值）")]
+        public void ParameterCollection_DateOnly_RoundTrip()
+        {
+            var original = new ParameterCollection
+            {
+                { "DateOnlyValue", new DateOnly(2026, 7, 25) }
+            };
+
+            var bytes = MessagePackCodec.Serialize(original);
+            var restored = MessagePackCodec.Deserialize<ParameterCollection>(bytes);
+
+            Assert.NotNull(restored);
+            Assert.Equal(new DateOnly(2026, 7, 25), restored["DateOnlyValue"].Value);
+        }
+
+        [Fact(DisplayName = "FilterCondition 的 DateOnly 條件值應可 round-trip")]
+        public void FilterCondition_DateOnlyValue_RoundTrip()
+        {
+            var original = FilterCondition.Equal("hire_date", new DateOnly(2026, 7, 25));
+
+            var bytes = MessagePackCodec.Serialize(original);
+            var restored = MessagePackCodec.Deserialize<FilterCondition>(bytes);
+
+            Assert.NotNull(restored);
+            Assert.Equal(new DateOnly(2026, 7, 25), restored.Value);
+        }
+
         [Theory]
         [InlineData("System.Int32", true)]
         [InlineData("System.String", true)]
         [InlineData("System.Boolean", true)]
         [InlineData("System.Decimal", true)]
         [InlineData("System.DateTime", true)]
+        [InlineData("System.DateOnly", true)]
         [InlineData("System.Guid", true)]
         [InlineData("System.Byte[]", true)]
         [InlineData("System.DBNull", true)]
