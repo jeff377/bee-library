@@ -1,10 +1,10 @@
 # Plan：DateTime 時區處理機制
 
-**狀態：📝 擬定中（2026-07-25）**
+**狀態：🚧 進行中（2026-07-25）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| P0 | 定案決策寫成 ADR + 系統時間戳改 UTC（trace / 定義檔 `CreateTime`） | 📝 待做 |
+| P0 | 定案決策寫成 ADR + 系統時間戳改 UTC（trace / 定義檔 `CreateTime`） | ✅ 已完成（2026-07-25） |
 | P1 | `Kind` 正本清源（清掉框架自身的 `Local` 來源）→ wire guard + Kind round-trip 測試 | 📝 待做 |
 | P2 | Connector 雙向轉換（含 `FilterCondition`）+ `SessionInfo.TimeZone` 填充 | 📝 待做 |
 | P3 | 單一時區部署零成本短路 + 跨 DB / 跨時區 / 行動端 tz 可用性回歸測試 | 📝 待做 |
@@ -252,7 +252,14 @@ Oracle `TIMESTAMP`、MySQL `DATETIME`、SQLite `TEXT`），時區轉換不交給
 ### D8：無 session 的系統時間戳一律 UTC
 
 稽核、trace 一律使用 `DateTime.UtcNow` / `DateTimeOffset.UtcNow`，不經使用者時區。
-順帶修正現況 `TraceEvent` / `TraceContext` 使用本地時間、導致跨區部署時間戳不可比的問題。
+
+> **論述更正（實作期查證）**：原文寫「修正 `TraceEvent` / `TraceContext` 使用本地時間、
+> 導致跨區部署時間戳不可比」——**這個理由不成立**。兩者的型別是 `DateTimeOffset`
+> （`TraceEvent.cs:11`、`TraceContext.cs:53`），**本就攜帶偏移、跨區可比**。
+>
+> 改為 `UtcNow` 的真正理由是：序列化與 log 呈現不再隨部署時區變動（跨機器 log 可直接對齊、
+> 不需心算 offset），並消除「日後被轉成 `DateTime` 或落入 naive 欄位時偏移遭丟棄」的陷阱。
+> 規則零例外的價值不變，只是動機不是可比性。
 
 ### D9：cache-notify 刻意不 UTC 化
 
@@ -293,7 +300,7 @@ Oracle `TIMESTAMP`、MySQL `DATETIME`、SQLite `TEXT`），時區轉換不交給
 
 | 階段 | 要點 |
 |------|------|
-| **P0** | 寫 `docs/adr/adr-032-datetime-timezone.md`（含 D5 否決理由、D9 / D11 的前提條件、`Time` 未來歸屬）；D8 系統時間戳改 UTC；D7 定義檔 `CreateTime` 改 `UtcNow`。此階段與後續解耦、風險最低，可最先落地。 |
+| **P0** | ✅ 已完成。`docs/adr/adr-032-datetime-timezone.md`（含 D5 否決理由、D9 / D11 的前提條件、`Time` 未來歸屬）；trace 三處與定義檔七處 `CreateTime` 改 UTC。實作期查證更正了 D8 的論述（見該條）。 |
 | **P1** | **兩步且順序不可顛倒。**<br>**(a) 正本清源**：清掉框架自身四處 `Local` 來源——`FormRowDefaults.cs:78`、`FieldDbTypeExtensions.cs:28`、`DynamicExpressoEvaluator.cs:46` 的 `Now()`、`TraceEvent` / `TraceContext`（後者屬 D8）。<br>**(b) 立不變式**：D6 guard（Connector 進出點、fail fast、不受短路影響）+ Kind round-trip 測試（**全 plan 最高優先**）；Repository 邊界寫入正規化與讀出 `SpecifyKind(Utc)`。<br>先開 guard 會當場炸在自家程式碼上。 |
 | **P2** | D4 Connector 雙向轉換：進出點掛載、轉換前深拷貝 `DataSet`、忽略 `Kind`、`FilterCondition` 依值型別（`DateOnly` / `DateTime`）判斷；登入時填充 `SessionInfo.TimeZone`（使用者設定 / 公司預設 / client 回報）。 |
 | **P3** | D10 短路；跨 DB（SQL Server / PostgreSQL / SQLite / MySQL / Oracle）round-trip 測試；跨時區測試（`TZ` 環境變數驅動）；**行動端 / WASM 的 tz 可用性驗證**（見 §4）；**驗證單一時區部署行為零變化**的回歸防護；重建 seed 與 demo 資料（依 D11）。 |

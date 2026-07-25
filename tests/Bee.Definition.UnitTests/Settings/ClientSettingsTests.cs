@@ -47,9 +47,9 @@ namespace Bee.Definition.UnitTests.Settings
         [DisplayName("ClientSettings 預設建構子應設定 CreateTime 與空 Endpoint")]
         public void ClientSettings_DefaultConstructor_InitializesState()
         {
-            var before = DateTime.Now;
+            var before = DateTime.UtcNow;
             var settings = new ClientSettings();
-            var after = DateTime.Now;
+            var after = DateTime.UtcNow;
 
             Assert.InRange(settings.CreateTime, before.AddSeconds(-1), after.AddSeconds(1));
             Assert.Equal(string.Empty, settings.Endpoint);

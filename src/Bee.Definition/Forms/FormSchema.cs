@@ -84,7 +84,7 @@ namespace Bee.Definition.Forms
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public DateTime CreateTime { get; } = DateTime.Now;
+        public DateTime CreateTime { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the program ID.

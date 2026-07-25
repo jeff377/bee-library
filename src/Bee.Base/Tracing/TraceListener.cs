@@ -88,7 +88,7 @@ namespace Bee.Base.Tracing
         {
             _writer.Write(new TraceEvent
             {
-                Time = DateTimeOffset.Now,
+                Time = DateTimeOffset.UtcNow,
                 Layer = layer,
                 Name = name,
                 Detail = detail,

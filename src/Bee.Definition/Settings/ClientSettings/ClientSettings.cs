@@ -20,7 +20,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         public ClientSettings()
         {
-            CreateTime = DateTime.Now;
+            CreateTime = DateTime.UtcNow;
         }
 
         #endregion

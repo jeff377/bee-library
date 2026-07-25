@@ -8,7 +8,7 @@
         /// <summary>
         /// Gets or sets the time the event occurred (for TraceEnd events, this is the start time).
         /// </summary>
-        public DateTimeOffset Time { get; set; } = DateTimeOffset.Now;
+        public DateTimeOffset Time { get; set; } = DateTimeOffset.UtcNow;
 
         /// <summary>
         /// Gets or sets the layer this event belongs to, e.g. UI, API, Biz, or Data.

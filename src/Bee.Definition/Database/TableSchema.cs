@@ -71,7 +71,7 @@ namespace Bee.Definition.Database
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public DateTime CreateTime { get; } = DateTime.Now;
+        public DateTime CreateTime { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the table name.

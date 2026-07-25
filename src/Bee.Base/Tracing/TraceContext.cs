@@ -23,7 +23,7 @@
         public string Detail { get; }
 
         /// <summary>
-        /// Gets the trace start time (local time).
+        /// Gets the trace start time (UTC).
         /// </summary>
         public DateTimeOffset Start { get; }
 
@@ -50,7 +50,7 @@
             Layer = layer;
             Name = name ?? string.Empty;
             Detail = detail;
-            Start = DateTimeOffset.Now; // Local time
+            Start = DateTimeOffset.UtcNow;
             Stopwatch = System.Diagnostics.Stopwatch.StartNew();
             Category = category ?? string.Empty;
             Tag = tag;

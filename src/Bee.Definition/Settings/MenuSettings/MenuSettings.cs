@@ -71,7 +71,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public DateTime CreateTime { get; } = DateTime.Now;
+        public DateTime CreateTime { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the display name.

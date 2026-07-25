@@ -68,7 +68,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public DateTime CreateTime { get; } = DateTime.Now;
+        public DateTime CreateTime { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Common parameters and environment settings.
