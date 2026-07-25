@@ -75,7 +75,7 @@ namespace Bee.Api.Core.MessagePack
             return new SerializableDataColumn
             {
                 ColumnName = col.ColumnName,
-                DataType = DbTypeConverter.ToFieldDbType(col.DataType),
+                DataType = col.ResolveFieldDbType(),
                 DisplayName = col.Caption,
                 AllowDBNull = col.AllowDBNull,
                 ReadOnly = col.ReadOnly,
@@ -158,6 +158,10 @@ namespace Bee.Api.Core.MessagePack
                     MaxLength = col.MaxLength,
                     DefaultValue = col.DefaultValue ?? DBNull.Value
                 };
+                // Several FieldDbType values share one CLR type, so the wire value carries information
+                // the rebuilt DataColumn.DataType cannot. Record it so the client side stays as
+                // self-describing as the payload was.
+                dc.ApplyFieldDbType(col.DataType);
                 dt.Columns.Add(dc);
             }
         }

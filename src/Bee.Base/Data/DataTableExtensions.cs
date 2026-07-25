@@ -39,18 +39,6 @@ namespace Bee.Base.Data
         }
 
         /// <summary>
-        /// Creates a column with the specified type and default value and adds it to the table.
-        /// </summary>
-        /// <param name="table">The target table.</param>
-        /// <param name="fieldName">The column name.</param>
-        /// <param name="dataType">The data type of the column.</param>
-        /// <param name="defaultValue">The default value for the column.</param>
-        private static DataColumn AddColumn(this DataTable table, string fieldName, Type dataType, object defaultValue)
-        {
-            return AddColumn(table, fieldName, string.Empty, dataType, defaultValue);
-        }
-
-        /// <summary>
         /// Creates a column for the specified field database type and adds it to the table.
         /// </summary>
         /// <param name="table">The target table.</param>
@@ -58,9 +46,7 @@ namespace Bee.Base.Data
         /// <param name="dbType">The field database type.</param>
         public static DataColumn AddColumn(this DataTable table, string fieldName, FieldDbType dbType)
         {
-            var dataType = DbTypeConverter.ToType(dbType);
-            object defaultValue = dbType.GetDefaultValue();
-            return AddColumn(table, fieldName, dataType, defaultValue);
+            return AddColumn(table, fieldName, string.Empty, dbType, dbType.GetDefaultValue());
         }
 
         /// <summary>
@@ -72,8 +58,7 @@ namespace Bee.Base.Data
         /// <param name="defaultValue">The default value for the column.</param>
         public static DataColumn AddColumn(this DataTable table, string fieldName, FieldDbType dbType, object defaultValue)
         {
-            var dataType = DbTypeConverter.ToType(dbType);
-            return AddColumn(table, fieldName, dataType, defaultValue);
+            return AddColumn(table, fieldName, string.Empty, dbType, defaultValue);
         }
 
         /// <summary>
@@ -84,10 +69,18 @@ namespace Bee.Base.Data
         /// <param name="caption">The column caption.</param>
         /// <param name="dbType">The field database type.</param>
         /// <param name="defaultValue">The default value for the column.</param>
+        /// <remarks>
+        /// All <see cref="FieldDbType"/> overloads funnel through here, so the declared field type is
+        /// recorded on the column in exactly one place. Without that record several
+        /// <see cref="FieldDbType"/> values would be indistinguishable downstream — most importantly
+        /// <see cref="FieldDbType.Date"/> and <see cref="FieldDbType.DateTime"/>, which share a CLR type.
+        /// </remarks>
         public static DataColumn AddColumn(this DataTable table, string fieldName, string caption, FieldDbType dbType, object defaultValue)
         {
             var dataType = DbTypeConverter.ToType(dbType);
-            return AddColumn(table, fieldName, caption, dataType, defaultValue);
+            var column = AddColumn(table, fieldName, caption, dataType, defaultValue);
+            column.ApplyFieldDbType(dbType);
+            return column;
         }
 
         /// <summary>
@@ -139,6 +132,49 @@ namespace Bee.Base.Data
         {
             foreach (DataColumn column in dataTable.Columns)
                 column.ColumnName = column.ColumnName.ToLowerInvariant();
+        }
+
+        /// <summary>
+        /// Records the declared <see cref="FieldDbType"/> for each named column of the table.
+        /// </summary>
+        /// <param name="table">The target table.</param>
+        /// <param name="dbType">The declared field database type.</param>
+        /// <param name="columnNames">The column names to mark.</param>
+        /// <exception cref="ArgumentException">A named column does not exist in the table.</exception>
+        /// <remarks>
+        /// Column names are matched case-insensitively by <see cref="DataColumnCollection"/>, which suits
+        /// tables passed through <see cref="LowercaseColumnNames"/>. A name matching no column raises an
+        /// error rather than being skipped: silently ignoring a typo would reproduce the very
+        /// "looks declared but has no effect" failure this record exists to remove.
+        /// </remarks>
+        public static void ApplyFieldDbType(this DataTable table, FieldDbType dbType, params string[] columnNames)
+        {
+            ArgumentNullException.ThrowIfNull(table);
+            ArgumentNullException.ThrowIfNull(columnNames);
+
+            foreach (var name in columnNames)
+            {
+                var column = table.Columns[name]
+                    ?? throw new ArgumentException(
+                        $"Column '{name}' does not exist in table '{table.TableName}'.", nameof(columnNames));
+                column.ApplyFieldDbType(dbType);
+            }
+        }
+
+        /// <summary>
+        /// Marks the named columns as calendar-day columns (<see cref="FieldDbType.Date"/>).
+        /// </summary>
+        /// <param name="table">The target table.</param>
+        /// <param name="columnNames">The column names to mark.</param>
+        /// <exception cref="ArgumentException">A named column does not exist in the table.</exception>
+        /// <remarks>
+        /// Call this on a <see cref="DataTable"/> produced by hand-written SQL (reports, batch jobs, any
+        /// AnyCode query) so its calendar-day columns describe themselves on the wire. Queries the
+        /// framework generates from a schema are marked by the framework and need no call here.
+        /// </remarks>
+        public static void SetDateColumns(this DataTable table, params string[] columnNames)
+        {
+            table.ApplyFieldDbType(FieldDbType.Date, columnNames);
         }
     }
 }

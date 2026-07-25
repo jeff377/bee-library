@@ -37,7 +37,7 @@ namespace Bee.Base.Serialization
             {
                 writer.WriteStartObject();
                 writer.WriteString("name", col.ColumnName);
-                writer.WriteString("type", DbTypeConverter.ToFieldDbType(col.DataType).ToString());
+                writer.WriteString("type", col.ResolveFieldDbType().ToString());
                 writer.WriteBoolean("allowNull", col.AllowDBNull);
                 writer.WriteBoolean("readOnly", col.ReadOnly);
                 writer.WriteNumber("maxLength", col.MaxLength);
@@ -391,6 +391,10 @@ namespace Bee.Base.Serialization
                     Caption = col.Caption,
                     DefaultValue = col.DefaultValue ?? DBNull.Value
                 };
+                // Several FieldDbType values share one CLR type, so the wire value carries information
+                // the rebuilt DataColumn.DataType cannot. Record it so the client side stays as
+                // self-describing as the payload was.
+                dc.ApplyFieldDbType(col.FieldType);
                 dt.Columns.Add(dc);
             }
 
