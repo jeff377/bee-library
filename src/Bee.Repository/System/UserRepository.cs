@@ -39,5 +39,23 @@ namespace Bee.Repository.System
             // Scalar is null when the user id matches no row → no user, empty row id.
             return result.Scalar == null ? Guid.Empty : ValueUtilities.CGuid(result.Scalar);
         }
+
+        /// <inheritdoc/>
+        public string GetTimeZone(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) { return string.Empty; }
+
+            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            string tbl = dbType.QuoteIdentifier("st_user");
+            string colTimeZone = dbType.QuoteIdentifier("time_zone");
+            string colId = dbType.QuoteIdentifier("sys_id");
+
+            string sql = $"SELECT {colTimeZone} FROM {tbl} WHERE {colId} = {{0}}";
+            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar, sql, userId));
+            // Null covers both "no such user" and "column never populated"; Oracle additionally
+            // returns null for a stored empty string. All three mean the same thing to the caller.
+            return result.Scalar == null ? string.Empty : ValueUtilities.CStr(result.Scalar).Trim();
+        }
     }
 }
