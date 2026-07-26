@@ -419,6 +419,7 @@ namespace Bee.Db
                     adapter.Fill(table);
                 }
                 table.LowercaseColumnNames();
+                table.NormalizeDateTimeMode();
                 ApplyDateColumns(command, table);
                 return DbCommandResult.ForTable(table);
             }

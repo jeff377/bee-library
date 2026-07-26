@@ -158,6 +158,11 @@ namespace Bee.Api.Core.MessagePack
                     MaxLength = col.MaxLength,
                     DefaultValue = col.DefaultValue ?? DBNull.Value
                 };
+                // The .NET default for a fresh DateTime column is `UnspecifiedLocal`, the one mode
+                // that writes a time-zone offset into XML. A rebuilt table must match the tables the
+                // framework builds itself (see `DataTableExtensions.AddColumn`), or a payload that
+                // survived the wire intact would still shift once persisted as XML.
+                if (type == typeof(DateTime)) { dc.DateTimeMode = DataSetDateTime.Unspecified; }
                 // Several FieldDbType values share one CLR type, so the wire value carries information
                 // the rebuilt DataColumn.DataType cannot. Record it so the client side stays as
                 // self-describing as the payload was.

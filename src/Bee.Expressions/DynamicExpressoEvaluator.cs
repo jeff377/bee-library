@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using DynamicExpresso;
 using DynamicExpresso.Exceptions;
+using Bee.Base.Data;
 
 namespace Bee.Expressions
 {
@@ -42,8 +43,8 @@ namespace Bee.Expressions
             // `customer_rowid != Guid.Empty`). Guid is a value type with no IO surface.
             interpreter.Reference(typeof(Guid));
 
-            interpreter.SetFunction("Today", (Func<DateTime>)(() => DateTime.Today));
-            interpreter.SetFunction("Now", (Func<DateTime>)(() => DateTime.Now));
+            interpreter.SetFunction("Today", (Func<DateTime>)(() => FrameworkClock.Today));
+            interpreter.SetFunction("Now", (Func<DateTime>)(() => FrameworkClock.Now));
             interpreter.SetFunction("IsNullOrEmpty", (Func<string?, bool>)string.IsNullOrEmpty);
             interpreter.SetFunction("IsNullOrWhiteSpace", (Func<string?, bool>)string.IsNullOrWhiteSpace);
         }

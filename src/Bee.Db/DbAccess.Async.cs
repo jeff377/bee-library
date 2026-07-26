@@ -207,6 +207,7 @@ namespace Bee.Db
                     var table = new DataTable("DataTable");
                     table.Load(reader);
                     table.LowercaseColumnNames();
+                    table.NormalizeDateTimeMode();
                     ApplyDateColumns(command, table);
                     return DbCommandResult.ForTable(table);
                 }

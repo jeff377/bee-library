@@ -176,5 +176,53 @@ namespace Bee.Base.Data
         {
             table.ApplyFieldDbType(FieldDbType.Date, columnNames);
         }
+
+        /// <summary>
+        /// Forces every <see cref="DateTime"/> column of the table to
+        /// <see cref="DataSetDateTime.Unspecified"/>, leaving the stored values untouched.
+        /// </summary>
+        /// <param name="table">The target table.</param>
+        /// <remarks>
+        /// Tables this framework builds through <c>AddColumn</c> already use
+        /// <see cref="DataSetDateTime.Unspecified"/>. Tables that ADO.NET builds for us do not:
+        /// <c>DbDataAdapter.Fill</c>, <c>DataTable.Load</c> and <c>DataSet.ReadXml</c> all leave the
+        /// .NET default of <see cref="DataSetDateTime.UnspecifiedLocal"/> in place. That default is
+        /// the one mode that writes a time-zone offset into XML, so a table read from the database
+        /// and then persisted as XML (the audit DiffGram does exactly this) carries an offset that a
+        /// reader in another zone applies on the way back in — shifting the value, possibly across a
+        /// day boundary. MessagePack and JSON are unaffected either way. See
+        /// docs/adr/adr-032-datetime-timezone.md.
+        ///
+        /// Only <see cref="DataSetDateTime.UnspecifiedLocal"/> columns are converted. The
+        /// <c>Utc</c> and <c>Local</c> modes carry a deliberate declaration and cannot be switched
+        /// once a column holds data, so they are left alone rather than made to throw.
+        /// </remarks>
+        public static void NormalizeDateTimeMode(this DataTable table)
+        {
+            ArgumentNullException.ThrowIfNull(table);
+
+            foreach (DataColumn column in table.Columns)
+            {
+                if (column.DataType == typeof(DateTime) &&
+                    column.DateTimeMode == DataSetDateTime.UnspecifiedLocal)
+                {
+                    column.DateTimeMode = DataSetDateTime.Unspecified;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Applies <see cref="NormalizeDateTimeMode(DataTable)"/> to every table of the data set.
+        /// </summary>
+        /// <param name="dataSet">The target data set.</param>
+        public static void NormalizeDateTimeMode(this DataSet dataSet)
+        {
+            ArgumentNullException.ThrowIfNull(dataSet);
+
+            foreach (DataTable table in dataSet.Tables)
+            {
+                table.NormalizeDateTimeMode();
+            }
+        }
     }
 }

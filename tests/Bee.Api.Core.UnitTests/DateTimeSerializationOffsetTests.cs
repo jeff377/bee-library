@@ -107,6 +107,52 @@ namespace Bee.Api.Core.UnitTests
 
         #region 三格式 round-trip 不得偏移
 
+        [Fact]
+        [DisplayName("MessagePack 還原的 DataTable 其 DateTime 欄位 DateTimeMode 為 Unspecified")]
+        public void MessagePack_RebuiltTable_UsesUnspecifiedDateTimeMode()
+        {
+            var table = new DataTable("orders");
+            table.AddColumn("created_at", FieldDbType.DateTime);
+            table.Rows.Add(Sample);
+
+            var restored = MessagePackCodec.Deserialize<DataTable>(MessagePackCodec.Serialize(table));
+
+            Assert.NotNull(restored);
+            Assert.Equal(DataSetDateTime.Unspecified, restored.Columns["created_at"]!.DateTimeMode);
+        }
+
+        [Fact]
+        [DisplayName("JSON 還原的 DataTable 其 DateTime 欄位 DateTimeMode 為 Unspecified")]
+        public void Json_RebuiltTable_UsesUnspecifiedDateTimeMode()
+        {
+            var table = new DataTable("orders");
+            table.AddColumn("created_at", FieldDbType.DateTime);
+            table.Rows.Add(Sample);
+
+            var restored = JsonCodec.Deserialize<DataTable>(JsonCodec.Serialize(table));
+
+            Assert.NotNull(restored);
+            Assert.Equal(DataSetDateTime.Unspecified, restored.Columns["created_at"]!.DateTimeMode);
+        }
+
+        [Fact]
+        [DisplayName("NormalizeDateTimeMode 將 ADO.NET 預設的 UnspecifiedLocal 轉為 Unspecified 且不改數值")]
+        public void NormalizeDateTimeMode_ConvertsAdoNetDefaultWithoutShifting()
+        {
+            // A table shaped the way DbDataAdapter.Fill / DataTable.Load leave it.
+            var table = new DataTable("t");
+            table.Columns.Add(new DataColumn("d", typeof(DateTime)));
+            table.Rows.Add(Sample);
+            Assert.Equal(DataSetDateTime.UnspecifiedLocal, table.Columns["d"]!.DateTimeMode);
+
+            table.NormalizeDateTimeMode();
+
+            Assert.Equal(DataSetDateTime.Unspecified, table.Columns["d"]!.DateTimeMode);
+            Assert.Equal(Sample, (DateTime)table.Rows[0]["d"]);
+            Assert.Equal("2026-01-01T09:00:00", ExtractXmlValue(WriteXml(table)));
+        }
+
+
         [Theory]
         [InlineData(DateTimeKind.Unspecified)]
         [InlineData(DateTimeKind.Utc)]

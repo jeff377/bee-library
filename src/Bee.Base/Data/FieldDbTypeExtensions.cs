@@ -23,9 +23,9 @@ namespace Bee.Base.Data
                 case FieldDbType.Currency:
                     return 0;
                 case FieldDbType.Date:
-                    return DateTime.Today;
+                    return FrameworkClock.Today;
                 case FieldDbType.DateTime:
-                    return DateTime.Now;
+                    return FrameworkClock.Now;
                 case FieldDbType.Guid:
                     return Guid.Empty;
                 default:
