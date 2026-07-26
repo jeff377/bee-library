@@ -28,9 +28,17 @@
 | **changelog-draft** | 整理自上一版 tag 至 HEAD 的雙語 CHANGELOG 草稿 |
 | **demo-smoke** | 對 samples/ 的 demo 跑端到端冒煙測試 |
 
-> **`plan-write` 已移出本目錄**，改由 `jeff377-plugins` marketplace 的 `plan-workflow` plugin 提供
-> （呼叫為 `/plan-workflow:plan-write`；marketplace 與啟用宣告在 `.claude/settings.json`）。
-> repo 只保留單一來源，避免本地副本與 plugin 版 drift。
+## Plugin 提供（不在本目錄）
+
+以下 skill **不在本目錄**，由 plugin 提供；marketplace 與啟用宣告在 `.claude/settings.json`。
+repo 只保留單一來源，避免本地副本與 plugin 版 drift。
+
+| Skill（呼叫名） | Plugin @ Marketplace | 一句話用途 |
+|----------------|---------------------|-----------|
+| **`/plan-workflow:plan-write`** | `plan-workflow` @ `jeff377-plugins` | 撰寫 / 更新 `docs/plans/` 計畫文件（狀態列、階段表格、封存流程） |
+| **`/plan-workflow:plan-handoff`** | `plan-workflow` @ `jeff377-plugins` | 把已定案的 plan 交接給新 session 實作（產出可複製的交接 prompt） |
+
+> **`plan-write` 原本在本目錄**，已移出改由 plugin 提供，故本目錄不再有該資料夾。
 
 ## 新增 skill
 
