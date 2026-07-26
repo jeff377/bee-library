@@ -4,14 +4,14 @@
 
 已採納（2026-07-25）
 
-> 分階段實作中。P0（本 ADR + 系統時間戳 UTC 化）已落地；
-> P1（`Kind` 紀律與 wire guard）、P2（Connector 雙向轉換）、P3（短路與跨區驗證）待做。
+> 分階段實作中。P0（本 ADR + 系統時間戳 UTC 化）與 P1（wire guard、`DateTimeMode` 正規化、
+> 時間來源接縫）已落地；P2（Connector 雙向轉換）、P3（跨 DB / 跨時區 / 行動端驗證）待做。
 > 執行細節見 `docs/plans/plan-datetime-timezone.md`。
 
 ## 背景
 
 框架要支援跨時區部署——資料庫時間以 UTC 儲存、使用者檢視時轉換為其時區——
-同時不讓單一時區部署付出任何額外成本。
+同時把單一時區部署要承擔的**複雜度**壓到最低（見 D10 對「零成本」的界定）。
 
 ### 現況並非「全鏈路本地時間」
 
@@ -161,7 +161,7 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
   `ToUniversalTime()` 則依**裝置 OS 時區**換算，而 D4 已否決裝置時區作為權威來源。
   `Kind=Local` 進 wire 是**框架自身的程式錯誤**，不是外部輸入的資料狀況。
 - **guard 掛在 Connector 進出點**，理由同 D4（in-process 無序列化邊界）。
-- **guard 永遠開啟，不受 D10 短路影響。**
+- **guard 永遠開啟，不受任何部署設定影響。**
 - DB 讀出的時間點值統一 `SpecifyKind(Utc)`；日曆日欄位維持 `Unspecified`。
 
 ### D7 / D8：持久化物件與系統時間戳一律 UTC
@@ -269,7 +269,7 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 
 - 單一時區來源，兩個方向必為反函數，round-trip 恆等；時區設錯只降級為顯示偏移。
 - Connector 完全 schema-less，報表 / AnyCode 等無 schema 場景同樣安全。
-- 單一時區部署行為零變化，跨區成本只在多時區部署才付。
+- 轉換路徑單一：同時區時退化為恆等轉換，不需為「有沒有跨區」維護兩套行為。
 
 **負面 / 風險**
 
