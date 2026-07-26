@@ -5,8 +5,8 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | P0 | 定案決策寫成 ADR + 系統時間戳改 UTC（trace / 定義檔 `CreateTime`） | ✅ 已完成（2026-07-25） |
-| P1 | `Kind` 正本清源（清掉框架自身的 `Local` 來源）→ wire guard + Kind round-trip 測試 | 📝 待做 |
-| P2 | Connector 雙向轉換（含 `FilterCondition`）+ `SessionInfo.TimeZone` 填充 | 📝 待做 |
+| P1 | D6 兩條 wire guard + 序列化回歸測試 + 「現在／今天」單一接縫（行為不變） | 🚧 進行中 |
+| P2 | `SessionInfo.TimeZone` 填充 → 接上接縫 + Connector 雙向轉換（含 `FilterCondition`） | 📝 待做 |
 | P3 | 單一時區部署零成本短路 + 跨 DB / 跨時區 / 行動端 tz 可用性回歸測試 | 📝 待做 |
 
 > 目標：讓 bee-library 支援跨時區部署——**資料庫時間以 UTC 儲存，使用者檢視時轉換為其時區**——
@@ -269,6 +269,30 @@ Oracle `TIMESTAMP`、MySQL `DATETIME`、SQLite `TEXT`），時區轉換不交給
 
 **連帶效果**：D4 的判斷完全不需要 `FormSchema`，Connector 100% schema-less。
 
+### D12：「今天」與「現在」以使用者時區為基準 ★
+
+**「今天」= `SessionInfo.TimeZone` 的今天**，不是裝置 OS 的今天，也不是伺服端機器的今天。
+
+理由是業務語意：請假單的請假日期預設為「當天」，那個當天必然是**使用者所在時區的當天**。
+而權威來源必須是 `SessionInfo.TimeZone` 而非裝置時區——否則使用者在紐約出差登打台北公司的假單，
+預設日期會變成前一天。這與 D4 的時區權威來源一致（換裝置 / 出差不改變資料語意）。
+
+**兩側必須用同一定義。** `Date` 欄位 Connector 絕不轉換（D4），因此伺服端與用戶端算出的
+「今天」若不一致，同一張單在兩側會是不同日期。伺服端求值時同樣要用 session 時區，不可用機器時區。
+
+受影響的三處（P1 收斂為單一接縫、P2 接上來源）：
+
+| 位置 | 現況 | 求值側 |
+|------|------|-------|
+| `FormRowDefaults.cs:78`（`DefaultForDbType`） | `Date` → `DateTime.Today`、`DateTime` → `DateTime.Now` | **用戶端**（唯一呼叫端為 `Bee.UI.Avalonia/DataObjects/FormDataObject.Events.cs:70`，走 `DataTable.TableNewRow` 掛鉤） |
+| `FieldDbTypeExtensions.cs:28`（`GetDefaultValue`） | 同上 | 兩側（`AddColumn` 的欄位預設值、`DbParameterSpecCollection` 的參數預設值） |
+| `DynamicExpressoEvaluator.cs:45-46`（`Today()` / `Now()`） | `DateTime.Today` / `DateTime.Now` | **兩側**（伺服端 `FormExpressionCalculator`、用戶端 `FormLiveComputation`） |
+
+> **待決**：`Today()` 依本條已確定為「使用者時區的今天」，但 **`Now()` 是否比照**（回使用者時區的
+> 現在）**或改回 UTC**，仍未定案。取捨在於：運算式是使用者可見的語意，`Now()` 回 UTC 會讓既有
+> 定義檔的語意靜默改變；但回使用者時區則需明確界定「該值寫進儲存格後由誰負責轉成 UTC」。
+> 另一選項是拆成 `Now()`（使用者時區）與 `UtcNow()` 兩個函式。此題須在 P2 動工前定案。
+
 ### D6：時間表示紀律與 wire guard ★
 
 依載體分成兩條不變式——**這兩者守的是不同東西，缺一不可**（依實測 1.4 修訂）：
@@ -387,9 +411,16 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 | 階段 | 要點 |
 |------|------|
 | **P0** | ✅ 已完成。`docs/adr/adr-032-datetime-timezone.md`（含 D5 否決理由、D9 / D11 的前提條件、`Time` 未來歸屬）；trace 三處與定義檔七處 `CreateTime` 改 UTC。實作期查證更正了 D8 的論述（見該條）。 |
-| **P1** | **兩步且順序不可顛倒。**<br>**(a) 正本清源**：三處 `DateTime.Now` / `Today`（`FormRowDefaults.cs:78`、`FieldDbTypeExtensions.cs:28`、`DynamicExpressoEvaluator.cs:45-46`）。依實測 1.4(a)，這三處的問題**是數值不是 `Kind`**——寫進 `DataRow` 後 Kind 會被 `DataColumn` 抹平，但本地牆上時間的數值會原封留下。<br>**另加**：稽核所有**非 `AddColumn` 路徑**產出的 `DataTable`（`DbDataAdapter.Fill`、`DataSet.ReadXml`、BO 自寫 SQL），確認 `DateTimeMode` 為 `Unspecified`（實測 1.4(e)）。<br>**(b) 立不變式**：D6 兩條 guard（Connector 進出點、fail fast、不受短路影響）+ round-trip 測試（**全 plan 最高優先**）；Repository 邊界寫入正規化與讀出 `SpecifyKind(Utc)`。 |
-| **P2** | D4 Connector 雙向轉換：進出點掛載、轉換前深拷貝 `DataSet`、忽略 `Kind`、`FilterCondition` 依值型別（`DateOnly` / `DateTime`）判斷；登入時填充 `SessionInfo.TimeZone`（使用者設定 / 公司預設 / client 回報）。 |
+| **P1** | **無內部順序約束**（原訂「先清 `Local` 來源再開 guard」已取消，理由見下）。<br>① **序列化回歸測試**——✅ 已完成（`DateTimeSerializationOffsetTests`，29 項，四時區皆綠）。<br>② D6 兩條 guard：DTO 查 `Kind`、`DataSet` 查 `DateTimeMode`；掛 Connector 進出點、fail fast、不受 D10 短路影響。<br>③ 稽核**非 `AddColumn` 路徑**產出的 `DataTable`（`DbDataAdapter.Fill`、`DataSet.ReadXml`、BO 自寫 SQL），確認 `DateTimeMode` 為 `Unspecified`（實測 1.4(e)）。<br>④ Repository 邊界寫入正規化與讀出 `SpecifyKind(Utc)`。<br>⑤ **建立「現在／今天」單一接縫**：把三處各自的 `DateTime.Now` / `Today`（`FormRowDefaults.cs:78`、`FieldDbTypeExtensions.cs:28`、`DynamicExpressoEvaluator.cs:45-46`）收斂到一個來源，**實作暫時維持現行行為**，P2 只需替換來源。 |
+| **P2** | ① 登入時填充 `SessionInfo.TimeZone`（使用者設定 / 公司預設 / client 回報）。<br>② **接上 P1 的接縫**：「今天」與「現在」改由使用者時區推導（見 D12）。<br>③ D4 Connector 雙向轉換：進出點掛載、轉換前深拷貝 `DataSet`、忽略 `Kind`、`FilterCondition` 依值型別（`DateOnly` / `DateTime`）判斷。 |
 | **P3** | D10 短路；跨 DB（SQL Server / PostgreSQL / SQLite / MySQL / Oracle）round-trip 測試；跨時區測試（`TZ` 環境變數驅動）；**行動端 / WASM 的 tz 可用性驗證**（見 §4）；**驗證單一時區部署行為零變化**的回歸防護；重建 seed 與 demo 資料（依 D11）。 |
+
+
+> **為何取消 P1 原訂的「先清 `Local` 來源、再開 guard」順序約束**：該約束建立在
+> 「三處 `DateTime.Now` / `Today` 產出的 `Local` 值會觸發 guard」這個前提上。
+> 實測 1.4(a) 推翻了它——三處的值全部是填進 `DataRow`，`Kind` 在賦值當下就被 `DataColumn`
+> 抹成 `Unspecified`，根本走不到 DTO 的 `Kind` guard。三處真正的問題是**數值語意**（D12），
+> 與 guard 正交，故移至 P2 與時區來源一併處理。
 
 ---
 

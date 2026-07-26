@@ -185,6 +185,24 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 > 既有現象**（見背景章節：MessagePack 不保留 `Kind`）。屆時「值本身就是 UTC」是唯一
 > 不依賴序列化器是否保留偏移的基準。
 
+### D12：「今天」與「現在」以使用者時區為基準
+
+**「今天」= `SessionInfo.TimeZone` 的今天**，不是裝置 OS 的今天，也不是伺服端機器的今天。
+
+理由是業務語意：請假單的請假日期預設為「當天」，那個當天必然是使用者所在時區的當天。
+權威來源取 `SessionInfo.TimeZone` 而非裝置時區——否則使用者在紐約出差登打台北公司的假單，
+預設日期會變成前一天。與 D4 的時區權威來源一致。
+
+**伺服端與用戶端必須用同一定義**：`Date` 欄位 Connector 絕不轉換（D4），兩側算出的「今天」
+若不一致，同一張單在兩側會是不同日期。伺服端求值同樣走 session 時區，不用機器時區。
+
+實作上把散落的 `DateTime.Now` / `DateTime.Today` 收斂為單一接縫（`FormRowDefaults`、
+`FieldDbTypeExtensions`、`DynamicExpressoEvaluator` 的 `Today()` / `Now()`），由該接縫依
+使用者時區推導。
+
+> **未定案**：運算式的 `Now()` 是否比照 `Today()` 回使用者時區、或改回 UTC、或拆成
+> `Now()` / `UtcNow()` 兩個函式。運算式是使用者可見的語意，改動會影響既有定義檔，須另行定案。
+
 ### D9：cache-notify 刻意不 UTC 化
 
 `sys_update_time` 的 high-water mark **只與自己比較**，UTC 化無實質效益。
