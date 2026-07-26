@@ -147,9 +147,12 @@ MessagePack 與 JSON 都只搬運數值。轉換責任全在伺服端與用戶�
 `[XmlIgnore, JsonIgnore, IgnoreMember]`、從未被持久化，仍一併改為 `UtcNow`——
 純粹為了讓「時間屬性一律 UTC」零例外；保留為 Local 例外的話，日後無人敢動這些欄位的語意。
 
-> trace 的 `TraceEvent.Time` / `TraceContext.Start` 型別是 `DateTimeOffset`，**本就攜帶偏移、
-> 跨區可比**，改 `UtcNow` 不是為了修正可比性，而是為了讓序列化與 log 呈現不隨部署時區變動，
-> 並消除「日後被轉成 `DateTime` 或落入 naive 欄位時偏移遭丟棄」的陷阱。
+快取到期時間（`CacheItemPolicy.AbsoluteExpiration`）同樣採 `UtcNow`。
+
+> trace 的 `TraceEvent.Time` / `TraceContext.Start` 與 `CacheItemPolicy.AbsoluteExpiration`
+> 型別都是 `DateTimeOffset`，**本就攜帶偏移、跨區可比**，改 `UtcNow` 不是為了修正可比性，
+> 而是為了讓序列化與 log 呈現不隨部署時區變動，並消除「日後被轉成 `DateTime` 或落入 naive 欄位時
+> 偏移遭丟棄」的陷阱。規則零例外的價值即在此：不必逐處判斷「這個 `DateTimeOffset` 會不會被降型」。
 
 ### D9：cache-notify 刻意不 UTC 化
 

@@ -21,7 +21,7 @@
         public CacheItemPolicy(CacheTimeKind  kind, int minutes)
         {
             if (kind == CacheTimeKind.AbsoluteTime)
-                AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(minutes);  // Absolute time expiration
+                AbsoluteExpiration = DateTimeOffset.UtcNow.AddMinutes(minutes);  // Absolute time expiration
             else
                 SlidingExpiration = TimeSpan.FromMinutes(minutes);  // Sliding time expiration
         }

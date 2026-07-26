@@ -29,9 +29,9 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("以 AbsoluteTime 建構應只設定 AbsoluteExpiration")]
         public void Constructor_AbsoluteTime_SetsAbsoluteExpirationOnly()
         {
-            var before = DateTimeOffset.Now.AddMinutes(10);
+            var before = DateTimeOffset.UtcNow.AddMinutes(10);
             var policy = new CacheItemPolicy(CacheTimeKind.AbsoluteTime, 10);
-            var after = DateTimeOffset.Now.AddMinutes(10);
+            var after = DateTimeOffset.UtcNow.AddMinutes(10);
 
             Assert.True(policy.AbsoluteExpiration >= before && policy.AbsoluteExpiration <= after);
             Assert.Equal(TimeSpan.Zero, policy.SlidingExpiration);
