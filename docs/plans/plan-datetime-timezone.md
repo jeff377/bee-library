@@ -1,11 +1,11 @@
 # Plan：DateTime 時區處理機制
 
-**狀態：🚧 進行中（2026-07-25）**
+**狀態：🚧 進行中（2026-07-26）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | P0 | 定案決策寫成 ADR + 系統時間戳改 UTC（trace / 定義檔 `CreateTime`） | ✅ 已完成（2026-07-25） |
-| P1 | D6 兩條 wire guard + 序列化回歸測試 + 「現在／今天」單一接縫（行為不變） | 🚧 進行中 |
+| P1 | D6 兩條 wire guard + 序列化回歸測試 + 「現在／今天」單一接縫（行為不變） | ✅ 已完成（2026-07-26） |
 | P2 | `SessionInfo.TimeZone` 填充 → 接上接縫 + Connector 雙向轉換（含 `FilterCondition`） | 📝 待做 |
 | P3 | 單一時區部署零成本短路 + 跨 DB / 跨時區 / 行動端 tz 可用性回歸測試 | 📝 待做 |
 
@@ -411,7 +411,7 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 | 階段 | 要點 |
 |------|------|
 | **P0** | ✅ 已完成。`docs/adr/adr-032-datetime-timezone.md`（含 D5 否決理由、D9 / D11 的前提條件、`Time` 未來歸屬）；trace 三處與定義檔七處 `CreateTime` 改 UTC。實作期查證更正了 D8 的論述（見該條）。 |
-| **P1** | **無內部順序約束**（原訂「先清 `Local` 來源再開 guard」已取消，理由見下）。<br>① **序列化回歸測試**——✅ 已完成（`DateTimeSerializationOffsetTests`，29 項，四時區皆綠）。<br>② D6 兩條 guard：DTO 查 `Kind`、`DataSet` 查 `DateTimeMode`；掛 Connector 進出點、fail fast、不受 D10 短路影響。<br>③ 稽核**非 `AddColumn` 路徑**產出的 `DataTable`（`DbDataAdapter.Fill`、`DataSet.ReadXml`、BO 自寫 SQL），確認 `DateTimeMode` 為 `Unspecified`（實測 1.4(e)）。<br>④ Repository 邊界寫入正規化與讀出 `SpecifyKind(Utc)`。<br>⑤ **建立「現在／今天」單一接縫**：把三處各自的 `DateTime.Now` / `Today`（`FormRowDefaults.cs:78`、`FieldDbTypeExtensions.cs:28`、`DynamicExpressoEvaluator.cs:45-46`）收斂到一個來源，**實作暫時維持現行行為**，P2 只需替換來源。 |
+| **P1** | **無內部順序約束**（原訂「先清 `Local` 來源再開 guard」已取消，理由見下）。<br>① **序列化回歸測試**——✅ 已完成（`DateTimeSerializationOffsetTests`，29 項，四時區皆綠）。<br>② ✅ D6 兩條 guard（`DateTimeWireGuard`，掛 `ApiConnector` 送出前與接收後）。採**針對性**而非通用反射走訪：只守值實際進入的兩個口——契約的 `DataSet` / `DataTable` 成員與 `FilterCondition` 的值。<br>③ ✅ `DataTableExtensions.NormalizeDateTimeMode` + 四個套用點（`DbAccess` 同步 / 非同步、兩條 wire 的建欄）。<br>④ **移至 P2**：D6 的「DB 讀出的時間點值統一 `SpecifyKind(Utc)`」在 DB 存的是 UTC 之後才有意義，而那要等 P2 的轉換管線；`DataTable` 儲存格另受 `DateTimeMode` 正規化保護（實測 1.4(a)），無 `Kind` 破口。<br>⑤ ✅ `Bee.Base.Data.FrameworkClock` 收斂三處，行為維持現狀。 |
 | **P2** | ① 登入時填充 `SessionInfo.TimeZone`（使用者設定 / 公司預設 / client 回報）。<br>② **接上 P1 的接縫**：「今天」與「現在」改由使用者時區推導（見 D12）。<br>③ D4 Connector 雙向轉換：進出點掛載、轉換前深拷貝 `DataSet`、忽略 `Kind`、`FilterCondition` 依值型別（`DateOnly` / `DateTime`）判斷。 |
 | **P3** | D10 短路；跨 DB（SQL Server / PostgreSQL / SQLite / MySQL / Oracle）round-trip 測試；跨時區測試（`TZ` 環境變數驅動）；**行動端 / WASM 的 tz 可用性驗證**（見 §4）；**驗證單一時區部署行為零變化**的回歸防護；重建 seed 與 demo 資料（依 D11）。 |
 
