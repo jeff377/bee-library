@@ -36,10 +36,24 @@ payload 由 `+08:00` 端產生、讀取端 `TZ=America/New_York`：
 | `2026-01-01T09:00:00Z`（Utc） | `09:00Z` Utc ✅ | `09:00` **Unspecified**（Kind 被抹） |
 | `2026-01-01T09:00:00+08:00`（**Local**） | **`2025-12-31T20:00:00-05:00`** ❌ 跨日 | `09:00` Unspecified |
 
+上表走的是 `DataTable` 路徑。補測 `DataSet` 儲存格與強型別 DTO 兩種載體後，發現行為並不一致：
+
+| 載體 | `Local` 值的下場 | 說明 |
+|------|-----------------|------|
+| `DataSet` 儲存格 | 不位移 | `DataColumn` 依 `DateTimeMode` 先把 `Kind` 正規化掉，formatter 看不到 `Local` |
+| 強型別 DTO 屬性（MessagePack） | **寫出端位移**（`09:00`+08 → `01:00Z`） | msgpack timestamp 擴充存絕對瞬間，`Local` 被轉為 UTC |
+| 強型別 DTO 屬性（JSON） | **讀取端位移**（可跨日） | 偏移寫進 wire，讀取端依自身時區重算 |
+
+另外 **XML 是第三條序列化路徑**（稽核 `WriteXml(DiffGram)` 走它），且是唯一會依
+`DataColumn.DateTimeMode` 決定要不要寫出時區偏移的格式——.NET 預設的 `UnspecifiedLocal`
+正是「會寫出偏移」的那個值，偏移一旦進了 XML，跨區讀回就位移甚至跨日。
+
 三個結論貫穿以下所有決策：
 
-1. **MessagePack 一律抹掉 `Kind`**，因此「由值自己帶時區資訊（ISO 8601 的 `Z`）」在本框架不成立。
-2. **`Kind=Local` 是唯一會讓兩種格式語意分岔的 Kind**，且 JSON 側可跨日。
+1. **MessagePack 不保留 `Kind` 資訊**（`DataTable` 路徑抹為 `Unspecified`、DTO 路徑一律回 `Utc`），
+   因此「由值自己帶時區資訊（ISO 8601 的 `Z`）」在本框架不成立。
+2. **`Kind=Local` 在兩種格式上都會位移數值**——JSON 於讀取端（可跨日）、MessagePack 於寫出端。
+   `Local` 沒有任何逃生路徑。
 3. **同一個 UTC 值經兩種格式讀回的 `Kind` 不同**（JSON `Utc` / MessagePack `Unspecified`），
    而 `PayloadFormat` 是部署期可切換的——**任何依 `Kind` 分支的邏輯都會隨部署設定而行為分岔**。
 
@@ -47,7 +61,7 @@ payload 由 `+08:00` 端產生、讀取端 `TZ=America/New_York`：
 
 ### 1. wire 傳 ISO 8601 帶時區偏移，由值本身表達（否決）
 
-MessagePack 抹掉 `Kind`（實測結論 1），偏移資訊無法存活。跨格式不一致。
+MessagePack 不保留 `Kind`（實測結論 1），偏移資訊無法存活。跨格式不一致。
 
 ### 2. 非對稱設計：用戶端送使用者時區，伺服端依 `SessionInfo.TimeZone` 轉回（否決）
 
@@ -123,11 +137,23 @@ MessagePack 與 JSON 都只搬運數值。轉換責任全在伺服端與用戶�
 
 > 此條刻意載明，否則日後會有人「順手補上」`DateTimeSemantics`。
 
-### D6：`Kind` 紀律與 wire guard
+### D6：時間表示紀律與 wire guard
 
-**不變式：進 wire 的 `DateTime`，`Kind` 只能是 `Unspecified` 或 `Utc`，絕不能是 `Local`。**
+依載體分成兩條不變式，**守的是不同東西，缺一不可**：
 
-`Local` 極易誤入——`DateTime.Now`、UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
+| 載體 | 不變式 |
+|------|--------|
+| `DataSet` / `DataTable` | 所有 `DateTime` 欄位的 **`DataColumn.DateTimeMode` 必須是 `Unspecified`** |
+| 強型別 DTO 屬性 | `DateTime` 的 **`Kind` 不得為 `Local`** |
+
+`DataSet` 那條不查 `Kind`：儲存格的 `Kind` 由 `DateTimeMode` 決定，查值恆得 `Unspecified`、
+查了等於沒查；真正決定「XML 寫出會不會帶偏移」的是 `DateTimeMode`。
+`AddColumn` 已設 `Unspecified`，破口在 `DbDataAdapter.Fill` / `DataSet.ReadXml` 等
+會落回 .NET 預設 `UnspecifiedLocal` 的路徑。
+
+DTO 那條查 `Kind`：沒有 `DataColumn` 的正規化緩衝，`Local` 在**兩條 wire 上都會位移數值**
+（MessagePack 於寫出端、JSON 於讀取端）。`Local` 極易誤入——`DateTime.Now`、`DateTime.Today`、
+UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 
 - **guard 為 fail fast：debug 與 release 都擲例外**，不做「修正後放行」。
   兩種修法都會靜默產生錯資料：`SpecifyKind(Unspecified)` 保留牆上時間、丟掉時區資訊
@@ -156,7 +182,7 @@ MessagePack 與 JSON 都只搬運數值。轉換責任全在伺服端與用戶�
 >
 > 快取尤其如此：**目前是行程內快取，但日後若改用跨機器的分散式快取**（Redis 等），
 > 到期時間會跨行程傳遞、經第三方序列化落地——而**偏移在序列化時被丟棄正是本 ADR 已實測到的
-> 既有現象**（見背景章節：MessagePack 一律抹掉 `Kind`）。屆時「值本身就是 UTC」是唯一
+> 既有現象**（見背景章節：MessagePack 不保留 `Kind`）。屆時「值本身就是 UTC」是唯一
 > 不依賴序列化器是否保留偏移的基準。
 
 ### D9：cache-notify 刻意不 UTC 化

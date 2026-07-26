@@ -72,6 +72,77 @@ payload 由 `+08:00` 端產生、讀取端 `TZ=America/New_York`：
    MessagePack 為 `Unspecified`），而 `PayloadFormat` 是部署期可切換的。
    任何依 `Kind` 分支的邏輯都會隨格式而行為分岔。
 
+### 1.4 `DataSet` 三格式實測（2026-07-25 補測，推翻 D6 的一項前提）
+
+上表量的是 `DateTime` 值本身。`DataSet` 儲存格另有一層變因——`DataColumn.DateTimeMode`——
+且 XML 是本框架的第三種序列化路徑（稽核 `WriteXml(DiffGram)` 走它），先前完全沒量過。
+
+#### (a) 儲存格的 `Kind` 由 `DateTimeMode` 決定，不是由存入的值決定
+
+同一格存入 `Unspecified` / `Utc` / `Local` 三種 Kind 的 `09:00`，
+在 `DateTimeMode=Unspecified` 下**讀出來全部是 `Unspecified` 09:00**。
+
+> **這推翻了 D6 原本的一項前提。** `Kind=Local` 混入的風險**對 `DataSet` 儲存格不存在**——
+> `DataColumn` 在賦值當下就先正規化掉了。連帶地，`FormRowDefaults` / `FieldDbTypeExtensions`
+> 那兩處 `DateTime.Now` 的問題**從來不是 `Kind`，而是數值本身**（本地牆上時間 vs UTC）。
+
+#### (b) 只有 XML 會依 `DateTimeMode` 加偏移（`DataTable` 路徑）
+
+| 格式 | 是否受 `DateTimeMode` 影響 |
+|------|--------------------------|
+| MessagePack | ❌ 恆不偏移，寫 naive |
+| JSON | ❌ 恆不偏移，寫 naive |
+| **XML** | ✅ **唯一會依 mode 加偏移的格式** |
+
+XML 在 `UnspecifiedLocal`（**.NET 預設**）下寫出 `2026-01-01T09:00:00+08:00`；
+`Unspecified` 下寫出 `2026-01-01T09:00:00`。
+
+#### (c) `Unspecified` 只保證「不主動加偏移」，不保證「忽略既有偏移」
+
+讀入端實測（讀取端 `TZ=America/New_York`）：
+
+| `DateTimeMode` | wire `09:00`（naive） | wire `09:00+08:00` | wire `09:00Z` |
+|----------------|---------------------|-------------------|--------------|
+| `Unspecified` | 09:00 Unspecified ✅ | **12-31 20:00** ❌ 跨日 | 09:00 Unspecified ✅ |
+| `UnspecifiedLocal` | 09:00 Unspecified ✅ | **12-31 20:00** ❌ 跨日 | 09:00 Unspecified ✅ |
+| `Utc` | 09:00 Utc | 01:00 Utc | 09:00 Utc |
+| `Local` | 09:00 Local | **12-31 20:00** Local | 04:00 Local |
+
+讀入端 `Unspecified` 與 `UnspecifiedLocal` **行為完全相同**，差別**只在寫出端**。
+
+→ **只要寫出端一律 `Unspecified`，wire 上就不會有偏移字串，讀入端自然安全。**
+
+#### (d) MessagePack 的 DTO 路徑與 `DataTable` 路徑行為不同 ★
+
+§1.3 的量測**只走了 `DataTable` 路徑**（plan 原文即註明「以 `MessagePackCodec` 走真實
+`DataTable` 路徑」），故結論「MessagePack 一律抹掉 `Kind`、數值原封保留」**只對 `DataTable` 成立**。
+強型別 DTO 屬性（走 typeless formatter）行為完全不同：
+
+| 存入 | `DataTable` 路徑讀回 | DTO typeless 路徑讀回 |
+|------|---------------------|---------------------|
+| `09:00` Unspecified | `09:00` Unspecified | `09:00` **Utc**（重新標記） |
+| `09:00` Utc | `09:00` Unspecified | `09:00` Utc |
+| `09:00` **Local**（+08） | `09:00` Unspecified | **`01:00` Utc**（**數值位移**） |
+
+msgpack 的 timestamp 擴充儲存的是絕對瞬間，因此 formatter 在寫出時會把 `Local` 轉成 UTC——
+瞬間正確，但**牆上時間讀數改變了**。把儲存格當牆上時間看的接收端會靜默讀到不同的時間。
+
+> **這使 D6 的 DTO 不變式比原先認知的更必要**：先前以為只有 JSON 會因 `Local` 而位移，
+> 實測顯示 **MessagePack 也會**——差別只在 JSON 位移發生於讀取端、MessagePack 發生於寫出端。
+> 兩條 wire 都不安全，`Local` 沒有任何逃生路徑。
+>
+> `DataTable` 之所以免疫，是因為 `DataColumn` 在 formatter 看到值之前就先正規化掉 `Kind`
+> （實測 (a)）。裸 DTO 屬性沒有這層緩衝。**只守其中一條路徑等於沒守。**
+
+#### (e) 真正的破口是「沒走 `AddColumn` 的 `DataTable`」
+
+`DataTableExtensions.AddColumn`（`src/Bee.Base/Data/DataTableExtensions.cs:29`）已刻意設
+`DateTimeMode = Unspecified`——這個既有決定是對的。
+
+但 `DbDataAdapter.Fill` 自動建欄、`DataSet.ReadXml` 推斷 schema 等路徑產出的 `DataColumn`
+拿到的是 .NET 預設 `UnspecifiedLocal`，**XML 寫出就會帶 `+08:00`、跨區讀回跨日**。
+稽核的 `FormBusinessObject.Audit.cs:56`（`WriteXml(DiffGram)`）正是走 XML。
+
 ---
 
 ## 2. 已定案的設計決策
@@ -198,12 +269,25 @@ Oracle `TIMESTAMP`、MySQL `DATETIME`、SQLite `TEXT`），時區轉換不交給
 
 **連帶效果**：D4 的判斷完全不需要 `FormSchema`，Connector 100% schema-less。
 
-### D6：`Kind` 紀律與 wire guard ★
+### D6：時間表示紀律與 wire guard ★
 
-**不變式：進 wire 的 `DateTime`，`Kind` 只能是 `Unspecified` 或 `Utc`，絕不能是 `Local`。**
+依載體分成兩條不變式——**這兩者守的是不同東西，缺一不可**（依實測 1.4 修訂）：
 
-依據實測 1.3：`Local` 是唯一會讓兩種序列化格式語意分岔的 Kind。而 `Local` 極易誤入——
-`DateTime.Now`、UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
+| 載體 | 不變式 | guard 方式 |
+|------|--------|-----------|
+| `DataSet` / `DataTable` | 所有 `DateTime` 欄位的 **`DataColumn.DateTimeMode` 必須是 `Unspecified`** | 逐**欄**檢查（比逐格檢查值的 Kind 更精準且成本更低） |
+| 強型別 DTO 屬性 | `DateTime` 的 **`Kind` 不得為 `Local`**，只能是 `Unspecified` 或 `Utc` | 逐屬性檢查 |
+
+**為何 `DataSet` 那條不是查 `Kind`**：實測 1.4(a) 顯示儲存格的 `Kind` 由 `DateTimeMode` 決定，
+存入什麼 Kind 都會被 `DataColumn` 正規化——查值的 `Kind` 恆為 `Unspecified`，查了等於沒查。
+真正決定「XML 寫出會不會帶偏移」的是 `DateTimeMode`（實測 1.4(b)(c)）。
+
+**為何 DTO 那條要查 `Kind`**：DTO 屬性沒有 `DataColumn` 這層正規化，`Local` 會原封進 wire，
+而依實測 1.4(d)，**兩條 wire 都會因此位移數值**——JSON 位移發生於讀取端（可跨日）、
+MessagePack 位移發生於寫出端（`Local` 09:00 → UTC 01:00）。`Local` 沒有任何逃生路徑。
+
+`Local` 極易誤入——`DateTime.Now`、`DateTime.Today`（實測 `Kind` 亦為 `Local`）、
+UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 
 #### guard 行為：fail fast
 
@@ -220,7 +304,7 @@ Oracle `TIMESTAMP`、MySQL `DATETIME`、SQLite `TEXT`），時區轉換不交給
 #### guard 掛載位置
 
 **掛在 Connector 進出點，不掛在序列化入口**——理由同 D4：in-process 走 `Plain` 時沒有序列化邊界，
-`Kind=Local` 可以毫無阻攔地一路存活到 DB。
+違規值可以毫無阻攔地一路存活到 DB。
 
 #### guard 不受 D10 短路影響
 
@@ -229,8 +313,10 @@ Oracle `TIMESTAMP`、MySQL `DATETIME`、SQLite `TEXT`），時區轉換不交給
 
 #### 其他
 
-- 補「三種 Kind × 兩種格式 × 兩個時區」的 round-trip 測試釘住此不變式。
-- DB 讀出的 instant 值統一 `SpecifyKind(Utc)`；日曆日語意欄位維持 `Unspecified`，不套 UTC。
+- 補 round-trip 測試釘住兩條不變式：DTO 側「三種 Kind × 兩種格式 × 兩個時區」；
+  `DataSet` 側「四種 `DateTimeMode` × 三種 wire 形式（naive / 帶偏移 / `Z`）× 兩個時區」，
+  **XML 必須納入**（它是唯一會加偏移的格式）。
+- DB 讀出的時間點值統一 `SpecifyKind(Utc)`；日曆日語意欄位維持 `Unspecified`，不套 UTC。
 
 > 這條比本 plan 其他任何一條都更容易在日後被無聲破壞，測試優先級最高。
 
@@ -301,7 +387,7 @@ Oracle `TIMESTAMP`、MySQL `DATETIME`、SQLite `TEXT`），時區轉換不交給
 | 階段 | 要點 |
 |------|------|
 | **P0** | ✅ 已完成。`docs/adr/adr-032-datetime-timezone.md`（含 D5 否決理由、D9 / D11 的前提條件、`Time` 未來歸屬）；trace 三處與定義檔七處 `CreateTime` 改 UTC。實作期查證更正了 D8 的論述（見該條）。 |
-| **P1** | **兩步且順序不可顛倒。**<br>**(a) 正本清源**：清掉框架自身四處 `Local` 來源——`FormRowDefaults.cs:78`、`FieldDbTypeExtensions.cs:28`、`DynamicExpressoEvaluator.cs:46` 的 `Now()`、`TraceEvent` / `TraceContext`（後者屬 D8）。<br>**(b) 立不變式**：D6 guard（Connector 進出點、fail fast、不受短路影響）+ Kind round-trip 測試（**全 plan 最高優先**）；Repository 邊界寫入正規化與讀出 `SpecifyKind(Utc)`。<br>先開 guard 會當場炸在自家程式碼上。 |
+| **P1** | **兩步且順序不可顛倒。**<br>**(a) 正本清源**：三處 `DateTime.Now` / `Today`（`FormRowDefaults.cs:78`、`FieldDbTypeExtensions.cs:28`、`DynamicExpressoEvaluator.cs:45-46`）。依實測 1.4(a)，這三處的問題**是數值不是 `Kind`**——寫進 `DataRow` 後 Kind 會被 `DataColumn` 抹平，但本地牆上時間的數值會原封留下。<br>**另加**：稽核所有**非 `AddColumn` 路徑**產出的 `DataTable`（`DbDataAdapter.Fill`、`DataSet.ReadXml`、BO 自寫 SQL），確認 `DateTimeMode` 為 `Unspecified`（實測 1.4(e)）。<br>**(b) 立不變式**：D6 兩條 guard（Connector 進出點、fail fast、不受短路影響）+ round-trip 測試（**全 plan 最高優先**）；Repository 邊界寫入正規化與讀出 `SpecifyKind(Utc)`。 |
 | **P2** | D4 Connector 雙向轉換：進出點掛載、轉換前深拷貝 `DataSet`、忽略 `Kind`、`FilterCondition` 依值型別（`DateOnly` / `DateTime`）判斷；登入時填充 `SessionInfo.TimeZone`（使用者設定 / 公司預設 / client 回報）。 |
 | **P3** | D10 短路；跨 DB（SQL Server / PostgreSQL / SQLite / MySQL / Oracle）round-trip 測試；跨時區測試（`TZ` 環境變數驅動）；**行動端 / WASM 的 tz 可用性驗證**（見 §4）；**驗證單一時區部署行為零變化**的回歸防護；重建 seed 與 demo 資料（依 D11）。 |
 
@@ -309,7 +395,11 @@ Oracle `TIMESTAMP`、MySQL `DATETIME`、SQLite `TEXT`），時區轉換不交給
 
 ## 4. 主要風險
 
-- **`Kind=Local` 混入 wire**（D6）——兩種序列化格式語意分岔且可跨日，是本設計最脆弱的一環。
+- **`DataColumn.DateTimeMode` 落回 .NET 預設 `UnspecifiedLocal`**（D6）——**新發現的最大破口**。
+  `AddColumn` 已設 `Unspecified`，但 `DbDataAdapter.Fill` / `DataSet.ReadXml` / BO 自寫 SQL 等
+  路徑產出的欄位會拿到預設值，XML 寫出即帶 `+08:00`、跨區讀回跨日（實測 1.4(c)(e)）。
+  症狀只在 XML 路徑（稽核 DiffGram）且只在跨區時出現，MessagePack / JSON 完全正常——極難發現。
+- **`Kind=Local` 混入 DTO 屬性**（D6）——兩種序列化格式語意分岔且可跨日。
   guard 改為 fail fast 後失敗模式從「靜默錯資料」變為「當場例外」，但 guard 本身被移除 / 繞過的風險仍在。
 - **日曆日誤轉**（D4）——標記方案**不能保證欄位一定有標記**：BO 自寫 SQL 未以 `SetDateColumns`
   宣告的日曆日欄位仍會被當 Instant 轉換。測試需專門覆蓋跨日邊界，文件須明確載明 BO 作者的標記責任。
