@@ -124,7 +124,7 @@ wire 序列化有 MessagePack 與 JSON 兩份平行實作，且分居不同套�
 
 - **正向**：
   - schema-less payload 自我描述，報表 / AnyCode / JS client 不需另取 schema 即可判別日曆日欄位。
-  - 跨時區設計（`plan-datetime-timezone.md` 的 D4）取得可靠的「不該轉換」判斷依據。
+  - 跨時區設計（[ADR-032](adr-032-datetime-timezone.md) 的 D4）取得可靠的「不該轉換」判斷依據。
   - 順帶修好 `Text`/`String`、`Currency`/`Decimal`、`AutoIncrement`/`Integer` 三組同樣被抹平的標記。
     因 `ToType` 對這些值的結果不變，用戶端重建的 CLR 型別完全不受影響。
   - 既有 client 不受影響：payload 結構與大小不變，只有 `FieldDbType` 的值變準確。

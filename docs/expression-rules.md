@@ -18,7 +18,22 @@
 
 - **變數 = 欄位名**：直接寫欄位名即可，如 `unit_price * qty`。同列所有欄位都可用。
 - **運算子**：C# 語法子集（`+ - * /`、`> >= < <= == !=`、`&& || !`、三元 `? :`、字串 `==`）。
-- **可用函式/型別**（沙箱白名單）：`Math`（`Math.Round`、`Math.Abs`…）、`Today()`、`Now()`、`IsNullOrEmpty(s)`、`IsNullOrWhiteSpace(s)`、`Guid`（如 `customer_rowid != Guid.Empty`）。
+- **可用函式/型別**（沙箱白名單）：`Math`（`Math.Round`、`Math.Abs`…）、`Today()`、`Now()`、`UtcNow()`、`IsNullOrEmpty(s)`、`IsNullOrWhiteSpace(s)`、`Guid`（如 `customer_rowid != Guid.Empty`）。
+
+  **時間函式的語意**（見 [ADR-032](adr/adr-032-datetime-timezone.md)）：
+
+  | 函式 | 回傳 | 基準 |
+  |------|------|------|
+  | `Today()` | `DateOnly` | **使用者所在時區**的今天。請假日期預設當天這類用途要的就是它——使用者在紐約登打台北公司的假單，仍會拿到台北的日期 |
+  | `Now()` | `DateTime`（`Kind` 為 `Unspecified`） | 同一時區的當下 |
+  | `UtcNow()` | `DateTime`（`Kind` 為 `Unspecified`） | UTC 當下，供需要明示 UTC 意圖時使用 |
+
+  `Today()` 回傳 `DateOnly` 而非 `DateTime`：日期在框架中一律以 `DateOnly` 表達，`DataSet`
+  儲存格是唯一例外（`DataColumn` 只能以 `DateTime` 承載日曆日）。把 `Today()` 寫進 `Date` 或
+  `DateTime` 欄位都可以，框架會在寫入儲存格時完成轉換。
+
+  > **`Now()` / `UtcNow()` 寫進 `DateTime` 欄位時請自行確認語意。** 於用戶端求值的運算式，
+  > 其結果送出時仍會被視為使用者時區值而換算一次；框架不會、也無法判斷某個儲存格是運算式填的。
 - **禁用**：反射、IO、任意型別載入——未在白名單的識別字會在解析期直接報錯（設定錯誤）。
 - **空值**：空欄（`DBNull`）以型別預設值代入（數值 0、字串空字串、`Guid.Empty`…），所以 `unit_price * qty` 遇空值算 0 而不會出錯。
 

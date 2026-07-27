@@ -41,6 +41,7 @@ This directory contains the public-facing developer documentation for the Bee.NE
 | [API Method Reference](api-method-reference.md) | Single-page table of every BO method exposed through JSON-RPC, with `[ApiAccessControl]` settings + purpose |
 | [FormMap](formmap.md) | Bee.Db's data access pattern, dynamically generating SQL from FormSchema |
 | [Calendar-Day vs Instant Column Semantics](date-semantics.md) | How a `FieldDbType.Date` column describes itself on the wire, reading it from .NET and JS/TS, and declaring it for hand-written SQL |
+| [Time Zones](datetime-timezone.md) | UTC storage, where conversion happens, configuring a user's zone, and what hand-written SQL and non-.NET clients must do |
 
 ---
 
@@ -48,6 +49,6 @@ This directory contains the public-facing developer documentation for the Bee.NE
 
 These folders are excluded from this README's main listing; consult them directly when needed:
 
-- **`adr/`** — Architecture Decision Records (ADR-001 through ADR-015+); design decisions with their rationale
+- **`adr/`** — Architecture Decision Records; design decisions with their rationale
 - **`plans/`** — Design / planning documents for in-progress or completed initiatives. These are point-in-time working documents, not reference material: an older plan may no longer describe current behaviour. Nothing outside this folder links into it — treat the documents above as the source of truth.
 - **`repo-ops/`** — Operational documentation for this repository (CI / branch protection); not relevant to framework users

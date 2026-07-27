@@ -4,8 +4,7 @@
 
 已採納（2026-07-25）
 
-> P0–P3 已全數實作（2026-07-26）。執行細節與實作期推翻的假設見
-> `docs/plans/plan-datetime-timezone.md`。
+> P0–P3 已全數實作（2026-07-26）。消費端使用方式見 [datetime-timezone.md](../datetime-timezone.md)。
 >
 > 唯一未執行的驗證：行動端 / WASM 的**實機**時區可用性。各 head 已釘住
 > `InvariantGlobalization=false` 與 `InvariantTimezone=false`，但那是設定護欄而非驗證——

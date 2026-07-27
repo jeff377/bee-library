@@ -10,6 +10,8 @@
 本文說明改了什麼、你不必動手就能得到什麼，以及唯一需要自行宣告語意的情況。
 
 > 設計理由與背後的實測數據：[ADR-031](adr/adr-031-calendar-day-column-semantics.md)。
+> 時間點（相對於日曆日）如何在 UTC 與使用者時區之間換算：
+> [datetime-timezone.zh-TW.md](datetime-timezone.zh-TW.md)。
 
 ---
 

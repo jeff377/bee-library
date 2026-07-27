@@ -285,7 +285,10 @@ export interface DataTableColumn {
   /**
    * The declared FieldDbType, e.g. 'String' | 'Date' | 'DateTime' | 'Decimal' | 'Guid'.
    * 'Date' means a calendar day — render it without a time of day and do NOT shift it
-   * through the browser timezone. See docs/date-semantics.md.
+   * through the browser timezone.
+   * 'DateTime' is an instant and is always UTC on the wire: convert it for display, and
+   * convert back to UTC before sending it.
+   * See docs/date-semantics.md and docs/datetime-timezone.md.
    */
   type: string;
   allowNull: boolean;

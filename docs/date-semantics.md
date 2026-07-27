@@ -12,6 +12,8 @@ This document covers what changed, what you get for free, and the one case where
 declare the semantics yourself.
 
 > Design rationale and the measurements behind it: [ADR-031](adr/adr-031-calendar-day-column-semantics.md).
+> How instants (as opposed to calendar days) move between UTC and a user's zone:
+> [datetime-timezone.md](datetime-timezone.md).
 
 ---
 

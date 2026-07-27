@@ -41,6 +41,7 @@
 | [API 方法參考](api-method-reference.zh-TW.md) | 透過 JSON-RPC 對外公開的所有 BO 方法單頁總覽，含 `[ApiAccessControl]` 設定與用途 |
 | [FormMap](formmap.zh-TW.md) | Bee.Db 採用的資料庫存取模式，以 FormSchema 為單位動態產生 SQL |
 | [日曆日與時間點的欄位語意](date-semantics.zh-TW.md) | `FieldDbType.Date` 欄位如何在 wire 上自我描述、.NET 與 JS/TS 端如何讀取，以及自寫 SQL 時如何宣告 |
+| [時區處理](datetime-timezone.zh-TW.md) | UTC 儲存、轉換發生在哪裡、使用者時區的設定，以及自寫 SQL 與非 .NET 用戶端該做什麼 |
 
 ---
 
@@ -48,6 +49,6 @@
 
 以下子目錄不列入本 README 的主清單，視需要直接參閱：
 
-- **`adr/`** — 架構決策紀錄（ADR-001 至 ADR-015+），記錄重大設計決策的背景與理由
+- **`adr/`** — 架構決策紀錄，記錄重大設計決策的背景與理由
 - **`plans/`** — 設計階段或已完成初始計畫的設計文件。屬**階段性工作文件、非參考資料**：舊 plan 未必符合現行行為。本目錄外的文件一律不連結進來，請以上方各文件為準
 - **`repo-ops/`** — 本 repo 的維運文件（CI / 分支保護），與框架使用者無關
