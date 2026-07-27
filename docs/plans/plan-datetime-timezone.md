@@ -45,7 +45,7 @@
 | 面向 | 現況 | 影響 |
 |------|------|------|
 | `SessionInfo.TimeZone` | 欄位已存在（`SessionInfo.cs:73`，預設 `Asia/Taipei`，IANA 格式），但全 repo 無任何讀寫 | 掛載點現成、休眠中，可直接沿用 |
-| `DbCommandSpec` 參數層 | SQL Server `DateTime` → `datetime2(7)`；PG / Oracle 不變 | 只解**精度**，與時區正交 |
+| `DbCommandSpec` 參數層 | SQL Server `DateTime` → `datetime2(7)`；**PostgreSQL 亦升為 `DateTime2` 並清除 `Kind`**（2026-07-26 修，見 §1.5）；MySQL / SQLite / Oracle 不變 | SQL Server 那條解**精度**；PostgreSQL 那條解**時區**，是 D1 在參數層的落實 |
 | `FieldDbType` | 刻意區分 `Date` / `DateTime`，補足 `DataColumn` 只能以 `DateTime` 承載日曆日的表達力缺口 | 「日曆日 vs 時間點」已可區分，且**這正是框架提供的全部兩種時間語意**（見 D5） |
 | `FilterCondition.Value` | 型別為 `object?`（`[Key(102)]`，走 typeless），`DateTime` 走同一條 wire | 查詢條件的時間值同樣需要正規化（見 D4） |
 | 日曆日 wire 標記 | **已完成**：`FieldDbType` 標記由定義層貫通至 `DataColumn.ExtendedProperties` 與 `SerializableDataColumn.DataType`，MessagePack / JSON 兩份 wire 實作皆承接 | Connector 可完全不依賴 `FormSchema` 判斷欄位語意 |
@@ -142,6 +142,35 @@ msgpack 的 timestamp 擴充儲存的是絕對瞬間，因此 formatter 在寫�
 但 `DbDataAdapter.Fill` 自動建欄、`DataSet.ReadXml` 推斷 schema 等路徑產出的 `DataColumn`
 拿到的是 .NET 預設 `UnspecifiedLocal`，**XML 寫出就會帶 `+08:00`、跨區讀回跨日**。
 稽核的 `FormBusinessObject.Audit.cs:56`（`WriteXml(DiffGram)`）正是走 XML。
+
+### 1.5 PostgreSQL 參數層曾違反 D1（2026-07-26 於 P3 驗證時發現並修正）
+
+D1 說「不採用 `timestamptz`，時區轉換不交給資料庫」。schema 產出的**欄位**確實是
+`timestamp without time zone`（實測 `information_schema` 確認），但**參數**不是：
+
+| 情況 | 修正前的行為 |
+|------|-------------|
+| inline `{0}` 參數 | 完全不設 `DbType`，由 provider 從 CLR 值推斷 → Npgsql 推成 `timestamptz` |
+| schema 驅動的參數 | 設 `DbType.DateTime` → **Npgsql 也映射到 `timestamptz`** |
+
+兩條路徑最終都送 `timestamptz`。`Kind=Unspecified` 會被 Npgsql 直接拒絕（拋
+`ArgumentException`）；`Kind=Utc` 則被接受，再由 PostgreSQL 在寫入 `timestamp` 欄位時
+**依 server 時區重新表達**——正是 D1 要把資料庫排除在外的那件事。server 時區為 UTC 時無異狀，
+換一台就會偏移。
+
+修正分兩處，且**兩者缺一不可**（Npgsql 對 `Kind` 與目標型別的檢查是雙向嚴格的）：
+
+1. `NormalizeDbType`：PostgreSQL 的 `DbType.DateTime` → `DbType.DateTime2`
+   （Npgsql 對 `timestamp without time zone` 的拼法）。與 SQL Server 那條手法相同、動機不同
+   ——那條解精度，這條解時區。
+2. `NormalizeParameterValue`：PostgreSQL 的 `DateTime` 一律 `SpecifyKind(Unspecified)`。
+   改用 `timestamp` 後，Npgsql 反過來拒絕 `Kind=Utc`；而值本身依 D1 已是 UTC、`Kind` 依 D6
+   本就不承載可信資訊，故在此清除，不必要求每個呼叫端各自記得。
+
+> **為何直到 P3 才發現**：症狀只在「PostgreSQL + server 時區非 UTC」時出現，且是靜默偏移；
+> 本機與 CI 的 PG 容器都跑 UTC。是 P3 新增的跨 provider round-trip 測試（刻意選 UTC 23:30
+> 這種任一次換算都會跨日的值）把它逼出來的。
+
 
 ---
 

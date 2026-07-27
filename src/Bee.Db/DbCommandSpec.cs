@@ -154,7 +154,14 @@ namespace Bee.Db
                     ? spec.Name
                     : parameterPrefix + spec.Name;
                 p.Value = NormalizeParameterValue(databaseType, spec.Value) ?? DBNull.Value;
-                if (spec.DbType.HasValue) p.DbType = NormalizeDbType(databaseType, spec.DbType.Value);
+                // An inline `{0}` parameter carries no DbType, leaving the provider to infer one from
+                // the CLR value — and Npgsql infers `timestamptz` for DateTime, which rejects
+                // Kind=Unspecified outright and would silently apply the server's zone to a Utc one.
+                // Naming DbType.DateTime pins it to the naive column type this framework stores in
+                // (ADR-032 D1), and routes SQL Server through the datetime2 upgrade below so an
+                // inline value keeps the same sub-millisecond precision a schema-driven one does.
+                var dbType = spec.DbType ?? (spec.Value is DateTime ? DbType.DateTime : null);
+                if (dbType.HasValue) p.DbType = NormalizeDbType(databaseType, dbType.Value);
                 if (spec.Size.HasValue && spec.Size.Value > 0) p.Size = spec.Size.Value;
                 p.IsNullable = spec.IsNullable;
                 if (!string.IsNullOrEmpty(spec.SourceColumn))
@@ -178,6 +185,13 @@ namespace Bee.Db
         {
             if (databaseType == DatabaseType.Oracle && value is Guid guid)
                 return guid.ToByteArray();
+            // Npgsql validates DateTimeKind against the target PostgreSQL type and refuses both
+            // mismatches: `timestamptz` demands Utc, `timestamp` demands anything but. Since every
+            // DateTime parameter is sent as `timestamp` (see NormalizeDbType) and its value is
+            // already UTC by ADR-032 D1, the Kind carries no information worth defending — D6 says
+            // as much — so it is cleared here rather than making every caller remember to.
+            if (databaseType == DatabaseType.PostgreSQL && value is DateTime dateTime)
+                return DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified);
             return value;
         }
 
@@ -201,6 +215,13 @@ namespace Bee.Db
             if (databaseType == DatabaseType.Oracle && dbType == DbType.Guid)
                 return DbType.Binary;
             if (databaseType == DatabaseType.SQLServer && dbType == DbType.DateTime)
+                return DbType.DateTime2;
+            // Npgsql maps DbType.DateTime to `timestamptz`, which refuses a Kind=Unspecified value
+            // outright and, for a Kind=Utc one, lets PostgreSQL re-express it in the server's zone on
+            // the way into the `timestamp` column the schema actually declares. Either way the
+            // database would be deciding the zone — the one thing ADR-032 D1 keeps it out of.
+            // DbType.DateTime2 is Npgsql's spelling of `timestamp without time zone`.
+            if (databaseType == DatabaseType.PostgreSQL && dbType == DbType.DateTime)
                 return DbType.DateTime2;
             return dbType;
         }

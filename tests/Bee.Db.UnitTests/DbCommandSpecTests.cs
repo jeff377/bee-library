@@ -434,14 +434,24 @@ namespace Bee.Db.UnitTests
         }
 
         [Theory]
-        [InlineData(DatabaseType.PostgreSQL)]
         [InlineData(DatabaseType.MySQL)]
         [InlineData(DatabaseType.SQLite)]
         [InlineData(DatabaseType.Oracle)]
-        [DisplayName("NormalizeDbType：非 SQL Server DB 上 DbType.DateTime 應原值傳回（避免跨 provider 回歸）")]
-        public void NormalizeDbType_NonSqlServerDateTime_PassThrough(DatabaseType dbType)
+        [DisplayName("NormalizeDbType：MySQL / SQLite / Oracle 上 DbType.DateTime 應原值傳回（避免跨 provider 回歸）")]
+        public void NormalizeDbType_UnaffectedProvidersDateTime_PassThrough(DatabaseType dbType)
         {
             Assert.Equal(DbType.DateTime, DbCommandSpec.NormalizeDbType(dbType, DbType.DateTime));
+        }
+
+        [Theory]
+        [InlineData(DatabaseType.SQLServer)]
+        [InlineData(DatabaseType.PostgreSQL)]
+        [DisplayName("NormalizeDbType：SQL Server 與 PostgreSQL 的 DbType.DateTime 應升為 DateTime2")]
+        public void NormalizeDbType_DateTime_UpgradedToDateTime2(DatabaseType dbType)
+        {
+            // 兩者升級的動機不同但手法相同：SQL Server 是為了精度（datetime → datetime2(7)），
+            // PostgreSQL 是為了避開 timestamptz 的隱式時區換算（ADR-032 D1）。
+            Assert.Equal(DbType.DateTime2, DbCommandSpec.NormalizeDbType(dbType, DbType.DateTime));
         }
 
         [Theory]
