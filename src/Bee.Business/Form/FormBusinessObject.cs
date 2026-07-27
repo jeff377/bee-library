@@ -174,7 +174,10 @@ namespace Bee.Business.Form
             Authorize(PermissionAction.Read);
 
             var repository = CreateDataFormRepository(ProgId);
-            var dataSet = repository.GetNewData();
+            // The user's zone travels as an argument rather than being resolved from ambient state:
+            // this code path is shared with the client, and a helper that reads its zone from
+            // somewhere invisible behaves differently on each side (ADR-032 D12).
+            var dataSet = repository.GetNewData(SessionInfoService.Get(AccessToken).TimeZone);
 
             return new GetNewDataResult { DataSet = dataSet };
         }

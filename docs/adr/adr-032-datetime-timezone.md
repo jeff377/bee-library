@@ -218,6 +218,37 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 > 送出時仍會被 Connector 當成使用者時區值再轉一次。此處不設 guard——Connector 無從得知某儲存格
 > 是運算式填的。因 `DateTime` 運算式罕見而接受，作者需自行確認語意。
 
+### D13：日期一律 `DateOnly`，`DataSet` 是唯一例外；時區一律以引數傳遞
+
+**兩條規則，一起構成日期處理的形狀。**
+
+#### (a) 日期的載體
+
+日期一律以 `DateOnly` 表達。**唯一例外是 `DataSet`**——`DataColumn` 透過 `IConvertible` 強制
+轉型，而 `DateOnly` 未實作它（實測：`row["d"] = new DateOnly(...)` 對 `DateTime` 欄位擲
+`ArgumentException`），故日曆日欄位維持 `typeof(DateTime)`，「日期時間 vs 日期」的區別由
+`FieldDbType` 標記承載（ADR-031 已建立此機制）。
+
+轉換發生在**寫進 `DataSet` 的那一刻**，而不是讓整個框架為了一個消費端改說 `DateTime`。
+
+#### (b) 時區的傳遞
+
+**前後端共用的日期時間函式，時區一律以引數傳遞，不從 ambient 狀態解析。**
+
+理由不只是「乾淨」，是這類程式碼**兩側都會跑**：從看不見的地方讀時區的 helper，在伺服端與
+用戶端會有不同行為，而那正是最難察覺的分歧。具體到本框架：
+
+- 伺服端**沒有** ambient「當前使用者」——`ISessionInfoService` 以 access token 為鍵，
+  並行服務多位使用者時沒有單一 session 可查。
+- `IExpressionEvaluator` 註冊為 **singleton**，任何「建構時固定時區」的設計都表達不出
+  per-user 時區。
+- 傳 id 而非傳 `IUserInfo`，讓 `FrameworkClock` 得以留在 `Bee.Base`（在身分模型之下）；
+  持有 `IUserInfo` 的呼叫端傳 `.TimeZone` 即可，介面照樣發揮作用。
+
+**例外**：`FieldDbTypeExtensions.GetDefaultValue` 無使用者情境可傳——`AddColumn` 與
+`DbParameterSpecCollection` 都是為 NOT NULL 欄位補值，屬**資料完整性後備**而非使用者讀到的
+值，故以 UTC 產生。使用者看得到的新列預設值走 `FormRowDefaults`，該處收時區引數。
+
 ### D9：cache-notify 刻意不 UTC 化
 
 `sys_update_time` 的 high-water mark **只與自己比較**，UTC 化無實質效益。

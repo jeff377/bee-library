@@ -32,7 +32,7 @@ namespace Bee.Api.Core.UnitTests.Form
             PagingOptions? paging = null)
             => throw new NotSupportedException();
 
-        public DataSet GetNewData()
+        public DataSet GetNewData(string timeZoneId = "")
         {
             GetNewDataCalled = true;
             return GetNewDataResult ?? new DataSet();

@@ -37,7 +37,11 @@ namespace Bee.Repository.Abstractions.Form
         /// <see cref="DataRowState.Added"/> state with a server-issued
         /// <c>sys_rowid</c>; detail tables carry their full schema but no rows.
         /// </summary>
-        DataSet GetNewData();
+        /// <param name="timeZoneId">
+        /// The requesting user's IANA time zone id, used to seed date defaults on the user's own day
+        /// (ADR-032 D12). Blank means UTC.
+        /// </param>
+        DataSet GetNewData(string timeZoneId = "");
 
         /// <summary>
         /// Loads the master row (and its details) by <paramref name="rowId"/>.

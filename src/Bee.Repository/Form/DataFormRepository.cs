@@ -172,7 +172,7 @@ namespace Bee.Repository.Form
         }
 
         /// <inheritdoc/>
-        public DataSet GetNewData()
+        public DataSet GetNewData(string timeZoneId = "")
         {
             var dataSet = new DataSet(ProgId);
 
@@ -188,7 +188,7 @@ namespace Bee.Repository.Form
             var masterRow = masterDataTable.NewRow();
             // Schema-driven non-null seeding (fresh sys_rowid + type defaults), then the
             // FormSchema field defaults (e.g. a status of "Draft") which take precedence.
-            FormRowDefaults.Apply(masterTable, masterRow);
+            FormRowDefaults.Apply(masterTable, masterRow, null, timeZoneId);
             ApplyMasterDefaults(masterRow, masterTable);
             masterDataTable.Rows.Add(masterRow);
 

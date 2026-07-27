@@ -171,7 +171,7 @@ namespace Bee.Api.Core.UnitTests.Form
                 return new DataFormListResult { Table = _table };
             }
 
-            public DataSet GetNewData() => throw new NotSupportedException();
+            public DataSet GetNewData(string timeZoneId = "") => throw new NotSupportedException();
 
             public DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null) => throw new NotSupportedException();
 
