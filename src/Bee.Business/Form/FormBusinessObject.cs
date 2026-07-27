@@ -176,8 +176,10 @@ namespace Bee.Business.Form
             var repository = CreateDataFormRepository(ProgId);
             // The user's zone travels as an argument rather than being resolved from ambient state:
             // this code path is shared with the client, and a helper that reads its zone from
-            // somewhere invisible behaves differently on each side (ADR-032 D12).
-            var dataSet = repository.GetNewData(SessionInfoService.Get(AccessToken).TimeZone);
+            // somewhere invisible behaves differently on each side (ADR-032 D13).
+            // `Get` yields null when the token has no session — blank then means UTC, which is the
+            // defined fallback; adopting the server machine's zone instead is what D4 rules out.
+            var dataSet = repository.GetNewData(ResolveSessionTimeZone());
 
             return new GetNewDataResult { DataSet = dataSet };
         }
@@ -385,6 +387,13 @@ namespace Bee.Business.Form
                 UnitSettings = DefineAccess.GetUnitSettings(),
             };
         }
+
+        /// <summary>
+        /// Resolves the requesting user's IANA time zone id, or an empty string when the token has
+        /// no session (meaning UTC).
+        /// </summary>
+        private string ResolveSessionTimeZone()
+            => SessionInfoService.Get(AccessToken)?.TimeZone ?? string.Empty;
 
         /// <summary>
         /// Resolves the current session's <see cref="CompanyInfo"/>, or null when no company is bound.
