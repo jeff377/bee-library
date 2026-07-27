@@ -259,6 +259,23 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 > 為 server local，而 **SQLite `CURRENT_TIMESTAMP` 是 UTC**。此處刻意不統一；
 > 日後若有人「順手統一」，會踩到這個差異。
 
+### D9b：資料庫端的欄位 `DEFAULT` 刻意維持 server 本地時鐘
+
+各 dialect 為 `Date` / `DateTime` 欄位產生的 `DEFAULT` 沿用各自的本地時鐘函式
+（`getdate()`、`CURRENT_TIMESTAMP`、`CURRENT_TIMESTAMP(6)`、`SYSTIMESTAMP`；SQLite 的
+`CURRENT_TIMESTAMP` 本就是 UTC）。**這與 D1 的表面字義不符，是刻意保留的例外。**
+
+理由是資料庫端**不可能取得使用者資訊**：D12 要求使用者看得到的時間以其時區為基準，而
+`DEFAULT` 在資料庫內求值，沒有 session、沒有使用者。改成 UTC 形式只是把一個不符 D12 的基準
+換成另一個，卻要動 DDL 並牽動既有資料表的 schema 比對。
+
+**這條路徑實務上不會被框架走到**：框架的 INSERT 透過 `DbParameterSpecCollection` 為每個
+NOT NULL 欄位供值，`DEFAULT` 只在「呼叫端自寫 INSERT 且省略該欄」時生效。
+
+> **唯一會實際寫入資料的情形**：`ALTER TABLE ADD COLUMN` 對既有資料列的回填，會把 server
+> 本地時間寫進該欄。若該欄語意上是使用者可見的時間點，回填值需另行修正——這不是框架能代勞的，
+> 因為既有列並不知道自己屬於哪個使用者。
+
 ### D10：轉換永遠執行，同時區時為恆等轉換
 
 **「零成本」指的是複雜度成本，不是執行成本。** 轉換管線一律運作，不因部署設定而繞過；
