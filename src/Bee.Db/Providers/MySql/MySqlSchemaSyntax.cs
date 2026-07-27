@@ -47,10 +47,13 @@ namespace Bee.Db.Providers.MySql
                 case FieldDbType.Currency:
                     return "0";
                 case FieldDbType.Date:
-                    // MySQL 8.0+ in strict mode does not accept `CURRENT_TIMESTAMP` as the default
-                    // value for a `DATE` column. The parenthesised expression form is required for
-                    // non-literal `DATE` defaults.
-                    return "(UTC_DATE)";
+                    // Parenthesised because MySQL 8.0.13+ requires the expression form for any
+                    // non-literal default other than `CURRENT_TIMESTAMP`. The inner `()` matters
+                    // too: INFORMATION_SCHEMA reports the stored default as `utc_date()`, and the
+                    // schema comparison strips one layer of outer parentheses before comparing —
+                    // so emitting `(UTC_DATE)` would never match what is read back, and every
+                    // schema check would re-emit the same ALTER.
+                    return "(UTC_DATE())";
                 case FieldDbType.DateTime:
                     // The framework stores every instant in UTC (ADR-032 D1), and this DEFAULT is
                     // the path that writes when a hand-written INSERT omits the column or an
@@ -59,7 +62,10 @@ namespace Bee.Db.Providers.MySql
                     // form is used. (This is about the storage basis, not the user's zone — the
                     // database has no session and cannot know the user; user-facing defaults come
                     // from `FormRowDefaults`, see D12.)
-                    return "UTC_TIMESTAMP(6)";
+                    // Parenthesised: MySQL 8.0.13+ accepts a bare function as a DEFAULT only for
+                    // `CURRENT_TIMESTAMP`; any other expression — `UTC_TIMESTAMP(6)` included — is a
+                    // syntax error unless wrapped, the same rule the `DATE` case above already hits.
+                    return "(UTC_TIMESTAMP(6))";
                 case FieldDbType.Guid:
                     return "(UUID())";
                 default:

@@ -99,7 +99,10 @@ namespace Bee.Db.UnitTests
         [InlineData("int", "42", "0", "42")]
         [InlineData("varchar", "hello", "", "hello")]
         [InlineData("varchar", "  world  ", "", "world")]
-        [InlineData("datetime", "UTC_TIMESTAMP(6)", "UTC_TIMESTAMP(6)", "")]
+        // 第二欄是 INFORMATION_SCHEMA 實際回報的形式：MySQL 剝掉外層括號並轉小寫，
+        // 第三欄則是框架發出的字面。兩者不同正是這個 parser 存在的理由。
+        [InlineData("datetime", "utc_timestamp(6)", "(UTC_TIMESTAMP(6))", "")]
+        [InlineData("date", "utc_date()", "(UTC_DATE())", "")]
         [InlineData("char", "uuid()", "(UUID())", "")]
         [InlineData("char", "UUID()", "(UUID())", "")]
         [InlineData("bigint", "100", "0", "100")]
