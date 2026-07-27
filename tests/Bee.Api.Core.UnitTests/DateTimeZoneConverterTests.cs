@@ -210,6 +210,21 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
+        [DisplayName("使用者時區為 UTC 時退化為恆等轉換——值逐 tick 不變")]
+        public void UtcUser_ConversionIsIdentity()
+        {
+            // D10 把「零成本」界定為複雜度而非執行成本：管線照跑，只是不改變值。
+            // 這條釘住那個「不改變」，避免日後有人在轉換路徑加上會動到值的處理。
+            var converted = DateTimeZoneConverter.UtcToUser(BuildTableWithRow(), "UTC");
+            var back = DateTimeZoneConverter.UserToUtc(converted, "UTC");
+
+            Assert.NotNull(converted);
+            Assert.NotNull(back);
+            Assert.Equal(Utc9Am.Ticks, ((DateTime)converted.Rows[0]["created_at"]).Ticks);
+            Assert.Equal(Utc9Am.Ticks, ((DateTime)back.Rows[0]["created_at"]).Ticks);
+        }
+
+        [Fact]
         [DisplayName("無法解析的時區應擲例外，不得靜默略過轉換")]
         public void Convert_UnresolvableZone_Throws()
         {

@@ -545,18 +545,22 @@ namespace Bee.Tests.Shared
         {
             switch (dbType)
             {
+                // The timestamp expressions are all the UTC-returning form. Each provider's default
+                // "now" reads the server's local clock — except SQLite's, which is already UTC — so
+                // seeding with them would put five different bases into columns ADR-032 D1 defines
+                // as UTC, and the resulting drift would look like a framework bug rather than seed data.
                 case DatabaseType.SQLServer:
-                    return ("NEWID()", "GETDATE()");
+                    return ("NEWID()", "GETUTCDATE()");
                 case DatabaseType.PostgreSQL:
-                    return ("gen_random_uuid()", "CURRENT_TIMESTAMP");
+                    return ("gen_random_uuid()", "(NOW() AT TIME ZONE 'UTC')");
                 case DatabaseType.SQLite:
                     // SQLite has no native UUID generator; hex(randomblob(16)) is unique enough
-                    // for seed data even though it isn't a v4 UUID.
+                    // for seed data even though it isn't a v4 UUID. Its CURRENT_TIMESTAMP is UTC.
                     return ("hex(randomblob(16))", "CURRENT_TIMESTAMP");
                 case DatabaseType.MySQL:
-                    return ("UUID()", "CURRENT_TIMESTAMP(6)");
+                    return ("UUID()", "UTC_TIMESTAMP(6)");
                 case DatabaseType.Oracle:
-                    return ("SYS_GUID()", "SYSTIMESTAMP");
+                    return ("SYS_GUID()", "SYS_EXTRACT_UTC(SYSTIMESTAMP)");
                 default:
                     // NOTE: when adding a new DatabaseType, add a case here as well —
                     // otherwise SharedDatabaseState will throw at fixture init time

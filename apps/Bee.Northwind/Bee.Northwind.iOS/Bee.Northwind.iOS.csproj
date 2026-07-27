@@ -26,4 +26,14 @@
     <ProjectReference Include="..\Bee.Northwind.UI\Bee.Northwind.UI.csproj" />
   </ItemGroup>
 
+  <!-- Time zone data must ship: the framework converts every instant between UTC and the user's
+       zone through TimeZoneInfo (ADR-032 D4), so a build without tz data fails at the first
+       conversion — and on this head that is every screen showing a date. Invariant globalization
+       would also strip it. Both are the SDK defaults today; they are pinned because the failure is
+       a runtime exception on device, which no desktop build or test can catch. -->
+  <PropertyGroup>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <InvariantTimezone>false</InvariantTimezone>
+  </PropertyGroup>
+
 </Project>
