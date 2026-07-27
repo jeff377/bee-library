@@ -93,7 +93,14 @@ namespace Bee.Db.Providers.SqlServer
                     return "0";
                 case FieldDbType.Date:
                 case FieldDbType.DateTime:
-                    return "getdate()";
+                    // The framework stores every instant in UTC (ADR-032 D1), and this DEFAULT is
+                    // the path that writes when a hand-written INSERT omits the column or an
+                    // ALTER TABLE ADD COLUMN backfills existing rows. The server's local clock
+                    // would put a non-UTC value into a column defined as UTC, so the UTC-returning
+                    // form is used. (This is about the storage basis, not the user's zone — the
+                    // database has no session and cannot know the user; user-facing defaults come
+                    // from `FormRowDefaults`, see D12.)
+                    return "getutcdate()";
                 case FieldDbType.Guid:
                     return "newid()";
                 default:

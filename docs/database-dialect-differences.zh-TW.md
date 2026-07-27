@@ -50,17 +50,16 @@ Bee.NET 由單一份 `TableSchema` 定義產生 DDL（CREATE TABLE / ALTER TABLE
 |---------------|-----------|------------|-------|--------|--------|
 | `String` / `Text` | `N''` | `''` | `''` | *（nullable — 見 §3）* | `''` |
 | `Short`/`Integer`/`Long`/`Decimal`/`Currency`/`Boolean` | `0` | `0` | `0` | `0` | `0` |
-| `Date` | `getdate()` | `CURRENT_TIMESTAMP` | `(CURRENT_DATE)` | `SYSTIMESTAMP` | `CURRENT_TIMESTAMP` |
-| `DateTime` | `getdate()` | `CURRENT_TIMESTAMP` | `CURRENT_TIMESTAMP(6)` | `SYSTIMESTAMP` | `CURRENT_TIMESTAMP` |
+| `Date` | `getutcdate()` | `(NOW() AT TIME ZONE 'UTC')` | `(UTC_DATE)` | `SYS_EXTRACT_UTC(SYSTIMESTAMP)` | `CURRENT_TIMESTAMP` |
+| `DateTime` | `getutcdate()` | `(NOW() AT TIME ZONE 'UTC')` | `UTC_TIMESTAMP(6)` | `SYS_EXTRACT_UTC(SYSTIMESTAMP)` | `CURRENT_TIMESTAMP` |
 | `Guid` | `newid()` | `gen_random_uuid()` | `(UUID())` | `SYS_GUID()` | `(hex(randomblob(16)))` |
 
 備註：
 
-- **時間類預設值讀的是資料庫伺服器的本地時鐘**（SQLite 的 `CURRENT_TIMESTAMP` 例外，本就是 UTC）。
-  框架的 INSERT 會為每個 NOT NULL 欄位供值，因此這些 `DEFAULT` 只在**你自寫 INSERT 且省略該欄**
-  時生效；此外 `ALTER TABLE ADD COLUMN` 對既有資料列的回填也會用到它。框架的時間欄位以 UTC 儲存
-  （見 [時區處理](datetime-timezone.zh-TW.md)），故上述兩種情形寫入的值不會是 UTC——資料庫端無從
-  得知使用者，這是刻意保留的例外，詳見 [ADR-032](adr/adr-032-datetime-timezone.md) 的 D9b。
+- **時間類預設值一律採 UTC 形式**。框架的時間欄位以 UTC 儲存（見
+  [時區處理](datetime-timezone.zh-TW.md)），而 `DEFAULT` 正是「SQL 未指定該欄位值」時實際寫入
+  資料的路徑：呼叫端自寫 INSERT 而省略該欄，以及 `ALTER TABLE ADD COLUMN` 對既有列的回填。
+  詳見 [ADR-032](adr/adr-032-datetime-timezone.md) 的 D9b。
 - **MySQL** 的函式型預設值需用括號包成*運算式*形式（`(UUID())`、`(CURRENT_DATE)`），因為 MySQL 只允許非字面值的預設值以括號運算式呈現。
 - **SQLite** 無原生 UUID 產生器；`hex(randomblob(16))` 是「唯一但非嚴格 v4」的替代，對框架託管的預設值已足夠。
 - **Boolean 字面值**：框架的標準形式是 `"1"` / `"0"`。PostgreSQL 的 `BOOLEAN` 欄不接受這兩者，故 PG 方言在輸出 SQL 的邊界將其轉為 `TRUE` / `FALSE`。其他方言皆接受 `1` / `0`。

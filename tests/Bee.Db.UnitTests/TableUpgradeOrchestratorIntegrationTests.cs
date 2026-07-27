@@ -258,7 +258,7 @@ namespace Bee.Db.UnitTests
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"CREATE TABLE [{tableName}] (" +
                     "[sys_rowid] [uniqueidentifier] NOT NULL DEFAULT (newid()) PRIMARY KEY, " +
-                    "[created_at] [datetime] NOT NULL DEFAULT (getdate()));"));
+                    "[created_at] [datetime] NOT NULL DEFAULT (getutcdate()));"));
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"INSERT INTO [{tableName}] (sys_rowid, created_at) VALUES (NEWID(), '2026-07-02T10:00:00');"));
 

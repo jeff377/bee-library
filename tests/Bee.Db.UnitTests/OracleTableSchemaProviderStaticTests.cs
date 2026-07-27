@@ -75,8 +75,8 @@ namespace Bee.Db.UnitTests
         [InlineData("CLOB", "'foo'", "", "foo")]
         [InlineData("NUMBER", "0", "", "0")]
         [InlineData("NUMBER", "42", "", "42")]
-        [InlineData("DATE", "SYSTIMESTAMP", "", "SYSTIMESTAMP")]
-        [InlineData("TIMESTAMP(6)", "SYSTIMESTAMP", "", "SYSTIMESTAMP")]
+        [InlineData("DATE", "SYS_EXTRACT_UTC(SYSTIMESTAMP)", "", "SYS_EXTRACT_UTC(SYSTIMESTAMP)")]
+        [InlineData("TIMESTAMP(6)", "SYS_EXTRACT_UTC(SYSTIMESTAMP)", "", "SYS_EXTRACT_UTC(SYSTIMESTAMP)")]
         [InlineData("RAW", "SYS_GUID()", "", "SYS_GUID()")]
         [DisplayName("Oracle ParseDBDefaultValue 應依型別剝除字串引號並 trim 空白")]
         public void ParseDBDefaultValue_StripsQuotesAndTrims(

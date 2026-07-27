@@ -80,9 +80,9 @@ namespace Bee.Db.UnitTests
         public void ParseDBDefaultValue_StringTypeNotQuoted_ReturnsAsIs()
         {
             // Oracle DATA_DEFAULT 如果不是引號包裹（如引用式 default），StripStringLiteral 不處理直接回傳
-            var result = OracleTableSchemaProvider.ParseDBDefaultValue("NVARCHAR2", "CURRENT_TIMESTAMP", "");
+            var result = OracleTableSchemaProvider.ParseDBDefaultValue("NVARCHAR2", "(NOW() AT TIME ZONE 'UTC')", "");
 
-            Assert.Equal("CURRENT_TIMESTAMP", result);
+            Assert.Equal("(NOW() AT TIME ZONE 'UTC')", result);
         }
 
         [Fact]

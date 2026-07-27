@@ -107,8 +107,8 @@ namespace Bee.Db.UnitTests
         [InlineData(FieldDbType.Long, "0")]
         [InlineData(FieldDbType.Decimal, "0")]
         [InlineData(FieldDbType.Currency, "0")]
-        [InlineData(FieldDbType.Date, "getdate()")]
-        [InlineData(FieldDbType.DateTime, "getdate()")]
+        [InlineData(FieldDbType.Date, "getutcdate()")]
+        [InlineData(FieldDbType.DateTime, "getutcdate()")]
         [InlineData(FieldDbType.Guid, "newid()")]
         [InlineData(FieldDbType.AutoIncrement, "")]
         [InlineData(FieldDbType.Binary, "")]
@@ -172,11 +172,11 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("SQL Server GetDefaultExpression DateTime 無自訂應回傳 getdate()")]
+        [DisplayName("SQL Server GetDefaultExpression DateTime 無自訂應回傳 getutcdate()")]
         public void GetDefaultExpression_DateTimeNoCustom_ReturnsGetDate()
         {
             var field = new DbField("created_at", "Created", FieldDbType.DateTime);
-            Assert.Equal("getdate()", SqlSchemaSyntax.GetDefaultExpression(field));
+            Assert.Equal("getutcdate()", SqlSchemaSyntax.GetDefaultExpression(field));
         }
 
         [Fact]

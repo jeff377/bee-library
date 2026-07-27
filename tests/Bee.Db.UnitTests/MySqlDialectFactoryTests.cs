@@ -52,7 +52,7 @@ namespace Bee.Db.UnitTests
             var factory = new MySqlDialectFactory();
 
             Assert.Equal("(UUID())", factory.GetDefaultValueExpression(FieldDbType.Guid));
-            Assert.Equal("CURRENT_TIMESTAMP(6)", factory.GetDefaultValueExpression(FieldDbType.DateTime));
+            Assert.Equal("UTC_TIMESTAMP(6)", factory.GetDefaultValueExpression(FieldDbType.DateTime));
             Assert.Equal("0", factory.GetDefaultValueExpression(FieldDbType.Integer));
             Assert.Equal(string.Empty, factory.GetDefaultValueExpression(FieldDbType.String));
         }

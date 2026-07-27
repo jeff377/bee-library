@@ -99,7 +99,7 @@ namespace Bee.Db.UnitTests
         [InlineData("int", "42", "0", "42")]
         [InlineData("varchar", "hello", "", "hello")]
         [InlineData("varchar", "  world  ", "", "world")]
-        [InlineData("datetime", "CURRENT_TIMESTAMP(6)", "CURRENT_TIMESTAMP(6)", "")]
+        [InlineData("datetime", "UTC_TIMESTAMP(6)", "UTC_TIMESTAMP(6)", "")]
         [InlineData("char", "uuid()", "(UUID())", "")]
         [InlineData("char", "UUID()", "(UUID())", "")]
         [InlineData("bigint", "100", "0", "100")]

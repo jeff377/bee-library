@@ -53,9 +53,9 @@ namespace Bee.Db.UnitTests
         [InlineData("NCHAR", "(N'X')", "", "X")]
         [InlineData("INT", "((42))", "", "42")]
         [InlineData("BIT", "((1))", "", "1")]
-        [InlineData("DATE", "(getdate())", "", "getdate()")]
-        [InlineData("DATETIME", "(getdate())", "", "getdate()")]
-        [InlineData("DATETIME2", "(getdate())", "", "getdate()")]
+        [InlineData("DATE", "(getutcdate())", "", "getutcdate()")]
+        [InlineData("DATETIME", "(getutcdate())", "", "getutcdate()")]
+        [InlineData("DATETIME2", "(getutcdate())", "", "getutcdate()")]
         [InlineData("UNIQUEIDENTIFIER", "(newid())", "", "newid()")]
         [DisplayName("ParseDBDefaultValue 應依型別剝除外層括號或前綴")]
         public void ParseDBDefaultValue_StripsWrappers(

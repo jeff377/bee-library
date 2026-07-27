@@ -315,6 +315,19 @@ namespace Bee.Db.Providers.PostgreSql
         {
             if (StringUtilities.IsEmpty(defaultValue)) return string.Empty;
 
+            // PostgreSQL rewrites a function-call default rather than storing it verbatim: the
+            // framework emits `(NOW() AT TIME ZONE 'UTC')` and reads back
+            // `(now() AT TIME ZONE 'UTC'::text)`. The generic cast-stripping below cuts at the first
+            // `::`, which sits *inside* those parentheses and would leave a malformed fragment — so
+            // the schema comparison would report a difference on every run and re-emit the same
+            // ALTER forever. Recognising the rewritten form up front keeps an up-to-date table quiet.
+            if (IsUtcNowDefault(defaultValue))
+            {
+                return StringUtilities.IsEquals(originalDefaultValue, UtcNowDefaultExpression)
+                    ? string.Empty
+                    : UtcNowDefaultExpression;
+            }
+
             // Strip an optional ::type cast suffix (e.g. 'abc'::character varying, '0'::integer).
             int castIndex = defaultValue.IndexOf("::", StringComparison.Ordinal);
             string trimmed = castIndex >= 0 ? defaultValue.Substring(0, castIndex) : defaultValue;
@@ -346,6 +359,32 @@ namespace Bee.Db.Providers.PostgreSql
 
             return StringUtilities.IsEquals(originalDefaultValue, normalized) ? string.Empty : normalized;
         }
+
+        /// <summary>
+        /// The canonical form of the framework's UTC "now" default, as emitted by
+        /// <c>PgSchemaSyntax</c>.
+        /// </summary>
+        private const string UtcNowDefaultExpression = "(NOW() AT TIME ZONE 'UTC')";
+
+        /// <summary>
+        /// Determines whether a stored default is PostgreSQL's rewrite of the framework's UTC
+        /// "now" expression, in any of the spellings the server may hand back.
+        /// </summary>
+        /// <param name="defaultValue">The raw <c>column_default</c> text.</param>
+        private static bool IsUtcNowDefault(string defaultValue)
+            => StringUtilities.IsEquals(Collapse(defaultValue), Collapse(UtcNowDefaultExpression));
+
+        /// <summary>
+        /// Reduces a default expression to a form that ignores the cosmetic differences PostgreSQL
+        /// introduces: added casts, dropped or added parentheses, whitespace and letter case.
+        /// </summary>
+        /// <param name="expression">The expression to reduce.</param>
+        private static string Collapse(string expression)
+            => expression
+                .Replace("::text", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace(" ", string.Empty)
+                .Replace("(", string.Empty)
+                .Replace(")", string.Empty);
 
         /// <summary>
         /// Strips the surrounding single quotes and unescapes doubled quotes for a PG string literal.

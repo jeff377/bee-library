@@ -175,7 +175,7 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("DateTime 欄位 DEFAULT 應為 CURRENT_TIMESTAMP(6)")]
+        [DisplayName("DateTime 欄位 DEFAULT 應為 UTC_TIMESTAMP(6)")]
         public void GetCommandText_NonNullDateTime_GeneratesCurrentTimestamp()
         {
             var schema = BuildSchema(FieldDbType.DateTime, allowNull: false);
@@ -183,7 +183,7 @@ namespace Bee.Db.UnitTests
 
             string sql = builder.GetCommandText(schema);
 
-            Assert.Contains("DEFAULT CURRENT_TIMESTAMP(6)", sql);
+            Assert.Contains("DEFAULT UTC_TIMESTAMP(6)", sql);
         }
 
         #endregion

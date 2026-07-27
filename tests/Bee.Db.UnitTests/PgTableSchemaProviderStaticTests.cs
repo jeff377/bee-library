@@ -62,8 +62,8 @@ namespace Bee.Db.UnitTests
         [InlineData("boolean", "TRUE", "", "1")]
         [InlineData("boolean", "FALSE", "", "0")]
         [InlineData("bool", "true", "", "1")]
-        [InlineData("date", "CURRENT_TIMESTAMP", "", "CURRENT_TIMESTAMP")]
-        [InlineData("timestamp", "CURRENT_TIMESTAMP", "", "CURRENT_TIMESTAMP")]
+        [InlineData("date", "(NOW() AT TIME ZONE 'UTC')", "", "(NOW() AT TIME ZONE 'UTC')")]
+        [InlineData("timestamp", "(NOW() AT TIME ZONE 'UTC')", "", "(NOW() AT TIME ZONE 'UTC')")]
         [InlineData("uuid", "gen_random_uuid()", "", "gen_random_uuid()")]
         [DisplayName("PG ParseDBDefaultValue 應依型別剝除 ::cast 與字串引號")]
         public void ParseDBDefaultValue_StripsCastAndQuotes(

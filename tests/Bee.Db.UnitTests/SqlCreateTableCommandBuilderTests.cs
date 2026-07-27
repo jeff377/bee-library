@@ -178,7 +178,7 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("DateTime 欄位應使用 getdate() 作為預設值")]
+        [DisplayName("DateTime 欄位應使用 getutcdate() 作為預設值")]
         public void GetCommandText_DateTime_DefaultGetdate()
         {
             var schema = BuildSchema(FieldDbType.DateTime);
@@ -186,7 +186,7 @@ namespace Bee.Db.UnitTests
 
             string sql = builder.GetCommandText(schema);
 
-            Assert.Contains("DEFAULT (getdate())", sql);
+            Assert.Contains("DEFAULT (getutcdate())", sql);
         }
 
         [Fact]

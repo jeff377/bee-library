@@ -89,6 +89,7 @@ FilterCondition.Equal("created_at", someDateTime);     // 時間點——送出�
 | 運算式新增 `UtcNow()` | 新增；需要明示 UTC 意圖時使用。 |
 | 新增 `st_user.time_zone` 欄位 | 既有資料列沒有值，視同 UTC。逐一設定後才會啟用轉換。 |
 | PostgreSQL 的 `DateTime` 參數改送 `timestamp` | 先前送的是 `timestamptz`，會讓 server 時區重新表達該值。不需任何調整，欄位型別未變。 |
+| 資料庫端的欄位 `DEFAULT` 改為 UTC 形式 | 既有資料表會在下次 schema 升級時收到一道 `ALTER ... SET DEFAULT`（僅異動 metadata，不重寫資料列）。 |
 
 日期在框架中一律以 `DateOnly` 表達，**唯一例外是 `DataSet` 儲存格**——`DataColumn` 只能承載
 `DateTime`，框架會在該邊界替你轉換。

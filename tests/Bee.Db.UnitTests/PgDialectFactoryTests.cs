@@ -46,8 +46,8 @@ namespace Bee.Db.UnitTests
             var factory = new PgDialectFactory();
 
             Assert.Equal("gen_random_uuid()", factory.GetDefaultValueExpression(FieldDbType.Guid));
-            Assert.Equal("CURRENT_TIMESTAMP", factory.GetDefaultValueExpression(FieldDbType.DateTime));
-            Assert.Equal("CURRENT_TIMESTAMP", factory.GetDefaultValueExpression(FieldDbType.Date));
+            Assert.Equal("(NOW() AT TIME ZONE 'UTC')", factory.GetDefaultValueExpression(FieldDbType.DateTime));
+            Assert.Equal("(NOW() AT TIME ZONE 'UTC')", factory.GetDefaultValueExpression(FieldDbType.Date));
             Assert.Equal("0", factory.GetDefaultValueExpression(FieldDbType.Integer));
             Assert.Equal("0", factory.GetDefaultValueExpression(FieldDbType.Boolean));
             Assert.Equal(string.Empty, factory.GetDefaultValueExpression(FieldDbType.String));

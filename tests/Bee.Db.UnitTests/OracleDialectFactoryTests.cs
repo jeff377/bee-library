@@ -63,7 +63,7 @@ namespace Bee.Db.UnitTests
             var factory = new OracleDialectFactory();
 
             Assert.Equal("SYS_GUID()", factory.GetDefaultValueExpression(FieldDbType.Guid));
-            Assert.Equal("SYSTIMESTAMP", factory.GetDefaultValueExpression(FieldDbType.DateTime));
+            Assert.Equal("SYS_EXTRACT_UTC(SYSTIMESTAMP)", factory.GetDefaultValueExpression(FieldDbType.DateTime));
             Assert.Equal("0", factory.GetDefaultValueExpression(FieldDbType.Integer));
             Assert.Equal(string.Empty, factory.GetDefaultValueExpression(FieldDbType.String));
         }

@@ -259,22 +259,30 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 > 為 server local，而 **SQLite `CURRENT_TIMESTAMP` 是 UTC**。此處刻意不統一；
 > 日後若有人「順手統一」，會踩到這個差異。
 
-### D9b：資料庫端的欄位 `DEFAULT` 刻意維持 server 本地時鐘
+### D9b：資料庫端的欄位 `DEFAULT` 也必須是 UTC
 
-各 dialect 為 `Date` / `DateTime` 欄位產生的 `DEFAULT` 沿用各自的本地時鐘函式
-（`getdate()`、`CURRENT_TIMESTAMP`、`CURRENT_TIMESTAMP(6)`、`SYSTIMESTAMP`；SQLite 的
-`CURRENT_TIMESTAMP` 本就是 UTC）。**這與 D1 的表面字義不符，是刻意保留的例外。**
+D1 對「`FieldDbType.DateTime` 欄位存 UTC」是**強制條件**，而 SQL 語句不一定會指定該欄位的值——
+`DEFAULT` 正是那些情況下實際寫入資料的路徑。因此各 dialect 的預設值運算式一律採 UTC 形式：
 
-理由是資料庫端**不可能取得使用者資訊**：D12 要求使用者看得到的時間以其時區為基準，而
-`DEFAULT` 在資料庫內求值，沒有 session、沒有使用者。改成 UTC 形式只是把一個不符 D12 的基準
-換成另一個，卻要動 DDL 並牽動既有資料表的 schema 比對。
+| Provider | `DateTime` 的 DEFAULT |
+|----------|----------------------|
+| SQL Server | `getutcdate()` |
+| PostgreSQL | `(NOW() AT TIME ZONE 'UTC')` |
+| MySQL | `UTC_TIMESTAMP(6)` |
+| Oracle | `SYS_EXTRACT_UTC(SYSTIMESTAMP)` |
+| SQLite | `CURRENT_TIMESTAMP`（本就是 UTC） |
 
-**這條路徑實務上不會被框架走到**：框架的 INSERT 透過 `DbParameterSpecCollection` 為每個
-NOT NULL 欄位供值，`DEFAULT` 只在「呼叫端自寫 INSERT 且省略該欄」時生效。
+**這與 D12 無關，別把兩者混為一談。** D12 講的是「使用者看得到的預設值要用其時區」，那確實不是
+資料庫做得到的——`DEFAULT` 在資料庫內求值，沒有 session、不知道使用者是誰。但 D1 講的是
+**儲存基準**，而 UTC 是絕對時刻、與使用者無關，資料庫完全有能力也必須遵守。
+使用者可見的新列預設值另由 `FormRowDefaults` 依 session 時區產生。
 
-> **唯一會實際寫入資料的情形**：`ALTER TABLE ADD COLUMN` 對既有資料列的回填，會把 server
-> 本地時間寫進該欄。若該欄語意上是使用者可見的時間點，回填值需另行修正——這不是框架能代勞的，
-> 因為既有列並不知道自己屬於哪個使用者。
+生效路徑有二：呼叫端自寫 INSERT 而省略該欄，以及 `ALTER TABLE ADD COLUMN` 對既有列的回填。
+
+> **PostgreSQL 的 round-trip 陷阱**：PG 不會逐字保存函式型預設值，而是改寫為
+> `(now() AT TIME ZONE 'UTC'::text)`。框架的 schema 比對是文字比對，若不處理就會判定恆有差異、
+> **每次檢查都重發同一道 ALTER**。`PgTableSchemaProvider.ParseDBDefaultValue` 因此加了一段
+> 專門的正規化；通用的「截斷第一個 `::`」邏輯在此不適用，因為那個 `::` 位在括號**內**。
 
 ### D10：轉換永遠執行，同時區時為恆等轉換
 

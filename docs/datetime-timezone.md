@@ -102,6 +102,7 @@ column-level setting can express it.
 | `UtcNow()` added to expressions | New; use it where you want UTC stated outright. |
 | `st_user.time_zone` column added | Existing rows have no value, which reads as UTC. Set it per user to enable conversion. |
 | PostgreSQL `DateTime` parameters now map to `timestamp` | Previously they were sent as `timestamptz`, which let the server's zone re-express the value. No action needed; column types are unchanged. |
+| Database-side column `DEFAULT`s are now UTC-returning | Existing tables pick up one `ALTER ... SET DEFAULT` on the next schema upgrade (metadata only — no rows are rewritten). |
 
 Dates are `DateOnly` throughout the framework. The single exception is a `DataSet` cell, where a
 `DataColumn` can only hold `DateTime` — the framework converts at that boundary so you do not have

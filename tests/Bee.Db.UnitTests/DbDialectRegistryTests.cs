@@ -99,7 +99,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("GetDefaultValueExpression 應回傳 SQL Server 特有預設值（如 getdate、newid）")]
         public void GetDefaultValueExpression_SqlServerDefaults()
         {
-            Assert.Equal("getdate()", _factory.GetDefaultValueExpression(FieldDbType.DateTime));
+            Assert.Equal("getutcdate()", _factory.GetDefaultValueExpression(FieldDbType.DateTime));
             Assert.Equal("newid()", _factory.GetDefaultValueExpression(FieldDbType.Guid));
             Assert.Equal("0", _factory.GetDefaultValueExpression(FieldDbType.Integer));
             Assert.Equal(string.Empty, _factory.GetDefaultValueExpression(FieldDbType.String));

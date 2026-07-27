@@ -179,7 +179,7 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("DateTime 欄位應使用 CURRENT_TIMESTAMP 作為預設值")]
+        [DisplayName("DateTime 欄位應使用 (NOW() AT TIME ZONE 'UTC') 作為預設值")]
         public void GetCommandText_DateTime_DefaultCurrentTimestamp()
         {
             var schema = BuildSchema(FieldDbType.DateTime);
@@ -187,7 +187,7 @@ namespace Bee.Db.UnitTests
 
             string sql = builder.GetCommandText(schema);
 
-            Assert.Contains("DEFAULT CURRENT_TIMESTAMP", sql);
+            Assert.Contains("DEFAULT (NOW() AT TIME ZONE 'UTC')", sql);
         }
 
         [Fact]

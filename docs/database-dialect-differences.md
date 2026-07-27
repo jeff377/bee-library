@@ -50,19 +50,16 @@ For a `NOT NULL` column with no explicit `DefaultValue`, each dialect emits its 
 |---------------|-----------|------------|-------|--------|--------|
 | `String` / `Text` | `N''` | `''` | `''` | *(nullable — see §3)* | `''` |
 | `Short`/`Integer`/`Long`/`Decimal`/`Currency`/`Boolean` | `0` | `0` | `0` | `0` | `0` |
-| `Date` | `getdate()` | `CURRENT_TIMESTAMP` | `(CURRENT_DATE)` | `SYSTIMESTAMP` | `CURRENT_TIMESTAMP` |
-| `DateTime` | `getdate()` | `CURRENT_TIMESTAMP` | `CURRENT_TIMESTAMP(6)` | `SYSTIMESTAMP` | `CURRENT_TIMESTAMP` |
+| `Date` | `getutcdate()` | `(NOW() AT TIME ZONE 'UTC')` | `(UTC_DATE)` | `SYS_EXTRACT_UTC(SYSTIMESTAMP)` | `CURRENT_TIMESTAMP` |
+| `DateTime` | `getutcdate()` | `(NOW() AT TIME ZONE 'UTC')` | `UTC_TIMESTAMP(6)` | `SYS_EXTRACT_UTC(SYSTIMESTAMP)` | `CURRENT_TIMESTAMP` |
 | `Guid` | `newid()` | `gen_random_uuid()` | `(UUID())` | `SYS_GUID()` | `(hex(randomblob(16)))` |
 
 Notes:
 
-- **Temporal defaults read the database server's local clock** (SQLite's `CURRENT_TIMESTAMP` is the
-  exception — it is already UTC). The framework's INSERTs supply a value for every NOT NULL column,
-  so these `DEFAULT`s only take effect when **you write the INSERT yourself and omit the column**;
-  `ALTER TABLE ADD COLUMN` also uses them to backfill existing rows. Framework time columns are
-  stored in UTC (see [Time Zones](datetime-timezone.md)), so neither of those two cases writes a
-  UTC value — the database cannot know which user a row belongs to, which is why this exception is
-  deliberate. See D9b in [ADR-032](adr/adr-032-datetime-timezone.md).
+- **Temporal defaults are all UTC-returning.** Framework time columns are stored in UTC (see
+  [Time Zones](datetime-timezone.md)), and a `DEFAULT` is the path that actually writes when the
+  SQL does not name the column: a hand-written INSERT that omits it, and `ALTER TABLE ADD COLUMN`
+  backfilling existing rows. See D9b in [ADR-032](adr/adr-032-datetime-timezone.md).
 - **MySQL** wraps function-call defaults in parentheses (`(UUID())`, `(CURRENT_DATE)`) because MySQL only allows non-literal defaults in the parenthesised *expression* form.
 - **SQLite** has no native UUID generator; `hex(randomblob(16))` is a unique-but-not-strictly-v4 surrogate, sufficient for framework-managed defaults.
 - **Boolean literals**: the framework's canonical form is `"1"` / `"0"`. PostgreSQL rejects those for a `BOOLEAN` column, so the PG dialect translates them to `TRUE` / `FALSE` at the SQL-emission boundary. All other dialects accept `1` / `0`.

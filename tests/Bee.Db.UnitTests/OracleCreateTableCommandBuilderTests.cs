@@ -228,7 +228,7 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("DateTime 欄位 DEFAULT 應為 SYSTIMESTAMP")]
+        [DisplayName("DateTime 欄位 DEFAULT 應為 SYS_EXTRACT_UTC(SYSTIMESTAMP)")]
         public void GetCommandText_NonNullDateTime_GeneratesSystimestampDefault()
         {
             var schema = BuildSchema(FieldDbType.DateTime, allowNull: false);
@@ -236,7 +236,7 @@ namespace Bee.Db.UnitTests
 
             string sql = builder.GetCommandText(schema);
 
-            Assert.Contains("DEFAULT SYSTIMESTAMP", sql);
+            Assert.Contains("DEFAULT SYS_EXTRACT_UTC(SYSTIMESTAMP)", sql);
         }
 
         [Fact]
