@@ -44,10 +44,12 @@ commit：`fddb38f6`（階段 1）、`c7782308`（階段 2）、`c5578a42`（階�
 
 ## 1. 問題
 
-`FieldDbType` 刻意區分 `Date` 與 `DateTime`，正是因為 .NET 只有單一 `DateTime` 型別、
-無法表達「日曆日 vs 時間點」的差別——定義層早就把這件事講清楚了。
+`FieldDbType` 刻意區分 `Date` 與 `DateTime`——定義層早就把「日曆日 vs 時間點」講清楚了。
+.NET 本身也有對應的型別：`DateOnly`（.NET 6+）就是日曆日，`DateTime` 是時間點。
 
-但這個區別在 CLR 層被抹平：
+問題不在語言缺表達力，而在**跨層 DTO 是 `DataSet`，而 `DataColumn` 沒有可用的日曆日儲存型別**
+（`DateOnly` 落入 `ObjectStorage`，實測見 §6 附錄）。日曆日因此只能以 `DateTime` 承載，
+定義層區分出的語意在 CLR 層被抹平：
 
 ```csharp
 case FieldDbType.Date:

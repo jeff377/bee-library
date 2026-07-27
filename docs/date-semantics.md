@@ -3,8 +3,9 @@
 [繁體中文](date-semantics.zh-TW.md)
 
 `FieldDbType` distinguishes `Date` (a calendar day: a birthday, an invoice date, an accounting
-period) from `DateTime` (an instant: when a record was created, when a user logged in). .NET has
-only one `DateTime` type, so that distinction is easy to lose — and until v4.15 the framework did
+period) from `DateTime` (an instant: when a record was created, when a user logged in). `DataSet` is
+the cross-layer DTO, and a `DataColumn` can only carry a calendar day as `DateTime` (`DateOnly` is
+not a usable storage type), so that distinction is easy to lose — and until v4.15 the framework did
 lose it once a value reached the CLR and the wire.
 
 This document covers what changed, what you get for free, and the one case where you have to

@@ -46,7 +46,7 @@
 |------|------|------|
 | `SessionInfo.TimeZone` | 欄位已存在（`SessionInfo.cs:73`，預設 `Asia/Taipei`，IANA 格式），但全 repo 無任何讀寫 | 掛載點現成、休眠中，可直接沿用 |
 | `DbCommandSpec` 參數層 | SQL Server `DateTime` → `datetime2(7)`；PG / Oracle 不變 | 只解**精度**，與時區正交 |
-| `FieldDbType` | 刻意區分 `Date` / `DateTime`，補足 .NET 只有單一 `DateTime` 型別的表達力缺口 | 「日曆日 vs 時間點」已可區分，且**這正是框架提供的全部兩種時間語意**（見 D5） |
+| `FieldDbType` | 刻意區分 `Date` / `DateTime`，補足 `DataColumn` 只能以 `DateTime` 承載日曆日的表達力缺口 | 「日曆日 vs 時間點」已可區分，且**這正是框架提供的全部兩種時間語意**（見 D5） |
 | `FilterCondition.Value` | 型別為 `object?`（`[Key(102)]`，走 typeless），`DateTime` 走同一條 wire | 查詢條件的時間值同樣需要正規化（見 D4） |
 | 日曆日 wire 標記 | **已完成**：`FieldDbType` 標記由定義層貫通至 `DataColumn.ExtendedProperties` 與 `SerializableDataColumn.DataType`，MessagePack / JSON 兩份 wire 實作皆承接 | Connector 可完全不依賴 `FormSchema` 判斷欄位語意 |
 | in-process 傳輸 | `ApiConnector.cs:172`：`LocalApiProvider` 且非 debug 時強制 `PayloadFormat.Plain`，`params` **完全不序列化**，物件以參考直接交給同行程 `JsonRpcExecutor` | **無序列化邊界**——轉換點與 guard 都不能掛在序列化入口（見 D4 / D6） |
