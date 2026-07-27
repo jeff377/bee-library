@@ -9,6 +9,20 @@ namespace Bee.Api.Client
     public static class ApiClientInfo
     {
         /// <summary>
+        /// Gets or sets the signed-in user's IANA time zone id; blank disables time zone conversion.
+        /// </summary>
+        /// <remarks>
+        /// The Connector converts payloads between UTC and this zone (ADR-032 D4). It lives here
+        /// rather than being read from the UI layer because <c>Bee.Api.Client</c> sits below it; the
+        /// host assigns it at login and clears it at logout.
+        ///
+        /// Blank means no conversion, which is the correct state before sign-in — there is no user
+        /// whose zone could apply, and adopting the device's would reintroduce the second source of
+        /// truth D4 rejects.
+        /// </remarks>
+        public static string UserTimeZoneId { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the connection types supported by the application.
         /// </summary>
         public static SupportedConnectTypes SupportedConnectTypes { get; set; } = SupportedConnectTypes.Both;

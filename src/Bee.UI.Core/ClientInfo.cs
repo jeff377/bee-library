@@ -224,6 +224,9 @@ namespace Bee.UI.Core
             }
             // NOTE: 連線方式變更必定使既有 token 失效，強制重登。
             AccessToken = Guid.Empty;
+            // 一併清掉時區：session 失效後那個時區已無所屬，留著會在下次登入前被誤用來換算
+            // （ADR-032 D13）。重新登入時 ApplyLoginResult 會重新填入。
+            ApiClientInfo.UserTimeZoneId = string.Empty;
         }
 
         /// <summary>
@@ -324,6 +327,9 @@ namespace Bee.UI.Core
                     ? loginResponse.TimeZone
                     : new UserInfo().TimeZone
             };
+            // The Connector layer sits below this one, so it cannot read UserInfo — hand it the zone
+            // it needs to convert payloads with (ADR-032 D4).
+            ApiClientInfo.UserTimeZoneId = UserInfo.TimeZone;
             // NOTE: 未來如有其他登入後需設定的屬性，請於此處擴充
         }
 

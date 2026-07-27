@@ -65,12 +65,22 @@ namespace Bee.Api.Client.Connectors
             var ctx = Tracer.Start(TraceLayers.ApiClient, string.Empty, name: $"ExecuteAsync.{progId}.{action}");
             try
             {
-                var (request, actualFormat) = PrepareRequest(progId, action, value, format);
+                // The Connector is the only place time zones are applied (ADR-032 D4): the wire is UTC
+                // in both directions, so the request converts out of the user's zone here and the
+                // response converts back into it. The swap is undone before returning so the caller's
+                // own request object is left exactly as it was handed over.
+                var timeZoneId = UserTimeZoneId;
+                T result;
+                using (PayloadZoneConverter.ToUtc(value, timeZoneId))
+                {
+                    var (request, actualFormat) = PrepareRequest(progId, action, value, format);
 
-                // Invoke the JSON-RPC method (remote or local)
-                var response = await this.Provider.ExecuteAsync(request).ConfigureAwait(false);
+                    // Invoke the JSON-RPC method (remote or local)
+                    var response = await this.Provider.ExecuteAsync(request).ConfigureAwait(false);
 
-                var result = FinalizeResponse<T>(response, actualFormat);
+                    result = FinalizeResponse<T>(response, actualFormat);
+                }
+                PayloadZoneConverter.ToUserZone(result, timeZoneId);
                 Tracer.End(ctx);
                 return result;
             }
@@ -82,6 +92,15 @@ namespace Bee.Api.Client.Connectors
                 throw;
             }
         }
+
+        /// <summary>
+        /// The signed-in user's IANA time zone id, or blank (meaning no conversion) before login.
+        /// </summary>
+        /// <remarks>
+        /// Read per call rather than captured: a connector instance outlives a sign-in, and a stale
+        /// zone would silently shift another user's data (ADR-032 D13).
+        /// </remarks>
+        private static string UserTimeZoneId => ApiClientInfo.UserTimeZoneId;
 
         /// <summary>
         /// Validates the progId and action arguments.
