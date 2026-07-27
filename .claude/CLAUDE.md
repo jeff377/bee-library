@@ -60,7 +60,15 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 2. **每次建立或修改 plan 文件後，回覆中必須附上該 plan 的連結**（markdown 相對連結），讓使用者可在對話中直接點開、不需自行翻找
 3. 等待使用者確認後，才開始執行
 4. **Plan 執行完畢時，立刻在文件頂部標記完成狀態**
-5. 由使用者要求時才將計畫文件移至 `docs/archive/` 封存（此目錄已 gitignored）
+5. 由使用者要求時才將計畫文件移至 `docs/plans/archive/` 封存（此目錄**入版控**，ADR 與 README 可安全連結到封存 plan）
+   - 例外：含未修安全弱點清單的 review 類 plan 改放 `docs/internal/`（gitignored），避免公開 repo 附上現成攻擊面盤點
+
+**plan 內連結慣例**：plan **一定會**被整批搬進 `archive/`，寫連結時就要讓它搬完仍有效：
+
+- **指向其他 plan** → 用同層裸相對路徑（`[plan-numeric-core.md](plan-numeric-core.md)`），不加 `../`。
+  相關 plan 通常同批封存，同層寫法在 `docs/plans/` 與 `docs/plans/archive/` 兩處都成立。
+- **指向 plan 以外的檔案**（`src/`、`docs/adr/`、`docs/*.md`）→ 從 `docs/plans/` 起算寫相對路徑
+  （`../adr/adr-030-xxx.md`、`../../src/Bee.Db/DbAccess.cs`），封存時**整批加一層 `../`**。
 
 > 狀態列格式、多階段 plan 的階段表格、封存細節 → 見 `/plan-workflow:plan-write` skill
 > （由 `jeff377-plugins` marketplace 的 `plan-workflow` plugin 提供，已於 `.claude/settings.json` 宣告啟用）。

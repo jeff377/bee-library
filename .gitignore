@@ -17,8 +17,8 @@
 # Local test settings (may contain sensitive connection strings)
 .runsettings
 
-# Archived working documents (plans / 過時設計文件，非當前參考資料)
-docs/archive/
+# 封存的 plan 已入版控（docs/plans/archive/）——ADR 與 README 會連結到它們，
+# 排除會讓那些連結對 clone 的人失效。含未修安全項的 review 類 plan 另放 docs/internal/。
 
 # Blog posts (published on HackMD, not synced to GitHub)
 docs/blogs/
