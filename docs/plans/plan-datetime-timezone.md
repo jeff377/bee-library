@@ -6,7 +6,7 @@
 |------|------|------|
 | P0 | 定案決策寫成 ADR + 系統時間戳改 UTC（trace / 定義檔 `CreateTime`） | ✅ 已完成（2026-07-25） |
 | P1 | D6 兩條 wire guard + 序列化回歸測試 + 「現在／今天」單一接縫（行為不變） | ✅ 已完成（2026-07-26） |
-| P2 | `SessionInfo.TimeZone` 填充 → 接上接縫 + Connector 雙向轉換（含 `FilterCondition`） | 📝 待做 |
+| P2 | `SessionInfo.TimeZone` 填充 → 接上接縫 + Connector 雙向轉換（含 `FilterCondition`） | 🚧 進行中（①② 完成） |
 | P3 | 恆等轉換路徑 + 跨 DB / 跨時區 / 行動端 tz 可用性回歸測試 | 📝 待做 |
 
 > 目標：讓 bee-library 支援跨時區部署——**資料庫時間以 UTC 儲存，使用者檢視時轉換為其時區**——
@@ -288,37 +288,36 @@ Oracle `TIMESTAMP`、MySQL `DATETIME`、SQLite `TEXT`），時區轉換不交給
 | `FieldDbTypeExtensions.cs:28`（`GetDefaultValue`） | 同上 | 兩側（`AddColumn` 的欄位預設值、`DbParameterSpecCollection` 的參數預設值） |
 | `DynamicExpressoEvaluator.cs:45-46`（`Today()` / `Now()`） | `DateTime.Today` / `DateTime.Now` | **兩側**（伺服端 `FormExpressionCalculator`、用戶端 `FormLiveComputation`） |
 
-#### 兩條路徑分開處理（2026-07-26 定案）
+#### 兩條路徑的處理（2026-07-26 定案，實作後校正）
 
-D12 的業務案例（請假日期預設當天）落在**欄位型別預設值**路徑，不在運算式路徑上。
-兩者需求不同，分開處理：
+D12 的業務案例（請假日期預設當天）落在**欄位型別預設值**路徑，但兩條路徑最終**都**接上使用者
+時區——因為 `Today()` 與欄位預設值共用同一個接縫（`FrameworkClock`），時區則沿呼叫鏈以引數
+傳遞（D13(b)）。
 
-| 路徑 | 處理 |
-|------|------|
-| 欄位型別預設值（`FormRowDefaults` / `FieldDbTypeExtensions`） | 依 D12 走使用者時區 |
-| 運算式時間函式（`DynamicExpressoEvaluator`） | **不做時區處理**，語意固定、由運算式作者自行選用 |
-
-理由：`FormExpressionCalculator` 拿 `DateTime` 做運算的機率很小，為它建置「隨求值側變化」的
-機制不成比例。**運算式作者自行決定要用哪個時間函式即可。**
+| 路徑 | 時區來源 |
+|------|---------|
+| 欄位型別預設值（`FormRowDefaults`） | 引數。伺服端 `FormBusinessObject.ResolveSessionTimeZone()` → `GetNewData`；用戶端 `ClientInfo.UserInfo.TimeZone` |
+| 運算式時間函式（`DynamicExpressoEvaluator`） | 引數。伺服端經 `IFormRuleProcessor` → `FormExpressionCalculator` → `IExpressionEvaluator.Evaluate`；用戶端 `FormLiveComputation` 逐次讀 `ClientInfo.UserInfo.TimeZone` |
+| `FieldDbTypeExtensions.GetDefaultValue` | **無使用者情境可傳 → UTC**（見 D13 的例外條款） |
 
 運算式的函式集：
 
-| 函式 | 語意 | 說明 |
-|------|------|------|
-| `Today()` | 使用者時區的今天 | **與欄位預設值共用同一個接縫**，語意單一 |
-| `Now()` | 不做時區處理 | 維持既有語意，不隨求值側變化 |
-| `UtcNow()` | UTC 當下 | 新增，供作者明示 UTC 意圖 |
+| 函式 | 語意 |
+|------|------|
+| `Today()` | 呼叫時傳入之時區的今天，回傳 **`DateOnly`**（D13(a)） |
+| `Now()` | 同一時區的當下，回傳 `DateTime`，`Kind` 恆為 `Unspecified` |
+| `UtcNow()` | UTC 當下，供作者明示 UTC 意圖 |
 
-`Today()` 共用接縫是刻意的：日曆日欄位 Connector 絕不轉換（D4），共用不會引入二次轉換問題；
-而讓同一個名字在「欄位預設值」與「運算式」兩處是兩種意思，是日後最容易踩的坑。
+`Today()` 與欄位預設值共用接縫是刻意的：日曆日欄位 Connector 絕不轉換（D4），共用不會引入
+二次轉換問題；而讓同一個名字在兩處是兩種意思，是日後最容易踩的坑。
 
 > **殘餘風險（刻意接受）**：在用戶端求值的運算式若以 `Now()` / `UtcNow()` 填進 `DateTime`
 > 儲存格，該值送出時仍會被 Connector 當成使用者時區值再轉一次。因 `DateTime` 運算式罕見而
 > 接受此風險；作者需自行確認語意。此處**不設 guard**——Connector 無從得知某儲存格是運算式填的。
 
-**P2 實作影響**：`FrameworkClock` 從純靜態改為可注入，**只需「使用者時區」一項設定**
-（供 `Today()` 與欄位型別預設值）。原先為了讓 `Now()` 隨側變化而需要的「儲存格所在空間」
-設定不再需要。
+> **實作期修正**：原訂「運算式不做時區處理」與「`FrameworkClock` 改為可注入」兩點都已推翻。
+> 前者因 `Today()` 與欄位預設值共用接縫而自然取得時區；後者因 `IExpressionEvaluator` 註冊為
+> **singleton**——任何「建構時固定時區」的設計只能是單一使用者的時區，故改走引數（D13(b)）。
 
 ### D13：日期一律 `DateOnly`，`DataSet` 是唯一例外；時區一律以引數傳遞
 
@@ -486,7 +485,7 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 |------|------|
 | **P0** | ✅ 已完成。`docs/adr/adr-032-datetime-timezone.md`（含 D5 否決理由、D9 / D11 的前提條件、`Time` 未來歸屬）；trace 三處與定義檔七處 `CreateTime` 改 UTC。實作期查證更正了 D8 的論述（見該條）。 |
 | **P1** | **無內部順序約束**（原訂「先清 `Local` 來源再開 guard」已取消，理由見下）。<br>① **序列化回歸測試**——✅ 已完成（`DateTimeSerializationOffsetTests`，29 項，四時區皆綠）。<br>② ✅ D6 兩條 guard（`DateTimeWireGuard`，掛 `ApiConnector` 送出前與接收後）。採**針對性**而非通用反射走訪：只守值實際進入的兩個口——契約的 `DataSet` / `DataTable` 成員與 `FilterCondition` 的值。<br>③ ✅ `DataTableExtensions.NormalizeDateTimeMode` + 四個套用點（`DbAccess` 同步 / 非同步、兩條 wire 的建欄）。<br>④ **移至 P2**：D6 的「DB 讀出的時間點值統一 `SpecifyKind(Utc)`」在 DB 存的是 UTC 之後才有意義，而那要等 P2 的轉換管線；`DataTable` 儲存格另受 `DateTimeMode` 正規化保護（實測 1.4(a)），無 `Kind` 破口。<br>⑤ ✅ `Bee.Base.Data.FrameworkClock` 收斂三處，行為維持現狀。 |
-| **P2** | ① 登入時填充 `SessionInfo.TimeZone`（使用者設定 / 公司預設 / client 回報）。<br>② **接上 P1 的接縫**：「今天」與「現在」改由使用者時區推導（見 D12）。<br>③ D4 Connector 雙向轉換：進出點掛載、轉換前深拷貝 `DataSet`、忽略 `Kind`、`FilterCondition` 依值型別（`DateOnly` / `DateTime`）判斷。 |
+| **P2** | ① ✅ `st_user.time_zone` → `SessionInfo.TimeZone` → `LoginResponse` → `ClientInfo.UserInfo`。<br>② ✅ 接上接縫：`FrameworkClock.Today(tz)` / `Now(tz)` 收時區引數，貫通伺服端（BO session）與用戶端（`ClientInfo`）；`Today()` 回 `DateOnly`（D13(a)），新增 `UtcNow()`。<br>③ D4 Connector 雙向轉換：進出點掛載、轉換前深拷貝 `DataSet`、忽略 `Kind`、`FilterCondition` 依值型別（`DateOnly` / `DateTime`）判斷。<br>④ Repository 邊界讀出 `SpecifyKind(Utc)`（原列 P1，因需 DB 確實存 UTC 才有意義而移入）。 |
 | **P3** | D10 恆等轉換路徑；跨 DB（SQL Server / PostgreSQL / SQLite / MySQL / Oracle）round-trip 測試；跨時區測試（`TZ` 環境變數驅動）；**行動端 / WASM 的 tz 可用性驗證**（見 §4）；**驗證同時區時轉換為恆等**（值不變）的回歸防護；重建 seed 與 demo 資料（依 D11，DB 內容將由本地牆上時間改為 UTC）。 |
 
 

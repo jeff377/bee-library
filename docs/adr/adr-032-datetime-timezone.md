@@ -4,8 +4,9 @@
 
 已採納（2026-07-25）
 
-> 分階段實作中。P0（本 ADR + 系統時間戳 UTC 化）與 P1（wire guard、`DateTimeMode` 正規化、
-> 時間來源接縫）已落地；P2（Connector 雙向轉換）、P3（跨 DB / 跨時區 / 行動端驗證）待做。
+> 分階段實作中。P0（本 ADR + 系統時間戳 UTC 化）、P1（wire guard、`DateTimeMode` 正規化、
+> 時間來源接縫）已落地，P2 完成時區來源接線（`st_user.time_zone` → session → 用戶端）；
+> P2 的 Connector 雙向轉換與 P3（跨 DB / 跨時區 / 行動端驗證）待做。
 
 ## 背景
 
@@ -199,19 +200,15 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 `FieldDbTypeExtensions`、`DynamicExpressoEvaluator` 的 `Today()` / `Now()`），由該接縫依
 使用者時區推導。
 
-**兩條路徑分開處理。** D12 的業務案例落在欄位型別預設值路徑，不在運算式路徑上：
+**兩條路徑最終都接上使用者時區**，因為 `Today()` 與欄位型別預設值共用同一個接縫
+（`FrameworkClock`），而時區沿呼叫鏈以引數傳遞（D13(b)）：伺服端由 BO 取 session 時區傳入，
+用戶端取 `ClientInfo.UserInfo.TimeZone`。
 
-| 路徑 | 處理 |
-|------|------|
-| 欄位型別預設值（`FormRowDefaults` / `FieldDbTypeExtensions`） | 走使用者時區 |
-| 運算式時間函式（`DynamicExpressoEvaluator`） | 不做時區處理，語意固定、由運算式作者自行選用 |
+運算式函式集為 `Today()`（傳入時區的今天，回 `DateOnly`）、`Now()`（同一時區的當下，`Kind`
+恆為 `Unspecified`）、`UtcNow()`（供作者明示 UTC 意圖）。共用接縫是刻意的：日曆日欄位絕不
+轉換（D4），共用不引入二次轉換問題；而讓同一個名字在兩處是兩種意思，是日後最容易踩的坑。
 
-`FormExpressionCalculator` 拿 `DateTime` 做運算的機率很小，為它建置「隨求值側變化」的機制
-不成比例。運算式函式集為 `Today()`（使用者時區的今天，**與欄位預設值共用同一接縫**）、
-`Now()`（不做時區處理）、`UtcNow()`（UTC 當下，供作者明示）。
-
-`Today()` 共用接縫是刻意的：日曆日欄位絕不轉換（D4），共用不引入二次轉換問題；而讓同一個名字
-在兩處是兩種意思，是日後最容易踩的坑。
+唯一不接時區的是 `FieldDbTypeExtensions.GetDefaultValue`——無使用者情境可傳，見 D13 的例外條款。
 
 > **殘餘風險（刻意接受）**：用戶端求值的運算式若以 `Now()` / `UtcNow()` 填進 `DateTime` 儲存格，
 > 送出時仍會被 Connector 當成使用者時區值再轉一次。此處不設 guard——Connector 無從得知某儲存格
