@@ -4,9 +4,12 @@
 
 已採納（2026-07-25）
 
-> 分階段實作中。P0（本 ADR + 系統時間戳 UTC 化）、P1（wire guard、`DateTimeMode` 正規化、
-> 時間來源接縫）、P2（時區來源接線 + Connector 雙向轉換）已落地；
-> P3（恆等轉換路徑、跨 DB / 跨時區 / 行動端 tz 可用性驗證）待做。
+> P0–P3 已全數實作（2026-07-26）。執行細節與實作期推翻的假設見
+> `docs/plans/plan-datetime-timezone.md`。
+>
+> 唯一未執行的驗證：行動端 / WASM 的**實機**時區可用性。各 head 已釘住
+> `InvariantGlobalization=false` 與 `InvariantTimezone=false`，但那是設定護欄而非驗證——
+> 缺 tz 資料的失敗是裝置上的執行期例外，桌面建置與測試都攔不到。
 
 ## 背景
 

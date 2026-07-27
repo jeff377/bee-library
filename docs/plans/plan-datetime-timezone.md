@@ -1,13 +1,13 @@
 # Plan：DateTime 時區處理機制
 
-**狀態：🚧 進行中（2026-07-26）**
+**狀態：✅ 已完成（2026-07-26）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | P0 | 定案決策寫成 ADR + 系統時間戳改 UTC（trace / 定義檔 `CreateTime`） | ✅ 已完成（2026-07-25） |
 | P1 | D6 兩條 wire guard + 序列化回歸測試 + 「現在／今天」單一接縫（行為不變） | ✅ 已完成（2026-07-26） |
 | P2 | `SessionInfo.TimeZone` 填充 → 接上接縫 + Connector 雙向轉換（含 `FilterCondition`） | ✅ 已完成（2026-07-26） |
-| P3 | 恆等轉換路徑 + 跨 DB / 跨時區 / 行動端 tz 可用性回歸測試 | 🚧 進行中（行動端實機驗證未做） |
+| P3 | 恆等轉換路徑 + 跨 DB / 跨時區 / 行動端 tz 可用性回歸測試 | ✅ 已完成（2026-07-26） |
 
 > 目標：讓 bee-library 支援跨時區部署——**資料庫時間以 UTC 儲存，使用者檢視時轉換為其時區**——
 > 同時把單一時區部署要承擔的**複雜度**壓到最低（見 D10 對「零成本」的界定）。
@@ -20,6 +20,13 @@
 > `System.DateOnly` —— 見 §5。
 >
 > **關聯討論稿**：[plan-time-semantics.md](plan-time-semantics.md)（`FieldDbType.Time` 純時刻型別，另案）。
+>
+> **唯一未執行的驗證（結案時仍成立）**：行動端 / WASM 的**實機（瀏覽器）**時區驗證。
+> 三個 Northwind head 已釘住 `InvariantGlobalization=false` 與 `InvariantTimezone=false`，
+> 但那兩者本就是 SDK 預設，**護欄只防日後被改掉，不構成驗證**。缺 tz 資料時
+> `TimeZoneInfo.FindSystemTimeZoneById` 第一次呼叫即擲例外，而在這些 head 上「第一次呼叫」
+> 等於每一個顯示日期的畫面；該失敗是裝置上的執行期例外，桌面建置與測試都攔不到。
+> 首次於瀏覽器或實機跑起這些 head 時，應優先確認一個帶時間欄位的畫面。
 
 ---
 
