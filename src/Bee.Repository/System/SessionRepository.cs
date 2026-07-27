@@ -74,8 +74,13 @@ namespace Bee.Repository.System
             if (table.IsEmpty()) { return null; }
             var row = table.Rows[0];
 
-            // If the session has expired, delete it and return null
-            DateTime endTime = ValueUtilities.CDateTime(row["sys_invalid_time"]);
+            // If the session has expired, delete it and return null.
+            // The column is a naive one holding UTC (ADR-032 D1), and `CreateSession` writes
+            // `DateTime.UtcNow` into it. Labelling it says so out loud: the comparison below is
+            // correct either way — `DateTime` compares ticks and ignores `Kind` — so an unlabelled
+            // value would leave the reader unable to tell a deliberate UTC basis from an oversight.
+            DateTime endTime = DateTime.SpecifyKind(
+                ValueUtilities.CDateTime(row["sys_invalid_time"]), DateTimeKind.Utc);
             if (endTime < DateTime.UtcNow)
             {
                 Delete(accessToken);

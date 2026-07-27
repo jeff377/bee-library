@@ -5,8 +5,8 @@
 已採納（2026-07-25）
 
 > 分階段實作中。P0（本 ADR + 系統時間戳 UTC 化）、P1（wire guard、`DateTimeMode` 正規化、
-> 時間來源接縫）已落地，P2 完成時區來源接線（`st_user.time_zone` → session → 用戶端）；
-> P2 的 Connector 雙向轉換與 P3（跨 DB / 跨時區 / 行動端驗證）待做。
+> 時間來源接縫）、P2（時區來源接線 + Connector 雙向轉換）已落地；
+> P3（恆等轉換路徑、跨 DB / 跨時區 / 行動端 tz 可用性驗證）待做。
 
 ## 背景
 
@@ -163,6 +163,10 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 - **guard 掛在 Connector 進出點**，理由同 D4（in-process 無序列化邊界）。
 - **guard 永遠開啟，不受任何部署設定影響。**
 - DB 讀出的時間點值統一 `SpecifyKind(Utc)`；日曆日欄位維持 `Unspecified`。
+  > 實作後查證，此條在本 repo 幾乎沒有落點：`DataSet` 儲存格的 `Kind` 由 `DataColumn` 抹為
+  > `Unspecified`（標記為 `Utc` 是 no-op），`Query<T>` 的 POCO 對映零呼叫端，而僅有的兩處
+  > 到期判斷都與 `DateTime.UtcNow` 比較——`DateTime` 比較看 ticks、不看 `Kind`，本就正確。
+  > 實際只在 `SessionRepository` 標記到期時間，價值在於讓「該欄存 UTC」由隱含依賴變成宣告。
 
 ### D7 / D8：持久化物件與系統時間戳一律 UTC
 
