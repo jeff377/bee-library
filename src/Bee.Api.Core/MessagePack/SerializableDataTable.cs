@@ -7,31 +7,27 @@ namespace Bee.Api.Core.MessagePack
     /// <summary>
     /// Serializable DataTable object used to transport DataTable structure and data.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class SerializableDataTable
     {
         /// <summary>
         /// Gets or sets the table name.
         /// </summary>
-        [Key(0)]
         public string TableName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the column definitions for the table.
         /// </summary>
-        [Key(1)]
         public List<SerializableDataColumn> Columns { get; set; }
 
         /// <summary>
         /// Gets or sets the row data collection.
         /// </summary>
-        [Key(2)]
         public List<SerializableDataRow> Rows { get; set; }
 
         /// <summary>
         /// Gets or sets the primary key column names.
         /// </summary>
-        [Key(3)]
         public List<string> PrimaryKeys { get; set; }
 
         /// <summary>

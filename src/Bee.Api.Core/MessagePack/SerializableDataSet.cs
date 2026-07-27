@@ -6,25 +6,22 @@ namespace Bee.Api.Core.MessagePack
     /// <summary>
     /// Serializable DataSet object used to support cross-platform transmission and storage.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class SerializableDataSet
     {
         /// <summary>
         /// Gets or sets the dataset name.
         /// </summary>
-        [Key(0)]
         public string DataSetName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the collection of all tables.
         /// </summary>
-        [Key(1)]
         public List<SerializableDataTable> Tables { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of relation definitions between tables.
         /// </summary>
-        [Key(2)]
         public List<SerializableDataRelation> Relations { get; set; }
 
         /// <summary>

@@ -12,7 +12,7 @@
 
 ### 變更
 
-- `Bee.Api.Core` / `Bee.Definition`(**破壞性 —— wire**):72 個合約型別(57 個 `Bee.Api.Core.Messages` request/response + 15 個 `Bee.Definition` / `Bee.Api.Contracts` DTO 與非 `[Union]` 集合 item)由整數 `[Key(n)]` 改為 `[MessagePackObject(keyAsPropertyName: true)]`;MessagePack payload 由位置式陣列改為屬性名 map,與 JSON 一致。刻意排除(維持整數鍵):`[Union]` 多型型別(`FilterNode` / `FilterCondition` / `FilterGroup`)、集合容器、以及 `SerializableData*` DataSet/DataTable plumbing。[ADR-030](docs/adr/adr-030-messagepack-name-based-keys.md)
+- `Bee.Api.Core` / `Bee.Definition`(**破壞性 —— wire**):77 個合約型別(57 個 `Bee.Api.Core.Messages` request/response + 15 個 `Bee.Definition` / `Bee.Api.Contracts` DTO 與非 `[Union]` 集合 item + 5 個 `SerializableData*` DataSet/DataTable wire 型別)由整數 `[Key(n)]` 改為 `[MessagePackObject(keyAsPropertyName: true)]`;MessagePack payload 由位置式陣列改為屬性名 map,與 JSON 一致。刻意排除(維持整數鍵):`[Union]` 多型型別(`FilterNode` / `FilterCondition` / `FilterGroup`)、以及 `MessagePackKeyCollectionBase<T>` 的 `ItemsForSerialization` proxy。[ADR-030](docs/adr/adr-030-messagepack-name-based-keys.md)
 - `Bee.Api.Contracts`(**破壞性 —— source**):System / Form / AuditLog 三軸合約介面(及其 DTO)由根命名空間移入 `Bee.Api.Contracts.System` / `.Form` / `.AuditLog`,對齊已軸分的 `Bee.Business.*` 與 `Bee.Api.Core.Messages.*` 層;根命名空間僅保留跨 BO 的 `ExecFunc` request/response。純 source-level —— 序列化實作類別命名空間不變,對 wire 無影響。
 
 ### 升級指引

@@ -2,7 +2,7 @@
 
 ## 狀態
 
-**已採納（Accepted，2026-07-22）** —— 決策已執行。合約與多數 DTO / 集合 item 型別改為 name-based（`keyAsPropertyName`）；`[Union]` 多型階層等為記錄在案的例外（見「執行結果與最終範圍」）。
+**已採納（Accepted，2026-07-22；範圍於 2026-07-27 擴大）** —— 決策已執行。合約與多數 DTO / 集合 item 型別改為 name-based（`keyAsPropertyName`），`SerializableData*` 於 2026-07-27 補做收斂；`[Union]` 多型階層等為記錄在案的例外（見「執行結果與最終範圍」）。
 
 > **go/no-go 決議（2026-07-22，定案）**：**立即執行**。關鍵事實 —— **目前無外部實際消費者**，故 breaking wire change 無相容性成本；先前「綁下一個 major」的暫緩理由（相容性衝擊）消失。以極低代價拿下「消滅 ctor-order footgun + 消滅跨繼承 key 編號協調 + 統一 JSON/MessagePack 心智」。
 
@@ -19,9 +19,35 @@
 | 非-Union 集合 item | ✅ 轉（footgun 消滅點） | *Item、SortField、DepartmentNode、Parameter |
 | **`[Union]` 多型階層** | ❌ **永久例外**（整數鍵） | FilterNode / FilterCondition / FilterGroup |
 | 集合容器 | ➖ 不受影響（走自訂 formatter / proxy） | MessagePackCollectionBase/KeyCollectionBase 子型別 |
-| DataSet/DataTable wire plumbing | ➖ 維持整數鍵 | SerializableData* |
+| DataSet/DataTable wire plumbing | ✅ 轉（2026-07-27 補做，見下） | SerializableData* |
 
 **約束記錄**：`[Union]` 型別**不得**改 `keyAsPropertyName`。新增多型 MessagePack 階層時沿用整數 `[Key]` + `[Union]`。
+
+### 補做：SerializableData\* 收斂（2026-07-27）
+
+原表將 `SerializableData*` 列為「維持整數鍵」，屬**未經論證的遺留**而非有技術理由的例外——
+這五個型別（`SerializableDataSet` / `DataTable` / `DataColumn` / `DataRow` / `DataRelation`）
+是純 DTO，無 `[Union]`、無唯讀成員、無 ctor 位置對號，不具備任何阻礙 `keyAsPropertyName` 的性質。
+留著整數鍵反而讓「MessagePack 一律 name-based」這條規則多出一個需要記憶的例外。
+
+→ 五個型別全數轉 `keyAsPropertyName: true`，移除 22 個 `[Key(n)]`。
+
+**唯一實質代價**：`SerializableDataRow` 是**逐列**序列化，三個成員鍵由整數改為
+`CurrentValues` / `OriginalValues` / `RowState`，每列 wire 增加約 35 bytes。
+惟這些鍵在列間完全重複，payload 管線的 GZip 對此類重複的壓縮率極高，實際淨成本可忽略。
+
+**確認為真例外、維持整數鍵者**（全 repo 掃描後僅此二處）：
+
+| 位置 | 理由 |
+|------|------|
+| `FilterNode` / `FilterCondition` / `FilterGroup` | `[Union]` 多型，與 `keyAsPropertyName` 根本不相容（永久例外） |
+| `MessagePackKeyCollectionBase<T>.ItemsForSerialization`（`[Key(0)]` proxy，唯一子型別 `ParameterCollection`） | opt-out membership 會把 `KeyedCollection` 的 `Count` / `Comparer` / indexer 一併拉上 wire。proxy property 的整數鍵是刻意的最小序列化表面 |
+
+`MessagePackCollectionBase<T>` 的八個子型別（`CurrencySettings` / `UnitSettings` /
+`FilterNodeCollection` / `SortFieldCollection` / `DepartmentNodeCollection` /
+`CompanyNumberFormats` / `CompanyCashRounding` / `CompanyAllowedCurrencies`）走
+`CollectionBaseFormatter` 序列化為 array，鍵style 不適用；其裸 `[MessagePackObject]` 標記
+仍為 `ApiContractRegistry.ConvertForSerialization` 的判斷依據，**不可移除**。
 
 **驗證**：Phase 0 AOT 冒煙（reflection-only 下 keyAsPropertyName OK）；Definition 序列化 201 + Api.Core 序列化/合約 237 全過；全 solution Release build 0 error / 0 warning。（DB 相依 end-to-end 測試因本機 Docker 未啟動未跑，與序列化改動無關。）
 
