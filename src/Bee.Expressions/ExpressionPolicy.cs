@@ -22,6 +22,7 @@ namespace Bee.Expressions
         /// <param name="dbType">The database field type.</param>
         public static Type ToClrType(FieldDbType dbType) => DbTypeConverter.ToType(dbType);
 
+
         /// <summary>
         /// Coerces a raw field value into a non-null value of the field's CLR type. A
         /// <c>null</c>/<see cref="DBNull"/> value becomes the type's default (0 for numerics,
@@ -52,6 +53,14 @@ namespace Bee.Expressions
             {
                 var text = value.ToString();
                 return string.IsNullOrEmpty(text) ? Array.Empty<byte>() : Convert.FromBase64String(text);
+            }
+            // `DateOnly` is the third non-`IConvertible` type on this path. A calendar day is a
+            // `DateOnly` everywhere in the framework except inside a `DataSet`, where the column must
+            // stay `typeof(DateTime)` — so a value arriving from `ValueUtilities.CDate` or the
+            // `Today()` expression helper is widened here, at the boundary (ADR-032 D12, ADR-031).
+            if (clrType == typeof(DateTime) && value is DateOnly dateOnly)
+            {
+                return dateOnly.ToDateTime(TimeOnly.MinValue);
             }
             // The value's runtime type differs from the field's CLR type (for example an int cell
             // feeding a decimal field). Convert when possible; incompatible types surface as an

@@ -31,5 +31,16 @@ namespace Bee.Business.System
         /// Gets or sets the user display name.
         /// </summary>
         public string UserName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the user's IANA time zone id (e.g. Asia/Taipei).
+        /// </summary>
+        /// <remarks>
+        /// Returned so the client can render dates and seed new rows on the user's own day rather
+        /// than the device's — a user filing a Taipei leave request from New York must still default
+        /// to the Taipei date (ADR-032 D12).
+        /// </remarks>
+        public string TimeZone { get; set; } = string.Empty;
+
     }
 }

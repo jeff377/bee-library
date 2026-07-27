@@ -20,6 +20,7 @@ namespace Bee.Api.Core.UnitTests
             public string ApiEncryptionKey { get; set; } = string.Empty;
             public string UserId { get; set; } = string.Empty;
             public string UserName { get; set; } = string.Empty;
+            public string TimeZone { get; set; } = string.Empty;
         }
 
         [Fact]

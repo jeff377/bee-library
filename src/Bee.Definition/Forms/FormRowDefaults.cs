@@ -1,4 +1,5 @@
 using System.Data;
+using Bee.Base;
 using Bee.Base.Data;
 using Bee.Definition.Database;
 
@@ -28,16 +29,20 @@ namespace Bee.Definition.Forms
         /// representation — including the string casing some providers store GUIDs in — is preserved;
         /// a mismatched case would orphan the detail under a case-sensitive key comparison.
         /// </param>
-        public static void Apply(FormTable formTable, DataRow row, object? masterRowId = null)
+        /// <param name="timeZoneId">
+        /// The user's IANA time zone id, used for the <c>Date</c> / <c>DateTime</c> defaults so a new
+        /// row opens on the user's own day (ADR-032 D12). Blank means UTC.
+        /// </param>
+        public static void Apply(FormTable formTable, DataRow row, object? masterRowId = null, string timeZoneId = "")
         {
             ArgumentNullException.ThrowIfNull(row);
             if (formTable?.Fields is null) { return; }
 
             foreach (FormField field in formTable.Fields)
-                ApplyField(field, row, masterRowId);
+                ApplyField(field, row, masterRowId, timeZoneId);
         }
 
-        private static void ApplyField(FormField field, DataRow row, object? masterRowId)
+        private static void ApplyField(FormField field, DataRow row, object? masterRowId, string timeZoneId)
         {
             // Persisted columns only: the database generates AutoIncrement, and
             // relation / virtual fields are never stored.
@@ -57,7 +62,7 @@ namespace Bee.Definition.Forms
             }
             if (row[field.FieldName] != DBNull.Value) { return; }
 
-            var value = DefaultForDbType(field.DbType);
+            var value = DefaultForDbType(field.DbType, timeZoneId);
             if (value != DBNull.Value) { row[field.FieldName] = value; }
         }
 
@@ -66,7 +71,14 @@ namespace Bee.Definition.Forms
         /// <see cref="DBNull.Value"/> for types with no natural empty value.
         /// </summary>
         /// <param name="dbType">The field database type.</param>
-        public static object DefaultForDbType(FieldDbType dbType) => dbType switch
+        /// <param name="timeZoneId">The user's IANA time zone id; blank means UTC.</param>
+        /// <remarks>
+        /// The <c>Date</c> and <c>DateTime</c> cases widen the clock's value to <see cref="DateTime"/>
+        /// because the caller is seeding a <c>DataSet</c> cell — the one place a date cannot be a
+        /// <see cref="DateOnly"/>, since <c>DataColumn</c> coerces through <c>IConvertible</c>
+        /// (ADR-032 D12, ADR-031).
+        /// </remarks>
+        public static object DefaultForDbType(FieldDbType dbType, string timeZoneId = "") => dbType switch
         {
             FieldDbType.String or FieldDbType.Text => string.Empty,
             FieldDbType.Boolean => false,
@@ -74,8 +86,8 @@ namespace Bee.Definition.Forms
             FieldDbType.Integer => 0,
             FieldDbType.Long => 0L,
             FieldDbType.Decimal or FieldDbType.Currency => 0m,
-            FieldDbType.Date => FrameworkClock.Today,
-            FieldDbType.DateTime => FrameworkClock.Now,
+            FieldDbType.Date => FrameworkClock.Today(timeZoneId).ToDateTime(TimeOnly.MinValue),
+            FieldDbType.DateTime => FrameworkClock.Now(timeZoneId),
             FieldDbType.Guid => Guid.Empty,
             FieldDbType.Binary => Array.Empty<byte>(),
             _ => DBNull.Value,

@@ -317,7 +317,12 @@ namespace Bee.UI.Core
             UserInfo = new UserInfo()
             {
                 UserId = loginResponse.UserId,
-                UserName = loginResponse.UserName
+                UserName = loginResponse.UserName,
+                // The server's value is authoritative; an empty one leaves the UserInfo default
+                // rather than silently adopting the device zone, which ADR-032 D4 rules out.
+                TimeZone = StringUtilities.IsNotEmpty(loginResponse.TimeZone)
+                    ? loginResponse.TimeZone
+                    : new UserInfo().TimeZone
             };
             // NOTE: 未來如有其他登入後需設定的屬性，請於此處擴充
         }

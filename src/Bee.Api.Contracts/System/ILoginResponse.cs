@@ -29,5 +29,11 @@ namespace Bee.Api.Contracts.System
         /// Gets the user display name.
         /// </summary>
         string UserName { get; }
+
+        /// <summary>
+        /// Gets the user's IANA time zone id (e.g. Asia/Taipei), the authority for every date the
+        /// client renders or seeds (ADR-032 D12).
+        /// </summary>
+        string TimeZone { get; }
     }
 }

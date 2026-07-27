@@ -60,13 +60,43 @@ namespace Bee.Expressions.UnitTests
         }
 
         [Fact]
-        [DisplayName("常數運算式（無變數）：Today() 回傳今日日期")]
-        public void Evaluate_TodayFunction_NoVariables_ReturnsToday()
+        [DisplayName("Today() 回傳 DateOnly——日期在 DataSet 之外一律以 DateOnly 表達")]
+        public void Evaluate_TodayFunction_ReturnsDateOnly()
         {
-            var result = _evaluator.Evaluate<DateTime>(
+            var result = _evaluator.Evaluate<DateOnly>(
                 "Today()", new Dictionary<string, object?>(StringComparer.Ordinal));
 
-            Assert.Equal(DateTime.Today, result);
+            // 未指定時區的 evaluator 以 UTC 為基準（見 FrameworkClock）。
+            Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), result);
+        }
+
+        [Fact]
+        [DisplayName("Today() 依 evaluator 建構時的時區求值，而非機器時區")]
+        public void Evaluate_TodayFunction_UsesConstructedTimeZone()
+        {
+            // 選一個與 UTC 差距夠大的時區，使「當地今天」在一天中的大部分時間都與 UTC 今天不同；
+            // 兩者相同的時段仍成立（斷言的是與該時區的今天一致，不是與 UTC 不同）。
+            var evaluator = new DynamicExpressoEvaluator("Pacific/Kiritimati");
+            var expected = DateOnly.FromDateTime(
+                TimeZoneInfo.ConvertTimeFromUtc(
+                    DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Pacific/Kiritimati")));
+
+            var result = evaluator.Evaluate<DateOnly>(
+                "Today()", new Dictionary<string, object?>(StringComparer.Ordinal));
+
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        [DisplayName("UtcNow() 供運算式作者明示 UTC 意圖")]
+        public void Evaluate_UtcNowFunction_ReturnsUnspecifiedKind()
+        {
+            var result = _evaluator.Evaluate<DateTime>(
+                "UtcNow()", new Dictionary<string, object?>(StringComparer.Ordinal));
+
+            // Kind 一律 Unspecified：Local 在兩條 wire 上都會位移讀數（ADR-032 D6）。
+            Assert.Equal(DateTimeKind.Unspecified, result.Kind);
+            Assert.True(Math.Abs((DateTime.UtcNow - result).TotalMinutes) < 1);
         }
 
         [Fact]

@@ -22,10 +22,15 @@ namespace Bee.Base.Data
                 case FieldDbType.Decimal:
                 case FieldDbType.Currency:
                     return 0;
+                // No user context reaches here — `AddColumn` and `DbParameterSpecCollection` both
+                // call this to satisfy a NOT NULL column that was given no value. That is a data
+                // integrity backstop, not a value the user reads, so it uses UTC rather than a user
+                // zone (ADR-032 D12). User-facing new-row defaults come from `FormRowDefaults`,
+                // which is given the session's zone.
                 case FieldDbType.Date:
-                    return FrameworkClock.Today;
+                    return DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Unspecified);
                 case FieldDbType.DateTime:
-                    return FrameworkClock.Now;
+                    return DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
                 case FieldDbType.Guid:
                     return Guid.Empty;
                 default:

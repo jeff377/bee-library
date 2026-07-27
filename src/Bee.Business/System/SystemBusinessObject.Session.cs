@@ -81,6 +81,7 @@ namespace Bee.Business.System
                 ApiEncryptionKey = encryptedKey,
                 UserId = sessionInfo.UserId,
                 UserName = sessionInfo.UserName,
+                TimeZone = sessionInfo.TimeZone,
             };
         }
 

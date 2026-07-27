@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using DynamicExpresso;
 using DynamicExpresso.Exceptions;
-using Bee.Base.Data;
+using Bee.Base;
 
 namespace Bee.Expressions
 {
@@ -26,25 +26,43 @@ namespace Bee.Expressions
         /// <summary>
         /// Initializes a new instance of <see cref="DynamicExpressoEvaluator"/>.
         /// </summary>
-        public DynamicExpressoEvaluator()
+        /// <param name="timeZoneId">
+        /// The user's IANA time zone id, used by the <c>Today()</c> helper. Blank means UTC.
+        /// </param>
+        /// <remarks>
+        /// The zone is fixed per evaluator rather than resolved per call: an evaluator is built for
+        /// one user's session (server) or one signed-in user (client), and its compiled-expression
+        /// cache is keyed only by expression text, so a zone that varied per call would let one
+        /// user's cached lambda close over another user's zone.
+        /// </remarks>
+        public DynamicExpressoEvaluator(string timeZoneId = "")
         {
             // Default options register primitive and common types (Math, Convert, ...) but no
             // reflection, IO, or arbitrary type loading — those remain unknown identifiers.
             _interpreter = new Interpreter(InterpreterOptions.Default);
-            RegisterHelperFunctions(_interpreter);
+            RegisterHelperFunctions(_interpreter, timeZoneId);
         }
 
         /// <summary>
         /// Registers the curated helper functions available to every expression.
         /// </summary>
-        private static void RegisterHelperFunctions(Interpreter interpreter)
+        /// <param name="interpreter">The interpreter to register into.</param>
+        /// <param name="timeZoneId">The user's IANA time zone id; blank means UTC.</param>
+        private static void RegisterHelperFunctions(Interpreter interpreter, string timeZoneId)
         {
             // Expose Guid so expressions can test key/reference fields (for example
             // `customer_rowid != Guid.Empty`). Guid is a value type with no IO surface.
             interpreter.Reference(typeof(Guid));
 
-            interpreter.SetFunction("Today", (Func<DateTime>)(() => FrameworkClock.Today));
-            interpreter.SetFunction("Now", (Func<DateTime>)(() => FrameworkClock.Now));
+            // `Today()` yields a calendar day in the user's zone (ADR-032 D12). It is a DateOnly
+            // like every other date in the framework; `ExpressionPolicy.CoerceValue` widens it when
+            // the result lands in a DataSet cell, the one place a date must be a DateTime.
+            interpreter.SetFunction("Today", (Func<DateOnly>)(() => FrameworkClock.Today(timeZoneId)));
+            // `Now()` deliberately does no time-zone work beyond the same lookup: an instant written
+            // into a DateTime cell is subject to the Connector's conversion, and expressions
+            // computing on instants are rare enough that the author picks the semantics (D12).
+            interpreter.SetFunction("Now", (Func<DateTime>)(() => FrameworkClock.Now(timeZoneId)));
+            interpreter.SetFunction("UtcNow", (Func<DateTime>)(() => DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)));
             interpreter.SetFunction("IsNullOrEmpty", (Func<string?, bool>)string.IsNullOrEmpty);
             interpreter.SetFunction("IsNullOrWhiteSpace", (Func<string?, bool>)string.IsNullOrWhiteSpace);
         }

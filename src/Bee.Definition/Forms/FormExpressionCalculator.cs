@@ -240,9 +240,13 @@ namespace Bee.Definition.Forms
             {
                 if (!row.Table.Columns.Contains(field.FieldName)) { continue; }
                 if (!IsEmptyValue(row[field.FieldName])) { continue; }
-                var clrType = ExpressionPolicy.ToClrType(field.DbType);
-                var value = _evaluator.Evaluate(field.DefaultValueExpression, variables, clrType);
-                var newValue = value ?? (object)DBNull.Value;
+                // Evaluated without a forced return type, then coerced: the engine's value domain and the
+                // DataSet's differ for dates — `Today()` yields a DateOnly while the cell holds a
+                // DateTime (ADR-032 D12, ADR-031) — and forcing the cell's type at parse time would
+                // make the engine reject its own helper. `CoerceValue` performs every widening the
+                // return type used to, plus that one.
+                var value = _evaluator.Evaluate(field.DefaultValueExpression, variables, typeof(object));
+                var newValue = value is null ? (object)DBNull.Value : ExpressionPolicy.CoerceValue(value, field.DbType);
                 if (Equals(newValue, row[field.FieldName])) { continue; }
                 row[field.FieldName] = newValue;
                 changed.Add(field.FieldName);
@@ -266,8 +270,9 @@ namespace Bee.Definition.Forms
             {
                 if (!row.Table.Columns.Contains(field.FieldName)) { continue; }
 
-                var clrType = ExpressionPolicy.ToClrType(field.DbType);
-                var result = _evaluator.Evaluate(field.ValueExpression, variables, clrType);
+                // Coerced after evaluation rather than forced at parse time — see ApplyDefaults.
+                var result = ExpressionPolicy.CoerceValue(
+                    _evaluator.Evaluate(field.ValueExpression, variables, typeof(object)), field.DbType);
 
                 if (result is decimal numeric)
                 {
@@ -281,7 +286,7 @@ namespace Bee.Definition.Forms
                     row[field.FieldName] = newValue;
                     changed.Add(field.FieldName);
                 }
-                variables[field.FieldName] = ExpressionPolicy.CoerceValue(result, field.DbType);
+                variables[field.FieldName] = result;
             }
             return changed;
         }
