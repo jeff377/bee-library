@@ -267,7 +267,7 @@ namespace Bee.Business.Form
         /// <param name="context">The save context.</param>
         protected virtual void DoBeforeSave(SaveContext context)
         {
-            RuleProcessor.ApplyBeforeSave(context.Schema, context.DataSet, BuildRoundingContext());
+            RuleProcessor.ApplyBeforeSave(context.Schema, context.DataSet, BuildRoundingContext(), ResolveSessionTimeZone());
         }
 
         /// <summary>
@@ -337,7 +337,7 @@ namespace Bee.Business.Form
         protected virtual void DoBeforeDelete(DeleteContext context)
         {
             if (context.Snapshot != null)
-                RuleProcessor.ApplyBeforeDelete(context.Schema, context.Snapshot);
+                RuleProcessor.ApplyBeforeDelete(context.Schema, context.Snapshot, ResolveSessionTimeZone());
         }
 
         /// <summary>

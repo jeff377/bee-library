@@ -26,29 +26,37 @@ namespace Bee.Expressions
         /// <summary>
         /// Initializes a new instance of <see cref="DynamicExpressoEvaluator"/>.
         /// </summary>
-        /// <param name="timeZoneId">
-        /// The user's IANA time zone id, used by the <c>Today()</c> helper. Blank means UTC.
-        /// </param>
-        /// <remarks>
-        /// The zone is fixed per evaluator rather than resolved per call: an evaluator is built for
-        /// one user's session (server) or one signed-in user (client), and its compiled-expression
-        /// cache is keyed only by expression text, so a zone that varied per call would let one
-        /// user's cached lambda close over another user's zone.
-        /// </remarks>
-        public DynamicExpressoEvaluator(string timeZoneId = "")
+        public DynamicExpressoEvaluator()
         {
             // Default options register primitive and common types (Math, Convert, ...) but no
             // reflection, IO, or arbitrary type loading — those remain unknown identifiers.
             _interpreter = new Interpreter(InterpreterOptions.Default);
-            RegisterHelperFunctions(_interpreter, timeZoneId);
+            RegisterHelperFunctions(_interpreter);
         }
+
+        /// <summary>
+        /// The time zone the helper functions read, for the duration of one <c>Evaluate</c> call.
+        /// </summary>
+        /// <remarks>
+        /// DynamicExpresso binds a helper to a fixed delegate at registration, so a per-call zone has
+        /// to reach the delegate through captured state. This field is that channel, and it is a
+        /// confined implementation detail: the public contract takes the zone as an argument
+        /// (ADR-032 D13), and this evaluator is a singleton whose helpers must therefore not hold one
+        /// user's zone.
+        ///
+        /// <c>[ThreadStatic]</c> rather than <c>AsyncLocal</c> because the window is one synchronous
+        /// <c>lambda.Invoke</c> — no await intervenes, so the value cannot leak to another logical
+        /// call. Keeping the zone out of the cache key is the point: one compiled lambda serves every
+        /// user regardless of zone.
+        /// </remarks>
+        [ThreadStatic]
+        private static string? t_timeZoneId;
 
         /// <summary>
         /// Registers the curated helper functions available to every expression.
         /// </summary>
         /// <param name="interpreter">The interpreter to register into.</param>
-        /// <param name="timeZoneId">The user's IANA time zone id; blank means UTC.</param>
-        private static void RegisterHelperFunctions(Interpreter interpreter, string timeZoneId)
+        private static void RegisterHelperFunctions(Interpreter interpreter)
         {
             // Expose Guid so expressions can test key/reference fields (for example
             // `customer_rowid != Guid.Empty`). Guid is a value type with no IO surface.
@@ -57,18 +65,19 @@ namespace Bee.Expressions
             // `Today()` yields a calendar day in the user's zone (ADR-032 D12). It is a DateOnly
             // like every other date in the framework; `ExpressionPolicy.CoerceValue` widens it when
             // the result lands in a DataSet cell, the one place a date must be a DateTime.
-            interpreter.SetFunction("Today", (Func<DateOnly>)(() => FrameworkClock.Today(timeZoneId)));
+            interpreter.SetFunction("Today", (Func<DateOnly>)(() => FrameworkClock.Today(t_timeZoneId ?? string.Empty)));
             // `Now()` deliberately does no time-zone work beyond the same lookup: an instant written
             // into a DateTime cell is subject to the Connector's conversion, and expressions
             // computing on instants are rare enough that the author picks the semantics (D12).
-            interpreter.SetFunction("Now", (Func<DateTime>)(() => FrameworkClock.Now(timeZoneId)));
+            interpreter.SetFunction("Now", (Func<DateTime>)(() => FrameworkClock.Now(t_timeZoneId ?? string.Empty)));
             interpreter.SetFunction("UtcNow", (Func<DateTime>)(() => DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)));
             interpreter.SetFunction("IsNullOrEmpty", (Func<string?, bool>)string.IsNullOrEmpty);
             interpreter.SetFunction("IsNullOrWhiteSpace", (Func<string?, bool>)string.IsNullOrWhiteSpace);
         }
 
         /// <inheritdoc />
-        public object? Evaluate(string expression, IReadOnlyDictionary<string, object?> variables, Type returnType)
+        public object? Evaluate(string expression, IReadOnlyDictionary<string, object?> variables, Type returnType,
+            string timeZoneId = "")
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(expression);
             ArgumentNullException.ThrowIfNull(variables);
@@ -86,13 +95,24 @@ namespace Bee.Expressions
                 arguments[i] = new Parameter(names[i], variables[names[i]] ?? (object)string.Empty);
             }
 
-            return lambda.Invoke(arguments);
+            // Scope the zone to this invocation only, and restore whatever an outer call had: a
+            // computed field's expression can be evaluated inside another evaluation.
+            var previous = t_timeZoneId;
+            t_timeZoneId = timeZoneId;
+            try
+            {
+                return lambda.Invoke(arguments);
+            }
+            finally
+            {
+                t_timeZoneId = previous;
+            }
         }
 
         /// <inheritdoc />
-        public T Evaluate<T>(string expression, IReadOnlyDictionary<string, object?> variables)
+        public T Evaluate<T>(string expression, IReadOnlyDictionary<string, object?> variables, string timeZoneId = "")
         {
-            var result = Evaluate(expression, variables, typeof(T));
+            var result = Evaluate(expression, variables, typeof(T), timeZoneId);
             return result is null ? default! : (T)result;
         }
 

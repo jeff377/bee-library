@@ -26,23 +26,23 @@ namespace Bee.Business.Form
         }
 
         /// <inheritdoc />
-        public void ApplyBeforeSave(FormSchema schema, DataSet dataSet, RoundingContext roundingContext)
+        public void ApplyBeforeSave(FormSchema schema, DataSet dataSet, RoundingContext roundingContext, string timeZoneId = "")
         {
             ArgumentNullException.ThrowIfNull(schema);
             ArgumentNullException.ThrowIfNull(dataSet);
             ArgumentNullException.ThrowIfNull(roundingContext);
 
-            _calculator.ApplyFieldExpressions(schema, dataSet, roundingContext);
-            _calculator.ValidateRules(schema, dataSet, FormRuleTrigger.BeforeSave);
+            _calculator.ApplyFieldExpressions(schema, dataSet, roundingContext, timeZoneId);
+            _calculator.ValidateRules(schema, dataSet, FormRuleTrigger.BeforeSave, timeZoneId);
         }
 
         /// <inheritdoc />
-        public void ApplyBeforeDelete(FormSchema schema, DataSet snapshot)
+        public void ApplyBeforeDelete(FormSchema schema, DataSet snapshot, string timeZoneId = "")
         {
             ArgumentNullException.ThrowIfNull(schema);
             ArgumentNullException.ThrowIfNull(snapshot);
 
-            _calculator.ValidateRules(schema, snapshot, FormRuleTrigger.BeforeDelete);
+            _calculator.ValidateRules(schema, snapshot, FormRuleTrigger.BeforeDelete, timeZoneId);
         }
     }
 }

@@ -21,9 +21,19 @@ namespace Bee.Expressions
         /// <param name="variables">The variable name/value pairs available to the expression.</param>
         /// <param name="returnType">The expected result type (for example <see cref="bool"/> for a
         /// condition or <see cref="decimal"/> for a computed amount).</param>
+        /// <param name="timeZoneId">
+        /// The user's IANA time zone id, seen by the <c>Today()</c> and <c>Now()</c> helpers.
+        /// Blank means UTC.
+        /// </param>
         /// <exception cref="ExpressionEvaluationException">The expression cannot be parsed or references
         /// an identifier outside the evaluation sandbox.</exception>
-        object? Evaluate(string expression, IReadOnlyDictionary<string, object?> variables, Type returnType);
+        /// <remarks>
+        /// The zone is a per-call argument, not evaluator state: an implementation is typically
+        /// registered as a singleton and serves every user, so a zone fixed at construction could
+        /// only ever be one user's (ADR-032 D13).
+        /// </remarks>
+        object? Evaluate(string expression, IReadOnlyDictionary<string, object?> variables, Type returnType,
+            string timeZoneId = "");
 
         /// <summary>
         /// Evaluates <paramref name="expression"/> and returns the result as <typeparamref name="T"/>.
@@ -31,9 +41,10 @@ namespace Bee.Expressions
         /// <typeparam name="T">The expected result type.</typeparam>
         /// <param name="expression">The expression text.</param>
         /// <param name="variables">The variable name/value pairs available to the expression.</param>
+        /// <param name="timeZoneId">The user's IANA time zone id; blank means UTC.</param>
         /// <exception cref="ExpressionEvaluationException">The expression cannot be parsed or references
         /// an identifier outside the evaluation sandbox.</exception>
-        T Evaluate<T>(string expression, IReadOnlyDictionary<string, object?> variables);
+        T Evaluate<T>(string expression, IReadOnlyDictionary<string, object?> variables, string timeZoneId = "");
 
         /// <summary>
         /// Returns the names of the variables (unknown identifiers) that <paramref name="expression"/>

@@ -25,6 +25,15 @@ namespace Bee.UI.Avalonia.DataObjects
     public sealed class FormLiveComputation
     {
         private readonly FormSchema _schema;
+        /// <summary>
+        /// The signed-in user's IANA time zone id, or blank (meaning UTC) before login.
+        /// </summary>
+        /// <remarks>
+        /// Read per call rather than captured at construction: this object outlives a sign-in, and a
+        /// stale zone would silently date a new row by the previous user's day (ADR-032 D13).
+        /// </remarks>
+        private static string TimeZoneId => Bee.UI.Core.ClientInfo.UserInfo?.TimeZone ?? string.Empty;
+
         private readonly FormExpressionCalculator _calculator;
         private readonly RoundingContext _roundingContext;
         // Dependency maps are built lazily per table (parse-once) and reused for every edit.
@@ -98,7 +107,7 @@ namespace Bee.UI.Avalonia.DataObjects
             {
                 // Skip the whole pass when no computed field references the changed field.
                 if (!GetDependencyMap(formTable).ContainsKey(changedField)) { return []; }
-                return _calculator.ApplyComputedRow(_schema, formTable, row, _roundingContext);
+                return _calculator.ApplyComputedRow(_schema, formTable, row, _roundingContext, TimeZoneId);
             });
         }
 
@@ -119,7 +128,7 @@ namespace Bee.UI.Avalonia.DataObjects
             var formTable = _schema.Tables?.GetOrDefault(tableName);
             if (formTable?.Fields is null) { return []; }
 
-            return RunGuarded(() => _calculator.ApplyDefaultRow(formTable, row));
+            return RunGuarded(() => _calculator.ApplyDefaultRow(formTable, row, TimeZoneId));
         }
 
         /// <summary>
@@ -143,8 +152,8 @@ namespace Bee.UI.Avalonia.DataObjects
             return RunGuarded(() =>
             {
                 var changed = new List<string>();
-                changed.AddRange(_calculator.ApplyDefaultRow(formTable, row));
-                foreach (var field in _calculator.ApplyComputedRow(_schema, formTable, row, _roundingContext)
+                changed.AddRange(_calculator.ApplyDefaultRow(formTable, row, TimeZoneId));
+                foreach (var field in _calculator.ApplyComputedRow(_schema, formTable, row, _roundingContext, TimeZoneId)
                              .Where(field => !changed.Contains(field, StringComparer.OrdinalIgnoreCase)))
                 {
                     changed.Add(field);

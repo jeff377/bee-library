@@ -71,18 +71,18 @@ namespace Bee.Expressions.UnitTests
         }
 
         [Fact]
-        [DisplayName("Today() 依 evaluator 建構時的時區求值，而非機器時區")]
-        public void Evaluate_TodayFunction_UsesConstructedTimeZone()
+        [DisplayName("Today() 依呼叫時傳入的時區求值，而非機器時區")]
+        public void Evaluate_TodayFunction_UsesSuppliedTimeZone()
         {
             // 選一個與 UTC 差距夠大的時區，使「當地今天」在一天中的大部分時間都與 UTC 今天不同；
             // 兩者相同的時段仍成立（斷言的是與該時區的今天一致，不是與 UTC 不同）。
-            var evaluator = new DynamicExpressoEvaluator("Pacific/Kiritimati");
+            // 同一個 evaluator 服務不同時區——時區走引數，不是 evaluator 狀態（ADR-032 D13）。
             var expected = DateOnly.FromDateTime(
                 TimeZoneInfo.ConvertTimeFromUtc(
                     DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Pacific/Kiritimati")));
 
-            var result = evaluator.Evaluate<DateOnly>(
-                "Today()", new Dictionary<string, object?>(StringComparer.Ordinal));
+            var result = _evaluator.Evaluate<DateOnly>(
+                "Today()", new Dictionary<string, object?>(StringComparer.Ordinal), "Pacific/Kiritimati");
 
             Assert.Equal(expected, result);
         }
