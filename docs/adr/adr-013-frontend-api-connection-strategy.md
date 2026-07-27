@@ -111,8 +111,6 @@ Web / Blazor 環境結構性不同,**不該勉強套用**。
 
 - 依賴關係視覺化:`docs/dependency-map.md`
 - 各前端的實際操作範例:`docs/development-cookbook.md` §「Frontend API Connection Patterns」
-- 桌面端 connection 流程的 sync→async 演進:`docs/plans/plan-deprecate-sync-api.md`
-- `Bee.UI.Maui` Phase 0 placeholder 設計:`docs/plans/plan-add-bee-ui-maui.md`
 - 後端 DI 取代靜態 Service Locator(影響 Blazor host 註冊方式):[ADR-011](adr-011-di-replaces-service-locator.md)
 
 ## 不在範圍

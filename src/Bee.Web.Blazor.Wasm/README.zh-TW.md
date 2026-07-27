@@ -25,8 +25,6 @@ CRUD UI 已上線：
 - 後端 round-trip 方法（`LoadAsync` / `SaveAsync` / `DeleteAsync` / `NewAsync`）已完整實作，透過 API connector 呼叫後端 BO。
 - `DynamicGrid`（清單檢視）與 `FormPage`（清單 + 主明細，透過共享的 `FormDataObject` 串接）皆已實作。
 
-完整設計請見 [docs/plans/plan-blazor-web-integration.md](../../docs/plans/plan-blazor-web-integration.md)。
-
 ## 相依約束
 
 **嚴禁相依任何後端組件**（Repository / Business / Hosting 等）—— 瀏覽器執行環境無法載入伺服端組件。此約束由相依鏈強制：`Bee.Api.Client → Bee.Api.Core → Bee.Api.Contracts/Definition` 全為純資料/協定層。

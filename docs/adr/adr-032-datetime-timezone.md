@@ -6,7 +6,6 @@
 
 > 分階段實作中。P0（本 ADR + 系統時間戳 UTC 化）與 P1（wire guard、`DateTimeMode` 正規化、
 > 時間來源接縫）已落地；P2（Connector 雙向轉換）、P3（跨 DB / 跨時區 / 行動端驗證）待做。
-> 執行細節見 `docs/plans/plan-datetime-timezone.md`。
 
 ## 背景
 
@@ -298,8 +297,6 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 - **新值必須加在列舉尾端**：`FieldDbType` 未顯式指定數值且會上 MessagePack wire，
   中間插值會讓其後所有值位移，打斷既有 payload 與定義檔相容性。
 
-討論稿見 `docs/plans/plan-time-semantics.md`。
-
 ## 後果
 
 **正面**
@@ -322,5 +319,3 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 ## 相關
 
 - ADR-031（日曆日欄位語意以顯式標記承載）——本 ADR 的 D4 判斷依據
-- `docs/plans/plan-datetime-timezone.md`——執行計畫與階段拆分
-- `docs/plans/plan-time-semantics.md`——`FieldDbType.Time` 討論稿

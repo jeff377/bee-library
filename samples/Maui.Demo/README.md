@@ -2,7 +2,7 @@
 
 **English** | [繁體中文](README.zh-TW.md)
 
-A Bee.NET sample: a MAUI client that talks to the JSON-RPC API hosted by `samples/QuickStart.Server`, rendering the shared `Define/FormSchema/Employee.FormSchema.xml`. Maps to [plan-samples-structure.md](../../docs/plans/plan-samples-structure.md) P2 and [plan-maui-integration.md](../../docs/plans/plan-maui-integration.md) Phase 2.
+A Bee.NET sample: a MAUI client that talks to the JSON-RPC API hosted by `samples/QuickStart.Server`, rendering the shared `Define/FormSchema/Employee.FormSchema.xml`.
 
 ## What it proves
 

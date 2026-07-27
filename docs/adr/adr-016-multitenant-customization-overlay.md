@@ -155,7 +155,7 @@ CustomizeOnlyStorage（嚴格只讀 {CustomizePath}/{customizeId}/...，無檔�
 
 ### Oracle `''=NULL` 與 `customize_id` 的 nullability
 
-`customize_id` 標準版常態為空。Oracle 把 `''` 視為 `NULL`，使「String NOT NULL 且常態為空」在 Oracle fresh CREATE 下無法成立。處理見 [plan-oracle-string-nullability](../plans/plan-oracle-string-nullability.md)：Oracle dialect 對 String 欄一律建 nullable，讀取端 `ValueUtilities.CStr(null)→""` 正規化，上層 C# 永遠看到空字串、不見 null；其餘方言維持 `NOT NULL` + `DEFAULT ''`。
+`customize_id` 標準版常態為空。Oracle 把 `''` 視為 `NULL`，使「String NOT NULL 且常態為空」在 Oracle fresh CREATE 下無法成立。處理方式：Oracle dialect 對 String 欄一律建 nullable，讀取端 `ValueUtilities.CStr(null)→""` 正規化，上層 C# 永遠看到空字串、不見 null；其餘方言維持 `NOT NULL` + `DEFAULT ''`。
 
 ### 「列舉全部 program」場景不給聯集
 
@@ -181,5 +181,3 @@ progId 級查找只解「給定 progId 取其一」，不直接給 base ∪ cust
 
 - [ADR-012：Session 公司情境模型](adr-012-session-company-context.md) — `CustomizeId` 載體沿用其 `CompanyInfo` / `SessionInfo` 模式
 - [ADR-009：快取實作](adr-009-cache-implementation.md) — override 層重用其 `CachePrefix` 隔離機制
-- [計畫：多租戶客製化](../plans/plan-multitenant-customization.md) — 五階段實作細節
-- [計畫：Oracle VARCHAR2 string nullability 修正](../plans/plan-oracle-string-nullability.md) — `customize_id` 在 Oracle 的 nullability 處理

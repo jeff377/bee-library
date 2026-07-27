@@ -129,10 +129,6 @@ stage.
 
 ## Related
 
-- Plans:
-  - [plan-jsonrpc-frontend-integration](../../docs/plans/plan-jsonrpc-frontend-integration.md)
-  - [plan-jsonrpc-formschema-formlayout](../../docs/plans/plan-jsonrpc-formschema-formlayout.md)
-  - [plan-web-js-demo-formdef-rendering](../../docs/plans/plan-web-js-demo-formdef-rendering.md)
 - Integration guide: [docs/jsonrpc-frontend-integration.md](../../docs/jsonrpc-frontend-integration.md)
 - Backend host: [samples/QuickStart.Server](../QuickStart.Server/)
 - Demo credentials: [samples/Bee.Samples.Shared/DemoCredentials.cs](../Bee.Samples.Shared/DemoCredentials.cs)

@@ -8,7 +8,7 @@
 
 Bee 的定義型別（`FormSchema`、`TableSchema`、`ProgramSettings`、`FormLayout`、`LanguageResource`、`DbCategorySettings`、`PermissionModels` 等）以 **XML 持久化**，且 client 端透過 `ClientDefineAccess.GetDefineAsync<T>` → `XmlCodec.Deserialize`（`System.Xml.Serialization.XmlSerializer`）反序列化。桌面（`net10.0`）與瀏覽器（Avalonia WASM，非 AOT）執行環境**有 `Reflection.Emit`**，XmlSerializer 走 **code-generated** 路徑，多年來運作正常。
 
-新增 `Bee.Northwind.iOS`（Avalonia iOS head，見 `docs/plans/plan-northwind-ios.md`）時，連線 + 登入成功，但**載入任何 XML 定義即崩**。根因：**iOS 禁止動態產碼（無 `Reflection.Emit`）**，XmlSerializer 退回 **reflection-only** 路徑（`ReflectionXmlSerializationReader`），暴露 Bee 定義型別兩個與該路徑不相容之處：
+新增 `Bee.Northwind.iOS`（Avalonia iOS head）時，連線 + 登入成功，但**載入任何 XML 定義即崩**。根因：**iOS 禁止動態產碼（無 `Reflection.Emit`）**，XmlSerializer 退回 **reflection-only** 路徑（`ReflectionXmlSerializationReader`），暴露 Bee 定義型別兩個與該路徑不相容之處：
 
 1. **集合多載 `Add` → `AmbiguousMatchException`**：reflection reader 以 `Type.GetMethod("Add")`（**不帶參數型別**）尋找集合的 add 方法。Bee 集合（`KeyCollectionBase<T>` / `CollectionBase<T>` 子類）通常有多個 public `Add`：繼承的 `Add(T)`、基底介面的 `Add(I…CollectionItem)`、各集合的便利 `Add(string, …)`。多於一個即丟 `AmbiguousMatchException`。
 2. **集合無無參數建構子 → `MissingMethodException`**：reflection reader 以 `Activator.CreateInstance(type)` 建立集合。許多定義集合是 **owner-coupled**（建構子只收 owner，如 `ProgramCategoryCollection(ProgramSettings)`），無 public 無參數建構子。code-gen 路徑用 getter 的既有實例（lazy-init with owner）故無此需求，reflection 路徑則需要。
@@ -42,8 +42,3 @@ Bee 的定義型別（`FormSchema`、`TableSchema`、`ProgramSettings`、`FormLa
   2. **必備 public 無參數建構子**（owner-coupled 集合除了 owner 建構子外，補一個 `: base()`）。
   3. 序列化的 **item 型別亦須有 public 無參數建構子**。
   以 reflection XmlSerializer 相容為硬性要求，避免未來新型別再於 AOT 目標踩雷。
-
-## 參考
-
-- `docs/plans/plan-northwind-ios.md`（階段 3 結果）
-- 記憶：`ios-xmlserializer-ambiguous-add`

@@ -158,5 +158,3 @@ Bee.DefineEditor.app/
 - DatabaseSettings 實連測試（交 server 端健康檢查）
 - 多人協作 / 鎖定機制
 - Customize 層覆蓋編輯（Phase 6 後若需要另議；目前在方案樹上不標示覆蓋）
-
-詳見 [docs/plans/archive/plan-define-editor.md](../../docs/plans/archive/plan-define-editor.md)。

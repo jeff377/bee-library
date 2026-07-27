@@ -204,5 +204,3 @@ EnterCompany(companyId)    ←→  LeaveCompany()
 ## 相關文件
 
 - [ADR-010：邏輯資料庫分類（DbCategory）](adr-010-logical-database-category.md) — `company` 類 DB 是本 ADR 的主要消費者
-- [計畫：SystemBO Session 生命週期方法](../plans/plan-system-bo-session-lifecycle.md) — 實作細節與 phase 拆分
-- [計畫：bo repo 三類資料庫存取路由](../plans/plan-bo-repo-db-routing.md) — Repository 層消費 `SessionInfo.CompanyId` 的路由機制

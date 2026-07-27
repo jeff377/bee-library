@@ -6,7 +6,7 @@
 
 ## 背景
 
-`Bee.Db` 在 SQLite provider 加入後（見 [`plan-sqlite-provider.md`](../plans/plan-sqlite-provider.md)），命名空間結構出現以下歸屬模糊問題：
+`Bee.Db` 在 SQLite provider 加入後，命名空間結構出現以下歸屬模糊問題：
 
 1. `Bee.Db.Sql` 命名籠統，實質僅放 DML 構件（query composition + IUD builders），但字面易讓人誤以為連 DDL 也包含。
 2. `Bee.Db.Providers` 根層平鋪混放四種職能介面：
@@ -107,5 +107,4 @@ provider 註冊入口（`using Bee.Db.Providers.Sqlite; DbDialectRegistry.Regist
 
 ## 相關文件
 
-- 計畫：[`plan-bee-db-namespace-restructure.md`](../plans/plan-bee-db-namespace-restructure.md)
 - 套件 README：[`src/Bee.Db/README.md`](../../src/Bee.Db/README.md)

@@ -102,8 +102,3 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 - 每個控件 / 概念的**標準行為與外觀契約**（綁定、唯讀、必填、FormMode、AllowEditModes、Layout、Grid）在此一處可見、可比對。
 - 日後在 Maui / Blazor 實作對應控件時，以本中心每個案例的行為為驗收基準：相同 schema / 假資料 / FormMode 下，跨平台應呈現一致的綁定與狀態切換。
 - 控件外觀變更（如唯讀去框）先在此目視驗證，再回推其他平台。
-
-## Plan
-
-- 重新設計（主題導向 IA + 8 主題）：[plan-avalonia-demo-center-redesign.md](../../docs/plans/plan-avalonia-demo-center-redesign.md)
-- 第一版（建立 Demo Center shell）：[plan-avalonia-demo-center.md](../../docs/plans/plan-avalonia-demo-center.md)

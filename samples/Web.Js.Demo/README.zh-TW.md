@@ -121,10 +121,6 @@ Save                                     → server 回傳 refreshed DataSet
 
 ## 相關文件
 
-- 計畫：
-  - [plan-jsonrpc-frontend-integration](../../docs/plans/plan-jsonrpc-frontend-integration.md)
-  - [plan-jsonrpc-formschema-formlayout](../../docs/plans/plan-jsonrpc-formschema-formlayout.md)
-  - [plan-web-js-demo-formdef-rendering](../../docs/plans/plan-web-js-demo-formdef-rendering.md)
 - 整合指引：[docs/jsonrpc-frontend-integration.zh-TW.md](../../docs/jsonrpc-frontend-integration.zh-TW.md)
 - 後端 host：[samples/QuickStart.Server](../QuickStart.Server/)
 - Demo 帳密：[samples/Bee.Samples.Shared/DemoCredentials.cs](../Bee.Samples.Shared/DemoCredentials.cs)

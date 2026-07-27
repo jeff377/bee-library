@@ -101,7 +101,7 @@ Bee.NET 為純 .NET 10 新框架、未發佈、無相容包袱，適合一次完
 
 `KeyObjectCache<T>.Get` 原本對「`CreateInstance` 回 null」的結果**不寫入**快取——下次同一個 key 再來會穿透到資料源（檔案 IO / DB 查詢）。攻擊者送無效 key、程式 bug 用錯誤 key、上層忘記前置檢查都會放大這個 cache penetration 問題。
 
-[`plan-keyobjectcache-negative-cache`](../plans/plan-keyobjectcache-negative-cache.md) 引入負向快取：
+`KeyObjectCache` 引入負向快取：
 
 ### 設計要點
 
@@ -131,7 +131,5 @@ Bee.NET 為純 .NET 10 新框架、未發佈、無相容包袱，適合一次完
 
 ## 相關文件
 
-- 計畫：[`plan-cache-migration.md`](../plans/plan-cache-migration.md)
-- 計畫：[`plan-keyobjectcache-negative-cache.md`](../plans/plan-keyobjectcache-negative-cache.md)
 - 套件 README：[`src/Bee.ObjectCaching/README.md`](../../src/Bee.ObjectCaching/README.md)
 - 相關 commit：[`8099d03`](https://github.com/jeff377/bee-library/commit/8099d03)（移除 `DbChangeMonitor` placeholder）、[`715c159e`](https://github.com/jeff377/bee-library/commit/715c159e)（負向快取）

@@ -2,7 +2,7 @@
 
 [English](README.md) | **繁體中文**
 
-Bee.NET 範例專案：MAUI 用戶端，連 `samples/QuickStart.Server` 的 JSON-RPC API，渲染共用 `Define/FormSchema/Employee.FormSchema.xml`。對應 [plan-samples-structure.md](../../docs/plans/plan-samples-structure.md) P2 與 [plan-maui-integration.md](../../docs/plans/plan-maui-integration.md) Phase 2。
+Bee.NET 範例專案：MAUI 用戶端，連 `samples/QuickStart.Server` 的 JSON-RPC API，渲染共用 `Define/FormSchema/Employee.FormSchema.xml`。
 
 ## 它要證明什麼
 

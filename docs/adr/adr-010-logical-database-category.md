@@ -182,7 +182,7 @@ DatabaseItem.Id          ──►  業務程式取連線的入口（執行時�
 
 ## 後續延伸：執行時路由（DbScope + IRepositoryDatabaseRouter，2026-05-15）
 
-本 ADR 原本明言「執行時取連線只用 `DatabaseItem.Id`，不經過 CategoryId」——但留下了「業務層怎麼從當前情境決定 `databaseId`」這個未規範的空白。[`plan-bo-repo-db-routing`](../plans/plan-bo-repo-db-routing.md) 補上這層，配合 [ADR-012](adr-012-session-company-context.md) 的 session 公司情境模型成形：
+本 ADR 原本明言「執行時取連線只用 `DatabaseItem.Id`，不經過 CategoryId」——但留下了「業務層怎麼從當前情境決定 `databaseId`」這個未規範的空白。`DbScope` + `IRepositoryDatabaseRouter` 補上這層，配合 [ADR-012](adr-012-session-company-context.md) 的 session 公司情境模型成形：
 
 ### `DbScope` enum：bo repo 的執行時存取意圖
 
@@ -237,4 +237,3 @@ P1 落地 `CompanyInfo` 時原本含 `LogDatabaseId` 欄位，預期某些公司
 - [ADR-005：FormSchema 定義驅動架構](adr-005-formschema-driven.md)
 - [ADR-012：Session 公司情境模型](adr-012-session-company-context.md) — `DbScope.Company` 路由依賴的 session 模型
 - [DatabaseSettings 與 DbCategorySettings 指引](../database-settings-guide.zh-TW.md) — 結構與運作細節
-- 計畫：[`plan-bo-repo-db-routing.md`](../plans/plan-bo-repo-db-routing.md) — `DbScope` + router 實作細節

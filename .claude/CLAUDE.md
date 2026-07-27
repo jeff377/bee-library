@@ -60,8 +60,9 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 2. **每次建立或修改 plan 文件後，回覆中必須附上該 plan 的連結**（markdown 相對連結），讓使用者可在對話中直接點開、不需自行翻找
 3. 等待使用者確認後，才開始執行
 4. **Plan 執行完畢時，立刻在文件頂部標記完成狀態**
-5. 由使用者要求時才將計畫文件移至 `docs/plans/archive/` 封存（此目錄**入版控**，ADR 與 README 可安全連結到封存 plan）
+5. 由使用者要求時才將計畫文件移至 `docs/plans/archive/` 封存（此目錄**入版控**，作為維護者的團隊記憶）
    - 例外：含未修安全弱點清單的 review 類 plan 改放 `docs/internal/`（gitignored），避免公開 repo 附上現成攻擊面盤點
+   - **公開文件一律不得連結或引用 plan**（含封存 plan）—— plan 是階段性文件、舊版未必正確，詳見 `rules/public-docs.md`
 
 **plan 內連結慣例**：plan **一定會**被整批搬進 `archive/`，寫連結時就要讓它搬完仍有效：
 
@@ -77,7 +78,8 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 
 實作任何功能或模組前，先讀 `docs/README.md` —— 公開文件的入口索引（架構總覽、開發指引與限制、
 資料庫、設計概念，皆雙語、分類列表），再依索引開對應文件。設計決策的背景見 `docs/adr/`；
-進行中 / 已完成的規劃見 `docs/plans/`；各套件細節見各 `src/` 專案的 `README.md`。
+進行中 / 已完成的規劃見 `docs/plans/`（階段性文件，舊 plan 未必符合現行行為，勿當規格）；
+各套件細節見各 `src/` 專案的 `README.md`。
 
 核心心智模型（實作時的定錨，細節見上述文件）：
 - **FormSchema** 為定義中樞，同時驅動 UI（FormLayout）、資料庫（DbTable）與驗證規則
@@ -90,6 +92,7 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 
 跨專案共用規則（`code-style`、`scanning`、`pull-request`、`releasing`）由使用者層 `~/.claude/CLAUDE.md` 統一載入，本檔僅引用本專案特化規則：
 
+@rules/public-docs.md
 @rules/testing.md
 @rules/security.md
 @rules/sonarcloud.md

@@ -5,7 +5,6 @@
 已採納（2026-07-25）
 
 > 三階段已全部實作完成（commit `fddb38f6` / `c7782308` / `c5578a42`）。
-> 執行細節與實作期偏離見 `docs/plans/plan-date-semantics.md`；
 > 消費端使用方式見 `docs/date-semantics.md`。
 
 ## 背景
@@ -44,7 +43,7 @@ JSON 的 `"type"` 欄位逐欄攜帶 `FieldDbType`，但兩者的來源都是
    `DataTable` 背後沒有 `FormSchema`，消費端**查不到欄位語意**。
    純 JS client 亦然：payload 自我描述後，前端不需另外取 schema。
 2. **跨時區部署需要一個安全預設。** 沒有欄位語意，schema-less 路徑上的日期欄位
-   會被當成時間點做時區轉換，造成跨日偏移（見 `docs/plans/plan-datetime-timezone.md` 的 D4）。
+   會被當成時間點做時區轉換，造成跨日偏移（見 [ADR-032](adr-032-datetime-timezone.md)）。
 3. **wire 上早就有這個槽位，只是填錯了。** 只要改變它的**來源**——從 CLR 型別反推改為
    優先讀顯式標記——就把 payload 的自我描述能力接回來，**不新增任何 wire 欄位**。
 
@@ -146,5 +145,3 @@ wire 序列化有 MessagePack 與 JSON 兩份平行實作，且分居不同套�
 - ADR-029（欄位名稱一律小寫）——同樣是「wire 表示法對齊定義層」的決策。
 - ADR-030（MessagePack name-based keys）——wire 表示法的另一項決策。
 - `docs/date-semantics.md`——消費端（含 JS/TS）的使用指引。
-- `docs/plans/plan-date-semantics.md`——本 ADR 的執行計畫與完整實測數據。
-- `docs/plans/plan-datetime-timezone.md`——後續的跨時區設計，以本 ADR 為前置。

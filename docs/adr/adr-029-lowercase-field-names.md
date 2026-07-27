@@ -4,7 +4,7 @@
 
 已採納（2026-07-09）
 
-> 原則即刻生效（欄名一律小寫 `snake_case`）。記憶體 `DataSet` 欄名已由大寫**遷移為小寫**（`AddColumn` / `LowercaseColumnNames` 於 `DbAccess` 讀取邊界套用），此為破壞性 wire 變更、第一方 client 已同步；執行與剩餘回歸見 `docs/plans/plan-dataset-lowercase-columns.md`。
+> 原則即刻生效（欄名一律小寫 `snake_case`）。記憶體 `DataSet` 欄名已由大寫**遷移為小寫**（`AddColumn` / `LowercaseColumnNames` 於 `DbAccess` 讀取邊界套用），此為破壞性 wire 變更、第一方 client 已同步。
 
 ## 背景
 
@@ -49,10 +49,8 @@
   - 稽核既有資料以「解析端相容新舊大小寫」處理（下游比對本就大小寫無關），不回填改寫不可變的稽核歷史。
   - **前置稽核已完成**：C# 端 0 處大寫字面比較（皆走大小寫無關 `DataColumnCollection`）；Avalonia head 繫結大小寫無關；其餘 UI head（WinForms / Blazor / MAUI）尚未實作，趁此時遷移使其天生一致。
   - **剩餘**：多 DB provider 容器全回歸（SQLite 已驗證）；**發佈時**於 CHANGELOG 標 breaking + 附遷移指南（依 `releasing.md`，CHANGELOG 累積至發版統整）。
-- **執行載體**：`docs/plans/plan-dataset-lowercase-columns.md`（含 Phase 0 稽核 → 決策 → 核心切換 → wire/前端 → 相容回歸）。
 
 ## 相關
 
 - ADR-028（自訂運算式與規則引擎）——大小寫敏感比對第二次咬人的來源。
 - `docs/database-naming-conventions.md` §1–2、§6——欄名小寫規範與跨層一致性。
-- `docs/plans/plan-dataset-lowercase-columns.md`——本 ADR 的執行計畫。

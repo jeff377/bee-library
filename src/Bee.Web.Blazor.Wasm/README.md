@@ -25,8 +25,6 @@ CRUD UI shipped:
 - Round-trip server methods (`LoadAsync` / `SaveAsync` / `DeleteAsync` / `NewAsync`) are fully implemented, calling the backend BO through the API connector.
 - `DynamicGrid` (list view) and `FormPage` (list + master-detail wired via a shared `FormDataObject`) are implemented.
 
-See [docs/plans/plan-blazor-web-integration.md](../../docs/plans/plan-blazor-web-integration.md) for the full design.
-
 ## Dependency Constraints
 
 **Must not depend on any backend project** (Repository / Business / Hosting, etc.) — the browser runtime cannot load server-only assemblies. The constraint is enforced by the dependency chain: `Bee.Api.Client → Bee.Api.Core → Bee.Api.Contracts/Definition` are all pure data/protocol layers.

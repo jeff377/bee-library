@@ -168,7 +168,7 @@ Oracle 是 outlier：framework 在 emit DDL/DML 時將識別符 `.ToUpperInvaria
 
 框架**曾長年將記憶體中的 `DataSet` 欄名存為大寫**——這個正規化最初是為了配合某個區分大小寫的 UI 繫結路徑（讀取資料庫時、以及 `DataTableExtensions.AddColumn` 內把欄名轉大寫）。它會洩漏到 wire，因此舊的 JSON / MessagePack 封包（及據此撰寫的 client）使用大寫 key，如 `SYS_ROWID`。
 
-依 **[ADR-029](adr/adr-029-lowercase-field-names.md)**，記憶體 `DataSet` 欄名**現已正規化為小寫**（`DataTableExtensions.AddColumn` 與 `LowercaseColumnNames`，於 `DbAccess` 讀取邊界套用），使所有層——以及 wire——一律呈現單一小寫欄名。此為**破壞性 wire 變更**：JSON / MessagePack payload key 現為小寫（如 `sys_rowid`），第一方 client 已同步更新。見 [plan-dataset-lowercase-columns.md](plans/plan-dataset-lowercase-columns.md)。
+依 **[ADR-029](adr/adr-029-lowercase-field-names.md)**，記憶體 `DataSet` 欄名**現已正規化為小寫**（`DataTableExtensions.AddColumn` 與 `LowercaseColumnNames`，於 `DbAccess` 讀取邊界套用），使所有層——以及 wire——一律呈現單一小寫欄名。此為**破壞性 wire 變更**：JSON / MessagePack payload key 現為小寫（如 `sys_rowid`），第一方 client 已同步更新。
 
 由於框架內所有欄名比對皆大小寫無關（`DataColumnCollection` 查找；運算式引擎以 `FormField.FieldName` 綁定），透過 C# 堆疊讀取舊的大寫封包仍可運作；只有區分大小寫的外部消費端（例如 JS/TS client 以字面 key 讀 `row.current.SYS_ROWID`）需改用小寫 key。
 

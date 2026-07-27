@@ -58,8 +58,7 @@ async 連線、overlay 對話框、publish 注意事項）見
 同一套 UI 也能以 Avalonia single-view head 在 iOS 與 Android 上執行，並連同上面執行中的 server。
 下方預設用 **Debug** 跑（免簽章、迭代快）。Release 的 trim/AOT 序列化相容性**已解並驗證** ——
 `Bee.Definition` 內隨套件附上 `ILLink.Descriptors.xml`，在 full trim 下保留定義型別圖，已在
-Android 模擬器（full trim）與 iOS 模擬器（強制 reflection-only path，等同 device AOT）驗證通過，
-見 [`docs/plans/plan-mobile-release-trim-safe.md`](../../docs/plans/plan-mobile-release-trim-safe.md)；
+Android 模擬器（full trim）與 iOS 模擬器（強制 reflection-only path，等同 device AOT）驗證通過；
 iOS 上實機則另需 Apple Developer 簽章憑證。畫面會響應式重排 —— 窄螢幕下表單
 單欄、清單卡片化 —— 且 Android 硬體 / 手勢返回鍵會先退記錄 → 關分頁，才退出 app。
 

@@ -2,7 +2,7 @@
 
 ## 狀態
 
-**已採納（Accepted，2026-07-22）** —— 決策已執行。合約與多數 DTO / 集合 item 型別改為 name-based（`keyAsPropertyName`）；`[Union]` 多型階層等為記錄在案的例外（見「執行結果與最終範圍」）。實施步驟與驗證見 [plan-messagepack-name-based-keys.md](../plans/plan-messagepack-name-based-keys.md)。
+**已採納（Accepted，2026-07-22）** —— 決策已執行。合約與多數 DTO / 集合 item 型別改為 name-based（`keyAsPropertyName`）；`[Union]` 多型階層等為記錄在案的例外（見「執行結果與最終範圍」）。
 
 > **go/no-go 決議（2026-07-22，定案）**：**立即執行**。關鍵事實 —— **目前無外部實際消費者**，故 breaking wire change 無相容性成本；先前「綁下一個 major」的暫緩理由（相容性衝擊）消失。以極低代價拿下「消滅 ctor-order footgun + 消滅跨繼承 key 編號協調 + 統一 JSON/MessagePack 心智」。
 
@@ -85,4 +85,3 @@
 
 - [ADR-004：使用 MessagePack 作為 API Payload 序列化格式](adr-004-messagepack-payload.md) —— 本 ADR revisit 其整數鍵的 schema-evolution 理由。
 - [ADR-025：定義型別 AOT XmlSerializer 相容](adr-025-define-types-aot-xmlserializer-compat.md) —— 行動端 AOT 序列化的相鄰脈絡。
-- [plan-messagepack-name-based-keys.md](../plans/plan-messagepack-name-based-keys.md) —— 執行步驟、決策閘門與 AOT 冒煙。

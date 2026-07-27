@@ -14,7 +14,7 @@
 - **存檔前驗證 / 刪除前檢查**：條件不通過顯示訊息、中斷動作。
 - **欄位預設值運算式**：新增資料時以運算式產生預設值。
 
-此能力橫跨定義層（`Bee.Definition`）、新求值引擎（`Bee.Expressions`）與商業邏輯層（`Bee.Business`），是框架對外 API surface 的結構性契約，故立此 ADR。完整設計與階段見 `docs/plans/plan-expression-rule-engine.md`；使用者指引見 `docs/expression-rules.md`。
+此能力橫跨定義層（`Bee.Definition`）、新求值引擎（`Bee.Expressions`）與商業邏輯層（`Bee.Business`），是框架對外 API surface 的結構性契約，故立此 ADR。使用者指引見 `docs/expression-rules.md`。
 
 ## 考慮過的選項
 
