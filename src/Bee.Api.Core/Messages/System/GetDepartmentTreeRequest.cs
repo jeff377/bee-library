@@ -1,3 +1,4 @@
+using Bee.Api.Contracts.System;
 using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
@@ -7,7 +8,7 @@ namespace Bee.Api.Core.Messages.System
     /// scoped to the caller's current company resolved from the session.
     /// </summary>
     [MessagePackObject(keyAsPropertyName: true)]
-    public class GetDepartmentTreeRequest : ApiRequest
+    public class GetDepartmentTreeRequest : ApiRequest, IGetDepartmentTreeRequest
     {
     }
 }
