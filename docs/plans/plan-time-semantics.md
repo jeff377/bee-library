@@ -16,6 +16,9 @@
 > 且 `TimeSpan` 在 raw SELECT 下可讀性差。改採
 > **「DB 與 `DataSet` 存 5 碼字串 `"HH:mm"`、程式碼用 `TimeOnly`」**。
 > §3.4 / §3.5 / §6 / §7 為本輪重寫；原案的實測證據保留於 §9 供日後回查。
+>
+> **2026-07-27 第五輪（逐項定案）**：§3.2 舊 client 破口、§3.7 schema 反推、
+> 取值層命名與空值形狀三項拍板（見各節），並補上 `Bee.Expressions` 的工作量缺口。
 
 ---
 
@@ -55,10 +58,13 @@ append 保證舊 payload 在新版仍讀得對，但**反向不成立**：新 se
 舊 client 的 `DbTypeConverter.ToType` 走 `default:` 直接擲 `InvalidOperationException`
 （`ToDbType` 同樣擲 `ArgumentOutOfRangeException`）。
 
-→ `Time` 上線需要「舊 client 不會取到含 `Time` 欄位的表」的部署紀律，或在 `Ping` / 版本協商層擋。
-**這不是可以靠 append-only 迴避的問題**，展開為正式 plan 時必須有明確決策。
+**這不是可以靠 append-only 迴避的問題**，且**不因改採字串承載而消失**——
+破口在列舉值本身，與底層存什麼無關。
 
-> 此條**不因改採字串承載而消失**——破口在列舉值本身，與底層存什麼無關。
+> **決策（2026-07-27）：接受破口，以 breaking 標記處理，不寫版本協商機制。**
+> 理由同 ADR-030：框架 client 與 server 同版發佈，目前無外部消費者。
+> 上線時於 `CHANGELOG` 明標 **breaking — wire**、要求 client 與 server 同版升級即可。
+> 未採「`Ping` / 版本協商層擋」——為單一列舉值寫協商機制不成比例。
 
 ### 3.3 `Time` 屬於「絕不轉時區」
 
@@ -71,10 +77,10 @@ append 保證舊 payload 在新版仍讀得對，但**反向不成立**：新 se
 ### 3.4 承載方案：DB 與 `DataSet` 存 5 碼字串，程式碼用 `TimeOnly`
 
 ```
-DB 欄位                 CHAR(5) / VARCHAR2(5)，內容 "HH:mm"
-DataColumn.DataType     typeof(string)
-FieldDbType             Time            ← 語意標記，不隨底層型別退回 String
-ValueUtilities.CTime    string → TimeOnly（ParseExact "HH:mm"）
+DB 欄位                     CHAR(5) / VARCHAR2(5)，內容 "HH:mm"
+DataColumn.DataType         typeof(string)
+FieldDbType                 Time            ← 語意標記，不隨底層型別退回 String
+ValueUtilities.CTimeOnly    string → TimeOnly?（ParseExact "HH:mm"，空字串回 null）
 ```
 
 **值域固定 `00:00`–`23:59`，精度到分。** 不支援秒——實務上時刻定義（班別、營業起訖、
@@ -117,6 +123,8 @@ ValueUtilities.CTime    string → TimeOnly（ParseExact "HH:mm"）
 > 承前，`GetDefaultValue(Time)` 回**空字串**，不是 `"00:00"`——
 > 午夜是合法時刻，不能當「未設定」用。
 
+**取值層對應地必須回 nullable**，見 §3.8。
+
 ### 3.6 範圍與格式由取值層把關，DB CHECK 為可選
 
 `CHAR(5)` 欄位在 DB 端塞得進 `"25:99"` 或 `"abc"`。防線放在框架的取值層：
@@ -139,28 +147,57 @@ TimeOnly.TryParseExact(s, "HH:mm", out var t)   // 一條就夠
 > 定義說是 `Time` → DB 反推說是 `String(5)` → `TableSchemaComparer` 判定有差異 →
 > **每次比對都想 ALTER，永遠收斂不了**
 
-| 解法 | 評估 |
-|------|------|
-| **`AlterCompatibilityRules` 視 `Time` ≡ `String(5)` 等價**（建議） | 便宜。升級方向本來就只從定義往 DB 走，DB 端反推只用於「要不要改」的判斷，判等價即可 |
-| 以 DB extended property 存語意標記 | SQL Server 有（框架已有 `SqlExtendedPropertyCommandBuilder`），但 MySQL / SQLite 無等價機制，五家做不齊 |
+> **決策（2026-07-27）：`AlterCompatibilityRules` 視 `Time` ≡ `String(5)` 等價。**
+> 便宜，且語意正確——升級方向本來就只從定義往 DB 走，DB 端反推只用於「要不要改」的判斷，
+> 判等價即可。五家各補一條規則。
+
+未採「以 DB extended property 存語意標記」：SQL Server 有現成機制
+（框架已有 `SqlExtendedPropertyCommandBuilder`），但 MySQL / SQLite 無等價機制，
+五家做不齊會變成 provider 特例——那正是本方案要避開的東西。
 
 `Date` 沒有這個問題，因為它反推得回來（`date` 型別存在）。這是字串承載要付的帳。
+
+### 3.8 取值層命名：`CTimeOnly` 回 `TimeOnly?`
+
+```csharp
+public static TimeOnly? CTimeOnly(object value)   // 空字串 / 非法格式 → null
+```
+
+**必須回 nullable，不能沿用 `Cxxx` 家族的 default 參數形狀。** 理由：
+
+`CDate` 現行簽章為 `CDate(object value, DateOnly defaultValue = default)`，空值回
+`default(DateOnly)` = `0001-01-01`。這安全，因為它**不是合法業務值**。
+但 `default(TimeOnly)` = **`00:00`，是完全合法的時刻** ——
+若照抄，未填的欄位會靜默變成午夜，正是 §3.5 要避開的事。
+
+**連帶更名（獨立於 `Time`，可先行）**：`CDate` → **`CDateOnly`**。
+`CDate` 自 4.15.0 已回傳 `DateOnly`，方法名與回傳型別對齊後，
+`CDateOnly` / `CTimeOnly` / `CDateTime` 三者形成一致的命名規律（方法名 = 回傳型別名），
+呼叫端一眼可知拿到什麼。
+
+> **更名是 breaking（source）**，但與 `Time` 無依賴，可獨立於本 plan 先行。
+> 更名**不改變 `CDate` 的 nullability** —— 它維持 `DateOnly` + default 參數，
+> 因為 `0001-01-01` 這個 sentinel 對日曆日仍然成立。
 
 ## 4. 待討論議題
 
 | 議題 | 說明 |
 |------|------|
-| 抽象層語意界定 | `FieldDbType.Time` = **時刻**、`00:00`–`23:59`。若日後需表達「工時 7.5 小時」，那是另一個 `FieldDbType.Duration`（時距），**不要讓 `Time` 一詞兩用** |
-| 取值層 | `ValueUtilities` 新增 `CTime` 回 `TimeOnly`，與 `CDate` / `CDateTime` 家族對稱；空字串的回傳形式待定（`TimeOnly?` 或擲例外） |
-| 標記 helper | `ResolveFieldDbType` / `ApplyFieldDbType` / `GetDeclaredFieldDbType` 需納入新值 |
+| 標記 helper | `ResolveFieldDbType` / `ApplyFieldDbType` / `GetDeclaredFieldDbType` 需納入新值（機械工，列此備忘） |
 | UI 層 | `FormField` 與各 UI 端（Avalonia / MAUI / Blazor）的時刻編輯控件；顯示格式是否隨語系（`08:30` vs `上午 8:30`） |
 | 既有 `String` 欄位遷移 | 目前以 `String` 土法承載時刻的欄位，改標 `Time` 後值格式是否需正規化 |
 
 **已就地結案、不再列為待議**：
 
+- ~~抽象層語意界定~~ → `FieldDbType.Time` = **時刻**、`00:00`–`23:59`（§3.4）。
+  若日後需表達「工時 7.5 小時」，那是另一個 `FieldDbType.Duration`（時距），
+  **不要讓 `Time` 一詞兩用**。
 - ~~CLR 承載型別~~ → §3.4。
 - ~~空值表達~~ → §3.5。
 - ~~範圍約束落在哪一層~~ → §3.6。
+- ~~schema 反推撞牆~~ → §3.7（`AlterCompatibilityRules` 判等價）。
+- ~~取值層命名與空值形狀~~ → §3.8（`CTimeOnly` 回 `TimeOnly?`）。
+- ~~舊 client 破口的處置~~ → §3.2（接受，標 breaking）。
 - ~~Oracle 落地方式~~ → 隨字串承載消失（§3.4 對照表）。
 - ~~三份 wire 的成本~~ → 隨字串承載歸零（§6）。
 - ~~typeless 白名單~~ → `System.String` 本就在白名單。
@@ -198,11 +235,17 @@ TimeOnly.TryParseExact(s, "HH:mm", out var t)   // 一條就夠
 |------|------|------|
 | 5 個 provider × TypeMapping / SchemaSyntax / CreateTable / TableRebuild | ~20 | **多為一行**——對應到 `char(5)` |
 | `AlterCompatibilityRules` 等價規則（§3.7） | 5 | 需要判斷邏輯，非一行 |
-| `Bee.Base`（`DbTypeConverter` / `FieldDbTypeExtensions` / `ValueUtilities.CTime` 等） | ~6 | 含正規化與 `CTime` |
+| `Bee.Base`（`DbTypeConverter` / `FieldDbTypeExtensions` / `ValueUtilities.CTimeOnly` 等） | ~6 | 含格式正規化與 `CTimeOnly` |
+| `Bee.Expressions`（`ExpressionPolicy.CoerceValue`） | 1 | 運算式欄位取用時刻的必經處 |
 | wire | **0** | §6 |
 
 **約 30 個檔位，但其中約 20 個是一行對應**，實質工作量遠低於原案的「約 40 檔位且多含邏輯」。
 這些 switch 幾乎都有 `default: throw`，漏改會**大聲失敗**而非沉默出錯。
+
+> `ExpressionPolicy.ToClrType` **不需改** —— 它委派給 `DbTypeConverter.ToType`，
+> `Time` → `string` 會自動跟上。要補的只有 `CoerceValue` 的 `Time` 分支
+> （見 [../../src/Bee.Expressions/ExpressionPolicy.cs](../../src/Bee.Expressions/ExpressionPolicy.cs)）。
+> 漏補會在計算欄取用時刻欄位時踩到。
 
 ## 8. 展開時機
 
