@@ -6,6 +6,11 @@ namespace Bee.Api.Core.UnitTests
     /// <summary>
     /// ApiPayloadTransformer 測試。需保存／還原 <see cref="ApiServiceOptions"/> 靜態狀態以避免影響其他測試。
     /// </summary>
+    /// <remarks>
+    /// try/finally 還原只在串行下成立，故加入 <c>ApiServiceOptionsState</c> collection
+    /// 與其他會改寫同一組靜態元件的測試類序列化。
+    /// </remarks>
+    [Collection("ApiServiceOptionsState")]
     public class ApiPayloadTransformerTests
     {
         [Fact]

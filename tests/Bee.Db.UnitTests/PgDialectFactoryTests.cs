@@ -11,9 +11,9 @@ namespace Bee.Db.UnitTests
 {
     /// <summary>
     /// PostgreSQL provider/dialect smoke tests. Verifies that the test fixture
-    /// (<see cref="Bee.Tests.Shared.GlobalFixture"/>) registers both the ADO.NET
-    /// provider factory and the dialect factory at startup, so subsequent PG
-    /// builder/integration tests can resolve them via the registries.
+    /// (<see cref="SharedDbFixture"/>) registers both the ADO.NET provider factory
+    /// and the dialect factory at startup, so subsequent PG builder/integration
+    /// tests can resolve them via the registries.
     /// </summary>
     public class PgDialectFactoryTests : IClassFixture<SharedDbFixture>
     {
@@ -78,7 +78,10 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(factory.CreateFormCommandBuilder(schema, defineAccess));
         }
 
-        [Fact]
+        // PgTableSchemaProvider 的 ctor 會急性 new DbAccess(databaseId)，未設
+        // BEE_TEST_CONNSTR_POSTGRESQL 時 'common_postgresql' 不會註冊到 DbConnectionManager
+        // → 裸 [Fact] 會硬失敗而非 skip。改用 [DbFact] 讓它在無容器環境自動跳過。
+        [DbFact(DatabaseType.PostgreSQL)]
         [DisplayName("PG DialectFactory 應能建立 TableSchemaProvider 實例")]
         public void DialectFactory_CreateTableSchemaProvider_ReturnsInstance()
         {
