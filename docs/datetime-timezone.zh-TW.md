@@ -22,7 +22,7 @@
 | 哪些欄位會被轉換？ | 宣告為 `FieldDbType.DateTime` 的欄位。`Date` 是日曆日，絕不轉換。 |
 | 使用者的時區從哪來？ | `st_user.time_zone`，隨 session 帶出——絕不取裝置時區。 |
 | 我的 BO 要改嗎？ | 不用，除非它自寫 SQL 且以日期做過濾。見 §3。 |
-| 有破壞性變更嗎？ | `ValueUtilities.CDate` 與運算式的 `Today()` 現在回傳 `DateOnly`。見 §5。 |
+| 有破壞性變更嗎？ | `ValueUtilities.CDateOnly` 與運算式的 `Today()` 現在回傳 `DateOnly`。見 §5。 |
 
 ## 2. 什麼都不做就有的行為
 
@@ -60,7 +60,7 @@ FilterCondition.Equal("created_at", someDateTime);     // 時間點——送出�
 ```
 
 該用日曆日時誤傳 `DateTime` **不會有任何錯誤**，只是在接近午夜時查到錯誤的資料列——這是最難察覺的
-一類錯誤。欄位是 `Date` 時請優先使用 `DateOnly`（`ValueUtilities.CDate` 回傳的正是它）。
+一類錯誤。欄位是 `Date` 時請優先使用 `DateOnly`（`ValueUtilities.CDateOnly` 回傳的正是它）。
 
 ### JavaScript 與其他非 .NET 用戶端
 
@@ -84,7 +84,7 @@ FilterCondition.Equal("created_at", someDateTime);     // 時間點——送出�
 
 | 變更 | 影響 |
 |------|------|
-| `ValueUtilities.CDate` 回傳 `DateOnly` | 把結果指派給 `DateTime` 的呼叫端需調整。寫進 `DataSet` 儲存格仍可運作——框架會在該邊界完成轉換。 |
+| `ValueUtilities.CDateOnly` 回傳 `DateOnly` | 把結果指派給 `DateTime` 的呼叫端需調整。寫進 `DataSet` 儲存格仍可運作——框架會在該邊界完成轉換。 |
 | 運算式 `Today()` 回傳 `DateOnly`，且依使用者時區 | 既有的 `DefaultValueExpression="Today()"` 在 `Date` 與 `DateTime` 欄位上都照常運作。 |
 | 運算式新增 `UtcNow()` | 新增；需要明示 UTC 意圖時使用。 |
 | 新增 `st_user.time_zone` 欄位 | 既有資料列沒有值，視同 UTC。逐一設定後才會啟用轉換。 |

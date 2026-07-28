@@ -23,7 +23,7 @@
 | 那改了什麼？ | 欄位**宣告的** `FieldDbType` 現在會跟著欄位走，並正確出現在 wire 上。過去它是從 CLR 型別反推的，而反推會把每個日曆日都回報成 `DateTime`。 |
 | payload 結構變了嗎？ | **沒有。** 兩種 wire 格式本來就逐欄攜帶 `FieldDbType`，只是值變準確。既有 client 照常運作。 |
 | 我需要做什麼嗎？ | 只有**自寫 SQL** 需要。schema 驅動的查詢會自行標記。 |
-| 有破壞性變更嗎？ | `ValueUtilities.CDate` 改為回傳 `DateOnly`。見 §5。 |
+| 有破壞性變更嗎？ | `ValueUtilities.CDateOnly` 改為回傳 `DateOnly`。見 §5。 |
 
 ## 2. 不必動手就能得到的部分
 
@@ -114,21 +114,23 @@ schema 宣告了但查詢未回傳的欄位也不會報錯（部分欄位查詢�
 **忘了宣告是本設計保留下來的唯一失敗模式。** 未標記的日曆日欄位對下游而言就是時間點——
 影響最大的是時區轉換，可能造成跨日偏移。
 
-## 5. 破壞性變更：`ValueUtilities.CDate`
+## 5. 破壞性變更：`ValueUtilities.CDateOnly`
 
 ```csharp
 // 之前
 public static DateTime CDate(object value, DateTime defaultValue = default)
 
-// v4.15 起
-public static DateOnly CDate(object value, DateOnly defaultValue = default)
+// v4.15 起 —— 一併更名，回傳型別收斂為 DateOnly
+public static DateOnly CDateOnly(object value, DateOnly defaultValue = default)
 ```
+
+方法**同時更名**：`CDateOnly` / `CDateTime` 以自身回傳型別為名，呼叫端不必回查即知拿到什麼。
 
 寫成 `DateTime d = ValueUtilities.CDate(x)` 的呼叫端會變成**編譯錯誤**，而非 runtime 失敗。
 兩種遷移方式：
 
 ```csharp
-DateOnly day = ValueUtilities.CDate(row["order_date"]);        // 要日曆日
+DateOnly day = ValueUtilities.CDateOnly(row["order_date"]);        // 要日曆日
 DateTime dt  = ValueUtilities.CDateTime(row["order_date"]);    // 要 DateTime
 ```
 

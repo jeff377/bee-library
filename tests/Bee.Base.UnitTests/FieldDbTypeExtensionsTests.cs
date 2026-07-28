@@ -55,7 +55,7 @@ namespace Bee.Base.UnitTests
             var date = new DateTime(2026, 4, 18, 0, 0, 0, DateTimeKind.Unspecified);
             Assert.Equal(date, FieldDbType.Date.ToFieldValue("2026-04-18"));
             Assert.Equal(date, FieldDbType.DateTime.ToFieldValue("2026-04-18"));
-            // 回歸：Date 分支不可改用 ValueUtilities.CDate（回傳 DateOnly）。日曆日欄位在
+            // 回歸：Date 分支不可改用 ValueUtilities.CDateOnly（回傳 DateOnly）。日曆日欄位在
             // DataColumn 上仍是 DateTime 欄位，而 DateOnly 未實作 IConvertible，塞回去會擲例外。
             Assert.IsType<DateTime>(FieldDbType.Date.ToFieldValue("2026-04-18"));
 

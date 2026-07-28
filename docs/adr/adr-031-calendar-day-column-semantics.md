@@ -98,7 +98,7 @@ JSON 的 `"type"` 欄位逐欄攜帶 `FieldDbType`，但兩者的來源都是
 | 儲存 | `DataColumn.DataType` 維持 `DateTime`；繫結層 / `RowFilter` / `Sort` / `Compute` / 既有 cast 零影響 |
 | 語意 | `DataColumn.ExtendedProperties` 記錄宣告的 `FieldDbType`，經 `DataColumnExtensions` 的 `ApplyFieldDbType` / `ResolveFieldDbType` 存取 |
 | wire | **不新增欄位**——MessagePack 的 `SerializableDataColumn.DataType` 與 JSON 的 `"type"` 本來就是 `FieldDbType`，只是填入的值變準確 |
-| 取值 | `ValueUtilities.CDate` 回傳 `DateOnly`，讓日曆日在使用端可與時間點區分 |
+| 取值 | `ValueUtilities.CDateOnly` 回傳 `DateOnly`，讓日曆日在使用端可與時間點區分 |
 
 ### 標記來源的責任分界（兩路徑）
 
@@ -132,8 +132,9 @@ wire 序列化有 MessagePack 與 JSON 兩份平行實作，且分居不同套�
   忘了宣告的日曆日欄位，在 wire 上仍標成 `DateTime`。
   緩解為 helper 只需一行、錯誤欄名與錯誤 `DbCommandKind` 皆擲例外（不靜默略過）、
   以及文件明確載明此責任分界。
-- **破壞性變更**：`ValueUtilities.CDate` 回傳型別由 `DateTime` 改為 `DateOnly`
-  （`defaultValue` 參數同步）。外部呼叫端 `DateTime d = ValueUtilities.CDate(x)` 成為
+- **破壞性變更**：`ValueUtilities.CDate` 更名為 `CDateOnly`，回傳型別由 `DateTime` 改為
+  `DateOnly`（`defaultValue` 參數同步）。更名使 `CDateOnly` / `CDateTime` 以自身回傳型別為名，
+  呼叫端不必回查即知拿到什麼。外部呼叫端 `DateTime d = ValueUtilities.CDate(x)` 成為
   **編譯錯誤**而非 runtime 失敗；遷移方式為改接 `DateOnly` 或改用 `CDateTime`。
   框架內呼叫端僅一處。
 - **需持續留意**：`ExtendedProperties` 在 `DataTable.Merge()` / `DataView.ToTable()` 等

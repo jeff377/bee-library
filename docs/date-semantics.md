@@ -25,7 +25,7 @@ declare the semantics yourself.
 | What changed? | The **declared** `FieldDbType` now travels with the column and appears correctly on the wire. It used to be inferred from the CLR type, which reported every calendar day as `DateTime`. |
 | Did the payload change shape? | **No.** Both wire formats already carried a `FieldDbType` per column. Only the value got accurate. Existing clients keep working. |
 | Do I have to do anything? | Only for **hand-written SQL**. Schema-driven queries mark themselves. |
-| Anything breaking? | `ValueUtilities.CDate` now returns `DateOnly`. See §5. |
+| Anything breaking? | `ValueUtilities.CDateOnly` now returns `DateOnly`. See §5. |
 
 ## 2. What you get without doing anything
 
@@ -121,21 +121,24 @@ and fields the query did not return are skipped (partial `SELECT`s are normal).
 column looks like an instant to everything downstream — most consequentially to timezone
 conversion, where it can shift across a day boundary.
 
-## 5. Breaking change: `ValueUtilities.CDate`
+## 5. Breaking change: `ValueUtilities.CDateOnly`
 
 ```csharp
 // Before
 public static DateTime CDate(object value, DateTime defaultValue = default)
 
-// v4.15 onwards
-public static DateOnly CDate(object value, DateOnly defaultValue = default)
+// v4.15 onwards — renamed, and the return type narrows to DateOnly
+public static DateOnly CDateOnly(object value, DateOnly defaultValue = default)
 ```
+
+The method is **renamed** as well: `CDateOnly` / `CDateTime` now name their own return type, so a
+call site tells you what it yields without a lookup.
 
 A call site written as `DateTime d = ValueUtilities.CDate(x)` becomes a **compile error**, not a
 runtime failure. Migrate either way:
 
 ```csharp
-DateOnly day = ValueUtilities.CDate(row["order_date"]);        // want a calendar day
+DateOnly day = ValueUtilities.CDateOnly(row["order_date"]);        // want a calendar day
 DateTime dt  = ValueUtilities.CDateTime(row["order_date"]);    // want a DateTime
 ```
 

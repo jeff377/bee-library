@@ -368,7 +368,7 @@ namespace Bee.Base
 
         #endregion
 
-        #region CDateTime / CDate
+        #region CDateTime / CDateOnly
 
         /// <summary>
         /// Converts the specified value to a DateTime. Supports Gregorian and ROC date strings
@@ -466,7 +466,7 @@ namespace Bee.Base
         /// when writing back into a <see cref="System.Data.DataColumn"/>, which stores calendar-day
         /// columns as <see cref="DateTime"/> and rejects a <see cref="DateOnly"/> value.
         /// </remarks>
-        public static DateOnly CDate(object value, DateOnly defaultValue = default)
+        public static DateOnly CDateOnly(object value, DateOnly defaultValue = default)
         {
             return DateOnly.FromDateTime(CDateTime(value, defaultValue.ToDateTime(TimeOnly.MinValue)));
         }

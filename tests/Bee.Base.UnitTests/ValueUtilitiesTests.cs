@@ -316,7 +316,7 @@ namespace Bee.Base.UnitTests
             Assert.Equal(-1.5m, ValueUtilities.CDecimal("abc", -1.5m));
         }
 
-        // ---- CDateTime / CDate ----
+        // ---- CDateTime / CDateOnly ----
 
         [Fact]
         [DisplayName("CDateTime 對各種輸入回傳對應 DateTime")]
@@ -381,29 +381,29 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("CDate 應捨去時刻並回傳 DateOnly")]
+        [DisplayName("CDateOnly 應捨去時刻並回傳 DateOnly")]
         public void CDate_ReturnsDatePortionOnly()
         {
             var input = new DateTime(2026, 4, 18, 15, 30, 45, DateTimeKind.Unspecified);
-            var result = ValueUtilities.CDate(input);
+            var result = ValueUtilities.CDateOnly(input);
             Assert.Equal(new DateOnly(2026, 4, 18), result);
         }
 
         [Fact]
-        [DisplayName("CDate 應可解析日期字串為 DateOnly")]
+        [DisplayName("CDateOnly 應可解析日期字串為 DateOnly")]
         public void CDate_ParsesDateString()
         {
-            var result = ValueUtilities.CDate("20150312");
+            var result = ValueUtilities.CDateOnly("20150312");
             Assert.Equal(new DateOnly(2015, 3, 12), result);
         }
 
         [Fact]
-        [DisplayName("CDate 於無法轉換的值應回傳指定的 DateOnly 預設值")]
+        [DisplayName("CDateOnly 於無法轉換的值應回傳指定的 DateOnly 預設值")]
         public void CDate_UnparsableValue_ReturnsDefault()
         {
             var fallback = new DateOnly(2026, 1, 1);
-            Assert.Equal(fallback, ValueUtilities.CDate(DBNull.Value, fallback));
-            Assert.Equal(fallback, ValueUtilities.CDate(string.Empty, fallback));
+            Assert.Equal(fallback, ValueUtilities.CDateOnly(DBNull.Value, fallback));
+            Assert.Equal(fallback, ValueUtilities.CDateOnly(string.Empty, fallback));
         }
 
         [Fact]

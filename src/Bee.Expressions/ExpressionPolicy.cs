@@ -56,7 +56,7 @@ namespace Bee.Expressions
             }
             // `DateOnly` is the third non-`IConvertible` type on this path. A calendar day is a
             // `DateOnly` everywhere in the framework except inside a `DataSet`, where the column must
-            // stay `typeof(DateTime)` — so a value arriving from `ValueUtilities.CDate` or the
+            // stay `typeof(DateTime)` — so a value arriving from `ValueUtilities.CDateOnly` or the
             // `Today()` expression helper is widened here, at the boundary (ADR-032 D12, ADR-031).
             if (clrType == typeof(DateTime) && value is DateOnly dateOnly)
             {

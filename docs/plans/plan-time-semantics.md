@@ -165,19 +165,17 @@ public static TimeOnly? CTimeOnly(object value)   // 空字串 / 非法格式 �
 
 **必須回 nullable，不能沿用 `Cxxx` 家族的 default 參數形狀。** 理由：
 
-`CDate` 現行簽章為 `CDate(object value, DateOnly defaultValue = default)`，空值回
+`CDateOnly` 的簽章為 `CDateOnly(object value, DateOnly defaultValue = default)`，空值回
 `default(DateOnly)` = `0001-01-01`。這安全，因為它**不是合法業務值**。
 但 `default(TimeOnly)` = **`00:00`，是完全合法的時刻** ——
 若照抄，未填的欄位會靜默變成午夜，正是 §3.5 要避開的事。
 
-**連帶更名（獨立於 `Time`，可先行）**：`CDate` → **`CDateOnly`**。
-`CDate` 自 4.15.0 已回傳 `DateOnly`，方法名與回傳型別對齊後，
+**連帶更名 —— ✅ 已於 2026-07-27 執行**：`CDate` → `CDateOnly`。
 `CDateOnly` / `CTimeOnly` / `CDateTime` 三者形成一致的命名規律（方法名 = 回傳型別名），
-呼叫端一眼可知拿到什麼。
+呼叫端一眼可知拿到什麼。此更名與 `Time` 無依賴，故不等本 plan 展開即先行。
 
-> **更名是 breaking（source）**，但與 `Time` 無依賴，可獨立於本 plan 先行。
-> 更名**不改變 `CDate` 的 nullability** —— 它維持 `DateOnly` + default 參數，
-> 因為 `0001-01-01` 這個 sentinel 對日曆日仍然成立。
+> 更名**未改變 nullability** —— `CDateOnly` 維持 `DateOnly` + default 參數，
+> 因為 `0001-01-01` 這個 sentinel 對日曆日仍然成立。只有時刻沒有可用的 sentinel。
 
 ## 4. 待討論議題
 

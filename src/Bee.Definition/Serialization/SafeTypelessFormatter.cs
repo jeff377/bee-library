@@ -56,7 +56,7 @@ namespace Bee.Definition.Serialization
             "System.DateTimeOffset",
             "System.TimeSpan",
             // Calendar-day values ride the wire as `DateOnly` so they describe their own semantics
-            // without a schema lookup. `ValueUtilities.CDate` returns `DateOnly`, so any filter
+            // without a schema lookup. `ValueUtilities.CDateOnly` returns `DateOnly`, so any filter
             // condition built from it lands here (see docs/adr/adr-031-calendar-day-column-semantics.md).
             "System.DateOnly",
             "System.Guid",

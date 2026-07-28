@@ -24,7 +24,7 @@ changed if you are upgrading.
 | Which columns convert? | Those declared `FieldDbType.DateTime`. A `Date` column is a calendar day and never converts. |
 | Where does the user's zone come from? | `st_user.time_zone`, carried on the session — never the device's zone. |
 | Do my business objects need changing? | No, unless they write hand-rolled SQL that filters on a date. See §3. |
-| Anything breaking? | `ValueUtilities.CDate` and the `Today()` expression helper now return `DateOnly`. See §5. |
+| Anything breaking? | `ValueUtilities.CDateOnly` and the `Today()` expression helper now return `DateOnly`. See §5. |
 
 ## 2. What you get without doing anything
 
@@ -69,7 +69,7 @@ FilterCondition.Equal("created_at", someDateTime);     // instant — converted 
 
 Passing a `DateTime` where you meant a calendar day produces no error. The query simply returns the
 wrong rows near midnight, which is the hardest kind of bug to notice — so prefer `DateOnly` (which
-is what `ValueUtilities.CDate` returns) whenever the column is a `Date`.
+is what `ValueUtilities.CDateOnly` returns) whenever the column is a `Date`.
 
 ### JavaScript and other non-.NET clients
 
@@ -97,7 +97,7 @@ column-level setting can express it.
 
 | Change | Impact |
 |--------|--------|
-| `ValueUtilities.CDate` returns `DateOnly` | Call sites assigning the result to a `DateTime` need updating. Writing it into a `DataSet` cell still works — the framework widens it at that boundary. |
+| `ValueUtilities.CDateOnly` returns `DateOnly` | Call sites assigning the result to a `DateTime` need updating. Writing it into a `DataSet` cell still works — the framework widens it at that boundary. |
 | `Today()` in expressions returns `DateOnly`, in the user's zone | Existing `DefaultValueExpression="Today()"` keeps working on both `Date` and `DateTime` fields. |
 | `UtcNow()` added to expressions | New; use it where you want UTC stated outright. |
 | `st_user.time_zone` column added | Existing rows have no value, which reads as UTC. Set it per user to enable conversion. |
