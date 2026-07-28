@@ -44,7 +44,6 @@ The framework routes SQL generation and schema reading by `DatabaseType` through
 
 - `IDialectFactory` -- per-provider factory exposing `IFormCommandBuilder`, `ICreateTableCommandBuilder`, `ITableAlterCommandBuilder`, `ITableRebuildCommandBuilder`, `ITableSchemaProvider`, and `GetDefaultValueExpression(FieldDbType)`
 - `DbDialectRegistry` -- maps `DatabaseType` to its `IDialectFactory` (mirrors how `DbProviderRegistry` maps to ADO.NET `DbProviderFactory`); registration is explicit and performed by the host
-- `DbFunc` -- database-aware utilities (parameter prefixes, identifier quoting, type inference) keyed by `DatabaseType`
 - Built-in dialect implementations:
   - **SQL Server** (`Providers/SqlServer/`) -- full support: form SELECT / INSERT / UPDATE / DELETE, CREATE/ALTER/REBUILD DDL, schema introspection
   - **PostgreSQL** (`Providers/PostgreSql/`) -- full support: form SELECT / INSERT / UPDATE / DELETE, CREATE/ALTER/REBUILD DDL, schema introspection via `information_schema` + `pg_catalog`
@@ -119,11 +118,6 @@ Host=localhost;Port=5432;Database={@DbName};Username={@UserId};Password={@Passwo
 - Per-query-shape delegate caching with `ConcurrentDictionary`
 - Supports `List<T>` and `IEnumerable<T>` (deferred) materialization
 
-### Logging & Diagnostics
-
-- `DbAccessLogger` -- command execution logging
-- `DbLogContext` -- slow query tracking and diagnostics context
-
 ## Key Public APIs
 
 | Class / Interface | Purpose |
@@ -139,7 +133,6 @@ Host=localhost;Port=5432;Database={@DbName};Username={@UserId};Password={@Passwo
 | `IDbConnectionManager` | Connection information registry |
 | `DbProviderRegistry` | ADO.NET `DbProviderFactory` resolution |
 | `ILMapper<T>` | IL emit-based DataReader-to-object mapping |
-| `DbFunc` | Database-aware utility methods |
 | `TableSchemaCommandBuilder` | Schema-based IUD command generation |
 
 ## Design Conventions
@@ -184,13 +177,11 @@ Bee.Db/
     Sqlite/        # SQLite implementations
   Manager/         # IDbConnectionManager, DbProviderRegistry, DbConnectionInfo,
                    # DbDialectRegistry
-  Logging/         # DbAccessLogger, DbLogContext
   *.cs (root)      # Cross-cutting infrastructure:
                    # DbAccess, DbCommandSpec, DbCommandSpecCollection,
                    # DbBatchSpec, DbBatchResult, DbCommandResult,
                    # DbCommandResultCollection, DbCommandKind,
                    # DbConnectionScope, DbParameterSpec, DbParameterSpecCollection,
-                   # DataTableUpdateSpec, DbFunc, ILMapper, CommandTextVariable
 ```
 
 The namespace layout follows three principles (see [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md)):

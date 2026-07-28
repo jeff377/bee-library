@@ -70,7 +70,6 @@
 
 - **靜態工具類別** -- `ValueUtilities`、`StringUtilities`、`DateTimeExtensions` 以靜態方法公開功能，不持有實例狀態。
 - **常數時間比較** -- `CompareBytes` 用於 HMAC / 雜湊驗證，防止時序攻擊（Timing Attack）。
-- **雙框架條件編譯** -- 使用 `#if NETSTANDARD2_0` 處理不同執行階段 API 的差異。
 - **介面導向擴充** -- 序列化透過 `IObjectSerialize` 與 `IObjectSerializeProcess` 抽象化。
 - **啟用 Nullable Reference Types**（`<Nullable>enable</Nullable>`）。
 

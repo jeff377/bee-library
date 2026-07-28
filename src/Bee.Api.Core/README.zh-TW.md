@@ -48,6 +48,9 @@
 
 ### MessagePack 基礎設施
 
+> 這些型別為 `internal`。此處記載是因為它們定義了 wire 行為，但它們**不屬於**套件的公開表面
+> ——要走同一條管線請用 public 的 `MessagePackPayloadSerializer`。
+
 - `SafeMessagePackSerializerOptions` -- 反序列化型別白名單，防止不受信任型別攻擊。
 - `MessagePackCodec` -- MessagePack 序列化的編解碼器。
 - `FormatterResolver` -- 自訂解析器，包含 ADO.NET 型別（`DataTable`、`DataSet` 等）的格式器。
@@ -65,7 +68,6 @@
 | `ApiPayloadTransformer` | 序列化 -> 壓縮 -> 加密管線 |
 | `ApiAccessValidator` | 透過 `ApiAccessControlAttribute` 實施方法層級保護 |
 | `ApiContractRegistry` | 將契約介面對應至 API 型別 |
-| `SafeMessagePackSerializerOptions` | 安全反序列化的型別白名單 |
 | `PayloadFormat` | 保護等級列舉（`Plain`、`Encoded`、`Encrypted`） |
 | `ApiAuthorizationValidator` | 請求授權驗證 |
 | `ApiCallContext` | 每次呼叫的中繼資料（Token、保護等級、身分） |

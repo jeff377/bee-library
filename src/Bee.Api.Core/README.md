@@ -48,6 +48,10 @@
 
 ### MessagePack Infrastructure
 
+> These types are `internal`. They are documented here because they define the wire behaviour, but
+> they are not part of the package's public surface — use `MessagePackPayloadSerializer` (public)
+> to reach the same pipeline.
+
 - `SafeMessagePackSerializerOptions` -- type whitelist for deserialization to prevent untrusted-type attacks.
 - `MessagePackCodec` -- encoder/decoder for MessagePack serialization.
 - `FormatterResolver` -- custom resolver with formatters for ADO.NET types (`DataTable`, `DataSet`, etc.).
@@ -65,7 +69,6 @@
 | `ApiPayloadTransformer` | Serialize -> Compress -> Encrypt pipeline |
 | `ApiAccessValidator` | Method-level protection via `ApiAccessControlAttribute` |
 | `ApiContractRegistry` | Maps contract interfaces to API types |
-| `SafeMessagePackSerializerOptions` | Type whitelist for safe deserialization |
 | `PayloadFormat` | Protection level enum (`Plain`, `Encoded`, `Encrypted`) |
 | `ApiAuthorizationValidator` | Request authorization validation |
 | `ApiCallContext` | Per-call metadata (token, protection, identity) |

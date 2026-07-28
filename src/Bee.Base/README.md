@@ -70,7 +70,6 @@
 
 - **Static utility classes** -- `ValueUtilities`, `StringUtilities`, `DateTimeExtensions` expose functionality as static methods; no instance state.
 - **Constant-time comparison** -- `CompareBytes` is used for HMAC / hash validation to prevent timing attacks.
-- **Dual-framework conditional compilation** -- `#if NETSTANDARD2_0` guards are used where runtime APIs diverge.
 - **Interface-based extensibility** -- serialization is abstracted via `IObjectSerialize` and `IObjectSerializeProcess`.
 - **Nullable reference types** enabled (`<Nullable>enable</Nullable>`).
 

@@ -24,7 +24,6 @@
 ### System-Level Connector
 
 - `SystemApiConnector` exposes system operations: `Login` (RSA key-exchange authentication), `Ping` (health check), `CreateSession` (one-time or time-limited tokens), `Initialize` (environment bootstrap), `GetDefine` / `SaveDefine` (definition CRUD), and `ExecFunc` (custom function execution).
-- Every async method has a synchronous counterpart powered by `SyncExecutor`.
 
 ### Form-Level Connector
 
@@ -44,10 +43,6 @@
 
 - `ApiClientInfo` holds static runtime configuration: `ConnectType`, `Endpoint`, `ApiKey`, `ApiEncryptionKey`, and `SupportedConnectTypes`.
 
-### Async-to-Sync Bridge
-
-- `SyncExecutor` wraps `Task.Run` + `GetAwaiter().GetResult()` to safely call async methods from synchronous contexts (constructors, WinForms event handlers) without deadlocks.
-
 ## Key Public APIs
 
 | Class / Interface | Purpose |
@@ -63,7 +58,6 @@
 | `ApiConnectValidator` | Validates endpoints and determines connection type |
 | `ConnectType` | Enum: `Local`, `Remote` |
 | `SupportedConnectTypes` | Flags enum: `Local`, `Remote`, `Both` |
-| `SyncExecutor` | Async-to-sync bridge for non-async callers |
 
 ## Design Conventions
 
@@ -71,7 +65,6 @@
 - **Template Method** -- `ApiConnector` defines `ExecuteAsync<T>` with fixed steps (create request, transform payload, invoke provider, restore response); subclasses supply domain-specific methods.
 - **Dual constructor pattern** -- each connector offers two constructors: `(Guid accessToken)` for local and `(string endpoint, Guid accessToken)` for remote, mirroring the two provider types.
 - **Payload format negotiation** -- requests default to `PayloadFormat.Encrypted`; the pipeline automatically downgrades to `Encoded` when no encryption key is set, or to `Plain` for local providers in non-debug mode.
-- **SyncExecutor for legacy callers** -- every async method has a sync wrapper using `SyncExecutor`, enabling use from WinForms constructors and synchronous APIs without deadlocks.
 
 ## Directory Structure
 
@@ -81,7 +74,6 @@ Bee.Api.Client/
   ApiConnectValidator.cs           # Endpoint validation and ConnectType detection
   ConnectType.cs                   # Local / Remote enum
   SupportedConnectTypes.cs         # Flags enum for supported connection types
-  SyncExecutor.cs                  # Async-to-sync bridge
   Connectors/
     ApiConnector.cs                # Abstract base connector
     SystemApiConnector.cs          # System-level operations

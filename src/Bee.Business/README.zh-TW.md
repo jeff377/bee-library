@@ -24,7 +24,7 @@
 
 ### 系統操作
 
-- `ISystemBusinessObject` -- 系統層級操作：`CreateSession`、`GetDefine`、`SaveDefine`
+- `ISystemBusinessObject` -- 跨 BO 契約：`Login`、`CreateSession`、`GetDefine`、`SaveDefine`、`EnterCompany`、`LeaveCompany`、`Logout`。純 API 方法（`Ping`、`GetFormSchema`、`GetFormLayout`、`GetLanguage` 等）在具象類別上 public + `[ApiAccessControl]`，刻意不放進此介面
 - 每個操作對應 Args/Result 組合：`LoginArgs`/`LoginResult`、`PingArgs`/`PingResult`、`CreateSessionArgs`/`CreateSessionResult`、`GetDefineArgs`/`GetDefineResult`、`SaveDefineArgs`/`SaveDefineResult`、`CheckPackageUpdateArgs`/`CheckPackageUpdateResult`、`GetPackageArgs`/`GetPackageResult`、`GetCommonConfigurationArgs`/`GetCommonConfigurationResult`
 
 ### 表單操作
@@ -47,7 +47,7 @@
 | 類別 / 介面 | 用途 |
 |-------------|------|
 | `IBusinessObject` | BO 基底介面（`ExecFunc`、`ExecFuncAnonymous`） |
-| `ISystemBusinessObject` | 系統操作（`CreateSession`、`GetDefine`、`SaveDefine`） |
+| `ISystemBusinessObject` | 跨 BO 系統操作（7 個成員；純 API 方法留在具象類別） |
 | `IFormBusinessObject` | 表單層級商業邏輯介面 |
 | `BusinessObjectFactory` | 建立 BO 實例的工廠 |
 | `LoginAttemptTracker` | 連續失敗後的帳戶鎖定 |

@@ -44,7 +44,6 @@
 
 - `IDialectFactory` -- 每個 provider 的工廠，提供 `IFormCommandBuilder`、`ICreateTableCommandBuilder`、`ITableAlterCommandBuilder`、`ITableRebuildCommandBuilder`、`ITableSchemaProvider` 與 `GetDefaultValueExpression(FieldDbType)`
 - `DbDialectRegistry` -- 將 `DatabaseType` 映射到對應的 `IDialectFactory`（與 `DbProviderRegistry` 映射 ADO.NET `DbProviderFactory` 對稱）；註冊由 host 應用程式明示完成
-- `DbFunc` -- 資料庫感知工具方法（依 `DatabaseType` 索引參數前綴、識別符引號、型別推斷）
 - 內建 dialect 實作：
   - **SQL Server**（`Providers/SqlServer/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、結構描述探查
   - **PostgreSQL**（`Providers/PostgreSql/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、透過 `information_schema` + `pg_catalog` 進行結構描述探查
@@ -119,11 +118,6 @@ Host=localhost;Port=5432;Database={@DbName};Username={@UserId};Password={@Passwo
 - 以 `ConcurrentDictionary` 依查詢結構快取委派
 - 支援 `List<T>` 與 `IEnumerable<T>`（延遲）具體化
 
-### 記錄與診斷
-
-- `DbAccessLogger` -- 命令執行記錄
-- `DbLogContext` -- 慢查詢追蹤與診斷上下文
-
 ## 主要公開 API
 
 | 類別 / 介面 | 用途 |
@@ -139,7 +133,6 @@ Host=localhost;Port=5432;Database={@DbName};Username={@UserId};Password={@Passwo
 | `IDbConnectionManager` | 連線資訊註冊中心 |
 | `DbProviderRegistry` | ADO.NET `DbProviderFactory` 解析 |
 | `ILMapper<T>` | 基於 IL emit 的 DataReader 至物件映射 |
-| `DbFunc` | 資料庫感知工具方法 |
 | `TableSchemaCommandBuilder` | 依結構描述產生 IUD 命令 |
 
 ## 設計慣例
@@ -184,13 +177,11 @@ Bee.Db/
     Sqlite/        # SQLite 實作
   Manager/         # IDbConnectionManager、DbProviderRegistry、DbConnectionInfo、
                    # DbDialectRegistry
-  Logging/         # DbAccessLogger、DbLogContext
   *.cs (root)      # 跨切面基礎設施：
                    # DbAccess、DbCommandSpec、DbCommandSpecCollection、
                    # DbBatchSpec、DbBatchResult、DbCommandResult、
                    # DbCommandResultCollection、DbCommandKind、
                    # DbConnectionScope、DbParameterSpec、DbParameterSpecCollection、
-                   # DataTableUpdateSpec、DbFunc、ILMapper、CommandTextVariable
 ```
 
 命名空間佈局遵循三項原則（見 [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md)）：

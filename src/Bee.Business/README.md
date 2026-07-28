@@ -24,7 +24,7 @@
 
 ### System Operations
 
-- `ISystemBusinessObject` -- system-level operations: `CreateSession`, `GetDefine`, `SaveDefine`
+- `ISystemBusinessObject` -- the cross-BO contract: `Login`, `CreateSession`, `GetDefine`, `SaveDefine`, `EnterCompany`, `LeaveCompany`, `Logout`. API-only methods (`Ping`, `GetFormSchema`, `GetFormLayout`, `GetLanguage`, …) are public on the concrete class with `[ApiAccessControl]` and deliberately stay off this interface
 - Argument/result pairs for each operation: `LoginArgs`/`LoginResult`, `PingArgs`/`PingResult`, `CreateSessionArgs`/`CreateSessionResult`, `GetDefineArgs`/`GetDefineResult`, `SaveDefineArgs`/`SaveDefineResult`, `CheckPackageUpdateArgs`/`CheckPackageUpdateResult`, `GetPackageArgs`/`GetPackageResult`, `GetCommonConfigurationArgs`/`GetCommonConfigurationResult`
 
 ### Form Operations
@@ -47,7 +47,7 @@
 | Class / Interface | Purpose |
 |-------------------|---------|
 | `IBusinessObject` | Base BO interface (`ExecFunc`, `ExecFuncAnonymous`) |
-| `ISystemBusinessObject` | System operations (`CreateSession`, `GetDefine`, `SaveDefine`) |
+| `ISystemBusinessObject` | Cross-BO system operations (7 members; API-only methods stay on the concrete class) |
 | `IFormBusinessObject` | Form-level business logic interface |
 | `BusinessObjectFactory` | Factory for creating BO instances |
 | `LoginAttemptTracker` | Account lockout after consecutive failures |
