@@ -68,6 +68,9 @@ namespace Bee.Base.Data
             {
                 case FieldDbType.String:
                 case FieldDbType.Text:
+                // A time of day is carried as a fixed-width `"HH:mm"` string, so it binds as a
+                // string parameter on every provider (ADR-033).
+                case FieldDbType.Time:
                     return DbType.String;
                 case FieldDbType.Boolean:
                     return DbType.Boolean;
@@ -106,6 +109,8 @@ namespace Bee.Base.Data
                 case FieldDbType.String:
                     return typeof(string);
                 case FieldDbType.Text:
+                    return typeof(string);
+                case FieldDbType.Time:
                     return typeof(string);
                 case FieldDbType.Boolean:
                     return typeof(bool);

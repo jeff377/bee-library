@@ -200,6 +200,8 @@ namespace Bee.Db.Providers.SqlServer
             {
                 case FieldDbType.String:
                     return $"[nvarchar]({field.Length})";
+                case FieldDbType.Time:
+                    return "[nchar](5)";
                 case FieldDbType.Text:
                     return "[nvarchar](max)";
                 case FieldDbType.Boolean:
@@ -258,6 +260,7 @@ namespace Bee.Db.Providers.SqlServer
             {
                 case FieldDbType.String:
                 case FieldDbType.Text:
+                case FieldDbType.Time:
                     return StringUtilities.Format("N'{0}'", StringUtilities.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue);
                 case FieldDbType.AutoIncrement:
                     return string.Empty;

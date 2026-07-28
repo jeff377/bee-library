@@ -164,12 +164,18 @@ namespace Bee.Definition.Database
         /// <param name="source">The source object to compare against.</param>
         public bool Compare(DbField source)
         {
-            // Compare data type
-            if (DbType != source.DbType) { return false; }
+            // Compare data type and, for the string family, width. Both sides are reduced to their
+            // physical shape first: a time of day is stored as a fixed-width `char(5)` string, so the
+            // database reports it as a 5-length string and never as `Time` — the semantic marker
+            // exists only in the definition. Without this reduction every `Time` column would read as
+            // a permanent difference and re-issue an ALTER on every comparison (ADR-033).
+            var (definedType, definedLength) = GetPhysicalShape(this);
+            var (actualType, actualLength) = GetPhysicalShape(source);
+            if (definedType != actualType) { return false; }
             // Compare AllowNull
             if (AllowNull != source.AllowNull) { return false; }
             // Compare field length for String type
-            if ((DbType == FieldDbType.String) && (Length != source.Length))
+            if ((definedType == FieldDbType.String) && (definedLength != actualLength))
                 return false;
             // Compare precision and scale for Decimal type
             if ((DbType == FieldDbType.Decimal) && (Precision != source.Precision || Scale != source.Scale))
@@ -188,6 +194,18 @@ namespace Bee.Definition.Database
             if (!StringUtilities.IsEquals(DefaultValue, source.DefaultValue)) { return false; }
 
             return true;
+        }
+
+        /// <summary>
+        /// Reduces a field to the physical shape the database actually reports, so a definition-only
+        /// semantic marker does not read as schema drift.
+        /// </summary>
+        /// <param name="field">The field to reduce.</param>
+        private static (FieldDbType DbType, int Length) GetPhysicalShape(DbField field)
+        {
+            return field.DbType == FieldDbType.Time
+                ? (FieldDbType.String, ValueUtilities.TimeOnlyLength)
+                : (field.DbType, field.Length);
         }
 
         /// <summary>

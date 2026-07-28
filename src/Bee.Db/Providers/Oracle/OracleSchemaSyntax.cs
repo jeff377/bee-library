@@ -36,6 +36,7 @@ namespace Bee.Db.Providers.Oracle
             {
                 case FieldDbType.String:
                 case FieldDbType.Text:
+                case FieldDbType.Time:
                     return string.Empty;
                 case FieldDbType.Boolean:
                 case FieldDbType.Short:
@@ -88,7 +89,9 @@ namespace Bee.Db.Providers.Oracle
             // non-empty default is still a valid non-null literal on a nullable column, so it is
             // preserved to keep the read-back schema diff stable.
             // See docs/plans/plan-oracle-string-nullability.md.
-            if (field.DbType == FieldDbType.String)
+            // A time of day is the same case: its unset value is the empty string, which Oracle
+            // stores as NULL, so it is emitted nullable with the empty default dropped (ADR-033).
+            if (field.DbType == FieldDbType.String || field.DbType == FieldDbType.Time)
             {
                 return StringUtilities.IsEmpty(field.DefaultValue)
                     ? string.Empty
@@ -156,7 +159,8 @@ namespace Bee.Db.Providers.Oracle
         /// <param name="field">The field definition.</param>
         public static string GetNullabilityClause(DbField field)
         {
-            bool isNullableText = field.DbType == FieldDbType.String || field.DbType == FieldDbType.Text;
+            bool isNullableText = field.DbType == FieldDbType.String || field.DbType == FieldDbType.Text
+                || field.DbType == FieldDbType.Time;
             return (field.AllowNull || isNullableText) ? "NULL" : "NOT NULL";
         }
 

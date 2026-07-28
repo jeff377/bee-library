@@ -473,6 +473,85 @@ namespace Bee.Base
 
         #endregion
 
+        #region CTimeOnly
+
+        /// <summary>
+        /// The storage and display format of a time of day: fixed-width 24-hour <c>"HH:mm"</c>.
+        /// </summary>
+        /// <remarks>
+        /// Fixed width is what makes lexicographic ordering match chronological ordering, so a
+        /// <c>char(5)</c> column sorts and range-scans correctly without a cast. Display uses the
+        /// same format as storage, so no culture-aware formatting is involved anywhere.
+        /// </remarks>
+        public const string TimeOnlyFormat = "HH:mm";
+
+        /// <summary>
+        /// The storage width of a time of day, in characters — the width of a <c>char(5)</c> column.
+        /// </summary>
+        /// <remarks>
+        /// Derived from <see cref="TimeOnlyFormat"/> so the two cannot drift apart.
+        /// </remarks>
+        public static readonly int TimeOnlyLength = TimeOnlyFormat.Length;
+
+        /// <summary>
+        /// Converts the specified value to a time of day, or <see langword="null"/> when the value is
+        /// unset or is not a well-formed time.
+        /// </summary>
+        /// <param name="value">The value to convert.</param>
+        /// <remarks>
+        /// Returns a nullable <see cref="TimeOnly"/> rather than following the default-value shape of
+        /// the rest of the <c>Cxxx</c> family, because a time of day has no spare value to stand for
+        /// "unset": <c>default(TimeOnly)</c> is <c>00:00</c>, a perfectly legal midnight. Handing back
+        /// a default would silently turn an unfilled field into midnight. An unset time is the empty
+        /// string in storage and <see langword="null"/> here.
+        /// <para>
+        /// Parsing is lenient about width (<c>"8:30"</c> is accepted) and accepts a
+        /// <see cref="DateTime"/> or <see cref="TimeSpan"/> source, but never accepts an out-of-range
+        /// value: this method is the framework's gate against the wider range a <c>char(5)</c> column
+        /// or a <see cref="TimeSpan"/> can physically hold (ADR-033).
+        /// </para>
+        /// </remarks>
+        public static TimeOnly? CTimeOnly(object? value)
+        {
+            switch (value)
+            {
+                case null:
+                case DBNull:
+                    return null;
+                case TimeOnly timeOnly:
+                    return timeOnly;
+                case DateTime dateTime:
+                    return TimeOnly.FromDateTime(dateTime);
+                case TimeSpan timeSpan:
+                    return timeSpan >= TimeSpan.Zero && timeSpan < TimeSpan.FromDays(1)
+                        ? TimeOnly.FromTimeSpan(timeSpan)
+                        : null;
+            }
+
+            var text = CStr(value).Trim();
+            if (IsEmpty(text)) { return null; }
+            return TimeOnly.TryParseExact(text, ["HH:mm", "H:mm"], CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var result) ? result : null;
+        }
+
+        /// <summary>
+        /// Converts the specified value to the storage form of a time of day: a fixed-width
+        /// <c>"HH:mm"</c> string, or the empty string when the value is unset or malformed.
+        /// </summary>
+        /// <param name="value">The value to convert.</param>
+        /// <remarks>
+        /// This is the normalising counterpart of <see cref="CTimeOnly"/>: it is what turns
+        /// <c>"8:30"</c> into <c>"08:30"</c> so the fixed-width ordering guarantee holds for every
+        /// value that reaches the database.
+        /// </remarks>
+        public static string CTimeString(object? value)
+        {
+            var time = CTimeOnly(value);
+            return time?.ToString(TimeOnlyFormat, CultureInfo.InvariantCulture) ?? string.Empty;
+        }
+
+        #endregion
+
         #region CGuid
 
         /// <summary>

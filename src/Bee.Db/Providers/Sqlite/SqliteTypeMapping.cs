@@ -31,6 +31,8 @@ namespace Bee.Db.Providers.Sqlite
                     return $"VARCHAR({field.Length})";
                 case FieldDbType.Text:
                     return "TEXT";
+                case FieldDbType.Time:
+                    return "VARCHAR(5)";
                 case FieldDbType.Boolean:
                     return "BOOLEAN";
                 case FieldDbType.AutoIncrement:

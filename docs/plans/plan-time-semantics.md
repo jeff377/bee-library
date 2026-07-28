@@ -1,11 +1,11 @@
 # Plan：`FieldDbType.Time` 純時刻型別
 
-**狀態：📝 擬定中（2026-07-27）**
+**狀態：🚧 進行中（2026-07-27）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 型別基礎與 DDL：`FieldDbType.Time` + `Bee.Base` 核心 + 五家 provider 對應與等價規則 + ADR | 📝 待做 |
-| 2 | 取值層與運算式：`ValueUtilities.CTimeOnly` + `ExpressionPolicy.CoerceValue` | 📝 待做 |
+| 1 | 型別基礎與 DDL：`FieldDbType.Time` + `Bee.Base` 核心 + 五家 provider 對應與等價規則 + ADR | ✅ 已完成（2026-07-27） |
+| 2 | 取值層與運算式：`ValueUtilities.CTimeOnly` + `ExpressionPolicy.CoerceValue` | ✅ 已完成（2026-07-27，併入階段 1） |
 | 3 | UI 層：時刻編輯控件（Avalonia 先行，再移植 MAUI / Blazor） | 📝 待做 |
 | 4 | 公開文件：雙語 `time-semantics` + 術語表時間語意詞條 + CHANGELOG breaking 標記 | 📝 待做 |
 
@@ -52,7 +52,7 @@
 ### 2.1 承載方案
 
 ```
-DB 欄位                     char(5) / VARCHAR2(5)，內容 "HH:mm"
+DB 欄位                     定寬 5 碼字元欄（見 §3），內容 "HH:mm"
 DataColumn.DataType         typeof(string)
 FieldDbType                 Time            ← 語意標記，不隨底層型別退回 String
 ValueUtilities.CTimeOnly    string → TimeOnly?（ParseExact "HH:mm"，空字串回 null）
@@ -108,8 +108,9 @@ TimeOnly.TryParseExact(s, "HH:mm", out var t)   // 一條就夠
 > 定義說是 `Time` → DB 反推說是 `String(5)` → `TableSchemaComparer` 判定有差異 →
 > **每次比對都想 ALTER，永遠收斂不了**
 
-→ **五家 `AlterCompatibilityRules` 各補一條規則判等價。** 升級方向本來就只從定義往 DB 走，
-DB 端反推只用於「要不要改」的判斷，判等價即可。
+→ **在 `DbField.Compare` 將兩側化約為物理形狀後再比較**（`Time` → `String(5)`）。
+diff 的閘門就在這一處，改在此收斂即可，也免去五份 provider 規則各自漂移。
+五家 `AlterCompatibilityRules` 另將 `Time` 歸入字串家族，供「已判定有差異後」決定 ALTER/REBUILD 之用。
 
 未採「以 DB extended property 存語意標記」：SQL Server 有現成機制
 （框架已有 `SqlExtendedPropertyCommandBuilder`），但 MySQL / SQLite 無等價機制，
@@ -156,16 +157,38 @@ Connector 判斷表中，`Time` 與 `Date` 同列（絕不轉）。改採字串�
 
 五家一致，無語意分裂、無特例：
 
-| DB | 欄位型別 |
-|----|---------|
-| SQL Server | `char(5)` |
-| PostgreSQL | `char(5)` |
-| MySQL | `CHAR(5)` |
-| SQLite | `TEXT` |
-| Oracle | `VARCHAR2(5)` |
+| DB | 欄位型別 | 選型理由 |
+|----|---------|---------|
+| SQL Server | `nchar(5)` | 留在 N-family，與 `N'...'` 預設字面值及其解析路徑自洽；`char` 在反推表無對應 |
+| PostgreSQL | `char(5)` | 定寬 |
+| MySQL | `CHAR(5)` | 定寬 |
+| SQLite | `VARCHAR(5)` | SQLite 無型別，但宣告型別會被反推——`TEXT` 會反推成 `Text`，`VARCHAR(5)` 才反推成 `String(5)` |
+| Oracle | `VARCHAR2(5)` | Oracle 無定寬字元的實益；且 `''`＝`NULL` 使該欄比照 `String` 走 nullable |
 
-> 定寬 `char` 優於 `varchar`：值恆為 5 碼，定寬省去長度前綴，
-> 也讓「不足 5 碼」的髒資料在寫入端就顯眼。SQLite 無型別，`TEXT` 即可。
+> 值恆為 5 碼，定寬型別省去長度前綴，也讓「不足 5 碼」的髒資料在寫入端就顯眼。
+
+## 3.1 實作結果（階段 1–2，2026-07-27）
+
+全 solution Release build 0 警告 0 錯誤；全測試 **5,085 通過 / 0 失敗 / 1 skip**（新增 30 項）。
+ADR：[../adr/adr-033-time-of-day-semantics.md](../adr/adr-033-time-of-day-semantics.md)。
+
+**階段 2 併入階段 1 出貨**：`ToFieldValue` 的正規化需要時刻剖析，而那正是 `CTimeOnly` 的本體，
+拆兩階段會讓同一份邏輯寫兩次。
+
+與 plan 的差異（皆為實作期發現，非設計變更）：
+
+| 項目 | plan 原文 | 實作 | 原因 |
+|------|----------|------|------|
+| 等價規則的落點 | 「五家 `AlterCompatibilityRules` 各補一條規則」 | **`DbField.Compare` 一處**化約物理形狀；五家 rules 另補「字串家族」歸類 | diff 的實際閘門是 `DbField.Compare` 的 `DbType != source.DbType`，五家 rules 只在**已判定有差異後**決定 ALTER/REBUILD，根本走不到。改在單一處化約，也免去五份規則各自漂移 |
+| 標記 helper | 列為需改動 | **不需改動** | `ResolveFieldDbType` / `ApplyFieldDbType` / `GetDeclaredFieldDbType` 是型別無關的泛用實作 |
+| `ExpressionPolicy.CoerceValue` | 「補 `Time` 分支」 | 改補 **`TimeOnly` → `string`** 的邊界轉換 | `Time` 的 `clrType` 是 `string`，字串值本來就走得通；真正會炸的是反向——`TimeOnly` 非 `IConvertible`，會從 `Convert.ChangeType` 擲出 |
+| SQL Server 型別 | `char(5)` | **`nchar(5)`** | `char` 在 `SqlTableSchemaProvider` 的反推表無對應（回 `Unknown`），且預設值字面值以 `N'...'` 產生、解析端卻走 `('...')` 分支，兩頭對不上。留在 N-family 兩者自洽。連帶修好 `nchar` 的長度換算（原僅 `NVARCHAR` 除以 2） |
+| SQLite 型別 | `TEXT` | **`VARCHAR(5)`** | `TEXT` 反推為 `FieldDbType.Text`，與化約後的 `String(5)` 對不上；`VARCHAR(5)` 反推即 `String(5)` |
+| Oracle | 未特別提及 | 另補 `''`＝`NULL` 的既有處置 | 時刻的未填值是空字串，命中 Oracle 把 `''` 視為 `NULL` 的老問題，需比照 `String` 欄位改為 nullable 並捨棄空預設 |
+| 整合測試斷言 | 「schema 比對零 diff」 | 斷言**時刻欄位**的 `UpgradeAction` 為 `None` | 整表斷言會被無關的既有行為汙染——SQLite 的 `Guid` 欄位在 DB 端有 `hex(randomblob(16))` 預設、定義端沒有，永遠有 diff |
+
+**順帶發現（未修，與本 plan 無關）**：SQLite 的 `Guid` 欄位定義與 DB 反推之間有永久性 diff，
+成因為 DB 端預設值 `hex(randomblob(16))` 未反映於定義。任何 SQLite 表的 schema 比對都會被判 `Upgrade`。
 
 ## 4. 階段細節
 

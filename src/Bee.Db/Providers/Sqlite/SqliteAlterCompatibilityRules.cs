@@ -1,3 +1,4 @@
+using Bee.Base;
 using Bee.Base.Data;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
@@ -53,7 +54,7 @@ namespace Bee.Db.Providers.Sqlite
         }
 
         private static bool IsStringLike(FieldDbType type) =>
-            type == FieldDbType.String || type == FieldDbType.Text;
+            type == FieldDbType.String || type == FieldDbType.Text || type == FieldDbType.Time;
 
         private static bool IsNumeric(FieldDbType type) =>
             type == FieldDbType.Short || type == FieldDbType.Integer || type == FieldDbType.Long
@@ -69,6 +70,7 @@ namespace Bee.Db.Providers.Sqlite
         private static int GetStringCapacity(DbField field)
         {
             if (field.DbType == FieldDbType.Text) return int.MaxValue;
+            if (field.DbType == FieldDbType.Time) return ValueUtilities.TimeOnlyLength;
             return field.Length <= 0 ? int.MaxValue : field.Length;
         }
 

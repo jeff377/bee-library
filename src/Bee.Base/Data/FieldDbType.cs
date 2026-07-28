@@ -60,6 +60,19 @@ namespace Bee.Base.Data
         /// <summary>
         /// Unknown type.
         /// </summary>
-        Unknown
+        Unknown,
+        /// <summary>
+        /// Time of day (<c>00:00</c>–<c>23:59</c>, minute precision), stored as a fixed-width
+        /// <c>"HH:mm"</c> string.
+        /// </summary>
+        /// <remarks>
+        /// A time of day is a wall-clock position within a day, not an instant and not a duration:
+        /// use it for shift boundaries, opening hours and reminder times. It is never shifted by a
+        /// time zone. Values ride in a <c>char(5)</c> column and a <c>string</c> DataColumn — see
+        /// <c>docs/adr/adr-033-time-of-day-semantics.md</c> for why a string rather than a native
+        /// database time type. New members must be appended here: the value rides the MessagePack
+        /// wire as its underlying integer, so inserting one mid-enum breaks existing payloads.
+        /// </remarks>
+        Time
     }
 }

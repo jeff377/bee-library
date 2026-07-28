@@ -15,6 +15,9 @@ namespace Bee.Base.Data
             {
                 case FieldDbType.String:
                 case FieldDbType.Text:
+                // A time of day has no spare value to stand for "unset" — `00:00` is a legal
+                // midnight — so an unfilled time is the empty string, never `"00:00"` (ADR-033).
+                case FieldDbType.Time:
                     return string.Empty;
                 case FieldDbType.Boolean:
                     return false;
@@ -51,6 +54,12 @@ namespace Bee.Base.Data
                 case FieldDbType.String:
                 case FieldDbType.Text:
                     return ValueUtilities.CStr(value);
+                case FieldDbType.Time:
+                    // Normalising here is what upholds the fixed-width ordering guarantee: `"8:30"`
+                    // reaches the database as `"08:30"`, so a `char(5)` column sorts and range-scans
+                    // chronologically. A malformed value becomes the empty string, matching the
+                    // leniency of the rest of this switch.
+                    return ValueUtilities.CTimeString(value);
                 case FieldDbType.Boolean:
                     return ValueUtilities.CBool(value);
                 case FieldDbType.Integer:

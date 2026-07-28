@@ -21,6 +21,8 @@ namespace Bee.Db.Providers.PostgreSql
                     return $"varchar({field.Length})";
                 case FieldDbType.Text:
                     return "text";
+                case FieldDbType.Time:
+                    return "char(5)";
                 case FieldDbType.Boolean:
                     return "boolean";
                 case FieldDbType.AutoIncrement:

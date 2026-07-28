@@ -1,4 +1,5 @@
 using System.Globalization;
+using Bee.Base;
 using Bee.Base.Data;
 
 namespace Bee.Expressions
@@ -61,6 +62,14 @@ namespace Bee.Expressions
             if (clrType == typeof(DateTime) && value is DateOnly dateOnly)
             {
                 return dateOnly.ToDateTime(TimeOnly.MinValue);
+            }
+            // `TimeOnly` is the fourth. A time of day is a `TimeOnly` at the point of use but a
+            // fixed-width `"HH:mm"` string in storage, so a value coming back from
+            // `ValueUtilities.CTimeOnly` is narrowed here rather than throwing out of
+            // `Convert.ChangeType`, which rejects every non-`IConvertible` type (ADR-033).
+            if (clrType == typeof(string) && value is TimeOnly timeOnly)
+            {
+                return timeOnly.ToString(ValueUtilities.TimeOnlyFormat, CultureInfo.InvariantCulture);
             }
             // The value's runtime type differs from the field's CLR type (for example an int cell
             // feeding a decimal field). Convert when possible; incompatible types surface as an

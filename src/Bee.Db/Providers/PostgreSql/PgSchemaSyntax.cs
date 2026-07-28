@@ -41,6 +41,7 @@ namespace Bee.Db.Providers.PostgreSql
             {
                 case FieldDbType.String:
                 case FieldDbType.Text:
+                case FieldDbType.Time:
                     return string.Empty;
                 case FieldDbType.Boolean:
                 case FieldDbType.Short:
@@ -80,6 +81,7 @@ namespace Bee.Db.Providers.PostgreSql
             {
                 case FieldDbType.String:
                 case FieldDbType.Text:
+                case FieldDbType.Time:
                     return StringUtilities.Format("'{0}'", StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : EscapeSqlString(field.DefaultValue));
                 case FieldDbType.AutoIncrement:
                     return string.Empty;

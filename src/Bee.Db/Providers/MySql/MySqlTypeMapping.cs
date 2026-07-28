@@ -35,6 +35,8 @@ namespace Bee.Db.Providers.MySql
                     return $"VARCHAR({field.Length})";
                 case FieldDbType.Text:
                     return "LONGTEXT";
+                case FieldDbType.Time:
+                    return "CHAR(5)";
                 case FieldDbType.Boolean:
                     return "TINYINT(1)";
                 case FieldDbType.AutoIncrement:

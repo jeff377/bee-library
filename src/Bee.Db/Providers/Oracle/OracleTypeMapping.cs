@@ -49,6 +49,8 @@ namespace Bee.Db.Providers.Oracle
                         : "CLOB";
                 case FieldDbType.Text:
                     return "CLOB";
+                case FieldDbType.Time:
+                    return "VARCHAR2(5)";
                 case FieldDbType.Boolean:
                     return "NUMBER(1)";
                 case FieldDbType.AutoIncrement:

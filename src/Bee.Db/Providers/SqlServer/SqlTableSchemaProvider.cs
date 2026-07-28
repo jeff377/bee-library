@@ -229,7 +229,7 @@ namespace Bee.Db.Providers.SqlServer
             // Set the String field length
             if (dbField.DbType == FieldDbType.String)
             {
-                if (StringUtilities.IsEquals(row.GetFieldValue<string>("DbType"), "NVARCHAR"))
+                if (StringUtilities.IsEqualsOr(row.GetFieldValue<string>("DbType"), "NVARCHAR", "NCHAR"))
                     dbField.Length = row.GetFieldValue<int>("Length") / 2;
                 else
                     dbField.Length = row.GetFieldValue<int>("Length");
