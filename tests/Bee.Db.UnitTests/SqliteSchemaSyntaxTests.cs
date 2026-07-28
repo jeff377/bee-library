@@ -44,6 +44,7 @@ namespace Bee.Db.UnitTests
         [Theory]
         [InlineData(FieldDbType.String, "")]
         [InlineData(FieldDbType.Text, "")]
+        [InlineData(FieldDbType.Time, "")]
         [InlineData(FieldDbType.Boolean, "0")]
         [InlineData(FieldDbType.Short, "0")]
         [InlineData(FieldDbType.Integer, "0")]

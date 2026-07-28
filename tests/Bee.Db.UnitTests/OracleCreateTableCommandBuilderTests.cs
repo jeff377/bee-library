@@ -46,6 +46,7 @@ namespace Bee.Db.UnitTests
         [InlineData(FieldDbType.Currency, "NUMBER(19,4)")]
         [InlineData(FieldDbType.Date, "DATE")]
         [InlineData(FieldDbType.DateTime, "TIMESTAMP(6)")]
+        [InlineData(FieldDbType.Time, "VARCHAR2(5)")]
         [InlineData(FieldDbType.Guid, "RAW(16)")]
         [InlineData(FieldDbType.Binary, "BLOB")]
         [InlineData(FieldDbType.Text, "CLOB")]

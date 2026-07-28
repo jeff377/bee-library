@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Text;
 using Bee.Base;
 using Bee.Db.Ddl;
-using Bee.Base.Data;
 
 namespace Bee.Db.Providers.SqlServer
 {
@@ -41,24 +40,6 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// Quotes a SQL Server identifier by escaping <c>]</c> as <c>]]</c> and wrapping in square brackets.
-        /// </summary>
-        /// <param name="identifier">The identifier to quote.</param>
-        private static string QuoteName(string identifier)
-        {
-            return $"[{identifier.Replace("]", "]]")}]";
-        }
-
-        /// <summary>
-        /// Escapes a string value for use inside an N'...' literal by doubling single quotes.
-        /// </summary>
-        /// <param name="value">The string value to escape.</param>
-        private static string EscapeSqlString(string value)
-        {
-            return value.Replace("'", "''");
-        }
-
-        /// <summary>
         /// Gets the SQL statement for creating a table.
         /// </summary>
         /// <param name="tableSchema">The table schema definition.</param>
@@ -85,7 +66,7 @@ namespace Bee.Db.Providers.SqlServer
 
             var sb = new StringBuilder();
             // Assemble the CREATE TABLE statement
-            sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {QuoteName(dbTableName)} (\r\n{fields}");
+            sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {SqlSchemaSyntax.QuoteName(dbTableName)} (\r\n{fields}");
             if (StringUtilities.IsNotEmpty(primaryKey))
                 sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
             sb.Append("\r\n);");
@@ -125,9 +106,9 @@ namespace Bee.Db.Providers.SqlServer
         private static string GetAddTableExtendedPropertyCommand(string tableName, string description)
         {
             return $"EXEC sp_addextendedproperty\r\n" +
-                   $"  @name=N'MS_Description', @value=N'{EscapeSqlString(description)}',\r\n" +
+                   $"  @name=N'MS_Description', @value=N'{SqlSchemaSyntax.EscapeSqlString(description)}',\r\n" +
                    $"  @level0type=N'SCHEMA', @level0name=N'dbo',\r\n" +
-                   $"  @level1type=N'TABLE', @level1name=N'{EscapeSqlString(tableName)}';";
+                   $"  @level1type=N'TABLE', @level1name=N'{SqlSchemaSyntax.EscapeSqlString(tableName)}';";
         }
 
         /// <summary>
@@ -139,10 +120,10 @@ namespace Bee.Db.Providers.SqlServer
         private static string GetAddColumnExtendedPropertyCommand(string tableName, string columnName, string description)
         {
             return $"EXEC sp_addextendedproperty\r\n" +
-                   $"  @name=N'MS_Description', @value=N'{EscapeSqlString(description)}',\r\n" +
+                   $"  @name=N'MS_Description', @value=N'{SqlSchemaSyntax.EscapeSqlString(description)}',\r\n" +
                    $"  @level0type=N'SCHEMA', @level0name=N'dbo',\r\n" +
-                   $"  @level1type=N'TABLE', @level1name=N'{EscapeSqlString(tableName)}',\r\n" +
-                   $"  @level2type=N'COLUMN', @level2name=N'{EscapeSqlString(columnName)}';";
+                   $"  @level1type=N'TABLE', @level1name=N'{SqlSchemaSyntax.EscapeSqlString(tableName)}',\r\n" +
+                   $"  @level2type=N'COLUMN', @level2name=N'{SqlSchemaSyntax.EscapeSqlString(columnName)}';";
         }
 
         /// <summary>
@@ -155,7 +136,7 @@ namespace Bee.Db.Providers.SqlServer
             foreach (DbField field in this.TableSchema.Fields!)
             {
                 // Get the SQL fragment for this column
-                string text = GetFieldCommandText(field);
+                string text = SqlSchemaSyntax.GetColumnDefinition(field);
                 if (StringUtilities.IsNotEmpty(text))
                 {
                     if (sb.Length > 0)
@@ -164,109 +145,6 @@ namespace Bee.Db.Providers.SqlServer
                 }
             }
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Gets the SQL fragment for a single column definition.
-        /// </summary>
-        /// <param name="field">The field definition.</param>
-        private static string GetFieldCommandText(DbField field)
-        {
-            // Column type
-            string dbType = ConverDbType(field);
-            // Nullability
-            string allowNull = field.AllowNull ? "NULL" : "NOT NULL";
-            // Default value
-            string defaultValue = GetDefaultValue(field);
-            string defaultText;
-            if (StringUtilities.IsNotEmpty(defaultValue))
-                defaultText = $"DEFAULT ({defaultValue})";
-            else
-                defaultText = string.Empty;
-
-            if (StringUtilities.IsEmpty(defaultText))
-                return $"{QuoteName(field.FieldName)} {dbType} {allowNull}";
-            else
-                return $"{QuoteName(field.FieldName)} {dbType} {allowNull} {defaultText}";
-        }
-
-        /// <summary>
-        /// Converts a field definition to the corresponding SQL Server column type string.
-        /// </summary>
-        /// <param name="field">The field definition.</param>
-        private static string ConverDbType(DbField field)
-        {
-            switch (field.DbType)
-            {
-                case FieldDbType.String:
-                    return $"[nvarchar]({field.Length})";
-                case FieldDbType.Time:
-                    return "[nchar](5)";
-                case FieldDbType.Text:
-                    return "[nvarchar](max)";
-                case FieldDbType.Boolean:
-                    return "[bit]";
-                case FieldDbType.AutoIncrement:
-                    return "[int] IDENTITY(1,1)";
-                case FieldDbType.Short:
-                    return "[smallint]";
-                case FieldDbType.Integer:
-                    return "[int]";
-                case FieldDbType.Long:
-                    return "[bigint]";
-                case FieldDbType.Decimal:
-                    {
-                        int precision = field.Precision > 0 ? field.Precision : 18;
-                        int scale = field.Scale > 0 ? field.Scale : 0;
-                        return $"[decimal]({precision},{scale})";
-                    }
-                case FieldDbType.Currency:
-                    return "[decimal](19,4)";
-                case FieldDbType.Date:
-                    return "[date]";
-                case FieldDbType.DateTime:
-                    return "[datetime]";
-                case FieldDbType.Guid:
-                    return "[uniqueidentifier]";
-                case FieldDbType.Binary:
-                    return "[varbinary](max)";
-                default:
-                    throw new InvalidOperationException($"DbType={field.DbType} is not supported");
-            }
-        }
-
-        /// <summary>
-        /// Gets the default value expression for a field.
-        /// </summary>
-        /// <param name="dbField">The field definition.</param>
-        private static string GetDefaultValue(DbField dbField)
-        {
-            if (dbField.AllowNull)
-                return string.Empty;
-            else
-                return GetDefaultValue(dbField.DbType, dbField.DefaultValue);
-        }
-
-        /// <summary>
-        /// Gets the default value expression for a given data type and raw default value.
-        /// </summary>
-        /// <param name="dbType">The field data type.</param>
-        /// <param name="defaultValue">The raw default value.</param>
-        private static string GetDefaultValue(FieldDbType dbType, string defaultValue)
-        {
-            string originalDefaultValue = SqlSchemaSyntax.GetDefaultValueExpression(dbType);
-
-            switch (dbType)
-            {
-                case FieldDbType.String:
-                case FieldDbType.Text:
-                case FieldDbType.Time:
-                    return StringUtilities.Format("N'{0}'", StringUtilities.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue);
-                case FieldDbType.AutoIncrement:
-                    return string.Empty;
-                default:
-                    return StringUtilities.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue;
-            }
         }
 
         /// <summary>
@@ -284,11 +162,11 @@ namespace Bee.Db.Providers.SqlServer
             {
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
-                fieldBuilder.Append(CultureInfo.InvariantCulture, $"{QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                fieldBuilder.Append(CultureInfo.InvariantCulture, $"{SqlSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
             string name = StringUtilities.Format(index.Name, tableName);
-            return $"CONSTRAINT {QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
+            return $"CONSTRAINT {SqlSchemaSyntax.QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
         }
 
         /// <summary>
@@ -321,13 +199,13 @@ namespace Bee.Db.Providers.SqlServer
             {
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
-                fieldBuilder.Append(CultureInfo.InvariantCulture, $"{QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                fieldBuilder.Append(CultureInfo.InvariantCulture, $"{SqlSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
             // Generate the CREATE INDEX statement
             if (index.Unique)
-                return $"CREATE UNIQUE INDEX {QuoteName(name)} ON {QuoteName(tableName)} ({fieldBuilder});";
+                return $"CREATE UNIQUE INDEX {SqlSchemaSyntax.QuoteName(name)} ON {SqlSchemaSyntax.QuoteName(tableName)} ({fieldBuilder});";
             else
-                return $"CREATE INDEX {QuoteName(name)} ON {QuoteName(tableName)} ({fieldBuilder});";
+                return $"CREATE INDEX {SqlSchemaSyntax.QuoteName(name)} ON {SqlSchemaSyntax.QuoteName(tableName)} ({fieldBuilder});";
         }
     }
 }

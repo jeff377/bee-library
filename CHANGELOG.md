@@ -77,6 +77,12 @@ All notable changes to this project will be documented in this file.
 
 - `Bee.Definition`: `FieldDbType.Date` columns resolve to `DateEdit` instead of falling through to
   a plain text box.
+- `Bee.Db`: a freshly created SQL Server table now declares `FieldDbType.DateTime` columns as
+  `datetime2(7)`, matching the ALTER and rebuild paths. `SqlCreateTableCommandBuilder` carried its
+  own copy of the type map and was missed by the 4.15.0 `datetime` → `datetime2(7)` migration, so
+  that migration only reached tables that were *upgraded* — a new deployment silently got the old
+  `datetime` (≈3.33 ms rounding, minimum 1753-01-01). The duplicate map is removed and CREATE now
+  goes through the same `SqlSchemaSyntax` primitives every other provider already used.
 - `Bee.Base`: `StringUtilities.Replace` uses ordinal comparison. Under the Turkish locale the
   connection-string placeholders (`{@Password}` and friends) failed to match and were sent verbatim.
 - `Bee.Base`: `DataTable` JSON round-trip no longer rewrites date-shaped text in string columns, and

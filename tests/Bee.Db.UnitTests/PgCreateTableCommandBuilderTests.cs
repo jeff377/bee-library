@@ -33,6 +33,7 @@ namespace Bee.Db.UnitTests
         [InlineData(FieldDbType.Currency, "numeric(19,4)")]
         [InlineData(FieldDbType.Date, "date")]
         [InlineData(FieldDbType.DateTime, "timestamp")]
+        [InlineData(FieldDbType.Time, "char(5)")]
         [InlineData(FieldDbType.Guid, "uuid")]
         [InlineData(FieldDbType.Binary, "bytea")]
         [InlineData(FieldDbType.Text, "text")]

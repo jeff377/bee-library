@@ -63,6 +63,11 @@
 ### 修正
 
 - `Bee.Definition`：`FieldDbType.Date` 欄位改對映到 `DateEdit`，不再落入純文字框。
+- `Bee.Db`：全新建立的 SQL Server 表，`FieldDbType.DateTime` 欄位改宣告為 `datetime2(7)`，
+  與 ALTER 及 rebuild 路徑一致。`SqlCreateTableCommandBuilder` 自帶一份型別對映複本，
+  4.15.0 的 `datetime` → `datetime2(7)` 遷移漏改了它，導致該遷移只到達「升級過的表」——
+  全新部署會靜默拿到舊的 `datetime`（約 3.33 毫秒捨入、下限 1753-01-01）。
+  已移除該複本，CREATE 改與其他四家 provider 一樣走 `SqlSchemaSyntax` 的共用原語。
 - `Bee.Base`：`StringUtilities.Replace` 改用 ordinal 比對。土耳其地區設定下連線字串佔位符
   （`{@Password}` 等）會比對失敗而原樣送出。
 - `Bee.Base`：`DataTable` 的 JSON round-trip 不再改寫字串欄位中的日期樣式文字，
