@@ -1,13 +1,13 @@
 # 計畫：框架體檢與分級重構（2026-07-28）
 
-**狀態：🚧 進行中（2026-07-28）**
+**狀態：🚧 進行中（2026-07-28）—— P0/P1/P3 完成，P2 餘三項待決**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | P0 | 正確性風險：wire 內容全滅、假綠燈測試、時區預設值、Date 編輯器、憑證替換 fail-open | ✅ 已完成（2026-07-28） |
-| P1 | 安全：定義檔寫入授權、路徑遍歷、匿名發 token、運算式沙箱、可變參照外洩 | 🚧 進行中（P1-6 ✅，其餘待做） |
-| P2 | 結構重構：UI head 複製收斂、Hosting 資料存取下沉、方言規則共用、死碼清理 | 🚧 進行中（P2-6 / P2-9 ✅，其餘待做） |
-| P3 | 文件漂移：53 條死連結、不存在的 API、CHANGELOG 未記 6 項 breaking | 🚧 進行中（P3-3 的 40 條機械死連結 ✅） |
+| P1 | 安全：定義檔寫入授權、路徑遍歷、匿名發 token、運算式沙箱、可變參照外洩 | ✅ 已完成（2026-07-28） |
+| P2 | 結構重構：UI head 複製收斂、Hosting 資料存取下沉、方言規則共用、死碼清理 | 🚧 進行中（P2-1/5/6/7/8/9 ✅；P2-2 / P2-3 / P2-4 待決） |
+| P3 | 文件漂移：53 條死連結、不存在的 API、CHANGELOG 未記 6 項 breaking | ✅ 已完成（2026-07-28） |
 | P4 | 觀察與裁決項：慣例豁免、次要補測、命名 breaking 排程 | 📝 待做 |
 
 > **第一批已落地（2026-07-28）**：挑選標準為「明確 bug 修正 + 純加法 + 測試／文件機械修正」，
@@ -268,7 +268,7 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 的存取等級，任何鬆緊變更都必須經 review）、`docs/api-method-reference` 雙語、
 `ClientDefineAccess.SaveDefineAsync` 的 XML doc（讓遠端呼叫者知道為何失敗）。
 
-### P1-2. 定義檔路徑無 containment（path traversal）
+### ✅ P1-2. 定義檔路徑無 containment（path traversal）
 
 [PathOptions.cs:57,62,68,74](../../src/Bee.Definition/PathOptions.cs) 皆為裸 `Path.Combine`，
 無 `Path.GetFullPath` + root 包含性檢查。兩個破口：`../` 跳出；rooted 路徑讓
@@ -280,7 +280,7 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 **修法**：抽 `EnsureWithinRoot(root, resolved)` helper（可直接取用 `CustomizeOnlyPathOptions`
 現有邏輯），套用到 `PathOptions` 全部 `GetXxxFilePath`。
 
-### P1-3. `CreateSession` 匿名發 token（**潛伏，目前被 TODO 擋住**）
+### ✅ P1-3. `CreateSession` 匿名發 token（**潛伏，目前被 TODO 擋住**）
 
 [SystemBusinessObject.Session.cs:284](../../src/Bee.Business/System/SystemBusinessObject.Session.cs)
 為 `ApiAccessRequirement.Anonymous`；[SessionRepository.cs:101-120](../../src/Bee.Repository/System/SessionRepository.cs)
@@ -307,7 +307,7 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 **修法**：優先修 P1-1 切斷注入路徑；並修正類別註解的安全宣告措辭（目前過於樂觀）；
 可選擇在 `GetOrCompile` 前用既有的 `DetectIdentifiers` 做識別字黑名單（`GetType` / `Assembly` / `Invoke`）。
 
-### P1-5. 安全狀態交出可變參照
+### ✅ P1-5. 安全狀態交出可變參照
 
 - [IPValidator.cs:32,40](../../src/Bee.Base/IPValidator.cs) —— `public List<string> Whitelist` / `Blacklist`
   getter-only 直接交出私有欄位**參照**，ctor 收 `List<string>` 未複製 → 呼叫端保有活體 handle，
@@ -331,7 +331,7 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 2. **命名空間寫錯**：白名單列 `"Bee.Contracts"`，但全 repo **無此命名空間**；
    實際專案是 `Bee.Api.Contracts`，未列入 → 該組 DTO 放進 `object` 欄位會被擋。
 
-### P1-7. 其他防禦深度
+### ✅ P1-7. 其他防禦深度
 
 | 項目 | 位置 | 說明 |
 |------|------|------|
@@ -438,7 +438,7 @@ XML 文件描述「統一存取企業常用商業物件，具快取機制」）�
 兩者實作皆正確（安全面向已確認），但依 code-style path A 應直接用
 `CryptographicOperations.FixedTimeEquals`。
 
-### P2-5. `Bee.Api.Core` 未宣告 MessagePack
+### ✅ P2-5. `Bee.Api.Core` 未宣告 MessagePack
 
 `Bee.Api.Core`（70 個檔案使用）與 `Bee.Api.Contracts`（3 個）皆無 MessagePack
 `PackageReference`，靠 `Bee.Definition` 遞移取得。
@@ -463,7 +463,7 @@ ADO.NET driver 的謹慎程度不一致。
 **修法**：補介面 + 補一支反射測試：`Bee.Api.Core.Messages.*` 內每個 `*Request`/`*Response`
 都必須實作同名 `I*` 契約。
 
-### P2-7. 三棲標籤補齊（低風險批次修）
+### ✅ P2-7. 三棲標籤補齊（低風險批次修）
 
 | 項目 | 位置 |
 |------|------|
@@ -473,7 +473,7 @@ ADO.NET driver 的謹慎程度不一致。
 | `TimeOnly` 未加入 typeless 白名單 | [SafeTypelessFormatter.cs:40-73](../../src/Bee.Definition/Serialization/SafeTypelessFormatter.cs) —— 有 `DateOnly` / `TimeSpan`，缺 `TimeOnly`。公開 API `ValueUtilities.CTimeOnly` 回傳 `TimeOnly?`，塞進 `FilterCondition.Value` 會被擋 |
 | `SessionInfo.Roles` 為裸 `ICollection<string>` | [SessionInfo.cs:89](../../src/Bee.Definition/Identity/SessionInfo.cs) —— 全 `Bee.Definition` 唯一裸集合；XmlSerializer 不支援介面型別屬性 |
 
-### P2-8. `DataTable` JSON wire 的三處失真
+### ✅ P2-8. `DataTable` JSON wire 的三處失真
 
 | 問題 | 位置 |
 |------|------|
@@ -501,7 +501,7 @@ ADO.NET driver 的謹慎程度不一致。
 新主題文件（`docs/` 根 + ADR）品質高且跟得上，但**跨層改動不回頭改 `src/*/README`**，
 且**改名／刪型別時無反向索引**。
 
-### P3-1. 可編譯性破產（外部開發者第一天就會複製的段落）
+### ✅ P3-1. 可編譯性破產（外部開發者第一天就會複製的段落）
 
 | 文件 | 錯誤 |
 |------|------|
@@ -511,7 +511,7 @@ ADO.NET driver 的謹慎程度不一致。
 | `docs/terminology.md:281` | `DatabaseType.SqlServer` / `MySql` / `PostgreSql` —— 實際是 `SQLServer` / `MySQL` / `PostgreSQL`，**大小寫不符即不編譯** |
 | `docs/terminology.md` 另 8 處 | `ComparisonOperator.Equals`→`Equal`、`IFilterNode`→`FilterNode`、`FilterNodeType`→`FilterNodeKind`、`FormMode`→`SingleFormMode`、`TableRole` 不存在、`ILogWriter`/`LogEntry`/`ConsoleLogWriter`/`NullLogWriter`/`LogEntryType` 皆已刪除、`SchemaUpgradeAction` 不存在、`IApiProvider`→`IJsonRpcProvider`、`DefineType` 少列 3 個值 |
 
-### P3-2. 設計之錄（ADR / constraints）失真 ★交叉確認
+### ✅ P3-2. 設計之錄（ADR / constraints）失真 ★交叉確認
 
 | 文件 | 問題 |
 |------|------|
@@ -524,7 +524,7 @@ ADO.NET driver 的謹慎程度不一致。
 | `docs/development-constraints.md:124-134` | 例外白名單漏了 `ForbiddenException` → `-32004` 且保留原訊息 → 用戶端錯誤處理會誤判 |
 | `docs/development-cookbook.md:32-33` vs `:562` | `UseBeeFramework()` 描述自相矛盾，且**兩處皆錯**：既非 no-op、也不註冊任何 middleware/endpoint。`POST /api` 來自 `ApiServiceController` + `MapControllers`，而 Blazor Server 範例完全沒提這一步 → 照抄的 host 沒有 API endpoint |
 
-### P3-3. 53 條死連結（GitHub 上直接 404）
+### ✅ P3-3. 53 條死連結（GitHub 上直接 404）
 
 | 數量 | 內容 | 修法 |
 |:---:|------|------|
@@ -534,7 +534,7 @@ ADO.NET driver 的謹慎程度不一致。
 
 > `time-semantics` 殘留檢查**零命中** —— `4a2a327c` 的四處呼叫點都已正確改指 `temporal-types*.md`。
 
-### P3-4. CHANGELOG 未記 6 項 breaking + 一條已被推翻的敘述
+### ✅ P3-4. CHANGELOG 未記 6 項 breaking + 一條已被推翻的敘述
 
 `src/Directory.Build.props` = **4.15.0**（注意：`.claude/CLAUDE.md` 寫的 4.13.0 已過期，應一併更正），
 tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md` / `.zh-TW.md`
@@ -544,7 +544,7 @@ tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md`
 「Deliberately excluded (kept on integer keys): `SerializableData*`」，
 但 HEAD 已是 `keyAsPropertyName: true`（`d64decf9`）→ **兩份公開文件互相矛盾**。ADR-030 已修正，CHANGELOG 未修正。
 
-### P3-5. 發版必辦：6 組實質 breaking 但 commit 未標 `!`
+### ✅ P3-5. 發版必辦：6 組實質 breaking 但 commit 未標 `!`
 
 `/changelog-draft` 依 commit 前綴掃描，以下會**全數漏掉**：
 
@@ -566,7 +566,7 @@ tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md`
 
 已正確標記（無需補）：`ba56cef0`、`50a2e7d8`、`49641789`、`d64decf9`、`c5578a42`、`d3c6e1bc`。
 
-### P3-6. `src/*/README` 系統性腐化
+### ✅ P3-6. `src/*/README` 系統性腐化
 
 17 份中至少 12 份含不存在的型別或錯誤目錄樹。重點：
 
@@ -582,7 +582,7 @@ tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md`
   `Bee.Definition` 漏 4 個資料夾與約 20 個 root 檔、`Bee.Repository.Abstractions:19-22` 宣稱 2 個 repository 合約實際 9 個
 - `src/Bee.Expressions/` **完全沒有 README**（唯一無文件的已發布 src 套件）
 
-### P3-7. 本輪大改動在 `src/*/README` 是**完全空白**
+### ✅ P3-7. 本輪大改動在 `src/*/README` 是**完全空白**
 
 無任何 README 提及：`DateTimeZoneConverter`、`PayloadZoneConverter`、`ApiClientInfo.UserTimeZoneId`、
 `st_user.time_zone`、`FrameworkClock`、`FieldDbType.Time`、`DateOnly` 慣例、
@@ -598,7 +598,7 @@ tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md`
 （`Bee.UI.Avalonia/README.md:23`「One per `ControlType`」）→
 讀者結論「三端都不支援時刻編輯」，恰與階段 3 剛完成的成果相反。
 
-### P3-8. 其他文件項
+### ✅ P3-8. 其他文件項
 
 - `docs/README.md:15` / zh 寫「17 個 `src/` 專案」，實際 18（同 repo 的 `dependency-map:5` 寫 18 → 索引與被索引文件自打嘴巴）
 - `dependency-map` 外部套件表 4 處與 csproj 不符（`FileProviders.Physical` 已不存在、
