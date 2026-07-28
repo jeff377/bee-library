@@ -113,6 +113,13 @@ namespace Bee.Expressions
             return InvokeWithZone(lambda, arguments, timeZoneId);
         }
 
+        /// <inheritdoc />
+        public T Evaluate<T>(string expression, IReadOnlyDictionary<string, object?> variables, string timeZoneId = "")
+        {
+            var result = Evaluate(expression, variables, typeof(T), timeZoneId);
+            return result is null ? default! : (T)result;
+        }
+
         /// <summary>
         /// Invokes a compiled lambda with <see cref="t_timeZoneId"/> set to <paramref name="timeZoneId"/>.
         /// </summary>
@@ -136,13 +143,6 @@ namespace Bee.Expressions
             {
                 t_timeZoneId = previous;
             }
-        }
-
-        /// <inheritdoc />
-        public T Evaluate<T>(string expression, IReadOnlyDictionary<string, object?> variables, string timeZoneId = "")
-        {
-            var result = Evaluate(expression, variables, typeof(T), timeZoneId);
-            return result is null ? default! : (T)result;
         }
 
         /// <inheritdoc />
