@@ -17,6 +17,15 @@ namespace Bee.ObjectCaching.Database
         /// Creates an instance of the session information.
         /// </summary>
         /// <param name="key">The access token.</param>
+        /// <remarks>
+        /// WARNING: implementing this changes the security posture of session validation, not just
+        /// its performance. Sessions currently enter the cache only through Login, so a row in
+        /// <c>st_session</c> that no Login produced can never satisfy <c>AccessTokenValidator</c>.
+        /// Rebuilding from the table removes that property: every path that writes to
+        /// <c>st_session</c> becomes a way to mint a usable token. Before adding it, confirm each
+        /// such writer performs its own authentication — <c>SystemBO.CreateSession</c> notably does
+        /// not (it issues a token from a user id alone), which is why it is <c>LocalOnly</c>.
+        /// </remarks>
         protected override SessionInfo? CreateInstance(string key)
         {
             return null; // Loading SessionInfo from the database or other sources is not yet implemented

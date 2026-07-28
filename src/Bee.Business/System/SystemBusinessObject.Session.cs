@@ -282,10 +282,26 @@ namespace Bee.Business.System
         private const int MaxExpiresInSeconds = 86400; // 24 hours
 
         /// <summary>
-        /// Creates a new user session.
+        /// Creates a new user session for the given user id. Restricted to local calls.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This issues an access token from a user id alone — it performs no credential check,
+        /// which is what separates it from <see cref="Login"/>. That makes it a trusted-caller
+        /// operation, so it is <see cref="ApiProtectionLevel.LocalOnly"/>: a remote caller able to
+        /// reach it could mint a token for any account, including an administrator.
+        /// </para>
+        /// <para>
+        /// It was previously <see cref="ApiAccessRequirement.Anonymous"/> over a public protection
+        /// level. What stopped that from being exploitable was incidental rather than designed:
+        /// <c>SessionInfoCache.CreateInstance</c> returns <c>null</c> (loading a session from the
+        /// database is unimplemented), so tokens written to <c>st_session</c> never satisfied
+        /// <c>AccessTokenValidator</c>. Implementing that lookup — which the class comment there
+        /// anticipates — would have turned this into a full authentication bypass.
+        /// </para>
+        /// </remarks>
         /// <param name="args">The input arguments.</param>
-        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
+        [ApiAccessControl(ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Anonymous)]
         public virtual CreateSessionResult CreateSession(CreateSessionArgs args)
         {
             if (args.ExpiresIn <= 0 || args.ExpiresIn > MaxExpiresInSeconds)

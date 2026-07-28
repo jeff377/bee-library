@@ -53,7 +53,7 @@ Singleton system-level BO, accessed as `System.<action>` over the wire.
 | `Ping` | Public | Anonymous | Liveness probe; round-trips a server timestamp. |
 | `GetCommonConfiguration` | Public | Anonymous | Returns `CommonConfiguration` (payload options, debug flag, default lang …). |
 | `Login` | Public | Anonymous | Authenticates user; returns access token + dynamic API encryption key. |
-| `CreateSession` | Public | Anonymous | Issues an anonymous session token (no user identity). |
+| `CreateSession` | LocalOnly | Anonymous | Issues a session token for a given user id **without checking credentials** — that is what separates it from `Login`. Trusted-caller operation, so remote calls are rejected. |
 | `EnterCompany` | Public | Authenticated | Switches the session to the specified company (multi-tenant scope). |
 | `LeaveCompany` | Public | Authenticated | Clears the company context, keeping the session alive. |
 | `Logout` | Public | Authenticated | Destroys the current session (also clears company context). |

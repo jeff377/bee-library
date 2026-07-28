@@ -65,7 +65,9 @@ namespace Bee.Business.UnitTests
 
             // System axis — SystemBusinessObject (system-level operations).
             new ApiSurfaceEntry("SystemBusinessObject", "CheckPackageUpdate",     ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous),
-            new ApiSurfaceEntry("SystemBusinessObject", "CreateSession",          ApiProtectionLevel.Public,  ApiAccessRequirement.Anonymous),
+            // LocalOnly：從 UserID 直接發 token、不驗憑證，屬受信任呼叫端操作。
+            // 先前為 Public + Anonymous，未被利用只是因為 SessionInfoCache.CreateInstance 尚未實作。
+            new ApiSurfaceEntry("SystemBusinessObject", "CreateSession",          ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Anonymous),
             new ApiSurfaceEntry("SystemBusinessObject", "EnterCompany",           ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetCommonConfiguration", ApiProtectionLevel.Public,  ApiAccessRequirement.Anonymous),
             new ApiSurfaceEntry("SystemBusinessObject", "GetDefine",              ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),

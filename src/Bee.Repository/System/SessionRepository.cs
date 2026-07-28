@@ -108,7 +108,11 @@ namespace Bee.Repository.System
             var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
             var result = dbAccess.Execute(command);
             var table = result.Table!;
-            if (table.IsEmpty()) { throw new InvalidOperationException($"UserID='{userID}' not found"); }
+            // The message deliberately omits the user id: InvalidOperationException is on the
+            // user-facing allow-list in JsonRpcExecutor, so its text reaches the caller verbatim and
+            // would confirm whether an account exists. EnterCompany collapses its failure modes for
+            // the same reason.
+            if (table.IsEmpty()) { throw new InvalidOperationException("User not found."); }
             var row = table.Rows[0];
 
             var user = new SessionUser()

@@ -51,7 +51,7 @@ BO 層 Args / Result 型別、`[ApiAccessControl]` 設定，與一行用途說�
 | `Ping` | Public | Anonymous | Liveness 探針;回傳 server timestamp。 |
 | `GetCommonConfiguration` | Public | Anonymous | 回傳 `CommonConfiguration`（payload options、debug flag、預設語系等）。 |
 | `Login` | Public | Anonymous | 使用者驗證；回傳 access token 與動態 API 加密金鑰。 |
-| `CreateSession` | Public | Anonymous | 發行匿名 session token（無使用者身分）。 |
+| `CreateSession` | LocalOnly | Anonymous | 為指定 UserID 發行 session token，**不驗憑證** —— 這正是它與 `Login` 的差異。屬受信任呼叫端操作，遠端呼叫一律拒絕。 |
 | `EnterCompany` | Public | Authenticated | 將 session 切換至指定 company（多租戶範圍）。 |
 | `LeaveCompany` | Public | Authenticated | 清除 company context，session 維持登入。 |
 | `Logout` | Public | Authenticated | 銷毀目前 session（同時清除 company context）。 |
