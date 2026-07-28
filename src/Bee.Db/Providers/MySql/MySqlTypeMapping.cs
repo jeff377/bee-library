@@ -7,7 +7,7 @@ namespace Bee.Db.Providers.MySql
     /// Converts <see cref="FieldDbType"/> to MySQL 8.0+ column type expressions.
     /// </summary>
     /// <remarks>
-    /// Type choices follow docs/plans/plan-mysql-support.md:
+    /// Type choices:
     /// <list type="bullet">
     /// <item><see cref="FieldDbType.String"/> → <c>VARCHAR(n)</c></item>
     /// <item><see cref="FieldDbType.Text"/> → <c>LONGTEXT</c> (avoids TEXT/MEDIUMTEXT length cliffs)</item>

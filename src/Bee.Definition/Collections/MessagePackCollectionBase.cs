@@ -12,6 +12,17 @@ namespace Bee.Definition.Collections
     /// <summary>
     /// Strongly typed collection with MessagePack support.
     /// </summary>
+    /// <remarks>
+    /// Near-identical to <see cref="Bee.Base.Collections.CollectionBase{T}"/> by design, not by
+    /// accident: <c>Bee.Base</c> takes no external package references at all, so it cannot carry
+    /// the MessagePack attributes this type needs. Rather than pull MessagePack down into the
+    /// foundation package for every consumer, the shape is repeated here where the dependency
+    /// already exists.
+    /// <para>
+    /// <b>Keep the two in step.</b> A behavioural change to one almost always belongs in the other
+    /// — the divergence is meant to be the attributes, nothing else.
+    /// </para>
+    /// </remarks>
     /// <typeparam name="T">The collection item type.</typeparam>
     public abstract class MessagePackCollectionBase<T> : Collection<T>, ICollectionBase, IObjectSerialize, ITagProperty
         where T : class, ICollectionItem  // Item type must implement ICollectionItem interface

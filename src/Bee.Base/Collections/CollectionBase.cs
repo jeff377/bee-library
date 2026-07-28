@@ -9,6 +9,15 @@ namespace Bee.Base.Collections
     /// <summary>
     /// Base class for strongly-typed collections.
     /// </summary>
+    /// <remarks>
+    /// <c>Bee.Definition.Collections.MessagePackCollectionBase&lt;T&gt;</c> is a near-identical
+    /// parallel of this type, carrying the MessagePack attributes that cannot live here because
+    /// <c>Bee.Base</c> deliberately takes no external package references.
+    /// <para>
+    /// <b>Keep the two in step.</b> A behavioural change here almost always belongs there too —
+    /// the divergence is meant to be the attributes, nothing else.
+    /// </para>
+    /// </remarks>
     /// <typeparam name="T">The type of the collection items.</typeparam>
     public abstract class CollectionBase<T> : Collection<T>, ICollectionBase, IObjectSerialize, ITagProperty
         where T : class, ICollectionItem  // Item type must implement ICollectionItem

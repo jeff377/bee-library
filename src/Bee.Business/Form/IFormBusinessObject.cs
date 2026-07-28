@@ -1,8 +1,26 @@
 namespace Bee.Business.Form
 {
     /// <summary>
-    /// Interface for form-level business logic objects.
+    /// Cross-BO interface for form-level business logic objects.
     /// </summary>
+    /// <remarks>
+    /// This is the decoupling layer for <b>BO-to-BO calls</b>, matching
+    /// <c>ISystemBusinessObject</c> / <c>ILogBusinessObject</c>: a caller resolves a form BO by
+    /// <c>progId</c> through <c>IBusinessObjectFactory</c> (see <c>CreateFormBO</c>), casts to this
+    /// interface, and invokes a method without binding to a concrete class — so host-side BO
+    /// customisation cannot break callers.
+    /// <para>
+    /// NOTE: the framework itself makes no BO-to-BO call through this seam today, so its only
+    /// current callers are tests. It stays because that is what the seam is <i>for</i>: the axis
+    /// interfaces exist so an application's own BOs can call one another, and removing it would
+    /// take that away from framework users rather than simplify the framework.
+    /// </para>
+    /// <para>
+    /// <b>Pure-API methods do not belong here</b> — methods that only ever arrive through
+    /// <c>JsonRpcExecutor.Execute</c> and have no BO consumer are declared on the concrete
+    /// <c>FormBusinessObject</c> with <c>[ApiAccessControl]</c> and stay out of this interface.
+    /// </para>
+    /// </remarks>
     public interface IFormBusinessObject : IBusinessObject
     {
         /// <summary>

@@ -35,6 +35,18 @@ namespace Bee.Api.Core.Messages
         /// <summary>
         /// Gets or sets the parameter collection.
         /// </summary>
+        /// <remarks>
+        /// <b>Values here are never time-zone converted.</b> The bag is untyped, so a
+        /// <see cref="DateTime"/> inside it carries no marker saying whether it is an instant, a
+        /// calendar day, or a system timestamp that is already UTC — converting every one of them
+        /// would be a guess, and would corrupt values a caller deliberately put in as UTC.
+        /// <para>
+        /// A custom (AnyCode) method that needs to pass an instant should agree its own basis with
+        /// the caller — UTC is the framework-consistent choice — or carry the value in a
+        /// <c>DataTable</c>, where the <c>FieldDbType</c> marker makes the intent explicit and the
+        /// connector converts it. See <c>docs/adr/adr-032-datetime-timezone.md</c> (D4).
+        /// </para>
+        /// </remarks>
         public ParameterCollection? Parameters
         {
             get

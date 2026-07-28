@@ -7,7 +7,7 @@ namespace Bee.Db.Providers.Oracle
     /// Converts <see cref="FieldDbType"/> to Oracle 19c+ column type expressions.
     /// </summary>
     /// <remarks>
-    /// Type choices follow docs/plans/plan-oracle-support.md:
+    /// Type choices:
     /// <list type="bullet">
     /// <item><see cref="FieldDbType.String"/> → <c>VARCHAR2(n CHAR)</c> when length is in
     ///       <c>1..4000</c>; otherwise <c>CLOB</c>. The 4000-byte VARCHAR2 ceiling is the

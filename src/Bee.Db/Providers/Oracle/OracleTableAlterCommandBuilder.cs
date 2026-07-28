@@ -90,7 +90,7 @@ namespace Bee.Db.Providers.Oracle
         /// Oracle rejects a redundant nullability hint — specifying <c>NOT NULL</c> on an
         /// already-NOT-NULL column raises <c>ORA-01442</c> — so MODIFY omits the clause when the
         /// nullability is unchanged (the common upgrade case where only type/length/default differ).
-        /// See docs/plans/plan-oracle-alter-nullability.md.
+        /// See <c>docs/database-dialect-differences.md</c> §3.1.
         /// </remarks>
         private static string BuildAlterFieldStatement(string tableName, DbField oldField, DbField newField)
         {

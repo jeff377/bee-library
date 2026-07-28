@@ -125,7 +125,16 @@ MessagePack 與 JSON 都只搬運數值。轉換責任全在伺服端與用戶�
 - **轉換掛在 Connector 進出點，不掛序列化入口**，且**轉換前必須深拷貝 `DataSet`**。
   in-process（`LocalApiProvider` + `PayloadFormat.Plain`）沒有序列化邊界、物件以參考傳遞——
   掛序列化入口會整個繞過，就地轉換則會改到呼叫端自己那一份。
+- **`ApiMessageBase.Parameters` 不轉換**（每個 request / response 都帶的無型別參數袋）。
+  袋內的值是 `object`，**沒有任何型別標記可分辨「時間點 / 日曆日 / 系統時間戳」**——
+  全部轉換等於猜測，還會破壞呼叫端刻意放進去的 UTC 值。AnyCode 自訂方法若要傳時間點，
+  請自行約定基準（建議一律 UTC）或改走帶 `FieldDbType` 標記的 `DataTable` 載體。
 - **一律忽略 `Kind`**，依 D3 視為 UTC（實測結論 3）。
+- **不存在的本地時刻（spring-forward 缺口）前推一個 DST 差**。日期選擇器無從得知某日
+  某個牆鐘時刻不存在，使用者選 02:30 是正常操作；`ConvertTimeToUtc` 對此擲
+  `ArgumentException` 且會原樣穿透 JSON-RPC。故轉 UTC 前先把落在缺口內的值前推該次
+  轉換的 delta（02:30 → 03:30），與 iOS / Android / Google 日曆等主流選擇器一致。
+  反向的 fall-back 重疊時刻不需處理——`ConvertTimeToUtc` 會確定性地解析為標準時間。
 - **時區來源為 `SessionInfo.TimeZone`，不使用裝置 OS 時區。** 權威來源是伺服端使用者設定，
   換裝置 / 出差不影響資料語意。「跟隨裝置時區」可作為使用者可選設定，但不是預設。
 

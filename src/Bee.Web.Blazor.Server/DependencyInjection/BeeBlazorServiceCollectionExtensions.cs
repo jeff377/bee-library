@@ -17,8 +17,7 @@ namespace Bee.Web.Blazor.Server.DependencyInjection
         /// Blazor Server hosts that want in-process backend dispatch must call
         /// <c>AddBeeFramework</c> separately so they keep full control over the
         /// backend composition root (Bee.Hosting stays the single composition
-        /// authority). See <c>docs/plans/plan-blazor-web-integration.md</c>
-        /// §DI 註冊分工.
+        /// authority).
         /// </remarks>
         /// <param name="services">The service collection.</param>
         /// <param name="configure">

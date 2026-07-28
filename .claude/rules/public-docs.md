@@ -12,6 +12,7 @@
 | `docs/adr/` | 全部 ADR —— 長效決策紀錄，外部讀者理解「為何這樣設計」的主要來源 |
 | `docs/changelogs/` | 全部逐版變更說明（根 `CHANGELOG.md` 的分版明細） |
 | **所有** `README.md` / `README.zh-TW.md` | 不分位置：`src/*/`、`samples/*/`、`apps/*/`、`tools/*/` 皆是 |
+| `src/**/*.cs` 的 **XML doc（`///`）** | 隨 NuGet 套件的 `.xml` 一起發佈，直接出現在消費端 IntelliSense —— 讀者與 README 相同 |
 
 ## 哪些不是
 
@@ -66,7 +67,17 @@ plan 是**階段性**文件：實作過程中會改、完成後會封存，且**
 改動公開文件後，或懷疑有遺漏時：
 
 ```bash
+# (1) markdown
 grep -rn --include="*.md" -e "plans/" -e "](plan-" docs/ README*.md CHANGELOG*.md src/ samples/ apps/ tools/ | grep -v "^docs/plans/" | grep -v "^docs/internal/" | grep -v "^docs/blogs/"
+
+# (2) 原始碼註解（XML doc 會進消費端 IntelliSense）
+grep -rn "docs/plans" src/ samples/ apps/ tools/ --include="*.cs" --include="*.axaml" --include="*.razor" | grep -v "/obj/" | grep -v "/bin/"
 ```
 
-預期輸出：只剩 `docs/README.md` / `docs/README.zh-TW.md` 對 `plans/` 資料夾的**性質說明**（不是連結，且已標明「階段性工作文件、非參考資料」）。
+預期輸出：(1) 只剩 `docs/README.md` / `docs/README.zh-TW.md` 對 `plans/` 資料夾的**性質說明**
+（不是連結，且已標明「階段性工作文件、非參考資料」）；(2) 完全無輸出。
+
+> **(2) 是 2026-07-28 才補上的**：先前檢查只 grep `.md`，因此 `src/Bee.Db/Providers/{Oracle,MySql}`
+> 底下 14 處指向 `docs/plans/` 的 XML doc 與註解長期漏網。替代寫法見下節——
+> 這些位置的實質說明本來就已寫在註解裡，plan 指標拿掉即可；需要延伸閱讀的改指
+> `docs/database-dialect-differences.md`。

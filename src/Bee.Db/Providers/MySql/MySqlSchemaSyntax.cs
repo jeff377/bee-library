@@ -12,8 +12,8 @@ namespace Bee.Db.Providers.MySql
     /// <remarks>
     /// Targets MySQL 8.0+. Assumes the server's <c>SQL_MODE</c> does not include
     /// <c>ANSI_QUOTES</c>; backtick quoting and <c>utf8mb4_0900_ai_ci</c> collation
-    /// (which is accent- and case-insensitive) are 8.0 defaults — see
-    /// docs/plans/plan-mysql-support.md.
+    /// (which is accent- and case-insensitive) are 8.0 defaults. See
+    /// <c>docs/database-dialect-differences.md</c> §4.
     /// </remarks>
     internal static class MySqlSchemaSyntax
     {

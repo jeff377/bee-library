@@ -45,7 +45,6 @@ ADR-003（採用靜態 Service Locator）的前提已不再適用：
 | `CacheFunc` / `CacheContainer` | Bee.ObjectCaching | 快取操作 facade、cache singleton |
 | `DefinePathInfo` | Bee.Definition | 定義檔路徑全域入口 |
 | `DbConnectionManager` | Bee.Db | 資料庫連線資訊靜態 facade |
-| `ApiServiceOptions` | Bee.Api.Core | API 序列化/壓縮/加密元件全域配置 |
 
 ### 保留的 process-wide static（registry-style 一次寫入，不影響並行）
 
@@ -53,6 +52,13 @@ ADR-003（採用靜態 Service Locator）的前提已不再適用：
 - `CacheInfo.Provider` —— cache backend（per-host 設定一次）
 - `DbProviderRegistry` —— ADO.NET `DbProviderFactory` 註冊表
 - `DbDialectRegistry` —— framework `IDialectFactory` 註冊表
+- `ApiServiceOptions` —— API 序列化 / 壓縮 / 加密元件全域配置（per-host 設定一次）
+
+> **補記（2026-07-28）**：`ApiServiceOptions` 原列於上方「移除的靜態 facade」表，
+> 但實作時並未隨 v5.0 一併移除，本文與程式碼因而長期不一致。經檢視後**確認保留**並
+> 移入本節——它與 `BackendInfo` 系不同，不持有 per-session 狀態、不是測試隔離成本的
+> 來源，形態上就是 registry-style 的一次寫入配置，與 `CacheInfo.Provider` 同類。
+> 唯一的並行風險在測試中改寫它，已由 `[Collection("ApiServiceOptionsState")]` 序列化處理。
 - `ApiClientInfo.LocalServiceProvider` —— `Bee.Api.Client` 近端模式過渡 holder（待後續 ADR 處理）
 
 ### 後端宿主啟動流程

@@ -14,7 +14,7 @@ namespace Bee.Db.Providers.MySql
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Dialect-specific output (see docs/plans/plan-mysql-support.md):
+    /// Dialect-specific output:
     /// </para>
     /// <list type="bullet">
     /// <item>Backtick-quoted identifiers (assumes <c>SQL_MODE</c> without <c>ANSI_QUOTES</c>).</item>

@@ -109,8 +109,7 @@ namespace Bee.Db.Providers.MySql
 
         /// <summary>
         /// Builds the MySQL 8.0+ <c>ALTER TABLE ... RENAME COLUMN</c> statement.
-        /// (MySQL 5.7 needs <c>CHANGE COLUMN</c>; we require 8.0+ per
-        /// docs/plans/plan-mysql-support.md.)
+        /// (MySQL 5.7 needs <c>CHANGE COLUMN</c>; this framework requires 8.0+.)
         /// </summary>
         private static string BuildRenameFieldStatement(string tableName, RenameFieldChange change)
         {

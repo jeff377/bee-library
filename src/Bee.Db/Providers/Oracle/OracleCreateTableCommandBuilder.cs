@@ -14,7 +14,7 @@ namespace Bee.Db.Providers.Oracle
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Dialect-specific output (see docs/plans/plan-oracle-support.md):
+    /// Dialect-specific output:
     /// </para>
     /// <list type="bullet">
     /// <item>Double-quoted identifiers; FormSchema convention is lowercase to side-step the
