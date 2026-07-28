@@ -8,7 +8,14 @@
 
 - **Layer**: Composition root (DI registration)
 - **Downstream** (dependents): `Bee.Api.AspNetCore`; non-ASP.NET Core hosts (WinForms / WPF / Console / Worker Service / integration tests)
-- **Upstream** (dependencies): `Bee.Api.Core`, `Bee.Business`, `Bee.Repository`, `Bee.ObjectCaching` (which transitively bring in `Bee.Definition`, `Bee.Base`, `Bee.Db`, `Bee.Repository.Abstractions`, `Bee.Api.Contracts`)
+- **Upstream** (dependencies): `Bee.Api.Core`, `Bee.Business`, `Bee.Db`, `Bee.Repository`, `Bee.ObjectCaching` (which transitively bring in `Bee.Definition`, `Bee.Base`, `Bee.Repository.Abstractions`, `Bee.Api.Contracts`)
+
+A composition root reaches across every layer by definition, so the "API layer must not reference the
+Repository layer" constraint does not apply here. What does apply: **this package holds no data access
+of its own.** Its hosted services are shells — the cache-notify poller reads through
+`ICacheNotifyReader` (`Bee.Db`) and the audit sink writes through `IAuditLogWriteRepository`
+(`Bee.Repository`). Statement construction and execution belong to those layers; new SQL added here
+would be a layering regression.
 
 ## Target Framework
 
@@ -70,4 +77,7 @@ ApiClientInfo.ConnectType = ConnectType.Local;
 ```
 Bee.Hosting/
   BeeFrameworkServiceCollectionExtensions.cs   # AddBeeFramework + helpers
+  Audit/                                       # IAuditLogSink, AuditLogDbSink,
+                                               # AuditLogWriterService, SynchronousAuditLogWriter
+  CacheNotify/                                 # CacheNotifyPoller, CacheNotifyPollSession
 ```

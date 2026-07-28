@@ -81,7 +81,7 @@ singleton；序列化生命週期 hook 讓即使是「讀取性質」的 `XmlCod
 
 | 禁止行為 | 原因 | 正確做法 |
 |----------|------|----------|
-| API 層直接引用 Repository 層 | 違反分層架構 | 透過 Business Object 間接存取 |
+| API 層直接引用 Repository 層（指 `Bee.Api.Core`、`Bee.Api.AspNetCore`；**不含**組合根 `Bee.Hosting`，接線各層本就是它的職責） | 違反分層架構 | 透過 Business Object 間接存取 |
 | Business Object 直接建立 `DbConnection` | 繞過連線管理與日誌 | 使用 `DbAccess` 類別 |
 | BO 引用 `Bee.Db`（`Bee.Business.csproj` 無 `Bee.Db` 的 `ProjectReference`） | BO 是業務邏輯的薄殼，資料存取屬於 Repository | FormSchema-driven CRUD → `IDataFormRepository`；自訂查詢 → 自訂 bo repo 配合 `IDbAccessFactory` |
 | BO 寫死 `databaseId` 字串或直接讀 `SessionInfo.CompanyId` / `CompanyInfo` | 將 BO 與路由實作耦合；部署設定變更時會壞 | 使用 `BusinessObject.ResolveDatabaseId(DbScope)`（自訂 bo repo）或 `CreateDataFormRepository(progId)`（FormSchema CRUD）；helper 內部委派給 `IRepositoryDatabaseRouter`，這是單一真相來源 |

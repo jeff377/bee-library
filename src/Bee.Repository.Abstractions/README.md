@@ -58,6 +58,8 @@
 
 ```
 Bee.Repository.Abstractions/
+  AuditLog/                      # IAuditLogRepository, IAuditLogWriteRepository
+                                 # + query / entry types
   Form/                          # IDataFormRepository, IReportFormRepository
   Factories/                     # ISystemRepositoryFactory, IFormRepositoryFactory
   System/                        # ISessionRepository, IDatabaseRepository

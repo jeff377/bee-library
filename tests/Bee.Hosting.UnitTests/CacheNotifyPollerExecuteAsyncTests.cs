@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Reflection;
-using Bee.Db;
+using Bee.Db.CacheNotify;
 using Bee.Definition.Settings;
 using Bee.Hosting.CacheNotify;
 using Microsoft.Extensions.Logging;
@@ -13,11 +13,15 @@ namespace Bee.Hosting.UnitTests
     /// </summary>
     public class CacheNotifyPollerExecuteAsyncTests
     {
-        private sealed class ThrowingDbFactory : IDbAccessFactory
+        private sealed class ThrowingReader : ICacheNotifyReader
         {
             private readonly Exception _exception;
-            public ThrowingDbFactory(Exception exception) { _exception = exception; }
-            public DbAccess Create(string databaseId) => throw _exception;
+            public ThrowingReader(Exception exception) { _exception = exception; }
+
+            public DateTime ReadBaseline(string databaseId) => throw _exception;
+
+            public IReadOnlyList<CacheNotifyChange> ReadChangesSince(string databaseId, DateTime threshold)
+                => throw _exception;
         }
 
         private sealed class StubLogger : ILogger<CacheNotifyPoller>
@@ -32,8 +36,8 @@ namespace Bee.Hosting.UnitTests
 
         private static CacheNotifyPoller MakePoller(CacheNotifyOptions options)
         {
-            var factory = new ThrowingDbFactory(new InvalidOperationException("sim poll error"));
-            return new CacheNotifyPoller(factory, options, s_logger);
+            var reader = new ThrowingReader(new InvalidOperationException("sim poll error"));
+            return new CacheNotifyPoller(reader, options, s_logger);
         }
 
         private static async Task InvokeExecuteAsync(CacheNotifyPoller poller, CancellationToken token)

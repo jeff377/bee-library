@@ -1,31 +1,35 @@
 using System.Data.Common;
 using System.Text;
-using Bee.Db;
 using Bee.Definition.Database;
 using Bee.Definition.Logging;
 using Bee.Definition.Settings;
+using Bee.Repository.Abstractions.AuditLog;
 using Microsoft.Extensions.Logging;
 
 namespace Bee.Hosting.Audit
 {
     /// <summary>
-    /// Persists <see cref="AuditEntry"/> rows into the log database via <see cref="IDbAccessFactory"/>.
+    /// Persists <see cref="AuditEntry"/> rows through <see cref="IAuditLogWriteRepository"/>.
     /// A failed write is logged and, when a fallback path is configured, spilled to a file so audit
     /// entries survive a transient log-database outage. This is the terminal sink shared by both the
     /// background and synchronous writers.
     /// </summary>
+    /// <remarks>
+    /// Holds no SQL: statement construction and execution live in the repository layer. What stays
+    /// here is the hosting-layer concern — deciding what happens when the write fails.
+    /// </remarks>
     internal sealed class AuditLogDbSink : IAuditLogSink
     {
-        private readonly IDbAccessFactory _dbAccessFactory;
+        private readonly IAuditLogWriteRepository _repository;
         private readonly AuditLogOptions _options;
         private readonly ILogger<AuditLogDbSink> _logger;
 
         /// <summary>
         /// Initializes a new <see cref="AuditLogDbSink"/>.
         /// </summary>
-        public AuditLogDbSink(IDbAccessFactory dbAccessFactory, AuditLogOptions options, ILogger<AuditLogDbSink> logger)
+        public AuditLogDbSink(IAuditLogWriteRepository repository, AuditLogOptions options, ILogger<AuditLogDbSink> logger)
         {
-            _dbAccessFactory = dbAccessFactory ?? throw new ArgumentNullException(nameof(dbAccessFactory));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -38,13 +42,7 @@ namespace Bee.Hosting.Audit
 
             try
             {
-                // Log tables live in the conventional 'log' database (a fixed databaseId, like
-                // 'common'); the physical mapping is resolved by DatabaseSettings, not configured here.
-                var dbAccess = _dbAccessFactory.Create(DbCategoryIds.Log);
-                foreach (var entry in entries)
-                {
-                    dbAccess.Execute(BuildInsert(entry));
-                }
+                _repository.WriteBatch(entries);
             }
             catch (DbException ex)
             {
@@ -58,33 +56,6 @@ namespace Bee.Hosting.Audit
                 _logger.LogError(ex, "Audit log write failed against the '{DatabaseId}' database.", DbCategoryIds.Log);
                 SpillToFile(entries);
             }
-        }
-
-        /// <summary>
-        /// Builds a parameterised INSERT for one entry. Column order is the entry's own stable
-        /// order; values bind positionally through <c>{@Parameters}</c>, with null mapped to
-        /// <see cref="DBNull.Value"/> so nullable columns are written as SQL NULL.
-        /// </summary>
-        internal static DbCommandSpec BuildInsert(AuditEntry entry)
-        {
-            var columns = entry.GetColumns();
-
-            var sb = new StringBuilder();
-            sb.Append("INSERT INTO ").Append(entry.TableName).Append(" (");
-            for (int i = 0; i < columns.Count; i++)
-            {
-                if (i > 0) { sb.Append(", "); }
-                sb.Append(columns[i].Name);
-            }
-            sb.Append(") VALUES (").Append(CommandTextVariable.Parameters).Append(')');
-
-            var values = new object[columns.Count];
-            for (int i = 0; i < columns.Count; i++)
-            {
-                values[i] = columns[i].Value ?? DBNull.Value;
-            }
-
-            return new DbCommandSpec(DbCommandKind.NonQuery, sb.ToString(), values);
         }
 
         /// <summary>

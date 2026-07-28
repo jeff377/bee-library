@@ -58,6 +58,8 @@
 
 ```
 Bee.Repository.Abstractions/
+  AuditLog/                      # IAuditLogRepository、IAuditLogWriteRepository
+                                 # 與查詢／記錄型別
   Form/                          # IDataFormRepository、IReportFormRepository
   Factories/                     # ISystemRepositoryFactory、IFormRepositoryFactory
   System/                        # ISessionRepository、IDatabaseRepository

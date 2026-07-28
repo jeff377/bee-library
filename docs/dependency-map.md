@@ -33,8 +33,11 @@ graph BT
 
   subgraph API
     Core["Bee.Api.Core"]
-    Hosting["Bee.Hosting"]
     AspNet["Bee.Api.AspNetCore"]
+  end
+
+  subgraph CompositionRoot [Composition Root]
+    Hosting["Bee.Hosting"]
   end
 
   subgraph ClientLayer [Client]
@@ -70,6 +73,7 @@ graph BT
   Core --> Definition
   Hosting --> Core
   Hosting --> Business
+  Hosting --> Db
   Hosting --> Repo
   Hosting --> Caching
   AspNet --> Hosting
@@ -90,7 +94,7 @@ graph BT
 | Bee.Definition | MessagePack 3.x, Microsoft.Extensions.Localization.Abstractions 10.x |
 | Bee.Db | *(none)* |
 | Bee.ObjectCaching | Microsoft.Extensions.Caching.Memory 10.x, Microsoft.Extensions.FileProviders.Physical 10.x |
-| Bee.Hosting | Microsoft.Extensions.DependencyInjection 10.x |
+| Bee.Hosting | Microsoft.Extensions.DependencyInjection 10.x, Microsoft.Extensions.Hosting.Abstractions 10.x |
 | Bee.Api.AspNetCore | `FrameworkReference: Microsoft.AspNetCore.App` |
 | Bee.Web.Blazor.Server | `Microsoft.AspNetCore.Components.Web` and related Blazor Server packages |
 | Bee.UI.Avalonia | Avalonia 12.0.x, Avalonia.Controls.DataGrid 12.0.x |
@@ -118,7 +122,7 @@ Also under `tools/` but not on NuGet:
 - **Bee.Expressions** is a portable, sandboxed expression evaluator (DynamicExpresso-backed) that depends only on `Bee.Base`. It is shared by `Bee.Definition` (the `FormExpressionCalculator`), `Bee.Business` (the rule processor), `Bee.Hosting` (DI registration), and `Bee.UI.Avalonia` (client-side live preview), so a field computed on the client matches what the server writes on save. See [adr-028](adr/adr-028-expression-rule-engine.md).
 - **Bee.Definition** is the most depended-on project, with 6 direct dependents (Contracts, Db, RepoAbs, Caching, Business, Core).
 - **Bee.Api.Contracts** is a shared contract/abstraction layer, not an application-level API project. Despite the "API" name, both `Bee.Business` and `Bee.Api.Core` depend on it (`Business → Contracts`, `Core → Contracts`), so it sits *below* them — the diagram groups it under **Shared Contracts** rather than the API application layer.
-- **Bee.Hosting** is the composition root: it consolidates the backend services (`Bee.Api.Core`, `Bee.Business`, `Bee.Repository`, `Bee.ObjectCaching`) behind a single `AddBeeFramework` extension on `IServiceCollection`, with no ASP.NET Core dependency. Non-web hosts (WinForms, Console, Worker Service) reference it directly.
+- **Bee.Hosting** is the composition root: it consolidates the backend services (`Bee.Api.Core`, `Bee.Business`, `Bee.Db`, `Bee.Repository`, `Bee.ObjectCaching`) behind a single `AddBeeFramework` extension on `IServiceCollection`, with no ASP.NET Core dependency. Non-web hosts (WinForms, Console, Worker Service) reference it directly. It is shown in its own **Composition Root** group rather than under API: reaching across every layer is what a composition root does, so the "API layer must not reference the Repository layer" constraint does not apply to it. What *does* apply is that it holds no data access of its own — statements live in `Bee.Db` / `Bee.Repository`, and Hosting keeps only the hosted-service shells and DI wiring.
 - **Bee.Api.AspNetCore** is the ASP.NET Core integration layer (`UseBeeFramework` middleware + `ApiServiceController`); it pulls in `Bee.Hosting` transitively, so web hosts get DI registration plus middleware in one package reference.
 - Both the client (Bee.Api.Client) and the server (Bee.Api.AspNetCore) share protocol logic via **Bee.Api.Core**, ensuring consistent serialization and encryption behavior.
 - **Bee.UI.Core** is the cross-platform UI common layer (`ClientInfo` / `IEndpointStorage` / `IUIViewService` / `VersionInfo`), shared by every native-UI family (currently Avalonia, which covers desktop / iOS / Android / WASM from one project; future WinForms / WPF) for client-side connection state and endpoint persistence. It contains no platform-specific UI code and depends only on `Bee.Api.Client`.

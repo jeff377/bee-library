@@ -22,8 +22,10 @@ using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 using Bee.Repository;
 using Bee.Repository.Abstractions;
+using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
+using Bee.Repository.AuditLog;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.Hosting
@@ -126,6 +128,7 @@ namespace Bee.Hosting
             //     it on the caller's transaction. No consumer wired yet (poller / business
             //     repositories arrive in later stages); registered now so it is injectable.
             services.AddSingleton<ICacheNotifyService, CacheNotifyService>();
+            services.AddSingleton<ICacheNotifyReader, CacheNotifyReader>();
 
             // 6c. Cache-notify polling hosted service. The poller publishes observed versions to
             //     CacheInfo.NotifyVersions; each cache entry carrying a matching ChangeNotifyKey
@@ -144,6 +147,7 @@ namespace Bee.Hosting
             services.AddSingleton(configuration.AuditLogOptions);
             if (configuration.AuditLogOptions.Enabled)
             {
+                services.AddSingleton<IAuditLogWriteRepository, AuditLogWriteRepository>();
                 services.AddSingleton<IAuditLogSink, AuditLogDbSink>();
                 if (configuration.AuditLogOptions.UseBackgroundWriter)
                 {

@@ -16,6 +16,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Bee.Api.Core\Bee.Api.Core.csproj" />
     <ProjectReference Include="..\Bee.Business\Bee.Business.csproj" />
+    <!-- Declared explicitly rather than taken transitively via Bee.Repository: the composition
+         root binds Bee.Db types directly (IDbAccessFactory, IDbConnectionManager, the cache-notify
+         reader/writer), so the dependency is real and must be visible in the package graph. -->
+    <ProjectReference Include="..\Bee.Db\Bee.Db.csproj" />
     <ProjectReference Include="..\Bee.Expressions\Bee.Expressions.csproj" />
     <ProjectReference Include="..\Bee.Repository\Bee.Repository.csproj" />
     <ProjectReference Include="..\Bee.ObjectCaching\Bee.ObjectCaching.csproj" />

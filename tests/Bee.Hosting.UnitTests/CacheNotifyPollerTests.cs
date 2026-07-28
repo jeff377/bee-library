@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Bee.Db;
 using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
 using Bee.Definition.Database;
@@ -43,9 +42,8 @@ namespace Bee.Hosting.UnitTests
         private CacheNotifyPollSession NewSession(DatabaseType databaseType)
         {
             var databaseId = TestDbConventions.GetDatabaseId(databaseType);
-            var factory = _fx.GetRequiredService<IDbAccessFactory>();
-            var container = _fx.GetRequiredService<ICacheContainer>();
-            return new CacheNotifyPollSession(databaseId, factory, marginSeconds: 5);
+            var reader = _fx.GetRequiredService<ICacheNotifyReader>();
+            return new CacheNotifyPollSession(databaseId, reader, marginSeconds: 5);
         }
 
         private CompanyInfo SeedCompany(string companyId)

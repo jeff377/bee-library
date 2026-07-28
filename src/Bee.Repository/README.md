@@ -61,6 +61,7 @@
 
 ```
 Bee.Repository/
+  AuditLog/   # AuditLogRepository (read), AuditLogWriteRepository (write)
   Form/       # DataFormRepository, ReportFormRepository
   Factories/   # SystemRepositoryFactory, FormRepositoryFactory
   System/     # SessionRepository, DatabaseRepository

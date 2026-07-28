@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Data.Common;
 using System.Reflection;
-using Bee.Db;
+using Bee.Db.CacheNotify;
 using Bee.Definition.Settings;
 using Bee.Hosting.CacheNotify;
 using Microsoft.Extensions.Logging;
@@ -13,16 +13,23 @@ namespace Bee.Hosting.UnitTests
     /// </summary>
     public class CacheNotifyPollerUnitTests
     {
-        private sealed class StubDbFactory : IDbAccessFactory
+        private sealed class StubReader : ICacheNotifyReader
         {
-            public DbAccess Create(string databaseId) => throw new NotImplementedException();
+            public DateTime ReadBaseline(string databaseId) => throw new NotImplementedException();
+
+            public IReadOnlyList<CacheNotifyChange> ReadChangesSince(string databaseId, DateTime threshold)
+                => throw new NotImplementedException();
         }
 
-        private sealed class ThrowingDbFactory : IDbAccessFactory
+        private sealed class ThrowingReader : ICacheNotifyReader
         {
             private readonly Exception _exception;
-            public ThrowingDbFactory(Exception exception) { _exception = exception; }
-            public DbAccess Create(string databaseId) => throw _exception;
+            public ThrowingReader(Exception exception) { _exception = exception; }
+
+            public DateTime ReadBaseline(string databaseId) => throw _exception;
+
+            public IReadOnlyList<CacheNotifyChange> ReadChangesSince(string databaseId, DateTime threshold)
+                => throw _exception;
         }
 
         private sealed class FakeDbException : DbException
@@ -38,7 +45,7 @@ namespace Bee.Hosting.UnitTests
                 Func<TState, Exception?, string> formatter) { }
         }
 
-        private static readonly IDbAccessFactory s_factory = new StubDbFactory();
+        private static readonly ICacheNotifyReader s_reader = new StubReader();
         private static readonly CacheNotifyOptions s_options = new();
         private static readonly ILogger<CacheNotifyPoller> s_logger = new StubLogger();
 
@@ -47,13 +54,13 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_ValidArguments_CreatesInstance()
         {
             var exception = Record.Exception(() =>
-                new CacheNotifyPoller(s_factory, s_options, s_logger));
+                new CacheNotifyPoller(s_reader, s_options, s_logger));
             Assert.Null(exception);
         }
 
         [Fact]
-        [DisplayName("CacheNotifyPoller 建構子 dbAccessFactory 為 null 應拋 ArgumentNullException")]
-        public void Constructor_NullDbAccessFactory_ThrowsArgumentNullException()
+        [DisplayName("CacheNotifyPoller 建構子 reader 為 null 應拋 ArgumentNullException")]
+        public void Constructor_NullReader_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
                 new CacheNotifyPoller(null!, s_options, s_logger));
@@ -64,7 +71,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NullOptions_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPoller(s_factory, null!, s_logger));
+                new CacheNotifyPoller(s_reader, null!, s_logger));
         }
 
         [Fact]
@@ -72,16 +79,16 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NullLogger_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPoller(s_factory, s_options, null!));
+                new CacheNotifyPoller(s_reader, s_options, null!));
         }
 
         [Fact]
         [DisplayName("SafePoll session.Poll() 拋 InvalidOperationException 時應被吞除，不向外傳播")]
         public void SafePoll_SessionThrowsInvalidOperationException_DoesNotPropagate()
         {
-            var throwingFactory = new ThrowingDbFactory(new InvalidOperationException("simulated db error"));
-            var session = new CacheNotifyPollSession("test_db", throwingFactory, marginSeconds: 0);
-            var poller = new CacheNotifyPoller(s_factory, s_options, s_logger);
+            var throwingReader = new ThrowingReader(new InvalidOperationException("simulated db error"));
+            var session = new CacheNotifyPollSession("test_db", throwingReader, marginSeconds: 0);
+            var poller = new CacheNotifyPoller(s_reader, s_options, s_logger);
 
             var safePollMethod = typeof(CacheNotifyPoller).GetMethod(
                 "SafePoll", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -95,9 +102,9 @@ namespace Bee.Hosting.UnitTests
         [DisplayName("SafePoll session.Poll() 拋 DbException 時應被吞除，不向外傳播")]
         public void SafePoll_SessionThrowsDbException_DoesNotPropagate()
         {
-            var throwingFactory = new ThrowingDbFactory(new FakeDbException("simulated db provider exception"));
-            var session = new CacheNotifyPollSession("test_db", throwingFactory, marginSeconds: 0);
-            var poller = new CacheNotifyPoller(s_factory, s_options, s_logger);
+            var throwingReader = new ThrowingReader(new FakeDbException("simulated db provider exception"));
+            var session = new CacheNotifyPollSession("test_db", throwingReader, marginSeconds: 0);
+            var poller = new CacheNotifyPoller(s_reader, s_options, s_logger);
 
             var safePollMethod = typeof(CacheNotifyPoller).GetMethod(
                 "SafePoll", BindingFlags.NonPublic | BindingFlags.Instance);

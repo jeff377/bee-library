@@ -188,12 +188,21 @@ Bee.Db/
                    # TableUpgradeOrchestrator, UpgradePlan, UpgradeStage,
                    # UpgradeStageKind, UpgradeOptions, UpgradeExecutionMode,
                    # ChangeExecutionKind, DescriptionLevel, DescriptionChange,
-                   # ITableSchemaProvider (live-DB schema reader contract)
+                   # ITableSchemaProvider (live-DB schema reader contract),
+                   # AlterCompatibilityRules, RebuildSchemaFactory
+                   # (dialect-neutral rules shared by all five providers)
     Changes/       # AddFieldChange, AlterFieldChange, RenameFieldChange,
                    # AddIndexChange, DropIndexChange, ITableChange
+  CacheNotify/     # st_cache_notify access, both directions:
+                   # ICacheNotifyService/CacheNotifyService (version bump),
+                   # ICacheNotifyReader/CacheNotifyReader (poll read),
+                   # CacheNotifyChange
+  Storage/         # DbDefineStorage (definitions persisted in the database)
   Providers/       # IDialectFactory (provider-factory contract)
     SqlServer/     # SQL Server implementations (DDL + DML + SchemaProvider + Helper)
     PostgreSql/    # PostgreSQL implementations
+    MySql/         # MySQL implementations
+    Oracle/        # Oracle implementations
     Sqlite/        # SQLite implementations
   Manager/         # IDbConnectionManager, DbProviderRegistry, DbConnectionInfo,
                    # DbDialectRegistry

@@ -186,12 +186,21 @@ Bee.Db/
                    # TableUpgradeOrchestrator、UpgradePlan、UpgradeStage、
                    # UpgradeStageKind、UpgradeOptions、UpgradeExecutionMode、
                    # ChangeExecutionKind、DescriptionLevel、DescriptionChange、
-                   # ITableSchemaProvider（live-DB schema 讀取契約）
+                   # ITableSchemaProvider（live-DB schema 讀取契約）、
+                   # AlterCompatibilityRules、RebuildSchemaFactory
+                   #（五家 provider 共用的方言無關規則）
     Changes/       # AddFieldChange、AlterFieldChange、RenameFieldChange、
                    # AddIndexChange、DropIndexChange、ITableChange
+  CacheNotify/     # st_cache_notify 讀寫兩端：
+                   # ICacheNotifyService/CacheNotifyService（版本遞增）、
+                   # ICacheNotifyReader/CacheNotifyReader（輪詢讀取）、
+                   # CacheNotifyChange
+  Storage/         # DbDefineStorage（定義存放於資料庫）
   Providers/       # IDialectFactory（provider 工廠契約）
     SqlServer/     # SQL Server 實作（DDL + DML + SchemaProvider + Helper）
     PostgreSql/    # PostgreSQL 實作
+    MySql/         # MySQL 實作
+    Oracle/        # Oracle 實作
     Sqlite/        # SQLite 實作
   Manager/         # IDbConnectionManager、DbProviderRegistry、DbConnectionInfo、
                    # DbDialectRegistry

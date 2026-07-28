@@ -3,7 +3,6 @@ using Bee.Db.Manager;
 using Bee.Definition.Database;
 using Bee.Definition.Logging;
 using Bee.Definition.Paging;
-using Bee.Hosting.Audit;
 using Bee.Repository.AuditLog;
 using Bee.Repository.Abstractions.AuditLog;
 using Bee.Tests.Shared;
@@ -36,8 +35,8 @@ namespace Bee.Hosting.UnitTests
             var olderId = Guid.NewGuid();
             var newerId = Guid.NewGuid();
 
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(ChangeEntry(olderId, progId, rowKey, "c1", ChangeKind.Insert, older)));
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(ChangeEntry(newerId, progId, rowKey, "c2", ChangeKind.Update, newer)));
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(ChangeEntry(olderId, progId, rowKey, "c1", ChangeKind.Insert, older)));
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(ChangeEntry(newerId, progId, rowKey, "c2", ChangeKind.Update, newer)));
 
             var repository = new AuditLogRepository(connectionManager, databaseId);
             var byRecord = new ChangeLogQuery { ProgId = progId, RowKey = rowKey };
@@ -95,7 +94,7 @@ namespace Bee.Hosting.UnitTests
 
             // Login: write one failed-login for a unique user, read it back by user + event filter.
             var loginUser = "u_" + Guid.NewGuid().ToString("N");
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(new LoginAuditEntry
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(new LoginAuditEntry
             {
                 SysRowId = Guid.NewGuid(),
                 LogTimeUtc = new DateTime(2026, 7, 8, 1, 0, 0, DateTimeKind.Utc),
@@ -112,7 +111,7 @@ namespace Bee.Hosting.UnitTests
 
             // Access: write one record-view for a unique prog+row.
             var accessRow = Guid.NewGuid().ToString();
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(new AccessAuditEntry
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(new AccessAuditEntry
             {
                 SysRowId = Guid.NewGuid(),
                 LogTimeUtc = new DateTime(2026, 7, 8, 1, 0, 0, DateTimeKind.Utc),
@@ -127,7 +126,7 @@ namespace Bee.Hosting.UnitTests
 
             // API anomaly: write one Slow for a unique method.
             var method = "M_" + Guid.NewGuid().ToString("N");
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(new ApiAnomalyEntry
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(new ApiAnomalyEntry
             {
                 SysRowId = Guid.NewGuid(),
                 LogTimeUtc = new DateTime(2026, 7, 8, 1, 0, 0, DateTimeKind.Utc),
@@ -143,7 +142,7 @@ namespace Bee.Hosting.UnitTests
 
             // DB anomaly: write one Timeout for a unique database id (no company dimension).
             var dbId = "d_" + Guid.NewGuid().ToString("N");
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(new DbAnomalyEntry
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(new DbAnomalyEntry
             {
                 SysRowId = Guid.NewGuid(),
                 LogTimeUtc = new DateTime(2026, 7, 8, 1, 0, 0, DateTimeKind.Utc),
@@ -185,7 +184,7 @@ namespace Bee.Hosting.UnitTests
             var to = baseTime.AddMinutes(1);
             for (int i = 0; i < 3; i++)
             {
-                dbAccess.Execute(AuditLogDbSink.BuildInsert(new ApiAnomalyEntry
+                dbAccess.Execute(AuditLogWriteRepository.BuildInsert(new ApiAnomalyEntry
                 {
                     SysRowId = Guid.NewGuid(),
                     LogTimeUtc = baseTime.AddSeconds(i),
@@ -213,7 +212,7 @@ namespace Bee.Hosting.UnitTests
             Assert.Equal(5002L, Convert.ToInt64(methodRow[0]["max_elapsed_ms"], System.Globalization.CultureInfo.InvariantCulture));
 
             // DB summary is a smoke check: seed one Timeout, confirm the grouped table comes back.
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(new DbAnomalyEntry
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(new DbAnomalyEntry
             {
                 SysRowId = Guid.NewGuid(),
                 LogTimeUtc = from,

@@ -85,7 +85,7 @@ share the same cached instances without coordination.
 
 | Forbidden | Reason | Correct Approach |
 |-----------|--------|------------------|
-| API layer directly references the Repository layer | Violates layered architecture | Access indirectly through a Business Object |
+| API layer directly references the Repository layer (`Bee.Api.Core`, `Bee.Api.AspNetCore`; **not** the composition root `Bee.Hosting`, whose job is to wire every layer) | Violates layered architecture | Access indirectly through a Business Object |
 | Business Object directly creates a `DbConnection` | Bypasses connection management and logging | Use the `DbAccess` class |
 | BO references `Bee.Db` (`Bee.Business.csproj` has no `ProjectReference` to `Bee.Db`) | BO is a thin shell over business logic; data access belongs to Repository | FormSchema-driven CRUD → `IDataFormRepository`; custom queries → ad-hoc bo repo with `IDbAccessFactory` |
 | BO hard-codes a `databaseId` string or reads `SessionInfo.CompanyId` / `CompanyInfo` directly | Couples BO to the routing implementation; breaks when deployments change | Use `BusinessObject.ResolveDatabaseId(DbScope)` (custom bo repo) or `CreateDataFormRepository(progId)` (FormSchema CRUD); the helpers delegate to `IRepositoryDatabaseRouter` which is the single source of truth |

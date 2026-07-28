@@ -3,7 +3,7 @@ using System.Globalization;
 using Bee.Db;
 using Bee.Definition.Database;
 using Bee.Definition.Logging;
-using Bee.Hosting.Audit;
+using Bee.Repository.AuditLog;
 using Bee.Tests.Shared;
 
 namespace Bee.Hosting.UnitTests
@@ -36,7 +36,7 @@ namespace Bee.Hosting.UnitTests
             };
 
             // Executes the exact INSERT the sink produces, against the test log database.
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(entry));
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(entry));
 
             var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_log_login WHERE sys_rowid={0}", rowId));
@@ -75,7 +75,7 @@ namespace Bee.Hosting.UnitTests
                 ChangesXml = "<diffgr:diffgram xmlns:diffgr=\"urn:schemas-microsoft-com:xml-diffgram-v1\" />",
             };
 
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(entry));
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(entry));
 
             var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_log_change WHERE sys_rowid={0}", rowId));
@@ -110,7 +110,7 @@ namespace Bee.Hosting.UnitTests
                 RowKey = Guid.NewGuid().ToString(),
             };
 
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(entry));
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(entry));
 
             var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_log_access WHERE sys_rowid={0}", rowId));
@@ -143,7 +143,7 @@ namespace Bee.Hosting.UnitTests
                 ElapsedMs = 5000,
                 ThresholdMs = 3000,
             };
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(entry));
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(entry));
 
             var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_log_anomaly_api WHERE sys_rowid={0}", rowId));
@@ -166,7 +166,7 @@ namespace Bee.Hosting.UnitTests
                 ErrorType = "DbException",
                 ErrorMessage = "timeout expired",
             };
-            dbAccess.Execute(AuditLogDbSink.BuildInsert(entry));
+            dbAccess.Execute(AuditLogWriteRepository.BuildInsert(entry));
 
             var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_log_anomaly_db WHERE sys_rowid={0}", rowId));

@@ -8,7 +8,12 @@
 
 - **層級**：Composition root（DI 註冊）
 - **下游**（消費者）：`Bee.Api.AspNetCore`；非 ASP.NET Core 宿主（WinForms / WPF / Console / Worker Service / 整合測試）
-- **上游**（相依）：`Bee.Api.Core`、`Bee.Business`、`Bee.Repository`、`Bee.ObjectCaching`（透過遞移帶入 `Bee.Definition`、`Bee.Base`、`Bee.Db`、`Bee.Repository.Abstractions`、`Bee.Api.Contracts`）
+- **上游**（相依）：`Bee.Api.Core`、`Bee.Business`、`Bee.Db`、`Bee.Repository`、`Bee.ObjectCaching`（透過遞移帶入 `Bee.Definition`、`Bee.Base`、`Bee.Repository.Abstractions`、`Bee.Api.Contracts`）
+
+組合根橫跨各層本就是其職責，故「API 層不得引用 Repository 層」的限制不適用於此套件。真正適用的限制是
+**本套件不自帶資料存取**：hosted service 只是外殼——cache-notify 輪詢透過 `ICacheNotifyReader`
+（`Bee.Db`）讀取，稽核 sink 透過 `IAuditLogWriteRepository`（`Bee.Repository`）寫入。語句的組建與執行
+屬於那兩層，在此新增 SQL 即為分層回歸。
 
 ## 目標框架
 
@@ -70,4 +75,7 @@ ApiClientInfo.ConnectType = ConnectType.Local;
 ```
 Bee.Hosting/
   BeeFrameworkServiceCollectionExtensions.cs   # AddBeeFramework 與輔助方法
+  Audit/                                       # IAuditLogSink、AuditLogDbSink、
+                                               # AuditLogWriterService、SynchronousAuditLogWriter
+  CacheNotify/                                 # CacheNotifyPoller、CacheNotifyPollSession
 ```

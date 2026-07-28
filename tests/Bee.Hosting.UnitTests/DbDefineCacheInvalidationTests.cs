@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Bee.Db;
 using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
 using Bee.Db.Storage;
@@ -28,7 +27,7 @@ namespace Bee.Hosting.UnitTests
         {
             var connectionManager = _fx.GetRequiredService<IDbConnectionManager>();
             var cacheNotify = _fx.GetRequiredService<ICacheNotifyService>();
-            var dbAccessFactory = _fx.GetRequiredService<IDbAccessFactory>();
+            var cacheNotifyReader = _fx.GetRequiredService<ICacheNotifyReader>();
             var databaseId = TestDbConventions.GetDatabaseId(databaseType);
 
             // Node A: a cache container backed by DB storage, with its own cache namespace, plus its
@@ -36,7 +35,7 @@ namespace Bee.Hosting.UnitTests
             string nodeAPrefix = "nodeA_" + Guid.NewGuid().ToString("N");
             var storageA = new DbDefineStorage(connectionManager, cacheNotify, databaseId);
             var containerA = new CacheContainerService(storageA, _fx.PathOptions, nodeAPrefix);
-            var session = new CacheNotifyPollSession(databaseId, dbAccessFactory, marginSeconds: 5);
+            var session = new CacheNotifyPollSession(databaseId, cacheNotifyReader, marginSeconds: 5);
 
             string progId = "E2E_" + Guid.NewGuid().ToString("N");
 
