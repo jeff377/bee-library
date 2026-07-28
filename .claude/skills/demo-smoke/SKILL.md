@@ -9,7 +9,7 @@ description: 對 `samples/<Sample.Name>/` 的 demo 跑一輪端到端冒煙測�
 
 ## 適用場景
 
-- 改完 Bee.UI.Maui / Bee.Web.Blazor.* 後想確認 sample 還能跑
+- 改完 Bee.UI.Avalonia / Bee.Web.Blazor.Server 後想確認 sample 還能跑
 - 加新 sample 後做最後 sanity check
 - Release 前對所有 sample 一次冒煙
 
@@ -30,9 +30,9 @@ description: 對 `samples/<Sample.Name>/` 的 demo 跑一輪端到端冒煙測�
 每個有 GUI 的 sample 自帶一份 `.smoke.yaml`。範例：
 
 ```yaml
-# samples/Maui.Demo/.smoke.yaml
-name: Maui.Demo
-display_name: Bee MAUI Demo
+# samples/Avalonia.Demo/.smoke.yaml
+name: Avalonia.Demo
+display_name: Bee Avalonia Demo
 
 # 起 demo 之前要跑的依賴 process
 prerequisites:
@@ -44,18 +44,19 @@ prerequisites:
 
 # demo app 自身啟動方式
 launch:
-  app_name: Bee MAUI Demo
-  bundle_path: samples/Maui.Demo/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/Bee MAUI Demo.app
-  # 或：
-  # launch_cmd: open <bundle_path>
-  # 預設用 macOS `open` 命令啟動 .app
+  app_name: Bee Avalonia Demo
+  # Avalonia 桌面端產出的是一般 .NET 可執行檔（macOS 無 .app bundle、Windows 無 MSIX），
+  # 因此以 dotnet 直接啟動已發布的 host DLL；跑 smoke 時不依賴 dotnet run 的 file-watch 迴圈。
+  launch_cmd: dotnet samples/Avalonia.Demo/bin/Debug/net10.0/Avalonia.Demo.dll
+  # 若 sample 產出的是 .app bundle，改用：
+  # bundle_path: samples/<Name>/bin/.../<App>.app   # 預設以 macOS `open` 啟動
 
 # 點擊與驗證流程
 flow:
   - step: take initial screenshot
     action: screenshot
     expect_text:                          # 至少要看到的字串（用 OCR / 截圖比對）
-      - "Bee MAUI demo"
+      - "Bee Avalonia demo"
       - "Endpoint"
       - "Connect"
 
@@ -119,7 +120,7 @@ mcp__computer-use__request_access(
 )
 ```
 
-接著 `open <bundle_path>`（or 跑 `launch.launch_cmd`），等 5-8 秒讓 MAUI app 起 UI。
+接著 `open <bundle_path>`（or 跑 `launch.launch_cmd`），等 5-8 秒讓 app 起 UI。
 
 ### Step 4：跑 flow 每一步
 
@@ -191,9 +192,8 @@ lsof -i :5050 -sTCP:LISTEN 2>/dev/null  # 應為空
 
 ## 知道的雷
 
-- **MAUI app pgrep 名稱**：app 進程名來自 `.app/Contents/MacOS/<AssemblyName>`，不是 csproj 顯示名。teardown 用 AssemblyName。
+- **pgrep 名稱**：以 .app bundle 發布時，進程名來自 `.app/Contents/MacOS/<AssemblyName>`，不是 csproj 顯示名；以 `dotnet <dll>` 啟動時進程名是 `dotnet`。teardown 要依實際啟動方式取名。
 - **Sandboxed app 第一次跑**：macOS 要使用者批准「網路存取」、「鍵盤監聽」（computer-use 點擊）。若 dialog 出現會卡住 flow；建議在 `.smoke.yaml` 加 `first_run_setup: |` 步驟提示。
-- **`net10.0-maccatalyst` 路徑**：Release 構建路徑是 `bin/Release/net10.0-maccatalyst/Bee MAUI Demo.app`（無 RID 子目錄），Debug 構建是 `bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/Bee MAUI Demo.app`（有 RID 子目錄）。`.smoke.yaml` 要分別寫對。
 - **expect_text 是 OCR 還是 accessibility？**：MVP 用截圖比對 + OCR；高精度需求改用 macOS Accessibility API（不在本 skill 範圍）。
 - **prerequisites 多依賴**：若 sample 需要 SQLite container 之類，把指令寫進 prerequisites；本 skill 不識別 container 工具。
 

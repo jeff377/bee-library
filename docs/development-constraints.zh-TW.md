@@ -15,7 +15,7 @@
 4. `services.AddBeeFramework(settings.BackendConfiguration, paths)` — 註冊框架服務（擴充方法來自 `Bee.Hosting`）
 5. `services.BuildServiceProvider()` 後 `app.UseBeeFramework()`（僅 ASP.NET Core 宿主；非 web 宿主則把產出的 `IServiceProvider` 設給 `ApiClientInfo.LocalServiceProvider` 啟用近端模式）
 
-完整參考見 [development-cookbook.zh-TW.md § Framework Initialization Order](development-cookbook.zh-TW.md#framework-initialization-order)。
+完整參考見 [development-cookbook.zh-TW.md § 框架初始化順序](development-cookbook.zh-TW.md#框架初始化順序)。
 
 ### 違反後果
 
