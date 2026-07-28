@@ -1,6 +1,6 @@
 ---
 name: bee-framework-review
-description: 對 bee-library 框架做「全面體檢」的可重複方法論 —— 八面向(架構分層、安全性、維護性、散落/不必要類別、相依分層與循環相依、序列化一致性、公開 API 表面、測試品質與覆蓋)唯讀審查,以平行子代理分面向掃描(非抽樣),交叉去重後彙整成分級(P0~P4)重構計畫 + 每項 10 分制評分。內建各面向的具體檢查清單、已知雷區、與「應為乾淨」的基準項(供回歸偵測)。當使用者要「全面體檢」、「架構體檢」、「健康檢查/健康度」、「framework review」、「全面 review」、「架構審查」、「幫框架打分/評分」、「有沒有散落或不必要的類別」、「提重構計畫」之類需求時使用,即使沒明講「體檢」也要在這類全框架審查請求時主動觸發。**只負責唯讀審查、評分與產出重構計畫,不直接改 code**(修正另循一般流程)。
+description: 對 bee-library 框架做「全面體檢」的可重複方法論 —— 九面向(架構分層、相依分層與循環相依、安全性、維護性、散落/不必要類別、序列化一致性、公開 API 表面、測試品質與覆蓋、文件漂移)唯讀審查,以平行子代理分面向掃描(非抽樣),交叉去重後彙整成分級(P0~P4)重構計畫 + 每項 10 分制評分。內建各面向的具體檢查清單、已知雷區、與「應為乾淨」的基準項(供回歸偵測)。當使用者要「全面體檢」、「架構體檢」、「健康檢查/健康度」、「framework review」、「全面 review」、「架構審查」、「幫框架打分/評分」、「有沒有散落或不必要的類別」、「提重構計畫」之類需求時使用,即使沒明講「體檢」也要在這類全框架審查請求時主動觸發。**只負責唯讀審查、評分與產出重構計畫,不直接改 code**(修正另循一般流程)。
 ---
 
 # bee-library 框架全面體檢
@@ -17,11 +17,11 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 
 依 `~/.claude/CLAUDE.md` 提問風格,每題附選項 + 標建議:
 
-1. **追加面向**(multi-select):預設八面向已涵蓋;問是否要再加(如效能/熱路徑、並行全域狀態、跨平台 AOT、文件漂移單獨拉出)。
+1. **追加面向**(multi-select):預設九面向已涵蓋;問是否要再加(如效能/熱路徑、並行全域狀態、跨平台 AOT)。
 2. **範圍**(single):全部 18 專案(建議) / 只核心後端(排除 UI heads Avalonia/Maui/Blazor,重構訊號密度最高) / 使用者指定。
 3. **執行方式**(single):唯讀 review + 計畫文件(建議) / 只口頭回報 / 多代理 workflow 深掃(需使用者明確同意大規模編排)。
 
-## 八個檢查面向
+## 九個檢查面向
 
 | # | 面向 | 核心問題 |
 |---|------|---------|
@@ -33,12 +33,17 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 | 6 | 序列化一致性 | XML/JSON/MessagePack 三棲標籤、`[Union]` 多型、typeless 白名單、trim/AOT |
 | 7 | 公開 API 表面 | 契約軸命名空間一致性、BO 介面純度、breaking-change 面、四層對齊 |
 | 8 | 測試品質與覆蓋 | 無效斷言(S2699)、覆蓋缺口、fixture 污染、flaky、`[Collection]` 序列化 |
+| 9 | 文件漂移 | 公開文件宣稱 vs 程式碼實際、死連結、雙語落差、CHANGELOG 未記 breaking |
 
 > 面向 1 與 2 高度重疊,可合派一個代理但分開評分。
+>
+> **面向 9 為 2026-07-28 起的常設項**,原本散在各面向的 P3。首次獨立評分即為九面向最低(4.5/10)
+> —— 被結構面的高分稀釋掉正是它該獨立計分的理由:文件漂移不會讓 build 紅、不會讓測試失敗,
+> 只會讓外部開發者照著寫出不能編譯的程式碼,沒有任何自動化機制會發現。
 
 ## 方法:平行子代理分面向掃描
 
-派 **6 個 `general-purpose` 子代理**(背景平行),各掃一面向(架構+相依合派、其餘各一)。每個代理:
+派 **7 個 `general-purpose` 子代理**(背景平行),各掃一面向(架構+相依合派、其餘各一)。每個代理:
 - **嚴格唯讀**,prompt 明示「絕對不可修改/寫入任何檔案,只回報發現」。
 - 收到**該面向的完整檢查清單 + 已知雷區**(見下)+ 相關規範摘要(從 `~/.claude/rules/` 與 `.claude/rules/` 提煉,別叫代理自己去讀整包)。
 - 回報格式統一:分三級 + 每項附 `專案/檔案:行號`、問題(WHY)、建議。
@@ -118,6 +123,25 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 - fixture 污染:`SaveDefine` 系列測試須切 temp 目錄,禁寫 `tests/Define/`。
 - `[Collection]` 序列化(規範宣稱 Phase 7 後清零,驗回歸)、測試改 production static、真實牆鐘 flaky(建議 `TimeProvider` + `FakeTimeProvider`)。
 
+### 9. 文件漂移(規範源:`.claude/rules/public-docs.md`)
+
+範圍是**公開文件**(寫給 NuGet 套件使用者看的):repo 根 `README*` / `CHANGELOG*`、`docs/` 根目錄全部 `.md`、
+`docs/adr/`、`docs/changelogs/`、以及**所有位置**的 `README.md` / `README.zh-TW.md`(`src/` `samples/` `apps/` `tools/`)。
+`docs/plans/`、`docs/repo-ops/`、`docs/internal/`、`.claude/` 不是公開文件。
+
+- **可編譯性(最高價值)**:文件中的型別名、方法名、DI 擴充方法、列舉成員逐一比對原始碼是否存在且大小寫相符。
+  外部開發者第一天就會複製的段落(cookbook、快速上手、README 範例)優先。**這類錯誤沒有任何自動化機制會抓到。**
+- **設計之錄失真**:ADR 描述的機制是否仍存在(型別已更名 / 已移除卻仍被當作現行機制描述);
+  `development-constraints` 的硬約束是否仍成立;被推翻的 ADR 是否已標 `已取代(Superseded)`。
+- **改名 / 刪型別的反向索引**:每次移除或更名公開型別,`grep -rn "<舊名>" --include="*.md"` 是否已清乾淨
+  —— 這是本面向約六成問題的來源。
+- **死連結**:全量檢查相對連結與 anchor。特別注意 `docs/changelogs/*.md` 這類**子目錄**中誤用 repo-root
+  相對路徑的整批錯誤(從子目錄解析會多一層,GitHub 上全 404)。
+- **雙語同步**:比對雙語配對的章節結構與內容量,找單邊更新;找應有雙語卻只有單語者。
+- **CHANGELOG**:`Directory.Build.props` 版本 vs tag 之後的 commit,標 `!` 的是否都已記載;
+  是否有 Unreleased 區段;既有敘述是否已被後續 commit 推翻。
+- **量化基準**:文件宣稱的專案數 / 相依邊 / 套件清單 vs 實際 csproj。
+
 ## 彙整與產出
 
 ### 分級(P0~P4)
@@ -141,5 +165,50 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 ## 計畫文件格式
 遵循 CLAUDE.md 的 plan 規範:頂部單行狀態列 `**狀態:📝 擬定中(YYYY-MM-DD)**` + 多階段(P0~P4)階段表格。回覆中附 `[plan-framework-review.md](docs/plans/plan-framework-review.md)` 連結。
 
+## 方法論教訓(2026-07-28 該輪學到,下次直接沿用)
+
+**1. 基準要寫具體清單,不要寫「死碼 0」這種無從驗證的斷言。**
+上輪基準宣稱「空 class 0、死碼 0」,本輪查出至少 15 個零使用型別且**全部早於上次體檢**
+—— 上輪判定過於樂觀(很可能只掃了完全無引用的檔案,沒追到「宣告 + DI 註冊」或
+「宣告 + 佔位測試」這類假陽性存活的型別)。**佔位測試會讓死碼在覆蓋率報告上呈現為已測試。**
+
+**2. 分數下降多半是掃描變深,不是程式碼退步 —— 但必須逐項用 git 驗證才能這樣說。**
+要求每個代理對「本輪新發現」用 `git log`/`git show` 查出問題引入時間,分清「回歸」與「既有問題首次被掃出」。
+兩者的處理優先序不同,混為一談會誤導使用者。
+
+**3. P0 級發現值得付出實測成本。**
+本輪「定義類 response 在 wire 上內容全滅」原本只是理論推斷,在 scratchpad 建獨立 console 專案
+(ProjectReference 到目標套件、走**公開**的序列化入口)實測後,才釘死失敗模式是
+**沉默空殼而非擲例外**,而修法選擇正好取決於這個答案。注意 `MessagePackCodec` 是 internal,
+外部探測要走 `MessagePackPayloadSerializer`。
+
+**4. 代理的結論要交叉驗證,尤其牽涉「這段是死碼」的判斷。**
+本輪有代理把 `ApiAccessValidator` 的 `LocalOnly` 判斷標為死碼,實際上只有條件後半段冗餘,
+機制本身有效 —— 若照單全收會誤判防護無效。同理,建議的修法可能建立在錯誤前提上
+(把定義型別當 wire DTO),**送出建議前先確認該型別的序列化契約**。
+
 ## 已知基準(上次體檢結果,供對照回歸)
-上次(2026-07-23)綜合 ≈ 8.25/10。**應維持為乾淨**的項:無循環/反向依賴、BO 無 Db 參照、Server 無 Client 參照、`*Func` 殘留 0、空 class 0、死碼 0、Newtonsoft 0、契約軸 100% 對齊、BO 介面純度無違反、MessagePack ctor 順序 landmine 未觸發、`[Union]`⊥keyAsPropertyName 遵守。若下次體檢這些**由乾淨變不乾淨,即為回歸,應標紅優先**。
+
+上次 **2026-07-28**:八面向平均 **8.19**、含文件漂移九面向 **7.78**。
+各面向:架構 8.8、相依 9.2、安全 7.8、維護 8.5、散落 7.5、序列化 7.0、公開 API 8.5、測試 8.2、文件 4.5。
+
+**應維持為乾淨**(由乾淨變不乾淨即為回歸,標紅優先):
+無循環/反向依賴、BO 無 Db 參照、Server 無 Client 參照、`*Func` 殘留 0、Newtonsoft 0、
+契約軸 100% 對齊(已有 `ApiContractPairingTests` 守門)、BO 介面純度無違反、
+MessagePack ctor 順序 landmine 未觸發、`[Union]`⊥keyAsPropertyName 遵守、
+`MessagePackCollectionBase<>` 子型別 formatter 註冊無遺漏、
+`new DateTime(` 未指定 `Kind` 0 處、`Regex` 未傳 timeout 0 處、
+`CurrentCultureIgnoreCase` 0 處、public 可變欄位 0、公開文件零 `docs/plans/` 引用。
+
+**已知不乾淨(具體清單,取代「死碼 0」)**:`IEnterpriseObjectService`、`EnterpriseObjectService`、
+`InitializeOptions`、`ApplicationType`、`SysFuncIDs`、`VersionFiles`、`TreeNodeIgnoreAttribute`、
+`DefaultBoolean`、`NotSetBoolean`、`SystemActions.GetLocalDefine`/`SaveLocalDefine`、
+`IDefineField`、`IElementCapabilityResolver`、`CheckPackageUpdate`/`GetPackage` 全棧。
+下次體檢應確認這些是否已清理,而非重新「發現」一次。
+
+**已建立的守門機制**(下次體檢應確認仍存在且有效):
+`BoApiSurfaceTests`(鎖定所有 `[ApiAccessControl]` 存取等級的 baseline)、
+`ApiContractPairingTests`(wire DTO ↔ 契約配對)、
+`TestFunc` 的 `comparedCount > 0` 斷言(防 helper 靜默退化)。
+**尚未建立**:public API surface 快照(`PublicAPI.Shipped.txt`)—— breaking change 漏標 `!`
+已連續兩輪發生(`IExcelHelper`、`IEvictableCache`),這是目前最高槓桿的單一改善。
