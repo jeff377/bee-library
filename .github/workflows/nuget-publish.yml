@@ -45,7 +45,6 @@ jobs:
         dotnet build src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.UI.Maui/Bee.UI.Maui.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Hosting/Bee.Hosting.csproj --configuration Release --no-restore /p:Version=$ver
@@ -53,7 +52,6 @@ jobs:
         dotnet build src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Repository/Bee.Repository.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Web.Blazor.Wasm/Bee.Web.Blazor.Wasm.csproj --configuration Release --no-restore /p:Version=$ver
         # Framework CLI (dotnet tool) — lock-stepped to framework version.
         dotnet build tools/Bee.Cli/Bee.Cli.csproj --configuration Release --no-restore /p:Version=$ver
 
@@ -70,7 +68,6 @@ jobs:
         dotnet pack src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.UI.Maui/Bee.UI.Maui.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Hosting/Bee.Hosting.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
@@ -78,7 +75,6 @@ jobs:
         dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Web.Blazor.Wasm/Bee.Web.Blazor.Wasm.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         # Framework CLI (dotnet tool).
         dotnet pack tools/Bee.Cli/Bee.Cli.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
 
@@ -118,7 +114,6 @@ jobs:
           - Bee.Api.Client
           - Bee.UI.Core
           - Bee.UI.Avalonia
-          - Bee.UI.Maui
           - Bee.Api.Contracts
           - Bee.Api.Core
           - Bee.Hosting
@@ -126,7 +121,6 @@ jobs:
           - Bee.Repository.Abstractions
           - Bee.Repository
           - Bee.Web.Blazor.Server
-          - Bee.Web.Blazor.Wasm
           - Bee.Cli (dotnet tool；安裝 `dotnet tool install -g Bee.Cli`，呼叫 `dotnet bee defines materialize ...`)
 
           如需安裝請至 NuGet.org 查詢對應版本。

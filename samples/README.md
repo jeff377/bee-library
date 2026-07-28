@@ -23,16 +23,12 @@ You should see `response : echo: hello from QuickStart.Console` in Terminal 2.
 To watch Blazor components render a `FormSchema` and drive a Login + Employee CRUD flow:
 
 ```bash
-# Option A — Blazor Server (in-process LocalApiProvider, no HTTP round-trip)
+# Blazor Server (in-process LocalApiProvider, no HTTP round-trip)
 cd samples/Blazor.Server.Demo
 dotnet run                          # → http://localhost:5055
-
-# Option B — Blazor Wasm (same components, but in-browser + HTTP /api)
-cd samples/Blazor.Wasm.Demo.Host
-dotnet run                          # → http://localhost:5070
 ```
 
-Both sign in with **`demo / demo`** and render the same `Employee` FormSchema.
+Sign in with **`demo / demo`** to render the `Employee` FormSchema.
 
 ## Where should I start?
 
@@ -41,12 +37,9 @@ Both sign in with **`demo / demo`** and render the same `Employee` FormSchema.
 | How to spin up a Bee backend, register a custom BO, and expose the JSON-RPC API | [`QuickStart.Server`](QuickStart.Server/README.md) |
 | How to call Bee from a third-party client with `Bee.Api.Client` (Remote mode) | [`QuickStart.Console`](QuickStart.Console/README.md) |
 | How to use `Bee.Web.Blazor.Server` components (Local dispatch — best perf) | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.md) |
-| How to use `Bee.Web.Blazor.Wasm` components (.NET running in the browser, HTTP only) | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.md) + [`.Host`](Blazor.Wasm.Demo.Host/README.md) |
-| How the same `FormSchema` renders inside a native mobile app (Mac Catalyst / iOS / Android) | [`Maui.Demo`](Maui.Demo/README.md) |
 | How the same `FormSchema` renders inside a desktop Avalonia app (Windows / macOS / Linux) | [`Avalonia.Demo`](Avalonia.Demo/README.md) |
 | Theme-oriented control demo center (theme → case nav, Demo/Source tabs, theme/FormMode toolbar): data binding, read-only/required, FormMode, layout, grid, native-vs-inherited parity | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) |
 | How to call Bee from pure JavaScript (no .NET on the client, Plain wire format) | [`Web.Js.Demo`](Web.Js.Demo/README.md) |
-| Login, AccessToken, and encrypted-payload fallback resolution on the client | `Blazor.Server.Demo` or `Maui.Demo` (either) |
 
 ## Demo catalog
 
@@ -55,9 +48,6 @@ Both sign in with **`demo / demo`** and render the same `Employee` FormSchema.
 | [`QuickStart.Server`](QuickStart.Server/README.md) | API host | `5050` | `dotnet run` | Bee.Api.AspNetCore + Bee.Hosting + Bee.Business + Bee.Db |
 | [`QuickStart.Console`](QuickStart.Console/README.md) | API client | — | `dotnet run` | Bee.Api.Client |
 | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.md) | Full-stack Blazor Server | `5055` | `dotnet run` | Bee.Web.Blazor.Server + Bee.Samples.Shared |
-| [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.md) | In-browser Wasm components | — | (launched via `.Host`) | Bee.Web.Blazor.Wasm |
-| [`Blazor.Wasm.Demo.Host`](Blazor.Wasm.Demo.Host/README.md) | Wasm static files + API host | `5070` | `dotnet run` | Bee.Api.AspNetCore + Bee.Web.Blazor.Wasm |
-| [`Maui.Demo`](Maui.Demo/README.md) | Native mobile-app client | — (talks to 5050) | `dotnet build -t:Run -c Debug -f net10.0-maccatalyst` | Bee.UI.Maui + Bee.Api.Client |
 | [`Avalonia.Demo`](Avalonia.Demo/README.md) | Desktop Avalonia client | — (talks to 5050) | `dotnet run -c Debug` | Bee.UI.Avalonia + Bee.Api.Client |
 | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) | Desktop Avalonia control demo center | — (no backend) | `dotnet run -c Debug` | Bee.UI.Avalonia |
 | [`Web.Js.Demo`](Web.Js.Demo/README.md) | Pure-JS browser client | — (talks to 5050) | `open index.html` | (no .NET — vanilla HTML/JS) |
@@ -67,21 +57,15 @@ Both sign in with **`demo / demo`** and render the same `Employee` FormSchema.
 
 ```
 QuickStart.Console ──HTTP──▶ QuickStart.Server
-                              (also Maui.Demo's default backend)
-
-Maui.Demo          ──HTTP──▶ QuickStart.Server  ← must be started first
 Avalonia.Demo      ──HTTP──▶ QuickStart.Server  ← must be started first
 Web.Js.Demo        ──HTTP──▶ QuickStart.Server  ← must be started first (CORS enabled)
-
-Blazor.Wasm.Demo   ◀──static files── Blazor.Wasm.Demo.Host
-                                  (host bundles the Bee backend and /api endpoint)
 
 Blazor.Server.Demo                ← no separate server; front-end and back-end share the process
 ```
 
 ## Shared credentials
 
-The Blazor / MAUI demos all sign in with `demo / demo`:
+The Blazor and desktop demos sign in with `demo / demo`:
 
 | Field | Value |
 |-------|-------|
@@ -124,7 +108,7 @@ The files below are **not** in git — they are runtime artifacts. A fresh clone
 |------|------------|----------|----------------|
 | `samples/<Host>/quickstart.db` | [`DemoSchemaSeeder`](Bee.Samples.Shared/DemoSchemaSeeder.cs) | SQLite with `ft_employee` + `ft_employee_phone` and 3 demo rows (Alice / Bob / Carol) | `/samples/**/*.db` |
 
-> The three hosts (`QuickStart.Server` / `Blazor.Server.Demo` / `Blazor.Wasm.Demo.Host`) **each get their own `quickstart.db`** and don't interfere with each other. Re-running the same host reuses existing data (both schema creation and seeding are idempotent).
+> Both hosts (`QuickStart.Server` / `Blazor.Server.Demo`) **each get their own `quickstart.db`** and don't interfere with each other. Re-running the same host reuses existing data (both schema creation and seeding are idempotent).
 
 To reset demo data: delete `samples/<Host>/quickstart.db` and re-run. To rotate the demo master key: change `DemoCredentials.DemoMasterKey` (or set `BEE_MASTER_KEY` to a different value externally) **and** delete every `quickstart.db` — existing rows are encrypted with the old key and would yield decryption failures otherwise.
 
@@ -135,7 +119,7 @@ To reset demo data: delete `samples/<Host>/quickstart.db` and re-run. To rotate 
 | Mode | Path | Used by | Sample demo |
 |------|------|---------|-------------|
 | **Local** | client → `LocalApiProvider` → `JsonRpcExecutor` → BO (same process) | Blazor Server, in-process tooling, BO-to-BO calls | `Blazor.Server.Demo` |
-| **Remote** | client → `RemoteApiProvider` → HTTP POST → `ApiServiceController` → `JsonRpcExecutor` → BO | Blazor Wasm, Console, MAUI, cross-machine | `QuickStart.Console`, `Blazor.Wasm.Demo`, `Maui.Demo` |
+| **Remote** | client → `RemoteApiProvider` → HTTP POST → `ApiServiceController` → `JsonRpcExecutor` → BO | Console, desktop, mobile, cross-machine | `QuickStart.Console`, `Avalonia.Demo` |
 
 Switching modes is a one-liner in `AddBeeBlazor` / `ApiClientInfo`:
 
@@ -158,16 +142,13 @@ dotnet build samples/Bee.Samples.slnx
 ## FAQ
 
 **Q: Port 5050 / 5055 / 5070 is already in use — what now?**
-Edit `samples/<Host>/Properties/launchSettings.json` and change `applicationUrl`. Don't forget to update anything that points at that host: the `--endpoint` flag for `QuickStart.Console`, the endpoint field in `Maui.Demo`, and `MauiProgram.DefaultEndpoint`.
+Edit `samples/<Host>/Properties/launchSettings.json` and change `applicationUrl`. Don't forget to update anything that points at that host: the `--endpoint` flag for `QuickStart.Console`, and the endpoint configured in `Avalonia.Demo`.
 
 **Q: I'm getting `Could not locate 'Define/SystemSettings.xml' walking up from ...`**
 Run `dotnet run` from inside the bee-library checkout. Don't copy the built binaries outside the repo — `DemoBackend` walks upward from `AppContext.BaseDirectory` looking for `Define/`, and that walk fails outside the repo.
 
-**Q: Why does the MAUI demo have to run in Debug?**
-On Apple platforms the Release-mode Mono linker strips the `System.Xml.Serialization` reflection fallback, breaking `FormSchema` deserialization. See [`Maui.Demo/README.md`](Maui.Demo/README.md) for details.
-
 **Q: Can I run all three hosts at the same time without conflicts?**
-Yes. The three hosts listen on different ports (5050 / 5055 / 5070), each has its own `quickstart.db`, and they share `samples/Define/` read-only. Running all three plus the Console and MAUI demos in parallel is fully supported.
+Yes. The two hosts listen on different ports (5050 / 5055), each has its own `quickstart.db`, and they share `samples/Define/` read-only. Running both plus the Console demo in parallel is fully supported.
 
 **Q: I edited code under `src/` — how do I see it in the demos?**
 Just re-run. `ProjectReference` rebuilds automatically. No `dotnet pack` and no cache flushing required.
@@ -178,4 +159,3 @@ Just re-run. `ProjectReference` rebuilds automatically. No `dotnet pack` and no 
 - SQL Server / PostgreSQL / Oracle / MySQL — SQLite is enough for demonstration
 - Full auth/authz flows (OAuth, JWT, an actual `st_user` table) — short-circuited with hard-coded `demo/demo`
 - Deployment scripts (Docker / k8s / TestFlight / Microsoft Store)
-- CI validation for samples — manual runs only, except that `Maui.Demo/.smoke.yaml` can be smoke-tested by the `demo-smoke` skill

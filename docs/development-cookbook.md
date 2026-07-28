@@ -474,7 +474,6 @@ What kind of frontend are you building?
 │   → See "Blazor Server" section below
 │
 └── Blazor WASM (Browser WebAssembly)
-    → Use Bee.Web.Blazor.Wasm with RemoteApiProvider (HTTP) — forced
     → See "Blazor WASM" section below
 ```
 
@@ -590,49 +589,6 @@ app.Run();
 
 The host application registers an `IApiProvider` implementation at startup to choose the mode (`LocalApiProvider` / `RemoteApiProvider`).
 
-### Blazor WASM (Bee.Web.Blazor.Wasm)
-
-Blazor WASM runs inside the browser sandbox and is **forced to use `RemoteApiProvider`** (it cannot load backend assemblies).
-
-**1. Register in `Program.cs`**:
-
-```csharp
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-
-var builder = WebAssemblyHostBuilder.CreateDefault(args);
-builder.RootComponents.Add<App>("#app");
-
-// HttpClient pointing at the API server endpoint
-builder.Services.AddScoped(sp => new HttpClient
-{
-    BaseAddress = new Uri("https://api.example.com/")
-});
-
-// Bee.Web.Blazor.Wasm RCL services (registers RemoteApiProvider automatically)
-builder.Services.AddBeeBlazor();
-
-await builder.Build().RunAsync();
-```
-
-**2. Razor component usage is identical to Blazor Server**:
-
-```razor
-@page "/employees"
-@inject SystemApiConnector SystemConnector
-
-@code {
-    protected override async Task OnInitializedAsync()
-    {
-        var formConnector = new FormApiConnector(/* ... */);
-        var result = await formConnector.GetListAsync(selectFields: "EmpId,EmpName");
-    }
-}
-```
-
-**3. Strict constraint**:
-
-> ⚠️ **`Bee.Web.Blazor.Wasm` must not depend on any backend project** (`Bee.Repository` / `Bee.Business` / `Bee.Hosting`, etc.) — the browser runtime cannot load server-only assemblies. The constraint is enforced by the dependency chain (`Bee.Api.Client → Bee.Api.Core → Bee.Api.Contracts/Definition` are all pure data/protocol layers).
-
 ### Avalonia desktop (Bee.UI.Avalonia)
 
 `Bee.UI.Avalonia` belongs to the **`Bee.UI.*` family**, so its API-connection pattern matches the "Desktop" section above — through the `ClientInfo` static singleton with a per-process token model.
@@ -654,12 +610,6 @@ public static void Main(string[] args)
 `FormView` resolves `Schema` / `FormConnector` / `AccessToken` from `ClientInfo` when the host only sets `ProgId`, mirroring the MAUI `FormPage` fallback. `GridControl` (a `ContentControl` composite exposing an inner `DataGrid` as `InnerGrid`) renders cells through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch (not `Binding "[FieldName]"`) — see [ADR-020](adr/adr-020-avalonia-datagrid-binding-strategy.md) for why — and offers two editing models through `GridEditMode` (`InCell` cell editing / `EditForm` popup row editing); see [ADR-021](adr/adr-021-avalonia-datagrid-editing-strategy.md). Field editors bind ambiently: set `FormScope.DataObject` once on a container and every descendant editor with a `FieldName` wires itself.
 
 Worked examples: [`samples/Avalonia.Demo`](../samples/Avalonia.Demo/README.md) (full CRUD flow) and [`samples/Avalonia.DemoCenter`](../samples/Avalonia.DemoCenter/README.md) (control demo center).
-
-### MAUI (Bee.UI.Maui)
-
-`Bee.UI.Maui` belongs to the **`Bee.UI.*` family**, so its API-connection pattern is the same as the "Desktop" section above — through the `ClientInfo` static singleton.
-
-Phase 1 has shipped the first FormSchema-driven controls (`DynamicForm` + `FormDataObject`); the csproj references `Microsoft.Maui.Controls` on a `net10.0` shared-logic TFM as the default. Platform TFMs (`net10.0-android` / `net10.0-ios` / `net10.0-maccatalyst` / `net10.0-windows`) are opt-in via `-p:BeeUiMauiFullPlatforms=true` and require the matching MAUI workloads. NuGet publishing remains deferred until a more complete control set is ready.
 
 ### Quick Reference
 

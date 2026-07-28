@@ -14,7 +14,7 @@
       TreatWarningsAsErrors: the iOS build runs trim analysis and Bee's reflection-heavy
       serialization (XmlSerializer for FormSchema, System.Text.Json, MessagePack) emits
       IL2026 / IL2104 trim warnings that are expected here. Release / trim-safe packaging
-      is a separate follow-up (see .claude/rules/maui.md Apple trim decision tree).
+      is a separate follow-up (see .claude/rules/apple-mobile-trim.md Apple trim decision tree).
     -->
   </PropertyGroup>
 

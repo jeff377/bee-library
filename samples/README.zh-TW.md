@@ -23,16 +23,12 @@ dotnet run
 要看 Blazor 元件實際渲染 `FormSchema`、走 Login + Employee CRUD:
 
 ```bash
-# 方案 A — Blazor Server(in-process LocalApiProvider,無 HTTP round-trip)
+# Blazor Server(in-process LocalApiProvider,無 HTTP round-trip)
 cd samples/Blazor.Server.Demo
 dotnet run                          # → http://localhost:5055
-
-# 方案 B — Blazor Wasm(同元件、改走瀏覽器端 + HTTP /api)
-cd samples/Blazor.Wasm.Demo.Host
-dotnet run                          # → http://localhost:5070
 ```
 
-兩邊都用 **`demo / demo`** 登入,登入後渲染同一份 `Employee` FormSchema。
+以 **`demo / demo`** 登入,渲染 `Employee` FormSchema。
 
 ## 我該從哪個 demo 看起
 
@@ -41,12 +37,9 @@ dotnet run                          # → http://localhost:5070
 | 如何起一個 Bee 後端、註冊自訂 BO、暴露 JSON-RPC API | [`QuickStart.Server`](QuickStart.Server/README.zh-TW.md) |
 | 如何用 `Bee.Api.Client` 從第三方端連 Bee(Remote 模式) | [`QuickStart.Console`](QuickStart.Console/README.zh-TW.md) |
 | 如何在 Blazor 內用 `Bee.Web.Blazor.Server` 元件(Local 派遣,效能最佳) | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.zh-TW.md) |
-| 如何在 Blazor 內用 `Bee.Web.Blazor.Wasm` 元件(瀏覽器端跑 .NET,必走 HTTP) | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.zh-TW.md) + [`.Host`](Blazor.Wasm.Demo.Host/README.zh-TW.md) |
-| 同一份 `FormSchema` 在原生行動 App 上如何渲染（Mac Catalyst / iOS / Android） | [`Maui.Demo`](Maui.Demo/README.zh-TW.md) |
 | 同一份 `FormSchema` 在桌面 Avalonia 上如何渲染（Windows / macOS / Linux） | [`Avalonia.Demo`](Avalonia.Demo/README.zh-TW.md) |
 | 主題導向控件 demo center（導覽樹 主題→案例、Demo/Source 分頁、主題/FormMode 工具列）：資料繫結、唯讀必填、FormMode、Layout、Grid、原生 vs 繼承比對 | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) |
 | 如何用純 JavaScript 從瀏覽器呼叫 Bee（前端無 .NET，走 Plain wire format） | [`Web.Js.Demo`](Web.Js.Demo/README.zh-TW.md) |
-| Login、AccessToken、Encrypted payload 的客戶端 fallback 機制 | `Blazor.Server.Demo` 或 `Maui.Demo`(任一) |
 
 ## Demo 清單
 
@@ -55,9 +48,6 @@ dotnet run                          # → http://localhost:5070
 | [`QuickStart.Server`](QuickStart.Server/README.zh-TW.md) | API host | `5050` | `dotnet run` | Bee.Api.AspNetCore + Bee.Hosting + Bee.Business + Bee.Db |
 | [`QuickStart.Console`](QuickStart.Console/README.zh-TW.md) | API client | — | `dotnet run` | Bee.Api.Client |
 | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.zh-TW.md) | 全端 Blazor Server | `5055` | `dotnet run` | Bee.Web.Blazor.Server + Bee.Samples.Shared |
-| [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.zh-TW.md) | 瀏覽器端 Wasm 元件 | — | (由 `.Host` 一起跑) | Bee.Web.Blazor.Wasm |
-| [`Blazor.Wasm.Demo.Host`](Blazor.Wasm.Demo.Host/README.zh-TW.md) | Wasm 靜態檔 + API host | `5070` | `dotnet run` | Bee.Api.AspNetCore + Bee.Web.Blazor.Wasm |
-| [`Maui.Demo`](Maui.Demo/README.zh-TW.md) | 原生行動 App 客戶端 | —(連 5050) | `dotnet build -t:Run -c Debug -f net10.0-maccatalyst` | Bee.UI.Maui + Bee.Api.Client |
 | [`Avalonia.Demo`](Avalonia.Demo/README.zh-TW.md) | 桌面 Avalonia 客戶端 | —(連 5050) | `dotnet run -c Debug` | Bee.UI.Avalonia + Bee.Api.Client |
 | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) | 桌面 Avalonia 控件 demo center | —(無後端) | `dotnet run -c Debug` | Bee.UI.Avalonia |
 | [`Web.Js.Demo`](Web.Js.Demo/README.zh-TW.md) | 純 JS 瀏覽器客戶端 | —(連 5050) | `open index.html` | (無 .NET — vanilla HTML/JS) |
@@ -67,21 +57,15 @@ dotnet run                          # → http://localhost:5070
 
 ```
 QuickStart.Console ──HTTP──▶ QuickStart.Server
-                              (亦為 Maui.Demo 預設後端)
-
-Maui.Demo          ──HTTP──▶ QuickStart.Server  ← 需先啟動
 Avalonia.Demo      ──HTTP──▶ QuickStart.Server  ← 需先啟動
 Web.Js.Demo        ──HTTP──▶ QuickStart.Server  ← 需先啟動（已開 CORS）
-
-Blazor.Wasm.Demo   ◀────靜態檔──── Blazor.Wasm.Demo.Host
-                                  (host 內含 Bee 後端與 /api endpoint,一起跑)
 
 Blazor.Server.Demo                ← 不需另起 server,前後端同 process
 ```
 
 ## 共用帳號
 
-Blazor / MAUI demo 的 Login 一律走 `demo / demo`:
+Blazor 與桌面 demo 的 Login 一律走 `demo / demo`:
 
 | 欄位 | 值 |
 |------|-----|
@@ -124,7 +108,7 @@ Define/
 |------|----------|------|----------------|
 | `samples/<Host>/quickstart.db` | [`DemoSchemaSeeder`](Bee.Samples.Shared/DemoSchemaSeeder.cs) | SQLite,含 `ft_employee` + `ft_employee_phone` 兩張表與 3 筆 demo 資料(Alice / Bob / Carol) | `/samples/**/*.db` |
 
-> 三個 host(`QuickStart.Server` / `Blazor.Server.Demo` / `Blazor.Wasm.Demo.Host`)**各有自己的 `quickstart.db`**,不會互相干擾。同一個 host 重跑會沿用既有資料(schema 建立與 seed 都是 idempotent)。
+> 兩個 host(`QuickStart.Server` / `Blazor.Server.Demo`)**各有自己的 `quickstart.db`**,不會互相干擾。同一個 host 重跑會沿用既有資料(schema 建立與 seed 都是 idempotent)。
 
 要重置 demo 資料:直接刪 `samples/<Host>/quickstart.db` 重跑即可。要輪換 demo master key:改 `DemoCredentials.DemoMasterKey`(或在外部把 `BEE_MASTER_KEY` 設成新值)並一併刪所有 `quickstart.db`(舊資料用舊 key 加密,留著會解不開)。
 
@@ -135,7 +119,6 @@ Bee 的 `Bee.Api.Client` 對呼叫端有**一致的 API 表面**,差異只在底
 | 模式 | 路徑 | 用於 | 範例 demo |
 |------|------|------|-----------|
 | **Local** | client → `LocalApiProvider` → `JsonRpcExecutor` → BO(同 process) | Blazor Server、in-process 工具、跨 BO 直接呼叫 | `Blazor.Server.Demo` |
-| **Remote** | client → `RemoteApiProvider` → HTTP POST → `ApiServiceController` → `JsonRpcExecutor` → BO | Blazor Wasm、Console、MAUI、跨機器 | `QuickStart.Console`、`Blazor.Wasm.Demo`、`Maui.Demo` |
 
 切換只是 `AddBeeBlazor` / `ApiClientInfo` 一行設定:
 
@@ -158,16 +141,12 @@ dotnet build samples/Bee.Samples.slnx
 ## 常見問題
 
 **Q: Port 5050/5055/5070 被佔用怎麼辦?**
-改 `samples/<Host>/Properties/launchSettings.json` 的 `applicationUrl`。記得連帶調整:依賴它的 client(`QuickStart.Console` 的 `--endpoint` 旗標、`Maui.Demo` 的 endpoint 輸入欄位、`MauiProgram.DefaultEndpoint`)。
 
 **Q: 出現 `Could not locate 'Define/SystemSettings.xml' walking up from ...`?**
 請從 bee-library checkout 目錄內執行 `dotnet run`,不要把 binary 拷貝到 repo 外。`DemoBackend` 是用「從 `AppContext.BaseDirectory` 向上找」的策略,跳出 repo 後找不到 `Define/`。
 
-**Q: MAUI demo 為什麼必須跑 Debug?**
-Apple 平台 Release-mode Mono linker 會砍 `System.Xml.Serialization` 反射 fallback,導致 `FormSchema` 反序列化失敗。詳見 [`Maui.Demo/README.zh-TW.md`](Maui.Demo/README.zh-TW.md#啟動-demo)。
-
-**Q: 三個 host 同時跑會不會打架?**
-不會。三個 host port 不同(5050 / 5055 / 5070),各自有獨立的 `quickstart.db`,共用 `samples/Define/` 但只讀不寫。三個都跑 + Console + Maui 一起測試完全可行。
+**Q: 兩個 host 同時跑會不會打架?**
+不會。兩個 host port 不同(5050 / 5055),各自有獨立的 `quickstart.db`,共用 `samples/Define/` 但只讀不寫。兩個都跑 + Console 一起測試完全可行。
 
 **Q: 改了 `src/` 下的 library,要怎麼反映到 demo?**
 重跑即可,`ProjectReference` 會自動 rebuild。不需要 `dotnet pack` / 也不需要清快取。
@@ -178,4 +157,3 @@ Apple 平台 Release-mode Mono linker 會砍 `System.Xml.Serialization` 反射 f
 - SQL Server / PostgreSQL / Oracle / MySQL — SQLite 已足夠示範
 - 認證 / 授權完整流程(OAuth、JWT、實際 `st_user` 表)— 用 hard-coded `demo/demo` 帶過
 - 部署腳本(Docker / k8s / TestFlight / Microsoft Store)
-- Sample CI 驗證 — 手動跑為主,僅 `Maui.Demo/.smoke.yaml` 可由 `demo-smoke` skill 一鍵冒煙

@@ -21,9 +21,7 @@
     <Project Path="src/Bee.Repository/Bee.Repository.csproj" Id="f78f3849-45b9-426e-a7b0-6edbd7fe256d" />
     <Project Path="src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj" />
     <Project Path="src/Bee.UI.Core/Bee.UI.Core.csproj" />
-    <Project Path="src/Bee.UI.Maui/Bee.UI.Maui.csproj" />
     <Project Path="src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj" />
-    <Project Path="src/Bee.Web.Blazor.Wasm/Bee.Web.Blazor.Wasm.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Bee.Api.AspNetCore.UnitTests/Bee.Api.AspNetCore.UnitTests.csproj" />
@@ -40,8 +38,6 @@
     <Project Path="tests/Bee.Tests.Shared/Bee.Tests.Shared.csproj" />
     <Project Path="tests/Bee.UI.Avalonia.UnitTests/Bee.UI.Avalonia.UnitTests.csproj" />
     <Project Path="tests/Bee.UI.Core.UnitTests/Bee.UI.Core.UnitTests.csproj" />
-    <Project Path="tests/Bee.UI.Maui.UnitTests/Bee.UI.Maui.UnitTests.csproj" />
     <Project Path="tests/Bee.Web.Blazor.Server.UnitTests/Bee.Web.Blazor.Server.UnitTests.csproj" />
-    <Project Path="tests/Bee.Web.Blazor.Wasm.UnitTests/Bee.Web.Blazor.Wasm.UnitTests.csproj" />
   </Folder>
 </Solution>

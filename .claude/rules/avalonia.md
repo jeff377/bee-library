@@ -2,7 +2,7 @@
 
 本檔記 bee-library 內 Avalonia 相關專案（`src/Bee.UI.Avalonia`、`tools/DefineEditor`、`samples/Avalonia.*`、`apps/Bee.Northwind` 四頭）的硬性規則與已知雷區。
 
-> Avalonia 行動 head（`net10.0-ios` / `net10.0-android`）的 trim / AOT 序列化雷與解法，與 MAUI 共用機制，見 `rules/maui.md`「Apple Release-mode trim 決策樹」。
+> Avalonia 行動 head（`net10.0-ios` / `net10.0-android`）的 trim / AOT 序列化雷與解法，見 `rules/apple-mobile-trim.md`。
 
 ## 套件版本與相容性
 

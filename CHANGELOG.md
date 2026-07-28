@@ -13,6 +13,13 @@ All notable changes to this project will be documented in this file.
 
 ### Changed — breaking (compile-time)
 
+- `Bee.UI.Maui` and `Bee.Web.Blazor.Wasm` are removed, along with their sample projects. The UI
+  surface consolidates onto two families: `Bee.UI.Avalonia` covers desktop, iOS, Android and WASM
+  from one `net10.0` project plus per-platform heads, and `Bee.Web.Blazor.Server` remains for the
+  one thing Avalonia cannot do — real HTML DOM with server-side rendering (SEO, embedding in an
+  existing site, screen readers, no runtime download). `Bee.Web.Blazor.Wasm` sat between the two
+  with no distinct role: same WASM runtime download as Avalonia Browser, and 950 lines identical to
+  the Server variant.
 - `Bee.ObjectCaching`: `IEvictableCache` and `ICacheContainer.TryEvict(string)` are removed;
   `KeyObjectCache<T>` / `ObjectCache<T>` no longer implement that interface. Cache invalidation now
   publishes a notify-key version and lets entries expire lazily. (`c45ff350`)

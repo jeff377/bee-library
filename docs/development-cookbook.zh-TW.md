@@ -469,7 +469,6 @@ Bee.NET 支援三類前端 host，每類消費 API 的方式結構不同。設�
 │   → 參考下方「Blazor Server」章節
 │
 └── Blazor WASM（Browser WebAssembly）
-    → 使用 Bee.Web.Blazor.Wasm，強制 RemoteApiProvider（HTTP）
     → 參考下方「Blazor WASM」章節
 ```
 
@@ -586,49 +585,6 @@ app.Run();
 
 宿主在 startup 註冊 `IApiProvider` 實作決定模式（`LocalApiProvider` / `RemoteApiProvider`）。
 
-### Blazor WASM（Bee.Web.Blazor.Wasm）
-
-Blazor WASM 跑在 Browser 沙箱內，**強制 RemoteApiProvider**(無法載入後端組件)。
-
-**1. `Program.cs` 註冊**：
-
-```csharp
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-
-var builder = WebAssemblyHostBuilder.CreateDefault(args);
-builder.RootComponents.Add<App>("#app");
-
-// HttpClient 指向 API server endpoint
-builder.Services.AddScoped(sp => new HttpClient
-{
-    BaseAddress = new Uri("https://api.example.com/")
-});
-
-// Bee.Web.Blazor.Wasm RCL services（會自動註冊 RemoteApiProvider）
-builder.Services.AddBeeBlazor();
-
-await builder.Build().RunAsync();
-```
-
-**2. Razor component 用法同 Blazor Server**：
-
-```razor
-@page "/employees"
-@inject SystemApiConnector SystemConnector
-
-@code {
-    protected override async Task OnInitializedAsync()
-    {
-        var formConnector = new FormApiConnector(/* ... */);
-        var result = await formConnector.GetListAsync(selectFields: "EmpId,EmpName");
-    }
-}
-```
-
-**3. 嚴格限制**：
-
-> ⚠️ **`Bee.Web.Blazor.Wasm` 嚴禁相依任何後端組件**（`Bee.Repository` / `Bee.Business` / `Bee.Hosting` 等）—— Browser 執行環境無法載入 server-only 組件。此約束由相依鏈強制（`Bee.Api.Client → Bee.Api.Core → Bee.Api.Contracts/Definition` 全為純資料 / 協定層）。
-
 ### Avalonia 桌面（Bee.UI.Avalonia）
 
 `Bee.UI.Avalonia` 歸 **`Bee.UI.*` family**，所以連 API 的方式與「桌面端」章節相同 —— 透過 `ClientInfo` static singleton，per-process 一個 token。
@@ -650,12 +606,6 @@ public static void Main(string[] args)
 `FormView` 在 host 只設 `ProgId` 時自動向 `ClientInfo` 取得 `Schema` / `FormConnector` / `AccessToken`，鏡像 MAUI `FormPage` 的 fallback。`GridControl`（`ContentControl` 組合式控件，內部 `DataGrid` 以 `InnerGrid` 公開）的 cell 走 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch（**不**走 `Binding "[FieldName]"`，原因詳見 [ADR-020](adr/adr-020-avalonia-datagrid-binding-strategy.md)），並以 `GridEditMode` 提供兩種編輯模型（`InCell` 逐格 / `EditForm` 彈窗整列，詳見 [ADR-021](adr/adr-021-avalonia-datagrid-editing-strategy.md)）。field editor 支援 ambient 綁定：容器設一次 `FormScope.DataObject`，子孫編輯器憑 `FieldName` 自動接線。
 
 實際範例：[`samples/Avalonia.Demo`](../samples/Avalonia.Demo/README.zh-TW.md)（完整 CRUD 流程）與 [`samples/Avalonia.DemoCenter`](../samples/Avalonia.DemoCenter/README.md)（控件 demo center）。
-
-### MAUI（Bee.UI.Maui）
-
-`Bee.UI.Maui` 歸 **`Bee.UI.*` family**，所以連 API 的方式與「桌面端」章節相同 —— 透過 `ClientInfo` static singleton。
-
-Phase 1 已交付首版 FormSchema 驅動控制項（`DynamicForm` + `FormDataObject`），csproj 以 `net10.0` 共通邏輯 TFM 為預設並引用 `Microsoft.Maui.Controls`。平台 TFM（`net10.0-android` / `net10.0-ios` / `net10.0-maccatalyst` / `net10.0-windows`）透過 `-p:BeeUiMauiFullPlatforms=true` opt-in（需安裝對應 MAUI workload）。NuGet 發版仍延後至控制項套件較完整時統一處理。
 
 ### 速查表
 

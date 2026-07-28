@@ -338,14 +338,7 @@ The BeeNET framework automatically maintains the following system fields in all 
 | `FormDataObject` | 表單資料物件 | The view-model object bound by the Avalonia controls: carries the `DataSet`, bridges ADO.NET table events into `FieldValueChanged` / dirty tracking, and exposes the buffered row-edit protocol |
 | `FileEndpointStorage` | 檔案端點儲存 | File-backed `IEndpointStorage` implementation that persists the API endpoint to `LocalApplicationData/<appName>/endpoint.txt` |
 
-### MAUI Control Library (`Bee.UI.Maui`)
-
-| English | 中文 | Description |
-|---------|------|-------------|
-| `DynamicForm` | 動態表單 | MAUI control that renders a FormSchema-driven form (master + detail) at runtime |
-| `FormDataObject` | 表單資料物件 | The data-binding object bound by `DynamicForm`, carrying the underlying `DataSet` and form-level state |
-
-### Web Frontend (`Bee.Web.Blazor.Server` / `Bee.Web.Blazor.Wasm`)
+### Web Frontend (`Bee.Web.Blazor.Server`)
 
 Both packages are Razor Class Libraries (RCLs) that expose the same Blazor component surface — `DynamicForm` and `FormDataObject` — but each one is implemented independently for its own hosting model (Blazor Server uses DI-scoped connectors per SignalR circuit; Blazor WASM is forced to `RemoteApiProvider` over HTTP).
 

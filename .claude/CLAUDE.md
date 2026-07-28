@@ -96,5 +96,5 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 @rules/testing.md
 @rules/security.md
 @rules/sonarcloud.md
-@rules/maui.md
+@rules/apple-mobile-trim.md
 @rules/avalonia.md

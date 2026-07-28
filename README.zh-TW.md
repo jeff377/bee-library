@@ -64,9 +64,7 @@ Bee.NET Framework 是一套採用 **N-Tier + Clean Architecture + MVVM** 混合�
 | **Bee.Api.Client.dll** | 提供連接器機制，支援近端與遠端呼叫後端 Business Object（`LocalApiProvider` / `RemoteApiProvider`）。 |
 | **Bee.UI.Core.dll** | 跨平台 UI 共通層（`ClientInfo` / `IEndpointStorage` / `IUIViewService` / `VersionInfo`），供原生 UI 宿主共用 client-side 連線狀態與 endpoint 持久化邏輯。 |
 | **Bee.UI.Avalonia.dll** | Avalonia 桌面控制項套件（Windows / macOS / Linux），提供 FormSchema 驅動控制項（`FormView` / `ListView` / `GridControl` 加上一組 field editor 與 `FormScope` ambient 綁定，皆以 `FormDataObject` 為資料中樞）與檔案後端 `FileEndpointStorage`。單一 `net10.0` TFM；下限版本鎖在 Avalonia 12.0.0 + DataGrid 12.0.0。 |
-| **Bee.UI.Maui.dll** | MAUI 跨平台控制項套件（iOS / Android / macOS / Windows），提供 FormSchema 驅動控制項（`DynamicForm` + `FormDataObject`）。預設 TFM 為 `net10.0`，平台 TFM 透過 `-p:BeeUiMauiFullPlatforms=true` opt-in。 |
 | **Bee.Web.Blazor.Server.dll** | Blazor Server 宿主用的 Razor Class Library（RCL），提供 DI scope 連接器與 Blazor 元件（`DynamicForm`、`FormDataObject`）。 |
-| **Bee.Web.Blazor.Wasm.dll** | Blazor WebAssembly 宿主用的 Razor Class Library（RCL），強制使用 `RemoteApiProvider`，嚴禁相依任何後端組件。 |
 
 ### Tooling（dotnet tool）
 
@@ -102,8 +100,6 @@ Console 會列出 `System.Ping` 狀態與自訂 BO 回應的訊息。完整 demo
 |------|------|------|
 | QuickStart | [`QuickStart.Server`](samples/QuickStart.Server/README.zh-TW.md) + [`QuickStart.Console`](samples/QuickStart.Console/README.zh-TW.md) | 最小 JSON-RPC 端到端，含一個 anonymous 自訂 BO |
 | Blazor Server | [`Blazor.Server.Demo`](samples/Blazor.Server.Demo/README.zh-TW.md) | `BeeLoginPanel` + `FormPage` + Employee CRUD,走 `LocalApiProvider` in-process 派遣 |
-| Blazor Wasm | [`Blazor.Wasm.Demo`](samples/Blazor.Wasm.Demo/README.zh-TW.md) + [`.Host`](samples/Blazor.Wasm.Demo.Host/README.zh-TW.md) | 同元件改在瀏覽器內跑,走 `RemoteApiProvider` 經 HTTP 派遣 |
-| MAUI | [`Maui.Demo`](samples/Maui.Demo/README.zh-TW.md) | 原生行動 App 客戶端（Mac Catalyst / iOS / Android / Windows）渲染同一份 `FormSchema` |
 | Avalonia | [`Avalonia.Demo`](samples/Avalonia.Demo/README.zh-TW.md) | 桌面 Avalonia 客戶端（Windows / macOS / Linux）渲染同一份 `FormSchema` |
 | Avalonia | [`Avalonia.DemoCenter`](samples/Avalonia.DemoCenter/README.md) | 主題導向控件 demo center（DevExpress 風格）：導覽樹（主題 → 案例）+ Demo/Source 分頁 + 主題/FormMode 工具列；涵蓋資料繫結、唯讀必填、FormMode、Layout、Grid、原生 vs 繼承比對（Semi.Avalonia，無後端） |
 | 純 JS | [`Web.Js.Demo`](samples/Web.Js.Demo/README.zh-TW.md) | 用瀏覽器原生 JavaScript 呼叫 JSON-RPC API — 前端無 .NET、無 npm |

@@ -336,14 +336,7 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 | `FormDataObject` | 表單資料物件 | Avalonia 控件綁定的 view-model：承載 `DataSet`、把 ADO.NET 表事件橋接為 `FieldValueChanged` 與 dirty 追蹤，並提供暫存列編輯協定 |
 | `FileEndpointStorage` | 檔案端點儲存 | 檔案後端的 `IEndpointStorage` 實作；endpoint 落在 `LocalApplicationData/<appName>/endpoint.txt` |
 
-### MAUI 控制項套件（`Bee.UI.Maui`）
-
-| 英文名稱 | 中文名稱 | 說明 |
-|----------|----------|------|
-| `DynamicForm` | 動態表單 | MAUI 控制項，依 FormSchema 在執行時動態渲染表單（master + detail） |
-| `FormDataObject` | 表單資料物件 | `DynamicForm` 綁定的資料物件，承載底層 `DataSet` 與表單層級狀態 |
-
-### Web 前端（`Bee.Web.Blazor.Server` / `Bee.Web.Blazor.Wasm`）
+### Web 前端（`Bee.Web.Blazor.Server`）
 
 兩個套件皆為 Razor Class Library（RCL），對外暴露相同的 Blazor 元件介面（`DynamicForm`、`FormDataObject`），但各自針對所屬宿主模型獨立實作（Blazor Server 以 DI scope 連接器搭配 SignalR circuit；Blazor WASM 強制使用 `RemoteApiProvider` 走 HTTP）。
 

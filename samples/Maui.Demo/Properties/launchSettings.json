@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "MacCatalyst": {
-      "commandName": "Project",
-      "nativeDebugging": false
-    }
-  }
-}

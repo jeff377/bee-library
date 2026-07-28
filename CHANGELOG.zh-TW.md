@@ -12,6 +12,11 @@
 
 ### 變更 —— 破壞性（編譯期可發現）
 
+- 移除 `Bee.UI.Maui` 與 `Bee.Web.Blazor.Wasm` 及其 sample 專案。UI 收斂為兩個家族：
+  `Bee.UI.Avalonia` 以單一 `net10.0` 專案加各平台 head 覆蓋桌面 / iOS / Android / WASM；
+  `Bee.Web.Blazor.Server` 保留，因為它提供 Avalonia 做不到的事——真 HTML DOM 與伺服器渲染
+  （SEO、嵌入既有網站、螢幕閱讀器、免下載 runtime）。`Bee.Web.Blazor.Wasm` 夾在兩者之間而無
+  獨立定位：與 Avalonia Browser 同樣要下載 WASM runtime，又與 Server 版有 950 行完全相同。
 - `Bee.ObjectCaching`：移除 `IEvictableCache` 與 `ICacheContainer.TryEvict(string)`；
   `KeyObjectCache<T>` / `ObjectCache<T>` 不再實作該介面。快取失效改為發布 notify-key 版本、
   由條目 lazy 過期。（`c45ff350`）
