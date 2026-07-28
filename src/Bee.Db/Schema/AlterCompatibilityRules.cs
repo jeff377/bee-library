@@ -1,19 +1,32 @@
 using Bee.Base;
 using Bee.Base.Data;
-using Bee.Db.Schema;
 using Bee.Definition.Database;
 
-namespace Bee.Db.Providers.SqlServer
+namespace Bee.Db.Schema
 {
     /// <summary>
-    /// Rules for determining whether a SQL Server column type change can be applied in place via ALTER COLUMN,
-    /// or whether it requires a table rebuild.
+    /// Dialect-neutral rules for deciding whether a column type change can be applied in place
+    /// via <c>ALTER</c>, or whether it requires a table rebuild, plus the narrowing hint that
+    /// accompanies that decision.
     /// </summary>
-    internal static class SqlAlterCompatibilityRules
+    /// <remarks>
+    /// These rules classify <see cref="FieldDbType"/> values into coarse families and compare
+    /// capacities; they touch no SQL syntax and therefore hold for every provider. Providers whose
+    /// engine imposes an extra restriction override only the affected member — SQLite, for example,
+    /// cannot alter a column at all and supplies its own <c>GetKindForTypeChange</c> while reusing
+    /// <see cref="IsNarrowing"/> from here.
+    /// <para>
+    /// WARNING: this type was extracted from five byte-identical per-provider copies. Any new rule
+    /// belongs here unless it is genuinely dialect-specific; putting it in one provider silently
+    /// leaves the other four on the old behaviour, which is the hardest class of schema-diff bug to
+    /// notice.
+    /// </para>
+    /// </remarks>
+    internal static class AlterCompatibilityRules
     {
         /// <summary>
-        /// Coarse type family used to decide ALTER vs rebuild. Same-family changes are considered ALTER-compatible;
-        /// cross-family changes fall back to rebuild.
+        /// Coarse type family used to decide ALTER vs rebuild. Same-family changes are considered
+        /// ALTER-compatible; cross-family changes fall back to rebuild.
         /// </summary>
         private enum TypeFamily
         {
@@ -114,8 +127,9 @@ namespace Bee.Db.Providers.SqlServer
             type == FieldDbType.Date || type == FieldDbType.DateTime;
 
         /// <summary>
-        /// Returns the effective string capacity; <see cref="int.MaxValue"/> represents MAX
-        /// (Text or String with non-positive Length) so that natural comparison yields the correct ordering.
+        /// Returns the effective string capacity; <see cref="int.MaxValue"/> represents the provider's
+        /// unbounded text type (Text, or String with a non-positive Length) so that natural comparison
+        /// yields the correct ordering.
         /// </summary>
         private static int GetStringCapacity(DbField field)
         {

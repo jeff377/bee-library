@@ -19,7 +19,7 @@ namespace Bee.Db.Providers.MySql
     /// <remarks>
     /// MySQL 8.0+ natively supports most schema changes via <c>ALTER TABLE</c>, so this
     /// path is rarely invoked — typically only for cross-family type changes flagged by
-    /// <see cref="MySqlAlterCompatibilityRules"/>. The pattern mirrors SQLite: temp table
+    /// <see cref="Schema.AlterCompatibilityRules"/>. The pattern mirrors SQLite: temp table
     /// is created with PK only, secondary indexes are recreated against the renamed table
     /// (avoids the need to track per-step index renames). New fields are excluded from
     /// the data copy so existing rows pick up their default; identity columns are also
@@ -42,7 +42,7 @@ namespace Bee.Db.Providers.MySql
             string tableName = diff.DefineTable.TableName;
             string tmpTableName = $"tmp_{tableName}";
 
-            var effectiveSchema = BuildEffectiveSchema(diff);
+            var effectiveSchema = RebuildSchemaFactory.BuildEffectiveSchema(diff);
             var addedFieldNames = diff.Changes.OfType<AddFieldChange>()
                 .Select(c => c.Field.FieldName)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -58,8 +58,8 @@ namespace Bee.Db.Providers.MySql
             //    Secondary indexes are recreated in step 6 with their real names against the
             //    final table, avoiding the need to use ALTER TABLE ... RENAME INDEX.
             sb.AppendLine("-- Create temporary table");
-            var tmpSchema = CloneWithTableName(effectiveSchema, tmpTableName);
-            StripNonPrimaryKeyIndexes(tmpSchema);
+            var tmpSchema = RebuildSchemaFactory.CloneWithTableName(effectiveSchema, tmpTableName);
+            RebuildSchemaFactory.StripNonPrimaryKeyIndexes(tmpSchema);
             var createBuilder = new MySqlCreateTableCommandBuilder();
             sb.AppendLine(createBuilder.GetCommandText(tmpSchema));
 
@@ -81,40 +81,6 @@ namespace Bee.Db.Providers.MySql
             sb.Append(BuildRecreateIndexStatements(tableName, effectiveSchema));
 
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Builds the effective rebuild schema: defined table + real-only fields appended
-        /// (extension field policy).
-        /// </summary>
-        private static TableSchema BuildEffectiveSchema(TableSchemaDiff diff)
-        {
-            var cloned = diff.DefineTable.Clone();
-            if (diff.RealTable != null)
-            {
-                foreach (var realField in diff.RealTable.Fields!.Where(f => !cloned.Fields!.Contains(f.FieldName)))
-                    cloned.Fields!.Add(realField.Clone());
-            }
-            return cloned;
-        }
-
-        private static TableSchema CloneWithTableName(TableSchema schema, string tableName)
-        {
-            var tmpSchema = schema.Clone();
-            tmpSchema.TableName = tableName;
-            tmpSchema.DisplayName = schema.DisplayName;
-            return tmpSchema;
-        }
-
-        /// <summary>
-        /// Removes all non-primary-key indexes from the schema. Used when generating the
-        /// temp table so secondary indexes can later be created with their real names.
-        /// </summary>
-        private static void StripNonPrimaryKeyIndexes(TableSchema schema)
-        {
-            var toRemove = schema.Indexes!.Where(i => !i.PrimaryKey).ToList();
-            foreach (var index in toRemove)
-                schema.Indexes!.Remove(index);
         }
 
         private static string BuildDropIfExistsStatement(string tableName)

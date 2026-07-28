@@ -26,7 +26,7 @@ namespace Bee.Db.Providers.SqlServer
                 case DropIndexChange _:
                     return ChangeExecutionKind.Alter;
                 case AlterFieldChange alter:
-                    return SqlAlterCompatibilityRules.GetKindForTypeChange(alter.OldField.DbType, alter.NewField.DbType);
+                    return AlterCompatibilityRules.GetKindForTypeChange(alter.OldField.DbType, alter.NewField.DbType);
                 default:
                     return ChangeExecutionKind.NotSupported;
             }
@@ -36,7 +36,7 @@ namespace Bee.Db.Providers.SqlServer
         public bool IsNarrowingChange(ITableChange change)
         {
             if (change is AlterFieldChange alter)
-                return SqlAlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
+                return AlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
             return false;
         }
 

@@ -19,7 +19,7 @@ namespace Bee.Db.Providers.Oracle
     /// <remarks>
     /// Oracle 19c+ supports most schema changes via <c>ALTER TABLE ... MODIFY</c>, so this
     /// path is rarely invoked — typically for cross-family type changes flagged by
-    /// <see cref="OracleAlterCompatibilityRules"/>, <c>NUMBER</c> precision reduction with
+    /// <see cref="Schema.AlterCompatibilityRules"/>, <c>NUMBER</c> precision reduction with
     /// non-empty data, or IDENTITY add/remove. The pattern mirrors MySQL: temp table is
     /// created with PK only, secondary indexes are recreated against the renamed table.
     /// New fields and IDENTITY columns are excluded from the data copy so existing rows pick
@@ -48,7 +48,7 @@ namespace Bee.Db.Providers.Oracle
             string tableName = diff.DefineTable.TableName;
             string tmpTableName = $"tmp_{tableName}";
 
-            var effectiveSchema = BuildEffectiveSchema(diff);
+            var effectiveSchema = RebuildSchemaFactory.BuildEffectiveSchema(diff);
             var addedFieldNames = diff.Changes.OfType<AddFieldChange>()
                 .Select(c => c.Field.FieldName)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -64,8 +64,8 @@ namespace Bee.Db.Providers.Oracle
             //    Secondary indexes are recreated in step 6 with their real names against the
             //    final table, avoiding the need to use ALTER INDEX ... RENAME.
             sb.AppendLine("-- Create temporary table");
-            var tmpSchema = CloneWithTableName(effectiveSchema, tmpTableName);
-            StripNonPrimaryKeyIndexes(tmpSchema);
+            var tmpSchema = RebuildSchemaFactory.CloneWithTableName(effectiveSchema, tmpTableName);
+            RebuildSchemaFactory.StripNonPrimaryKeyIndexes(tmpSchema);
             var createBuilder = new OracleCreateTableCommandBuilder();
             sb.AppendLine(createBuilder.GetCommandText(tmpSchema));
 
@@ -88,40 +88,6 @@ namespace Bee.Db.Providers.Oracle
             sb.Append(BuildRecreateIndexStatements(tableName, effectiveSchema));
 
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Builds the effective rebuild schema: defined table + real-only fields appended
-        /// (extension field policy).
-        /// </summary>
-        private static TableSchema BuildEffectiveSchema(TableSchemaDiff diff)
-        {
-            var cloned = diff.DefineTable.Clone();
-            if (diff.RealTable != null)
-            {
-                foreach (var realField in diff.RealTable.Fields!.Where(f => !cloned.Fields!.Contains(f.FieldName)))
-                    cloned.Fields!.Add(realField.Clone());
-            }
-            return cloned;
-        }
-
-        private static TableSchema CloneWithTableName(TableSchema schema, string tableName)
-        {
-            var tmpSchema = schema.Clone();
-            tmpSchema.TableName = tableName;
-            tmpSchema.DisplayName = schema.DisplayName;
-            return tmpSchema;
-        }
-
-        /// <summary>
-        /// Removes all non-primary-key indexes from the schema. Used when generating the
-        /// temp table so secondary indexes can later be created with their real names.
-        /// </summary>
-        private static void StripNonPrimaryKeyIndexes(TableSchema schema)
-        {
-            var toRemove = schema.Indexes!.Where(i => !i.PrimaryKey).ToList();
-            foreach (var index in toRemove)
-                schema.Indexes!.Remove(index);
         }
 
         /// <summary>

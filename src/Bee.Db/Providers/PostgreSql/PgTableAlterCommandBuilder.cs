@@ -27,7 +27,7 @@ namespace Bee.Db.Providers.PostgreSql
                 case DropIndexChange _:
                     return ChangeExecutionKind.Alter;
                 case AlterFieldChange alter:
-                    return PgAlterCompatibilityRules.GetKindForTypeChange(alter.OldField.DbType, alter.NewField.DbType);
+                    return AlterCompatibilityRules.GetKindForTypeChange(alter.OldField.DbType, alter.NewField.DbType);
                 default:
                     return ChangeExecutionKind.NotSupported;
             }
@@ -37,7 +37,7 @@ namespace Bee.Db.Providers.PostgreSql
         public bool IsNarrowingChange(ITableChange change)
         {
             if (change is AlterFieldChange alter)
-                return PgAlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
+                return AlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
             return false;
         }
 

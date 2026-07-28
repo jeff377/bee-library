@@ -151,6 +151,7 @@ Field 'x' doesn't have a default value
 
 ## 參考
 
-- 方言實作：`src/Bee.Db/Providers/<Dialect>/<Dialect>SchemaSyntax.cs`、`…TableSchemaProvider.cs`、`…AlterCompatibilityRules.cs`。
+- 方言實作：`src/Bee.Db/Providers/<Dialect>/<Dialect>SchemaSyntax.cs`、`…TableSchemaProvider.cs`。
+- 五家 provider 共用的方言無關規則（ALTER vs rebuild、narrowing 判定）：`src/Bee.Db/Schema/AlterCompatibilityRules.cs`（SQLite 僅覆寫 `GetKindForTypeChange`，位於 `src/Bee.Db/Providers/Sqlite/SqliteAlterCompatibilityRules.cs`）。
 - 欄位模型：[DbField.cs](../src/Bee.Definition/Database/DbField.cs)。
 - 相關文件：[database-naming-conventions.zh-TW.md](database-naming-conventions.zh-TW.md)、[database-schema-upgrade.zh-TW.md](database-schema-upgrade.zh-TW.md)、[src/Bee.Db/README.zh-TW.md](../src/Bee.Db/README.zh-TW.md)。

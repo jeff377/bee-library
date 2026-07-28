@@ -16,7 +16,7 @@ namespace Bee.Db.Providers.Oracle
     /// <remarks>
     /// Oracle 19c+ natively supports <c>ADD</c>, <c>MODIFY</c>, <c>RENAME COLUMN</c> and
     /// index management; the rebuild fallback is only invoked for cross-family type
-    /// changes flagged by <see cref="OracleAlterCompatibilityRules"/>. Differences from
+    /// changes flagged by <see cref="Schema.AlterCompatibilityRules"/>. Differences from
     /// MySQL: column lists for <c>ADD</c> / <c>MODIFY</c> use Oracle's parenthesised form
     /// (<c>ADD ("col" type ...)</c>), index drops do not take an <c>ON tablename</c> clause,
     /// and <c>MODIFY</c> emits the full column definition in one statement (PG-style
@@ -35,7 +35,7 @@ namespace Bee.Db.Providers.Oracle
                 case DropIndexChange _:
                     return ChangeExecutionKind.Alter;
                 case AlterFieldChange alter:
-                    return OracleAlterCompatibilityRules.GetKindForTypeChange(alter.OldField.DbType, alter.NewField.DbType);
+                    return AlterCompatibilityRules.GetKindForTypeChange(alter.OldField.DbType, alter.NewField.DbType);
                 default:
                     return ChangeExecutionKind.NotSupported;
             }
@@ -45,7 +45,7 @@ namespace Bee.Db.Providers.Oracle
         public bool IsNarrowingChange(ITableChange change)
         {
             if (change is AlterFieldChange alter)
-                return OracleAlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
+                return AlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
             return false;
         }
 

@@ -29,7 +29,7 @@ namespace Bee.Db.Providers.PostgreSql
             string tableName = diff.DefineTable.TableName;
             string tmpTableName = $"tmp_{tableName}";
 
-            var effectiveSchema = BuildEffectiveSchema(diff);
+            var effectiveSchema = RebuildSchemaFactory.BuildEffectiveSchema(diff);
             var addedFieldNames = diff.Changes.OfType<AddFieldChange>()
                 .Select(c => c.Field.FieldName)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -43,7 +43,7 @@ namespace Bee.Db.Providers.PostgreSql
 
             // 2) Create the temp table using the CREATE builder (with the tmp name).
             sb.AppendLine("-- Create temporary table");
-            var tmpSchema = CloneWithTableName(effectiveSchema, tmpTableName);
+            var tmpSchema = RebuildSchemaFactory.CloneWithTableName(effectiveSchema, tmpTableName);
             var createBuilder = new PgCreateTableCommandBuilder();
             sb.AppendLine(createBuilder.GetCommandText(tmpSchema));
 
@@ -60,28 +60,6 @@ namespace Bee.Db.Providers.PostgreSql
             sb.Append(BuildRenameStatements(tmpTableName, tableName, effectiveSchema));
 
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Builds the effective rebuild schema: defined table + real-only fields appended (extension field policy).
-        /// </summary>
-        private static TableSchema BuildEffectiveSchema(TableSchemaDiff diff)
-        {
-            var cloned = diff.DefineTable.Clone();
-            if (diff.RealTable != null)
-            {
-                foreach (var realField in diff.RealTable.Fields!.Where(f => !cloned.Fields!.Contains(f.FieldName)))
-                    cloned.Fields!.Add(realField.Clone());
-            }
-            return cloned;
-        }
-
-        private static TableSchema CloneWithTableName(TableSchema schema, string tableName)
-        {
-            var tmpSchema = schema.Clone();
-            tmpSchema.TableName = tableName;
-            tmpSchema.DisplayName = schema.DisplayName;
-            return tmpSchema;
         }
 
         private static string BuildDropIfExistsStatement(string tableName)

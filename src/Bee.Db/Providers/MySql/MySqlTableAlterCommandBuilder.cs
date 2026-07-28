@@ -17,7 +17,7 @@ namespace Bee.Db.Providers.MySql
     /// MySQL 8.0+ natively supports <c>ADD COLUMN</c>, <c>MODIFY COLUMN</c> (full
     /// re-definition in one statement), <c>RENAME COLUMN</c>, and index management;
     /// the rebuild fallback is only invoked for cross-family type changes flagged by
-    /// <see cref="MySqlAlterCompatibilityRules"/>. Compared with PostgreSQL, MySQL's
+    /// <see cref="Schema.AlterCompatibilityRules"/>. Compared with PostgreSQL, MySQL's
     /// <c>MODIFY COLUMN</c> takes the full column definition in one shot, so the
     /// PG-style three-part ALTER (TYPE + NULLABILITY + DEFAULT) collapses into a
     /// single statement here.
@@ -35,7 +35,7 @@ namespace Bee.Db.Providers.MySql
                 case DropIndexChange _:
                     return ChangeExecutionKind.Alter;
                 case AlterFieldChange alter:
-                    return MySqlAlterCompatibilityRules.GetKindForTypeChange(alter.OldField.DbType, alter.NewField.DbType);
+                    return AlterCompatibilityRules.GetKindForTypeChange(alter.OldField.DbType, alter.NewField.DbType);
                 default:
                     return ChangeExecutionKind.NotSupported;
             }
@@ -45,7 +45,7 @@ namespace Bee.Db.Providers.MySql
         public bool IsNarrowingChange(ITableChange change)
         {
             if (change is AlterFieldChange alter)
-                return MySqlAlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
+                return AlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
             return false;
         }
 

@@ -151,6 +151,7 @@ When a schema upgrade changes a column, some changes can be done with `ALTER`, o
 
 ## Reference
 
-- Dialect implementations: `src/Bee.Db/Providers/<Dialect>/<Dialect>SchemaSyntax.cs`, `…TableSchemaProvider.cs`, `…AlterCompatibilityRules.cs`.
+- Dialect implementations: `src/Bee.Db/Providers/<Dialect>/<Dialect>SchemaSyntax.cs`, `…TableSchemaProvider.cs`.
+- Dialect-neutral ALTER-vs-rebuild and narrowing rules, shared by all five providers: `src/Bee.Db/Schema/AlterCompatibilityRules.cs` (SQLite overrides only `GetKindForTypeChange`, in `src/Bee.Db/Providers/Sqlite/SqliteAlterCompatibilityRules.cs`).
 - Column model: [DbField.cs](../src/Bee.Definition/Database/DbField.cs).
 - Related docs: [database-naming-conventions.md](database-naming-conventions.md), [database-schema-upgrade.md](database-schema-upgrade.md), [src/Bee.Db/README.md](../src/Bee.Db/README.md).

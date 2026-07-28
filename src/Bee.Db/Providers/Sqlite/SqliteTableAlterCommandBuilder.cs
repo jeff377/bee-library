@@ -37,7 +37,7 @@ namespace Bee.Db.Providers.Sqlite
         public bool IsNarrowingChange(ITableChange change)
         {
             if (change is AlterFieldChange alter)
-                return SqliteAlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
+                return AlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
             return false;
         }
 
