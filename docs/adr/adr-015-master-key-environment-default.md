@@ -152,7 +152,6 @@
 
 ## 相關連結
 
-- [計畫：MasterKeySource 預設改為環境變數](../archive/plan-masterkey-default-env-var.md) — 實作 plan，含變更清單與驗證方式（已封存）
 - `src/Bee.Definition/Settings/SystemSettings/MasterKeySource.cs` — config model 與 ctor 預設
 - `src/Bee.Definition/Security/MasterKeyProvider.cs` — File / Environment 分支讀取邏輯
 - `samples/Bee.Samples.Shared/DemoCredentials.cs` — `DemoMasterKey` hardcoded 常數

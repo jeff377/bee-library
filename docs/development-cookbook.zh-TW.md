@@ -416,7 +416,13 @@ in-process 快取（`Bee.ObjectCaching`）在發生寫入的那個 process 會�
 
 ### 讓快取可被失效 —— 不用做任何事
 
-任何由 `ICacheContainer` 持有、繼承自 `KeyObjectCache<T>` / `ObjectCache<T>` 的快取都**自動**可被失效：它實作 `IEvictableCache`，`CacheGroup` 預設 = 被快取型別名（`CompanyInfoCache` → `"CompanyInfo"`、`FormSchemaCache` → `"FormSchema"`）。容器在建構時建好「群組 → 快取」分派表。**新增快取加進容器即自動納入 —— 零註冊。**
+快取要參與跨 process 失效，須在自己的 `GetPolicy()` 宣告 notify key：
+
+```csharp
+policy.ChangeNotifyKey = changeSource.NotifyKey;
+```
+
+帶有該 key 的條目會取得一個綁定「該 key 已發布版本」的到期 token。**這個宣告是必要的** —— 沒有設定 `ChangeNotifyKey` 的快取，不論如何註冊都不會被 poller 失效。
 
 ### 觸發失效 —— 在同一 transaction 內 bump
 
@@ -436,7 +442,7 @@ _cacheNotify.Touch($"CompanyInfo:{companyId}", transaction, databaseType);
 
 ### 失效如何傳到其他節點
 
-各節點的 `CacheNotifyPoller`（hosted service）每 `IntervalSeconds` 輪詢 `st_cache_notify`,找出 `cache_version` 變大的 key（以 `sys_update_time` 增量抓取、以 version 冪等判定）,呼叫 `ICacheContainer.TryEvict(cacheKey)` → 對應快取項被移除 → 下次讀取從來源 lazy 重載。無 push、無訊息匯流排：每個節點各自輪詢同一張表。
+各節點的 `CacheNotifyPoller`（hosted service）每 `IntervalSeconds` 輪詢 `st_cache_notify`,找出 `cache_version` 變大的 key（以 `sys_update_time` 增量抓取、以 version 冪等判定）,並經 `CacheInfo.NotifyVersions` 發布新版本。`ChangeNotifyKey` 相符的條目會發現版本與自己擷取時不同,於下次讀取時過期並從來源 lazy 重載。不推送、不主動觸碰任何條目：每個節點各自輪詢同一張表。
 
 ### 設定（`BackendConfiguration.CacheNotifyOptions`）
 

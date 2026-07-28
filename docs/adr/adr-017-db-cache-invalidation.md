@@ -33,6 +33,8 @@
 
 4. **慣例式分派**（取代手動路由 registry）：每個快取實作 `IEvictableCache`（`CacheGroup` 預設 = 被快取型別名），`CacheContainerService` 自動建「群組 → 快取」表並提供 `ICacheContainer.TryEvict(cacheKey)`。poller 只丟 `container.TryEvict(cacheKey)`，依群組分派到對應快取 `Remove`。`Bee.ObjectCaching` 不需引用 DB 層。
 
+   > ⚠️ **此項已於實作演進中被取代**，`IEvictableCache` 與 `ICacheContainer.TryEvict` 均已移除。見文末〈實作演進〉。
+
 ### 核心不變式（凌駕一切實作便利）
 
 1. **bump 必須與資料變更在同一 transaction 提交。** 否則通知先被輪詢看到、資料 commit 尚未可見 → reload 讀到舊值並標記為新鮮 → **永久 stale**。`Touch` 顯式收 `DbTransaction` 即保證此點。
@@ -41,7 +43,9 @@
 
 3. **時間一律用 DB 伺服器時鐘，絕不用 app 端時鐘。** 寫入、highWater、threshold 三者全部同源（DB 時鐘）且全程不轉時區；多節點各自讀同一台 DB 的時鐘，避免節點時鐘偏移。DB 伺服器設為 **UTC+0** 時所有值即 UTC。機制不依賴 app 主機時區。
 
-4. **失效動作為 evict（`Remove`）+ lazy 重載。** 沒人在讀的 key 不白白重載；複用既有 lazy `CreateInstance` / service 層 load-on-miss。`Remove` 對未快取 key 為 no-op。
+4. **失效動作不重載，只讓下次讀取拿到新值。** 沒人在讀的 key 不白白重載；複用既有 lazy `CreateInstance` / service 層 load-on-miss。
+
+   > 原文為「evict（`Remove`）+ lazy 重載」。不變式本身（不主動重載）維持有效，但達成手段已改為發布 notify-key 版本、由既有條目 lazy 過期。見文末〈實作演進〉。
 
 5. **新增快取零註冊。** 群組名 = 型別名的慣例使任何加進 `ICacheContainer` 的快取自動可失效，不必維護路由表 —— 對 ERP 大量 DB 相依快取可擴展。
 
@@ -53,7 +57,7 @@
 |------|------|
 | `st_cache_notify.TableSchema.xml` | `tests/Define/TableSchema/common/`（系統表 define 目錄） |
 | `ICacheNotifyService` / `CacheNotifyService` | `Bee.Db`（與 `DbDefineStorage` 共同的最低交會點） |
-| `IEvictableCache` / `ICacheContainer.TryEvict` | `Bee.ObjectCaching`（與快取註冊同層，無 DB 依賴） |
+| ~~`IEvictableCache` / `ICacheContainer.TryEvict`~~（已移除，見〈實作演進〉） | `Bee.ObjectCaching`（與快取註冊同層，無 DB 依賴） |
 | `CacheNotifyPoller` / `CacheNotifyPollSession` | `Bee.Hosting`（`Microsoft.Extensions.Hosting.Abstractions`） |
 | `CacheNotifyOptions` | `Bee.Definition.Settings`（`BackendConfiguration.CacheNotifyOptions`） |
 
@@ -84,10 +88,25 @@
 
 5. **以時間戳（而非版本號）判定異動** —— 拒絕：時鐘偏移、同毫秒多次更新、輪詢邊界三個雷。改用單調 `version` 逐 key 比對最穩（時間只作便宜的增量游標）。
 
+## 實作演進
+
+ADR 記錄的是決策當下的設計，以下為後續實作的偏離，供讀者對照現行程式碼：
+
+**`IEvictableCache` 與 `ICacheContainer.TryEvict` 已退役**（`c45ff350`）。原設計以「群組 → 快取」
+註冊表把 poller 的通知分派到對應快取執行 `Remove`；現行做法改為 poller 發布 notify-key 版本，
+由 `MemoryCacheProvider` 的 `CacheNotifyToken` 在下次讀取時使條目過期。
+
+決策層的四條核心不變式**全部維持有效** —— 同 transaction bump、以 version 判定、DB 時鐘單一來源、
+不主動重載。改變的只是最後一項的達成手段：從「主動 Remove」變成「標記版本、讓既有條目自然過期」，
+少了一份需要維護的路由表，也不再需要每個快取型別實作額外介面。
+
+**DB 伺服器時區已不影響正確性。** 不變式 3 原文提到「DB 伺服器設為 UTC+0 時所有值即 UTC」；
+現行 `CacheNotifyService` 改由各 dialect 的 `GetDefaultValueExpression(FieldDbType.DateTime)`
+取值，五種資料庫一律回 UTC，與伺服器時區設定無關。
+
 ## 相關文件
 
 - [ADR-009](adr-009-cache-implementation.md)：`Bee.ObjectCaching` 快取實作
 - [ADR-018](adr-018-db-define-storage.md)：定義儲存於資料庫（本機制的主要消費端之一）
-- 計畫：[`plan-db-cache-dependency.md`](../archive/plan-db-cache-dependency.md)、[`plan-define-cache-db-invalidation.md`](../archive/plan-define-cache-db-invalidation.md)（已封存）
 - 使用指引：[`development-cookbook.md`](../development-cookbook.md) §跨 process 快取失效
 - 命名慣例：[`database-naming-conventions.md`](../database-naming-conventions.md)

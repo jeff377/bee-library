@@ -421,7 +421,13 @@ In-process caches (`Bee.ObjectCaching`) are evicted immediately on the writing p
 
 ### Making a cache invalidatable — nothing to do
 
-Any cache held by `ICacheContainer` that derives from `KeyObjectCache<T>` / `ObjectCache<T>` is **automatically** invalidatable: it implements `IEvictableCache` with `CacheGroup` defaulting to the cached type's name (`CompanyInfoCache` → `"CompanyInfo"`, `FormSchemaCache` → `"FormSchema"`). The container builds a `group → cache` dispatch map at construction. **Add a new cache to the container and it participates — no registration.**
+A cache participates in cross-process invalidation by declaring a notify key in its `GetPolicy()`:
+
+```csharp
+policy.ChangeNotifyKey = changeSource.NotifyKey;
+```
+
+Entries carrying that key are given an expiration token bound to the key's published version. **This declaration is required** — a cache that does not set `ChangeNotifyKey` is never invalidated by the poller, however it is registered.
 
 ### Triggering an invalidation — bump in the same transaction
 
@@ -441,7 +447,7 @@ Conventions for the `"group:entity"` key:
 
 ### How eviction reaches other nodes
 
-`CacheNotifyPoller` (a hosted service) on each node polls `st_cache_notify` every `IntervalSeconds`, detects keys whose `cache_version` advanced (incremental fetch by `sys_update_time`, idempotent by version), and calls `ICacheContainer.TryEvict(cacheKey)` → the matching cache's entry is removed → the next read reloads from source (lazy). No push, no message bus: every node independently polls the same table.
+`CacheNotifyPoller` (a hosted service) on each node polls `st_cache_notify` every `IntervalSeconds`, detects keys whose `cache_version` advanced (incremental fetch by `sys_update_time`, idempotent by version), and publishes the new version via `CacheInfo.NotifyVersions`. Entries whose `ChangeNotifyKey` matches see a version different from the one they captured and expire on the next read, which reloads from source (lazy). Nothing is pushed and no entry is touched eagerly: every node independently polls the same table.
 
 ### Configuration (`BackendConfiguration.CacheNotifyOptions`)
 

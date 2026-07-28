@@ -34,7 +34,7 @@
 
 2. **`define_type` = `typeof(T).Name`** → 同時是儲存鑑別字、[ADR-017](adr-017-db-cache-invalidation.md) 慣例分派的快取群組、bump 群組三者一致（注意 Language 的快取型別為 `LanguageResource`，故 `define_type` = `"LanguageResource"`）。`SaveX` 在同 tx 內 `Touch("<typeof(T).Name>:<define_key>")` → 失效自動路由到對應快取。
 
-3. **`define_key` 對齊快取 Remove key**：複合鍵用 **`.`**（`TableSchema` → `"common.st_user"`、`Language` → `"zh-TW.common"`），與 `TableSchemaCache` / `LanguageResourceCache` 內部 key 編碼一致 —— 否則 `TryEvict(群組, 實體)` 會踢錯/踢不到。
+3. **`define_key` 對齊快取 Remove key**：複合鍵用 **`.`**（`TableSchema` → `"common.st_user"`、`Language` → `"zh-TW.common"`），與 `TableSchemaCache` / `LanguageResourceCache` 內部 key 編碼一致 —— 否則跨節點失效會對不到 key。（原文為 `TryEvict(群組, 實體)`；該 API 已於 ADR-017〈實作演進〉所述的改動中移除。）
 
 4. **sentinel `"*"`**：`customize_id`(base) 與單例 `define_key` 用非空 `"*"`。因 **Oracle 把 `''` 當 `NULL` 且 PK 欄不可為 NULL**（dialect 層的 String→nullable 修正救不了 PK 欄），不能用空字串；`"*"` 也對齊既有 `"Type:*"` 單例慣例。
 
@@ -55,7 +55,7 @@
 
 ### 失效整合（承 ADR-017）
 
-定義快取皆為 `IEvictableCache`（群組 = 型別名），各快取 `GetPolicy()` 已 storage-aware：`FileDefineStorage` 設 file-watch、`DbDefineStorage` 不設（改靠通知表）。`DbDefineStorage.SaveX` 同 tx bump 後，跨節點失效由 poller + 慣例分派自動完成 —— **無需註冊任何路由**。
+定義快取各自的 `GetPolicy()` 已 storage-aware：`FileDefineStorage` 設 file-watch、`DbDefineStorage` 不設（改靠通知表）。`DbDefineStorage.SaveX` 同 tx bump 後，跨節點失效由 poller 自動完成 —— **無需註冊任何路由**。（原文提及的 `IEvictableCache` 慣例分派已改為 notify-key 版本 + lazy 過期，見 [ADR-017](adr-017-db-cache-invalidation.md)〈實作演進〉。）
 
 ### 啟用前置（部署作業，非程式）
 
@@ -78,5 +78,4 @@
 - [ADR-017](adr-017-db-cache-invalidation.md)：資料庫快取失效機制（本儲存的失效通道）
 - [ADR-016](adr-016-multitenant-customization-overlay.md)：多租戶客製化覆蓋層（`customize_id` 語意來源）
 - [ADR-009](adr-009-cache-implementation.md)：快取實作（cache 笨儲存 / service 載入分層）
-- 計畫：[`plan-db-define-storage.md`](../archive/plan-db-define-storage.md)（已封存）
 - 命名慣例：[`database-naming-conventions.md`](../database-naming-conventions.md)
