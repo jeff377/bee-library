@@ -644,8 +644,18 @@ tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md`
 > 這已不是單點疏失而是流程缺口：commit 前綴是 changelog 的唯一來源，
 > 卻無任何機制檢查「public surface 有刪改時 subject 必須帶 `!`」。
 >
-> **建議引入 `Microsoft.CodeAnalysis.PublicApiAnalyzers` 的 `PublicAPI.Shipped.txt`**，
-> 讓漏標 `!` 變成 build 失敗而非人工把關。這是本輪最高槓桿的單一改善。
+> ~~**建議引入 `Microsoft.CodeAnalysis.PublicApiAnalyzers` 的 `PublicAPI.Shipped.txt`**，
+> 讓漏標 `!` 變成 build 失敗而非人工把關。這是本輪最高槓桿的單一改善。~~
+>
+> **✅ 已導入（2026-07-28）**：16 個 `src` 專案全數納入，以當時的 HEAD 為 Shipped baseline
+> （5,387 行），維運程序見 `docs/repo-ops/public-api-baseline.md`。
+> 實測有效——把 `DateTimeExtensions.GetYearMonth` 由 public 改為 internal，build 立即以
+> `RS0017` 失敗並指到 baseline 的確切行號。
+>
+> 導入時順帶暴露一個**驗證面缺口**：`tools/` 既不在 `Bee.Library.slnx` 內，也不在
+> `build-ci.yml` 的 path filter 內，因此 P2-4 刪除 `EnterpriseObjectService` 時
+> `DefineEditor` 的 axaml 綁定殘留，本機與 CI 都不會紅（`96802256` 修正）。
+> **刪除公開型別時須一併建置 `samples` / `tools` / `apps` 三個方案。**
 
 已正確標記（無需補）：`ba56cef0`、`50a2e7d8`、`49641789`、`d64decf9`、`c5578a42`、`d3c6e1bc`。
 
