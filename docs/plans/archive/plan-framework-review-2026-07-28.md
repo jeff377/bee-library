@@ -91,19 +91,19 @@
 
 | 檔案 | 屬性 |
 |------|------|
-| [FormSchema.cs:168](../../src/Bee.Definition/Forms/FormSchema.cs) | `Tables` |
-| [FormSchema.cs:209](../../src/Bee.Definition/Forms/FormSchema.cs) | `Rules` |
-| [FormTable.cs:77](../../src/Bee.Definition/Forms/FormTable.cs) | `Fields` |
-| [FormLayout.cs:115,134](../../src/Bee.Definition/Layouts/FormLayout.cs) | `Sections` / `Details` |
-| [LanguageResource.cs:45,56](../../src/Bee.Definition/Language/LanguageResource.cs) | `Items` / `Enums` |
+| [FormSchema.cs:168](../../../src/Bee.Definition/Forms/FormSchema.cs) | `Tables` |
+| [FormSchema.cs:209](../../../src/Bee.Definition/Forms/FormSchema.cs) | `Rules` |
+| [FormTable.cs:77](../../../src/Bee.Definition/Forms/FormTable.cs) | `Fields` |
+| [FormLayout.cs:115,134](../../../src/Bee.Definition/Layouts/FormLayout.cs) | `Sections` / `Details` |
+| [LanguageResource.cs:45,56](../../../src/Bee.Definition/Language/LanguageResource.cs) | `Items` / `Enums` |
 
 **影響面**：`SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync` / `GetLanguageAsync`
 這組 API 的 XML doc 寫著「primarily intended for JS frontends」，
 但**預設 `PayloadFormat` 是 `Encrypted`（＝MessagePack）**，任何 .NET 呼叫端使用即中招。
 走 `ClientDefineAccess.GetDefineAsync<T>`（XML 字串）的既有 .NET UI 路徑**不受影響**。
 
-**連帶問題（P0-1b）**：[KeyCollectionItem.cs:99](../../src/Bee.Base/Collections/KeyCollectionItem.cs)
-的 `Collection`、[CollectionBase.cs:44](../../src/Bee.Base/Collections/CollectionBase.cs) 的 `Owner`
+**連帶問題（P0-1b）**：[KeyCollectionItem.cs:99](../../../src/Bee.Base/Collections/KeyCollectionItem.cs)
+的 `Collection`、[CollectionBase.cs:44](../../../src/Bee.Base/Collections/CollectionBase.cs) 的 `Owner`
 等反向參照只標 `[XmlIgnore, JsonIgnore]`，缺 `[IgnoreMember]`。
 根因是結構性的：**`Bee.Base` 沒有 MessagePack 的 `PackageReference`，標不了 `[IgnoreMember]`**。
 （已驗證：`Bee.Base.csproj` 無任何 `PackageReference`。）
@@ -135,7 +135,7 @@ XML doc 已標明。若日後要硬性防護，可在 BO 層對非 `Plain` forma
 
 ### ✅ P0-2. `TestFunc` 假綠燈 —— 12 個核心 wire 契約失去驗證 ★本期回歸
 
-[tests/Bee.Api.Core.UnitTests/TestFunc.cs:24-28](../../tests/Bee.Api.Core.UnitTests/TestFunc.cs)
+[tests/Bee.Api.Core.UnitTests/TestFunc.cs:24-28](../../../tests/Bee.Api.Core.UnitTests/TestFunc.cs)
 的比對迴圈以 `keyAttribute != null` 為閘門。
 
 **已驗證**：adr-030 遷移後，`src/` 只剩 3 個檔案還有 `[Key(...)]`
@@ -150,18 +150,18 @@ XML doc 已標明。若日後要硬性防護，可在 BO 層對非 `Plain` forma
 共 6 個型別**在整個 `tests/` 只出現在這一處**，目前 wire 保真度為零實質驗證。
 
 **修法**：移除 `[Key]` 閘門，對所有 public readable 屬性一律比對；
-或改採 [ContractsDtoRoundTripTests.cs](../../tests/Bee.Api.Core.UnitTests/MessagePack/ContractsDtoRoundTripTests.cs)
+或改採 [ContractsDtoRoundTripTests.cs](../../../tests/Bee.Api.Core.UnitTests/MessagePack/ContractsDtoRoundTripTests.cs)
 的顯式逐欄斷言模式（本 repo 目前最好的範本）。**修好後須立即重跑，確認 6 個測試仍為綠。**
 
 ### ✅ P0-3. 時區預設值與文件相反 ★ 已驗證
 
-[SessionInfo.cs:73](../../src/Bee.Definition/Identity/SessionInfo.cs)：
+[SessionInfo.cs:73](../../../src/Bee.Definition/Identity/SessionInfo.cs)：
 `public string TimeZone { get; set; } = "Asia/Taipei";`
 
-[SystemBusinessObject.Session.cs:275](../../src/Bee.Business/System/SystemBusinessObject.Session.cs)
+[SystemBusinessObject.Session.cs:275](../../../src/Bee.Business/System/SystemBusinessObject.Session.cs)
 只在 `st_user.time_zone` 非空時覆寫。
 
-但 [docs/datetime-timezone.md:87,103](../datetime-timezone.md) 寫「An empty value means UTC」
+但 [docs/datetime-timezone.md:87,103](../../datetime-timezone.md) 寫「An empty value means UTC」
 「Existing rows have no value, which reads as UTC」（zh-TW 版 `:76,90` 同義）。
 
 **影響**：升級後未填 `time_zone` 的部署，全體時刻偏移 +8 小時，而文件明說那是無作用狀態。
@@ -183,7 +183,7 @@ XML doc 已標明。若日後要硬性防護，可在 BO 層對非 `Plain` forma
 
 ### ✅ P0-4. `FieldDbType.Date` 無編輯器對映 ★ 已驗證，程式 bug
 
-[LayoutColumnFactory.cs:65-76](../../src/Bee.Definition/Layouts/LayoutColumnFactory.cs)
+[LayoutColumnFactory.cs:65-76](../../../src/Bee.Definition/Layouts/LayoutColumnFactory.cs)
 的 `ResolveControlType` switch：
 
 ```csharp
@@ -196,7 +196,7 @@ _ => ControlType.TextEdit,          // ← FieldDbType.Date 落在這裡
 ```
 
 `DateTime` 與 `Time` 都有分支，**獨缺 `Date`**。
-[docs/temporal-types.md:38,44-45](../temporal-types.md) 宣稱「宣告 `FieldDbType` 後
+[docs/temporal-types.md:38,44-45](../../temporal-types.md) 宣稱「宣告 `FieldDbType` 後
 layout 層自動推導編輯器，不需改 layout 就有日期挑選器」—— 目前為假。
 
 剛完成「日期一律 `DateOnly`」的改動後，宣告 `DbType="Date"` 的欄位在三端都拿到純文字框。
@@ -205,7 +205,7 @@ layout 層自動推導編輯器，不需改 layout 就有日期挑選器」—�
 
 ### ✅ P0-5. `StringUtilities.Replace` 缺 `CultureInvariant` —— 憑證替換 fail-open
 
-[StringUtilities.cs:189](../../src/Bee.Base/StringUtilities.cs)：
+[StringUtilities.cs:189](../../../src/Bee.Base/StringUtilities.cs)：
 
 ```csharp
 var options = ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None;
@@ -216,8 +216,8 @@ return Regex.Replace(s, Regex.Escape(search), replacement, options, TimeSpan.Fro
 `IndexOf` 全部正確使用 `StringComparison.Ordinal`，**唯獨 `Replace` 因改走 Regex 而繞過自家防線**。
 
 下游 12 個生產呼叫端全是識別碼替換，其中：
-- [DbConnectionManagerService.cs:78,80,82](../../src/Bee.Db/Manager/DbConnectionManagerService.cs) —— `{@DbName}` / `{@UserId}` / `{@Password}`
-- [DatabaseRepository.cs:59,61,63](../../src/Bee.Repository/System/DatabaseRepository.cs) —— 同上
+- [DbConnectionManagerService.cs:78,80,82](../../../src/Bee.Db/Manager/DbConnectionManagerService.cs) —— `{@DbName}` / `{@UserId}` / `{@Password}`
+- [DatabaseRepository.cs:59,61,63](../../../src/Bee.Repository/System/DatabaseRepository.cs) —— 同上
 
 `{@UserId}` 含 `I`；tr-TR 地區設定下 `I` 的小寫是 `ı` 而非 `i`，不敏感比對會失配。
 **失配後果不是擲例外，而是佔位符原樣留在連線字串裡** —— `Password={@Password}`
@@ -235,7 +235,7 @@ return Regex.Replace(s, Regex.Escape(search), replacement, options, TimeSpan.Fro
 
 ### ✅ P1-1. `SaveDefine` 無權限模型 ★最高投報比
 
-[SystemBusinessObject.Define.cs:242-249](../../src/Bee.Business/System/SystemBusinessObject.Define.cs)
+[SystemBusinessObject.Define.cs:242-249](../../../src/Bee.Business/System/SystemBusinessObject.Define.cs)
 唯一閘門是排除 `SystemSettings` / `DatabaseSettings`。**未排除** `PermissionModels`、
 `ProgramSettings`、`DbCategorySettings`、`TableSchema`、`FormSchema`、`FormLayout`、`Language`。
 
@@ -270,11 +270,11 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 
 ### ✅ P1-2. 定義檔路徑無 containment（path traversal）
 
-[PathOptions.cs:57,62,68,74](../../src/Bee.Definition/PathOptions.cs) 皆為裸 `Path.Combine`，
+[PathOptions.cs:57,62,68,74](../../../src/Bee.Definition/PathOptions.cs) 皆為裸 `Path.Combine`，
 無 `Path.GetFullPath` + root 包含性檢查。兩個破口：`../` 跳出；rooted 路徑讓
 `Path.Combine` **直接丟棄前面所有段**。
 
-**對照組同樣證明是遺漏**：[CustomizeOnlyPathOptions.cs:39-53](../../src/Bee.Definition/CustomizeOnlyPathOptions.cs)
+**對照組同樣證明是遺漏**：[CustomizeOnlyPathOptions.cs:39-53](../../../src/Bee.Definition/CustomizeOnlyPathOptions.cs)
 對 `customizeId` **有**完整檢查，但同類別的 `GetFormLayoutFilePath` / `GetLanguageFilePath` 仍無。
 
 **修法**：抽 `EnsureWithinRoot(root, resolved)` helper（可直接取用 `CustomizeOnlyPathOptions`
@@ -282,12 +282,12 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 
 ### ✅ P1-3. `CreateSession` 匿名發 token（**潛伏，目前被 TODO 擋住**）
 
-[SystemBusinessObject.Session.cs:284](../../src/Bee.Business/System/SystemBusinessObject.Session.cs)
-為 `ApiAccessRequirement.Anonymous`；[SessionRepository.cs:101-120](../../src/Bee.Repository/System/SessionRepository.cs)
+[SystemBusinessObject.Session.cs:284](../../../src/Bee.Business/System/SystemBusinessObject.Session.cs)
+為 `ApiAccessRequirement.Anonymous`；[SessionRepository.cs:101-120](../../../src/Bee.Repository/System/SessionRepository.cs)
 只 `SELECT sys_id, sys_name FROM st_user WHERE sys_id={0}`，查得到就發 token。
 
 **已驗證的緩解**：`AccessTokenValidator` 走 `ISessionInfoService` →
-[SessionInfoCache.cs:22](../../src/Bee.ObjectCaching/Database/SessionInfoCache.cs) 的
+[SessionInfoCache.cs:22](../../../src/Bee.ObjectCaching/Database/SessionInfoCache.cs) 的
 `CreateInstance` 回傳 `null`（註解自述「尚未實作 DB 載入」），
 因此發出的 token 目前**無法**通過 `Authenticated` 檢查。
 
@@ -297,7 +297,7 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 
 ### P1-4. DynamicExpresso 不是安全沙箱
 
-[DynamicExpressoEvaluator.cs:32](../../src/Bee.Expressions/DynamicExpressoEvaluator.cs)
+[DynamicExpressoEvaluator.cs:32](../../../src/Bee.Expressions/DynamicExpressoEvaluator.cs)
 用 `InterpreterOptions.Default`。類別 remarks 主張「reflection / file / network 都是 unknown identifier」
 —— 這對**靜態型別名稱**成立，對**實例成員存取**不成立：`GetType()` 是 `System.Object` 的公開方法，
 任何變數（每個欄位值都是變數）都能起手 `some_field.GetType().Assembly...`。
@@ -309,12 +309,12 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 
 ### ✅ P1-5. 安全狀態交出可變參照
 
-- [IPValidator.cs:32,40](../../src/Bee.Base/IPValidator.cs) —— `public List<string> Whitelist` / `Blacklist`
+- [IPValidator.cs:32,40](../../../src/Bee.Base/IPValidator.cs) —— `public List<string> Whitelist` / `Blacklist`
   getter-only 直接交出私有欄位**參照**，ctor 收 `List<string>` 未複製 → 呼叫端保有活體 handle，
   可在建構後改寫安全名單
-- [ApiClientInfo.cs:49](../../src/Bee.Api.Client/ApiClientInfo.cs) —— `public static byte[] ApiEncryptionKey { get; set; }`，
+- [ApiClientInfo.cs:49](../../../src/Bee.Api.Client/ApiClientInfo.cs) —— `public static byte[] ApiEncryptionKey { get; set; }`，
   連 setter 都繞得過（陣列內容可就地改寫）
-- [UpgradeStage.cs:27](../../src/Bee.Db/Schema/UpgradeStage.cs) —— `public List<string> Statements { get; }`，
+- [UpgradeStage.cs:27](../../../src/Bee.Db/Schema/UpgradeStage.cs) —— `public List<string> Statements { get; }`，
   可對已算好的升級計畫注入任意 SQL
 
 **修法**：防禦性複製 + 回傳 `IReadOnlyList<T>`。
@@ -322,7 +322,7 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 
 ### ✅ P1-6. 反序列化白名單的兩個缺陷 ★交叉確認
 
-[SysInfo.cs:66](../../src/Bee.Base/SysInfo.cs)：
+[SysInfo.cs:66](../../../src/Bee.Base/SysInfo.cs)：
 
 1. **文化相依比對**：`typeName.StartsWith(ns + ".")` 未指定 `StringComparison`。
    同檔 line 90-92 建清單時明確用 `StringComparer.Ordinal` 並註解說明理由
@@ -335,13 +335,13 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 
 | 項目 | 位置 | 說明 |
 |------|------|------|
-| `XmlCodec.Deserialize` 未硬化 | [XmlCodec.cs:51-66](../../src/Bee.Base/Serialization/XmlCodec.cs) | 吃 wire 來的 XML，內部實體展開未禁（billion-laughs DoS）。同 repo 的 `ChangeDiffGramReader.LoadHardened` 已是正解範本 |
-| Master key 檔案權限 | [MasterKeyProvider.cs:81-92](../../src/Bee.Definition/Security/MasterKeyProvider.cs) | 預設權限受 umask 影響，Unix 上常為 world-readable。建檔後應 `File.SetUnixFileMode` |
-| API key 驗證器不驗值 | [ApiAuthorizationValidator.cs:54-58](../../src/Bee.Api.Core/Authorization/ApiAuthorizationValidator.cs) | 知情的預設不安全（已有啟動警告）。建議非 Development 環境未設金鑰即拒絕啟動 |
-| `GetCommonConfiguration` 匿名 | [SystemBusinessObject.cs:48](../../src/Bee.Business/System/SystemBusinessObject.cs) | 匿名回傳 `AllowedTypeNamespaces` 等於免費提供 gadget 搜尋起點 |
-| `Login` 允許 Plain | [SystemBusinessObject.Session.cs:24](../../src/Bee.Business/System/SystemBusinessObject.Session.cs) | 密碼可未加密進 JSON body，完全倚賴部署端 TLS |
-| `SysInfo.IsDebugMode` public setter | [SysInfo.cs:30](../../src/Bee.Base/SysInfo.cs) | `NoEncryptionEncryptor` 的 guard 正確，但其判斷依據可被任何 in-process 程式碼改寫 |
-| 使用者列舉 | [SessionRepository.cs:107](../../src/Bee.Repository/System/SessionRepository.cs) | 訊息含 `UserID='x' not found` 且在 user-facing 白名單內。對照 `EnterCompany` 刻意統一錯誤訊息，此處漏做 |
+| `XmlCodec.Deserialize` 未硬化 | [XmlCodec.cs:51-66](../../../src/Bee.Base/Serialization/XmlCodec.cs) | 吃 wire 來的 XML，內部實體展開未禁（billion-laughs DoS）。同 repo 的 `ChangeDiffGramReader.LoadHardened` 已是正解範本 |
+| Master key 檔案權限 | [MasterKeyProvider.cs:81-92](../../../src/Bee.Definition/Security/MasterKeyProvider.cs) | 預設權限受 umask 影響，Unix 上常為 world-readable。建檔後應 `File.SetUnixFileMode` |
+| API key 驗證器不驗值 | [ApiAuthorizationValidator.cs:54-58](../../../src/Bee.Api.Core/Authorization/ApiAuthorizationValidator.cs) | 知情的預設不安全（已有啟動警告）。建議非 Development 環境未設金鑰即拒絕啟動 |
+| `GetCommonConfiguration` 匿名 | [SystemBusinessObject.cs:48](../../../src/Bee.Business/System/SystemBusinessObject.cs) | 匿名回傳 `AllowedTypeNamespaces` 等於免費提供 gadget 搜尋起點 |
+| `Login` 允許 Plain | [SystemBusinessObject.Session.cs:24](../../../src/Bee.Business/System/SystemBusinessObject.Session.cs) | 密碼可未加密進 JSON body，完全倚賴部署端 TLS |
+| `SysInfo.IsDebugMode` public setter | [SysInfo.cs:30](../../../src/Bee.Base/SysInfo.cs) | `NoEncryptionEncryptor` 的 guard 正確，但其判斷依據可被任何 in-process 程式碼改寫 |
+| 使用者列舉 | [SessionRepository.cs:107](../../../src/Bee.Repository/System/SessionRepository.cs) | 訊息含 `UserID='x' not found` 且在 user-facing 白名單內。對照 `EnterCompany` 刻意統一錯誤訊息，此處漏做 |
 
 ---
 
@@ -374,12 +374,12 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 
 ### ✅ P2-2. `Bee.Hosting` 承載資料存取實作
 
-[Bee.Hosting.csproj](../../src/Bee.Hosting/Bee.Hosting.csproj) **未宣告** `Bee.Db`，
+[Bee.Hosting.csproj](../../../src/Bee.Hosting/Bee.Hosting.csproj) **未宣告** `Bee.Db`，
 卻靠 `Bee.Repository → Bee.Db` 遞移取得，且不只 DI 註冊，是實質 SQL 組建與執行：
 
-- [CacheNotifyPollSession.cs:96,114-115,146-150](../../src/Bee.Hosting/CacheNotify/CacheNotifyPollSession.cs)
+- [CacheNotifyPollSession.cs:96,114-115,146-150](../../../src/Bee.Hosting/CacheNotify/CacheNotifyPollSession.cs)
   —— 自組 `SELECT`、五種方言的時間函式分歧處理
-- [AuditLogDbSink.cs:68-88](../../src/Bee.Hosting/Audit/AuditLogDbSink.cs) —— `StringBuilder` 組 `INSERT`
+- [AuditLogDbSink.cs:68-88](../../../src/Bee.Hosting/Audit/AuditLogDbSink.cs) —— `StringBuilder` 組 `INSERT`
 
 Hosting 959 行中非 composition 的實作碼佔 381 行，其中 291 行含直接資料存取。
 
@@ -442,12 +442,12 @@ Hosting 959 行中非 composition 的實作碼佔 381 行，其中 291 行含直
 
 | 型別 | 位置 |
 |------|------|
-| `IEnterpriseObjectService` + `EnterpriseObjectService` | [Bee.Definition](../../src/Bee.Definition/IEnterpriseObjectService.cs) + [Bee.ObjectCaching](../../src/Bee.ObjectCaching/Services/EnterpriseObjectService.cs) |
+| `IEnterpriseObjectService` + `EnterpriseObjectService` | [Bee.Definition](../../../src/Bee.Definition/IEnterpriseObjectService.cs) + [Bee.ObjectCaching](../../../src/Bee.ObjectCaching/Services/EnterpriseObjectService.cs) |
 | `enum InitializeOptions` / `enum ApplicationType` / `static class SysFuncIDs` | `src/Bee.Definition/` 根目錄 |
-| `class VersionFiles` | [Settings/SystemSettings/](../../src/Bee.Definition/Settings/SystemSettings/VersionFiles.cs) |
-| `TreeNodeIgnoreAttribute` | [Bee.Base/Attributes/](../../src/Bee.Base/Attributes/TreeNodeIgnoreAttribute.cs) |
+| `class VersionFiles` | [Settings/SystemSettings/](../../../src/Bee.Definition/Settings/SystemSettings/VersionFiles.cs) |
+| `TreeNodeIgnoreAttribute` | [Bee.Base/Attributes/](../../../src/Bee.Base/Attributes/TreeNodeIgnoreAttribute.cs) |
 | `DefaultBoolean` / `NotSetBoolean` | `src/Bee.Base/` |
-| `SystemActions.GetLocalDefine` / `SaveLocalDefine` | [SystemActions.cs:67,75](../../src/Bee.Definition/SystemActions.cs) |
+| `SystemActions.GetLocalDefine` / `SaveLocalDefine` | [SystemActions.cs:67,75](../../../src/Bee.Definition/SystemActions.cs) |
 
 `IEnterpriseObjectService` 最值得注意：它有完整的架構外觀
 （`BackendDefaultTypes` 常數 + `BackendComponents` 設定項 + DI singleton 註冊 +
@@ -458,8 +458,8 @@ XML 文件描述「統一存取企業常用商業物件，具快取機制」）�
 **注意**：這些型別各自帶著「可被建立 / 預設值為 X」的佔位測試，
 讓死碼在覆蓋率報告上呈現為已測試。刪型別時須連同佔位測試一起刪。
 
-**遷移孤兒**：[DateTimeExtensions.cs:13](../../src/Bee.Base/DateTimeExtensions.cs) 的 `IsEmpty`
-以 `< 1753-01-01` 為判準，但 [DbCommandSpec.cs:217-218](../../src/Bee.Db/DbCommandSpec.cs)
+**遷移孤兒**：[DateTimeExtensions.cs:13](../../../src/Bee.Base/DateTimeExtensions.cs) 的 `IsEmpty`
+以 `< 1753-01-01` 為判準，但 [DbCommandSpec.cs:217-218](../../../src/Bee.Db/DbCommandSpec.cs)
 已把 SQL Server 升級為 `DbType.DateTime2` —— **1753 這條線已不再是資料庫限制**。
 且同一概念有三種不一致判準（`DateTimeExtensions.IsEmpty`、`ValueUtilities.IsEmpty`、
 `FieldDbTypeExtensions` 用 `DateTime.MinValue`）。`DateTimeExtensions.IsEmpty` 本身零呼叫，可直接刪。
@@ -511,7 +511,7 @@ ADO.NET driver 的謹慎程度不一致。
 
 ### ✅ P2-6. 契約軸缺漏 + 無自動守門 ★本期回歸
 
-[GetDepartmentTreeRequest.cs:10](../../src/Bee.Api.Core/Messages/System/GetDepartmentTreeRequest.cs)
+[GetDepartmentTreeRequest.cs:10](../../../src/Bee.Api.Core/Messages/System/GetDepartmentTreeRequest.cs)
 **未實作任何契約介面**，`Bee.Api.Contracts/System/` 無 `IGetDepartmentTreeRequest.cs`。
 
 其他 5 個同樣無參數的 request 全都有空標記契約介面，證明這是慣例而非「無參數就不需要」。
@@ -526,18 +526,18 @@ ADO.NET driver 的謹慎程度不一致。
 | 項目 | 位置 |
 |------|------|
 | `SerializeState` / `ObjectFilePath` / `CreateTime` 缺 `[IgnoreMember]` | `FormLayout`、`MenuSettings`、`DatabaseSettings`、`DbCategorySettings`、`SystemSettings`、`ClientSettings`、`ProgramSettings`、`PermissionModels`（`FormSchema` / `TableSchema` 已補齊 → 家族內不一致） |
-| `MasterTable` 缺 `[IgnoreMember]` | [FormSchema.cs:190](../../src/Bee.Definition/Forms/FormSchema.cs) —— 註解說明的理由對 MessagePack 同樣成立，目前 master table 被序列化兩次 |
-| `RelationFieldReferences` 缺 `[JsonIgnore]` + `[IgnoreMember]` | [FormTable.cs:143](../../src/Bee.Definition/Forms/FormTable.cs) —— 衍生集合，且 getter 在 schema 不一致時會擲例外 → 「序列化到一半爆炸」 |
-| `TimeOnly` 未加入 typeless 白名單 | [SafeTypelessFormatter.cs:40-73](../../src/Bee.Definition/Serialization/SafeTypelessFormatter.cs) —— 有 `DateOnly` / `TimeSpan`，缺 `TimeOnly`。公開 API `ValueUtilities.CTimeOnly` 回傳 `TimeOnly?`，塞進 `FilterCondition.Value` 會被擋 |
-| `SessionInfo.Roles` 為裸 `ICollection<string>` | [SessionInfo.cs:89](../../src/Bee.Definition/Identity/SessionInfo.cs) —— 全 `Bee.Definition` 唯一裸集合；XmlSerializer 不支援介面型別屬性 |
+| `MasterTable` 缺 `[IgnoreMember]` | [FormSchema.cs:190](../../../src/Bee.Definition/Forms/FormSchema.cs) —— 註解說明的理由對 MessagePack 同樣成立，目前 master table 被序列化兩次 |
+| `RelationFieldReferences` 缺 `[JsonIgnore]` + `[IgnoreMember]` | [FormTable.cs:143](../../../src/Bee.Definition/Forms/FormTable.cs) —— 衍生集合，且 getter 在 schema 不一致時會擲例外 → 「序列化到一半爆炸」 |
+| `TimeOnly` 未加入 typeless 白名單 | [SafeTypelessFormatter.cs:40-73](../../../src/Bee.Definition/Serialization/SafeTypelessFormatter.cs) —— 有 `DateOnly` / `TimeSpan`，缺 `TimeOnly`。公開 API `ValueUtilities.CTimeOnly` 回傳 `TimeOnly?`，塞進 `FilterCondition.Value` 會被擋 |
+| `SessionInfo.Roles` 為裸 `ICollection<string>` | [SessionInfo.cs:89](../../../src/Bee.Definition/Identity/SessionInfo.cs) —— 全 `Bee.Definition` 唯一裸集合；XmlSerializer 不支援介面型別屬性 |
 
 ### ✅ P2-8. `DataTable` JSON wire 的三處失真
 
 | 問題 | 位置 |
 |------|------|
-| 字串欄存 ISO-8601 樣式文字會被改寫（`"2026-07-28"` → `"07/28/2026 00:00:00"`） | [DataTableJsonConverter.cs:313,348](../../src/Bee.Base/Serialization/DataTableJsonConverter.cs) —— 應依目標欄位型別決定怎麼讀，不要猜 |
+| 字串欄存 ISO-8601 樣式文字會被改寫（`"2026-07-28"` → `"07/28/2026 00:00:00"`） | [DataTableJsonConverter.cs:313,348](../../../src/Bee.Base/Serialization/DataTableJsonConverter.cs) —— 應依目標欄位型別決定怎麼讀，不要猜 |
 | `decimal` 超過 15 位有效數字靜默失精（未試 `TryGetDecimal`） | 同上 `:317-319` —— **與 ERP round-then-sum 鐵則直接衝突** |
-| `double`/`float`→`decimal`、`uint`/`ulong` 溢位、`TimeSpan`/`DateOnly`/`TimeOnly` 擲例外 | [DbTypeConverter.cs:26-58,105-137](../../src/Bee.Base/Data/DbTypeConverter.cs) —— AnyCode 報表的原生 SQL DataTable 很容易帶這些型別 |
+| `double`/`float`→`decimal`、`uint`/`ulong` 溢位、`TimeSpan`/`DateOnly`/`TimeOnly` 擲例外 | [DbTypeConverter.cs:26-58,105-137](../../../src/Bee.Base/Data/DbTypeConverter.cs) —— AnyCode 報表的原生 SQL DataTable 很容易帶這些型別 |
 
 ### ✅ P2-9. 測試品質
 

@@ -29,7 +29,7 @@
 
 ## 1. 現況與目標
 
-`FieldDbType`（[../../src/Bee.Base/Data/FieldDbType.cs](../../src/Bee.Base/Data/FieldDbType.cs)）目前為：
+`FieldDbType`（[../../src/Bee.Base/Data/FieldDbType.cs](../../../src/Bee.Base/Data/FieldDbType.cs)）目前為：
 `String` / `Text` / `Boolean` / `AutoIncrement` / `Short` / `Integer` / `Long` /
 `Decimal` / `Currency` / `Date` / `DateTime` / `Guid` / `Binary` / `Unknown`。
 
@@ -78,7 +78,7 @@ ValueUtilities.CTimeOnly    string → TimeOnly?（ParseExact "HH:mm"，空字�
 ### 2.2 空值即空字串，欄位維持 NOT NULL
 
 框架以 `DateTime.MinValue` 當時間空值 sentinel
-（[../../src/Bee.Base/Data/FieldDbTypeExtensions.cs](../../src/Bee.Base/Data/FieldDbTypeExtensions.cs)
+（[../../src/Bee.Base/Data/FieldDbTypeExtensions.cs](../../../src/Bee.Base/Data/FieldDbTypeExtensions.cs)
 的 `ToDbFieldValue`）。**時刻沒有等價的 sentinel** —— `00:00` 是合法的午夜。
 
 字串承載讓這個問題消失：**空字串即「未填」**，`Time` 欄比照其他文字欄維持
@@ -134,7 +134,7 @@ public static TimeOnly? CTimeOnly(object value)   // 空字串 / 非法格式 �
 ### 2.6 列舉值必須 append 至尾端；舊 client 破口接受並標 breaking
 
 `FieldDbType` 未顯式指定數值（隱含 `0..N`），而它會上 MessagePack wire——
-[../../src/Bee.Api.Core/MessagePack/SerializableDataColumn.cs](../../src/Bee.Api.Core/MessagePack/SerializableDataColumn.cs)
+[../../src/Bee.Api.Core/MessagePack/SerializableDataColumn.cs](../../../src/Bee.Api.Core/MessagePack/SerializableDataColumn.cs)
 的 `DataType` 即為一例。**enum 一律以底層整數上 wire，與鍵style 無關**（`keyAsPropertyName`
 改的是成員鍵）。在中間插入 `Time` 會讓其後所有值位移，**打斷既有 payload**。
 
@@ -170,7 +170,7 @@ Connector 判斷表中，`Time` 與 `Date` 同列（絕不轉）。改採字串�
 ## 3.1 實作結果（階段 1–2，2026-07-27）
 
 全 solution Release build 0 警告 0 錯誤；全測試 **5,085 通過 / 0 失敗 / 1 skip**（新增 30 項）。
-ADR：[../adr/adr-033-time-of-day-semantics.md](../adr/adr-033-time-of-day-semantics.md)。
+ADR：[../adr/adr-033-time-of-day-semantics.md](../../adr/adr-033-time-of-day-semantics.md)。
 
 **階段 2 併入階段 1 出貨**：`ToFieldValue` 的正規化需要時刻剖析，而那正是 `CTimeOnly` 的本體，
 拆兩階段會讓同一份邏輯寫兩次。
@@ -221,9 +221,9 @@ ADR：[../adr/adr-033-time-of-day-semantics.md](../adr/adr-033-time-of-day-seman
 
 | 產出 | 內容 |
 |------|------|
-| ~~`time-semantics.md` / `.zh-TW.md`~~ | 雙語公開文件：何時該用、宣告方式、五家欄位型別、讀寫、查詢排序保證、破壞性變更，以及「`Time` 不是什麼」。**已於 2026-07-27 併入 [../temporal-types.md](../temporal-types.md) 並刪除** —— `Date` 與 `DateTime` 各有專屬機制要解釋（標記、UTC 轉換），`Time` 沒有，其專屬文件講不出跨層總覽沒講的事 |
-| [../terminology.md](../terminology.md) / [.zh-TW.md](../terminology.zh-TW.md) | 新增「時間語意」一節：日曆日 / 時刻 / 時間點 / 時距四詞與對應型別、判別法；並更新 `FieldDbType` 與 `ControlType` 的值清單 |
-| [../README.md](../README.md) / [.zh-TW.md](../README.zh-TW.md) | 文件索引新增時刻欄位條目 |
+| ~~`time-semantics.md` / `.zh-TW.md`~~ | 雙語公開文件：何時該用、宣告方式、五家欄位型別、讀寫、查詢排序保證、破壞性變更，以及「`Time` 不是什麼」。**已於 2026-07-27 併入 [../temporal-types.md](../../temporal-types.md) 並刪除** —— `Date` 與 `DateTime` 各有專屬機制要解釋（標記、UTC 轉換），`Time` 沒有，其專屬文件講不出跨層總覽沒講的事 |
+| [../terminology.md](../../terminology.md) / [.zh-TW.md](../../terminology.zh-TW.md) | 新增「時間語意」一節：日曆日 / 時刻 / 時間點 / 時距四詞與對應型別、判別法；並更新 `FieldDbType` 與 `ControlType` 的值清單 |
+| [../README.md](../../README.md) / [.zh-TW.md](../../README.zh-TW.md) | 文件索引新增時刻欄位條目 |
 
 `public-docs.md` 的落地檢查通過（公開文件無任何指向 `docs/plans/` 的連結）。
 
