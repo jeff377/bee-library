@@ -53,6 +53,22 @@ namespace Bee.Definition.Settings
         public AuditLogOptions AuditLogOptions { get; set; } = new AuditLogOptions();
 
         /// <summary>
+        /// Gets or sets the IANA time zone id applied to a session when the user has no
+        /// <c>st_user.time_zone</c> of their own. An empty value means UTC.
+        /// </summary>
+        /// <remarks>
+        /// The default is <c>Asia/Taipei</c> rather than empty for backward compatibility: the
+        /// <c>st_user.time_zone</c> column was introduced in this release, so every existing row is
+        /// blank, and defaulting to UTC would shift all of their displayed times on upgrade.
+        /// Deployments outside that zone should set this explicitly — or set it to an empty string
+        /// to opt into UTC, which is what the conversion layer already does for a blank zone.
+        /// </remarks>
+        [Category("Localization")]
+        [Description("IANA time zone id applied when a user has no time zone of their own. Empty means UTC.")]
+        [DefaultValue("Asia/Taipei")]
+        public string DefaultTimeZone { get; set; } = "Asia/Taipei";
+
+        /// <summary>
         /// Object description.
         /// </summary>
         public override string ToString()

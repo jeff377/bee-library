@@ -254,7 +254,8 @@ namespace Bee.Business.System
         }
 
         /// <summary>
-        /// Fills <see cref="SessionInfo.TimeZone"/> from the user's <c>st_user.time_zone</c>.
+        /// Fills <see cref="SessionInfo.TimeZone"/> from the user's <c>st_user.time_zone</c>,
+        /// falling back to <see cref="BackendConfiguration.DefaultTimeZone"/>.
         /// </summary>
         /// <param name="sessionInfo">The session being created.</param>
         /// <remarks>
@@ -262,9 +263,10 @@ namespace Bee.Business.System
         /// neither the device's zone nor the server machine's, so that filing a Taipei leave request
         /// from New York still defaults to the Taipei date (ADR-032 D12).
         ///
-        /// An unset or unreadable value leaves the <see cref="SessionInfo"/> default in place rather
-        /// than failing the login: authentication is overridable and a deployment may authenticate
+        /// An unset or unreadable user value falls back to the deployment-wide default rather than
+        /// failing the login: authentication is overridable and a deployment may authenticate
         /// against something other than <c>st_user</c>, in which case there is no row to read.
+        /// A deployment that wants UTC sets <c>DefaultTimeZone</c> to an empty string.
         /// </remarks>
         protected virtual void ApplyUserTimeZone(SessionInfo sessionInfo)
         {
@@ -272,7 +274,9 @@ namespace Bee.Business.System
 
             var repo = Services.GetRequiredService<ISystemRepositoryFactory>().CreateUserRepository();
             var timeZone = repo.GetTimeZone(sessionInfo.UserId);
-            if (StringUtilities.IsNotEmpty(timeZone)) { sessionInfo.TimeZone = timeZone; }
+            sessionInfo.TimeZone = StringUtilities.IsNotEmpty(timeZone)
+                ? timeZone
+                : DefineAccess.GetSystemSettings().BackendConfiguration.DefaultTimeZone;
         }
 
         private const int MaxExpiresInSeconds = 86400; // 24 hours

@@ -73,7 +73,10 @@ FilterCondition.Equal("created_at", someDateTime);     // 時間點——送出�
 
 `st_user.time_zone` 存 IANA id（`Asia/Taipei`、`America/New_York`）。登入時複製到 session 並回傳給用戶端。
 
-**空值代表 UTC。框架絕不退回裝置時區**：否則使用者帶著筆電移動就會改變自己輸入資料的意義，
+使用者若沒有自己的值，會退回 `BackendConfiguration.DefaultTimeZone`，其出廠預設為 `Asia/Taipei`。
+請把它設成部署實際所在的時區——或設為空字串以採用 UTC，因為**所有轉換點對空時區一律視為 UTC**。
+
+**框架絕不退回裝置時區**：否則使用者帶著筆電移動就會改變自己輸入資料的意義，
 而且「看到的值」與「伺服端存下的值」會來自兩個不同來源。
 
 框架**刻意不提供**公司層級或欄位層級的覆寫。若某個值必須以**另一個**時區呈現——例如出勤紀錄要看
@@ -87,7 +90,7 @@ FilterCondition.Equal("created_at", someDateTime);     // 時間點——送出�
 | `ValueUtilities.CDateOnly` 回傳 `DateOnly?` | 把結果指派給 `DateTime` 的呼叫端需調整；原本省略預設參數的呼叫端也需改為顯式傳入 fallback。寫進 `DataSet` 儲存格仍可運作——框架會在該邊界完成轉換。 |
 | 運算式 `Today()` 回傳 `DateOnly`，且依使用者時區 | 既有的 `DefaultValueExpression="Today()"` 在 `Date` 與 `DateTime` 欄位上都照常運作。 |
 | 運算式新增 `UtcNow()` | 新增；需要明示 UTC 意圖時使用。 |
-| 新增 `st_user.time_zone` 欄位 | 既有資料列沒有值，視同 UTC。逐一設定後才會啟用轉換。 |
+| 新增 `st_user.time_zone` 欄位 | 既有資料列沒有值，會退回 `BackendConfiguration.DefaultTimeZone`（預設 `Asia/Taipei`），因此升級後顯示時刻不會位移。欄位可逐一設定，預設值則依部署設定。 |
 | PostgreSQL 的 `DateTime` 參數改送 `timestamp` | 先前送的是 `timestamptz`，會讓 server 時區重新表達該值。不需任何調整，欄位型別未變。 |
 | 資料庫端的欄位 `DEFAULT` 改為 UTC 形式 | 既有資料表會在下次 schema 升級時收到一道 `ALTER ... SET DEFAULT`（僅異動 metadata，不重寫資料列）。 |
 

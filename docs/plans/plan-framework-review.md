@@ -4,7 +4,7 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| P0 | 正確性風險：wire 內容全滅、假綠燈測試、時區預設值、Date 編輯器、憑證替換 fail-open | 🚧 進行中（P0-2 / P0-4 / P0-5 ✅；P0-1 / P0-3 待裁決） |
+| P0 | 正確性風險：wire 內容全滅、假綠燈測試、時區預設值、Date 編輯器、憑證替換 fail-open | 🚧 進行中（P0-2 / P0-3 / P0-4 / P0-5 ✅；P0-1 待裁決修法方向） |
 | P1 | 安全：定義檔寫入授權、路徑遍歷、匿名發 token、運算式沙箱、可變參照外洩 | 🚧 進行中（P1-6 ✅，其餘待做） |
 | P2 | 結構重構：UI head 複製收斂、Hosting 資料存取下沉、方言規則共用、死碼清理 | 🚧 進行中（P2-6 / P2-9 ✅，其餘待做） |
 | P3 | 文件漂移：53 條死連結、不存在的 API、CHANGELOG 未記 6 項 breaking | 🚧 進行中（P3-3 的 40 條機械死連結 ✅） |
@@ -139,7 +139,7 @@ byte round-trip 測試，斷言巢狀集合數量與內容。
 或改採 [ContractsDtoRoundTripTests.cs](../../tests/Bee.Api.Core.UnitTests/MessagePack/ContractsDtoRoundTripTests.cs)
 的顯式逐欄斷言模式（本 repo 目前最好的範本）。**修好後須立即重跑，確認 6 個測試仍為綠。**
 
-### P0-3. 時區預設值與文件相反 ★ 已驗證
+### ✅ P0-3. 時區預設值與文件相反 ★ 已驗證
 
 [SessionInfo.cs:73](../../src/Bee.Definition/Identity/SessionInfo.cs)：
 `public string TimeZone { get; set; } = "Asia/Taipei";`
@@ -153,9 +153,19 @@ byte round-trip 測試，斷言巢狀集合數量與內容。
 **影響**：升級後未填 `time_zone` 的部署，全體時刻偏移 +8 小時，而文件明說那是無作用狀態。
 海外部署會看到系統性錯誤時間卻查不出原因。
 
-**需裁決**：這是**文件寫錯**（實際行為刻意預設台北）還是**程式該改**（預設應為 UTC 或空字串）？
-兩者修法完全不同，且後者屬行為 breaking。建議預設值改為空字串 + 轉換層視空值為 UTC，
-與文件對齊且對海外部署安全，但這是使用者的產品決策。
+**修復方式（採 C 方案）**：實作時發現關鍵事實 —— 轉換層三處
+（`FrameworkClock.Now`、`DateTimeZoneConverter.IsNoOp`、`PayloadZoneConverter`）
+**早就一律把空字串視為 UTC**，文件說的「空值代表 UTC」是對的；
+是 `SessionInfo.TimeZone` 硬編非空預設，讓那條路徑永遠走不到。
+
+因此修法為「讓既有語意真正生效」而非新增語意：
+
+1. `SessionInfo.TimeZone` / `UserInfo.TimeZone` 預設改為空字串
+2. 新增 `BackendConfiguration.DefaultTimeZone`，預設 `Asia/Taipei`（升級零位移）
+3. 登入填充改為：`st_user.time_zone` 非空 → 用它；否則 → `DefaultTimeZone`
+4. 雙語文件同步更正
+
+部署要 UTC 只需把 `DefaultTimeZone` 設為空字串。
 
 ### ✅ P0-4. `FieldDbType.Date` 無編輯器對映 ★ 已驗證，程式 bug
 

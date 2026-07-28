@@ -84,9 +84,13 @@ types arrive in the payload, so the client can tell the two apart without extra 
 `st_user.time_zone` holds an IANA id (`Asia/Taipei`, `America/New_York`). Login copies it onto the
 session and returns it to the client.
 
-An empty value means UTC. The framework never falls back to the device's zone: a user travelling
-with a laptop would otherwise change the meaning of the data they enter, and the value they see and
-the value the server stores would come from two different sources.
+A user with no value of their own falls back to `BackendConfiguration.DefaultTimeZone`, which ships
+as `Asia/Taipei`. Set it to the zone your deployment actually runs in — or to an empty string to use
+UTC, which is what every conversion point does with a blank zone.
+
+The framework never falls back to the device's zone: a user travelling with a laptop would otherwise
+change the meaning of the data they enter, and the value they see and the value the server stores
+would come from two different sources.
 
 There is deliberately no per-company or per-column override. When a value must be shown in some
 *other* zone — an attendance record read in the employee's work-site zone, say — model it as a UTC
@@ -100,7 +104,7 @@ column-level setting can express it.
 | `ValueUtilities.CDateOnly` returns `DateOnly?` | Call sites assigning the result to a `DateTime` need updating; so do call sites that relied on an omitted default argument, which now pass the fallback explicitly. Writing the value into a `DataSet` cell still works — the framework widens it at that boundary. |
 | `Today()` in expressions returns `DateOnly`, in the user's zone | Existing `DefaultValueExpression="Today()"` keeps working on both `Date` and `DateTime` fields. |
 | `UtcNow()` added to expressions | New; use it where you want UTC stated outright. |
-| `st_user.time_zone` column added | Existing rows have no value, which reads as UTC. Set it per user to enable conversion. |
+| `st_user.time_zone` column added | Existing rows have no value and fall back to `BackendConfiguration.DefaultTimeZone` (`Asia/Taipei` by default), so displayed times do not shift on upgrade. Set the column per user, and the default per deployment. |
 | PostgreSQL `DateTime` parameters now map to `timestamp` | Previously they were sent as `timestamptz`, which let the server's zone re-express the value. No action needed; column types are unchanged. |
 | Database-side column `DEFAULT`s are now UTC-returning | Existing tables pick up one `ALTER ... SET DEFAULT` on the next schema upgrade (metadata only — no rows are rewritten). |
 

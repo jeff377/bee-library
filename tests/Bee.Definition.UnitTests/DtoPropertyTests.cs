@@ -31,7 +31,8 @@ namespace Bee.Definition.UnitTests
             Assert.Equal(Guid.Empty, info.AccessToken);
             Assert.Null(info.CompanyId);
             Assert.Equal("zh-TW", info.Culture);
-            Assert.Equal("Asia/Taipei", info.TimeZone);
+            // 空值即 UTC：實際時區由登入時填入（st_user.time_zone，否則 DefaultTimeZone）
+            Assert.Empty(info.TimeZone);
             Assert.Empty(info.ApiEncryptionKey);
         }
 
@@ -111,7 +112,7 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
-        [DisplayName("UserInfo 預設應使用 zh-TW 與 Asia/Taipei")]
+        [DisplayName("UserInfo 預設應使用 zh-TW 與空時區（即 UTC）")]
         public void UserInfo_Defaults_ReturnsExpectedCultureAndTimeZone()
         {
             // Act
@@ -119,7 +120,8 @@ namespace Bee.Definition.UnitTests
 
             // Assert
             Assert.Equal("zh-TW", user.Culture);
-            Assert.Equal("Asia/Taipei", user.TimeZone);
+            // 空值即 UTC：實際時區由伺服器於登入時提供
+            Assert.Empty(user.TimeZone);
         }
     }
 }

@@ -22,8 +22,13 @@ namespace Bee.Definition.Identity
 
         /// <summary>
         /// Gets or sets the user time zone (IANA format recommended, e.g., Asia/Taipei).
+        /// An empty value means UTC.
         /// </summary>
-        public string TimeZone { get; set; } = "Asia/Taipei";
+        /// <remarks>
+        /// Empty by default, matching <c>SessionInfo.TimeZone</c>: the effective zone is supplied
+        /// by the server at login, and the conversion layer already treats a blank zone as UTC.
+        /// </remarks>
+        public string TimeZone { get; set; } = string.Empty;
     }
 
 }

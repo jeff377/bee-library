@@ -69,8 +69,17 @@ namespace Bee.Definition.Identity
 
         /// <summary>
         /// Gets or sets the user time zone (IANA format recommended, e.g., Asia/Taipei).
+        /// An empty value means UTC.
         /// </summary>
-        public string TimeZone { get; set; } = "Asia/Taipei";
+        /// <remarks>
+        /// The default is deliberately empty rather than a named zone. Every layer that consumes
+        /// this value — <c>FrameworkClock</c>, <c>DateTimeZoneConverter</c> and
+        /// <c>PayloadZoneConverter</c> — already treats a blank zone as UTC, and hard-coding a
+        /// zone here made that path unreachable while silently binding the framework to a single
+        /// region. Login fills this from <c>st_user.time_zone</c>, falling back to
+        /// <c>BackendConfiguration.DefaultTimeZone</c>.
+        /// </remarks>
+        public string TimeZone { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the API encryption key used for bidirectional data encryption between the client and server.
