@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
+using MessagePack;
 using System.Xml.Serialization;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
@@ -33,7 +34,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Gets the serialization state.
         /// </summary>
-        [XmlIgnore, JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
@@ -51,7 +52,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Gets the file path bound to serialization.
         /// </summary>
-        [XmlIgnore, JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public string ObjectFilePath { get; private set; } = string.Empty;
 

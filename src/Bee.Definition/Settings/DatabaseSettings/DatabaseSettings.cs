@@ -3,6 +3,7 @@ using System.Xml.Serialization;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using System.Text.Json.Serialization;
+using MessagePack;
 
 namespace Bee.Definition.Settings
 {
@@ -82,7 +83,7 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Gets the time at which this object was created.
         /// </summary>
-        [XmlIgnore, JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public DateTime CreateTime { get; } = DateTime.UtcNow;
 

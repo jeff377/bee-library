@@ -8,6 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Declared explicitly even though Bee.Definition already brings it in transitively.
+         MessagePack is this project's wire ABI, not an incidental dependency: 70 files here
+         use it and the default payload format is MessagePack. Leaving the version pinned
+         solely by Bee.Definition means a change there would alter this package's on-the-wire
+         behaviour with no local signal, and consumers of the published NuGet package could
+         not see the contract at all. -->
+    <PackageReference Include="MessagePack" Version="3.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Bee.Api.Contracts\Bee.Api.Contracts.csproj" />
     <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />
   </ItemGroup>

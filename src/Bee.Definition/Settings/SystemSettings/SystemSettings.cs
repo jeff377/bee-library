@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using System.Text.Json.Serialization;
+using MessagePack;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 
@@ -32,7 +33,7 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Serialization state.
         /// </summary>
-        [XmlIgnore, JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
@@ -48,7 +49,7 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Serialized binding file.
         /// </summary>
-        [XmlIgnore, JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public string ObjectFilePath { get; private set; } = string.Empty;
 
@@ -66,7 +67,7 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Object creation time.
         /// </summary>
-        [XmlIgnore, JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public DateTime CreateTime { get; } = DateTime.UtcNow;
 

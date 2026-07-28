@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Explicit rather than transitive via Bee.Definition: the concrete DTOs here carry
+         MessagePack attributes, so it is part of this package's contract. -->
+    <PackageReference Include="MessagePack" Version="3.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />
   </ItemGroup>
 
