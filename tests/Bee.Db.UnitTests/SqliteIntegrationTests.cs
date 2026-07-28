@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using Bee.Base.Data;
 using Bee.Db.Manager;
+using Bee.Db.Schema;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
 
@@ -183,6 +184,46 @@ namespace Bee.Db.UnitTests
             {
                 dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
                     "DROP TABLE IF EXISTS dec_test"));
+            }
+        }
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite 含 Guid 欄位的表建立後再比對應為 None（DB 端內建預設值不得造成永久 diff）")]
+        public void SchemaComparer_AfterCreatingGuidColumn_ReportsNoUpgrade()
+        {
+            var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.SQLite);
+            var connectionManager = _fx.GetRequiredService<IDbConnectionManager>();
+            var dbAccess = _fx.NewDbAccess(databaseId);
+            const string tableName = "guid_default_test";
+
+            // Guid 欄位在 SQLite 帶 DB 端預設值 (hex(randomblob(16)))，但定義端 DefaultValue 為空字串。
+            // 若讀回後未正規化成同一形式，比對會永遠把該欄標為 Upgrade、整表無法收斂。
+            var define = new TableSchema { TableName = tableName };
+            define.Fields!.Add("sys_rowid", "Row ID", FieldDbType.Guid);
+            define.Fields!.Add("name", "Name", FieldDbType.String, 50);
+            define.Indexes!.AddPrimaryKey("sys_rowid");
+
+            dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
+                $"DROP TABLE IF EXISTS {tableName}"));
+            try
+            {
+                var orchestrator = new TableUpgradeOrchestrator(databaseId, connectionManager);
+                var createDiff = new TableSchemaComparer(define, null, DatabaseType.SQLite).CompareToDiff();
+                Assert.True(orchestrator.Execute(orchestrator.Plan(createDiff), databaseId));
+
+                var provider = new Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider(databaseId, connectionManager);
+                var real = provider.GetTableSchema(tableName);
+                Assert.NotNull(real);
+                Assert.Equal(string.Empty, real!.Fields!["sys_rowid"].DefaultValue);
+
+                var compare = new TableSchemaComparer(define, real, DatabaseType.SQLite).Compare();
+                Assert.Equal(DbUpgradeAction.None, compare.Fields!["sys_rowid"].UpgradeAction);
+                Assert.Equal(DbUpgradeAction.None, compare.UpgradeAction);
+            }
+            finally
+            {
+                dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
+                    $"DROP TABLE IF EXISTS {tableName}"));
             }
         }
 

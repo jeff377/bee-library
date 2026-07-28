@@ -336,22 +336,67 @@ namespace Bee.Db.Providers.Sqlite
         /// strips surrounding parentheses (SQLite often wraps function defaults) and outer
         /// single quotes; returns an empty string when it equals the framework built-in default.
         /// </summary>
+        /// <remarks>
+        /// WARNING: both sides must go through <see cref="NormalizeDefaultText"/> before being
+        /// compared. SQLite requires an expression default to be parenthesised in the DDL, so
+        /// the framework built-in for <see cref="FieldDbType.Guid"/> is written as
+        /// <c>(hex(randomblob(16)))</c>, but <c>PRAGMA table_info</c> reports the inner
+        /// expression only. Comparing the raw forms marks every GUID column as different on
+        /// every schema comparison, so the table never converges.
+        /// </remarks>
         public static string ParseDefaultValue(string rawDefault, FieldDbType dbType, string originalDefault)
         {
             if (StringUtilities.IsEmpty(rawDefault)) return string.Empty;
 
-            string trimmed = rawDefault.Trim();
+            string actual = NormalizeDefaultText(rawDefault, dbType);
+            string original = NormalizeDefaultText(originalDefault, dbType);
 
-            // Unwrap an outer pair of parentheses: "(hex(randomblob(16)))" → "hex(randomblob(16))".
-            if (trimmed.StartsWith('(') && trimmed.EndsWith(')'))
-                trimmed = trimmed.Substring(1, trimmed.Length - 2).Trim();
+            return StringUtilities.IsEquals(original, actual) ? string.Empty : actual;
+        }
+
+        /// <summary>
+        /// Reduces a default value expression to a canonical form: trims whitespace, unwraps a
+        /// matching outer pair of parentheses, and for string types strips the surrounding
+        /// single quotes and unescapes doubled quotes.
+        /// </summary>
+        private static string NormalizeDefaultText(string defaultText, FieldDbType dbType)
+        {
+            if (StringUtilities.IsEmpty(defaultText)) return string.Empty;
+
+            string trimmed = UnwrapOuterParentheses(defaultText.Trim());
 
             // For string types, strip the surrounding single quotes and unescape doubled quotes.
             if ((dbType == FieldDbType.String || dbType == FieldDbType.Text) &&
                 trimmed.Length >= 2 && trimmed.StartsWith('\'') && trimmed.EndsWith('\''))
                 trimmed = trimmed.Substring(1, trimmed.Length - 2).Replace("''", "'");
 
-            return StringUtilities.IsEquals(originalDefault, trimmed) ? string.Empty : trimmed;
+            return trimmed;
+        }
+
+        /// <summary>
+        /// Removes a single outer pair of parentheses when the leading <c>(</c> is the one closed
+        /// by the trailing <c>)</c>: <c>(hex(randomblob(16)))</c> becomes <c>hex(randomblob(16))</c>.
+        /// An expression such as <c>(a)||(b)</c> is left untouched.
+        /// </summary>
+        private static string UnwrapOuterParentheses(string expression)
+        {
+            while (expression.Length >= 2 && expression.StartsWith('(') && expression.EndsWith(')'))
+            {
+                int depth = 0;
+                for (int i = 0; i < expression.Length; i++)
+                {
+                    if (expression[i] == '(') { depth++; }
+                    else if (expression[i] == ')')
+                    {
+                        depth--;
+                        // The opening parenthesis closes before the end, so it is not an outer pair.
+                        if (depth == 0 && i < expression.Length - 1) return expression;
+                    }
+                }
+                if (depth != 0) return expression;
+                expression = expression.Substring(1, expression.Length - 2).Trim();
+            }
+            return expression;
         }
     }
 }

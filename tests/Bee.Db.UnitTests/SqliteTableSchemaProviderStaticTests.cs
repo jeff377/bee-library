@@ -97,16 +97,38 @@ namespace Bee.Db.UnitTests
             Assert.Equal(expected, SqliteTableSchemaProvider.ParseDefaultValue(raw, dbType, original));
         }
 
-        [Fact]
-        [DisplayName("SQLite ParseDefaultValue：函式預設外層括號應被剝除（hex(randomblob(16)) round-trip）")]
-        public void ParseDefaultValue_FunctionDefaultWithOuterParens_StripsOnce()
+        [Theory]
+        // PRAGMA table_info 實際回報的形式：外層括號已被 SQLite 剝掉，內建預設值仍帶括號。
+        [InlineData("hex(randomblob(16))")]
+        // 保險起見，帶括號的原樣輸入也應正規化為相同結果。
+        [InlineData("(hex(randomblob(16)))")]
+        [DisplayName("SQLite ParseDefaultValue：Guid 內建預設值應正規化為空字串（不論是否帶外層括號）")]
+        public void ParseDefaultValue_GuidBuiltinDefault_ReturnsEmpty(string raw)
         {
-            // SQLite 在 DEFAULT 子句裡通常會以 (...) 包覆函式表達式，
-            // ParseDefaultValue 只剝外層一層；compare 用的 originalDefault 仍含括號，
-            // 因此比對不相等，回傳剝完外層括號的形式。
+            // 內建預設值 (hex(randomblob(16))) 在 DDL 內必須加括號才是合法的 SQLite 運算式預設，
+            // 但 PRAGMA table_info 只回報括號內的運算式。兩邊都正規化後才比得出「與內建預設相同」，
+            // 否則每次 schema 比對都會把 Guid 欄位標為 Upgrade 而永遠收斂不了。
             var result = SqliteTableSchemaProvider.ParseDefaultValue(
-                "(hex(randomblob(16)))", FieldDbType.Guid, "(hex(randomblob(16)))");
-            Assert.Equal("hex(randomblob(16))", result);
+                raw, FieldDbType.Guid, "(hex(randomblob(16)))");
+            Assert.Equal(string.Empty, result);
+        }
+
+        [Fact]
+        [DisplayName("SQLite ParseDefaultValue：非內建的函式預設應保留剝除外層括號後的表達式")]
+        public void ParseDefaultValue_NonBuiltinFunctionDefault_ReturnsUnwrappedExpression()
+        {
+            var result = SqliteTableSchemaProvider.ParseDefaultValue(
+                "(lower(hex(randomblob(16))))", FieldDbType.Guid, "(hex(randomblob(16)))");
+            Assert.Equal("lower(hex(randomblob(16)))", result);
+        }
+
+        [Fact]
+        [DisplayName("SQLite ParseDefaultValue：非成對的頭尾括號不應被誤剝")]
+        public void ParseDefaultValue_UnpairedOuterParens_NotStripped()
+        {
+            var result = SqliteTableSchemaProvider.ParseDefaultValue(
+                "(a)||(b)", FieldDbType.Text, string.Empty);
+            Assert.Equal("(a)||(b)", result);
         }
 
         [Fact]
