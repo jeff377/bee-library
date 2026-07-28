@@ -117,13 +117,38 @@ API Key 情境相反：**每個 request 都要驗一次**。把 100k 次迭代�
 > 這條要在程式碼註解寫明「為何不用 `PasswordHasher`」，否則日後必定有人「順手統一」
 > 而把 100k 迭代搬進每個請求。
 
-### D4：快取沿用 DB-backed cache 樣板
+### D4：快取沿用 DB-backed cache 樣板，但須自我載入
 
 `ApiKeyCache : KeyObjectCache<ApiKeyInfo>`（`src/Bee.ObjectCaching/Database/`），key 為 `sys_id`，
 搭配 `st_cache_notify` 失效——停用一把金鑰後，其他行程在下次 notify 檢查時同步失效。
 
 負向快取（查無此 `sys_id`）沿用 `KeyObjectCache` 既有機制，避免以隨機 `sys_id` 掃描造成
 每次都穿透到 DB。
+
+**與現有四個 DB 相依快取的關鍵差異**：`SessionInfoCache` / `CompanyInfoCache` /
+`CompanyRolePermissionsCache` / `DepartmentTreeCache` 的 `CreateInstance` **全部回 `null`**，
+靠一個明確事件（Login / `EnterCompany` / 權限服務）呼叫 `Set` 灌入。API Key 沒有那個事件
+——請求進來時金鑰已經在 header 上，沒有任何前置步驟可以預熱。
+**`ApiKeyCache` 是框架第一個必須「miss 時自己去 DB 撈」的快取。**
+
+`Bee.ObjectCaching` 不得相依 `Bee.Repository`，故 `CreateInstance` 無法直接查 `st_api_key`。兩條路線：
+
+| 路線 | 做法 | 代價 |
+|---|---|---|
+| A | 比照 `CompanyRolePermissionsCache`：`CreateInstance` 維持回 `null`，由 `ApiKeyService` 做 `Get() ?? repo.Load() → Set()` | **負向快取失效**——擋隨機 `sys_id` 掃描的邏輯得在 service 再寫一份 |
+| B ✅ | ctor 收載入委派（`ApiKeyCache(Func<string, ApiKeyInfo?> loader)`），DI 組裝時綁 repository | 形狀與其他四個快取不同，須註解說明理由 |
+
+**採 B**。理由是負向快取：[`KeyObjectCache.Get`](../../src/Bee.ObjectCaching/KeyObjectCache.cs)
+已內建 miss sentinel 與正/負向 policy，路線 A 等於繞過 base class 再手寫一份——正是體檢反覆
+抓到的「同一份邏輯留兩個複本」同型問題。委派同時是保持相依方向的接縫。
+
+**TTL 須覆寫 `GetPolicy`**：預設為 sliding 20 分，對金鑰不適用——sliding 會讓熱門金鑰永遠不
+重讀，`expired_at` 到期後仍在快取中存活。改為 absolute（建議 60 分）。撤銷的保證來自
+cache-notify 而非過期，這也是 D5 / D10「DB 短暫不可用仍能服務」的來源；代價是 notify 失效鏈
+成為撤銷的**唯一**保證，其可靠性必須有測試覆蓋。
+
+**接線清單**（依 `bee-add-cache-object` skill）：`ICacheContainer` 新增 `ApiKey` 屬性（三處同步）、
+cache group 名稱、兩個 CacheNotify 測試 stub（漏補會 CS0535 直接編不過）。
 
 ### D5：表不存在或無啟用金鑰時維持現行行為（相容性閘門）
 
@@ -166,6 +191,50 @@ validator」改為「請建立 API 金鑰」——**從此不需要寫程式就�
 為後盾（[`EndpointStorage`](../../src/Bee.UI.Core/EndpointStorage.cs)），沿用同一份持久化載體即可，
 不動介面。行動端 sandbox 情境仍走各平台既有的 storage 實作。
 
+### D9：每請求驗證，不引入 token 交換
+
+金鑰每個請求驗一次，**不做**「以金鑰換短期 token、之後改驗 token」。四個理由：
+
+1. **成本已經被 D2 / D3 設計掉**：切字串 → `sys_id` O(1) 查記憶體快取 → 一次 SHA-256（約 48 bytes）
+   → `FixedTimeEquals`。框架每個需授權的請求本來就在付同級成本——
+   [`AccessTokenValidator`](../../src/Bee.Business/Validator/AccessTokenValidator.cs) →
+   `SessionInfoCache.Get` 是**純記憶體查表**（`CreateInstance` 回 `null`，從不查 DB）。
+2. **交換式會撞上 session 的既有安全設計**（最關鍵）：
+   [`SessionInfoCache`](../../src/Bee.ObjectCaching/Database/SessionInfoCache.cs) 的 `CreateInstance`
+   回 `null` 是**安全屬性而非待辦**——XML doc 已載明：只有 Login 能讓 token 進快取，否則任何寫
+   `st_session` 的路徑都變成鑄 token 的方法（`CreateSession` 正因為只憑 user id 發 token 才是
+   `LocalOnly`）。推論是 token 只在鑄造它的那個行程有效，多節點部署下 A 節點換到的 token 到 B 節點
+   會 401。相對地 `ApiKeyCache` 以 `sys_id` 為 key、可從 `st_api_key` 重建，天生跨行程一致。
+   **per-request 是唯一不需要動 session 安全模型的選項。**
+3. **撤銷語意維持單層**：停用即擋住，最壞延遲是 notify 週期。交換式須再建一條
+   「key 撤銷 → 連帶撤銷其衍生 token」的失效鏈，事故處置從「改一個欄位」變成兩件事。
+4. **wire 上不出現兩個生命週期不同的 token**，守住「`X-Api-Key` = 應用識別、`Bearer` = 使用者鑑別」
+   的分界（也就是「不在範圍」第一條）。
+
+日後才需重議的觸發條件：per-key 配額 / rate limit / scope（現列不在範圍）、對第三方的
+OAuth client_credentials 標準介接——屆時是**新增**一條路徑，而不是取代金鑰檢查。
+
+### D10：`System.Ping` 免金鑰
+
+ping 是連通性檢查，不碰 DB、不回業務資料。排除後健康檢查在 DB 不可用時仍能作答
+（`待確認 1` 由此收斂）。三個落地約束：
+
+1. **獨立豁免清單，不重用 `NoAuthMethods`**。
+   [`ApiAuthorizationValidator.NoAuthMethods`](../../src/Bee.Api.Core/Authorization/ApiAuthorizationValidator.cs)
+   是 **Bearer 豁免**清單（含 `System.Login` 與 `System.GetApiPayloadOptions`），與金鑰是不同軸；
+   合用會一次放掉三個：`Login` 恰恰**最需要**金鑰（階段 2 要記「哪個 app 在嘗試登入」），
+   `GetApiPayloadOptions` 揭露 payload / 加密協商設定、不是連通性檢查。新清單預設**只有
+   `System.Ping`**，比照 `IsAuthorizationRequired` 做成 `protected virtual` 供部署端加自己的健康
+   檢查方法。兩個清單並存須註解寫明「兩條軸，勿合併」。
+2. **`PingResult` 增加金鑰狀態欄**（`NotProvided` / `Invalid` / `Valid`）。ping 的主要消費場景是
+   連線設定畫面的「測試連線」；完全不看金鑰會讓使用者打錯金鑰仍顯示連線成功，錯誤延到第一次
+   真正呼叫才在別的畫面浮出。加欄位屬 additive，adr-030 改 name-based key 後 wire 相容。
+   副作用是 ping 成為「金鑰是否有效」的 oracle——以 D2 的 256-bit secret 而言無實際可利用性
+   （攻擊者須先持有完整金鑰），此判斷要寫進註解，別讓後人誤以為是疏漏。
+3. **`Version` 改為金鑰有效才回**。[`SystemBusinessObject.Ping`](../../src/Bee.Business/System/SystemBusinessObject.cs)
+   現在無條件回 `SysInfo.Version`；免金鑰後等於對全網公開框架版本（fingerprinting 起手式）。
+   `Status` / `ServerTime` 對連通性檢查已足夠；監控要版本號的話本來就該帶金鑰。
+
 ## 階段 1：存放模型與驗證
 
 1. `st_api_key` TableSchema（common）+ 註冊進 `DbCategorySettings`；`ApiKeyRepository`。
@@ -173,16 +242,22 @@ validator」改為「請建立 API 金鑰」——**從此不需要寫程式就�
    salt + SHA-256 + `FixedTimeEquals`，含「為何不用 `PasswordHasher`」的 WHY 註解。
 3. 金鑰格式工具：產生（`RandomNumberGenerator` 256-bit，URL-safe base64）與解析
    `{sys_id}.{secret}`；格式不符即快速失敗，不進 DB 查詢。
-4. `ApiKeyCache : KeyObjectCache<ApiKeyInfo>` + cache-notify 失效（依 `bee-add-cache-object` 流程，
-   含 `ICacheContainer` 三處同步與兩個 CacheNotify 測試 stub）。
+4. `ApiKeyCache : KeyObjectCache<ApiKeyInfo>`，依 D4：ctor 收載入委派、覆寫 `GetPolicy` 為
+   absolute TTL、`ICacheContainer` 三處同步、cache-notify 失效與兩個 CacheNotify 測試 stub
+   （依 `bee-add-cache-object` 流程）。
 5. `IApiKeyValidator`（`Bee.Definition/Security/`）+ 預設實作，由 `AddBeeFramework` 註冊。
 6. `ApiAuthorizationContext` 增加驗證器承載欄位；`ApiServiceController.ValidateAuthorization`
    從 DI 解析並帶入；`ApiAuthorizationValidator` 有驗證器就嚴格比對、沒有就沿用非空檢查。
-7. 啟動警告訊息與觸發條件改依 D5。
-8. 測試：命中 / 查無 / 停用 / 過期 / 格式不符 / 無啟用金鑰沿用舊行為 / 雜湊 round-trip /
-   cache-notify 失效生效。
+   同時依 D10 新增金鑰豁免清單（`protected virtual`，預設只含 `System.Ping`），
+   與既有的 Bearer 豁免 `NoAuthMethods` 並存且互不引用。
+7. 依 D10 調整 ping：`PingResult` 增金鑰狀態欄、`Version` 改為金鑰有效才回。
+8. 啟動警告訊息與觸發條件改依 D5。
+9. 測試：命中 / 查無 / 停用 / 過期 / 格式不符 / 無啟用金鑰沿用舊行為 / 雜湊 round-trip /
+   cache-notify 失效生效 / **ping 不帶金鑰仍回 `ok` 且不含 `Version`** /
+   **ping 帶無效金鑰回報 `Invalid`** / **`Login` 與 `GetApiPayloadOptions` 仍需金鑰**。
 
-**驗收**：建了金鑰的部署，錯誤金鑰被拒；沒建的部署行為與升級前一致。
+**驗收**：建了金鑰的部署，錯誤金鑰被拒；沒建的部署行為與升級前一致；
+DB 不可用時 ping 仍可回應，其餘方法 fail-closed。
 
 ## 階段 2：呼叫端識別
 
@@ -223,9 +298,9 @@ validator」改為「請建立 API 金鑰」——**從此不需要寫程式就�
 
 ## 待確認
 
-1. **DB 不可用時的行為**：金鑰驗證在請求最前端，連 `System.Ping` 都需通過。DB 掛掉時
-   API 全數拒絕——判斷是可接受（DB 掛了 API 本來就沒用），但要明確載明，避免日後被當 bug 追。
-   若要讓 ping 在 DB 掛時仍可回應（健康檢查用途），需把 ping 排除在金鑰檢查外，另議。
+1. ~~**DB 不可用時的行為**~~ —— **已決策（見 D10）**：`System.Ping` 免金鑰，健康檢查在 DB
+   不可用時仍能作答；其餘方法 fail-closed（DB 掛了 API 本來就沒用）。快取 TTL 依 D4 拉長為
+   absolute 60 分，DB 短暫不可用期間已在快取的金鑰仍可服務。此行為須寫進文件，避免日後被當 bug 追。
 2. **金鑰是否綁 CompanyId**：DB 存放讓「一租戶一把」變得自然。但一旦金鑰帶公司語意，
    就與 session 公司情境形成兩個來源、需交叉驗證。預設**不綁**，維持金鑰只識別應用；
    有需求再另案。
