@@ -18,7 +18,11 @@
 
 ### 型別轉換與字串工具
 
-- `ValueUtilities` -- 安全型別轉換，支援預設值回退（`CInt`、`CStr`、`CBool` 等）
+- `ValueUtilities` -- 安全型別轉換（`CInt`、`CStr`、`CBool` 等）。時間家族（`CDateOnly`、
+  `CDateTime`、`CTimeOnly`）的單參數多載回傳 nullable，雙參數多載才顯式帶預設值——無法解析的
+  輸入回 `null`，而不是一個可能流進報表的 sentinel 日期
+- `FrameworkClock` -- 框架時鐘。時間點用 `UtcNow()`；某時區的牆上時間用 `Now(timeZoneId)`，
+  回傳 `Unspecified`（絕不回 `Local`）。時區 id 為空即代表 UTC
 - `StringExtensions` / `StringUtilities` -- 字串操作輔助方法（編碼、格式化、比較）
 - `DateTimeExtensions` -- 日期工具，包含民國曆支援
 

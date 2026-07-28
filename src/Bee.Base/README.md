@@ -18,7 +18,13 @@
 
 ### Type Conversion & String Utilities
 
-- `ValueUtilities` -- safe type conversions with fallback defaults (`CInt`, `CStr`, `CBool`, etc.)
+- `ValueUtilities` -- safe type conversions (`CInt`, `CStr`, `CBool`, …). The temporal members
+  (`CDateOnly`, `CDateTime`, `CTimeOnly`) return a nullable from their one-argument form and take
+  an explicit fallback in the two-argument overload — an unparseable input yields `null` rather
+  than a sentinel date that could reach a report
+- `FrameworkClock` -- the framework's clock. `UtcNow()` for instants; `Now(timeZoneId)` for a
+  wall-clock reading in a given zone, returned as `Unspecified` (never `Local`). A blank zone id
+  means UTC
 - `StringExtensions` / `StringUtilities` -- string manipulation helpers (encoding, formatting, comparison)
 - `DateTimeExtensions` -- date utilities including ROC (Minguo) calendar support
 

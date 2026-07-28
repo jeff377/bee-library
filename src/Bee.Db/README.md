@@ -118,6 +118,26 @@ Host=localhost;Port=5432;Database={@DbName};Username={@UserId};Password={@Passwo
 - Per-query-shape delegate caching with `ConcurrentDictionary`
 - Supports `List<T>` and `IEnumerable<T>` (deferred) materialization
 
+
+### Temporal Types Across Providers
+
+`FieldDbType` has three temporal members and they map very differently:
+
+| `FieldDbType` | SQL Server | PostgreSQL | MySQL | Oracle | SQLite |
+|---|---|---|---|---|---|
+| `Date` | `date` | `date` | `DATE` | `DATE` | `DATE` |
+| `DateTime` | `datetime2` | `timestamp` | `DATETIME(6)` | `TIMESTAMP(6)` | `DATETIME` |
+| `Time` | `nchar(5)` | `char(5)` | `CHAR(5)` | `VARCHAR2(5)` | `VARCHAR(5)` |
+
+`Time` is carried as a fixed-width `"HH:mm"` string rather than a native time type. Native time
+types differ too much across providers (range, precision, whether they are an interval or a
+clock reading) to round-trip a wall-clock value reliably, and a time of day is never time-zone
+converted — see [ADR-033](../../docs/adr/adr-033-time-of-day-semantics.md).
+
+> Writing a custom dialect? `GetDefaultValueExpression(FieldDbType)` and your type mapping must
+> both handle `Time`. It was appended to the enum, so an existing `switch` compiles fine and
+> silently falls through to its default branch.
+
 ## Key Public APIs
 
 | Class / Interface | Purpose |

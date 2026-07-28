@@ -118,6 +118,24 @@ Host=localhost;Port=5432;Database={@DbName};Username={@UserId};Password={@Passwo
 - 以 `ConcurrentDictionary` 依查詢結構快取委派
 - 支援 `List<T>` 與 `IEnumerable<T>`（延遲）具體化
 
+
+### 各 provider 的時間型別對映
+
+`FieldDbType` 有三個時間型別成員，對映方式差異很大：
+
+| `FieldDbType` | SQL Server | PostgreSQL | MySQL | Oracle | SQLite |
+|---|---|---|---|---|---|
+| `Date` | `date` | `date` | `DATE` | `DATE` | `DATE` |
+| `DateTime` | `datetime2` | `timestamp` | `DATETIME(6)` | `TIMESTAMP(6)` | `DATETIME` |
+| `Time` | `nchar(5)` | `char(5)` | `CHAR(5)` | `VARCHAR2(5)` | `VARCHAR(5)` |
+
+`Time` 以固定寬度的 `"HH:mm"` 字串承載，而非各家原生時間型別。原生時間型別在範圍、精度、
+以及「代表間隔還是時鐘讀數」上差異太大，無法可靠地 round-trip 一個牆上時間；且時刻永遠不做
+時區轉換——見 [ADR-033](../../docs/adr/adr-033-time-of-day-semantics.md)。
+
+> 要自訂 dialect？`GetDefaultValueExpression(FieldDbType)` 與型別對映**都**必須處理 `Time`。
+> 它是附加在列舉末端的，所以既有的 `switch` 編譯照樣通過，只會靜默落入 default 分支。
+
 ## 主要公開 API
 
 | 類別 / 介面 | 用途 |
