@@ -104,7 +104,6 @@
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="DefineAccess"/><TextBox Text="{Binding DefineAccess, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="SessionInfoService"/><TextBox Text="{Binding SessionInfoService, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="CompanyInfoService"/><TextBox Text="{Binding CompanyInfoService, Mode=TwoWay}"/></DockPanel>
-                <DockPanel Classes="row"><TextBlock Classes="label" Text="EnterpriseObjectService"/><TextBox Text="{Binding EnterpriseObjectService, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="SystemRepositoryFactory"/><TextBox Text="{Binding SystemRepositoryFactory, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="FormRepositoryFactory"/><TextBox Text="{Binding FormRepositoryFactory, Mode=TwoWay}"/></DockPanel>
             </StackPanel>
