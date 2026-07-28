@@ -100,10 +100,39 @@ namespace Bee.Api.Core.JsonRpc
             // SpecifyKind first: ConvertTime* rejects a value whose Kind contradicts the requested
             // direction, and the incoming Kind is not trustworthy anyway (see the type remarks).
             var naive = DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
+            if (toUtc) { naive = SkipSpringForwardGap(naive, zone); }
             var shifted = toUtc
                 ? TimeZoneInfo.ConvertTimeToUtc(naive, zone)
                 : TimeZoneInfo.ConvertTimeFromUtc(naive, zone);
             return DateTime.SpecifyKind(shifted, DateTimeKind.Unspecified);
+        }
+
+        /// <summary>
+        /// Moves a local time that falls inside a spring-forward gap to the first instant that
+        /// actually exists, leaving every other value untouched.
+        /// </summary>
+        /// <remarks>
+        /// A date picker has no way to know that a wall-clock time does not exist on a given day, so
+        /// a user picking 02:30 on a transition day is doing something entirely reasonable. Without
+        /// this, <c>ConvertTimeToUtc</c> throws <see cref="ArgumentException"/> and that exception
+        /// travels out through the JSON-RPC boundary as an opaque failure.
+        /// <para>
+        /// Shifting forward by the gap's own length is the convention the mainstream date pickers
+        /// use (iOS, Android, Google Calendar): 02:30 on a one-hour spring-forward day becomes
+        /// 03:30. The gap length is derived from the offsets either side of the transition rather
+        /// than assumed to be one hour — not every zone moves by exactly an hour.
+        /// </para>
+        /// <para>
+        /// The fall-back (ambiguous) direction needs no handling: <c>ConvertTimeToUtc</c> resolves a
+        /// repeated local time to standard time deterministically and does not throw.
+        /// </para>
+        /// </remarks>
+        private static DateTime SkipSpringForwardGap(DateTime naive, TimeZoneInfo zone)
+        {
+            if (!zone.IsInvalidTime(naive)) { return naive; }
+
+            var gap = zone.GetUtcOffset(naive.Date.AddDays(1)) - zone.GetUtcOffset(naive.Date.AddDays(-1));
+            return gap > TimeSpan.Zero ? naive.Add(gap) : naive;
         }
 
         private static DataSet? Convert(DataSet? dataSet, string timeZoneId, bool toUtc)

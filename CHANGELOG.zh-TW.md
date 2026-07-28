@@ -76,6 +76,10 @@
 - `Bee.Definition`：定義檔路徑拒絕會逃出定義根目錄的片段。
 - `Bee.Definition`：master key 檔案在 Unix 上建立為僅擁有者可讀寫。
 - `Bee.Repository`：session 查詢失敗不再把 UserID 回傳給呼叫端。
+- `Bee.Api.Core`：因日光節約前推而不存在的本地時刻（例如轉換日的 02:30）改為前推該次轉換的
+  delta，不再擲例外。日期選擇器無從得知該時刻不存在，使用者的選擇是合理的；先前
+  `ArgumentException` 會原樣穿透 JSON-RPC 邊界成為不明失敗。此行為與 iOS / Android /
+  Google 日曆等主流選擇器一致。反向的 fall-back 重疊時刻本就有確定性解析，不受影響。
 
 ### 安全性
 

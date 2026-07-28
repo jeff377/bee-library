@@ -84,17 +84,35 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("UserToUtc 對 spring-forward 缺口內的時刻目前擲 ArgumentException（已知缺口）")]
-        public void UserToUtc_InvalidLocalTime_CurrentlyThrows()
+        [DisplayName("UserToUtc 對 spring-forward 缺口內的時刻應前推一個 DST 差，不擲例外")]
+        public void UserToUtc_InvalidLocalTime_SkipsGapForward()
         {
-            // NOTE: 這支測試記錄的是**現況**而非期望的最終行為。使用者以日期選擇器輸入
-            // 02:30 是完全正常的操作，但該時刻在該日不存在，`TimeZoneInfo.ConvertTimeToUtc`
-            // 因此擲 `ArgumentException`，且會原樣穿透 JSON-RPC 邊界。語意如何收斂
-            // （前推一個 DST 差、退回標準時間、或轉為具名的框架例外）尚待裁決。
-            var exception = Record.Exception(() =>
-                DateTimeZoneConverter.UserToUtc(BuildTableWithInstant(SpringForwardGap), NewYork));
+            var converted = DateTimeZoneConverter.UserToUtc(BuildTableWithInstant(SpringForwardGap), NewYork);
 
-            Assert.IsType<ArgumentException>(exception);
+            Assert.NotNull(converted);
+
+            // 02:30 不存在 → 前推該次轉換的 delta（此區為 1 小時）後的 03:30 才是真實時刻。
+            var gap = Zone.GetUtcOffset(SpringForwardGap.Date.AddDays(1))
+                      - Zone.GetUtcOffset(SpringForwardGap.Date.AddDays(-1));
+            var expected = DateTime.SpecifyKind(
+                TimeZoneInfo.ConvertTimeToUtc(SpringForwardGap.Add(gap), Zone), DateTimeKind.Unspecified);
+
+            Assert.Equal(expected, (DateTime)converted.Rows[0]["occurred_at"]);
+        }
+
+        [Fact]
+        [DisplayName("前推後的時刻轉回使用者時區應落在缺口之後，且是存在的時刻")]
+        public void UserToUtc_InvalidLocalTime_ResultRoundTripsToARealTime()
+        {
+            var converted = DateTimeZoneConverter.UserToUtc(BuildTableWithInstant(SpringForwardGap), NewYork);
+            Assert.NotNull(converted);
+
+            var utc = (DateTime)converted.Rows[0]["occurred_at"];
+            var backInZone = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.SpecifyKind(utc, DateTimeKind.Unspecified), Zone);
+
+            Assert.False(Zone.IsInvalidTime(backInZone));
+            Assert.True(backInZone > SpringForwardGap);
         }
     }
 }

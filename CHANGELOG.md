@@ -92,6 +92,12 @@ All notable changes to this project will be documented in this file.
 - `Bee.Definition`: definition file paths reject segments that would escape the definition root.
 - `Bee.Definition`: master key files are created owner-only on Unix.
 - `Bee.Repository`: session lookup failures no longer echo the user id back to the caller.
+- `Bee.Api.Core`: a local time that does not exist because of a daylight-saving spring-forward
+  (e.g. 02:30 on a transition day) is moved forward by the gap's own length instead of throwing.
+  A date picker cannot know the time is missing, so the user's pick was reasonable; previously
+  `ArgumentException` escaped through the JSON-RPC boundary as an opaque failure. This matches the
+  convention of the mainstream pickers (iOS, Android, Google Calendar). Ambiguous fall-back times
+  were already resolved deterministically and are unchanged.
 
 ### Security
 
