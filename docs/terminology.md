@@ -246,8 +246,9 @@ The test: ask whether the value needs to know *which day*. If it does, it is an 
 not and the question is *what time*, it is a time of day. If the question is *how long*, it is a
 duration.
 
-See [Calendar-Day vs Instant Column Semantics](date-semantics.md), [Time-of-Day Columns](time-semantics.md),
-and [Time Zones](datetime-timezone.md).
+See [Temporal Types](temporal-types.md) for the cross-layer reference, and
+[Calendar-Day vs Instant Column Semantics](date-semantics.md) / [Time Zones](datetime-timezone.md)
+for the two semantics that carry a mechanism of their own.
 
 
 ### Query and Filter

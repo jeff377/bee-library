@@ -42,7 +42,6 @@
 | [FormMap](formmap.zh-TW.md) | Bee.Db 採用的資料庫存取模式，以 FormSchema 為單位動態產生 SQL |
 | [時間型別總覽：Date、DateTime、Time](temporal-types.zh-TW.md) | 跨層對照參考：三者如何選擇，以及各自在資料庫、`DataSet`、程式碼與三種序列化中的承載方式 |
 | [日曆日與時間點的欄位語意](date-semantics.zh-TW.md) | `FieldDbType.Date` 欄位如何在 wire 上自我描述、.NET 與 JS/TS 端如何讀取，以及自寫 SQL 時如何宣告 |
-| [時刻欄位](time-semantics.zh-TW.md) | 何時使用 `FieldDbType.Time`、定寬 `"HH:mm"` 的儲存形式、如何讀成 `TimeOnly`，以及它為何不是時距 |
 | [時區處理](datetime-timezone.zh-TW.md) | UTC 儲存、轉換發生在哪裡、使用者時區的設定，以及自寫 SQL 與非 .NET 用戶端該做什麼 |
 
 ---

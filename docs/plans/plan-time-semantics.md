@@ -221,7 +221,7 @@ ADR：[../adr/adr-033-time-of-day-semantics.md](../adr/adr-033-time-of-day-seman
 
 | 產出 | 內容 |
 |------|------|
-| [../time-semantics.md](../time-semantics.md) / [.zh-TW.md](../time-semantics.zh-TW.md) | 雙語公開文件：何時該用、宣告方式、五家欄位型別、讀寫、查詢排序保證、破壞性變更，以及「`Time` 不是什麼」 |
+| ~~`time-semantics.md` / `.zh-TW.md`~~ | 雙語公開文件：何時該用、宣告方式、五家欄位型別、讀寫、查詢排序保證、破壞性變更，以及「`Time` 不是什麼」。**已於 2026-07-27 併入 [../temporal-types.md](../temporal-types.md) 並刪除** —— `Date` 與 `DateTime` 各有專屬機制要解釋（標記、UTC 轉換），`Time` 沒有，其專屬文件講不出跨層總覽沒講的事 |
 | [../terminology.md](../terminology.md) / [.zh-TW.md](../terminology.zh-TW.md) | 新增「時間語意」一節：日曆日 / 時刻 / 時間點 / 時距四詞與對應型別、判別法；並更新 `FieldDbType` 與 `ControlType` 的值清單 |
 | [../README.md](../README.md) / [.zh-TW.md](../README.zh-TW.md) | 文件索引新增時刻欄位條目 |
 

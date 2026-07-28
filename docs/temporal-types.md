@@ -41,6 +41,15 @@ The one structural difference: `Date` and `DateTime` **share a CLR type**, so th
 semantic would be lost the moment a value left the definition layer. It is preserved by an explicit
 marker on the column. `Time` needs no marker — a `string` column is already unambiguous.
 
+Declaring any of the three is the same one line, and the layout layer derives the editor from it —
+no layout change is needed to get a date picker or a time input:
+
+```xml
+<DbField FieldName="hire_date"  Caption="Hire Date" DbType="Date" />
+<DbField FieldName="created_at" Caption="Created"   DbType="DateTime" />
+<DbField FieldName="work_start" Caption="Start"     DbType="Time" />
+```
+
 ## 3. Database layer
 
 | Database | `Date` | `DateTime` | `Time` |
@@ -116,6 +125,11 @@ Two properties hold across the whole family:
 
 When a non-null value is wanted, pass the fallback explicitly. Stating it is the point: it makes
 the choice visible instead of hiding it in an omitted default argument.
+
+All three are **lenient about what they accept and strict about what they return**. `CTimeOnly`
+takes `"8:30"`, a `DateTime` or an in-range `TimeSpan`; `CDateTime` takes Gregorian and ROC date
+strings (`20150312`, `1040312`). Anything out of range or unrecognisable comes back `null` rather
+than a guess.
 
 ## 6. Serialization
 
@@ -257,8 +271,8 @@ field rather than deriving it from two times of day.**
 
 - [Calendar-Day vs Instant Column Semantics](date-semantics.md) — how the `Date` marker works and
   how to declare it for hand-written SQL. [ADR-031](adr/adr-031-calendar-day-column-semantics.md).
-- [Time-of-Day Columns](time-semantics.md) — the `Time` type in depth.
-  [ADR-033](adr/adr-033-time-of-day-semantics.md).
+- [ADR-033](adr/adr-033-time-of-day-semantics.md) — why `Time` is a fixed-width string rather than
+  a native database time type, with the measurements behind the decision.
 - [Time Zones](datetime-timezone.md) — UTC storage and conversion for instants.
   [ADR-032](adr/adr-032-datetime-timezone.md).
 - [Terminology](terminology.md) — the four-term vocabulary (calendar day / time of day / instant /

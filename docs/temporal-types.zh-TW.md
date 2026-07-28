@@ -38,6 +38,14 @@
 唯一的結構性差異：`Date` 與 `DateTime` **共用 CLR 型別**，日曆日語意在值離開定義層的瞬間就會消失，
 因此靠欄位上的顯式標記保留。`Time` 不需要標記 —— `string` 欄位本身已無歧義。
 
+三者的宣告都是同樣一行，版面層會據此推導編輯控件 —— 不需改動 layout 即可得到日期選擇器或時刻輸入：
+
+```xml
+<DbField FieldName="hire_date"  Caption="到職日" DbType="Date" />
+<DbField FieldName="created_at" Caption="建立時間" DbType="DateTime" />
+<DbField FieldName="work_start" Caption="上班時刻" DbType="Time" />
+```
+
 ## 3. 資料庫層
 
 | 資料庫 | `Date` | `DateTime` | `Time` |
@@ -111,6 +119,10 @@ DateTime created = ValueUtilities.CDateTime(row["created_at"], DateTime.MinValue
 
 需要非 null 值時請顯式傳入 fallback。「明寫」正是重點：它讓選擇可見，
 而不是藏在被省略的預設參數裡。
+
+三者都**對輸入寬鬆、對輸出嚴格**。`CTimeOnly` 接受 `"8:30"`、`DateTime`、範圍內的 `TimeSpan`；
+`CDateTime` 接受西元與民國日期字串（`20150312`、`1040312`）。
+超出範圍或無法辨識的一律回 `null`，不做臆測。
 
 ## 6. 序列化
 
@@ -245,8 +257,8 @@ FilterCondition.Equal("work_start", "08:30");                      // string —
 
 - [日曆日與時間點的欄位語意](date-semantics.zh-TW.md) —— `Date` 標記的運作方式，
   以及自寫 SQL 時如何宣告。[ADR-031](adr/adr-031-calendar-day-column-semantics.md)。
-- [時刻欄位](time-semantics.zh-TW.md) —— `Time` 型別的深入說明。
-  [ADR-033](adr/adr-033-time-of-day-semantics.md)。
+- [ADR-033](adr/adr-033-time-of-day-semantics.md) —— `Time` 為何採定寬字串而非資料庫原生時刻型別，
+  含決策背後的實測數據。
 - [時區處理](datetime-timezone.zh-TW.md) —— 時間點的 UTC 儲存與轉換。
   [ADR-032](adr/adr-032-datetime-timezone.md)。
 - [術語表](terminology.zh-TW.md) —— 日曆日 / 時刻 / 時間點 / 時距 四詞的定義。

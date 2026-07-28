@@ -42,7 +42,6 @@ This directory contains the public-facing developer documentation for the Bee.NE
 | [FormMap](formmap.md) | Bee.Db's data access pattern, dynamically generating SQL from FormSchema |
 | [Temporal Types: Date, DateTime and Time](temporal-types.md) | The cross-layer reference: choosing between the three, and how each is carried in the database, the `DataSet`, code, and all three serialization formats |
 | [Calendar-Day vs Instant Column Semantics](date-semantics.md) | How a `FieldDbType.Date` column describes itself on the wire, reading it from .NET and JS/TS, and declaring it for hand-written SQL |
-| [Time-of-Day Columns](time-semantics.md) | When to use `FieldDbType.Time`, the fixed-width `"HH:mm"` storage form, reading it as a `TimeOnly`, and why it is not a duration |
 | [Time Zones](datetime-timezone.md) | UTC storage, where conversion happens, configuring a user's zone, and what hand-written SQL and non-.NET clients must do |
 
 ---
