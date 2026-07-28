@@ -233,7 +233,7 @@ return Regex.Replace(s, Regex.Escape(search), replacement, options, TimeSpan.Fro
 四項嚴重發現構成一條鏈：**登入 → 覆寫 FormSchema → 伺服器端運算式求值**。
 已獨立驗證，並區分「當前可利用」與「潛伏」。
 
-### P1-1. `SaveDefine` 無權限模型 ★最高投報比
+### ✅ P1-1. `SaveDefine` 無權限模型 ★最高投報比
 
 [SystemBusinessObject.Define.cs:242-249](../../src/Bee.Business/System/SystemBusinessObject.Define.cs)
 唯一閘門是排除 `SystemSettings` / `DatabaseSettings`。**未排除** `PermissionModels`、
@@ -246,9 +246,27 @@ return Regex.Replace(s, Regex.Escape(search), replacement, options, TimeSpan.Fro
 `Authorize(PermissionAction.X)`，`LogBusinessObject` 有 `EnsureAuditReadAllowed()`。
 只有 `SystemBusinessObject` 的 Define 家族裸奔。
 
-**修法**：加 `PermissionAction` 閘門；可寫的 `DefineType` 改黑名單為**白名單**。
+**修復方式（比權限模型更嚴格）**：寫入定義是**部署期作業**，不是應用期作業，
+因此整個方法改為 `ApiProtectionLevel.LocalOnly` —— 遠端呼叫一律拒絕，
+比任何 token 或權限檢查都嚴格，也不需要新增權限模型。
 
-> **單獨修好這一項，即可把 P1-2 與 P1-4 的實際可達性從「任何登入使用者」降到「管理員」。**
+兩道防線並存（刻意不只靠 attribute）：
+
+1. `[ApiAccessControl(LocalOnly, ...)]` —— 擋 JSON-RPC 遠端流量
+2. 方法內 `if (!IsLocalCall) throw` —— 擋其他路徑
+
+**第 2 道是實作過程中由測試抓回來的**：最初只留 attribute 並移除方法內檢查，
+4 個測試立刻紅 —— 它們直接 `new SystemBusinessObject(isLocalCall: false)` 呼叫方法，
+**繞過 `ApiAccessValidator`**。validator 只在 JSON-RPC dispatch 路徑上執行，
+in-process 宿主、自訂 dispatcher 或子類都不經過它。
+
+副作用：`P1-2`（路徑遍歷）與 `P1-4`（運算式沙箱）的實際可達性從
+「任何已登入帳號」降為「能發起近端呼叫者」，兩者的優先度隨之下降
+（仍應修，但不再是可被一般帳號觸發的路徑）。
+
+連帶更新：`BoApiSurfaceTests` baseline（該測試刻意鎖定所有 `[ApiAccessControl]`
+的存取等級，任何鬆緊變更都必須經 review）、`docs/api-method-reference` 雙語、
+`ClientDefineAccess.SaveDefineAsync` 的 XML doc（讓遠端呼叫者知道為何失敗）。
 
 ### P1-2. 定義檔路徑無 containment（path traversal）
 

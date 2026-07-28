@@ -58,7 +58,7 @@ Singleton system-level BO, accessed as `System.<action>` over the wire.
 | `LeaveCompany` | Public | Authenticated | Clears the company context, keeping the session alive. |
 | `Logout` | Public | Authenticated | Destroys the current session (also clears company context). |
 | `GetDefine` | Public | Authenticated | Returns definition data as an XML envelope (universal — .NET clients use this for FormSchema / FormLayout / LanguageResource). |
-| `SaveDefine` | Public | Authenticated | Persists definition data via XML envelope; invalidates the matching cache slot. |
+| `SaveDefine` | LocalOnly | Authenticated | Persists definition data via XML envelope; invalidates the matching cache slot. Writing definitions is a deployment-time operation, so remote callers are rejected outright — read them with `GetDefine`. |
 | `GetFormSchema` | Public | Authenticated | **JS-only.** Returns a `FormSchema` as a typed JSON tree (auto-localized using session's `Culture`). |
 | `GetFormLayout` | Public | Authenticated | **JS-only.** Returns a `FormLayout` (generated from auto-localized FormSchema). |
 | `GetDepartmentTree` | Public | Authenticated | Returns the current company's department tree (per-company org hierarchy) as a typed object (JSON / MessagePack); `null` when no company is entered. |

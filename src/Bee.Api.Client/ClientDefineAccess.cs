@@ -121,6 +121,13 @@ namespace Bee.Api.Client
         /// <summary>
         /// Asynchronously saves definition data via the API.
         /// </summary>
+        /// <remarks>
+        /// Every <c>Save*Async</c> method on this class routes through here, and the server-side
+        /// <c>SystemBO.SaveDefine</c> is <c>LocalOnly</c>: writing a definition is a
+        /// deployment-time operation. On a local connection these succeed; on a remote one the
+        /// server rejects the call with <see cref="UnauthorizedAccessException"/>. Reading
+        /// definitions works over both.
+        /// </remarks>
         /// <param name="defineType">The definition data type.</param>
         /// <param name="defineObject">The definition data object.</param>
         /// <param name="keys">The keys used to locate where the definition data is saved.</param>

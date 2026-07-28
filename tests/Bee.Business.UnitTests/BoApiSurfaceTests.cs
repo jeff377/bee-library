@@ -78,7 +78,9 @@ namespace Bee.Business.UnitTests
             new ApiSurfaceEntry("SystemBusinessObject", "Login",                  ApiProtectionLevel.Public,  ApiAccessRequirement.Anonymous),
             new ApiSurfaceEntry("SystemBusinessObject", "Logout",                 ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "Ping",                   ApiProtectionLevel.Public,  ApiAccessRequirement.Anonymous),
-            new ApiSurfaceEntry("SystemBusinessObject", "SaveDefine",             ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
+            // LocalOnly：寫入定義是部署期作業。先前僅擋 SystemSettings / DatabaseSettings，
+            // 其餘定義型別（含 PermissionModels、DbCategorySettings、FormSchema）任何已驗證帳號皆可覆寫。
+            new ApiSurfaceEntry("SystemBusinessObject", "SaveDefine",             ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated),
         };
 
         [Fact]

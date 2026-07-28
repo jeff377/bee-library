@@ -254,15 +254,36 @@ namespace Bee.Business.System
         }
 
         /// <summary>
-        /// Saves definition data (public). Sensitive definitions such as SystemSettings and DatabaseSettings are excluded.
+        /// Saves definition data. Restricted to local calls.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Writing a definition is a deployment-time operation, not an application one, so this
+        /// method is <see cref="ApiProtectionLevel.LocalOnly"/> — stricter than any token- or
+        /// permission-based check a remote caller could satisfy. Tooling that maintains
+        /// definitions (the define editor, deployment scripts) runs against a local connection;
+        /// remote clients read definitions through <see cref="GetDefine"/> and never write them.
+        /// </para>
+        /// <para>
+        /// The previous guard only rejected <c>SystemSettings</c> and <c>DatabaseSettings</c> from
+        /// remote callers, which left every other definition type writable by any authenticated
+        /// account — including <c>PermissionModels</c> (the authorisation model itself),
+        /// <c>DbCategorySettings</c> (which database each table resolves to) and <c>FormSchema</c>
+        /// (whose expressions are evaluated server-side). Gating the whole method removes that
+        /// class of escalation rather than enumerating the sensitive types.
+        /// </para>
+        /// </remarks>
         /// <param name="args">The input arguments.</param>
-        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated)]
         public virtual SaveDefineResult SaveDefine(SaveDefineArgs args)
         {
-            // Non-local calls are not permitted to save SystemSettings or DatabaseSettings
-            if ((args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings) && !IsLocalCall)
-                throw new NotSupportedException("The specified DefineType is not supported.");
+            // Defence in depth, deliberately kept alongside the LocalOnly attribute rather than
+            // relying on it alone: ApiAccessValidator only runs on the JSON-RPC dispatch path, so a
+            // caller that constructs the BO directly — in-process hosting, a custom dispatcher, a
+            // subclass — never passes through it. The attribute stops remote API traffic; this stops
+            // everything else.
+            if (!IsLocalCall)
+                throw new NotSupportedException("SaveDefine is restricted to local calls.");
 
             return SaveDefineCore(args);
         }

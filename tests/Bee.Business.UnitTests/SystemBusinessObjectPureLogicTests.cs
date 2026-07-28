@@ -75,9 +75,18 @@ namespace Bee.Business.UnitTests
         [Theory]
         [InlineData(DefineType.SystemSettings)]
         [InlineData(DefineType.DatabaseSettings)]
-        [DisplayName("SaveDefine 非本地呼叫且為敏感 DefineType 應拋 NotSupportedException")]
-        public void SaveDefine_NonLocalCallWithSensitiveType_ThrowsNotSupported(DefineType defineType)
+        [InlineData(DefineType.PermissionModels)]
+        [InlineData(DefineType.DbCategorySettings)]
+        [InlineData(DefineType.FormSchema)]
+        [InlineData(DefineType.FormLayout)]
+        [InlineData(DefineType.ProgramSettings)]
+        [InlineData(DefineType.Language)]
+        [DisplayName("SaveDefine 非本地呼叫應一律拋 NotSupportedException（不限敏感型別）")]
+        public void SaveDefine_NonLocalCall_ThrowsNotSupported(DefineType defineType)
         {
+            // 先前僅 SystemSettings / DatabaseSettings 受擋，其餘定義型別任何已驗證帳號皆可覆寫
+            // ——包含 PermissionModels（授權模型本身）、DbCategorySettings（各表對應哪個資料庫）
+            // 與 FormSchema（其運算式在伺服端求值）。現改為整個方法限近端。
             var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, isLocalCall: false);
             var args = new SaveDefineArgs { DefineType = defineType, Xml = "<root/>" };
 
