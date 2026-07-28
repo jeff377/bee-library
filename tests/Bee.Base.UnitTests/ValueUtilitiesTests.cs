@@ -322,9 +322,10 @@ namespace Bee.Base.UnitTests
         [DisplayName("CDateTime 對各種輸入回傳對應 DateTime")]
         public void CDateTime_VariousInputs_ReturnsExpectedResult()
         {
-            Assert.Equal(default, ValueUtilities.CDateTime(null!));
-            Assert.Equal(default, ValueUtilities.CDateTime(DBNull.Value));
-            Assert.Equal(default, ValueUtilities.CDateTime(""));
+            // Unset input yields null, not a sentinel the caller has to remember to compare against.
+            Assert.Null(ValueUtilities.CDateTime(null!));
+            Assert.Null(ValueUtilities.CDateTime(DBNull.Value));
+            Assert.Null(ValueUtilities.CDateTime(""));
 
             var expected = new DateTime(2015, 3, 12, 0, 0, 0, DateTimeKind.Unspecified);
             Assert.Equal(expected, ValueUtilities.CDateTime(expected));
@@ -334,8 +335,8 @@ namespace Bee.Base.UnitTests
             // ROC date(民國年)
             Assert.Equal(expected, ValueUtilities.CDateTime("1040312"));
 
-            // 非數值字串 → StrToDate 回傳 DateTime.MinValue(不丟例外)
-            Assert.Equal(DateTime.MinValue, ValueUtilities.CDateTime("not-a-date"));
+            // 非數值字串 → 無法辨識為日期 → null(不丟例外)
+            Assert.Null(ValueUtilities.CDateTime("not-a-date"));
         }
 
         [Theory]
@@ -353,21 +354,48 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("CDateTime 對未支援長度的數字字串應回傳 DateTime.MinValue")]
-        public void CDateTime_UnsupportedLength_ReturnsMinValue()
+        [DisplayName("CDateTime 對未支援長度的數字字串應回傳 null")]
+        public void CDateTime_UnsupportedLength_ReturnsNull()
         {
-            // 長度 2 不在 switch 的 3/4/5/6/7/8 範圍內 → default 分支 → MinValue
-            var result = ValueUtilities.CDateTime("12");
-            Assert.Equal(DateTime.MinValue, result);
+            // 長度 2 不在 switch 的 3/4/5/6/7/8 範圍內 → 無法辨識為日期
+            Assert.Null(ValueUtilities.CDateTime("12"));
         }
 
         [Fact]
-        [DisplayName("CDateTime 對非數字字串經 StrToDate 返回 MinValue")]
-        public void CDateTime_NonNumericString_ReturnsMinValue()
+        [DisplayName("CDateTime 對非數字字串應回傳 null")]
+        public void CDateTime_NonNumericString_ReturnsNull()
         {
-            // "abcdefgh" 移除分隔字元後非數字 → StrToDate 直接回傳 MinValue
-            var result = ValueUtilities.CDateTime("abcdefgh");
-            Assert.Equal(DateTime.MinValue, result);
+            // "abcdefgh" 移除分隔字元後非數字 → 無法辨識為日期
+            Assert.Null(ValueUtilities.CDateTime("abcdefgh"));
+        }
+
+        [Fact]
+        [DisplayName("無法辨識的輸入在傳入預設值時應回傳該預設值")]
+        public void CDateTime_Unrecognizable_WithExplicitDefault_ReturnsDefault()
+        {
+            // 舊版此路徑固定回 MinValue 而忽略呼叫端給的預設值；顯式多載讓預設值真正生效。
+            var fallback = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Unspecified);
+            Assert.Equal(fallback, ValueUtilities.CDateTime("abcdefgh", fallback));
+            Assert.Equal(fallback, ValueUtilities.CDateTime(DBNull.Value, fallback));
+        }
+
+        [Fact]
+        [DisplayName("時間家族的單參數多載一律回傳 nullable")]
+        public void TemporalFamily_SingleArgumentOverloads_AreNullable()
+        {
+            Assert.Null(ValueUtilities.CDateTime(DBNull.Value));
+            Assert.Null(ValueUtilities.CDateOnly(DBNull.Value));
+            Assert.Null(ValueUtilities.CTimeOnly(DBNull.Value));
+        }
+
+        [Fact]
+        [DisplayName("時間家族的預設值多載應回傳所給的預設值")]
+        public void TemporalFamily_DefaultOverloads_ReturnTheGivenDefault()
+        {
+            var date = new DateOnly(2000, 1, 1);
+            var time = new TimeOnly(8, 30);
+            Assert.Equal(date, ValueUtilities.CDateOnly(DBNull.Value, date));
+            Assert.Equal(time, ValueUtilities.CTimeOnly(DBNull.Value, time));
         }
 
         [Fact]

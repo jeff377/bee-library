@@ -32,7 +32,7 @@ The test: **ask whether the value needs to know which day.**
 | `DataColumn.DataType` | `DateTime` | `DateTime` | **`string`** |
 | Distinguishable from CLR type alone? | **No** — shares `DateTime` | No | **Yes** |
 | How the semantic survives | `ExtendedProperties` marker | (default for the CLR type) | the CLR type itself |
-| Read it as | `ValueUtilities.CDateOnly` → `DateOnly` | `ValueUtilities.CDateTime` → `DateTime` | `ValueUtilities.CTimeOnly` → `TimeOnly?` |
+| Read it as | `CDateOnly` → `DateOnly?` | `CDateTime` → `DateTime?` | `CTimeOnly` → `TimeOnly?` |
 | Unset value | `DateTime.MinValue` → `DBNull` | `DateTime.MinValue` → `DBNull` | **empty string** |
 | Time-zone converted? | **Never** | **Yes** (UTC ↔ user zone) | **Never** |
 | Default UI editor | `DateEdit` | `DateEdit` | `TimeEdit` |
@@ -98,16 +98,24 @@ anything built through `AddColumn(name, FieldDbType)`. **Hand-written SQL is the
 ## 5. Code layer
 
 ```csharp
-DateOnly  day     = ValueUtilities.CDateOnly(row["hire_date"]);
-DateTime  instant = ValueUtilities.CDateTime(row["created_at"]);
-TimeOnly? start   = ValueUtilities.CTimeOnly(row["work_start"]);   // null when unset
+// One argument -> nullable. An unset value is a case the compiler makes you handle.
+DateOnly? day     = ValueUtilities.CDateOnly(row["hire_date"]);
+DateTime? instant = ValueUtilities.CDateTime(row["created_at"]);
+TimeOnly? start   = ValueUtilities.CTimeOnly(row["work_start"]);
+
+// Two arguments -> non-null, with the fallback stated at the call site.
+DateTime created = ValueUtilities.CDateTime(row["created_at"], DateTime.MinValue);
 ```
 
-The method name matches the return type throughout, so a call site tells you what it yields.
+Two properties hold across the whole family:
 
-**`CTimeOnly` alone returns a nullable.** A time of day has no spare value to mean "unset" —
-`default(TimeOnly)` is `00:00`, a perfectly legal midnight — whereas `default(DateOnly)` is
-`0001-01-01`, which is not a legal business value and therefore works as a sentinel.
+- **The method name matches the return type**, so a call site tells you what it yields.
+- **The one-argument form returns a nullable.** Unset is then a case the compiler forces you to
+  handle, rather than a sentinel you have to remember to compare against — and a leaked sentinel is
+  a real failure: `0001-01-01` rendered in a report is worse than a null-reference at the boundary.
+
+When a non-null value is wanted, pass the fallback explicitly. Stating it is the point: it makes
+the choice visible instead of hiding it in an omitted default argument.
 
 ## 6. Serialization
 

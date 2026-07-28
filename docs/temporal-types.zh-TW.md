@@ -30,7 +30,7 @@
 | `DataColumn.DataType` | `DateTime` | `DateTime` | **`string`** |
 | 光看 CLR 型別能分辨嗎？ | **不能** —— 與 `DateTime` 共用 | 不能 | **能** |
 | 語意如何保留 | `ExtendedProperties` 標記 | （該 CLR 型別的預設語意） | CLR 型別本身 |
-| 讀取方式 | `ValueUtilities.CDateOnly` → `DateOnly` | `ValueUtilities.CDateTime` → `DateTime` | `ValueUtilities.CTimeOnly` → `TimeOnly?` |
+| 讀取方式 | `CDateOnly` → `DateOnly?` | `CDateTime` → `DateTime?` | `CTimeOnly` → `TimeOnly?` |
 | 未填值 | `DateTime.MinValue` → `DBNull` | `DateTime.MinValue` → `DBNull` | **空字串** |
 | 會轉時區嗎？ | **絕不** | **會**（UTC ↔ 使用者時區） | **絕不** |
 | 預設 UI 控件 | `DateEdit` | `DateEdit` | `TimeEdit` |
@@ -93,16 +93,24 @@ FieldDbType declared = column.ResolveFieldDbType();    // Date / DateTime / Time
 ## 5. 程式碼層
 
 ```csharp
-DateOnly  day     = ValueUtilities.CDateOnly(row["hire_date"]);
-DateTime  instant = ValueUtilities.CDateTime(row["created_at"]);
-TimeOnly? start   = ValueUtilities.CTimeOnly(row["work_start"]);   // 未填時為 null
+// 單參數 → nullable。未填是編譯器逼你處理的情況。
+DateOnly? day     = ValueUtilities.CDateOnly(row["hire_date"]);
+DateTime? instant = ValueUtilities.CDateTime(row["created_at"]);
+TimeOnly? start   = ValueUtilities.CTimeOnly(row["work_start"]);
+
+// 雙參數 → 非 null，且 fallback 明寫在呼叫端。
+DateTime created = ValueUtilities.CDateTime(row["created_at"], DateTime.MinValue);
 ```
 
-方法名與回傳型別一致，呼叫端不必回查即知拿到什麼。
+整個家族有兩個一致性質：
 
-**只有 `CTimeOnly` 回傳 nullable。** 時刻沒有多餘的值可以代表「未設定」——
-`default(TimeOnly)` 就是 `00:00`，一個完全合法的午夜；而 `default(DateOnly)` 是 `0001-01-01`，
-不是合法業務值，因此可以作為 sentinel。
+- **方法名與回傳型別一致**，呼叫端不必回查即知拿到什麼。
+- **單參數多載一律回傳 nullable。** 未填因而是編譯器強制處理的情況，
+  而不是要記得比對的 sentinel —— 而 sentinel 外洩是真實的災難：
+  報表上印出 `0001-01-01` 比在邊界擲 null 例外更糟。
+
+需要非 null 值時請顯式傳入 fallback。「明寫」正是重點：它讓選擇可見，
+而不是藏在被省略的預設參數裡。
 
 ## 6. 序列化
 

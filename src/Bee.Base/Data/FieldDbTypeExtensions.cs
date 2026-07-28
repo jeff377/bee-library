@@ -72,9 +72,11 @@ namespace Bee.Base.Data
                     // `DateTime` column carrying a marker, and a `DataColumn` of that type rejects a
                     // `DateOnly` value outright — `DateOnly` does not implement `IConvertible`, so the
                     // usual conversion never runs.
-                    return ValueUtilities.CDateTime(value).Date;
+                    // The explicit fallback is the framework's unset sentinel for a temporal column,
+                    // the same value `ToDbFieldValue` maps back to DBNull.
+                    return ValueUtilities.CDateTime(value, DateTime.MinValue).Date;
                 case FieldDbType.DateTime:
-                    return ValueUtilities.CDateTime(value);
+                    return ValueUtilities.CDateTime(value, DateTime.MinValue);
                 case FieldDbType.Guid:
                     return ValueUtilities.CGuid(value);
                 default:
@@ -92,7 +94,7 @@ namespace Bee.Base.Data
         /// <param name="value">The input value.</param>
         public static object ToDbFieldValue(this FieldDbType dbType, object value)
         {
-            if (value is DateTime && ValueUtilities.CDateTime(value) == DateTime.MinValue)
+            if (value is DateTime && ValueUtilities.CDateTime(value, DateTime.MinValue) == DateTime.MinValue)
                 return DBNull.Value;
             return dbType.ToFieldValue(value);
         }

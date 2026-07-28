@@ -258,7 +258,7 @@ namespace Bee.Business.AuditLog
 
         /// <summary>Reads a log-time column as a UTC <see cref="DateTime"/> (the write side stores UTC).</summary>
         private static DateTime ReadUtc(object value)
-            => DateTime.SpecifyKind(ValueUtilities.CDateTime(value), DateTimeKind.Utc);
+            => DateTime.SpecifyKind(ValueUtilities.CDateTime(value, DateTime.MinValue), DateTimeKind.Utc);
 
         /// <summary>Reads a nullable string column, mapping <see cref="DBNull"/> to <c>null</c>.</summary>
         private static string? ReadNullableString(object value)

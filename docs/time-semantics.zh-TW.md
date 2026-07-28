@@ -67,9 +67,15 @@ if (start is null) { /* 未填 */ }
 row["work_start"] = FieldDbType.Time.ToFieldValue("8:30");   // "08:30"
 ```
 
-`CTimeOnly` 回傳 **`TimeOnly?`** 而非帶預設值的 `TimeOnly`，這是刻意的：時刻沒有多餘的值可以代表
-「未設定」—— `default(TimeOnly)` 就是 `00:00`，一個完全合法的午夜。回傳 nullable 才能逼呼叫端
-處理未填的情況，而不是把空欄位靜默讀成午夜。
+單參數多載回傳 **`TimeOnly?`**，逼呼叫端處理未填的情況，而不是把空欄位靜默讀成午夜 ——
+時刻沒有多餘的值可以代表「未設定」，`default(TimeOnly)` 就是 `00:00`。
+需要非 null 值時請顯式傳入 fallback：
+
+```csharp
+TimeOnly start = ValueUtilities.CTimeOnly(row["work_start"], new TimeOnly(9, 0));
+```
+
+整個時間家族（`CDateOnly` / `CDateTime` / `CTimeOnly`）採同一形狀。
 
 它對輸入寬鬆（`"8:30"`、`DateTime`、範圍內的 `TimeSpan` 皆接受），對輸出嚴格：
 超出範圍或格式不合一律回 `null`。

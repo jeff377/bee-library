@@ -80,7 +80,7 @@ namespace Bee.Repository.System
             // correct either way — `DateTime` compares ticks and ignores `Kind` — so an unlabelled
             // value would leave the reader unable to tell a deliberate UTC basis from an oversight.
             DateTime endTime = DateTime.SpecifyKind(
-                ValueUtilities.CDateTime(row["sys_invalid_time"]), DateTimeKind.Utc);
+                ValueUtilities.CDateTime(row["sys_invalid_time"], DateTime.MinValue), DateTimeKind.Utc);
             if (endTime < DateTime.UtcNow)
             {
                 Delete(accessToken);

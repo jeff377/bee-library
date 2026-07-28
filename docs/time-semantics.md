@@ -71,10 +71,16 @@ if (start is null) { /* not filled in */ }
 row["work_start"] = FieldDbType.Time.ToFieldValue("8:30");   // "08:30"
 ```
 
-`CTimeOnly` returns **`TimeOnly?`**, not a `TimeOnly` with a default. That is deliberate: a time of
-day has no spare value to mean "unset", because `default(TimeOnly)` is `00:00` — a perfectly legal
-midnight. A nullable return makes the caller handle the unfilled case instead of silently reading
-an empty field as midnight.
+The one-argument form returns **`TimeOnly?`**, so the caller has to handle the unfilled case
+instead of silently reading an empty field as midnight — a time of day has no spare value to mean
+"unset", because `default(TimeOnly)` is `00:00`. Pass a fallback explicitly when a non-null value
+is wanted:
+
+```csharp
+TimeOnly start = ValueUtilities.CTimeOnly(row["work_start"], new TimeOnly(9, 0));
+```
+
+The whole temporal family (`CDateOnly` / `CDateTime` / `CTimeOnly`) follows this shape.
 
 It is lenient about what it accepts (`"8:30"`, a `DateTime`, an in-range `TimeSpan`) and strict
 about what it returns: anything out of range or malformed comes back `null`.

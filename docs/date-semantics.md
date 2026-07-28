@@ -127,22 +127,28 @@ conversion, where it can shift across a day boundary.
 // Before
 public static DateTime CDate(object value, DateTime defaultValue = default)
 
-// v4.15 onwards — renamed, and the return type narrows to DateOnly
-public static DateOnly CDateOnly(object value, DateOnly defaultValue = default)
+// now — renamed, narrowed to DateOnly, and split into two overloads
+public static DateOnly? CDateOnly(object? value);                        // unset -> null
+public static DateOnly  CDateOnly(object? value, DateOnly defaultValue); // explicit fallback
 ```
 
-The method is **renamed** as well: `CDateOnly` / `CDateTime` now name their own return type, so a
-call site tells you what it yields without a lookup.
+The method is **renamed** as well: `CDateOnly` / `CDateTime` / `CTimeOnly` now name their own
+return type, so a call site tells you what it yields without a lookup.
+
+The whole temporal family follows one shape: **the one-argument form returns a nullable**, so an
+unset value is a case the compiler makes you handle rather than a sentinel you have to remember to
+compare against. When a non-null value is wanted, pass the fallback explicitly — stating it at the
+call site is what makes it visible.
 
 A call site written as `DateTime d = ValueUtilities.CDate(x)` becomes a **compile error**, not a
 runtime failure. Migrate either way:
 
 ```csharp
-DateOnly day = ValueUtilities.CDateOnly(row["order_date"]);        // want a calendar day
-DateTime dt  = ValueUtilities.CDateTime(row["order_date"]);    // want a DateTime
+DateOnly? day = ValueUtilities.CDateOnly(row["order_date"]);                    // want a calendar day
+DateTime  dt  = ValueUtilities.CDateTime(row["order_date"], DateTime.MinValue); // want a DateTime
 ```
 
-`CDateTime` is unchanged and now also accepts a `DateOnly` input.
+`CDateTime` follows the same two-overload shape and now also accepts a `DateOnly` input.
 
 > **Do not write a `DateOnly` back into a `DataTable`.** A calendar-day column is a `DateTime`
 > column carrying a mark, and `DataColumn` rejects a `DateOnly` value outright — `DateOnly` does

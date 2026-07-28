@@ -120,21 +120,27 @@ schema 宣告了但查詢未回傳的欄位也不會報錯（部分欄位查詢�
 // 之前
 public static DateTime CDate(object value, DateTime defaultValue = default)
 
-// v4.15 起 —— 一併更名，回傳型別收斂為 DateOnly
-public static DateOnly CDateOnly(object value, DateOnly defaultValue = default)
+// 現在 —— 一併更名、收斂為 DateOnly，並拆為兩個多載
+public static DateOnly? CDateOnly(object? value);                        // 未填 → null
+public static DateOnly  CDateOnly(object? value, DateOnly defaultValue); // 顯式預設值
 ```
 
-方法**同時更名**：`CDateOnly` / `CDateTime` 以自身回傳型別為名，呼叫端不必回查即知拿到什麼。
+方法**同時更名**：`CDateOnly` / `CDateTime` / `CTimeOnly` 以自身回傳型別為名，
+呼叫端不必回查即知拿到什麼。
+
+整個時間家族採同一形狀：**單參數多載一律回傳 nullable**，未填因而是編譯器逼你處理的情況，
+而不是要記得比對的 sentinel。需要非 null 值時請顯式傳入預設值 ——
+把 fallback 寫在呼叫端正是讓它可見的方式。
 
 寫成 `DateTime d = ValueUtilities.CDate(x)` 的呼叫端會變成**編譯錯誤**，而非 runtime 失敗。
 兩種遷移方式：
 
 ```csharp
-DateOnly day = ValueUtilities.CDateOnly(row["order_date"]);        // 要日曆日
-DateTime dt  = ValueUtilities.CDateTime(row["order_date"]);    // 要 DateTime
+DateOnly? day = ValueUtilities.CDateOnly(row["order_date"]);                    // 要日曆日
+DateTime  dt  = ValueUtilities.CDateTime(row["order_date"], DateTime.MinValue); // 要 DateTime
 ```
 
-`CDateTime` 未變更，且現在也接受 `DateOnly` 輸入。
+`CDateTime` 採同樣的兩多載形狀，且現在也接受 `DateOnly` 輸入。
 
 > **不要把 `DateOnly` 寫回 `DataTable`。** 日曆日欄位是帶著標記的 `DateTime` 欄位，
 > `DataColumn` 會直接拒絕 `DateOnly` 值——`DateOnly` 未實作 `IConvertible`，

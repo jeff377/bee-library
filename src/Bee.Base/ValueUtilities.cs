@@ -371,16 +371,24 @@ namespace Bee.Base
         #region CDateTime / CDateOnly
 
         /// <summary>
-        /// Converts the specified value to a DateTime. Supports Gregorian and ROC date strings
+        /// Converts the specified value to an instant, or <see langword="null"/> when the value is
+        /// unset or is not a recognisable date. Supports Gregorian and ROC date strings
         /// (e.g. <c>20150312</c>, <c>1040312</c>); the framework parses with
         /// <see cref="CultureInfo.InvariantCulture"/> so call sites do not pass culture.
         /// </summary>
         /// <param name="value">The value to convert.</param>
-        /// <param name="defaultValue">The default value.</param>
-        public static DateTime CDateTime(object value, DateTime defaultValue = default)
+        /// <remarks>
+        /// The whole temporal family — <see cref="CDateTime(object?)"/>,
+        /// <see cref="CDateOnly(object?)"/>, <see cref="CTimeOnly(object?)"/> — returns a nullable
+        /// from its one-argument form, so "unset" is a case the compiler makes the caller handle
+        /// rather than a sentinel value they have to remember to compare against. Pass a default
+        /// explicitly (<see cref="CDateTime(object?, DateTime)"/>) when a non-null value is wanted;
+        /// stating the fallback at the call site is what makes it visible.
+        /// </remarks>
+        public static DateTime? CDateTime(object? value)
         {
-            if (IsNullOrDBNull(value)) { return defaultValue; }
-            if (StringUtilities.IsEmpty(value)) { return defaultValue; }
+            if (value is null || value is DBNull) { return null; }
+            if (StringUtilities.IsEmpty(value)) { return null; }
             if (value is DateTime dt) { return dt; }
             // Handled before the string path: `DateOnly.ToString()` is culture-dependent, so parsing it
             // back with `InvariantCulture` succeeds only where the two formats happen to agree.
@@ -395,19 +403,29 @@ namespace Bee.Base
             }
             catch (FormatException)
             {
-                return defaultValue;
+                return null;
             }
             catch (OverflowException)
             {
-                return defaultValue;
+                return null;
             }
         }
 
         /// <summary>
-        /// Converts a string to a date value.
+        /// Converts the specified value to an instant, falling back to <paramref name="defaultValue"/>
+        /// when the value is unset or is not a recognisable date.
+        /// </summary>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="defaultValue">The value to use when conversion yields nothing.</param>
+        public static DateTime CDateTime(object? value, DateTime defaultValue)
+            => CDateTime(value) ?? defaultValue;
+
+        /// <summary>
+        /// Converts a string to a date value, or <see langword="null"/> when the string is not a
+        /// recognisable date form.
         /// </summary>
         /// <param name="value">The string describing a date.</param>
-        private static DateTime StrToDate(string value)
+        private static DateTime? StrToDate(string value)
         {
             string sValue;
             string sDate;
@@ -417,7 +435,7 @@ namespace Bee.Base
             sValue = value.Replace("/", string.Empty);
             sValue = sValue.Replace("-", string.Empty);
             // Only all-numeric strings are valid for date conversion
-            if (!IsNumeric(sValue)) { return DateTime.MinValue; }
+            if (!IsNumeric(sValue)) { return null; }
             // Attempt date conversion based on the string length
             iLen = sValue.Length;
             switch (iLen)
@@ -450,14 +468,13 @@ namespace Bee.Base
             if (StringUtilities.IsNotEmpty(sDate))
                 return Convert.ToDateTime(sDate, CultureInfo.InvariantCulture);
             else
-                return DateTime.MinValue;
+                return null;
         }
 
         /// <summary>
         /// Converts the specified value to a calendar day, discarding any time of day.
         /// </summary>
         /// <param name="value">The value to convert.</param>
-        /// <param name="defaultValue">The default value.</param>
         /// <remarks>
         /// Returns <see cref="DateOnly"/> so a calendar day is distinguishable from an instant at the
         /// point of use, the same distinction the definition layer draws between
@@ -466,10 +483,19 @@ namespace Bee.Base
         /// when writing back into a <see cref="System.Data.DataColumn"/>, which stores calendar-day
         /// columns as <see cref="DateTime"/> and rejects a <see cref="DateOnly"/> value.
         /// </remarks>
-        public static DateOnly CDateOnly(object value, DateOnly defaultValue = default)
+        public static DateOnly? CDateOnly(object? value)
         {
-            return DateOnly.FromDateTime(CDateTime(value, defaultValue.ToDateTime(TimeOnly.MinValue)));
+            return CDateTime(value) is { } instant ? DateOnly.FromDateTime(instant) : null;
         }
+
+        /// <summary>
+        /// Converts the specified value to a calendar day, falling back to
+        /// <paramref name="defaultValue"/> when the value is unset or is not a recognisable date.
+        /// </summary>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="defaultValue">The value to use when conversion yields nothing.</param>
+        public static DateOnly CDateOnly(object? value, DateOnly defaultValue)
+            => CDateOnly(value) ?? defaultValue;
 
         #endregion
 
@@ -535,12 +561,26 @@ namespace Bee.Base
         }
 
         /// <summary>
+        /// Converts the specified value to a time of day, falling back to
+        /// <paramref name="defaultValue"/> when the value is unset or malformed.
+        /// </summary>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="defaultValue">The value to use when conversion yields nothing.</param>
+        /// <remarks>
+        /// Stating the fallback here is deliberate: <c>default(TimeOnly)</c> is midnight, a legal
+        /// time of day, so a silently-defaulted unset field would be indistinguishable from one
+        /// genuinely set to <c>00:00</c>.
+        /// </remarks>
+        public static TimeOnly CTimeOnly(object? value, TimeOnly defaultValue)
+            => CTimeOnly(value) ?? defaultValue;
+
+        /// <summary>
         /// Converts the specified value to the storage form of a time of day: a fixed-width
         /// <c>"HH:mm"</c> string, or the empty string when the value is unset or malformed.
         /// </summary>
         /// <param name="value">The value to convert.</param>
         /// <remarks>
-        /// This is the normalising counterpart of <see cref="CTimeOnly"/>: it is what turns
+        /// This is the normalising counterpart of <see cref="CTimeOnly(object?)"/>: it is what turns
         /// <c>"8:30"</c> into <c>"08:30"</c> so the fixed-width ordering guarantee holds for every
         /// value that reaches the database.
         /// </remarks>
