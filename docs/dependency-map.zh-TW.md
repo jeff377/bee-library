@@ -79,7 +79,6 @@ graph BT
   UIAvalonia --> Client
   UIAvalonia --> Definition
   BlazorSrv --> Client
-  BlazorWasm --> Client
 ```
 
 ## 外部相依套件
@@ -122,9 +121,9 @@ graph BT
 - **Bee.Hosting** 為 composition root：將後端服務（`Bee.Api.Core`、`Bee.Business`、`Bee.Repository`、`Bee.ObjectCaching`）整合於一個 `IServiceCollection.AddBeeFramework` 擴充入口，不依賴 ASP.NET Core。非 web 宿主（WinForms、Console、Worker Service）直接引用此套件。
 - **Bee.Api.AspNetCore** 為 ASP.NET Core 整合層（`UseBeeFramework` middleware 與 `ApiServiceController`），透過遞移引用 `Bee.Hosting`，使 web 宿主一次引用即取得 DI 註冊與 middleware。
 - 用戶端（Bee.Api.Client）與伺服器端（Bee.Api.AspNetCore）皆透過 **Bee.Api.Core** 共享協定邏輯，確保序列化與加解密行為一致。
-- **Bee.UI.Core** 為跨平台 UI 共通層（`ClientInfo` / `IEndpointStorage` / `IUIViewService` / `VersionInfo`），供所有 native UI family（Avalonia 桌面 / MAUI 行動 / 未來 WinForms / WPF）共用 client-side 連線狀態與 endpoint 持久化邏輯；不含任何平台專屬 UI 程式碼，只依 `Bee.Api.Client`。
+- **Bee.UI.Core** 為跨平台 UI 共通層（`ClientInfo` / `IEndpointStorage` / `IUIViewService` / `VersionInfo`），供所有 native UI family（目前為 Avalonia，以單一專案涵蓋桌面 / iOS / Android / WASM；未來 WinForms / WPF）共用 client-side 連線狀態與 endpoint 持久化邏輯；不含任何平台專屬 UI 程式碼，只依 `Bee.Api.Client`。
 - **Bee.UI.Avalonia** 為 Avalonia 桌面控制項套件（Windows / macOS / Linux）。內含 FormSchema 驅動控制項（`FormView` 單筆、`ListView` 清單、`GridControl` 表格，加上一組 field editor 與 `FormScope` ambient 綁定，皆以 `FormDataObject` 為資料中樞）與檔案後端 `FileEndpointStorage`，單一 `net10.0` TFM。下限版本鎖在 `Avalonia 12.0.0` + `Avalonia.Controls.DataGrid 12.0.0`（後者目前 stable 最高就是 12.0.0），host 可以透過 transitive 帶更新的 12.0.x。DataGrid 為何不走 `Binding "[FieldName]"` 詳見 [adr-020](adr/adr-020-avalonia-datagrid-binding-strategy.md)，編輯策略詳見 [adr-021](adr/adr-021-avalonia-datagrid-editing-strategy.md)。
 - **`Bee.UI.*` family 判別準則**：是否消費 `Bee.UI.Core` 抽象（`ClientInfo` / `IEndpointStorage` / `IUIViewService` 等）。
   - 消費 → 歸 `Bee.UI.*`（目前：`Bee.UI.Core`、`Bee.UI.Avalonia`；未來：`Bee.UI.WinForms`、`Bee.UI.Wpf` 等同理）
-  - 不消費，自有狀態管理 → 走獨立 family prefix（如 `Bee.Web.Blazor.*`：Blazor circuit / WASM 環境無檔案 IO 與 dialog service 概念，獨立路線合理）
+  - 不消費，自有狀態管理 → 走獨立 family prefix（如 `Bee.Web.Blazor.*`：Blazor circuit 無檔案 IO 與 dialog service 概念，獨立路線合理）
 - **Web 前端層**（`Bee.Web.Blazor.Server`）為 RCL（Razor Class Library）元件庫，只相依 `Bee.Api.Client`，由宿主決定 `IApiProvider` 實作（`LocalApiProvider` / `RemoteApiProvider`）與是否呼叫 `AddBeeFramework`。
