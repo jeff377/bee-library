@@ -392,14 +392,14 @@ Common patterns discovered during each AnyCode customization can be distilled ba
 |  Bee.Db (data access infrastructure)                 |  N-Tier: Data Layer
 |  +- IDialectFactory routes per DatabaseType          |
 |  +- DbDialectRegistry: SQLServer / PostgreSQL / SQLite / ...  |
-|  +- DbProviderManager: ADO.NET DbProviderFactory     |
+|  +- DbProviderRegistry: ADO.NET DbProviderFactory     |
 +------------------------------------------------------+
 |  Database (MSSQL / PostgreSQL / SQLite / MySQL ...) |
 +------------------------------------------------------+
 ```
 
 > Provider registration is explicit: the host app calls
-> `DbProviderManager.RegisterProvider(...)` and
+> `DbProviderRegistry.Register(...)` and
 > `DbDialectRegistry.Register(...)` for each database it actually uses.
 > `Bee.Db` itself has zero ADO.NET driver dependencies. See
 > [`src/Bee.Db/README.md`](../src/Bee.Db/README.md) for the registration

@@ -5,7 +5,7 @@
 `FieldDbType` distinguishes `Date` (a calendar day: a birthday, an invoice date, an accounting
 period) from `DateTime` (an instant: when a record was created, when a user logged in). `DataSet` is
 the cross-layer DTO, and a `DataColumn` can only carry a calendar day as `DateTime` (`DateOnly` is
-not a usable storage type), so that distinction is easy to lose — and until v4.15 the framework did
+not a usable storage type), so that distinction is easy to lose — and until this release the framework did
 lose it once a value reached the CLR and the wire.
 
 This document covers what changed, what you get for free, and the one case where you have to
@@ -65,7 +65,7 @@ The `type` field of a column was always there; it is now accurate:
 ```jsonc
 {
   "name": "order_date",
-  "type": "Date",           // was "DateTime" before v4.15
+  "type": "Date",           // was "DateTime" in earlier releases
   "allowNull": false,
   // …
 }

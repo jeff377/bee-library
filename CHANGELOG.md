@@ -4,6 +4,78 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+> Contains **breaking changes that predate this section**: several commits after the `v4.15.0` tag
+> altered published API surface without marking the subject `!`, so `/changelog-draft` would not
+> have surfaced them. They are listed here explicitly. The most dangerous kind is at the end —
+> changes that produce no compiler error at all.
+
+### Changed — breaking (compile-time)
+
+- `Bee.ObjectCaching`: `IEvictableCache` and `ICacheContainer.TryEvict(string)` are removed;
+  `KeyObjectCache<T>` / `ObjectCache<T>` no longer implement that interface. Cache invalidation now
+  publishes a notify-key version and lets entries expire lazily. (`c45ff350`)
+- `Bee.Repository.Abstractions`: `IDataFormRepository.GetNewData()` takes a `timeZoneId` argument.
+  Implementers must update their signature. (`b759894f`)
+- `Bee.Business` / `Bee.Expressions`: `IFormRuleProcessor` (five members) and
+  `IExpressionEvaluator.Evaluate` / `Evaluate<T>` take a `timeZoneId` argument. (`5f28f9a3`)
+- `Bee.Definition`: `IDefineStorage` gains `GetChangeSource(...)`. (`bb5e4473`, `f7459cc2`)
+- `Bee.Base`: the temporal `Cxxx` family returns nullable from its one-argument form, and
+  `CDate` is renamed `CDateOnly`. (`ba56cef0`, `49641789`, `c5578a42`)
+- `Bee.Base` / `Bee.Db`: `FieldDbType.Time` added (appended to the enum — existing values are
+  unchanged). (`50a2e7d8`)
+- `Bee.Api.Core` (**wire**): `SerializableData*` moves to property-name keys, completing the
+  migration 4.15.0 had deliberately excluded. (`d64decf9`)
+- `Bee.Api.Client`: `SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync` are removed.
+  They only ever returned an empty shell to .NET callers: definition types declare XML as their
+  serialization contract and their nested collections are get-only, which JSON and MessagePack drop
+  on deserialization. Use `ClientInfo.DefineAccess.*` or `GetDefineAsync` with the matching
+  `DefineType`.
+- `Bee.Business`: `SystemBO.SaveDefine` and `SystemBO.CreateSession` are now `LocalOnly`; remote
+  callers are rejected. Writing definitions and minting a token from a user id without a credential
+  check are both trusted-caller operations.
+
+### Changed — breaking (silent, no compiler error)
+
+- **System timestamps are UTC.** `CreateTime`-style properties, cache expiry, session expiry,
+  database column `DEFAULT`s and the PostgreSQL parameter layer all moved from local time to UTC.
+  Downstream code that reads these values or compares them shifts by one time-zone offset with no
+  compilation failure. (`122184e4`, `52ddb24a`, `9aadf9eb`, `1eb0e09f`, `11aedcc4`, `c990aa9e`)
+- **Dates are `DateOnly`.** `FormRowDefaults.Apply` and `FieldDbTypeExtensions.DefaultForDbType`
+  gain default arguments (binary breaking), and the `Today()` expression helper returns `DateOnly`
+  instead of `DateTime`. (`f028ba04`)
+- **Default time zone.** `SessionInfo.TimeZone` and `UserInfo.TimeZone` default to an empty string
+  (which every conversion point already treats as UTC) instead of `Asia/Taipei`. Login fills the
+  session from `st_user.time_zone`, falling back to the new
+  `BackendConfiguration.DefaultTimeZone` — which ships as `Asia/Taipei`, so existing deployments do
+  not shift. A custom authentication flow that constructs `SessionInfo` directly without calling
+  `ApplyUserTimeZone` will produce UTC sessions.
+- **Deserialization allow-list.** `SysInfo`'s built-in namespace list had `Bee.Contracts`, which
+  does not exist in this framework; it is corrected to `Bee.Api.Contracts`. A consumer type placed
+  in a `Bee.Contracts` namespace would go from allowed to rejected.
+
+### Fixed
+
+- `Bee.Definition`: `FieldDbType.Date` columns resolve to `DateEdit` instead of falling through to
+  a plain text box.
+- `Bee.Base`: `StringUtilities.Replace` uses ordinal comparison. Under the Turkish locale the
+  connection-string placeholders (`{@Password}` and friends) failed to match and were sent verbatim.
+- `Bee.Base`: `DataTable` JSON round-trip no longer rewrites date-shaped text in string columns, and
+  no longer loses precision on decimals beyond `double`'s range.
+- `Bee.Base`: `XmlCodec.Deserialize` prohibits DTD processing (internal-entity expansion / billion
+  laughs).
+- `Bee.Definition`: definition file paths reject segments that would escape the definition root.
+- `Bee.Definition`: master key files are created owner-only on Unix.
+- `Bee.Repository`: session lookup failures no longer echo the user id back to the caller.
+
+### Security
+
+- Identifier-shaped string comparisons are ordinal throughout, including the deserialization
+  allow-list in `SysInfo` and the `enc:` sentinel in `DatabaseSettingsCryptor`.
+- `IPValidator` copies its allow/deny lists and exposes them read-only; `UpgradeStage.Statements` is
+  read-only.
+
 ## [4.15.0]
 
 > Bee.NET remains in pre-stable evolution. This release is a **wire & API consolidation** ahead of stabilization. MessagePack contract serialization moves from positional integer keys to **property-name keys**, so JSON and MessagePack now share one name-based wire contract and the constructor-order / cross-inheritance key-numbering footgun is gone [ADR-030](docs/adr/adr-030-messagepack-name-based-keys.md). Separately, the API **contract interfaces are reorganized into per-axis namespaces** (`Bee.Api.Contracts.System` / `.Form` / `.AuditLog`) to match the existing implementation layers. Both changes are technically breaking — the wire format and `using` statements respectively — but ship as a minor under the pre-stable policy, as there are no external consumers yet.

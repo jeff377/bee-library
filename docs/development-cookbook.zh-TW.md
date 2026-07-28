@@ -487,7 +487,7 @@ using Bee.UI.Core;
 // 1. 實作 IUIViewService（提供連線設定對話框）
 public class MyUIViewService : IUIViewService
 {
-    public bool ShowApiConnect()
+    public async Task<bool> ShowApiConnectAsync()
     {
         // 彈出讓使用者輸入 endpoint 的 dialog；返回 true 表示輸入完成
         // 實作細節依 UI framework（MAUI ContentPage / WinForms Form 等）
@@ -496,14 +496,14 @@ public class MyUIViewService : IUIViewService
 
 // 2. 啟動時 Initialize
 var supportedConnectTypes = SupportedConnectTypes.Both; // Local + Remote 都支援
-if (!ClientInfo.Initialize(new MyUIViewService(), supportedConnectTypes))
+if (!ClientInfo.InitializeAsync(new MyUIViewService(), supportedConnectTypes))
 {
     // 使用者取消連線設定，App 結束
     return;
 }
 ```
 
-`Initialize` 內部：讀檔(`{ExeName}.Settings.xml`) → 嘗試 endpoint → 不可達則呼叫 `IUIViewService.ShowApiConnect()` 讓使用者重設。
+`InitializeAsync` 內部：讀檔(`{ExeName}.Settings.xml`) → 嘗試 endpoint → 不可達則呼叫 `IUIViewService.ShowApiConnectAsync()` 讓使用者重設。
 
 **2. 登入後 `ApplyLoginResult`**：
 
@@ -517,7 +517,7 @@ ClientInfo.ApplyLoginResult(loginResponse);
 
 ```csharp
 // System-level API
-var pingResult = await ClientInfo.SystemApiConnector.PingAsync();
+await ClientInfo.SystemApiConnector.PingAsync();   // 回傳 Task，無回傳值
 
 // Form-level API（FormBO）
 var formConnector = ClientInfo.CreateFormApiConnector("Employee");
@@ -530,7 +530,7 @@ var schema = ClientInfo.DefineAccess.GetFormSchema("Employee");
 **4. 切換 endpoint（使用者更換 server）**：
 
 ```csharp
-ClientInfo.SetEndpoint("https://new-server.example.com/api");
+ClientInfo.SetEndpointAsync("https://new-server.example.com/api");
 // 內部會 reset AccessToken，重新觸發 ApplyLoginResult 流程
 ```
 
@@ -545,11 +545,11 @@ using Bee.Hosting; // AddBeeFramework
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 後端服務（DbConnectionManager / IDefineAccess / BO 等）
+// 後端服務（IDbConnectionManager / IDefineAccess / BO 等）
 builder.Services.AddBeeFramework(backendConfiguration, pathOptions);
 
 // Bee.Web.Blazor.Server RCL 元件庫的 services
-builder.Services.AddBeeWebBlazorServer();
+builder.Services.AddBeeBlazor();
 
 // Blazor Server 標準設定
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -605,7 +605,7 @@ builder.Services.AddScoped(sp => new HttpClient
 });
 
 // Bee.Web.Blazor.Wasm RCL services（會自動註冊 RemoteApiProvider）
-builder.Services.AddBeeWebBlazorWasm();
+builder.Services.AddBeeBlazor();
 
 await builder.Build().RunAsync();
 ```
@@ -662,7 +662,7 @@ Phase 1 已交付首版 FormSchema 驅動控制項（`DynamicForm` + `FormDataOb
 | 前端 | 連線抽象 | Token 承載 | Endpoint 持久化 | 模式 | 註冊方式 |
 |------|---------|-----------|---------------|------|---------|
 | 桌面端（Avalonia / MAUI / WinForms） | `ClientInfo` static | **1 個使用者 / process**（`ClientInfo._accessToken` static） | 本機檔案 + `IEndpointStorage` | Local 或 Remote | 啟動時 `ClientInfo.Initialize` |
-| Blazor Server | DI scope | **N 個使用者 / process**（per SignalR circuit） | appsettings / 啟動注入 | Local 或 Remote | `AddBeeFramework` + `AddBeeWebBlazorServer` |
-| Blazor WASM | DI scope | 1 個使用者 / WASM heap | localStorage / JS interop | **強制 Remote** | `AddBeeWebBlazorWasm` + HttpClient |
+| Blazor Server | DI scope | **N 個使用者 / process**（per SignalR circuit） | appsettings / 啟動注入 | Local 或 Remote | `AddBeeFramework` + `AddBeeBlazor` |
+| Blazor WASM | DI scope | 1 個使用者 / WASM heap | localStorage / JS interop | **強制 Remote** | `AddBeeBlazor` + HttpClient |
 
 > ⚠️ **不要在 Blazor 環境使用 `Bee.UI.Core.ClientInfo`**：`_accessToken` 為 `private static Guid`，一個 process 內只能存 **1 個** AccessToken。Blazor Server 同 process 服務 N 個 user circuit 時，後登入者會覆蓋前者，造成 cross-user data leak。詳見 [ADR-013](adr/adr-013-frontend-api-connection-strategy.md)。

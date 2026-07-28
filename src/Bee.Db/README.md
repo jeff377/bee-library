@@ -25,8 +25,8 @@
 
 ### Connection & Provider Management
 
-- `DbConnectionManager` -- centralized connection information registry
-- `DbProviderManager` -- database provider factory resolution
+- `IDbConnectionManager` -- centralized connection information registry
+- `DbProviderRegistry` -- database provider factory resolution
 - `DbConnectionInfo` -- connection metadata (connection string, database type, provider)
 
 ### Query Composition
@@ -43,7 +43,7 @@
 The framework routes SQL generation and schema reading by `DatabaseType` through a dialect factory layer:
 
 - `IDialectFactory` -- per-provider factory exposing `IFormCommandBuilder`, `ICreateTableCommandBuilder`, `ITableAlterCommandBuilder`, `ITableRebuildCommandBuilder`, `ITableSchemaProvider`, and `GetDefaultValueExpression(FieldDbType)`
-- `DbDialectRegistry` -- maps `DatabaseType` to its `IDialectFactory` (mirrors how `DbProviderManager` maps to ADO.NET `DbProviderFactory`); registration is explicit and performed by the host
+- `DbDialectRegistry` -- maps `DatabaseType` to its `IDialectFactory` (mirrors how `DbProviderRegistry` maps to ADO.NET `DbProviderFactory`); registration is explicit and performed by the host
 - `DbFunc` -- database-aware utilities (parameter prefixes, identifier quoting, type inference) keyed by `DatabaseType`
 - Built-in dialect implementations:
   - **SQL Server** (`Providers/SqlServer/`) -- full support: form SELECT / INSERT / UPDATE / DELETE, CREATE/ALTER/REBUILD DDL, schema introspection
@@ -82,15 +82,15 @@ using Microsoft.Data.Sqlite;
 using Npgsql;
 
 // SQL Server
-DbProviderManager.RegisterProvider(DatabaseType.SQLServer, SqlClientFactory.Instance);
+DbProviderRegistry.Register(DatabaseType.SQLServer, SqlClientFactory.Instance);
 DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory());
 
 // PostgreSQL
-DbProviderManager.RegisterProvider(DatabaseType.PostgreSQL, NpgsqlFactory.Instance);
+DbProviderRegistry.Register(DatabaseType.PostgreSQL, NpgsqlFactory.Instance);
 DbDialectRegistry.Register(DatabaseType.PostgreSQL, new PgDialectFactory());
 
 // SQLite
-DbProviderManager.RegisterProvider(DatabaseType.SQLite, SqliteFactory.Instance);
+DbProviderRegistry.Register(DatabaseType.SQLite, SqliteFactory.Instance);
 DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory());
 
 // Configure connection items in DatabaseSettings (typically loaded from XML);
@@ -136,8 +136,8 @@ Host=localhost;Port=5432;Database={@DbName};Username={@UserId};Password={@Passwo
 | `IFormCommandBuilder` | Provider-specific CRUD generation interface |
 | `ITableSchemaProvider` | Provider-specific live-database schema reader |
 | `DbDialectRegistry` | `DatabaseType` → `IDialectFactory` registry |
-| `DbConnectionManager` | Connection information registry |
-| `DbProviderManager` | ADO.NET `DbProviderFactory` resolution |
+| `IDbConnectionManager` | Connection information registry |
+| `DbProviderRegistry` | ADO.NET `DbProviderFactory` resolution |
 | `ILMapper<T>` | IL emit-based DataReader-to-object mapping |
 | `DbFunc` | Database-aware utility methods |
 | `TableSchemaCommandBuilder` | Schema-based IUD command generation |
@@ -182,7 +182,7 @@ Bee.Db/
     SqlServer/     # SQL Server implementations (DDL + DML + SchemaProvider + Helper)
     PostgreSql/    # PostgreSQL implementations
     Sqlite/        # SQLite implementations
-  Manager/         # DbConnectionManager, DbProviderManager, DbConnectionInfo,
+  Manager/         # IDbConnectionManager, DbProviderRegistry, DbConnectionInfo,
                    # DbDialectRegistry
   Logging/         # DbAccessLogger, DbLogContext
   *.cs (root)      # Cross-cutting infrastructure:

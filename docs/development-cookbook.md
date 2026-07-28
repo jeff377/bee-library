@@ -491,7 +491,7 @@ using Bee.UI.Core;
 // 1. Implement IUIViewService (provides the connection settings dialog)
 public class MyUIViewService : IUIViewService
 {
-    public bool ShowApiConnect()
+    public async Task<bool> ShowApiConnectAsync()
     {
         // Show a dialog asking the user for the endpoint; return true if confirmed.
         // Concrete implementation depends on the UI framework (MAUI ContentPage / WinForms Form, etc.).
@@ -500,14 +500,14 @@ public class MyUIViewService : IUIViewService
 
 // 2. Initialize at startup
 var supportedConnectTypes = SupportedConnectTypes.Both; // both Local and Remote allowed
-if (!ClientInfo.Initialize(new MyUIViewService(), supportedConnectTypes))
+if (!ClientInfo.InitializeAsync(new MyUIViewService(), supportedConnectTypes))
 {
     // The user cancelled connection setup; exit the app.
     return;
 }
 ```
 
-Internally `Initialize` reads the `{ExeName}.Settings.xml` file, tries the endpoint, and falls back to `IUIViewService.ShowApiConnect()` if unreachable.
+Internally `InitializeAsync` reads the `{ExeName}.Settings.xml` file, tries the endpoint, and falls back to `IUIViewService.ShowApiConnectAsync()` if unreachable.
 
 **2. Apply login result**:
 
@@ -521,7 +521,7 @@ ClientInfo.ApplyLoginResult(loginResponse);
 
 ```csharp
 // System-level API
-var pingResult = await ClientInfo.SystemApiConnector.PingAsync();
+await ClientInfo.SystemApiConnector.PingAsync();   // returns Task — no result to assign
 
 // Form-level API (FormBO)
 var formConnector = ClientInfo.CreateFormApiConnector("Employee");
@@ -534,7 +534,7 @@ var schema = ClientInfo.DefineAccess.GetFormSchema("Employee");
 **4. Switch endpoint (user changes server)**:
 
 ```csharp
-ClientInfo.SetEndpoint("https://new-server.example.com/api");
+ClientInfo.SetEndpointAsync("https://new-server.example.com/api");
 // Internally resets AccessToken and re-triggers the ApplyLoginResult flow.
 ```
 
@@ -549,11 +549,11 @@ using Bee.Hosting; // AddBeeFramework
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Backend services (DbConnectionManager / IDefineAccess / BO, etc.)
+// Backend services (IDbConnectionManager / IDefineAccess / BO, etc.)
 builder.Services.AddBeeFramework(backendConfiguration, pathOptions);
 
 // Bee.Web.Blazor.Server RCL services
-builder.Services.AddBeeWebBlazorServer();
+builder.Services.AddBeeBlazor();
 
 // Standard Blazor Server setup
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -609,7 +609,7 @@ builder.Services.AddScoped(sp => new HttpClient
 });
 
 // Bee.Web.Blazor.Wasm RCL services (registers RemoteApiProvider automatically)
-builder.Services.AddBeeWebBlazorWasm();
+builder.Services.AddBeeBlazor();
 
 await builder.Build().RunAsync();
 ```
@@ -666,7 +666,7 @@ Phase 1 has shipped the first FormSchema-driven controls (`DynamicForm` + `FormD
 | Frontend | Connection abstraction | Token tenancy | Endpoint persistence | Mode | Registration |
 |---------|-----------------------|---------------|--------------------|------|-------------|
 | Desktop (Avalonia / MAUI / WinForms) | `ClientInfo` static | **1 user / process** (`ClientInfo._accessToken` static) | Local file + `IEndpointStorage` | Local or Remote | `ClientInfo.Initialize` at startup |
-| Blazor Server | DI scope | **N users / process** (per SignalR circuit) | appsettings / startup injection | Local or Remote | `AddBeeFramework` + `AddBeeWebBlazorServer` |
-| Blazor WASM | DI scope | 1 user / WASM heap | localStorage / JS interop | **Remote only** | `AddBeeWebBlazorWasm` + `HttpClient` |
+| Blazor Server | DI scope | **N users / process** (per SignalR circuit) | appsettings / startup injection | Local or Remote | `AddBeeFramework` + `AddBeeBlazor` |
+| Blazor WASM | DI scope | 1 user / WASM heap | localStorage / JS interop | **Remote only** | `AddBeeBlazor` + `HttpClient` |
 
 > ⚠️ **Do not use `Bee.UI.Core.ClientInfo` in Blazor environments.** Its `_accessToken` is a `private static Guid` — only **one** AccessToken per process. In Blazor Server, where one process serves N concurrent user circuits, a later login overwrites the prior user's token, causing cross-user data leakage. See [ADR-013](adr/adr-013-frontend-api-connection-strategy.md).

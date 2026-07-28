@@ -19,7 +19,7 @@ changed if you are upgrading.
 | Question | Answer |
 |----------|--------|
 | Where is time converted? | In the client's `Connector`, both directions. Nowhere else. |
-| What does the database hold? | UTC, in ordinary columns with no time zone (`datetime2`, `timestamp`, `DATETIME`, `TIMESTAMP`, `TEXT`). |
+| What does the database hold? | UTC, in ordinary columns with no time zone (`datetime2`, `timestamp`, `DATETIME`, `TIMESTAMP`). |
 | What travels on the wire? | UTC, in **both** directions. |
 | Which columns convert? | Those declared `FieldDbType.DateTime`. A `Date` column is a calendar day and never converts. |
 | Where does the user's zone come from? | `st_user.time_zone`, carried on the session — never the device's zone. |

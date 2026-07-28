@@ -4,7 +4,7 @@
 
 `FieldDbType` 區分 `Date`（日曆日：生日、發票日期、帳期）與 `DateTime`（時間點：建立時刻、
 登入時刻）。`DataSet` 作為跨層 DTO，其 `DataColumn` 只能以 `DateTime` 承載日曆日
-（`DateOnly` 不是可用的儲存型別），這個區別很容易在傳遞過程中消失——在 v4.15 之前，
+（`DateOnly` 不是可用的儲存型別），這個區別很容易在傳遞過程中消失——在本版之前，
 框架確實在值進入 CLR 與 wire 之後就把它弄丟了。
 
 本文說明改了什麼、你不必動手就能得到什麼，以及唯一需要自行宣告語意的情況。
@@ -62,7 +62,7 @@ var declared = column.GetDeclaredFieldDbType();    // 未標記時回傳 null
 ```jsonc
 {
   "name": "order_date",
-  "type": "Date",           // v4.15 之前是 "DateTime"
+  "type": "Date",           // 舊版是 "DateTime"
   "allowNull": false,
   // …
 }

@@ -4,6 +4,67 @@
 
 本檔記錄專案的所有重要變更。
 
+## [Unreleased]
+
+> 本區段含**先前未被標示的破壞性變更**：`v4.15.0` tag 之後有數個 commit 改動了已發布的 API
+> 表面卻未在 subject 標 `!`，`/changelog-draft` 掃不到，因此在此明列。最危險的一類在最後
+> ——完全不會產生編譯錯誤的變更。
+
+### 變更 —— 破壞性（編譯期可發現）
+
+- `Bee.ObjectCaching`：移除 `IEvictableCache` 與 `ICacheContainer.TryEvict(string)`；
+  `KeyObjectCache<T>` / `ObjectCache<T>` 不再實作該介面。快取失效改為發布 notify-key 版本、
+  由條目 lazy 過期。（`c45ff350`）
+- `Bee.Repository.Abstractions`：`IDataFormRepository.GetNewData()` 增加 `timeZoneId` 引數，
+  實作端須同步改簽章。（`b759894f`）
+- `Bee.Business` / `Bee.Expressions`：`IFormRuleProcessor`（五個成員）與
+  `IExpressionEvaluator.Evaluate` / `Evaluate<T>` 增加 `timeZoneId` 引數。（`5f28f9a3`）
+- `Bee.Definition`：`IDefineStorage` 新增 `GetChangeSource(...)`。（`bb5e4473`、`f7459cc2`）
+- `Bee.Base`：時間 `Cxxx` 家族的單參數多載改回傳 nullable，`CDate` 更名為 `CDateOnly`。
+  （`ba56cef0`、`49641789`、`c5578a42`）
+- `Bee.Base` / `Bee.Db`：新增 `FieldDbType.Time`（附加於列舉末端，既有值不變）。（`50a2e7d8`）
+- `Bee.Api.Core`（**wire**）：`SerializableData*` 改採 property-name key，完成 4.15.0 當時
+  刻意排除的部分。（`d64decf9`）
+- `Bee.Api.Client`：移除 `SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync`。
+  這兩個方法對 .NET 呼叫端一直只會回傳空殼——定義型別的序列化契約是 XML，其巢狀集合為
+  get-only，JSON 與 MessagePack 反序列化時會丟棄。請改用 `ClientInfo.DefineAccess.*`
+  或 `GetDefineAsync` 搭配對應的 `DefineType`。
+- `Bee.Business`：`SystemBO.SaveDefine` 與 `SystemBO.CreateSession` 改為 `LocalOnly`，
+  遠端呼叫一律拒絕。寫入定義、以及不驗憑證就從 UserID 發 token，都屬受信任呼叫端操作。
+
+### 變更 —— 破壞性（靜默，無編譯錯誤）
+
+- **系統時間戳改為 UTC。** `CreateTime` 類屬性、快取到期、session 到期、資料庫欄位 `DEFAULT`
+  與 PostgreSQL 參數層全面由本地時間改為 UTC。下游若讀取或比較這些值，會整體位移一個時區
+  且不會有任何編譯失敗。（`122184e4`、`52ddb24a`、`9aadf9eb`、`1eb0e09f`、`11aedcc4`、`c990aa9e`）
+- **日期一律 `DateOnly`。** `FormRowDefaults.Apply` 與 `FieldDbTypeExtensions.DefaultForDbType`
+  增加預設參數（binary breaking），運算式 `Today()` 由 `DateTime` 改回傳 `DateOnly`。（`f028ba04`）
+- **預設時區。** `SessionInfo.TimeZone` 與 `UserInfo.TimeZone` 的預設值由 `Asia/Taipei` 改為
+  空字串（所有轉換點本就將空字串視為 UTC）。登入時由 `st_user.time_zone` 填入，若為空則退回
+  新增的 `BackendConfiguration.DefaultTimeZone`——其出廠預設為 `Asia/Taipei`，故既有部署不會
+  位移。但自訂認證流程若直接建構 `SessionInfo` 而未呼叫 `ApplyUserTimeZone`，該 session 會是 UTC。
+- **反序列化允許清單。** `SysInfo` 內建的命名空間清單原本列 `Bee.Contracts`，而框架中無此
+  命名空間；已更正為 `Bee.Api.Contracts`。若有消費端型別放在 `Bee.Contracts` 命名空間下，
+  會由允許變成拒絕。
+
+### 修正
+
+- `Bee.Definition`：`FieldDbType.Date` 欄位改對映到 `DateEdit`，不再落入純文字框。
+- `Bee.Base`：`StringUtilities.Replace` 改用 ordinal 比對。土耳其地區設定下連線字串佔位符
+  （`{@Password}` 等）會比對失敗而原樣送出。
+- `Bee.Base`：`DataTable` 的 JSON round-trip 不再改寫字串欄位中的日期樣式文字，
+  也不再讓超出 `double` 精度的 decimal 失精。
+- `Bee.Base`：`XmlCodec.Deserialize` 禁用 DTD 處理（內部實體展開 / billion laughs）。
+- `Bee.Definition`：定義檔路徑拒絕會逃出定義根目錄的片段。
+- `Bee.Definition`：master key 檔案在 Unix 上建立為僅擁有者可讀寫。
+- `Bee.Repository`：session 查詢失敗不再把 UserID 回傳給呼叫端。
+
+### 安全性
+
+- 識別碼型字串比對全面改為 ordinal，包含 `SysInfo` 的反序列化允許清單與
+  `DatabaseSettingsCryptor` 的 `enc:` 哨兵。
+- `IPValidator` 複製其允許／拒絕清單並以唯讀公開；`UpgradeStage.Statements` 改為唯讀。
+
 ## [4.15.0]
 
 > Bee.NET 仍處 pre-stable 演進階段。本版是發版前的 **wire 與 API 收斂**。MessagePack 合約序列化由位置式整數鍵改為 **property-name key**,使 JSON 與 MessagePack 共用同一份以屬性名為準的 wire 合約,並消除建構子順序 / 跨繼承 key 編號的 footgun [ADR-030](docs/adr/adr-030-messagepack-name-based-keys.md)。另外,API **合約介面依軸分入命名空間**(`Bee.Api.Contracts.System` / `.Form` / `.AuditLog`),對齊既有的實作層。兩項變更技術上皆屬破壞性 —— 分別是 wire 格式與 `using` —— 但依 pre-stable 政策以 minor 發佈,因目前尚無外部消費者。

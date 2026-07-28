@@ -25,8 +25,8 @@
 
 ### 連線與提供者管理
 
-- `DbConnectionManager` -- 集中式連線資訊註冊
-- `DbProviderManager` -- 資料庫提供者工廠解析
+- `IDbConnectionManager` -- 集中式連線資訊註冊
+- `DbProviderRegistry` -- 資料庫提供者工廠解析
 - `DbConnectionInfo` -- 連線中繼資料（連線字串、資料庫類型、提供者）
 
 ### 查詢組合
@@ -43,7 +43,7 @@
 框架透過 dialect factory 層依 `DatabaseType` 路由 SQL 生成與結構描述讀取：
 
 - `IDialectFactory` -- 每個 provider 的工廠，提供 `IFormCommandBuilder`、`ICreateTableCommandBuilder`、`ITableAlterCommandBuilder`、`ITableRebuildCommandBuilder`、`ITableSchemaProvider` 與 `GetDefaultValueExpression(FieldDbType)`
-- `DbDialectRegistry` -- 將 `DatabaseType` 映射到對應的 `IDialectFactory`（與 `DbProviderManager` 映射 ADO.NET `DbProviderFactory` 對稱）；註冊由 host 應用程式明示完成
+- `DbDialectRegistry` -- 將 `DatabaseType` 映射到對應的 `IDialectFactory`（與 `DbProviderRegistry` 映射 ADO.NET `DbProviderFactory` 對稱）；註冊由 host 應用程式明示完成
 - `DbFunc` -- 資料庫感知工具方法（依 `DatabaseType` 索引參數前綴、識別符引號、型別推斷）
 - 內建 dialect 實作：
   - **SQL Server**（`Providers/SqlServer/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、結構描述探查
@@ -82,15 +82,15 @@ using Microsoft.Data.Sqlite;
 using Npgsql;
 
 // SQL Server
-DbProviderManager.RegisterProvider(DatabaseType.SQLServer, SqlClientFactory.Instance);
+DbProviderRegistry.Register(DatabaseType.SQLServer, SqlClientFactory.Instance);
 DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory());
 
 // PostgreSQL
-DbProviderManager.RegisterProvider(DatabaseType.PostgreSQL, NpgsqlFactory.Instance);
+DbProviderRegistry.Register(DatabaseType.PostgreSQL, NpgsqlFactory.Instance);
 DbDialectRegistry.Register(DatabaseType.PostgreSQL, new PgDialectFactory());
 
 // SQLite
-DbProviderManager.RegisterProvider(DatabaseType.SQLite, SqliteFactory.Instance);
+DbProviderRegistry.Register(DatabaseType.SQLite, SqliteFactory.Instance);
 DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory());
 
 // 在 DatabaseSettings 中設定每筆 DatabaseItem（通常從 XML 載入）；
@@ -136,8 +136,8 @@ Host=localhost;Port=5432;Database={@DbName};Username={@UserId};Password={@Passwo
 | `IFormCommandBuilder` | 提供者專屬 CRUD 產生介面 |
 | `ITableSchemaProvider` | 各 provider 的即時資料庫結構描述讀取器 |
 | `DbDialectRegistry` | `DatabaseType` → `IDialectFactory` 註冊中心 |
-| `DbConnectionManager` | 連線資訊註冊中心 |
-| `DbProviderManager` | ADO.NET `DbProviderFactory` 解析 |
+| `IDbConnectionManager` | 連線資訊註冊中心 |
+| `DbProviderRegistry` | ADO.NET `DbProviderFactory` 解析 |
 | `ILMapper<T>` | 基於 IL emit 的 DataReader 至物件映射 |
 | `DbFunc` | 資料庫感知工具方法 |
 | `TableSchemaCommandBuilder` | 依結構描述產生 IUD 命令 |
@@ -182,7 +182,7 @@ Bee.Db/
     SqlServer/     # SQL Server 實作（DDL + DML + SchemaProvider + Helper）
     PostgreSql/    # PostgreSQL 實作
     Sqlite/        # SQLite 實作
-  Manager/         # DbConnectionManager、DbProviderManager、DbConnectionInfo、
+  Manager/         # IDbConnectionManager、DbProviderRegistry、DbConnectionInfo、
                    # DbDialectRegistry
   Logging/         # DbAccessLogger、DbLogContext
   *.cs (root)      # 跨切面基礎設施：

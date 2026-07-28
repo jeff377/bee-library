@@ -17,7 +17,7 @@
 | 問題 | 答案 |
 |------|------|
 | 時間在哪裡轉換？ | 用戶端的 `Connector`，雙向皆然。其他地方都不轉。 |
-| 資料庫存什麼？ | UTC，存在無時區的一般欄位（`datetime2`、`timestamp`、`DATETIME`、`TIMESTAMP`、`TEXT`）。 |
+| 資料庫存什麼？ | UTC，存在無時區的一般欄位（`datetime2`、`timestamp`、`DATETIME`、`TIMESTAMP`）。 |
 | wire 上傳什麼？ | UTC，**兩個方向都是**。 |
 | 哪些欄位會被轉換？ | 宣告為 `FieldDbType.DateTime` 的欄位。`Date` 是日曆日，絕不轉換。 |
 | 使用者的時區從哪來？ | `st_user.time_zone`，隨 session 帶出——絕不取裝置時區。 |

@@ -71,17 +71,13 @@
 |----------|----------|------|
 | `FilterCondition` | 篩選條件 | 單一欄位條件（例如 `Name LIKE '%Lee%'`、`Age > 18`） |
 | `FilterGroup` | 篩選條件群組 | 多個條件以 AND / OR 組合的條件樹節點 |
-| `IFilterNode` | 篩選節點介面 | `FilterCondition` 與 `FilterGroup` 的共同介面 |
+| `FilterNode` | 篩選節點介面 | `FilterCondition` 與 `FilterGroup` 的共同介面 |
 
 ### 日誌
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `ILogWriter` | 日誌寫入介面 | 系統日誌輸出的抽象介面 |
-| `LogEntry` | 日誌記錄 | 單筆系統日誌事件物件 |
 | `LogOptions` | 日誌選項 | 日誌行為的設定參數 |
-| `ConsoleLogWriter` | Console 日誌寫入器 | 將日誌輸出至 Console 的實作 |
-| `NullLogWriter` | 空日誌寫入器 | 不執行任何操作的預設實作，避免 null 檢查 |
 | `DbAccessAnomalyLogOptions` | 資料庫存取異常日誌選項 | 資料庫異常存取行為的日誌設定（門檻由 DB 異常記錄器消費） |
 | `IAuditLogWriter` | 稽核日誌寫入介面 | 寫入稽核軌跡記錄到 log 資料庫的唯一入口（背景批次或同步，best-effort） |
 | `AuditEntry` | 稽核記錄基底 | 單筆稽核記錄的抽象基底；承載共通 who/when/where 欄位，子類再加各軸專屬欄位 |
@@ -227,8 +223,7 @@
 | `FieldType` | 欄位種類 | `DbField`（資料庫欄位）、`RelationField`（關聯欄位）、`VirtualField`（虛擬欄位） |
 | `FieldDbType` | 欄位資料庫型別 | `String`、`Integer`、`Decimal`、`DateTime`、`Date`、`Time`、`Boolean` … 等 15 種 |
 | `ControlType` | 控制項類型 | `TextEdit`、`DropDownEdit`、`DateEdit`、`TimeEdit`、`CheckEdit` … |
-| `FormMode` | 表單模式 | `Add`（新增）、`Edit`（編輯）、`View`（檢視） |
-| `TableRole` | 資料表角色 | `Master`（主檔）、`Detail`（明細） |
+| `SingleFormMode` | 表單模式 | `View`（檢視）、`Add`（新增）、`Edit`（編輯）；以 `FormScope.FormMode` attached property 對外 |
 
 ### 時間語意
 
@@ -236,9 +231,9 @@
 
 | 詞 | 語意 | `FieldDbType` | 取值層 | 說明 |
 |----|------|--------------|--------|------|
-| **日曆日** | 哪一天 | `Date` | `ValueUtilities.CDateOnly` → `DateOnly` | 生日、發票日期。牆上時間，絕不轉時區 |
+| **日曆日** | 哪一天 | `Date` | `ValueUtilities.CDateOnly` → `DateOnly?` | 生日、發票日期。牆上時間，絕不轉時區 |
 | **時刻** | 幾點（一日之內） | `Time` | `ValueUtilities.CTimeOnly` → `TimeOnly?` | 班別起訖、營業時間。牆上時間，絕不轉時區 |
-| **時間點** | 哪一天的幾點 | `DateTime` | `ValueUtilities.CDateTime` → `DateTime` | 建立時間、登入時戳。以 UTC 儲存，顯示時轉使用者時區 |
+| **時間點** | 哪一天的幾點 | `DateTime` | `ValueUtilities.CDateTime` → `DateTime?` | 建立時間、登入時戳。以 UTC 儲存，顯示時轉使用者時區 |
 | **時距** | 多久 | （無對應型別） | — | 工時、時長。目前以 `Decimal`（小時）承載 |
 
 判別法：問「這個值需不需要知道是哪一天？」需要就是時間點；不需要而問的是「幾點」就是時刻；
@@ -256,7 +251,7 @@
 | `ComparisonOperator` | 比較運算子 | `Equals`、`NotEquals`、`GreaterThan`、`LessThan`、`Like`、`In`、`Between` … |
 | `LogicalOperator` | 邏輯運算子 | `And`（且）、`Or`（或） |
 | `SortDirection` | 排序方向 | `Ascending`（遞增）、`Descending`（遞減） |
-| `FilterNodeType` | 篩選節點種類 | `Condition`（條件）、`Group`（群組） |
+| `FilterNodeKind` | 篩選節點種類 | `Condition`（條件）、`Group`（群組） |
 
 ### API 與安全
 
@@ -276,9 +271,7 @@
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `DatabaseType` | 資料庫類型 | `SqlServer`、`MySql`、`PostgreSql` … |
-| `SchemaUpgradeAction` | 結構升級動作 | 資料庫結構變更時的升級策略 |
-| `LogEntryType` | 日誌記錄類型 | `Information`（資訊）、`Warning`（警告）、`Error`（錯誤） |
+| `DatabaseType` | 資料庫類型 | `SQLServer`、`PostgreSQL`、`MySQL`、`Oracle`、`SQLite` |
 | `LoginEvent` | 登入事件 | `LoginSucceeded`、`LoginFailed`、`LockedOut`、`Logout`（記於 `st_log_login`） |
 | `ChangeKind` | 異動類型 | `Insert`、`Update`、`Delete`（記於 `st_log_change`） |
 | `AnomalyKind` | 異常類型 | `Error`、`Timeout`、`Slow`、`LargeAffected`、`LargeResult`（記於 `st_log_anomaly_*`） |
@@ -358,13 +351,13 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 |----------|----------|------|
 | `DynamicForm`（Razor 元件） | 動態表單元件 | Blazor 元件，依 FormSchema 動態渲染表單；Server 與 Wasm 套件各自提供一份實作 |
 | `FormDataObject` | 表單資料物件 | Blazor `DynamicForm` 綁定的資料物件；各套件依宿主模型分別有獨立版本 |
-| `AddBeeWebBlazorServer` | Blazor Server 註冊擴充方法 | `IServiceCollection` 擴充方法，註冊 Blazor Server RCL 所需服務（DI scope 連接器） |
-| `AddBeeWebBlazorWasm` | Blazor WASM 註冊擴充方法 | `IServiceCollection` 擴充方法，註冊 Blazor WASM RCL 所需服務（強制 `RemoteApiProvider`） |
+| `AddBeeBlazor` | Blazor Server 註冊擴充方法 | `IServiceCollection` 擴充方法，註冊 Blazor Server RCL 所需服務（DI scope 連接器） |
+| `AddBeeBlazor` | Blazor WASM 註冊擴充方法 | `IServiceCollection` 擴充方法，註冊 Blazor WASM RCL 所需服務（強制 `RemoteApiProvider`） |
 
 ### API 連線提供者（`Bee.Api.Client`）
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `IApiProvider` | API 提供者介面 | 抽象連接器如何抵達後端；由宿主在啟動時選擇實作 |
+| `IJsonRpcProvider` | API 提供者介面 | 抽象連接器如何抵達後端；由宿主在啟動時選擇實作 |
 | `LocalApiProvider` | 近端 API 提供者 | In-process 實作，前後端共用同一個 process，直接呼叫 BO 方法（無 HTTP 開銷） |
 | `RemoteApiProvider` | 遠端 API 提供者 | 基於 HTTP 的實作，前端透過 JSON-RPC 連到後端（Blazor WASM 必須使用此實作） |

@@ -69,7 +69,7 @@
 ```
 Bee.Db                       # 跨切面基礎設施：DbAccess、DbCommandSpec、DbBatchSpec、DbConnectionScope、
                              # DbFunc、ILMapper、DbCommandKind、DbBatchResult 等執行核心
-Bee.Db.Manager               # DbConnectionManager、DbProviderManager、DbDialectRegistry
+Bee.Db.Manager               # IDbConnectionManager、DbProviderRegistry、DbDialectRegistry
 Bee.Db.Logging               # DbAccessLogger、DbLogContext
 Bee.Db.Ddl                   # DDL 字串產生契約（3 個 I*CommandBuilder）
 Bee.Db.Dml                   # DML 字串產生 + 構件（含 IFormCommandBuilder、TableSchemaCommandBuilder、JoinType）

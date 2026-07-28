@@ -71,17 +71,13 @@ This document provides a standard term reference for technical writing, ensuring
 |---------|------|-------------|
 | `FilterCondition` | 篩選條件 | A single column condition (e.g. `Name LIKE '%Lee%'`, `Age > 18`) |
 | `FilterGroup` | 篩選條件群組 | A condition tree node combining multiple conditions with AND / OR |
-| `IFilterNode` | 篩選節點介面 | The common interface of `FilterCondition` and `FilterGroup` |
+| `FilterNode` | 篩選節點介面 | The common interface of `FilterCondition` and `FilterGroup` |
 
 ### Logging
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `ILogWriter` | 日誌寫入介面 | The abstract interface for system log output |
-| `LogEntry` | 日誌記錄 | A single system log event object |
 | `LogOptions` | 日誌選項 | Configuration parameters for logging behavior |
-| `ConsoleLogWriter` | Console 日誌寫入器 | Implementation that writes logs to the console |
-| `NullLogWriter` | 空日誌寫入器 | Default no-op implementation, avoiding null checks |
 | `DbAccessAnomalyLogOptions` | 資料庫存取異常日誌選項 | Logging configuration for database access anomalies (thresholds consumed by the DB anomaly recorder) |
 | `IAuditLogWriter` | 稽核日誌寫入介面 | The single entry point for writing audit-trail entries to the log database (background/batch or synchronous, best-effort) |
 | `AuditEntry` | 稽核記錄基底 | Abstract base for one audit-trail row; carries the common who/when/where columns, subclasses add axis-specific columns |
@@ -227,8 +223,7 @@ This document provides a standard term reference for technical writing, ensuring
 | `FieldType` | 欄位種類 | `DbField` (database field), `RelationField` (relation field), `VirtualField` (virtual field) |
 | `FieldDbType` | 欄位資料庫型別 | `String`, `Integer`, `Decimal`, `DateTime`, `Date`, `Time`, `Boolean`, ... 15 in total |
 | `ControlType` | 控制項類型 | `TextEdit`, `DropDownEdit`, `DateEdit`, `TimeEdit`, `CheckEdit`, ... |
-| `FormMode` | 表單模式 | `Add`, `Edit`, `View` |
-| `TableRole` | 資料表角色 | `Master`, `Detail` |
+| `SingleFormMode` | 表單模式 | `View`, `Add`, `Edit` (exposed as the `FormScope.FormMode` attached property) |
 
 ### Time Semantics
 
@@ -237,9 +232,9 @@ never names one of them on its own.
 
 | Term | Meaning | `FieldDbType` | Reading it | Notes |
 |------|---------|---------------|-----------|-------|
-| **Calendar day** | Which day | `Date` | `ValueUtilities.CDateOnly` → `DateOnly` | Birthday, invoice date. Wall-clock; never time-zone shifted |
+| **Calendar day** | Which day | `Date` | `ValueUtilities.CDateOnly` → `DateOnly?` | Birthday, invoice date. Wall-clock; never time-zone shifted |
 | **Time of day** | What time (within a day) | `Time` | `ValueUtilities.CTimeOnly` → `TimeOnly?` | Shift boundaries, opening hours. Wall-clock; never time-zone shifted |
-| **Instant** | What time on which day | `DateTime` | `ValueUtilities.CDateTime` → `DateTime` | Created-at, login timestamp. Stored as UTC, shown in the user's zone |
+| **Instant** | What time on which day | `DateTime` | `ValueUtilities.CDateTime` → `DateTime?` | Created-at, login timestamp. Stored as UTC, shown in the user's zone |
 | **Duration** | How long | (no type yet) | — | Working hours, elapsed time. Carried as a `Decimal` (hours) for now |
 
 The test: ask whether the value needs to know *which day*. If it does, it is an instant. If it does
@@ -258,7 +253,7 @@ for the two semantics that carry a mechanism of their own.
 | `ComparisonOperator` | 比較運算子 | `Equals`, `NotEquals`, `GreaterThan`, `LessThan`, `Like`, `In`, `Between`, ... |
 | `LogicalOperator` | 邏輯運算子 | `And`, `Or` |
 | `SortDirection` | 排序方向 | `Ascending`, `Descending` |
-| `FilterNodeType` | 篩選節點種類 | `Condition`, `Group` |
+| `FilterNodeKind` | 篩選節點種類 | `Condition`, `Group` |
 
 ### API and Security
 
@@ -278,9 +273,7 @@ for the two semantics that carry a mechanism of their own.
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `DatabaseType` | 資料庫類型 | `SqlServer`, `MySql`, `PostgreSql`, ... |
-| `SchemaUpgradeAction` | 結構升級動作 | Upgrade strategy for database structural changes |
-| `LogEntryType` | 日誌記錄類型 | `Information`, `Warning`, `Error` |
+| `DatabaseType` | 資料庫類型 | `SQLServer`, `PostgreSQL`, `MySQL`, `Oracle`, `SQLite` |
 | `LoginEvent` | 登入事件 | `LoginSucceeded`, `LoginFailed`, `LockedOut`, `Logout` (recorded in `st_log_login`) |
 | `ChangeKind` | 異動類型 | `Insert`, `Update`, `Delete` (recorded in `st_log_change`) |
 | `AnomalyKind` | 異常類型 | `Error`, `Timeout`, `Slow`, `LargeAffected`, `LargeResult` (recorded in `st_log_anomaly_*`) |
@@ -360,13 +353,13 @@ Both packages are Razor Class Libraries (RCLs) that expose the same Blazor compo
 |---------|------|-------------|
 | `DynamicForm` (Razor component) | 動態表單元件 | Blazor component that renders a FormSchema-driven form; the Server and Wasm packages each ship their own implementation |
 | `FormDataObject` | 表單資料物件 | Data-binding object bound by the Blazor `DynamicForm`; each package has its own version tailored to its hosting model |
-| `AddBeeWebBlazorServer` | Blazor Server 註冊擴充方法 | `IServiceCollection` extension that registers the Blazor Server RCL services (DI-scoped connectors) |
-| `AddBeeWebBlazorWasm` | Blazor WASM 註冊擴充方法 | `IServiceCollection` extension that registers the Blazor WASM RCL services (forces `RemoteApiProvider`) |
+| `AddBeeBlazor` | Blazor Server 註冊擴充方法 | `IServiceCollection` extension that registers the Blazor Server RCL services (DI-scoped connectors) |
+| `AddBeeBlazor` | Blazor WASM 註冊擴充方法 | `IServiceCollection` extension that registers the Blazor WASM RCL services (forces `RemoteApiProvider`) |
 
 ### Api Client Providers (`Bee.Api.Client`)
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `IApiProvider` | API 提供者介面 | Abstracts how a connector reaches the backend; chosen by the host at startup |
+| `IJsonRpcProvider` | API 提供者介面 | Abstracts how a connector reaches the backend; chosen by the host at startup |
 | `LocalApiProvider` | 近端 API 提供者 | In-process implementation; the frontend and backend share the same process, invoking BO methods directly (no HTTP) |
 | `RemoteApiProvider` | 遠端 API 提供者 | HTTP-based implementation; the frontend reaches the backend over JSON-RPC (required for Blazor WASM) |

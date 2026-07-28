@@ -22,12 +22,12 @@ Bee.NET 在 v4.4 階段同時擁有三類前端 host:
 | Endpoint 設定流程 | 啟動時讀檔 → 不可達則彈 dialog 讓使用者輸入 | 由宿主 startup 注入或讀 appsettings | 由宿主 startup 注入或讀 JS interop |
 | Token 管理 | **single-user** static singleton(`ClientInfo._accessToken` 為 `private static Guid`) | **multi-user per circuit**,每個 SignalR circuit 各自一份 token | **multi-user per app instance**,每個 Browser tab / WASM heap 各自一份 token |
 | Token 承載人數 | 1(一個 process = 一個使用者) | N(一個 server process 同時服務多個 SignalR 連線) | 1 per browser instance,但同 server 對應 N tabs |
-| UI 互動需求 | 需要對話框服務(`IUIViewService.ShowApiConnect()`) | 走 Razor component 流程,無 dialog 抽象 | 同 Server |
+| UI 互動需求 | 需要對話框服務(`IUIViewService.ShowApiConnectAsync()`) | 走 Razor component 流程,無 dialog 抽象 | 同 Server |
 | 連線方式 | Local 或 Remote(可雙模式) | Local(in-process)或 Remote(HTTP) | **只能 Remote(HTTP)** —— Browser 無法載入後端組件 |
 
 如果強要**單一連線抽象**涵蓋三類前端,會出現結構性矛盾:
 
-1. **桌面端需要的 `IUIViewService.ShowApiConnect()` dialog 抽象,在 Blazor 環境無對應**(Razor component 模型完全不同),抽象會變空殼或語意錯置
+1. **桌面端需要的 `IUIViewService.ShowApiConnectAsync()` dialog 抽象,在 Blazor 環境無對應**(Razor component 模型完全不同),抽象會變空殼或語意錯置
 2. **`ClientInfo` 用 static singleton 維持狀態 fits 桌面端,但對 Web 端是 cross-user security bug**:
    - `Bee.UI.Core.ClientInfo._accessToken` 是 `private static Guid` —— 一個 process 內**只能存一個使用者的 AccessToken**
    - 桌面端 OK(一個 App process = 一個登入使用者)
@@ -51,8 +51,8 @@ v4.4 加入 Blazor RCL 時若強行讓 Blazor 走 `Bee.UI.Core`,就會踩到上�
 - **消費對象**:`ClientInfo` static singleton、`IEndpointStorage`、`IUIViewService`、`VersionInfo`
 - **適用前端**:桌面端 / native UI(MAUI、WinForms、WPF、Avalonia 等)
 - **連線模型**:
-  - `ClientInfo.Initialize(uiService, supportedConnectTypes)` 在 App 啟動時呼叫
-  - `ClientInfo.SetEndpoint(endpoint)` 設定 endpoint(Local 路徑或 Remote URL),內部走 `SyncExecutor.Run(() => SystemApiConnector.InitializeAsync())`
+  - `ClientInfo.InitializeAsync(uiService, supportedConnectTypes)` 在 App 啟動時呼叫
+  - `ClientInfo.SetEndpointAsync(endpoint)` 設定 endpoint(Local 路徑或 Remote URL),內部走 `SyncExecutor.Run(() => SystemApiConnector.InitializeAsync())`
   - `ClientInfo.ApplyLoginResult(loginResponse)` 套用登入結果
   - 透過 `ClientInfo.SystemApiConnector` / `ClientInfo.CreateFormApiConnector(progId)` 取得 connector
   - 持久化由 `IEndpointStorage`(預設實作:檔案);UI 對話流程由 `IUIViewService` 提供
