@@ -5,8 +5,6 @@ using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Api.Core.Messages.System;
 using Bee.Definition;
-using Bee.Definition.Forms;
-using Bee.Definition.Layouts;
 using Bee.Definition.Organization;
 using Bee.Api.Core.Messages;
 
@@ -189,20 +187,19 @@ namespace Bee.Api.Client.Connectors
                 return default!;
         }
 
-        /// <summary>
-        /// Asynchronously gets a form schema as a typed object. JSON-friendly
-        /// alternative to <see cref="GetDefineAsync{T}"/> for the FormSchema type,
-        /// primarily intended for JS / TypeScript frontends but usable from the
-        /// .NET client as well.
-        /// </summary>
-        /// <param name="progId">The program identifier.</param>
-        public virtual async Task<FormSchema?> GetFormSchemaAsync(string progId)
-        {
-            var request = new GetFormSchemaRequest() { ProgId = progId };
-            var result = await ExecuteAsync<GetFormSchemaResponse>(SystemActions.GetFormSchema, request)
-                .ConfigureAwait(false);
-            return result.Schema;
-        }
+        // Note: GetFormSchema, GetFormLayout and GetLanguage have no .NET client methods. Those BO
+        // methods are JS-only (Plain JSON wire format) — see the SystemBO XML docs for the
+        // rationale. .NET clients use GetDefineAsync with the matching DefineType, which carries
+        // the definition as XML.
+        //
+        // The distinction is not stylistic. Definition types (FormSchema, FormLayout,
+        // LanguageResource, TableSchema) declare XML as their serialisation contract: their nested
+        // collections are get-only, which XmlSerializer handles by populating the existing instance.
+        // JSON and MessagePack instead bind by writability, so they serialise those collections on
+        // the way out but drop them on the way back — a .NET caller would receive a schema carrying
+        // its scalar fields and no tables, with no error raised. Rather than reshape the definition
+        // model to suit a wire format, definitions travel as XML and these entry points stay out of
+        // the .NET client.
 
         /// <summary>
         /// Asynchronously gets the current company's department tree (per-company organisation
@@ -215,30 +212,6 @@ namespace Bee.Api.Client.Connectors
                 .ConfigureAwait(false);
             return result.Tree;
         }
-
-        /// <summary>
-        /// Asynchronously gets a form layout as a typed object. JSON-friendly
-        /// alternative for rendering schema-driven UI from JS / TypeScript
-        /// frontends; usable from the .NET client as well.
-        /// </summary>
-        /// <param name="progId">The program identifier.</param>
-        /// <param name="layoutId">The layout identifier; empty string resolves to <c>"default"</c>.</param>
-        public virtual async Task<FormLayout?> GetFormLayoutAsync(string progId, string layoutId = "")
-        {
-            var request = new GetFormLayoutRequest()
-            {
-                ProgId = progId,
-                LayoutId = layoutId ?? string.Empty,
-            };
-            var result = await ExecuteAsync<GetFormLayoutResponse>(SystemActions.GetFormLayout, request)
-                .ConfigureAwait(false);
-            return result.Layout;
-        }
-
-        // Note: GetLanguage has no .NET client method. The BO method
-        // SystemBO.GetLanguage is JS-only (Plain JSON wire format) — see SystemBO
-        // XML doc for the rationale. .NET clients should use GetDefineAsync with
-        // DefineType.Language (XML-based path through GetDefine).
 
         /// <summary>
         /// Asynchronously saves definition data.

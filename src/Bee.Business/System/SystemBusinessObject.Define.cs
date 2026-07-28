@@ -57,8 +57,18 @@ namespace Bee.Business.System
         /// Returns a <see cref="FormSchema"/> as a typed object, intended for JS /
         /// TypeScript frontends that prefer JSON over the XML envelope returned by
         /// <see cref="GetDefine"/>. The Plain wire format serialises the schema as
-        /// a JSON tree directly; the .NET client may keep using <see cref="GetDefine"/>.
+        /// a JSON tree directly.
         /// </summary>
+        /// <remarks>
+        /// **JS-only API**, on the same convention as <see cref="GetLanguage"/>.
+        /// <see cref="FormSchema"/> declares XML as its serialisation contract: its nested
+        /// collections are get-only, which XmlSerializer handles by populating the existing
+        /// instance. JSON and MessagePack bind by writability instead, so a .NET caller
+        /// deserialising this response would receive a schema carrying its scalar fields and no
+        /// tables, with no error raised. .NET clients must use <see cref="GetDefine"/> with
+        /// <c>DefineType.FormSchema</c>, and the .NET client deliberately exposes no method for
+        /// this action.
+        /// </remarks>
         /// <param name="args">The input arguments carrying the target <c>ProgId</c>.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual GetFormSchemaResult GetFormSchema(GetFormSchemaArgs args)
@@ -100,6 +110,14 @@ namespace Bee.Business.System
         /// Plain wire format serialises it as a JSON tree ready for direct UI
         /// rendering.
         /// </summary>
+        /// <remarks>
+        /// **JS-only API**, on the same convention as <see cref="GetLanguage"/>. <see
+        /// cref="FormLayout"/> declares XML as its serialisation contract and its nested
+        /// collections are get-only, so a .NET caller deserialising this response would receive a
+        /// layout with no sections and no error raised. .NET clients must use <see
+        /// cref="GetDefine"/> with <c>DefineType.FormLayout</c>, and the .NET client deliberately
+        /// exposes no method for this action.
+        /// </remarks>
         /// <param name="args">
         /// The input arguments. <c>ProgId</c> is required; <c>LayoutId</c> may be
         /// empty (defaults to <c>"default"</c> server-side).

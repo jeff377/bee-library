@@ -4,7 +4,7 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| P0 | 正確性風險：wire 內容全滅、假綠燈測試、時區預設值、Date 編輯器、憑證替換 fail-open | 🚧 進行中（P0-2 / P0-3 / P0-4 / P0-5 ✅；P0-1 待裁決修法方向） |
+| P0 | 正確性風險：wire 內容全滅、假綠燈測試、時區預設值、Date 編輯器、憑證替換 fail-open | ✅ 已完成（2026-07-28） |
 | P1 | 安全：定義檔寫入授權、路徑遍歷、匿名發 token、運算式沙箱、可變參照外洩 | 🚧 進行中（P1-6 ✅，其餘待做） |
 | P2 | 結構重構：UI head 複製收斂、Hosting 資料存取下沉、方言規則共用、死碼清理 | 🚧 進行中（P2-6 / P2-9 ✅，其餘待做） |
 | P3 | 文件漂移：53 條死連結、不存在的 API、CHANGELOG 未記 6 項 breaking | 🚧 進行中（P3-3 的 40 條機械死連結 ✅） |
@@ -74,7 +74,7 @@
 
 ## P0：正確性 / 功能風險
 
-### P0-1. 定義類 response 在 MessagePack wire 上內容全滅（沉默失敗）★ 已實測確認
+### ✅ P0-1. 定義類 response 在 .NET 端反序列化不回內容（沉默失敗）★ 已實測確認
 
 **實測結果**（scratchpad 獨立專案，走公開的 `MessagePackPayloadSerializer`，即實際 wire 路徑）：
 
@@ -108,16 +108,30 @@
 根因是結構性的：**`Bee.Base` 沒有 MessagePack 的 `PackageReference`，標不了 `[IgnoreMember]`**。
 （已驗證：`Bee.Base.csproj` 無任何 `PackageReference`。）
 
-**修法（三選一，需使用者裁決）**：
+**補充實測（JSON 路徑）**：JSON 序列化「出去」含完整 `Tables` 樹（1299 字元），
+「回來」同樣是 `Tables=0`。**兩種 format 皆為單向壞** —— JS 端（只消費 JSON）不受影響，
+壞的只有 .NET 端的反序列化。
 
-| 方案 | 內容 | 取捨 |
-|------|------|------|
-| A | 給集合加 setter | 最小改動，但要處理 owner 重繫；且 `Bee.Base` 仍需補 `[IgnoreMember]` |
-| B | 三個 response 改攜 XML 字串，與 `GetDefineResponse` 一致 | 與既有可運作路徑收斂，但失去 JS 端的 JSON 樹 |
-| C | 明確限制這三個 API 只走 `PayloadFormat.Plain`，connector 硬編 | 保留 JS 友善性，但 .NET 呼叫端失去加密選項 |
+**修復方式**：**不是**給集合加 setter。定義型別（`FormSchema` / `FormLayout` /
+`LanguageResource` / `TableSchema`）的序列化契約就是 XML，其 get-only 集合正是
+XmlSerializer 的 populate 語意所需；為了 JSON/MessagePack 去改定義模型的屬性形狀，
+等於讓 wire 格式反過來決定定義模型的設計。
 
-**驗收**：對**填滿內容**的 `FormSchema` / `FormLayout` / `LanguageResource` 各加一個
-byte round-trip 測試，斷言巢狀集合數量與內容。
+正確做法是讓定義資料只有一條傳輸路徑（`GetDefine`，XML 承載），並讓 .NET client
+不要提供第二條。框架其實**已為 `GetLanguage` 建立此慣例**（無 .NET client 方法 +
+註解指引），只是 `GetFormSchema` / `GetFormLayout` 沒跟上，XML doc 還宣稱
+"usable from the .NET client as well"。
+
+已執行：
+1. 移除 `SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync`
+   （**production 零呼叫端** —— 所有 UI 走的是同名但不同類的 `ClientDefineAccess`，屬 XML 路徑）
+2. 三個定義型 API 統一為 JS-only，client 端以單一註解說明「為何定義資料不走 .NET client」
+3. server 端 BO 的 XML doc 由「.NET client **may** keep using `GetDefine`」
+   改為明確的 **JS-only API** 標註與原因，對齊 `GetLanguage` 既有措辭
+
+**殘留（已知、可接受）**：server 端這三個方法在 `Encoded` / `Encrypted`（MessagePack）
+format 下仍會回傳空殼。JS 端走 `Plain`，.NET 端已無入口，故無實際觸發路徑；
+XML doc 已標明。若日後要硬性防護，可在 BO 層對非 `Plain` format 直接拒絕。
 
 ### ✅ P0-2. `TestFunc` 假綠燈 —— 12 個核心 wire 契約失去驗證 ★本期回歸
 
