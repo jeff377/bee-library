@@ -97,7 +97,7 @@ namespace Bee.Api.Core.UnitTests
         [InlineData("System.DBNull", true)]
         [InlineData("Bee.Base.SomeClass", true)]
         [InlineData("Bee.Definition.Collections.Parameter", true)]
-        [InlineData("Bee.Contracts.SomeDto", true)]
+        [InlineData("Bee.Api.Contracts.SomeDto", true)]
         [DisplayName("IsTypeAllowed 應允許原始型別與白名單命名空間")]
         public void IsTypeAllowed_AllowedTypes_ReturnsTrue(string fullName, bool expected)
         {

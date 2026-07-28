@@ -180,7 +180,7 @@ namespace Bee.Api.Core.UnitTests
         [InlineData("Bee.Api.Core.Messages.System.LoginRequest, Bee.Api.Core")]
         [InlineData("Bee.Definition.Collections.ParameterCollection, Bee.Definition")]
         [InlineData("Bee.Base.SomeClass, Bee.Base")]
-        [InlineData("Bee.Contracts.SomeDto, Bee.Contracts")]
+        [InlineData("Bee.Api.Contracts.SomeDto, Bee.Api.Contracts")]
         [InlineData("System.Int32")]
         [DisplayName("RestoreFrom 應允許白名單內的 TypeName")]
         public void RestoreFrom_AllowedTypeName_DoesNotThrowValidationError(string typeName)

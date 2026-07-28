@@ -73,7 +73,7 @@ namespace Bee.Api.Core.Conversion
         /// <returns>The matching API response type, or the sentinel type if not found.</returns>
         private static Type ResolveResponseType(Type boType)
         {
-            if (!boType.Name.EndsWith(ResultSuffix))
+            if (!boType.Name.EndsWith(ResultSuffix, StringComparison.Ordinal))
                 return _noMatch;
 
             var responseName = boType.Name[..^ResultSuffix.Length] + ResponseSuffix;

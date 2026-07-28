@@ -120,7 +120,7 @@ namespace Bee.Base.UnitTests
 
             Assert.True(SysInfo.IsTypeNameAllowed("Bee.Base.SomeClass"));
             Assert.True(SysInfo.IsTypeNameAllowed("Bee.Definition.Foo"));
-            Assert.True(SysInfo.IsTypeNameAllowed("Bee.Contracts.Bar"));
+            Assert.True(SysInfo.IsTypeNameAllowed("Bee.Api.Contracts.Bar"));
             Assert.True(SysInfo.IsTypeNameAllowed("Bee.Api.Core.Baz"));
             Assert.True(SysInfo.IsTypeNameAllowed("Bee.Business.Qux"));
         }

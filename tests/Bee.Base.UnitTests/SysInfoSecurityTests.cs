@@ -11,7 +11,7 @@ namespace Bee.Base.UnitTests
         [Theory]
         [InlineData("Bee.Base.SomeClass", true)]
         [InlineData("Bee.Definition.Collections.Parameter", true)]
-        [InlineData("Bee.Contracts.MyDto", true)]
+        [InlineData("Bee.Api.Contracts.MyDto", true)]
         [InlineData("System.Byte[]", true)]
         [DisplayName("IsTypeNameAllowed 應允許白名單內的型別")]
         public void IsTypeNameAllowed_AllowedTypes_ReturnsTrue(string typeName, bool expected)

@@ -150,7 +150,7 @@ namespace Bee.Db
             foreach (var spec in Parameters)
             {
                 var p = cmd.CreateParameter();
-                p.ParameterName = (string.IsNullOrEmpty(parameterPrefix) || spec.Name.StartsWith(parameterPrefix))
+                p.ParameterName = (string.IsNullOrEmpty(parameterPrefix) || spec.Name.StartsWith(parameterPrefix, StringComparison.Ordinal))
                     ? spec.Name
                     : parameterPrefix + spec.Name;
                 p.Value = NormalizeParameterValue(databaseType, spec.Value) ?? DBNull.Value;

@@ -47,23 +47,29 @@ namespace Bee.Base
         /// Pre-populated with the default allowed type namespaces for JSON-RPC data transfer.
         /// </summary>
         private static List<string> _allowedTypeNamespaces =
-            ["Bee.Base", "Bee.Definition", "Bee.Contracts", "Bee.Api.Core", "Bee.Business"];
+            ["Bee.Base", "Bee.Definition", "Bee.Api.Contracts", "Bee.Api.Core", "Bee.Business"];
 
         /// <summary>
         /// Gets the list of type namespaces allowed for JSON-RPC data transfer (read-only).
         /// Only types in these namespaces are permitted for deserialization to ensure security.
         /// Use <see cref="Initialize"/> to configure custom namespaces.
-        /// Note: Bee.Base, Bee.Definition, and Bee.Contracts are built-in default namespaces and do not need to be specified.
+        /// Note: Bee.Base, Bee.Definition, Bee.Api.Contracts, Bee.Api.Core and Bee.Business are
+        /// built-in default namespaces and do not need to be specified.
         /// </summary>
         public static IReadOnlyList<string> AllowedTypeNamespaces => _allowedTypeNamespaces;
 
         /// <summary>
         /// Validates whether the specified type name is in an allowed namespace.
         /// </summary>
+        /// <remarks>
+        /// Ordinal comparison is required here, matching the comparer used to build the set in
+        /// <see cref="BuildAllowedTypeNamespaces"/>. This is a security boundary, so the outcome
+        /// must not depend on the server's regional settings.
+        /// </remarks>
         /// <param name="typeName">The type name to validate.</param>
         public static bool IsTypeNameAllowed(string typeName)
         {
-            if (AllowedTypeNamespaces.Any(ns => typeName.StartsWith(ns + ".")))
+            if (AllowedTypeNamespaces.Any(ns => typeName.StartsWith(ns + ".", StringComparison.Ordinal)))
                 return true;
 
             return typeName == "System.Byte[]";
@@ -93,7 +99,7 @@ namespace Bee.Base
             {
                 "Bee.Base",
                 "Bee.Definition",
-                "Bee.Contracts",
+                "Bee.Api.Contracts",
                 "Bee.Api.Core",
                 "Bee.Business"
             };

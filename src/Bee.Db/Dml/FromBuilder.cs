@@ -34,7 +34,10 @@ namespace Bee.Db.Dml
             if (joins == null || joins.Count == 0)
                 return sb.ToString();
 
-            var joinList = joins.OrderBy(j => j.RightAlias);
+            // Ordinal ordering keeps the generated SQL deterministic. `RightAlias` is an
+            // identifier, and a culture-aware sort would emit a different JOIN order under
+            // a different regional setting, which also defeats plan caching.
+            var joinList = joins.OrderBy(j => j.RightAlias, StringComparer.Ordinal);
             foreach (var join in joinList)
             {
                 var joinKeyword = join.JoinType.ToString().ToUpperInvariant() + " JOIN";

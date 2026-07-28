@@ -29,7 +29,7 @@ namespace Bee.Definition.UnitTests.Serialization
         [Theory]
         [InlineData("Bee.Base.SomeClass")]
         [InlineData("Bee.Definition.Foo")]
-        [InlineData("Bee.Contracts.Dto")]
+        [InlineData("Bee.Api.Contracts.Dto")]
         [InlineData("Bee.Api.Core.Something")]
         [InlineData("Bee.Business.Employee")]
         [DisplayName("IsTypeAllowed Bee.* 命名空間型別應回傳 true")]

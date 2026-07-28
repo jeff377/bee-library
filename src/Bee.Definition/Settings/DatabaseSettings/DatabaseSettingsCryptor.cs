@@ -34,12 +34,12 @@ namespace Bee.Definition.Settings
 
             AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
 
-            foreach (var server in settings.Servers!.Where(s => StringUtilities.IsNotEmpty(s.Password) && !s.Password.StartsWith(EncPrefix)))
+            foreach (var server in settings.Servers!.Where(s => StringUtilities.IsNotEmpty(s.Password) && !s.Password.StartsWith(EncPrefix, StringComparison.Ordinal)))
             {
                 server.Password = Encrypt(server.Password, aesKey, hmacKey);
             }
 
-            foreach (var item in settings.Items!.Where(i => StringUtilities.IsNotEmpty(i.Password) && !i.Password.StartsWith(EncPrefix)))
+            foreach (var item in settings.Items!.Where(i => StringUtilities.IsNotEmpty(i.Password) && !i.Password.StartsWith(EncPrefix, StringComparison.Ordinal)))
             {
                 item.Password = Encrypt(item.Password, aesKey, hmacKey);
             }
@@ -75,7 +75,7 @@ namespace Bee.Definition.Settings
 
         private static string Decrypt(string password, byte[] aesKey, byte[] hmacKey)
         {
-            if (StringUtilities.IsEmpty(password) || !password.StartsWith(EncPrefix))
+            if (StringUtilities.IsEmpty(password) || !password.StartsWith(EncPrefix, StringComparison.Ordinal))
                 return password;
 
             try

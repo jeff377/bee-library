@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace Bee.Base
 {
@@ -176,9 +175,17 @@ namespace Bee.Base
         #region Replace / Trim / Split
 
         /// <summary>
-        /// Replaces occurrences of a substring within a string using regex.
-        /// Defaults to case-insensitive matching with a 1-second timeout.
+        /// Replaces occurrences of a substring within a string.
+        /// Defaults to case-insensitive matching.
         /// </summary>
+        /// <remarks>
+        /// Ordinal (culture-independent) comparison is intentional, consistent with the rest of
+        /// this class. Callers replace identifier-shaped tokens such as the <c>{@Password}</c>
+        /// placeholders in connection-string templates. A culture-aware comparison would fail to
+        /// match those tokens under the Turkish locale, where the lowercase form of <c>I</c> is
+        /// the dotless <c>i</c>. That failure is silent: the placeholder survives verbatim and is
+        /// then sent to the server as if it were the literal credential.
+        /// </remarks>
         /// <param name="s">The string to process.</param>
         /// <param name="search">The substring to search for.</param>
         /// <param name="replacement">The replacement substring.</param>
@@ -186,8 +193,8 @@ namespace Bee.Base
         public static string Replace(string? s, string search, string replacement, bool ignoreCase = true)
         {
             if (string.IsNullOrEmpty(s)) return string.Empty;
-            var options = ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None;
-            return Regex.Replace(s, Regex.Escape(search), replacement, options, TimeSpan.FromSeconds(1));
+            return s.Replace(search, replacement,
+                ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
 
         /// <summary>
