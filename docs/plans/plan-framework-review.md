@@ -1,12 +1,12 @@
 # 計畫：框架體檢與分級重構（2026-07-28）
 
-**狀態：🚧 進行中（2026-07-28）—— P0/P1/P3 完成，P2 餘 P2-9 測試品質**
+**狀態：🚧 進行中（2026-07-28）—— P0/P1/P2/P3 完成，餘 P4 待裁決**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | P0 | 正確性風險：wire 內容全滅、假綠燈測試、時區預設值、Date 編輯器、憑證替換 fail-open | ✅ 已完成（2026-07-28） |
 | P1 | 安全：定義檔寫入授權、路徑遍歷、匿名發 token、運算式沙箱、可變參照外洩 | ✅ 已完成（2026-07-28） |
-| P2 | 結構重構：UI head 複製收斂、Hosting 資料存取下沉、方言規則共用、死碼清理 | 🚧 進行中（P2-1~P2-8 ✅；P2-9 測試品質部分完成） |
+| P2 | 結構重構：UI head 複製收斂、Hosting 資料存取下沉、方言規則共用、死碼清理 | ✅ 已完成（2026-07-28） |
 | P3 | 文件漂移：53 條死連結、不存在的 API、CHANGELOG 未記 6 項 breaking | ✅ 已完成（2026-07-28） |
 | P4 | 觀察與裁決項：慣例豁免、次要補測、命名 breaking 排程 | 📝 待做 |
 
@@ -539,20 +539,42 @@ ADO.NET driver 的謹慎程度不一致。
 | `decimal` 超過 15 位有效數字靜默失精（未試 `TryGetDecimal`） | 同上 `:317-319` —— **與 ERP round-then-sum 鐵則直接衝突** |
 | `double`/`float`→`decimal`、`uint`/`ulong` 溢位、`TimeSpan`/`DateOnly`/`TimeOnly` 擲例外 | [DbTypeConverter.cs:26-58,105-137](../../src/Bee.Base/Data/DbTypeConverter.cs) —— AnyCode 報表的原生 SQL DataTable 很容易帶這些型別 |
 
-### 🚧 P2-9. 測試品質
+### ✅ P2-9. 測試品質
 
-`FieldDbType.Time` 在 `*AlterCompatibilityRulesTests` 的 0 案例已隨 P2-3 的測試收斂補上；
-其餘六項未處理。
+複查時發現前三項在 P0/P1/P3 批次與 UI 收斂期間已順帶修掉（現況：四個
+`CollectionDefinition` 都在各自組件內、`ApiServiceOptions` 兩個 class 都已入
+`[Collection("ApiServiceOptionsState")]`、`PgDialectFactoryTests` 已改 `[DbFact]`）。
+本輪處理其餘四項。
 
 | 項目 | 位置 |
 |------|------|
-| `ApiServiceOptions.*` static 被兩個平行 class 修改，無 `[Collection]` | `ApiPayloadTransformerTests.cs:59`、`ApiServiceOptionsTests.cs:58-60,85-87`。**CI 2-core 才會紅，且失敗訊息會誤導成 production 安全 bug** |
-| `[Collection("SysInfoStatic")]` / `[Collection("ClientInfo")]` 無對應 `CollectionDefinition` | 隱式分組目前仍運作，但打錯字不會編譯錯 → 靜默失效 |
-| `PgDialectFactoryTests` 用裸 `[Fact]` 但會實際解析 PG 連線 | `:81-88`。無容器環境**硬失敗而非 skip**；MySQL / Oracle / SQLite 對應測試都已避開，只有 PG 漏改 |
-| ✅ `FieldDbType.Time` 的 DDL / schema-diff 純單元層 **0 案例** | ~~5 個 `*AlterCompatibilityRulesTests`~~ 已於 P2-3 收斂後補齊分類與 narrowing 案例；`Sql`/`Pg SchemaSyntaxTests` + `SqlCreateTableCommandBuilderTests` 仍待補 |
-| DST 零覆蓋 | 測試只用 `Asia/Taipei` 與 `Pacific/Kiritimati`，**兩者都不觀測 DST**。`ConvertTimeToUtc` 對 spring-forward 缺口內的時間會擲 `ArgumentException` |
-| 3 處真實牆鐘 sleep | `MemoryCacheProviderTests:100,146`、`CacheNotifyServiceTests:97`、`AuditLogWriterServiceTests:88`。`LoginAttemptTrackerTests:47` 已改假時鐘，是正確範本 |
-| `PayloadZoneConverter` 用「列舉具體型別」的 switch | 註解已自承「新增 message 型別不會自動覆蓋」。`ExecFuncRequest/Response` 的 `Parameters`（`object` 值可含 `DateTime`）永遠不轉 → AnyCode 自訂方法的時間值在錯的時區 |
+| ✅ `ApiServiceOptions.*` static 被兩個平行 class 修改，無 `[Collection]` | 複查已修：兩個 class 皆在 `[Collection("ApiServiceOptionsState")]`，定義位於同組件 |
+| ✅ `[Collection("SysInfoStatic")]` / `[Collection("ClientInfo")]` 無對應 `CollectionDefinition` | 複查已修：`ClientInfoState` / `SysInfoStatic` / `ApiServiceOptionsState` / `ApiClientInfoState` 四個名稱的使用與定義都落在同一組件內 |
+| ✅ `PgDialectFactoryTests` 用裸 `[Fact]` 但會實際解析 PG 連線 | 複查已修：改為 `[DbFact(DatabaseType.PostgreSQL)]`，並在原處留註解說明為何 |
+| ✅ `FieldDbType.Time` 的 DDL / schema-diff 純單元層 **0 案例** | 全數補齊：`AlterCompatibilityRulesTests`（P2-3）＋五家 `*CreateTableCommandBuilderTests`、`SqlSchemaSyntaxTests`、`SqliteSchemaSyntaxTests`。**補這批時抓到一個生產 bug，見下方 P2-9b** |
+| ✅ DST 零覆蓋 | 新增 `DateTimeZoneConverterDstTests`（`America/New_York`）：fall-back 重疊、DST 前後偏移不同、spring-forward 缺口。以 `IsInvalidTime` / `IsAmbiguousTime` 斷言前提，避免 tzdata 不同時以錯誤理由通過。**缺口的語意仍待裁決 → 移入 P4** |
+| ✅ 3 處真實牆鐘 sleep | 逐處複查後只有兩處是真的：`MemoryCacheProviderTests:100` 改注入可推進假時鐘（`MemoryCacheOptions.Clock`）、`CacheNotifyServiceTests:97` 的 `Thread.Sleep(50)` 直接移除（斷言是非遞減，sleep 不強化任何事）。另兩處（`MemoryCacheProviderTests:146` 檔案監控、`AuditLogWriterServiceTests:88` 背景排空）**已是「輪詢至條件成立 + deadline」的正確寫法**，原清單誤計 |
+| 🔶 `PayloadZoneConverter` 用「列舉具體型別」的 switch | 已新增 `PayloadZoneCoverageGuardTests`：反射掃出所有承載 `DataSet` / `DataTable` / `FilterNode` 的 message 型別（現為 10 個），逐一**實跑轉換並斷言值真的位移**——新增帶資料的型別卻忘了接進 switch 會直接紅。`Parameters`（在 `ApiMessageBase`，**每個** request/response 都有，值為 `object`）是否該轉換屬語意裁決 → **移入 P4** |
+
+### ✅ P2-9b. 補 `Time` 覆蓋時抓到的生產 bug（本輪新增，非原清單）
+
+`SqlCreateTableCommandBuilder` 自帶一份與 `SqlSchemaSyntax` 重複的型別對映
+（`ConverDbType`，含 typo），而 4.15.0 的「SQL Server `DateTime` 由 `datetime`
+遷移至 `datetime2(7)`」（`7df805f4`）**只改了 `SqlSchemaSyntax`**。
+
+後果是遷移只做了一半：走 ALTER / rebuild 的既有表拿到 `datetime2(7)`，
+**全新 CREATE 的表拿到 `datetime`**（約 3.33 毫秒捨入、下限 1753-01-01）。
+測試抓不到，因為 `SqlCreateTableCommandBuilderTests` 自己斷言的就是 `[datetime]`。
+
+五家 provider 中只有 SQL Server 留了複本，其餘四家都委派
+`<X>SchemaSyntax.GetColumnDefinition`——`SqlSchemaSyntax` 的類別註解甚至已寫明
+「used by the CREATE and ALTER schema builders」，但 CREATE 實際上沒在用。
+
+已修：移除該複本（連同 `QuoteName` / `EscapeSqlString` 兩個逐字複本與兩個
+`GetDefaultValue` 多載），CREATE 改走 `SqlSchemaSyntax`；CHANGELOG 雙語記為修正。
+
+> **與 P2-3 同一個模式**：方言邏輯留複本 → 改一份、其他靜默留舊行為。
+> P2-3 收的是「五份相同」，這裡是「兩份已分岔」——後者更危險，因為分岔本身就是 bug。
 
 ---
 
@@ -692,6 +714,8 @@ tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md`
 | 中文註解殘留 | 17 行 in-body + 31 個 `#region` + **1 行中文 XML doc**（`BeeBlazorServiceCollectionExtensions.cs:21`，會出現在外部使用者 IntelliSense，優先度最高） |
 | 99 處 WHAT-not-WHY 註解 | 集中在較舊核心套件。**不建議專案式清理**（改動面大、review 訊噪比低），碰到該檔案時順手刪。對照組：`FieldDbTypeExtensions.cs` 等新程式碼的註解已是範本水準（含 ADR 引用）—— 趨勢向好 |
 | `PayloadSwap` / `DbAccess` 拆檔 | 純組織重構，零行為變更，可獨立排程 |
+| **DST spring-forward 缺口語意** | `DateTimeZoneConverter.UserToUtc` 對不存在的本地時刻（如 `America/New_York` 2026-03-08 02:30）擲 `ArgumentException` 並原樣穿透 JSON-RPC。使用者用日期選擇器輸入 02:30 是正常操作。需裁決：前推一個 DST 差、退回標準時間、或轉為具名的框架例外。現況已有測試記錄（`DateTimeZoneConverterDstTests`） |
+| **`ApiMessageBase.Parameters` 是否時區轉換** | `Parameters` 在每個 request/response 上，值為 `object`，`PayloadZoneConverter` 從不處理。難處在於無型別標記可分辨「瞬間 / 日曆日 / 系統時間戳」——全轉是猜測，會破壞刻意放 UTC 的參數。需裁決語意（例如要求 AnyCode 呼叫端自行轉、或引入標記） |
 
 ---
 
@@ -793,5 +817,6 @@ tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md`
 
 **修掉 P0 全部 + P1-1 後，預估綜合可回到 8.5–8.8；再完成 P2-1 / P2-4 與 P3 文件批次，可上 9.0+。**
 
-> **執行結果**：P0 / P1 / P3 全數落地，P2 完成 P2-1 ~ P2-8。
-> 未完成者僅 **P2-9 測試品質**（下表勾選狀態見該節）與 **P4**（多數需裁決或排入下一 major）。
+> **執行結果**：P0 / P1 / P2 / P3 全數落地，僅餘 **P4**（多數需裁決或排入下一 major）。
+> P2-9 過程中新增兩個待裁決項（DST spring-forward 缺口語意、`Parameters` 是否轉換），
+> 已列入 P4 下表。
