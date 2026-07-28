@@ -1,4 +1,5 @@
 using System.Globalization;
+using Bee.Base;
 using Bee.Definition.Collections;
 using Bee.Definition.Layouts;
 using Bee.UI.Maui.DataObjects;
@@ -187,6 +188,29 @@ namespace Bee.UI.Maui.Controls
                         };
                         control.TextChanged += (_, e) =>
                             DataObject?.SetField(field.FieldName, e.NewTextValue);
+                        return control;
+                    }
+                case ControlType.TimeEdit:
+                    {
+                        // A fixed-width "HH:mm" masked entry rather than a TimePicker: display format
+                        // equals storage format, and a picker would render per device locale (ADR-033).
+                        var control = new Entry
+                        {
+                            Text = rawValue,
+                            IsReadOnly = field.ReadOnly,
+                            MaxLength = ValueUtilities.TimeOnlyLength,
+                            Keyboard = Keyboard.Numeric
+                        };
+                        // Normalise on commit, not per keystroke — "8:3" is a legitimate intermediate
+                        // state while typing. Unparseable input keeps the last committed value.
+                        control.Unfocused += (_, _) =>
+                        {
+                            string normalized = ValueUtilities.CTimeString(control.Text);
+                            if (StringUtilities.IsNotEmpty(control.Text) && StringUtilities.IsEmpty(normalized))
+                                return;
+                            control.Text = normalized;
+                            DataObject?.SetField(field.FieldName, normalized);
+                        };
                         return control;
                     }
                 case ControlType.DropDownEdit:

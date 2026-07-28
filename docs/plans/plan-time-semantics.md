@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | 型別基礎與 DDL：`FieldDbType.Time` + `Bee.Base` 核心 + 五家 provider 對應與等價規則 + ADR | ✅ 已完成（2026-07-27） |
 | 2 | 取值層與運算式：`ValueUtilities.CTimeOnly` + `ExpressionPolicy.CoerceValue` | ✅ 已完成（2026-07-27，併入階段 1） |
-| 3 | UI 層：時刻編輯控件（Avalonia 先行，再移植 MAUI / Blazor） | 📝 待做 |
+| 3 | UI 層：時刻編輯控件（Avalonia 先行，再移植 MAUI / Blazor） | ✅ 已完成（2026-07-27） |
 | 4 | 公開文件：雙語 `time-semantics` + 術語表時間語意詞條 + CHANGELOG breaking 標記 | 📝 待做 |
 
 > **目標**：補上框架缺少的「時刻」表達力——班別起訖、營業時間、提醒時刻這類
@@ -189,6 +189,33 @@ ADR：[../adr/adr-033-time-of-day-semantics.md](../adr/adr-033-time-of-day-seman
 
 **順帶發現（未修，與本 plan 無關）**：SQLite 的 `Guid` 欄位定義與 DB 反推之間有永久性 diff，
 成因為 DB 端預設值 `hex(randomblob(16))` 未反映於定義。任何 SQLite 表的 schema 比對都會被判 `Upgrade`。
+
+## 3.2 實作結果（階段 3，2026-07-27）
+
+全 solution Release build 0 警告 0 錯誤；全測試 **5,097 通過 / 0 失敗 / 1 skip**（新增 12 項）。
+
+| 端 | 控件 |
+|----|------|
+| 定義層 | `ControlType.TimeEdit`（append 至尾端）；`LayoutColumnFactory` 將 `FieldDbType.Time` 自動解析為它 |
+| Avalonia | `TimeEdit : TextEdit`，`MaxLength = 5`、提交時正規化 |
+| MAUI | `Entry` + `MaxLength = 5` + 數字鍵盤，`Unfocused` 時正規化 |
+| Blazor（Server / Wasm） | `<input type="text" inputmode="numeric" maxlength="5" pattern="…">`，`onchange` 正規化 |
+
+三個決定：
+
+- **不用原生時刻選擇器**（`<input type="time">` / MAUI `TimePicker`）。它們的**值**格式雖然也是
+  `"HH:mm"`，但**呈現**隨瀏覽器 / 裝置語系（12 小時制），違反「顯示格式 = 儲存格式」的定案。
+  改用遮罩文字輸入後，三端呈現天然一致。
+- **正規化在提交時做，不在每次按鍵**。`"8:3"` 是輸入過程的合法中間狀態。
+- **無法解析的輸入保留前一個有效值，不清空欄位**（比照 `NumericEdit`）——
+  游標滑一下不該靜默毀掉資料。清空輸入框仍是明確的「取消設定」。
+
+`GridControl` **不需改動**：`IsAlwaysOnEditor` 與儲存格 `DatePicker` 分支只涵蓋選擇器式控件，
+文字輸入走既有的一般路徑——這是選遮罩文字輸入的附帶收穫。
+
+**順帶發現（未修，與本 plan 無關）**：`LayoutColumnFactory.ResolveControlType` 只把
+`FieldDbType.DateTime` 對應到 `DateEdit`，**`FieldDbType.Date` 沒有對應**，會落到 `TextEdit`。
+看似是日曆日 plan 的遺漏；因會改變既有 `Date` 欄位的 UI 行為，未在本 plan 順手改。
 
 ## 4. 階段細節
 
