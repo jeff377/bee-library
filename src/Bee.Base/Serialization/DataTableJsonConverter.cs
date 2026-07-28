@@ -291,8 +291,9 @@ namespace Bee.Base.Serialization
                 }
                 else
                 {
-                    var rawValue = ReadPrimitiveValue(ref reader);
-                    if (rawValue != null && typeLookup.TryGetValue(colName, out var targetType))
+                    typeLookup.TryGetValue(colName, out var targetType);
+                    var rawValue = ReadPrimitiveValue(ref reader, targetType);
+                    if (rawValue != null && targetType != null)
                         map[colName] = ConvertValue(rawValue, targetType);
                     else
                         map[colName] = rawValue;
@@ -304,18 +305,32 @@ namespace Bee.Base.Serialization
         /// <summary>
         /// Reads a primitive JSON value from the reader and returns it as a .NET object.
         /// </summary>
-        private static object? ReadPrimitiveValue(ref Utf8JsonReader reader)
+        /// <param name="reader">The JSON reader positioned on the value.</param>
+        /// <param name="targetType">
+        /// The CLR type of the destination column when known; <c>null</c> for contexts with no
+        /// column (such as a column's own <c>defaultValue</c>).
+        /// </param>
+        private static object? ReadPrimitiveValue(ref Utf8JsonReader reader, Type? targetType = null)
         {
             switch (reader.TokenType)
             {
                 case JsonTokenType.String:
-                    // Try DateTime first, then fall back to string
-                    if (reader.TryGetDateTime(out var dt))
+                    // Only guess at a date when the column is not a string one. A text column
+                    // holding an ISO-8601-shaped value ("2026-07-28" in a remark or a user-defined
+                    // code) would otherwise be parsed to DateTime and then rendered back as
+                    // "07/28/2026 00:00:00" — a different value, and long enough to breach
+                    // DataColumn.MaxLength.
+                    if (targetType != typeof(string) && reader.TryGetDateTime(out var dt))
                         return dt;
                     return reader.GetString();
                 case JsonTokenType.Number:
                     if (reader.TryGetInt64(out var l))
                         return l;
+                    // Decimal before double: a monetary value with more than 15 significant digits
+                    // loses precision through double, which would break the round-then-sum rule
+                    // that detail lines must add up to the stated total.
+                    if (reader.TryGetDecimal(out var dec))
+                        return dec;
                     return reader.GetDouble();
                 case JsonTokenType.True:
                     return true;
