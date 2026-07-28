@@ -87,14 +87,17 @@ namespace Bee.Db.UnitTests
         // and some dialects (SQL Server datetime) have coarse granularity, so the invariant is
         // non-decreasing rather than strictly increasing; the version assertion carries the
         // strict "the row really was touched again" guarantee.
+        //
+        // NOTE: no sleep between the two touches. A non-decreasing assertion holds regardless of
+        // how little time passed, so a sleep would only slow the suite down without strengthening
+        // anything — and a sleep long enough to make the comparison strict would still be a guess
+        // about the server's clock granularity.
         private void RunUpdateTimeRefresh(DatabaseType databaseType)
         {
             var key = NewKey();
 
             Touch(databaseType, key);
             var first = ReadRow(databaseType, key);
-
-            Thread.Sleep(50);
 
             Touch(databaseType, key);
             var second = ReadRow(databaseType, key);

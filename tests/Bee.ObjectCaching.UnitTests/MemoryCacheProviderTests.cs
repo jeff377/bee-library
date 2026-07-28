@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using Bee.ObjectCaching.Providers;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Internal;
 
 namespace Bee.ObjectCaching.UnitTests
 {
@@ -88,18 +90,36 @@ namespace Bee.ObjectCaching.UnitTests
 
         [Fact]
         [DisplayName("AbsoluteExpiration 過期後 Get 應回傳 null")]
-        public async Task Set_WithAbsoluteExpiration_EvictsAfterDeadline()
+        public void Set_WithAbsoluteExpiration_EvictsAfterDeadline()
         {
-            using var provider = CreateProvider();
+            // 假時鐘取代真實等待：過期與否由 MemoryCache 依 Clock 判定，推進時鐘即可，
+            // 不需 sleep 到牆鐘真的走過期限（真實等待在負載高的 CI 上也未必可靠）。
+            var clock = new FakeClock(new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
+            using var provider = new MemoryCacheProvider(
+                new MemoryCache(new MemoryCacheOptions { Clock = clock }));
             var policy = new CacheItemPolicy
             {
-                AbsoluteExpiration = DateTimeOffset.UtcNow.AddMilliseconds(50)
+                AbsoluteExpiration = clock.UtcNow.AddMilliseconds(50)
             };
             provider.Set("k", "v", policy);
+            Assert.Equal("v", provider.Get("k"));
 
-            await Task.Delay(200);
+            clock.Advance(TimeSpan.FromMilliseconds(51));
 
             Assert.Null(provider.Get("k"));
+        }
+
+        /// <summary>
+        /// 可推進的假時鐘，供 <see cref="MemoryCacheOptions.Clock"/> 注入，
+        /// 讓過期測試不依賴真實牆鐘。
+        /// </summary>
+        private sealed class FakeClock : ISystemClock
+        {
+            public FakeClock(DateTimeOffset start) { UtcNow = start; }
+
+            public DateTimeOffset UtcNow { get; private set; }
+
+            public void Advance(TimeSpan delta) => UtcNow = UtcNow.Add(delta);
         }
 
         [Fact]
