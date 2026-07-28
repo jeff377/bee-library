@@ -1,12 +1,12 @@
 # 計畫：框架體檢與分級重構（2026-07-28）
 
-**狀態：🚧 進行中（2026-07-28）—— P0/P1/P3 完成，P2 餘三項待決**
+**狀態：🚧 進行中（2026-07-28）—— P0/P1/P3 完成，P2 餘 P2-9 測試品質**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | P0 | 正確性風險：wire 內容全滅、假綠燈測試、時區預設值、Date 編輯器、憑證替換 fail-open | ✅ 已完成（2026-07-28） |
 | P1 | 安全：定義檔寫入授權、路徑遍歷、匿名發 token、運算式沙箱、可變參照外洩 | ✅ 已完成（2026-07-28） |
-| P2 | 結構重構：UI head 複製收斂、Hosting 資料存取下沉、方言規則共用、死碼清理 | 🚧 進行中（P2-1/5/6/7/8/9 ✅；P2-2 / P2-3 / P2-4 待決） |
+| P2 | 結構重構：UI head 複製收斂、Hosting 資料存取下沉、方言規則共用、死碼清理 | 🚧 進行中（P2-1~P2-8 ✅；P2-9 測試品質部分完成） |
 | P3 | 文件漂移：53 條死連結、不存在的 API、CHANGELOG 未記 6 項 breaking | ✅ 已完成（2026-07-28） |
 | P4 | 觀察與裁決項：慣例豁免、次要補測、命名 breaking 排程 | 📝 待做 |
 
@@ -372,7 +372,7 @@ in-process 宿主、自訂 dispatcher 或子類都不經過它。
 >
 > ⚠️ 新增 `src/` 套件須依 checklist 同步 CI pack 清單、`dependency-map`、README 專案數（雙語）。
 
-### P2-2. `Bee.Hosting` 承載資料存取實作
+### ✅ P2-2. `Bee.Hosting` 承載資料存取實作
 
 [Bee.Hosting.csproj](../../src/Bee.Hosting/Bee.Hosting.csproj) **未宣告** `Bee.Db`，
 卻靠 `Bee.Repository → Bee.Db` 遞移取得，且不只 DI 註冊，是實質 SQL 組建與執行：
@@ -386,12 +386,34 @@ Hosting 959 行中非 composition 的實作碼佔 381 行，其中 291 行含直
 **文件層自我矛盾**：`dependency-map` 把 Hosting 畫進「API 層」subgraph，
 而 `development-constraints:84` 明文禁止「API 層直接引用 Repository 層」。
 
-**修法**：查詢下沉至 `Bee.Db.CacheNotify`（該 namespace 已存在）與 `Bee.Repository`
-（`AuditLog/` 已存在），Hosting 只留 `IHostedService` 殼與 DI 註冊。
-**若決定維持現狀**，至少補 `Bee.Db` 顯式 `ProjectReference` 並在 dependency-map 補畫這條邊，
-且把 Hosting 從「API 層」移到獨立的「組合根」subgraph。
+**已執行（下沉，非維持現狀）**：
 
-### P2-3. 方言無關邏輯在 5 個 provider 各複製一份
+實作時釐清的兩點事實，決定了下沉的切法：
+
+1. **`Bee.Db` 的顯式宣告與下沉與否無關，本來就該補** —— `BeeFrameworkServiceCollectionExtensions`
+   自身就 `using Bee.Db` / `Bee.Db.CacheNotify` / `Bee.Db.Manager` 做 DI 註冊。
+2. **poll session 不能整個搬** —— 它呼叫 `CacheInfo.NotifyVersions.SetVersion`（`Bee.ObjectCaching`），
+   而 `Bee.Db` 不引用 `Bee.ObjectCaching`，整搬會產生一條反向新邊。
+
+因此切法為「SQL 下沉、狀態留下」：
+
+- 新增 `Bee.Db/CacheNotify` 的 `ICacheNotifyReader` / `CacheNotifyReader` / `CacheNotifyChange`，
+  承接 baseline 與 delta 查詢及五方言的 `NaiveNowCommandText` / `ThresholdBinding`
+  —— 與該 namespace 既有的寫端 `CacheNotifyService` 對稱
+- 新增 `IAuditLogWriteRepository`（`Bee.Repository.Abstractions`，純加法，不動既有
+  `IAuditLogRepository`）與 `AuditLogWriteRepository`（`Bee.Repository/AuditLog`）
+- `CacheNotifyPollSession` 只留 mirror / high-water / 版本發布；`AuditLogDbSink` 只留檔案
+  fallback 與 logging。**Hosting 現已零 SQL**，959 → 855 行
+- `Bee.Hosting.csproj` 補 `Bee.Db` 顯式 `ProjectReference`
+- 五方言分支的反射測試隨實作搬到 `Bee.Db.UnitTests`
+
+文件同步：`dependency-map` 雙語把 Hosting 移出「API 層」改列獨立「組合根」subgraph、補
+`Hosting --> Db` 邊、補漏記的 `Hosting.Abstractions`（P3-8 標為完成但仍殘留的一項）；
+`development-constraints` 雙語為「API 層不得引用 Repository 層」加上組合根例外，消除既有的
+自我矛盾；四個 `src/*/README` 目錄樹補上 `AuditLog/` / `CacheNotify/` / `Storage/`
+與遺漏的 MySql / Oracle provider。
+
+### ✅ P2-3. 方言無關邏輯在 5 個 provider 各複製一份
 
 `GetKindForTypeChange` / `IsNarrowing` / `GetFamily` / `GetStringCapacity` /
 `IsNumericNarrowing` / `GetNumericRank` 在 `Sql|Pg|MySql|Oracle|Sqlite AlterCompatibilityRules.cs`
@@ -402,10 +424,19 @@ Hosting 959 行中非 composition 的實作碼佔 381 行，其中 291 行含直
 目前修一個方言的規則，其他四個靜默留在舊行為 —— 這正是 schema 比對類 bug 最難察覺的形態
 （對照剛修的 `9933160d` SQLite Guid 永久 diff）。
 
-**修法**：抽 `Bee.Db/Schema/AlterCompatibilityRules`，各 provider 只覆寫真差異
-（如 Sqlite 缺 `GetFamily` 是真差異）。
+**已執行**。實測（去註解後逐行 diff）比原描述還乾淨：PostgreSql / MySql / Oracle 與 SqlServer
+**只差 namespace 與類別名**，其餘逐字元相同；SQLite 也只有 `GetKindForTypeChange` 一處真差異。
 
-### P2-4. 死碼與遷移孤兒
+- 新增 `Bee.Db/Schema/AlterCompatibilityRules`（型別家族分類 + narrowing 判定）與
+  `Bee.Db/Schema/RebuildSchemaFactory`（`BuildEffectiveSchema` / `CloneWithTableName` /
+  `StripNonPrimaryKeyIndexes`）
+- 刪除 Sql / Pg / MySql / Oracle 四份規則複本，由各 `TableAlterCommandBuilder` 直接呼叫共用類
+  （依 code-style 不留純委派 facade）；`SqliteAlterCompatibilityRules` 只保留真差異
+- 測試由五份（968 行）收斂為共用一份 + SQLite 一份，並補上 `FieldDbType.Time` 在字串家族的
+  分類與 narrowing 案例——**同時清掉 P2-9「`Time` 在 `*AlterCompatibilityRulesTests` 0 案例」一項**
+- 淨減 1,812 行；雙語 `database-dialect-differences` 的參考路徑同步更新
+
+### ✅ P2-4. 死碼與遷移孤兒
 
 **零使用型別**（皆已 grep 跨 `src/ tests/ apps/ samples/ tools/ docs/` 驗證）：
 
@@ -436,7 +467,34 @@ XML 文件描述「統一存取企業常用商業物件，具快取機制」）�
 **安全程式碼重複**：`AesCbcHmacCryptor.CompareBytes` 與 `FileHashValidator.FixedTimeEquals`
 實作逐字相同，且全 repo 對 `CryptographicOperations` 引用數為 **0**。
 兩者實作皆正確（安全面向已確認），但依 code-style path A 應直接用
-`CryptographicOperations.FixedTimeEquals`。
+`CryptographicOperations.FixedTimeEquals`。（實際有**三份**——`PasswordHasher.FixedTimeEquals`
+本表未列。）
+
+**已執行**（範圍經使用者裁決，非全表照刪）：
+
+| 層級 | 處置 |
+|------|------|
+| 非破壞修正 | 三處手寫常數時間比對改用 `CryptographicOperations.FixedTimeEquals`（皆為 private，零公開表面變更） |
+| 真死碼 | 刪除八個型別 + 三個成員（見下），連同佔位測試、README 條目、`terminology` 詞條 |
+| 未消費的抽象 | `IDefineField`（`DbField` 實作）、`IElementCapabilityResolver`（實作被 Avalonia 與 DemoCenter 實際使用）**保留** —— 這是「要不要留擴充點」的判斷題，不是死碼 |
+| 刻意擴充點 | `CheckPackageUpdate` / `GetPackage` 全棧**保留** —— base 擲 `NotSupportedException` 供子類覆寫，已列入公開 API 參考文件 |
+
+實刪清單：`IEnterpriseObjectService`、`EnterpriseObjectService`、`InitializeOptions`、
+`ApplicationType`、`SysFuncIDs`、`VersionFiles`、`DefaultBoolean`、`NotSetBoolean`、
+`SystemActions.GetLocalDefine` / `SaveLocalDefine`、`DateTimeExtensions.IsEmpty`。
+
+連帶：`IEnterpriseObjectService` 移除後，其專屬的 `CreateOrDefault` helper 也成為死碼一併刪除
+（其餘可替換服務走 `CreateConfigurableService`，已由 `BeeFrameworkServiceResolutionTests` 覆蓋，
+故刪除該佔位測試無覆蓋損失）。
+
+⚠️ **本表一處誤判已更正**：`TreeNodeIgnoreAttribute` **不是死碼** —— 它有 7 處生產用途
+（`CollectionItem` / `KeyCollectionItem` / `FormField` / `FormRule` / `FormSchema` /
+`MessagePackCollectionItem` / `MessagePackKeyCollectionItem`），原掃描以全名 `TreeNodeIgnoreAttribute`
+grep，漏掉 `[TreeNodeIgnore]` 簡寫形式。刪除後 build 立刻失敗，已還原。
+**下次體檢對 attribute 型別必須同時 grep 全名與去 `Attribute` 後綴的簡寫形式。**
+
+CHANGELOG 雙語於 Unreleased 記為 compile-time breaking，並註明既有 `SystemSettings.xml`
+殘留 `EnterpriseObjectService` 節點載入時會被忽略、不需遷移檔案。
 
 ### ✅ P2-5. `Bee.Api.Core` 未宣告 MessagePack
 
@@ -483,12 +541,15 @@ ADO.NET driver 的謹慎程度不一致。
 
 ### 🚧 P2-9. 測試品質
 
+`FieldDbType.Time` 在 `*AlterCompatibilityRulesTests` 的 0 案例已隨 P2-3 的測試收斂補上；
+其餘六項未處理。
+
 | 項目 | 位置 |
 |------|------|
 | `ApiServiceOptions.*` static 被兩個平行 class 修改，無 `[Collection]` | `ApiPayloadTransformerTests.cs:59`、`ApiServiceOptionsTests.cs:58-60,85-87`。**CI 2-core 才會紅，且失敗訊息會誤導成 production 安全 bug** |
 | `[Collection("SysInfoStatic")]` / `[Collection("ClientInfo")]` 無對應 `CollectionDefinition` | 隱式分組目前仍運作，但打錯字不會編譯錯 → 靜默失效 |
 | `PgDialectFactoryTests` 用裸 `[Fact]` 但會實際解析 PG 連線 | `:81-88`。無容器環境**硬失敗而非 skip**；MySQL / Oracle / SQLite 對應測試都已避開，只有 PG 漏改 |
-| `FieldDbType.Time` 的 DDL / schema-diff 純單元層 **0 案例** | 5 個 `*AlterCompatibilityRulesTests` + `Sql`/`Pg SchemaSyntaxTests` + `SqlCreateTableCommandBuilderTests`。目前只靠會 skip 的 `[DbFact]` 守住 |
+| ✅ `FieldDbType.Time` 的 DDL / schema-diff 純單元層 **0 案例** | ~~5 個 `*AlterCompatibilityRulesTests`~~ 已於 P2-3 收斂後補齊分類與 narrowing 案例；`Sql`/`Pg SchemaSyntaxTests` + `SqlCreateTableCommandBuilderTests` 仍待補 |
 | DST 零覆蓋 | 測試只用 `Asia/Taipei` 與 `Pacific/Kiritimati`，**兩者都不觀測 DST**。`ConvertTimeToUtc` 對 spring-forward 缺口內的時間會擲 `ArgumentException` |
 | 3 處真實牆鐘 sleep | `MemoryCacheProviderTests:100,146`、`CacheNotifyServiceTests:97`、`AuditLogWriterServiceTests:88`。`LoginAttemptTrackerTests:47` 已改假時鐘，是正確範本 |
 | `PayloadZoneConverter` 用「列舉具體型別」的 switch | 註解已自承「新增 message 型別不會自動覆蓋」。`ExecFuncRequest/Response` 的 `Parameters`（`object` 值可含 `DateTime`）永遠不轉 → AnyCode 自訂方法的時間值在錯的時區 |
@@ -695,10 +756,20 @@ tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md`
 
 ### 已知不乾淨（具體清單，取代「死碼 0」這類斷言）
 
-死碼：`IEnterpriseObjectService`、`EnterpriseObjectService`、`InitializeOptions`、`ApplicationType`、
+~~死碼：`IEnterpriseObjectService`、`EnterpriseObjectService`、`InitializeOptions`、`ApplicationType`、
 `SysFuncIDs`、`VersionFiles`、`TreeNodeIgnoreAttribute`、`DefaultBoolean`、`NotSetBoolean`、
 `SystemActions.GetLocalDefine`、`SystemActions.SaveLocalDefine`、`DateTimeExtensions.IsEmpty`、
-`IDefineField`、`IElementCapabilityResolver`、`CheckPackageUpdate`/`GetPackage` 全棧（12 檔）
+`IDefineField`、`IElementCapabilityResolver`、`CheckPackageUpdate`/`GetPackage` 全棧（12 檔）~~
+
+**上表已於 P2-4 處理完畢**，剩餘的「已知不乾淨」縮減為下列**刻意保留**項，
+下次體檢應視為基準而非新發現：
+
+| 保留項 | 理由 |
+|--------|------|
+| `IDefineField` | `DbField` 實作它；屬未被消費的抽象而非死碼 |
+| `IElementCapabilityResolver` | 實作 `ElementCapabilityResolver.Default` 被 `Bee.UI.Avalonia` 與 `Avalonia.DemoCenter` 實際使用，README 記為擴充點 |
+| `CheckPackageUpdate` / `GetPackage` 全棧 | base 擲 `NotSupportedException` 的刻意擴充點，已列入 `docs/api-method-reference` 與 `jsonrpc-frontend-integration` |
+| `DateTimeExtensions.GetYearMonth` | 零生產呼叫端，但不在本輪裁決範圍內；下輪可一併評估 |
 
 **這些全部早於上次體檢**（各代理已用 git 逐項驗證最後異動日：2026-04-08 至 2026-05-23），
 非本期回歸，而是上次基準判定過於樂觀。
@@ -721,3 +792,6 @@ tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md`
 | 10 | P4 | 多數需使用者裁決或排入下一 major |
 
 **修掉 P0 全部 + P1-1 後，預估綜合可回到 8.5–8.8；再完成 P2-1 / P2-4 與 P3 文件批次，可上 9.0+。**
+
+> **執行結果**：P0 / P1 / P3 全數落地，P2 完成 P2-1 ~ P2-8。
+> 未完成者僅 **P2-9 測試品質**（下表勾選狀態見該節）與 **P4**（多數需裁決或排入下一 major）。
