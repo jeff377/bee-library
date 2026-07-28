@@ -1,6 +1,6 @@
 # 計畫：框架體檢與分級重構（2026-07-28）
 
-**狀態：🚧 進行中（2026-07-28）—— P0/P1/P2/P3 完成，餘 P4 待裁決**
+**狀態：✅ 已完成（2026-07-28）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -8,7 +8,7 @@
 | P1 | 安全：定義檔寫入授權、路徑遍歷、匿名發 token、運算式沙箱、可變參照外洩 | ✅ 已完成（2026-07-28） |
 | P2 | 結構重構：UI head 複製收斂、Hosting 資料存取下沉、方言規則共用、死碼清理 | ✅ 已完成（2026-07-28） |
 | P3 | 文件漂移：53 條死連結、不存在的 API、CHANGELOG 未記 6 項 breaking | ✅ 已完成（2026-07-28） |
-| P4 | 觀察與裁決項：慣例豁免、次要補測、命名 breaking 排程 | 📝 待做 |
+| P4 | 觀察與裁決項：慣例豁免、次要補測、命名 breaking 排程 | ✅ 已裁決（2026-07-28，命名 breaking 排下一 major） |
 
 > **第一批已落地（2026-07-28）**：挑選標準為「明確 bug 修正 + 純加法 + 測試／文件機械修正」，
 > 排除需產品裁決者（P0-1 / P0-3）與屬 breaking 者（P2-4 死碼刪除、P2-7 wire 標籤）。
@@ -711,21 +711,24 @@ tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md`
 
 ---
 
-## P4：觀察 / 待裁決
+## ✅ P4：觀察 / 待裁決
+
+**全部已裁決**。下表右欄記錄裁決結果；命名類 breaking 依裁決排入下一 major，
+未在本輪執行。
 
 | 項目 | 說明 |
 |------|------|
-| BO 軸介面零 production 消費者 | `IFormBusinessObject` / `ISystemBusinessObject` / `ILogBusinessObject` 的 `CreateFormBO`/`CreateSystemBO` 呼叫端只有測試。規則本身**無違反**（純 API 方法確實都在具象類別），但按規則字面，一個零跨 BO 消費者的介面正是規則要防的東西。`ILogBusinessObject` 已有誠實註記。需裁決：保留為文件化擴充點，或收斂到具象類別直到出現第一個真實消費者 |
-| `IReportFormRepository` 空介面 | 有文件說明（`terminology.md:158` 的 AnyCode 策略），屬刻意擴充點。但空介面讓擴充點無法真正使用，且 6 支測試被迫寫 `NotSupportedException` stub。建議**保留但在 XML 註解標明「刻意為空」**；若一年內仍無成員則連同工廠方法移除 |
-| `ApiServiceOptions` 與 ADR-011 矛盾 | adr-011 把 5 個 ambient singleton 列在「已移除的靜態 facade」表中，但程式碼仍在且在每次請求的熱路徑上。需擇一修正 |
-| `MessagePackCollectionBase` vs `CollectionBase` 平行家族 | 去除註解後 diff 僅 10 行。分岔很可能是刻意的（避免 `Bee.Base` 相依 MessagePack），**但兩個檔案都沒有一句話說明**。建議保留分岔 + 互相指名的雙向註解 |
-| `PermissionAction` 為 `[Flags]` 卻用單數名（S2342） | 其餘 5 個 `[Flags]` enum 全合規。更名屬 breaking，建議排入下一 major |
-| `FileUtilities.FileWriteText`/`FileReadText` 命名 stutter | 20 個呼叫端，breaking，同上排 major |
-| 中文註解殘留 | 17 行 in-body + 31 個 `#region` + **1 行中文 XML doc**（`BeeBlazorServiceCollectionExtensions.cs:21`，會出現在外部使用者 IntelliSense，優先度最高） |
-| 99 處 WHAT-not-WHY 註解 | 集中在較舊核心套件。**不建議專案式清理**（改動面大、review 訊噪比低），碰到該檔案時順手刪。對照組：`FieldDbTypeExtensions.cs` 等新程式碼的註解已是範本水準（含 ADR 引用）—— 趨勢向好 |
-| `PayloadSwap` / `DbAccess` 拆檔 | 純組織重構，零行為變更，可獨立排程 |
-| **DST spring-forward 缺口語意** | `DateTimeZoneConverter.UserToUtc` 對不存在的本地時刻（如 `America/New_York` 2026-03-08 02:30）擲 `ArgumentException` 並原樣穿透 JSON-RPC。使用者用日期選擇器輸入 02:30 是正常操作。需裁決：前推一個 DST 差、退回標準時間、或轉為具名的框架例外。現況已有測試記錄（`DateTimeZoneConverterDstTests`） |
-| **`ApiMessageBase.Parameters` 是否時區轉換** | `Parameters` 在每個 request/response 上，值為 `object`，`PayloadZoneConverter` 從不處理。難處在於無型別標記可分辨「瞬間 / 日曆日 / 系統時間戳」——全轉是猜測，會破壞刻意放 UTC 的參數。需裁決語意（例如要求 AnyCode 呼叫端自行轉、或引入標記） |
+| ✅ **保留** —— BO 軸介面零 production 消費者 | `IFormBusinessObject` / `ISystemBusinessObject` / `ILogBusinessObject` 的 `CreateFormBO`/`CreateSystemBO` 呼叫端只有測試。規則本身**無違反**（純 API 方法確實都在具象類別），但按規則字面，一個零跨 BO 消費者的介面正是規則要防的東西。`ILogBusinessObject` 已有誠實註記。需裁決：保留為文件化擴充點，或收斂到具象類別直到出現第一個真實消費者 |
+| ✅ **保留 + 標明刻意為空** —— `IReportFormRepository` 空介面 | 有文件說明（`terminology.md:158` 的 AnyCode 策略），屬刻意擴充點。但空介面讓擴充點無法真正使用，且 6 支測試被迫寫 `NotSupportedException` stub。建議**保留但在 XML 註解標明「刻意為空」**；若一年內仍無成員則連同工廠方法移除 |
+| ✅ **改 ADR 反映實情** —— `ApiServiceOptions` 與 ADR-011 矛盾 | adr-011 把 5 個 ambient singleton 列在「已移除的靜態 facade」表中，但程式碼仍在且在每次請求的熱路徑上。需擇一修正 |
+| ✅ **保留分岔 + 雙向註解** —— `MessagePackCollectionBase` vs `CollectionBase` | 去除註解後 diff 僅 10 行。分岔很可能是刻意的（避免 `Bee.Base` 相依 MessagePack），**但兩個檔案都沒有一句話說明**。建議保留分岔 + 互相指名的雙向註解 |
+| 📌 **排下一 major**（180 個呼叫點）—— `PermissionAction` 為 `[Flags]` 卻用單數名（S2342） | 其餘 5 個 `[Flags]` enum 全合規。更名屬 breaking，建議排入下一 major |
+| 📌 **排下一 major**（24 個呼叫點）—— `FileUtilities.FileWriteText`/`FileReadText` 命名 stutter | 20 個呼叫端，breaking，同上排 major |
+| ✅ **XML doc 已清（僅剩 0 行）**；in-body 16 行 + 31 個 `#region` 併入「碰到再改」—— 中文註解殘留 | 17 行 in-body + 31 個 `#region` + **1 行中文 XML doc**（`BeeBlazorServiceCollectionExtensions.cs:21`，會出現在外部使用者 IntelliSense，優先度最高） |
+| ✅ **維持不做專案式清理** —— 99 處 WHAT-not-WHY 註解 | 集中在較舊核心套件。**不建議專案式清理**（改動面大、review 訊噪比低），碰到該檔案時順手刪。對照組：`FieldDbTypeExtensions.cs` 等新程式碼的註解已是範本水準（含 ADR 引用）—— 趨勢向好 |
+| ✅ **已完成** —— `PayloadSwap` 拆出獨立檔；`DbAccess` 本就已有 `.Async` 分檔 | 純組織重構，零行為變更，可獨立排程 |
+| ✅ **前推一個 DST 差** —— DST spring-forward 缺口語意 | `DateTimeZoneConverter.UserToUtc` 對不存在的本地時刻（如 `America/New_York` 2026-03-08 02:30）擲 `ArgumentException` 並原樣穿透 JSON-RPC。使用者用日期選擇器輸入 02:30 是正常操作。需裁決：前推一個 DST 差、退回標準時間、或轉為具名的框架例外。現況已有測試記錄（`DateTimeZoneConverterDstTests`） |
+| ✅ **維持不轉，寫進 adr-032 D4 與 XML doc** —— `ApiMessageBase.Parameters` 是否時區轉換 | `Parameters` 在每個 request/response 上，值為 `object`，`PayloadZoneConverter` 從不處理。難處在於無型別標記可分辨「瞬間 / 日曆日 / 系統時間戳」——全轉是猜測，會破壞刻意放 UTC 的參數。需裁決語意（例如要求 AnyCode 呼叫端自行轉、或引入標記） |
 
 ---
 
@@ -827,6 +830,16 @@ tag `v4.15.0` 之後有 63 個 commit，其中 6 個標 `!`，但 `CHANGELOG.md`
 
 **修掉 P0 全部 + P1-1 後，預估綜合可回到 8.5–8.8；再完成 P2-1 / P2-4 與 P3 文件批次，可上 9.0+。**
 
-> **執行結果**：P0 / P1 / P2 / P3 全數落地，僅餘 **P4**（多數需裁決或排入下一 major）。
-> P2-9 過程中新增兩個待裁決項（DST spring-forward 缺口語意、`Parameters` 是否轉換），
-> 已列入 P4 下表。
+> **執行結果**：P0 / P1 / P2 / P3 / P4 全數完成。P4 的兩項命名 breaking 依裁決排入
+> 下一 major，其餘就地落地。
+>
+> 執行過程另外抓到**兩個原清單沒有的生產 bug**，都屬「同一份邏輯留了複本、改了一份」
+> 的同型問題：
+>
+> 1. **SQL Server 全新 CREATE 的 `DateTime` 仍是 `datetime`**（P2-9b）——
+>    4.15.0 的 `datetime2(7)` 遷移只改了 `SqlSchemaSyntax`，漏掉
+>    `SqlCreateTableCommandBuilder` 自帶的型別對映複本。
+> 2. **`DefineEditor` 的 axaml 綁定殘留**——P2-4 刪型別後，`tools/` 既不在
+>    `Bee.Library.slnx` 也不在 CI path filter 內，本機與 CI 兩邊都不會紅。
+>
+> 兩者共同的教訓是**驗證面要涵蓋複本與下游方案**，已分別寫入 P2-9b 與 P3-5 段落。
