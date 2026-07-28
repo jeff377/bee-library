@@ -1,0 +1,232 @@
+#nullable enable
+Bee.Api.Contracts.AuditLog.IGetAccessLogRequest
+Bee.Api.Contracts.AuditLog.IGetAccessLogRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetAccessLogRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Contracts.AuditLog.IGetAccessLogRequest.ProgId.get -> string?
+Bee.Api.Contracts.AuditLog.IGetAccessLogRequest.RowKey.get -> string?
+Bee.Api.Contracts.AuditLog.IGetAccessLogRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetAccessLogRequest.UserId.get -> string?
+Bee.Api.Contracts.AuditLog.IGetApiAnomalyLogRequest
+Bee.Api.Contracts.AuditLog.IGetApiAnomalyLogRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetApiAnomalyLogRequest.Kind.get -> Bee.Definition.Logging.AnomalyKind?
+Bee.Api.Contracts.AuditLog.IGetApiAnomalyLogRequest.Method.get -> string?
+Bee.Api.Contracts.AuditLog.IGetApiAnomalyLogRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Contracts.AuditLog.IGetApiAnomalyLogRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetApiAnomalyLogRequest.UserId.get -> string?
+Bee.Api.Contracts.AuditLog.IGetApiAnomalySummaryRequest
+Bee.Api.Contracts.AuditLog.IGetApiAnomalySummaryRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetApiAnomalySummaryRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetChangeDetailRequest
+Bee.Api.Contracts.AuditLog.IGetChangeDetailRequest.SysRowId.get -> System.Guid
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.ChangeKind.get -> Bee.Definition.Logging.ChangeKind
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.Fields.get -> System.Collections.Generic.IReadOnlyList<Bee.Api.Contracts.AuditLog.RecordFieldChange!>!
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.IsSensitive.get -> bool
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.LogTime.get -> System.DateTime
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.ProgId.get -> string?
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.RowKey.get -> string?
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.Source.get -> string?
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.SysRowId.get -> System.Guid
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.UserId.get -> string?
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.UserName.get -> string?
+Bee.Api.Contracts.AuditLog.IGetChangeLogRequest
+Bee.Api.Contracts.AuditLog.IGetChangeLogRequest.ChangeKind.get -> Bee.Definition.Logging.ChangeKind?
+Bee.Api.Contracts.AuditLog.IGetChangeLogRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetChangeLogRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Contracts.AuditLog.IGetChangeLogRequest.ProgId.get -> string?
+Bee.Api.Contracts.AuditLog.IGetChangeLogRequest.RowKey.get -> string?
+Bee.Api.Contracts.AuditLog.IGetChangeLogRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetChangeLogRequest.UserId.get -> string?
+Bee.Api.Contracts.AuditLog.IGetChangeLogResponse
+Bee.Api.Contracts.AuditLog.IGetChangeLogResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
+Bee.Api.Contracts.AuditLog.IGetChangeLogResponse.Table.get -> System.Data.DataTable?
+Bee.Api.Contracts.AuditLog.IGetDbAnomalyLogRequest
+Bee.Api.Contracts.AuditLog.IGetDbAnomalyLogRequest.DatabaseId.get -> string?
+Bee.Api.Contracts.AuditLog.IGetDbAnomalyLogRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetDbAnomalyLogRequest.Kind.get -> Bee.Definition.Logging.AnomalyKind?
+Bee.Api.Contracts.AuditLog.IGetDbAnomalyLogRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Contracts.AuditLog.IGetDbAnomalyLogRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetDbAnomalySummaryRequest
+Bee.Api.Contracts.AuditLog.IGetDbAnomalySummaryRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetDbAnomalySummaryRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetLoginLogRequest
+Bee.Api.Contracts.AuditLog.IGetLoginLogRequest.Event.get -> Bee.Definition.Logging.LoginEvent?
+Bee.Api.Contracts.AuditLog.IGetLoginLogRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetLoginLogRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Contracts.AuditLog.IGetLoginLogRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetLoginLogRequest.UserId.get -> string?
+Bee.Api.Contracts.AuditLog.IGetTopApiMethodsRequest
+Bee.Api.Contracts.AuditLog.IGetTopApiMethodsRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetTopApiMethodsRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Contracts.AuditLog.IGetTopApiMethodsRequest.TopN.get -> int
+Bee.Api.Contracts.AuditLog.ILogAggregateResponse
+Bee.Api.Contracts.AuditLog.ILogAggregateResponse.Table.get -> System.Data.DataTable?
+Bee.Api.Contracts.AuditLog.ILogListResponse
+Bee.Api.Contracts.AuditLog.ILogListResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
+Bee.Api.Contracts.AuditLog.ILogListResponse.Table.get -> System.Data.DataTable?
+Bee.Api.Contracts.AuditLog.RecordFieldChange
+Bee.Api.Contracts.AuditLog.RecordFieldChange.FieldName.get -> string!
+Bee.Api.Contracts.AuditLog.RecordFieldChange.FieldName.set -> void
+Bee.Api.Contracts.AuditLog.RecordFieldChange.NewValue.get -> string?
+Bee.Api.Contracts.AuditLog.RecordFieldChange.NewValue.set -> void
+Bee.Api.Contracts.AuditLog.RecordFieldChange.OldValue.get -> string?
+Bee.Api.Contracts.AuditLog.RecordFieldChange.OldValue.set -> void
+Bee.Api.Contracts.AuditLog.RecordFieldChange.RecordFieldChange() -> void
+Bee.Api.Contracts.AuditLog.RecordFieldChange.RowKey.get -> string?
+Bee.Api.Contracts.AuditLog.RecordFieldChange.RowKey.set -> void
+Bee.Api.Contracts.AuditLog.RecordFieldChange.RowState.get -> Bee.Definition.Logging.ChangeKind
+Bee.Api.Contracts.AuditLog.RecordFieldChange.RowState.set -> void
+Bee.Api.Contracts.AuditLog.RecordFieldChange.TableName.get -> string!
+Bee.Api.Contracts.AuditLog.RecordFieldChange.TableName.set -> void
+Bee.Api.Contracts.Form.IDeleteRequest
+Bee.Api.Contracts.Form.IDeleteRequest.RowId.get -> System.Guid
+Bee.Api.Contracts.Form.IDeleteResponse
+Bee.Api.Contracts.Form.IDeleteResponse.RowsAffected.get -> int
+Bee.Api.Contracts.Form.IGetDataRequest
+Bee.Api.Contracts.Form.IGetDataRequest.RowId.get -> System.Guid
+Bee.Api.Contracts.Form.IGetDataResponse
+Bee.Api.Contracts.Form.IGetDataResponse.DataSet.get -> System.Data.DataSet?
+Bee.Api.Contracts.Form.IGetListRequest
+Bee.Api.Contracts.Form.IGetListRequest.Filter.get -> Bee.Definition.Filters.FilterNode?
+Bee.Api.Contracts.Form.IGetListRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Contracts.Form.IGetListRequest.SelectFields.get -> string!
+Bee.Api.Contracts.Form.IGetListRequest.SortFields.get -> Bee.Definition.Sorting.SortFieldCollection?
+Bee.Api.Contracts.Form.IGetListResponse
+Bee.Api.Contracts.Form.IGetListResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
+Bee.Api.Contracts.Form.IGetListResponse.Table.get -> System.Data.DataTable?
+Bee.Api.Contracts.Form.IGetLookupRequest
+Bee.Api.Contracts.Form.IGetLookupRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Contracts.Form.IGetLookupRequest.SearchText.get -> string!
+Bee.Api.Contracts.Form.IGetLookupResponse
+Bee.Api.Contracts.Form.IGetLookupResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
+Bee.Api.Contracts.Form.IGetLookupResponse.Table.get -> System.Data.DataTable?
+Bee.Api.Contracts.Form.IGetNewDataRequest
+Bee.Api.Contracts.Form.IGetNewDataResponse
+Bee.Api.Contracts.Form.IGetNewDataResponse.DataSet.get -> System.Data.DataSet?
+Bee.Api.Contracts.Form.ISaveRequest
+Bee.Api.Contracts.Form.ISaveRequest.DataSet.get -> System.Data.DataSet?
+Bee.Api.Contracts.Form.ISaveResponse
+Bee.Api.Contracts.Form.ISaveResponse.AffectedRows.get -> System.Collections.Generic.Dictionary<string!, int>!
+Bee.Api.Contracts.Form.ISaveResponse.DataSet.get -> System.Data.DataSet?
+Bee.Api.Contracts.IExecFuncRequest
+Bee.Api.Contracts.IExecFuncRequest.FuncId.get -> string!
+Bee.Api.Contracts.IExecFuncResponse
+Bee.Api.Contracts.System.ICheckPackageUpdateRequest
+Bee.Api.Contracts.System.ICheckPackageUpdateRequest.Queries.get -> System.Collections.Generic.List<Bee.Api.Contracts.System.PackageUpdateQuery!>!
+Bee.Api.Contracts.System.ICheckPackageUpdateResponse
+Bee.Api.Contracts.System.ICheckPackageUpdateResponse.Updates.get -> System.Collections.Generic.List<Bee.Api.Contracts.System.PackageUpdateInfo!>!
+Bee.Api.Contracts.System.ICreateSessionRequest
+Bee.Api.Contracts.System.ICreateSessionRequest.ExpiresIn.get -> int
+Bee.Api.Contracts.System.ICreateSessionRequest.OneTime.get -> bool
+Bee.Api.Contracts.System.ICreateSessionRequest.UserID.get -> string!
+Bee.Api.Contracts.System.ICreateSessionResponse
+Bee.Api.Contracts.System.ICreateSessionResponse.AccessToken.get -> System.Guid
+Bee.Api.Contracts.System.ICreateSessionResponse.ExpiredAt.get -> System.DateTime
+Bee.Api.Contracts.System.IEnterCompanyRequest
+Bee.Api.Contracts.System.IEnterCompanyRequest.CompanyId.get -> string!
+Bee.Api.Contracts.System.IEnterCompanyResponse
+Bee.Api.Contracts.System.IEnterCompanyResponse.Capabilities.get -> System.Collections.Generic.Dictionary<string!, Bee.Definition.Settings.PermissionAction>!
+Bee.Api.Contracts.System.IEnterCompanyResponse.Company.get -> Bee.Definition.Identity.CompanyInfo!
+Bee.Api.Contracts.System.IGetCommonConfigurationRequest
+Bee.Api.Contracts.System.IGetCommonConfigurationResponse
+Bee.Api.Contracts.System.IGetCommonConfigurationResponse.CommonConfiguration.get -> string!
+Bee.Api.Contracts.System.IGetDefineRequest
+Bee.Api.Contracts.System.IGetDefineRequest.DefineType.get -> Bee.Definition.DefineType
+Bee.Api.Contracts.System.IGetDefineRequest.Keys.get -> string![]?
+Bee.Api.Contracts.System.IGetDefineResponse
+Bee.Api.Contracts.System.IGetDefineResponse.Xml.get -> string!
+Bee.Api.Contracts.System.IGetDepartmentTreeRequest
+Bee.Api.Contracts.System.IGetDepartmentTreeResponse
+Bee.Api.Contracts.System.IGetDepartmentTreeResponse.Tree.get -> Bee.Definition.Organization.DepartmentTree?
+Bee.Api.Contracts.System.IGetFormLayoutRequest
+Bee.Api.Contracts.System.IGetFormLayoutRequest.LayoutId.get -> string!
+Bee.Api.Contracts.System.IGetFormLayoutRequest.ProgId.get -> string!
+Bee.Api.Contracts.System.IGetFormLayoutResponse
+Bee.Api.Contracts.System.IGetFormLayoutResponse.Layout.get -> Bee.Definition.Layouts.FormLayout?
+Bee.Api.Contracts.System.IGetFormSchemaRequest
+Bee.Api.Contracts.System.IGetFormSchemaRequest.ProgId.get -> string!
+Bee.Api.Contracts.System.IGetFormSchemaResponse
+Bee.Api.Contracts.System.IGetFormSchemaResponse.Schema.get -> Bee.Definition.Forms.FormSchema?
+Bee.Api.Contracts.System.IGetLanguageRequest
+Bee.Api.Contracts.System.IGetLanguageRequest.Lang.get -> string!
+Bee.Api.Contracts.System.IGetLanguageRequest.Namespace.get -> string!
+Bee.Api.Contracts.System.IGetLanguageResponse
+Bee.Api.Contracts.System.IGetLanguageResponse.Resource.get -> Bee.Definition.Language.LanguageResource?
+Bee.Api.Contracts.System.IGetPackageRequest
+Bee.Api.Contracts.System.IGetPackageRequest.AppId.get -> string!
+Bee.Api.Contracts.System.IGetPackageRequest.Channel.get -> string!
+Bee.Api.Contracts.System.IGetPackageRequest.ComponentId.get -> string!
+Bee.Api.Contracts.System.IGetPackageRequest.FileId.get -> string!
+Bee.Api.Contracts.System.IGetPackageRequest.Platform.get -> string!
+Bee.Api.Contracts.System.IGetPackageRequest.Version.get -> string!
+Bee.Api.Contracts.System.IGetPackageResponse
+Bee.Api.Contracts.System.IGetPackageResponse.Content.get -> byte[]!
+Bee.Api.Contracts.System.IGetPackageResponse.FileName.get -> string!
+Bee.Api.Contracts.System.IGetPackageResponse.FileSize.get -> long
+Bee.Api.Contracts.System.IGetPackageResponse.PackageUrl.get -> string!
+Bee.Api.Contracts.System.IGetPackageResponse.Sha256.get -> string!
+Bee.Api.Contracts.System.ILeaveCompanyRequest
+Bee.Api.Contracts.System.ILeaveCompanyResponse
+Bee.Api.Contracts.System.ILoginRequest
+Bee.Api.Contracts.System.ILoginRequest.ClientPublicKey.get -> string!
+Bee.Api.Contracts.System.ILoginRequest.Password.get -> string!
+Bee.Api.Contracts.System.ILoginRequest.UserId.get -> string!
+Bee.Api.Contracts.System.ILoginResponse
+Bee.Api.Contracts.System.ILoginResponse.AccessToken.get -> System.Guid
+Bee.Api.Contracts.System.ILoginResponse.ApiEncryptionKey.get -> string!
+Bee.Api.Contracts.System.ILoginResponse.ExpiredAt.get -> System.DateTime
+Bee.Api.Contracts.System.ILoginResponse.TimeZone.get -> string!
+Bee.Api.Contracts.System.ILoginResponse.UserId.get -> string!
+Bee.Api.Contracts.System.ILoginResponse.UserName.get -> string!
+Bee.Api.Contracts.System.ILogoutRequest
+Bee.Api.Contracts.System.ILogoutResponse
+Bee.Api.Contracts.System.IPingRequest
+Bee.Api.Contracts.System.IPingRequest.ClientName.get -> string?
+Bee.Api.Contracts.System.IPingRequest.TraceId.get -> string?
+Bee.Api.Contracts.System.IPingResponse
+Bee.Api.Contracts.System.IPingResponse.ServerTime.get -> System.DateTime
+Bee.Api.Contracts.System.IPingResponse.Status.get -> string!
+Bee.Api.Contracts.System.IPingResponse.TraceId.get -> string?
+Bee.Api.Contracts.System.IPingResponse.Version.get -> string?
+Bee.Api.Contracts.System.ISaveDefineRequest
+Bee.Api.Contracts.System.ISaveDefineRequest.DefineType.get -> Bee.Definition.DefineType
+Bee.Api.Contracts.System.ISaveDefineRequest.Keys.get -> string![]?
+Bee.Api.Contracts.System.ISaveDefineRequest.Xml.get -> string!
+Bee.Api.Contracts.System.ISaveDefineResponse
+Bee.Api.Contracts.System.PackageDelivery
+Bee.Api.Contracts.System.PackageDelivery.Api = 1 -> Bee.Api.Contracts.System.PackageDelivery
+Bee.Api.Contracts.System.PackageDelivery.Url = 0 -> Bee.Api.Contracts.System.PackageDelivery
+Bee.Api.Contracts.System.PackageUpdateInfo
+Bee.Api.Contracts.System.PackageUpdateInfo.AppId.get -> string!
+Bee.Api.Contracts.System.PackageUpdateInfo.AppId.set -> void
+Bee.Api.Contracts.System.PackageUpdateInfo.ComponentId.get -> string!
+Bee.Api.Contracts.System.PackageUpdateInfo.ComponentId.set -> void
+Bee.Api.Contracts.System.PackageUpdateInfo.Delivery.get -> Bee.Api.Contracts.System.PackageDelivery
+Bee.Api.Contracts.System.PackageUpdateInfo.Delivery.set -> void
+Bee.Api.Contracts.System.PackageUpdateInfo.LatestVersion.get -> string!
+Bee.Api.Contracts.System.PackageUpdateInfo.LatestVersion.set -> void
+Bee.Api.Contracts.System.PackageUpdateInfo.Mandatory.get -> bool
+Bee.Api.Contracts.System.PackageUpdateInfo.Mandatory.set -> void
+Bee.Api.Contracts.System.PackageUpdateInfo.PackageSize.get -> long
+Bee.Api.Contracts.System.PackageUpdateInfo.PackageSize.set -> void
+Bee.Api.Contracts.System.PackageUpdateInfo.PackageUpdateInfo() -> void
+Bee.Api.Contracts.System.PackageUpdateInfo.PackageUrl.get -> string!
+Bee.Api.Contracts.System.PackageUpdateInfo.PackageUrl.set -> void
+Bee.Api.Contracts.System.PackageUpdateInfo.ReleaseNotes.get -> string!
+Bee.Api.Contracts.System.PackageUpdateInfo.ReleaseNotes.set -> void
+Bee.Api.Contracts.System.PackageUpdateInfo.Sha256.get -> string!
+Bee.Api.Contracts.System.PackageUpdateInfo.Sha256.set -> void
+Bee.Api.Contracts.System.PackageUpdateInfo.UpdateAvailable.get -> bool
+Bee.Api.Contracts.System.PackageUpdateInfo.UpdateAvailable.set -> void
+Bee.Api.Contracts.System.PackageUpdateQuery
+Bee.Api.Contracts.System.PackageUpdateQuery.AppId.get -> string!
+Bee.Api.Contracts.System.PackageUpdateQuery.AppId.set -> void
+Bee.Api.Contracts.System.PackageUpdateQuery.Channel.get -> string!
+Bee.Api.Contracts.System.PackageUpdateQuery.Channel.set -> void
+Bee.Api.Contracts.System.PackageUpdateQuery.ComponentId.get -> string!
+Bee.Api.Contracts.System.PackageUpdateQuery.ComponentId.set -> void
+Bee.Api.Contracts.System.PackageUpdateQuery.CurrentVersion.get -> string!
+Bee.Api.Contracts.System.PackageUpdateQuery.CurrentVersion.set -> void
+Bee.Api.Contracts.System.PackageUpdateQuery.PackageUpdateQuery() -> void
+Bee.Api.Contracts.System.PackageUpdateQuery.Platform.get -> string!
+Bee.Api.Contracts.System.PackageUpdateQuery.Platform.set -> void

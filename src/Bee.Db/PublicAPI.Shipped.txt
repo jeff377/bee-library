@@ -1,0 +1,586 @@
+#nullable enable
+Bee.Db.CacheNotify.CacheNotifyChange
+Bee.Db.CacheNotify.CacheNotifyChange.CacheKey.get -> string!
+Bee.Db.CacheNotify.CacheNotifyChange.CacheKey.init -> void
+Bee.Db.CacheNotify.CacheNotifyChange.CacheNotifyChange() -> void
+Bee.Db.CacheNotify.CacheNotifyChange.CacheNotifyChange(string! CacheKey, long Version, System.DateTime UpdateTime) -> void
+Bee.Db.CacheNotify.CacheNotifyChange.Deconstruct(out string! CacheKey, out long Version, out System.DateTime UpdateTime) -> void
+Bee.Db.CacheNotify.CacheNotifyChange.Equals(Bee.Db.CacheNotify.CacheNotifyChange other) -> bool
+Bee.Db.CacheNotify.CacheNotifyChange.UpdateTime.get -> System.DateTime
+Bee.Db.CacheNotify.CacheNotifyChange.UpdateTime.init -> void
+Bee.Db.CacheNotify.CacheNotifyChange.Version.get -> long
+Bee.Db.CacheNotify.CacheNotifyChange.Version.init -> void
+Bee.Db.CacheNotify.CacheNotifyReader
+Bee.Db.CacheNotify.CacheNotifyReader.CacheNotifyReader(Bee.Db.IDbAccessFactory! dbAccessFactory) -> void
+Bee.Db.CacheNotify.CacheNotifyReader.ReadBaseline(string! databaseId) -> System.DateTime
+Bee.Db.CacheNotify.CacheNotifyReader.ReadChangesSince(string! databaseId, System.DateTime threshold) -> System.Collections.Generic.IReadOnlyList<Bee.Db.CacheNotify.CacheNotifyChange>!
+Bee.Db.CacheNotify.CacheNotifyService
+Bee.Db.CacheNotify.CacheNotifyService.CacheNotifyService() -> void
+Bee.Db.CacheNotify.CacheNotifyService.Touch(string! cacheKey, System.Data.Common.DbTransaction! transaction, Bee.Definition.Database.DatabaseType databaseType) -> void
+Bee.Db.CacheNotify.CacheNotifyService.TouchAsync(string! cacheKey, System.Data.Common.DbTransaction! transaction, Bee.Definition.Database.DatabaseType databaseType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Bee.Db.CacheNotify.ICacheNotifyReader
+Bee.Db.CacheNotify.ICacheNotifyReader.ReadBaseline(string! databaseId) -> System.DateTime
+Bee.Db.CacheNotify.ICacheNotifyReader.ReadChangesSince(string! databaseId, System.DateTime threshold) -> System.Collections.Generic.IReadOnlyList<Bee.Db.CacheNotify.CacheNotifyChange>!
+Bee.Db.CacheNotify.ICacheNotifyService
+Bee.Db.CacheNotify.ICacheNotifyService.Touch(string! cacheKey, System.Data.Common.DbTransaction! transaction, Bee.Definition.Database.DatabaseType databaseType) -> void
+Bee.Db.CacheNotify.ICacheNotifyService.TouchAsync(string! cacheKey, System.Data.Common.DbTransaction! transaction, Bee.Definition.Database.DatabaseType databaseType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Bee.Db.CommandTextVariable
+Bee.Db.DataTableUpdateSpec
+Bee.Db.DataTableUpdateSpec.DataTable.get -> System.Data.DataTable!
+Bee.Db.DataTableUpdateSpec.DataTable.set -> void
+Bee.Db.DataTableUpdateSpec.DataTableUpdateSpec() -> void
+Bee.Db.DataTableUpdateSpec.DeleteCommand.get -> Bee.Db.DbCommandSpec?
+Bee.Db.DataTableUpdateSpec.DeleteCommand.set -> void
+Bee.Db.DataTableUpdateSpec.InsertCommand.get -> Bee.Db.DbCommandSpec?
+Bee.Db.DataTableUpdateSpec.InsertCommand.set -> void
+Bee.Db.DataTableUpdateSpec.IsolationLevel.get -> System.Data.IsolationLevel?
+Bee.Db.DataTableUpdateSpec.IsolationLevel.set -> void
+Bee.Db.DataTableUpdateSpec.UpdateCommand.get -> Bee.Db.DbCommandSpec?
+Bee.Db.DataTableUpdateSpec.UpdateCommand.set -> void
+Bee.Db.DataTableUpdateSpec.UseTransaction.get -> bool
+Bee.Db.DataTableUpdateSpec.UseTransaction.set -> void
+Bee.Db.DatabaseTypeExtensions
+Bee.Db.DbAccess
+Bee.Db.DbAccess.DatabaseType.get -> Bee.Definition.Database.DatabaseType
+Bee.Db.DbAccess.DbAccess(System.Data.Common.DbConnection! externalConnection, Bee.Definition.Database.DatabaseType databaseType, int maxCommandTimeout = 0) -> void
+Bee.Db.DbAccess.DbAccess(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager, int maxCommandTimeout = 0, Bee.Definition.Logging.IAuditLogWriter? anomalyWriter = null, Bee.Definition.Logging.DbAccessAnomalyLogOptions? anomalyOptions = null) -> void
+Bee.Db.DbAccess.Execute(Bee.Db.DbCommandSpec! command) -> Bee.Db.DbCommandResult!
+Bee.Db.DbAccess.Execute(Bee.Db.DbCommandSpec! command, System.Data.Common.DbTransaction! transaction) -> Bee.Db.DbCommandResult!
+Bee.Db.DbAccess.ExecuteAsync(Bee.Db.DbCommandSpec! command, System.Data.Common.DbTransaction! transaction, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Bee.Db.DbCommandResult!>!
+Bee.Db.DbAccess.ExecuteAsync(Bee.Db.DbCommandSpec! command, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Bee.Db.DbCommandResult!>!
+Bee.Db.DbAccess.ExecuteBatch(Bee.Db.DbBatchSpec! batch) -> Bee.Db.DbBatchResult!
+Bee.Db.DbAccess.ExecuteBatchAsync(Bee.Db.DbBatchSpec! batch, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Bee.Db.DbBatchResult!>!
+Bee.Db.DbAccess.ExecuteDataTable(string! commandText, params object![]! values) -> System.Data.DataTable?
+Bee.Db.DbAccess.ExecuteDataTableAsync(string! commandText, params object![]! values) -> System.Threading.Tasks.Task<System.Data.DataTable?>!
+Bee.Db.DbAccess.ExecuteNonQuery(string! commandText, params object![]! values) -> int
+Bee.Db.DbAccess.ExecuteNonQueryAsync(string! commandText, params object![]! values) -> System.Threading.Tasks.Task<int>!
+Bee.Db.DbAccess.ExecuteScalar(string! commandText, params object![]! values) -> object?
+Bee.Db.DbAccess.ExecuteScalarAsync(string! commandText, params object![]! values) -> System.Threading.Tasks.Task<object?>!
+Bee.Db.DbAccess.Provider.get -> System.Data.Common.DbProviderFactory!
+Bee.Db.DbAccess.Query<T>(Bee.Db.DbCommandSpec! command) -> System.Collections.Generic.List<T>!
+Bee.Db.DbAccess.QueryAsync<T>(Bee.Db.DbCommandSpec! command, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.List<T>!>!
+Bee.Db.DbAccess.UpdateDataTable(Bee.Db.DataTableUpdateSpec! spec) -> int
+Bee.Db.DbAccess.UpdateDataTables(System.Collections.Generic.IReadOnlyList<Bee.Db.DataTableUpdateSpec!>! specs) -> System.Collections.Generic.IReadOnlyList<int>!
+Bee.Db.DbAccessFactory
+Bee.Db.DbAccessFactory.Create(string! databaseId) -> Bee.Db.DbAccess!
+Bee.Db.DbAccessFactory.DbAccessFactory(Bee.Db.Manager.IDbConnectionManager! connectionManager, int maxCommandTimeout = 0, System.Func<Bee.Definition.Logging.IAuditLogWriter?>? anomalyWriterFactory = null, Bee.Definition.Logging.DbAccessAnomalyLogOptions? anomalyOptions = null) -> void
+Bee.Db.DbBatchResult
+Bee.Db.DbBatchResult.DbBatchResult() -> void
+Bee.Db.DbBatchResult.Results.get -> Bee.Db.DbCommandResultCollection!
+Bee.Db.DbBatchResult.Results.set -> void
+Bee.Db.DbBatchResult.RowsAffectedSum.get -> int
+Bee.Db.DbBatchResult.RowsAffectedSum.set -> void
+Bee.Db.DbBatchSpec
+Bee.Db.DbBatchSpec.Commands.get -> Bee.Db.DbCommandSpecCollection!
+Bee.Db.DbBatchSpec.Commands.set -> void
+Bee.Db.DbBatchSpec.DbBatchSpec() -> void
+Bee.Db.DbBatchSpec.IsolationLevel.get -> System.Data.IsolationLevel?
+Bee.Db.DbBatchSpec.IsolationLevel.set -> void
+Bee.Db.DbBatchSpec.UseTransaction.get -> bool
+Bee.Db.DbBatchSpec.UseTransaction.set -> void
+Bee.Db.DbCommandKind
+Bee.Db.DbCommandKind.DataTable = 2 -> Bee.Db.DbCommandKind
+Bee.Db.DbCommandKind.NonQuery = 0 -> Bee.Db.DbCommandKind
+Bee.Db.DbCommandKind.Scalar = 1 -> Bee.Db.DbCommandKind
+Bee.Db.DbCommandResult
+Bee.Db.DbCommandResult.DbCommandResult() -> void
+Bee.Db.DbCommandResult.Kind.get -> Bee.Db.DbCommandKind
+Bee.Db.DbCommandResult.RowsAffected.get -> int
+Bee.Db.DbCommandResult.Scalar.get -> object?
+Bee.Db.DbCommandResult.Table.get -> System.Data.DataTable?
+Bee.Db.DbCommandResultCollection
+Bee.Db.DbCommandResultCollection.DbCommandResultCollection() -> void
+Bee.Db.DbCommandSpec
+Bee.Db.DbCommandSpec.CommandText.get -> string!
+Bee.Db.DbCommandSpec.CommandText.set -> void
+Bee.Db.DbCommandSpec.CommandTimeout.get -> int
+Bee.Db.DbCommandSpec.CommandTimeout.set -> void
+Bee.Db.DbCommandSpec.CommandType.get -> System.Data.CommandType
+Bee.Db.DbCommandSpec.CommandType.set -> void
+Bee.Db.DbCommandSpec.CreateCommand(Bee.Definition.Database.DatabaseType databaseType, System.Data.Common.DbConnection! connection) -> System.Data.Common.DbCommand!
+Bee.Db.DbCommandSpec.DateColumns.get -> System.Collections.Generic.List<string!>!
+Bee.Db.DbCommandSpec.DbCommandSpec() -> void
+Bee.Db.DbCommandSpec.DbCommandSpec(Bee.Db.DbCommandKind kind, string! commandText, System.Collections.Generic.IDictionary<string!, object!>? parameters) -> void
+Bee.Db.DbCommandSpec.DbCommandSpec(Bee.Db.DbCommandKind kind, string! commandText, params object![]! values) -> void
+Bee.Db.DbCommandSpec.Kind.get -> Bee.Db.DbCommandKind
+Bee.Db.DbCommandSpec.Kind.set -> void
+Bee.Db.DbCommandSpec.Parameters.get -> Bee.Db.DbParameterSpecCollection!
+Bee.Db.DbCommandSpecCollection
+Bee.Db.DbCommandSpecCollection.DbCommandSpecCollection() -> void
+Bee.Db.DbConnectionScope
+Bee.Db.DbConnectionScope.Connection.get -> System.Data.Common.DbConnection?
+Bee.Db.DbConnectionScope.Dispose() -> void
+Bee.Db.DbParameterSpec
+Bee.Db.DbParameterSpec.DbParameterSpec() -> void
+Bee.Db.DbParameterSpec.DbParameterSpec(string! name, object! value) -> void
+Bee.Db.DbParameterSpec.DbType.get -> System.Data.DbType?
+Bee.Db.DbParameterSpec.DbType.set -> void
+Bee.Db.DbParameterSpec.IsNullable.get -> bool
+Bee.Db.DbParameterSpec.IsNullable.set -> void
+Bee.Db.DbParameterSpec.Name.get -> string!
+Bee.Db.DbParameterSpec.Name.set -> void
+Bee.Db.DbParameterSpec.Size.get -> int?
+Bee.Db.DbParameterSpec.Size.set -> void
+Bee.Db.DbParameterSpec.SourceColumn.get -> string!
+Bee.Db.DbParameterSpec.SourceColumn.set -> void
+Bee.Db.DbParameterSpec.SourceVersion.get -> System.Data.DataRowVersion
+Bee.Db.DbParameterSpec.SourceVersion.set -> void
+Bee.Db.DbParameterSpec.Value.get -> object?
+Bee.Db.DbParameterSpec.Value.set -> void
+Bee.Db.DbParameterSpecCollection
+Bee.Db.DbParameterSpecCollection.Add(Bee.Definition.Database.DbField! field, System.Data.DataRowVersion sourceVersion = System.Data.DataRowVersion.Current) -> Bee.Db.DbParameterSpec!
+Bee.Db.DbParameterSpecCollection.Add(string! name, object! value) -> Bee.Db.DbParameterSpec!
+Bee.Db.DbParameterSpecCollection.DbParameterSpecCollection() -> void
+Bee.Db.DbTypeMapper
+Bee.Db.Ddl.ICreateTableCommandBuilder
+Bee.Db.Ddl.ICreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
+Bee.Db.Ddl.ITableAlterCommandBuilder
+Bee.Db.Ddl.ITableAlterCommandBuilder.GetExecutionKind(Bee.Db.Schema.Changes.ITableChange! change) -> Bee.Db.Schema.ChangeExecutionKind
+Bee.Db.Ddl.ITableAlterCommandBuilder.GetStatements(string! tableName, Bee.Db.Schema.Changes.ITableChange! change) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Ddl.ITableAlterCommandBuilder.IsNarrowingChange(Bee.Db.Schema.Changes.ITableChange! change) -> bool
+Bee.Db.Ddl.ITableRebuildCommandBuilder
+Bee.Db.Ddl.ITableRebuildCommandBuilder.GetCommandText(Bee.Db.Schema.TableSchemaDiff! diff) -> string!
+Bee.Db.Dml.DefaultParameterCollector
+Bee.Db.Dml.DefaultParameterCollector.Add(object! value) -> string!
+Bee.Db.Dml.DefaultParameterCollector.DefaultParameterCollector(string! prefix) -> void
+Bee.Db.Dml.DefaultParameterCollector.GetAll() -> System.Collections.Generic.IDictionary<string!, object!>!
+Bee.Db.Dml.DefaultParameterCollector.Prefix.get -> string!
+Bee.Db.Dml.DeleteCommandBuilder
+Bee.Db.Dml.DeleteCommandBuilder.Build(string! tableName, Bee.Definition.Filters.FilterNode! filter) -> Bee.Db.DbCommandSpec!
+Bee.Db.Dml.DeleteCommandBuilder.DeleteCommandBuilder(Bee.Definition.Forms.FormSchema! formSchema, Bee.Definition.Database.DatabaseType databaseType) -> void
+Bee.Db.Dml.FromBuilder
+Bee.Db.Dml.FromBuilder.Build(string! mainTableName, Bee.Db.Dml.TableJoinCollection! joins) -> string!
+Bee.Db.Dml.FromBuilder.FromBuilder(Bee.Definition.Database.DatabaseType databaseType) -> void
+Bee.Db.Dml.IFormCommandBuilder
+Bee.Db.Dml.IFormCommandBuilder.BuildCount(string! tableName, Bee.Definition.Filters.FilterNode? filter = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Dml.IFormCommandBuilder.BuildDelete(string! tableName, Bee.Definition.Filters.FilterNode! filter) -> Bee.Db.DbCommandSpec!
+Bee.Db.Dml.IFormCommandBuilder.BuildSelect(string! tableName, string! selectFields, Bee.Definition.Filters.FilterNode? filter = null, Bee.Definition.Sorting.SortFieldCollection? sortFields = null, int? skip = null, int? take = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Dml.IFromBuilder
+Bee.Db.Dml.IFromBuilder.Build(string! mainTableName, Bee.Db.Dml.TableJoinCollection! joins) -> string!
+Bee.Db.Dml.ILimitBuilder
+Bee.Db.Dml.ILimitBuilder.Build(int? skip, int? take) -> string!
+Bee.Db.Dml.IParameterCollector
+Bee.Db.Dml.IParameterCollector.Add(object! value) -> string!
+Bee.Db.Dml.IParameterCollector.GetAll() -> System.Collections.Generic.IDictionary<string!, object!>!
+Bee.Db.Dml.ISelectBuilder
+Bee.Db.Dml.ISelectBuilder.Build(Bee.Definition.Forms.FormTable! formTable, string! selectFields, Bee.Db.Dml.SelectContext! selectContext) -> string!
+Bee.Db.Dml.ISortBuilder
+Bee.Db.Dml.ISortBuilder.Build(Bee.Definition.Sorting.SortFieldCollection? sortFields, Bee.Db.Dml.SelectContext? selectContext = null) -> string!
+Bee.Db.Dml.IWhereBuilder
+Bee.Db.Dml.IWhereBuilder.Build(Bee.Definition.Filters.FilterNode? root, Bee.Db.Dml.SelectContext? selectContext = null, bool includeWhereKeyword = true) -> Bee.Db.Dml.WhereBuildResult!
+Bee.Db.Dml.JoinType
+Bee.Db.Dml.JoinType.Full = 3 -> Bee.Db.Dml.JoinType
+Bee.Db.Dml.JoinType.Inner = 0 -> Bee.Db.Dml.JoinType
+Bee.Db.Dml.JoinType.Left = 1 -> Bee.Db.Dml.JoinType
+Bee.Db.Dml.JoinType.Right = 2 -> Bee.Db.Dml.JoinType
+Bee.Db.Dml.LimitBuilder
+Bee.Db.Dml.LimitBuilder.Build(int? skip, int? take) -> string!
+Bee.Db.Dml.LimitBuilder.LimitBuilder(Bee.Definition.Database.DatabaseType databaseType) -> void
+Bee.Db.Dml.QueryFieldMapping
+Bee.Db.Dml.QueryFieldMapping.FieldName.get -> string!
+Bee.Db.Dml.QueryFieldMapping.FieldName.set -> void
+Bee.Db.Dml.QueryFieldMapping.QueryFieldMapping() -> void
+Bee.Db.Dml.QueryFieldMapping.SourceAlias.get -> string!
+Bee.Db.Dml.QueryFieldMapping.SourceAlias.set -> void
+Bee.Db.Dml.QueryFieldMapping.SourceField.get -> string!
+Bee.Db.Dml.QueryFieldMapping.SourceField.set -> void
+Bee.Db.Dml.QueryFieldMapping.TableJoin.get -> Bee.Db.Dml.TableJoin?
+Bee.Db.Dml.QueryFieldMapping.TableJoin.set -> void
+Bee.Db.Dml.QueryFieldMappingCollection
+Bee.Db.Dml.QueryFieldMappingCollection.QueryFieldMappingCollection() -> void
+Bee.Db.Dml.SelectBuilder
+Bee.Db.Dml.SelectBuilder.Build(Bee.Definition.Forms.FormTable! formTable, string! selectFields, Bee.Db.Dml.SelectContext! selectContext) -> string!
+Bee.Db.Dml.SelectBuilder.SelectBuilder(Bee.Definition.Database.DatabaseType databaseType) -> void
+Bee.Db.Dml.SelectCommandBuilder
+Bee.Db.Dml.SelectCommandBuilder.Build(string! tableName, string! selectFields, Bee.Definition.Filters.FilterNode? filter = null, Bee.Definition.Sorting.SortFieldCollection? sortFields = null, int? skip = null, int? take = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Dml.SelectCommandBuilder.BuildCount(string! tableName, Bee.Definition.Filters.FilterNode? filter = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Dml.SelectCommandBuilder.SelectCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Database.DatabaseType databaseType, Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
+Bee.Db.Dml.SelectContext
+Bee.Db.Dml.SelectContext.FieldMappings.get -> Bee.Db.Dml.QueryFieldMappingCollection!
+Bee.Db.Dml.SelectContext.FieldMappings.set -> void
+Bee.Db.Dml.SelectContext.Joins.get -> Bee.Db.Dml.TableJoinCollection!
+Bee.Db.Dml.SelectContext.Joins.set -> void
+Bee.Db.Dml.SelectContext.SelectContext() -> void
+Bee.Db.Dml.SelectContextBuilder
+Bee.Db.Dml.SelectContextBuilder.Build() -> Bee.Db.Dml.SelectContext!
+Bee.Db.Dml.SelectContextBuilder.SelectContextBuilder(Bee.Definition.Forms.FormTable! formTable, System.Collections.Generic.HashSet<string!>! usedFieldNames, Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
+Bee.Db.Dml.SortBuilder
+Bee.Db.Dml.SortBuilder.Build(Bee.Definition.Sorting.SortFieldCollection? sortFields, Bee.Db.Dml.SelectContext? selectContext = null) -> string!
+Bee.Db.Dml.SortBuilder.SortBuilder(Bee.Definition.Database.DatabaseType databaseType) -> void
+Bee.Db.Dml.TableJoin
+Bee.Db.Dml.TableJoin.JoinType.get -> Bee.Db.Dml.JoinType
+Bee.Db.Dml.TableJoin.JoinType.set -> void
+Bee.Db.Dml.TableJoin.LeftAlias.get -> string!
+Bee.Db.Dml.TableJoin.LeftAlias.set -> void
+Bee.Db.Dml.TableJoin.LeftField.get -> string!
+Bee.Db.Dml.TableJoin.LeftField.set -> void
+Bee.Db.Dml.TableJoin.LeftTable.get -> string!
+Bee.Db.Dml.TableJoin.LeftTable.set -> void
+Bee.Db.Dml.TableJoin.RightAlias.get -> string!
+Bee.Db.Dml.TableJoin.RightAlias.set -> void
+Bee.Db.Dml.TableJoin.RightField.get -> string!
+Bee.Db.Dml.TableJoin.RightField.set -> void
+Bee.Db.Dml.TableJoin.RightTable.get -> string!
+Bee.Db.Dml.TableJoin.RightTable.set -> void
+Bee.Db.Dml.TableJoin.TableJoin() -> void
+Bee.Db.Dml.TableJoinCollection
+Bee.Db.Dml.TableJoinCollection.FindRightAlias(string! rightAlias) -> Bee.Db.Dml.TableJoin?
+Bee.Db.Dml.TableJoinCollection.TableJoinCollection() -> void
+Bee.Db.Dml.TableSchemaCommandBuilder
+Bee.Db.Dml.TableSchemaCommandBuilder.BuildDeleteCommand() -> Bee.Db.DbCommandSpec!
+Bee.Db.Dml.TableSchemaCommandBuilder.BuildInsertCommand() -> Bee.Db.DbCommandSpec!
+Bee.Db.Dml.TableSchemaCommandBuilder.BuildUpdateCommand() -> Bee.Db.DbCommandSpec!
+Bee.Db.Dml.TableSchemaCommandBuilder.BuildUpdateSpec(System.Data.DataTable! dataTable) -> Bee.Db.DataTableUpdateSpec!
+Bee.Db.Dml.TableSchemaCommandBuilder.DatabaseType.get -> Bee.Definition.Database.DatabaseType
+Bee.Db.Dml.TableSchemaCommandBuilder.TableSchema.get -> Bee.Definition.Database.TableSchema!
+Bee.Db.Dml.TableSchemaCommandBuilder.TableSchemaCommandBuilder(Bee.Definition.Database.DatabaseType databaseType, Bee.Definition.Database.TableSchema! tableSchema) -> void
+Bee.Db.Dml.WhereBuildResult
+Bee.Db.Dml.WhereBuildResult.Parameters.get -> System.Collections.Generic.IDictionary<string!, object!>?
+Bee.Db.Dml.WhereBuildResult.Parameters.set -> void
+Bee.Db.Dml.WhereBuildResult.WhereBuildResult() -> void
+Bee.Db.Dml.WhereBuildResult.WhereClause.get -> string!
+Bee.Db.Dml.WhereBuildResult.WhereClause.set -> void
+Bee.Db.Dml.WhereBuilder
+Bee.Db.Dml.WhereBuilder.Build(Bee.Definition.Filters.FilterNode? root, Bee.Db.Dml.SelectContext? selectContext = null, bool includeWhereKeyword = true) -> Bee.Db.Dml.WhereBuildResult!
+Bee.Db.Dml.WhereBuilder.WhereBuilder(Bee.Definition.Database.DatabaseType databaseType) -> void
+Bee.Db.IDbAccessFactory
+Bee.Db.IDbAccessFactory.Create(string! databaseId) -> Bee.Db.DbAccess!
+Bee.Db.ILMapper<T>
+Bee.Db.Manager.DbConnectionInfo
+Bee.Db.Manager.DbConnectionInfo.ConnectionString.get -> string!
+Bee.Db.Manager.DbConnectionInfo.DatabaseType.get -> Bee.Definition.Database.DatabaseType
+Bee.Db.Manager.DbConnectionInfo.Provider.get -> System.Data.Common.DbProviderFactory!
+Bee.Db.Manager.DbConnectionManagerService
+Bee.Db.Manager.DbConnectionManagerService.Clear() -> void
+Bee.Db.Manager.DbConnectionManagerService.Contains(string! databaseId) -> bool
+Bee.Db.Manager.DbConnectionManagerService.Count.get -> int
+Bee.Db.Manager.DbConnectionManagerService.CreateConnection(string! databaseId) -> System.Data.Common.DbConnection!
+Bee.Db.Manager.DbConnectionManagerService.DbConnectionManagerService(Bee.Definition.IDatabaseSettingsProvider! provider) -> void
+Bee.Db.Manager.DbConnectionManagerService.GetConnectionInfo(string! databaseId) -> Bee.Db.Manager.DbConnectionInfo!
+Bee.Db.Manager.DbConnectionManagerService.Remove(string! databaseId) -> bool
+Bee.Db.Manager.DbDialectRegistry
+Bee.Db.Manager.DbProviderRegistry
+Bee.Db.Manager.IDbConnectionManager
+Bee.Db.Manager.IDbConnectionManager.Clear() -> void
+Bee.Db.Manager.IDbConnectionManager.Contains(string! databaseId) -> bool
+Bee.Db.Manager.IDbConnectionManager.Count.get -> int
+Bee.Db.Manager.IDbConnectionManager.CreateConnection(string! databaseId) -> System.Data.Common.DbConnection!
+Bee.Db.Manager.IDbConnectionManager.GetConnectionInfo(string! databaseId) -> Bee.Db.Manager.DbConnectionInfo!
+Bee.Db.Manager.IDbConnectionManager.Remove(string! databaseId) -> bool
+Bee.Db.Providers.IDialectFactory
+Bee.Db.Providers.IDialectFactory.CreateCreateTableCommandBuilder() -> Bee.Db.Ddl.ICreateTableCommandBuilder!
+Bee.Db.Providers.IDialectFactory.CreateFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> Bee.Db.Dml.IFormCommandBuilder!
+Bee.Db.Providers.IDialectFactory.CreateTableAlterCommandBuilder() -> Bee.Db.Ddl.ITableAlterCommandBuilder!
+Bee.Db.Providers.IDialectFactory.CreateTableRebuildCommandBuilder() -> Bee.Db.Ddl.ITableRebuildCommandBuilder!
+Bee.Db.Providers.IDialectFactory.CreateTableSchemaProvider(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> Bee.Db.Schema.ITableSchemaProvider!
+Bee.Db.Providers.IDialectFactory.GetDefaultValueExpression(Bee.Base.Data.FieldDbType dbType) -> string!
+Bee.Db.Providers.MySql.MySqlCreateTableCommandBuilder
+Bee.Db.Providers.MySql.MySqlCreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
+Bee.Db.Providers.MySql.MySqlCreateTableCommandBuilder.MySqlCreateTableCommandBuilder() -> void
+Bee.Db.Providers.MySql.MySqlDialectFactory
+Bee.Db.Providers.MySql.MySqlDialectFactory.CreateCreateTableCommandBuilder() -> Bee.Db.Ddl.ICreateTableCommandBuilder!
+Bee.Db.Providers.MySql.MySqlDialectFactory.CreateFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> Bee.Db.Dml.IFormCommandBuilder!
+Bee.Db.Providers.MySql.MySqlDialectFactory.CreateTableAlterCommandBuilder() -> Bee.Db.Ddl.ITableAlterCommandBuilder!
+Bee.Db.Providers.MySql.MySqlDialectFactory.CreateTableRebuildCommandBuilder() -> Bee.Db.Ddl.ITableRebuildCommandBuilder!
+Bee.Db.Providers.MySql.MySqlDialectFactory.CreateTableSchemaProvider(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> Bee.Db.Schema.ITableSchemaProvider!
+Bee.Db.Providers.MySql.MySqlDialectFactory.GetDefaultValueExpression(Bee.Base.Data.FieldDbType dbType) -> string!
+Bee.Db.Providers.MySql.MySqlDialectFactory.MySqlDialectFactory() -> void
+Bee.Db.Providers.MySql.MySqlFormCommandBuilder
+Bee.Db.Providers.MySql.MySqlFormCommandBuilder.BuildCount(string! tableName, Bee.Definition.Filters.FilterNode? filter = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.MySql.MySqlFormCommandBuilder.BuildDelete(string! tableName, Bee.Definition.Filters.FilterNode! filter) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.MySql.MySqlFormCommandBuilder.BuildSelect(string! tableName, string! selectFields, Bee.Definition.Filters.FilterNode? filter = null, Bee.Definition.Sorting.SortFieldCollection? sortFields = null, int? skip = null, int? take = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.MySql.MySqlFormCommandBuilder.MySqlFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
+Bee.Db.Providers.MySql.MySqlTableAlterCommandBuilder
+Bee.Db.Providers.MySql.MySqlTableAlterCommandBuilder.GetExecutionKind(Bee.Db.Schema.Changes.ITableChange! change) -> Bee.Db.Schema.ChangeExecutionKind
+Bee.Db.Providers.MySql.MySqlTableAlterCommandBuilder.GetStatements(string! tableName, Bee.Db.Schema.Changes.ITableChange! change) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.MySql.MySqlTableAlterCommandBuilder.IsNarrowingChange(Bee.Db.Schema.Changes.ITableChange! change) -> bool
+Bee.Db.Providers.MySql.MySqlTableAlterCommandBuilder.MySqlTableAlterCommandBuilder() -> void
+Bee.Db.Providers.MySql.MySqlTableSchemaProvider
+Bee.Db.Providers.MySql.MySqlTableSchemaProvider.DatabaseId.get -> string!
+Bee.Db.Providers.MySql.MySqlTableSchemaProvider.GetTableSchema(string! tableName) -> Bee.Definition.Database.TableSchema?
+Bee.Db.Providers.MySql.MySqlTableSchemaProvider.MySqlTableSchemaProvider(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Db.Providers.Oracle.OracleCreateTableCommandBuilder
+Bee.Db.Providers.Oracle.OracleCreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
+Bee.Db.Providers.Oracle.OracleCreateTableCommandBuilder.OracleCreateTableCommandBuilder() -> void
+Bee.Db.Providers.Oracle.OracleDialectFactory
+Bee.Db.Providers.Oracle.OracleDialectFactory.CreateCreateTableCommandBuilder() -> Bee.Db.Ddl.ICreateTableCommandBuilder!
+Bee.Db.Providers.Oracle.OracleDialectFactory.CreateFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> Bee.Db.Dml.IFormCommandBuilder!
+Bee.Db.Providers.Oracle.OracleDialectFactory.CreateTableAlterCommandBuilder() -> Bee.Db.Ddl.ITableAlterCommandBuilder!
+Bee.Db.Providers.Oracle.OracleDialectFactory.CreateTableRebuildCommandBuilder() -> Bee.Db.Ddl.ITableRebuildCommandBuilder!
+Bee.Db.Providers.Oracle.OracleDialectFactory.CreateTableSchemaProvider(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> Bee.Db.Schema.ITableSchemaProvider!
+Bee.Db.Providers.Oracle.OracleDialectFactory.GetDefaultValueExpression(Bee.Base.Data.FieldDbType dbType) -> string!
+Bee.Db.Providers.Oracle.OracleDialectFactory.OracleDialectFactory() -> void
+Bee.Db.Providers.Oracle.OracleFormCommandBuilder
+Bee.Db.Providers.Oracle.OracleFormCommandBuilder.BuildCount(string! tableName, Bee.Definition.Filters.FilterNode? filter = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.Oracle.OracleFormCommandBuilder.BuildDelete(string! tableName, Bee.Definition.Filters.FilterNode! filter) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.Oracle.OracleFormCommandBuilder.BuildSelect(string! tableName, string! selectFields, Bee.Definition.Filters.FilterNode? filter = null, Bee.Definition.Sorting.SortFieldCollection? sortFields = null, int? skip = null, int? take = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.Oracle.OracleFormCommandBuilder.OracleFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
+Bee.Db.Providers.Oracle.OracleTableAlterCommandBuilder
+Bee.Db.Providers.Oracle.OracleTableAlterCommandBuilder.GetExecutionKind(Bee.Db.Schema.Changes.ITableChange! change) -> Bee.Db.Schema.ChangeExecutionKind
+Bee.Db.Providers.Oracle.OracleTableAlterCommandBuilder.GetStatements(string! tableName, Bee.Db.Schema.Changes.ITableChange! change) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.Oracle.OracleTableAlterCommandBuilder.IsNarrowingChange(Bee.Db.Schema.Changes.ITableChange! change) -> bool
+Bee.Db.Providers.Oracle.OracleTableAlterCommandBuilder.OracleTableAlterCommandBuilder() -> void
+Bee.Db.Providers.Oracle.OracleTableSchemaProvider
+Bee.Db.Providers.Oracle.OracleTableSchemaProvider.DatabaseId.get -> string!
+Bee.Db.Providers.Oracle.OracleTableSchemaProvider.GetTableSchema(string! tableName) -> Bee.Definition.Database.TableSchema?
+Bee.Db.Providers.Oracle.OracleTableSchemaProvider.OracleTableSchemaProvider(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Db.Providers.PostgreSql.PgCreateTableCommandBuilder
+Bee.Db.Providers.PostgreSql.PgCreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
+Bee.Db.Providers.PostgreSql.PgCreateTableCommandBuilder.PgCreateTableCommandBuilder() -> void
+Bee.Db.Providers.PostgreSql.PgDialectFactory
+Bee.Db.Providers.PostgreSql.PgDialectFactory.CreateCreateTableCommandBuilder() -> Bee.Db.Ddl.ICreateTableCommandBuilder!
+Bee.Db.Providers.PostgreSql.PgDialectFactory.CreateFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> Bee.Db.Dml.IFormCommandBuilder!
+Bee.Db.Providers.PostgreSql.PgDialectFactory.CreateTableAlterCommandBuilder() -> Bee.Db.Ddl.ITableAlterCommandBuilder!
+Bee.Db.Providers.PostgreSql.PgDialectFactory.CreateTableRebuildCommandBuilder() -> Bee.Db.Ddl.ITableRebuildCommandBuilder!
+Bee.Db.Providers.PostgreSql.PgDialectFactory.CreateTableSchemaProvider(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> Bee.Db.Schema.ITableSchemaProvider!
+Bee.Db.Providers.PostgreSql.PgDialectFactory.GetDefaultValueExpression(Bee.Base.Data.FieldDbType dbType) -> string!
+Bee.Db.Providers.PostgreSql.PgDialectFactory.PgDialectFactory() -> void
+Bee.Db.Providers.PostgreSql.PgFormCommandBuilder
+Bee.Db.Providers.PostgreSql.PgFormCommandBuilder.BuildCount(string! tableName, Bee.Definition.Filters.FilterNode? filter = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.PostgreSql.PgFormCommandBuilder.BuildDelete(string! tableName, Bee.Definition.Filters.FilterNode! filter) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.PostgreSql.PgFormCommandBuilder.BuildSelect(string! tableName, string! selectFields, Bee.Definition.Filters.FilterNode? filter = null, Bee.Definition.Sorting.SortFieldCollection? sortFields = null, int? skip = null, int? take = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.PostgreSql.PgFormCommandBuilder.PgFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
+Bee.Db.Providers.PostgreSql.PgTableAlterCommandBuilder
+Bee.Db.Providers.PostgreSql.PgTableAlterCommandBuilder.GetExecutionKind(Bee.Db.Schema.Changes.ITableChange! change) -> Bee.Db.Schema.ChangeExecutionKind
+Bee.Db.Providers.PostgreSql.PgTableAlterCommandBuilder.GetStatements(string! tableName, Bee.Db.Schema.Changes.ITableChange! change) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.PostgreSql.PgTableAlterCommandBuilder.IsNarrowingChange(Bee.Db.Schema.Changes.ITableChange! change) -> bool
+Bee.Db.Providers.PostgreSql.PgTableAlterCommandBuilder.PgTableAlterCommandBuilder() -> void
+Bee.Db.Providers.PostgreSql.PgTableSchemaProvider
+Bee.Db.Providers.PostgreSql.PgTableSchemaProvider.DatabaseId.get -> string!
+Bee.Db.Providers.PostgreSql.PgTableSchemaProvider.GetTableSchema(string! tableName) -> Bee.Definition.Database.TableSchema?
+Bee.Db.Providers.PostgreSql.PgTableSchemaProvider.PgTableSchemaProvider(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Db.Providers.SqlServer.SqlCreateTableCommandBuilder
+Bee.Db.Providers.SqlServer.SqlCreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
+Bee.Db.Providers.SqlServer.SqlCreateTableCommandBuilder.SqlCreateTableCommandBuilder() -> void
+Bee.Db.Providers.SqlServer.SqlDialectFactory
+Bee.Db.Providers.SqlServer.SqlDialectFactory.CreateCreateTableCommandBuilder() -> Bee.Db.Ddl.ICreateTableCommandBuilder!
+Bee.Db.Providers.SqlServer.SqlDialectFactory.CreateFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> Bee.Db.Dml.IFormCommandBuilder!
+Bee.Db.Providers.SqlServer.SqlDialectFactory.CreateTableAlterCommandBuilder() -> Bee.Db.Ddl.ITableAlterCommandBuilder!
+Bee.Db.Providers.SqlServer.SqlDialectFactory.CreateTableRebuildCommandBuilder() -> Bee.Db.Ddl.ITableRebuildCommandBuilder!
+Bee.Db.Providers.SqlServer.SqlDialectFactory.CreateTableSchemaProvider(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> Bee.Db.Schema.ITableSchemaProvider!
+Bee.Db.Providers.SqlServer.SqlDialectFactory.GetDefaultValueExpression(Bee.Base.Data.FieldDbType dbType) -> string!
+Bee.Db.Providers.SqlServer.SqlDialectFactory.SqlDialectFactory() -> void
+Bee.Db.Providers.SqlServer.SqlExtendedPropertyCommandBuilder
+Bee.Db.Providers.SqlServer.SqlFormCommandBuilder
+Bee.Db.Providers.SqlServer.SqlFormCommandBuilder.BuildCount(string! tableName, Bee.Definition.Filters.FilterNode? filter = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.SqlServer.SqlFormCommandBuilder.BuildDelete(string! tableName, Bee.Definition.Filters.FilterNode! filter) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.SqlServer.SqlFormCommandBuilder.BuildSelect(string! tableName, string! selectFields, Bee.Definition.Filters.FilterNode? filter = null, Bee.Definition.Sorting.SortFieldCollection? sortFields = null, int? skip = null, int? take = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.SqlServer.SqlFormCommandBuilder.SqlFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
+Bee.Db.Providers.SqlServer.SqlTableAlterCommandBuilder
+Bee.Db.Providers.SqlServer.SqlTableAlterCommandBuilder.GetExecutionKind(Bee.Db.Schema.Changes.ITableChange! change) -> Bee.Db.Schema.ChangeExecutionKind
+Bee.Db.Providers.SqlServer.SqlTableAlterCommandBuilder.GetStatements(string! tableName, Bee.Db.Schema.Changes.ITableChange! change) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.SqlServer.SqlTableAlterCommandBuilder.IsNarrowingChange(Bee.Db.Schema.Changes.ITableChange! change) -> bool
+Bee.Db.Providers.SqlServer.SqlTableAlterCommandBuilder.SqlTableAlterCommandBuilder() -> void
+Bee.Db.Providers.SqlServer.SqlTableSchemaProvider
+Bee.Db.Providers.SqlServer.SqlTableSchemaProvider.DatabaseId.get -> string!
+Bee.Db.Providers.SqlServer.SqlTableSchemaProvider.GetTableSchema(string! tableName) -> Bee.Definition.Database.TableSchema?
+Bee.Db.Providers.SqlServer.SqlTableSchemaProvider.SqlTableSchemaProvider(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Db.Providers.Sqlite.SqliteCreateTableCommandBuilder
+Bee.Db.Providers.Sqlite.SqliteCreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
+Bee.Db.Providers.Sqlite.SqliteCreateTableCommandBuilder.SqliteCreateTableCommandBuilder() -> void
+Bee.Db.Providers.Sqlite.SqliteDataAdapter
+Bee.Db.Providers.Sqlite.SqliteDataAdapter.RowUpdated -> System.EventHandler<System.Data.Common.RowUpdatedEventArgs!>?
+Bee.Db.Providers.Sqlite.SqliteDataAdapter.RowUpdating -> System.EventHandler<System.Data.Common.RowUpdatingEventArgs!>?
+Bee.Db.Providers.Sqlite.SqliteDataAdapter.SqliteDataAdapter() -> void
+Bee.Db.Providers.Sqlite.SqliteDialectFactory
+Bee.Db.Providers.Sqlite.SqliteDialectFactory.CreateCreateTableCommandBuilder() -> Bee.Db.Ddl.ICreateTableCommandBuilder!
+Bee.Db.Providers.Sqlite.SqliteDialectFactory.CreateFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> Bee.Db.Dml.IFormCommandBuilder!
+Bee.Db.Providers.Sqlite.SqliteDialectFactory.CreateTableAlterCommandBuilder() -> Bee.Db.Ddl.ITableAlterCommandBuilder!
+Bee.Db.Providers.Sqlite.SqliteDialectFactory.CreateTableRebuildCommandBuilder() -> Bee.Db.Ddl.ITableRebuildCommandBuilder!
+Bee.Db.Providers.Sqlite.SqliteDialectFactory.CreateTableSchemaProvider(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> Bee.Db.Schema.ITableSchemaProvider!
+Bee.Db.Providers.Sqlite.SqliteDialectFactory.GetDefaultValueExpression(Bee.Base.Data.FieldDbType dbType) -> string!
+Bee.Db.Providers.Sqlite.SqliteDialectFactory.SqliteDialectFactory() -> void
+Bee.Db.Providers.Sqlite.SqliteFormCommandBuilder
+Bee.Db.Providers.Sqlite.SqliteFormCommandBuilder.BuildCount(string! tableName, Bee.Definition.Filters.FilterNode? filter = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.Sqlite.SqliteFormCommandBuilder.BuildDelete(string! tableName, Bee.Definition.Filters.FilterNode! filter) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.Sqlite.SqliteFormCommandBuilder.BuildSelect(string! tableName, string! selectFields, Bee.Definition.Filters.FilterNode? filter = null, Bee.Definition.Sorting.SortFieldCollection? sortFields = null, int? skip = null, int? take = null) -> Bee.Db.DbCommandSpec!
+Bee.Db.Providers.Sqlite.SqliteFormCommandBuilder.SqliteFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
+Bee.Db.Providers.Sqlite.SqliteProviderFactory
+Bee.Db.Providers.Sqlite.SqliteProviderFactory.SqliteProviderFactory(System.Data.Common.DbProviderFactory! inner) -> void
+Bee.Db.Providers.Sqlite.SqliteTableAlterCommandBuilder
+Bee.Db.Providers.Sqlite.SqliteTableAlterCommandBuilder.GetExecutionKind(Bee.Db.Schema.Changes.ITableChange! change) -> Bee.Db.Schema.ChangeExecutionKind
+Bee.Db.Providers.Sqlite.SqliteTableAlterCommandBuilder.GetStatements(string! tableName, Bee.Db.Schema.Changes.ITableChange! change) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.Sqlite.SqliteTableAlterCommandBuilder.IsNarrowingChange(Bee.Db.Schema.Changes.ITableChange! change) -> bool
+Bee.Db.Providers.Sqlite.SqliteTableAlterCommandBuilder.SqliteTableAlterCommandBuilder() -> void
+Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider
+Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider.DatabaseId.get -> string!
+Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider.GetTableSchema(string! tableName) -> Bee.Definition.Database.TableSchema?
+Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider.SqliteTableSchemaProvider(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Db.Schema.ChangeExecutionKind
+Bee.Db.Schema.ChangeExecutionKind.Alter = 0 -> Bee.Db.Schema.ChangeExecutionKind
+Bee.Db.Schema.ChangeExecutionKind.NotSupported = 2 -> Bee.Db.Schema.ChangeExecutionKind
+Bee.Db.Schema.ChangeExecutionKind.Rebuild = 1 -> Bee.Db.Schema.ChangeExecutionKind
+Bee.Db.Schema.Changes.AddFieldChange
+Bee.Db.Schema.Changes.AddFieldChange.AddFieldChange(Bee.Definition.Database.DbField! field) -> void
+Bee.Db.Schema.Changes.AddFieldChange.Describe() -> string!
+Bee.Db.Schema.Changes.AddFieldChange.Field.get -> Bee.Definition.Database.DbField!
+Bee.Db.Schema.Changes.AddIndexChange
+Bee.Db.Schema.Changes.AddIndexChange.AddIndexChange(Bee.Definition.Database.DbTableIndex! index) -> void
+Bee.Db.Schema.Changes.AddIndexChange.Describe() -> string!
+Bee.Db.Schema.Changes.AddIndexChange.Index.get -> Bee.Definition.Database.DbTableIndex!
+Bee.Db.Schema.Changes.AlterFieldChange
+Bee.Db.Schema.Changes.AlterFieldChange.AlterFieldChange(Bee.Definition.Database.DbField! oldField, Bee.Definition.Database.DbField! newField) -> void
+Bee.Db.Schema.Changes.AlterFieldChange.Describe() -> string!
+Bee.Db.Schema.Changes.AlterFieldChange.NewField.get -> Bee.Definition.Database.DbField!
+Bee.Db.Schema.Changes.AlterFieldChange.OldField.get -> Bee.Definition.Database.DbField!
+Bee.Db.Schema.Changes.DropIndexChange
+Bee.Db.Schema.Changes.DropIndexChange.Describe() -> string!
+Bee.Db.Schema.Changes.DropIndexChange.DropIndexChange(Bee.Definition.Database.DbTableIndex! index) -> void
+Bee.Db.Schema.Changes.DropIndexChange.Index.get -> Bee.Definition.Database.DbTableIndex!
+Bee.Db.Schema.Changes.ITableChange
+Bee.Db.Schema.Changes.ITableChange.Describe() -> string!
+Bee.Db.Schema.Changes.RenameFieldChange
+Bee.Db.Schema.Changes.RenameFieldChange.Describe() -> string!
+Bee.Db.Schema.Changes.RenameFieldChange.NewField.get -> Bee.Definition.Database.DbField!
+Bee.Db.Schema.Changes.RenameFieldChange.OldFieldName.get -> string!
+Bee.Db.Schema.Changes.RenameFieldChange.RenameFieldChange(string! oldFieldName, Bee.Definition.Database.DbField! newField) -> void
+Bee.Db.Schema.DescriptionChange
+Bee.Db.Schema.DescriptionChange.DescriptionChange() -> void
+Bee.Db.Schema.DescriptionChange.FieldName.get -> string!
+Bee.Db.Schema.DescriptionChange.FieldName.set -> void
+Bee.Db.Schema.DescriptionChange.IsNew.get -> bool
+Bee.Db.Schema.DescriptionChange.IsNew.set -> void
+Bee.Db.Schema.DescriptionChange.Level.get -> Bee.Db.Schema.DescriptionLevel
+Bee.Db.Schema.DescriptionChange.Level.set -> void
+Bee.Db.Schema.DescriptionChange.NewValue.get -> string!
+Bee.Db.Schema.DescriptionChange.NewValue.set -> void
+Bee.Db.Schema.DescriptionLevel
+Bee.Db.Schema.DescriptionLevel.Column = 1 -> Bee.Db.Schema.DescriptionLevel
+Bee.Db.Schema.DescriptionLevel.Table = 0 -> Bee.Db.Schema.DescriptionLevel
+Bee.Db.Schema.ITableSchemaProvider
+Bee.Db.Schema.ITableSchemaProvider.DatabaseId.get -> string!
+Bee.Db.Schema.ITableSchemaProvider.GetTableSchema(string! tableName) -> Bee.Definition.Database.TableSchema?
+Bee.Db.Schema.TableSchemaBuilder
+Bee.Db.Schema.TableSchemaBuilder.Compare(string! categoryId, string! tableName) -> Bee.Definition.Database.TableSchema!
+Bee.Db.Schema.TableSchemaBuilder.CompareToDiff(string! categoryId, string! tableName) -> Bee.Db.Schema.TableSchemaDiff!
+Bee.Db.Schema.TableSchemaBuilder.DatabaseId.get -> string!
+Bee.Db.Schema.TableSchemaBuilder.Execute(string! categoryId, string! tableName, Bee.Db.Schema.UpgradeOptions? options = null) -> bool
+Bee.Db.Schema.TableSchemaBuilder.GetCommandText(string! categoryId, string! tableName, Bee.Db.Schema.UpgradeOptions? options = null) -> string!
+Bee.Db.Schema.TableSchemaBuilder.TableSchemaBuilder(string! databaseId, Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Db.Schema.TableSchemaComparer
+Bee.Db.Schema.TableSchemaComparer.Compare() -> Bee.Definition.Database.TableSchema!
+Bee.Db.Schema.TableSchemaComparer.CompareToDiff() -> Bee.Db.Schema.TableSchemaDiff!
+Bee.Db.Schema.TableSchemaComparer.DatabaseType.get -> Bee.Definition.Database.DatabaseType
+Bee.Db.Schema.TableSchemaComparer.DefineTable.get -> Bee.Definition.Database.TableSchema!
+Bee.Db.Schema.TableSchemaComparer.DescriptionChanges.get -> System.Collections.Generic.List<Bee.Db.Schema.DescriptionChange!>!
+Bee.Db.Schema.TableSchemaComparer.RealTable.get -> Bee.Definition.Database.TableSchema?
+Bee.Db.Schema.TableSchemaComparer.TableSchemaComparer(Bee.Definition.Database.TableSchema! defineTable, Bee.Definition.Database.TableSchema? realTable, Bee.Definition.Database.DatabaseType databaseType) -> void
+Bee.Db.Schema.TableSchemaDiff
+Bee.Db.Schema.TableSchemaDiff.Changes.get -> System.Collections.Generic.List<Bee.Db.Schema.Changes.ITableChange!>!
+Bee.Db.Schema.TableSchemaDiff.DefineTable.get -> Bee.Definition.Database.TableSchema!
+Bee.Db.Schema.TableSchemaDiff.DescriptionChanges.get -> System.Collections.Generic.List<Bee.Db.Schema.DescriptionChange!>!
+Bee.Db.Schema.TableSchemaDiff.IsEmpty.get -> bool
+Bee.Db.Schema.TableSchemaDiff.IsNewTable.get -> bool
+Bee.Db.Schema.TableSchemaDiff.RealTable.get -> Bee.Definition.Database.TableSchema?
+Bee.Db.Schema.TableSchemaDiff.TableSchemaDiff(Bee.Definition.Database.TableSchema! defineTable, Bee.Definition.Database.TableSchema? realTable) -> void
+Bee.Db.Schema.TableUpgradeOrchestrator
+Bee.Db.Schema.TableUpgradeOrchestrator.Execute(Bee.Db.Schema.UpgradePlan! plan, string! databaseId) -> bool
+Bee.Db.Schema.TableUpgradeOrchestrator.Plan(Bee.Db.Schema.TableSchemaDiff! diff, Bee.Db.Schema.UpgradeOptions? options = null) -> Bee.Db.Schema.UpgradePlan!
+Bee.Db.Schema.TableUpgradeOrchestrator.TableUpgradeOrchestrator(Bee.Db.Providers.IDialectFactory! dialect, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Db.Schema.TableUpgradeOrchestrator.TableUpgradeOrchestrator(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Db.Schema.UpgradeExecutionMode
+Bee.Db.Schema.UpgradeExecutionMode.Alter = 2 -> Bee.Db.Schema.UpgradeExecutionMode
+Bee.Db.Schema.UpgradeExecutionMode.Create = 1 -> Bee.Db.Schema.UpgradeExecutionMode
+Bee.Db.Schema.UpgradeExecutionMode.NoChange = 0 -> Bee.Db.Schema.UpgradeExecutionMode
+Bee.Db.Schema.UpgradeExecutionMode.Rebuild = 3 -> Bee.Db.Schema.UpgradeExecutionMode
+Bee.Db.Schema.UpgradeOptions
+Bee.Db.Schema.UpgradeOptions.AllowColumnNarrowing.get -> bool
+Bee.Db.Schema.UpgradeOptions.AllowColumnNarrowing.set -> void
+Bee.Db.Schema.UpgradeOptions.UpgradeOptions() -> void
+Bee.Db.Schema.UpgradePlan
+Bee.Db.Schema.UpgradePlan.AllStatements.get -> System.Collections.Generic.IEnumerable<string!>!
+Bee.Db.Schema.UpgradePlan.IsEmpty.get -> bool
+Bee.Db.Schema.UpgradePlan.Mode.get -> Bee.Db.Schema.UpgradeExecutionMode
+Bee.Db.Schema.UpgradePlan.Stages.get -> System.Collections.Generic.List<Bee.Db.Schema.UpgradeStage!>!
+Bee.Db.Schema.UpgradePlan.UpgradePlan(Bee.Db.Schema.UpgradeExecutionMode mode, System.Collections.Generic.IEnumerable<Bee.Db.Schema.UpgradeStage!>? stages = null, System.Collections.Generic.IEnumerable<string!>? warnings = null) -> void
+Bee.Db.Schema.UpgradePlan.Warnings.get -> System.Collections.Generic.List<string!>!
+Bee.Db.Schema.UpgradeStage
+Bee.Db.Schema.UpgradeStage.Kind.get -> Bee.Db.Schema.UpgradeStageKind
+Bee.Db.Schema.UpgradeStage.Statements.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Schema.UpgradeStage.UpgradeStage(Bee.Db.Schema.UpgradeStageKind kind, System.Collections.Generic.IEnumerable<string!>! statements) -> void
+Bee.Db.Schema.UpgradeStageKind
+Bee.Db.Schema.UpgradeStageKind.AddColumns = 2 -> Bee.Db.Schema.UpgradeStageKind
+Bee.Db.Schema.UpgradeStageKind.AlterColumns = 1 -> Bee.Db.Schema.UpgradeStageKind
+Bee.Db.Schema.UpgradeStageKind.CreateIndexes = 3 -> Bee.Db.Schema.UpgradeStageKind
+Bee.Db.Schema.UpgradeStageKind.CreateTable = 5 -> Bee.Db.Schema.UpgradeStageKind
+Bee.Db.Schema.UpgradeStageKind.DropIndexes = 0 -> Bee.Db.Schema.UpgradeStageKind
+Bee.Db.Schema.UpgradeStageKind.Rebuild = 6 -> Bee.Db.Schema.UpgradeStageKind
+Bee.Db.Schema.UpgradeStageKind.SyncDescriptions = 4 -> Bee.Db.Schema.UpgradeStageKind
+Bee.Db.Storage.DbDefineStorage
+Bee.Db.Storage.DbDefineStorage.DbDefineStorage(Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Db.CacheNotify.ICacheNotifyService! cacheNotify, string! databaseId = "common") -> void
+Bee.Db.Storage.DbDefineStorage.DbDefineStorage(System.IServiceProvider! serviceProvider) -> void
+Bee.Db.Storage.DbDefineStorage.GetChangeSource(Bee.Definition.DefineType defineType, params string![]! keys) -> Bee.Definition.Storage.DefineChangeSource
+Bee.Db.Storage.DbDefineStorage.GetCurrencySettings() -> Bee.Definition.Settings.CurrencySettings?
+Bee.Db.Storage.DbDefineStorage.GetCustomizeFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?
+Bee.Db.Storage.DbDefineStorage.GetCustomizeLanguage(string! customizeId, string! lang, string! ns) -> Bee.Definition.Language.LanguageResource?
+Bee.Db.Storage.DbDefineStorage.GetCustomizeProgramSettings(string! customizeId) -> Bee.Definition.Settings.ProgramSettings?
+Bee.Db.Storage.DbDefineStorage.GetDbCategorySettings() -> Bee.Definition.Settings.DbCategorySettings?
+Bee.Db.Storage.DbDefineStorage.GetFormLayout(string! layoutId) -> Bee.Definition.Layouts.FormLayout?
+Bee.Db.Storage.DbDefineStorage.GetFormSchema(string! progId) -> Bee.Definition.Forms.FormSchema?
+Bee.Db.Storage.DbDefineStorage.GetLanguage(string! lang, string! ns) -> Bee.Definition.Language.LanguageResource?
+Bee.Db.Storage.DbDefineStorage.GetProgramSettings() -> Bee.Definition.Settings.ProgramSettings?
+Bee.Db.Storage.DbDefineStorage.GetTableSchema(string! categoryId, string! tableName) -> Bee.Definition.Database.TableSchema?
+Bee.Db.Storage.DbDefineStorage.GetUnitSettings() -> Bee.Definition.Settings.UnitSettings?
+Bee.Db.Storage.DbDefineStorage.SaveCurrencySettings(Bee.Definition.Settings.CurrencySettings! settings) -> void
+Bee.Db.Storage.DbDefineStorage.SaveDbCategorySettings(Bee.Definition.Settings.DbCategorySettings! settings) -> void
+Bee.Db.Storage.DbDefineStorage.SaveFormLayout(Bee.Definition.Layouts.FormLayout! formLayout) -> void
+Bee.Db.Storage.DbDefineStorage.SaveFormSchema(Bee.Definition.Forms.FormSchema! formSchema) -> void
+Bee.Db.Storage.DbDefineStorage.SaveLanguage(Bee.Definition.Language.LanguageResource! resource) -> void
+Bee.Db.Storage.DbDefineStorage.SaveProgramSettings(Bee.Definition.Settings.ProgramSettings! settings) -> void
+Bee.Db.Storage.DbDefineStorage.SaveTableSchema(string! categoryId, Bee.Definition.Database.TableSchema! tableSchema) -> void
+Bee.Db.Storage.DbDefineStorage.SaveUnitSettings(Bee.Definition.Settings.UnitSettings! settings) -> void
+const Bee.Db.CommandTextVariable.Parameters = "{@Parameters}" -> string!
+const Bee.Db.Storage.DbDefineStorage.DefineDatabaseId = "common" -> string!
+override Bee.Db.CacheNotify.CacheNotifyChange.GetHashCode() -> int
+override Bee.Db.DbAccess.ToString() -> string!
+override Bee.Db.DbCommandSpec.ToString() -> string!
+override Bee.Db.DbParameterSpec.ToString() -> string!
+override Bee.Db.Dml.QueryFieldMapping.ToString() -> string!
+override Bee.Db.Dml.TableJoin.Key.get -> string!
+override Bee.Db.Dml.TableJoin.Key.set -> void
+override Bee.Db.Dml.TableJoin.ToString() -> string!
+override Bee.Db.Providers.Sqlite.SqliteProviderFactory.CanCreateDataAdapter.get -> bool
+override Bee.Db.Providers.Sqlite.SqliteProviderFactory.CreateCommand() -> System.Data.Common.DbCommand?
+override Bee.Db.Providers.Sqlite.SqliteProviderFactory.CreateCommandBuilder() -> System.Data.Common.DbCommandBuilder?
+override Bee.Db.Providers.Sqlite.SqliteProviderFactory.CreateConnection() -> System.Data.Common.DbConnection?
+override Bee.Db.Providers.Sqlite.SqliteProviderFactory.CreateConnectionStringBuilder() -> System.Data.Common.DbConnectionStringBuilder?
+override Bee.Db.Providers.Sqlite.SqliteProviderFactory.CreateDataAdapter() -> System.Data.Common.DbDataAdapter!
+override Bee.Db.Providers.Sqlite.SqliteProviderFactory.CreateParameter() -> System.Data.Common.DbParameter?
+static Bee.Db.CacheNotify.CacheNotifyChange.operator !=(Bee.Db.CacheNotify.CacheNotifyChange left, Bee.Db.CacheNotify.CacheNotifyChange right) -> bool
+static Bee.Db.CacheNotify.CacheNotifyChange.operator ==(Bee.Db.CacheNotify.CacheNotifyChange left, Bee.Db.CacheNotify.CacheNotifyChange right) -> bool
+static Bee.Db.DatabaseTypeExtensions.GetParameterName(this Bee.Definition.Database.DatabaseType databaseType, string! name) -> string!
+static Bee.Db.DatabaseTypeExtensions.GetParameterPrefix(this Bee.Definition.Database.DatabaseType databaseType) -> string!
+static Bee.Db.DatabaseTypeExtensions.QuoteIdentifier(this Bee.Definition.Database.DatabaseType databaseType, string! identifier) -> string!
+static Bee.Db.DbCommandResult.ForRowsAffected(int rows) -> Bee.Db.DbCommandResult!
+static Bee.Db.DbCommandResult.ForScalar(object? value) -> Bee.Db.DbCommandResult!
+static Bee.Db.DbCommandResult.ForTable(System.Data.DataTable! table) -> Bee.Db.DbCommandResult!
+static Bee.Db.DbConnectionScope.Create(System.Data.Common.DbConnection? externalConnection, System.Data.Common.DbProviderFactory! factory, string! connectionString, System.Action<System.Data.Common.DbConnection!>? onConnectionOpened = null) -> Bee.Db.DbConnectionScope!
+static Bee.Db.DbConnectionScope.CreateAsync(System.Data.Common.DbConnection? externalConnection, System.Data.Common.DbProviderFactory! factory, string! connectionString, System.Action<System.Data.Common.DbConnection!>? onConnectionOpened = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Bee.Db.DbConnectionScope!>!
+static Bee.Db.DbTypeMapper.Infer(object! value) -> System.Data.DbType?
+static Bee.Db.ILMapper<T>.CacheCount.get -> int
+static Bee.Db.ILMapper<T>.ClearCache() -> void
+static Bee.Db.ILMapper<T>.CreateMapFunc(System.Data.Common.DbDataReader! reader) -> System.Func<System.Data.Common.DbDataReader!, T>!
+static Bee.Db.ILMapper<T>.MapToEnumerable(System.Data.Common.DbDataReader! reader, System.Func<System.Data.Common.DbDataReader!, T>! mapper) -> System.Collections.Generic.IEnumerable<T>!
+static Bee.Db.ILMapper<T>.MapToList(System.Data.Common.DbDataReader! reader, System.Func<System.Data.Common.DbDataReader!, T>! mapper) -> System.Collections.Generic.List<T>!
+static Bee.Db.Manager.DbDialectRegistry.Get(Bee.Definition.Database.DatabaseType type) -> Bee.Db.Providers.IDialectFactory!
+static Bee.Db.Manager.DbDialectRegistry.IsRegistered(Bee.Definition.Database.DatabaseType type) -> bool
+static Bee.Db.Manager.DbDialectRegistry.Register(Bee.Definition.Database.DatabaseType type, Bee.Db.Providers.IDialectFactory! factory) -> void
+static Bee.Db.Manager.DbProviderRegistry.Get(Bee.Definition.Database.DatabaseType type) -> System.Data.Common.DbProviderFactory!
+static Bee.Db.Manager.DbProviderRegistry.GetConnectionInitializer(Bee.Definition.Database.DatabaseType type) -> System.Action<System.Data.Common.DbConnection!>?
+static Bee.Db.Manager.DbProviderRegistry.IsRegistered(Bee.Definition.Database.DatabaseType type) -> bool
+static Bee.Db.Manager.DbProviderRegistry.Register(Bee.Definition.Database.DatabaseType type, System.Data.Common.DbProviderFactory! factory) -> void
+static Bee.Db.Manager.DbProviderRegistry.Register(Bee.Definition.Database.DatabaseType type, System.Data.Common.DbProviderFactory! factory, System.Action<System.Data.Common.DbConnection!>? connectionInitializer) -> void
+static Bee.Db.Providers.MySql.MySqlTableSchemaProvider.GetFieldDbType(string! dataType, int dataPrecision, int dataScale, int length) -> Bee.Base.Data.FieldDbType
+static Bee.Db.Providers.MySql.MySqlTableSchemaProvider.ParseDBDefaultValue(string! dataType, string! defaultValue, string! originalDefaultValue) -> string!
+static Bee.Db.Providers.Oracle.OracleTableSchemaProvider.GetFieldDbType(string! dataType, int dataPrecision, int dataScale, int length) -> Bee.Base.Data.FieldDbType
+static Bee.Db.Providers.Oracle.OracleTableSchemaProvider.ParseDBDefaultValue(string! dataType, string! defaultValue, string! originalDefaultValue) -> string!
+static Bee.Db.Providers.PostgreSql.PgTableSchemaProvider.GetFieldDbType(string! dataType, int dataPrecision, int dataScale, int length) -> Bee.Base.Data.FieldDbType
+static Bee.Db.Providers.PostgreSql.PgTableSchemaProvider.ParseDBDefaultValue(string! dataType, string! defaultValue, string! originalDefaultValue) -> string!
+static Bee.Db.Providers.SqlServer.SqlExtendedPropertyCommandBuilder.GetCommandText(string! tableName, System.Collections.Generic.IReadOnlyList<Bee.Db.Schema.DescriptionChange!>? changes) -> string!
+static Bee.Db.Providers.SqlServer.SqlTableSchemaProvider.GetFieldDbType(string! dataType, int dataPrecision, int dataScale, int length) -> Bee.Base.Data.FieldDbType
+static Bee.Db.Providers.SqlServer.SqlTableSchemaProvider.ParseDBDefaultValue(string! dataType, string! defaultValue, string! originalDefaultValue) -> string!
+static Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider.MapToFieldDbType(string! baseType, bool isPrimaryKey) -> Bee.Base.Data.FieldDbType
+static Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider.ParseDefaultValue(string! rawDefault, Bee.Base.Data.FieldDbType dbType, string! originalDefault) -> string!
+static Bee.Db.Schema.UpgradeOptions.Default.get -> Bee.Db.Schema.UpgradeOptions!
+~override Bee.Db.CacheNotify.CacheNotifyChange.Equals(object obj) -> bool
+~override Bee.Db.CacheNotify.CacheNotifyChange.ToString() -> string

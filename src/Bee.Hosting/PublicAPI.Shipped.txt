@@ -1,0 +1,8 @@
+#nullable enable
+Bee.Hosting.BeeFrameworkServiceCollectionExtensions
+Bee.Hosting.CacheNotify.CacheNotifyPollSession
+Bee.Hosting.CacheNotify.CacheNotifyPollSession.CacheNotifyPollSession(string! databaseId, Bee.Db.CacheNotify.ICacheNotifyReader! reader, int marginSeconds) -> void
+Bee.Hosting.CacheNotify.CacheNotifyPollSession.Poll() -> void
+Bee.Hosting.CacheNotify.CacheNotifyPoller
+Bee.Hosting.CacheNotify.CacheNotifyPoller.CacheNotifyPoller(Bee.Db.CacheNotify.ICacheNotifyReader! reader, Bee.Definition.Settings.CacheNotifyOptions! options, Microsoft.Extensions.Logging.ILogger<Bee.Hosting.CacheNotify.CacheNotifyPoller!>! logger) -> void
+static Bee.Hosting.BeeFrameworkServiceCollectionExtensions.AddBeeFramework(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Bee.Definition.Settings.BackendConfiguration! configuration, Bee.Definition.PathOptions! pathOptions, bool autoCreateMasterKey = false) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

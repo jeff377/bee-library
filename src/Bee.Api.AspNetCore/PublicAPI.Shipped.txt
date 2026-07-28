@@ -1,0 +1,11 @@
+#nullable enable
+Bee.Api.AspNetCore.BeeFrameworkApplicationBuilderExtensions
+Bee.Api.AspNetCore.Controllers.ApiServiceController
+Bee.Api.AspNetCore.Controllers.ApiServiceController.ApiServiceController() -> void
+Bee.Api.AspNetCore.Controllers.ApiServiceController.IsDevelopment.get -> bool
+Bee.Api.AspNetCore.Controllers.ApiServiceController.PostAsync(string? apiKey = null, string? authorization = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult!>!
+static Bee.Api.AspNetCore.BeeFrameworkApplicationBuilderExtensions.UseBeeFramework(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+virtual Bee.Api.AspNetCore.Controllers.ApiServiceController.CreateErrorResponse(int httpStatusCode, Bee.Api.Core.JsonRpc.JsonRpcErrorCode code, string! message, string? id = null, string? data = null) -> Microsoft.AspNetCore.Mvc.IActionResult!
+virtual Bee.Api.AspNetCore.Controllers.ApiServiceController.HandleRequestAsync(System.Guid accessToken, Bee.Api.Core.JsonRpc.JsonRpcRequest! request) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult!>!
+virtual Bee.Api.AspNetCore.Controllers.ApiServiceController.ReadRequestAsync() -> System.Threading.Tasks.Task<Bee.Api.Core.JsonRpc.JsonRpcRequest!>!
+virtual Bee.Api.AspNetCore.Controllers.ApiServiceController.ValidateAuthorization(Bee.Api.Core.JsonRpc.JsonRpcRequest! request, string? apiKey, string? authorization) -> Bee.Api.Core.Authorization.ApiAuthorizationResult!

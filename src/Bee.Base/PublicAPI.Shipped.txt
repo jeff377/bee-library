@@ -1,0 +1,423 @@
+#nullable enable
+Bee.Base.AssemblyLoader
+Bee.Base.Attributes.TreeNodeAttribute
+Bee.Base.Attributes.TreeNodeAttribute.CollectionFolder.get -> bool
+Bee.Base.Attributes.TreeNodeAttribute.DisplayFormat.get -> string!
+Bee.Base.Attributes.TreeNodeAttribute.PropertyName.get -> string!
+Bee.Base.Attributes.TreeNodeAttribute.TreeNodeAttribute() -> void
+Bee.Base.Attributes.TreeNodeAttribute.TreeNodeAttribute(string! displayFormat) -> void
+Bee.Base.Attributes.TreeNodeAttribute.TreeNodeAttribute(string! displayFormat, bool collectionFolder) -> void
+Bee.Base.Attributes.TreeNodeAttribute.TreeNodeAttribute(string! displayFormat, string! propertyName) -> void
+Bee.Base.Attributes.TreeNodeIgnoreAttribute
+Bee.Base.Attributes.TreeNodeIgnoreAttribute.TreeNodeIgnoreAttribute() -> void
+Bee.Base.Collections.CollectionBase<T>
+Bee.Base.Collections.CollectionBase<T>.CollectionBase() -> void
+Bee.Base.Collections.CollectionBase<T>.CollectionBase(object! owner) -> void
+Bee.Base.Collections.CollectionBase<T>.Insert(int index, Bee.Base.Collections.ICollectionItem! value) -> void
+Bee.Base.Collections.CollectionBase<T>.Owner.get -> object?
+Bee.Base.Collections.CollectionBase<T>.Remove(Bee.Base.Collections.ICollectionItem! value) -> void
+Bee.Base.Collections.CollectionBase<T>.SerializeState.get -> Bee.Base.Serialization.SerializeState
+Bee.Base.Collections.CollectionBase<T>.SetOwner(object! owner) -> void
+Bee.Base.Collections.CollectionBase<T>.Tag.get -> object?
+Bee.Base.Collections.CollectionBase<T>.Tag.set -> void
+Bee.Base.Collections.CollectionExtensions
+Bee.Base.Collections.CollectionItem
+Bee.Base.Collections.CollectionItem.Collection.get -> Bee.Base.Collections.ICollectionBase?
+Bee.Base.Collections.CollectionItem.CollectionItem() -> void
+Bee.Base.Collections.CollectionItem.Remove() -> void
+Bee.Base.Collections.CollectionItem.SerializeState.get -> Bee.Base.Serialization.SerializeState
+Bee.Base.Collections.CollectionItem.SetCollection(Bee.Base.Collections.ICollectionBase? collection) -> void
+Bee.Base.Collections.CollectionItem.Tag.get -> object?
+Bee.Base.Collections.CollectionItem.Tag.set -> void
+Bee.Base.Collections.Dictionary<T>
+Bee.Base.Collections.Dictionary<T>.Dictionary() -> void
+Bee.Base.Collections.ICollectionBase
+Bee.Base.Collections.ICollectionBase.Add(Bee.Base.Collections.ICollectionItem! value) -> void
+Bee.Base.Collections.ICollectionBase.Insert(int index, Bee.Base.Collections.ICollectionItem! value) -> void
+Bee.Base.Collections.ICollectionBase.Owner.get -> object?
+Bee.Base.Collections.ICollectionBase.Remove(Bee.Base.Collections.ICollectionItem! value) -> void
+Bee.Base.Collections.ICollectionItem
+Bee.Base.Collections.ICollectionItem.Remove() -> void
+Bee.Base.Collections.ICollectionItem.SetCollection(Bee.Base.Collections.ICollectionBase? collection) -> void
+Bee.Base.Collections.IKeyCollectionBase
+Bee.Base.Collections.IKeyCollectionBase.Add(Bee.Base.Collections.IKeyCollectionItem! value) -> void
+Bee.Base.Collections.IKeyCollectionBase.ChangeItemKey(string! key, Bee.Base.Collections.IKeyCollectionItem! value) -> void
+Bee.Base.Collections.IKeyCollectionBase.Insert(int index, Bee.Base.Collections.IKeyCollectionItem! value) -> void
+Bee.Base.Collections.IKeyCollectionBase.Owner.get -> object?
+Bee.Base.Collections.IKeyCollectionBase.Remove(Bee.Base.Collections.IKeyCollectionItem! value) -> void
+Bee.Base.Collections.IKeyCollectionItem
+Bee.Base.Collections.IKeyCollectionItem.Key.get -> string!
+Bee.Base.Collections.IKeyCollectionItem.Key.set -> void
+Bee.Base.Collections.IKeyCollectionItem.Remove() -> void
+Bee.Base.Collections.IKeyCollectionItem.SetCollection(Bee.Base.Collections.IKeyCollectionBase? collection) -> void
+Bee.Base.Collections.KeyCollectionBase<T>
+Bee.Base.Collections.KeyCollectionBase<T>.ChangeItemKey(string! key, Bee.Base.Collections.IKeyCollectionItem! value) -> void
+Bee.Base.Collections.KeyCollectionBase<T>.GetOrDefault(string! key) -> T?
+Bee.Base.Collections.KeyCollectionBase<T>.Insert(int index, Bee.Base.Collections.IKeyCollectionItem! value) -> void
+Bee.Base.Collections.KeyCollectionBase<T>.KeyCollectionBase() -> void
+Bee.Base.Collections.KeyCollectionBase<T>.KeyCollectionBase(object! owner) -> void
+Bee.Base.Collections.KeyCollectionBase<T>.Owner.get -> object?
+Bee.Base.Collections.KeyCollectionBase<T>.Remove(Bee.Base.Collections.IKeyCollectionItem! value) -> void
+Bee.Base.Collections.KeyCollectionBase<T>.SerializeState.get -> Bee.Base.Serialization.SerializeState
+Bee.Base.Collections.KeyCollectionBase<T>.Tag.get -> object?
+Bee.Base.Collections.KeyCollectionBase<T>.Tag.set -> void
+Bee.Base.Collections.KeyCollectionItem
+Bee.Base.Collections.KeyCollectionItem.Collection.get -> Bee.Base.Collections.IKeyCollectionBase?
+Bee.Base.Collections.KeyCollectionItem.KeyCollectionItem() -> void
+Bee.Base.Collections.KeyCollectionItem.Remove() -> void
+Bee.Base.Collections.KeyCollectionItem.SerializeState.get -> Bee.Base.Serialization.SerializeState
+Bee.Base.Collections.KeyCollectionItem.SetCollection(Bee.Base.Collections.IKeyCollectionBase? collection) -> void
+Bee.Base.Collections.KeyCollectionItem.Tag.get -> object?
+Bee.Base.Collections.KeyCollectionItem.Tag.set -> void
+Bee.Base.Collections.StringHashSet
+Bee.Base.Collections.StringHashSet.Add(string! s, string! delimiter) -> void
+Bee.Base.Collections.StringHashSet.StringHashSet() -> void
+Bee.Base.ConnectionTestResult
+Bee.Base.ConnectionTestResult.ConnectionTestResult() -> void
+Bee.Base.ConnectionTestResult.ConnectionTestResult(bool isSuccess, string! message) -> void
+Bee.Base.ConnectionTestResult.IsSuccess.get -> bool
+Bee.Base.ConnectionTestResult.IsSuccess.set -> void
+Bee.Base.ConnectionTestResult.Message.get -> string!
+Bee.Base.ConnectionTestResult.Message.set -> void
+Bee.Base.Data.DataColumnExtensions
+Bee.Base.Data.DataRowExtensions
+Bee.Base.Data.DataRowViewExtensions
+Bee.Base.Data.DataSetExtensions
+Bee.Base.Data.DataTableComparer
+Bee.Base.Data.DataTableExtensions
+Bee.Base.Data.DataViewExtensions
+Bee.Base.Data.DbTypeConverter
+Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.AutoIncrement = 3 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Binary = 12 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Boolean = 2 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Currency = 8 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Date = 9 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.DateTime = 10 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Decimal = 7 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Guid = 11 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Integer = 5 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Long = 6 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Short = 4 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.String = 0 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Text = 1 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Time = 14 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbType.Unknown = 13 -> Bee.Base.Data.FieldDbType
+Bee.Base.Data.FieldDbTypeExtensions
+Bee.Base.DateInterval
+Bee.Base.DateInterval.Day = 4 -> Bee.Base.DateInterval
+Bee.Base.DateInterval.DayOfYear = 3 -> Bee.Base.DateInterval
+Bee.Base.DateInterval.Hour = 7 -> Bee.Base.DateInterval
+Bee.Base.DateInterval.Minute = 8 -> Bee.Base.DateInterval
+Bee.Base.DateInterval.Month = 2 -> Bee.Base.DateInterval
+Bee.Base.DateInterval.Quarter = 1 -> Bee.Base.DateInterval
+Bee.Base.DateInterval.Second = 9 -> Bee.Base.DateInterval
+Bee.Base.DateInterval.WeekOfYear = 5 -> Bee.Base.DateInterval
+Bee.Base.DateInterval.Weekday = 6 -> Bee.Base.DateInterval
+Bee.Base.DateInterval.Year = 0 -> Bee.Base.DateInterval
+Bee.Base.DateTimeExtensions
+Bee.Base.Exceptions.ExceptionExtensions
+Bee.Base.Exceptions.ForbiddenException
+Bee.Base.Exceptions.ForbiddenException.ForbiddenException(string! message) -> void
+Bee.Base.Exceptions.ForbiddenException.ForbiddenException(string! message, System.Exception! innerException) -> void
+Bee.Base.Exceptions.UserMessageException
+Bee.Base.Exceptions.UserMessageException.UserMessageException(string! message) -> void
+Bee.Base.Exceptions.UserMessageException.UserMessageException(string! message, System.Exception! innerException) -> void
+Bee.Base.FileUtilities
+Bee.Base.FrameworkClock
+Bee.Base.HttpUtilities
+Bee.Base.IDisplayName
+Bee.Base.IDisplayName.DisplayName.get -> string!
+Bee.Base.IDisplayName.DisplayName.set -> void
+Bee.Base.IKeyObject
+Bee.Base.IKeyObject.GetKey() -> string!
+Bee.Base.IPValidator
+Bee.Base.IPValidator.Blacklist.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Base.IPValidator.IPValidator(System.Collections.Generic.List<string!>! whitelist, System.Collections.Generic.List<string!>! blacklist) -> void
+Bee.Base.IPValidator.IsIpAllowed(string! ipAddress) -> bool
+Bee.Base.IPValidator.Whitelist.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Base.ISysInfoConfiguration
+Bee.Base.ISysInfoConfiguration.AllowedTypeNamespaces.get -> string!
+Bee.Base.ISysInfoConfiguration.AllowedTypeNamespaces.set -> void
+Bee.Base.ISysInfoConfiguration.IsDebugMode.get -> bool
+Bee.Base.ISysInfoConfiguration.IsDebugMode.set -> void
+Bee.Base.ISysInfoConfiguration.Version.get -> string!
+Bee.Base.ISysInfoConfiguration.Version.set -> void
+Bee.Base.ITagProperty
+Bee.Base.ITagProperty.Tag.get -> object?
+Bee.Base.ITagProperty.Tag.set -> void
+Bee.Base.MemberPath
+Bee.Base.Security.AesCbcHmacCryptor
+Bee.Base.Security.AesCbcHmacKeyGenerator
+Bee.Base.Security.FileHashValidator
+Bee.Base.Security.PasswordHasher
+Bee.Base.Security.RsaCryptor
+Bee.Base.Serialization.DataSetJsonConverter
+Bee.Base.Serialization.DataSetJsonConverter.DataSetJsonConverter() -> void
+Bee.Base.Serialization.DataTableJsonConverter
+Bee.Base.Serialization.DataTableJsonConverter.DataTableJsonConverter() -> void
+Bee.Base.Serialization.Gzip
+Bee.Base.Serialization.IObjectSerialize
+Bee.Base.Serialization.IObjectSerialize.SerializeState.get -> Bee.Base.Serialization.SerializeState
+Bee.Base.Serialization.IObjectSerialize.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+Bee.Base.Serialization.IObjectSerializeBase
+Bee.Base.Serialization.IObjectSerializeEmpty
+Bee.Base.Serialization.IObjectSerializeEmpty.IsSerializeEmpty.get -> bool
+Bee.Base.Serialization.IObjectSerializeFile
+Bee.Base.Serialization.IObjectSerializeFile.ObjectFilePath.get -> string!
+Bee.Base.Serialization.IObjectSerializeFile.SetObjectFilePath(string! filePath) -> void
+Bee.Base.Serialization.IObjectSerializeProcess
+Bee.Base.Serialization.IObjectSerializeProcess.AfterDeserialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
+Bee.Base.Serialization.IObjectSerializeProcess.AfterSerialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
+Bee.Base.Serialization.IObjectSerializeProcess.BeforeSerialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
+Bee.Base.Serialization.ISerializableClone
+Bee.Base.Serialization.ISerializableClone.CreateSerializableCopy() -> object!
+Bee.Base.Serialization.JsonCodec
+Bee.Base.Serialization.SerializationExtensions
+Bee.Base.Serialization.SerializationUtilities
+Bee.Base.Serialization.SerializeFormat
+Bee.Base.Serialization.SerializeFormat.Json = 1 -> Bee.Base.Serialization.SerializeFormat
+Bee.Base.Serialization.SerializeFormat.Xml = 0 -> Bee.Base.Serialization.SerializeFormat
+Bee.Base.Serialization.SerializeState
+Bee.Base.Serialization.SerializeState.None = 0 -> Bee.Base.Serialization.SerializeState
+Bee.Base.Serialization.SerializeState.Serialize = 1 -> Bee.Base.Serialization.SerializeState
+Bee.Base.Serialization.Utf8StringWriter
+Bee.Base.Serialization.Utf8StringWriter.Utf8StringWriter() -> void
+Bee.Base.Serialization.XmlCodec
+Bee.Base.Serialization.XmlSerializerCache
+Bee.Base.StringExtensions
+Bee.Base.StringUtilities
+Bee.Base.SysInfo
+Bee.Base.Tracing.ITraceListener
+Bee.Base.Tracing.ITraceListener.TraceEnd(Bee.Base.Tracing.TraceContext! ctx, Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string? detail = null) -> void
+Bee.Base.Tracing.ITraceListener.TraceStart(Bee.Base.Tracing.TraceLayers layer, string! detail = "", string! category = "", object? tag = null, string! name = "") -> Bee.Base.Tracing.TraceContext!
+Bee.Base.Tracing.ITraceListener.TraceWrite(Bee.Base.Tracing.TraceLayers layer, string! detail = "", Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string! category = "", object? tag = null, string! name = "") -> void
+Bee.Base.Tracing.ITraceWriter
+Bee.Base.Tracing.ITraceWriter.Write(Bee.Base.Tracing.TraceEvent! evt) -> void
+Bee.Base.Tracing.TraceCategories
+Bee.Base.Tracing.TraceContext
+Bee.Base.Tracing.TraceContext.Category.get -> string!
+Bee.Base.Tracing.TraceContext.Detail.get -> string!
+Bee.Base.Tracing.TraceContext.Layer.get -> Bee.Base.Tracing.TraceLayers
+Bee.Base.Tracing.TraceContext.Name.get -> string!
+Bee.Base.Tracing.TraceContext.Start.get -> System.DateTimeOffset
+Bee.Base.Tracing.TraceContext.Stopwatch.get -> System.Diagnostics.Stopwatch!
+Bee.Base.Tracing.TraceContext.Tag.get -> object?
+Bee.Base.Tracing.TraceEvent
+Bee.Base.Tracing.TraceEvent.Category.get -> string!
+Bee.Base.Tracing.TraceEvent.Category.set -> void
+Bee.Base.Tracing.TraceEvent.Detail.get -> string!
+Bee.Base.Tracing.TraceEvent.Detail.set -> void
+Bee.Base.Tracing.TraceEvent.DurationMs.get -> double
+Bee.Base.Tracing.TraceEvent.DurationMs.set -> void
+Bee.Base.Tracing.TraceEvent.Kind.get -> Bee.Base.Tracing.TraceEventKind
+Bee.Base.Tracing.TraceEvent.Kind.set -> void
+Bee.Base.Tracing.TraceEvent.Layer.get -> Bee.Base.Tracing.TraceLayers
+Bee.Base.Tracing.TraceEvent.Layer.set -> void
+Bee.Base.Tracing.TraceEvent.Name.get -> string!
+Bee.Base.Tracing.TraceEvent.Name.set -> void
+Bee.Base.Tracing.TraceEvent.Status.get -> Bee.Base.Tracing.TraceStatus
+Bee.Base.Tracing.TraceEvent.Status.set -> void
+Bee.Base.Tracing.TraceEvent.Tag.get -> object?
+Bee.Base.Tracing.TraceEvent.Tag.set -> void
+Bee.Base.Tracing.TraceEvent.Time.get -> System.DateTimeOffset
+Bee.Base.Tracing.TraceEvent.Time.set -> void
+Bee.Base.Tracing.TraceEvent.TraceEvent() -> void
+Bee.Base.Tracing.TraceEventKind
+Bee.Base.Tracing.TraceEventKind.End = 1 -> Bee.Base.Tracing.TraceEventKind
+Bee.Base.Tracing.TraceEventKind.Point = 2 -> Bee.Base.Tracing.TraceEventKind
+Bee.Base.Tracing.TraceEventKind.Start = 0 -> Bee.Base.Tracing.TraceEventKind
+Bee.Base.Tracing.TraceLayers
+Bee.Base.Tracing.TraceLayers.All = Bee.Base.Tracing.TraceLayers.UI | Bee.Base.Tracing.TraceLayers.ApiClient | Bee.Base.Tracing.TraceLayers.ApiServer | Bee.Base.Tracing.TraceLayers.Business | Bee.Base.Tracing.TraceLayers.Data -> Bee.Base.Tracing.TraceLayers
+Bee.Base.Tracing.TraceLayers.ApiClient = 2 -> Bee.Base.Tracing.TraceLayers
+Bee.Base.Tracing.TraceLayers.ApiServer = 4 -> Bee.Base.Tracing.TraceLayers
+Bee.Base.Tracing.TraceLayers.Business = 8 -> Bee.Base.Tracing.TraceLayers
+Bee.Base.Tracing.TraceLayers.Data = 16 -> Bee.Base.Tracing.TraceLayers
+Bee.Base.Tracing.TraceLayers.None = 0 -> Bee.Base.Tracing.TraceLayers
+Bee.Base.Tracing.TraceLayers.UI = 1 -> Bee.Base.Tracing.TraceLayers
+Bee.Base.Tracing.TraceListener
+Bee.Base.Tracing.TraceListener.TraceEnd(Bee.Base.Tracing.TraceContext! ctx, Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string? detail = null) -> void
+Bee.Base.Tracing.TraceListener.TraceListener(Bee.Base.Tracing.ITraceWriter! writer) -> void
+Bee.Base.Tracing.TraceListener.TraceStart(Bee.Base.Tracing.TraceLayers layer, string! detail = "", string! category = "", object? tag = null, string! name = "") -> Bee.Base.Tracing.TraceContext!
+Bee.Base.Tracing.TraceListener.TraceWrite(Bee.Base.Tracing.TraceLayers layer, string! detail = "", Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string! category = "", object? tag = null, string! name = "") -> void
+Bee.Base.Tracing.TraceStatus
+Bee.Base.Tracing.TraceStatus.Cancelled = 2 -> Bee.Base.Tracing.TraceStatus
+Bee.Base.Tracing.TraceStatus.Error = 1 -> Bee.Base.Tracing.TraceStatus
+Bee.Base.Tracing.TraceStatus.Ok = 0 -> Bee.Base.Tracing.TraceStatus
+Bee.Base.Tracing.Tracer
+Bee.Base.ValueUtilities
+const Bee.Base.Tracing.TraceCategories.General = "General" -> string!
+const Bee.Base.Tracing.TraceCategories.JsonRpc = "JsonRpc" -> string!
+const Bee.Base.ValueUtilities.TimeOnlyFormat = "HH:mm" -> string!
+override Bee.Base.Collections.CollectionBase<T>.InsertItem(int index, T! item) -> void
+override Bee.Base.Collections.CollectionBase<T>.RemoveItem(int index) -> void
+override Bee.Base.Collections.KeyCollectionBase<T>.GetKeyForItem(T! item) -> string!
+override Bee.Base.Collections.KeyCollectionBase<T>.InsertItem(int index, T! item) -> void
+override Bee.Base.Collections.KeyCollectionBase<T>.RemoveItem(int index) -> void
+override Bee.Base.Serialization.DataSetJsonConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Data.DataSet?
+override Bee.Base.Serialization.DataSetJsonConverter.Write(System.Text.Json.Utf8JsonWriter! writer, System.Data.DataSet! value, System.Text.Json.JsonSerializerOptions! options) -> void
+override Bee.Base.Serialization.DataTableJsonConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Data.DataTable?
+override Bee.Base.Serialization.DataTableJsonConverter.Write(System.Text.Json.Utf8JsonWriter! writer, System.Data.DataTable! value, System.Text.Json.JsonSerializerOptions! options) -> void
+override Bee.Base.Serialization.Utf8StringWriter.Encoding.get -> System.Text.Encoding!
+static Bee.Base.AssemblyLoader.CreateInstance(string! assemblyName, string! typeName, params object![]! args) -> object?
+static Bee.Base.AssemblyLoader.CreateInstance(string! fullTypeName, params object![]! args) -> object?
+static Bee.Base.AssemblyLoader.FindAssembly(string! assemblyName) -> System.Reflection.Assembly?
+static Bee.Base.AssemblyLoader.GetType(string! assemblyName, string! typeName) -> System.Type?
+static Bee.Base.AssemblyLoader.GetType(string! fullTypeName) -> System.Type?
+static Bee.Base.AssemblyLoader.IsAssemblyLoaded(string! assemblyName) -> bool
+static Bee.Base.AssemblyLoader.LoadAssembly(string! assemblyName) -> System.Reflection.Assembly!
+static Bee.Base.Attributes.TreeNodeAttribute.GetDisplayText(object! value) -> string!
+static Bee.Base.Collections.CollectionExtensions.GetValue<T>(this System.Data.PropertyCollection! collection, string! key, object? defaultValue) -> T?
+static Bee.Base.Data.DataColumnExtensions.ApplyFieldDbType(this System.Data.DataColumn! column, Bee.Base.Data.FieldDbType dbType) -> void
+static Bee.Base.Data.DataColumnExtensions.GetDeclaredFieldDbType(this System.Data.DataColumn! column) -> Bee.Base.Data.FieldDbType?
+static Bee.Base.Data.DataColumnExtensions.ResolveFieldDbType(this System.Data.DataColumn! column) -> Bee.Base.Data.FieldDbType
+static Bee.Base.Data.DataRowExtensions.GetFieldValue<T>(this System.Data.DataRow! row, string! columnName) -> T
+static Bee.Base.Data.DataRowExtensions.GetFieldValue<T>(this System.Data.DataRow! row, string! columnName, T defaultValue) -> T
+static Bee.Base.Data.DataRowViewExtensions.GetFieldValue<T>(this System.Data.DataRowView! rowView, string! columnName) -> T
+static Bee.Base.Data.DataRowViewExtensions.GetFieldValue<T>(this System.Data.DataRowView! rowView, string! columnName, T defaultValue) -> T
+static Bee.Base.Data.DataSetExtensions.GetMasterRow(this System.Data.DataSet! dataSet) -> System.Data.DataRow?
+static Bee.Base.Data.DataSetExtensions.GetMasterTable(this System.Data.DataSet! dataSet) -> System.Data.DataTable?
+static Bee.Base.Data.DataSetExtensions.IsEmpty(this System.Data.DataSet! dataSet) -> bool
+static Bee.Base.Data.DataTableComparer.IsEqual(System.Data.DataTable! dt1, System.Data.DataTable! dt2) -> bool
+static Bee.Base.Data.DataTableExtensions.AddColumn(this System.Data.DataTable! table, string! fieldName, Bee.Base.Data.FieldDbType dbType) -> System.Data.DataColumn!
+static Bee.Base.Data.DataTableExtensions.AddColumn(this System.Data.DataTable! table, string! fieldName, Bee.Base.Data.FieldDbType dbType, object! defaultValue) -> System.Data.DataColumn!
+static Bee.Base.Data.DataTableExtensions.AddColumn(this System.Data.DataTable! table, string! fieldName, string! caption, Bee.Base.Data.FieldDbType dbType, object! defaultValue) -> System.Data.DataColumn!
+static Bee.Base.Data.DataTableExtensions.ApplyFieldDbType(this System.Data.DataTable! table, Bee.Base.Data.FieldDbType dbType, params string![]! columnNames) -> void
+static Bee.Base.Data.DataTableExtensions.HasField(this System.Data.DataTable! dataTable, string! fieldName) -> bool
+static Bee.Base.Data.DataTableExtensions.IsEmpty(this System.Data.DataTable! dataTable) -> bool
+static Bee.Base.Data.DataTableExtensions.LowercaseColumnNames(this System.Data.DataTable! dataTable) -> void
+static Bee.Base.Data.DataTableExtensions.NormalizeDateTimeMode(this System.Data.DataSet! dataSet) -> void
+static Bee.Base.Data.DataTableExtensions.NormalizeDateTimeMode(this System.Data.DataTable! table) -> void
+static Bee.Base.Data.DataTableExtensions.SetDateColumns(this System.Data.DataTable! table, params string![]! columnNames) -> void
+static Bee.Base.Data.DataTableExtensions.SetPrimaryKey(this System.Data.DataTable! table, string! fieldNames) -> void
+static Bee.Base.Data.DataViewExtensions.DeleteRows(this System.Data.DataView! dataView, bool acceptChanges) -> void
+static Bee.Base.Data.DataViewExtensions.HasField(this System.Data.DataView! dataView, string! fieldName) -> bool
+static Bee.Base.Data.DataViewExtensions.IsEmpty(this System.Data.DataView! dataView) -> bool
+static Bee.Base.Data.DbTypeConverter.ToDbType(Bee.Base.Data.FieldDbType fieldDbType) -> System.Data.DbType
+static Bee.Base.Data.DbTypeConverter.ToFieldDbType(System.Type! type) -> Bee.Base.Data.FieldDbType
+static Bee.Base.Data.DbTypeConverter.ToType(Bee.Base.Data.FieldDbType fieldDbType) -> System.Type!
+static Bee.Base.Data.DbTypeConverter.ToTypeCode(System.Type! type) -> System.TypeCode
+static Bee.Base.Data.FieldDbTypeExtensions.GetDefaultValue(this Bee.Base.Data.FieldDbType dbType) -> object!
+static Bee.Base.Data.FieldDbTypeExtensions.ToDbFieldValue(this Bee.Base.Data.FieldDbType dbType, object! value) -> object!
+static Bee.Base.Data.FieldDbTypeExtensions.ToFieldValue(this Bee.Base.Data.FieldDbType dbType, object! value) -> object!
+static Bee.Base.DateTimeExtensions.GetYearMonth(this System.DateTime dateValue) -> System.DateTime
+static Bee.Base.Exceptions.ExceptionExtensions.Unwrap(this System.Exception! ex) -> System.Exception!
+static Bee.Base.FileUtilities.FileReadText(string! filePath) -> string!
+static Bee.Base.FileUtilities.FileWriteText(string! filePath, string! contents) -> void
+static Bee.Base.FileUtilities.FileWriteText(string! filePath, string! contents, System.Text.Encoding! encoding) -> void
+static Bee.Base.FileUtilities.GetAssemblyPath() -> string!
+static Bee.Base.FileUtilities.IsLocalPath(string! input) -> bool
+static Bee.Base.FrameworkClock.Now(string! timeZoneId) -> System.DateTime
+static Bee.Base.FrameworkClock.Today(string! timeZoneId) -> System.DateOnly
+static Bee.Base.HttpUtilities.GetAsync(string! endpoint, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
+static Bee.Base.HttpUtilities.IsEndpointReachableAsync(string! endpoint, System.TimeSpan? timeout = null) -> System.Threading.Tasks.Task<bool>!
+static Bee.Base.HttpUtilities.IsUrl(string! input) -> bool
+static Bee.Base.HttpUtilities.PostAsync(string! endpoint, string! body, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
+static Bee.Base.MemberPath.Of<T>(System.Linq.Expressions.Expression<System.Func<T>!>! expression) -> string!
+static Bee.Base.Security.AesCbcHmacCryptor.Decrypt(byte[]! encryptedData, byte[]! aesKey, byte[]! hmacKey) -> byte[]!
+static Bee.Base.Security.AesCbcHmacCryptor.Encrypt(byte[]! plainBytes, byte[]! aesKey, byte[]! hmacKey) -> byte[]!
+static Bee.Base.Security.AesCbcHmacKeyGenerator.FromBase64CombinedKey(string! base64, out byte[]! aesKey, out byte[]! hmacKey) -> void
+static Bee.Base.Security.AesCbcHmacKeyGenerator.FromCombinedKey(byte[]! combinedKey, out byte[]! aesKey, out byte[]! hmacKey) -> void
+static Bee.Base.Security.AesCbcHmacKeyGenerator.GenerateBase64CombinedKey() -> string!
+static Bee.Base.Security.AesCbcHmacKeyGenerator.GenerateCombinedKey() -> byte[]!
+static Bee.Base.Security.FileHashValidator.ComputeSha256(string! filePath) -> string!
+static Bee.Base.Security.FileHashValidator.VerifySha256(string! filePath, string! expectedSha256Hex) -> bool
+static Bee.Base.Security.PasswordHasher.HashPassword(string! password) -> string!
+static Bee.Base.Security.PasswordHasher.VerifyPassword(string! password, string! hashedPassword) -> bool
+static Bee.Base.Security.RsaCryptor.DecryptWithPrivateKey(string! base64CipherText, string! privateKey) -> string!
+static Bee.Base.Security.RsaCryptor.EncryptWithPublicKey(string! plainText, string! publicKey) -> string!
+static Bee.Base.Security.RsaCryptor.GenerateRsaKeyPair(out string! publicKey, out string! privateKey) -> void
+static Bee.Base.Serialization.Gzip.Compress(byte[]! bytes) -> byte[]!
+static Bee.Base.Serialization.Gzip.Decompress(byte[]! bytes) -> byte[]!
+static Bee.Base.Serialization.JsonCodec.Deserialize<T>(string! json, bool includeTypeName = true) -> T?
+static Bee.Base.Serialization.JsonCodec.DeserializeFromFile<T>(string! filePath) -> T?
+static Bee.Base.Serialization.JsonCodec.Serialize(object! value, bool ignoreDefaultValue = true, bool ignoreNullValue = true, bool includeTypeName = true) -> string!
+static Bee.Base.Serialization.JsonCodec.SerializeToFile(object! value, string! filePath) -> void
+static Bee.Base.Serialization.SerializationExtensions.Save(this Bee.Base.Serialization.IObjectSerializeFile! value) -> void
+static Bee.Base.Serialization.SerializationExtensions.ToJson(this Bee.Base.Serialization.IObjectSerializeBase! value) -> string!
+static Bee.Base.Serialization.SerializationExtensions.ToJsonFile(this Bee.Base.Serialization.IObjectSerializeFile! value, string! filePath) -> void
+static Bee.Base.Serialization.SerializationExtensions.ToXml(this Bee.Base.Serialization.IObjectSerializeBase! value) -> string!
+static Bee.Base.Serialization.SerializationExtensions.ToXmlFile(this Bee.Base.Serialization.IObjectSerializeFile! value, string! filePath) -> void
+static Bee.Base.Serialization.SerializationUtilities.IsSerializeEmpty(Bee.Base.Serialization.SerializeState serializeState, object! value) -> bool
+static Bee.Base.Serialization.XmlCodec.Deserialize(string! xml, System.Type! type) -> object?
+static Bee.Base.Serialization.XmlCodec.Deserialize<T>(string! xml) -> T?
+static Bee.Base.Serialization.XmlCodec.DeserializeFromFile<T>(string! filePath) -> T?
+static Bee.Base.Serialization.XmlCodec.Serialize(object! value) -> string!
+static Bee.Base.Serialization.XmlCodec.SerializeToFile(object! value, string! filePath) -> void
+static Bee.Base.Serialization.XmlSerializerCache.Get(System.Type! type) -> System.Xml.Serialization.XmlSerializer!
+static Bee.Base.StringExtensions.LeftCut(this string? s, string! prefix) -> string!
+static Bee.Base.StringExtensions.LeftRightCut(this string? s, string! prefix, string! suffix) -> string!
+static Bee.Base.StringExtensions.RightCut(this string? s, string! suffix) -> string!
+static Bee.Base.StringExtensions.SplitLeft(this string? s, string! delimiter, out string! left, out string! right) -> void
+static Bee.Base.StringExtensions.SplitRight(this string? s, string! delimiter, out string! left, out string! right) -> void
+static Bee.Base.StringUtilities.Contains(string? s, string! value, bool ignoreCase = true) -> bool
+static Bee.Base.StringUtilities.EndsWith(string? s, string! suffix, bool ignoreCase = true) -> bool
+static Bee.Base.StringUtilities.Format(string! format, params object![]! args) -> string!
+static Bee.Base.StringUtilities.GetNextId(string! value, int numberBase) -> string!
+static Bee.Base.StringUtilities.GetNextId(string! value, string! baseValues) -> string!
+static Bee.Base.StringUtilities.IndexOf(string? s, string! value, bool ignoreCase = true) -> int
+static Bee.Base.StringUtilities.IsEmpty(object? value) -> bool
+static Bee.Base.StringUtilities.IsEmpty(string? s, bool isTrim = true) -> bool
+static Bee.Base.StringUtilities.IsEquals(string? s1, string? s2, bool ignoreCase = true) -> bool
+static Bee.Base.StringUtilities.IsEqualsOr(string? s, params string![]! values) -> bool
+static Bee.Base.StringUtilities.IsNotEmpty(object? value) -> bool
+static Bee.Base.StringUtilities.IsNotEmpty(string? s, bool isTrim = true) -> bool
+static Bee.Base.StringUtilities.LastIndexOf(string? s, string! value, bool ignoreCase = true) -> int
+static Bee.Base.StringUtilities.Replace(string? s, string! search, string! replacement, bool ignoreCase = true) -> string!
+static Bee.Base.StringUtilities.Split(string? s, string! delimiter) -> string![]!
+static Bee.Base.StringUtilities.StartsWith(string? s, string! prefix, bool ignoreCase = true) -> bool
+static Bee.Base.StringUtilities.Trim(string? s) -> string!
+static Bee.Base.SysInfo.AllowedTypeNamespaces.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Bee.Base.SysInfo.Initialize(Bee.Base.ISysInfoConfiguration! configuration) -> void
+static Bee.Base.SysInfo.IsDebugMode.get -> bool
+static Bee.Base.SysInfo.IsDebugMode.set -> void
+static Bee.Base.SysInfo.IsSingleFile.get -> bool
+static Bee.Base.SysInfo.IsSingleFile.set -> void
+static Bee.Base.SysInfo.IsToolMode.get -> bool
+static Bee.Base.SysInfo.IsToolMode.set -> void
+static Bee.Base.SysInfo.IsTypeNameAllowed(string! typeName) -> bool
+static Bee.Base.SysInfo.TraceEnabled.get -> bool
+static Bee.Base.SysInfo.TraceListener.get -> Bee.Base.Tracing.ITraceListener?
+static Bee.Base.SysInfo.TraceListener.set -> void
+static Bee.Base.SysInfo.Version.get -> string!
+static Bee.Base.SysInfo.Version.set -> void
+static Bee.Base.Tracing.Tracer.Enabled.get -> bool
+static Bee.Base.Tracing.Tracer.End(Bee.Base.Tracing.TraceContext? ctx, Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string? detail = null) -> void
+static Bee.Base.Tracing.Tracer.Start(Bee.Base.Tracing.TraceLayers layer, string! detail = "", string! category = "", object? tag = null, string! name = "") -> Bee.Base.Tracing.TraceContext?
+static Bee.Base.Tracing.Tracer.Write(Bee.Base.Tracing.TraceLayers layer, string! detail = "", Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string! category = "", object? tag = null, string! name = "") -> void
+static Bee.Base.ValueUtilities.CBool(object! value, bool defaultValue = false) -> bool
+static Bee.Base.ValueUtilities.CBool(string! value, bool defaultValue = false) -> bool
+static Bee.Base.ValueUtilities.CDateOnly(object? value) -> System.DateOnly?
+static Bee.Base.ValueUtilities.CDateOnly(object? value, System.DateOnly defaultValue) -> System.DateOnly
+static Bee.Base.ValueUtilities.CDateTime(object? value) -> System.DateTime?
+static Bee.Base.ValueUtilities.CDateTime(object? value, System.DateTime defaultValue) -> System.DateTime
+static Bee.Base.ValueUtilities.CDecimal(object! value, decimal defaultValue = 0) -> decimal
+static Bee.Base.ValueUtilities.CDouble(object! value, double defaultValue = 0) -> double
+static Bee.Base.ValueUtilities.CEnum(string! value, System.Type! type) -> object!
+static Bee.Base.ValueUtilities.CEnum<T>(string! value) -> T
+static Bee.Base.ValueUtilities.CGuid(object! value) -> System.Guid
+static Bee.Base.ValueUtilities.CGuid(string! value) -> System.Guid
+static Bee.Base.ValueUtilities.CInt(object! value, int defaultValue = 0) -> int
+static Bee.Base.ValueUtilities.CStr(object! value) -> string!
+static Bee.Base.ValueUtilities.CStr(object! value, string! defaultValue) -> string!
+static Bee.Base.ValueUtilities.CTimeOnly(object? value) -> System.TimeOnly?
+static Bee.Base.ValueUtilities.CTimeOnly(object? value, System.TimeOnly defaultValue) -> System.TimeOnly
+static Bee.Base.ValueUtilities.CTimeString(object? value) -> string!
+static Bee.Base.ValueUtilities.ConvertToNumber(object! value) -> object!
+static Bee.Base.ValueUtilities.IsEmpty(System.Collections.IEnumerable! enumerable) -> bool
+static Bee.Base.ValueUtilities.IsEmpty(System.Collections.IList! value) -> bool
+static Bee.Base.ValueUtilities.IsEmpty(System.DateTime value) -> bool
+static Bee.Base.ValueUtilities.IsEmpty(System.Guid value) -> bool
+static Bee.Base.ValueUtilities.IsEmpty(byte[]! data) -> bool
+static Bee.Base.ValueUtilities.IsEmpty(object! value) -> bool
+static Bee.Base.ValueUtilities.IsEmpty(string! value) -> bool
+static Bee.Base.ValueUtilities.IsNullOrDBNull(object? value) -> bool
+static Bee.Base.ValueUtilities.IsNumeric(object! value) -> bool
+static Bee.Base.ValueUtilities.IsNumeric(string! value, int length) -> bool
+static readonly Bee.Base.ValueUtilities.TimeOnlyLength -> int
+virtual Bee.Base.Collections.CollectionBase<T>.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+virtual Bee.Base.Collections.CollectionItem.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+virtual Bee.Base.Collections.KeyCollectionBase<T>.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+virtual Bee.Base.Collections.KeyCollectionItem.Key.get -> string!
+virtual Bee.Base.Collections.KeyCollectionItem.Key.set -> void
+virtual Bee.Base.Collections.KeyCollectionItem.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void

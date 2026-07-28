@@ -1,0 +1,72 @@
+#nullable enable
+Bee.Repository.AuditLog.AuditLogRepository
+Bee.Repository.AuditLog.AuditLogRepository.AuditLogRepository(Bee.Db.Manager.IDbConnectionManager! connectionManager, string! databaseId) -> void
+Bee.Repository.AuditLog.AuditLogRepository.GetAccessLog(Bee.Repository.Abstractions.AuditLog.AccessLogQuery! query, Bee.Definition.Paging.PagingOptions! paging) -> Bee.Repository.Abstractions.AuditLog.AuditLogPage!
+Bee.Repository.AuditLog.AuditLogRepository.GetApiAnomalyLog(Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery! query, Bee.Definition.Paging.PagingOptions! paging) -> Bee.Repository.Abstractions.AuditLog.AuditLogPage!
+Bee.Repository.AuditLog.AuditLogRepository.GetApiAnomalySummary(System.DateTime? fromUtc, System.DateTime? toUtc, string? companyId) -> System.Data.DataTable!
+Bee.Repository.AuditLog.AuditLogRepository.GetChangeById(System.Guid sysRowId, string? companyId) -> System.Data.DataTable?
+Bee.Repository.AuditLog.AuditLogRepository.GetChangeLog(Bee.Repository.Abstractions.AuditLog.ChangeLogQuery! query, Bee.Definition.Paging.PagingOptions! paging) -> Bee.Repository.Abstractions.AuditLog.AuditLogPage!
+Bee.Repository.AuditLog.AuditLogRepository.GetDbAnomalyLog(Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery! query, Bee.Definition.Paging.PagingOptions! paging) -> Bee.Repository.Abstractions.AuditLog.AuditLogPage!
+Bee.Repository.AuditLog.AuditLogRepository.GetDbAnomalySummary(System.DateTime? fromUtc, System.DateTime? toUtc) -> System.Data.DataTable!
+Bee.Repository.AuditLog.AuditLogRepository.GetLoginLog(Bee.Repository.Abstractions.AuditLog.LoginLogQuery! query, Bee.Definition.Paging.PagingOptions! paging) -> Bee.Repository.Abstractions.AuditLog.AuditLogPage!
+Bee.Repository.AuditLog.AuditLogRepository.GetTopApiMethods(System.DateTime? fromUtc, System.DateTime? toUtc, int topN, string? companyId) -> System.Data.DataTable!
+Bee.Repository.AuditLog.AuditLogWriteRepository
+Bee.Repository.AuditLog.AuditLogWriteRepository.AuditLogWriteRepository(Bee.Db.IDbAccessFactory! dbAccessFactory) -> void
+Bee.Repository.AuditLog.AuditLogWriteRepository.WriteBatch(System.Collections.Generic.IReadOnlyList<Bee.Definition.Logging.AuditEntry!>! entries) -> void
+Bee.Repository.Factories.AuditLogRepositoryFactory
+Bee.Repository.Factories.AuditLogRepositoryFactory.AuditLogRepositoryFactory(Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Repository.Factories.AuditLogRepositoryFactory.CreateAuditLogRepository() -> Bee.Repository.Abstractions.AuditLog.IAuditLogRepository!
+Bee.Repository.Factories.FormRepositoryFactory
+Bee.Repository.Factories.FormRepositoryFactory.CreateDataFormRepository(string! progId, System.Guid accessToken) -> Bee.Repository.Abstractions.Form.IDataFormRepository!
+Bee.Repository.Factories.FormRepositoryFactory.CreateReportFormRepository(string! progId) -> Bee.Repository.Abstractions.Form.IReportFormRepository!
+Bee.Repository.Factories.FormRepositoryFactory.FormRepositoryFactory(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Db.IDbAccessFactory! dbAccessFactory, Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Repository.Abstractions.IRepositoryDatabaseRouter! router) -> void
+Bee.Repository.Factories.SystemRepositoryFactory
+Bee.Repository.Factories.SystemRepositoryFactory.CreateCompanyRepository() -> Bee.Repository.Abstractions.System.ICompanyRepository!
+Bee.Repository.Factories.SystemRepositoryFactory.CreateDatabaseRepository() -> Bee.Repository.Abstractions.System.IDatabaseRepository!
+Bee.Repository.Factories.SystemRepositoryFactory.CreateDepartmentRepository() -> Bee.Repository.Abstractions.System.IDepartmentRepository!
+Bee.Repository.Factories.SystemRepositoryFactory.CreateEmployeeRepository() -> Bee.Repository.Abstractions.System.IEmployeeRepository!
+Bee.Repository.Factories.SystemRepositoryFactory.CreateRolePermissionRepository() -> Bee.Repository.Abstractions.System.IRolePermissionRepository!
+Bee.Repository.Factories.SystemRepositoryFactory.CreateSessionRepository() -> Bee.Repository.Abstractions.System.ISessionRepository!
+Bee.Repository.Factories.SystemRepositoryFactory.CreateUserCompanyRepository() -> Bee.Repository.Abstractions.System.IUserCompanyRepository!
+Bee.Repository.Factories.SystemRepositoryFactory.CreateUserRepository() -> Bee.Repository.Abstractions.System.IUserRepository!
+Bee.Repository.Factories.SystemRepositoryFactory.SystemRepositoryFactory(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Repository.Form.DataFormRepository
+Bee.Repository.Form.DataFormRepository.DataFormRepository(string! progId, Bee.Definition.Forms.FormSchema! schema, Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Db.IDbAccessFactory! dbAccessFactory, Bee.Db.Manager.IDbConnectionManager! connectionManager, string! databaseId) -> void
+Bee.Repository.Form.DataFormRepository.Delete(System.Guid rowId, Bee.Definition.Filters.FilterNode? scopeFilter = null) -> int
+Bee.Repository.Form.DataFormRepository.ExistsInScope(System.Guid rowId, Bee.Definition.Filters.FilterNode? scopeFilter) -> bool
+Bee.Repository.Form.DataFormRepository.GetData(System.Guid rowId, Bee.Definition.Filters.FilterNode? scopeFilter = null) -> System.Data.DataSet?
+Bee.Repository.Form.DataFormRepository.GetList(string! selectFields, Bee.Definition.Filters.FilterNode? filter, Bee.Definition.Sorting.SortFieldCollection? sortFields, Bee.Definition.Paging.PagingOptions? paging = null) -> Bee.Repository.Abstractions.Form.DataFormListResult!
+Bee.Repository.Form.DataFormRepository.GetNewData(string! timeZoneId = "") -> System.Data.DataSet!
+Bee.Repository.Form.DataFormRepository.ProgId.get -> string!
+Bee.Repository.Form.DataFormRepository.Save(System.Data.DataSet! dataSet) -> (System.Data.DataSet? Refreshed, System.Collections.Generic.Dictionary<string!, int>! AffectedRows)
+Bee.Repository.Form.ReportFormRepository
+Bee.Repository.Form.ReportFormRepository.ProgId.get -> string!
+Bee.Repository.Form.ReportFormRepository.ReportFormRepository(string! progId) -> void
+Bee.Repository.RepositoryDatabaseRouter
+Bee.Repository.RepositoryDatabaseRouter.RepositoryDatabaseRouter(Bee.Definition.Identity.ISessionInfoService! sessionService, Bee.Definition.Identity.ICompanyInfoService! companyService) -> void
+Bee.Repository.RepositoryDatabaseRouter.Resolve(Bee.Definition.DbScope scope, System.Guid accessToken) -> string!
+Bee.Repository.System.CompanyRepository
+Bee.Repository.System.CompanyRepository.CompanyRepository(Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Repository.System.CompanyRepository.GetById(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
+Bee.Repository.System.DepartmentRepository
+Bee.Repository.System.DepartmentRepository.DepartmentRepository(Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Repository.System.DepartmentRepository.GetDepartments(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Organization.DepartmentRow!>!
+Bee.Repository.System.EmployeeRepository
+Bee.Repository.System.EmployeeRepository.EmployeeRepository(Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Repository.System.EmployeeRepository.GetByUserRowId(string! databaseId, System.Guid userRowId) -> Bee.Definition.Organization.EmployeeRow?
+Bee.Repository.System.RolePermissionRepository
+Bee.Repository.System.RolePermissionRepository.GetRoleGrants(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Identity.RoleGrantRow!>!
+Bee.Repository.System.RolePermissionRepository.GetUserRoles(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Identity.UserRoleRow!>!
+Bee.Repository.System.RolePermissionRepository.RolePermissionRepository(Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Repository.System.SessionRepository
+Bee.Repository.System.SessionRepository.CreateSession(string! userID, int expiresIn = 3600, bool oneTime = false) -> Bee.Definition.Identity.SessionUser!
+Bee.Repository.System.SessionRepository.GetSession(System.Guid accessToken) -> Bee.Definition.Identity.SessionUser?
+Bee.Repository.System.SessionRepository.SessionRepository(Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Repository.System.UserCompanyRepository
+Bee.Repository.System.UserCompanyRepository.HasAccess(string! userId, string! companyId) -> bool
+Bee.Repository.System.UserCompanyRepository.UserCompanyRepository(Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+Bee.Repository.System.UserRepository
+Bee.Repository.System.UserRepository.GetRowIdBySysId(string! userId) -> System.Guid
+Bee.Repository.System.UserRepository.GetTimeZone(string! userId) -> string!
+Bee.Repository.System.UserRepository.UserRepository(Bee.Db.Manager.IDbConnectionManager! connectionManager) -> void
+static Bee.Repository.AuditLog.AuditLogWriteRepository.BuildInsert(Bee.Definition.Logging.AuditEntry! entry) -> Bee.Db.DbCommandSpec!

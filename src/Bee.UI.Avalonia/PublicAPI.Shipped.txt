@@ -1,0 +1,311 @@
+#nullable enable
+Bee.UI.Avalonia.Controls.AmountColumnSummary
+Bee.UI.Avalonia.Controls.Editors.ButtonEdit
+Bee.UI.Avalonia.Controls.Editors.ButtonEdit.ButtonClick -> System.EventHandler?
+Bee.UI.Avalonia.Controls.Editors.ButtonEdit.ButtonEdit() -> void
+Bee.UI.Avalonia.Controls.Editors.ButtonEdit.HasLookup.get -> bool
+Bee.UI.Avalonia.Controls.Editors.ButtonEdit.LookupFailed -> System.EventHandler<System.Exception!>?
+Bee.UI.Avalonia.Controls.Editors.CheckEdit
+Bee.UI.Avalonia.Controls.Editors.CheckEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutField! field) -> void
+Bee.UI.Avalonia.Controls.Editors.CheckEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutFieldBase! field, System.Data.DataRow! row) -> void
+Bee.UI.Avalonia.Controls.Editors.CheckEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, string! fieldName) -> void
+Bee.UI.Avalonia.Controls.Editors.CheckEdit.CheckEdit() -> void
+Bee.UI.Avalonia.Controls.Editors.CheckEdit.FieldName.get -> string!
+Bee.UI.Avalonia.Controls.Editors.CheckEdit.FieldName.set -> void
+Bee.UI.Avalonia.Controls.Editors.CheckEdit.FieldValue.get -> object?
+Bee.UI.Avalonia.Controls.Editors.CheckEdit.FieldValue.set -> void
+Bee.UI.Avalonia.Controls.Editors.CheckEdit.SetControlState(Bee.Definition.Layouts.SingleFormMode formMode) -> void
+Bee.UI.Avalonia.Controls.Editors.CheckEdit.Unbind() -> void
+Bee.UI.Avalonia.Controls.Editors.DateEdit
+Bee.UI.Avalonia.Controls.Editors.DateEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutField! field) -> void
+Bee.UI.Avalonia.Controls.Editors.DateEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutFieldBase! field, System.Data.DataRow! row) -> void
+Bee.UI.Avalonia.Controls.Editors.DateEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, string! fieldName) -> void
+Bee.UI.Avalonia.Controls.Editors.DateEdit.DateEdit() -> void
+Bee.UI.Avalonia.Controls.Editors.DateEdit.FieldName.get -> string!
+Bee.UI.Avalonia.Controls.Editors.DateEdit.FieldName.set -> void
+Bee.UI.Avalonia.Controls.Editors.DateEdit.FieldValue.get -> object?
+Bee.UI.Avalonia.Controls.Editors.DateEdit.FieldValue.set -> void
+Bee.UI.Avalonia.Controls.Editors.DateEdit.ReadOnlyText.get -> string?
+Bee.UI.Avalonia.Controls.Editors.DateEdit.ReadOnlyText.set -> void
+Bee.UI.Avalonia.Controls.Editors.DateEdit.SetControlState(Bee.Definition.Layouts.SingleFormMode formMode) -> void
+Bee.UI.Avalonia.Controls.Editors.DateEdit.Unbind() -> void
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutField! field) -> void
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutFieldBase! field, System.Data.DataRow! row) -> void
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, string! fieldName) -> void
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.DropDownEdit() -> void
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.FieldName.get -> string!
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.FieldName.set -> void
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.FieldValue.get -> object?
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.FieldValue.set -> void
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.ReadOnlyText.get -> string?
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.ReadOnlyText.set -> void
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.SetControlState(Bee.Definition.Layouts.SingleFormMode formMode) -> void
+Bee.UI.Avalonia.Controls.Editors.DropDownEdit.Unbind() -> void
+Bee.UI.Avalonia.Controls.Editors.FieldEditorFactory
+Bee.UI.Avalonia.Controls.Editors.FormScope
+Bee.UI.Avalonia.Controls.Editors.IFieldEditor
+Bee.UI.Avalonia.Controls.Editors.IFieldEditor.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutField! field) -> void
+Bee.UI.Avalonia.Controls.Editors.IFieldEditor.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutFieldBase! field, System.Data.DataRow! row) -> void
+Bee.UI.Avalonia.Controls.Editors.IFieldEditor.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, string! fieldName) -> void
+Bee.UI.Avalonia.Controls.Editors.IFieldEditor.Unbind() -> void
+Bee.UI.Avalonia.Controls.Editors.LookupDialog
+Bee.UI.Avalonia.Controls.Editors.LookupPanel
+Bee.UI.Avalonia.Controls.Editors.LookupPanel.Bind(Bee.Definition.Forms.FormSchema! schema, Bee.Api.Client.Connectors.FormApiConnector! connector) -> void
+Bee.UI.Avalonia.Controls.Editors.LookupPanel.Cancel() -> void
+Bee.UI.Avalonia.Controls.Editors.LookupPanel.Cancelled -> System.EventHandler?
+Bee.UI.Avalonia.Controls.Editors.LookupPanel.Commit() -> void
+Bee.UI.Avalonia.Controls.Editors.LookupPanel.Committed -> System.EventHandler<System.Data.DataRow!>?
+Bee.UI.Avalonia.Controls.Editors.LookupPanel.Grid.get -> Bee.UI.Avalonia.Controls.GridControl!
+Bee.UI.Avalonia.Controls.Editors.LookupPanel.LookupPanel() -> void
+Bee.UI.Avalonia.Controls.Editors.LookupPanel.ReloadAsync() -> System.Threading.Tasks.Task!
+Bee.UI.Avalonia.Controls.Editors.LookupPanel.SearchText.get -> string!
+Bee.UI.Avalonia.Controls.Editors.LookupPanel.SearchText.set -> void
+Bee.UI.Avalonia.Controls.Editors.LookupPanel.SelectedRow.get -> System.Data.DataRow?
+Bee.UI.Avalonia.Controls.Editors.MemoEdit
+Bee.UI.Avalonia.Controls.Editors.MemoEdit.MemoEdit() -> void
+Bee.UI.Avalonia.Controls.Editors.NumericEdit
+Bee.UI.Avalonia.Controls.Editors.NumericEdit.CurrencySettings.get -> Bee.Definition.Settings.CurrencySettings?
+Bee.UI.Avalonia.Controls.Editors.NumericEdit.CurrencySettings.set -> void
+Bee.UI.Avalonia.Controls.Editors.NumericEdit.DefaultCurrencyCode.get -> string!
+Bee.UI.Avalonia.Controls.Editors.NumericEdit.DefaultCurrencyCode.set -> void
+Bee.UI.Avalonia.Controls.Editors.NumericEdit.DefaultUnitCode.get -> string!
+Bee.UI.Avalonia.Controls.Editors.NumericEdit.DefaultUnitCode.set -> void
+Bee.UI.Avalonia.Controls.Editors.NumericEdit.NumericEdit() -> void
+Bee.UI.Avalonia.Controls.Editors.NumericEdit.UnitSettings.get -> Bee.Definition.Settings.UnitSettings?
+Bee.UI.Avalonia.Controls.Editors.NumericEdit.UnitSettings.set -> void
+Bee.UI.Avalonia.Controls.Editors.RowEditDialog
+Bee.UI.Avalonia.Controls.Editors.RowEditPanel
+Bee.UI.Avalonia.Controls.Editors.RowEditPanel.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutGrid! layout, System.Data.DataRow! row) -> void
+Bee.UI.Avalonia.Controls.Editors.RowEditPanel.Cancel() -> void
+Bee.UI.Avalonia.Controls.Editors.RowEditPanel.Commit() -> void
+Bee.UI.Avalonia.Controls.Editors.RowEditPanel.Compact.get -> bool
+Bee.UI.Avalonia.Controls.Editors.RowEditPanel.Compact.set -> void
+Bee.UI.Avalonia.Controls.Editors.RowEditPanel.EditCancelled -> System.EventHandler?
+Bee.UI.Avalonia.Controls.Editors.RowEditPanel.EditCommitted -> System.EventHandler?
+Bee.UI.Avalonia.Controls.Editors.RowEditPanel.Row.get -> System.Data.DataRow?
+Bee.UI.Avalonia.Controls.Editors.RowEditPanel.RowEditPanel() -> void
+Bee.UI.Avalonia.Controls.Editors.RowEditPanel.Unbind() -> void
+Bee.UI.Avalonia.Controls.Editors.TextEdit
+Bee.UI.Avalonia.Controls.Editors.TextEdit.ApplyReadOnlyAppearance(bool readOnly) -> void
+Bee.UI.Avalonia.Controls.Editors.TextEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutField! field) -> void
+Bee.UI.Avalonia.Controls.Editors.TextEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutFieldBase! field, System.Data.DataRow! row) -> void
+Bee.UI.Avalonia.Controls.Editors.TextEdit.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, string! fieldName) -> void
+Bee.UI.Avalonia.Controls.Editors.TextEdit.FieldName.get -> string!
+Bee.UI.Avalonia.Controls.Editors.TextEdit.FieldName.set -> void
+Bee.UI.Avalonia.Controls.Editors.TextEdit.FieldValue.get -> object?
+Bee.UI.Avalonia.Controls.Editors.TextEdit.FieldValue.set -> void
+Bee.UI.Avalonia.Controls.Editors.TextEdit.TextEdit() -> void
+Bee.UI.Avalonia.Controls.Editors.TextEdit.Unbind() -> void
+Bee.UI.Avalonia.Controls.Editors.TimeEdit
+Bee.UI.Avalonia.Controls.Editors.TimeEdit.TimeEdit() -> void
+Bee.UI.Avalonia.Controls.Editors.YearMonthEdit
+Bee.UI.Avalonia.Controls.Editors.YearMonthEdit.YearMonthEdit() -> void
+Bee.UI.Avalonia.Controls.GridControl
+Bee.UI.Avalonia.Controls.GridControl.AddRow() -> void
+Bee.UI.Avalonia.Controls.GridControl.AllowEdit.get -> bool
+Bee.UI.Avalonia.Controls.GridControl.AllowEdit.set -> void
+Bee.UI.Avalonia.Controls.GridControl.Bind(Bee.Definition.Layouts.LayoutGrid! layout, System.Data.DataTable? rows) -> void
+Bee.UI.Avalonia.Controls.GridControl.Bind(Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutGrid! layout) -> void
+Bee.UI.Avalonia.Controls.GridControl.CurrencySettings.get -> Bee.Definition.Settings.CurrencySettings?
+Bee.UI.Avalonia.Controls.GridControl.CurrencySettings.set -> void
+Bee.UI.Avalonia.Controls.GridControl.DataTable.get -> System.Data.DataTable?
+Bee.UI.Avalonia.Controls.GridControl.DataTable.set -> void
+Bee.UI.Avalonia.Controls.GridControl.DefaultCurrencyCode.get -> string!
+Bee.UI.Avalonia.Controls.GridControl.DefaultCurrencyCode.set -> void
+Bee.UI.Avalonia.Controls.GridControl.DeleteSelectedRow() -> void
+Bee.UI.Avalonia.Controls.GridControl.EditMode.get -> Bee.UI.Avalonia.Controls.GridEditMode
+Bee.UI.Avalonia.Controls.GridControl.EditMode.set -> void
+Bee.UI.Avalonia.Controls.GridControl.EndEdit() -> void
+Bee.UI.Avalonia.Controls.GridControl.GridControl() -> void
+Bee.UI.Avalonia.Controls.GridControl.InnerGrid.get -> Avalonia.Controls.DataGrid!
+Bee.UI.Avalonia.Controls.GridControl.Layout.get -> Bee.Definition.Layouts.LayoutGrid?
+Bee.UI.Avalonia.Controls.GridControl.RefreshRows() -> void
+Bee.UI.Avalonia.Controls.GridControl.RowSelected -> System.EventHandler<System.Guid>?
+Bee.UI.Avalonia.Controls.GridControl.SelectedItem.get -> object?
+Bee.UI.Avalonia.Controls.GridControl.SelectedItem.set -> void
+Bee.UI.Avalonia.Controls.GridControl.SetControlState(Bee.Definition.Layouts.SingleFormMode formMode) -> void
+Bee.UI.Avalonia.Controls.GridControl.TableName.get -> string!
+Bee.UI.Avalonia.Controls.GridControl.TableName.set -> void
+Bee.UI.Avalonia.Controls.GridControl.Unbind() -> void
+Bee.UI.Avalonia.Controls.GridControl.UnitSettings.get -> Bee.Definition.Settings.UnitSettings?
+Bee.UI.Avalonia.Controls.GridControl.UnitSettings.set -> void
+Bee.UI.Avalonia.Controls.GridEditMode
+Bee.UI.Avalonia.Controls.GridEditMode.EditForm = 1 -> Bee.UI.Avalonia.Controls.GridEditMode
+Bee.UI.Avalonia.Controls.GridEditMode.InCell = 0 -> Bee.UI.Avalonia.Controls.GridEditMode
+Bee.UI.Avalonia.Controls.PermissionScope
+Bee.UI.Avalonia.DataObjects.FieldValueChangedEventArgs
+Bee.UI.Avalonia.DataObjects.FieldValueChangedEventArgs.FieldName.get -> string!
+Bee.UI.Avalonia.DataObjects.FieldValueChangedEventArgs.FieldValueChangedEventArgs(string! tableName, string! fieldName, string! value, System.Data.DataRow! row) -> void
+Bee.UI.Avalonia.DataObjects.FieldValueChangedEventArgs.Row.get -> System.Data.DataRow!
+Bee.UI.Avalonia.DataObjects.FieldValueChangedEventArgs.TableName.get -> string!
+Bee.UI.Avalonia.DataObjects.FieldValueChangedEventArgs.Value.get -> string!
+Bee.UI.Avalonia.DataObjects.FormDataObject
+Bee.UI.Avalonia.DataObjects.FormDataObject.ApplyLookupSelection(Bee.Definition.Forms.FormField! field, System.Data.DataRow! selectedRow, System.Data.DataRow? targetRow = null) -> void
+Bee.UI.Avalonia.DataObjects.FormDataObject.BeginRowEdit(System.Data.DataRow! row) -> void
+Bee.UI.Avalonia.DataObjects.FormDataObject.CancelRowEdit(System.Data.DataRow! row) -> void
+Bee.UI.Avalonia.DataObjects.FormDataObject.ClearLookupSelection(Bee.Definition.Forms.FormField! field, System.Data.DataRow? targetRow = null) -> void
+Bee.UI.Avalonia.DataObjects.FormDataObject.CommitRowEdit(System.Data.DataRow! row) -> void
+Bee.UI.Avalonia.DataObjects.FormDataObject.DataSet.get -> System.Data.DataSet!
+Bee.UI.Avalonia.DataObjects.FormDataObject.DataSetReplaced -> System.EventHandler?
+Bee.UI.Avalonia.DataObjects.FormDataObject.DeleteAsync() -> System.Threading.Tasks.Task!
+Bee.UI.Avalonia.DataObjects.FormDataObject.DetailTables.get -> System.Collections.Generic.IEnumerable<System.Data.DataTable!>!
+Bee.UI.Avalonia.DataObjects.FormDataObject.FieldValueChanged -> System.EventHandler<Bee.UI.Avalonia.DataObjects.FieldValueChangedEventArgs!>?
+Bee.UI.Avalonia.DataObjects.FormDataObject.FormDataObject(Bee.Definition.Forms.FormSchema! schema, Bee.Api.Client.Connectors.FormApiConnector? connector = null) -> void
+Bee.UI.Avalonia.DataObjects.FormDataObject.GetField(System.Data.DataRow! row, string! fieldName) -> string!
+Bee.UI.Avalonia.DataObjects.FormDataObject.GetField(string! fieldName) -> string!
+Bee.UI.Avalonia.DataObjects.FormDataObject.GetFormField(string! fieldName) -> Bee.Definition.Forms.FormField?
+Bee.UI.Avalonia.DataObjects.FormDataObject.GetFormField(string! tableName, string! fieldName) -> Bee.Definition.Forms.FormField?
+Bee.UI.Avalonia.DataObjects.FormDataObject.InitializeNewMaster() -> void
+Bee.UI.Avalonia.DataObjects.FormDataObject.IsDirty.get -> bool
+Bee.UI.Avalonia.DataObjects.FormDataObject.IsDirtyChanged -> System.EventHandler?
+Bee.UI.Avalonia.DataObjects.FormDataObject.IsLoading.get -> bool
+Bee.UI.Avalonia.DataObjects.FormDataObject.LoadAsync(System.Guid rowId) -> System.Threading.Tasks.Task!
+Bee.UI.Avalonia.DataObjects.FormDataObject.MasterRow.get -> System.Data.DataRow?
+Bee.UI.Avalonia.DataObjects.FormDataObject.MasterTable.get -> System.Data.DataTable!
+Bee.UI.Avalonia.DataObjects.FormDataObject.NewAsync() -> System.Threading.Tasks.Task!
+Bee.UI.Avalonia.DataObjects.FormDataObject.RowAdded -> System.EventHandler<Bee.UI.Avalonia.DataObjects.RowChangedEventArgs!>?
+Bee.UI.Avalonia.DataObjects.FormDataObject.RowDeleted -> System.EventHandler<Bee.UI.Avalonia.DataObjects.RowChangedEventArgs!>?
+Bee.UI.Avalonia.DataObjects.FormDataObject.SaveAsync() -> System.Threading.Tasks.Task!
+Bee.UI.Avalonia.DataObjects.FormDataObject.SetField(System.Data.DataRow! row, string! fieldName, string? value) -> void
+Bee.UI.Avalonia.DataObjects.FormDataObject.SetField(string! fieldName, string? value) -> void
+Bee.UI.Avalonia.DataObjects.FormLiveComputation
+Bee.UI.Avalonia.DataObjects.FormLiveComputation.ApplyDefaults(string! tableName, System.Data.DataRow! row) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.UI.Avalonia.DataObjects.FormLiveComputation.FormLiveComputation(Bee.Definition.Forms.FormSchema! schema, Bee.Definition.RoundingContext? roundingContext = null, Bee.Expressions.IExpressionEvaluator? evaluator = null) -> void
+Bee.UI.Avalonia.DataObjects.FormLiveComputation.InitializeNewRow(string! tableName, System.Data.DataRow! row) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.UI.Avalonia.DataObjects.FormLiveComputation.IsDegraded.get -> bool
+Bee.UI.Avalonia.DataObjects.FormLiveComputation.IsRecomputing.get -> bool
+Bee.UI.Avalonia.DataObjects.FormLiveComputation.Recompute(string! tableName, string! changedField, System.Data.DataRow! row) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.UI.Avalonia.DataObjects.RowChangedEventArgs
+Bee.UI.Avalonia.DataObjects.RowChangedEventArgs.Row.get -> System.Data.DataRow!
+Bee.UI.Avalonia.DataObjects.RowChangedEventArgs.RowChangedEventArgs(string! tableName, System.Data.DataRow! row) -> void
+Bee.UI.Avalonia.DataObjects.RowChangedEventArgs.TableName.get -> string!
+Bee.UI.Avalonia.Storage.FileEndpointStorage
+Bee.UI.Avalonia.Storage.FileEndpointStorage.FileEndpointStorage(string! appName) -> void
+Bee.UI.Avalonia.Storage.FileEndpointStorage.FilePath.get -> string!
+Bee.UI.Avalonia.Storage.FileEndpointStorage.LoadEndpoint() -> string!
+Bee.UI.Avalonia.Storage.FileEndpointStorage.SaveEndpoint(string! endpoint) -> void
+Bee.UI.Avalonia.Storage.FileEndpointStorage.SetEndpoint(string! endpoint) -> void
+Bee.UI.Avalonia.Views.FormView
+Bee.UI.Avalonia.Views.FormView.AccessToken.get -> System.Guid
+Bee.UI.Avalonia.Views.FormView.AccessToken.set -> void
+Bee.UI.Avalonia.Views.FormView.ApplyResponsiveState() -> void
+Bee.UI.Avalonia.Views.FormView.Closed -> System.EventHandler?
+Bee.UI.Avalonia.Views.FormView.CompactWidthThreshold.get -> double
+Bee.UI.Avalonia.Views.FormView.CompactWidthThreshold.set -> void
+Bee.UI.Avalonia.Views.FormView.DataObject.get -> Bee.UI.Avalonia.DataObjects.FormDataObject?
+Bee.UI.Avalonia.Views.FormView.DetailEditMode.get -> Bee.UI.Avalonia.Controls.GridEditMode
+Bee.UI.Avalonia.Views.FormView.DetailEditMode.set -> void
+Bee.UI.Avalonia.Views.FormView.EditAsync(System.Guid rowId) -> System.Threading.Tasks.Task!
+Bee.UI.Avalonia.Views.FormView.ErrorOccurred -> System.EventHandler<System.Exception!>?
+Bee.UI.Avalonia.Views.FormView.FormConnector.get -> Bee.Api.Client.Connectors.FormApiConnector?
+Bee.UI.Avalonia.Views.FormView.FormConnector.set -> void
+Bee.UI.Avalonia.Views.FormView.FormMode.get -> Bee.Definition.Layouts.SingleFormMode
+Bee.UI.Avalonia.Views.FormView.FormMode.set -> void
+Bee.UI.Avalonia.Views.FormView.FormView() -> void
+Bee.UI.Avalonia.Views.FormView.NewAsync() -> System.Threading.Tasks.Task!
+Bee.UI.Avalonia.Views.FormView.ProgId.get -> string!
+Bee.UI.Avalonia.Views.FormView.ProgId.set -> void
+Bee.UI.Avalonia.Views.FormView.Saved -> System.EventHandler?
+Bee.UI.Avalonia.Views.FormView.Schema.get -> Bee.Definition.Forms.FormSchema?
+Bee.UI.Avalonia.Views.FormView.Schema.set -> void
+Bee.UI.Avalonia.Views.FormView.ViewAsync(System.Guid rowId) -> System.Threading.Tasks.Task!
+Bee.UI.Avalonia.Views.ListView
+Bee.UI.Avalonia.Views.ListView.AccessToken.get -> System.Guid
+Bee.UI.Avalonia.Views.ListView.AccessToken.set -> void
+Bee.UI.Avalonia.Views.ListView.AddRequested -> System.EventHandler?
+Bee.UI.Avalonia.Views.ListView.EditRequested -> System.EventHandler<System.Guid>?
+Bee.UI.Avalonia.Views.ListView.ErrorOccurred -> System.EventHandler<System.Exception!>?
+Bee.UI.Avalonia.Views.ListView.FormConnector.get -> Bee.Api.Client.Connectors.FormApiConnector?
+Bee.UI.Avalonia.Views.ListView.FormConnector.set -> void
+Bee.UI.Avalonia.Views.ListView.InitializeAsync() -> System.Threading.Tasks.Task!
+Bee.UI.Avalonia.Views.ListView.ListView() -> void
+Bee.UI.Avalonia.Views.ListView.ProgId.get -> string!
+Bee.UI.Avalonia.Views.ListView.ProgId.set -> void
+Bee.UI.Avalonia.Views.ListView.ReloadAsync() -> System.Threading.Tasks.Task!
+Bee.UI.Avalonia.Views.ListView.Schema.get -> Bee.Definition.Forms.FormSchema?
+Bee.UI.Avalonia.Views.ListView.Schema.set -> void
+Bee.UI.Avalonia.Views.ListView.ViewRequested -> System.EventHandler<System.Guid>?
+const Bee.UI.Avalonia.Controls.Editors.RowEditPanel.CompactWidthThreshold = 600 -> double
+const Bee.UI.Avalonia.Views.FormView.DefaultCompactWidthThreshold = 600 -> double
+override Bee.UI.Avalonia.Controls.Editors.ButtonEdit.ApplyMetadata() -> void
+override Bee.UI.Avalonia.Controls.Editors.ButtonEdit.OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.ButtonEdit.OnKeyDown(Avalonia.Input.KeyEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.ButtonEdit.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs! change) -> void
+override Bee.UI.Avalonia.Controls.Editors.ButtonEdit.RefreshFromSource() -> void
+override Bee.UI.Avalonia.Controls.Editors.ButtonEdit.SetControlState(Bee.Definition.Layouts.SingleFormMode formMode) -> void
+override Bee.UI.Avalonia.Controls.Editors.ButtonEdit.ShouldWriteBackText.get -> bool
+override Bee.UI.Avalonia.Controls.Editors.CheckEdit.OnApplyTemplate(Avalonia.Controls.Primitives.TemplateAppliedEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.CheckEdit.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.CheckEdit.OnDetachedFromLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.CheckEdit.StyleKeyOverride.get -> System.Type!
+override Bee.UI.Avalonia.Controls.Editors.DateEdit.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.DateEdit.OnDetachedFromLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.DateEdit.StyleKeyOverride.get -> System.Type!
+override Bee.UI.Avalonia.Controls.Editors.DropDownEdit.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.DropDownEdit.OnDetachedFromLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.DropDownEdit.StyleKeyOverride.get -> System.Type!
+override Bee.UI.Avalonia.Controls.Editors.NumericEdit.GetWriteBackValue() -> string?
+override Bee.UI.Avalonia.Controls.Editors.NumericEdit.RefreshFromSource() -> void
+override Bee.UI.Avalonia.Controls.Editors.RowEditPanel.OnDetachedFromLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.TextEdit.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.TextEdit.OnDetachedFromLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.Editors.TextEdit.StyleKeyOverride.get -> System.Type!
+override Bee.UI.Avalonia.Controls.Editors.TimeEdit.GetWriteBackValue() -> string?
+override Bee.UI.Avalonia.Controls.Editors.TimeEdit.RefreshFromSource() -> void
+override Bee.UI.Avalonia.Controls.Editors.YearMonthEdit.ValueFormat.get -> string!
+override Bee.UI.Avalonia.Controls.GridControl.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.GridControl.OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.GridControl.OnDetachedFromLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Controls.GridControl.StyleKeyOverride.get -> System.Type!
+override Bee.UI.Avalonia.Views.FormView.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs! change) -> void
+override Bee.UI.Avalonia.Views.ListView.OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs! e) -> void
+override Bee.UI.Avalonia.Views.ListView.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs! change) -> void
+static Bee.UI.Avalonia.Controls.AmountColumnSummary.TryComputeTotal(System.Collections.Generic.IEnumerable<(decimal Value, string! CurrencyCode)>! cells) -> decimal?
+static Bee.UI.Avalonia.Controls.Editors.FieldEditorFactory.Create(Bee.Definition.Layouts.ControlType controlType) -> Avalonia.Controls.Control!
+static Bee.UI.Avalonia.Controls.Editors.FormScope.GetDataObject(Avalonia.Controls.Control! element) -> Bee.UI.Avalonia.DataObjects.FormDataObject?
+static Bee.UI.Avalonia.Controls.Editors.FormScope.GetFormMode(Avalonia.Controls.Control! element) -> Bee.Definition.Layouts.SingleFormMode
+static Bee.UI.Avalonia.Controls.Editors.FormScope.SetDataObject(Avalonia.Controls.Control! element, Bee.UI.Avalonia.DataObjects.FormDataObject? value) -> void
+static Bee.UI.Avalonia.Controls.Editors.FormScope.SetFormMode(Avalonia.Controls.Control! element, Bee.Definition.Layouts.SingleFormMode value) -> void
+static Bee.UI.Avalonia.Controls.Editors.LookupDialog.ShowAsync(Avalonia.Visual! host, string! progId, Bee.Definition.Forms.FormSchema? schema = null, Bee.Api.Client.Connectors.FormApiConnector? connector = null) -> System.Threading.Tasks.Task<System.Data.DataRow?>!
+static Bee.UI.Avalonia.Controls.Editors.RowEditDialog.ShowAsync(Avalonia.Visual! host, Bee.UI.Avalonia.DataObjects.FormDataObject! dataObject, Bee.Definition.Layouts.LayoutGrid! layout, System.Data.DataRow! row) -> System.Threading.Tasks.Task<bool>!
+static Bee.UI.Avalonia.Controls.PermissionScope.GetAction(Avalonia.Controls.Control! control) -> Bee.Definition.Settings.PermissionAction
+static Bee.UI.Avalonia.Controls.PermissionScope.SetAction(Avalonia.Controls.Control! control, Bee.Definition.Settings.PermissionAction value) -> void
+static readonly Bee.UI.Avalonia.Controls.Editors.CheckEdit.FieldNameProperty -> Avalonia.StyledProperty<string!>!
+static readonly Bee.UI.Avalonia.Controls.Editors.DateEdit.FieldNameProperty -> Avalonia.StyledProperty<string!>!
+static readonly Bee.UI.Avalonia.Controls.Editors.DateEdit.ReadOnlyTextProperty -> Avalonia.StyledProperty<string?>!
+static readonly Bee.UI.Avalonia.Controls.Editors.DropDownEdit.FieldNameProperty -> Avalonia.StyledProperty<string!>!
+static readonly Bee.UI.Avalonia.Controls.Editors.DropDownEdit.ReadOnlyTextProperty -> Avalonia.StyledProperty<string?>!
+static readonly Bee.UI.Avalonia.Controls.Editors.FormScope.DataObjectProperty -> Avalonia.AttachedProperty<Bee.UI.Avalonia.DataObjects.FormDataObject?>!
+static readonly Bee.UI.Avalonia.Controls.Editors.FormScope.FormModeProperty -> Avalonia.AttachedProperty<Bee.Definition.Layouts.SingleFormMode>!
+static readonly Bee.UI.Avalonia.Controls.Editors.TextEdit.FieldNameProperty -> Avalonia.StyledProperty<string!>!
+static readonly Bee.UI.Avalonia.Controls.GridControl.AllowEditProperty -> Avalonia.StyledProperty<bool>!
+static readonly Bee.UI.Avalonia.Controls.GridControl.EditModeProperty -> Avalonia.StyledProperty<Bee.UI.Avalonia.Controls.GridEditMode>!
+static readonly Bee.UI.Avalonia.Controls.GridControl.TableNameProperty -> Avalonia.StyledProperty<string!>!
+static readonly Bee.UI.Avalonia.Controls.PermissionScope.ActionProperty -> Avalonia.AttachedProperty<Bee.Definition.Settings.PermissionAction>!
+static readonly Bee.UI.Avalonia.Views.FormView.AccessTokenProperty -> Avalonia.StyledProperty<System.Guid>!
+static readonly Bee.UI.Avalonia.Views.FormView.CompactWidthThresholdProperty -> Avalonia.StyledProperty<double>!
+static readonly Bee.UI.Avalonia.Views.FormView.DetailEditModeProperty -> Avalonia.StyledProperty<Bee.UI.Avalonia.Controls.GridEditMode>!
+static readonly Bee.UI.Avalonia.Views.FormView.FormConnectorProperty -> Avalonia.StyledProperty<Bee.Api.Client.Connectors.FormApiConnector?>!
+static readonly Bee.UI.Avalonia.Views.FormView.FormModeProperty -> Avalonia.StyledProperty<Bee.Definition.Layouts.SingleFormMode>!
+static readonly Bee.UI.Avalonia.Views.FormView.ProgIdProperty -> Avalonia.StyledProperty<string!>!
+static readonly Bee.UI.Avalonia.Views.FormView.SchemaProperty -> Avalonia.StyledProperty<Bee.Definition.Forms.FormSchema?>!
+static readonly Bee.UI.Avalonia.Views.ListView.AccessTokenProperty -> Avalonia.StyledProperty<System.Guid>!
+static readonly Bee.UI.Avalonia.Views.ListView.FormConnectorProperty -> Avalonia.StyledProperty<Bee.Api.Client.Connectors.FormApiConnector?>!
+static readonly Bee.UI.Avalonia.Views.ListView.ProgIdProperty -> Avalonia.StyledProperty<string!>!
+static readonly Bee.UI.Avalonia.Views.ListView.SchemaProperty -> Avalonia.StyledProperty<Bee.Definition.Forms.FormSchema?>!
+virtual Bee.UI.Avalonia.Controls.Editors.DateEdit.ValueFormat.get -> string!
+virtual Bee.UI.Avalonia.Controls.Editors.TextEdit.ApplyMetadata() -> void
+virtual Bee.UI.Avalonia.Controls.Editors.TextEdit.GetWriteBackValue() -> string?
+virtual Bee.UI.Avalonia.Controls.Editors.TextEdit.RefreshFromSource() -> void
+virtual Bee.UI.Avalonia.Controls.Editors.TextEdit.SetControlState(Bee.Definition.Layouts.SingleFormMode formMode) -> void
+virtual Bee.UI.Avalonia.Controls.Editors.TextEdit.ShouldWriteBackText.get -> bool
+virtual Bee.UI.Avalonia.Views.FormView.GetViewportWidth() -> double
+virtual Bee.UI.Avalonia.Views.FormView.OnFormModeChanged(Bee.Definition.Layouts.SingleFormMode formMode) -> void
+virtual Bee.UI.Avalonia.Views.FormView.ResolveAccessToken() -> System.Guid
+virtual Bee.UI.Avalonia.Views.FormView.ResolveFormConnector(string! progId) -> Bee.Api.Client.Connectors.FormApiConnector!
+virtual Bee.UI.Avalonia.Views.FormView.ResolveRoundingContextAsync() -> System.Threading.Tasks.Task<Bee.Definition.RoundingContext!>!
+virtual Bee.UI.Avalonia.Views.FormView.ResolveSchemaAsync(string! progId) -> System.Threading.Tasks.Task<Bee.Definition.Forms.FormSchema?>!
+virtual Bee.UI.Avalonia.Views.ListView.ResolveAccessToken() -> System.Guid
+virtual Bee.UI.Avalonia.Views.ListView.ResolveFormConnector(string! progId) -> Bee.Api.Client.Connectors.FormApiConnector!
+virtual Bee.UI.Avalonia.Views.ListView.ResolveSchemaAsync(string! progId) -> System.Threading.Tasks.Task<Bee.Definition.Forms.FormSchema?>!

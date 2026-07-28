@@ -1,0 +1,135 @@
+#nullable enable
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.AccessLogQuery() -> void
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.CompanyId.get -> string?
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.CompanyId.init -> void
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.FromUtc.get -> System.DateTime?
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.FromUtc.init -> void
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.ProgId.get -> string?
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.ProgId.init -> void
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.RowKey.get -> string?
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.RowKey.init -> void
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.ToUtc.get -> System.DateTime?
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.ToUtc.init -> void
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.UserId.get -> string?
+Bee.Repository.Abstractions.AuditLog.AccessLogQuery.UserId.init -> void
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.ApiAnomalyLogQuery() -> void
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.CompanyId.get -> string?
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.CompanyId.init -> void
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.FromUtc.get -> System.DateTime?
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.FromUtc.init -> void
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.Kind.get -> Bee.Definition.Logging.AnomalyKind?
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.Kind.init -> void
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.Method.get -> string?
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.Method.init -> void
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.ToUtc.get -> System.DateTime?
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.ToUtc.init -> void
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.UserId.get -> string?
+Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery.UserId.init -> void
+Bee.Repository.Abstractions.AuditLog.AuditLogPage
+Bee.Repository.Abstractions.AuditLog.AuditLogPage.AuditLogPage() -> void
+Bee.Repository.Abstractions.AuditLog.AuditLogPage.Paging.get -> Bee.Definition.Paging.PagingInfo!
+Bee.Repository.Abstractions.AuditLog.AuditLogPage.Paging.init -> void
+Bee.Repository.Abstractions.AuditLog.AuditLogPage.Table.get -> System.Data.DataTable!
+Bee.Repository.Abstractions.AuditLog.AuditLogPage.Table.init -> void
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.ChangeKind.get -> Bee.Definition.Logging.ChangeKind?
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.ChangeKind.init -> void
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.ChangeLogQuery() -> void
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.CompanyId.get -> string?
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.CompanyId.init -> void
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.FromUtc.get -> System.DateTime?
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.FromUtc.init -> void
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.ProgId.get -> string?
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.ProgId.init -> void
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.RowKey.get -> string?
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.RowKey.init -> void
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.ToUtc.get -> System.DateTime?
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.ToUtc.init -> void
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.UserId.get -> string?
+Bee.Repository.Abstractions.AuditLog.ChangeLogQuery.UserId.init -> void
+Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery
+Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery.DatabaseId.get -> string?
+Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery.DatabaseId.init -> void
+Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery.DbAnomalyLogQuery() -> void
+Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery.FromUtc.get -> System.DateTime?
+Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery.FromUtc.init -> void
+Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery.Kind.get -> Bee.Definition.Logging.AnomalyKind?
+Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery.Kind.init -> void
+Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery.ToUtc.get -> System.DateTime?
+Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery.ToUtc.init -> void
+Bee.Repository.Abstractions.AuditLog.IAuditLogRepository
+Bee.Repository.Abstractions.AuditLog.IAuditLogRepository.GetAccessLog(Bee.Repository.Abstractions.AuditLog.AccessLogQuery! query, Bee.Definition.Paging.PagingOptions! paging) -> Bee.Repository.Abstractions.AuditLog.AuditLogPage!
+Bee.Repository.Abstractions.AuditLog.IAuditLogRepository.GetApiAnomalyLog(Bee.Repository.Abstractions.AuditLog.ApiAnomalyLogQuery! query, Bee.Definition.Paging.PagingOptions! paging) -> Bee.Repository.Abstractions.AuditLog.AuditLogPage!
+Bee.Repository.Abstractions.AuditLog.IAuditLogRepository.GetApiAnomalySummary(System.DateTime? fromUtc, System.DateTime? toUtc, string? companyId) -> System.Data.DataTable!
+Bee.Repository.Abstractions.AuditLog.IAuditLogRepository.GetChangeById(System.Guid sysRowId, string? companyId) -> System.Data.DataTable?
+Bee.Repository.Abstractions.AuditLog.IAuditLogRepository.GetChangeLog(Bee.Repository.Abstractions.AuditLog.ChangeLogQuery! query, Bee.Definition.Paging.PagingOptions! paging) -> Bee.Repository.Abstractions.AuditLog.AuditLogPage!
+Bee.Repository.Abstractions.AuditLog.IAuditLogRepository.GetDbAnomalyLog(Bee.Repository.Abstractions.AuditLog.DbAnomalyLogQuery! query, Bee.Definition.Paging.PagingOptions! paging) -> Bee.Repository.Abstractions.AuditLog.AuditLogPage!
+Bee.Repository.Abstractions.AuditLog.IAuditLogRepository.GetDbAnomalySummary(System.DateTime? fromUtc, System.DateTime? toUtc) -> System.Data.DataTable!
+Bee.Repository.Abstractions.AuditLog.IAuditLogRepository.GetLoginLog(Bee.Repository.Abstractions.AuditLog.LoginLogQuery! query, Bee.Definition.Paging.PagingOptions! paging) -> Bee.Repository.Abstractions.AuditLog.AuditLogPage!
+Bee.Repository.Abstractions.AuditLog.IAuditLogRepository.GetTopApiMethods(System.DateTime? fromUtc, System.DateTime? toUtc, int topN, string? companyId) -> System.Data.DataTable!
+Bee.Repository.Abstractions.AuditLog.IAuditLogWriteRepository
+Bee.Repository.Abstractions.AuditLog.IAuditLogWriteRepository.WriteBatch(System.Collections.Generic.IReadOnlyList<Bee.Definition.Logging.AuditEntry!>! entries) -> void
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery.CompanyId.get -> string?
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery.CompanyId.init -> void
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery.Event.get -> Bee.Definition.Logging.LoginEvent?
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery.Event.init -> void
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery.FromUtc.get -> System.DateTime?
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery.FromUtc.init -> void
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery.LoginLogQuery() -> void
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery.ToUtc.get -> System.DateTime?
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery.ToUtc.init -> void
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery.UserId.get -> string?
+Bee.Repository.Abstractions.AuditLog.LoginLogQuery.UserId.init -> void
+Bee.Repository.Abstractions.Factories.IAuditLogRepositoryFactory
+Bee.Repository.Abstractions.Factories.IAuditLogRepositoryFactory.CreateAuditLogRepository() -> Bee.Repository.Abstractions.AuditLog.IAuditLogRepository!
+Bee.Repository.Abstractions.Factories.IFormRepositoryFactory
+Bee.Repository.Abstractions.Factories.IFormRepositoryFactory.CreateDataFormRepository(string! progId, System.Guid accessToken) -> Bee.Repository.Abstractions.Form.IDataFormRepository!
+Bee.Repository.Abstractions.Factories.IFormRepositoryFactory.CreateReportFormRepository(string! progId) -> Bee.Repository.Abstractions.Form.IReportFormRepository!
+Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory
+Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateCompanyRepository() -> Bee.Repository.Abstractions.System.ICompanyRepository!
+Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateDatabaseRepository() -> Bee.Repository.Abstractions.System.IDatabaseRepository!
+Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateDepartmentRepository() -> Bee.Repository.Abstractions.System.IDepartmentRepository!
+Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateEmployeeRepository() -> Bee.Repository.Abstractions.System.IEmployeeRepository!
+Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateRolePermissionRepository() -> Bee.Repository.Abstractions.System.IRolePermissionRepository!
+Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateSessionRepository() -> Bee.Repository.Abstractions.System.ISessionRepository!
+Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateUserCompanyRepository() -> Bee.Repository.Abstractions.System.IUserCompanyRepository!
+Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateUserRepository() -> Bee.Repository.Abstractions.System.IUserRepository!
+Bee.Repository.Abstractions.Form.DataFormListResult
+Bee.Repository.Abstractions.Form.DataFormListResult.DataFormListResult() -> void
+Bee.Repository.Abstractions.Form.DataFormListResult.Paging.get -> Bee.Definition.Paging.PagingInfo?
+Bee.Repository.Abstractions.Form.DataFormListResult.Paging.init -> void
+Bee.Repository.Abstractions.Form.DataFormListResult.Table.get -> System.Data.DataTable?
+Bee.Repository.Abstractions.Form.DataFormListResult.Table.init -> void
+Bee.Repository.Abstractions.Form.IDataFormRepository
+Bee.Repository.Abstractions.Form.IDataFormRepository.Delete(System.Guid rowId, Bee.Definition.Filters.FilterNode? scopeFilter = null) -> int
+Bee.Repository.Abstractions.Form.IDataFormRepository.ExistsInScope(System.Guid rowId, Bee.Definition.Filters.FilterNode? scopeFilter) -> bool
+Bee.Repository.Abstractions.Form.IDataFormRepository.GetData(System.Guid rowId, Bee.Definition.Filters.FilterNode? scopeFilter = null) -> System.Data.DataSet?
+Bee.Repository.Abstractions.Form.IDataFormRepository.GetList(string! selectFields, Bee.Definition.Filters.FilterNode? filter, Bee.Definition.Sorting.SortFieldCollection? sortFields, Bee.Definition.Paging.PagingOptions? paging = null) -> Bee.Repository.Abstractions.Form.DataFormListResult!
+Bee.Repository.Abstractions.Form.IDataFormRepository.GetNewData(string! timeZoneId = "") -> System.Data.DataSet!
+Bee.Repository.Abstractions.Form.IDataFormRepository.Save(System.Data.DataSet! dataSet) -> (System.Data.DataSet? Refreshed, System.Collections.Generic.Dictionary<string!, int>! AffectedRows)
+Bee.Repository.Abstractions.Form.IReportFormRepository
+Bee.Repository.Abstractions.IRepositoryDatabaseRouter
+Bee.Repository.Abstractions.IRepositoryDatabaseRouter.Resolve(Bee.Definition.DbScope scope, System.Guid accessToken) -> string!
+Bee.Repository.Abstractions.System.ICompanyRepository
+Bee.Repository.Abstractions.System.ICompanyRepository.GetById(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
+Bee.Repository.Abstractions.System.IDatabaseRepository
+Bee.Repository.Abstractions.System.IDatabaseRepository.TestConnection(Bee.Definition.Settings.DatabaseItem! item) -> void
+Bee.Repository.Abstractions.System.IDatabaseRepository.UpgradeTableSchema(string! databaseId, string! categoryId, string! tableName) -> bool
+Bee.Repository.Abstractions.System.IDepartmentRepository
+Bee.Repository.Abstractions.System.IDepartmentRepository.GetDepartments(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Organization.DepartmentRow!>!
+Bee.Repository.Abstractions.System.IEmployeeRepository
+Bee.Repository.Abstractions.System.IEmployeeRepository.GetByUserRowId(string! databaseId, System.Guid userRowId) -> Bee.Definition.Organization.EmployeeRow?
+Bee.Repository.Abstractions.System.IRolePermissionRepository
+Bee.Repository.Abstractions.System.IRolePermissionRepository.GetRoleGrants(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Identity.RoleGrantRow!>!
+Bee.Repository.Abstractions.System.IRolePermissionRepository.GetUserRoles(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Identity.UserRoleRow!>!
+Bee.Repository.Abstractions.System.ISessionRepository
+Bee.Repository.Abstractions.System.ISessionRepository.CreateSession(string! userID, int expiresIn = 3600, bool oneTime = false) -> Bee.Definition.Identity.SessionUser!
+Bee.Repository.Abstractions.System.ISessionRepository.GetSession(System.Guid accessToken) -> Bee.Definition.Identity.SessionUser?
+Bee.Repository.Abstractions.System.IUserCompanyRepository
+Bee.Repository.Abstractions.System.IUserCompanyRepository.HasAccess(string! userId, string! companyId) -> bool
+Bee.Repository.Abstractions.System.IUserRepository
+Bee.Repository.Abstractions.System.IUserRepository.GetRowIdBySysId(string! userId) -> System.Guid
+Bee.Repository.Abstractions.System.IUserRepository.GetTimeZone(string! userId) -> string!

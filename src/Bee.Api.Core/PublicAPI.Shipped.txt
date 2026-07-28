@@ -1,0 +1,664 @@
+#nullable enable
+Bee.Api.Core.ApiServiceOptions
+Bee.Api.Core.Authorization.ApiAuthorizationContext
+Bee.Api.Core.Authorization.ApiAuthorizationContext.ApiAuthorizationContext() -> void
+Bee.Api.Core.Authorization.ApiAuthorizationContext.ApiKey.get -> string!
+Bee.Api.Core.Authorization.ApiAuthorizationContext.ApiKey.set -> void
+Bee.Api.Core.Authorization.ApiAuthorizationContext.Authorization.get -> string!
+Bee.Api.Core.Authorization.ApiAuthorizationContext.Authorization.set -> void
+Bee.Api.Core.Authorization.ApiAuthorizationContext.Method.get -> string!
+Bee.Api.Core.Authorization.ApiAuthorizationContext.Method.set -> void
+Bee.Api.Core.Authorization.ApiAuthorizationResult
+Bee.Api.Core.Authorization.ApiAuthorizationResult.AccessToken.get -> System.Guid
+Bee.Api.Core.Authorization.ApiAuthorizationResult.AccessToken.set -> void
+Bee.Api.Core.Authorization.ApiAuthorizationResult.ApiAuthorizationResult() -> void
+Bee.Api.Core.Authorization.ApiAuthorizationResult.Code.get -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.Authorization.ApiAuthorizationResult.Code.set -> void
+Bee.Api.Core.Authorization.ApiAuthorizationResult.ErrorMessage.get -> string!
+Bee.Api.Core.Authorization.ApiAuthorizationResult.ErrorMessage.set -> void
+Bee.Api.Core.Authorization.ApiAuthorizationResult.IsValid.get -> bool
+Bee.Api.Core.Authorization.ApiAuthorizationResult.IsValid.set -> void
+Bee.Api.Core.Authorization.ApiAuthorizationValidator
+Bee.Api.Core.Authorization.ApiAuthorizationValidator.ApiAuthorizationValidator() -> void
+Bee.Api.Core.Authorization.ApiAuthorizationValidator.Validate(Bee.Api.Core.Authorization.ApiAuthorizationContext! context) -> Bee.Api.Core.Authorization.ApiAuthorizationResult!
+Bee.Api.Core.Authorization.IApiAuthorizationValidator
+Bee.Api.Core.Authorization.IApiAuthorizationValidator.Validate(Bee.Api.Core.Authorization.ApiAuthorizationContext! context) -> Bee.Api.Core.Authorization.ApiAuthorizationResult!
+Bee.Api.Core.Conversion.ApiInputConverter
+Bee.Api.Core.Conversion.ApiOutputConverter
+Bee.Api.Core.JsonRpc.ApiPayload
+Bee.Api.Core.JsonRpc.ApiPayload.ApiPayload() -> void
+Bee.Api.Core.JsonRpc.ApiPayload.Format.get -> Bee.Api.Core.Messages.PayloadFormat
+Bee.Api.Core.JsonRpc.ApiPayload.SerializeState.get -> Bee.Base.Serialization.SerializeState
+Bee.Api.Core.JsonRpc.ApiPayload.TypeName.get -> string!
+Bee.Api.Core.JsonRpc.ApiPayload.TypeName.set -> void
+Bee.Api.Core.JsonRpc.ApiPayload.Value.get -> object?
+Bee.Api.Core.JsonRpc.ApiPayload.Value.set -> void
+Bee.Api.Core.JsonRpc.ApiPayloadConverter
+Bee.Api.Core.JsonRpc.ApiPayloadJsonConverter<T>
+Bee.Api.Core.JsonRpc.ApiPayloadJsonConverter<T>.ApiPayloadJsonConverter() -> void
+Bee.Api.Core.JsonRpc.ApiPayloadJsonConverterFactory
+Bee.Api.Core.JsonRpc.ApiPayloadJsonConverterFactory.ApiPayloadJsonConverterFactory() -> void
+Bee.Api.Core.JsonRpc.DateTimeWireGuard
+Bee.Api.Core.JsonRpc.DateTimeZoneConverter
+Bee.Api.Core.JsonRpc.JsonRpcError
+Bee.Api.Core.JsonRpc.JsonRpcError.Code.get -> int
+Bee.Api.Core.JsonRpc.JsonRpcError.Code.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcError.Data.get -> object?
+Bee.Api.Core.JsonRpc.JsonRpcError.Data.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcError.JsonRpcError() -> void
+Bee.Api.Core.JsonRpc.JsonRpcError.JsonRpcError(int code, string! message, object? data = null) -> void
+Bee.Api.Core.JsonRpc.JsonRpcError.Message.get -> string!
+Bee.Api.Core.JsonRpc.JsonRpcError.Message.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.CompanyAccessDenied = -32003 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.CompanyNotEntered = -32002 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.InternalError = -32000 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.InvalidParams = -32602 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.InvalidRequest = -32600 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.MethodNotFound = -32601 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.ParseError = -32700 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.PermissionDenied = -32004 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.Unauthorized = -32001 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.UserMessage = -32099 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcException
+Bee.Api.Core.JsonRpc.JsonRpcException.ErrorCode.get -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcException.HttpStatusCode.get -> int
+Bee.Api.Core.JsonRpc.JsonRpcException.JsonRpcException(int httpStatusCode, Bee.Api.Core.JsonRpc.JsonRpcErrorCode errorCode, string! rpcMessage) -> void
+Bee.Api.Core.JsonRpc.JsonRpcException.RpcMessage.get -> string!
+Bee.Api.Core.JsonRpc.JsonRpcExecutor
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.AccessToken.get -> System.Guid
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.AccessToken.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.Execute(Bee.Api.Core.JsonRpc.JsonRpcRequest! request) -> Bee.Api.Core.JsonRpc.JsonRpcResponse!
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.ExecuteAsync(Bee.Api.Core.JsonRpc.JsonRpcRequest! request) -> System.Threading.Tasks.Task<Bee.Api.Core.JsonRpc.JsonRpcResponse!>!
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.IsLocalCall.get -> bool
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.IsLocalCall.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.JsonRpcExecutor(Bee.Definition.IBusinessObjectFactory! boFactory, Bee.Definition.Security.IAccessTokenValidator! tokenValidator, Bee.Definition.Security.IApiEncryptionKeyProvider! keyProvider, Bee.Definition.Logging.IAuditLogWriter? anomalyWriter = null, Bee.Definition.Settings.AuditLogOptions? auditOptions = null, Bee.Definition.Identity.ISessionInfoService? sessionService = null) -> void
+Bee.Api.Core.JsonRpc.JsonRpcParams
+Bee.Api.Core.JsonRpc.JsonRpcParams.JsonRpcParams() -> void
+Bee.Api.Core.JsonRpc.JsonRpcRequest
+Bee.Api.Core.JsonRpc.JsonRpcRequest.Id.get -> string?
+Bee.Api.Core.JsonRpc.JsonRpcRequest.Id.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcRequest.JsonRpcRequest() -> void
+Bee.Api.Core.JsonRpc.JsonRpcRequest.Jsonrpc.get -> string!
+Bee.Api.Core.JsonRpc.JsonRpcRequest.Jsonrpc.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcRequest.Method.get -> string!
+Bee.Api.Core.JsonRpc.JsonRpcRequest.Method.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcRequest.Params.get -> Bee.Api.Core.JsonRpc.JsonRpcParams!
+Bee.Api.Core.JsonRpc.JsonRpcRequest.Params.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcRequest.SerializeState.get -> Bee.Base.Serialization.SerializeState
+Bee.Api.Core.JsonRpc.JsonRpcResponse
+Bee.Api.Core.JsonRpc.JsonRpcResponse.Error.get -> Bee.Api.Core.JsonRpc.JsonRpcError?
+Bee.Api.Core.JsonRpc.JsonRpcResponse.Error.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcResponse.Id.get -> string?
+Bee.Api.Core.JsonRpc.JsonRpcResponse.Id.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcResponse.JsonRpcResponse() -> void
+Bee.Api.Core.JsonRpc.JsonRpcResponse.JsonRpcResponse(Bee.Api.Core.JsonRpc.JsonRpcRequest! request) -> void
+Bee.Api.Core.JsonRpc.JsonRpcResponse.Jsonrpc.get -> string!
+Bee.Api.Core.JsonRpc.JsonRpcResponse.Jsonrpc.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcResponse.Method.get -> string?
+Bee.Api.Core.JsonRpc.JsonRpcResponse.Method.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcResponse.Result.get -> Bee.Api.Core.JsonRpc.JsonRpcResult?
+Bee.Api.Core.JsonRpc.JsonRpcResponse.Result.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcResponse.SerializeState.get -> Bee.Base.Serialization.SerializeState
+Bee.Api.Core.JsonRpc.JsonRpcResult
+Bee.Api.Core.JsonRpc.JsonRpcResult.JsonRpcResult() -> void
+Bee.Api.Core.JsonRpc.PayloadSwap
+Bee.Api.Core.JsonRpc.PayloadSwap.Dispose() -> void
+Bee.Api.Core.JsonRpc.PayloadSwap.Equals(Bee.Api.Core.JsonRpc.PayloadSwap other) -> bool
+Bee.Api.Core.JsonRpc.PayloadSwap.PayloadSwap() -> void
+Bee.Api.Core.JsonRpc.PayloadSwap.PayloadSwap(System.Action! restore) -> void
+Bee.Api.Core.JsonRpc.PayloadZoneConverter
+Bee.Api.Core.MessagePack.SerializableDataColumn
+Bee.Api.Core.MessagePack.SerializableDataColumn.AllowDBNull.get -> bool
+Bee.Api.Core.MessagePack.SerializableDataColumn.AllowDBNull.set -> void
+Bee.Api.Core.MessagePack.SerializableDataColumn.ColumnName.get -> string!
+Bee.Api.Core.MessagePack.SerializableDataColumn.ColumnName.set -> void
+Bee.Api.Core.MessagePack.SerializableDataColumn.DataType.get -> Bee.Base.Data.FieldDbType
+Bee.Api.Core.MessagePack.SerializableDataColumn.DataType.set -> void
+Bee.Api.Core.MessagePack.SerializableDataColumn.DefaultValue.get -> object?
+Bee.Api.Core.MessagePack.SerializableDataColumn.DefaultValue.set -> void
+Bee.Api.Core.MessagePack.SerializableDataColumn.DisplayName.get -> string!
+Bee.Api.Core.MessagePack.SerializableDataColumn.DisplayName.set -> void
+Bee.Api.Core.MessagePack.SerializableDataColumn.MaxLength.get -> int
+Bee.Api.Core.MessagePack.SerializableDataColumn.MaxLength.set -> void
+Bee.Api.Core.MessagePack.SerializableDataColumn.ReadOnly.get -> bool
+Bee.Api.Core.MessagePack.SerializableDataColumn.ReadOnly.set -> void
+Bee.Api.Core.MessagePack.SerializableDataColumn.SerializableDataColumn() -> void
+Bee.Api.Core.MessagePack.SerializableDataRelation
+Bee.Api.Core.MessagePack.SerializableDataRelation.ChildColumns.get -> System.Collections.Generic.List<string!>!
+Bee.Api.Core.MessagePack.SerializableDataRelation.ChildColumns.set -> void
+Bee.Api.Core.MessagePack.SerializableDataRelation.ChildTable.get -> string!
+Bee.Api.Core.MessagePack.SerializableDataRelation.ChildTable.set -> void
+Bee.Api.Core.MessagePack.SerializableDataRelation.ParentColumns.get -> System.Collections.Generic.List<string!>!
+Bee.Api.Core.MessagePack.SerializableDataRelation.ParentColumns.set -> void
+Bee.Api.Core.MessagePack.SerializableDataRelation.ParentTable.get -> string!
+Bee.Api.Core.MessagePack.SerializableDataRelation.ParentTable.set -> void
+Bee.Api.Core.MessagePack.SerializableDataRelation.RelationName.get -> string!
+Bee.Api.Core.MessagePack.SerializableDataRelation.RelationName.set -> void
+Bee.Api.Core.MessagePack.SerializableDataRelation.SerializableDataRelation() -> void
+Bee.Api.Core.MessagePack.SerializableDataRow
+Bee.Api.Core.MessagePack.SerializableDataRow.CurrentValues.get -> System.Collections.Generic.Dictionary<string!, object?>?
+Bee.Api.Core.MessagePack.SerializableDataRow.CurrentValues.set -> void
+Bee.Api.Core.MessagePack.SerializableDataRow.OriginalValues.get -> System.Collections.Generic.Dictionary<string!, object?>?
+Bee.Api.Core.MessagePack.SerializableDataRow.OriginalValues.set -> void
+Bee.Api.Core.MessagePack.SerializableDataRow.RowState.get -> System.Data.DataRowState
+Bee.Api.Core.MessagePack.SerializableDataRow.RowState.set -> void
+Bee.Api.Core.MessagePack.SerializableDataRow.SerializableDataRow() -> void
+Bee.Api.Core.MessagePack.SerializableDataSet
+Bee.Api.Core.MessagePack.SerializableDataSet.DataSetName.get -> string!
+Bee.Api.Core.MessagePack.SerializableDataSet.DataSetName.set -> void
+Bee.Api.Core.MessagePack.SerializableDataSet.Relations.get -> System.Collections.Generic.List<Bee.Api.Core.MessagePack.SerializableDataRelation!>!
+Bee.Api.Core.MessagePack.SerializableDataSet.Relations.set -> void
+Bee.Api.Core.MessagePack.SerializableDataSet.SerializableDataSet() -> void
+Bee.Api.Core.MessagePack.SerializableDataSet.Tables.get -> System.Collections.Generic.List<Bee.Api.Core.MessagePack.SerializableDataTable!>!
+Bee.Api.Core.MessagePack.SerializableDataSet.Tables.set -> void
+Bee.Api.Core.MessagePack.SerializableDataTable
+Bee.Api.Core.MessagePack.SerializableDataTable.Columns.get -> System.Collections.Generic.List<Bee.Api.Core.MessagePack.SerializableDataColumn!>!
+Bee.Api.Core.MessagePack.SerializableDataTable.Columns.set -> void
+Bee.Api.Core.MessagePack.SerializableDataTable.PrimaryKeys.get -> System.Collections.Generic.List<string!>!
+Bee.Api.Core.MessagePack.SerializableDataTable.PrimaryKeys.set -> void
+Bee.Api.Core.MessagePack.SerializableDataTable.Rows.get -> System.Collections.Generic.List<Bee.Api.Core.MessagePack.SerializableDataRow!>!
+Bee.Api.Core.MessagePack.SerializableDataTable.Rows.set -> void
+Bee.Api.Core.MessagePack.SerializableDataTable.SerializableDataTable() -> void
+Bee.Api.Core.MessagePack.SerializableDataTable.TableName.get -> string!
+Bee.Api.Core.MessagePack.SerializableDataTable.TableName.set -> void
+Bee.Api.Core.Messages.ApiCallContext
+Bee.Api.Core.Messages.ApiCallContext.AccessToken.get -> System.Guid
+Bee.Api.Core.Messages.ApiCallContext.AccessToken.set -> void
+Bee.Api.Core.Messages.ApiCallContext.ApiCallContext() -> void
+Bee.Api.Core.Messages.ApiCallContext.ApiCallContext(System.Guid accessToken, bool isLocalCall, Bee.Api.Core.Messages.PayloadFormat format) -> void
+Bee.Api.Core.Messages.ApiCallContext.Format.get -> Bee.Api.Core.Messages.PayloadFormat
+Bee.Api.Core.Messages.ApiCallContext.Format.set -> void
+Bee.Api.Core.Messages.ApiCallContext.IsLocalCall.get -> bool
+Bee.Api.Core.Messages.ApiCallContext.IsLocalCall.set -> void
+Bee.Api.Core.Messages.ApiCallContext.ShouldValidateEncoding.get -> bool
+Bee.Api.Core.Messages.ApiErrorInfo
+Bee.Api.Core.Messages.ApiErrorInfo.ApiErrorInfo() -> void
+Bee.Api.Core.Messages.ApiErrorInfo.ApiErrorInfo(System.Exception! exception, bool includeStackTrace = false) -> void
+Bee.Api.Core.Messages.ApiErrorInfo.IsHandled.get -> bool
+Bee.Api.Core.Messages.ApiErrorInfo.IsHandled.set -> void
+Bee.Api.Core.Messages.ApiErrorInfo.Message.get -> string!
+Bee.Api.Core.Messages.ApiErrorInfo.Message.set -> void
+Bee.Api.Core.Messages.ApiErrorInfo.StackTrace.get -> string!
+Bee.Api.Core.Messages.ApiErrorInfo.StackTrace.set -> void
+Bee.Api.Core.Messages.ApiHeaders
+Bee.Api.Core.Messages.ApiMessageBase
+Bee.Api.Core.Messages.ApiMessageBase.ApiMessageBase() -> void
+Bee.Api.Core.Messages.ApiMessageBase.Parameters.get -> Bee.Definition.Collections.ParameterCollection?
+Bee.Api.Core.Messages.ApiMessageBase.Parameters.set -> void
+Bee.Api.Core.Messages.ApiMessageBase.SerializeState.get -> Bee.Base.Serialization.SerializeState
+Bee.Api.Core.Messages.ApiRequest
+Bee.Api.Core.Messages.ApiRequest.ApiRequest() -> void
+Bee.Api.Core.Messages.ApiResponse
+Bee.Api.Core.Messages.ApiResponse.ApiResponse() -> void
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.FromUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.GetAccessLogRequest() -> void
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.Paging.set -> void
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.ProgId.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.ProgId.set -> void
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.RowKey.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.RowKey.set -> void
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.ToUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.UserId.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetAccessLogRequest.UserId.set -> void
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.FromUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.GetApiAnomalyLogRequest() -> void
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.Kind.get -> Bee.Definition.Logging.AnomalyKind?
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.Kind.set -> void
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.Method.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.Method.set -> void
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.Paging.set -> void
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.ToUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.UserId.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalyLogRequest.UserId.set -> void
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalySummaryRequest
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalySummaryRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalySummaryRequest.FromUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalySummaryRequest.GetApiAnomalySummaryRequest() -> void
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalySummaryRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetApiAnomalySummaryRequest.ToUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailRequest
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailRequest.GetChangeDetailRequest() -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailRequest.SysRowId.get -> System.Guid
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailRequest.SysRowId.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.ChangeKind.get -> Bee.Definition.Logging.ChangeKind
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.ChangeKind.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.Fields.get -> System.Collections.Generic.List<Bee.Api.Contracts.AuditLog.RecordFieldChange!>!
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.Fields.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.GetChangeDetailResponse() -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.IsSensitive.get -> bool
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.IsSensitive.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.LogTime.get -> System.DateTime
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.LogTime.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.ProgId.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.ProgId.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.RowKey.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.RowKey.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.Source.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.Source.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.SysRowId.get -> System.Guid
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.SysRowId.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.UserId.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.UserId.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.UserName.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.UserName.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.ChangeKind.get -> Bee.Definition.Logging.ChangeKind?
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.ChangeKind.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.FromUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.GetChangeLogRequest() -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.Paging.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.ProgId.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.ProgId.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.RowKey.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.RowKey.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.ToUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.UserId.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.UserId.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse
+Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.GetChangeLogResponse() -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
+Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Paging.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Table.get -> System.Data.DataTable?
+Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Table.set -> void
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.DatabaseId.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.DatabaseId.set -> void
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.FromUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.GetDbAnomalyLogRequest() -> void
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.Kind.get -> Bee.Definition.Logging.AnomalyKind?
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.Kind.set -> void
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.Paging.set -> void
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.ToUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalySummaryRequest
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalySummaryRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalySummaryRequest.FromUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalySummaryRequest.GetDbAnomalySummaryRequest() -> void
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalySummaryRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetDbAnomalySummaryRequest.ToUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest.Event.get -> Bee.Definition.Logging.LoginEvent?
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest.Event.set -> void
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest.FromUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest.GetLoginLogRequest() -> void
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest.Paging.set -> void
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest.ToUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest.UserId.get -> string?
+Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest.UserId.set -> void
+Bee.Api.Core.Messages.AuditLog.GetTopApiMethodsRequest
+Bee.Api.Core.Messages.AuditLog.GetTopApiMethodsRequest.FromUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetTopApiMethodsRequest.FromUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetTopApiMethodsRequest.GetTopApiMethodsRequest() -> void
+Bee.Api.Core.Messages.AuditLog.GetTopApiMethodsRequest.ToUtc.get -> System.DateTime?
+Bee.Api.Core.Messages.AuditLog.GetTopApiMethodsRequest.ToUtc.set -> void
+Bee.Api.Core.Messages.AuditLog.GetTopApiMethodsRequest.TopN.get -> int
+Bee.Api.Core.Messages.AuditLog.GetTopApiMethodsRequest.TopN.set -> void
+Bee.Api.Core.Messages.AuditLog.LogAggregateResponse
+Bee.Api.Core.Messages.AuditLog.LogAggregateResponse.LogAggregateResponse() -> void
+Bee.Api.Core.Messages.AuditLog.LogAggregateResponse.Table.get -> System.Data.DataTable?
+Bee.Api.Core.Messages.AuditLog.LogAggregateResponse.Table.set -> void
+Bee.Api.Core.Messages.AuditLog.LogListResponse
+Bee.Api.Core.Messages.AuditLog.LogListResponse.LogListResponse() -> void
+Bee.Api.Core.Messages.AuditLog.LogListResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
+Bee.Api.Core.Messages.AuditLog.LogListResponse.Paging.set -> void
+Bee.Api.Core.Messages.AuditLog.LogListResponse.Table.get -> System.Data.DataTable?
+Bee.Api.Core.Messages.AuditLog.LogListResponse.Table.set -> void
+Bee.Api.Core.Messages.ExecFuncRequest
+Bee.Api.Core.Messages.ExecFuncRequest.ExecFuncRequest() -> void
+Bee.Api.Core.Messages.ExecFuncRequest.ExecFuncRequest(string! funcID) -> void
+Bee.Api.Core.Messages.ExecFuncRequest.FuncId.get -> string!
+Bee.Api.Core.Messages.ExecFuncRequest.FuncId.set -> void
+Bee.Api.Core.Messages.ExecFuncResponse
+Bee.Api.Core.Messages.ExecFuncResponse.ExecFuncResponse() -> void
+Bee.Api.Core.Messages.Form.DeleteRequest
+Bee.Api.Core.Messages.Form.DeleteRequest.DeleteRequest() -> void
+Bee.Api.Core.Messages.Form.DeleteRequest.RowId.get -> System.Guid
+Bee.Api.Core.Messages.Form.DeleteRequest.RowId.set -> void
+Bee.Api.Core.Messages.Form.DeleteResponse
+Bee.Api.Core.Messages.Form.DeleteResponse.DeleteResponse() -> void
+Bee.Api.Core.Messages.Form.DeleteResponse.RowsAffected.get -> int
+Bee.Api.Core.Messages.Form.DeleteResponse.RowsAffected.set -> void
+Bee.Api.Core.Messages.Form.GetDataRequest
+Bee.Api.Core.Messages.Form.GetDataRequest.GetDataRequest() -> void
+Bee.Api.Core.Messages.Form.GetDataRequest.RowId.get -> System.Guid
+Bee.Api.Core.Messages.Form.GetDataRequest.RowId.set -> void
+Bee.Api.Core.Messages.Form.GetDataResponse
+Bee.Api.Core.Messages.Form.GetDataResponse.DataSet.get -> System.Data.DataSet?
+Bee.Api.Core.Messages.Form.GetDataResponse.DataSet.set -> void
+Bee.Api.Core.Messages.Form.GetDataResponse.GetDataResponse() -> void
+Bee.Api.Core.Messages.Form.GetListRequest
+Bee.Api.Core.Messages.Form.GetListRequest.Filter.get -> Bee.Definition.Filters.FilterNode?
+Bee.Api.Core.Messages.Form.GetListRequest.Filter.set -> void
+Bee.Api.Core.Messages.Form.GetListRequest.GetListRequest() -> void
+Bee.Api.Core.Messages.Form.GetListRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Core.Messages.Form.GetListRequest.Paging.set -> void
+Bee.Api.Core.Messages.Form.GetListRequest.SelectFields.get -> string!
+Bee.Api.Core.Messages.Form.GetListRequest.SelectFields.set -> void
+Bee.Api.Core.Messages.Form.GetListRequest.SortFields.get -> Bee.Definition.Sorting.SortFieldCollection?
+Bee.Api.Core.Messages.Form.GetListRequest.SortFields.set -> void
+Bee.Api.Core.Messages.Form.GetListResponse
+Bee.Api.Core.Messages.Form.GetListResponse.GetListResponse() -> void
+Bee.Api.Core.Messages.Form.GetListResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
+Bee.Api.Core.Messages.Form.GetListResponse.Paging.set -> void
+Bee.Api.Core.Messages.Form.GetListResponse.Table.get -> System.Data.DataTable?
+Bee.Api.Core.Messages.Form.GetListResponse.Table.set -> void
+Bee.Api.Core.Messages.Form.GetLookupRequest
+Bee.Api.Core.Messages.Form.GetLookupRequest.GetLookupRequest() -> void
+Bee.Api.Core.Messages.Form.GetLookupRequest.Paging.get -> Bee.Definition.Paging.PagingOptions?
+Bee.Api.Core.Messages.Form.GetLookupRequest.Paging.set -> void
+Bee.Api.Core.Messages.Form.GetLookupRequest.SearchText.get -> string!
+Bee.Api.Core.Messages.Form.GetLookupRequest.SearchText.set -> void
+Bee.Api.Core.Messages.Form.GetLookupResponse
+Bee.Api.Core.Messages.Form.GetLookupResponse.GetLookupResponse() -> void
+Bee.Api.Core.Messages.Form.GetLookupResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
+Bee.Api.Core.Messages.Form.GetLookupResponse.Paging.set -> void
+Bee.Api.Core.Messages.Form.GetLookupResponse.Table.get -> System.Data.DataTable?
+Bee.Api.Core.Messages.Form.GetLookupResponse.Table.set -> void
+Bee.Api.Core.Messages.Form.GetNewDataRequest
+Bee.Api.Core.Messages.Form.GetNewDataRequest.GetNewDataRequest() -> void
+Bee.Api.Core.Messages.Form.GetNewDataResponse
+Bee.Api.Core.Messages.Form.GetNewDataResponse.DataSet.get -> System.Data.DataSet?
+Bee.Api.Core.Messages.Form.GetNewDataResponse.DataSet.set -> void
+Bee.Api.Core.Messages.Form.GetNewDataResponse.GetNewDataResponse() -> void
+Bee.Api.Core.Messages.Form.SaveRequest
+Bee.Api.Core.Messages.Form.SaveRequest.DataSet.get -> System.Data.DataSet?
+Bee.Api.Core.Messages.Form.SaveRequest.DataSet.set -> void
+Bee.Api.Core.Messages.Form.SaveRequest.SaveRequest() -> void
+Bee.Api.Core.Messages.Form.SaveResponse
+Bee.Api.Core.Messages.Form.SaveResponse.AffectedRows.get -> System.Collections.Generic.Dictionary<string!, int>!
+Bee.Api.Core.Messages.Form.SaveResponse.AffectedRows.set -> void
+Bee.Api.Core.Messages.Form.SaveResponse.DataSet.get -> System.Data.DataSet?
+Bee.Api.Core.Messages.Form.SaveResponse.DataSet.set -> void
+Bee.Api.Core.Messages.Form.SaveResponse.SaveResponse() -> void
+Bee.Api.Core.Messages.PayloadFormat
+Bee.Api.Core.Messages.PayloadFormat.Encoded = 1 -> Bee.Api.Core.Messages.PayloadFormat
+Bee.Api.Core.Messages.PayloadFormat.Encrypted = 2 -> Bee.Api.Core.Messages.PayloadFormat
+Bee.Api.Core.Messages.PayloadFormat.Plain = 0 -> Bee.Api.Core.Messages.PayloadFormat
+Bee.Api.Core.Messages.System.CheckPackageUpdateRequest
+Bee.Api.Core.Messages.System.CheckPackageUpdateRequest.CheckPackageUpdateRequest() -> void
+Bee.Api.Core.Messages.System.CheckPackageUpdateRequest.Queries.get -> System.Collections.Generic.List<Bee.Api.Contracts.System.PackageUpdateQuery!>!
+Bee.Api.Core.Messages.System.CheckPackageUpdateRequest.Queries.set -> void
+Bee.Api.Core.Messages.System.CheckPackageUpdateResponse
+Bee.Api.Core.Messages.System.CheckPackageUpdateResponse.CheckPackageUpdateResponse() -> void
+Bee.Api.Core.Messages.System.CheckPackageUpdateResponse.Updates.get -> System.Collections.Generic.List<Bee.Api.Contracts.System.PackageUpdateInfo!>!
+Bee.Api.Core.Messages.System.CheckPackageUpdateResponse.Updates.set -> void
+Bee.Api.Core.Messages.System.CreateSessionRequest
+Bee.Api.Core.Messages.System.CreateSessionRequest.CreateSessionRequest() -> void
+Bee.Api.Core.Messages.System.CreateSessionRequest.ExpiresIn.get -> int
+Bee.Api.Core.Messages.System.CreateSessionRequest.ExpiresIn.set -> void
+Bee.Api.Core.Messages.System.CreateSessionRequest.OneTime.get -> bool
+Bee.Api.Core.Messages.System.CreateSessionRequest.OneTime.set -> void
+Bee.Api.Core.Messages.System.CreateSessionRequest.UserID.get -> string!
+Bee.Api.Core.Messages.System.CreateSessionRequest.UserID.set -> void
+Bee.Api.Core.Messages.System.CreateSessionResponse
+Bee.Api.Core.Messages.System.CreateSessionResponse.AccessToken.get -> System.Guid
+Bee.Api.Core.Messages.System.CreateSessionResponse.AccessToken.set -> void
+Bee.Api.Core.Messages.System.CreateSessionResponse.CreateSessionResponse() -> void
+Bee.Api.Core.Messages.System.CreateSessionResponse.ExpiredAt.get -> System.DateTime
+Bee.Api.Core.Messages.System.CreateSessionResponse.ExpiredAt.set -> void
+Bee.Api.Core.Messages.System.EnterCompanyRequest
+Bee.Api.Core.Messages.System.EnterCompanyRequest.CompanyId.get -> string!
+Bee.Api.Core.Messages.System.EnterCompanyRequest.CompanyId.set -> void
+Bee.Api.Core.Messages.System.EnterCompanyRequest.EnterCompanyRequest() -> void
+Bee.Api.Core.Messages.System.EnterCompanyResponse
+Bee.Api.Core.Messages.System.EnterCompanyResponse.Capabilities.get -> System.Collections.Generic.Dictionary<string!, Bee.Definition.Settings.PermissionAction>!
+Bee.Api.Core.Messages.System.EnterCompanyResponse.Capabilities.set -> void
+Bee.Api.Core.Messages.System.EnterCompanyResponse.Company.get -> Bee.Definition.Identity.CompanyInfo!
+Bee.Api.Core.Messages.System.EnterCompanyResponse.Company.set -> void
+Bee.Api.Core.Messages.System.EnterCompanyResponse.EnterCompanyResponse() -> void
+Bee.Api.Core.Messages.System.GetCommonConfigurationRequest
+Bee.Api.Core.Messages.System.GetCommonConfigurationRequest.GetCommonConfigurationRequest() -> void
+Bee.Api.Core.Messages.System.GetCommonConfigurationResponse
+Bee.Api.Core.Messages.System.GetCommonConfigurationResponse.CommonConfiguration.get -> string!
+Bee.Api.Core.Messages.System.GetCommonConfigurationResponse.CommonConfiguration.set -> void
+Bee.Api.Core.Messages.System.GetCommonConfigurationResponse.GetCommonConfigurationResponse() -> void
+Bee.Api.Core.Messages.System.GetDefineRequest
+Bee.Api.Core.Messages.System.GetDefineRequest.DefineType.get -> Bee.Definition.DefineType
+Bee.Api.Core.Messages.System.GetDefineRequest.DefineType.set -> void
+Bee.Api.Core.Messages.System.GetDefineRequest.GetDefineRequest() -> void
+Bee.Api.Core.Messages.System.GetDefineRequest.Keys.get -> string![]?
+Bee.Api.Core.Messages.System.GetDefineRequest.Keys.set -> void
+Bee.Api.Core.Messages.System.GetDefineResponse
+Bee.Api.Core.Messages.System.GetDefineResponse.GetDefineResponse() -> void
+Bee.Api.Core.Messages.System.GetDefineResponse.Xml.get -> string!
+Bee.Api.Core.Messages.System.GetDefineResponse.Xml.set -> void
+Bee.Api.Core.Messages.System.GetDepartmentTreeRequest
+Bee.Api.Core.Messages.System.GetDepartmentTreeRequest.GetDepartmentTreeRequest() -> void
+Bee.Api.Core.Messages.System.GetDepartmentTreeResponse
+Bee.Api.Core.Messages.System.GetDepartmentTreeResponse.GetDepartmentTreeResponse() -> void
+Bee.Api.Core.Messages.System.GetDepartmentTreeResponse.Tree.get -> Bee.Definition.Organization.DepartmentTree?
+Bee.Api.Core.Messages.System.GetDepartmentTreeResponse.Tree.set -> void
+Bee.Api.Core.Messages.System.GetFormLayoutRequest
+Bee.Api.Core.Messages.System.GetFormLayoutRequest.GetFormLayoutRequest() -> void
+Bee.Api.Core.Messages.System.GetFormLayoutRequest.LayoutId.get -> string!
+Bee.Api.Core.Messages.System.GetFormLayoutRequest.LayoutId.set -> void
+Bee.Api.Core.Messages.System.GetFormLayoutRequest.ProgId.get -> string!
+Bee.Api.Core.Messages.System.GetFormLayoutRequest.ProgId.set -> void
+Bee.Api.Core.Messages.System.GetFormLayoutResponse
+Bee.Api.Core.Messages.System.GetFormLayoutResponse.GetFormLayoutResponse() -> void
+Bee.Api.Core.Messages.System.GetFormLayoutResponse.Layout.get -> Bee.Definition.Layouts.FormLayout?
+Bee.Api.Core.Messages.System.GetFormLayoutResponse.Layout.set -> void
+Bee.Api.Core.Messages.System.GetFormSchemaRequest
+Bee.Api.Core.Messages.System.GetFormSchemaRequest.GetFormSchemaRequest() -> void
+Bee.Api.Core.Messages.System.GetFormSchemaRequest.ProgId.get -> string!
+Bee.Api.Core.Messages.System.GetFormSchemaRequest.ProgId.set -> void
+Bee.Api.Core.Messages.System.GetFormSchemaResponse
+Bee.Api.Core.Messages.System.GetFormSchemaResponse.GetFormSchemaResponse() -> void
+Bee.Api.Core.Messages.System.GetFormSchemaResponse.Schema.get -> Bee.Definition.Forms.FormSchema?
+Bee.Api.Core.Messages.System.GetFormSchemaResponse.Schema.set -> void
+Bee.Api.Core.Messages.System.GetLanguageRequest
+Bee.Api.Core.Messages.System.GetLanguageRequest.GetLanguageRequest() -> void
+Bee.Api.Core.Messages.System.GetLanguageRequest.Lang.get -> string!
+Bee.Api.Core.Messages.System.GetLanguageRequest.Lang.set -> void
+Bee.Api.Core.Messages.System.GetLanguageRequest.Namespace.get -> string!
+Bee.Api.Core.Messages.System.GetLanguageRequest.Namespace.set -> void
+Bee.Api.Core.Messages.System.GetLanguageResponse
+Bee.Api.Core.Messages.System.GetLanguageResponse.GetLanguageResponse() -> void
+Bee.Api.Core.Messages.System.GetLanguageResponse.Resource.get -> Bee.Definition.Language.LanguageResource?
+Bee.Api.Core.Messages.System.GetLanguageResponse.Resource.set -> void
+Bee.Api.Core.Messages.System.GetPackageRequest
+Bee.Api.Core.Messages.System.GetPackageRequest.AppId.get -> string!
+Bee.Api.Core.Messages.System.GetPackageRequest.AppId.set -> void
+Bee.Api.Core.Messages.System.GetPackageRequest.Channel.get -> string!
+Bee.Api.Core.Messages.System.GetPackageRequest.Channel.set -> void
+Bee.Api.Core.Messages.System.GetPackageRequest.ComponentId.get -> string!
+Bee.Api.Core.Messages.System.GetPackageRequest.ComponentId.set -> void
+Bee.Api.Core.Messages.System.GetPackageRequest.FileId.get -> string!
+Bee.Api.Core.Messages.System.GetPackageRequest.FileId.set -> void
+Bee.Api.Core.Messages.System.GetPackageRequest.GetPackageRequest() -> void
+Bee.Api.Core.Messages.System.GetPackageRequest.Platform.get -> string!
+Bee.Api.Core.Messages.System.GetPackageRequest.Platform.set -> void
+Bee.Api.Core.Messages.System.GetPackageRequest.Version.get -> string!
+Bee.Api.Core.Messages.System.GetPackageRequest.Version.set -> void
+Bee.Api.Core.Messages.System.GetPackageResponse
+Bee.Api.Core.Messages.System.GetPackageResponse.Content.get -> byte[]!
+Bee.Api.Core.Messages.System.GetPackageResponse.Content.set -> void
+Bee.Api.Core.Messages.System.GetPackageResponse.FileName.get -> string!
+Bee.Api.Core.Messages.System.GetPackageResponse.FileName.set -> void
+Bee.Api.Core.Messages.System.GetPackageResponse.FileSize.get -> long
+Bee.Api.Core.Messages.System.GetPackageResponse.FileSize.set -> void
+Bee.Api.Core.Messages.System.GetPackageResponse.GetPackageResponse() -> void
+Bee.Api.Core.Messages.System.GetPackageResponse.PackageUrl.get -> string!
+Bee.Api.Core.Messages.System.GetPackageResponse.PackageUrl.set -> void
+Bee.Api.Core.Messages.System.GetPackageResponse.Sha256.get -> string!
+Bee.Api.Core.Messages.System.GetPackageResponse.Sha256.set -> void
+Bee.Api.Core.Messages.System.LeaveCompanyRequest
+Bee.Api.Core.Messages.System.LeaveCompanyRequest.LeaveCompanyRequest() -> void
+Bee.Api.Core.Messages.System.LeaveCompanyResponse
+Bee.Api.Core.Messages.System.LeaveCompanyResponse.LeaveCompanyResponse() -> void
+Bee.Api.Core.Messages.System.LoginRequest
+Bee.Api.Core.Messages.System.LoginRequest.ClientPublicKey.get -> string!
+Bee.Api.Core.Messages.System.LoginRequest.ClientPublicKey.set -> void
+Bee.Api.Core.Messages.System.LoginRequest.LoginRequest() -> void
+Bee.Api.Core.Messages.System.LoginRequest.Password.get -> string!
+Bee.Api.Core.Messages.System.LoginRequest.Password.set -> void
+Bee.Api.Core.Messages.System.LoginRequest.UserId.get -> string!
+Bee.Api.Core.Messages.System.LoginRequest.UserId.set -> void
+Bee.Api.Core.Messages.System.LoginResponse
+Bee.Api.Core.Messages.System.LoginResponse.AccessToken.get -> System.Guid
+Bee.Api.Core.Messages.System.LoginResponse.AccessToken.set -> void
+Bee.Api.Core.Messages.System.LoginResponse.ApiEncryptionKey.get -> string!
+Bee.Api.Core.Messages.System.LoginResponse.ApiEncryptionKey.set -> void
+Bee.Api.Core.Messages.System.LoginResponse.ExpiredAt.get -> System.DateTime
+Bee.Api.Core.Messages.System.LoginResponse.ExpiredAt.set -> void
+Bee.Api.Core.Messages.System.LoginResponse.LoginResponse() -> void
+Bee.Api.Core.Messages.System.LoginResponse.TimeZone.get -> string!
+Bee.Api.Core.Messages.System.LoginResponse.TimeZone.set -> void
+Bee.Api.Core.Messages.System.LoginResponse.UserId.get -> string!
+Bee.Api.Core.Messages.System.LoginResponse.UserId.set -> void
+Bee.Api.Core.Messages.System.LoginResponse.UserName.get -> string!
+Bee.Api.Core.Messages.System.LoginResponse.UserName.set -> void
+Bee.Api.Core.Messages.System.LogoutRequest
+Bee.Api.Core.Messages.System.LogoutRequest.LogoutRequest() -> void
+Bee.Api.Core.Messages.System.LogoutResponse
+Bee.Api.Core.Messages.System.LogoutResponse.LogoutResponse() -> void
+Bee.Api.Core.Messages.System.PingRequest
+Bee.Api.Core.Messages.System.PingRequest.ClientName.get -> string?
+Bee.Api.Core.Messages.System.PingRequest.ClientName.set -> void
+Bee.Api.Core.Messages.System.PingRequest.PingRequest() -> void
+Bee.Api.Core.Messages.System.PingRequest.TraceId.get -> string?
+Bee.Api.Core.Messages.System.PingRequest.TraceId.set -> void
+Bee.Api.Core.Messages.System.PingResponse
+Bee.Api.Core.Messages.System.PingResponse.PingResponse() -> void
+Bee.Api.Core.Messages.System.PingResponse.ServerTime.get -> System.DateTime
+Bee.Api.Core.Messages.System.PingResponse.ServerTime.set -> void
+Bee.Api.Core.Messages.System.PingResponse.Status.get -> string!
+Bee.Api.Core.Messages.System.PingResponse.Status.set -> void
+Bee.Api.Core.Messages.System.PingResponse.TraceId.get -> string?
+Bee.Api.Core.Messages.System.PingResponse.TraceId.set -> void
+Bee.Api.Core.Messages.System.PingResponse.Version.get -> string?
+Bee.Api.Core.Messages.System.PingResponse.Version.set -> void
+Bee.Api.Core.Messages.System.SaveDefineRequest
+Bee.Api.Core.Messages.System.SaveDefineRequest.DefineType.get -> Bee.Definition.DefineType
+Bee.Api.Core.Messages.System.SaveDefineRequest.DefineType.set -> void
+Bee.Api.Core.Messages.System.SaveDefineRequest.Keys.get -> string![]?
+Bee.Api.Core.Messages.System.SaveDefineRequest.Keys.set -> void
+Bee.Api.Core.Messages.System.SaveDefineRequest.SaveDefineRequest() -> void
+Bee.Api.Core.Messages.System.SaveDefineRequest.Xml.get -> string!
+Bee.Api.Core.Messages.System.SaveDefineRequest.Xml.set -> void
+Bee.Api.Core.Messages.System.SaveDefineResponse
+Bee.Api.Core.Messages.System.SaveDefineResponse.SaveDefineResponse() -> void
+Bee.Api.Core.Registry.ApiContractRegistry
+Bee.Api.Core.Transformers.AesPayloadEncryptor
+Bee.Api.Core.Transformers.AesPayloadEncryptor.AesPayloadEncryptor() -> void
+Bee.Api.Core.Transformers.AesPayloadEncryptor.Decrypt(byte[]! bytes, byte[]! encryptionKey) -> byte[]!
+Bee.Api.Core.Transformers.AesPayloadEncryptor.Encrypt(byte[]! bytes, byte[]! encryptionKey) -> byte[]!
+Bee.Api.Core.Transformers.AesPayloadEncryptor.EncryptionMethod.get -> string!
+Bee.Api.Core.Transformers.ApiPayloadOptionsFactory
+Bee.Api.Core.Transformers.ApiPayloadTransformer
+Bee.Api.Core.Transformers.ApiPayloadTransformer.ApiPayloadTransformer() -> void
+Bee.Api.Core.Transformers.ApiPayloadTransformer.Decode(object! payload, System.Type! type) -> object?
+Bee.Api.Core.Transformers.ApiPayloadTransformer.Decrypt(byte[]! encryptedBytes, byte[]! encryptionKey) -> byte[]!
+Bee.Api.Core.Transformers.ApiPayloadTransformer.Encode(object! payload, System.Type! type) -> byte[]!
+Bee.Api.Core.Transformers.ApiPayloadTransformer.Encrypt(byte[]! rawBytes, byte[]! encryptionKey) -> byte[]!
+Bee.Api.Core.Transformers.GzipPayloadCompressor
+Bee.Api.Core.Transformers.GzipPayloadCompressor.Compress(byte[]! bytes) -> byte[]!
+Bee.Api.Core.Transformers.GzipPayloadCompressor.CompressionMethod.get -> string!
+Bee.Api.Core.Transformers.GzipPayloadCompressor.Decompress(byte[]! bytes) -> byte[]!
+Bee.Api.Core.Transformers.GzipPayloadCompressor.GzipPayloadCompressor() -> void
+Bee.Api.Core.Transformers.IApiPayloadCompressor
+Bee.Api.Core.Transformers.IApiPayloadCompressor.Compress(byte[]! bytes) -> byte[]!
+Bee.Api.Core.Transformers.IApiPayloadCompressor.CompressionMethod.get -> string!
+Bee.Api.Core.Transformers.IApiPayloadCompressor.Decompress(byte[]! bytes) -> byte[]!
+Bee.Api.Core.Transformers.IApiPayloadEncryptor
+Bee.Api.Core.Transformers.IApiPayloadEncryptor.Decrypt(byte[]! bytes, byte[]! encryptionKey) -> byte[]!
+Bee.Api.Core.Transformers.IApiPayloadEncryptor.Encrypt(byte[]! bytes, byte[]! encryptionKey) -> byte[]!
+Bee.Api.Core.Transformers.IApiPayloadEncryptor.EncryptionMethod.get -> string!
+Bee.Api.Core.Transformers.IApiPayloadSerializer
+Bee.Api.Core.Transformers.IApiPayloadSerializer.Deserialize(byte[]! bytes, System.Type! type) -> object?
+Bee.Api.Core.Transformers.IApiPayloadSerializer.SerializationMethod.get -> string!
+Bee.Api.Core.Transformers.IApiPayloadSerializer.Serialize(object! value, System.Type! type) -> byte[]!
+Bee.Api.Core.Transformers.IApiPayloadTransformer
+Bee.Api.Core.Transformers.IApiPayloadTransformer.Decode(object! payload, System.Type! type) -> object?
+Bee.Api.Core.Transformers.IApiPayloadTransformer.Decrypt(byte[]! encryptedBytes, byte[]! encryptionKey) -> byte[]!
+Bee.Api.Core.Transformers.IApiPayloadTransformer.Encode(object! payload, System.Type! type) -> byte[]!
+Bee.Api.Core.Transformers.IApiPayloadTransformer.Encrypt(byte[]! rawBytes, byte[]! encryptionKey) -> byte[]!
+Bee.Api.Core.Transformers.MessagePackPayloadSerializer
+Bee.Api.Core.Transformers.MessagePackPayloadSerializer.Deserialize(byte[]! bytes, System.Type! type) -> object?
+Bee.Api.Core.Transformers.MessagePackPayloadSerializer.MessagePackPayloadSerializer() -> void
+Bee.Api.Core.Transformers.MessagePackPayloadSerializer.SerializationMethod.get -> string!
+Bee.Api.Core.Transformers.MessagePackPayloadSerializer.Serialize(object! value, System.Type! type) -> byte[]!
+Bee.Api.Core.Transformers.NoCompressionCompressor
+Bee.Api.Core.Transformers.NoCompressionCompressor.Compress(byte[]! bytes) -> byte[]!
+Bee.Api.Core.Transformers.NoCompressionCompressor.CompressionMethod.get -> string!
+Bee.Api.Core.Transformers.NoCompressionCompressor.Decompress(byte[]! bytes) -> byte[]!
+Bee.Api.Core.Transformers.NoCompressionCompressor.NoCompressionCompressor() -> void
+Bee.Api.Core.Transformers.NoEncryptionEncryptor
+Bee.Api.Core.Transformers.NoEncryptionEncryptor.Decrypt(byte[]! bytes, byte[]! encryptionKey) -> byte[]!
+Bee.Api.Core.Transformers.NoEncryptionEncryptor.Encrypt(byte[]! bytes, byte[]! encryptionKey) -> byte[]!
+Bee.Api.Core.Transformers.NoEncryptionEncryptor.EncryptionMethod.get -> string!
+Bee.Api.Core.Transformers.NoEncryptionEncryptor.NoEncryptionEncryptor() -> void
+Bee.Api.Core.Validator.ApiAccessValidator
+const Bee.Api.Core.Messages.ApiHeaders.ApiKey = "X-Api-Key" -> string!
+const Bee.Api.Core.Messages.ApiHeaders.Authorization = "Authorization" -> string!
+const Bee.Api.Core.Messages.ApiHeaders.ContentType = "Content-Type" -> string!
+override Bee.Api.Core.JsonRpc.ApiPayloadJsonConverter<T>.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> T?
+override Bee.Api.Core.JsonRpc.ApiPayloadJsonConverter<T>.Write(System.Text.Json.Utf8JsonWriter! writer, T! value, System.Text.Json.JsonSerializerOptions! options) -> void
+override Bee.Api.Core.JsonRpc.ApiPayloadJsonConverterFactory.CanConvert(System.Type! typeToConvert) -> bool
+override Bee.Api.Core.JsonRpc.ApiPayloadJsonConverterFactory.CreateConverter(System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Text.Json.Serialization.JsonConverter!
+override Bee.Api.Core.JsonRpc.PayloadSwap.Equals(object? obj) -> bool
+override Bee.Api.Core.JsonRpc.PayloadSwap.GetHashCode() -> int
+override Bee.Api.Core.Messages.ApiErrorInfo.ToString() -> string!
+static Bee.Api.Core.ApiServiceOptions.AuthorizationValidator.get -> Bee.Api.Core.Authorization.IApiAuthorizationValidator!
+static Bee.Api.Core.ApiServiceOptions.AuthorizationValidator.set -> void
+static Bee.Api.Core.ApiServiceOptions.CurrentSettingsSummary.get -> string!
+static Bee.Api.Core.ApiServiceOptions.Initialize(Bee.Api.Core.Transformers.IApiPayloadSerializer! serializer, Bee.Api.Core.Transformers.IApiPayloadCompressor! compressor, Bee.Api.Core.Transformers.IApiPayloadEncryptor! encryptor) -> void
+static Bee.Api.Core.ApiServiceOptions.Initialize(Bee.Definition.Settings.ApiPayloadOptions! payloadOptions, bool isDebugMode) -> void
+static Bee.Api.Core.ApiServiceOptions.PayloadCompressor.get -> Bee.Api.Core.Transformers.IApiPayloadCompressor!
+static Bee.Api.Core.ApiServiceOptions.PayloadCompressor.set -> void
+static Bee.Api.Core.ApiServiceOptions.PayloadEncryptor.get -> Bee.Api.Core.Transformers.IApiPayloadEncryptor!
+static Bee.Api.Core.ApiServiceOptions.PayloadEncryptor.set -> void
+static Bee.Api.Core.ApiServiceOptions.PayloadSerializer.get -> Bee.Api.Core.Transformers.IApiPayloadSerializer!
+static Bee.Api.Core.ApiServiceOptions.PayloadSerializer.set -> void
+static Bee.Api.Core.ApiServiceOptions.PayloadTransformer.get -> Bee.Api.Core.Transformers.IApiPayloadTransformer!
+static Bee.Api.Core.ApiServiceOptions.PayloadTransformer.set -> void
+static Bee.Api.Core.Authorization.ApiAuthorizationResult.Fail(Bee.Api.Core.JsonRpc.JsonRpcErrorCode code, string! errorMessage) -> Bee.Api.Core.Authorization.ApiAuthorizationResult!
+static Bee.Api.Core.Authorization.ApiAuthorizationResult.Success(System.Guid accessToken) -> Bee.Api.Core.Authorization.ApiAuthorizationResult!
+static Bee.Api.Core.Conversion.ApiInputConverter.Convert(object! source, System.Type! targetType) -> object?
+static Bee.Api.Core.Conversion.ApiOutputConverter.Convert(object! boResult) -> object?
+static Bee.Api.Core.Conversion.ApiOutputConverter.ConvertResultValue<T>(object! value) -> T?
+static Bee.Api.Core.JsonRpc.ApiPayloadConverter.RestoreFrom(Bee.Api.Core.JsonRpc.ApiPayload! payload, Bee.Api.Core.Messages.PayloadFormat sourceFormat, byte[]? encryptionKey = null) -> void
+static Bee.Api.Core.JsonRpc.ApiPayloadConverter.TransformTo(Bee.Api.Core.JsonRpc.ApiPayload! payload, Bee.Api.Core.Messages.PayloadFormat targetFormat, byte[]? encryptionKey = null) -> void
+static Bee.Api.Core.JsonRpc.DateTimeWireGuard.Validate(object? value) -> void
+static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.ConvertFilterValue(object? value, string! timeZoneId, bool toUtc) -> object?
+static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UserToUtc(System.Data.DataSet? dataSet, string! timeZoneId) -> System.Data.DataSet?
+static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UserToUtc(System.Data.DataTable? table, string! timeZoneId) -> System.Data.DataTable?
+static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UtcToUser(System.Data.DataSet? dataSet, string! timeZoneId) -> System.Data.DataSet?
+static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UtcToUser(System.Data.DataTable? table, string! timeZoneId) -> System.Data.DataTable?
+static Bee.Api.Core.JsonRpc.PayloadSwap.operator !=(Bee.Api.Core.JsonRpc.PayloadSwap left, Bee.Api.Core.JsonRpc.PayloadSwap right) -> bool
+static Bee.Api.Core.JsonRpc.PayloadSwap.operator ==(Bee.Api.Core.JsonRpc.PayloadSwap left, Bee.Api.Core.JsonRpc.PayloadSwap right) -> bool
+static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUserZone(object? payload, string! timeZoneId) -> void
+static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUtc(object? payload, string! timeZoneId) -> Bee.Api.Core.JsonRpc.PayloadSwap
+static Bee.Api.Core.MessagePack.SerializableDataSet.FromDataSet(System.Data.DataSet! ds) -> Bee.Api.Core.MessagePack.SerializableDataSet!
+static Bee.Api.Core.MessagePack.SerializableDataSet.ToDataSet(Bee.Api.Core.MessagePack.SerializableDataSet! sds) -> System.Data.DataSet!
+static Bee.Api.Core.MessagePack.SerializableDataTable.FromDataTable(System.Data.DataTable! table) -> Bee.Api.Core.MessagePack.SerializableDataTable!
+static Bee.Api.Core.MessagePack.SerializableDataTable.ToDataTable(Bee.Api.Core.MessagePack.SerializableDataTable! sdt) -> System.Data.DataTable!
+static Bee.Api.Core.Registry.ApiContractRegistry.ConvertForSerialization(object! value) -> object?
+static Bee.Api.Core.Registry.ApiContractRegistry.Register<TContract, TApi>() -> void
+static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateCompressor(string! name) -> Bee.Api.Core.Transformers.IApiPayloadCompressor!
+static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateEncryptor(string! name, bool isDebugMode) -> Bee.Api.Core.Transformers.IApiPayloadEncryptor!
+static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateSerializer(string! name) -> Bee.Api.Core.Transformers.IApiPayloadSerializer!
+static Bee.Api.Core.Validator.ApiAccessValidator.ValidateAccess(System.Reflection.MethodInfo! method, Bee.Api.Core.Messages.ApiCallContext! context, Bee.Definition.Security.IAccessTokenValidator! tokenValidator) -> void
+virtual Bee.Api.Core.Authorization.ApiAuthorizationValidator.IsAuthorizationRequired(string! method) -> bool
+virtual Bee.Api.Core.JsonRpc.ApiPayload.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+virtual Bee.Api.Core.JsonRpc.JsonRpcRequest.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+virtual Bee.Api.Core.JsonRpc.JsonRpcResponse.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+virtual Bee.Api.Core.Messages.ApiMessageBase.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void

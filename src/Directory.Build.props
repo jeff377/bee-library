@@ -34,7 +34,12 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <RepositoryUrl>https://github.com/jeff377/bee-library</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>    
+    <RepositoryType>git</RepositoryType>
+
+    <!-- Opt-in per-project SARIF diagnostics, used to regenerate the PublicAPI baselines in bulk.
+         Off unless BeeSarifDir is passed, so normal builds are unaffected. Procedure:
+         docs/repo-ops/public-api-baseline.md -->
+    <ErrorLog Condition="'$(BeeSarifDir)' != ''">$(BeeSarifDir)/$(MSBuildProjectName).sarif,version=2.1</ErrorLog>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,5 +50,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.202" PrivateAssets="All"/>
+    <!-- Public API surface tracking. RS0016/RS0017 turn "a published type or member was added,
+         removed or changed" into a build failure unless the baseline below is updated in the same
+         commit, so a breaking change can no longer reach a release without someone noticing.
+         See docs/plans (framework review P3-5) for why: the commit-subject `!` convention was the
+         only gate and it missed real breaks twice. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="4.14.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,67 @@
+#nullable enable
+Bee.UI.Core.ClientInfo
+Bee.UI.Core.EndpointStorage
+Bee.UI.Core.EndpointStorage.EndpointStorage() -> void
+Bee.UI.Core.EndpointStorage.LoadEndpoint() -> string!
+Bee.UI.Core.EndpointStorage.SaveEndpoint(string! endpoint) -> void
+Bee.UI.Core.EndpointStorage.SetEndpoint(string! endpoint) -> void
+Bee.UI.Core.IEndpointStorage
+Bee.UI.Core.IEndpointStorage.LoadEndpoint() -> string!
+Bee.UI.Core.IEndpointStorage.SaveEndpoint(string! endpoint) -> void
+Bee.UI.Core.IEndpointStorage.SetEndpoint(string! endpoint) -> void
+Bee.UI.Core.IUIViewService
+Bee.UI.Core.IUIViewService.ShowApiConnectAsync() -> System.Threading.Tasks.Task<bool>!
+Bee.UI.Core.Permissions.ElementCapabilityResolver
+Bee.UI.Core.Permissions.ElementCapabilityResolver.Can(Bee.Definition.Forms.FormSchema! schema, Bee.Definition.Settings.PermissionAction action, System.Collections.Generic.IReadOnlyDictionary<string!, Bee.Definition.Settings.PermissionAction>? capabilities) -> bool
+Bee.UI.Core.Permissions.ElementCapabilityResolver.ElementCapabilityResolver() -> void
+Bee.UI.Core.Permissions.ElementCapabilityResolver.ResolveField(Bee.Definition.Forms.FormSchema! schema, string! fieldName, string! tableName, System.Collections.Generic.IReadOnlyDictionary<string!, Bee.Definition.Settings.PermissionAction>? capabilities) -> Bee.UI.Core.Permissions.FieldCapability
+Bee.UI.Core.Permissions.FieldCapability
+Bee.UI.Core.Permissions.FieldCapability.Deconstruct(out bool Visible, out bool ReadOnly) -> void
+Bee.UI.Core.Permissions.FieldCapability.Equals(Bee.UI.Core.Permissions.FieldCapability other) -> bool
+Bee.UI.Core.Permissions.FieldCapability.FieldCapability() -> void
+Bee.UI.Core.Permissions.FieldCapability.FieldCapability(bool Visible, bool ReadOnly) -> void
+Bee.UI.Core.Permissions.FieldCapability.ReadOnly.get -> bool
+Bee.UI.Core.Permissions.FieldCapability.ReadOnly.init -> void
+Bee.UI.Core.Permissions.FieldCapability.Visible.get -> bool
+Bee.UI.Core.Permissions.FieldCapability.Visible.init -> void
+Bee.UI.Core.Permissions.IElementCapabilityResolver
+Bee.UI.Core.Permissions.IElementCapabilityResolver.Can(Bee.Definition.Forms.FormSchema! schema, Bee.Definition.Settings.PermissionAction action, System.Collections.Generic.IReadOnlyDictionary<string!, Bee.Definition.Settings.PermissionAction>? capabilities) -> bool
+Bee.UI.Core.Permissions.IElementCapabilityResolver.ResolveField(Bee.Definition.Forms.FormSchema! schema, string! fieldName, string! tableName, System.Collections.Generic.IReadOnlyDictionary<string!, Bee.Definition.Settings.PermissionAction>? capabilities) -> Bee.UI.Core.Permissions.FieldCapability
+Bee.UI.Core.VersionInfo
+override Bee.UI.Core.Permissions.FieldCapability.GetHashCode() -> int
+static Bee.UI.Core.ClientInfo.AccessToken.get -> System.Guid
+static Bee.UI.Core.ClientInfo.AllowGenerateSettings.get -> bool
+static Bee.UI.Core.ClientInfo.AllowGenerateSettings.set -> void
+static Bee.UI.Core.ClientInfo.ApplyEnterCompanyResult(Bee.Api.Core.Messages.System.EnterCompanyResponse! response) -> void
+static Bee.UI.Core.ClientInfo.ApplyLoginResult(Bee.Api.Core.Messages.System.LoginResponse! loginResponse) -> void
+static Bee.UI.Core.ClientInfo.Arguments.get -> System.Collections.Generic.Dictionary<string!, string!>?
+static Bee.UI.Core.ClientInfo.Capabilities.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Bee.Definition.Settings.PermissionAction>?
+static Bee.UI.Core.ClientInfo.ClearCompanyContext() -> void
+static Bee.UI.Core.ClientInfo.ClientSettings.get -> Bee.Definition.Settings.ClientSettings!
+static Bee.UI.Core.ClientInfo.Company.get -> Bee.Definition.Identity.CompanyInfo?
+static Bee.UI.Core.ClientInfo.CreateFormApiConnector(string! progId) -> Bee.Api.Client.Connectors.FormApiConnector!
+static Bee.UI.Core.ClientInfo.CreateLogApiConnector() -> Bee.Api.Client.Connectors.LogApiConnector!
+static Bee.UI.Core.ClientInfo.DefineAccess.get -> Bee.Api.Client.ClientDefineAccess!
+static Bee.UI.Core.ClientInfo.EndpointStorage.get -> Bee.UI.Core.IEndpointStorage!
+static Bee.UI.Core.ClientInfo.EndpointStorage.set -> void
+static Bee.UI.Core.ClientInfo.GetEndpoint() -> string!
+static Bee.UI.Core.ClientInfo.InitializeAsync(Bee.UI.Core.IUIViewService! service, Bee.Api.Client.SupportedConnectTypes connectTypes) -> System.Threading.Tasks.Task<bool>!
+static Bee.UI.Core.ClientInfo.InitializeAsync(string! endpoint) -> System.Threading.Tasks.Task!
+static Bee.UI.Core.ClientInfo.ResetDefineCache() -> void
+static Bee.UI.Core.ClientInfo.SetEndpointAsync(string! endpoint) -> System.Threading.Tasks.Task!
+static Bee.UI.Core.ClientInfo.SystemApiConnector.get -> Bee.Api.Client.Connectors.SystemApiConnector!
+static Bee.UI.Core.ClientInfo.UIViewService.get -> Bee.UI.Core.IUIViewService?
+static Bee.UI.Core.ClientInfo.UserInfo.get -> Bee.Definition.Identity.UserInfo?
+static Bee.UI.Core.Permissions.FieldCapability.operator !=(Bee.UI.Core.Permissions.FieldCapability left, Bee.UI.Core.Permissions.FieldCapability right) -> bool
+static Bee.UI.Core.Permissions.FieldCapability.operator ==(Bee.UI.Core.Permissions.FieldCapability left, Bee.UI.Core.Permissions.FieldCapability right) -> bool
+static Bee.UI.Core.VersionInfo.AssemblyVersion.get -> string!
+static Bee.UI.Core.VersionInfo.Company.get -> string!
+static Bee.UI.Core.VersionInfo.Description.get -> string!
+static Bee.UI.Core.VersionInfo.FileVersion.get -> string!
+static Bee.UI.Core.VersionInfo.FullInformationalVersion.get -> string!
+static Bee.UI.Core.VersionInfo.Product.get -> string!
+static Bee.UI.Core.VersionInfo.Version.get -> string!
+static readonly Bee.UI.Core.Permissions.ElementCapabilityResolver.Default -> Bee.UI.Core.Permissions.ElementCapabilityResolver!
+static readonly Bee.UI.Core.Permissions.FieldCapability.Allowed -> Bee.UI.Core.Permissions.FieldCapability
+~override Bee.UI.Core.Permissions.FieldCapability.Equals(object obj) -> bool
+~override Bee.UI.Core.Permissions.FieldCapability.ToString() -> string

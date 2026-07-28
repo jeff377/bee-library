@@ -5,6 +5,12 @@
     <Nullable>enable</Nullable>
     <Description>Blazor Server component library for Bee.NET (FormSchema-driven UI on top of LocalApiProvider).</Description>
     <PackageTags>bee.net;blazor;blazor-server;rcl;ui</PackageTags>
+    <!-- RS0041 (oblivious reference types in public API) fires only on the Razor-generated
+         BuildRenderTree overrides in obj/**/*_razor.g.cs. That signature is emitted by the Razor
+         source generator, not authored here, and cannot be annotated. The members themselves are
+         still tracked in PublicAPI.Shipped.txt, so an added or removed component is still caught
+         by RS0016/RS0017 — only the nullability-obliviousness check is off. -->
+    <NoWarn>$(NoWarn);RS0041</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

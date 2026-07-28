@@ -1,0 +1,85 @@
+#nullable enable
+Bee.Web.Blazor.Server.Components.BeeAccessTokenProvider
+Bee.Web.Blazor.Server.Components.BeeAccessTokenProvider.AccessToken.get -> System.Guid
+Bee.Web.Blazor.Server.Components.BeeAccessTokenProvider.BeeAccessTokenProvider() -> void
+Bee.Web.Blazor.Server.Components.BeeAccessTokenProvider.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Bee.Web.Blazor.Server.Components.BeeAccessTokenProvider!>?
+Bee.Web.Blazor.Server.Components.BeeAccessTokenProvider.ChildContent.set -> void
+Bee.Web.Blazor.Server.Components.BeeAccessTokenProvider.Clear() -> void
+Bee.Web.Blazor.Server.Components.BeeAccessTokenProvider.IsAuthenticated.get -> bool
+Bee.Web.Blazor.Server.Components.BeeAccessTokenProvider.SetToken(System.Guid accessToken) -> void
+Bee.Web.Blazor.Server.Components.BeeLoginPanel
+Bee.Web.Blazor.Server.Components.BeeLoginPanel.BeeLoginPanel() -> void
+Bee.Web.Blazor.Server.Components.BeeLoginPanel.OnLoggedIn.get -> Microsoft.AspNetCore.Components.EventCallback<Bee.Api.Core.Messages.System.LoginResponse!>
+Bee.Web.Blazor.Server.Components.BeeLoginPanel.OnLoggedIn.set -> void
+Bee.Web.Blazor.Server.Components.BeeLoginPanel.PasswordLabel.get -> string!
+Bee.Web.Blazor.Server.Components.BeeLoginPanel.PasswordLabel.set -> void
+Bee.Web.Blazor.Server.Components.BeeLoginPanel.SubmitLabel.get -> string!
+Bee.Web.Blazor.Server.Components.BeeLoginPanel.SubmitLabel.set -> void
+Bee.Web.Blazor.Server.Components.BeeLoginPanel.UserIdLabel.get -> string!
+Bee.Web.Blazor.Server.Components.BeeLoginPanel.UserIdLabel.set -> void
+Bee.Web.Blazor.Server.Components.DynamicForm
+Bee.Web.Blazor.Server.Components.DynamicForm.DataObject.get -> Bee.Web.Blazor.Server.DataObjects.FormDataObject?
+Bee.Web.Blazor.Server.Components.DynamicForm.DataObject.set -> void
+Bee.Web.Blazor.Server.Components.DynamicForm.DynamicForm() -> void
+Bee.Web.Blazor.Server.Components.DynamicForm.IdPrefix.get -> string!
+Bee.Web.Blazor.Server.Components.DynamicForm.IdPrefix.set -> void
+Bee.Web.Blazor.Server.Components.DynamicForm.Layout.get -> Bee.Definition.Layouts.FormLayout?
+Bee.Web.Blazor.Server.Components.DynamicForm.Layout.set -> void
+Bee.Web.Blazor.Server.Components.DynamicGrid
+Bee.Web.Blazor.Server.Components.DynamicGrid.DynamicGrid() -> void
+Bee.Web.Blazor.Server.Components.DynamicGrid.EmptyText.get -> string!
+Bee.Web.Blazor.Server.Components.DynamicGrid.EmptyText.set -> void
+Bee.Web.Blazor.Server.Components.DynamicGrid.Layout.get -> Bee.Definition.Layouts.LayoutGrid?
+Bee.Web.Blazor.Server.Components.DynamicGrid.Layout.set -> void
+Bee.Web.Blazor.Server.Components.DynamicGrid.OnRowSelected.get -> Microsoft.AspNetCore.Components.EventCallback<System.Guid>
+Bee.Web.Blazor.Server.Components.DynamicGrid.OnRowSelected.set -> void
+Bee.Web.Blazor.Server.Components.DynamicGrid.Rows.get -> System.Data.DataTable?
+Bee.Web.Blazor.Server.Components.DynamicGrid.Rows.set -> void
+Bee.Web.Blazor.Server.Components.FormPage
+Bee.Web.Blazor.Server.Components.FormPage.AccessToken.get -> System.Guid
+Bee.Web.Blazor.Server.Components.FormPage.AccessToken.set -> void
+Bee.Web.Blazor.Server.Components.FormPage.FormPage() -> void
+Bee.Web.Blazor.Server.Components.FormPage.ProgId.get -> string!
+Bee.Web.Blazor.Server.Components.FormPage.ProgId.set -> void
+Bee.Web.Blazor.Server.DataObjects.FormDataObject
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.DataSet.get -> System.Data.DataSet!
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.DeleteAsync() -> System.Threading.Tasks.Task!
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.DetailTables.get -> System.Collections.Generic.IEnumerable<System.Data.DataTable!>!
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.FormDataObject(Bee.Definition.Forms.FormSchema! schema, Bee.Api.Client.Connectors.FormApiConnector? connector = null) -> void
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.GetField(string! fieldName) -> string!
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.GetFormField(string! fieldName) -> Bee.Definition.Forms.FormField?
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.InitializeNewMaster() -> void
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.IsDirty.get -> bool
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.IsLoading.get -> bool
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.LoadAsync(System.Guid rowId) -> System.Threading.Tasks.Task!
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.MasterRow.get -> System.Data.DataRow?
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.MasterTable.get -> System.Data.DataTable!
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.NewAsync() -> System.Threading.Tasks.Task!
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.SaveAsync() -> System.Threading.Tasks.Task!
+Bee.Web.Blazor.Server.DataObjects.FormDataObject.SetField(string! fieldName, string? value) -> void
+Bee.Web.Blazor.Server.DependencyInjection.BeeApiConnectorFactory
+Bee.Web.Blazor.Server.DependencyInjection.BeeApiConnectorFactory.BeeApiConnectorFactory(Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions! options) -> void
+Bee.Web.Blazor.Server.DependencyInjection.BeeApiConnectorFactory.Mode.get -> Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorProviderMode
+Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions
+Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions.BeeBlazorOptions() -> void
+Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions.Endpoint.get -> string!
+Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions.Mode.get -> Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorProviderMode
+Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions.UseLocalProvider() -> Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions!
+Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions.UseRemoteProvider(string! endpoint) -> Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions!
+Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorProviderMode
+Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorProviderMode.Local = 0 -> Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorProviderMode
+Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorProviderMode.Remote = 1 -> Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorProviderMode
+Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorServiceCollectionExtensions
+Bee.Web.Blazor.Server._Imports
+Bee.Web.Blazor.Server._Imports.Execute() -> void
+Bee.Web.Blazor.Server._Imports._Imports() -> void
+override Bee.Web.Blazor.Server.Components.BeeAccessTokenProvider.OnInitialized() -> void
+override Bee.Web.Blazor.Server.Components.FormPage.OnInitializedAsync() -> System.Threading.Tasks.Task!
+static Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorServiceCollectionExtensions.AddBeeBlazor(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+virtual Bee.Web.Blazor.Server.DependencyInjection.BeeApiConnectorFactory.CreateFormConnector(System.Guid accessToken, string! progId) -> Bee.Api.Client.Connectors.FormApiConnector!
+virtual Bee.Web.Blazor.Server.DependencyInjection.BeeApiConnectorFactory.CreateSystemConnector(System.Guid accessToken) -> Bee.Api.Client.Connectors.SystemApiConnector!
+~override Bee.Web.Blazor.Server.Components.BeeAccessTokenProvider.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Bee.Web.Blazor.Server.Components.BeeLoginPanel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Bee.Web.Blazor.Server.Components.DynamicForm.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Bee.Web.Blazor.Server.Components.DynamicGrid.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Bee.Web.Blazor.Server.Components.FormPage.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
