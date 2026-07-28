@@ -1,13 +1,13 @@
 # 計畫：UI 專案收斂為 Avalonia + Blazor.Server 雙軌
 
-**狀態：🚧 進行中（2026-07-28）**
+**狀態：✅ 已完成（2026-07-28）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 移除 `Bee.UI.Maui` 與 `Bee.Web.Blazor.Wasm`（含 tests / samples / CI / slnx） | ✅ 已完成（2026-07-28） |
 | 2 | MAUI trim/AOT 知識保留：`rules/maui.md` 重新定位為 Apple 平台通用 | ✅ 已完成（採方案 A，更名 `apple-mobile-trim.md`） |
 | 3 | 文件同步（dependency-map、README 專案數、samples 導覽、CHANGELOG breaking） | ✅ 已完成（2026-07-28） |
-| 4 | 收斂 `FormDataObject` 重複（範圍由階段 1 決定：4 份 → 2 份） | 📝 待做 |
+| 4 | 收斂 `FormDataObject` 重複 | ✅ 已完成（改採雙向註解，理由見下） |
 
 ## 背景
 
@@ -88,16 +88,38 @@ runtime，唯一差異是 DOM vs canvas；而它又與 `Bee.Web.Blazor.Server` �
   若此次收斂推翻了 adr-013 的前提，正確做法是**新增一份 ADR 記錄本次決策並標記 adr-013 為部分取代**，
   而不是改寫 adr-013 本身
 
-## 階段 4：`FormDataObject` 收斂
+## 階段 4：`FormDataObject` 收斂 —— 改採雙向註解
 
 體檢 P2-1 原建議「抽 `Bee.Web.Blazor.Core` 承接兩個 Blazor 的 950 行重複」——
-**階段 1 完成後這件事就不必做了**（只剩一個 Blazor，沒有共用對象）。
+階段 1 完成後這件事已不必做（只剩一個 Blazor，沒有共用對象）。
 
-`FormDataObject` 從 4 份降為 2 份（Avalonia + Blazor.Server）。這兩份仍完全平台中立
-（using 只有 `System.Data` / `Bee.Api.Client.Connectors` / `Bee.Definition`，零 UI 框架相依），
-因此仍值得上移至 `Bee.UI.Core`，但規模與風險都比原本小得多。
+`FormDataObject` 從 4 份降為 2 份（Avalonia 791 行 / Blazor.Server 360 行）。兩份的
+`using` 完全一致且零 UI 框架相依，技術上可上移至 `Bee.UI.Core`——**但不應該這麼做**。
 
-> **順序很重要**：先移除專案再抽共用層。反過來會為即將刪除的專案建共用基礎設施。
+`docs/dependency-map.md` 明文記載 **`Bee.UI.*` family 判別準則**：
+
+> 是否消費 `Bee.UI.Core` 抽象（`ClientInfo` / `IEndpointStorage` / `IUIViewService`）。
+> 消費 → 歸 `Bee.UI.*`；不消費、有自己的狀態管理 → 獨立 family 前綴
+> （如 `Bee.Web.Blazor.*`：Blazor circuit / WASM 環境沒有檔案 IO 與 dialog service 的概念）。
+
+也就是說「Blazor 不消費 `Bee.UI.Core`」是**刻意的架構決策且有明確理由**，不是疏漏。
+上移會讓 `Bee.Web.Blazor.Server` 依賴 `Bee.UI.Core`，直接牴觸這條準則——而準則本身
+正是以「是否消費 UI.Core」為判別基礎。
+
+評估過的替代方案：
+
+| 方案 | 取捨 | 判定 |
+|------|------|------|
+| 新增中性套件（如 `Bee.Forms`） | 消除重複且不違反準則 | 為 360 行重複多一個發布套件（CI pack 清單 / dependency-map / README 全要加），不划算 |
+| Blazor.Server 引用 `Bee.UI.Core` | 最省事 | 破壞 family 準則的判別基礎 |
+| `Bee.UI.Core` 拆「連線狀態」與「表單資料」兩層 | 長期最乾淨 | 工程量遠超過它要解決的問題；若要做應另開 plan |
+
+**採用：維持兩份 + 雙向註解**，說明刻意平行維護、為何不合併、以及改一邊必須同步另一邊。
+這與 repo 內既有的平行家族（`Bee.Base.Collections` vs `Bee.Definition.Collections.MessagePack*`）
+處理方式一致——體檢曾指出那組「分岔很可能刻意，但兩個檔案都沒有一句話說明」，此次一併把
+慣例建立起來。
+
+> **順序很重要**：先移除專案再決定共用層。反過來會為即將刪除的專案建共用基礎設施。
 
 ## 風險與確認事項
 

@@ -13,11 +13,26 @@ namespace Bee.Web.Blazor.Server.DataObjects
     /// access surface for two-way binding by <c>DynamicForm</c> / <c>DynamicGrid</c>.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The constructor seeds an empty <see cref="DataSet"/> derived from
     /// <see cref="FormSchema"/>. The async methods (<see cref="LoadAsync"/>,
     /// <see cref="NewAsync"/>, <see cref="SaveAsync"/>, <see cref="DeleteAsync"/>)
     /// round-trip through the supplied <see cref="FormApiConnector"/> and replace
     /// the local <see cref="DataSet"/> with the server response.
+    /// </para>
+    /// <para>
+    /// <b>Deliberately parallel to <c>Bee.UI.Avalonia.DataObjects.FormDataObject</c>.</b>
+    /// The two are near-identical and neither carries a UI-framework dependency, so merging them
+    /// looks obvious — but the shared home would have to be <c>Bee.UI.Core</c>, and consuming it is
+    /// exactly what places a package in the <c>Bee.UI.*</c> family (docs/dependency-map.md).
+    /// <c>Bee.Web.Blazor.*</c> is a separate family on purpose: a circuit has no file IO and no
+    /// dialog service, so <c>IEndpointStorage</c> / <c>IUIViewService</c> mean nothing here.
+    /// </para>
+    /// <para>
+    /// WARNING: a behavioural change here — DataSet seeding, default values for a
+    /// <see cref="FieldDbType"/>, connector round-trip handling — must be mirrored in the Avalonia
+    /// copy. Nothing enforces this at compile time.
+    /// </para>
     /// </remarks>
     public class FormDataObject
     {
