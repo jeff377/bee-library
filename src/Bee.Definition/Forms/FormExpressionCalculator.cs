@@ -250,7 +250,7 @@ namespace Bee.Definition.Forms
                 // DateTime (ADR-032 D12, ADR-031) — and forcing the cell's type at parse time would
                 // make the engine reject its own helper. `CoerceValue` performs every widening the
                 // return type used to, plus that one.
-                var value = _evaluator.Evaluate(field.DefaultValueExpression, variables, typeof(object), timeZoneId);
+                var value = _evaluator.Evaluate<object?>(field.DefaultValueExpression, variables, timeZoneId);
                 var newValue = value is null ? (object)DBNull.Value : ExpressionPolicy.CoerceValue(value, field.DbType);
                 if (Equals(newValue, row[field.FieldName])) { continue; }
                 row[field.FieldName] = newValue;
@@ -277,7 +277,7 @@ namespace Bee.Definition.Forms
 
                 // Coerced after evaluation rather than forced at parse time — see ApplyDefaults.
                 var result = ExpressionPolicy.CoerceValue(
-                    _evaluator.Evaluate(field.ValueExpression, variables, typeof(object), timeZoneId), field.DbType);
+                    _evaluator.Evaluate<object?>(field.ValueExpression, variables, timeZoneId), field.DbType);
 
                 if (result is decimal numeric)
                 {

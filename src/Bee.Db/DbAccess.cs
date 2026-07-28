@@ -562,7 +562,7 @@ namespace Bee.Db
                     tran = scope.Connection!.BeginTransaction();
                     var affected = new int[specs.Count];
                     for (int i = 0; i < specs.Count; i++)
-                        affected[i] = ApplySpec(specs[i], scope.Connection!, tran);
+                        affected[i] = ApplySpec(specs[i], scope.Connection, tran);
 
                     tran.Commit();
                     return affected;

@@ -81,7 +81,7 @@ namespace Bee.Definition.UnitTests.Forms
         [DisplayName("DefaultForDbType：布林回傳 false")]
         public void DefaultForDbType_Boolean_ReturnsFalse()
         {
-            Assert.Equal(false, FormRowDefaults.DefaultForDbType(FieldDbType.Boolean));
+            Assert.False(Assert.IsType<bool>(FormRowDefaults.DefaultForDbType(FieldDbType.Boolean)));
         }
 
         [Fact]

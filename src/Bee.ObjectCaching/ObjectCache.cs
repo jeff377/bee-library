@@ -85,7 +85,7 @@ namespace Bee.ObjectCaching
             var value = CreateInstance();
             if (value != null)
             {
-                CacheInfo.Provider.Set(key, value!, BuildPolicy());
+                CacheInfo.Provider.Set(key, value, BuildPolicy());
             }
             return value;
         }
@@ -97,7 +97,7 @@ namespace Bee.ObjectCaching
         public virtual void Set(T value)
         {
             string key = GetKey();
-            CacheInfo.Provider.Set(key, value!, BuildPolicy());
+            CacheInfo.Provider.Set(key, value, BuildPolicy());
         }
 
         /// <summary>

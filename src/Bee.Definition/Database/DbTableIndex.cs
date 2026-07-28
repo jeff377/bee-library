@@ -108,12 +108,12 @@ namespace Bee.Definition.Database
             // Index field count differs, return false
             if (IndexFields!.Count != source.IndexFields!.Count) { return false; }
             // Compare each index field schema
-            foreach (IndexField indexField in IndexFields!)
+            foreach (IndexField indexField in IndexFields)
             {
                 // Index field does not exist, return false
-                if (!source.IndexFields!.Contains(indexField.FieldName)) { return false; }
+                if (!source.IndexFields.Contains(indexField.FieldName)) { return false; }
                 // Sort direction differs, return false
-                if (databaseType == DatabaseType.SQLServer && indexField.SortDirection != source.IndexFields![indexField.FieldName].SortDirection) { return false; }
+                if (databaseType == DatabaseType.SQLServer && indexField.SortDirection != source.IndexFields[indexField.FieldName].SortDirection) { return false; }
             }
             return true;
         }

@@ -63,7 +63,7 @@ namespace Bee.Api.Core.UnitTests.Filters
 
             Assert.Equal("sys_id", restored.FieldName);
             Assert.Equal(ComparisonOperator.In, restored.Operator);
-            var values = Assert.IsAssignableFrom<IEnumerable<object>>(restored.Value).ToList();
+            var values = Assert.IsType<IEnumerable<object>>(restored.Value, exactMatch: false).ToList();
             Assert.Equal(new object[] { "E001", "E002", "E003" }, values);
         }
 

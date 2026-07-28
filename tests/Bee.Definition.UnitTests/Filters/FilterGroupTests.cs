@@ -88,7 +88,7 @@ namespace Bee.Definition.UnitTests.Filters
             // In() materializes the input to a fresh object[] (so it round-trips through the
             // MessagePack typeless whitelist), so assert content equality rather than reference identity.
             Assert.Equal(ComparisonOperator.In, cond.Operator);
-            var stored = Assert.IsAssignableFrom<IEnumerable<object>>(cond.Value);
+            var stored = Assert.IsType<IEnumerable<object>>(cond.Value, exactMatch: false);
             Assert.Equal(values, stored);
         }
 

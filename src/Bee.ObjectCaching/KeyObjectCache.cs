@@ -127,7 +127,7 @@ namespace Bee.ObjectCaching
         public virtual void Set(string key, T value)
         {
             string cacheKey = GetCacheKey(key);
-            CacheInfo.Provider.Set(cacheKey, value!, BuildPolicy(key));
+            CacheInfo.Provider.Set(cacheKey, value, BuildPolicy(key));
         }
 
         /// <summary>

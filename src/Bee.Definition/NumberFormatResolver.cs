@@ -37,7 +37,7 @@ namespace Bee.Definition
                 // Resolve the effective currency: the explicit reference code, else the company's
                 // default (home) currency. When neither resolves — or no currency master is deployed —
                 // fall back to the company table (Amount is normally absent there → framework default 2).
-                string code = !string.IsNullOrEmpty(refCode) ? refCode! : (ctx.Company?.DefaultCurrency ?? string.Empty);
+                string code = !string.IsNullOrEmpty(refCode) ? refCode : (ctx.Company?.DefaultCurrency ?? string.Empty);
                 if (ctx.CurrencySettings != null && !string.IsNullOrEmpty(code))
                     return ctx.CurrencySettings.GetDecimals(code);
                 return ctx.Company?.GetDecimals(kind) ?? NumberKindProfile.GetDefaultDecimals(kind);
@@ -48,7 +48,7 @@ namespace Bee.Definition
                 // Quantities/weights resolve from the bound unit; with no unit code (or no unit master)
                 // they fall back to the company decimals (else the framework default).
                 if (ctx.UnitSettings != null && !string.IsNullOrEmpty(refCode))
-                    return ctx.UnitSettings.GetDecimals(refCode!);
+                    return ctx.UnitSettings.GetDecimals(refCode);
                 return ctx.Company?.GetDecimals(kind) ?? NumberKindProfile.GetDefaultDecimals(kind);
             }
 

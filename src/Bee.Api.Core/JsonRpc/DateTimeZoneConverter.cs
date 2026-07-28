@@ -34,15 +34,6 @@ namespace Bee.Api.Core.JsonRpc
             => Convert(dataSet, timeZoneId, toUtc: false);
 
         /// <summary>
-        /// Returns a copy of <paramref name="dataSet"/> with instant columns moved from the user's
-        /// zone to UTC — the direction for a request leaving the client.
-        /// </summary>
-        /// <param name="dataSet">The data set to convert; <c>null</c> returns <c>null</c>.</param>
-        /// <param name="timeZoneId">The user's IANA time zone id; blank is a no-op.</param>
-        public static DataSet? UserToUtc(DataSet? dataSet, string timeZoneId)
-            => Convert(dataSet, timeZoneId, toUtc: true);
-
-        /// <summary>
         /// Returns a copy of <paramref name="table"/> with instant columns moved from UTC to the
         /// user's zone.
         /// </summary>
@@ -50,6 +41,15 @@ namespace Bee.Api.Core.JsonRpc
         /// <param name="timeZoneId">The user's IANA time zone id; blank is a no-op.</param>
         public static DataTable? UtcToUser(DataTable? table, string timeZoneId)
             => Convert(table, timeZoneId, toUtc: false);
+
+        /// <summary>
+        /// Returns a copy of <paramref name="dataSet"/> with instant columns moved from the user's
+        /// zone to UTC — the direction for a request leaving the client.
+        /// </summary>
+        /// <param name="dataSet">The data set to convert; <c>null</c> returns <c>null</c>.</param>
+        /// <param name="timeZoneId">The user's IANA time zone id; blank is a no-op.</param>
+        public static DataSet? UserToUtc(DataSet? dataSet, string timeZoneId)
+            => Convert(dataSet, timeZoneId, toUtc: true);
 
         /// <summary>
         /// Returns a copy of <paramref name="table"/> with instant columns moved from the user's

@@ -84,7 +84,7 @@ namespace Bee.Definition.Database
             if (tableSchema.Fields == null) return;
 
             // Create primary key index
-            if (tableSchema.Fields!.Contains(SysFields.No))
+            if (tableSchema.Fields.Contains(SysFields.No))
                 tableSchema.Indexes!.AddPrimaryKey(SysFields.No);
 
             // Create unique row identifier index

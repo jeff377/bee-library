@@ -110,8 +110,22 @@ namespace Bee.Expressions
                 arguments[i] = new Parameter(names[i], variables[names[i]] ?? (object)string.Empty);
             }
 
-            // Scope the zone to this invocation only, and restore whatever an outer call had: a
-            // computed field's expression can be evaluated inside another evaluation.
+            return InvokeWithZone(lambda, arguments, timeZoneId);
+        }
+
+        /// <summary>
+        /// Invokes a compiled lambda with <see cref="t_timeZoneId"/> set to <paramref name="timeZoneId"/>.
+        /// </summary>
+        /// <param name="lambda">The compiled expression to invoke.</param>
+        /// <param name="arguments">The bound parameters.</param>
+        /// <param name="timeZoneId">The zone the helper functions should observe for this invocation.</param>
+        /// <remarks>
+        /// The zone is scoped to this invocation only, and whatever an outer call had is restored: a
+        /// computed field's expression can be evaluated inside another evaluation. Kept static so the
+        /// whole read/write protocol for the ambient field sits next to the field itself.
+        /// </remarks>
+        private static object? InvokeWithZone(Lambda lambda, Parameter[] arguments, string timeZoneId)
+        {
             var previous = t_timeZoneId;
             t_timeZoneId = timeZoneId;
             try

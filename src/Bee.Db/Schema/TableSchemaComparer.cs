@@ -259,7 +259,7 @@ namespace Bee.Db.Schema
 
                 // DB does not yet have the target name — check for a rename hint.
                 if (StringUtilities.IsNotEmpty(defineField.OriginalFieldName)
-                    && this.RealTable.Fields!.Contains(defineField.OriginalFieldName))
+                    && this.RealTable.Fields.Contains(defineField.OriginalFieldName))
                 {
                     var oldRealField = this.RealTable.Fields[defineField.OriginalFieldName];
                     diff.Changes.Add(new RenameFieldChange(defineField.OriginalFieldName, defineField.Clone()));

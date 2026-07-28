@@ -23,7 +23,7 @@ namespace Bee.UI.Avalonia.Views
             var listLayout = Schema!.GetListLayout();
             // Degrade the freshly generated list layout before binding: sensitive columns the user
             // cannot Read drop out. No-op when no company context is active.
-            LayoutCapabilityApplier.ApplyGrid(listLayout, Schema!, ClientInfo.Capabilities);
+            LayoutCapabilityApplier.ApplyGrid(listLayout, Schema, ClientInfo.Capabilities);
             // Columns render immediately; rows arrive with the first ReloadAsync.
             _grid.Bind(listLayout, rows: null);
 

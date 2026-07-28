@@ -194,7 +194,7 @@ namespace Bee.Definition.Forms
                 if (StringUtilities.IsEmpty(this.ProgId) || !this.Tables!.Contains(this.ProgId))
                     return null;
                 else
-                    return this.Tables![this.ProgId];
+                    return this.Tables[this.ProgId];
             }
         }
 

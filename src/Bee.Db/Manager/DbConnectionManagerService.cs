@@ -107,7 +107,7 @@ namespace Bee.Db.Manager
                 connection.StateChange += (sender, e) =>
                 {
                     if (e.OriginalState == ConnectionState.Closed && e.CurrentState == ConnectionState.Open)
-                        initializer((DbConnection)sender!);
+                        initializer((DbConnection)sender);
                 };
             }
             return connection;

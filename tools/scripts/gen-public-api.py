@@ -14,13 +14,35 @@ import pathlib
 import sys
 
 
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
+
+
+def resolve_within_repo(raw: str) -> pathlib.Path:
+    """Resolve `raw` and reject anything that escapes the repository root.
+
+    This script only ever reads a build's SARIF log and writes a `PublicAPI` baseline,
+    both of which live inside the repository. Confining the arguments keeps a stray
+    relative path from reading or overwriting an unrelated file on the machine.
+    """
+    resolved = pathlib.Path(raw).expanduser().resolve()
+    if resolved != REPO_ROOT and REPO_ROOT not in resolved.parents:
+        raise ValueError(f"path escapes the repository root: {raw}")
+    return resolved
+
+
 def main() -> int:
     if len(sys.argv) != 3:
         print(__doc__, file=sys.stderr)
         return 2
 
-    sarif_path, out_path = sys.argv[1], sys.argv[2]
-    log = json.loads(pathlib.Path(sarif_path).read_text(encoding="utf-8"))
+    try:
+        sarif_path = resolve_within_repo(sys.argv[1])
+        out_path = resolve_within_repo(sys.argv[2])
+    except ValueError as ex:
+        print(ex, file=sys.stderr)
+        return 2
+
+    log = json.loads(sarif_path.read_text(encoding="utf-8"))
 
     names = set()
     for run in log.get("runs", []):
@@ -31,7 +53,7 @@ def main() -> int:
             if api:
                 names.add(api)
 
-    target = pathlib.Path(out_path)
+    target = out_path
     if target.exists():
         names.update(
             line for line in target.read_text(encoding="utf-8").splitlines()

@@ -82,7 +82,7 @@ namespace Bee.Db.Dml
             buffer.AppendLine(" Values ");
             buffer.Append('(');
             count = 0;
-            foreach (DbField field in this.TableSchema.Fields!)
+            foreach (DbField field in this.TableSchema.Fields)
             {
                 if (field.DbType != FieldDbType.AutoIncrement)
                 {
@@ -128,7 +128,7 @@ namespace Bee.Db.Dml
                 }
             }
             // Add primary key condition to WHERE clause
-            fieldName = QuoteIdentifier(keyField!.FieldName);
+            fieldName = QuoteIdentifier(keyField.FieldName);
             command.Parameters.Add(keyField, System.Data.DataRowVersion.Original);
             buffer.AppendLine();
             buffer.AppendLine(CultureInfo.InvariantCulture, $"Where {fieldName}={GetParameterName(keyField.FieldName)}");
@@ -149,7 +149,7 @@ namespace Bee.Db.Dml
 
             // Add primary key condition to WHERE clause
             var keyField = this.TableSchema.Fields![SysFields.RowId];
-            string fieldName = QuoteIdentifier(keyField!.FieldName);
+            string fieldName = QuoteIdentifier(keyField.FieldName);
             command.Parameters.Add(keyField, System.Data.DataRowVersion.Original);
             buffer.AppendLine(CultureInfo.InvariantCulture, $"Where {fieldName}={GetParameterName(keyField.FieldName)}");
 
