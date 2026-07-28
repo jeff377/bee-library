@@ -21,7 +21,7 @@ See [development-cookbook.md § Framework Initialization Order](development-cook
 
 - Resolving framework services before `AddBeeFramework` → DI container throws `InvalidOperationException` (service not registered)
 - Calling `SystemSettingsLoader.Load` on a path with no `SystemSettings.xml` → throws `FileNotFoundException`
-- Constructing `DbAccess` without an `IDbConnectionManager` argument → compile error (every constructor of `DbAccess` requires `IDbConnectionManager`); obtain `DbAccess` instances through DI-injected `IDbAccessFactory.Create(databaseId)`
+- Resolving a `DbAccess` by database id without an `IDbConnectionManager` → compile error; obtain those instances through DI-injected `IDbAccessFactory.Create(databaseId)`. (A second constructor takes an already-open `DbConnection` plus its `DatabaseType` and needs no connection manager — it is for callers that own the connection, such as the cache-notify poller.)
 
 ### Reference Example
 
@@ -130,6 +130,8 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 - `NotSupportedException`
 - `FormatException`
 - `JsonRpcException`
+
+`ForbiddenException` is also forwarded with its message intact, but under a distinct code: `JsonRpcErrorCode.PermissionDenied` (`-32004`). Client-side error handling that assumes every user-facing failure arrives as `-32099` will misclassify permission denials.
 
 All other exceptions are masked as `"Internal server error"` in production (mapped to `JsonRpcErrorCode.InternalError` `-32000`) to prevent leakage of internal details.
 

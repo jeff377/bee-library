@@ -29,8 +29,8 @@ entry point (service locator).
 │      IBusinessObjectFactory / JsonRpcExecutor       │
 ├─────────────────────────────────────────────────────┤
 │ 5. provider = services.BuildServiceProvider()       │
-│ 6. app.UseBeeFramework() (ASP.NET only — currently  │
-│    a no-op hook reserved for future middleware)     │
+│ 6. app.UseBeeFramework() (ASP.NET only — startup   │
+│    checks; registers no middleware or endpoint)    │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -564,10 +564,15 @@ builder.Services.AddBeeBlazor();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 var app = builder.Build();
-app.UseBeeFramework(); // JSON-RPC middleware
+app.UseBeeFramework();  // startup checks only — see note below
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.Run();
 ```
+
+> `UseBeeFramework` registers no middleware and no endpoint — it performs startup checks (notably
+> warning when the default `ApiAuthorizationValidator` is still in place). The `POST /api` endpoint
+> comes from a controller deriving from `ApiServiceController`, so the host still needs
+> `AddControllers()` and `MapControllers()`.
 
 **2. Inject connectors in a Razor component**:
 

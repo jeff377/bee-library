@@ -21,7 +21,7 @@
 
 - 在 `AddBeeFramework` 之前解析框架服務 → DI 容器拋 `InvalidOperationException`（服務未註冊）
 - `SystemSettingsLoader.Load` 指向不存在的 `SystemSettings.xml` → 拋 `FileNotFoundException`
-- 直接 `new DbAccess(databaseId)` 而未提供 `IDbConnectionManager` 參數 → 編譯錯誤（框架要求所有 ctor 都帶 `IDbConnectionManager`）；改透過 DI 注入的 `IDbAccessFactory.Create(databaseId)` 取得 `DbAccess` 實例
+- 以資料庫 id 建立 `DbAccess` 卻未提供 `IDbConnectionManager` 參數 → 編譯錯誤；改透過 DI 注入的 `IDbAccessFactory.Create(databaseId)` 取得實例。（另有一個 ctor 接已開啟的 `DbConnection` 加其 `DatabaseType`，不需連線管理員——供自行持有連線的呼叫端使用，例如 cache-notify poller）
 
 ### 參考範例
 
@@ -126,6 +126,8 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 - `NotSupportedException`
 - `FormatException`
 - `JsonRpcException`
+
+`ForbiddenException` 同樣原文回傳，但使用不同的錯誤碼：`JsonRpcErrorCode.PermissionDenied`（`-32004`）。用戶端若假設「所有 user-facing 失敗都是 `-32099`」，會誤判權限拒絕。
 
 其他所有例外在正式環境一律遮蔽為 `"Internal server error"`（對映到 `JsonRpcErrorCode.InternalError` `-32000`），避免洩漏內部細節。
 

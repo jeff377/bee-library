@@ -28,8 +28,8 @@ ctor 注入解析，無靜態入口點（service locator）。
 │      IBusinessObjectFactory / JsonRpcExecutor        │
 ├─────────────────────────────────────────────────────┤
 │ 5. provider = services.BuildServiceProvider()        │
-│ 6. app.UseBeeFramework()（僅 ASP.NET — 目前為 no-op，│
-│    保留作未來 middleware 註冊點）                    │
+│ 6. app.UseBeeFramework()（僅 ASP.NET — 啟動期檢查，  │
+│    不註冊任何 middleware 或 endpoint）               │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -560,10 +560,14 @@ builder.Services.AddBeeBlazor();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 var app = builder.Build();
-app.UseBeeFramework(); // JSON-RPC middleware
+app.UseBeeFramework();  // 僅啟動期檢查 —— 見下方說明
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.Run();
 ```
+
+> `UseBeeFramework` 不註冊任何 middleware,也不註冊 endpoint —— 它做的是啟動期檢查
+> （主要是在預設 `ApiAuthorizationValidator` 仍在使用時發出警告）。`POST /api` 端點來自繼承
+> `ApiServiceController` 的 controller,因此宿主仍需 `AddControllers()` 與 `MapControllers()`。
 
 **2. Razor component 中注入 connector**：
 
