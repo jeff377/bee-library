@@ -60,10 +60,13 @@ namespace Bee.Definition
 
         /// <inheritdoc/>
         public override string GetFormLayoutFilePath(string layoutId)
-            => System.IO.Path.Combine(_customizeRoot, "FormLayout", $"{layoutId}.FormLayout.xml");
+            => System.IO.Path.Combine(_customizeRoot, "FormLayout",
+                $"{ValidatePathSegment(layoutId, nameof(layoutId))}.FormLayout.xml");
 
         /// <inheritdoc/>
         public override string GetLanguageFilePath(string lang, string ns)
-            => System.IO.Path.Combine(_customizeRoot, "Language", lang, $"{ns}.Language.xml");
+            => System.IO.Path.Combine(_customizeRoot, "Language",
+                ValidatePathSegment(lang, nameof(lang)),
+                $"{ValidatePathSegment(ns, nameof(ns))}.Language.xml");
     }
 }
