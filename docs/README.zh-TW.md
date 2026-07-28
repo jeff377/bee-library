@@ -41,6 +41,7 @@
 | [API 方法參考](api-method-reference.zh-TW.md) | 透過 JSON-RPC 對外公開的所有 BO 方法單頁總覽，含 `[ApiAccessControl]` 設定與用途 |
 | [FormMap](formmap.zh-TW.md) | Bee.Db 採用的資料庫存取模式，以 FormSchema 為單位動態產生 SQL |
 | [日曆日與時間點的欄位語意](date-semantics.zh-TW.md) | `FieldDbType.Date` 欄位如何在 wire 上自我描述、.NET 與 JS/TS 端如何讀取，以及自寫 SQL 時如何宣告 |
+| [時刻欄位](time-semantics.zh-TW.md) | 何時使用 `FieldDbType.Time`、定寬 `"HH:mm"` 的儲存形式、如何讀成 `TimeOnly`，以及它為何不是時距 |
 | [時區處理](datetime-timezone.zh-TW.md) | UTC 儲存、轉換發生在哪裡、使用者時區的設定，以及自寫 SQL 與非 .NET 用戶端該做什麼 |
 
 ---

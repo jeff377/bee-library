@@ -225,10 +225,28 @@
 | 英文名稱 | 中文名稱 | 值 |
 |----------|----------|----|
 | `FieldType` | 欄位種類 | `DbField`（資料庫欄位）、`RelationField`（關聯欄位）、`VirtualField`（虛擬欄位） |
-| `FieldDbType` | 欄位資料庫型別 | `String`、`Integer`、`Decimal`、`DateTime`、`Date`、`Boolean` … 等 13 種 |
-| `ControlType` | 控制項類型 | `TextEdit`、`DropDownEdit`、`DateEdit`、`CheckBox` … |
+| `FieldDbType` | 欄位資料庫型別 | `String`、`Integer`、`Decimal`、`DateTime`、`Date`、`Time`、`Boolean` … 等 15 種 |
+| `ControlType` | 控制項類型 | `TextEdit`、`DropDownEdit`、`DateEdit`、`TimeEdit`、`CheckEdit` … |
 | `FormMode` | 表單模式 | `Add`（新增）、`Edit`（編輯）、`View`（檢視） |
 | `TableRole` | 資料表角色 | `Master`（主檔）、`Detail`（明細） |
+
+### 時間語意
+
+框架區分四種時間概念。「時間」僅作為泛指這四者的上位詞，不單獨用來指其中任何一個。
+
+| 詞 | 語意 | `FieldDbType` | 取值層 | 說明 |
+|----|------|--------------|--------|------|
+| **日曆日** | 哪一天 | `Date` | `ValueUtilities.CDateOnly` → `DateOnly` | 生日、發票日期。牆上時間，絕不轉時區 |
+| **時刻** | 幾點（一日之內） | `Time` | `ValueUtilities.CTimeOnly` → `TimeOnly?` | 班別起訖、營業時間。牆上時間，絕不轉時區 |
+| **時間點** | 哪一天的幾點 | `DateTime` | `ValueUtilities.CDateTime` → `DateTime` | 建立時間、登入時戳。以 UTC 儲存，顯示時轉使用者時區 |
+| **時距** | 多久 | （無對應型別） | — | 工時、時長。目前以 `Decimal`（小時）承載 |
+
+判別法：問「這個值需不需要知道是哪一天？」需要就是時間點；不需要而問的是「幾點」就是時刻；
+問的是「多久」則是時距。
+
+詳見 [日曆日與時間點的欄位語意](date-semantics.zh-TW.md)、[時刻欄位](time-semantics.zh-TW.md)、
+[時區處理](datetime-timezone.zh-TW.md)。
+
 
 ### 查詢與篩選
 

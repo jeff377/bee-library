@@ -1,13 +1,13 @@
 # Plan：`FieldDbType.Time` 純時刻型別
 
-**狀態：🚧 進行中（2026-07-27）**
+**狀態：✅ 已完成（2026-07-27）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 型別基礎與 DDL：`FieldDbType.Time` + `Bee.Base` 核心 + 五家 provider 對應與等價規則 + ADR | ✅ 已完成（2026-07-27） |
 | 2 | 取值層與運算式：`ValueUtilities.CTimeOnly` + `ExpressionPolicy.CoerceValue` | ✅ 已完成（2026-07-27，併入階段 1） |
 | 3 | UI 層：時刻編輯控件（Avalonia 先行，再移植 MAUI / Blazor） | ✅ 已完成（2026-07-27） |
-| 4 | 公開文件：雙語 `time-semantics` + 術語表時間語意詞條 + CHANGELOG breaking 標記 | 📝 待做 |
+| 4 | 公開文件：雙語 `time-semantics` + 術語表時間語意詞條 + CHANGELOG breaking 標記 | ✅ 已完成（2026-07-27） |
 
 > **目標**：補上框架缺少的「時刻」表達力——班別起訖、營業時間、提醒時刻這類
 > **一日之內、不繫於特定日期**的值，目前只能以 `String` 或 `DateTime` 勉強承載。
@@ -216,6 +216,27 @@ ADR：[../adr/adr-033-time-of-day-semantics.md](../adr/adr-033-time-of-day-seman
 **順帶發現（未修，與本 plan 無關）**：`LayoutColumnFactory.ResolveControlType` 只把
 `FieldDbType.DateTime` 對應到 `DateEdit`，**`FieldDbType.Date` 沒有對應**，會落到 `TextEdit`。
 看似是日曆日 plan 的遺漏；因會改變既有 `Date` 欄位的 UI 行為，未在本 plan 順手改。
+
+## 3.3 實作結果（階段 4，2026-07-27）
+
+| 產出 | 內容 |
+|------|------|
+| [../time-semantics.md](../time-semantics.md) / [.zh-TW.md](../time-semantics.zh-TW.md) | 雙語公開文件：何時該用、宣告方式、五家欄位型別、讀寫、查詢排序保證、破壞性變更，以及「`Time` 不是什麼」 |
+| [../terminology.md](../terminology.md) / [.zh-TW.md](../terminology.zh-TW.md) | 新增「時間語意」一節：日曆日 / 時刻 / 時間點 / 時距四詞與對應型別、判別法；並更新 `FieldDbType` 與 `ControlType` 的值清單 |
+| [../README.md](../README.md) / [.zh-TW.md](../README.zh-TW.md) | 文件索引新增時刻欄位條目 |
+
+`public-docs.md` 的落地檢查通過（公開文件無任何指向 `docs/plans/` 的連結）。
+
+**CHANGELOG 未寫，刻意延後至發版**：本 repo 的慣例是 changelog 於 `chore(release)` commit
+連同版本號一次寫成（由 `changelog-draft` 從 git 歷史整理），目前 `CHANGELOG.md` 最上方的
+`[4.15.0]` 是**已發佈**版本，且下一版版號尚未決定。現在插入條目會既違反慣例、又需憑空認定版號。
+
+> **發版時務必納入的 breaking 條目**（兩則，皆已在 commit message 標明 `BREAKING CHANGE`）：
+> 1. `FieldDbType` 新增 `Time` —— 含 `Time` 欄位的表無法被舊版 client 反序列化，須同版升級。
+> 2. `ValueUtilities.CDate` 更名為 `CDateOnly`（source-level）。
+>
+> 另有一項**尚未修正的既有文件錯誤**：`docs/date-semantics.*` 有 6 處寫「v4.15 起」，
+> 但該變更（`c5578a42`）落在 `v4.15.0` tag 之後，實際屬下一版。發版時應一併更正版號。
 
 ## 4. 階段細節
 

@@ -225,10 +225,30 @@ This document provides a standard term reference for technical writing, ensuring
 | English | 中文 | Values |
 |---------|------|--------|
 | `FieldType` | 欄位種類 | `DbField` (database field), `RelationField` (relation field), `VirtualField` (virtual field) |
-| `FieldDbType` | 欄位資料庫型別 | `String`, `Integer`, `Decimal`, `DateTime`, `Date`, `Boolean`, ... 13 in total |
-| `ControlType` | 控制項類型 | `TextEdit`, `DropDownEdit`, `DateEdit`, `CheckBox`, ... |
+| `FieldDbType` | 欄位資料庫型別 | `String`, `Integer`, `Decimal`, `DateTime`, `Date`, `Time`, `Boolean`, ... 15 in total |
+| `ControlType` | 控制項類型 | `TextEdit`, `DropDownEdit`, `DateEdit`, `TimeEdit`, `CheckEdit`, ... |
 | `FormMode` | 表單模式 | `Add`, `Edit`, `View` |
 | `TableRole` | 資料表角色 | `Master`, `Detail` |
+
+### Time Semantics
+
+The framework distinguishes four time concepts. "Time" is only ever a cover term for all four; it
+never names one of them on its own.
+
+| Term | Meaning | `FieldDbType` | Reading it | Notes |
+|------|---------|---------------|-----------|-------|
+| **Calendar day** | Which day | `Date` | `ValueUtilities.CDateOnly` → `DateOnly` | Birthday, invoice date. Wall-clock; never time-zone shifted |
+| **Time of day** | What time (within a day) | `Time` | `ValueUtilities.CTimeOnly` → `TimeOnly?` | Shift boundaries, opening hours. Wall-clock; never time-zone shifted |
+| **Instant** | What time on which day | `DateTime` | `ValueUtilities.CDateTime` → `DateTime` | Created-at, login timestamp. Stored as UTC, shown in the user's zone |
+| **Duration** | How long | (no type yet) | — | Working hours, elapsed time. Carried as a `Decimal` (hours) for now |
+
+The test: ask whether the value needs to know *which day*. If it does, it is an instant. If it does
+not and the question is *what time*, it is a time of day. If the question is *how long*, it is a
+duration.
+
+See [Calendar-Day vs Instant Column Semantics](date-semantics.md), [Time-of-Day Columns](time-semantics.md),
+and [Time Zones](datetime-timezone.md).
+
 
 ### Query and Filter
 
