@@ -14,15 +14,16 @@ namespace Bee.Definition.UnitTests
         private static PathOptions CreateOptions()
             => new PathOptions { DefinePath = Path.Combine(Path.GetTempPath(), "bee-define-root") };
 
+        // The `params` constructor rather than a collection expression: the latter starts from a
+        // parameterless `TheoryData<string>()`, which binds to the same `params` constructor with an
+        // empty array and trips CA1825 on the analyzer set SonarCloud runs.
         public static TheoryData<string> HostilePathSegments()
-            =>
-            [
+            => new(
                 "../../../etc/passwd",
                 "..",
                 "a/b",
                 @"a\b",
-                "/etc/cron.d/x",
-            ];
+                "/etc/cron.d/x");
 
         [Theory]
         [MemberData(nameof(HostilePathSegments))]

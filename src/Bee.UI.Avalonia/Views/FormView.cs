@@ -253,10 +253,11 @@ namespace Bee.UI.Avalonia.Views
         /// <summary>Loads a record read-only (<see cref="SingleFormMode.View"/>).</summary>
         public async Task ViewAsync(Guid rowId)
         {
-            if (!await EnsureInitializedAsync().ConfigureAwait(true)) return;
+            var dataObject = await EnsureDataObjectAsync().ConfigureAwait(true);
+            if (dataObject is null) return;
             await RunGuardedAsync(async () =>
             {
-                await _dataObject!.LoadAsync(rowId).ConfigureAwait(true);
+                await dataObject.LoadAsync(rowId).ConfigureAwait(true);
                 FormMode = SingleFormMode.View;
             }).ConfigureAwait(true);
         }
@@ -264,10 +265,11 @@ namespace Bee.UI.Avalonia.Views
         /// <summary>Loads a record for editing (<see cref="SingleFormMode.Edit"/>).</summary>
         public async Task EditAsync(Guid rowId)
         {
-            if (!await EnsureInitializedAsync().ConfigureAwait(true)) return;
+            var dataObject = await EnsureDataObjectAsync().ConfigureAwait(true);
+            if (dataObject is null) return;
             await RunGuardedAsync(async () =>
             {
-                await _dataObject!.LoadAsync(rowId).ConfigureAwait(true);
+                await dataObject.LoadAsync(rowId).ConfigureAwait(true);
                 FormMode = SingleFormMode.Edit;
             }).ConfigureAwait(true);
         }
@@ -275,17 +277,18 @@ namespace Bee.UI.Avalonia.Views
         /// <summary>Starts a blank record (<see cref="SingleFormMode.Add"/>).</summary>
         public async Task NewAsync()
         {
-            if (!await EnsureInitializedAsync().ConfigureAwait(true)) return;
+            var dataObject = await EnsureDataObjectAsync().ConfigureAwait(true);
+            if (dataObject is null) return;
             await RunGuardedAsync(async () =>
             {
-                await _dataObject!.NewAsync().ConfigureAwait(true);
+                await dataObject.NewAsync().ConfigureAwait(true);
                 // The server's `GetNewData` seeds columns but does not evaluate the
                 // `DefaultValueExpression`. Apply the display-layer defaults (and recompute) so the blank
                 // master row shows them at once. The master row does not raise `RowAdded` because it is
                 // populated before the event bridge attaches, so seed it explicitly here.
-                var master = _dataObject.MasterRow;
+                var master = dataObject.MasterRow;
                 if (master is not null)
-                    _liveComputation?.InitializeNewRow(_dataObject.MasterTable.TableName, master);
+                    _liveComputation?.InitializeNewRow(dataObject.MasterTable.TableName, master);
                 FormMode = SingleFormMode.Add;
             }).ConfigureAwait(true);
         }
@@ -353,9 +356,18 @@ namespace Bee.UI.Avalonia.Views
         /// <param name="formMode">The new form mode.</param>
         protected virtual void OnFormModeChanged(SingleFormMode formMode) => UpdateToolbarState();
 
-        private async Task<bool> EnsureInitializedAsync()
+        /// <summary>
+        /// Ensures the data object exists and returns it, or <c>null</c> when the form cannot be
+        /// initialized (no schema, no connector, or the schema lookup failed).
+        /// </summary>
+        /// <remarks>
+        /// Returns the data object rather than a success flag so callers hold a non-null reference the
+        /// compiler can verify. A <c>bool</c> would leave them dereferencing the field on trust — and
+        /// that trust does not survive the lambda they pass to <c>RunGuardedAsync</c>.
+        /// </remarks>
+        private async Task<FormDataObject?> EnsureDataObjectAsync()
         {
-            if (_dataObject is not null) return true;
+            if (_dataObject is not null) return _dataObject;
 
             ApplyAccessTokenFallback();
 
@@ -370,14 +382,14 @@ namespace Bee.UI.Avalonia.Views
                 catch (Exception ex)
                 {
                     ReportError(ex);
-                    return false;
+                    return null;
                 }
             }
 
             if (FormConnector is null && !string.IsNullOrEmpty(ProgId))
                 FormConnector = ResolveFormConnector(ProgId);
 
-            if (Schema is null || FormConnector is null) return false;
+            if (Schema is null || FormConnector is null) return null;
 
             _dataObject = new FormDataObject(Schema, FormConnector);
             // Live preview recomputes computed fields as the user edits. It is subscribed once because the
@@ -394,7 +406,7 @@ namespace Bee.UI.Avalonia.Views
             // (detail grid actions follow the form's edit mode, not permission). No-op when no
             // company context is active.
             LayoutCapabilityApplier.Apply(_formLayout, Schema, ClientInfo.Capabilities);
-            return true;
+            return _dataObject;
         }
 
         private void ApplyAccessTokenFallback()

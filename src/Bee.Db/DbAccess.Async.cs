@@ -88,9 +88,10 @@ namespace Bee.Db
                 {
                     if (batch.UseTransaction)
                     {
+                        var connection = scope.Connection!;
                         tran = batch.IsolationLevel.HasValue
-                            ? await scope.Connection!.BeginTransactionAsync(batch.IsolationLevel.Value, cancellationToken).ConfigureAwait(false)
-                            : await scope.Connection!.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+                            ? await connection.BeginTransactionAsync(batch.IsolationLevel.Value, cancellationToken).ConfigureAwait(false)
+                            : await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
                     }
 
                     for (int i = 0; i < batch.Commands.Count; i++)

@@ -149,28 +149,41 @@ namespace Bee.Db
 
             foreach (var spec in Parameters)
             {
-                var p = cmd.CreateParameter();
-                p.ParameterName = (string.IsNullOrEmpty(parameterPrefix) || spec.Name.StartsWith(parameterPrefix, StringComparison.Ordinal))
-                    ? spec.Name
-                    : parameterPrefix + spec.Name;
-                p.Value = NormalizeParameterValue(databaseType, spec.Value) ?? DBNull.Value;
-                // An inline `{0}` parameter carries no DbType, leaving the provider to infer one from
-                // the CLR value — and Npgsql infers `timestamptz` for DateTime, which rejects
-                // Kind=Unspecified outright and would silently apply the server's zone to a Utc one.
-                // Naming DbType.DateTime pins it to the naive column type this framework stores in
-                // (ADR-032 D1), and routes SQL Server through the datetime2 upgrade below so an
-                // inline value keeps the same sub-millisecond precision a schema-driven one does.
-                var dbType = spec.DbType ?? (spec.Value is DateTime ? DbType.DateTime : null);
-                if (dbType.HasValue) p.DbType = NormalizeDbType(databaseType, dbType.Value);
-                if (spec.Size.HasValue && spec.Size.Value > 0) p.Size = spec.Size.Value;
-                p.IsNullable = spec.IsNullable;
-                if (!string.IsNullOrEmpty(spec.SourceColumn))
-                    p.SourceColumn = spec.SourceColumn;
-                p.SourceVersion = spec.SourceVersion;
-                cmd.Parameters.Add(p);
+                cmd.Parameters.Add(CreateParameter(cmd, databaseType, parameterPrefix, spec));
             }
 
             return cmd;
+        }
+
+        /// <summary>
+        /// Builds a single provider parameter from its specification.
+        /// </summary>
+        /// <param name="cmd">The command the parameter is created from.</param>
+        /// <param name="databaseType">The database type, which decides the value and type normalizations.</param>
+        /// <param name="parameterPrefix">The provider's parameter prefix, prepended when the name lacks it.</param>
+        /// <param name="spec">The parameter specification.</param>
+        private static DbParameter CreateParameter(DbCommand cmd, DatabaseType databaseType,
+            string parameterPrefix, DbParameterSpec spec)
+        {
+            var p = cmd.CreateParameter();
+            p.ParameterName = (string.IsNullOrEmpty(parameterPrefix) || spec.Name.StartsWith(parameterPrefix, StringComparison.Ordinal))
+                ? spec.Name
+                : parameterPrefix + spec.Name;
+            p.Value = NormalizeParameterValue(databaseType, spec.Value) ?? DBNull.Value;
+            // An inline `{0}` parameter carries no DbType, leaving the provider to infer one from
+            // the CLR value — and Npgsql infers `timestamptz` for DateTime, which rejects
+            // Kind=Unspecified outright and would silently apply the server's zone to a Utc one.
+            // Naming DbType.DateTime pins it to the naive column type this framework stores in
+            // (ADR-032 D1), and routes SQL Server through the datetime2 upgrade below so an
+            // inline value keeps the same sub-millisecond precision a schema-driven one does.
+            var dbType = spec.DbType ?? (spec.Value is DateTime ? DbType.DateTime : null);
+            if (dbType.HasValue) p.DbType = NormalizeDbType(databaseType, dbType.Value);
+            if (spec.Size.HasValue && spec.Size.Value > 0) p.Size = spec.Size.Value;
+            p.IsNullable = spec.IsNullable;
+            if (!string.IsNullOrEmpty(spec.SourceColumn))
+                p.SourceColumn = spec.SourceColumn;
+            p.SourceVersion = spec.SourceVersion;
+            return p;
         }
 
         /// <summary>

@@ -19,69 +19,6 @@
       "message": "Rename the enumeration 'PermissionAction' to match the regular expression: '^([A-Z]{1,3}[a-z0-9]+)*([A-Z]{2})?s$'.",
       "reason": "False Positive。PermissionAction 雖為 [Flags]，但每個成員是單一動作；全部公開 API（IAuthorizationService.Can、FormBusinessObject.Authorize、PermissionRule.Add/ctor）皆傳單一 action，PermissionAction.Read 在每個呼叫端讀起來自然。集合語意由成員名（AllowedActions 等）承載而非型別名。BCL 有單數 [Flags] 前例（FileAccess、FileShare）。曾於 25146aad 改複數後評估呼叫端可讀性，於本次 revert 回單數。請於 SonarCloud UI 標 False Positive。",
       "lastAttempt": "2026-06-05"
-    },
-    "AZ-RwOYp46T2B-I6URPq": {
-      "rule": "csharpsquid:S8969",
-      "severity": "MINOR",
-      "component": "src/Bee.Db/DbAccess.Async.cs",
-      "line": 92,
-      "message": "Remove this null-forgiving operator; the compiler already knows this expression is not null here.",
-      "reason": "False Positive。實測移除後 Roslyn 報 CS8602（可能 null 參考的取值），在 TreatWarningsAsErrors=true 下直接建置失敗——編譯器並不知道 scope.Connection 非 null。Sonar 的流程分析與 Roslyn nullable flow analysis 在此不一致，以編譯器為準。請於 SonarCloud UI 標 False Positive。",
-      "lastAttempt": "2026-07-28"
-    },
-    "AZ-RwOYp46T2B-I6URPr": {
-      "rule": "csharpsquid:S8969",
-      "severity": "MINOR",
-      "component": "src/Bee.Db/DbAccess.Async.cs",
-      "line": 93,
-      "message": "Remove this null-forgiving operator; the compiler already knows this expression is not null here.",
-      "reason": "False Positive。同 line 92：移除後 Roslyn 報 CS8602 導致建置失敗。請於 SonarCloud UI 標 False Positive。",
-      "lastAttempt": "2026-07-28"
-    },
-    "AZ-PnZ4-E2HCc5z46TjG": {
-      "rule": "csharpsquid:S8969",
-      "severity": "MINOR",
-      "component": "src/Bee.UI.Avalonia/Views/FormView.cs",
-      "line": 259,
-      "message": "Remove this null-forgiving operator; the compiler already knows this expression is not null here.",
-      "reason": "False Positive。_dataObject 的非 null 由 EnsureInitializedAsync 的回傳值保證，但該保證跨越 await 與 lambda 邊界，Roslyn 的 nullable flow analysis 追不到——移除後報 CS8602 建置失敗。請於 SonarCloud UI 標 False Positive。",
-      "lastAttempt": "2026-07-28"
-    },
-    "AZ-PnZ4-E2HCc5z46TjH": {
-      "rule": "csharpsquid:S8969",
-      "severity": "MINOR",
-      "component": "src/Bee.UI.Avalonia/Views/FormView.cs",
-      "line": 270,
-      "message": "Remove this null-forgiving operator; the compiler already knows this expression is not null here.",
-      "reason": "False Positive。同 line 259：移除後 Roslyn 報 CS8602 導致建置失敗。請於 SonarCloud UI 標 False Positive。",
-      "lastAttempt": "2026-07-28"
-    },
-    "AZ-PnZ4-E2HCc5z46TjI": {
-      "rule": "csharpsquid:S8969",
-      "severity": "MINOR",
-      "component": "src/Bee.UI.Avalonia/Views/FormView.cs",
-      "line": 281,
-      "message": "Remove this null-forgiving operator; the compiler already knows this expression is not null here.",
-      "reason": "False Positive。同 line 259：移除後 Roslyn 報 CS8602 導致建置失敗。請於 SonarCloud UI 標 False Positive。",
-      "lastAttempt": "2026-07-28"
-    },
-    "AZ-X_pS1ecfn39edfW8-": {
-      "rule": "csharpsquid:S3776",
-      "severity": "CRITICAL",
-      "component": "src/Bee.Db/DbCommandSpec.cs",
-      "line": 125,
-      "message": "Refactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.",
-      "reason": "依 .claude/rules/sonarcloud.md「不納入之規則」，Cognitive Complexity（S3776）屬重構判斷題、需依情境評估，不納入為硬性規則，故不由 sonar-fix 自動處理。該方法為跨 provider 的 DbType 正規化，分支本身即是規格（各 provider 的差異），機械式拆分反而割裂內聚。請人工評估是否重構，或於 SonarCloud UI 標 Won't Fix。",
-      "lastAttempt": "2026-07-28"
-    },
-    "AZ-n1RWP6y80kX-Oj070": {
-      "rule": "external_roslyn:CA1825",
-      "severity": "INFO",
-      "component": "tests/Bee.Definition.UnitTests/PathOptionsTraversalTests.cs",
-      "line": 19,
-      "message": "Avoid unnecessary zero-length array allocations.  Use Array.Empty<string>() instead.",
-      "reason": "本機 HEAD 無法重現：該位置為 TheoryData<string> 的集合運算式，含 5 個元素、無零長度陣列配置；以 Release 建置整個 Bee.Library.slnx 得 0 警告（TreatWarningsAsErrors=true 下若真有 CA1825 會直接建置失敗）。研判為 Sonar 端分析器版本差異或殘留的過期 issue。請於 SonarCloud UI 確認後標 False Positive。",
-      "lastAttempt": "2026-07-28"
     }
   }
 }
