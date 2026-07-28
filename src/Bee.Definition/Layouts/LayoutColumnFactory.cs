@@ -66,7 +66,7 @@ namespace Bee.Definition.Layouts
             => type != ControlType.Auto ? type : dbType switch
             {
                 FieldDbType.Boolean => ControlType.CheckEdit,
-                FieldDbType.DateTime => ControlType.DateEdit,
+                FieldDbType.Date or FieldDbType.DateTime => ControlType.DateEdit,
                 FieldDbType.Time => ControlType.TimeEdit,
                 FieldDbType.Text => ControlType.MemoEdit,
                 FieldDbType.Short or FieldDbType.Integer or FieldDbType.Long

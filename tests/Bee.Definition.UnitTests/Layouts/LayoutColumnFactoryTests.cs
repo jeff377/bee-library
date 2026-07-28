@@ -25,6 +25,7 @@ namespace Bee.Definition.UnitTests.Layouts
 
         [Theory]
         [InlineData(FieldDbType.Boolean, ControlType.CheckEdit)]
+        [InlineData(FieldDbType.Date, ControlType.DateEdit)]
         [InlineData(FieldDbType.DateTime, ControlType.DateEdit)]
         [InlineData(FieldDbType.Text, ControlType.MemoEdit)]
         [InlineData(FieldDbType.String, ControlType.TextEdit)]
