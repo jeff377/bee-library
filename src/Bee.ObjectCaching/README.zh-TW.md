@@ -38,7 +38,6 @@
 ### 服務
 
 - `SessionInfoService` -- 由快取層支援的 Session 生命週期操作
-- `EnterpriseObjectService` -- 協調企業範圍的快取物件
 
 ### 多租戶客製化覆蓋層
 
@@ -77,7 +76,8 @@ Bee.ObjectCaching/
                # DbCategorySettingsCache
   Database/    # SessionInfoCache
   Providers/   # ICacheProvider、MemoryCacheProvider
-  Services/    # SessionInfoService、EnterpriseObjectService
+  Services/    # SessionInfoService、CompanyInfoService、AuthorizationService、
+               # RolePermissionService、DepartmentTreeService、EmployeeContextResolver
   *.cs（根目錄）# ICacheContainer、CacheContainerService、ObjectCache、KeyObjectCache、
                # CacheItemPolicy、CacheTimeKind、CacheInfo、
                # CacheDefineAccess、

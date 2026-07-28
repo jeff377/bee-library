@@ -62,17 +62,9 @@ namespace Bee.Definition
         /// </summary>
         public const string GetLanguage = "GetLanguage";
         /// <summary>
-        /// Gets definition data (local only).
-        /// </summary>
-        public const string GetLocalDefine = "GetLocalDefine";
-        /// <summary>
         /// Saves definition data.
         /// </summary>
         public const string SaveDefine = "SaveDefine";
-        /// <summary>
-        /// Saves definition data (local only).
-        /// </summary>
-        public const string SaveLocalDefine = "SaveLocalDefine";
         /// <summary>
         /// Executes a custom function.
         /// </summary>

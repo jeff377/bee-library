@@ -51,7 +51,7 @@ namespace Bee.Base.Security
                     byte[] salt = Convert.FromBase64String(parts[1]);
                     byte[] storedHash = Convert.FromBase64String(parts[2]);
                     var computedHash = PBKDF2SHA256(password, salt, iterations, storedHash.Length);
-                    return FixedTimeEquals(storedHash, computedHash);
+                    return CryptographicOperations.FixedTimeEquals(storedHash, computedHash);
                 }
                 else
                 {
@@ -62,7 +62,7 @@ namespace Bee.Base.Security
                     byte[] salt = Convert.FromBase64String(parts[1]);
                     byte[] storedHash = Convert.FromBase64String(parts[2]);
                     var computedHash = PBKDF2SHA1Legacy(password, salt, iterations, storedHash.Length);
-                    return FixedTimeEquals(storedHash, computedHash);
+                    return CryptographicOperations.FixedTimeEquals(storedHash, computedHash);
                 }
             }
             catch (Exception ex) when (ex is FormatException or OverflowException or ArgumentException)
@@ -93,21 +93,6 @@ namespace Bee.Base.Security
             // NOSONAR: legacy SHA1 required for backwards compatibility with existing stored hashes.
             return Rfc2898DeriveBytes.Pbkdf2(
                 System.Text.Encoding.UTF8.GetBytes(password), salt, iterations, HashAlgorithmName.SHA1, outputBytes);
-        }
-
-        /// <summary>
-        /// Performs a constant-time comparison to prevent timing attacks.
-        /// </summary>
-        private static bool FixedTimeEquals(byte[] a, byte[] b)
-        {
-            if (a.Length != b.Length) return false;
-
-            int result = 0;
-            for (int i = 0; i < a.Length; i++)
-            {
-                result |= a[i] ^ b[i];
-            }
-            return result == 0;
         }
     }
 

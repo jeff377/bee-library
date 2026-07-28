@@ -42,6 +42,17 @@ All notable changes to this project will be documented in this file.
 - `Bee.Business`: `SystemBO.SaveDefine` and `SystemBO.CreateSession` are now `LocalOnly`; remote
   callers are rejected. Writing definitions and minting a token from a user id without a credential
   check are both trusted-caller operations.
+- Dead public surface is removed: eight types (`IEnterpriseObjectService`, `EnterpriseObjectService`,
+  `InitializeOptions`, `ApplicationType`, `SysFuncIDs`, `VersionFiles`, `DefaultBoolean`,
+  `NotSetBoolean`) plus three members (`SystemActions.GetLocalDefine` / `SaveLocalDefine`,
+  `DateTimeExtensions.IsEmpty`). None had a consumer anywhere in the framework.
+  `IEnterpriseObjectService` is the one worth calling out: it had the full look of an extension
+  point — a `BackendDefaultTypes` constant, a `BackendComponents.EnterpriseObjectService` setting
+  and a DI registration — but the interface declared no members, so substituting an implementation
+  could never change any behaviour. An `EnterpriseObjectService` element left in an existing
+  `SystemSettings.xml` is ignored on load; no file migration is needed.
+  `DateTimeExtensions.IsEmpty` treated anything before 1753-01-01 as empty, a boundary that stopped
+  being a database limit when SQL Server moved to `datetime2`.
 
 ### Changed — breaking (silent, no compiler error)
 
@@ -82,6 +93,9 @@ All notable changes to this project will be documented in this file.
   allow-list in `SysInfo` and the `enc:` sentinel in `DatabaseSettingsCryptor`.
 - `IPValidator` copies its allow/deny lists and exposes them read-only; `UpgradeStage.Statements` is
   read-only.
+- The three hand-rolled constant-time comparison loops (`AesCbcHmacCryptor`, `PasswordHasher`,
+  `FileHashValidator`) are replaced by `CryptographicOperations.FixedTimeEquals`. All three were
+  correct; one primitive is one thing to keep correct.
 
 ## [4.15.0]
 

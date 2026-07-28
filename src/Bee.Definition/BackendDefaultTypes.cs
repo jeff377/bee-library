@@ -49,10 +49,6 @@ namespace Bee.Definition
         /// Default company info service type.
         /// </summary>
         public const string CompanyInfoService = "Bee.ObjectCaching.Services.CompanyInfoService, Bee.ObjectCaching";
-        /// <summary>
-        /// Default unified access service type for commonly used enterprise business objects.
-        /// </summary>
-        public const string EnterpriseObjectService = "Bee.ObjectCaching.Services.EnterpriseObjectService, Bee.ObjectCaching";
 
         // ---------------- Repository ----------------
         /// <summary>

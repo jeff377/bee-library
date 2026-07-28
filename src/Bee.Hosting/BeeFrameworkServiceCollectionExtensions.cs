@@ -185,8 +185,6 @@ namespace Bee.Hosting
             services.AddSingleton<ICacheDataSourceProvider>(sp =>
                 CreateConfigurableService<ICacheDataSourceProvider>(sp,
                     components.CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider));
-            services.AddSingleton<IEnterpriseObjectService>(_ => CreateOrDefault<IEnterpriseObjectService>(
-                components.EnterpriseObjectService, BackendDefaultTypes.EnterpriseObjectService));
 
             // Expression engine + form rule processor. Both are stateless singletons; the evaluator
             // caches compiled expressions process-wide, so a single instance is preferred.
@@ -397,17 +395,6 @@ namespace Bee.Hosting
             var type = AssemblyLoader.GetType(typeName)
                 ?? throw new InvalidOperationException($"Type '{typeName}' not found for IBusinessObjectFactory.");
             return (IBusinessObjectFactory)ActivatorUtilities.CreateInstance(sp, type);
-        }
-
-        /// <summary>
-        /// Convenience wrapper around <see cref="AssemblyLoader.CreateInstance(string, object[])"/>
-        /// for parameterless services.
-        /// </summary>
-        private static T CreateOrDefault<T>(string? configured, string fallback) where T : class
-        {
-            var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
-            return (AssemblyLoader.CreateInstance(typeName) as T)
-                ?? throw new InvalidOperationException($"Failed to construct {typeof(T).Name}: {typeName}");
         }
 
         /// <summary>

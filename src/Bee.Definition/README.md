@@ -87,10 +87,10 @@ Bee.Definition/
   (root)            Cross-cutting infrastructure:
                     BackendDefaultTypes, DefineTypeExtensions, DefineType,
                     GlobalEvents, PropertyCategories,
-                    SysFields, SysFuncIDs, SysProgIds, SystemActions,
-                    ApplicationType, InitializeOptions, PathOptions, CustomizeOnlyPathOptions,
+                    SysFields, SysProgIds, SystemActions,
+                    PathOptions, CustomizeOnlyPathOptions,
                     IDatabaseSettingsProvider, IBusinessObjectFactory,
-                    ICacheDataSourceProvider, IEnterpriseObjectService
+                    ICacheDataSourceProvider
 ```
 
 The namespace layout follows the design principles in [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md):

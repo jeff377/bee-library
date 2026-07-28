@@ -87,7 +87,7 @@ namespace Bee.Base.Security
                 using (var hmac = new HMACSHA256(hmacKey))
                 {
                     byte[] computedHmac = hmac.ComputeHash(dataToVerify);
-                    if (!CompareBytes(hmacBytes, computedHmac))
+                    if (!CryptographicOperations.FixedTimeEquals(hmacBytes, computedHmac))
                         throw new CryptographicException("HMAC validation failed.");
                 }
 
@@ -115,18 +115,6 @@ namespace Bee.Base.Security
             Buffer.BlockCopy(a, 0, result, 0, a.Length);
             Buffer.BlockCopy(b, 0, result, a.Length, b.Length);
             return result;
-        }
-
-        /// <summary>
-        /// Compares two byte arrays using constant-time comparison to prevent timing attacks.
-        /// </summary>
-        private static bool CompareBytes(byte[] a, byte[] b)
-        {
-            if (a.Length != b.Length) return false;
-            int result = 0;
-            for (int i = 0; i < a.Length; i++)
-                result |= a[i] ^ b[i];
-            return result == 0;
         }
     }
 }

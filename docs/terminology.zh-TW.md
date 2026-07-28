@@ -117,7 +117,6 @@
 |----------|----------|------|
 | `IUIControl` | UI 控制項介面 | 依表單模式控制 UI 元件狀態的介面 |
 | `ICacheDataSourceProvider` | 快取資料來源提供者介面 | 取得暫存連線的用戶資料 |
-| `IEnterpriseObjectService` | 企業物件服務介面 | 提供組織結構、模組參數等業務物件的統一存取服務 |
 
 ---
 

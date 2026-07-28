@@ -36,6 +36,14 @@
   或 `GetDefineAsync` 搭配對應的 `DefineType`。
 - `Bee.Business`：`SystemBO.SaveDefine` 與 `SystemBO.CreateSession` 改為 `LocalOnly`，
   遠端呼叫一律拒絕。寫入定義、以及不驗憑證就從 UserID 發 token，都屬受信任呼叫端操作。
+- 移除零使用的公開表面：八個型別（`IEnterpriseObjectService`、`EnterpriseObjectService`、
+  `InitializeOptions`、`ApplicationType`、`SysFuncIDs`、`VersionFiles`、`DefaultBoolean`、
+  `NotSetBoolean`）與三個成員（`SystemActions.GetLocalDefine` / `SaveLocalDefine`、
+  `DateTimeExtensions.IsEmpty`），框架內外皆無呼叫端。其中 `IEnterpriseObjectService` 值得特別
+  說明：它具備擴充點的完整外觀——`BackendDefaultTypes` 常數、`BackendComponents.EnterpriseObjectService`
+  設定項、DI 註冊——但介面零成員，因此替換實作什麼都改變不了。既有 `SystemSettings.xml` 若殘留
+  `EnterpriseObjectService` 節點，載入時會被忽略，不需遷移檔案。`DateTimeExtensions.IsEmpty`
+  以 1753-01-01 為判準，而該界線在 SQL Server 改用 `datetime2` 後已不再是資料庫限制。
 
 ### 變更 —— 破壞性（靜默，無編譯錯誤）
 
@@ -69,6 +77,8 @@
 - 識別碼型字串比對全面改為 ordinal，包含 `SysInfo` 的反序列化允許清單與
   `DatabaseSettingsCryptor` 的 `enc:` 哨兵。
 - `IPValidator` 複製其允許／拒絕清單並以唯讀公開；`UpgradeStage.Statements` 改為唯讀。
+- 三處手寫的常數時間比對迴圈（`AesCbcHmacCryptor`、`PasswordHasher`、`FileHashValidator`）
+  改用 `CryptographicOperations.FixedTimeEquals`。三者實作原本都正確；但一個原語只需維持一次正確。
 
 ## [4.15.0]
 

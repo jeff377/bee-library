@@ -84,14 +84,6 @@ namespace Bee.Definition.Settings
         public string CompanyInfoService { get; set; } = BackendDefaultTypes.CompanyInfoService;
 
         /// <summary>
-        /// Unified access service type for commonly used enterprise business objects.
-        /// </summary>
-        [Category("Service")]
-        [Description("Unified access service type for commonly used enterprise business objects.")]
-        [DefaultValue(BackendDefaultTypes.EnterpriseObjectService)]
-        public string EnterpriseObjectService { get; set; } = BackendDefaultTypes.EnterpriseObjectService;
-
-        /// <summary>
         /// System level repository factory type.
         /// </summary>
         [Category("Repository")]

@@ -25,7 +25,7 @@ namespace Bee.Base.Security
                 var expectedBytes = HexToBytes(expectedSha256Hex);
                 if (expectedBytes == null || expectedBytes.Length != actualBytes.Length)
                     return false;
-                return FixedTimeEquals(actualBytes, expectedBytes);
+                return CryptographicOperations.FixedTimeEquals(actualBytes, expectedBytes);
             }
         }
 
@@ -43,18 +43,6 @@ namespace Bee.Base.Security
                 catch (Exception ex) when (ex is FormatException or OverflowException) { return null; }
             }
             return bytes;
-        }
-
-        /// <summary>
-        /// Performs a constant-time byte array comparison to prevent timing side-channel attacks.
-        /// </summary>
-        private static bool FixedTimeEquals(byte[] a, byte[] b)
-        {
-            if (a.Length != b.Length) return false;
-            int result = 0;
-            for (int i = 0; i < a.Length; i++)
-                result |= a[i] ^ b[i];
-            return result == 0;
         }
 
         /// <summary>

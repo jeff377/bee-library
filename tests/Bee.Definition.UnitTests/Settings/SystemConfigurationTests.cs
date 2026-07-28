@@ -43,29 +43,5 @@ namespace Bee.Definition.UnitTests.Settings
 
             Assert.Equal(nameof(BackendConfiguration), config.ToString());
         }
-
-        [Fact]
-        [DisplayName("VersionFiles 預設值應為空字串")]
-        public void VersionFiles_Default_HasEmptyProperties()
-        {
-            var versionFiles = new VersionFiles();
-
-            Assert.Equal(string.Empty, versionFiles.Version);
-            Assert.Equal(string.Empty, versionFiles.Files);
-        }
-
-        [Fact]
-        [DisplayName("VersionFiles 屬性可設定與讀取")]
-        public void VersionFiles_Properties_CanBeSet()
-        {
-            var versionFiles = new VersionFiles
-            {
-                Version = "4.0.1",
-                Files = "a.dll;b.dll"
-            };
-
-            Assert.Equal("4.0.1", versionFiles.Version);
-            Assert.Equal("a.dll;b.dll", versionFiles.Files);
-        }
     }
 }

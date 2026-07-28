@@ -38,7 +38,6 @@
 ### Services
 
 - `SessionInfoService` -- session lifecycle operations backed by the cache layer
-- `EnterpriseObjectService` -- coordinates enterprise-scoped cached objects
 
 ### Tenant Customization Overlay
 
@@ -77,7 +76,8 @@ Bee.ObjectCaching/
                # DbCategorySettingsCache
   Database/    # SessionInfoCache
   Providers/   # ICacheProvider, MemoryCacheProvider
-  Services/    # SessionInfoService, EnterpriseObjectService
+  Services/    # SessionInfoService, CompanyInfoService, AuthorizationService,
+               # RolePermissionService, DepartmentTreeService, EmployeeContextResolver
   *.cs (root)  # ICacheContainer, CacheContainerService, ObjectCache, KeyObjectCache,
                # CacheItemPolicy, CacheTimeKind, CacheInfo,
                # CacheDefineAccess,

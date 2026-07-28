@@ -87,10 +87,10 @@ Bee.Definition/
   （根目錄）         跨切面基礎設施：
                     BackendDefaultTypes、DefineTypeExtensions、DefineType、
                     GlobalEvents、PropertyCategories、
-                    SysFields、SysFuncIDs、SysProgIds、SystemActions、
-                    ApplicationType、InitializeOptions、PathOptions、CustomizeOnlyPathOptions、
+                    SysFields、SysProgIds、SystemActions、
+                    PathOptions、CustomizeOnlyPathOptions、
                     IDatabaseSettingsProvider、IBusinessObjectFactory、
-                    ICacheDataSourceProvider、IEnterpriseObjectService
+                    ICacheDataSourceProvider
 ```
 
 命名空間佈局遵循 [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md) 的設計原則：

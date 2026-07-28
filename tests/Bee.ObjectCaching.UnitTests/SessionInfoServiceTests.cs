@@ -48,13 +48,5 @@ namespace Bee.ObjectCaching.UnitTests
             var service = NewService();
             Assert.Null(service.Get(Guid.NewGuid()));
         }
-
-        [Fact]
-        [DisplayName("EnterpriseObjectService 可被建立並符合介面")]
-        public void EnterpriseObjectService_CanBeInstantiated()
-        {
-            var service = new EnterpriseObjectService();
-            Assert.IsType<IEnterpriseObjectService>(service, exactMatch: false);
-        }
     }
 }

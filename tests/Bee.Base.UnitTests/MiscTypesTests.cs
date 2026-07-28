@@ -90,22 +90,6 @@ namespace Bee.Base.UnitTests
     public class EnumDefaultsTests
     {
         [Fact]
-        [DisplayName("DefaultBoolean 預設值為 Default")]
-        public void DefaultBoolean_DefaultValue_IsDefault()
-        {
-            DefaultBoolean value = default;
-            Assert.Equal(DefaultBoolean.Default, value);
-        }
-
-        [Fact]
-        [DisplayName("NotSetBoolean 預設值為 NotSet")]
-        public void NotSetBoolean_DefaultValue_IsNotSet()
-        {
-            NotSetBoolean value = default;
-            Assert.Equal(NotSetBoolean.NotSet, value);
-        }
-
-        [Fact]
         [DisplayName("DateInterval 預設值為 Year")]
         public void DateInterval_DefaultValue_IsYear()
         {

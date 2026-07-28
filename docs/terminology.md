@@ -117,7 +117,6 @@ This document provides a standard term reference for technical writing, ensuring
 |---------|------|-------------|
 | `IUIControl` | UI 控制項介面 | Interface that controls UI component state by form mode |
 | `ICacheDataSourceProvider` | 快取資料來源提供者介面 | Provides cached user data for transient sessions |
-| `IEnterpriseObjectService` | 企業物件服務介面 | Unified access service for enterprise business objects (organization, module parameters, etc.) |
 
 ---
 
