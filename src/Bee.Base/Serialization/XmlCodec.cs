@@ -1,3 +1,5 @@
+using System.Xml;
+
 namespace Bee.Base.Serialization
 {
     /// <summary>
@@ -48,13 +50,24 @@ namespace Bee.Base.Serialization
         /// </summary>
         /// <param name="xml">The XML string.</param>
         /// <param name="type">The object type.</param>
+        /// <remarks>
+        /// This is the framework's single entry point for turning XML back into objects, and it is
+        /// reached with wire input (definition payloads arrive as XML strings), so it reads through
+        /// a hardened <see cref="XmlReader"/> rather than handing the string straight to
+        /// <c>XmlSerializer</c>. <c>XmlSerializer(TextReader)</c> already nulls its resolver,
+        /// which blocks external entities, but leaves internal entity expansion enabled — enough for
+        /// a billion-laughs denial of service. Prohibiting DTD processing closes that, and doing it
+        /// here means every present and future caller inherits the setting.
+        /// </remarks>
         public static object? Deserialize(string xml, Type type)
         {
             if (StringUtilities.IsEmpty(xml))
                 return default;
 
             object? value;
-            using (StringReader reader = new StringReader(xml))
+            var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null };
+            using (StringReader stringReader = new StringReader(xml))
+            using (XmlReader reader = XmlReader.Create(stringReader, settings))
             {
                 var serializer = XmlSerializerCache.Get(type);
                 value = serializer.Deserialize(reader);

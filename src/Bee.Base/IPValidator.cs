@@ -20,16 +20,22 @@ namespace Bee.Base
         /// </summary>
         /// <param name="whitelist">A list of whitelist IP address patterns.</param>
         /// <param name="blacklist">A list of blacklist IP address patterns.</param>
+        /// <remarks>
+        /// Both lists are copied rather than captured. These decide who may reach the API, so the
+        /// validator must not stay coupled to a list the caller still holds and can mutate after
+        /// construction.
+        /// </remarks>
         public IPValidator(List<string> whitelist, List<string> blacklist)
         {
-            _whitelist = whitelist ?? [];
-            _blacklist = blacklist ?? [];
+            _whitelist = whitelist is null ? [] : [.. whitelist];
+            _blacklist = blacklist is null ? [] : [.. blacklist];
         }
 
         /// <summary>
         /// Gets the list of whitelist IP address patterns.
         /// </summary>
-        public List<string> Whitelist
+        /// <remarks>Read-only by design — see the constructor.</remarks>
+        public IReadOnlyList<string> Whitelist
         {
             get { return _whitelist; }
         }
@@ -37,7 +43,8 @@ namespace Bee.Base
         /// <summary>
         /// Gets the list of blacklist IP address patterns.
         /// </summary>
-        public List<string> Blacklist
+        /// <remarks>Read-only by design — see the constructor.</remarks>
+        public IReadOnlyList<string> Blacklist
         {
             get { return _blacklist; }
         }

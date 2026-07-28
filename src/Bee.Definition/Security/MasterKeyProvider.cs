@@ -89,6 +89,8 @@ namespace Bee.Definition.Security
                     {
                         writer.Write(newKey);
                     }
+
+                    RestrictToOwner(filePath);
                     return newKey;
                 }
                 catch (IOException)
@@ -162,6 +164,31 @@ namespace Bee.Definition.Security
         {
             // Generate a new Base64-encoded master key
             return AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
+        }
+
+        /// <summary>
+        /// Restricts a freshly created key file to the owning user on Unix-like systems.
+        /// </summary>
+        /// <param name="filePath">The key file to restrict.</param>
+        /// <remarks>
+        /// The file holds the key that protects every other secret in the deployment, in plain
+        /// Base64. A default-permission file is subject to the process umask, commonly 022, which
+        /// leaves it world-readable — any local account could then decrypt the configured database
+        /// passwords. Windows inherits usable ACLs from the parent directory, so this is a no-op
+        /// there. Failures are non-fatal: an unusual filesystem (a mounted share, a container
+        /// volume) may not support the call, and refusing to start would be a worse outcome than
+        /// running with the inherited permissions.
+        /// </remarks>
+        private static void RestrictToOwner(string filePath)
+        {
+            if (OperatingSystem.IsWindows()) { return; }
+
+            try
+            {
+                File.SetUnixFileMode(filePath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            }
+            catch (UnauthorizedAccessException) { /* best effort — keep the inherited mode */ }
+            catch (IOException) { /* best effort — filesystem may not support mode changes */ }
         }
     }
 

@@ -11,11 +11,26 @@ namespace Bee.Expressions
     /// compiled once, cached by their text and parameter signature, then invoked per row.
     /// </summary>
     /// <remarks>
-    /// The evaluation sandbox exposes only the supplied variables, primitive types, a small set of
-    /// common types (such as <see cref="Math"/>), and the helper functions registered in the
-    /// constructor. Any other identifier — reflection, file or network access, arbitrary type
-    /// loading — is an unknown identifier and fails at parse time, so a definition-authored
-    /// expression cannot reach outside this surface.
+    /// <para>
+    /// The evaluator exposes the supplied variables, primitive types, a small set of common types
+    /// (such as <see cref="Math"/>), and the helper functions registered in the constructor. A
+    /// <em>type name</em> that was not registered — <c>File</c>, <c>Assembly</c>, <c>Process</c> —
+    /// is an unknown identifier and fails at parse time.
+    /// </para>
+    /// <para>
+    /// WARNING: that is not the same as a security sandbox, and this class must not be treated as
+    /// one. Member access on a value is resolved by reflection, and <c>GetType()</c> is a public
+    /// member of <see cref="object"/>, so any variable in scope is a starting point for
+    /// <c>someField.GetType().Assembly</c> and onward through the reflection API. Upstream
+    /// DynamicExpresso states the same limitation: it is not built to evaluate untrusted input.
+    /// </para>
+    /// <para>
+    /// What keeps this safe in practice is the source of the expressions, not the parser:
+    /// expressions live in definition files, and writing a definition is a deployment-time
+    /// operation (<c>SystemBO.SaveDefine</c> is <c>LocalOnly</c>). Anything that would let a remote
+    /// or lower-privileged caller supply expression text turns this into remote code execution on
+    /// the server, so that boundary is the control — keep it intact.
+    /// </para>
     /// </remarks>
     public sealed class DynamicExpressoEvaluator : IExpressionEvaluator
     {

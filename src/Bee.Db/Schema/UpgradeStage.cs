@@ -24,6 +24,11 @@ namespace Bee.Db.Schema
         /// <summary>
         /// Gets the SQL statements to execute, in order.
         /// </summary>
-        public List<string> Statements { get; }
+        /// <remarks>
+        /// Read-only: the statements are computed by schema comparison and executed verbatim, so
+        /// handing out a mutable list would let a caller inject arbitrary SQL into a plan that has
+        /// already been reviewed.
+        /// </remarks>
+        public IReadOnlyList<string> Statements { get; }
     }
 }
