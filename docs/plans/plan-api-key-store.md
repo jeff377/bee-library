@@ -218,8 +218,8 @@ validator」改為「請建立 API 金鑰」——**從此不需要寫程式就�
 
 > **2026-07-29 修訂**：本節原本以「session 只能由 Login 灌入、token 僅在鑄造它的行程有效」
 > 作為最關鍵理由（原理由 2）。該前提正被
-> [plan-cache-createinstance-db-loading.md](plan-cache-createinstance-db-loading.md) 的階段 3 / 4
-> 移除——session 將可由 `st_session` 種子重建、跨行程一致。**結論不受影響**：其餘三個理由
+> [plan-session-persistence.md](plan-session-persistence.md) 移除——session 將可由
+> `st_session` 種子重建、跨行程一致。**結論不受影響**：其餘三個理由
 > 與 session 無關，per-request 驗證仍是正解。但原理由 2 的論證已反轉（屆時交換式反而可行），
 > 故改寫為與 session 實作無關的論據。同理原理由 1 的「從不查 DB」也已不成立，一併修正。
 
