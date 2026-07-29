@@ -32,6 +32,22 @@ namespace Bee.Api.Core.UnitTests
             return executor;
         }
 
+        [Fact]
+        [DisplayName("JsonRpcExecutor.IsLocalCall 預設須為 false（LocalOnly 保護的基礎）")]
+        public void IsLocalCall_Default_IsFalse()
+        {
+            // LocalOnly 方法（如 SystemBO.CreateSession / SaveDefine）的整套保護建立在這個
+            // 預設值上：ApiAccessValidator 只在 IsLocalCall 為 false 時擋下遠端呼叫。
+            // 預設為 false 表示「忘了設」會落在安全的一邊；改成 true 或移除初始值會讓
+            // 任何未明確設值的呼叫路徑取得本地呼叫權限。
+            var executor = new JsonRpcExecutor(
+                _fx.GetRequiredService<IBusinessObjectFactory>(),
+                _fx.GetRequiredService<IAccessTokenValidator>(),
+                _fx.GetRequiredService<IApiEncryptionKeyProvider>());
+
+            Assert.False(executor.IsLocalCall);
+        }
+
         /// <summary>
         /// 執行 API 方法。
         /// </summary>
