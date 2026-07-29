@@ -1,5 +1,5 @@
 using Bee.Definition.Identity;
-using Bee.Repository.Abstractions.System;
+using Bee.Repository.Abstractions.Factories;
 
 namespace Bee.ObjectCaching.Services
 {
@@ -9,29 +9,30 @@ namespace Bee.ObjectCaching.Services
     /// company database. No caching — invoked once per <c>EnterCompany</c>; the result is snapshotted
     /// onto the session so per-request scope filtering stays zero-DB.
     /// </summary>
+    /// <remarks>
+    /// Repositories come from <see cref="ISystemRepositoryFactory"/> per call rather than being
+    /// injected one by one, so adding a system repository never widens this constructor.
+    /// </remarks>
     public class EmployeeContextResolver : IEmployeeContextResolver
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IEmployeeRepository _employeeRepository;
+        private readonly ISystemRepositoryFactory _systemFactory;
 
         /// <summary>
         /// Initializes a new <see cref="EmployeeContextResolver"/>.
         /// </summary>
-        /// <param name="userRepository">The common <c>st_user</c> reader.</param>
-        /// <param name="employeeRepository">The company <c>st_employee</c> reader.</param>
-        public EmployeeContextResolver(IUserRepository userRepository, IEmployeeRepository employeeRepository)
+        /// <param name="systemFactory">Factory that builds system-level repositories on demand.</param>
+        public EmployeeContextResolver(ISystemRepositoryFactory systemFactory)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
+            _systemFactory = systemFactory ?? throw new ArgumentNullException(nameof(systemFactory));
         }
 
         /// <inheritdoc/>
         public EmployeeContext Resolve(string userId, string databaseId)
         {
-            var userRowId = _userRepository.GetRowIdBySysId(userId);
+            var userRowId = _systemFactory.CreateUserRepository().GetRowIdBySysId(userId);
             if (userRowId == Guid.Empty) { return EmployeeContext.Empty; }
 
-            var employee = _employeeRepository.GetByUserRowId(databaseId, userRowId);
+            var employee = _systemFactory.CreateEmployeeRepository().GetByUserRowId(databaseId, userRowId);
             if (employee == null) { return new EmployeeContext(userRowId, Guid.Empty, Guid.Empty); }
 
             return new EmployeeContext(userRowId, employee.RowId, employee.DeptRowId);

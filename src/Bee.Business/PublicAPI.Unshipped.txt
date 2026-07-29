@@ -1,6 +1,4 @@
 #nullable enable
-*REMOVED*Bee.Business.Providers.CacheDataSourceProvider.CacheDataSourceProvider(Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory) -> void
-Bee.Business.Providers.CacheDataSourceProvider.CacheDataSourceProvider(Bee.Repository.Abstractions.System.ISessionRepository! sessionRepository, Bee.Repository.Abstractions.System.ICompanyRepository! companyRepository, Bee.Repository.Abstractions.System.IRolePermissionRepository! rolePermissionRepository, Bee.Repository.Abstractions.System.IDepartmentRepository! departmentRepository) -> void
 Bee.Business.Providers.CacheDataSourceProvider.GetCompanyInfo(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
 Bee.Business.Providers.CacheDataSourceProvider.GetCompanyRolePermissions(string! companyId) -> Bee.Definition.Identity.CompanyRolePermissions?
 Bee.Business.Providers.CacheDataSourceProvider.GetDepartmentTree(string! companyId) -> Bee.Definition.Organization.DepartmentTree?

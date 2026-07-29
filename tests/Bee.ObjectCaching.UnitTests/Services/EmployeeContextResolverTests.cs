@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Definition.Identity;
 using Bee.Definition.Organization;
 using Bee.ObjectCaching.Services;
+using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
 
 namespace Bee.ObjectCaching.UnitTests.Services
@@ -19,7 +20,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
         private static readonly Guid s_deptRowId = Guid.NewGuid();
 
         private static EmployeeContextResolver Create(Guid userRowId, EmployeeRow? employee)
-            => new(new FakeUserRepository(userRowId), new FakeEmployeeRepository(employee));
+            => new(new FakeSystemRepositoryFactory(userRowId, employee));
 
         [Fact]
         [DisplayName("Resolve 有對應員工回完整 context（user/employee/dept）")]
@@ -72,6 +73,32 @@ namespace Bee.ObjectCaching.UnitTests.Services
             Assert.Equal(s_userRowId, ctx.UserRowId);
             Assert.Equal(s_employeeRowId, ctx.EmployeeRowId);
             Assert.Equal(Guid.Empty, ctx.DeptRowId);
+        }
+
+        /// <summary>
+        /// 只實作 EmployeeContextResolver 會用到的兩個 Create 方法；其餘一律擲例外，
+        /// 讓非預期的 repository 取用在測試中立即現形。
+        /// </summary>
+        private sealed class FakeSystemRepositoryFactory : ISystemRepositoryFactory
+        {
+            private readonly Guid _userRowId;
+            private readonly EmployeeRow? _employee;
+
+            public FakeSystemRepositoryFactory(Guid userRowId, EmployeeRow? employee)
+            {
+                _userRowId = userRowId;
+                _employee = employee;
+            }
+
+            public IUserRepository CreateUserRepository() => new FakeUserRepository(_userRowId);
+            public IEmployeeRepository CreateEmployeeRepository() => new FakeEmployeeRepository(_employee);
+
+            public IDatabaseRepository CreateDatabaseRepository() => throw new NotSupportedException();
+            public ISessionRepository CreateSessionRepository() => throw new NotSupportedException();
+            public ICompanyRepository CreateCompanyRepository() => throw new NotSupportedException();
+            public IUserCompanyRepository CreateUserCompanyRepository() => throw new NotSupportedException();
+            public IRolePermissionRepository CreateRolePermissionRepository() => throw new NotSupportedException();
+            public IDepartmentRepository CreateDepartmentRepository() => throw new NotSupportedException();
         }
 
         private sealed class FakeUserRepository : IUserRepository

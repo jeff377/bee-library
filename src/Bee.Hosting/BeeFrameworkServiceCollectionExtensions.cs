@@ -24,7 +24,6 @@ using Bee.Repository;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
-using Bee.Repository.Abstractions.System;
 using Bee.Repository.AuditLog;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -231,23 +230,11 @@ namespace Bee.Hosting
                 new Bee.Repository.Factories.AuditLogRepositoryFactory(
                     sp.GetRequiredService<IDbConnectionManager>()));
 
-            // Repositories that ctor-inject into upstream services (CacheDataSourceProvider,
-            // EnterCompany permission check). Owned by the factory but exposed to DI so
-            // ActivatorUtilities can resolve them without a service-locator pattern.
-            services.AddSingleton<ISessionRepository>(sp =>
-                sp.GetRequiredService<ISystemRepositoryFactory>().CreateSessionRepository());
-            services.AddSingleton<ICompanyRepository>(sp =>
-                sp.GetRequiredService<ISystemRepositoryFactory>().CreateCompanyRepository());
-            services.AddSingleton<IUserCompanyRepository>(sp =>
-                sp.GetRequiredService<ISystemRepositoryFactory>().CreateUserCompanyRepository());
-            services.AddSingleton<IRolePermissionRepository>(sp =>
-                sp.GetRequiredService<ISystemRepositoryFactory>().CreateRolePermissionRepository());
-            services.AddSingleton<IDepartmentRepository>(sp =>
-                sp.GetRequiredService<ISystemRepositoryFactory>().CreateDepartmentRepository());
-            services.AddSingleton<IUserRepository>(sp =>
-                sp.GetRequiredService<ISystemRepositoryFactory>().CreateUserRepository());
-            services.AddSingleton<IEmployeeRepository>(sp =>
-                sp.GetRequiredService<ISystemRepositoryFactory>().CreateEmployeeRepository());
+            // NOTE: individual system repositories are deliberately NOT registered here. Consumers
+            // ctor-inject ISystemRepositoryFactory and create what they need per call, the same way
+            // FormBusinessObject obtains its form repository from IFormRepositoryFactory by progId.
+            // Registering them one by one made every new system table a three-place edit (factory
+            // method, DI line, consumer ctor); this keeps it to the factory interface alone.
 
             // Permission services: per-company role-permission snapshot cache + layer-1 Can check.
             services.AddSingleton<IRolePermissionService>(sp =>
@@ -263,9 +250,7 @@ namespace Bee.Hosting
             // Record-scope identity: resolves the current user's employee/department (EnterCompany
             // snapshots the result onto SessionInfo for zero-DB scope filtering).
             services.AddSingleton<IEmployeeContextResolver>(sp =>
-                new EmployeeContextResolver(
-                    sp.GetRequiredService<IUserRepository>(),
-                    sp.GetRequiredService<IEmployeeRepository>()));
+                new EmployeeContextResolver(sp.GetRequiredService<ISystemRepositoryFactory>()));
             // Record-scope (layer-2): resolves (model, action) + session identity + grants + model
             // default + department tree into a read filter / per-row verdict.
             services.AddSingleton<IScopeResolver>(sp =>

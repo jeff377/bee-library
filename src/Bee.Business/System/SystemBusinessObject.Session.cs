@@ -5,7 +5,6 @@ using Bee.Definition.Attributes;
 using Bee.Definition.Logging;
 using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.Factories;
-using Bee.Repository.Abstractions.System;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
 
@@ -112,7 +111,8 @@ namespace Bee.Business.System
             var companyInfo = companyInfoService.Get(args.CompanyId)
                 ?? throw new InvalidOperationException("Company access denied.");
 
-            var userCompanyRepository = Services.GetRequiredService<IUserCompanyRepository>();
+            var userCompanyRepository = Services.GetRequiredService<ISystemRepositoryFactory>()
+                .CreateUserCompanyRepository();
             if (!userCompanyRepository.HasAccess(sessionInfo.UserId, args.CompanyId))
                 throw new InvalidOperationException("Company access denied.");
 

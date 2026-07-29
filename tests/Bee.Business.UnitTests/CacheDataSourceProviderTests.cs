@@ -17,12 +17,7 @@ namespace Bee.Business.UnitTests
 
         private CacheDataSourceProvider CreateProvider()
         {
-            var factory = _fx.GetRequiredService<ISystemRepositoryFactory>();
-            return new CacheDataSourceProvider(
-                factory.CreateSessionRepository(),
-                factory.CreateCompanyRepository(),
-                factory.CreateRolePermissionRepository(),
-                factory.CreateDepartmentRepository());
+            return new CacheDataSourceProvider(_fx.GetRequiredService<ISystemRepositoryFactory>());
         }
 
         [DbFact(DatabaseType.SQLServer)]
@@ -71,10 +66,9 @@ namespace Bee.Business.UnitTests
 
         [Fact]
         [DisplayName("CacheDataSourceProvider 建構子傳 null 應拋 ArgumentNullException")]
-        public void Constructor_NullRepository_Throws()
+        public void Constructor_NullFactory_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() =>
-                new CacheDataSourceProvider(null!, null!, null!, null!));
+            Assert.Throws<ArgumentNullException>(() => new CacheDataSourceProvider(null!));
         }
     }
 }

@@ -10,7 +10,6 @@ using Bee.Definition.Settings;
 using Bee.ObjectCaching;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.Factories;
-using Bee.Repository.Abstractions.System;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.Hosting.UnitTests
@@ -53,8 +52,10 @@ namespace Bee.Hosting.UnitTests
                 Assert.NotNull(sp.GetRequiredService<IRepositoryDatabaseRouter>());
                 Assert.NotNull(sp.GetRequiredService<ISystemRepositoryFactory>());
                 Assert.NotNull(sp.GetRequiredService<IFormRepositoryFactory>());
-                Assert.NotNull(sp.GetRequiredService<ICompanyRepository>());
-                Assert.NotNull(sp.GetRequiredService<IUserCompanyRepository>());
+                // Individual system repositories are not DI-registered by design — consumers go
+                // through the factory, so resolving one from it is what this asserts.
+                Assert.NotNull(sp.GetRequiredService<ISystemRepositoryFactory>().CreateCompanyRepository());
+                Assert.NotNull(sp.GetRequiredService<ISystemRepositoryFactory>().CreateUserCompanyRepository());
                 Assert.NotNull(sp.GetRequiredService<JsonRpcExecutor>());
             }
             finally

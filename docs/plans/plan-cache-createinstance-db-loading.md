@@ -26,9 +26,23 @@
 - `Bee.ObjectCaching` 對 `Bee.Repository.Abstractions` 的專案參考**保留**——
   `EmployeeContextResolver` 仍在使用。
 
-**已知待重構（使用者已知悉，另案處理）**：`CacheDataSourceProvider` 的建構式會隨
-DB-sourced 快取增加而持續變寬。可改為持有通用 repository 存取介面（`ISystemRepositoryFactory`）
-並於各取數方法內按需取得，即可讓建構式固定不變。
+**已完成的後續重構（2026-07-29，同日）**：原本每新增一個系統 repository 要登記三處
+——工廠方法、DI 個別註冊、消費端 ctor 參數——`CacheDataSourceProvider` 的建構式因此會
+隨 DB-sourced 快取增加而持續變寬。改為比照 BO 層既有慣例收斂：
+
+- 判準來自 `IFormRepositoryFactory` / `IBusinessObjectFactory`：**身分是資料（ProgId），
+  不是型別；DI 只放工廠，不放實例**。一千個 ERP 功能共用同一個 `DataFormRepository`
+  類別，`FormBusinessObject` 只持有工廠、每次操作才 `CreateDataFormRepository(ProgId)`，
+  DI 註冊數不隨功能數增長。
+- `CacheDataSourceProvider`、`EmployeeContextResolver` 改為持有 `ISystemRepositoryFactory`，
+  各方法內按需 `CreateXxxRepository()`；`EnterCompany` 的 `IUserCompanyRepository` 同改。
+- `BeeFrameworkServiceCollectionExtensions` 中 7 行個別 repository 註冊全數移除，
+  只留 `ISystemRepositoryFactory`。新增系統 repository 從此只需動工廠介面一處。
+- `CacheDataSourceProvider` 的建構式因此還原為 `PublicAPI.Shipped.txt` 中原本的簽章，
+  該類別的 breaking change 消失；`EmployeeContextResolver` 建構式則為新的 breaking change
+  （已登錄 `PublicAPI.Unshipped.txt`）。
+- 副作用：外部 app 若原本 `sp.GetRequiredService<ICompanyRepository>()` 需改從工廠取得。
+  已確認 `apps/` `samples/` `tools/` 完全未引用個別 repository。
 
 **尚未處理**：`ICacheDataSourceProvider` 新增三個方法屬 breaking change（已登錄
 `PublicAPI.Unshipped.txt`），發版時需在 CHANGELOG 標示。
