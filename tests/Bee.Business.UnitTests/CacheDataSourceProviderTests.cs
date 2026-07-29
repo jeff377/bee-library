@@ -14,23 +14,67 @@ namespace Bee.Business.UnitTests
         private readonly SharedDbFixture _fx;
 
         public CacheDataSourceProviderTests(SharedDbFixture fx) { _fx = fx; }
+
+        private CacheDataSourceProvider CreateProvider()
+        {
+            var factory = _fx.GetRequiredService<ISystemRepositoryFactory>();
+            return new CacheDataSourceProvider(
+                factory.CreateSessionRepository(),
+                factory.CreateCompanyRepository(),
+                factory.CreateRolePermissionRepository(),
+                factory.CreateDepartmentRepository());
+        }
+
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("GetSessionUser 傳入不存在的 Token 應回傳 null")]
         public void GetSessionUser_UnknownToken_ReturnsNull()
         {
-            var factory = _fx.GetRequiredService<ISystemRepositoryFactory>();
-            var provider = new CacheDataSourceProvider(factory);
+            var provider = CreateProvider();
 
             var result = provider.GetSessionUser(Guid.NewGuid());
 
             Assert.Null(result);
         }
 
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("GetCompanyInfo 傳入不存在的公司代碼應回傳 null")]
+        public void GetCompanyInfo_UnknownCompany_ReturnsNull()
+        {
+            var provider = CreateProvider();
+
+            var result = provider.GetCompanyInfo("no_such_company");
+
+            Assert.Null(result);
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("GetCompanyRolePermissions 傳入不存在的公司代碼應回傳 null")]
+        public void GetCompanyRolePermissions_UnknownCompany_ReturnsNull()
+        {
+            var provider = CreateProvider();
+
+            var result = provider.GetCompanyRolePermissions("no_such_company");
+
+            Assert.Null(result);
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("GetDepartmentTree 傳入不存在的公司代碼應回傳 null")]
+        public void GetDepartmentTree_UnknownCompany_ReturnsNull()
+        {
+            var provider = CreateProvider();
+
+            var result = provider.GetDepartmentTree("no_such_company");
+
+            Assert.Null(result);
+        }
+
         [Fact]
         [DisplayName("CacheDataSourceProvider 建構子傳 null 應拋 ArgumentNullException")]
-        public void Constructor_NullFactory_Throws()
+        public void Constructor_NullRepository_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new CacheDataSourceProvider(null!));
+            Assert.Throws<ArgumentNullException>(() =>
+                new CacheDataSourceProvider(null!, null!, null!, null!));
         }
     }
 }

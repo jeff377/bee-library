@@ -4,7 +4,6 @@ using Bee.Definition.Identity;
 using Bee.Definition.Organization;
 using Bee.Definition.Storage;
 using Bee.ObjectCaching.Services;
-using Bee.Repository.Abstractions.System;
 
 namespace Bee.ObjectCaching.UnitTests.Services
 {
@@ -14,87 +13,66 @@ namespace Bee.ObjectCaching.UnitTests.Services
     /// </summary>
     public class DepartmentTreeServiceTests
     {
-        private sealed class StubCompanyInfoService : ICompanyInfoService
+        private sealed class StubCacheDataSourceProvider : ICacheDataSourceProvider
         {
-            private readonly Func<string, CompanyInfo?> _resolver;
-            public StubCompanyInfoService(Func<string, CompanyInfo?> resolver) { _resolver = resolver; }
-            public CompanyInfo? Get(string companyId) => _resolver(companyId);
-            public void Set(CompanyInfo companyInfo) { }
-            public void Remove(string companyId) { }
+            private readonly Func<string, DepartmentTree?> _resolver;
+            public int GetDepartmentTreeCallCount { get; private set; }
+            public StubCacheDataSourceProvider(Func<string, DepartmentTree?> resolver) { _resolver = resolver; }
+
+            public DepartmentTree? GetDepartmentTree(string companyId)
+            {
+                GetDepartmentTreeCallCount++;
+                return _resolver(companyId);
+            }
+
+            public SessionUser? GetSessionUser(Guid accessToken) => null;
+            public CompanyInfo? GetCompanyInfo(string companyId) => null;
+            public CompanyRolePermissions? GetCompanyRolePermissions(string companyId) => null;
         }
 
-        private sealed class StubDepartmentRepository : IDepartmentRepository
-        {
-            private readonly Func<string, IReadOnlyList<DepartmentRow>> _resolver;
-            public StubDepartmentRepository(Func<string, IReadOnlyList<DepartmentRow>> resolver) { _resolver = resolver; }
-            public IReadOnlyList<DepartmentRow> GetDepartments(string databaseId) => _resolver(databaseId);
-        }
-
-        private static CacheContainerService NewCache()
+        private static CacheContainerService NewCache(ICacheDataSourceProvider? dataSource = null)
         {
             var paths = new PathOptions { DefinePath = Path.GetTempPath() };
             var storage = new FileDefineStorage(paths);
-            return new CacheContainerService(storage, paths, "dept_svc_" + Guid.NewGuid().ToString("N"));
+            string prefix = "dept_svc_" + Guid.NewGuid().ToString("N");
+            return dataSource == null
+                ? new CacheContainerService(storage, paths, prefix)
+                : new CacheContainerService(storage, paths, prefix, () => dataSource);
         }
 
         [Fact]
         [DisplayName("建構子 cache 為 null 應拋 ArgumentNullException")]
         public void Constructor_NullCache_ThrowsArgumentNullException()
         {
-            var companyService = new StubCompanyInfoService(_ => null);
-            var repo = new StubDepartmentRepository(_ => []);
-            Assert.Throws<ArgumentNullException>(() =>
-                new DepartmentTreeService(null!, companyService, repo));
+            Assert.Throws<ArgumentNullException>(() => new DepartmentTreeService(null!));
         }
 
         [Fact]
-        [DisplayName("建構子 companyInfoService 為 null 應拋 ArgumentNullException")]
-        public void Constructor_NullCompanyInfoService_ThrowsArgumentNullException()
-        {
-            var cache = NewCache();
-            var repo = new StubDepartmentRepository(_ => []);
-            Assert.Throws<ArgumentNullException>(() =>
-                new DepartmentTreeService(cache, null!, repo));
-        }
-
-        [Fact]
-        [DisplayName("建構子 repository 為 null 應拋 ArgumentNullException")]
-        public void Constructor_NullRepository_ThrowsArgumentNullException()
-        {
-            var cache = NewCache();
-            var companyService = new StubCompanyInfoService(_ => null);
-            Assert.Throws<ArgumentNullException>(() =>
-                new DepartmentTreeService(cache, companyService, null!));
-        }
-
-        [Fact]
-        [DisplayName("Get 快取命中時應直接回傳快取的 DepartmentTree，不呼叫 companyInfoService")]
+        [DisplayName("Get 快取命中時應直接回傳快取的 DepartmentTree，不觸發資料來源")]
         public void Get_CacheHit_ReturnsCachedTree()
         {
-            var cache = NewCache();
+            var dataSource = new StubCacheDataSourceProvider(
+                _ => throw new InvalidOperationException("should not be called"));
+            var cache = NewCache(dataSource);
             var companyId = "C001";
             var cachedTree = new DepartmentTree(companyId, []);
             cache.DepartmentTree.Set(cachedTree);
 
-            var companyService = new StubCompanyInfoService(
-                _ => throw new InvalidOperationException("should not be called"));
-            var repo = new StubDepartmentRepository(
-                _ => throw new InvalidOperationException("should not be called"));
-            var service = new DepartmentTreeService(cache, companyService, repo);
+            var service = new DepartmentTreeService(cache);
 
             var result = service.Get(companyId);
 
             Assert.Same(cachedTree, result);
+            Assert.Equal(0, dataSource.GetDepartmentTreeCallCount);
         }
 
         [Fact]
         [DisplayName("Get 快取未命中且公司不存在時應回傳 null")]
         public void Get_CacheMiss_CompanyNotFound_ReturnsNull()
         {
-            var cache = NewCache();
-            var companyService = new StubCompanyInfoService(_ => null);
-            var repo = new StubDepartmentRepository(_ => []);
-            var service = new DepartmentTreeService(cache, companyService, repo);
+            var dataSource = new StubCacheDataSourceProvider(_ => null);
+            var cache = NewCache(dataSource);
+            var service = new DepartmentTreeService(cache);
 
             var result = service.Get("MISSING_COMPANY");
 
@@ -102,18 +80,15 @@ namespace Bee.ObjectCaching.UnitTests.Services
         }
 
         [Fact]
-        [DisplayName("Get 快取未命中且公司存在時應建構 DepartmentTree 存入快取並回傳，第二次呼叫命中快取")]
-        public void Get_CacheMiss_CompanyFound_BuildsAndCachesTree()
+        [DisplayName("Get 快取未命中且公司存在時應由資料來源載入並快取，第二次呼叫命中快取")]
+        public void Get_CacheMiss_CompanyFound_LoadsAndCachesTree()
         {
-            var cache = NewCache();
             var companyId = "C002";
             var deptRowId = Guid.NewGuid();
-            var company = new CompanyInfo { CompanyId = companyId, CompanyDatabaseId = "biz_db_01" };
             var rows = new[] { new DepartmentRow(deptRowId, "D001", "Sales", Guid.Empty, Guid.Empty) };
-
-            var companyService = new StubCompanyInfoService(_ => company);
-            var repo = new StubDepartmentRepository(_ => rows);
-            var service = new DepartmentTreeService(cache, companyService, repo);
+            var dataSource = new StubCacheDataSourceProvider(id => new DepartmentTree(id, rows));
+            var cache = NewCache(dataSource);
+            var service = new DepartmentTreeService(cache);
 
             var result = service.Get(companyId);
 
@@ -121,23 +96,34 @@ namespace Bee.ObjectCaching.UnitTests.Services
             Assert.Equal(companyId, result!.CompanyId);
             Assert.NotNull(result.Roots);
             Assert.Single(result.Roots!);
+            Assert.Equal(1, dataSource.GetDepartmentTreeCallCount);
 
             var second = service.Get(companyId);
             Assert.Same(result, second);
+            Assert.Equal(1, dataSource.GetDepartmentTreeCallCount);
+        }
+
+        [Fact]
+        [DisplayName("未提供資料來源時 Get 應回 null（維持既有行為）")]
+        public void Get_NoDataSource_ReturnsNull()
+        {
+            var cache = NewCache();
+            var service = new DepartmentTreeService(cache);
+
+            Assert.Null(service.Get("ANY"));
         }
 
         [Fact]
         [DisplayName("Remove 應從快取中移除指定公司的 DepartmentTree")]
         public void Remove_EvictsFromCache()
         {
-            var cache = NewCache();
+            var dataSource = new StubCacheDataSourceProvider(_ => null);
+            var cache = NewCache(dataSource);
             var companyId = "C003";
             var tree = new DepartmentTree(companyId, []);
             cache.DepartmentTree.Set(tree);
 
-            var companyService = new StubCompanyInfoService(_ => null);
-            var repo = new StubDepartmentRepository(_ => []);
-            var service = new DepartmentTreeService(cache, companyService, repo);
+            var service = new DepartmentTreeService(cache);
 
             service.Remove(companyId);
 

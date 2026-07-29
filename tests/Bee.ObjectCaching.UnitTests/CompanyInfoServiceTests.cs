@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using Bee.Definition;
 using Bee.Definition.Identity;
+using Bee.Definition.Organization;
 using Bee.ObjectCaching.Services;
-using Bee.Repository.Abstractions.System;
 
 namespace Bee.ObjectCaching.UnitTests
 {
@@ -12,25 +12,33 @@ namespace Bee.ObjectCaching.UnitTests
     /// </summary>
     public class CompanyInfoServiceTests
     {
-        private sealed class StubCompanyRepository : ICompanyRepository
+        private sealed class StubCacheDataSourceProvider : ICacheDataSourceProvider
         {
             private readonly Func<string, CompanyInfo?> _resolver;
-            public int GetByIdCallCount { get; private set; }
-            public StubCompanyRepository() : this(_ => null) { }
-            public StubCompanyRepository(Func<string, CompanyInfo?> resolver) { _resolver = resolver; }
-            public CompanyInfo? GetById(string companyId)
+            public int GetCompanyInfoCallCount { get; private set; }
+            public StubCacheDataSourceProvider() : this(_ => null) { }
+            public StubCacheDataSourceProvider(Func<string, CompanyInfo?> resolver) { _resolver = resolver; }
+
+            public CompanyInfo? GetCompanyInfo(string companyId)
             {
-                GetByIdCallCount++;
+                GetCompanyInfoCallCount++;
                 return _resolver(companyId);
             }
+
+            public SessionUser? GetSessionUser(Guid accessToken) => null;
+            public CompanyRolePermissions? GetCompanyRolePermissions(string companyId) => null;
+            public DepartmentTree? GetDepartmentTree(string companyId) => null;
         }
 
-        private static CompanyInfoService NewService(out CacheContainerService container, ICompanyRepository? repo = null)
+        private static CompanyInfoService NewService(out CacheContainerService container,
+            StubCacheDataSourceProvider? dataSource = null)
         {
             var paths = new PathOptions { DefinePath = Path.GetTempPath() };
             var storage = new Bee.Definition.Storage.FileDefineStorage(paths);
-            container = new CacheContainerService(storage, paths, "company_svc_" + Guid.NewGuid().ToString("N"));
-            return new CompanyInfoService(container, repo ?? new StubCompanyRepository());
+            var provider = dataSource ?? new StubCacheDataSourceProvider();
+            container = new CacheContainerService(storage, paths,
+                "company_svc_" + Guid.NewGuid().ToString("N"), () => provider);
+            return new CompanyInfoService(container);
         }
 
         [Fact]
@@ -58,49 +66,51 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("Get 不存在且 repository 也無資料時應回 null")]
-        public void Get_MissingCompanyId_RepoEmpty_ReturnsNull()
+        [DisplayName("Get 不存在且資料來源也無資料時應回 null")]
+        public void Get_MissingCompanyId_DataSourceEmpty_ReturnsNull()
         {
             var service = NewService(out _);
             Assert.Null(service.Get("UNKNOWN"));
         }
 
         [Fact]
-        [DisplayName("Get cache miss 時應呼叫 repository fallback，並把結果寫回 cache")]
-        public void Get_CacheMiss_LoadsFromRepository_AndPopulatesCache()
+        [DisplayName("Get cache miss 時快取應向資料來源讀取，並把結果寫回 cache")]
+        public void Get_CacheMiss_LoadsFromDataSource_AndPopulatesCache()
         {
-            var repo = new StubCompanyRepository(id => id == "DB_ONLY"
+            var dataSource = new StubCacheDataSourceProvider(id => id == "DB_ONLY"
                 ? new CompanyInfo { CompanyId = "DB_ONLY", CompanyName = "from-db", CompanyDatabaseId = "common" }
                 : null);
-            var service = NewService(out var container, repo);
+            var service = NewService(out _, dataSource);
 
             var first = service.Get("DB_ONLY");
             Assert.NotNull(first);
             Assert.Equal("from-db", first.CompanyName);
-            Assert.Equal(1, repo.GetByIdCallCount);
+            Assert.Equal(1, dataSource.GetCompanyInfoCallCount);
 
-            // 第二次應命中 cache，不再打 repository
+            // 第二次應命中 cache，不再打資料來源
             var second = service.Get("DB_ONLY");
             Assert.NotNull(second);
-            Assert.Equal(1, repo.GetByIdCallCount);
+            Assert.Equal(1, dataSource.GetCompanyInfoCallCount);
+        }
+
+        [Fact]
+        [DisplayName("未提供資料來源時 Get 應回 null（維持既有行為）")]
+        public void Get_NoDataSource_ReturnsNull()
+        {
+            var paths = new PathOptions { DefinePath = Path.GetTempPath() };
+            var storage = new Bee.Definition.Storage.FileDefineStorage(paths);
+            var container = new CacheContainerService(storage, paths,
+                "company_svc_no_ds_" + Guid.NewGuid().ToString("N"));
+            var service = new CompanyInfoService(container);
+
+            Assert.Null(service.Get("ANY"));
         }
 
         [Fact]
         [DisplayName("Ctor 傳入 null cache 應拋例外")]
         public void Ctor_NullCache_Throws()
         {
-            Assert.Throws<ArgumentNullException>(
-                () => new CompanyInfoService(null!, new StubCompanyRepository()));
-        }
-
-        [Fact]
-        [DisplayName("Ctor 傳入 null companyRepository 應拋例外")]
-        public void Ctor_NullCompanyRepository_Throws()
-        {
-            var paths = new PathOptions { DefinePath = Path.GetTempPath() };
-            var storage = new Bee.Definition.Storage.FileDefineStorage(paths);
-            var cache = new CacheContainerService(storage, paths, "company_svc_null_repo_" + Guid.NewGuid().ToString("N"));
-            Assert.Throws<ArgumentNullException>(() => new CompanyInfoService(cache, null!));
+            Assert.Throws<ArgumentNullException>(() => new CompanyInfoService(null!));
         }
     }
 }

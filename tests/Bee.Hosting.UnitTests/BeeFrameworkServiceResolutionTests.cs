@@ -4,8 +4,10 @@ using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Definition;
 using Bee.Definition.Identity;
+using Bee.Definition.Organization;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
+using Bee.ObjectCaching;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
@@ -40,7 +42,13 @@ namespace Bee.Hosting.UnitTests
                 Assert.NotNull(sp.GetRequiredService<IAccessTokenValidator>());
                 Assert.NotNull(sp.GetRequiredService<ISessionInfoService>());
                 Assert.NotNull(sp.GetRequiredService<ICompanyInfoService>());
+                // Resolving both of these proves the cache container takes its data source as a
+                // deferred factory: resolving it eagerly would close the cycle ICacheContainer →
+                // ICacheDataSourceProvider → repositories → IDefineAccess → ICacheContainer.
+                Assert.NotNull(sp.GetRequiredService<ICacheContainer>());
                 Assert.NotNull(sp.GetRequiredService<ICacheDataSourceProvider>());
+                Assert.NotNull(sp.GetRequiredService<IRolePermissionService>());
+                Assert.NotNull(sp.GetRequiredService<IDepartmentTreeService>());
                 Assert.NotNull(sp.GetRequiredService<IBusinessObjectFactory>());
                 Assert.NotNull(sp.GetRequiredService<IRepositoryDatabaseRouter>());
                 Assert.NotNull(sp.GetRequiredService<ISystemRepositoryFactory>());

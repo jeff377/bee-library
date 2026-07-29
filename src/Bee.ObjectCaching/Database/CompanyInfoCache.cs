@@ -1,33 +1,56 @@
+using Bee.Definition;
 using Bee.Definition.Identity;
 
 namespace Bee.ObjectCaching.Database
 {
     /// <summary>
-    /// Company information cache, keyed by company id.
+    /// Company information cache, keyed by company id. Reads through to
+    /// <see cref="ICacheDataSourceProvider.GetCompanyInfo"/> on a miss.
     /// </summary>
     /// <remarks>
     /// Inherits the default negative caching policy from <see cref="KeyObjectCache{T}"/>:
     /// a missing company id is cached as a sentinel for the negative TTL, so repeated
     /// lookups of unknown company ids do not re-invoke <see cref="CreateInstance"/>.
-    /// <see cref="CreateInstance"/> currently returns <c>null</c> — until the company
-    /// data source is wired (separate plan), entries are populated exclusively by
-    /// <see cref="KeyObjectCache{T}.Set(T)"/> from <c>EnterCompany</c>.
     /// </remarks>
     public class CompanyInfoCache : KeyObjectCache<CompanyInfo>
     {
-        /// <summary>
-        /// Initializes a new <see cref="CompanyInfoCache"/>.
-        /// </summary>
-        /// <param name="cachePrefix">Per-owner cache namespace (see <see cref="KeyObjectCache{T}"/>).</param>
-        public CompanyInfoCache(string cachePrefix = "") : base(cachePrefix) { }
+        private readonly Func<ICacheDataSourceProvider>? _dataSource;
 
         /// <summary>
-        /// Creates an instance of the company information.
+        /// Initializes a new <see cref="CompanyInfoCache"/> without a data source, leaving
+        /// <see cref="KeyObjectCache{T}.Set(T)"/> as the only way in.
+        /// </summary>
+        /// <param name="cachePrefix">Per-owner cache namespace (see <see cref="KeyObjectCache{T}"/>).</param>
+        public CompanyInfoCache(string cachePrefix = "") : this(null, cachePrefix) { }
+
+        /// <summary>
+        /// Initializes a new <see cref="CompanyInfoCache"/> bound to a data source.
+        /// </summary>
+        /// <param name="dataSource">
+        /// Lazy accessor for the cache data source; <c>null</c> disables read-through, leaving
+        /// <see cref="KeyObjectCache{T}.Set(T)"/> as the only way in.
+        /// </param>
+        /// <param name="cachePrefix">Per-owner cache namespace (see <see cref="KeyObjectCache{T}"/>).</param>
+        /// <remarks>
+        /// WARNING: <paramref name="dataSource"/> must stay a factory. Resolving the provider while
+        /// <see cref="CacheContainerService"/> is under construction closes the dependency cycle
+        /// <c>ICacheContainer</c> to <c>ICacheDataSourceProvider</c> to the repository factory to
+        /// <c>IDefineAccess</c> and back to <c>ICacheContainer</c>. Deferring the call to the first
+        /// cache miss breaks that cycle, because the container singleton is fully constructed by then.
+        /// </remarks>
+        internal CompanyInfoCache(Func<ICacheDataSourceProvider>? dataSource, string cachePrefix)
+            : base(cachePrefix)
+        {
+            _dataSource = dataSource;
+        }
+
+        /// <summary>
+        /// Creates an instance of the company information by reading it from the data source.
         /// </summary>
         /// <param name="key">The company id.</param>
         protected override CompanyInfo? CreateInstance(string key)
         {
-            return null; // Loading CompanyInfo from the database is not yet implemented
+            return _dataSource?.Invoke().GetCompanyInfo(key);
         }
     }
 }

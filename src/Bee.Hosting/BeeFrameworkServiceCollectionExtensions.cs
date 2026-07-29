@@ -77,10 +77,15 @@ namespace Bee.Hosting
             // 4. IDefineStorage / IDefineAccess / ICacheContainer — singletons.
             services.AddSingleton<IDefineStorage>(sp => CreateDefineStorage(
                 components.DefineStorage, BackendDefaultTypes.DefineStorage, sp, sp.GetRequiredService<PathOptions>()));
+            //    The data source is passed as a factory, not an instance. Resolving it here would
+            //    close the cycle ICacheContainer → ICacheDataSourceProvider → repositories →
+            //    IDefineAccess → ICacheContainer; deferring to the first cache miss breaks it.
             services.AddSingleton<ICacheContainer>(sp =>
                 new CacheContainerService(
                     sp.GetRequiredService<IDefineStorage>(),
-                    sp.GetRequiredService<PathOptions>()));
+                    sp.GetRequiredService<PathOptions>(),
+                    string.Empty,
+                    sp.GetRequiredService<ICacheDataSourceProvider>));
 
             // 4b. Tenant customization-override layer: per-customizeId cache provider + reader.
             //     Both honour PathOptions.CustomizePath — when it is empty (the standard,
@@ -226,9 +231,11 @@ namespace Bee.Hosting
                 new Bee.Repository.Factories.AuditLogRepositoryFactory(
                     sp.GetRequiredService<IDbConnectionManager>()));
 
-            // Repositories that ctor-inject into upstream services (CompanyInfoService,
+            // Repositories that ctor-inject into upstream services (CacheDataSourceProvider,
             // EnterCompany permission check). Owned by the factory but exposed to DI so
             // ActivatorUtilities can resolve them without a service-locator pattern.
+            services.AddSingleton<ISessionRepository>(sp =>
+                sp.GetRequiredService<ISystemRepositoryFactory>().CreateSessionRepository());
             services.AddSingleton<ICompanyRepository>(sp =>
                 sp.GetRequiredService<ISystemRepositoryFactory>().CreateCompanyRepository());
             services.AddSingleton<IUserCompanyRepository>(sp =>
@@ -244,10 +251,7 @@ namespace Bee.Hosting
 
             // Permission services: per-company role-permission snapshot cache + layer-1 Can check.
             services.AddSingleton<IRolePermissionService>(sp =>
-                new RolePermissionService(
-                    sp.GetRequiredService<ICacheContainer>(),
-                    sp.GetRequiredService<ICompanyInfoService>(),
-                    sp.GetRequiredService<IRolePermissionRepository>()));
+                new RolePermissionService(sp.GetRequiredService<ICacheContainer>()));
             services.AddSingleton<IAuthorizationService>(sp =>
                 new AuthorizationService(
                     sp.GetRequiredService<ISessionInfoService>(),
@@ -255,10 +259,7 @@ namespace Bee.Hosting
 
             // Organization: per-company department-tree snapshot cache (record-scope source).
             services.AddSingleton<IDepartmentTreeService>(sp =>
-                new DepartmentTreeService(
-                    sp.GetRequiredService<ICacheContainer>(),
-                    sp.GetRequiredService<ICompanyInfoService>(),
-                    sp.GetRequiredService<IDepartmentRepository>()));
+                new DepartmentTreeService(sp.GetRequiredService<ICacheContainer>()));
             // Record-scope identity: resolves the current user's employee/department (EnterCompany
             // snapshots the result onto SessionInfo for zero-DB scope filtering).
             services.AddSingleton<IEmployeeContextResolver>(sp =>

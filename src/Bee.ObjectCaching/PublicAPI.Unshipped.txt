@@ -1,1 +1,8 @@
 #nullable enable
+*REMOVED*Bee.ObjectCaching.Services.CompanyInfoService.CompanyInfoService(Bee.ObjectCaching.ICacheContainer! cache, Bee.Repository.Abstractions.System.ICompanyRepository! companyRepository) -> void
+*REMOVED*Bee.ObjectCaching.Services.DepartmentTreeService.DepartmentTreeService(Bee.ObjectCaching.ICacheContainer! cache, Bee.Definition.Identity.ICompanyInfoService! companyInfoService, Bee.Repository.Abstractions.System.IDepartmentRepository! repository) -> void
+*REMOVED*Bee.ObjectCaching.Services.RolePermissionService.RolePermissionService(Bee.ObjectCaching.ICacheContainer! cache, Bee.Definition.Identity.ICompanyInfoService! companyInfoService, Bee.Repository.Abstractions.System.IRolePermissionRepository! repository) -> void
+Bee.ObjectCaching.CacheContainerService.CacheContainerService(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix, System.Func<Bee.Definition.ICacheDataSourceProvider!>? dataSource) -> void
+Bee.ObjectCaching.Services.CompanyInfoService.CompanyInfoService(Bee.ObjectCaching.ICacheContainer! cache) -> void
+Bee.ObjectCaching.Services.DepartmentTreeService.DepartmentTreeService(Bee.ObjectCaching.ICacheContainer! cache) -> void
+Bee.ObjectCaching.Services.RolePermissionService.RolePermissionService(Bee.ObjectCaching.ICacheContainer! cache) -> void

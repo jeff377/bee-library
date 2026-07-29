@@ -36,6 +36,28 @@ namespace Bee.ObjectCaching
         /// <param name="paths">Path options used by file-backed caches.</param>
         /// <param name="cachePrefix">Per-owner cache namespace; <see cref="string.Empty"/> means "share the legacy unprefixed namespace".</param>
         public CacheContainerService(IDefineStorage storage, PathOptions paths, string cachePrefix)
+            : this(storage, paths, cachePrefix, dataSource: null) { }
+
+        /// <summary>
+        /// Initializes a new <see cref="CacheContainerService"/> whose database-backed caches read
+        /// through to the supplied data source on a miss.
+        /// </summary>
+        /// <param name="storage">The define storage shared by storage-backed caches.</param>
+        /// <param name="paths">Path options used by file-backed caches.</param>
+        /// <param name="cachePrefix">Per-owner cache namespace; <see cref="string.Empty"/> means "share the legacy unprefixed namespace".</param>
+        /// <param name="dataSource">
+        /// Lazy accessor for the cache data source; <c>null</c> leaves the database-backed caches
+        /// without read-through, populated only through their <c>Set</c> methods.
+        /// </param>
+        /// <remarks>
+        /// WARNING: <paramref name="dataSource"/> must stay a factory. Resolving the provider here
+        /// closes the dependency cycle <c>ICacheContainer</c> to <c>ICacheDataSourceProvider</c> to
+        /// the repository factory to <c>IDefineAccess</c> and back to <c>ICacheContainer</c>, which
+        /// deadlocks service resolution in <c>AddBeeFramework</c>. Deferring the call to the first
+        /// cache miss breaks the cycle, because this container is fully constructed by then.
+        /// </remarks>
+        public CacheContainerService(IDefineStorage storage, PathOptions paths, string cachePrefix,
+            Func<ICacheDataSourceProvider>? dataSource)
         {
             ArgumentNullException.ThrowIfNull(storage);
             ArgumentNullException.ThrowIfNull(paths);
@@ -52,11 +74,12 @@ namespace Bee.ObjectCaching
             FormSchema = new FormSchemaCache(storage, paths, CachePrefix);
             FormLayout = new FormLayoutCache(storage, paths, CachePrefix);
             LanguageResource = new LanguageResourceCache(storage, paths, CachePrefix);
+            // SessionInfo has no read-through yet: nothing persists a login session to st_session,
+            // so there is nothing to rebuild from. See docs/plans for the persistence work it needs.
             SessionInfo = new SessionInfoCache(CachePrefix);
-            CompanyInfo = new CompanyInfoCache(CachePrefix);
-            CompanyRolePermissions = new CompanyRolePermissionsCache(CachePrefix);
-            DepartmentTree = new DepartmentTreeCache(CachePrefix);
-
+            CompanyInfo = new CompanyInfoCache(dataSource, CachePrefix);
+            CompanyRolePermissions = new CompanyRolePermissionsCache(dataSource, CachePrefix);
+            DepartmentTree = new DepartmentTreeCache(dataSource, CachePrefix);
         }
 
         /// <summary>
