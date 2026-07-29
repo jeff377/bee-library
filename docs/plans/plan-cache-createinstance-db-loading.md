@@ -563,8 +563,20 @@ DB 根本不會被讀取，delete-on-read 永遠不觸發。這不是「要不�
 | D6 | 讀取副作用與 `oneTime` | 讀取純化不做 DELETE；`oneTime: true` 明確擲例外，不靜默降級 |
 | D7 | 過期 session 殘留 | 比照 `CacheNotifyPoller` 以 `BackgroundService` 排程清理 |
 
-**階段 4 動工前仍須完成的稽核**（非決策，是查核動作）：確認 ASP.NET host 無任何路徑
-會將 `JsonRpcExecutor.IsLocalCall` 設為 `true`——`CreateSession` 的整套保護建立於此。
+**`IsLocalCall` 稽核 —— ✅ 已完成（2026-07-29），前提成立、不需改碼。**
+
+`CreateSession` 的整套保護建立於 `IsLocalCall`，故於階段 4 動工前查核。結果：
+
+- **預設值 fail-safe**：`JsonRpcExecutor.IsLocalCall` 宣告即 `= false`，「忘了設」落在安全的一邊。
+- **ASP.NET host 另行明確設 `false`**
+  （[ApiServiceController.cs:146](../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)），
+  無條件寫死——不取自 header、設定檔或請求內容，屬 defence in depth。
+- **全 repo 僅一處 production 設 `true`**：
+  [LocalApiProvider.cs:46](../../src/Bee.Api.Client/Providers/LocalApiProvider.cs)。
+  它要求 `ApiClientInfo.LocalServiceProvider` 已指派為同行程建好的 backend service provider，
+  未設即擲例外——只能由宿主程式於啟動時自行接上，遠端請求無從觸發。其餘皆為測試。
+- **兩條可能的繞道均不成立**：`IsLocalCall` 位於 executor 而非 `JsonRpcRequest`，
+  無法自 wire 反序列化設定；executor 為 transient、每請求一個新實例，無跨請求殘留。
 
 ### 已知的既有特性（非階段 3 引入，但與切換公司相關）
 
@@ -572,12 +584,17 @@ DB 根本不會被讀取，delete-on-read 永遠不觸發。這不是「要不�
 現行模型為「一次一家、可自由切換」。若日後需要「同時開兩家公司作業」，
 需改為每請求帶公司或多 token，屬另一個設計題，不在本 plan 範圍。
 
-### 獨立於階段 3 的既有缺陷（建議先修）
+### 快取過期政策維持不變（`GetPolicy` 不需覆寫）
 
-`SessionInfoCache` 未覆寫 `GetPolicy`，沿用 base 預設的 **20 分鐘 sliding**，
-而 `SessionInfo.ExpiredAt` 為 Login + 1 小時且**無任何續期機制**。兩個到期權威打架：
-閒置逾 20 分鐘的使用者會被迫重新登入，儘管其 token 仍有效。
-覆寫 `GetPolicy` 為 absolute at `ExpiredAt` 即可，與階段 3 無關、零安全影響。
+`SessionInfoCache` 沿用 base 預設的 **20 分鐘 sliding**，而 `SessionInfo.ExpiredAt`
+為 Login + 1 小時。這在**沒有重建機制的今日**確實會讓閒置逾 20 分鐘的使用者被迫重新登入，
+但階段 3 落地後即自然消解：快取逐出只是記憶體回收，下次使用時由種子重建，
+`ExpiredAt` 隨之取回並由 `AccessTokenValidator` 把關——**到期權威始終在種子，不在快取**。
+
+因此不應把快取壽命釘在 `ExpiredAt`：那會讓每個 session 無論是否再被使用都佔滿一小時記憶體，
+而 sliding 讓閒置者先釋放、需要時再重建，才是正確的取捨。
+`ExpiredAt` 短於 20 分鐘的情形實務上幾乎不出現，即使出現也只是快取比 token 多活一會兒，
+驗證端仍會拒絕。
 
 ## 測試
 

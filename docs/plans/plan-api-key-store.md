@@ -117,30 +117,40 @@ API Key 情境相反：**每個 request 都要驗一次**。把 100k 次迭代�
 > 這條要在程式碼註解寫明「為何不用 `PasswordHasher`」，否則日後必定有人「順手統一」
 > 而把 100k 迭代搬進每個請求。
 
-### D4：快取沿用 DB-backed cache 樣板，但須自我載入
+### D4：快取沿用 DB-backed cache 樣板（自載，經 `ICacheDataSourceProvider`）
+
+> **2026-07-29 修訂**：本節原本論證「`ApiKeyCache` 是框架第一個必須自己去 DB 撈的快取」，
+> 並在兩條路線間選了 per-cache 載入委派。該前提已不成立——
+> `CompanyInfoCache` / `CompanyRolePermissionsCache` / `DepartmentTreeCache` 已於同日改為自載
+> （見 [plan-cache-createinstance-db-loading.md](plan-cache-createinstance-db-loading.md)），
+> 自載成為 Database 快取的既定慣例，`ApiKeyCache` 照既有樣板走即可，不需要獨有形狀。
 
 `ApiKeyCache : KeyObjectCache<ApiKeyInfo>`（`src/Bee.ObjectCaching/Database/`），key 為 `sys_id`，
 搭配 `st_cache_notify` 失效——停用一把金鑰後，其他行程在下次 notify 檢查時同步失效。
 
 負向快取（查無此 `sys_id`）沿用 `KeyObjectCache` 既有機制，避免以隨機 `sys_id` 掃描造成
-每次都穿透到 DB。
+每次都穿透到 DB。**這也是必須自載的理由**：
+[`KeyObjectCache.Get`](../../src/Bee.ObjectCaching/KeyObjectCache.cs) 的 miss sentinel 與
+正/負向 policy 都掛在 `CreateInstance` 上，把載入寫到 service 等於繞過 base class 再手寫一份。
 
-**與現有四個 DB 相依快取的關鍵差異**：`SessionInfoCache` / `CompanyInfoCache` /
-`CompanyRolePermissionsCache` / `DepartmentTreeCache` 的 `CreateInstance` **全部回 `null`**，
-靠一個明確事件（Login / `EnterCompany` / 權限服務）呼叫 `Set` 灌入。API Key 沒有那個事件
-——請求進來時金鑰已經在 header 上，沒有任何前置步驟可以預熱。
-**`ApiKeyCache` 是框架第一個必須「miss 時自己去 DB 撈」的快取。**
+**載入接縫**：`ICacheDataSourceProvider`（`Bee.Definition`）新增 `ApiKeyInfo? GetApiKey(string sysId)`，
+由 `Bee.Business.Providers.CacheDataSourceProvider` 實作（經 `ISystemRepositoryFactory` 取
+`IApiKeyRepository`）。`ApiKeyCache.CreateInstance` 呼叫它。
 
-`Bee.ObjectCaching` 不得相依 `Bee.Repository`，故 `CreateInstance` 無法直接查 `st_api_key`。兩條路線：
+三個必須遵守的形狀約束（細節見 `bee-add-cache-object` skill 的 path B）：
 
-| 路線 | 做法 | 代價 |
-|---|---|---|
-| A | 比照 `CompanyRolePermissionsCache`：`CreateInstance` 維持回 `null`，由 `ApiKeyService` 做 `Get() ?? repo.Load() → Set()` | **負向快取失效**——擋隨機 `sys_id` 掃描的邏輯得在 service 再寫一份 |
-| B ✅ | ctor 收載入委派（`ApiKeyCache(Func<string, ApiKeyInfo?> loader)`），DI 組裝時綁 repository | 形狀與其他四個快取不同，須註解說明理由 |
+- **`ApiKeyInfo` 型別必須放 `Bee.Definition`**（與 `CompanyInfo` / `DepartmentTree` 同層）。
+  `Bee.Repository.Abstractions` 反向相依 `Bee.Definition`，取數方法若回傳 repository 型別
+  會造成專案循環參考。
+- **快取持有 `Func<ICacheDataSourceProvider>` 而非實例**，第一次 miss 才解析；直接注入會閉合
+  `ICacheContainer → ICacheDataSourceProvider → ISystemRepositoryFactory → IDefineAccess →
+  ICacheContainer` 這條環，`AddBeeFramework` 解析即死結。
+- **帶 `dataSource` 的建構式為 `internal`**（`RS0026` / `RS0027` 不允許兩個 public 多載都帶
+  選擇性參數）。
 
-**採 B**。理由是負向快取：[`KeyObjectCache.Get`](../../src/Bee.ObjectCaching/KeyObjectCache.cs)
-已內建 miss sentinel 與正/負向 policy，路線 A 等於繞過 base class 再手寫一份——正是體檢反覆
-抓到的「同一份邏輯留兩個複本」同型問題。委派同時是保持相依方向的接縫。
+**不需要 `ApiKeyService`**：載入在快取，驗證邏輯在 `IApiKeyValidator`（D6），兩者之間沒有
+第三個角色可放。與其他 Database 快取不同——那些有 service 是因為介面要放 `Bee.Definition`
+供上層使用，而 API Key 的上層消費者就是 validator 本身。
 
 **TTL 須覆寫 `GetPolicy`**：預設為 sliding 20 分，對金鑰不適用——sliding 會讓熱門金鑰永遠不
 重讀，`expired_at` 到期後仍在快取中存活。改為 absolute（建議 60 分）。撤銷的保證來自
@@ -198,18 +208,20 @@ validator」改為「請建立 API 金鑰」——**從此不需要寫程式就�
 1. **成本已經被 D2 / D3 設計掉**：切字串 → `sys_id` O(1) 查記憶體快取 → 一次 SHA-256（約 48 bytes）
    → `FixedTimeEquals`。框架每個需授權的請求本來就在付同級成本——
    [`AccessTokenValidator`](../../src/Bee.Business/Validator/AccessTokenValidator.cs) →
-   `SessionInfoCache.Get` 是**純記憶體查表**（`CreateInstance` 回 `null`，從不查 DB）。
-2. **交換式會撞上 session 的既有安全設計**（最關鍵）：
-   [`SessionInfoCache`](../../src/Bee.ObjectCaching/Database/SessionInfoCache.cs) 的 `CreateInstance`
-   回 `null` 是**安全屬性而非待辦**——XML doc 已載明：只有 Login 能讓 token 進快取，否則任何寫
-   `st_session` 的路徑都變成鑄 token 的方法（`CreateSession` 正因為只憑 user id 發 token 才是
-   `LocalOnly`）。推論是 token 只在鑄造它的那個行程有效，多節點部署下 A 節點換到的 token 到 B 節點
-   會 401。相對地 `ApiKeyCache` 以 `sys_id` 為 key、可從 `st_api_key` 重建，天生跨行程一致。
-   **per-request 是唯一不需要動 session 安全模型的選項。**
+   `SessionInfoCache.Get` 命中時是純記憶體查表。
+2. **交換式會多養一條 token 生命週期**：金鑰驗證與 session 是兩套獨立的失效機制，
+   交換式等於把兩者綁在一起，任何一邊的過期 / 撤銷規則改動都要重新推導另一邊。
 3. **撤銷語意維持單層**：停用即擋住，最壞延遲是 notify 週期。交換式須再建一條
    「key 撤銷 → 連帶撤銷其衍生 token」的失效鏈，事故處置從「改一個欄位」變成兩件事。
 4. **wire 上不出現兩個生命週期不同的 token**，守住「`X-Api-Key` = 應用識別、`Bearer` = 使用者鑑別」
    的分界（也就是「不在範圍」第一條）。
+
+> **2026-07-29 修訂**：本節原本以「session 只能由 Login 灌入、token 僅在鑄造它的行程有效」
+> 作為最關鍵理由（原理由 2）。該前提正被
+> [plan-cache-createinstance-db-loading.md](plan-cache-createinstance-db-loading.md) 的階段 3 / 4
+> 移除——session 將可由 `st_session` 種子重建、跨行程一致。**結論不受影響**：其餘三個理由
+> 與 session 無關，per-request 驗證仍是正解。但原理由 2 的論證已反轉（屆時交換式反而可行），
+> 故改寫為與 session 實作無關的論據。同理原理由 1 的「從不查 DB」也已不成立，一併修正。
 
 日後才需重議的觸發條件：per-key 配額 / rate limit / scope（現列不在範圍）、對第三方的
 OAuth client_credentials 標準介接——屆時是**新增**一條路徑，而不是取代金鑰檢查。
@@ -242,9 +254,12 @@ ping 是連通性檢查，不碰 DB、不回業務資料。排除後健康檢查
    salt + SHA-256 + `FixedTimeEquals`，含「為何不用 `PasswordHasher`」的 WHY 註解。
 3. 金鑰格式工具：產生（`RandomNumberGenerator` 256-bit，URL-safe base64）與解析
    `{sys_id}.{secret}`；格式不符即快速失敗，不進 DB 查詢。
-4. `ApiKeyCache : KeyObjectCache<ApiKeyInfo>`，依 D4：ctor 收載入委派、覆寫 `GetPolicy` 為
-   absolute TTL、`ICacheContainer` 三處同步、cache-notify 失效與兩個 CacheNotify 測試 stub
-   （依 `bee-add-cache-object` 流程）。
+4. `ApiKeyCache : KeyObjectCache<ApiKeyInfo>`，依 D4：`CreateInstance` 經
+   `ICacheDataSourceProvider.GetApiKey` 自載（快取持 `Func<ICacheDataSourceProvider>`、
+   帶該參數的建構式為 `internal`）、覆寫 `GetPolicy` 為 absolute TTL、`ICacheContainer` 三處同步、
+   cache-notify 失效與兩個 CacheNotify 測試 stub（依 `bee-add-cache-object` 流程）。
+   `ApiKeyInfo` 放 `Bee.Definition`；`ICacheDataSourceProvider` 加取數方法、
+   `CacheDataSourceProvider` 實作、`ISystemRepositoryFactory` 加 `CreateApiKeyRepository()`。
 5. `IApiKeyValidator`（`Bee.Definition/Security/`）+ 預設實作，由 `AddBeeFramework` 註冊。
 6. `ApiAuthorizationContext` 增加驗證器承載欄位；`ApiServiceController.ValidateAuthorization`
    從 DI 解析並帶入；`ApiAuthorizationValidator` 有驗證器就嚴格比對、沒有就沿用非空檢查。

@@ -1,6 +1,6 @@
 ---
 name: bee-add-cache-object
-description: bee-library 新增框架快取物件的完整跨檔流程，分兩類——Define 定義快取（來源是定義檔，經 IDefineAccess）與 Database 資料庫相依快取（來源是 DB，經 service + repository + cache-notify 失效）。含 ObjectCache vs KeyObjectCache 決策樹、ICacheContainer + CacheContainerService 三處同步、兩個 CacheNotify 測試 stub（漏補必 CS0535）、DI 註冊與 cache-notify 失效鏈。當使用者要「新增快取物件」、「加一個 cache」、「快取某定義 / 資料庫資料」、「KeyObjectCache / ObjectCache」、「cache-notify 失效」、「判權限/查設定要零 DB」之類需求時使用。
+description: bee-library 新增框架快取物件的完整跨檔流程，分兩類——Define 定義快取（來源是定義檔，經 IDefineAccess）與 Database 資料庫相依快取（來源是 DB，經 ICacheDataSourceProvider 自載 + cache-notify 失效）。含 ObjectCache vs KeyObjectCache 決策樹、ICacheContainer + CacheContainerService 三處同步、兩個 CacheNotify 測試 stub（漏補必 CS0535）、DI 相依環的延遲解析與 cache-notify 失效鏈。當使用者要「新增快取物件」、「加一個 cache」、「快取某定義 / 資料庫資料」、「KeyObjectCache / ObjectCache」、「cache-notify 失效」、「判權限/查設定要零 DB」之類需求時使用。
 ---
 
 # bee-library 新增快取物件
@@ -10,7 +10,7 @@ bee-library 的快取分**兩類**，來源與失效機制不同，檔案鏈也�
 > 樣板對照（讀程式碼時對著看）：
 > - Define 快取（single）：`PermissionModelsCache`（`ObjectCache<PermissionModels>`）
 > - Define 快取（keyed）：`FormSchemaCache`（`KeyObjectCache<FormSchema>`，by progId）
-> - Database 快取（keyed）：`CompanyRolePermissionsCache` / `CompanyInfoCache`（`KeyObjectCache<T>`，by id，`CreateInstance => null`）
+> - Database 快取（keyed）：`CompanyRolePermissionsCache` / `CompanyInfoCache`（`KeyObjectCache<T>`，by id，`CreateInstance` 經 `ICacheDataSourceProvider` 自載）
 
 ## 決策樹
 
@@ -19,7 +19,7 @@ bee-library 的快取分**兩類**，來源與失效機制不同，檔案鏈也�
 | 來源 | 類別 | 資料夾 | 失效機制 | 樣板 |
 |------|------|--------|---------|------|
 | **定義檔**（XML，經 `IDefineAccess`） | **Define 快取** | `Bee.ObjectCaching/Define/` | `CreateInstance` 自載；`SaveDefine` 時清 | `PermissionModelsCache` / `FormSchemaCache` |
-| **資料庫**（runtime 資料） | **Database 快取** | `Bee.ObjectCaching/Database/` | service 載入 + `Set`；cache-notify 輪詢清 | `CompanyRolePermissionsCache` / `CompanyInfoCache` |
+| **資料庫**（runtime 資料） | **Database 快取** | `Bee.ObjectCaching/Database/` | `CreateInstance` 經 `ICacheDataSourceProvider` 自載；cache-notify 輪詢清 | `CompanyRolePermissionsCache` / `CompanyInfoCache` |
 
 ### 第二刀：single 還是 keyed？（兩類都適用）
 
@@ -29,7 +29,15 @@ bee-library 的快取分**兩類**，來源與失效機制不同，檔案鏈也�
 | `KeyObjectCache<T>` | **多個實例，by key**（progId / company id / token） | `FormSchema` / `TableSchema`（by progId）、`CompanyInfo` / `SessionInfo` / `CompanyRolePermissions`（by id） |
 
 - `KeyObjectCache<T>` 要求 `T` 實作 `IKeyObject`（`string GetKey()`）。
-- Define 快取的 `CreateInstance(key)` **自載**（從 `IDefineAccess` 取）；Database 快取的 `CreateInstance(key)` **一律 `=> null`**（negative caching，資料由 service 載入後 `Set`，cache 不自己碰 DB）。
+- **兩類的 `CreateInstance(key)` 都自載**：Define 快取從 `IDefineAccess` 取，Database 快取經
+  `ICacheDataSourceProvider` 取。差別只在資料來源與失效機制，不在載入位置。
+
+> **2026-07-29 起的慣例變更**：Database 快取原本一律 `CreateInstance => null`、由 service 做
+> 「`Get` 落空 → repository → `Set` 回填」。該寫法等於在每個 service 手刻一份 read-through，
+> 且繞過 base class 已內建的負向快取。現已全數改為自載——`CompanyInfoCache` /
+> `CompanyRolePermissionsCache` / `DepartmentTreeCache` 皆是。
+> **新增快取請勿再沿用 `=> null` 的舊樣板**（`SessionInfoCache` 仍回 `null`，那是尚未接上
+> 持久化的待辦，不是樣板）。
 
 ---
 
@@ -66,15 +74,26 @@ bee-library 的快取分**兩類**，來源與失效機制不同，檔案鏈也�
 | # | 檔案 | 慣例 |
 |---|------|------|
 | 1 | `src/Bee.Definition/<Area>/<Name>.cs` | POCO 實作 `IKeyObject`（`GetKey() => <CacheKey>`）；純資料 + 查詢方法，無 DB |
-| 2 | `src/Bee.ObjectCaching/Database/<Name>Cache.cs` | `: KeyObjectCache<T>`，`CreateInstance(key) => null`（由 service 載入） |
-| 3 | `src/Bee.Definition/<Area>/I<Name>Service.cs` | `Get(string key)` / `Remove(string key)` |
-| 4 | `src/Bee.ObjectCaching/Services/<Name>Service.cs` | cache miss → 解析來源（如 company DB）→ repository 載入 → `new <Name>(...)` → `cache.Set` |
-| 5 | `src/Bee.Repository.Abstractions/.../I<X>Repository.cs` + `src/Bee.Repository/.../<X>Repository.cs` | 資料來源（DB 讀取）；遵守 `bee-add-bo-method` 規則 1（Repository 抽象） |
-| 6 | `src/Bee.ObjectCaching/ICacheContainer.cs` | 加 `<Name>Cache <Name> { get; }` |
-| 7 | `src/Bee.ObjectCaching/CacheContainerService.cs` | **三處**（見下方共用段） |
-| 8 | `src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs` | DI 註冊 repository + service（見下方） |
-| 9 | 兩個測試 stub | **必補**（見下方共用段） |
-| (10) | cache-notify bump 點 | 寫配置的 BO/Repository 在**同 transaction** `ICacheNotifyService.Touch(cacheKey, tx, dbType)`（見下方） |
+| 2 | `src/Bee.Definition/ICacheDataSourceProvider.cs` | 加取數方法 `<T>? Get<Name>(string key)`——**必須回傳 `Bee.Definition` 的型別**（見下方相依限制） |
+| 3 | `src/Bee.Business/Providers/CacheDataSourceProvider.cs` | 實作該方法：由 `ISystemRepositoryFactory` 取 repository、組裝 POCO |
+| 4 | `src/Bee.ObjectCaching/Database/<Name>Cache.cs` | `: KeyObjectCache<T>`，`CreateInstance` 呼叫 provider（見樣板） |
+| 5 | `src/Bee.Definition/<Area>/I<Name>Service.cs` | `Get(string key)` / `Remove(string key)`——上層不必相依 `Bee.ObjectCaching` 的分層邊界 |
+| 6 | `src/Bee.ObjectCaching/Services/<Name>Service.cs` | **單行委派**到 cache；載入邏輯不在這裡 |
+| 7 | `src/Bee.Repository.Abstractions/.../I<X>Repository.cs` + `src/Bee.Repository/.../<X>Repository.cs` | 資料來源（DB 讀取）；**同時在 `ISystemRepositoryFactory` 加 `Create<X>Repository()`** |
+| 8 | `src/Bee.ObjectCaching/ICacheContainer.cs` | 加 `<Name>Cache <Name> { get; }` |
+| 9 | `src/Bee.ObjectCaching/CacheContainerService.cs` | **三處**（見下方共用段）；ctor 把 `dataSource` 傳給新 cache |
+| 10 | `src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs` | 只註冊 service；**不要**逐一註冊 repository（見下方） |
+| 11 | 兩個測試 stub | **必補**（見下方共用段） |
+| (12) | cache-notify bump 點 | 寫配置的 BO/Repository 在**同 transaction** `ICacheNotifyService.Touch(cacheKey, tx, dbType)`（見下方） |
+
+### 相依限制：為何取數方法要回傳 domain 型別
+
+`ICacheDataSourceProvider` 位於 `Bee.Definition`，而 `Bee.Repository.Abstractions`
+**反向相依** `Bee.Definition`（`ICompanyRepository.GetById` 回傳 `CompanyInfo`）。
+若取數方法回傳 repository 型別，`Bee.Definition` 就得引用 `Bee.Repository.Abstractions`
+→ **專案循環參考，編譯不過**。
+
+所以：POCO 放 `Bee.Definition`，provider 回傳該 POCO，`Bee.ObjectCaching` 只看得到介面。
 
 ### Cache 樣板（path B）
 
@@ -83,48 +102,81 @@ namespace Bee.ObjectCaching.Database
 {
     public class <Name>Cache : KeyObjectCache<<T>>
     {
-        public <Name>Cache(string cachePrefix = "") : base(cachePrefix) { }
+        private readonly Func<ICacheDataSourceProvider>? _dataSource;
 
-        // 一律 null：資料由 <Name>Service 載入後 Set，cache 不自碰 DB（negative caching）。
-        protected override <T>? CreateInstance(string key) => null;
+        /// <param name="cachePrefix">Per-owner cache namespace.</param>
+        public <Name>Cache(string cachePrefix = "") : this(null, cachePrefix) { }
+
+        /// <remarks>
+        /// WARNING: dataSource must stay a factory — see CompanyInfoCache for the cycle it avoids.
+        /// </remarks>
+        internal <Name>Cache(Func<ICacheDataSourceProvider>? dataSource, string cachePrefix)
+            : base(cachePrefix)
+        {
+            _dataSource = dataSource;
+        }
+
+        protected override <T>? CreateInstance(string key)
+            => _dataSource?.Invoke().Get<Name>(key);
     }
 }
 ```
 
+**兩個容易踩的形狀約束**：
+
+- **帶 `dataSource` 的建構式必須 `internal`**。若做成 public，`RS0026` / `RS0027` 會擋下——
+  不允許兩個 public 多載都帶選擇性參數，且帶選擇性參數者必須是參數最多的多載。
+  `CacheContainerService` 同組件，`internal` 即足夠，且公開表面不變動。
+- **`dataSource` 必須是 `Func<T>` 而非實例**（見下方 DI 段的相依環）。
+
 ### Service 樣板（path B）
+
+載入邏輯已在 cache，service 收斂為分層邊界上的單行委派：
 
 ```csharp
 public class <Name>Service : I<Name>Service
 {
     private readonly ICacheContainer _cache;
-    // + 解析來源所需服務（如 ICompanyInfoService）、I<X>Repository
 
-    public <T>? Get(string key)
-    {
-        var cached = _cache.<Name>.Get(key);
-        if (cached != null) { return cached; }
-        // 解析來源 DB → repository 載入 → 組裝 → Set
-        var snapshot = new <T>(...);
-        _cache.<Name>.Set(snapshot);
-        return snapshot;
-    }
+    public <Name>Service(ICacheContainer cache)
+        => _cache = cache ?? throw new ArgumentNullException(nameof(cache));
 
+    public <T>? Get(string key) => _cache.<Name>.Get(key);
     public void Remove(string key) => _cache.<Name>.Remove(key);
 }
 ```
 
+> service 看似純 facade，但介面定義在 `Bee.Definition`，讓 `Bee.Business` / `Bee.Repository`
+> 等上層不必相依 `Bee.ObjectCaching`——是分層邊界，不是 code-style 要消除的 1-line wrapper。
+
 ### DI 註冊（path B，`BeeFrameworkServiceCollectionExtensions.cs`）
 
 ```csharp
-// repository：由 factory 建立但暴露給 DI（ActivatorUtilities / ctor inject 用）
-services.AddSingleton<I<X>Repository>(sp =>
-    sp.GetRequiredService<ISystemRepositoryFactory>().Create<X>Repository());
-
-// service：直接 new（依賴從 sp 解析）
+// service：只吃 ICacheContainer
 services.AddSingleton<I<Name>Service>(sp =>
-    new <Name>Service(
-        sp.GetRequiredService<ICacheContainer>(),
-        /* ...其他依賴... */));
+    new <Name>Service(sp.GetRequiredService<ICacheContainer>()));
+```
+
+**不要**為新 repository 加 `services.AddSingleton<I<X>Repository>(...)`——消費端一律經
+`ISystemRepositoryFactory` 按需取得（與 `IFormRepositoryFactory` 用 progId 產生表單 repository
+同一慣例）。逐一註冊會讓每個新系統表變成「工廠方法 + DI 註冊 + 消費端 ctor 參數」三處編輯。
+
+**相依環（務必理解，否則 `AddBeeFramework` 解析即死結）**：
+
+```
+ICacheContainer → ICacheDataSourceProvider → ISystemRepositoryFactory → IDefineAccess → ICacheContainer
+```
+
+`CacheDefineAccess` 吃 `ICacheContainer`，環因此閉合。解法是容器**以 method group 傳入延遲工廠**，
+第一次 cache miss 才解析：
+
+```csharp
+services.AddSingleton<ICacheContainer>(sp =>
+    new CacheContainerService(
+        sp.GetRequiredService<IDefineStorage>(),
+        sp.GetRequiredService<PathOptions>(),
+        string.Empty,
+        sp.GetRequiredService<ICacheDataSourceProvider>));   // 注意：無括號，不即時解析
 ```
 
 ### cache-notify 失效鏈（path B）
@@ -145,6 +197,8 @@ services.AddSingleton<I<Name>Service>(sp =>
 
 ```csharp
 // (1) ctor 內初始化
+//     Define 快取：new <Name>Cache(storage, paths, CachePrefix)
+//     Database 快取：把 dataSource 傳進去 —— new <Name>Cache(dataSource, CachePrefix)
 <Name> = new <Name>Cache(CachePrefix);
 
 // (2) 收集所有 cache 供 cache-notify 路由的陣列 — 把 <Name> 加進去
@@ -184,11 +238,17 @@ public <Name>Cache <Name> => throw new NotImplementedException();
 1. **漏補兩個 CacheNotify stub → CS0535**：加 `ICacheContainer` 屬性後一定要補（線 A 踩過一次）。
 2. **只 build 個別專案、沒跑 slnx**：stub 的 CS0535 在 `dotnet build tests/Bee.Hosting.UnitTests` 才現；**一律 `dotnet build Bee.Library.slnx -c Release` 複現 CI strict build**。
 3. **`CacheContainerService` 三處只改一兩處**：init 漏 → NRE；eviction 陣列漏 → cache-notify 失效收不到（沉默 bug）；屬性宣告漏 → CS0535。
-4. **Database 快取 `CreateInstance` 寫成自載**：應 `=> null`（由 service 載入）。自載會讓 cache 直接碰 DB，破壞「判定零 DB」設計。
-5. **single vs keyed 選錯**：整份一個物件用 `ObjectCache<T>`；多實例用 `KeyObjectCache<T>` 且 `T : IKeyObject`。
-6. **`IDE0028` 集合初始化**：`new List<string>()` 當欄位/區域初始化會被要求改 collection expression `[]`（net10 + strict build）。
-7. **POCO 放進 cache 後被 mutate**：cache 內容共享、不可變動（見 memory `definition-immutability`）；per-session 變動先 `Clone()`。
-8. **cache-notify bump 點忘了同 transaction**：`Touch` 必須與寫配置同一 transaction，否則寫成功但 notify 沒進、或 notify 進了但寫 rollback。
+4. **沿用舊的 `CreateInstance => null` 樣板**（2026-07-29 前的慣例）：Database 快取現在**應自載**，
+   經 `ICacheDataSourceProvider`。回 `null` 等於把 read-through 手刻進 service，並繞過 base class
+   已內建的負向快取。順帶澄清：「判定零 DB」講的是**快取命中**零 DB，而 miss 無論由 service 或
+   `CreateInstance` 去撈都要碰 DB——自載不破壞該設計。
+5. **`dataSource` 寫成實例而非 `Func<T>`**：`AddBeeFramework` 解析 `ICacheContainer` 時即死結
+   （相依環見 path B 的 DI 段）。DI 註冊處傳 method group、不要加括號。
+6. **為新 repository 加個別 DI 註冊**：一律經 `ISystemRepositoryFactory` 取得，不逐一註冊。
+7. **single vs keyed 選錯**：整份一個物件用 `ObjectCache<T>`；多實例用 `KeyObjectCache<T>` 且 `T : IKeyObject`。
+8. **`IDE0028` 集合初始化**：`new List<string>()` 當欄位/區域初始化會被要求改 collection expression `[]`（net10 + strict build）。
+9. **POCO 放進 cache 後被 mutate**：cache 內容共享、不可變動（見 memory `definition-immutability`）；per-session 變動先 `Clone()`。
+10. **cache-notify bump 點忘了同 transaction**：`Touch` 必須與寫配置同一 transaction，否則寫成功但 notify 沒進、或 notify 進了但寫 rollback。
 
 ## 完整 checklist
 
@@ -202,11 +262,14 @@ public <Name>Cache <Name> => throw new NotImplementedException();
 - [ ] `Define/<Name>Cache.cs`（`CreateInstance` 自載）
 
 **Path B（Database 快取）**：
-- [ ] POCO 實作 `IKeyObject`，判定/查詢邏輯放 POCO 方法
-- [ ] `Database/<Name>Cache.cs`（`CreateInstance => null`）
-- [ ] `I<Name>Service` + `<Name>Service`（cache miss → repository → `Set`）
-- [ ] repository 抽象 + 實作（DB 來源）
-- [ ] DI 註冊 repository + service
+- [ ] POCO 實作 `IKeyObject`（放 `Bee.Definition`），判定/查詢邏輯放 POCO 方法
+- [ ] `ICacheDataSourceProvider` 加取數方法（**回傳 `Bee.Definition` 型別**）
+- [ ] `CacheDataSourceProvider` 實作（經 `ISystemRepositoryFactory` 取 repository、組裝 POCO）
+- [ ] `Database/<Name>Cache.cs`（`CreateInstance` 呼叫 provider；帶 `dataSource` 的建構式 `internal`）
+- [ ] `I<Name>Service` + `<Name>Service`（**單行委派**，不含載入邏輯）
+- [ ] repository 抽象 + 實作 + `ISystemRepositoryFactory` 加 `Create<X>Repository()`
+- [ ] DI 只註冊 service（**不**逐一註冊 repository）
+- [ ] `CacheContainerService` ctor 把 `dataSource` 傳進新 cache
 - [ ] cache-notify bump 點（寫配置時 `Touch` 同 transaction；無管理介面則留待）
 
 **共用（兩條都要）**：
@@ -222,12 +285,14 @@ public <Name>Cache <Name> => throw new NotImplementedException();
 |------|------|
 | Define 快取（single）樣板 | `src/Bee.ObjectCaching/Define/PermissionModelsCache.cs` |
 | Define 快取（keyed）樣板 | `src/Bee.ObjectCaching/Define/FormSchemaCache.cs` |
-| Database 快取樣板 | `src/Bee.ObjectCaching/Database/CompanyRolePermissionsCache.cs` / `CompanyInfoCache.cs` |
+| Database 快取樣板 | `src/Bee.ObjectCaching/Database/CompanyInfoCache.cs`（含 `Func<T>` 相依環的 WARNING 註解） |
+| Database 快取（需解析來源 DB） | `src/Bee.ObjectCaching/Database/DepartmentTreeCache.cs` / `CompanyRolePermissionsCache.cs` |
+| 取數接縫 | `src/Bee.Definition/ICacheDataSourceProvider.cs` + `src/Bee.Business/Providers/CacheDataSourceProvider.cs` |
 | Cache 基類 | `src/Bee.ObjectCaching/ObjectCache.cs` / `KeyObjectCache.cs` |
-| Service 樣板 | `src/Bee.ObjectCaching/Services/RolePermissionService.cs`（cache miss → repo → Set） |
+| Service 樣板 | `src/Bee.ObjectCaching/Services/DepartmentTreeService.cs`（單行委派） |
 | POCO + 判定邏輯樣板 | `src/Bee.Definition/Identity/CompanyRolePermissions.cs`（`GetAllowed` / `GetKey`） |
 | 三處同步點 | `src/Bee.ObjectCaching/CacheContainerService.cs`（init / eviction 陣列 / 屬性 / `TryEvict`） |
 | ICacheContainer | `src/Bee.ObjectCaching/ICacheContainer.cs` |
 | 測試 stub（必補） | `tests/Bee.Hosting.UnitTests/CacheNotifyPollerUnitTests.cs` / `CacheNotifyPollSessionUnitTests.cs` |
-| DI 註冊 | `src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs`（repository + service） |
+| DI 註冊 | `src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs`（service；`ICacheContainer` 傳延遲工廠） |
 | POCO 純單元測試樣板 | `tests/Bee.Definition.UnitTests/Identity/CompanyRolePermissionsTests.cs` |
