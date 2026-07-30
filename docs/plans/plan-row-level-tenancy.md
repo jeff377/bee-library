@@ -42,6 +42,8 @@
 | 注入層級（D1） | repository 建構繫結，**且僅對宣告了該欄位的表注入**——schema 驅動，不是無條件 AND |
 | raw SQL 路徑（D2） | 入口強制傳入租戶範圍參數（漏填＝編譯錯誤）＋ 靜態掃描補手寫 SQL 那一段 |
 | 欄位宣告（D3） | `NOT NULL`，預設值空字串——依框架對 string 型別的預設值規範 |
+| 欄位長度 | `DbType="String" Length="10"`——公司代號固定 10 碼英文 |
+| 涵蓋規則（D4） | `CategoryId="company"` 的表一律宣告；`common` / `log` 視需求 |
 
 **為何用字串而非 `company_rowid`**：它與 session、`ICompanyInfoService`、權限快照用的是同一個
 key，過濾時零轉換，也少一個對不上的環節；共用庫裡人眼可讀，支援與除錯直接看得懂。代價是
@@ -51,6 +53,26 @@ key，過濾時零轉換，也少一個對不上的環節；共用庫裡人眼�
 **為何獨立庫也要帶**：獨立庫裡它是常數、看似浪費一個短字串，換來的是兩種模式**表結構完全一致**，
 同一份 `TableSchema` 通用；試用公司畢業到獨立庫時是**純資料搬移，不是 schema 分岔**。
 若只有共用庫才加欄位，等於長期維護兩種表形狀，且畢業流程要做 schema 轉換。
+
+### 公司代號格式：固定 10 碼英文
+
+`sys_company_id` 一律宣告為 `DbType="String" Length="10"`。固定長度對本 plan 是實質好處——
+它是每張業務表都會多出來的欄位，也會進到每個複合唯一索引的第一段，寬度小且可預期，
+索引成本才壓得住。
+
+框架沒有固定長度字串型別（`FieldDbType` 只有變動長度的 `String` / `Text`），
+因此「固定 10 碼」由**驗證層**保證，欄位只負責上限。
+
+**兩件連帶要處理的事：**
+
+1. **`st_company.sys_id` 目前是 `Length="20"`**（[st_company.TableSchema.xml](../../src/Bee.Definition/Defaults/TableSchema/common/st_company.TableSchema.xml)）。
+   來源欄位比副本寬，代表可以建出一個 12 碼的公司代號、卻在蓋章到業務列時被截斷或退件。
+   建議**收窄為 10** 讓約束留在單一事實來源；既有部署需在升級前檢查有無超過 10 碼的公司代號。
+
+2. **大小寫要統一。** 公司代號是識別碼型字串，框架端比對用 `OrdinalIgnoreCase`
+   （快取鍵、`ICompanyInfoService` 查找），但資料庫端相不相等取決於 collation。
+   兩邊規則不同時，`C001` 與 `c001` 會出現「快取當同一家、資料庫當兩家」的分裂。
+   建議在建立公司時即正規化為大寫，讓兩端一致。
 
 ## 核心原則：過濾由建構保證，不是由呼叫端記得
 
@@ -168,6 +190,7 @@ D1 的閘門碰不到它；但 common / log 要宣告此欄位前，須先確認
 | `uk_` 仍為單欄 → 兩家試用公司無法有相同單號 | 階段 2 改複合索引，且需在既有表升級路徑一併處理 |
 | `EmployeeContextResolver` 於共用庫跨公司誤中 | 階段 3 補公司條件，並補測試釘住 |
 | 既有部署 backfill 不完整 → NOT NULL 違反 | D3 決定 nullable 收緊時機；升級腳本需可重跑 |
+| 公司代號大小寫不一致 → 快取與 DB 判斷分裂 | 建立公司時正規化為大寫；比對一律 `OrdinalIgnoreCase` |
 | 快取跨租戶污染 | 現有 DB 快取（`RolePermissionService` / `DepartmentTree`）本就以 companyId 為 key，需逐一確認無以 databaseId 為 key 者 |
 
 ## 不在範圍
