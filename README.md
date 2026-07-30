@@ -22,6 +22,7 @@ All packages target **`net10.0`**.
 - **Multi-database support**: Built-in dialects for SQL Server, PostgreSQL, SQLite, MySQL, and Oracle; host applications register only what they use.
 - **Modular components**: Decoupled libraries for core utilities, data, caching, business logic, and API hosting.
 - **Rapid development**: Reusable base classes and FormSchema-driven CRUD reduce repetitive boilerplate.
+- **Conventions enforced at build time**: Roslyn analyzers ship with the packages and register automatically, turning framework conventions — database scope selection, cross-file definition consistency, wire contract shape — into build diagnostics that name both the cause and the fix. See [Analyzer Rules](docs/analyzer-rules.md).
 
 ## 📐 Architecture
 

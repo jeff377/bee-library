@@ -22,6 +22,7 @@ Bee.NET Framework 是一套採用 **N-Tier + Clean Architecture + MVVM** 混合�
 - **多資料庫支援**：內建 SQL Server、PostgreSQL、SQLite、MySQL、Oracle 五種 dialect，由 host 應用程式按需註冊。
 - **模組化組件**：根據職責切分為多個元件，靈活組合、降低耦合。
 - **開發加速器**：透過可重用基底類別與 FormSchema 驅動的 CRUD，大幅減少重複程式碼。
+- **慣例於建置期把關**：Roslyn analyzer 隨套件自動註冊，把框架慣例——資料庫 scope 選擇、定義檔跨檔一致性、wire 合約形狀——變成同時指出原因與修法的建置期診斷。詳見 [Analyzer 規則](docs/analyzer-rules.zh-TW.md)。
 
 ## 📐 架構總覽
 

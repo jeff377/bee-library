@@ -1,6 +1,6 @@
 # 計畫：Bee.Analyzers — 把框架慣例變成編譯期錯誤
 
-**狀態：🚧 進行中（2026-07-30）**
+**狀態：✅ 已完成（2026-07-30）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -8,7 +8,7 @@
 | 2 | XML 定義檔規則（BEE1xxx 單檔、BEE2xxx 跨檔一致性）完整化 | ✅ 已完成（2026-07-30） |
 | 3 | 序列化與 wire 合約規則（BEE4xxx） | ✅ 已完成（2026-07-30） |
 | 4 | C# 程式碼慣例規則（BEE3xxx） | ✅ 已完成（2026-07-30） |
-| 5 | 發佈整合、消費端零設定驗證、對外文件 | 📝 待做 |
+| 5 | 發佈整合、消費端零設定驗證、對外文件 | ✅ 已完成（2026-07-30） |
 
 ## 背景
 
@@ -96,7 +96,9 @@ analyzer 專案位於 `src/Bee.Analyzers/`（不獨立打包），透過 `Bee.De
 > 唯一的 `info` 級規則（BEE2007）**已知對 AI 無效**，保留僅為 IDE 提示價值。BEE3003 原訂為 `info`，
 > 已於階段 4 剔除——低可見度加上偵測不完整，不值得實作。
 
-全部可由消費端 `.editorconfig` 逐條調整，並提供整組關閉的 MSBuild property。
+逐條調整的機制**依診斷位置而異**（階段 5 實測）：報在 XML 定義檔上的 BEE1xxx / BEE2xxx 必須用
+`.globalconfig`，`.editorconfig` 完全無效；報在 C# 上的 BEE3xxx / BEE4xxx 兩者皆可。另提供
+`BeeAnalyzeDefinitionFiles=false` 一次關閉定義檔規則。
 
 ### D4：診斷訊息寫給 AI 讀，不是傳統簡短診斷
 
@@ -528,13 +530,52 @@ unrestricted」，實作卻是擲 `UnauthorizedAccessException`。這份 XML doc
 會讓外部開發者（與其 AI）以為未標記等於開放存取——與事實相反的安全認知。已改為 `<remarks>` 明述
 「未涵蓋即**拒絕**」、attribute 的解析優先序，並指向 BEE3001 於編譯期把關。
 
-### 階段 5：發佈整合與對外文件
+### 階段 5：發佈整合與對外文件 ✅
 
-- 確認 `build-ci.yml` / `nuget-publish.yml` 對 analyzer 產出的處理正確（見 D2，內嵌不需新增 pack 行，
-  但需確認 `--no-build` 流程下 analyzer dll 已就位）
-- 實作整組關閉的 MSBuild property，並驗證 `.editorconfig` 逐條調整 severity 確實生效
-- 定調 analyzer 新增規則在 semver 下的定位，並在 CHANGELOG（雙語）明確交代新規則對既有專案的影響
-  與關閉方式——首版 `error` 級規則可能讓既有專案升版後建置失敗
-- 消費端 README 段落（雙語）：規則總表、如何逐條調整 severity、如何整組關閉
-- 於 `docs/` 新增雙語公開文件說明 analyzer 規則（外部開發者可讀）
-- 評估是否新增 ADR 記錄 D1 / D2 / D3 / D5 四項決策
+**已完成**
+
+- **CI pack 路徑重驗**：三個 src 專案自我套用 analyzer 後，`build slnx` → `pack --no-build` 仍正確，
+  `analyzers/dotnet/cs/Bee.Analyzers.dll` 與 `build/Bee.Definition.targets` 都在 nupkg 內。
+- **消費端可控性實測**，結果推翻了 D3 原本的承諾（見下）。
+- **雙語公開文件**：`docs/analyzer-rules.md` / `.zh-TW.md`，含 22 條規則總表、定義檔來源與
+  `BeeDefinitionFilesGlob`、依診斷位置區分的 severity 調整方式、整組關閉、版本政策。已加入
+  `docs/README.md` / `.zh-TW.md` 索引。
+
+**關鍵實測：`.editorconfig` 對定義檔規則完全無效**
+
+D3 原本承諾「全部可由消費端 `.editorconfig` 逐條調整」。實測發現對 BEE1xxx / BEE2xxx **完全無效**：
+
+| 嘗試 | 結果 |
+|------|------|
+| `.editorconfig` `[*.cs]` 設 `severity = none` | ❌ 仍為 error |
+| `.editorconfig` `[*]` 設 `severity = none` | ❌ 仍為 error |
+| `.editorconfig` `[*.xml]` 設 `severity = none` | ❌ 仍為 error |
+| `.globalconfig` 設 `severity = warning` / `none` | ✅ 生效 |
+| `BeeAnalyzeDefinitionFiles=false` | ✅ 整組靜默 |
+
+原因：`.editorconfig` 透過「診斷位置所屬檔案」解析 severity，而定義檔規則報在以 `AdditionalFiles`
+提供的 XML 上——那不屬於編譯的語法樹，因此沒有任何 `.editorconfig` section 適用。`.globalconfig`
+（`is_global = true`）是編譯層級設定，故有效。
+
+C# 規則（報在 `.cs` 上）則 `.editorconfig` `[*.cs]` 正常生效，已實測 BEE4006 由 error 降為 warning。
+
+這是消費端**一定會踩**的坑（習慣寫 `[*.cs]`），已寫入對外文件的 IMPORTANT 區塊。
+
+**版本政策（定調）**
+
+- 新規則只在 **minor** 版本加入，patch 版不引入新診斷
+- 提高既有規則 severity 屬 minor 變更，需在該版變更說明交代
+- 每條規則可個別調整、定義檔規則可整組關閉——升級絕不讓消費端無路可走
+
+**其餘已完成項目**
+
+- repo 根 `README.md` / `.zh-TW.md` 於特色清單補一條，指向 `docs/analyzer-rules.md`
+  （該檔為 `PackageReadmeFile`，會顯示於 nuget.org）
+- CHANGELOG（雙語）`[Unreleased]` 的 Added 區段交代本次新增
+
+**未做，且刻意不做**
+
+| 項目 | 判斷 |
+|------|------|
+| 新增 ADR 記錄 D1 / D2 / D3 / D5 | 不需要。這四項是**實作層決策**（分析管線的選擇、打包位置、severity 分級軸、一次編譯的視野），不是會被外部讀者拿去推導行為的架構決策；且全數已在本 plan 與 analyzer 的 `<remarks>` 中就近記載。ADR 應留給「外部開發者需要理解為何如此設計」的長效決策 |
+| 推廣 analyzer 到其他 `src/` 專案 | 現況已覆蓋有意義的範圍：`Bee.Definition`（定義型別與序列化型別的所在）、`Bee.Business`（BO 的所在）、`Bee.Api.Core`（wire 合約與 formatter 註冊清單的所在）。其餘專案（`Bee.Db`、`Bee.Repository` 等）不定義受這些規則約束的型別，掛上去只增加建置成本 |

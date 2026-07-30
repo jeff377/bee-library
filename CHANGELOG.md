@@ -13,6 +13,18 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- **Framework conventions are now enforced at build time.** `Bee.Definition` ships Roslyn analyzers
+  that register automatically, turning 22 conventions into build diagnostics: definition file
+  validity and cross-file consistency (database scope selection, table registration, relation
+  references, sidecar existence), wire contract shape (formatter registration, key strategy,
+  constructor order, parameterless constructors) and coding conventions (business object access
+  control). Diagnostics state the cause and the fix in one message rather than merely flagging a
+  violation, because the conventions they cover otherwise fail at run time — often far from the
+  definition responsible. Consumers need no setup: the package supplies the definition files to the
+  compiler itself. Every rule is individually adjustable and the definition file group can be
+  disabled wholesale. See [Analyzer Rules](docs/analyzer-rules.md) for the rule list, the severity
+  adjustment mechanism (which differs by rule group) and the versioning policy.
+
 - **Sessions survive cache eviction, restart and multi-node routing.** Signing in now writes a
   rebuild seed to `st_session` (token, user, expiry, company) and `SessionInfoCache` rebuilds the
   session from it on a miss. The seed is deliberately not a snapshot of `SessionInfo`: roles,
