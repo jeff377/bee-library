@@ -22,6 +22,14 @@ public partial class ConnectionViewModel : ViewModelBase
     [ObservableProperty]
     private string _endpoint = AppDefaults.Endpoint;
 
+    /// <summary>
+    /// API key sent as <c>X-Api-Key</c>. Pre-filled from storage (seeded on first run with
+    /// <see cref="AppDefaults.ApiKey"/>); editing it here persists the new value, so pointing the
+    /// demo at a backend that has issued its own key needs no rebuild.
+    /// </summary>
+    [ObservableProperty]
+    private string _apiKey = ClientInfo.GetApiKey();
+
     /// <summary>Status line text mirroring the ping / connect / error message.</summary>
     [ObservableProperty]
     private string _status = "Idle. Make sure Bee.Northwind.Server is running before connecting.";
@@ -82,8 +90,10 @@ public partial class ConnectionViewModel : ViewModelBase
             // then stores the endpoint via EndpointStorage — fully async, so it does not block
             // the UI thread. The async path is required on browser WASM, whose single-threaded
             // runtime throws "Cannot wait on monitors" if any await is bridged synchronously.
+            // Applied before connecting: the ping itself carries the key, so a wrong one shows up
+            // here rather than on the first real call.
+            ClientInfo.SetApiKey(ApiKey?.Trim() ?? string.Empty);
             await ClientInfo.InitializeAsync(endpoint).ConfigureAwait(true);
-            ApiClientInfo.ApiKey = AppDefaults.ApiKey;
 
             SetStatus(
                 $"Connected to {endpoint}. ConnectType = {ApiClientInfo.ConnectType}.",

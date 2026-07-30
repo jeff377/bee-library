@@ -37,6 +37,13 @@
                    IsEnabled="{Binding IsNotBusy}" />
         </StackPanel>
 
+        <StackPanel Spacing="6">
+          <TextBlock Text="API key" Foreground="{DynamicResource SemiColorText1}" />
+          <TextBox Text="{Binding ApiKey, Mode=TwoWay}"
+                   PlaceholderText="app-id.secret"
+                   IsEnabled="{Binding IsNotBusy}" />
+        </StackPanel>
+
         <StackPanel Orientation="Horizontal" Spacing="12">
           <Button Content="Connect"
                   Classes="Primary"

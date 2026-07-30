@@ -32,6 +32,75 @@ namespace Bee.UI.Avalonia.UnitTests.Storage
         }
 
         [Fact]
+        [DisplayName("ApiKeyFilePath 為 LocalApplicationData/<appName>/apikey.txt")]
+        public void ApiKeyFilePath_CombinesLocalAppDataAndAppName()
+        {
+            var appName = NewAppName();
+            var storage = new FileEndpointStorage(appName);
+
+            Assert.Equal(Path.Combine(AppDirectory(appName), "apikey.txt"), storage.ApiKeyFilePath);
+        }
+
+        [Fact]
+        [DisplayName("SetApiKey 只改記憶體快取，不落地；SaveApiKey 才寫檔")]
+        public void SetApiKey_DoesNotTouchDisk_SaveApiKeyDoes()
+        {
+            var appName = NewAppName();
+            try
+            {
+                var storage = new FileEndpointStorage(appName);
+
+                storage.SetApiKey("cached-only.secret");
+                Assert.Equal("cached-only.secret", storage.LoadApiKey());
+                Assert.False(File.Exists(storage.ApiKeyFilePath));
+
+                storage.SaveApiKey("persisted.secret");
+                Assert.True(File.Exists(storage.ApiKeyFilePath));
+                Assert.Equal("persisted.secret", File.ReadAllText(storage.ApiKeyFilePath));
+            }
+            finally
+            {
+                Cleanup(appName);
+            }
+        }
+
+        [Fact]
+        [DisplayName("SaveApiKey 寫入後新實例應讀回同一把金鑰，且與 endpoint 互不干擾")]
+        public void SaveApiKey_RoundTripsIndependentlyOfEndpoint()
+        {
+            var appName = NewAppName();
+            try
+            {
+                var writer = new FileEndpointStorage(appName);
+                writer.SaveEndpoint("http://host:5100/api");
+                writer.SaveApiKey("app-id.secret");
+
+                var reader = new FileEndpointStorage(appName);
+                Assert.Equal("http://host:5100/api", reader.LoadEndpoint());
+                Assert.Equal("app-id.secret", reader.LoadApiKey());
+            }
+            finally
+            {
+                Cleanup(appName);
+            }
+        }
+
+        [Fact]
+        [DisplayName("LoadApiKey 於尚未寫入時應回空字串")]
+        public void LoadApiKey_NoFile_ReturnsEmpty()
+        {
+            var appName = NewAppName();
+            try
+            {
+                Assert.Equal(string.Empty, new FileEndpointStorage(appName).LoadApiKey());
+            }
+            finally
+            {
+                Cleanup(appName);
+            }
+        }
+
+        [Fact]
         [DisplayName("建構子在 appName 為 null 或空白時拋出例外")]
         public void Constructor_NullOrWhitespaceAppName_Throws()
         {

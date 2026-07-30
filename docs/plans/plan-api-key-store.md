@@ -7,7 +7,7 @@
 | 1 | `st_api_key` 表 + 兩段式金鑰格式 + 產生金鑰 BO 方法 + `IApiKeyValidator` + 快取與失效，未設定時維持相容 | ✅ 已完成（2026-07-30） |
 | 2 | 呼叫端識別：驗證結果帶入呼叫上下文並落進稽核記錄 | ✅ 已完成（2026-07-30） |
 | 3 | 金鑰管理表單（框架自身 CRUD dogfooding）+ 產生 / 輪替流程與文件 | 📝 待做 |
-| 4 | 用戶端存放：脫離原始碼 hardcode，samples / Northwind 遷移 | 📝 待做 |
+| 4 | 用戶端存放：脫離原始碼 hardcode，samples / Northwind 遷移 | ✅ 已完成（2026-07-30） |
 
 ## 背景
 
@@ -253,6 +253,11 @@ validator 本身維持無狀態。
 
 ### D8：用戶端存放不擴充 `IEndpointStorage`
 
+> **2026-07-30 修訂**：本節「實作端本來就以 `ClientSettings` 為後盾」的前提**不成立**——6 個 host
+> 有 5 個已改用平台專屬 storage 而繞開 `ClientSettings`。結論「不擴充 `IEndpointStorage`」保留，
+> 但金鑰改走**新增的平行介面 `IApiKeyStorage`**，而非塞進 `ClientSettings` 就了事。
+> 詳見階段 4 的「執行結果」。
+
 `IEndpointStorage` 三個方法名稱都綁死 endpoint（`LoadEndpoint` / `SetEndpoint` / `SaveEndpoint`），
 硬塞 ApiKey 要嘛改名（breaking，四個實作 + 所有 host）、要嘛加不對稱的方法。
 
@@ -430,6 +435,30 @@ build 0w/0e、`./test.sh` 全綠（新增 7 個測試）。與計畫的差異：
 4. README 更新（依 `rules/public-docs.md`，不連結本 plan）。
 
 **驗收**：更換 API Key 不需重新編譯任何用戶端。
+
+### 執行結果（2026-07-30）
+
+驗收達成。build 0w/0e（`Bee.Library.slnx` / `Bee.Samples.slnx` / `Bee.Northwind.slnx` 三個方案）、
+`./test.sh` 全綠（新增 12 個測試）。
+
+**D8 的前提被實測推翻，接縫因此改形狀**（已與使用者確認後定案）：D8 主張「`IEndpointStorage`
+的實作端本來就以 `ClientSettings` 為後盾，金鑰加在 `ClientSettings` 即可」。實際上 6 個 host 有 5 個
+**刻意繞開** `ClientSettings`——`FileEndpointStorage`（Northwind Desktop / iOS / Android、
+Avalonia.Demo）與 `BrowserLocalStorageEndpointStorage`（Northwind Browser），因為那份 XML 位於組件
+路徑旁，iOS bundle 唯讀、WASM 無檔案系統。照 D8 原樣做，金鑰在這 5 個 head 上無處持久化，驗收正好
+在最需要的地方不成立。
+
+| 項目 | 落地情況 |
+|------|---------|
+| 接縫形狀 | **新增平行的 `IApiKeyStorage`**（`Bee.UI.Core`）+ `ClientSettings`-backed 預設實作，經 `ClientInfo.ApiKeyStorage` 指派。不擴充也不改名 `IEndpointStorage`（D8 的原始顧慮成立），既有實作零破壞 |
+| 平台承載 | 既有兩個平台 storage 類別**一併實作** `IApiKeyStorage`：`FileEndpointStorage` 多寫一個 `apikey.txt`、`BrowserLocalStorageEndpointStorage` 多存一個 localStorage key。head 把同一個實例指派給兩個屬性，不重複造輪子 |
+| 硬編碼的去法 | `ClientInfo.ApplyApiKey(defaultApiKey)`：存放為空才以應用內建值**當種子寫入**，之後一律以存放值為準。`AppDefaults.ApiKey` 因此從「硬編碼金鑰」降格為「首次啟動預設值」，不必為了保留 out-of-the-box 體驗而留死值 |
+| 連線設定畫面 | Northwind `ConnectionViewModel` 增 `ApiKey` 欄位與輸入框，**在 ping 之前套用**——金鑰打錯會當場顯示，而不是延到第一次真正呼叫才在別的畫面浮出 |
+| 命令列覆寫 | `ClientInfo.InitializeAsync` 比照 `Endpoint` 支援 `ApiKey` 參數（僅記憶體、不改存放值）；註解寫明「參數列可從行程表讀取，真正的憑證不該走這條」 |
+| QuickStart.Console | 只引用 `Bee.Api.Client`（無 `Bee.UI.Core`），故不走 storage：改為 `--apikey` 參數 + demo 預設值 |
+
+命名上的取捨：`FileEndpointStorage` 實作 `IApiKeyStorage` 讀起來名不符實，但它是已發佈型別，改名即
+breaking，故保留原名並在類別註解說明它承載兩個值。
 
 ## 不在範圍
 

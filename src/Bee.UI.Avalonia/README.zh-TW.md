@@ -25,15 +25,19 @@ Avalonia 桌面控制項套件（Windows / macOS / Linux）。以一組深度綁
 | `GridEditMode` | grid 的 UI 層編輯模型：`InCell`（逐格編輯，ADR-021 混合策略）或 `EditForm`（唯讀 grid + 彈窗整列編輯）。 |
 | `RowEditPanel` / `RowEditDialog` | EditForm 模式的編輯面，由 field editors 組成；經暫存列編輯協定確認或取消。 |
 | `FormDataObject` | view-model：承載 `DataSet`、把 ADO.NET 表事件橋接為 `FieldValueChanged` 與 dirty 追蹤，提供非同步 CRUD 與暫存列編輯協定（`BeginRowEdit` / `CommitRowEdit` / `CancelRowEdit`）。 |
-| `FileEndpointStorage` | 檔案後端 `IEndpointStorage`；endpoint 落在 `LocalApplicationData/<appName>/endpoint.txt`。 |
+| `FileEndpointStorage` | 檔案後端 `IEndpointStorage` + `IApiKeyStorage`；endpoint 落在 `LocalApplicationData/<appName>/endpoint.txt`，API 金鑰落在同層的 `apikey.txt`。 |
 
 ## 使用方式
 
 ```csharp
-// Host bootstrap — wire EndpointStorage BEFORE any UI control instantiates.
-ApiClientInfo.ApiKey = "my-app";
+// Host bootstrap — wire the storages BEFORE any UI control instantiates.
 ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Remote;
-ClientInfo.EndpointStorage = new FileEndpointStorage("MyApp");
+var storage = new FileEndpointStorage("MyApp");
+ClientInfo.EndpointStorage = storage;
+ClientInfo.ApiKeyStorage = storage;
+// Seeds empty storage on first run; the stored key wins afterwards, so changing it
+// is a settings change rather than a rebuild.
+ClientInfo.ApplyApiKey("my-app");
 ```
 
 ```xml

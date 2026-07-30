@@ -25,15 +25,19 @@ Single `net10.0` TFM. Lower-bound pins: `Avalonia 12.0.0` + `Avalonia.Controls.D
 | `GridEditMode` | UI-layer editing model for grids: `InCell` (cell editing, ADR-021 hybrid strategy) or `EditForm` (read-only grid + popup row editing). |
 | `RowEditPanel` / `RowEditDialog` | EditForm-mode editing surface built from the field editors; commits or cancels through the buffered row-edit protocol. |
 | `FormDataObject` | The view-model: carries the `DataSet`, bridges ADO.NET table events into `FieldValueChanged` / dirty tracking, exposes the async CRUD round-trips and the buffered row-edit protocol (`BeginRowEdit` / `CommitRowEdit` / `CancelRowEdit`). |
-| `FileEndpointStorage` | File-backed `IEndpointStorage`; persists the endpoint at `LocalApplicationData/<appName>/endpoint.txt`. |
+| `FileEndpointStorage` | File-backed `IEndpointStorage` + `IApiKeyStorage`; persists the endpoint at `LocalApplicationData/<appName>/endpoint.txt` and the API key at `apikey.txt` beside it. |
 
 ## Usage
 
 ```csharp
-// Host bootstrap — wire EndpointStorage BEFORE any UI control instantiates.
-ApiClientInfo.ApiKey = "my-app";
+// Host bootstrap — wire the storages BEFORE any UI control instantiates.
 ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Remote;
-ClientInfo.EndpointStorage = new FileEndpointStorage("MyApp");
+var storage = new FileEndpointStorage("MyApp");
+ClientInfo.EndpointStorage = storage;
+ClientInfo.ApiKeyStorage = storage;
+// Seeds empty storage on first run; the stored key wins afterwards, so changing it
+// is a settings change rather than a rebuild.
+ClientInfo.ApplyApiKey("my-app");
 ```
 
 ```xml

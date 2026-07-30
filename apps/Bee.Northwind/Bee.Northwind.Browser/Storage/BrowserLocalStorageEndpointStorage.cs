@@ -4,10 +4,10 @@ using Bee.UI.Core;
 namespace Bee.Northwind.Browser.Storage;
 
 /// <summary>
-/// <see cref="IEndpointStorage"/> implementation backed by the browser's
-/// <c>window.localStorage</c>. The browser (WASM) sandbox cannot write to the file system,
+/// <see cref="IEndpointStorage"/> / <see cref="IApiKeyStorage"/> implementation backed by the
+/// browser's <c>window.localStorage</c>. The browser (WASM) sandbox cannot write to the file system,
 /// so the file-backed <c>FileEndpointStorage</c> used by the desktop head does not apply;
-/// this persists the endpoint under a per-app localStorage key instead.
+/// this persists the endpoint and the API key under per-app localStorage keys instead.
 /// </summary>
 /// <remarks>
 /// Hosts opt in by assigning
@@ -20,11 +20,14 @@ namespace Bee.Northwind.Browser.Storage;
 /// input does not hit the JS boundary on every keystroke.
 /// </para>
 /// </remarks>
-public sealed class BrowserLocalStorageEndpointStorage : IEndpointStorage
+public sealed class BrowserLocalStorageEndpointStorage : IEndpointStorage, IApiKeyStorage
 {
     private const string KeyPrefix = "Bee.Endpoint.";
+    private const string ApiKeyPrefix = "Bee.ApiKey.";
     private readonly string _key;
+    private readonly string _apiKeyKey;
     private string? _cachedEndpoint;
+    private string? _cachedApiKey;
 
     /// <summary>
     /// Initializes a new instance of <see cref="BrowserLocalStorageEndpointStorage"/>.
@@ -36,6 +39,7 @@ public sealed class BrowserLocalStorageEndpointStorage : IEndpointStorage
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(appName);
         _key = KeyPrefix + appName;
+        _apiKeyKey = ApiKeyPrefix + appName;
     }
 
     /// <inheritdoc/>
@@ -56,6 +60,26 @@ public sealed class BrowserLocalStorageEndpointStorage : IEndpointStorage
     {
         _cachedEndpoint = endpoint;
         LocalStorageInterop.SetItem(_key, endpoint);
+    }
+
+    /// <inheritdoc/>
+    public string LoadApiKey()
+    {
+        _cachedApiKey ??= LocalStorageInterop.GetItem(_apiKeyKey) ?? string.Empty;
+        return _cachedApiKey;
+    }
+
+    /// <inheritdoc/>
+    public void SetApiKey(string apiKey)
+    {
+        _cachedApiKey = apiKey;
+    }
+
+    /// <inheritdoc/>
+    public void SaveApiKey(string apiKey)
+    {
+        _cachedApiKey = apiKey;
+        LocalStorageInterop.SetItem(_apiKeyKey, apiKey);
     }
 }
 

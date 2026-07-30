@@ -28,9 +28,12 @@ namespace Avalonia.Demo
             // Configure the Bee client singletons before any control or VM runs.
             // EndpointStorage must point at a writable per-user folder; the lib's
             // FileEndpointStorage handles that for unpackaged Avalonia hosts.
-            ApiClientInfo.ApiKey = "avalonia-demo";
             ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Remote;
-            ClientInfo.EndpointStorage = new FileEndpointStorage("Bee.Avalonia.Demo");
+            var storage = new FileEndpointStorage("Bee.Avalonia.Demo");
+            ClientInfo.EndpointStorage = storage;
+            ClientInfo.ApiKeyStorage = storage;
+            // The demo key only seeds empty storage on first run; the stored value wins afterwards.
+            ClientInfo.ApplyApiKey("avalonia-demo");
 
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }

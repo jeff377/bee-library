@@ -77,6 +77,19 @@ namespace Bee.Definition.Settings
         public string Endpoint { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the API key sent as the <c>X-Api-Key</c> header, identifying which
+        /// application is calling.
+        /// </summary>
+        /// <remarks>
+        /// NOTE: not a secret in the cryptographic sense — a key shipped inside a client can always
+        /// be recovered from it. Keeping it here rather than in source is about being able to change
+        /// it without recompiling; user authentication stays with the access token.
+        /// </remarks>
+        [Description("API key sent as the X-Api-Key header, identifying the calling application.")]
+        [DefaultValue("")]
+        public string ApiKey { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets the service endpoint list.
         /// </summary>
         [Description("Service endpoint list.")]

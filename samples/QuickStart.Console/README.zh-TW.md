@@ -15,7 +15,7 @@ dotnet run
 預設連 `http://localhost:5050/api`。要換 endpoint：
 
 ```bash
-dotnet run -- --endpoint http://other-host:5050/api
+dotnet run -- --endpoint http://other-host:5050/api --apikey app-id.secret
 ```
 
 ## 預期輸出
@@ -35,7 +35,7 @@ dotnet run -- --endpoint http://other-host:5050/api
 
 | 程式段落 | library 功能 |
 |----------|--------------|
-| `ApiClientInfo.ApiKey = "quickstart-demo"` | `Bee.Api.Client.ApiClientInfo` — Remote 模式下每個 request 會帶 `X-Api-Key` |
+| `ApiClientInfo.ApiKey = ParseApiKey(args) ?? DefaultApiKey` | `Bee.Api.Client.ApiClientInfo` — Remote 模式下每個 request 會帶 `X-Api-Key`。伺服端發放正式金鑰後以 `--apikey <key>` 傳入；內建值只是 demo 預設，之所以能用是因為尚未發放金鑰的部署仍接受任何非空值 |
 | `new SystemApiConnector(endpoint, Guid.Empty)` | `Bee.Api.Client.Connectors.SystemApiConnector` — 內部用 `RemoteApiProvider` 走 HTTP |
 | `await connector.PingAsync()` | 直接打 `System.Ping`，框架預設將其視為 anonymous，回傳 `status=ok` |
 | `new FormApiConnector(endpoint, Guid.Empty, "Echo")` | `Bee.Api.Client.Connectors.FormApiConnector` — 鎖定 progId="Echo"，呼叫 `Echo.<action>` |

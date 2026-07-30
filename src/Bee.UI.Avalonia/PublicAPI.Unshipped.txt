@@ -1,1 +1,5 @@
 #nullable enable
+Bee.UI.Avalonia.Storage.FileEndpointStorage.ApiKeyFilePath.get -> string!
+Bee.UI.Avalonia.Storage.FileEndpointStorage.LoadApiKey() -> string!
+Bee.UI.Avalonia.Storage.FileEndpointStorage.SaveApiKey(string! apiKey) -> void
+Bee.UI.Avalonia.Storage.FileEndpointStorage.SetApiKey(string! apiKey) -> void

@@ -37,8 +37,17 @@ Avalonia、MAUI、Blazor 可共用同一套連線與權限邏輯，各自以自�
 - `IEndpointStorage` -- 服務 endpoint 的持久化契約（`LoadEndpoint` / `SetEndpoint` / `SaveEndpoint`）。
 - `EndpointStorage` -- 預設實作，backing 為 `ClientInfo.ClientSettings`（`{ExeName}.Settings.xml`）。
   當預設檔案位置不適用時，前端會將 `ClientInfo.EndpointStorage` 指派為平台專屬實作 —— 例如
-  `FileEndpointStorage`（於 `Bee.UI.Avalonia`）或 sandbox-friendly 的 `MauiPreferenceEndpointStorage`
-  （於 `Bee.UI.Maui`）。
+  `FileEndpointStorage`（於 `Bee.UI.Avalonia`）。
+- `IApiKeyStorage` / `ApiKeyStorage` -- `X-Api-Key` 值的同一組契約與預設實作
+  （`LoadApiKey` / `SetApiKey` / `SaveApiKey`），經 `ClientInfo.ApiKeyStorage` 指派。**凡是因為平台
+  無法寫入組件路徑而替換 `EndpointStorage` 的 host，也必須替換這個**；平台 storage 類別可同時實作
+  兩個介面並指派給兩者（`FileEndpointStorage` 即如此）。
+- `ClientInfo.ApplyApiKey(defaultApiKey)` -- 套用存放的金鑰，存放為空時以應用內建值作為種子寫入。
+  這讓內建常數變成「首次啟動的預設值」而非硬編碼金鑰：此後以存放值為準，更換不需重新編譯。
+  `ClientInfo.SetApiKey` 則持久化新金鑰並立即套用到後續呼叫。
+
+> 用戶端持有的 API 金鑰在密碼學意義上並非機密 —— 它可以從已發佈的應用還原出來。它識別的是
+> **哪個應用**在呼叫；**使用者**的鑑別仍是 access token 的職責。
 
 ### 主機服務
 

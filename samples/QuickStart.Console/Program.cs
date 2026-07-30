@@ -7,14 +7,16 @@ namespace QuickStart.Console;
 internal static class Program
 {
     private const string DefaultEndpoint = "http://localhost:5050/api";
+    private const string DefaultApiKey = "quickstart-demo";
 
     public static async Task<int> Main(string[] args)
     {
         var endpoint = ParseEndpoint(args) ?? DefaultEndpoint;
 
-        // ApiKey is required by the framework's default ApiAuthorizationValidator
-        // (any non-empty value passes — the demo doesn't validate the key further).
-        ApiClientInfo.ApiKey = "quickstart-demo";
+        // The server requires an X-Api-Key. A deployment that has issued no key still accepts any
+        // non-empty value, so the demo default works out of the box; once a real key is issued,
+        // pass it with --apikey rather than rebuilding this sample.
+        ApiClientInfo.ApiKey = ParseApiKey(args) ?? DefaultApiKey;
 
         System.Console.WriteLine($"→ endpoint: {endpoint}");
         System.Console.WriteLine();
@@ -63,6 +65,16 @@ internal static class Program
         for (int i = 0; i < args.Length - 1; i++)
         {
             if (args[i] is "--endpoint" or "-e")
+                return args[i + 1];
+        }
+        return null;
+    }
+
+    private static string? ParseApiKey(string[] args)
+    {
+        for (int i = 0; i < args.Length - 1; i++)
+        {
+            if (args[i] is "--apikey" or "-k")
                 return args[i + 1];
         }
         return null;

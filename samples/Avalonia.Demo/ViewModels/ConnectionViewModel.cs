@@ -83,8 +83,9 @@ namespace Avalonia.Demo.ViewModels
                 // ClientInfo.InitializeAsync runs ApiConnectValidator (HTTP reachability +
                 // ping) then stores the endpoint via EndpointStorage, awaiting the work
                 // instead of blocking the UI thread.
+                // The key comes from storage (seeded on first run by Program.Main), so changing it
+                // does not need a rebuild of this sample.
                 await ClientInfo.InitializeAsync(endpoint).ConfigureAwait(true);
-                ApiClientInfo.ApiKey = "avalonia-demo";
 
                 SetStatus(
                     $"Connected to {endpoint}. ConnectType = {ApiClientInfo.ConnectType}.",

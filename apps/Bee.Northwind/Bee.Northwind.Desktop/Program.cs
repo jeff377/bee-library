@@ -24,9 +24,13 @@ internal static class Program
         // Configure the Bee client singletons before any control or VM runs. EndpointStorage
         // must point at a writable per-user folder; FileEndpointStorage handles that for
         // unpackaged Avalonia hosts.
-        ApiClientInfo.ApiKey = AppDefaults.ApiKey;
         ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Remote;
-        ClientInfo.EndpointStorage = new FileEndpointStorage("Bee.Northwind");
+        var storage = new FileEndpointStorage("Bee.Northwind");
+        ClientInfo.EndpointStorage = storage;
+        ClientInfo.ApiKeyStorage = storage;
+        // The shipped key only seeds empty storage on first run; after that the stored value wins,
+        // so swapping keys is a settings change rather than a rebuild.
+        ClientInfo.ApplyApiKey(AppDefaults.ApiKey);
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }

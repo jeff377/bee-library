@@ -19,6 +19,7 @@ namespace Bee.Repository.System
     public class ApiKeyRepository : IApiKeyRepository
     {
         private const string TableName = "st_api_key";
+        private const string SysIdColumn = "sys_id";
 
         private readonly IDbConnectionManager _connectionManager;
         private readonly ICacheNotifyService? _cacheNotify;
@@ -44,7 +45,7 @@ namespace Bee.Repository.System
 
             var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
-            string colId = dbType.QuoteIdentifier("sys_id");
+            string colId = dbType.QuoteIdentifier(SysIdColumn);
             string colName = dbType.QuoteIdentifier("sys_name");
             string colHashed = dbType.QuoteIdentifier("hashed_key");
             string colKeyType = dbType.QuoteIdentifier("key_type");
@@ -65,7 +66,7 @@ namespace Bee.Repository.System
             object expiredAt = row["expired_at"];
             return new ApiKeyInfo
             {
-                SysId = ValueUtilities.CStr(row["sys_id"]),
+                SysId = ValueUtilities.CStr(row[SysIdColumn]),
                 SysName = ValueUtilities.CStr(row["sys_name"]),
                 HashedKey = ValueUtilities.CStr(row["hashed_key"]),
                 KeyType = (ApiKeyType)ValueUtilities.CInt(row["key_type"], (int)ApiKeyType.Internal),
@@ -103,7 +104,7 @@ namespace Bee.Repository.System
 
             var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
-            string colId = dbType.QuoteIdentifier("sys_id");
+            string colId = dbType.QuoteIdentifier(SysIdColumn);
 
             string sql = $"SELECT COUNT(*) FROM {tbl} WHERE {colId} = {{0}}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, sysId);
@@ -127,7 +128,7 @@ namespace Bee.Repository.System
             var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
-            string colId = dbType.QuoteIdentifier("sys_id");
+            string colId = dbType.QuoteIdentifier(SysIdColumn);
             string colName = dbType.QuoteIdentifier("sys_name");
             string colHashed = dbType.QuoteIdentifier("hashed_key");
             string colKeyType = dbType.QuoteIdentifier("key_type");

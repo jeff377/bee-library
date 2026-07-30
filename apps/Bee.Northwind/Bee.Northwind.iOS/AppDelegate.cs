@@ -26,9 +26,13 @@ public partial class AppDelegate : AvaloniaAppDelegate<App>
         // the app, but FileEndpointStorage writes under the per-user local application data folder
         // (SpecialFolder.LocalApplicationData maps to the app's writable Library directory on iOS),
         // so the desktop file-backed storage applies unchanged. Verified in plan stage 3.
-        ApiClientInfo.ApiKey = AppDefaults.ApiKey;
         ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Remote;
-        ClientInfo.EndpointStorage = new FileEndpointStorage("Bee.Northwind");
+        var storage = new FileEndpointStorage("Bee.Northwind");
+        ClientInfo.EndpointStorage = storage;
+        ClientInfo.ApiKeyStorage = storage;
+        // The shipped key only seeds empty storage on first run; after that the stored value wins,
+        // so swapping keys is a settings change rather than a rebuild.
+        ClientInfo.ApplyApiKey(AppDefaults.ApiKey);
 
         return base.CustomizeAppBuilder(builder)
             .WithInterFont();

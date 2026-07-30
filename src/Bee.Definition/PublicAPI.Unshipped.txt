@@ -75,3 +75,5 @@ Bee.Definition.Logging.AuditEntry.ApiKeyId.get -> string?
 Bee.Definition.Logging.AuditEntry.ApiKeyId.init -> void
 Bee.Definition.Logging.AuditEntry.ApiKeyName.get -> string?
 Bee.Definition.Logging.AuditEntry.ApiKeyName.init -> void
+Bee.Definition.Settings.ClientSettings.ApiKey.get -> string!
+Bee.Definition.Settings.ClientSettings.ApiKey.set -> void

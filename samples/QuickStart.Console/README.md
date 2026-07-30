@@ -15,7 +15,7 @@ dotnet run
 The default endpoint is `http://localhost:5050/api`. To override:
 
 ```bash
-dotnet run -- --endpoint http://other-host:5050/api
+dotnet run -- --endpoint http://other-host:5050/api --apikey app-id.secret
 ```
 
 ## What to expect
@@ -35,7 +35,7 @@ dotnet run -- --endpoint http://other-host:5050/api
 
 | Code | Library feature |
 |------|-----------------|
-| `ApiClientInfo.ApiKey = "quickstart-demo"` | `Bee.Api.Client.ApiClientInfo` — in Remote mode, every request carries this as `X-Api-Key` |
+| `ApiClientInfo.ApiKey = ParseApiKey(args) ?? DefaultApiKey` | `Bee.Api.Client.ApiClientInfo` — in Remote mode every request carries this as `X-Api-Key`. Pass `--apikey <key>` once the server has issued a real one; the built-in value is only a demo default, which works because a deployment with no issued key still accepts any non-empty value |
 | `new SystemApiConnector(endpoint, Guid.Empty)` | `Bee.Api.Client.Connectors.SystemApiConnector` — internally uses `RemoteApiProvider` over HTTP |
 | `await connector.PingAsync()` | Invokes `System.Ping`; treated as anonymous by the framework and returns `status=ok` |
 | `new FormApiConnector(endpoint, Guid.Empty, "Echo")` | `Bee.Api.Client.Connectors.FormApiConnector` — bound to progId "Echo", invokes `Echo.<action>` |

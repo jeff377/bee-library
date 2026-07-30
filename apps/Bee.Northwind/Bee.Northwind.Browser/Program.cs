@@ -17,9 +17,13 @@ internal sealed partial class Program
         // Same client contract as the desktop head (Remote connector to the JSON-RPC
         // backend), but the browser sandbox cannot write files, so endpoint persistence
         // goes through localStorage instead of FileEndpointStorage.
-        ApiClientInfo.ApiKey = AppDefaults.ApiKey;
         ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Remote;
-        ClientInfo.EndpointStorage = new BrowserLocalStorageEndpointStorage("Bee.Northwind");
+        var storage = new BrowserLocalStorageEndpointStorage("Bee.Northwind");
+        ClientInfo.EndpointStorage = storage;
+        ClientInfo.ApiKeyStorage = storage;
+        // The shipped key only seeds empty storage on first run; after that the stored value wins,
+        // so swapping keys is a settings change rather than a rebuild.
+        ClientInfo.ApplyApiKey(AppDefaults.ApiKey);
 
         return BuildAvaloniaApp()
             .WithInterFont()

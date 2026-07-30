@@ -35,14 +35,27 @@ way.
   (`ApplyLoginResult`, `ApplyEnterCompanyResult`, `ClearCompanyContext`). `ResetDefineCache` discards
   the cached definition data after a tenant switch.
 
-### Endpoint Persistence
+### Endpoint and API Key Persistence
 
 - `IEndpointStorage` -- persistence contract for the configured service endpoint
   (`LoadEndpoint` / `SetEndpoint` / `SaveEndpoint`).
 - `EndpointStorage` -- default implementation, backed by `ClientInfo.ClientSettings`
   (`{ExeName}.Settings.xml`). Front ends assign `ClientInfo.EndpointStorage` to a platform-specific
   implementation when the default file location is unsuitable -- e.g. `FileEndpointStorage`
-  (in `Bee.UI.Avalonia`) or the sandbox-friendly `MauiPreferenceEndpointStorage` (in `Bee.UI.Maui`).
+  (in `Bee.UI.Avalonia`).
+- `IApiKeyStorage` / `ApiKeyStorage` -- the same pair for the `X-Api-Key` value
+  (`LoadApiKey` / `SetApiKey` / `SaveApiKey`), assigned through `ClientInfo.ApiKeyStorage`. A host
+  that replaces `EndpointStorage` because its platform cannot write beside the assembly must
+  replace this too; a platform storage class may implement both interfaces and be assigned to
+  each (`FileEndpointStorage` does).
+- `ClientInfo.ApplyApiKey(defaultApiKey)` -- applies the stored key, seeding empty storage with the
+  value the application ships. That makes the shipped constant a first-run default instead of a
+  hard-coded key: from then on the stored value wins and can be changed without recompiling.
+  `ClientInfo.SetApiKey` persists a new key and applies it to subsequent calls.
+
+> An API key held by a client is not a secret in the cryptographic sense -- it can be recovered from
+> the shipped application. It identifies *which application* is calling; authenticating *the user*
+> remains the access token's job.
 
 ### Host Services
 
@@ -69,8 +82,8 @@ way.
   process; changing it invalidates the cached connectors, define accessor, and capability snapshot.
 - **Framework-agnostic** -- no UI-framework types leak in, so the same connection and permission
   logic serves every `Bee.UI.*` front end.
-- **Pluggable endpoint storage** -- hosts override `ClientInfo.EndpointStorage` with a
-  platform-appropriate `IEndpointStorage` implementation.
+- **Pluggable endpoint / API key storage** -- hosts override `ClientInfo.EndpointStorage` and
+  `ClientInfo.ApiKeyStorage` with platform-appropriate implementations.
 - **Async-friendly initialization** -- `InitializeAsync` / `SetEndpointAsync` validate the endpoint
   and initialize the connector without blocking, so they are safe on single-threaded runtimes
   (browser WASM).
@@ -83,6 +96,8 @@ Bee.UI.Core/
   ClientInfo.cs          # Client-side connection state and connector factory
   IEndpointStorage.cs    # Endpoint persistence contract
   EndpointStorage.cs     # Default ClientSettings-backed implementation
+  IApiKeyStorage.cs      # API key persistence contract
+  ApiKeyStorage.cs       # Default ClientSettings-backed implementation
   IUIViewService.cs      # Host-supplied view services
   VersionInfo.cs         # Package version metadata
   Permissions/           # ElementCapabilityResolver, FieldCapability,

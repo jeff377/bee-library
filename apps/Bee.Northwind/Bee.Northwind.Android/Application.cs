@@ -36,9 +36,13 @@ public class Application : AvaloniaAndroidApplication<App>
         // sandbox grants the app a writable per-user data directory, and FileEndpointStorage
         // writes under SpecialFolder.LocalApplicationData (which maps there on Android), so the
         // desktop file-backed storage applies unchanged. Verified in plan stage 3.
-        ApiClientInfo.ApiKey = AppDefaults.ApiKey;
         ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Remote;
-        ClientInfo.EndpointStorage = new FileEndpointStorage("Bee.Northwind");
+        var storage = new FileEndpointStorage("Bee.Northwind");
+        ClientInfo.EndpointStorage = storage;
+        ClientInfo.ApiKeyStorage = storage;
+        // The shipped key only seeds empty storage on first run; after that the stored value wins,
+        // so swapping keys is a settings change rather than a rebuild.
+        ClientInfo.ApplyApiKey(AppDefaults.ApiKey);
 
         return base.CustomizeAppBuilder(builder)
             .WithInterFont();

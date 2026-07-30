@@ -32,6 +32,14 @@ namespace Bee.UI.Core
         public static IEndpointStorage EndpointStorage { get; set; } = new EndpointStorage();
 
         /// <summary>
+        /// Gets or sets the API key persistence strategy. Hosts that replace
+        /// <see cref="EndpointStorage"/> because their platform cannot write beside the assembly
+        /// (iOS, Android, browser WASM) must replace this too — otherwise the key falls back to a
+        /// settings file those platforms cannot persist.
+        /// </summary>
+        public static IApiKeyStorage ApiKeyStorage { get; set; } = new ApiKeyStorage();
+
+        /// <summary>
         /// Client settings loaded from <c>{ExeName}.Settings.xml</c>.
         /// </summary>
         public static ClientSettings ClientSettings
@@ -255,6 +263,54 @@ namespace Bee.UI.Core
             return EndpointStorage.LoadEndpoint();
         }
 
+        /// <summary>
+        /// Returns the currently configured API key.
+        /// </summary>
+        public static string GetApiKey()
+        {
+            return ApiKeyStorage.LoadApiKey();
+        }
+
+        /// <summary>
+        /// Persists the API key and applies it to subsequent API calls.
+        /// </summary>
+        /// <param name="apiKey">The API key issued for this application.</param>
+        /// <remarks>
+        /// Synchronous, unlike <see cref="SetEndpointAsync"/>: changing the endpoint has to
+        /// revalidate the connection and rebuild the connector, whereas the key is simply a header
+        /// value the next call carries.
+        /// </remarks>
+        public static void SetApiKey(string apiKey)
+        {
+            ApiKeyStorage.SaveApiKey(apiKey);
+            ApiClientInfo.ApiKey = apiKey;
+        }
+
+        /// <summary>
+        /// Applies the stored API key to <see cref="ApiClientInfo.ApiKey"/>, falling back to
+        /// <paramref name="defaultApiKey"/> — and persisting it — the first time an application runs
+        /// with nothing stored.
+        /// </summary>
+        /// <param name="defaultApiKey">
+        /// The key the application ships with, used only to seed empty storage. Pass an empty string
+        /// for deployments that expect the key to be configured out of band.
+        /// </param>
+        /// <remarks>
+        /// This is what lets an application drop its hard-coded key without losing out-of-the-box
+        /// behaviour: the shipped value becomes a first-run seed, and from then on the stored value
+        /// wins and can be changed without recompiling.
+        /// </remarks>
+        public static void ApplyApiKey(string defaultApiKey = "")
+        {
+            string stored = ApiKeyStorage.LoadApiKey();
+            if (StringUtilities.IsEmpty(stored) && StringUtilities.IsNotEmpty(defaultApiKey))
+            {
+                ApiKeyStorage.SaveApiKey(defaultApiKey);
+                stored = defaultApiKey;
+            }
+            ApiClientInfo.ApiKey = stored;
+        }
+
         private static async Task<bool> InitializeConnectAsync(SupportedConnectTypes supportedConnectTypes)
         {
             ApiClientInfo.SupportedConnectTypes = supportedConnectTypes;
@@ -285,6 +341,14 @@ namespace Bee.UI.Core
             if (Arguments.TryGetValue("Endpoint", out string? endpointArg))
             {
                 EndpointStorage.SetEndpoint(endpointArg);
+            }
+            // NOTE: in-memory only, like the endpoint argument — a command line switch overrides
+            // this run without rewriting stored settings. Suitable because the key identifies an
+            // application rather than authenticating a user; a real credential does not belong in
+            // an argument list, which is readable from the process table.
+            if (Arguments.TryGetValue("ApiKey", out string? apiKeyArg))
+            {
+                ApiKeyStorage.SetApiKey(apiKeyArg);
             }
             if (!await InitializeConnectAsync(connectTypes).ConfigureAwait(false)
                 && !await UIViewService.ShowApiConnectAsync().ConfigureAwait(false))
