@@ -94,6 +94,53 @@ namespace Bee.Definition.UnitTests.Logging
         }
 
         [Fact]
+        [DisplayName("GetColumns 共通欄位應含呼叫端應用識別（api_key_id / api_key_name）")]
+        public void GetColumns_IncludesApiKeyIdentity()
+        {
+            var entry = new TestAuditEntry
+            {
+                ApiKeyId = "northwind-desktop",
+                ApiKeyName = "Northwind Desktop",
+                Extra = "x",
+            };
+
+            var map = entry.GetColumns().ToDictionary(c => c.Name, c => c.Value);
+
+            Assert.Equal("northwind-desktop", map["api_key_id"]);
+            Assert.Equal("Northwind Desktop", map["api_key_name"]);
+        }
+
+        [Fact]
+        [DisplayName("未經金鑰閘門的呼叫，api_key_id / api_key_name 應為 null 而非空字串")]
+        public void GetColumns_WithoutApiKey_LeavesIdentityNull()
+        {
+            var map = new TestAuditEntry { Extra = "x" }.GetColumns().ToDictionary(c => c.Name, c => c.Value);
+
+            Assert.Null(map["api_key_id"]);
+            Assert.Null(map["api_key_name"]);
+        }
+
+        [Fact]
+        [DisplayName("DbAnomalyEntry 不含共通欄位，因此也不含呼叫端應用識別")]
+        public void DbAnomalyEntry_OmitsApiKeyIdentity()
+        {
+            // DB 異常的視角是 database_id + command，沒有「誰在呼叫」——它覆寫掉整組共通欄位，
+            // 新增的識別欄因此自然不會出現在 st_log_anomaly_db。
+            var entry = new DbAnomalyEntry
+            {
+                DatabaseId = "common",
+                Command = "SELECT 1",
+                Kind = AnomalyKind.Error,
+            };
+
+            var names = entry.GetColumns().Select(c => c.Name).ToList();
+
+            Assert.DoesNotContain("api_key_id", names);
+            Assert.DoesNotContain("api_key_name", names);
+            Assert.DoesNotContain("user_id", names);
+        }
+
+        [Fact]
         [DisplayName("ChangeAuditEntry 目標表與 prog_id/table_name/row_key/change_kind/is_sensitive/changes_xml 欄位正確")]
         public void ChangeAuditEntry_ColumnsAndTable()
         {

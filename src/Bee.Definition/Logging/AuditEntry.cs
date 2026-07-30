@@ -63,6 +63,22 @@ namespace Bee.Definition.Logging
         /// <summary>Gets the origin marker, such as <c>"ProgId.Action"</c> or a channel name.</summary>
         public string? Source { get; init; }
 
+        /// <summary>
+        /// Gets the identifier of the API key the caller presented, or <c>null</c> when the call did
+        /// not come through the key gate (an in-process call, or a deployment that has issued no key).
+        /// </summary>
+        /// <remarks>
+        /// WARNING: this is the key's identifier segment only. The secret segment must never reach a
+        /// log row — the framework does not hold it in plaintext at all after issuing.
+        /// </remarks>
+        public string? ApiKeyId { get; init; }
+
+        /// <summary>
+        /// Gets the denormalised application name behind <see cref="ApiKeyId"/>, so the log row names
+        /// the caller without a cross-database join to the common-database <c>st_api_key</c> table.
+        /// </summary>
+        public string? ApiKeyName { get; init; }
+
         /// <summary>Gets the physical log table this entry is written to (e.g. <c>st_log_login</c>).</summary>
         public abstract string TableName { get; }
 
@@ -99,6 +115,8 @@ namespace Bee.Definition.Logging
             columns.Add(new AuditColumn("trace_id", TraceId));
             columns.Add(new AuditColumn("client_ip", ClientIp));
             columns.Add(new AuditColumn("source", Source));
+            columns.Add(new AuditColumn("api_key_id", ApiKeyId));
+            columns.Add(new AuditColumn("api_key_name", ApiKeyName));
         }
 
         /// <summary>

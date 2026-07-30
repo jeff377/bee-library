@@ -71,3 +71,7 @@ Bee.Definition.Security.IApiKeyValidator.Validate(string? apiKey) -> Bee.Definit
 const Bee.Definition.Security.ApiKeyGateState.CacheKey = "[gate]" -> string!
 static readonly Bee.Definition.Security.ApiKeyValidationResult.NotChecked -> Bee.Definition.Security.ApiKeyValidationResult!
 const Bee.Definition.SystemActions.CreateApiKey = "CreateApiKey" -> string!
+Bee.Definition.Logging.AuditEntry.ApiKeyId.get -> string?
+Bee.Definition.Logging.AuditEntry.ApiKeyId.init -> void
+Bee.Definition.Logging.AuditEntry.ApiKeyName.get -> string?
+Bee.Definition.Logging.AuditEntry.ApiKeyName.init -> void

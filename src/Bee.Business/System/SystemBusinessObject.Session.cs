@@ -281,6 +281,11 @@ namespace Bee.Business.System
                 UserId = userId,
                 UserName = userName,
                 AccessToken = accessToken,
+                // Which application attempted the sign-in. This is the axis where it matters most:
+                // a burst of failures from one application reads very differently from the same
+                // burst spread across several.
+                ApiKeyId = ApiKeyId,
+                ApiKeyName = ApiKeyName,
                 FailReason = failReason,
                 Source = source,
             });

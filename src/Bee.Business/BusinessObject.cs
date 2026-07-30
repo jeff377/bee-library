@@ -1,3 +1,4 @@
+using Bee.Base;
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Definition.Identity;
@@ -55,6 +56,21 @@ namespace Bee.Business
         /// In-process calls leave the default, since they carry no <c>X-Api-Key</c> header.
         /// </remarks>
         public ApiKeyValidationResult ApiKeyValidation { get; set; } = ApiKeyValidationResult.NotChecked;
+
+        /// <summary>
+        /// Gets the calling application's key identifier for audit rows, or <c>null</c> when the call
+        /// did not come through the key gate.
+        /// </summary>
+        /// <remarks>
+        /// Empty is normalised to <c>null</c> so the log column reads as "not applicable" rather than
+        /// an empty string — and so the value survives Oracle, which stores <c>''</c> as NULL anyway.
+        /// </remarks>
+        protected string? ApiKeyId => StringUtilities.IsEmpty(ApiKeyValidation.SysId) ? null : ApiKeyValidation.SysId;
+
+        /// <summary>
+        /// Gets the calling application's display name for audit rows, or <c>null</c> when unknown.
+        /// </summary>
+        protected string? ApiKeyName => StringUtilities.IsEmpty(ApiKeyValidation.SysName) ? null : ApiKeyValidation.SysName;
 
         /// <summary>Gets the definition data access service from the per-call context.</summary>
         protected IDefineAccess DefineAccess => _ctx.DefineAccess;

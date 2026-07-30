@@ -234,7 +234,10 @@ namespace Bee.Api.AspNetCore.Controllers
                 Method = method,
                 Kind = AnomalyKind.Unauthorized,
                 ErrorType = "ApiKeyRejected",
-                ErrorMessage = StringUtilities.IsEmpty(sysId) ? null : "sys_id=" + sysId,
+                // The identifier goes in its own column rather than inside the message, so a
+                // rejected attempt can be grouped with that application's accepted calls.
+                // ApiKeyName stays null: the key was refused, so no application is identified.
+                ApiKeyId = StringUtilities.IsEmpty(sysId) ? null : sysId,
                 ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString(),
                 Source = method,
             });

@@ -165,6 +165,36 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
             Assert.Equal("C1", anomaly.CompanyId);
         }
 
+        [Fact]
+        [DisplayName("異常記錄應帶入呼叫端應用識別（api_key_id / api_key_name）")]
+        public void Execute_AnomalyEnabled_CarriesApiKeyIdentity()
+        {
+            var writer = new CapturingAuditLogWriter();
+            var executor = NewAuditExecutor(writer, EnabledOptions(), new StubSessionInfoService(NewSession()), Guid.NewGuid());
+            executor.ApiKeyValidation = new ApiKeyValidationResult(
+                ApiKeyStatus.Valid, "northwind-desktop", "Northwind Desktop");
+
+            executor.Execute(UnknownActionRequest());
+
+            var anomaly = Assert.IsType<ApiAnomalyEntry>(Assert.Single(writer.Entries));
+            Assert.Equal("northwind-desktop", anomaly.ApiKeyId);
+            Assert.Equal("Northwind Desktop", anomaly.ApiKeyName);
+        }
+
+        [Fact]
+        [DisplayName("未經金鑰閘門的呼叫，異常記錄的應用識別應為 null")]
+        public void Execute_AnomalyEnabledWithoutApiKey_LeavesIdentityNull()
+        {
+            var writer = new CapturingAuditLogWriter();
+            var executor = NewAuditExecutor(writer, EnabledOptions(), new StubSessionInfoService(NewSession()), Guid.NewGuid());
+
+            executor.Execute(UnknownActionRequest());
+
+            var anomaly = Assert.IsType<ApiAnomalyEntry>(Assert.Single(writer.Entries));
+            Assert.Null(anomaly.ApiKeyId);
+            Assert.Null(anomaly.ApiKeyName);
+        }
+
         // ---- 成功 anomaly 記錄（lines 143-148；慢查詢） ----
 
         [Fact]

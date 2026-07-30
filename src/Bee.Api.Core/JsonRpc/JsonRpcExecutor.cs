@@ -183,6 +183,8 @@ namespace Bee.Api.Core.JsonRpc
                 UserName = session?.UserName,
                 CompanyId = session?.CompanyId,
                 AccessToken = AccessToken == Guid.Empty ? null : AccessToken,
+                ApiKeyId = NullIfEmpty(ApiKeyValidation.SysId),
+                ApiKeyName = NullIfEmpty(ApiKeyValidation.SysName),
                 Method = method,
                 Kind = kind,
                 ElapsedMs = elapsedMs > int.MaxValue ? int.MaxValue : (int)elapsedMs,
@@ -192,6 +194,14 @@ namespace Bee.Api.Core.JsonRpc
                 Source = method,
             });
         }
+
+        /// <summary>
+        /// Normalises an empty string to <c>null</c> so an audit column reads as "not applicable"
+        /// rather than blank.
+        /// </summary>
+        /// <param name="value">The value to normalise.</param>
+        private static string? NullIfEmpty(string? value)
+            => string.IsNullOrEmpty(value) ? null : value;
 
         private static bool IsTimeout(Exception ex)
             => ex is TimeoutException

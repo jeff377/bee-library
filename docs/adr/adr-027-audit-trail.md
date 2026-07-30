@@ -41,7 +41,7 @@
 - **D1 — 六軸收斂**：基礎設施 ＋ 登入（①）＋ 異動（③，含安全⑥以 `is_sensitive` 旗標併入）＋ 檢視（②）＋ 異常（④/⑤）。軸⑤系統以**異常記錄**實現，非 observability 稽核表。
 - **D2 — 統一寫入抽象 `IAuditLogWriter`**：`AuditEntry` 抽象基底（共通欄可覆寫的 `AddCommonColumns`）＋ 型別化子類；預設背景批次寫入（bounded channel，滿載退化同步、log DB 不可用落地檔），無 host 時同步直寫。放 `Bee.Definition.Logging`。
 - **D3 — `st_log_*` 於 `log` 分類、opt-in**：`AuditLogOptions`（掛 `BackendConfiguration`）各軸獨立開關，**預設全關**，零回歸。5 張表：`st_log_login` / `st_log_change` / `st_log_access` / `st_log_anomaly_api` / `st_log_anomaly_db`。
-- **D4 — 日誌獨立性**：log 列自足、查詢不 join；去正規化 who / company；`log` 可依年份分庫（`log_YYYY`，當年可寫、歷史唯讀），寫入目標未來以解析器選當年可寫 DB（現以固定 `DbCategoryIds.Log`）。
+- **D4 — 日誌獨立性**：log 列自足、查詢不 join；去正規化 who / company（**2026-07-30 起併入呼叫端應用**：`api_key_id` + `api_key_name`，同理由——`st_api_key` 在 `common`，跨庫 join 不可行。四張帶 who 的表皆有此欄，`st_log_anomaly_db` 因覆寫 `AddCommonColumns` 自然不含）；`log` 可依年份分庫（`log_YYYY`，當年可寫、歷史唯讀），寫入目標未來以解析器選當年可寫 DB（現以固定 `DbCategoryIds.Log`）。
 - **D5 — 異動 = DataSet DiffGram 單表**：`st_log_change.changes_xml` 存 `GetChanges()` 的 DiffGram（master+detail 新舊值）。兩條鐵則：**擷取在 `Save` 的 `AcceptChanges` 之前**、**序列化必用 `DiffGram`**（普通 `WriteXml` 丟舊值）。`Delete` 於刪除前載入記錄、存**完整 before-image**。
 - **D6 — 異常 = 五類、API/DB 分表**：`Error` / `Timeout`（獨立於錯誤，屬 infra/效能訊號）/ `Slow` / `LargeAffected` / `LargeResult`。掛 `JsonRpcExecutor.ExecuteAsyncCore`（API）與 `DbAccess.Execute`（DB），實作既有 `DbAccessAnomalyLogOptions` 門檻。
 - **D7 — 安全**：不記完整 SQL 與參數值（只存 `{0}` 模板）、error 訊息消毒（無堆疊、無內部路徑）；沿用 `security.md` / `scanning.md` 既有規則。

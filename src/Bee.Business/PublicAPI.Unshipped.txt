@@ -62,3 +62,5 @@ Bee.Business.System.CreateApiKeyResult.CreateApiKeyResult() -> void
 Bee.Business.System.CreateApiKeyResult.SysId.get -> string!
 Bee.Business.System.CreateApiKeyResult.SysId.set -> void
 virtual Bee.Business.System.SystemBusinessObject.CreateApiKey(Bee.Business.System.CreateApiKeyArgs! args) -> Bee.Business.System.CreateApiKeyResult!
+Bee.Business.BusinessObject.ApiKeyId.get -> string?
+Bee.Business.BusinessObject.ApiKeyName.get -> string?

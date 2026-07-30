@@ -26,18 +26,18 @@ namespace Bee.Repository.AuditLog
         // Header column lists per axis — deliberately exclude any heavy payload (e.g. the change axis'
         // changes_xml). All are compile-time constants (no user input), safe to inline into SELECTs.
         private const string ChangeHeaderColumns =
-            "sys_rowid, log_time, user_id, user_name, company_id, company_name, prog_id, row_key, change_kind, is_sensitive, source";
+            "sys_rowid, log_time, user_id, user_name, company_id, company_name, api_key_id, api_key_name, prog_id, row_key, change_kind, is_sensitive, source";
 
         private const string ChangeDetailColumns = ChangeHeaderColumns + ", changes_xml";
 
         private const string LoginHeaderColumns =
-            "sys_rowid, log_time, user_id, user_name, company_id, company_name, client_ip, source, event, fail_reason";
+            "sys_rowid, log_time, user_id, user_name, company_id, company_name, api_key_id, api_key_name, client_ip, source, event, fail_reason";
 
         private const string AccessHeaderColumns =
-            "sys_rowid, log_time, user_id, user_name, company_id, company_name, client_ip, source, prog_id, row_key";
+            "sys_rowid, log_time, user_id, user_name, company_id, company_name, api_key_id, api_key_name, client_ip, source, prog_id, row_key";
 
         private const string ApiAnomalyHeaderColumns =
-            "sys_rowid, log_time, user_id, user_name, company_id, company_name, client_ip, source, method, anomaly_kind, elapsed_ms, threshold_ms, error_type, error_message";
+            "sys_rowid, log_time, user_id, user_name, company_id, company_name, api_key_id, api_key_name, client_ip, source, method, anomaly_kind, elapsed_ms, threshold_ms, error_type, error_message";
 
         private const string DbAnomalyHeaderColumns =
             "sys_rowid, log_time, database_id, command, anomaly_kind, elapsed_ms, threshold_ms, affected_rows, result_rows, error_type, error_message";
