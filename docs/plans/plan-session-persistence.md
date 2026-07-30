@@ -1,13 +1,13 @@
 # 計畫：SessionInfo 持久化與重建（`st_session` 種子）
 
-**狀態：🚧 進行中（2026-07-30）**
+**狀態：✅ 已完成（2026-07-30）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 前置：金鑰改為可推導（`DerivedApiEncryptionKeyProvider`）＋ `st_user` 語系欄位 | ✅ 已完成（2026-07-30） |
 | 2 | 種子持久化：`SessionUser` 擴充、四個寫入點、Login / `CreateSession` 共用建構路徑 | ✅ 已完成（2026-07-30） |
 | 3 | 重建：`ICacheDataSourceProvider.GetSessionInfo` ＋ `SessionInfoCache.CreateInstance` ＋ 讀取純化 | ✅ 已完成（2026-07-30） |
-| 4 | 收尾：過期列清理排程、CHANGELOG 與文件（`oneTime` 拒絕已提前於階段 2 落地） | 📝 待做 |
+| 4 | 收尾：過期列清理排程、CHANGELOG 與文件（`oneTime` 拒絕已提前於階段 2 落地） | ✅ 已完成（2026-07-30） |
 
 > 承接自 [plan-cache-createinstance-db-loading.md](plan-cache-createinstance-db-loading.md) 的階段 3 / 4。
 > 該 plan 的階段 1 / 2（三個 DB 快取改為經 `ICacheDataSourceProvider` 自載）已完成並上線，
@@ -345,8 +345,12 @@ DB 根本不會被讀取，delete-on-read 永遠不觸發。這不是「要不�
 的 `CacheNotifyOptions.Enabled` 寫法）。依到期時間 DELETE 為冪等操作，多節點同時執行亦安全。
 
 - 設定歸屬 `BackgroundServiceConfiguration`——該類別目前為空的佔位型別，正是此用途。
-- 輔助措施：Login 時順手刪除**該使用者自己**的過期列（範圍受限、成本低），
-  作為排程未啟用時的兜底。
+  **實作時改置於 `BackendConfiguration.SessionCleanupOptions`**：`AddBeeFramework` 收到的是
+  `BackendConfiguration`，`BackgroundServiceConfiguration` 掛在 `SystemSettings` 底下、
+  註冊 hosted service 的當下看不到；既有的 `CacheNotifyOptions` 也在同一層，形狀一致。
+- ~~輔助措施：Login 時順手刪除**該使用者自己**的過期列~~——**實作時判定不可行並取消**：
+  `st_session` 沒有使用者欄位（使用者 id 在 `session_user_xml` 內），無法以使用者為條件過濾，
+  要做到得先加欄位。排程預設啟用且啟動時先掃一次，兜底價值不足以支撐這個 schema 變更。
 
 ## 已完成的前置稽核
 

@@ -103,6 +103,42 @@ namespace Bee.Repository.UnitTests
         }
 
         [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("GetSession 不得產生任何寫入（讀取純化）")]
+        public void GetSession_HasNoSideEffect()
+        {
+            var repo = CreateRepo();
+            var expired = CreateSeed(expiresInSeconds: -3600);
+            repo.InsertSession(expired);
+
+            // 過期列由查詢條件過濾，不再 delete-on-read
+            Assert.Null(repo.GetSession(expired.AccessToken));
+            // 讀完該列仍在，交由清理排程回收——若讀取仍會刪除，這裡就沒有東西可刪了
+            Assert.True(repo.DeleteExpiredSessions() >= 1);
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("DeleteExpiredSessions 應刪除過期列、保留未過期列且重複執行冪等")]
+        public void DeleteExpiredSessions_RemovesOnlyExpired_AndIsIdempotent()
+        {
+            var repo = CreateRepo();
+            var live = CreateSeed();
+            var expired = CreateSeed(expiresInSeconds: -3600);
+            repo.InsertSession(live);
+            repo.InsertSession(expired);
+
+            repo.DeleteExpiredSessions();
+
+            Assert.NotNull(repo.GetSession(live.AccessToken));
+
+            // 冪等：第二次執行不應再影響未過期列，也不應擲例外
+            var exception = Record.Exception(() => repo.DeleteExpiredSessions());
+            Assert.Null(exception);
+            Assert.NotNull(repo.GetSession(live.AccessToken));
+
+            repo.DeleteSession(live.AccessToken);
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("未帶 CompanyId 的種子應重建為未進公司狀態")]
         public void GetSession_SeedWithoutCompanyId_RebuildsAsCompanyLess()
         {

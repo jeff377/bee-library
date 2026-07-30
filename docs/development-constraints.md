@@ -229,6 +229,24 @@ API Request / Response and BO Args / Result types must follow naming conventions
 - During lockout, all login attempts are rejected directly without checking the password
 - Successful login resets the failure counter
 
+## Session Persistence Constraints
+
+Signing in writes a rebuild seed to `st_session`, and `SessionInfoCache` rebuilds an evicted session
+from it. Three constraints follow:
+
+- **The seed is not a snapshot.** It holds only what cannot be derived again — token, user, expiry,
+  company. Roles, customization code and record-scope row ids are recomputed on every rebuild.
+  Do not add derivable state to `SessionUser`: a value stored there stops tracking its source, and
+  a permission revoked after sign-in would survive in the copy.
+- **Session rebuild requires a key provider that can recover the session key.**
+  `DerivedApiEncryptionKeyProvider` (the default) and `StaticApiEncryptionKeyProvider` can;
+  `DynamicApiEncryptionKeyProvider` cannot, because its key exists only inside the session. Under
+  the dynamic provider, sessions are deliberately not rebuilt at all — an evicted session sends the
+  user back to sign-in rather than into a session that looks valid but fails every encrypted call.
+- **A custom sign-in flow must go through the framework's construction path.** Code that builds a
+  `SessionInfo` and only calls `SessionInfoService.Set` produces a session with no row behind it:
+  it dies at the next restart, and on another node it does not exist at all.
+
 ## Database Schema Constraints
 
 The framework's schema definition (`TableSchema`) and upgrade mechanism (`TableUpgradeOrchestrator`) **deliberately do not support** the following database-level elements:

@@ -14,3 +14,12 @@ Bee.Definition.Logging.LoginEvent.ServiceSessionCreated = 4 -> Bee.Definition.Lo
 *REMOVED*Bee.Definition.ICacheDataSourceProvider.GetSessionUser(System.Guid accessToken) -> Bee.Definition.Identity.SessionUser?
 Bee.Definition.ICacheDataSourceProvider.GetSessionInfo(System.Guid accessToken) -> Bee.Definition.Identity.SessionInfo?
 Bee.Definition.Security.IApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool
+Bee.Definition.Settings.BackendConfiguration.SessionCleanupOptions.get -> Bee.Definition.Settings.SessionCleanupOptions!
+Bee.Definition.Settings.BackendConfiguration.SessionCleanupOptions.set -> void
+Bee.Definition.Settings.SessionCleanupOptions
+Bee.Definition.Settings.SessionCleanupOptions.Enabled.get -> bool
+Bee.Definition.Settings.SessionCleanupOptions.Enabled.set -> void
+Bee.Definition.Settings.SessionCleanupOptions.IntervalSeconds.get -> int
+Bee.Definition.Settings.SessionCleanupOptions.IntervalSeconds.set -> void
+Bee.Definition.Settings.SessionCleanupOptions.SessionCleanupOptions() -> void
+override Bee.Definition.Settings.SessionCleanupOptions.ToString() -> string!

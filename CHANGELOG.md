@@ -11,6 +11,26 @@ All notable changes to this project will be documented in this file.
 > have surfaced them. They are listed here explicitly. The most dangerous kind is at the end —
 > changes that produce no compiler error at all.
 
+### Added
+
+- **Sessions survive cache eviction, restart and multi-node routing.** Signing in now writes a
+  rebuild seed to `st_session` (token, user, expiry, company) and `SessionInfoCache` rebuilds the
+  session from it on a miss. The seed is deliberately not a snapshot of `SessionInfo`: roles,
+  customization code and record-scope row ids are recomputed on every rebuild, so a company
+  permission revoked after sign-in takes effect instead of living on in a stale copy. Entering or
+  leaving a company updates the seed, and signing out deletes it — without that, clearing only the
+  cache would let the next request restore the token from its row.
+- `Bee.Business`: `DerivedApiEncryptionKeyProvider` derives a per-session key from a root key and
+  the access token via HKDF-SHA256, so the key needs no storage, survives cache eviction and is
+  identical on every node. It is now the default provider. With no `SecurityKeySettings.
+  ApiEncryptionKey` configured it derives its root key from the master key, so an unconfigured
+  deployment still works.
+- `Bee.Definition`: `st_user.culture`, `BackendConfiguration.DefaultLanguage` and
+  `BackendConfiguration.SessionCleanupOptions`; `Bee.Hosting`: `ExpiredSessionCleanupService`
+  (enabled by default, hourly) reclaims expired `st_session` rows.
+- `Bee.Business`: `SessionCompanyBinder` holds the company-binding derivation shared by
+  `EnterCompany` and session rebuild, so the two cannot drift into granting different permissions.
+
 ### Changed — breaking (compile-time)
 
 - `Bee.UI.Maui` and `Bee.Web.Blazor.Wasm` are removed, along with their sample projects. The UI
@@ -54,6 +74,18 @@ All notable changes to this project will be documented in this file.
   `DateTimeExtensions.IsEmpty` treated anything before 1753-01-01 as empty, a boundary that stopped
   being a database limit when SQL Server moved to `datetime2`.
 
+- `Bee.Definition`: `IApiEncryptionKeyProvider.GenerateKeyForLogin()` takes the access token
+  (`GenerateKeyForLogin(Guid)`) and the interface gains `SupportsSessionRebuild`. A deriving
+  provider needs the token as key material, so the token is now generated before the key.
+- `Bee.Definition`: `ICacheDataSourceProvider.GetSessionUser(Guid)` is replaced by
+  `GetSessionInfo(Guid)`, which returns a rebuilt session rather than the raw seed.
+- `Bee.Repository.Abstractions`: `ISessionRepository.CreateSession(...)` is replaced by
+  `InsertSession` / `UpdateSession` / `DeleteSession` / `DeleteExpiredSessions` — creating a session
+  is a business-object concern, not a repository one. `IUserRepository.GetTimeZone(string)` is
+  replaced by `GetLocale(string)` (time zone and culture in one query) and gains `GetName(string)`.
+- `Bee.Business`: `SystemBusinessObject.ApplyUserTimeZone` is renamed `ApplyUserLocale` (it now
+  fills the culture too); `CacheDataSourceProvider`'s constructor takes an `IServiceProvider`.
+
 ### Changed — breaking (silent, no compiler error)
 
 - **System timestamps are UTC.** `CreateTime`-style properties, cache expiry, session expiry,
@@ -72,6 +104,31 @@ All notable changes to this project will be documented in this file.
 - **Deserialization allow-list.** `SysInfo`'s built-in namespace list had `Bee.Contracts`, which
   does not exist in this framework; it is corrected to `Bee.Api.Contracts`. A consumer type placed
   in a `Bee.Contracts` namespace would go from allowed to rejected.
+
+- **Default API encryption key provider.** `BackendDefaultTypes.ApiEncryptionKeyProvider` now names
+  `DerivedApiEncryptionKeyProvider` instead of `DynamicApiEncryptionKeyProvider`. Session rebuild
+  depends on it: the dynamic provider keeps the key inside the session, so a rebuilt session would
+  look signed in while every encrypted call failed — which is why sessions issued under it are not
+  rebuilt at all. Live sessions are invalidated once on upgrade because the key is produced
+  differently. Deployments wanting the old behaviour set
+  `BackendComponents.ApiEncryptionKeyProvider` explicitly. The constant's value is also inlined by
+  the compiler, so consumers that referenced it must rebuild.
+- **Default culture.** `SessionInfo.Culture` defaults to an empty string instead of `zh-TW`, making
+  the language service's fallback reachable for signed-in calls for the first time. Login fills it
+  from the new `st_user.culture` column, falling back to `BackendConfiguration.DefaultLanguage`,
+  which ships as `zh-TW` so existing deployments do not change language. A custom authentication
+  flow that builds `SessionInfo` directly without `ApplyUserLocale` produces sessions with no
+  culture.
+- **`SystemBO.CreateSession` issues a usable session.** It previously wrote a bare `st_session` row
+  and nothing else, so the token it returned resolved to no session and could not enter a company.
+  It now takes the same construction path as login minus the credential check, and writes a
+  `ServiceSessionCreated` audit entry. It is still `LocalOnly`. Passing `OneTime` now throws
+  `NotSupportedException`: one-time semantics rested on delete-on-read, and a session cached at
+  creation is never read back from the row, so the guarantee could no longer be honoured — failing
+  loudly beats degrading a security promise in silence.
+- **Session reads have no side effects.** `SessionRepository.GetSession` filters expired rows in the
+  query instead of deleting them on the way past. Reclaiming them is `ExpiredSessionCleanupService`'s
+  job; a deployment that disables it should reclaim `st_session` by its own means.
 
 ### Fixed
 

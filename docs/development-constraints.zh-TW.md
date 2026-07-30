@@ -225,6 +225,20 @@ API Request/Response 與 BO Args/Result 型別必須遵守命名慣例，`ApiOut
 - 鎖定期間所有登入嘗試直接拒絕，不檢查密碼
 - 成功登入會重置失敗計數器
 
+## Session 持久化限制
+
+登入時會寫入重建種子至 `st_session`，`SessionInfoCache` 在快取失效時據以重建。由此衍生三項限制：
+
+- **種子不是快照。** 它只存無法再推導的值——token、使用者、到期、公司；角色、客製代碼、
+  record scope 一律於每次重建重算。**不要把可推導的狀態加進 `SessionUser`**：存進去的值就不再
+  跟隨來源變動，登入後被撤銷的權限會殘留在該份副本裡。
+- **重建需搭配「能取回 session 金鑰」的 provider。** `DerivedApiEncryptionKeyProvider`（預設）與
+  `StaticApiEncryptionKeyProvider` 可以；`DynamicApiEncryptionKeyProvider` 不行，因為它的金鑰
+  只存在於 session 內。使用 dynamic provider 時，session 一律不重建——快取失效即請使用者重新登入，
+  勝過給出一個「看似有效但每個加密呼叫都失敗」的 session。
+- **自訂登入流程必須走框架的建構路徑。** 只建構 `SessionInfo` 並呼叫 `SessionInfoService.Set`
+  的程式碼，會產生一個背後沒有列的 session：行程一重啟就消失，在其他節點上根本不存在。
+
 ## 資料庫 Schema 限制
 
 框架的 schema 定義（`TableSchema`）與升級機制（`TableUpgradeOrchestrator`）**刻意不支援**下列資料庫層元素：

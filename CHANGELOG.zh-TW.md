@@ -10,6 +10,23 @@
 > 表面卻未在 subject 標 `!`，`/changelog-draft` 掃不到，因此在此明列。最危險的一類在最後
 > ——完全不會產生編譯錯誤的變更。
 
+### 新增
+
+- **Session 撐得過快取逐出、行程重啟與多節點路由。** 登入時寫入重建種子至 `st_session`
+  （token、使用者、到期、公司），`SessionInfoCache` 在快取失效時據以重建。種子刻意不是
+  `SessionInfo` 的快照：角色、客製代碼、record scope 一律於每次重建重算，因此登入後被撤銷的
+  公司權限會即刻生效，而非殘留在舊快照裡。進入 / 離開公司同步更新種子，登出則刪除種子——
+  否則只清快取會讓下一個請求把 token 由該列復活。
+- `Bee.Business`：新增 `DerivedApiEncryptionKeyProvider`，以 HKDF-SHA256 由根金鑰與 accessToken
+  導出 per-session 金鑰。金鑰因此不需儲存、撐得過快取逐出，且任何節點算出同一把；現為預設
+  provider。未設定 `SecurityKeySettings.ApiEncryptionKey` 時改由 master key 導出根金鑰，
+  未設定的部署一樣可用。
+- `Bee.Definition`：新增 `st_user.culture` 欄位、`BackendConfiguration.DefaultLanguage` 與
+  `BackendConfiguration.SessionCleanupOptions`；`Bee.Hosting`：新增 `ExpiredSessionCleanupService`
+  （預設啟用、每小時一次）回收過期的 `st_session` 列。
+- `Bee.Business`：新增 `SessionCompanyBinder`，收容 `EnterCompany` 與 session 重建共用的公司
+  繫結推導，兩條路徑不會各自算出不同的權限狀態。
+
 ### 變更 —— 破壞性（編譯期可發現）
 
 - 移除 `Bee.UI.Maui` 與 `Bee.Web.Blazor.Wasm` 及其 sample 專案。UI 收斂為兩個家族：
@@ -45,6 +62,18 @@
   `EnterpriseObjectService` 節點，載入時會被忽略，不需遷移檔案。`DateTimeExtensions.IsEmpty`
   以 1753-01-01 為判準，而該界線在 SQL Server 改用 `datetime2` 後已不再是資料庫限制。
 
+- `Bee.Definition`：`IApiEncryptionKeyProvider.GenerateKeyForLogin()` 改為接收 accessToken
+  （`GenerateKeyForLogin(Guid)`），介面並新增 `SupportsSessionRebuild`。導出式 provider 需要
+  token 作為金鑰材料，故現在先產生 token 再產生金鑰。
+- `Bee.Definition`：`ICacheDataSourceProvider.GetSessionUser(Guid)` 換為 `GetSessionInfo(Guid)`，
+  回傳重建後的 session 而非原始種子。
+- `Bee.Repository.Abstractions`：`ISessionRepository.CreateSession(...)` 換為 `InsertSession` /
+  `UpdateSession` / `DeleteSession` / `DeleteExpiredSessions`——建立 session 屬業務物件職責，
+  不屬 repository。`IUserRepository.GetTimeZone(string)` 換為 `GetLocale(string)`（時區與語系
+  單次查詢取回），並新增 `GetName(string)`。
+- `Bee.Business`：`SystemBusinessObject.ApplyUserTimeZone` 更名為 `ApplyUserLocale`（現在也填語系）；
+  `CacheDataSourceProvider` 建構子新增 `IServiceProvider` 參數。
+
 ### 變更 —— 破壞性（靜默，無編譯錯誤）
 
 - **系統時間戳改為 UTC。** `CreateTime` 類屬性、快取到期、session 到期、資料庫欄位 `DEFAULT`
@@ -59,6 +88,24 @@
 - **反序列化允許清單。** `SysInfo` 內建的命名空間清單原本列 `Bee.Contracts`，而框架中無此
   命名空間；已更正為 `Bee.Api.Contracts`。若有消費端型別放在 `Bee.Contracts` 命名空間下，
   會由允許變成拒絕。
+
+- **預設的 API 加密金鑰 provider 改變。** `BackendDefaultTypes.ApiEncryptionKeyProvider` 由
+  `DynamicApiEncryptionKeyProvider` 改指 `DerivedApiEncryptionKeyProvider`。session 重建依賴於此：
+  dynamic provider 把金鑰只放在 session 內，重建出的 session 會「看似已登入但每個加密呼叫都失敗」，
+  因此它簽發的 session 一律不重建。升級後現存 session 會因金鑰產生方式改變而失效一次。需維持
+  舊行為者，於 `BackendComponents.ApiEncryptionKeyProvider` 明確指定。該常數值會被編譯器內嵌，
+  引用過它的消費端需重新建置。
+- **預設語系改變。** `SessionInfo.Culture` 預設由 `zh-TW` 改為空字串，語言服務的 fallback 路徑
+  對已登入的呼叫首次可達。登入時由新增的 `st_user.culture` 欄位填入，未設值則退回
+  `BackendConfiguration.DefaultLanguage`（出廠即 `zh-TW`，既有部署不會換語言）。自訂認證流程若
+  直接建構 `SessionInfo` 而未呼叫 `ApplyUserLocale`，該 session 不帶語系。
+- **`SystemBO.CreateSession` 簽發的 session 現在真的可用。** 先前它只寫一列 `st_session` 而已，
+  取得的 token 找不到對應 session、也進不了公司。現在改走與登入相同的建構路徑（僅少了密碼驗證），
+  並寫入 `ServiceSessionCreated` 稽核；保護等級維持 `LocalOnly`。傳入 `OneTime` 改擲
+  `NotSupportedException`：一次性語意原本靠 delete-on-read，而建立時即入快取的 session 永遠不會
+  再由該列讀回，保證已無從兌現——明確失敗優於讓帶安全意味的承諾無聲失效。
+- **Session 讀取不再有副作用。** `SessionRepository.GetSession` 改以查詢條件過濾過期列，不再
+  順手刪除。回收改由 `ExpiredSessionCleanupService` 負責；停用該排程的部署需自行回收 `st_session`。
 
 ### 修正
 

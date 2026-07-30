@@ -11,6 +11,7 @@ using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
 using Bee.Hosting.Audit;
 using Bee.Hosting.CacheNotify;
+using Bee.Hosting.Session;
 using Bee.Definition;
 using Bee.Definition.Logging;
 using Bee.ObjectCaching;
@@ -143,6 +144,15 @@ namespace Bee.Hosting
             if (configuration.CacheNotifyOptions.Enabled)
             {
                 services.AddHostedService<CacheNotifyPoller>();
+            }
+
+            // 6c-2. Expired session cleanup. Reads no longer delete expired rows on the way past,
+            //       and every sign-in inserts one, so this is what bounds st_session. Same shape as
+            //       the poller above: registered only when enabled, inert without an IHost.
+            services.AddSingleton(configuration.SessionCleanupOptions);
+            if (configuration.SessionCleanupOptions.Enabled)
+            {
+                services.AddHostedService<ExpiredSessionCleanupService>();
             }
 
             // 6d. Audit-trail (data-history) logging. Opt-in: when disabled every consumer gets the

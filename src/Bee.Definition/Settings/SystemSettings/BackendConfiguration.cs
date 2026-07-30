@@ -53,6 +53,19 @@ namespace Bee.Definition.Settings
         public AuditLogOptions AuditLogOptions { get; set; } = new AuditLogOptions();
 
         /// <summary>
+        /// Gets or sets the expired-session cleanup settings.
+        /// </summary>
+        /// <remarks>
+        /// Kept here alongside <see cref="CacheNotifyOptions"/> rather than under
+        /// <c>BackgroundServiceConfiguration</c>: <c>AddBeeFramework</c> receives this object, and
+        /// a hosted service can only be registered from settings it can actually see at that
+        /// point.
+        /// </remarks>
+        [Category("Backend")]
+        [Description("Expired session cleanup settings.")]
+        public SessionCleanupOptions SessionCleanupOptions { get; set; } = new SessionCleanupOptions();
+
+        /// <summary>
         /// Gets or sets the IANA time zone id applied to a session when the user has no
         /// <c>st_user.time_zone</c> of their own. An empty value means UTC.
         /// </summary>

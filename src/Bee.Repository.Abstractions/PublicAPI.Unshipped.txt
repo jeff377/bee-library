@@ -21,3 +21,4 @@ Bee.Repository.Abstractions.System.ISessionRepository.InsertSession(Bee.Definiti
 Bee.Repository.Abstractions.System.ISessionRepository.UpdateSession(Bee.Definition.Identity.SessionUser! sessionUser) -> void
 Bee.Repository.Abstractions.System.ISessionRepository.DeleteSession(System.Guid accessToken) -> void
 Bee.Repository.Abstractions.System.IUserRepository.GetName(string! userId) -> string?
+Bee.Repository.Abstractions.System.ISessionRepository.DeleteExpiredSessions() -> int

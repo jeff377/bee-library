@@ -72,6 +72,17 @@ namespace Bee.Repository.System
         }
 
         /// <inheritdoc/>
+        public int DeleteExpiredSessions()
+        {
+            string sql = "DELETE FROM st_session \n" +
+                                 "WHERE sys_invalid_time <= {0}";
+            var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, DateTime.UtcNow);
+            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var result = dbAccess.Execute(command);
+            return result.RowsAffected;
+        }
+
+        /// <inheritdoc/>
         /// <remarks>
         /// A pure read: expired rows are filtered by the query rather than deleted on the way past.
         /// This runs on the request path, potentially on several nodes at once, and a read that

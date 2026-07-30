@@ -1,1 +1,3 @@
 #nullable enable
+Bee.Hosting.Session.ExpiredSessionCleanupService
+Bee.Hosting.Session.ExpiredSessionCleanupService.ExpiredSessionCleanupService(Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory, Bee.Definition.Settings.SessionCleanupOptions! options, Microsoft.Extensions.Logging.ILogger<Bee.Hosting.Session.ExpiredSessionCleanupService!>! logger) -> void

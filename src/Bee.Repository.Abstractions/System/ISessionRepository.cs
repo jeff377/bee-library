@@ -46,5 +46,16 @@ namespace Bee.Repository.Abstractions.System
         /// clearing only the cache would let the next request restore the token from the row.
         /// </remarks>
         void DeleteSession(Guid accessToken);
+
+        /// <summary>
+        /// Deletes every seed whose expiry has passed, returning how many rows went.
+        /// </summary>
+        /// <returns>The number of rows deleted.</returns>
+        /// <remarks>
+        /// Idempotent and safe to run concurrently on several nodes: the predicate is the expiry
+        /// time, so two passes simply find nothing left to do. Reads no longer reclaim expired rows
+        /// themselves, which is why this exists.
+        /// </remarks>
+        int DeleteExpiredSessions();
     }
 }
