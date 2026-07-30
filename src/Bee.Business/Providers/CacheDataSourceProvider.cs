@@ -1,6 +1,7 @@
 using Bee.Base;
 using Bee.Business.Session;
 using Bee.Definition;
+using Bee.Definition.Database;
 using Bee.Definition.Identity;
 using Bee.Definition.Organization;
 using Bee.Definition.Security;
@@ -58,6 +59,14 @@ namespace Bee.Business.Providers
             // that is no longer cached. Rebuilding anyway would produce a session that looks signed
             // in but fails every encrypted call, so the token is treated as dead instead.
             if (!keyProvider.SupportsSessionRebuild) { return null; }
+
+            // No `common` database configured means there is no seed store to read, which is the
+            // normal state for an in-process host that never wired one up. A session lookup must
+            // answer "not a session" there rather than surfacing a connection-manager failure —
+            // the caller is `AccessTokenValidator`, whose only question is whether the token
+            // authenticates.
+            var databaseItems = _services.GetRequiredService<IDatabaseSettingsProvider>().Get().Items;
+            if (databaseItems?.GetOrDefault(DbCategoryIds.Common) == null) { return null; }
 
             var seed = _systemFactory.CreateSessionRepository().GetSession(accessToken);
             if (seed == null) { return null; }
