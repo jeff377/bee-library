@@ -148,10 +148,10 @@ namespace Bee.Analyzers.Serialization
             CompilationAnalysisContext context,
             INamedTypeSymbol collectionBase)
         {
-            foreach (var type in EnumerateTypes(context.Compilation.Assembly.GlobalNamespace, context.CancellationToken))
+            var sourceTypes = EnumerateTypes(context.Compilation.Assembly.GlobalNamespace, context.CancellationToken);
+            foreach (var type in sourceTypes.Where(type => IsCandidate(type, collectionBase)))
             {
-                if (IsCandidate(type, collectionBase))
-                    yield return type;
+                yield return type;
             }
 
             foreach (var reference in context.Compilation.References)
@@ -164,10 +164,10 @@ namespace Bee.Analyzers.Serialization
                     continue;
                 }
 
-                foreach (var type in EnumerateTypes(assembly.GlobalNamespace, context.CancellationToken))
+                var referencedTypes = EnumerateTypes(assembly.GlobalNamespace, context.CancellationToken);
+                foreach (var type in referencedTypes.Where(type => IsCandidate(type, collectionBase)))
                 {
-                    if (IsCandidate(type, collectionBase))
-                        yield return type;
+                    yield return type;
                 }
             }
         }

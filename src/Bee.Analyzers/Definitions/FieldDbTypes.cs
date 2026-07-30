@@ -45,13 +45,7 @@ namespace Bee.Analyzers.Definitions
         /// </remarks>
         public static bool IsValid(string value)
         {
-            foreach (var name in All)
-            {
-                if (string.Equals(value, name, StringComparison.Ordinal))
-                    return true;
-            }
-
-            return false;
+            return All.Contains(value, StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -61,13 +55,7 @@ namespace Bee.Analyzers.Definitions
         /// <returns>The correctly cased name, or <c>null</c> when no name matches.</returns>
         public static string? FindCaseInsensitiveMatch(string value)
         {
-            foreach (var name in All)
-            {
-                if (string.Equals(value, name, StringComparison.OrdinalIgnoreCase))
-                    return name;
-            }
-
-            return null;
+            return All.FirstOrDefault(name => string.Equals(value, name, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

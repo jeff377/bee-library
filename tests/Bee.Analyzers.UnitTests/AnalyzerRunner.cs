@@ -109,7 +109,7 @@ namespace Bee.Analyzers.UnitTests
         /// </summary>
         /// <param name="anchorTypes">要確保納入的型別。</param>
         /// <returns>去重後的組件參考。</returns>
-        private static IEnumerable<MetadataReference> BuildReferences(Type[] anchorTypes)
+        private static MetadataReference[] BuildReferences(Type[] anchorTypes)
         {
             var locations = new HashSet<string>(StringComparer.Ordinal);
 

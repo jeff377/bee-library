@@ -106,10 +106,10 @@ namespace Bee.Analyzers.Serialization
         {
             for (var current = type; current is not null; current = current.BaseType)
             {
-                foreach (var attribute in current.GetAttributes())
+                if (current.GetAttributes()
+                    .Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, unionAttribute)))
                 {
-                    if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, unionAttribute))
-                        return current;
+                    return current;
                 }
             }
 

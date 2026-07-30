@@ -65,7 +65,7 @@ namespace Bee.Hosting.Session
             try
             {
                 int deleted = _systemFactory.CreateSessionRepository().DeleteExpiredSessions();
-                if (deleted > 0)
+                if (deleted > 0 && _logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation("Deleted {Count} expired session row(s).", deleted);
                 }

@@ -57,13 +57,8 @@ namespace Bee.Analyzers.Serialization
         /// </remarks>
         public bool IsCollectionBase(INamedTypeSymbol type)
         {
-            foreach (var baseType in _baseTypes)
-            {
-                if (SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, baseType))
-                    return true;
-            }
-
-            return false;
+            return _baseTypes
+                .Any(baseType => SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, baseType));
         }
 
         /// <summary>
@@ -79,11 +74,8 @@ namespace Bee.Analyzers.Serialization
                     continue;
 
                 var definition = current.OriginalDefinition;
-                foreach (var baseType in _baseTypes)
-                {
-                    if (SymbolEqualityComparer.Default.Equals(definition, baseType))
-                        return true;
-                }
+                if (_baseTypes.Any(baseType => SymbolEqualityComparer.Default.Equals(definition, baseType)))
+                    return true;
             }
 
             return false;

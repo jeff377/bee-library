@@ -32,13 +32,7 @@ namespace Bee.Analyzers.Definitions
         /// <returns><c>true</c> when the schema ships with the framework.</returns>
         public static bool IsFrameworkSupplied(string progId)
         {
-            foreach (var known in All)
-            {
-                if (string.Equals(progId, known, StringComparison.OrdinalIgnoreCase))
-                    return true;
-            }
-
-            return false;
+            return All.Contains(progId, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

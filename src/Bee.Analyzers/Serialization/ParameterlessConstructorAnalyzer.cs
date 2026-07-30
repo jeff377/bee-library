@@ -101,13 +101,8 @@ namespace Bee.Analyzers.Serialization
             if (objectAttribute is null)
                 return false;
 
-            foreach (var attribute in type.GetAttributes())
-            {
-                if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, objectAttribute))
-                    return true;
-            }
-
-            return false;
+            return type.GetAttributes()
+                .Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, objectAttribute));
         }
     }
 }

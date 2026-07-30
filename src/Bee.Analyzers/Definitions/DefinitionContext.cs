@@ -91,20 +91,11 @@ namespace Bee.Analyzers.Definitions
 
                 if (DefinitionFileNames.IsFormSchema(file.Path))
                 {
-                    var schema = FormSchemaModel.TryCreate(file, cancellationToken);
-                    if (schema is null)
-                        continue;
-
-                    formSchemas.Add(schema);
-                    if (!schemasByProgId.ContainsKey(schema.ProgId))
-                        schemasByProgId[schema.ProgId] = schema;
+                    AddFormSchema(file, formSchemas, schemasByProgId, cancellationToken);
                 }
                 else if (DefinitionFileNames.IsTableSchema(file.Path))
                 {
-                    var table = TableSchemaModel.TryCreate(file, cancellationToken);
-                    var key = DefinitionFileNames.GetTableSchemaKey(file.Path);
-                    if (table is not null && key is not null && !tablesByKey.ContainsKey(key))
-                        tablesByKey[key] = table;
+                    AddTableSchema(file, tablesByKey, cancellationToken);
                 }
                 else if (DefinitionFileNames.IsFormLayout(file.Path))
                 {
@@ -113,9 +104,7 @@ namespace Bee.Analyzers.Definitions
                 }
                 else if (DefinitionFileNames.IsLanguage(file.Path))
                 {
-                    var resource = LanguageResourceModel.TryCreate(file, cancellationToken);
-                    if (resource is not null)
-                        languageResources.Add(resource);
+                    AddLanguageResource(file, languageResources, cancellationToken);
                 }
             }
 
@@ -126,6 +115,65 @@ namespace Bee.Analyzers.Definitions
                 formLayoutProgIds,
                 languageResources,
                 DbCategoryRegistry.TryCreate(files, cancellationToken));
+        }
+
+        /// <summary>
+        /// Parses a form schema file and adds it to the index.
+        /// </summary>
+        /// <param name="file">The form schema file.</param>
+        /// <param name="formSchemas">The list receiving every parsed schema.</param>
+        /// <param name="schemasByProgId">The lookup receiving the first schema per program identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <remarks>
+        /// The list keeps duplicates while the lookup keeps only the first: rules that report on a
+        /// declaration need every file, whereas rules that resolve a reference need one answer.
+        /// </remarks>
+        private static void AddFormSchema(
+            AdditionalText file,
+            List<FormSchemaModel> formSchemas,
+            Dictionary<string, FormSchemaModel> schemasByProgId,
+            CancellationToken cancellationToken)
+        {
+            var schema = FormSchemaModel.TryCreate(file, cancellationToken);
+            if (schema is null)
+                return;
+
+            formSchemas.Add(schema);
+            if (!schemasByProgId.ContainsKey(schema.ProgId))
+                schemasByProgId[schema.ProgId] = schema;
+        }
+
+        /// <summary>
+        /// Parses a table schema file and adds it to the index.
+        /// </summary>
+        /// <param name="file">The table schema file.</param>
+        /// <param name="tablesByKey">The lookup receiving the first table per key.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private static void AddTableSchema(
+            AdditionalText file,
+            Dictionary<string, TableSchemaModel> tablesByKey,
+            CancellationToken cancellationToken)
+        {
+            var table = TableSchemaModel.TryCreate(file, cancellationToken);
+            var key = DefinitionFileNames.GetTableSchemaKey(file.Path);
+            if (table is not null && key is not null && !tablesByKey.ContainsKey(key))
+                tablesByKey[key] = table;
+        }
+
+        /// <summary>
+        /// Parses a language resource file and adds it to the index.
+        /// </summary>
+        /// <param name="file">The language resource file.</param>
+        /// <param name="languageResources">The list receiving every parsed resource.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private static void AddLanguageResource(
+            AdditionalText file,
+            List<LanguageResourceModel> languageResources,
+            CancellationToken cancellationToken)
+        {
+            var resource = LanguageResourceModel.TryCreate(file, cancellationToken);
+            if (resource is not null)
+                languageResources.Add(resource);
         }
 
         /// <summary>

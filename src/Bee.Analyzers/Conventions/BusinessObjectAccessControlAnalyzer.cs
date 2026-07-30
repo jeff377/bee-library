@@ -134,13 +134,8 @@ namespace Bee.Analyzers.Conventions
 
         private static bool HasAttribute(ISymbol symbol, INamedTypeSymbol attributeType)
         {
-            foreach (var attribute in symbol.GetAttributes())
-            {
-                if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeType))
-                    return true;
-            }
-
-            return false;
+            return symbol.GetAttributes()
+                .Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeType));
         }
 
         private static bool DerivesFrom(INamedTypeSymbol type, INamedTypeSymbol baseType)
