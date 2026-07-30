@@ -8,3 +8,6 @@ Bee.Definition.Security.IApiEncryptionKeyProvider.GenerateKeyForLogin(System.Gui
 const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DerivedApiEncryptionKeyProvider, Bee.Business" -> string!
 Bee.Definition.Settings.BackendConfiguration.DefaultLanguage.get -> string!
 Bee.Definition.Settings.BackendConfiguration.DefaultLanguage.set -> void
+Bee.Definition.Identity.SessionUser.CompanyId.get -> string?
+Bee.Definition.Identity.SessionUser.CompanyId.set -> void
+Bee.Definition.Logging.LoginEvent.ServiceSessionCreated = 4 -> Bee.Definition.Logging.LoginEvent

@@ -1,3 +1,8 @@
 #nullable enable
 *REMOVED*Bee.Repository.System.UserRepository.GetTimeZone(string! userId) -> string!
 Bee.Repository.System.UserRepository.GetLocale(string! userId) -> Bee.Repository.Abstractions.System.UserLocale
+*REMOVED*Bee.Repository.System.SessionRepository.CreateSession(string! userID, int expiresIn = 3600, bool oneTime = false) -> Bee.Definition.Identity.SessionUser!
+Bee.Repository.System.SessionRepository.InsertSession(Bee.Definition.Identity.SessionUser! sessionUser) -> void
+Bee.Repository.System.SessionRepository.UpdateSession(Bee.Definition.Identity.SessionUser! sessionUser) -> void
+Bee.Repository.System.SessionRepository.DeleteSession(System.Guid accessToken) -> void
+Bee.Repository.System.UserRepository.GetName(string! userId) -> string?

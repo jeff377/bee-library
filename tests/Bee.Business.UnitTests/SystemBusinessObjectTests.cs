@@ -3,6 +3,7 @@ using Bee.Base.Security;
 using Bee.Business.System;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
+using Bee.Definition.Identity;
 
 namespace Bee.Business.UnitTests
 {
@@ -34,6 +35,44 @@ namespace Bee.Business.UnitTests
             Assert.NotNull(result);
             Assert.NotEqual(Guid.Empty, result.AccessToken);
             Assert.True(result.ExpiredAt > DateTime.UtcNow);
+
+            // 走的是與 Login 相同的建構路徑：解析使用者名稱、套語系、產生金鑰、寫種子、寫快取。
+            // 先前只做一次 raw INSERT，取得的 token 在快取中找不到 session，等同不可用。
+            var session = _fx.GetRequiredService<ISessionInfoService>().Get(result.AccessToken);
+            try
+            {
+                Assert.NotNull(session);
+                Assert.Equal("001", session!.UserId);
+                Assert.NotEmpty(session.UserName);
+                Assert.NotEmpty(session.ApiEncryptionKey);
+                Assert.NotEmpty(session.Culture);
+            }
+            finally
+            {
+                _fx.GetRequiredService<ISessionInfoService>().Remove(result.AccessToken);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("CreateSession 傳入不存在的使用者編號應擲 InvalidOperationException")]
+        public void CreateSession_NonExistentUserId_ThrowsInvalidOperation()
+        {
+            var business = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            var args = new CreateSessionArgs { UserID = "__nonexistent_user_xyz__", ExpiresIn = 600 };
+
+            Assert.Throws<InvalidOperationException>(() => business.CreateSession(args));
+        }
+
+        [Fact]
+        [DisplayName("CreateSession 要求一次性 token 應擲 NotSupportedException 而非靜默降級")]
+        public void CreateSession_OneTime_ThrowsNotSupported()
+        {
+            var business = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            var args = new CreateSessionArgs { UserID = "001", ExpiresIn = 600, OneTime = true };
+
+            // 建立時即寫入快取後，第一次使用是 cache hit，delete-on-read 永遠不會觸發，
+            // 一次性語意無處消費。讓帶安全意味的保證無聲失效是最差的選項，故明確拒絕。
+            Assert.Throws<NotSupportedException>(() => business.CreateSession(args));
         }
 
         /// <summary>

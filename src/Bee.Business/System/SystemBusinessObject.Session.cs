@@ -5,6 +5,7 @@ using Bee.Definition.Attributes;
 using Bee.Definition.Logging;
 using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
 
@@ -46,26 +47,12 @@ namespace Bee.Business.System
             // Clear failed attempt history on successful login
             tracker?.Reset(args.UserId);
 
-            // 2. Generate the access token first, then the encryption key — a deriving provider
-            //    takes the token as key material, so the order cannot be reversed.
-            var accessToken = Guid.NewGuid();
-            byte[] encryptionKey = Services.GetRequiredService<IApiEncryptionKeyProvider>()
-                .GenerateKeyForLogin(accessToken);
-
-            // 3. Create SessionInfo and store it in the cache
-            var sessionInfo = new SessionInfo
-            {
-                AccessToken = accessToken,
-                UserId = args.UserId,
-                UserName = userName,
-                ExpiredAt = DateTime.UtcNow.AddHours(1),
-                ApiEncryptionKey = encryptionKey
-            };
-            ApplyUserLocale(sessionInfo);
-            SessionInfoService.Set(sessionInfo);
+            // 2. Build the session: derive the key, persist the seed, then fill the cache.
+            var sessionInfo = CreateSessionInfo(args.UserId, userName, DefaultSessionLifetime);
+            byte[] encryptionKey = sessionInfo.ApiEncryptionKey;
             WriteLoginAudit(LoginEvent.LoginSucceeded, sessionInfo.UserId, sessionInfo.UserName, sessionInfo.AccessToken, null, LoginSource);
 
-            // 4. Return the encrypted key and access token
+            // 3. Return the encrypted key and access token
             string encryptedKey = string.Empty;
             if (StringUtilities.IsNotEmpty(args.ClientPublicKey))
             {
@@ -138,6 +125,9 @@ namespace Bee.Business.System
             sessionInfo.UserRowId = employeeContext.UserRowId;
             sessionInfo.EmployeeRowId = employeeContext.EmployeeRowId;
             sessionInfo.DeptRowId = employeeContext.DeptRowId;
+            // Seed before cache: the company is the one snapshotted value that cannot be derived,
+            // so a rebuild that missed it would silently drop the user back to "no company".
+            SessionRepository.UpdateSession(CreateSeed(sessionInfo));
             SessionInfoService.Set(sessionInfo);
 
             return new EnterCompanyResult { Company = companyInfo, Capabilities = capabilities };
@@ -163,6 +153,9 @@ namespace Bee.Business.System
             if (sessionInfo.CompanyId != null)
             {
                 ClearCompanyContext(sessionInfo);
+                // Clearing only the cache would let a rebuild put the user back into the company
+                // they just left.
+                SessionRepository.UpdateSession(CreateSeed(sessionInfo));
                 SessionInfoService.Set(sessionInfo);
             }
 
@@ -176,8 +169,9 @@ namespace Bee.Business.System
         /// <remarks>
         /// Idempotent — calling on an unknown or already-expired access token succeeds
         /// without error. The clean-up sequence is: clear <c>SessionInfo.CompanyId</c>
-        /// (no-op if already null), then remove the session entry from the cache. Callers
-        /// do not need to call <c>LeaveCompany</c> before <c>Logout</c>.
+        /// (no-op if already null), delete the seed from <c>st_session</c>, then remove the
+        /// session entry from the cache. Callers do not need to call <c>LeaveCompany</c>
+        /// before <c>Logout</c>.
         /// </remarks>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual LogoutResult Logout(LogoutArgs args)
@@ -194,6 +188,11 @@ namespace Bee.Business.System
             }
 
             WriteLoginAudit(LoginEvent.Logout, sessionInfo?.UserId, sessionInfo?.UserName, AccessToken, null, LogoutSource);
+            // WARNING: the seed must go before the cache entry, and it must go at all. Sessions are
+            // rebuilt from `st_session`, so clearing only the cache would let the very next request
+            // restore this token from its row — sign-out would do nothing. Deleting the row first
+            // also means a failure here surfaces as a failed sign-out rather than a silent one.
+            SessionRepository.DeleteSession(AccessToken);
             SessionInfoService.Remove(AccessToken);
             return new LogoutResult();
         }
@@ -217,6 +216,77 @@ namespace Bee.Business.System
 
         private const string LoginSource = "System.Login";
         private const string LogoutSource = "System.Logout";
+        private const string CreateSessionSource = "System.CreateSession";
+
+        /// <summary>
+        /// How long a session issued by <see cref="Login"/> stays valid.
+        /// </summary>
+        private static readonly TimeSpan DefaultSessionLifetime = TimeSpan.FromHours(1);
+
+        /// <summary>
+        /// Builds a session for an already-identified user, persists its seed, and puts it in the
+        /// cache. Shared by <see cref="Login"/> and <see cref="CreateSession"/>, which differ only
+        /// in whether a credential check preceded them.
+        /// </summary>
+        /// <param name="userId">The authenticated user id.</param>
+        /// <param name="userName">The user's display name.</param>
+        /// <param name="lifetime">How long the session stays valid.</param>
+        /// <returns>The session, already persisted and cached.</returns>
+        /// <remarks>
+        /// WARNING: the seed is written before the cache entry, and that order is not incidental.
+        /// The two inconsistent states are not equally bad — a seed with no cache entry is rebuilt
+        /// on the next request, while a cache entry with no seed is a token that dies at the next
+        /// restart and does not exist at all on another node, which the client has no way to know.
+        ///
+        /// A failed seed write therefore fails the whole operation rather than being swallowed:
+        /// handing back a token that is already doomed defers the fault to some later request,
+        /// where it is far harder to diagnose.
+        /// </remarks>
+        private SessionInfo CreateSessionInfo(string userId, string userName, TimeSpan lifetime)
+        {
+            // The access token has to exist before the key: a deriving provider takes it as key
+            // material, which is what makes the key recoverable when the session is rebuilt.
+            var accessToken = Guid.NewGuid();
+            byte[] encryptionKey = Services.GetRequiredService<IApiEncryptionKeyProvider>()
+                .GenerateKeyForLogin(accessToken);
+
+            var sessionInfo = new SessionInfo
+            {
+                AccessToken = accessToken,
+                UserId = userId,
+                UserName = userName,
+                ExpiredAt = DateTime.UtcNow.Add(lifetime),
+                ApiEncryptionKey = encryptionKey
+            };
+            ApplyUserLocale(sessionInfo);
+
+            SessionRepository.InsertSession(CreateSeed(sessionInfo));
+            SessionInfoService.Set(sessionInfo);
+            return sessionInfo;
+        }
+
+        /// <summary>
+        /// Gets the session seed repository.
+        /// </summary>
+        private ISessionRepository SessionRepository
+            => Services.GetRequiredService<ISystemRepositoryFactory>().CreateSessionRepository();
+
+        /// <summary>
+        /// Projects a session onto the seed persisted in <c>st_session</c>: the values that cannot
+        /// be derived again. Everything else is recomputed when the session is rebuilt.
+        /// </summary>
+        /// <param name="sessionInfo">The live session.</param>
+        private static SessionUser CreateSeed(SessionInfo sessionInfo)
+        {
+            return new SessionUser
+            {
+                AccessToken = sessionInfo.AccessToken,
+                UserID = sessionInfo.UserId,
+                UserName = sessionInfo.UserName,
+                EndTime = sessionInfo.ExpiredAt,
+                CompanyId = sessionInfo.CompanyId,
+            };
+        }
 
         /// <summary>
         /// Writes a login-axis audit entry when audit logging and its login category are both
@@ -304,30 +374,52 @@ namespace Bee.Business.System
         /// reach it could mint a token for any account, including an administrator.
         /// </para>
         /// <para>
-        /// It was previously <see cref="ApiAccessRequirement.Anonymous"/> over a public protection
-        /// level. What stopped that from being exploitable was incidental rather than designed:
-        /// <c>SessionInfoCache.CreateInstance</c> returns <c>null</c> (loading a session from the
-        /// database is unimplemented), so tokens written to <c>st_session</c> never satisfied
-        /// <c>AccessTokenValidator</c>. Implementing that lookup — which the class comment there
-        /// anticipates — would have turned this into a full authentication bypass.
+        /// It is the password-free counterpart of <see cref="Login"/>, for a background service
+        /// that needs to run work through a business object on a user's behalf. It therefore takes
+        /// exactly the same construction path — name resolution, locale, encryption key, seed,
+        /// cache — minus the credential check, and the caller then calls <c>EnterCompany</c> like
+        /// any other client. Before this, it wrote a bare row to <c>st_session</c> and nothing
+        /// else, so the token it returned could not resolve a company and was unusable in practice.
         /// </para>
         /// </remarks>
         /// <param name="args">The input arguments.</param>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when <c>args.OneTime</c> is set; see the remark below.
+        /// </exception>
         [ApiAccessControl(ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Anonymous)]
         public virtual CreateSessionResult CreateSession(CreateSessionArgs args)
         {
+            ArgumentNullException.ThrowIfNull(args);
             if (args.ExpiresIn <= 0 || args.ExpiresIn > MaxExpiresInSeconds)
                 throw new ArgumentOutOfRangeException(nameof(args),
                     $"args.ExpiresIn must be between 1 and {MaxExpiresInSeconds} seconds.");
+            // One-time semantics used to rest on delete-on-read in the seed repository. Now that a
+            // session is cached at creation, the first use is a cache hit and the row is never
+            // read, so the guarantee could not be honoured. Refusing outright is the only honest
+            // option: silently degrading a security-flavoured promise to "ordinary session" is
+            // worse than failing. A future handoff-token design would consume the token by
+            // exchanging it for a real session, which is a genuine single consumption point.
+            if (args.OneTime)
+                throw new NotSupportedException(
+                    "One-time sessions are no longer supported. Create an ordinary session and " +
+                    "keep its lifetime short instead.");
 
-            // Create a new user session
-            var repo = Services.GetRequiredService<ISystemRepositoryFactory>().CreateSessionRepository();
-            var user = repo.CreateSession(args.UserID, args.ExpiresIn, args.OneTime);
-            // Return the access token
+            var userRepository = Services.GetRequiredService<ISystemRepositoryFactory>().CreateUserRepository();
+            // The message deliberately omits the user id: InvalidOperationException is on the
+            // user-facing allow-list in JsonRpcExecutor, so its text reaches the caller verbatim
+            // and would confirm whether an account exists.
+            var userName = userRepository.GetName(args.UserID)
+                ?? throw new InvalidOperationException("User not found.");
+
+            var sessionInfo = CreateSessionInfo(args.UserID, userName, TimeSpan.FromSeconds(args.ExpiresIn));
+            // Issuing a token for someone without their credentials is worth a trail of its own.
+            WriteLoginAudit(LoginEvent.ServiceSessionCreated, sessionInfo.UserId, sessionInfo.UserName,
+                sessionInfo.AccessToken, null, CreateSessionSource);
+
             return new CreateSessionResult()
             {
-                AccessToken = user.AccessToken,
-                ExpiredAt = user.EndTime
+                AccessToken = sessionInfo.AccessToken,
+                ExpiredAt = sessionInfo.ExpiredAt
             };
         }
     }

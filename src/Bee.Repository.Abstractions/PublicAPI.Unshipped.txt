@@ -16,3 +16,8 @@ static Bee.Repository.Abstractions.System.UserLocale.operator !=(Bee.Repository.
 static Bee.Repository.Abstractions.System.UserLocale.operator ==(Bee.Repository.Abstractions.System.UserLocale left, Bee.Repository.Abstractions.System.UserLocale right) -> bool
 ~override Bee.Repository.Abstractions.System.UserLocale.Equals(object obj) -> bool
 ~override Bee.Repository.Abstractions.System.UserLocale.ToString() -> string
+*REMOVED*Bee.Repository.Abstractions.System.ISessionRepository.CreateSession(string! userID, int expiresIn = 3600, bool oneTime = false) -> Bee.Definition.Identity.SessionUser!
+Bee.Repository.Abstractions.System.ISessionRepository.InsertSession(Bee.Definition.Identity.SessionUser! sessionUser) -> void
+Bee.Repository.Abstractions.System.ISessionRepository.UpdateSession(Bee.Definition.Identity.SessionUser! sessionUser) -> void
+Bee.Repository.Abstractions.System.ISessionRepository.DeleteSession(System.Guid accessToken) -> void
+Bee.Repository.Abstractions.System.IUserRepository.GetName(string! userId) -> string?

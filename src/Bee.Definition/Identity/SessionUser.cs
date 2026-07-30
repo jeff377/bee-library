@@ -36,6 +36,23 @@ namespace Bee.Definition.Identity
         public bool OneTime { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets the company the session is currently working in, or <c>null</c> when it
+        /// has not entered one.
+        /// </summary>
+        /// <remarks>
+        /// The only company-scoped value in the seed, because it is the only one that cannot be
+        /// derived: nothing in the database records which company the user picked. Everything else
+        /// <c>EnterCompany</c> snapshots onto the session (roles, customization code, record-scope
+        /// row ids) is recomputed on rebuild, which is also what keeps a revoked permission from
+        /// surviving in a stale snapshot.
+        ///
+        /// A seed written before this property existed deserializes to <c>null</c>, rebuilding as
+        /// a signed-in session that has not entered a company — the same state
+        /// <c>LeaveCompany</c> leaves behind.
+        /// </remarks>
+        public string? CompanyId { get; set; }
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()

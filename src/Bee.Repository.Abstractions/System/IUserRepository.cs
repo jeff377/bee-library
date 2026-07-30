@@ -28,5 +28,17 @@ namespace Bee.Repository.Abstractions.System
         /// background service sending a notification has no session to read it from.
         /// </remarks>
         UserLocale GetLocale(string userId);
+
+        /// <summary>
+        /// Reads a user's display name (<c>st_user.sys_name</c>), or <c>null</c> when no such user
+        /// exists.
+        /// </summary>
+        /// <param name="userId">The user business id (<c>st_user.sys_id</c>).</param>
+        /// <remarks>
+        /// <c>null</c> means "no such user" and is distinct from an empty name, which is why the
+        /// return type is nullable: the caller uses it to decide whether a session may be issued
+        /// at all.
+        /// </remarks>
+        string? GetName(string userId);
     }
 }

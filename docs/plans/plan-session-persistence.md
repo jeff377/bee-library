@@ -5,9 +5,9 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 前置：金鑰改為可推導（`DerivedApiEncryptionKeyProvider`）＋ `st_user` 語系欄位 | ✅ 已完成（2026-07-30） |
-| 2 | 種子持久化：`SessionUser` 擴充、四個寫入點、Login / `CreateSession` 共用建構路徑 | 📝 待做 |
+| 2 | 種子持久化：`SessionUser` 擴充、四個寫入點、Login / `CreateSession` 共用建構路徑 | ✅ 已完成（2026-07-30） |
 | 3 | 重建：`ICacheDataSourceProvider.GetSessionInfo` ＋ `SessionInfoCache.CreateInstance` ＋ 讀取純化 | 📝 待做 |
-| 4 | 收尾：`oneTime` 明確拒絕、過期列清理排程、CHANGELOG 與文件 | 📝 待做 |
+| 4 | 收尾：過期列清理排程、CHANGELOG 與文件（`oneTime` 拒絕已提前於階段 2 落地） | 📝 待做 |
 
 > 承接自 [plan-cache-createinstance-db-loading.md](plan-cache-createinstance-db-loading.md) 的階段 3 / 4。
 > 該 plan 的階段 1 / 2（三個 DB 快取改為經 `ICacheDataSourceProvider` 自載）已完成並上線，
@@ -328,6 +328,8 @@ DB 根本不會被讀取，delete-on-read 永遠不觸發。這不是「要不�
    安全性不受影響——`AccessTokenValidator` 本就檢查 `ExpiredAt`；刪除責任移交 D7。
 2. **一次性語意先明確拒絕**：`CreateSession` 收到 `oneTime: true` 時擲
    `NotSupportedException`。**不可靜默降級**——讓一個帶安全意味的保證無聲失效是最差的選項。
+   （實作時**提前至階段 2** 落地：階段 2 一加上「建立即寫快取」，一次性機制當下即失效，
+   拒絕與該行為必須同一批出貨，不能留一段「保證已失效但仍接受」的空窗。）
    若日後確有需求，應重新設計為「交換式 handoff token」（首次使用時換發正式 session，
    該交換即唯一且明確的消費點），屬另案；產線既無使用者，不應卡住本 plan。
 

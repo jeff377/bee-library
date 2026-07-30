@@ -65,5 +65,27 @@ namespace Bee.Repository.System
             static string ReadText(object? value)
                 => value == null || value == DBNull.Value ? string.Empty : ValueUtilities.CStr(value).Trim();
         }
+
+        /// <inheritdoc/>
+        public string? GetName(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) { return null; }
+
+            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            string tbl = dbType.QuoteIdentifier("st_user");
+            string colName = dbType.QuoteIdentifier("sys_name");
+            string colId = dbType.QuoteIdentifier("sys_id");
+
+            string sql = $"SELECT {colName} FROM {tbl} WHERE {colId} = {{0}}";
+            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable, sql, userId));
+            var table = result.Table;
+            // No row means no such user. A row carrying a null name is a user with a blank name,
+            // which is a different answer and must not collapse into the same one.
+            if (table == null || table.Rows.Count == 0) { return null; }
+
+            var value = table.Rows[0][0];
+            return value == null || value == DBNull.Value ? string.Empty : ValueUtilities.CStr(value).Trim();
+        }
     }
 }

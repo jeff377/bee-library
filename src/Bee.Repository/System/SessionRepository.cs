@@ -3,7 +3,6 @@ using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Db;
 using Bee.Db.Manager;
-using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Repository.Abstractions.System;
 using Bee.Definition.Identity;
@@ -11,11 +10,12 @@ using Bee.Definition.Identity;
 namespace Bee.Repository.System
 {
     /// <summary>
-    /// Data access object for session information, encapsulating operations on the st_session and st_user tables.
+    /// Data access object for the session seed stored in <c>st_session</c>, using
+    /// <see cref="SessionUser"/> as the data model.
     /// </summary>
     /// <remarks>
-    /// This class is responsible for creating, querying, and deleting session user data, using <see cref="SessionUser"/> as the data model.
-    /// Common use cases include generating an AccessToken on user login, validating session state, and clearing expired sessions.
+    /// Writes are driven by the session lifecycle in <c>SystemBusinessObject</c>: sign-in inserts
+    /// the seed, entering or leaving a company updates it, and sign-out deletes it.
     /// </remarks>
     public class SessionRepository : ISessionRepository
     {
@@ -30,12 +30,11 @@ namespace Bee.Repository.System
             _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         }
 
-        /// <summary>
-        /// Inserts a session record into the database.
-        /// </summary>
-        /// <param name="sessionUser">The session user data to persist.</param>
-        private void Insert(SessionUser sessionUser)
+        /// <inheritdoc/>
+        public void InsertSession(SessionUser sessionUser)
         {
+            ArgumentNullException.ThrowIfNull(sessionUser);
+
             string xml = XmlCodec.Serialize(sessionUser);
             string sql = "INSERT INTO st_session \n" +
                                  "(access_token, session_user_xml, sys_insert_time, sys_invalid_time) \n" +
@@ -45,11 +44,25 @@ namespace Bee.Repository.System
             dbAccess.Execute(command);
         }
 
-        /// <summary>
-        /// Deletes the session record for the specified access token.
-        /// </summary>
-        /// <param name="accessToken">The access token.</param>
-        private void Delete(Guid accessToken)
+        /// <inheritdoc/>
+        public void UpdateSession(SessionUser sessionUser)
+        {
+            ArgumentNullException.ThrowIfNull(sessionUser);
+
+            // The whole seed is rewritten rather than one column patched: the caller holds the
+            // current session and the seed lives inside a single XML column, so a read-modify-write
+            // would cost an extra round trip to reach the same state.
+            string xml = XmlCodec.Serialize(sessionUser);
+            string sql = "UPDATE st_session \n" +
+                                 "SET session_user_xml={1}, sys_invalid_time={2} \n" +
+                                 "WHERE access_token={0}";
+            var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, sessionUser.AccessToken, xml, sessionUser.EndTime);
+            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            dbAccess.Execute(command);
+        }
+
+        /// <inheritdoc/>
+        public void DeleteSession(Guid accessToken)
         {
             string sql = "DELETE FROM st_session \n" +
                                  "WHERE access_token={0}";
@@ -75,55 +88,22 @@ namespace Bee.Repository.System
             var row = table.Rows[0];
 
             // If the session has expired, delete it and return null.
-            // The column is a naive one holding UTC (ADR-032 D1), and `CreateSession` writes
-            // `DateTime.UtcNow` into it. Labelling it says so out loud: the comparison below is
+            // The column is a naive one holding UTC (ADR-032 D1), and the write path stores
+            // `SessionUser.EndTime`, itself computed from `DateTime.UtcNow`. Labelling it says so out loud: the comparison below is
             // correct either way — `DateTime` compares ticks and ignores `Kind` — so an unlabelled
             // value would leave the reader unable to tell a deliberate UTC basis from an oversight.
             DateTime endTime = DateTime.SpecifyKind(
                 ValueUtilities.CDateTime(row["sys_invalid_time"], DateTime.MinValue), DateTimeKind.Utc);
             if (endTime < DateTime.UtcNow)
             {
-                Delete(accessToken);
+                DeleteSession(accessToken);
                 return null;
             }
 
             string xml = ValueUtilities.CStr(row["session_user_xml"]);
             var user = XmlCodec.Deserialize<SessionUser>(xml);
             // If the session is one-time use, delete it after retrieval
-            if (user!.OneTime) { Delete(accessToken); }
-            return user;
-        }
-
-        /// <summary>
-        /// Creates a new user session.
-        /// </summary>
-        /// <param name="userID">The user account identifier.</param>
-        /// <param name="expiresIn">The expiration time in seconds.</param>
-        /// <param name="oneTime">Whether the session is valid for one-time use only.</param>
-        public SessionUser CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
-        {
-            string sql = "SELECT sys_id, sys_name FROM st_user \n" +
-                                 "WHERE sys_id={0}";
-            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, userID);
-            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
-            var result = dbAccess.Execute(command);
-            var table = result.Table!;
-            // The message deliberately omits the user id: InvalidOperationException is on the
-            // user-facing allow-list in JsonRpcExecutor, so its text reaches the caller verbatim and
-            // would confirm whether an account exists. EnterCompany collapses its failure modes for
-            // the same reason.
-            if (table.IsEmpty()) { throw new InvalidOperationException("User not found."); }
-            var row = table.Rows[0];
-
-            var user = new SessionUser()
-            {
-                AccessToken = Guid.NewGuid(),
-                UserID = userID,
-                UserName = ValueUtilities.CStr(row[SysFields.Name]),
-                EndTime = DateTime.UtcNow.AddSeconds(expiresIn),
-                OneTime = oneTime
-            };
-            Insert(user);
+            if (user!.OneTime) { DeleteSession(accessToken); }
             return user;
         }
     }
