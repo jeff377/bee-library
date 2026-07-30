@@ -573,6 +573,21 @@ C# 規則（報在 `.cs` 上）則 `.editorconfig` `[*.cs]` 正常生效，已�
   （該檔為 `PackageReadmeFile`，會顯示於 nuget.org）
 - CHANGELOG（雙語）`[Unreleased]` 的 Added 區段交代本次新增
 
+**追加：`apps/Bee.Northwind` 的 dogfooding 接線**
+
+Northwind 有 30 個真實定義檔（8 FormSchema / 10 TableSchema / 8 FormLayout + 設定檔）與自訂 BO，
+是驗證規則的最佳對象——階段 2 的「複製 `tests/Define` 到臨時專案」是一次性手動驗證，掛上去則變成
+每次建置都跑的持續驗證。結果：**0 診斷**，兩種分析管線皆以反向驗證確認確實在執行
+（改 `Category.FormSchema.xml` 的 CategoryId → BEE1001 報出；在自訂 BO 加未標記的 public 方法 →
+BEE3001 報出）。
+
+ProjectReference 情境比套件消費端多兩個手動步驟，已寫入該 csproj 註解：
+
+| 消費端（PackageReference） | 框架內 / apps（ProjectReference） |
+|---------------------------|--------------------------------|
+| analyzer 隨 nupkg 的 `analyzers/dotnet/cs/` 自動註冊 | 需自行加 `OutputItemType="Analyzer"`——analyzer 不隨 ProjectReference 傳遞 |
+| `build/Bee.Definition.targets` 自動注入 `AdditionalFiles` | targets 只存在於 nupkg，需自行列 `AdditionalFiles`（Northwind 的定義檔還在上一層目錄） |
+
 **未做，且刻意不做**
 
 | 項目 | 判斷 |

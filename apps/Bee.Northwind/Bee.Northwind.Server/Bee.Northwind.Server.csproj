@@ -10,6 +10,22 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!--
+    Dogfooding the framework convention analyzers against this application's real definition files.
+    Two things have to be done by hand here that a package consumer gets for free: the analyzer has to
+    be referenced explicitly (analyzers do not flow through a ProjectReference), and the definition
+    files have to be listed as AdditionalFiles, because build/Bee.Definition.targets ships inside the
+    NuGet package and is not imported by a project reference. The definitions also live one level up,
+    at the solution root rather than beside this project.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Bee.Analyzers\Bee.Analyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+    <AdditionalFiles Include="..\Define\**\*.xml" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Bee.Api.AspNetCore\Bee.Api.AspNetCore.csproj" />
     <ProjectReference Include="..\..\..\src\Bee.Business\Bee.Business.csproj" />
