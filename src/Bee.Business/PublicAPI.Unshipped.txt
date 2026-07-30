@@ -37,3 +37,28 @@ Bee.Business.Providers.CacheDataSourceProvider.GetSessionInfo(System.Guid access
 Bee.Business.Providers.DerivedApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool
 Bee.Business.Providers.DynamicApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool
 Bee.Business.Providers.StaticApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool
+Bee.Business.BusinessObject.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
+Bee.Business.BusinessObject.ApiKeyValidation.set -> void
+Bee.Business.Providers.CacheDataSourceProvider.GetApiKey(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
+Bee.Business.Providers.CacheDataSourceProvider.GetApiKeyGateState() -> Bee.Definition.Security.ApiKeyGateState!
+Bee.Business.System.PingResult.ApiKeyStatus.get -> Bee.Definition.Security.ApiKeyStatus
+Bee.Business.System.PingResult.ApiKeyStatus.set -> void
+Bee.Business.System.CreateApiKeyArgs
+Bee.Business.System.CreateApiKeyArgs.Contact.get -> string?
+Bee.Business.System.CreateApiKeyArgs.Contact.set -> void
+Bee.Business.System.CreateApiKeyArgs.CreateApiKeyArgs() -> void
+Bee.Business.System.CreateApiKeyArgs.ExpiredAt.get -> System.DateTime?
+Bee.Business.System.CreateApiKeyArgs.ExpiredAt.set -> void
+Bee.Business.System.CreateApiKeyArgs.KeyType.get -> Bee.Definition.Security.ApiKeyType
+Bee.Business.System.CreateApiKeyArgs.KeyType.set -> void
+Bee.Business.System.CreateApiKeyArgs.SysId.get -> string!
+Bee.Business.System.CreateApiKeyArgs.SysId.set -> void
+Bee.Business.System.CreateApiKeyArgs.SysName.get -> string!
+Bee.Business.System.CreateApiKeyArgs.SysName.set -> void
+Bee.Business.System.CreateApiKeyResult
+Bee.Business.System.CreateApiKeyResult.ApiKey.get -> string!
+Bee.Business.System.CreateApiKeyResult.ApiKey.set -> void
+Bee.Business.System.CreateApiKeyResult.CreateApiKeyResult() -> void
+Bee.Business.System.CreateApiKeyResult.SysId.get -> string!
+Bee.Business.System.CreateApiKeyResult.SysId.set -> void
+virtual Bee.Business.System.SystemBusinessObject.CreateApiKey(Bee.Business.System.CreateApiKeyArgs! args) -> Bee.Business.System.CreateApiKeyResult!

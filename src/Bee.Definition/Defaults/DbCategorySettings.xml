@@ -7,6 +7,7 @@
 				<TableItem TableName="st_session" DisplayName="Session" />
 				<TableItem TableName="st_company" DisplayName="Company" />
 				<TableItem TableName="st_user_company" DisplayName="User accessible companies" />
+				<TableItem TableName="st_api_key" DisplayName="API key" />
 				<TableItem TableName="st_cache_notify" DisplayName="Cache notification" />
 				<TableItem TableName="st_define" DisplayName="Define storage" />
 			</Tables>

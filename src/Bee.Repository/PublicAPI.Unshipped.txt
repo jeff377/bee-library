@@ -7,3 +7,11 @@ Bee.Repository.System.SessionRepository.UpdateSession(Bee.Definition.Identity.Se
 Bee.Repository.System.SessionRepository.DeleteSession(System.Guid accessToken) -> void
 Bee.Repository.System.UserRepository.GetName(string! userId) -> string?
 Bee.Repository.System.SessionRepository.DeleteExpiredSessions() -> int
+Bee.Repository.Factories.SystemRepositoryFactory.CreateApiKeyRepository() -> Bee.Repository.Abstractions.System.IApiKeyRepository!
+Bee.Repository.System.ApiKeyRepository
+Bee.Repository.System.ApiKeyRepository.Exists(string! sysId) -> bool
+Bee.Repository.System.ApiKeyRepository.GetEnabledById(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
+Bee.Repository.System.ApiKeyRepository.GetGateState() -> Bee.Definition.Security.ApiKeyGateState!
+Bee.Repository.System.ApiKeyRepository.Insert(Bee.Definition.Security.ApiKeyInfo! apiKey) -> void
+Bee.Repository.Factories.SystemRepositoryFactory.SystemRepositoryFactory(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Db.CacheNotify.ICacheNotifyService? cacheNotify) -> void
+Bee.Repository.System.ApiKeyRepository.ApiKeyRepository(Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Db.CacheNotify.ICacheNotifyService? cacheNotify = null) -> void

@@ -94,6 +94,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
             public IEmployeeRepository CreateEmployeeRepository() => new FakeEmployeeRepository(_employee);
 
             public IDatabaseRepository CreateDatabaseRepository() => throw new NotSupportedException();
+            public IApiKeyRepository CreateApiKeyRepository() => throw new NotSupportedException();
             public ISessionRepository CreateSessionRepository() => throw new NotSupportedException();
             public ICompanyRepository CreateCompanyRepository() => throw new NotSupportedException();
             public IUserCompanyRepository CreateUserCompanyRepository() => throw new NotSupportedException();

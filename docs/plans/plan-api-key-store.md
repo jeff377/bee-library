@@ -1,10 +1,10 @@
 # 計畫：API Key 存放機制與預設驗證強化
 
-**狀態：📝 擬定中（2026-07-27）**
+**狀態：🚧 進行中（2026-07-30）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | `st_api_key` 表 + 兩段式金鑰格式 + `IApiKeyValidator` + 快取與失效，未設定時維持相容 | 📝 待做 |
+| 1 | `st_api_key` 表 + 兩段式金鑰格式 + 產生金鑰 BO 方法 + `IApiKeyValidator` + 快取與失效，未設定時維持相容 | ✅ 已完成（2026-07-30） |
 | 2 | 呼叫端識別：驗證結果帶入呼叫上下文並落進稽核記錄 | 📝 待做 |
 | 3 | 金鑰管理表單（框架自身 CRUD dogfooding）+ 產生 / 輪替流程與文件 | 📝 待做 |
 | 4 | 用戶端存放：脫離原始碼 hardcode，samples / Northwind 遷移 | 📝 待做 |
@@ -94,14 +94,21 @@ API Key 走可逆存放沒有必要，且 DB 一旦外洩即等於全部金鑰�
 業界標準做法（GitHub PAT、Stripe 皆是此形狀）：
 
 ```
-bee_a7f3c2e1.xLq9Kv2mNp8wR4tZ...
-└─ sys_id ─┘ └────── secret ──────┘
+northwind-desktop.xLq9Kv2mNp8wR4tZ...
+└──── sys_id ────┘ └────── secret ──────┘
 ```
 
 驗證流程：切出前段 → 以 `sys_id` O(1) 查快取 → 驗證後段 secret 對上 `hashed_key`。
 
 三件事同時成立：**O(1) 查找**、**不可逆存放**、**log 得到可讀的呼叫端識別**。
 逐把比對（O(n)）與無鹽索引雜湊都不需要了。
+
+**`sys_id` 由建立者人工指定**（已決策 2026-07-30），不由系統產生亂碼——符合框架
+`sys_id` ＝ 人可讀識別碼的既有慣例，且 log 與稽核記錄直接看得出是哪個應用，不必再回查
+`sys_name`。前段本就不機密（本節上方已論證），可被枚舉不構成風險。
+
+框架須驗證：字元集限 `[a-z0-9-]`（**不得含 `.`**，否則切段錯誤）、長度上限、以及 `sys_id`
+唯一性——三者皆為建立時的快速失敗，不是驗證熱路徑的負擔。
 
 ### D3：雜湊用 salt + SHA-256，**不用** `PasswordHasher`
 
@@ -113,6 +120,14 @@ API Key 情境相反：**每個 request 都要驗一次**。把 100k 次迭代�
 
 採 `salt + SHA-256(salt || secret)`，以 `CryptographicOperations.FixedTimeEquals` 比對，
 儲存格式沿用 `PasswordHasher` 的版本前綴風格：`v1.{saltBase64}.{hashBase64}`。
+
+**salt 的定位要在註解寫清楚**：對 256-bit 高熵隨機 secret，salt 幾乎不提供實質防護——它防的是
+彩虹表與「多人用同一組弱密碼」的碰撞，兩者在本情境都不存在。保留 salt 是為了**格式與
+`PasswordHasher` 一致**、以及消除理論上的相同 secret 碰撞，不是安全必要條件。不寫明的話，
+後人會把它當必要防護而不敢動，或反過來誤以為「有 salt 就等於有 KDF 強度」。
+
+不改用 pepper（server-side keyed hash）：那會讓金鑰驗證綁上 master key，master key 輪替時
+所有金鑰雜湊同時失效，而換得的離線暴力防護對 256-bit secret 本無意義。
 
 > 這條要在程式碼註解寫明「為何不用 `PasswordHasher`」，否則日後必定有人「順手統一」
 > 而把 100k 迭代搬進每個請求。
@@ -152,10 +167,17 @@ API Key 情境相反：**每個 request 都要驗一次**。把 100k 次迭代�
 第三個角色可放。與其他 Database 快取不同——那些有 service 是因為介面要放 `Bee.Definition`
 供上層使用，而 API Key 的上層消費者就是 validator 本身。
 
-**TTL 須覆寫 `GetPolicy`**：預設為 sliding 20 分，對金鑰不適用——sliding 會讓熱門金鑰永遠不
-重讀，`expired_at` 到期後仍在快取中存活。改為 absolute（建議 60 分）。撤銷的保證來自
-cache-notify 而非過期，這也是 D5 / D10「DB 短暫不可用仍能服務」的來源；代價是 notify 失效鏈
-成為撤銷的**唯一**保證，其可靠性必須有測試覆蓋。
+**TTL 須覆寫 `GetPolicy`**：預設為 sliding 20 分，改為 absolute（建議 60 分）。
+
+理由是**兜底，不是過期判定**——這點容易寫錯，故明列：`expired_at` 是快取物件**內的欄位**，
+validator 每次都比對當下時間對 `expired_at`，故到期是即時生效的，與快取存活多久無關。
+absolute TTL 真正解決的是**撤銷鏈斷掉時的最壞暴露窗**：撤銷（`enabled` 改 false）的唯一保證是
+`st_cache_notify`，一旦 notify 鏈失效，sliding 會讓熱門金鑰**無限期**留在快取中有效，
+absolute 則把暴露窗限死在一個 TTL 內。
+
+代價與必要覆蓋：notify 失效鏈仍是撤銷的**第一線且唯一即時**保證，其可靠性必須有測試覆蓋；
+absolute TTL 只是保證「最終會失效」，不能拿來當撤銷機制用。另一面的好處是 D5 / D10 的
+「DB 短暫不可用期間，已在快取的金鑰仍可服務」。
 
 **接線清單**（依 `bee-add-cache-object` skill）：`ICacheContainer` 新增 `ApiKey` 屬性（三處同步）、
 cache group 名稱、兩個 CacheNotify 測試 stub（漏補會 CS0535 直接編不過）。
@@ -169,9 +191,35 @@ samples 與 Northwind，以及尚未建表的既有資料庫。分兩態：
 |---|---|
 | 表不存在，或無任何啟用中金鑰 | 沿用現行：只檢查非空 + **啟動警告**（訊息改為指向金鑰管理） |
 | 有啟用中金鑰 | **嚴格比對**：格式不符、查無、已停用、已過期一律拒絕 |
+| **查詢 gate 時 DB 連不上 / 擲例外** | **fail-closed：一律拒絕**（`System.Ping` 依 D10 免金鑰，仍可作答） |
 
 升級不破壞既有部署，而一旦建了第一把金鑰就自動獲得真正的閘門。啟動警告從「請自己覆寫
 validator」改為「請建立 API 金鑰」——**從此不需要寫程式就能關上這個洞**，是本計畫最主要的體驗改善。
+
+#### 「表不存在」與「DB 故障」必須分開判定（已決策 2026-07-30）
+
+第三列是本決策最容易實作錯的地方。寬鬆態的觸發條件**只有明確的 schema 訊號**（表不存在）
+與明確的查詢結果（查到 0 筆啟用金鑰）；**任何例外都走 fail-closed**。
+
+> **WARNING**：不得寫成 `try { 查 gate } catch { 回寬鬆 }`。那會讓 DB 故障自動降級成
+> 「任何非空字串皆通過」——把可用性事故轉成安全洞，且外部無從察覺。
+
+與階段 1 驗收的「其餘方法 fail-closed」一致：DB 掛了業務 API 本來就無法服務，拒絕不損失
+實際可用性；能作答的健康檢查由 D10 的免金鑰 `System.Ping` 承擔。
+
+#### gate 狀態本身需要快取與失效路徑
+
+「是否有啟用中金鑰」不能每請求查一次 DB。此狀態與 `ApiKeyCache`（per-`sys_id`）是**不同粒度**，
+D4 的樣板不直接覆蓋，須一併設計：
+
+- 併入 `ApiKeyCache` 同一個 cache group，以保留字 key（如 `__gate__`）承載，或另立單值
+  `ObjectCache`——實作時擇一，但**必須與金鑰快取共用同一個 cache group 名稱**，
+  才能一次 notify 同時失效兩者。
+- 金鑰的新增 / 停用 / 刪除都要發 notify，否則**建了第一把金鑰卻仍停在寬鬆態**（最壞延遲一個
+  absolute TTL）。這是引導期最可能被誤判為 bug 的行為，須有測試覆蓋
+  「建第一把金鑰後 → gate 轉嚴格」。
+- gate 快取**不得由例外填入**（承上，例外走 fail-closed 且不寫入快取），避免把一次 DB 抽風
+  固化成一個 TTL 的寬鬆態。
 
 ### D6：新增 `IApiKeyValidator`，走 DI 而非靜態
 
@@ -183,8 +231,19 @@ validator」改為「請建立 API 金鑰」——**從此不需要寫程式就�
 的原語 / 政策分層，金鑰驗證屬政策層）。
 
 接線點是 [`ApiServiceController.ValidateAuthorization`](../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)——
-它是 `protected virtual` 且能取用 `HttpContext.RequestServices`，由此解析 `IApiKeyValidator`
-並帶入 `ApiAuthorizationContext`，validator 本身維持無狀態。
+它是 `protected virtual` 且能取用 `HttpContext.RequestServices`，由此解析 `IApiKeyValidator`。
+
+**controller 解析後就在該處驗完，`ApiAuthorizationContext` 只承載「驗證結果」，不承載驗證器**
+（已決策 2026-07-30）。結果型別帶狀態（見 D10 四態）與識別資訊（`sys_id` / `sys_name`）。
+把服務實例塞進 context 會有三個壞處，故不採：
+
+1. `ApiAuthorizationContext` 是純資料載體，塞服務即成 service locator，並讓
+   `ApiAuthorizationValidator`（`Bee.Api.Core`）反過來依賴政策介面。
+2. 分工會變模糊：`ApiAuthorizationValidator` 只該做**決策**（該不該放行），不該負責觸發驗證。
+3. 結果可**一份三用**：授權決策、D10 的 `PingResult` 金鑰狀態欄、階段 2 的呼叫端識別，
+   三者共用同一次驗證，不必各自再查一次快取。
+
+validator 本身維持無狀態。
 
 ### D7：金鑰只在產生當下顯示一次
 
@@ -238,41 +297,96 @@ ping 是連通性檢查，不碰 DB、不回業務資料。排除後健康檢查
    `GetApiPayloadOptions` 揭露 payload / 加密協商設定、不是連通性檢查。新清單預設**只有
    `System.Ping`**，比照 `IsAuthorizationRequired` 做成 `protected virtual` 供部署端加自己的健康
    檢查方法。兩個清單並存須註解寫明「兩條軸，勿合併」。
-2. **`PingResult` 增加金鑰狀態欄**（`NotProvided` / `Invalid` / `Valid`）。ping 的主要消費場景是
-   連線設定畫面的「測試連線」；完全不看金鑰會讓使用者打錯金鑰仍顯示連線成功，錯誤延到第一次
-   真正呼叫才在別的畫面浮出。加欄位屬 additive，adr-030 改 name-based key 後 wire 相容。
+2. **`PingResult` 增加金鑰狀態欄，四態**（已決策 2026-07-30）：
+
+   | 狀態 | 語意 |
+   |---|---|
+   | `NotConfigured` | 部署仍在 D5 寬鬆態（表不存在或無啟用金鑰）——**金鑰尚未成為閘門** |
+   | `NotProvided` | 嚴格態，但請求未帶 `X-Api-Key` |
+   | `Invalid` | 嚴格態，金鑰格式不符 / 查無 / 已停用 / 已過期 |
+   | `Valid` | 嚴格態，金鑰有效 |
+
+   ping 的主要消費場景是連線設定畫面的「測試連線」；完全不看金鑰會讓使用者打錯金鑰仍顯示連線
+   成功，錯誤延到第一次真正呼叫才在別的畫面浮出。加欄位屬 additive，adr-030 改 name-based key
+   後 wire 相容。
+
+   **`NotConfigured` 是四態的關鍵**：三態設計下，寬鬆態部署會對任何非空字串回 `Valid`，
+   連線測試畫面因此告訴使用者「金鑰有效」，而該部署根本沒有閘門——那是比不顯示更糟的誤導。
+   這一態同時讓 D5 的啟動警告有了**對外可見面**：維運不必翻 server log 就知道閘門還沒關上。
+
    副作用是 ping 成為「金鑰是否有效」的 oracle——以 D2 的 256-bit secret 而言無實際可利用性
    （攻擊者須先持有完整金鑰），此判斷要寫進註解，別讓後人誤以為是疏漏。
 3. **`Version` 改為金鑰有效才回**。[`SystemBusinessObject.Ping`](../../src/Bee.Business/System/SystemBusinessObject.cs)
    現在無條件回 `SysInfo.Version`；免金鑰後等於對全網公開框架版本（fingerprinting 起手式）。
    `Status` / `ServerTime` 對連通性檢查已足夠；監控要版本號的話本來就該帶金鑰。
 
+   **寬鬆態（`NotConfigured`）下照舊回 `Version`**——那些部署的閘門本來就未關上，扣掉版本號
+   只會讓既有監控在升級當下壞掉，卻換不到任何實質收斂。此交互要寫進註解與文件，
+   否則會被當成漏判。
+
 ## 階段 1：存放模型與驗證
 
 1. `st_api_key` TableSchema（common）+ 註冊進 `DbCategorySettings`；`ApiKeyRepository`。
 2. `ApiKeyHasher`（`Bee.Base/Security/`，原語層）：`HashSecret` / `VerifySecret`，
-   salt + SHA-256 + `FixedTimeEquals`，含「為何不用 `PasswordHasher`」的 WHY 註解。
+   salt + SHA-256 + `FixedTimeEquals`，含「為何不用 `PasswordHasher`」與「salt 為格式一致
+   非安全必要」兩段 WHY 註解（D3）。
 3. 金鑰格式工具：產生（`RandomNumberGenerator` 256-bit，URL-safe base64）與解析
-   `{sys_id}.{secret}`；格式不符即快速失敗，不進 DB 查詢。
-4. `ApiKeyCache : KeyObjectCache<ApiKeyInfo>`，依 D4：`CreateInstance` 經
+   `{sys_id}.{secret}`；`sys_id` 字元集 / 長度驗證依 D2（禁 `.`）。格式不符即快速失敗，
+   不進 DB 查詢——這也是「無 rate limit 仍不懼掃描」的第一道，配合負向快取讓不存在的
+   `sys_id` 不穿透到 DB。
+4. **產生金鑰的 BO 方法**（依 `bee-add-bo-method` 流程，回傳一次性完整金鑰）。
+   置於階段 1 而非階段 3：D5 的 gate 一旦有第一把金鑰就轉嚴格態，若產生手段留在階段 3，
+   階段 1 單獨上線的部署將**無法建立第一把金鑰**（框架刻意無還原路徑，只能手算
+   `v1.{salt}.{hash}` 手動 INSERT）。管理表單仍留階段 3。
+5. `ApiKeyCache : KeyObjectCache<ApiKeyInfo>`，依 D4：`CreateInstance` 經
    `ICacheDataSourceProvider.GetApiKey` 自載（快取持 `Func<ICacheDataSourceProvider>`、
    帶該參數的建構式為 `internal`）、覆寫 `GetPolicy` 為 absolute TTL、`ICacheContainer` 三處同步、
    cache-notify 失效與兩個 CacheNotify 測試 stub（依 `bee-add-cache-object` 流程）。
    `ApiKeyInfo` 放 `Bee.Definition`；`ICacheDataSourceProvider` 加取數方法、
    `CacheDataSourceProvider` 實作、`ISystemRepositoryFactory` 加 `CreateApiKeyRepository()`。
-5. `IApiKeyValidator`（`Bee.Definition/Security/`）+ 預設實作，由 `AddBeeFramework` 註冊。
-6. `ApiAuthorizationContext` 增加驗證器承載欄位；`ApiServiceController.ValidateAuthorization`
-   從 DI 解析並帶入；`ApiAuthorizationValidator` 有驗證器就嚴格比對、沒有就沿用非空檢查。
+6. **gate 狀態快取**（D5）：「是否有啟用中金鑰」與金鑰共用同一 cache group，金鑰
+   新增 / 停用 / 刪除一併發 notify；例外不寫入快取。
+7. `IApiKeyValidator`（`Bee.Definition/Security/`）+ 預設實作，由 `AddBeeFramework` 註冊。
+   拒絕時**對外一律回同一訊息**，不區分查無 / 停用 / 過期（避免成為 oracle）；區分只存在
+   稽核記錄中。
+8. `ApiAuthorizationContext` 增加**驗證結果**承載欄位（狀態 + `sys_id` / `sys_name`，
+   依 D6 不承載驗證器）；`ApiServiceController.ValidateAuthorization` 從 DI 解析驗證器、
+   在該處驗完並帶入結果；`ApiAuthorizationValidator` 依結果決策——嚴格態比對、
+   寬鬆態沿用非空檢查、DB 異常 fail-closed。
    同時依 D10 新增金鑰豁免清單（`protected virtual`，預設只含 `System.Ping`），
    與既有的 Bearer 豁免 `NoAuthMethods` 並存且互不引用。
-7. 依 D10 調整 ping：`PingResult` 增金鑰狀態欄、`Version` 改為金鑰有效才回。
-8. 啟動警告訊息與觸發條件改依 D5。
-9. 測試：命中 / 查無 / 停用 / 過期 / 格式不符 / 無啟用金鑰沿用舊行為 / 雜湊 round-trip /
-   cache-notify 失效生效 / **ping 不帶金鑰仍回 `ok` 且不含 `Version`** /
-   **ping 帶無效金鑰回報 `Invalid`** / **`Login` 與 `GetApiPayloadOptions` 仍需金鑰**。
+9. 依 D10 調整 ping：`PingResult` 增金鑰狀態欄（四態）、`Version` 改為金鑰有效才回
+   （寬鬆態照舊回）。
+10. 啟動警告訊息與觸發條件改依 D5。
+11. **金鑰驗證失敗的稽核記錄**：明確不做 rate limit（見「不在範圍」）的前提下，失敗記錄是
+    唯一的偵測手段，故階段 1 就要落地，不等階段 2。只記前段 `sys_id` 與來源，
+    **絕不記完整金鑰值**（對齊 `security.md`）。
+12. 測試：命中 / 查無 / 停用 / 過期 / 格式不符 / 無啟用金鑰沿用舊行為 / 雜湊 round-trip /
+    cache-notify 失效生效 / **建第一把金鑰後 gate 轉嚴格** / **DB 查詢擲例外時 fail-closed
+    （不得降級為寬鬆）** / **ping 不帶金鑰仍回 `ok` 且不含 `Version`** /
+    **ping 帶無效金鑰回報 `Invalid`、寬鬆態回報 `NotConfigured`** /
+    **`Login` 與 `GetApiPayloadOptions` 仍需金鑰** / **四種拒絕情境對外訊息一致**。
 
 **驗收**：建了金鑰的部署，錯誤金鑰被拒；沒建的部署行為與升級前一致；
-DB 不可用時 ping 仍可回應，其餘方法 fail-closed。
+**不需等階段 3 即可產生第一把金鑰並完成引導**；DB 不可用時 ping 仍可回應，其餘方法 fail-closed。
+
+### 執行結果（2026-07-30）
+
+驗收條件全數達成，`dotnet build Bee.Library.slnx -c Release` 0w/0e、`./test.sh` 全綠
+（新增 26 個測試，5 個 dialect 的 repository round-trip 全數執行）。與計畫的差異與追加決策：
+
+| 項目 | 落地情況 |
+|------|---------|
+| `ApiKeyStatus` 為**五態** | 計畫定四態，實作多一個 `NotChecked = 0`：行程內呼叫本來就沒有 `X-Api-Key` 標頭，把它報成 `NotProvided`（嚴格態、被拒）或 `NotConfigured`（部署未設定）都是錯的敘述。授權決策上 `NotChecked` 與 `NotConfigured` 同路（沿用非空檢查） |
+| `CreateApiKey` 為 `LocalOnly` | 計畫未指定保護等級。取 `SaveDefine` 的同一理由：鑄造憑證屬部署期作業，只憑「已驗證」不該能自行鑄一把金鑰。**代價**：階段 3 的遠端管理表單需要一條權限把關的路徑，屆時才處理 |
+| 金鑰狀態傳遞路徑 | BO 不改建構式（會破壞所有應用子類），改以 `IApiKeyContextAware` 由 executor 在建構後賦值。此接縫階段 2 的稽核可直接沿用 |
+| 表存在與否的判定 | 走 `ITableSchemaProvider.GetTableSchema` 回 `null`，不靠「查詢失敗」推論——這是 D5 第三列 fail-closed 能與「表不存在即寬鬆」分開的關鍵 |
+| gate 快取 | `ApiKeyGateCache`（單一 key `[gate]`），以 `CacheGroup` 覆寫為 `ApiKeyInfo` 與金鑰快取同群；`Insert` 在同一 transaction 內 bump 兩個 notify key |
+| 附帶修正 | `ApiOutputConverter.ConvertResultValue` 的讀取選項缺 `JsonStringEnumConverter`，與 `JsonCodec` 的寫入端不對稱。`PingResult.ApiKeyStatus` 是第一個 enum 型別的回應欄位，因此才浮現 |
+| 既有測試的行為調整 | `PostAsync_MissingApiKey_Returns401` 原以 `System.Ping` 為樣本，Ping 依 D10 免金鑰後改用 `System.ExecFunc`；`DefaultsTests` 的嵌入檔數 29 → 30 |
+
+尚未觸及（不屬階段 1）：samples / Northwind 的 `DbCategorySettings` 未註冊 `st_api_key`，
+因此那些部署的表不存在 → 維持寬鬆態，正是 D5 設計的升級路徑。
 
 ## 階段 2：呼叫端識別
 
@@ -287,7 +401,7 @@ DB 不可用時 ping 仍可回應，其餘方法 fail-closed。
 
 1. 以**框架自身的 FormSchema CRUD** 做管理表單（dogfooding，不需為此擴充 DefineEditor）：
    新增（顯示一次完整金鑰並提示不再顯示）、停用、設到期、刪除。
-2. 產生動作走 BO 方法（依 `bee-add-bo-method` 流程），不由前端組金鑰。
+2. 產生動作沿用階段 1 已交付的 BO 方法，不由前端組金鑰。
 3. 輪替流程文件：發第二把 → 用戶端逐步換 → 停用舊把 → 確認無流量後刪除。
 4. 文件（雙語）：API Key 的定位（應用識別 ≠ 使用者鑑別）、發放與輪替流程、第三方介接指引；
    `framework-reserved-names.md` 補 `st_api_key`。
@@ -309,6 +423,11 @@ DB 不可用時 ping 仍可回應，其餘方法 fail-closed。
 - **不改 AccessToken 鑑別鏈**。本計畫只補應用識別層；使用者鑑別維持現行 Bearer token 機制。
 - **不做 per-key 權限 / 配額 / rate limiting**。金鑰只有「有效 / 無效」，不承載授權語意——
   授權是 `PermissionModels` 的職責，混進來會變成第二套權限系統。`key_type` 只是標示，不影響判權。
+
+  沒有 rate limit 為何可接受：secret 是 256-bit 高熵值，猜測不可行；成本面上，格式不符
+  **不進 DB**（階段 1 第 3 點），不存在的 `sys_id` 由負向快取擋住，故亂打金鑰不會放大成
+  DB 壓力，只多一次記憶體查表。代價是**偵測**——這正是階段 1 第 11 點把失敗稽核記錄
+  提前落地的原因。
 - **不處理 mTLS / OAuth client credentials**。那是不同層級的部署決策。
 
 ## 待確認
@@ -316,8 +435,15 @@ DB 不可用時 ping 仍可回應，其餘方法 fail-closed。
 1. ~~**DB 不可用時的行為**~~ —— **已決策（見 D10）**：`System.Ping` 免金鑰，健康檢查在 DB
    不可用時仍能作答；其餘方法 fail-closed（DB 掛了 API 本來就沒用）。快取 TTL 依 D4 拉長為
    absolute 60 分，DB 短暫不可用期間已在快取的金鑰仍可服務。此行為須寫進文件，避免日後被當 bug 追。
-2. **金鑰是否綁 CompanyId**：DB 存放讓「一租戶一把」變得自然。但一旦金鑰帶公司語意，
-   就與 session 公司情境形成兩個來源、需交叉驗證。預設**不綁**，維持金鑰只識別應用；
-   有需求再另案。
+2. ~~**金鑰是否綁 CompanyId**~~ —— **已決策（2026-07-30）：不綁**，維持金鑰只識別應用。
+   一旦金鑰帶公司語意，就與 session 公司情境形成兩個來源、需交叉驗證。
+
+   與 [plan-row-level-tenancy.md](plan-row-level-tenancy.md) **正交無衝突**：`st_api_key` 是
+   common scope 表，`sys_company_id` 只作用於 company 表。租賃（pooled）模式下公司情境仍來自
+   session，此決策不受影響。
+
+   重議的**唯一觸發條件**：出現**無 Bearer 的機器對機器（M2M）介接**需求——那時金鑰是唯一的
+   公司來源，非綁不可。屆時比照 D9 的處理方式，是**新增一條 M2M 路徑**（金鑰可帶公司語意），
+   而不是改動現行金鑰的語意。
 3. **相容模式的長期處置**：D5 為相容保留寬鬆態。是否在某個大版本改為「無金鑰即拒絕」？
    若要，須在 CHANGELOG 標 breaking 並給遷移指引。

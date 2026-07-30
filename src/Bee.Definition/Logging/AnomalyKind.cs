@@ -20,5 +20,15 @@ namespace Bee.Definition.Logging
 
         /// <summary>(DB) Returned more rows than the configured threshold.</summary>
         LargeResult = 5,
+
+        /// <summary>
+        /// (API) The call was rejected before it ran — a supplied API key was not accepted.
+        /// </summary>
+        /// <remarks>
+        /// Not a code defect: it is the detection signal for a misconfigured client or a probing
+        /// caller. With per-key rate limiting deliberately out of scope, these records are the only
+        /// place such attempts become visible.
+        /// </remarks>
+        Unauthorized = 6,
     }
 }

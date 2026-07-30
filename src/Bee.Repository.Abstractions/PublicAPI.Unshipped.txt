@@ -22,3 +22,9 @@ Bee.Repository.Abstractions.System.ISessionRepository.UpdateSession(Bee.Definiti
 Bee.Repository.Abstractions.System.ISessionRepository.DeleteSession(System.Guid accessToken) -> void
 Bee.Repository.Abstractions.System.IUserRepository.GetName(string! userId) -> string?
 Bee.Repository.Abstractions.System.ISessionRepository.DeleteExpiredSessions() -> int
+Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateApiKeyRepository() -> Bee.Repository.Abstractions.System.IApiKeyRepository!
+Bee.Repository.Abstractions.System.IApiKeyRepository
+Bee.Repository.Abstractions.System.IApiKeyRepository.Exists(string! sysId) -> bool
+Bee.Repository.Abstractions.System.IApiKeyRepository.GetEnabledById(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
+Bee.Repository.Abstractions.System.IApiKeyRepository.GetGateState() -> Bee.Definition.Security.ApiKeyGateState!
+Bee.Repository.Abstractions.System.IApiKeyRepository.Insert(Bee.Definition.Security.ApiKeyInfo! apiKey) -> void

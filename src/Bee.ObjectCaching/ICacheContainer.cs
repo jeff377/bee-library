@@ -56,5 +56,11 @@ namespace Bee.ObjectCaching
         /// <summary>The per-company department-tree snapshot cache, keyed by company id.</summary>
         DepartmentTreeCache DepartmentTree { get; }
 
+        /// <summary>The issued API key cache, keyed by key identifier.</summary>
+        ApiKeyCache ApiKey { get; }
+
+        /// <summary>The single-entry cache holding whether the API key gate is in force.</summary>
+        ApiKeyGateCache ApiKeyGate { get; }
+
     }
 }

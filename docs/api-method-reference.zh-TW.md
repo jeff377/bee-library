@@ -57,6 +57,7 @@ BO 層 Args / Result 型別、`[ApiAccessControl]` 設定，與一行用途說�
 | `Logout` | Public | Authenticated | 銷毀目前 session（同時清除 company context）。 |
 | `GetDefine` | Public | Authenticated | XML envelope 取定義資料（通用 — .NET client FormSchema / FormLayout / LanguageResource 都走此方法）。 |
 | `SaveDefine` | LocalOnly | Authenticated | XML envelope 持久化定義資料；同時失效對應 cache slot。寫入定義屬部署期作業，遠端呼叫一律拒絕 —— 讀取請用 `GetDefine`。 |
+| `CreateApiKey` | LocalOnly | Authenticated | 發放 API 金鑰，完整明文金鑰**只回傳一次** —— 伺服端只存雜湊，無法再次顯示。鑄造憑證屬部署期作業，遠端呼叫一律拒絕。 |
 | `GetFormSchema` | Public | Authenticated | **JS-only。** 以 typed JSON tree 回傳 `FormSchema`（依 session `Culture` 自動本地化）。 |
 | `GetFormLayout` | Public | Authenticated | **JS-only。** 回傳 `FormLayout`（由自動本地化的 FormSchema 動態 generate）。 |
 | `GetDepartmentTree` | Public | Authenticated | 以 typed 物件（JSON / MessagePack）回傳當前公司的部門樹（per-company 組織階層）；未進公司時為 `null`。 |

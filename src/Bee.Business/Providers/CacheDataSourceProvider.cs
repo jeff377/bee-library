@@ -65,8 +65,7 @@ namespace Bee.Business.Providers
             // answer "not a session" there rather than surfacing a connection-manager failure —
             // the caller is `AccessTokenValidator`, whose only question is whether the token
             // authenticates.
-            var databaseItems = _services.GetRequiredService<IDatabaseSettingsProvider>().Get().Items;
-            if (databaseItems?.GetOrDefault(DbCategoryIds.Common) == null) { return null; }
+            if (!HasCommonDatabase()) { return null; }
 
             var seed = _systemFactory.CreateSessionRepository().GetSession(accessToken);
             if (seed == null) { return null; }
@@ -123,6 +122,40 @@ namespace Bee.Business.Providers
 
             var rows = _systemFactory.CreateDepartmentRepository().GetDepartments(company.CompanyDatabaseId);
             return new DepartmentTree(companyId, rows);
+        }
+
+        /// <inheritdoc/>
+        public ApiKeyInfo? GetApiKey(string sysId)
+        {
+            // Same guard as the session lookup: an in-process host with no `common` database has no
+            // key store, and "no store" has to read as "no such key" rather than a connection-manager
+            // failure.
+            if (!HasCommonDatabase()) { return null; }
+
+            return _systemFactory.CreateApiKeyRepository().GetEnabledById(sysId);
+        }
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// WARNING: no try/catch here, and none in the caller. A database failure must reach the
+        /// validator so it can reject the call; turning it into a not-in-force state would silently
+        /// reopen the key gate for the duration of an outage. Only the two definitive answers —
+        /// no configured store, and a store whose table is absent or empty — report not-in-force.
+        /// </remarks>
+        public ApiKeyGateState GetApiKeyGateState()
+        {
+            if (!HasCommonDatabase()) { return new ApiKeyGateState { InForce = false }; }
+
+            return _systemFactory.CreateApiKeyRepository().GetGateState();
+        }
+
+        /// <summary>
+        /// Returns whether a <c>common</c> database is configured for this host.
+        /// </summary>
+        private bool HasCommonDatabase()
+        {
+            var databaseItems = _services.GetRequiredService<IDatabaseSettingsProvider>().Get().Items;
+            return databaseItems?.GetOrDefault(DbCategoryIds.Common) != null;
         }
     }
 }

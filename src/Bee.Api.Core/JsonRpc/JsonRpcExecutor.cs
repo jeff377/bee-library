@@ -66,6 +66,13 @@ namespace Bee.Api.Core.JsonRpc
         public bool IsLocalCall { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets the API key verdict for the current call, assigned by the transport layer.
+        /// Defaults to <see cref="ApiKeyValidationResult.NotChecked"/>, which is correct for
+        /// in-process calls: they carry no <c>X-Api-Key</c> header.
+        /// </summary>
+        public ApiKeyValidationResult ApiKeyValidation { get; set; } = ApiKeyValidationResult.NotChecked;
+
+        /// <summary>
         /// Executes an API method.
         /// </summary>
         /// <param name="request">The JSON-RPC request model.</param>
@@ -101,6 +108,14 @@ namespace Bee.Api.Core.JsonRpc
                 // performing any decryption work.
                 var (progId, action) = ParseMethod(request.Method);
                 var businessObject = CreateBusinessObject(AccessToken, progId);
+                // Hand the caller's application identity to business objects that ask for it. A
+                // setter rather than a constructor argument: only a few methods care (the
+                // connectivity probe reports it, the audit trail records it), and widening every
+                // business-object constructor would break each application subclass for their sake.
+                if (businessObject is IApiKeyContextAware apiKeyAware)
+                {
+                    apiKeyAware.ApiKeyValidation = ApiKeyValidation;
+                }
                 var method = GetMethod(businessObject, action);
                 ApiAccessValidator.ValidateAccess(method, new ApiCallContext(AccessToken, IsLocalCall, format), _tokenValidator);
 

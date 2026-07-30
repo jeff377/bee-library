@@ -33,11 +33,17 @@ namespace Bee.Business.System
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual PingResult Ping(PingArgs args)
         {
+            var apiKey = ApiKeyValidation;
             return new PingResult()
             {
                 Status = "ok",
                 ServerTime = DateTime.UtcNow,
-                Version = SysInfo.Version, // system version
+                ApiKeyStatus = apiKey.Status,
+                // Withheld unless the caller got past the key gate, so an unauthenticated probe
+                // cannot read the framework version off a method that requires no key. `IsAccepted`
+                // also covers the two states where the gate is not in force (no key issued yet, or an
+                // in-process call), which keeps existing monitors working.
+                Version = apiKey.IsAccepted ? SysInfo.Version : null,
                 TraceId = args.TraceId // echo back the trace ID
             };
         }

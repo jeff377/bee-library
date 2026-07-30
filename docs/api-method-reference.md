@@ -59,6 +59,7 @@ Singleton system-level BO, accessed as `System.<action>` over the wire.
 | `Logout` | Public | Authenticated | Destroys the current session (also clears company context). |
 | `GetDefine` | Public | Authenticated | Returns definition data as an XML envelope (universal — .NET clients use this for FormSchema / FormLayout / LanguageResource). |
 | `SaveDefine` | LocalOnly | Authenticated | Persists definition data via XML envelope; invalidates the matching cache slot. Writing definitions is a deployment-time operation, so remote callers are rejected outright — read them with `GetDefine`. |
+| `CreateApiKey` | LocalOnly | Authenticated | Issues an API key and returns the complete plaintext key **once** — only a hash is stored, so it cannot be shown again. Minting a credential is a deployment-time operation, so remote callers are rejected. |
 | `GetFormSchema` | Public | Authenticated | **JS-only.** Returns a `FormSchema` as a typed JSON tree (auto-localized using session's `Culture`). |
 | `GetFormLayout` | Public | Authenticated | **JS-only.** Returns a `FormLayout` (generated from auto-localized FormSchema). |
 | `GetDepartmentTree` | Public | Authenticated | Returns the current company's department tree (per-company org hierarchy) as a typed object (JSON / MessagePack); `null` when no company is entered. |

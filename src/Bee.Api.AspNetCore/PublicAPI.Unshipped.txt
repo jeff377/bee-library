@@ -1,1 +1,3 @@
 #nullable enable
+Bee.Api.AspNetCore.Controllers.ApiServiceController.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
+virtual Bee.Api.AspNetCore.Controllers.ApiServiceController.ValidateApiKey(string? apiKey) -> Bee.Definition.Security.ApiKeyValidationResult!

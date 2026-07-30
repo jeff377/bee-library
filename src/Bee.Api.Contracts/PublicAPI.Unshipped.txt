@@ -1,1 +1,11 @@
 #nullable enable
+Bee.Api.Contracts.System.IPingResponse.ApiKeyStatus.get -> Bee.Definition.Security.ApiKeyStatus
+Bee.Api.Contracts.System.ICreateApiKeyRequest
+Bee.Api.Contracts.System.ICreateApiKeyRequest.Contact.get -> string?
+Bee.Api.Contracts.System.ICreateApiKeyRequest.ExpiredAt.get -> System.DateTime?
+Bee.Api.Contracts.System.ICreateApiKeyRequest.KeyType.get -> Bee.Definition.Security.ApiKeyType
+Bee.Api.Contracts.System.ICreateApiKeyRequest.SysId.get -> string!
+Bee.Api.Contracts.System.ICreateApiKeyRequest.SysName.get -> string!
+Bee.Api.Contracts.System.ICreateApiKeyResponse
+Bee.Api.Contracts.System.ICreateApiKeyResponse.ApiKey.get -> string!
+Bee.Api.Contracts.System.ICreateApiKeyResponse.SysId.get -> string!

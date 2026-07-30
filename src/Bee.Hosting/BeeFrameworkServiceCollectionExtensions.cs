@@ -260,6 +260,12 @@ namespace Bee.Hosting
                     sp.GetRequiredService<ISessionInfoService>(),
                     sp.GetRequiredService<IRolePermissionService>()));
 
+            // API key validation (application identity). Registered plainly rather than through the
+            // configurable-component path: a host that wants different key storage replaces it with
+            // services.AddSingleton<IApiKeyValidator, MyValidator>() after AddBeeFramework.
+            services.AddSingleton<IApiKeyValidator>(sp =>
+                new ApiKeyValidator(sp.GetRequiredService<ICacheContainer>()));
+
             // Organization: per-company department-tree snapshot cache (record-scope source).
             services.AddSingleton<IDepartmentTreeService>(sp =>
                 new DepartmentTreeService(sp.GetRequiredService<ICacheContainer>()));

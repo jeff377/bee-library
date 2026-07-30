@@ -78,6 +78,8 @@ namespace Bee.ObjectCaching
             CompanyInfo = new CompanyInfoCache(dataSource, CachePrefix);
             CompanyRolePermissions = new CompanyRolePermissionsCache(dataSource, CachePrefix);
             DepartmentTree = new DepartmentTreeCache(dataSource, CachePrefix);
+            ApiKey = new ApiKeyCache(dataSource, CachePrefix);
+            ApiKeyGate = new ApiKeyGateCache(dataSource, CachePrefix);
         }
 
         /// <summary>
@@ -131,6 +133,12 @@ namespace Bee.ObjectCaching
 
         /// <inheritdoc/>
         public DepartmentTreeCache DepartmentTree { get; }
+
+        /// <inheritdoc/>
+        public ApiKeyCache ApiKey { get; }
+
+        /// <inheritdoc/>
+        public ApiKeyGateCache ApiKeyGate { get; }
 
     }
 }

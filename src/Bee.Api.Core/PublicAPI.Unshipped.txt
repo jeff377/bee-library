@@ -1,1 +1,26 @@
 #nullable enable
+Bee.Api.Core.Authorization.ApiAuthorizationContext.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
+Bee.Api.Core.Authorization.ApiAuthorizationContext.ApiKeyValidation.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.ApiKeyValidation.set -> void
+Bee.Api.Core.Messages.System.PingResponse.ApiKeyStatus.get -> Bee.Definition.Security.ApiKeyStatus
+Bee.Api.Core.Messages.System.PingResponse.ApiKeyStatus.set -> void
+virtual Bee.Api.Core.Authorization.ApiAuthorizationValidator.IsApiKeyRequired(string! method) -> bool
+Bee.Api.Core.Messages.System.CreateApiKeyRequest
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.Contact.get -> string?
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.Contact.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.CreateApiKeyRequest() -> void
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.ExpiredAt.get -> System.DateTime?
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.ExpiredAt.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.KeyType.get -> Bee.Definition.Security.ApiKeyType
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.KeyType.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.SysId.get -> string!
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.SysId.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.SysName.get -> string!
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.SysName.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyResponse
+Bee.Api.Core.Messages.System.CreateApiKeyResponse.ApiKey.get -> string!
+Bee.Api.Core.Messages.System.CreateApiKeyResponse.ApiKey.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyResponse.CreateApiKeyResponse() -> void
+Bee.Api.Core.Messages.System.CreateApiKeyResponse.SysId.get -> string!
+Bee.Api.Core.Messages.System.CreateApiKeyResponse.SysId.set -> void

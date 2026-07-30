@@ -6,6 +6,7 @@ using Bee.Base.Serialization;
 using Bee.Api.Core.Messages.System;
 using Bee.Definition;
 using Bee.Definition.Organization;
+using Bee.Definition.Security;
 using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Client.Connectors
@@ -228,6 +229,36 @@ namespace Bee.Api.Client.Connectors
                 Keys = keys
             };
             await ExecuteAsync<SaveDefineResponse>(SystemActions.SaveDefine, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously issues a new API key and returns the complete plaintext key once.
+        /// </summary>
+        /// <param name="sysId">The key identifier to issue; lowercase letters, digits and hyphens.</param>
+        /// <param name="sysName">The display name of the application the key is for.</param>
+        /// <param name="keyType">The key classification; a label only.</param>
+        /// <param name="contact">The contact for a third-party holder, so an incident has someone to reach.</param>
+        /// <param name="expiredAt">The UTC expiry, or <c>null</c> for a key that does not expire.</param>
+        /// <remarks>
+        /// IMPORTANT: <c>CreateApiKeyResponse.ApiKey</c> is the only time the plaintext key exists
+        /// outside the caller — the server keeps just a hash. Persist it here or issue a replacement.
+        /// <para>
+        /// The server restricts this to local calls, so this reaches it through an in-process
+        /// connector only.
+        /// </para>
+        /// </remarks>
+        public async Task<CreateApiKeyResponse> CreateApiKeyAsync(string sysId, string sysName,
+            ApiKeyType keyType = ApiKeyType.Internal, string? contact = null, DateTime? expiredAt = null)
+        {
+            var request = new CreateApiKeyRequest()
+            {
+                SysId = sysId,
+                SysName = sysName,
+                KeyType = keyType,
+                Contact = contact,
+                ExpiredAt = expiredAt
+            };
+            return await ExecuteAsync<CreateApiKeyResponse>(SystemActions.CreateApiKey, request).ConfigureAwait(false);
         }
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace Bee.Business
     /// <summary>
     /// Base class for business logic objects.
     /// </summary>
-    public abstract class BusinessObject : IBusinessObject
+    public abstract class BusinessObject : IBusinessObject, IApiKeyContextAware
     {
         private readonly IBeeContext _ctx;
 
@@ -48,6 +48,13 @@ namespace Bee.Business
         /// Gets a value indicating whether the call originates from a local source (e.g., same process or host as the server).
         /// </summary>
         public bool IsLocalCall { get; } = false;
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Assigned by the transport layer right after construction; business code only reads it.
+        /// In-process calls leave the default, since they carry no <c>X-Api-Key</c> header.
+        /// </remarks>
+        public ApiKeyValidationResult ApiKeyValidation { get; set; } = ApiKeyValidationResult.NotChecked;
 
         /// <summary>Gets the definition data access service from the per-call context.</summary>
         protected IDefineAccess DefineAccess => _ctx.DefineAccess;

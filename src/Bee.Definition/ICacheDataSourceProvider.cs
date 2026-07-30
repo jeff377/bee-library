@@ -1,5 +1,6 @@
 using Bee.Definition.Identity;
 using Bee.Definition.Organization;
+using Bee.Definition.Security;
 
 namespace Bee.Definition
 {
@@ -54,5 +55,29 @@ namespace Bee.Definition
         /// </summary>
         /// <param name="companyId">The company business id.</param>
         DepartmentTree? GetDepartmentTree(string companyId);
+
+        /// <summary>
+        /// Gets the enabled API key with the specified identifier; <c>null</c> when no enabled,
+        /// unexpired key matches.
+        /// </summary>
+        /// <param name="sysId">The key identifier (the leading segment of the plaintext key).</param>
+        /// <remarks>
+        /// <c>null</c> covers "unknown id" and "disabled key" alike, which is what the caller needs:
+        /// both reject the request, and telling them apart in the response would let a caller probe
+        /// which keys exist.
+        /// </remarks>
+        ApiKeyInfo? GetApiKey(string sysId);
+
+        /// <summary>
+        /// Gets whether the API key gate is in force (<c>st_api_key</c> exists and holds at least
+        /// one enabled key).
+        /// </summary>
+        /// <remarks>
+        /// WARNING: implementations must let database failures propagate rather than reporting
+        /// "not in force". Returning a not-in-force state on error would reopen the gate during an
+        /// outage; the caller turns a propagated exception into a rejection instead. Absence of the
+        /// table is a definitive schema answer and does report not-in-force.
+        /// </remarks>
+        ApiKeyGateState GetApiKeyGateState();
     }
 }

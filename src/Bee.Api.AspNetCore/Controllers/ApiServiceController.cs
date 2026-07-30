@@ -1,14 +1,20 @@
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using Bee.Api.Core;
 using Bee.Api.Core.Authorization;
 using Bee.Api.Core.JsonRpc;
+using Bee.Base;
 using Bee.Base.Exceptions;
 using Bee.Base.Serialization;
+using Bee.Definition.Logging;
+using Bee.Definition.Security;
+using Bee.Definition.Settings;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Bee.Api.Core.Messages;
 
 namespace Bee.Api.AspNetCore.Controllers
@@ -121,15 +127,117 @@ namespace Bee.Api.AspNetCore.Controllers
         /// <returns>The authorization validation result.</returns>
         protected virtual ApiAuthorizationResult ValidateAuthorization(JsonRpcRequest request, string? apiKey, string? authorization)
         {
+            ApiKeyValidation = ValidateApiKey(apiKey);
+
             var context = new ApiAuthorizationContext
             {
                 ApiKey = apiKey ?? string.Empty,
                 Authorization = authorization ?? string.Empty,
-                Method = request.Method
+                Method = request.Method,
+                ApiKeyValidation = ApiKeyValidation
             };
 
             var validator = ApiServiceOptions.AuthorizationValidator;
-            return validator.Validate(context);
+            var result = validator.Validate(context);
+            if (!result.IsValid && ApiKeyValidation.Status == ApiKeyStatus.Invalid)
+            {
+                WriteApiKeyAnomaly(request.Method);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the API key verdict for the current request, established by
+        /// <see cref="ValidateAuthorization"/>.
+        /// </summary>
+        /// <remarks>
+        /// Per-request state on a per-request controller instance. Carried as a property rather than
+        /// threaded through <see cref="HandleRequestAsync"/> so the existing signature — which
+        /// deployments override — stays intact.
+        /// </remarks>
+        protected ApiKeyValidationResult ApiKeyValidation { get; private set; } = ApiKeyValidationResult.NotChecked;
+
+        /// <summary>
+        /// Runs the API key check for this request.
+        /// </summary>
+        /// <param name="apiKey">The raw <c>X-Api-Key</c> header value.</param>
+        /// <remarks>
+        /// WARNING: a failed lookup is turned into a rejection here, never into
+        /// <see cref="ApiKeyStatus.NotConfigured"/>. Reporting "this deployment has no keys" when the
+        /// database is merely unreachable would reopen the gate for the duration of an outage. The
+        /// connectivity probe stays answerable because the authorization validator exempts it from
+        /// the key requirement, not because this method softens the failure.
+        /// <para>
+        /// A host with no <see cref="IApiKeyValidator"/> registered (a bare test host) yields
+        /// <see cref="ApiKeyStatus.NotChecked"/>, which keeps the historical presence-only check.
+        /// </para>
+        /// </remarks>
+        protected virtual ApiKeyValidationResult ValidateApiKey(string? apiKey)
+        {
+            var validator = HttpContext.RequestServices?.GetService<IApiKeyValidator>();
+            if (validator == null)
+            {
+                return ApiKeyValidationResult.NotChecked;
+            }
+
+            try
+            {
+                return validator.Validate(apiKey);
+            }
+            catch (DbException ex)
+            {
+                LogApiKeyLookupFailure(ex);
+                return new ApiKeyValidationResult(ApiKeyStatus.Invalid);
+            }
+            catch (InvalidOperationException ex)
+            {
+                LogApiKeyLookupFailure(ex);
+                return new ApiKeyValidationResult(ApiKeyStatus.Invalid);
+            }
+        }
+
+        /// <summary>
+        /// Logs a failed API key lookup as a warning.
+        /// </summary>
+        /// <param name="ex">The exception raised by the lookup.</param>
+        private void LogApiKeyLookupFailure(Exception ex)
+        {
+            HttpContext.RequestServices?.GetService<ILogger<ApiServiceController>>()?
+                .LogWarning(ex, "API key validation failed to reach its store; the request was rejected.");
+        }
+
+        /// <summary>
+        /// Records a rejected API key in the API anomaly log.
+        /// </summary>
+        /// <param name="method">The JSON-RPC method the caller attempted.</param>
+        /// <remarks>
+        /// Only rejected keys are recorded, not absent ones: a deployment behind a monitor that pings
+        /// without a key would otherwise fill the log with entries carrying no information. A key
+        /// that was supplied and refused is the signal worth keeping.
+        /// <para>
+        /// WARNING: never record the key value. Only the identifier segment — which is not secret and
+        /// whose character set is validated — plus the caller's address go in.
+        /// </para>
+        /// </remarks>
+        private void WriteApiKeyAnomaly(string method)
+        {
+            var services = HttpContext.RequestServices;
+            var options = services?.GetService<AuditLogOptions>();
+            if (options is not { Enabled: true, AnomalyEnabled: true }) { return; }
+
+            var writer = services?.GetService<IAuditLogWriter>();
+            if (writer == null) { return; }
+
+            string sysId = ApiKeyValidation.SysId;
+            writer.Write(new ApiAnomalyEntry
+            {
+                Method = method,
+                Kind = AnomalyKind.Unauthorized,
+                ErrorType = "ApiKeyRejected",
+                ErrorMessage = StringUtilities.IsEmpty(sysId) ? null : "sys_id=" + sysId,
+                ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                Source = method,
+            });
         }
 
         /// <summary>
@@ -144,6 +252,7 @@ namespace Bee.Api.AspNetCore.Controllers
                 var executor = HttpContext.RequestServices.GetRequiredService<JsonRpcExecutor>();
                 executor.AccessToken = accessToken;
                 executor.IsLocalCall = false;
+                executor.ApiKeyValidation = ApiKeyValidation;
                 var result = await executor.ExecuteAsync(request);
                 return new ContentResult
                 {

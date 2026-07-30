@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Bee.Api.Core.Conversion
 {
@@ -21,7 +22,20 @@ namespace Bee.Api.Core.Conversion
         // since ConcurrentDictionary does not accept null values.
         private static readonly ConcurrentDictionary<Type, Type> _cache = new();
         private static readonly Type _noMatch = typeof(void);
-        private static readonly JsonSerializerOptions CaseInsensitiveOptions = new() { PropertyNameCaseInsensitive = true };
+        /// <summary>
+        /// Read options for JSON responses.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: <see cref="JsonStringEnumConverter"/> must stay, and must match whatever
+        /// <c>JsonCodec</c> writes. That writer emits enums as names, so a reader without this
+        /// converter throws on the first response property that happens to be an enum. The converter
+        /// still accepts numeric values, so it only widens what can be read.
+        /// </remarks>
+        private static readonly JsonSerializerOptions CaseInsensitiveOptions = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() },
+        };
 
         private const string ResultSuffix = "Result";
         private const string ResponseSuffix = "Response";

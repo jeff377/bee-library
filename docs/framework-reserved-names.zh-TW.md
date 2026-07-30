@@ -22,6 +22,7 @@
 | `st_company` | 公司清單（per-tenant 根目錄）。 |
 | `st_user_company` | 哪些使用者可進入哪些公司。 |
 | `st_session` | Session / Access Token。 |
+| `st_api_key` | 已發放的 API 金鑰（`X-Api-Key`）：應用識別，以雜湊存放。 |
 | `st_define` | DB-backed 定義儲存（FormSchema / TableSchema 等，非 XML 檔案版本）。 |
 | `st_cache_notify` | 跨節點 cache 失效通道（[ADR-017](adr/adr-017-db-cache-invalidation.md)）。 |
 

@@ -8,3 +8,22 @@ Bee.ObjectCaching.CacheContainerService.CacheContainerService(Bee.Definition.Sto
 Bee.ObjectCaching.Services.CompanyInfoService.CompanyInfoService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.DepartmentTreeService.DepartmentTreeService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.RolePermissionService.RolePermissionService(Bee.ObjectCaching.ICacheContainer! cache) -> void
+Bee.ObjectCaching.CacheContainerService.ApiKey.get -> Bee.ObjectCaching.Database.ApiKeyCache!
+Bee.ObjectCaching.CacheContainerService.ApiKeyGate.get -> Bee.ObjectCaching.Database.ApiKeyGateCache!
+Bee.ObjectCaching.Database.ApiKeyCache
+Bee.ObjectCaching.Database.ApiKeyCache.ApiKeyCache(string! cachePrefix = "") -> void
+Bee.ObjectCaching.Database.ApiKeyGateCache
+Bee.ObjectCaching.Database.ApiKeyGateCache.ApiKeyGateCache(string! cachePrefix = "") -> void
+Bee.ObjectCaching.Database.ApiKeyGateCache.GetState() -> Bee.Definition.Security.ApiKeyGateState?
+Bee.ObjectCaching.Database.ApiKeyGateCache.RemoveState() -> void
+Bee.ObjectCaching.ICacheContainer.ApiKey.get -> Bee.ObjectCaching.Database.ApiKeyCache!
+Bee.ObjectCaching.ICacheContainer.ApiKeyGate.get -> Bee.ObjectCaching.Database.ApiKeyGateCache!
+Bee.ObjectCaching.Services.ApiKeyValidator
+Bee.ObjectCaching.Services.ApiKeyValidator.ApiKeyValidator(Bee.ObjectCaching.ICacheContainer! cache) -> void
+Bee.ObjectCaching.Services.ApiKeyValidator.Validate(string? apiKey) -> Bee.Definition.Security.ApiKeyValidationResult!
+const Bee.ObjectCaching.Database.ApiKeyCache.AbsoluteMinutes = 60 -> int
+override Bee.ObjectCaching.Database.ApiKeyCache.CreateInstance(string! key) -> Bee.Definition.Security.ApiKeyInfo?
+override Bee.ObjectCaching.Database.ApiKeyCache.GetPolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy!
+override Bee.ObjectCaching.Database.ApiKeyGateCache.CacheGroup.get -> string!
+override Bee.ObjectCaching.Database.ApiKeyGateCache.CreateInstance(string! key) -> Bee.Definition.Security.ApiKeyGateState?
+override Bee.ObjectCaching.Database.ApiKeyGateCache.GetPolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy!

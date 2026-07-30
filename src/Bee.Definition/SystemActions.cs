@@ -66,6 +66,10 @@ namespace Bee.Definition
         /// </summary>
         public const string SaveDefine = "SaveDefine";
         /// <summary>
+        /// Issues a new API key and returns the plaintext key once.
+        /// </summary>
+        public const string CreateApiKey = "CreateApiKey";
+        /// <summary>
         /// Executes a custom function.
         /// </summary>
         public const string ExecFunc = "ExecFunc";

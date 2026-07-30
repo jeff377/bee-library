@@ -89,7 +89,9 @@ namespace Bee.Api.AspNetCore.UnitTests
         [DisplayName("PostAsync 無 API 金鑰應回傳 401")]
         public async Task PostAsync_MissingApiKey_Returns401()
         {
-            const string body = "{\"method\":\"System.Ping\",\"id\":\"1\",\"params\":{\"clientName\":\"t\",\"traceId\":\"0\"}}";
+            // 以 ExecFunc 而非 Ping 為測試對象：Ping 已刻意免金鑰（健康檢查在資料庫不可用時
+            // 仍須作答），因此不再是「缺金鑰即 401」的樣本。
+            const string body = "{\"method\":\"System.ExecFunc\",\"id\":\"1\",\"params\":{}}";
             var result = await PostAsync("application/json", body, apiKey: null);
 
             var obj = Assert.IsType<ObjectResult>(result);

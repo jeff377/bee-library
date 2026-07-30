@@ -23,3 +23,51 @@ Bee.Definition.Settings.SessionCleanupOptions.IntervalSeconds.get -> int
 Bee.Definition.Settings.SessionCleanupOptions.IntervalSeconds.set -> void
 Bee.Definition.Settings.SessionCleanupOptions.SessionCleanupOptions() -> void
 override Bee.Definition.Settings.SessionCleanupOptions.ToString() -> string!
+Bee.Definition.ICacheDataSourceProvider.GetApiKey(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
+Bee.Definition.ICacheDataSourceProvider.GetApiKeyGateState() -> Bee.Definition.Security.ApiKeyGateState!
+Bee.Definition.Logging.AnomalyKind.Unauthorized = 6 -> Bee.Definition.Logging.AnomalyKind
+Bee.Definition.Security.ApiKeyGateState
+Bee.Definition.Security.ApiKeyGateState.ApiKeyGateState() -> void
+Bee.Definition.Security.ApiKeyGateState.GetKey() -> string!
+Bee.Definition.Security.ApiKeyGateState.InForce.get -> bool
+Bee.Definition.Security.ApiKeyGateState.InForce.set -> void
+Bee.Definition.Security.ApiKeyInfo
+Bee.Definition.Security.ApiKeyInfo.ApiKeyInfo() -> void
+Bee.Definition.Security.ApiKeyInfo.Contact.get -> string!
+Bee.Definition.Security.ApiKeyInfo.Contact.set -> void
+Bee.Definition.Security.ApiKeyInfo.ExpiredAt.get -> System.DateTime?
+Bee.Definition.Security.ApiKeyInfo.ExpiredAt.set -> void
+Bee.Definition.Security.ApiKeyInfo.GetKey() -> string!
+Bee.Definition.Security.ApiKeyInfo.HashedKey.get -> string!
+Bee.Definition.Security.ApiKeyInfo.HashedKey.set -> void
+Bee.Definition.Security.ApiKeyInfo.IsExpired(System.DateTime utcNow) -> bool
+Bee.Definition.Security.ApiKeyInfo.KeyType.get -> Bee.Definition.Security.ApiKeyType
+Bee.Definition.Security.ApiKeyInfo.KeyType.set -> void
+Bee.Definition.Security.ApiKeyInfo.SysId.get -> string!
+Bee.Definition.Security.ApiKeyInfo.SysId.set -> void
+Bee.Definition.Security.ApiKeyInfo.SysName.get -> string!
+Bee.Definition.Security.ApiKeyInfo.SysName.set -> void
+Bee.Definition.Security.ApiKeyStatus
+Bee.Definition.Security.ApiKeyStatus.Invalid = 3 -> Bee.Definition.Security.ApiKeyStatus
+Bee.Definition.Security.ApiKeyStatus.NotChecked = 0 -> Bee.Definition.Security.ApiKeyStatus
+Bee.Definition.Security.ApiKeyStatus.NotConfigured = 1 -> Bee.Definition.Security.ApiKeyStatus
+Bee.Definition.Security.ApiKeyStatus.NotProvided = 2 -> Bee.Definition.Security.ApiKeyStatus
+Bee.Definition.Security.ApiKeyStatus.Valid = 4 -> Bee.Definition.Security.ApiKeyStatus
+Bee.Definition.Security.ApiKeyType
+Bee.Definition.Security.ApiKeyType.Internal = 1 -> Bee.Definition.Security.ApiKeyType
+Bee.Definition.Security.ApiKeyType.ThirdParty = 2 -> Bee.Definition.Security.ApiKeyType
+Bee.Definition.Security.ApiKeyValidationResult
+Bee.Definition.Security.ApiKeyValidationResult.ApiKeyValidationResult(Bee.Definition.Security.ApiKeyStatus status) -> void
+Bee.Definition.Security.ApiKeyValidationResult.ApiKeyValidationResult(Bee.Definition.Security.ApiKeyStatus status, string! sysId, string! sysName) -> void
+Bee.Definition.Security.ApiKeyValidationResult.IsAccepted.get -> bool
+Bee.Definition.Security.ApiKeyValidationResult.Status.get -> Bee.Definition.Security.ApiKeyStatus
+Bee.Definition.Security.ApiKeyValidationResult.SysId.get -> string!
+Bee.Definition.Security.ApiKeyValidationResult.SysName.get -> string!
+Bee.Definition.Security.IApiKeyContextAware
+Bee.Definition.Security.IApiKeyContextAware.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
+Bee.Definition.Security.IApiKeyContextAware.ApiKeyValidation.set -> void
+Bee.Definition.Security.IApiKeyValidator
+Bee.Definition.Security.IApiKeyValidator.Validate(string? apiKey) -> Bee.Definition.Security.ApiKeyValidationResult!
+const Bee.Definition.Security.ApiKeyGateState.CacheKey = "[gate]" -> string!
+static readonly Bee.Definition.Security.ApiKeyValidationResult.NotChecked -> Bee.Definition.Security.ApiKeyValidationResult!
+const Bee.Definition.SystemActions.CreateApiKey = "CreateApiKey" -> string!

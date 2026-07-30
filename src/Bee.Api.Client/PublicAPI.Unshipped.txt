@@ -1,1 +1,2 @@
 #nullable enable
+Bee.Api.Client.Connectors.SystemApiConnector.CreateApiKeyAsync(string! sysId, string! sysName, Bee.Definition.Security.ApiKeyType keyType = Bee.Definition.Security.ApiKeyType.Internal, string? contact = null, System.DateTime? expiredAt = null) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.CreateApiKeyResponse!>!

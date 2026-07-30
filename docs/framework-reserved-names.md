@@ -22,6 +22,7 @@ The `st_` prefix means "framework-owned table". It is **orthogonal to which data
 | `st_company` | Company list (per-tenant root). |
 | `st_user_company` | Which users can enter which companies. |
 | `st_session` | Sessions / access tokens. |
+| `st_api_key` | Issued API keys (`X-Api-Key`): application identity, stored as a hash. |
 | `st_define` | DB-backed definition storage (FormSchema / TableSchema / etc., when not stored as XML files). |
 | `st_cache_notify` | Cross-node cache invalidation channel ([ADR-017](adr/adr-017-db-cache-invalidation.md)). |
 

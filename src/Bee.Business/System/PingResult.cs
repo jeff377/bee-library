@@ -1,4 +1,5 @@
 using Bee.Api.Contracts.System;
+using Bee.Definition.Security;
 
 namespace Bee.Business.System
 {
@@ -18,7 +19,13 @@ namespace Bee.Business.System
         public DateTime ServerTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the optional version information.
+        /// Gets or sets the outcome of the API key check for this call.
+        /// </summary>
+        public ApiKeyStatus ApiKeyStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional version information; <c>null</c> when the caller did not present
+        /// an accepted API key.
         /// </summary>
         public string? Version { get; set; }
 

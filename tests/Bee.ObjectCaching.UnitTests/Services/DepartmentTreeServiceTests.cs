@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Definition;
 using Bee.Definition.Identity;
 using Bee.Definition.Organization;
+using Bee.Definition.Security;
 using Bee.Definition.Storage;
 using Bee.ObjectCaching.Services;
 
@@ -28,6 +29,8 @@ namespace Bee.ObjectCaching.UnitTests.Services
             public SessionInfo? GetSessionInfo(Guid accessToken) => null;
             public CompanyInfo? GetCompanyInfo(string companyId) => null;
             public CompanyRolePermissions? GetCompanyRolePermissions(string companyId) => null;
+            public ApiKeyInfo? GetApiKey(string sysId) => null;
+            public ApiKeyGateState GetApiKeyGateState() => new();
         }
 
         private static CacheContainerService NewCache(ICacheDataSourceProvider? dataSource = null)
