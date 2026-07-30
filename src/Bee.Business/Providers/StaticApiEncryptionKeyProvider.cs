@@ -29,10 +29,11 @@ namespace Bee.Business.Providers
         public byte[] GetKey(Guid accessToken) => _apiEncryptionKey;
 
         /// <summary>
-        /// Generates an encryption key at login time (may be shared or random).
+        /// Generates the key for a newly issued session; always the shared key.
         /// </summary>
+        /// <param name="accessToken">The access token of the session being created (unused).</param>
         /// <returns>A 64-byte combined key (AES + HMAC).</returns>
-        public byte[] GenerateKeyForLogin() => _apiEncryptionKey;
+        public byte[] GenerateKeyForLogin(Guid accessToken) => _apiEncryptionKey;
     }
 
 }

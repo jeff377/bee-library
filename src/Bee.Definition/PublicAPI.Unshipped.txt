@@ -2,3 +2,7 @@
 Bee.Definition.ICacheDataSourceProvider.GetCompanyInfo(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
 Bee.Definition.ICacheDataSourceProvider.GetCompanyRolePermissions(string! companyId) -> Bee.Definition.Identity.CompanyRolePermissions?
 Bee.Definition.ICacheDataSourceProvider.GetDepartmentTree(string! companyId) -> Bee.Definition.Organization.DepartmentTree?
+*REMOVED*Bee.Definition.Security.IApiEncryptionKeyProvider.GenerateKeyForLogin() -> byte[]!
+*REMOVED*const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DynamicApiEncryptionKeyProvider, Bee.Business" -> string!
+Bee.Definition.Security.IApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
+const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DerivedApiEncryptionKeyProvider, Bee.Business" -> string!

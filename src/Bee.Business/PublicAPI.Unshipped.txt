@@ -2,3 +2,12 @@
 Bee.Business.Providers.CacheDataSourceProvider.GetCompanyInfo(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
 Bee.Business.Providers.CacheDataSourceProvider.GetCompanyRolePermissions(string! companyId) -> Bee.Definition.Identity.CompanyRolePermissions?
 Bee.Business.Providers.CacheDataSourceProvider.GetDepartmentTree(string! companyId) -> Bee.Definition.Organization.DepartmentTree?
+*REMOVED*Bee.Business.Providers.DynamicApiEncryptionKeyProvider.GenerateKeyForLogin() -> byte[]!
+*REMOVED*Bee.Business.Providers.StaticApiEncryptionKeyProvider.GenerateKeyForLogin() -> byte[]!
+Bee.Business.Providers.DerivedApiEncryptionKeyProvider
+Bee.Business.Providers.DerivedApiEncryptionKeyProvider.DerivedApiEncryptionKeyProvider(byte[]! rootKey) -> void
+Bee.Business.Providers.DerivedApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
+Bee.Business.Providers.DerivedApiEncryptionKeyProvider.GetKey(System.Guid accessToken) -> byte[]!
+Bee.Business.Providers.DynamicApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
+Bee.Business.Providers.StaticApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
+static Bee.Business.Providers.DerivedApiEncryptionKeyProvider.FromMasterKey(byte[]! masterKey) -> Bee.Business.Providers.DerivedApiEncryptionKeyProvider!

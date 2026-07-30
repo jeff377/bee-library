@@ -1,10 +1,10 @@
 # 計畫：SessionInfo 持久化與重建（`st_session` 種子）
 
-**狀態：📝 擬定中（2026-07-29）**
+**狀態：🚧 進行中（2026-07-30）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 前置：金鑰改為可推導（`DerivedApiEncryptionKeyProvider`）＋ `st_user` 語系欄位 | 📝 待做 |
+| 1 | 前置：金鑰改為可推導（`DerivedApiEncryptionKeyProvider`）＋ `st_user` 語系欄位 | 🚧 進行中 |
 | 2 | 種子持久化：`SessionUser` 擴充、四個寫入點、Login / `CreateSession` 共用建構路徑 | 📝 待做 |
 | 3 | 重建：`ICacheDataSourceProvider.GetSessionInfo` ＋ `SessionInfoCache.CreateInstance` ＋ 讀取純化 | 📝 待做 |
 | 4 | 收尾：`oneTime` 明確拒絕、過期列清理排程、CHANGELOG 與文件 | 📝 待做 |
@@ -152,6 +152,31 @@ Login 的 DB 寫入失敗應**讓 Login 失敗**而非吞掉：吞掉會讓 clie
 | D7 | 過期 session 殘留 | 比照 `CacheNotifyPoller` 以 `BackgroundService` 排程清理 |
 
 > 編號沿用原 plan（D1 / D2 屬快取自載那份），不重新編號以免交叉引用失效。
+
+### 實作細節定案（2026-07-30）
+
+動工前補齊原文留白處，均不改變上表的設計方向：
+
+| 項目 | 決策 |
+|------|------|
+| 預設 `IApiEncryptionKeyProvider` | **改為 Derived**——`BackendDefaultTypes.ApiEncryptionKeyProvider` 由 Dynamic 改指 `DerivedApiEncryptionKeyProvider`，使 out-of-box 部署即具備重建能力 |
+| `GenerateKeyForLogin` 簽章 | 直接換為 `(Guid accessToken)`，不保留無參數多載（保留只能讓 Derived 擲例外，等於留一條死路徑） |
+| HKDF 參數 | HMAC-SHA256；IKM = `SecurityKeySettings.ApiEncryptionKey`、salt = 空、info = `"bee-api-session-key"` + token 的 16 bytes；輸出 64 bytes |
+| `st_user` 語系欄位 | `culture`（對齊 `SessionInfo.Culture`，值形如 `zh-TW`） |
+| `LoginEvent` 新值 | `ServiceSessionCreated`，附於列舉末端 |
+| D6 過期列讀取 | 以查詢條件過濾，不讀出後再判斷 |
+| D7 清理排程 | 預設啟用、間隔 1 小時，設定歸 `BackgroundServiceConfiguration` |
+
+**未設定 `ApiEncryptionKey` 時以 master key 導出根金鑰**（2026-07-30 修正 D3 的「註冊時擲錯誤」）：
+原訂未設定即 fail-fast，實作後發現代價過高——`SecurityKeySettings` 的「未設定＝空 byte[]」
+本就是受支援狀態，fail-fast 會讓所有未設定金鑰的既有部署升級後**開機即失敗**（實測亦令 33 個
+現有測試在啟動階段就掛）。改為：未設定時以 master key 為 HKDF IKM、搭專屬 domain label
+（`bee-api-encryption-root-key`）導出根金鑰。master key 僅作導出來源、不直接參與 payload 加解密，
+且導出結果不等同 master key 本身；明確設定 `ApiEncryptionKey` 時該值優先。out-of-box 因此真正可用。
+
+**預設改為 Derived 的相容性**：既有部署升級後金鑰產生方式改變，現存 session 會失效一次。
+需維持舊行為者，於 `BackendComponents.ApiEncryptionKeyProvider` 明確指定 Dynamic。
+`BackendDefaultTypes.ApiEncryptionKeyProvider` 為 `const`，變更其值屬 binary-breaking，須寫入 CHANGELOG。
 
 ### D3：`ApiEncryptionKey` 改為可推導（`DerivedApiEncryptionKeyProvider`）
 

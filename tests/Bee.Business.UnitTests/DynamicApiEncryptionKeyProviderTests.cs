@@ -71,7 +71,7 @@ namespace Bee.Business.UnitTests
         {
             var provider = CreateProvider();
 
-            var key = provider.GenerateKeyForLogin();
+            var key = provider.GenerateKeyForLogin(Guid.NewGuid());
 
             Assert.NotNull(key);
             Assert.Equal(64, key.Length);

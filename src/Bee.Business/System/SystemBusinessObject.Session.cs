@@ -46,14 +46,16 @@ namespace Bee.Business.System
             // Clear failed attempt history on successful login
             tracker?.Reset(args.UserId);
 
-            // 2. Generate an encryption key on login (may be shared or random)
+            // 2. Generate the access token first, then the encryption key — a deriving provider
+            //    takes the token as key material, so the order cannot be reversed.
+            var accessToken = Guid.NewGuid();
             byte[] encryptionKey = Services.GetRequiredService<IApiEncryptionKeyProvider>()
-                .GenerateKeyForLogin();
+                .GenerateKeyForLogin(accessToken);
 
             // 3. Create SessionInfo and store it in the cache
             var sessionInfo = new SessionInfo
             {
-                AccessToken = Guid.NewGuid(),
+                AccessToken = accessToken,
                 UserId = args.UserId,
                 UserName = userName,
                 ExpiredAt = DateTime.UtcNow.AddHours(1),

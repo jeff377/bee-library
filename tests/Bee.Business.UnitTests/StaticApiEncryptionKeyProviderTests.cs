@@ -30,7 +30,7 @@ namespace Bee.Business.UnitTests
             var provider = new StaticApiEncryptionKeyProvider(key);
 
             var a = provider.GetKey(Guid.NewGuid());
-            var b = provider.GenerateKeyForLogin();
+            var b = provider.GenerateKeyForLogin(Guid.NewGuid());
 
             Assert.Same(a, b);
         }

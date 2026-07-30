@@ -195,10 +195,11 @@ namespace Bee.Hosting
             services.AddSingleton<IExpressionEvaluator, DynamicExpressoEvaluator>();
             services.AddSingleton<IFormRuleProcessor, FormRuleProcessor>();
 
-            // 6. IApiEncryptionKeyProvider — Static needs the configured key byte[]; Dynamic
-            //    needs ISessionInfoService. Phase 5/6 unifies via IOptions<T> + DI ctor.
+            // 6. IApiEncryptionKeyProvider — Static and Derived need key material from the
+            //    settings; Dynamic needs ISessionInfoService. Phase 5/6 unifies via
+            //    IOptions<T> + DI ctor.
             services.AddSingleton<IApiEncryptionKeyProvider>(sp =>
-                CreateApiEncryptionKeyProvider(sp, components.ApiEncryptionKeyProvider, keys.ApiEncryptionKey));
+                CreateApiEncryptionKeyProvider(sp, components.ApiEncryptionKeyProvider, keys));
 
             // 7. Login attempt tracker — optional service with no default impl. Apps wanting
             //    brute-force protection register their own impl via
@@ -354,18 +355,29 @@ namespace Bee.Hosting
         }
 
         /// <summary>
-        /// Creates the configured <see cref="IApiEncryptionKeyProvider"/>. The static provider
-        /// receives the decrypted API key byte[] directly; the dynamic provider relies on
-        /// <see cref="ISessionInfoService"/> resolved through DI.
+        /// Creates the configured <see cref="IApiEncryptionKeyProvider"/>. The static and derived
+        /// providers receive the decrypted API key byte[] directly (as the shared key and as root
+        /// key material respectively), the derived one falling back to the master key when no API
+        /// key is configured; the dynamic provider relies on <see cref="ISessionInfoService"/>
+        /// resolved through DI.
         /// </summary>
-        private static IApiEncryptionKeyProvider CreateApiEncryptionKeyProvider(IServiceProvider sp, string? configured, byte[] apiEncryptionKey)
+        private static IApiEncryptionKeyProvider CreateApiEncryptionKeyProvider(IServiceProvider sp, string? configured, SecurityKeys keys)
         {
             var typeName = string.IsNullOrWhiteSpace(configured) ? BackendDefaultTypes.ApiEncryptionKeyProvider : configured;
             var type = AssemblyLoader.GetType(typeName)
                 ?? throw new InvalidOperationException($"Type '{typeName}' not found for IApiEncryptionKeyProvider.");
 
             if (type == typeof(StaticApiEncryptionKeyProvider))
-                return new StaticApiEncryptionKeyProvider(apiEncryptionKey);
+                return new StaticApiEncryptionKeyProvider(keys.ApiEncryptionKey);
+            if (type == typeof(DerivedApiEncryptionKeyProvider))
+            {
+                // This is the default provider, so a deployment that never configured
+                // ApiEncryptionKey lands here. Falling back to a root key derived from the master
+                // key keeps it working out of the box; an explicitly configured key wins.
+                return keys.ApiEncryptionKey.Length > 0
+                    ? new DerivedApiEncryptionKeyProvider(keys.ApiEncryptionKey)
+                    : DerivedApiEncryptionKeyProvider.FromMasterKey(keys.MasterKey);
+            }
             return (IApiEncryptionKeyProvider)ActivatorUtilities.CreateInstance(sp, type);
         }
 
@@ -393,6 +405,7 @@ namespace Bee.Hosting
             byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource, definePath, autoCreateMasterKey);
 
             return new SecurityKeys(
+                MasterKey: masterKey,
                 ApiEncryptionKey: Decrypt(masterKey, settings.ApiEncryptionKey),
                 CookieEncryptionKey: Decrypt(masterKey, settings.CookieEncryptionKey),
                 ConfigEncryptionKey: Decrypt(masterKey, settings.ConfigEncryptionKey),
@@ -409,6 +422,7 @@ namespace Bee.Hosting
         /// key (or empty when not configured).
         /// </summary>
         private readonly record struct SecurityKeys(
+            byte[] MasterKey,
             byte[] ApiEncryptionKey,
             byte[] CookieEncryptionKey,
             byte[] ConfigEncryptionKey,
