@@ -24,15 +24,13 @@ namespace Bee.Analyzers.Serialization
     /// <para>
     /// Types using <c>keyAsPropertyName: true</c> are out of scope: name-based keys are matched by
     /// name, and a reversed constructor round-trips correctly. In practice this rule therefore applies
-    /// to the <c>[Union]</c> polymorphic families, which cannot use name-based keys.
+    /// to whatever still keeps integer keys — in this framework the <c>[Union]</c> polymorphic families,
+    /// which ADR-030 keeps on integer keys by decision.
     /// </para>
     /// </remarks>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class MessagePackConstructorOrderAnalyzer : DiagnosticAnalyzer
     {
-        private const string MessagePackObjectAttribute = "MessagePack.MessagePackObjectAttribute";
-        private const string KeyAttribute = "MessagePack.KeyAttribute";
-
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             id: DiagnosticIds.ConstructorParameterOrderMismatch,
             title: "MessagePack constructor parameters must follow integer key order",
@@ -62,8 +60,8 @@ namespace Bee.Analyzers.Serialization
                 // Resolved by metadata name because the analyzer targets netstandard2.0 and cannot
                 // reference MessagePack. A consumer that does not use MessagePack resolves to null,
                 // which silences the rule instead of reporting against unrelated code.
-                var objectAttribute = startContext.Compilation.GetTypeByMetadataName(MessagePackObjectAttribute);
-                var keyAttribute = startContext.Compilation.GetTypeByMetadataName(KeyAttribute);
+                var objectAttribute = startContext.Compilation.GetTypeByMetadataName(SerializationAttributeNames.MessagePackObjectAttribute);
+                var keyAttribute = startContext.Compilation.GetTypeByMetadataName(SerializationAttributeNames.KeyAttribute);
                 if (objectAttribute is null || keyAttribute is null)
                     return;
 
@@ -84,7 +82,7 @@ namespace Bee.Analyzers.Serialization
 
             var attribute = type.GetAttributes().FirstOrDefault(
                 data => SymbolEqualityComparer.Default.Equals(data.AttributeClass, objectAttribute));
-            if (attribute is null || UsesNameBasedKeys(attribute))
+            if (attribute is null || MessagePackContract.UsesNameBasedKeys(attribute))
                 return;
 
             var keysByMember = CollectIntegerKeys(type, keyAttribute);
@@ -118,25 +116,6 @@ namespace Bee.Analyzers.Serialization
                     actualOrder,
                     expectedOrder));
             }
-        }
-
-        /// <summary>
-        /// Determines whether the attribute opts the type into name-based keys.
-        /// </summary>
-        /// <param name="attribute">The <c>MessagePackObject</c> attribute applied to the type.</param>
-        /// <returns><c>true</c> when <c>keyAsPropertyName</c> is set.</returns>
-        private static bool UsesNameBasedKeys(AttributeData attribute)
-        {
-            if (attribute.ConstructorArguments.Length > 0 && attribute.ConstructorArguments[0].Value is bool positional)
-                return positional;
-
-            foreach (var argument in attribute.NamedArguments)
-            {
-                if (argument.Key == "keyAsPropertyName" && argument.Value.Value is bool named)
-                    return named;
-            }
-
-            return false;
         }
 
         /// <summary>

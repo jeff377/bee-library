@@ -17,6 +17,18 @@
     <PackageReference Include="MessagePack" Version="3.1.7" />
   </ItemGroup>
 
+  <!--
+    Framework convention analyzers applied to this project itself. BEE4001 (missing
+    CollectionBaseFormatter registration) only activates in the compilation that owns the registration
+    list, which is this one — without this reference that rule would never run anywhere.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Analyzers\Bee.Analyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Bee.Api.Contracts\Bee.Api.Contracts.csproj" />
     <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />

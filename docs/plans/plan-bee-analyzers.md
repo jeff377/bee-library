@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | 基礎設施：analyzer 專案 + `AdditionalFiles` 管線 + 3 條規則走通端到端 | ✅ 已完成（2026-07-30） |
 | 2 | XML 定義檔規則（BEE1xxx 單檔、BEE2xxx 跨檔一致性）完整化 | ✅ 已完成（2026-07-30） |
-| 3 | 序列化與 wire 合約規則（BEE4xxx） | 📝 待做 |
+| 3 | 序列化與 wire 合約規則（BEE4xxx） | ✅ 已完成（2026-07-30） |
 | 4 | C# 程式碼慣例規則（BEE3xxx） | 📝 待做 |
 | 5 | 發佈整合、消費端零設定驗證、對外文件 | 📝 待做 |
 
@@ -87,8 +87,8 @@ analyzer 專案位於 `src/Bee.Analyzers/`（不獨立打包），透過 `Bee.De
 
 | 確定性 | 規則 | 首版 severity |
 |--------|------|--------------|
-| **高**——違反必然是錯，誤判空間極小 | BEE1001–1005、BEE1007（非法列舉值、重複欄名、單檔內欄位參照）<br>BEE4001–4006、BEE4008（序列化沉默失敗與 wire 合約） | `error` |
-| **中**——極可能是錯但有合理例外 | BEE1006、BEE2001–2006（跨檔一致性）<br>BEE3001–3002、BEE4007、BEE4009 | `warning` |
+| **高**——違反必然是錯，誤判空間極小 | BEE1001–1005、BEE1007（非法列舉值、重複欄名、單檔內欄位參照）<br>BEE4001–4004、BEE4006（序列化與 wire 合約；BEE4003 依架構決策） | `error` |
+| **中**——極可能是錯但有合理例外 | BEE1006、BEE2001–2006（跨檔一致性）<br>BEE3001–3002、BEE4005、BEE4007 | `warning` |
 | **純建議** | BEE2007（缺翻譯）、BEE3003（cache mutate，僅能偵測明顯樣式） | `info` |
 
 升級路徑：`warning` 級規則上線後觀察實際誤判率，確認低誤判後再逐條升為 `error`。
@@ -187,15 +187,15 @@ reflection-only）才爆炸。
 
 | ID | 規則 | Severity |
 |----|------|----------|
-| BEE4001 | 繼承 `MessagePackCollectionBase<>` 的具體型別未註冊 `CollectionBaseFormatter` → **序列化為空集合且無任何錯誤** | error |
+| BEE4001 | 繼承 `MessagePackCollectionBase<>` 的具體型別未註冊 `CollectionBaseFormatter` → 序列化正常但**反序列化擲例外**（見階段 3 實測） | error |
 | BEE4002 | `[JsonPropertyName("x")]` 與 `[MessagePackObject(keyAsPropertyName: true)]` 併用 → JSON 與 MessagePack 的欄位名不一致，兩個 wire 格式對不上 | error |
-| BEE4003 | `[Union]` 多型型別不得使用 `keyAsPropertyName: true`，必須維持整數 `[Key]` | error |
+| BEE4003 | union 階層（帶 `[Union]` 的基底與其所有子類）不得使用 `keyAsPropertyName`，須維持整數 `[Key]` | error |
 | BEE4004 | **僅整數 `[Key]` 型別**：public 建構子的參數順序必須跟隨 `[Key]` **數值**順序（見下方實測） | error |
-| BEE4005 | 繼承 `KeyCollectionBase<T>` / `MessagePackKeyCollectionBase<T>` 的型別只能有一個 public instance `Add`（多載在 reflection-only 路徑擲 `AmbiguousMatchException`） | error |
+| BEE4005 | 框架集合子類不得新增 public `Add` 多載（reflection-only 路徑的 `AmbiguousMatchException`） | warning（實測無法重現，見階段 3） |
 | BEE4006 | 三棲型別必須有無參數建構子（XML 反射路徑與行動端 reflection-only 皆需要） | error |
-| BEE4007 | 衍生 / 計算屬性的 ignore 標籤不一致——`[IgnoreMember]`、`[JsonIgnore]`、`[XmlIgnore]` 只標其中一兩個 | warning |
-| BEE4008 | `[MessagePackObject]` 型別的 public 屬性缺 `[Key]` 且未開 `keyAsPropertyName` | error |
-| BEE4009 | wire 合約破壞語意化：公開屬性改名在 `keyAsPropertyName: true` 下即破壞 wire 相容性 | warning |
+| BEE4007 | **public setter** 屬性的 ignore 標籤跨格式不一致（get-only 與 private setter 排除，見階段 3） | warning |
+| ~~BEE4008~~ | ~~`[MessagePackObject]` 屬性缺 `[Key]`~~ — **已剔除**：MessagePack 自帶 `MsgPack004` 已於編譯期覆蓋 | — |
+| ~~BEE4009~~ | ~~wire 合約破壞語意化~~ — **不做**：RS0016 已覆蓋公開屬性改名 | — |
 
 **規則依據與備註**：
 
@@ -385,12 +385,67 @@ DB 操作，因此無 TableSchema、無 layout、表未註冊皆為刻意狀態�
 - **重複診斷的來源**：同一個定義檔在 `dotnet build` 輸出中會出現兩次（MSBuild 對 compilation-end
   診斷的重複回報），非 analyzer 重複報告。
 
-### 階段 3：序列化與 wire 合約規則
+### 階段 3：序列化與 wire 合約規則 ✅
 
-補齊 BEE4001（**僅框架內版本**）、BEE4002、BEE4003、BEE4005–BEE4008。BEE4009 視情況。
+實作 5 條（BEE4001、4002、4005、4006、4007），**剔除 3 條**。驗證紀律（每條規則須先證明失敗真實
+存在）在此階段發揮了最大作用——它擋掉的 3 條規則若照原 plan 實作，會是純粹的浪費或誤判來源。
 
-此階段對框架自身立即有價值：BEE4001 框架內版本防的是維護者漏註冊 formatter，
-而該風險目前只靠 `MessagePackCodec.cs` 的一段註解在防守。
+**BEE4003：依據替換後保留**
+
+原 plan 的依據是「技術不相容」，實測**無法重現**——基底、子類、或兩者都用 `keyAsPropertyName`，
+round-trip 全部正常（wire 為 `[0,{...}]`：union tag + name-based map），連最接近 `FilterNode` 的形狀
+（兩子類 + `object?` 走 typeless + abstract get-only 判別碼）也正常。
+
+但規則本身**以架構決策為依據保留**（2026-07-30 定案）：union 階層一律維持整數 `[Key]`，讓整個階層
+共用單一 keying 策略。這類規則的價值來自「團隊決定的一致性」而非「會壞」，且誤判率更低——沒有例外。
+
+實作要點：走 base chain 找 `[Union]` 即可涵蓋基底與所有子類（含多層繼承的孫類），不需維護子型別清單。
+analyzer 的 `<remarks>` 明確記載「依據是決策而非可重現的失敗」，避免後人誤以為背後有序列化 bug、
+或誤以為新證據足以放寬規則——放寬的條件是改變慣例的決定。
+
+**剔除的規則與理由**
+
+| 規則 | 實驗結果 | 結論 |
+|------|---------|------|
+| BEE4008（缺 `[Key]`） | 撰寫 probe 時**編譯直接失敗**：MessagePack 套件自帶 `MsgPack004`，訊息還附官方文件連結 | 已被上游覆蓋，實作只會產生重複診斷 |
+| BEE4009（wire 相容性破壞） | 公開屬性改名已由既有的 `PublicApiAnalyzers`（RS0016）攔下 | 價值不足，plan 原本即標「視情況」 |
+
+> **BEE4003 的剔除牽動 ADR-030**：該 ADR 記載「實作發現 `[Union]` 多型與 `keyAsPropertyName` 根本
+> 不相容」並列為「永久例外」。以 MessagePack 3.1.7 實測無法重現此不相容。這不等於 ADR 當時判斷有誤
+> （可能是舊版行為，或當時的失敗被歸因到此），但**該約束值得重新驗證**——若實際相容，未來新增多型
+> 階層就不必被迫使用整數 `[Key]`，也不必承擔 BEE4004 那個 ctor 順序 footgun。
+
+**實測修正的認知**
+
+| 原假設 | 實測 |
+|--------|------|
+| BEE4001：未註冊 formatter → 「序列化為空集合且無任何錯誤」（框架註解與 plan 皆如此描述） | **序列化完全正常**（`[{"Name":"first"},{"Name":"second"}]`），是**反序列化**擲 `MessagePackSerializationException`。失敗點在讀回時，可能是另一個行程 |
+| BEE4005：多個 public `Add` → reflection-only 擲 `AmbiguousMatchException` | 桌面加 `IsDynamicCodeSupported=false`（框架文件記載的 iOS AOT 重現法）**仍無法重現**。規則保留但降為 warning，依據是已修復的歷史缺陷而非可重現的案例 |
+| BEE4006：屬 iOS / AOT 專屬問題 | `XmlSerializer` 在**桌面**即擲 `MissingMethodException`，覆蓋面比預期廣，維持 error |
+
+> `MessagePackCodec.cs` 與 `FormatterResolver.cs` 的註解目前寫「serializes as empty with no error」，
+> 與實測不符，值得順手更正（不在本 plan 範圍）。
+
+**框架自身驗證（本階段的關鍵步驟）**
+
+BEE4001 只在**擁有註冊清單的 compilation** 生效（以 `CollectionBaseFormatter` 建構式偵測，該型別為
+`Bee.Api.Core` internal，其他專案解析為 null 自動靜默）。但 D2 的打包設定刻意不讓 analyzer 套用到
+框架自己——若不處理，這條規則**永遠不會執行**。因此 `Bee.Api.Core.csproj` 加上
+`OutputItemType="Analyzer"` 的 ProjectReference。
+
+由此得到兩個結果：
+
+1. **抓到一條誤報並修正**：BEE4007 對框架的 4 個 `IObjectSerialize.SerializeState` 成員誤報。根因是
+   它們為 `{ get; private set; }`——`XmlSerializer` 需要 public setter 才能還原值，故 private setter
+   屬性的跨格式差異沒有實際後果。規則範圍收窄為 public setter，並補測試固定此行為。
+2. **反向驗證規則確實在工作**：暫時移除 `MessagePackCodec` 中 `UnitSettings` 的註冊後，BEE4001 精確
+   報在註冊陣列所在行（`MessagePackCodec.cs(35,21)`），訊息含可直接複製的
+   `new CollectionBaseFormatter<UnitSettings, UnitItem>()`。還原後框架建置 0 警告 0 錯誤。
+
+框架其餘 7 個集合、以及 BEE4002 / 4005 / 4006 對框架自身皆無誤報。
+
+**待評估**：是否把 analyzer 推廣到其他 `src/` 專案（BEE4005–4007 對 `Bee.Definition` 的型別同樣有
+價值）。目前只掛在 `Bee.Api.Core`，理由是風險最小且 BEE4001 僅在此有效；推廣的誤報風險評估列入階段 5。
 
 ### 階段 4：C# 程式碼慣例
 

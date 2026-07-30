@@ -86,9 +86,41 @@ namespace Bee.Analyzers
         public const string InconsistentLanguageCoverage = "BEE2007";
 
         /// <summary>
+        /// A collection deriving from a framework collection base is not registered with a formatter.
+        /// </summary>
+        public const string CollectionFormatterNotRegistered = "BEE4001";
+
+        /// <summary>
+        /// A name-based MessagePack type renames a property for JSON only, so the two wire formats
+        /// disagree on the field name.
+        /// </summary>
+        public const string WireFieldNameMismatch = "BEE4002";
+
+        /// <summary>
+        /// A type in a polymorphic union hierarchy opts into name-based keys instead of integer keys.
+        /// </summary>
+        public const string UnionMustUseIntegerKeys = "BEE4003";
+
+        /// <summary>
         /// A collection item constructor takes its parameters in an order that does not match
         /// the MessagePack key order.
         /// </summary>
         public const string ConstructorParameterOrderMismatch = "BEE4004";
+
+        /// <summary>
+        /// A collection declares an additional public Add overload, which reflection-only
+        /// serialization cannot resolve unambiguously.
+        /// </summary>
+        public const string AmbiguousCollectionAdd = "BEE4005";
+
+        /// <summary>
+        /// A serialized type has no parameterless constructor, so deserialization cannot create it.
+        /// </summary>
+        public const string MissingParameterlessConstructor = "BEE4006";
+
+        /// <summary>
+        /// A writable property is excluded from some serialization formats but not others.
+        /// </summary>
+        public const string InconsistentIgnoreAttributes = "BEE4007";
     }
 }

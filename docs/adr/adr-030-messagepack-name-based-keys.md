@@ -10,18 +10,18 @@
 
 ## 執行結果與最終範圍（2026-07-22）
 
-實作發現 **`[Union]` 多型與 `keyAsPropertyName` 根本不相容**（Union 以整數鍵陣列 + 型別判別碼序列化），故「全 90 型別轉換」不可能，最終採 **category-aware** 範圍：
+`[Union]` 多型階層**依決策維持整數鍵**（Union 以整數鍵陣列 + 型別判別碼序列化，讓整個階層共用單一 keying 策略），故未做「全 90 型別轉換」，最終採 **category-aware** 範圍：
 
 | 類別 | 處置 | 型別 |
 |------|------|------|
 | 合約 Request/Response | ✅ 轉 keyAsPropertyName | 57 個 `Bee.Api.Core.Messages.*`（+ `ApiMessageBase.Parameters` 移除 `[Key(0)]`） |
 | 純 DTO | ✅ 轉 | PackageUpdateInfo/Query、RecordFieldChange、CompanyInfo、DepartmentTree、Paging* |
 | 非-Union 集合 item | ✅ 轉（footgun 消滅點） | *Item、SortField、DepartmentNode、Parameter |
-| **`[Union]` 多型階層** | ❌ **永久例外**（整數鍵） | FilterNode / FilterCondition / FilterGroup |
+| **`[Union]` 多型階層** | ❌ **例外**（整數鍵，依決策） | FilterNode / FilterCondition / FilterGroup |
 | 集合容器 | ➖ 不受影響（走自訂 formatter / proxy） | MessagePackCollectionBase/KeyCollectionBase 子型別 |
 | DataSet/DataTable wire plumbing | ✅ 轉（2026-07-27 補做，見下） | SerializableData* |
 
-**約束記錄**：`[Union]` 型別**不得**改 `keyAsPropertyName`。新增多型 MessagePack 階層時沿用整數 `[Key]` + `[Union]`。
+**約束記錄**：`[Union]` 型別**不得**改 `keyAsPropertyName`。新增多型 MessagePack 階層時沿用整數 `[Key]` + `[Union]`。此約束由 **BEE4003** 在編譯期把關（涵蓋帶 `[Union]` 的基底與其所有子類，含多層繼承）；放寬的條件是改變本 ADR 的決定，而非新的相容性證據——`keyAsPropertyName` 在 union 階層上經實測可正常 round-trip，維持整數鍵是為了讓階層共用單一 keying 策略。
 
 ### 補做：SerializableData\* 收斂（2026-07-27）
 
@@ -40,7 +40,7 @@
 
 | 位置 | 理由 |
 |------|------|
-| `FilterNode` / `FilterCondition` / `FilterGroup` | `[Union]` 多型，與 `keyAsPropertyName` 根本不相容（永久例外） |
+| `FilterNode` / `FilterCondition` / `FilterGroup` | `[Union]` 多型，依決策維持整數鍵以共用單一 keying 策略（由 BEE4003 把關） |
 | `MessagePackKeyCollectionBase<T>.ItemsForSerialization`（`[Key(0)]` proxy，唯一子型別 `ParameterCollection`） | opt-out membership 會把 `KeyedCollection` 的 `Count` / `Comparer` / indexer 一併拉上 wire。proxy property 的整數鍵是刻意的最小序列化表面 |
 
 `MessagePackCollectionBase<T>` 的八個子型別（`CurrencySettings` / `UnitSettings` /
