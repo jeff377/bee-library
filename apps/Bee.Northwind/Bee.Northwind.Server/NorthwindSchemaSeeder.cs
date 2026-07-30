@@ -36,9 +36,17 @@ public static class NorthwindSchemaSeeder
         Dictionary<string, string>? Deferred = null);
 
     // Framework tables not registered in DbCategorySettings; their TableSchema is materialized
-    // from Bee.Definition embedded defaults by NorthwindBackend.AddNorthwindBackend. Currently
-    // just st_cache_notify, polled by CacheNotifyPoller.
-    private static readonly string[] s_frameworkTables = { "st_cache_notify" };
+    // from Bee.Definition embedded defaults by NorthwindBackend.AddNorthwindBackend.
+    // `st_cache_notify` is polled by CacheNotifyPoller. `st_session` holds the seed every sign-in
+    // writes, and `st_user` supplies the session's culture and time zone — the demo authenticates
+    // against hard-coded credentials rather than `st_user`, so that table stays empty and the
+    // locale lookup falls back to the deployment defaults, which is the intended behaviour.
+    private static readonly string[] s_frameworkTables =
+    {
+        "st_cache_notify",
+        "st_session",
+        "st_user",
+    };
 
     // Insert order: a forward-relation target must precede its dependents.
     private static readonly SeedTable[] s_seeds =
