@@ -106,7 +106,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
             private readonly Guid _rowId;
             public FakeUserRepository(Guid rowId) { _rowId = rowId; }
             public Guid GetRowIdBySysId(string userId) => _rowId;
-            public string GetTimeZone(string userId) => string.Empty;
+            public UserLocale GetLocale(string userId) => UserLocale.Empty;
         }
 
         private sealed class FakeEmployeeRepository : IEmployeeRepository

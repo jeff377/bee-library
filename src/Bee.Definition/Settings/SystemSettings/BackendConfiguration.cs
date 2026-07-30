@@ -69,6 +69,20 @@ namespace Bee.Definition.Settings
         public string DefaultTimeZone { get; set; } = "Asia/Taipei";
 
         /// <summary>
+        /// Gets or sets the culture applied when a user has no <c>st_user.culture</c> of their own.
+        /// An empty value falls through to the language service's own default.
+        /// </summary>
+        /// <remarks>
+        /// The default is <c>zh-TW</c> for backward compatibility: <see cref="Identity.SessionInfo.Culture"/>
+        /// used to be hard-coded to that value, so every existing deployment is implicitly running on
+        /// it. Deployments serving another language should set this explicitly.
+        /// </remarks>
+        [Category("Localization")]
+        [Description("Culture applied when a user has no culture of their own (e.g. zh-TW).")]
+        [DefaultValue("zh-TW")]
+        public string DefaultLanguage { get; set; } = "zh-TW";
+
+        /// <summary>
         /// Object description.
         /// </summary>
         public override string ToString()

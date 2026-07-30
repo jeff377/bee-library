@@ -1,13 +1,14 @@
 using System.ComponentModel;
 using Bee.Db.Manager;
 using Bee.Definition.Database;
+using Bee.Repository.Abstractions.System;
 using Bee.Repository.System;
 using Bee.Tests.Shared;
 
 namespace Bee.Repository.UnitTests
 {
     /// <summary>
-    /// 驗證 <c>st_user.time_zone</c> 的讀取，含「未設值」的降級行為。
+    /// 驗證 <c>st_user.time_zone</c> / <c>st_user.culture</c> 的讀取，含「未設值」的降級行為。
     /// </summary>
     /// <remarks>
     /// <see cref="UserRepository"/> 內部自行解析 <c>common</c> 分類，呼叫端無法指定資料庫，
@@ -18,35 +19,38 @@ namespace Bee.Repository.UnitTests
     /// <c>st_user</c>）的部署根本不會有對應的列。呼叫端據此決定 fallback。
     /// 設計背景見 docs/adr/adr-032-datetime-timezone.md（D12）。
     /// </remarks>
-    public class UserRepositoryTimeZoneTests : IClassFixture<SharedDbFixture>
+    public class UserRepositoryLocaleTests : IClassFixture<SharedDbFixture>
     {
         private readonly SharedDbFixture _fx;
-        public UserRepositoryTimeZoneTests(SharedDbFixture fx) { _fx = fx; }
+        public UserRepositoryLocaleTests(SharedDbFixture fx) { _fx = fx; }
 
         private UserRepository CreateRepo()
             => new UserRepository(_fx.GetRequiredService<IDbConnectionManager>());
 
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("GetTimeZone('001') 應回傳 seed 使用者的時區")]
-        public void GetTimeZone_SeedUser_ReturnsSeededZone()
+        [DisplayName("GetLocale('001') 應回傳 seed 使用者的時區與語系")]
+        public void GetLocale_SeedUser_ReturnsSeededValues()
         {
-            Assert.Equal("Asia/Taipei", CreateRepo().GetTimeZone("001"));
+            var locale = CreateRepo().GetLocale("001");
+
+            Assert.Equal("Asia/Taipei", locale.TimeZone);
+            Assert.Equal("zh-TW", locale.Culture);
         }
 
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("GetTimeZone 查無使用者應回傳空字串而非擲例外")]
-        public void GetTimeZone_UnknownUser_ReturnsEmpty()
+        [DisplayName("GetLocale 查無使用者應回傳空值而非擲例外")]
+        public void GetLocale_UnknownUser_ReturnsEmpty()
         {
-            Assert.Equal(string.Empty, CreateRepo().GetTimeZone("no-such-user"));
+            Assert.Equal(UserLocale.Empty, CreateRepo().GetLocale("no-such-user"));
         }
 
         [Theory]
         [InlineData("")]
         [InlineData("   ")]
-        [DisplayName("GetTimeZone 對空白 userId 應直接回傳空字串，不查資料庫")]
-        public void GetTimeZone_BlankUserId_ReturnsEmpty(string userId)
+        [DisplayName("GetLocale 對空白 userId 應直接回傳空值，不查資料庫")]
+        public void GetLocale_BlankUserId_ReturnsEmpty(string userId)
         {
-            Assert.Equal(string.Empty, CreateRepo().GetTimeZone(userId));
+            Assert.Equal(UserLocale.Empty, CreateRepo().GetLocale(userId));
         }
     }
 }

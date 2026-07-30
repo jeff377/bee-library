@@ -3,7 +3,9 @@ using Bee.Base.Security;
 using Bee.Business.System;
 using Bee.Business.UnitTests.Fakes;
 using Bee.Definition.Identity;
+using Bee.Definition.Database;
 using Bee.Definition.Security;
+using Bee.Definition.Storage;
 using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests
@@ -90,6 +92,58 @@ namespace Bee.Business.UnitTests
                 var session = sessionService.Get(result.AccessToken);
                 Assert.NotNull(session);
                 Assert.Equal(Convert.ToBase64String(session!.ApiEncryptionKey), sessionKeyBase64);
+            }
+            finally
+            {
+                sessionService.Remove(result.AccessToken);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("Login 應由 st_user 帶入使用者的時區與語系")]
+        public void Login_SeedUser_AppliesLocaleFromUserRow()
+        {
+            var sessionService = _fx.GetRequiredService<ISessionInfoService>();
+            var bo = new TestableSystemBusinessObject(
+                TestBeeContext.Create(_fx),
+                Guid.Empty,
+                _ => (true, "測試管理員"));
+
+            var result = bo.Login(new LoginArgs { UserId = "001", Password = "x" });
+
+            try
+            {
+                var session = sessionService.Get(result.AccessToken);
+                Assert.NotNull(session);
+                Assert.Equal("Asia/Taipei", session!.TimeZone);
+                Assert.Equal("zh-TW", session.Culture);
+            }
+            finally
+            {
+                sessionService.Remove(result.AccessToken);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("Login 使用者無對應 st_user 列時應退回部署層預設語系與時區")]
+        public void Login_UserWithoutRow_FallsBackToDeploymentDefaults()
+        {
+            var sessionService = _fx.GetRequiredService<ISessionInfoService>();
+            var backend = _fx.GetRequiredService<IDefineAccess>()
+                .GetSystemSettings().BackendConfiguration;
+            var bo = new TestableSystemBusinessObject(
+                TestBeeContext.Create(_fx),
+                Guid.Empty,
+                _ => (true, "No Row"));
+
+            var result = bo.Login(new LoginArgs { UserId = "no-such-user", Password = "x" });
+
+            try
+            {
+                var session = sessionService.Get(result.AccessToken);
+                Assert.NotNull(session);
+                Assert.Equal(backend.DefaultTimeZone, session!.TimeZone);
+                Assert.Equal(backend.DefaultLanguage, session.Culture);
             }
             finally
             {

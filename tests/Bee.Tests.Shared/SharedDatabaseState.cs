@@ -419,21 +419,28 @@ namespace Bee.Tests.Shared
             string colEmail = dbType.QuoteIdentifier("email");
             string colNote = dbType.QuoteIdentifier("note");
             string colTimeZone = dbType.QuoteIdentifier("time_zone");
+            string colCulture = dbType.QuoteIdentifier("culture");
             string colInsTime = dbType.QuoteIdentifier("sys_insert_time");
 
             var existing = LookupRowId(dbType, dbAccess, tbl, colRowId, colId, "001");
             if (existing != Guid.Empty)
             {
                 // Existence alone is not the goal — the seed must converge on a known state. A row
-                // inserted before `time_zone` existed carries no value, so backfill it. The predicate
-                // makes the statement idempotent and safe to race: concurrent test processes either
-                // write the same value or find nothing to write. Oracle stores '' as NULL, so the
-                // IS NULL arm covers it there and the equality arm covers the other providers.
+                // inserted before `time_zone` / `culture` existed carries no value, so backfill it.
+                // The predicate makes each statement idempotent and safe to race: concurrent test
+                // processes either write the same value or find nothing to write. Oracle stores ''
+                // as NULL, so the IS NULL arm covers it there and the equality arm covers the other
+                // providers.
                 var backfill = new DbCommandSpec(DbCommandKind.NonQuery,
                     $"UPDATE {tbl} SET {colTimeZone} = 'Asia/Taipei' " +
                     $"WHERE {colId} = {{0}} AND ({colTimeZone} IS NULL OR {colTimeZone} = '')",
                     "001");
                 dbAccess.Execute(backfill);
+                var backfillCulture = new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"UPDATE {tbl} SET {colCulture} = 'zh-TW' " +
+                    $"WHERE {colId} = {{0}} AND ({colCulture} IS NULL OR {colCulture} = '')",
+                    "001");
+                dbAccess.Execute(backfillCulture);
                 Console.WriteLine($"SharedDatabaseState: {databaseId} seed user '001' already exists (rowid={existing})");
                 return existing;
             }
@@ -443,8 +450,8 @@ namespace Bee.Tests.Shared
             // password/email/note 使用單空白字元而非空字串：Oracle 將 empty string 視為
             // NULL，會違反 NOT NULL constraint；其他 DB 仍視為一字元字串。如此 5 DB 行為一致。
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
-                $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colPwd}, {colEmail}, {colNote}, {colTimeZone}, {colInsTime}) " +
-                $"VALUES ({{0}}, {{1}}, {{2}}, ' ', ' ', ' ', 'Asia/Taipei', {now})",
+                $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colPwd}, {colEmail}, {colNote}, {colTimeZone}, {colCulture}, {colInsTime}) " +
+                $"VALUES ({{0}}, {{1}}, {{2}}, ' ', ' ', ' ', 'Asia/Taipei', 'zh-TW', {now})",
                 newRowId, "001", "測試管理員");
             dbAccess.Execute(insert);
             Console.WriteLine($"SharedDatabaseState: {databaseId} seed user '001' inserted (rowid={newRowId})");

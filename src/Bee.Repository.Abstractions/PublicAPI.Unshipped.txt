@@ -1,1 +1,18 @@
 #nullable enable
+*REMOVED*Bee.Repository.Abstractions.System.IUserRepository.GetTimeZone(string! userId) -> string!
+Bee.Repository.Abstractions.System.IUserRepository.GetLocale(string! userId) -> Bee.Repository.Abstractions.System.UserLocale
+Bee.Repository.Abstractions.System.UserLocale
+Bee.Repository.Abstractions.System.UserLocale.Culture.get -> string!
+Bee.Repository.Abstractions.System.UserLocale.Culture.init -> void
+Bee.Repository.Abstractions.System.UserLocale.Deconstruct(out string! TimeZone, out string! Culture) -> void
+Bee.Repository.Abstractions.System.UserLocale.Equals(Bee.Repository.Abstractions.System.UserLocale other) -> bool
+Bee.Repository.Abstractions.System.UserLocale.TimeZone.get -> string!
+Bee.Repository.Abstractions.System.UserLocale.TimeZone.init -> void
+Bee.Repository.Abstractions.System.UserLocale.UserLocale() -> void
+Bee.Repository.Abstractions.System.UserLocale.UserLocale(string! TimeZone, string! Culture) -> void
+override Bee.Repository.Abstractions.System.UserLocale.GetHashCode() -> int
+static Bee.Repository.Abstractions.System.UserLocale.Empty.get -> Bee.Repository.Abstractions.System.UserLocale
+static Bee.Repository.Abstractions.System.UserLocale.operator !=(Bee.Repository.Abstractions.System.UserLocale left, Bee.Repository.Abstractions.System.UserLocale right) -> bool
+static Bee.Repository.Abstractions.System.UserLocale.operator ==(Bee.Repository.Abstractions.System.UserLocale left, Bee.Repository.Abstractions.System.UserLocale right) -> bool
+~override Bee.Repository.Abstractions.System.UserLocale.Equals(object obj) -> bool
+~override Bee.Repository.Abstractions.System.UserLocale.ToString() -> string

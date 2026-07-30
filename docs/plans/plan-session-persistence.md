@@ -4,7 +4,7 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 前置：金鑰改為可推導（`DerivedApiEncryptionKeyProvider`）＋ `st_user` 語系欄位 | 🚧 進行中 |
+| 1 | 前置：金鑰改為可推導（`DerivedApiEncryptionKeyProvider`）＋ `st_user` 語系欄位 | ✅ 已完成（2026-07-30） |
 | 2 | 種子持久化：`SessionUser` 擴充、四個寫入點、Login / `CreateSession` 共用建構路徑 | 📝 待做 |
 | 3 | 重建：`ICacheDataSourceProvider.GetSessionInfo` ＋ `SessionInfoCache.CreateInstance` ＋ 讀取純化 | 📝 待做 |
 | 4 | 收尾：`oneTime` 明確拒絕、過期列清理排程、CHANGELOG 與文件 | 📝 待做 |

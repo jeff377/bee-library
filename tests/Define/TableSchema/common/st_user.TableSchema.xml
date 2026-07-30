@@ -9,6 +9,7 @@
 		<DbField FieldName="email" Caption="電子郵件" DbType="String" Length="100" />
 		<DbField FieldName="note" Caption="備註" DbType="String" Length="200" />
 		<DbField FieldName="time_zone" Caption="時區" DbType="String" Length="50" />
+		<DbField FieldName="culture" Caption="語系" DbType="String" Length="10" />
 		<DbField FieldName="sys_insert_time" DisplayName="寫入時間" DbType="DateTime" />
 	</Fields>
 	<Indexes>

@@ -11,3 +11,5 @@ Bee.Business.Providers.DerivedApiEncryptionKeyProvider.GetKey(System.Guid access
 Bee.Business.Providers.DynamicApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
 Bee.Business.Providers.StaticApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
 static Bee.Business.Providers.DerivedApiEncryptionKeyProvider.FromMasterKey(byte[]! masterKey) -> Bee.Business.Providers.DerivedApiEncryptionKeyProvider!
+*REMOVED*virtual Bee.Business.System.SystemBusinessObject.ApplyUserTimeZone(Bee.Definition.Identity.SessionInfo! sessionInfo) -> void
+virtual Bee.Business.System.SystemBusinessObject.ApplyUserLocale(Bee.Definition.Identity.SessionInfo! sessionInfo) -> void

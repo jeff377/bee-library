@@ -6,3 +6,5 @@ Bee.Definition.ICacheDataSourceProvider.GetDepartmentTree(string! companyId) -> 
 *REMOVED*const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DynamicApiEncryptionKeyProvider, Bee.Business" -> string!
 Bee.Definition.Security.IApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
 const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DerivedApiEncryptionKeyProvider, Bee.Business" -> string!
+Bee.Definition.Settings.BackendConfiguration.DefaultLanguage.get -> string!
+Bee.Definition.Settings.BackendConfiguration.DefaultLanguage.set -> void

@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*Bee.Repository.System.UserRepository.GetTimeZone(string! userId) -> string!
+Bee.Repository.System.UserRepository.GetLocale(string! userId) -> Bee.Repository.Abstractions.System.UserLocale

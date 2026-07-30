@@ -41,21 +41,29 @@ namespace Bee.Repository.System
         }
 
         /// <inheritdoc/>
-        public string GetTimeZone(string userId)
+        public UserLocale GetLocale(string userId)
         {
-            if (string.IsNullOrWhiteSpace(userId)) { return string.Empty; }
+            if (string.IsNullOrWhiteSpace(userId)) { return UserLocale.Empty; }
 
             var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier("st_user");
             string colTimeZone = dbType.QuoteIdentifier("time_zone");
+            string colCulture = dbType.QuoteIdentifier("culture");
             string colId = dbType.QuoteIdentifier("sys_id");
 
-            string sql = $"SELECT {colTimeZone} FROM {tbl} WHERE {colId} = {{0}}";
+            string sql = $"SELECT {colTimeZone}, {colCulture} FROM {tbl} WHERE {colId} = {{0}}";
             var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
-            var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar, sql, userId));
-            // Null covers both "no such user" and "column never populated"; Oracle additionally
-            // returns null for a stored empty string. All three mean the same thing to the caller.
-            return result.Scalar == null ? string.Empty : ValueUtilities.CStr(result.Scalar).Trim();
+            var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable, sql, userId));
+            var table = result.Table;
+            if (table == null || table.Rows.Count == 0) { return UserLocale.Empty; }
+
+            // Null covers both "column never populated" and, on Oracle, a stored empty string.
+            // Both mean the same thing to the caller: no preference, use the deployment default.
+            var row = table.Rows[0];
+            return new UserLocale(ReadText(row[0]), ReadText(row[1]));
+
+            static string ReadText(object? value)
+                => value == null || value == DBNull.Value ? string.Empty : ValueUtilities.CStr(value).Trim();
         }
     }
 }

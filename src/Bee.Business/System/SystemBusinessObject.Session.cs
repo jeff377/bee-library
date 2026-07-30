@@ -61,7 +61,7 @@ namespace Bee.Business.System
                 ExpiredAt = DateTime.UtcNow.AddHours(1),
                 ApiEncryptionKey = encryptionKey
             };
-            ApplyUserTimeZone(sessionInfo);
+            ApplyUserLocale(sessionInfo);
             SessionInfoService.Set(sessionInfo);
             WriteLoginAudit(LoginEvent.LoginSucceeded, sessionInfo.UserId, sessionInfo.UserName, sessionInfo.AccessToken, null, LoginSource);
 
@@ -256,29 +256,39 @@ namespace Bee.Business.System
         }
 
         /// <summary>
-        /// Fills <see cref="SessionInfo.TimeZone"/> from the user's <c>st_user.time_zone</c>,
-        /// falling back to <see cref="BackendConfiguration.DefaultTimeZone"/>.
+        /// Fills <see cref="SessionInfo.TimeZone"/> and <see cref="SessionInfo.Culture"/> from the
+        /// user's <c>st_user</c> row, falling back to
+        /// <see cref="BackendConfiguration.DefaultTimeZone"/> and
+        /// <see cref="BackendConfiguration.DefaultLanguage"/> respectively.
         /// </summary>
         /// <param name="sessionInfo">The session being created.</param>
         /// <remarks>
         /// The session's zone is the authority for every user-facing date the framework produces —
         /// neither the device's zone nor the server machine's, so that filing a Taipei leave request
-        /// from New York still defaults to the Taipei date (ADR-032 D12).
+        /// from New York still defaults to the Taipei date (ADR-032 D12). The culture is the
+        /// authority for every string the language service resolves for this session.
         ///
         /// An unset or unreadable user value falls back to the deployment-wide default rather than
         /// failing the login: authentication is overridable and a deployment may authenticate
         /// against something other than <c>st_user</c>, in which case there is no row to read.
         /// A deployment that wants UTC sets <c>DefaultTimeZone</c> to an empty string.
+        ///
+        /// Both values are read in a single query because both are needed on every login and live
+        /// in the same row.
         /// </remarks>
-        protected virtual void ApplyUserTimeZone(SessionInfo sessionInfo)
+        protected virtual void ApplyUserLocale(SessionInfo sessionInfo)
         {
             ArgumentNullException.ThrowIfNull(sessionInfo);
 
             var repo = Services.GetRequiredService<ISystemRepositoryFactory>().CreateUserRepository();
-            var timeZone = repo.GetTimeZone(sessionInfo.UserId);
-            sessionInfo.TimeZone = StringUtilities.IsNotEmpty(timeZone)
-                ? timeZone
-                : DefineAccess.GetSystemSettings().BackendConfiguration.DefaultTimeZone;
+            var locale = repo.GetLocale(sessionInfo.UserId);
+            var backend = DefineAccess.GetSystemSettings().BackendConfiguration;
+            sessionInfo.TimeZone = StringUtilities.IsNotEmpty(locale.TimeZone)
+                ? locale.TimeZone
+                : backend.DefaultTimeZone;
+            sessionInfo.Culture = StringUtilities.IsNotEmpty(locale.Culture)
+                ? locale.Culture
+                : backend.DefaultLanguage;
         }
 
         private const int MaxExpiresInSeconds = 86400; // 24 hours

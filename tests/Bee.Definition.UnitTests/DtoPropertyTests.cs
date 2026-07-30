@@ -30,8 +30,9 @@ namespace Bee.Definition.UnitTests
             // Assert
             Assert.Equal(Guid.Empty, info.AccessToken);
             Assert.Null(info.CompanyId);
-            Assert.Equal("zh-TW", info.Culture);
-            // 空值即 UTC：實際時區由登入時填入（st_user.time_zone，否則 DefaultTimeZone）
+            // 空值即「未指定」：實際語系與時區由登入時填入
+            // （st_user.culture / st_user.time_zone，否則 DefaultLanguage / DefaultTimeZone）
+            Assert.Empty(info.Culture);
             Assert.Empty(info.TimeZone);
             Assert.Empty(info.ApiEncryptionKey);
         }

@@ -63,9 +63,17 @@ namespace Bee.Definition.Identity
         public string CustomizeId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the user culture (e.g., zh-TW, en-US).
+        /// Gets or sets the user culture (e.g., zh-TW, en-US). An empty value means the language
+        /// service falls back to the system default language.
         /// </summary>
-        public string Culture { get; set; } = "zh-TW";
+        /// <remarks>
+        /// The default is deliberately empty rather than a named culture, for the same reason as
+        /// <see cref="TimeZone"/>: hard-coding <c>zh-TW</c> made the language service's fallback
+        /// path unreachable for every logged-in call and silently bound the framework to one
+        /// region. Login fills this from <c>st_user.culture</c>, falling back to
+        /// <c>BackendConfiguration.DefaultLanguage</c>.
+        /// </remarks>
+        public string Culture { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the user time zone (IANA format recommended, e.g., Asia/Taipei).

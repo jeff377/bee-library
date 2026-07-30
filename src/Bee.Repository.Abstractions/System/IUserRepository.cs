@@ -14,16 +14,19 @@ namespace Bee.Repository.Abstractions.System
         Guid GetRowIdBySysId(string userId);
 
         /// <summary>
-        /// Reads a user's IANA time zone id (<c>st_user.time_zone</c>), or an empty string when the
-        /// user does not exist or has not been assigned one.
+        /// Reads a user's localization preferences (<c>st_user.time_zone</c> and
+        /// <c>st_user.culture</c>) in one query, returning <see cref="UserLocale.Empty"/> when the
+        /// user does not exist.
         /// </summary>
         /// <param name="userId">The user business id (<c>st_user.sys_id</c>).</param>
         /// <remarks>
-        /// The caller decides the fallback. An empty result is expected rather than exceptional:
-        /// rows seeded before the column existed carry no value, and a deployment may leave the
-        /// column unset entirely. See docs/adr/adr-032-datetime-timezone.md (D12) for why the user's
-        /// zone — not the device's and not the server's — is the authority for user-facing dates.
+        /// The caller decides the fallback for each value. An empty entry is expected rather than
+        /// exceptional: rows seeded before the columns existed carry no value, and a deployment may
+        /// leave them unset entirely. See docs/adr/adr-032-datetime-timezone.md (D12) for why the
+        /// user's zone — not the device's and not the server's — is the authority for user-facing
+        /// dates; the culture is stored per user for the same reason plus one more, namely that a
+        /// background service sending a notification has no session to read it from.
         /// </remarks>
-        string GetTimeZone(string userId);
+        UserLocale GetLocale(string userId);
     }
 }
