@@ -1,0 +1,30 @@
+﻿<Project>
+
+  <!--
+    Feeds the consumer's framework definition files to the Bee.NET analyzers.
+
+    The definition rules (BEE1xxx / BEE2xxx) read XML through AdditionalFiles, which MSBuild has to
+    supply explicitly — analyzers cannot open files on their own. Injecting the glob here is what
+    makes the rules work with no setup on the consumer's side.
+
+    Set BeeAnalyzeDefinitionFiles to false to opt out, or override BeeDefinitionFilesGlob to point at
+    a non-standard layout.
+  -->
+
+  <PropertyGroup>
+    <BeeAnalyzeDefinitionFiles Condition="'$(BeeAnalyzeDefinitionFiles)' == ''">true</BeeAnalyzeDefinitionFiles>
+    <BeeDefinitionFilesGlob Condition="'$(BeeDefinitionFilesGlob)' == ''">Define\**\*.xml</BeeDefinitionFilesGlob>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BeeAnalyzeDefinitionFiles)' == 'true'">
+    <!--
+      NOTE: The glob is rooted at the project directory rather than recursive from above it, so a
+      solution with many projects does not re-scan the same tree once per project. Build output is
+      excluded because a definition file copied next to the binaries is a duplicate of the source
+      one, and reporting both would double every diagnostic.
+    -->
+    <AdditionalFiles Include="$(BeeDefinitionFilesGlob)"
+                     Exclude="$(BaseOutputPath)**;$(BaseIntermediateOutputPath)**;bin\**;obj\**" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      WARNING: This project must target netstandard2.0. Roslyn loads analyzers into the compiler
+      process, which requires netstandard2.0 regardless of what the rest of the repository targets.
+      Retargeting to net10.0 makes the analyzer silently fail to load in consuming builds.
+    -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+
+    <!--
+      The analyzer is not published as a standalone package. It is embedded into the
+      Bee.Definition package under analyzers/dotnet/cs/ so that every consumer of that package
+      gets the framework convention diagnostics with no extra install step.
+    -->
+    <IsPackable>false</IsPackable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+
+    <!-- Required for analyzer projects; enables the RS1xxx analyzer-authoring rules. -->
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+
+    <Description>Roslyn analyzers enforcing Bee.NET framework conventions. Embedded in the Bee.Definition package.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!--
+    Analyzer release tracking (RS2008). Every rule must be listed in the unshipped release before it
+    builds, and moved into the shipped release when a version goes out. This is the analyzer
+    equivalent of the PublicAPI baselines used elsewhere in the repository.
+  -->
+  <ItemGroup>
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Bee.Analyzers.UnitTests" />
+  </ItemGroup>
+
+  <!--
+    Opt out of the repository-wide public API surface tracking inherited from
+    src/Directory.Build.props. The analyzer types are public only because Roslyn discovers them
+    by reflection; they ship under analyzers/ rather than lib/, so no consumer can reference
+    them as API and there is nothing to keep a baseline for.
+  -->
+  <ItemGroup>
+    <PackageReference Remove="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
+    <AdditionalFiles Remove="PublicAPI.Shipped.txt" />
+    <AdditionalFiles Remove="PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
+</Project>

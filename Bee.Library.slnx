@@ -6,6 +6,7 @@
   </Folder>
   <Folder Name="/src/">
     <File Path="src/Directory.Build.props" />
+    <Project Path="src/Bee.Analyzers/Bee.Analyzers.csproj" />
     <Project Path="src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj" />
     <Project Path="src/Bee.Api.Client/Bee.Api.Client.csproj" />
     <Project Path="src/Bee.Api.Contracts/Bee.Api.Contracts.csproj" />
@@ -24,6 +25,7 @@
     <Project Path="src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Bee.Analyzers.UnitTests/Bee.Analyzers.UnitTests.csproj" />
     <Project Path="tests/Bee.Api.AspNetCore.UnitTests/Bee.Api.AspNetCore.UnitTests.csproj" />
     <Project Path="tests/Bee.Api.Client.UnitTests/Bee.Api.Client.UnitTests.csproj" />
     <Project Path="tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj" />

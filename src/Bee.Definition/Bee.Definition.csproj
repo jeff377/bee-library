@@ -23,6 +23,38 @@
   </ItemGroup>
 
   <!--
+    Framework convention analyzers, shipped inside this package rather than as a separate one.
+    NuGet auto-registers any assembly under analyzers/dotnet/cs, so every consumer of Bee.Definition
+    gets the diagnostics with no extra install step — which is the whole point, since consumers only
+    have the packages and never the repository the conventions are documented in.
+
+    ReferenceOutputAssembly is false because the analyzer is not part of this assembly's API surface;
+    the ProjectReference exists only to order the build. Bee.Definition itself is deliberately NOT
+    analyzed by it (no OutputItemType="Analyzer"): the rules target consumer definition files, and
+    the framework's own Defaults/ definitions are validated by the unit tests instead.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Analyzers\Bee.Analyzers.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="build\Bee.Definition.targets" Pack="true" PackagePath="build\" />
+  </ItemGroup>
+
+  <Target Name="_BeePackAnalyzer" BeforeTargets="_GetPackageFiles">
+    <MSBuild Projects="..\Bee.Analyzers\Bee.Analyzers.csproj"
+             Targets="GetTargetPath"
+             Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="_BeeAnalyzerAssembly" />
+    </MSBuild>
+    <ItemGroup>
+      <None Include="@(_BeeAnalyzerAssembly)" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
+    </ItemGroup>
+  </Target>
+
+  <!--
     Trimmer / AOT preservation roots for the definition layer, shipped with the package.
     The logical name "ILLink.Descriptors.xml" is the convention the .NET trimmer scans for,
     so this is auto-applied for every downstream trimmed / AOT consumer (e.g. the Avalonia
