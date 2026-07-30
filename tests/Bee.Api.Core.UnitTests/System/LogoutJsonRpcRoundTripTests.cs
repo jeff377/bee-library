@@ -15,12 +15,17 @@ namespace Bee.Api.Core.UnitTests.System
     /// 走 <see cref="JsonRpcExecutor"/> 的 end-to-end round-trip：將 <c>System.Logout</c>
     /// 透過 executor 派發到 <see cref="Bee.Business.System.SystemBusinessObject.Logout"/>，
     /// 驗證 SessionInfo 從快取消失且回傳成功。
+    /// <para>
+    /// 需要 <see cref="SharedDbFixture"/>（而非 <c>BeeTestFixture</c>）：session 持久化落地後，
+    /// Logout 會刪除 `st_session` 的種子，因此本測試對 <c>st_session</c> 有真實相依。單靠 <c>BeeTestFixture</c> 不會建 schema，
+    /// 只有在別的測試行程剛好先建好表時才會通過——那是 CI 上偶發紅的來源。
+    /// </para>
     /// </summary>
-    public class LogoutJsonRpcRoundTripTests : IClassFixture<BeeTestFixture>
+    public class LogoutJsonRpcRoundTripTests : IClassFixture<SharedDbFixture>
     {
-        private readonly BeeTestFixture _fx;
+        private readonly SharedDbFixture _fx;
 
-        public LogoutJsonRpcRoundTripTests(BeeTestFixture fx) { _fx = fx; }
+        public LogoutJsonRpcRoundTripTests(SharedDbFixture fx) { _fx = fx; }
 
         private JsonRpcExecutor BuildExecutor(Guid accessToken)
         {

@@ -15,12 +15,17 @@ namespace Bee.Api.Core.UnitTests.System
     /// 走 <see cref="JsonRpcExecutor"/> 的 end-to-end round-trip：將 <c>System.LeaveCompany</c>
     /// 透過 executor 派發到 <see cref="Bee.Business.System.SystemBusinessObject.LeaveCompany"/>，
     /// 驗證 SessionInfo.CompanyId 被清空且回傳成功。
+    /// <para>
+    /// 需要 <see cref="SharedDbFixture"/>（而非 <c>BeeTestFixture</c>）：session 持久化落地後，
+    /// LeaveCompany 會更新 `st_session` 的種子，因此本測試對 <c>st_session</c> 有真實相依。單靠 <c>BeeTestFixture</c> 不會建 schema，
+    /// 只有在別的測試行程剛好先建好表時才會通過——那是 CI 上偶發紅的來源。
+    /// </para>
     /// </summary>
-    public class LeaveCompanyJsonRpcRoundTripTests : IClassFixture<BeeTestFixture>
+    public class LeaveCompanyJsonRpcRoundTripTests : IClassFixture<SharedDbFixture>
     {
-        private readonly BeeTestFixture _fx;
+        private readonly SharedDbFixture _fx;
 
-        public LeaveCompanyJsonRpcRoundTripTests(BeeTestFixture fx) { _fx = fx; }
+        public LeaveCompanyJsonRpcRoundTripTests(SharedDbFixture fx) { _fx = fx; }
 
         private JsonRpcExecutor BuildExecutor(Guid accessToken)
         {
