@@ -13,11 +13,17 @@ namespace Bee.Api.Core.Validator
         /// <summary>
         /// Validates whether the specified method satisfies the access conditions (local, encoded, encrypted),
         /// and throws an exception if the conditions are not met.
-        /// If the method is not marked with <see cref="ApiAccessControlAttribute"/>, access is treated as unrestricted.
         /// </summary>
         /// <param name="method">The API method to validate.</param>
         /// <param name="context">The current API call context.</param>
         /// <param name="tokenValidator">The access-token validator used when the method requires authentication.</param>
+        /// <remarks>
+        /// IMPORTANT: A method that no <see cref="ApiAccessControlAttribute"/> covers is <b>denied</b>, not
+        /// treated as unrestricted — the absence of a declaration rejects the call rather than permitting
+        /// it. The attribute is resolved from the method, then the method it overrides, then the declaring
+        /// type, so a type-level attribute covers all of its methods. Analyzer rule BEE3001 reports an
+        /// uncovered public business object method at build time, before a client discovers it.
+        /// </remarks>
         public static void ValidateAccess(MethodInfo method, ApiCallContext context, IAccessTokenValidator tokenValidator)
         {
             ArgumentNullException.ThrowIfNull(tokenValidator);

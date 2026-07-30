@@ -11,6 +11,17 @@
     <InternalsVisibleTo Include="Bee.Business.UnitTests" />
   </ItemGroup>
 
+  <!--
+    Framework convention analyzers applied to this project itself: BEE3001 checks that every public
+    business object method declares access control, and this is where the business objects live.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Analyzers\Bee.Analyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Bee.Api.Contracts\Bee.Api.Contracts.csproj" />
     <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />

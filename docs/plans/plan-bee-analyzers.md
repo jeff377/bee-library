@@ -7,7 +7,7 @@
 | 1 | 基礎設施：analyzer 專案 + `AdditionalFiles` 管線 + 3 條規則走通端到端 | ✅ 已完成（2026-07-30） |
 | 2 | XML 定義檔規則（BEE1xxx 單檔、BEE2xxx 跨檔一致性）完整化 | ✅ 已完成（2026-07-30） |
 | 3 | 序列化與 wire 合約規則（BEE4xxx） | ✅ 已完成（2026-07-30） |
-| 4 | C# 程式碼慣例規則（BEE3xxx） | 📝 待做 |
+| 4 | C# 程式碼慣例規則（BEE3xxx） | ✅ 已完成（2026-07-30） |
 | 5 | 發佈整合、消費端零設定驗證、對外文件 | 📝 待做 |
 
 ## 背景
@@ -88,12 +88,13 @@ analyzer 專案位於 `src/Bee.Analyzers/`（不獨立打包），透過 `Bee.De
 | 確定性 | 規則 | 首版 severity |
 |--------|------|--------------|
 | **高**——違反必然是錯，誤判空間極小 | BEE1001–1005、BEE1007（非法列舉值、重複欄名、單檔內欄位參照）<br>BEE4001–4004、BEE4006（序列化與 wire 合約；BEE4003 依架構決策） | `error` |
-| **中**——極可能是錯但有合理例外 | BEE1006、BEE2001–2006（跨檔一致性）<br>BEE3001–3002、BEE4005、BEE4007 | `warning` |
-| **純建議** | BEE2007（缺翻譯）、BEE3003（cache mutate，僅能偵測明顯樣式） | `info` |
+| **中**——極可能是錯但有合理例外 | BEE1006、BEE2001–2006（跨檔一致性）<br>BEE3001、BEE3002、BEE4005 | `warning` |
+| **純建議** | BEE2007（缺翻譯） | `info` |
 
 升級路徑：`warning` 級規則上線後觀察實際誤判率，確認低誤判後再逐條升為 `error`。
 
-> `info` 級的兩條規則**已知對 AI 無效**，保留它們僅為 IDE 提示價值；不指望它們達成本 plan 的目標。
+> 唯一的 `info` 級規則（BEE2007）**已知對 AI 無效**，保留僅為 IDE 提示價值。BEE3003 原訂為 `info`，
+> 已於階段 4 剔除——低可見度加上偵測不完整，不值得實作。
 
 全部可由消費端 `.editorconfig` 逐條調整，並提供整組關閉的 MSBuild property。
 
@@ -175,9 +176,9 @@ BEE2001: FormSchema 'Product' declares CategoryId 'common', but its DbTableName 
 
 | ID | 規則 | Severity |
 |----|------|----------|
-| BEE3001 | 繼承 `FormBusinessObject` / `SystemBusinessObject` 的公開 API 方法需標 `[ApiAccessControl]` | warning |
-| BEE3002 | 定義型別的集合屬性不得使用裸 `List<T>` / `Collection<T>`，須繼承 `KeyCollectionBase` / `CollectionBase` | warning |
-| BEE3003 | `IDefineAccess.GetX` 取得的 cache 物件不得 mutate（需 `Clone()`） | info（僅能偵測明顯樣式） |
+| BEE3001 | 繼承 `BusinessObject` 的型別，其 public 方法需被 `[ApiAccessControl]` 涵蓋（方法／被 override 的 base method／宣告型別任一即可） | warning |
+| BEE3002 | 定義層集合屬性不得使用裸 `List<T>` / `Collection<T>`（**僅 `Bee.Definition` 組件內生效**，見階段 4） | warning |
+| ~~BEE3003~~ | ~~cache 物件不得 mutate~~ — **已剔除**：`info` 對 AI 無效且偵測不完整（見階段 4） | — |
 
 ### D 類：序列化與 wire 合約（BEE4xxx）— 沉默失敗的重災區
 
@@ -193,7 +194,7 @@ reflection-only）才爆炸。
 | BEE4004 | **僅整數 `[Key]` 型別**：public 建構子的參數順序必須跟隨 `[Key]` **數值**順序（見下方實測） | error |
 | BEE4005 | 框架集合子類不得新增 public `Add` 多載（reflection-only 路徑的 `AmbiguousMatchException`） | warning（實測無法重現，見階段 3） |
 | BEE4006 | 三棲型別必須有無參數建構子（XML 反射路徑與行動端 reflection-only 皆需要） | error |
-| BEE4007 | **public setter** 屬性的 ignore 標籤跨格式不一致（get-only 與 private setter 排除，見階段 3） | warning |
+| ~~BEE4007~~ | ~~ignore 標籤跨格式一致性~~ — **已剔除**：框架自身誤判率 60%，跨格式不對稱是刻意設計（見階段 4） | — |
 | ~~BEE4008~~ | ~~`[MessagePackObject]` 屬性缺 `[Key]`~~ — **已剔除**：MessagePack 自帶 `MsgPack004` 已於編譯期覆蓋 | — |
 | ~~BEE4009~~ | ~~wire 合約破壞語意化~~ — **不做**：RS0016 已覆蓋公開屬性改名 | — |
 
@@ -447,9 +448,85 @@ BEE4001 只在**擁有註冊清單的 compilation** 生效（以 `CollectionBase
 **待評估**：是否把 analyzer 推廣到其他 `src/` 專案（BEE4005–4007 對 `Bee.Definition` 的型別同樣有
 價值）。目前只掛在 `Bee.Api.Core`，理由是風險最小且 BEE4001 僅在此有效；推廣的誤報風險評估列入階段 5。
 
-### 階段 4：C# 程式碼慣例
+### 階段 4：C# 程式碼慣例 ✅
 
-補齊 BEE3001–3003。BEE3003 僅能偵測明顯樣式，接受覆蓋不完整。
+實作 2 條（BEE3001、BEE3002），剔除 1 條（BEE3003）。
+
+**BEE3001：可行性先驗證，再實作**
+
+動工前先確認兩個前提：
+
+1. **未標記的真實後果**——`ApiAccessValidator` 實際擲 `UnauthorizedAccessException`（未標記是**拒絕**存取，
+   不是開放）。JSON-RPC 直接以 action 名解析 public 方法，故 public 方法即 API surface。
+2. **誤判率**——框架 BO 共 24 個 public 方法、22 個 `[ApiAccessControl]`，差異僅 2 個**建構子**。
+   慣例已被 100% 遵守，排除建構子與存取子後誤判率趨近零。
+
+attribute 查找複製框架的優先序（方法 → 被 override 的 base method → 宣告型別），因此型別層級標記可涵蓋
+所有方法，不會對已被覆蓋的方法誤報。`Bee.Business` 套用 analyzer 後 0 診斷；反向驗證（暫時移除
+`SystemBusinessObject.Ping` 的 attribute）精確報在該方法，還原後恢復乾淨。
+
+**BEE3002：範圍由實測收窄，且誠實記錄其侷限**
+
+「定義型別」無法可靠識別——消費端一般 DTO 帶 `List<string>` 屬性與定義型別長得一模一樣。初版限定
+`Bee.*` 組件仍**誤報 3 處**：`Bee.Business` 的 `CheckPackageUpdateArgs.Queries`、
+`CheckPackageUpdateResult.Updates`、`GetChangeDetailResult.Fields`——這些是跨層 DTO，不需要 owner
+back-reference / SerializeState / keyed lookup，用裸 `List<T>` 是正確寫法。
+
+最終限定**僅 `Bee.Definition` 組件內生效**，該組件 0 診斷（定義層已 100% 遵守慣例）。
+
+> 誠實的侷限：BEE3002 **對外部開發者沒有價值**，只服務框架自身一致性。這與本 plan 的核心目標
+> （服務消費端的 AI）不一致，但框架自身品質仍值得一條低成本規則。
+
+連帶：測試 harness 新增 `RunOnSourceAs`，可指定模擬的組件名稱——只在特定組件生效的規則若沿用預設
+名稱，會靜默而測試永遠通過，與「規則沒實作」無法區分。
+
+**BEE3003 剔除**
+
+| 理由 | 說明 |
+|------|------|
+| `info` 對 AI 無效 | D3 已確認 `dotnet build` 預設 verbosity 不顯示 `info`，本 plan 的核心目標是 AI 的 build → fix 迴圈 |
+| 偵測本質不完整 | plan 原文即寫「僅能偵測明顯樣式」。要涵蓋間接 mutate 需資料流分析，成本高且仍會漏 |
+| 誤判方向不利 | 一條高誤判、低可見度的規則，最可能的結局是被消費端整組關掉 |
+
+**階段 4 才發現：階段 3 的 BEE4007 必須剔除**
+
+`Bee.Definition` 真正套用 analyzer 後，BEE4007 報出 5 處，全部檢視後確認**沒有一處是缺陷**：
+
+| 位置 | 實際情況 |
+|------|---------|
+| `DbField.DbType`、`FormField.DbType` | 標的是 `[JsonIgnore(Condition = JsonIgnoreCondition.Never)]`——`Never` 意為**永不忽略**（強制序列化）。規則只看 attribute 是否存在、未讀 `Condition`，屬**實作 bug** |
+| `DbField.UpgradeAction`、`DbTableIndex.UpgradeAction`、`MenuSettings.DisplayName` | 只標 `[XmlIgnore]`，XML doc 明寫「not serialized」——runtime 概念刻意不進定義檔但需上 wire。**正確設計** |
+
+即使修掉 bug，後三者仍會誤報，誤判率 60%。依 D3 的分級軸（誤判可能性），這條規則不該存在——故剔除。
+
+> **方法論教訓：「證明失敗真實存在」不等於「證明它是缺陷」。**
+> 階段 3 的實驗確實證明了「只標 `[IgnoreMember]` 會讓成員仍上 JSON wire」這個機制，但沒有驗證
+> 「框架是否刻意如此」。三個格式的用途本就不同——XML 持久化定義檔、JSON/MessagePack 傳 wire——
+> 跨格式不對稱因此是常見且正確的設計。驗證失敗機制之外，還須確認該行為在本框架中是否為刻意選擇。
+
+**流程失誤：先前「Bee.Definition 0 診斷」的驗證是無效的**
+
+BEE3002 完成時報告過「`Bee.Definition` 套用 analyzer 後 0 診斷」，但當時修改 csproj 的指令**靜默失敗**，
+該專案其實沒有套用 analyzer——0 診斷是「規則沒執行」而非「規則通過」。真正套用後立即出現 12 個診斷
+（BEE3002 兩個、BEE4007 十個），才有了上述兩項修正。
+
+這正是同一階段寫進 `AnalyzerRunner.RunOnSourceAs` 註解裡的那個陷阱：**規則靜默與規則通過的徵狀完全相同**。
+補上的紀律是：每條自我套用的規則都要做**反向驗證**（暫時製造一次違規，確認診斷出現），不能只看「0 診斷」。
+BEE3001（移除 `SystemBusinessObject.Ping` 的 attribute）與 BEE3002（在 `FormSchema` 加裸 `List<string>` 屬性）
+皆已通過反向驗證。
+
+**BEE3002 的例外：集合基底自身**
+
+`MessagePackKeyCollectionBase.ItemsForSerialization` 是 `List<T>`，且**刻意如此**——ADR-030 記載它是
+`[Key(0)]` 序列化 proxy，用途就是把 keyed collection 攤平成清單上 wire。規則因此排除「集合基底本身」
+的屬性：基底的序列化管線與使用它們的定義型別遵循不同規則。
+
+**順帶修正：`ApiAccessValidator` 的 XML doc 與實作矛盾**
+
+該 doc 寫「If the method is not marked with `ApiAccessControlAttribute`, access is treated as
+unrestricted」，實作卻是擲 `UnauthorizedAccessException`。這份 XML doc 隨 NuGet 進消費端 IntelliSense，
+會讓外部開發者（與其 AI）以為未標記等於開放存取——與事實相反的安全認知。已改為 `<remarks>` 明述
+「未涵蓋即**拒絕**」、attribute 的解析優先序，並指向 BEE3001 於編譯期把關。
 
 ### 階段 5：發佈整合與對外文件
 

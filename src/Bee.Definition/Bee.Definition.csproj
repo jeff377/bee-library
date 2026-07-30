@@ -35,6 +35,7 @@
   -->
   <ItemGroup>
     <ProjectReference Include="..\Bee.Analyzers\Bee.Analyzers.csproj"
+                      OutputItemType="Analyzer"
                       PrivateAssets="all"
                       ReferenceOutputAssembly="false" />
   </ItemGroup>

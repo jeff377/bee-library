@@ -17,6 +17,11 @@ namespace Bee.Analyzers.UnitTests
         private const string PlaceholderSource = "internal sealed class Placeholder { }";
 
         /// <summary>
+        /// 預設的模擬組件名稱。
+        /// </summary>
+        private const string DefaultAssemblyName = "Bee.Analyzers.TestAssembly";
+
+        /// <summary>
         /// 以指定的定義檔執行 analyzer，回傳其產生的診斷。
         /// </summary>
         /// <param name="analyzer">要執行的 analyzer。</param>
@@ -45,7 +50,26 @@ namespace Bee.Analyzers.UnitTests
             DiagnosticAnalyzer analyzer,
             string source,
             params Type[] anchorTypes)
-            => Run(analyzer, source, BuildReferences(anchorTypes), []);
+            => Run(analyzer, source, BuildReferences(anchorTypes), [], DefaultAssemblyName);
+
+        /// <summary>
+        /// 以指定的組件名稱執行 analyzer，供只在特定組件內生效的規則使用。
+        /// </summary>
+        /// <param name="analyzer">要執行的 analyzer。</param>
+        /// <param name="assemblyName">模擬的組件名稱，例如 <c>Bee.Definition</c>。</param>
+        /// <param name="source">要分析的 C# 原始碼。</param>
+        /// <param name="anchorTypes">原始碼所引用之外部型別的代表。</param>
+        /// <returns>analyzer 產生的診斷。</returns>
+        /// <remarks>
+        /// BEE3002 僅在 <c>Bee.Definition</c> 組件內生效（見該規則的 remarks），若沿用預設組件名稱，
+        /// 規則會靜默而測試將永遠通過——與「規則沒實作」無法區分。
+        /// </remarks>
+        public static ImmutableArray<Diagnostic> RunOnSourceAs(
+            DiagnosticAnalyzer analyzer,
+            string assemblyName,
+            string source,
+            params Type[] anchorTypes)
+            => Run(analyzer, source, BuildReferences(anchorTypes), [], assemblyName);
 
         /// <summary>
         /// 以指定的原始碼與定義檔執行 analyzer，回傳其產生的診斷。
@@ -58,7 +82,7 @@ namespace Bee.Analyzers.UnitTests
             DiagnosticAnalyzer analyzer,
             string source,
             params (string Path, string Content)[] additionalFiles)
-            => Run(analyzer, source, [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)], additionalFiles);
+            => Run(analyzer, source, [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)], additionalFiles, DefaultAssemblyName);
 
         /// <summary>
         /// 取得指定原始碼的編譯期診斷，用於排查測試素材本身是否有編譯錯誤。
@@ -73,7 +97,7 @@ namespace Bee.Analyzers.UnitTests
         public static ImmutableArray<Diagnostic> GetCompilationDiagnostics(string source, params Type[] anchorTypes)
         {
             return CSharpCompilation.Create(
-                assemblyName: "Bee.Analyzers.TestAssembly",
+                assemblyName: DefaultAssemblyName,
                 syntaxTrees: [CSharpSyntaxTree.ParseText(source)],
                 references: BuildReferences(anchorTypes),
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
@@ -109,10 +133,11 @@ namespace Bee.Analyzers.UnitTests
             DiagnosticAnalyzer analyzer,
             string source,
             IEnumerable<MetadataReference> references,
-            (string Path, string Content)[] additionalFiles)
+            (string Path, string Content)[] additionalFiles,
+            string assemblyName)
         {
             var compilation = CSharpCompilation.Create(
-                assemblyName: "Bee.Analyzers.TestAssembly",
+                assemblyName: assemblyName,
                 syntaxTrees: [CSharpSyntaxTree.ParseText(source)],
                 references: references,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));

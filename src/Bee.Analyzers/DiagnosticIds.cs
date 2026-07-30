@@ -86,6 +86,16 @@ namespace Bee.Analyzers
         public const string InconsistentLanguageCoverage = "BEE2007";
 
         /// <summary>
+        /// A public method on a business object declares no API access control.
+        /// </summary>
+        public const string MissingApiAccessControl = "BEE3001";
+
+        /// <summary>
+        /// A definition type exposes a collection property that is not a framework collection.
+        /// </summary>
+        public const string NonFrameworkCollectionProperty = "BEE3002";
+
+        /// <summary>
         /// A collection deriving from a framework collection base is not registered with a formatter.
         /// </summary>
         public const string CollectionFormatterNotRegistered = "BEE4001";
@@ -117,10 +127,5 @@ namespace Bee.Analyzers
         /// A serialized type has no parameterless constructor, so deserialization cannot create it.
         /// </summary>
         public const string MissingParameterlessConstructor = "BEE4006";
-
-        /// <summary>
-        /// A writable property is excluded from some serialization formats but not others.
-        /// </summary>
-        public const string InconsistentIgnoreAttributes = "BEE4007";
     }
 }

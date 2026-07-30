@@ -46,6 +46,27 @@ namespace Bee.Analyzers.Serialization
         }
 
         /// <summary>
+        /// Determines whether the specified type is itself one of the framework collection bases.
+        /// </summary>
+        /// <param name="type">The type to test.</param>
+        /// <returns><c>true</c> when the type is a collection base rather than a user of one.</returns>
+        /// <remarks>
+        /// The bases carry serialization plumbing of their own — a proxy property that flattens the
+        /// collection for the wire, for instance — which follows different rules from the definition
+        /// types that consume them.
+        /// </remarks>
+        public bool IsCollectionBase(INamedTypeSymbol type)
+        {
+            foreach (var baseType in _baseTypes)
+            {
+                if (SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, baseType))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Determines whether the specified type derives from one of the framework collection bases.
         /// </summary>
         /// <param name="type">The type to test.</param>
