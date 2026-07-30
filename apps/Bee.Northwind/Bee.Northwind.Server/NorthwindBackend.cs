@@ -46,18 +46,19 @@ public static class NorthwindBackend
 
         var paths = new PathOptions { DefinePath = ResolveDefinePath() };
 
-        // The framework reaches for a handful of tables in the common database that no
-        // DbCategorySettings entry declares: st_cache_notify (polled by the cache-notify poller
-        // AddBeeFramework registers), st_session (the seed every sign-in writes) and st_user
-        // (the session's culture / time zone). Their TableSchema ships as embedded framework
-        // defaults in Bee.Definition, so materialize them into the demo DefinePath
-        // (skip-if-exists) for IDefineAccess to resolve; NorthwindSchemaSeeder then creates
-        // the tables from the same list.
+        // The framework reaches for several tables in the common database that no
+        // DbCategorySettings entry declares — the cache-notify poller AddBeeFramework registers
+        // reads st_cache_notify, every sign-in writes a seed to st_session and reads the session
+        // locale from st_user. Their TableSchema ships as embedded framework defaults in
+        // Bee.Definition, so materialize the whole common set into the demo DefinePath
+        // (skip-if-exists) for IDefineAccess to resolve; NorthwindSchemaSeeder derives the same
+        // set from the same source and creates the tables. Taking the folder wholesale rather
+        // than naming files is deliberate: see GetFrameworkCommonTables for why, and for what
+        // the demo pays in return.
         Defaults.MaterializeTo(paths.DefinePath, new MaterializeOptions
         {
-            Filter = rel => rel is "TableSchema/common/st_cache_notify.TableSchema.xml"
-                or "TableSchema/common/st_session.TableSchema.xml"
-                or "TableSchema/common/st_user.TableSchema.xml"
+            Filter = rel => rel.StartsWith(
+                NorthwindSchemaSeeder.CommonTableSchemaPrefix, StringComparison.Ordinal)
         });
 
         // SQLite providers — keep dialect registration explicit so the framework does
