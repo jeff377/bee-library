@@ -41,13 +41,7 @@ namespace Bee.Analyzers.Definitions
         /// <returns><c>true</c> when the value matches a scope identifier exactly.</returns>
         public static bool IsValid(string value)
         {
-            foreach (var scope in All)
-            {
-                if (string.Equals(value, scope, StringComparison.Ordinal))
-                    return true;
-            }
-
-            return false;
+            return All.Any(scope => string.Equals(value, scope, StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -65,13 +59,9 @@ namespace Bee.Analyzers.Definitions
         /// </remarks>
         public static string? FindCaseInsensitiveMatch(string value)
         {
-            foreach (var scope in All)
-            {
-                if (string.Equals(value, scope, StringComparison.OrdinalIgnoreCase))
-                    return scope;
-            }
-
-            return null;
+            return All
+                .Where(scope => string.Equals(value, scope, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
         }
 
         /// <summary>

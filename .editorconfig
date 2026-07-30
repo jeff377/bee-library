@@ -54,6 +54,12 @@ dotnet_diagnostic.CA5351.severity = warning
 # 禁用 System.Random 於安全場景
 dotnet_diagnostic.CA5394.severity = warning
 
+# PermissionAction 刻意維持單數：呼叫端一律傳單一動作（Can(token, modelId, PermissionAction.Read)），
+# [Flags] 只用於 allowed_actions 的 mask 儲存。此決定已在 SonarCloud 標為 False Positive，
+# 此處一併關掉編譯期告警，避免 CI 每次都出現同一則 annotation。
+[src/Bee.Definition/Settings/Permission/PermissionAction.cs]
+dotnet_diagnostic.S2342.severity = none
+
 # XML project files
 [*.{csproj,props,targets}]
 indent_size = 2

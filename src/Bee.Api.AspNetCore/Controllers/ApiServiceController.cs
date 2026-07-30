@@ -225,7 +225,9 @@ namespace Bee.Api.AspNetCore.Controllers
             var options = services?.GetService<AuditLogOptions>();
             if (options is not { Enabled: true, AnomalyEnabled: true }) { return; }
 
-            var writer = services?.GetService<IAuditLogWriter>();
+            // `services` is known non-null here: a null provider yields null options above, which
+            // already returned.
+            var writer = services!.GetService<IAuditLogWriter>();
             if (writer == null) { return; }
 
             string sysId = ApiKeyValidation.SysId;

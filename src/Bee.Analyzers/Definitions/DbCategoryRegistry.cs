@@ -99,13 +99,10 @@ namespace Bee.Analyzers.Definitions
         /// </remarks>
         public string? FindScopeOf(string tableName)
         {
-            foreach (var pair in _tablesByScope)
-            {
-                if (pair.Value.Contains(tableName))
-                    return pair.Key;
-            }
-
-            return null;
+            return _tablesByScope
+                .Where(pair => pair.Value.Contains(tableName))
+                .Select(pair => pair.Key)
+                .FirstOrDefault();
         }
     }
 }

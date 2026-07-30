@@ -59,23 +59,39 @@ namespace Bee.Analyzers.Definitions
                 if (string.IsNullOrEmpty(scope) || !DbCategoryScopes.IsValid(scope!))
                     continue;
 
-                foreach (var table in schema.Tables)
-                {
-                    var dbTableName = table.Attribute("DbTableName");
-                    if (dbTableName is null || string.IsNullOrEmpty(dbTableName.Value))
-                        continue;
+                ReportUnregisteredTables(context, registry, schema, scope!);
+            }
+        }
 
-                    if (registry.IsRegistered(scope!, dbTableName.Value))
-                        continue;
+        /// <summary>
+        /// Reports every table of one schema that is not registered under the declared scope.
+        /// </summary>
+        /// <param name="context">The compilation analysis context.</param>
+        /// <param name="registry">The table registrations parsed from the settings.</param>
+        /// <param name="schema">The form schema being checked.</param>
+        /// <param name="scope">The scope the schema declares, already validated as accepted.</param>
+        private static void ReportUnregisteredTables(
+            CompilationAnalysisContext context,
+            DbCategoryRegistry registry,
+            FormSchemaModel schema,
+            string scope)
+        {
+            foreach (var table in schema.Tables)
+            {
+                var dbTableName = table.Attribute("DbTableName");
+                if (dbTableName is null || string.IsNullOrEmpty(dbTableName.Value))
+                    continue;
 
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        Rule,
-                        schema.CreateLocation(dbTableName),
-                        schema.ProgId,
-                        scope,
-                        dbTableName.Value,
-                        BuildAdvice(registry, dbTableName.Value, scope!)));
-                }
+                if (registry.IsRegistered(scope, dbTableName.Value))
+                    continue;
+
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Rule,
+                    schema.CreateLocation(dbTableName),
+                    schema.ProgId,
+                    scope,
+                    dbTableName.Value,
+                    BuildAdvice(registry, dbTableName.Value, scope)));
             }
         }
 
