@@ -39,6 +39,9 @@
 | 欄位名稱 | `sys_company_id`（snake_case 全小寫，與 `sys_rowid` / `sys_master_rowid` 同族） |
 | 值的型別 | **字串業務公司代號**（如 `C001`），即 `SessionInfo.CompanyId` 手上的值，不用 GUID rowid |
 | 涵蓋範圍 | **所有部署一律帶此欄位，含獨立庫** |
+| 注入層級（D1） | repository 建構繫結，**且僅對宣告了該欄位的表注入**——schema 驅動，不是無條件 AND |
+| raw SQL 路徑（D2） | 入口強制傳入租戶範圍參數（漏填＝編譯錯誤）＋ 靜態掃描補手寫 SQL 那一段 |
+| 欄位宣告（D3） | `NOT NULL`，預設值空字串——依框架對 string 型別的預設值規範 |
 
 **為何用字串而非 `company_rowid`**：它與 session、`ICompanyInfoService`、權限快照用的是同一個
 key，過濾時零轉換，也少一個對不上的環節；共用庫裡人眼可讀，支援與除錯直接看得懂。代價是
@@ -66,8 +69,14 @@ public DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null)
 
 正確落點：`IFormRepositoryFactory.CreateDataFormRepository(progId, accessToken)` 建構 repository 時
 已握有 accessToken，且已透過 router 解析出資料庫；同一處解析出 `session.CompanyId` 並注入
-repository，之後該 repository 的每一條 SELECT / UPDATE / DELETE 都無條件 AND 上租戶條件，
+repository，之後該 repository 的每一條 SELECT / UPDATE / DELETE 都 AND 上租戶條件，
 INSERT 一律蓋章。呼叫端沒有「不傳」這個選項。
+
+**但不是每張表都有這個欄位**——`st_user`、`st_company` 這類 common 庫的系統表沒有、
+也不該有公司歸屬。因此注入必須**由 schema 驅動**：以目標表的 `TableSchema` 是否宣告
+`sys_company_id` 為閘門，宣告了才注入。這同時給出一個好性質：**要不要被租戶隔離，
+是資料表定義說了算，不是呼叫端說了算**——漏加欄位會在資料層被看見（欄位不存在），
+而不是變成一條靜默少了條件的查詢。
 
 ## 現況盤點（動工前已確認）
 
@@ -81,42 +90,51 @@ INSERT 一律蓋章。呼叫端沒有「不傳」這個選項。
 | 存於 company 庫的 `st_*` 權限表 | `st_role` / `st_role_grant` / `st_user_role` | 共用庫下同樣需要區隔（見 D4） |
 | `IDbAccessFactory` / `DbCommandSpec` 直查 | AnyCode 報表 / 批次自寫 SQL | **最大破口**（見 D2） |
 
-## 待議項目
+## 決策
 
-### D1：租戶條件的注入層級
+### D1：注入落在 repository 建構，且由 schema 決定要不要注入 —— ✅ 已定案
 
-| 選項 | 說明 | 評估 |
-|------|------|------|
-| **A. repository 建構繫結**（建議） | 工廠建構時注入 `CompanyId`，repository 內部對每條語句 AND 條件 | 呼叫端無從省略；改動集中在 `DataFormRepository` 與工廠 |
-| B. `DbCommandSpec` 建構層 | 更低層，凡是碰到宣告了該欄位的表就注入 | 覆蓋面最廣（含 AnyCode），但要在 SQL 文字層解析目標表，脆弱 |
-| C. BO 層組 FilterNode | 與現有 scopeFilter 同形狀 | **不建議**，理由見上節 |
+工廠建構 `DataFormRepository` 時注入 `CompanyId`，repository 內部對每條語句加上租戶條件、
+INSERT 蓋章；呼叫端沒有省略的選項。
 
-### D2：AnyCode / raw SQL 路徑怎麼收（本 plan 最關鍵的一題）
+**閘門是目標表的 `TableSchema` 有沒有宣告 `sys_company_id`**：`st_user` 這類 common 庫的
+系統表沒有公司歸屬，對它們注入條件是錯的。schema 驅動讓「哪些資料受租戶隔離」成為定義層的
+決定，而非呼叫端的自由心證。
 
-報表與批次由 BO 自寫 SQL、經 `IDbAccessFactory.Create(databaseId)` 直查，完全繞過 D1 的注入。
-共用庫下這正是最會忘記、也最容易外洩的一條路。
+否決 `DbCommandSpec` 建構層（要在 SQL 文字層猜目標表，脆弱）與 BO 層 `FilterNode`
+（會變成可省略的參數，見上節）。
 
-| 選項 | 說明 | 代價 |
-|------|------|------|
-| A. 收斂入口 | 不再直接公開 `IDbAccessFactory` 給 BO，改提供一個「已綁公司」的封裝，取得 `DbAccess` 必須經過它 | 改動既有 BO 呼叫端；封裝仍無法阻止手寫 SQL 漏條件 |
-| B. 必填參數 | raw 查詢入口強制傳入公司代號，簽章上就要求 | 仍靠人填對，但「忘記」會變成編譯錯誤 |
-| C. 規範 + 掃描 | 文件規範 ＋ 自訂分析器 / 測試掃描偵測未帶條件的查詢 | 最不侵入，但保證最弱 |
-| D. 資料庫層 RLS | 交由 DB 的 row-level security | 五種 DB 支援度不一（SQLite 無），與框架跨庫策略衝突 |
+### D2：raw SQL 入口改為必填租戶範圍 ＋ 靜態掃描 —— ✅ 已定案
 
-**需要你裁決**：安全性與既有 BO 改動量的取捨。我的傾向是 **B ＋ C**——讓漏填變成編譯期錯誤，
-再以掃描補手寫 SQL 的那一段；A 的封裝擋不住真正的破口（SQL 文字仍是自己寫的），
-成本卻最高。
+報表與批次由 BO 自寫 SQL、經 `IDbAccessFactory.Create(databaseId)` 直查，繞過 D1 的注入；
+共用庫下這是最容易外洩的一條路。決議：**讓「沒想過租戶」變成編譯錯誤**。
 
-### D3：既有部署與既有資料的遷移
+入口簽章要求一個明確的租戶範圍引數，且不提供預設值：
 
-- 所有既有業務表都要 ALTER ADD `sys_company_id`，且既有列需 backfill。
-- 獨立庫（一庫一公司）的 backfill 值可由 `DatabaseSettings` 反查該庫對應的公司代號；
-  **一庫多公司在既有部署中不存在**，故 backfill 無歧義。
-- 欄位 nullability：字串常態有值，依偏好宣告 NOT NULL；但 Oracle 視 `''` 為 NULL，
-  backfill 未覆蓋到的列會違反 NOT NULL。需決定是「先 nullable、backfill 後再收緊」還是
-  「ALTER 時即帶 DEFAULT」。
+- `TenantScope.Company(companyId)` —— 查詢限定於該公司
+- `TenantScope.NotApplicable` —— 明確宣告此查詢不涉及公司歸屬（如查 `st_user`）
 
-### D4：哪些表要有這個欄位
+兩者都要求開發者**當下作答**；差別在於後者是一個看得見、可被 review 與掃描盯上的宣告，
+而不是「什麼都沒寫」。第二層是靜態掃描：對 `TenantScope.Company` 的呼叫檢查 SQL 文字是否
+帶有該欄位條件，補上「參數傳了但 SQL 忘了加」的缺口。
+
+否決「收斂入口／封裝 `DbAccess`」——SQL 文字仍是自己寫的，封裝擋不住真正的破口，
+卻要改動所有既有 BO 呼叫端；也否決資料庫層 RLS（五種 DB 支援度不一，SQLite 無）。
+
+### D3：`NOT NULL` ＋ 預設值空字串 —— ✅ 已定案
+
+依框架對 string 型別的預設值規範宣告：`NOT NULL`，`DefaultValue` 為空字串。不採 nullable
+——讓「沒蓋到章的列」成為合法狀態，等於把資料完整性問題延後。
+
+**升級路徑另有一道 Oracle 的坎**（宣告面不受影響，但 ALTER 順序要對）：Oracle 視 `''` 為
+NULL，對已有資料列的表直接 `ALTER ADD ... NOT NULL DEFAULT ''` 會擲 ORA-01400。既有表的
+加欄位必須是三步：**ALTER ADD（可為空）→ 以實際公司代號 backfill → 收緊為 NOT NULL**。
+這是升級腳本的步驟，不是欄位宣告的讓步——新建的表一律直接是 `NOT NULL`。
+
+backfill 值的來源：獨立庫（一庫一公司）可由 `DatabaseSettings` 反查該庫對應的公司代號；
+**一庫多公司在既有部署中不存在**（那是本 plan 才引入的模式），故 backfill 無歧義。
+
+### D4：哪些表要有這個欄位 —— 部分待議
 
 | 類別 | 例 | 是否需要 |
 |------|-----|---------|
@@ -125,7 +143,7 @@ INSERT 一律蓋章。呼叫端沒有「不傳」這個選項。
 | common 庫的系統表 | `st_user`、`st_company`、`st_session` | ❌ 本就跨公司共用；`st_session` 的公司欄位是「目前在哪家」，語意不同但沿用同一命名 |
 | log 庫 | 稽核記錄 | 待議：稽核是否需要按公司區隔查詢 |
 
-### D5：畢業流程（試用 → 獨立庫）是否納入本 plan
+### D5：畢業流程（試用 → 獨立庫）不納入本 plan
 
 資料搬移工具、公司代號重複的處理、搬移期間的停機與一致性。傾向**不納入**，
 本 plan 只保證「表結構一致，畢業是純資料搬移」這個前提成立，工具另案。
@@ -134,7 +152,8 @@ INSERT 一律蓋章。呼叫端沒有「不傳」這個選項。
 
 | 風險 | 因應 |
 |------|------|
-| 漏掉過濾條件 → 跨租戶外洩 | D1 建構繫結使呼叫端無從省略；D2 裁決後補齊 raw 路徑 |
+| 漏掉過濾條件 → 跨租戶外洩 | D1 建構繫結使呼叫端無從省略；D2 讓 raw 路徑漏填變編譯錯誤 |
+| 表忘了宣告 `sys_company_id` → 該表完全不受隔離 | schema 驅動的代價：需有測試釘住「`CategoryId=company` 的業務表必須宣告此欄位」 |
 | `uk_` 仍為單欄 → 兩家試用公司無法有相同單號 | 階段 2 改複合索引，且需在既有表升級路徑一併處理 |
 | `EmployeeContextResolver` 於共用庫跨公司誤中 | 階段 3 補公司條件，並補測試釘住 |
 | 既有部署 backfill 不完整 → NOT NULL 違反 | D3 決定 nullable 收緊時機；升級腳本需可重跑 |
