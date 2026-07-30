@@ -135,6 +135,8 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 
 All other exceptions are masked as `"Internal server error"` in production (mapped to `JsonRpcErrorCode.InternalError` `-32000`) to prevent leakage of internal details.
 
+When `CommonConfiguration.IsDebugMode` is enabled, the original message is passed through instead of being replaced — the code stays `-32000`. The executor handles these exceptions itself rather than letting them reach the transport, so with the message replaced a developer has nothing to work from. The stack trace is never included, in either mode.
+
 ### When to Use Each Type
 
 | Exception type | Usage |

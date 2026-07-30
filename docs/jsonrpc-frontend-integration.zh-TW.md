@@ -199,7 +199,7 @@ schema-driven UI 渲染通常會兩者都拿（`GetFormSchema` 拿驗證規則�
 | `-32600` | `InvalidRequest` | 缺 method、缺 API key、Bearer 格式錯 | 檢查 headers |
 | `-32601` | `MethodNotFound` | 找不到 `progId.action` | 檢查方法名稱 / 大小寫 |
 | `-32602` | `InvalidParams` | args 驗證失敗 | 看 `message` 內容 |
-| `-32000` | `InternalError` | 未處理的 server 端例外 | 看 server log；訊息不適合對使用者顯示 |
+| `-32000` | `InternalError` | 未處理的 server 端例外 | 訊息不適合對使用者顯示。正式環境為遮蔽訊息，僅 debug 模式帶原始訊息 |
 | `-32001` | `Unauthorized` | Token 缺、無效、過期 | 重新登入 |
 | `-32002` | `CompanyNotEntered` | 方法需要公司 context | 先呼叫 `System.EnterCompany` |
 | `-32003` | `CompanyAccessDenied` | 使用者沒有此公司權限 | 顯示拒絕、切換公司 |

@@ -131,6 +131,8 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 
 其他所有例外在正式環境一律遮蔽為 `"Internal server error"`（對映到 `JsonRpcErrorCode.InternalError` `-32000`），避免洩漏內部細節。
 
+`CommonConfiguration.IsDebugMode` 啟用時改為透傳原始訊息，錯誤碼仍為 `-32000`。這類例外由 executor 自行處理、不會往上拋到 transport，訊息一旦被換掉，開發者就沒有任何線索可循。兩種模式都不含堆疊追蹤。
+
 ### 使用時機
 
 | 例外型別 | 使用情境 |

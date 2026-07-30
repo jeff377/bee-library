@@ -144,6 +144,12 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- `Bee.Api.Core`: an infrastructure exception now reaches the caller with its own message when
+  `CommonConfiguration.IsDebugMode` is enabled, instead of always being replaced by
+  `"Internal server error"`. `JsonRpcExecutor` handles these exceptions itself rather than letting
+  them reach the transport, so the replacement left a developer with nothing at all to work from —
+  the transport's own development-mode passthrough never got the chance to fire. Production
+  behaviour is unchanged, and the stack trace is never included in either mode.
 - `Bee.Definition`: `FieldDbType.Date` columns resolve to `DateEdit` instead of falling through to
   a plain text box.
 - `Bee.Db`: a freshly created SQL Server table now declares `FieldDbType.DateTime` columns as

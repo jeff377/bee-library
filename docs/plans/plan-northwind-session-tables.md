@@ -1,12 +1,12 @@
 # 計畫：修復 Bee.Northwind 登入中斷（缺 `st_session` / `st_user`）
 
-**狀態：📝 擬定中（2026-07-30）**
+**狀態：✅ 已完成（2026-07-30）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | Northwind 建立框架必要的 common 表，登入恢復 | 📝 待做 |
-| 2 | common 表清單改為資料驅動 + 啟動 fail-fast 驗證 | 📝 待做 |
-| 3 | 框架端對被遮蔽的基礎設施例外補無條件 log | 📝 待做 |
+| 1 | Northwind 建立框架必要的 common 表，登入恢復 | ✅ 已完成（2026-07-30） |
+| 2 | common 表清單改為資料驅動 + 啟動 fail-fast 驗證 | ✅ 已完成（2026-07-30） |
+| 3 | debug 模式透傳基礎設施例外訊息 | ✅ 已完成（2026-07-30） |
 
 ## 背景
 
@@ -116,35 +116,39 @@ warn: Bee.Hosting.Session.ExpiredSessionCleanupService[0]
 **驗收**：刪除 `northwind.db` 重跑 → 表全數建立、登入正常；手動刪掉其中一張表後重啟 →
 啟動即失敗並指名缺哪張表。
 
-## 階段 3：框架端對被遮蔽的基礎設施例外補無條件 log
+## 階段 3：debug 模式透傳基礎設施例外訊息
 
 這是唯一動到 `src/` 的階段，也是讓下次同類問題「五分鐘查完而不是半小時」的關鍵。
 
 **問題**：[`JsonRpcExecutor.cs`](../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs) 的 catch 走
 `MapException` 把非使用者面例外壓成 `Internal server error` 後回傳，但除了受稽核選項閘住的
 `LogApiFailureAnomaly` 之外沒有其他落點。稽核關閉時 = 完全靜默。
-
-**方案 A（建議）**：`JsonRpcExecutor` 注入 optional `ILogger<JsonRpcExecutor>`（沿用
-`_anomalyWriter` / `_auditOptions` 既有的 optional ctor 參數模式，直接建構的測試傳 null 即可），
-在 `MapException` 回傳 `InternalError` 的路徑上以 `LogError` 記錄原始例外與 method 名。
-使用者面例外（已原樣回傳訊息給呼叫端）不重複記。
-
-- **代價**：`Bee.Api.Core` 需新增 `Microsoft.Extensions.Logging.Abstractions` 套件參考 ——
-  目前 `Bee.Api.Core` / `Bee.Definition` / `Bee.Base` 三者都沒有任何 `ILogger` 使用，
-  restore graph 裡也沒有這個套件。它是輕量且幾乎人人都有的相依，但這是**發佈套件的相依面新增**，
-  需要明確認可，並同步 [`dependency-map`](../dependency-map.md)（雙語）與該套件 README。
-
-**方案 B**：讓 executor 把 root exception 掛在回應上，由
 [`ApiServiceController`](../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)
-（本來就在有 logging 的 ASP.NET Core 層）記錄。免新增相依，但要改動 JSON-RPC 回應的內部型別，
-且 in-process 呼叫路徑沒有這層 transport，等於漏一半。**不建議**。
+雖有 development 模式帶原訊息的相同取捨，但 executor 自己 catch 後回傳錯誤回應，例外從未往上拋，
+那層根本沒有機會觸發。
 
-**必須守住**：只在 server 端記錄，回給客戶端的訊息維持遮蔽不變 —— 這是既有的安全設計，
-不因為好查而放寬。對應 `rules/scanning.md` 的「敏感資訊外洩」條款。
+**採用做法**：`MapException` 在 `SysInfo.IsDebugMode` 為真時透傳原始例外訊息，錯誤碼維持
+`-32000`。`SysInfo` 屬 `Bee.Base`、由各 host 於啟動時以 `CommonConfiguration` 灌入，
+`Bee.Api.Core` 本來就依賴它 —— **零新增套件相依、零公開表面變更**。
 
-**驗收**：故意讓某張表缺失觸發 `SqliteException` → server log 出現含表名與堆疊的 `LogError`
-一筆，客戶端回應仍為 `-32000 Internal server error` 不變。既有的
-`Bee.Api.Core.UnitTests` 對 `MapException` 的測試不受影響。
+> 原先評估的是注入 `ILogger<JsonRpcExecutor>`，但那需要為 `Bee.Api.Core` 新增
+> `Microsoft.Extensions.Logging.Abstractions`，且在公開 ctor 加選擇性參數會移除已 shipped 的
+> 簽章（PublicAPI baseline 直接以 RS0017 擋下）—— 對一個診斷性改善而言代價過高。改用既有的
+> debug 旗標後兩項代價都消失。差別是：這解的是**開發期**可見性；正式環境的基礎設施例外仍然
+> 只在稽核開啟時才有記錄，那是另一個獨立議題。
+
+**守住的界線**：只在 debug 模式透傳，且只傳 message、不含堆疊 —— 對應 `rules/scanning.md`
+的「敏感資訊外洩」條款。正式環境行為完全不變。
+
+**測試連帶**：`MapException` 的結果自此取決於 `SysInfo.IsDebugMode` 這個 process-wide 靜態。
+原本兩條斷言遮蔽訊息的測試沿用環境值，而測試 fixture 本身跑在 debug 模式（`tests/Define` 的
+`SystemSettings`）—— 改動後立刻紅，正確地暴露了「斷言依賴環境」這件事。兩條改為明確設定
+`IsDebugMode = false`（要驗的是 production 行為），並補上 debug 模式的對應測試；
+本組件新增 `SysInfoStaticCollection` 序列化這兩個測試類。
+
+**驗收**：全套測試 15 個專案 0 失敗；Northwind 於執行期 drop 掉 `st_session` 後登入，
+客戶端直接收到 `-32000 - SQLite Error 1: 'no such table: st_session'.`
+（本次事件原本要靠逐張建表反推才問得出的那句話）。
 
 ## 未納入本次，但已知的缺口
 
@@ -163,11 +167,13 @@ test，並讓框架改動觸發它；屆時需一併決定 slnx 與 path filter 
 | 風險 | 評估 |
 |------|------|
 | 階段 1 改錯範圍 | 低。改動限於 Northwind 兩個檔案，已實測驗證過完整路徑。 |
-| 階段 2 多建空表造成困惑 | 低但真實。以註解與 README 說明化解；取捨已列於階段 2 供 review。 |
-| 階段 3 新增套件相依 | 中。屬發佈套件的相依面變更，需明確認可並同步文件。 |
-| 階段 3 誤放寬錯誤訊息 | 中。實作時必須逐項確認回應內容不變，驗收步驟已包含此檢查。 |
+| 階段 2 多建空表造成困惑 | 低但真實。已以 `GetFrameworkCommonTables` 的 remarks 說明取捨。 |
+| ~~階段 3 新增套件相依~~ | 已消除 —— 改用既有的 `SysInfo.IsDebugMode`，不新增相依、不動公開表面。 |
+| 階段 3 誤放寬錯誤訊息 | 已控制。透傳僅限 debug 模式且只含 message；正式環境路徑有明確測試覆蓋。 |
 
-## 執行順序
+## 執行結果
 
-階段 1 可獨立先出（讓 demo 立刻可用）。階段 2 依賴階段 1 的結論但不依賴其程式碼，
-階段 3 完全獨立、可與前兩者平行或延後。
+三個階段均已落地，全套測試 15 個專案 0 失敗（1 skipped，屬既有的 RSA 條件測試）。
+公開文件同步更新：`development-constraints`、`jsonrpc-frontend-integration` 與 CHANGELOG（皆雙語）。
+
+階段 3 的最終做法與原案不同（見該節），是 review 時提出的更省做法。

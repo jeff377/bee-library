@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Bee.Api.Core.JsonRpc;
+using Bee.Base;
 using Bee.Base.Exceptions;
 
 namespace Bee.Api.Core.UnitTests.JsonRpc
@@ -9,6 +10,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
     /// exception types to (<see cref="JsonRpcErrorCode"/>, message) pairs used in the
     /// JSON-RPC response envelope.
     /// </summary>
+    [Collection("SysInfoStatic")]
     public class JsonRpcExecutorUserMessageExceptionTests
     {
         [Fact]
@@ -81,29 +83,91 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         }
 
         [Fact]
-        [DisplayName("MapException 於非白名單例外應回傳 InternalError code 與遮蔽訊息")]
+        [DisplayName("MapException 於非白名單例外應回傳 InternalError code 與遮蔽訊息(非 debug 模式)")]
         public void MapException_UnknownException_ReturnsInternalErrorCode()
         {
             var ex = new MissingMethodException("Method 'DefinitelyNotAMethod' not found.");
 
-            var (code, message) = JsonRpcExecutor.MapException(ex);
+            // 遮蔽只在非 debug 模式生效，而測試行程本身跑在 debug 模式
+            // （tests/Define 的 SystemSettings）。這裡要驗的是 production 行為。
+            bool original = SysInfo.IsDebugMode;
+            try
+            {
+                SysInfo.IsDebugMode = false;
+                var (code, message) = JsonRpcExecutor.MapException(ex);
 
-            Assert.Equal(JsonRpcErrorCode.InternalError, code);
-            Assert.Equal("Internal server error", message);
+                Assert.Equal(JsonRpcErrorCode.InternalError, code);
+                Assert.Equal("Internal server error", message);
+            }
+            finally
+            {
+                SysInfo.IsDebugMode = original;
+            }
         }
 
         [Fact]
-        [DisplayName("MapException 於通用 Exception 應回傳 InternalError code")]
+        [DisplayName("MapException 於通用 Exception 應回傳 InternalError code(非 debug 模式不洩漏原訊息)")]
         public void MapException_GenericException_ReturnsInternalErrorCode()
         {
             var ex = new Exception("Some internal failure.");
 
-            var (code, message) = JsonRpcExecutor.MapException(ex);
+            bool original = SysInfo.IsDebugMode;
+            try
+            {
+                SysInfo.IsDebugMode = false;
+                var (code, message) = JsonRpcExecutor.MapException(ex);
 
-            Assert.Equal(JsonRpcErrorCode.InternalError, code);
-            Assert.Equal("Internal server error", message);
-            // 確認原訊息不洩漏。
-            Assert.DoesNotContain("Some internal failure", message);
+                Assert.Equal(JsonRpcErrorCode.InternalError, code);
+                Assert.Equal("Internal server error", message);
+                // 確認原訊息不洩漏。
+                Assert.DoesNotContain("Some internal failure", message);
+            }
+            finally
+            {
+                SysInfo.IsDebugMode = original;
+            }
+        }
+
+        [Fact]
+        [DisplayName("MapException 於 debug 模式應透傳基礎設施例外原訊息(code 維持 InternalError)")]
+        public void MapException_DebugMode_PassesThroughInfrastructureMessage()
+        {
+            bool original = SysInfo.IsDebugMode;
+            try
+            {
+                SysInfo.IsDebugMode = true;
+                var ex = new MissingMethodException("Method 'DefinitelyNotAMethod' not found.");
+
+                var (code, message) = JsonRpcExecutor.MapException(ex);
+
+                Assert.Equal(JsonRpcErrorCode.InternalError, code);
+                Assert.Equal("Method 'DefinitelyNotAMethod' not found.", message);
+            }
+            finally
+            {
+                SysInfo.IsDebugMode = original;
+            }
+        }
+
+        [Fact]
+        [DisplayName("MapException 於 debug 模式不應改變使用者面例外的對應結果")]
+        public void MapException_DebugMode_LeavesUserFacingMappingUnchanged()
+        {
+            bool original = SysInfo.IsDebugMode;
+            try
+            {
+                SysInfo.IsDebugMode = true;
+                var ex = new UserMessageException("欄位不能為空");
+
+                var (code, message) = JsonRpcExecutor.MapException(ex);
+
+                Assert.Equal(JsonRpcErrorCode.UserMessage, code);
+                Assert.Equal("欄位不能為空", message);
+            }
+            finally
+            {
+                SysInfo.IsDebugMode = original;
+            }
         }
     }
 }

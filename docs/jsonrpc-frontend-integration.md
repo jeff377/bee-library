@@ -207,7 +207,7 @@ Method names are **case-sensitive** — `system.ping` will not dispatch.
 | `-32600` | `InvalidRequest` | Missing method, missing API key, or invalid Bearer format | Inspect headers |
 | `-32601` | `MethodNotFound` | Unknown `progId.action` | Check method name / casing |
 | `-32602` | `InvalidParams` | Args validation failed | Inspect `message` |
-| `-32000` | `InternalError` | Unhandled server-side exception | Server logs; not user-facing |
+| `-32000` | `InternalError` | Unhandled server-side exception | Not user-facing. The message is masked in production and carries the original text only in debug mode |
 | `-32001` | `Unauthorized` | Token missing, invalid, or expired | Re-login |
 | `-32002` | `CompanyNotEntered` | Method needs company context | Call `System.EnterCompany` first |
 | `-32003` | `CompanyAccessDenied` | User has no rights to this company | Display denial, switch company |

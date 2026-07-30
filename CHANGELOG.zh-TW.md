@@ -117,6 +117,10 @@
 
 ### 修正
 
+- `Bee.Api.Core`：`CommonConfiguration.IsDebugMode` 啟用時，基礎設施例外改為原訊息回傳呼叫端，
+  不再一律替換為 `"Internal server error"`。這類例外由 `JsonRpcExecutor` 自行處理、不會往上拋到
+  transport，訊息一旦被換掉，開發者就完全沒有線索——transport 自己的 development 模式透傳根本
+  沒有機會觸發。正式環境行為不變，且兩種模式都不含堆疊追蹤。
 - `Bee.Definition`：`FieldDbType.Date` 欄位改對映到 `DateEdit`，不再落入純文字框。
 - `Bee.Db`：全新建立的 SQL Server 表，`FieldDbType.DateTime` 欄位改宣告為 `datetime2(7)`，
   與 ALTER 及 rebuild 路徑一致。`SqlCreateTableCommandBuilder` 自帶一份型別對映複本，

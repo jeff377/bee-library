@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using Bee.Base;
 using Bee.Base.Exceptions;
 using Bee.Base.Tracing;
 using Bee.Definition;
@@ -319,9 +320,27 @@ namespace Bee.Api.Core.JsonRpc
         /// <param name="ex">The exception (already unwrapped) to map.</param>
         /// <returns>A tuple of the JSON-RPC error code and the message to expose.</returns>
         /// <remarks>
+        /// <para>
         /// Exposed as <c>internal</c> for direct unit testing through
         /// <c>InternalsVisibleTo</c>; the mapping is a protocol-level contract, not an
         /// implementation detail.
+        /// </para>
+        /// <para>
+        /// In debug mode the infrastructure message is passed through instead of being replaced.
+        /// The generic message is the right answer in production — an infrastructure failure
+        /// should not describe the server's internals to a caller — but it leaves a developer
+        /// with nothing to work from: the executor handles the exception here rather than letting
+        /// it reach the transport, so nothing further up gets a chance to report it either. The
+        /// same trade-off is already made at the transport layer, where
+        /// <c>ApiServiceController</c> attaches the real message only when the host is running
+        /// in development.
+        /// </para>
+        /// <para>
+        /// WARNING: the debug branch must stay gated on <see cref="SysInfo.IsDebugMode"/>, and
+        /// must pass the message alone. A stack trace or any wider dump would leak internal paths
+        /// and system detail into an API response, which <c>rules/scanning.md</c> prohibits
+        /// outright.
+        /// </para>
         /// </remarks>
         internal static (JsonRpcErrorCode code, string message) MapException(Exception ex)
         {
@@ -329,7 +348,8 @@ namespace Bee.Api.Core.JsonRpc
                 return (JsonRpcErrorCode.PermissionDenied, ex.Message);
             if (IsUserFacingException(ex))
                 return (JsonRpcErrorCode.UserMessage, ex.Message);
-            return (JsonRpcErrorCode.InternalError, "Internal server error");
+            return (JsonRpcErrorCode.InternalError,
+                SysInfo.IsDebugMode ? ex.Message : "Internal server error");
         }
 
         /// <summary>
