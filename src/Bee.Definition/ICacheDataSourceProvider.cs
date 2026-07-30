@@ -22,10 +22,17 @@ namespace Bee.Definition
     public interface ICacheDataSourceProvider
     {
         /// <summary>
-        /// Gets the session user data for the specified access token.
+        /// Rebuilds the session for the specified access token from its persisted seed, or returns
+        /// <c>null</c> when it cannot be rebuilt.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        SessionUser? GetSessionUser(Guid accessToken);
+        /// <remarks>
+        /// <c>null</c> covers every "this token is not a live session" case — no seed, an expired
+        /// seed, a company permission revoked since sign-in, or a key provider that cannot recover
+        /// the session key. The caller treats them all the same way: the token does not
+        /// authenticate and the user signs in again.
+        /// </remarks>
+        SessionInfo? GetSessionInfo(Guid accessToken);
 
         /// <summary>
         /// Gets the company master record for the specified company id; <c>null</c> when no company

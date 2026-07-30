@@ -34,6 +34,11 @@ namespace Bee.Business.Providers
         /// <param name="accessToken">The access token of the session being created (unused).</param>
         /// <returns>A 64-byte combined key (AES + HMAC).</returns>
         public byte[] GenerateKeyForLogin(Guid accessToken) => _apiEncryptionKey;
+
+        /// <summary>
+        /// Always <c>true</c>: the shared key does not depend on the session.
+        /// </summary>
+        public bool SupportsSessionRebuild => true;
     }
 
 }

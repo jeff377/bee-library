@@ -74,9 +74,7 @@ namespace Bee.ObjectCaching
             FormSchema = new FormSchemaCache(storage, paths, CachePrefix);
             FormLayout = new FormLayoutCache(storage, paths, CachePrefix);
             LanguageResource = new LanguageResourceCache(storage, paths, CachePrefix);
-            // SessionInfo has no read-through yet: nothing persists a login session to st_session,
-            // so there is nothing to rebuild from. See docs/plans for the persistence work it needs.
-            SessionInfo = new SessionInfoCache(CachePrefix);
+            SessionInfo = new SessionInfoCache(dataSource, CachePrefix);
             CompanyInfo = new CompanyInfoCache(dataSource, CachePrefix);
             CompanyRolePermissions = new CompanyRolePermissionsCache(dataSource, CachePrefix);
             DepartmentTree = new DepartmentTreeCache(dataSource, CachePrefix);

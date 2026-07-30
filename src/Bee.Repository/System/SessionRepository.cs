@@ -71,40 +71,31 @@ namespace Bee.Repository.System
             dbAccess.Execute(command);
         }
 
-        /// <summary>
-        /// Gets the session information for the specified access token.
-        /// </summary>
-        /// <param name="accessToken">The access token.</param>
+        /// <inheritdoc/>
+        /// <remarks>
+        /// A pure read: expired rows are filtered by the query rather than deleted on the way past.
+        /// This runs on the request path, potentially on several nodes at once, and a read that
+        /// writes turns every session lookup into a statement that can contend or fail outright on
+        /// a read-only replica. Reclaiming those rows belongs to the cleanup schedule; correctness
+        /// does not depend on it, since an expired row can no longer be read back through here and
+        /// `AccessTokenValidator` checks the expiry again regardless.
+        ///
+        /// `sys_invalid_time` is a naive column holding UTC (ADR-032 D1), matching the
+        /// `DateTime.UtcNow`-based value the write path stores.
+        /// </remarks>
         public SessionUser? GetSession(Guid accessToken)
         {
-            string sql = "SELECT session_user_xml, sys_invalid_time \n" +
+            string sql = "SELECT session_user_xml \n" +
                                  "FROM st_session \n" +
-                                 "WHERE access_token={0}";
-            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, accessToken);
+                                 "WHERE access_token={0} AND sys_invalid_time > {1}";
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, accessToken, DateTime.UtcNow);
             var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
             var result = dbAccess.Execute(command);
             var table = result.Table!;
             if (table.IsEmpty()) { return null; }
-            var row = table.Rows[0];
 
-            // If the session has expired, delete it and return null.
-            // The column is a naive one holding UTC (ADR-032 D1), and the write path stores
-            // `SessionUser.EndTime`, itself computed from `DateTime.UtcNow`. Labelling it says so out loud: the comparison below is
-            // correct either way — `DateTime` compares ticks and ignores `Kind` — so an unlabelled
-            // value would leave the reader unable to tell a deliberate UTC basis from an oversight.
-            DateTime endTime = DateTime.SpecifyKind(
-                ValueUtilities.CDateTime(row["sys_invalid_time"], DateTime.MinValue), DateTimeKind.Utc);
-            if (endTime < DateTime.UtcNow)
-            {
-                DeleteSession(accessToken);
-                return null;
-            }
-
-            string xml = ValueUtilities.CStr(row["session_user_xml"]);
-            var user = XmlCodec.Deserialize<SessionUser>(xml);
-            // If the session is one-time use, delete it after retrieval
-            if (user!.OneTime) { DeleteSession(accessToken); }
-            return user;
+            string xml = ValueUtilities.CStr(table.Rows[0]["session_user_xml"]);
+            return XmlCodec.Deserialize<SessionUser>(xml);
         }
     }
 }

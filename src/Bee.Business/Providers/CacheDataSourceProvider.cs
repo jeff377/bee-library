@@ -1,6 +1,10 @@
+using Bee.Base;
+using Bee.Business.Session;
 using Bee.Definition;
 using Bee.Definition.Identity;
 using Bee.Definition.Organization;
+using Bee.Definition.Security;
+using Bee.Definition.Storage;
 using Bee.Repository.Abstractions.Factories;
 
 namespace Bee.Business.Providers
@@ -22,20 +26,65 @@ namespace Bee.Business.Providers
     public class CacheDataSourceProvider : ICacheDataSourceProvider
     {
         private readonly ISystemRepositoryFactory _systemFactory;
+        private readonly IServiceProvider _services;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CacheDataSourceProvider"/> class.
         /// </summary>
         /// <param name="systemFactory">Factory that builds system-level repositories on demand.</param>
-        public CacheDataSourceProvider(ISystemRepositoryFactory systemFactory)
+        /// <param name="services">
+        /// Service provider used to resolve session-rebuild collaborators on first use.
+        /// </param>
+        public CacheDataSourceProvider(ISystemRepositoryFactory systemFactory, IServiceProvider services)
         {
             _systemFactory = systemFactory ?? throw new ArgumentNullException(nameof(systemFactory));
+            _services = services ?? throw new ArgumentNullException(nameof(services));
         }
 
         /// <inheritdoc/>
-        public SessionUser? GetSessionUser(Guid accessToken)
+        /// <remarks>
+        /// Rebuilding re-runs the derivations sign-in performed rather than restoring a snapshot:
+        /// the seed carries only the token, user, expiry and company, and roles, customization code
+        /// and record-scope identity are recomputed here. That is what keeps a permission revoked
+        /// after sign-in from surviving in the rebuilt session.
+        /// </remarks>
+        public SessionInfo? GetSessionInfo(Guid accessToken)
         {
-            return _systemFactory.CreateSessionRepository().GetSession(accessToken);
+            // Resolved per call, not in the constructor: this provider is itself built lazily on a
+            // cache miss, and the key provider can depend on the session service, which would close
+            // a construction cycle back onto the cache container.
+            var keyProvider = _services.GetRequiredService<IApiEncryptionKeyProvider>();
+            // A provider whose key lives only inside the session cannot supply one for a session
+            // that is no longer cached. Rebuilding anyway would produce a session that looks signed
+            // in but fails every encrypted call, so the token is treated as dead instead.
+            if (!keyProvider.SupportsSessionRebuild) { return null; }
+
+            var seed = _systemFactory.CreateSessionRepository().GetSession(accessToken);
+            if (seed == null) { return null; }
+
+            var sessionInfo = new SessionInfo
+            {
+                AccessToken = seed.AccessToken,
+                UserId = seed.UserID,
+                UserName = seed.UserName,
+                ExpiredAt = seed.EndTime,
+                ApiEncryptionKey = keyProvider.GetKey(seed.AccessToken),
+            };
+
+            var locale = _systemFactory.CreateUserRepository().GetLocale(seed.UserID);
+            var backend = _services.GetRequiredService<IDefineAccess>().GetSystemSettings().BackendConfiguration;
+            sessionInfo.TimeZone = StringUtilities.IsNotEmpty(locale.TimeZone) ? locale.TimeZone : backend.DefaultTimeZone;
+            sessionInfo.Culture = StringUtilities.IsNotEmpty(locale.Culture) ? locale.Culture : backend.DefaultLanguage;
+
+            if (StringUtilities.IsNotEmpty(seed.CompanyId))
+            {
+                // Access is re-checked here, so a user whose company permission was revoked does
+                // not come back into that company on the next rebuild.
+                var binding = _services.GetRequiredService<SessionCompanyBinder>().Bind(sessionInfo, seed.CompanyId!);
+                if (binding == null) { return null; }
+            }
+
+            return sessionInfo;
         }
 
         /// <inheritdoc/>

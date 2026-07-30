@@ -25,7 +25,7 @@ namespace Bee.ObjectCaching.UnitTests
                 return _resolver(companyId);
             }
 
-            public SessionUser? GetSessionUser(Guid accessToken) => null;
+            public SessionInfo? GetSessionInfo(Guid accessToken) => null;
             public CompanyRolePermissions? GetCompanyRolePermissions(string companyId) => null;
             public DepartmentTree? GetDepartmentTree(string companyId) => null;
         }

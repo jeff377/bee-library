@@ -17,16 +17,17 @@ namespace Bee.Business.UnitTests
 
         private CacheDataSourceProvider CreateProvider()
         {
-            return new CacheDataSourceProvider(_fx.GetRequiredService<ISystemRepositoryFactory>());
+            return new CacheDataSourceProvider(
+                _fx.GetRequiredService<ISystemRepositoryFactory>(), _fx.Provider);
         }
 
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("GetSessionUser 傳入不存在的 Token 應回傳 null")]
-        public void GetSessionUser_UnknownToken_ReturnsNull()
+        [DisplayName("GetSessionInfo 傳入不存在的 Token 應回傳 null")]
+        public void GetSessionInfo_UnknownToken_ReturnsNull()
         {
             var provider = CreateProvider();
 
-            var result = provider.GetSessionUser(Guid.NewGuid());
+            var result = provider.GetSessionInfo(Guid.NewGuid());
 
             Assert.Null(result);
         }
@@ -68,7 +69,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("CacheDataSourceProvider 建構子傳 null 應拋 ArgumentNullException")]
         public void Constructor_NullFactory_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new CacheDataSourceProvider(null!));
+            Assert.Throws<ArgumentNullException>(() => new CacheDataSourceProvider(null!, _fx.Provider));
         }
     }
 }

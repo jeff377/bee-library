@@ -26,5 +26,18 @@ namespace Bee.Definition.Security
         /// rebuilt from the database recovers a working key without persisting it.
         /// </remarks>
         byte[] GenerateKeyForLogin(Guid accessToken);
+
+        /// <summary>
+        /// Gets a value indicating whether <see cref="GetKey"/> can produce a session's key
+        /// without a live session to read it from.
+        /// </summary>
+        /// <remarks>
+        /// Session rebuild depends on this. A provider that keeps the key only inside the session
+        /// (a random per-login key) cannot recover it once the cache entry is gone, so a session it
+        /// issued must not be rebuilt: the user would appear signed in while every encrypted call
+        /// failed. Implementations that hold a shared key or derive the key from the access token
+        /// return <c>true</c>.
+        /// </remarks>
+        bool SupportsSessionRebuild { get; }
     }
 }

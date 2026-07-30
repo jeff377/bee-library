@@ -13,3 +13,27 @@ Bee.Business.Providers.StaticApiEncryptionKeyProvider.GenerateKeyForLogin(System
 static Bee.Business.Providers.DerivedApiEncryptionKeyProvider.FromMasterKey(byte[]! masterKey) -> Bee.Business.Providers.DerivedApiEncryptionKeyProvider!
 *REMOVED*virtual Bee.Business.System.SystemBusinessObject.ApplyUserTimeZone(Bee.Definition.Identity.SessionInfo! sessionInfo) -> void
 virtual Bee.Business.System.SystemBusinessObject.ApplyUserLocale(Bee.Definition.Identity.SessionInfo! sessionInfo) -> void
+Bee.Business.Session.SessionCompanyBinder
+Bee.Business.Session.SessionCompanyBinder.Bind(Bee.Definition.Identity.SessionInfo! sessionInfo, string! companyId) -> Bee.Business.Session.SessionCompanyBinding?
+Bee.Business.Session.SessionCompanyBinder.SessionCompanyBinder(Bee.Definition.Identity.ICompanyInfoService! companyInfoService, Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory, Bee.Definition.Identity.IRolePermissionService! rolePermissionService, Bee.Definition.Identity.IEmployeeContextResolver! employeeContextResolver) -> void
+Bee.Business.Session.SessionCompanyBinding
+Bee.Business.Session.SessionCompanyBinding.<Clone>$() -> Bee.Business.Session.SessionCompanyBinding!
+Bee.Business.Session.SessionCompanyBinding.Capabilities.get -> System.Collections.Generic.Dictionary<string!, Bee.Definition.Settings.PermissionAction>!
+Bee.Business.Session.SessionCompanyBinding.Capabilities.init -> void
+Bee.Business.Session.SessionCompanyBinding.Company.get -> Bee.Definition.Identity.CompanyInfo!
+Bee.Business.Session.SessionCompanyBinding.Company.init -> void
+Bee.Business.Session.SessionCompanyBinding.Deconstruct(out Bee.Definition.Identity.CompanyInfo! Company, out System.Collections.Generic.Dictionary<string!, Bee.Definition.Settings.PermissionAction>! Capabilities) -> void
+Bee.Business.Session.SessionCompanyBinding.Equals(Bee.Business.Session.SessionCompanyBinding? other) -> bool
+Bee.Business.Session.SessionCompanyBinding.SessionCompanyBinding(Bee.Definition.Identity.CompanyInfo! Company, System.Collections.Generic.Dictionary<string!, Bee.Definition.Settings.PermissionAction>! Capabilities) -> void
+override Bee.Business.Session.SessionCompanyBinding.Equals(object? obj) -> bool
+override Bee.Business.Session.SessionCompanyBinding.GetHashCode() -> int
+override Bee.Business.Session.SessionCompanyBinding.ToString() -> string!
+static Bee.Business.Session.SessionCompanyBinding.operator !=(Bee.Business.Session.SessionCompanyBinding? left, Bee.Business.Session.SessionCompanyBinding? right) -> bool
+static Bee.Business.Session.SessionCompanyBinding.operator ==(Bee.Business.Session.SessionCompanyBinding? left, Bee.Business.Session.SessionCompanyBinding? right) -> bool
+*REMOVED*Bee.Business.Providers.CacheDataSourceProvider.CacheDataSourceProvider(Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory) -> void
+*REMOVED*Bee.Business.Providers.CacheDataSourceProvider.GetSessionUser(System.Guid accessToken) -> Bee.Definition.Identity.SessionUser?
+Bee.Business.Providers.CacheDataSourceProvider.CacheDataSourceProvider(Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory, System.IServiceProvider! services) -> void
+Bee.Business.Providers.CacheDataSourceProvider.GetSessionInfo(System.Guid accessToken) -> Bee.Definition.Identity.SessionInfo?
+Bee.Business.Providers.DerivedApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool
+Bee.Business.Providers.DynamicApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool
+Bee.Business.Providers.StaticApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool

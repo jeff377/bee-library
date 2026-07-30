@@ -6,6 +6,7 @@ using Bee.Definition.Logging;
 using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
+using Bee.Business.Session;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
 
@@ -96,41 +97,17 @@ namespace Bee.Business.System
             var sessionInfo = SessionInfoService.Get(AccessToken)
                 ?? throw new UnauthorizedAccessException("Session not found or has expired.");
 
-            var companyInfoService = Services.GetRequiredService<ICompanyInfoService>();
-            var companyInfo = companyInfoService.Get(args.CompanyId)
+            // The same binder runs on session rebuild, so entering a company and coming back from
+            // an evicted cache land on identical session state.
+            var binding = Services.GetRequiredService<SessionCompanyBinder>().Bind(sessionInfo, args.CompanyId)
                 ?? throw new InvalidOperationException("Company access denied.");
 
-            var userCompanyRepository = Services.GetRequiredService<ISystemRepositoryFactory>()
-                .CreateUserCompanyRepository();
-            if (!userCompanyRepository.HasAccess(sessionInfo.UserId, args.CompanyId))
-                throw new InvalidOperationException("Company access denied.");
-
-            sessionInfo.CompanyId = args.CompanyId;
-            // Derive the session's customization code from the company (empty when the company
-            // ships no customization). The session-level overlay reads this value downstream.
-            sessionInfo.CustomizeId = companyInfo.CustomizeId;
-            // Snapshot the user's roles for this company so the layer-1 Can check runs from
-            // SessionInfo.Roles (sys_id) without re-hitting the database on every request.
-            var rolePermissionService = Services.GetRequiredService<IRolePermissionService>();
-            var snapshot = rolePermissionService.Get(args.CompanyId);
-            sessionInfo.Roles = snapshot?.GetUserRoleIds(sessionInfo.UserId).ToList() ?? [];
-            // Compute the per-model capability snapshot once, here, where the roles and the
-            // permission snapshot are both in hand — the client caches it to degrade UI elements
-            // without any extra round-trip (see plan-permission-capability.md).
-            var capabilities = snapshot?.GetAllowedByModel(sessionInfo.Roles) ?? [];
-            // Snapshot the user's record-scope identity (user/employee/department row ids) so
-            // layer-2 scope filtering runs from the session without re-hitting the database.
-            var employeeResolver = Services.GetRequiredService<IEmployeeContextResolver>();
-            var employeeContext = employeeResolver.Resolve(sessionInfo.UserId, companyInfo.CompanyDatabaseId);
-            sessionInfo.UserRowId = employeeContext.UserRowId;
-            sessionInfo.EmployeeRowId = employeeContext.EmployeeRowId;
-            sessionInfo.DeptRowId = employeeContext.DeptRowId;
             // Seed before cache: the company is the one snapshotted value that cannot be derived,
             // so a rebuild that missed it would silently drop the user back to "no company".
             SessionRepository.UpdateSession(CreateSeed(sessionInfo));
             SessionInfoService.Set(sessionInfo);
 
-            return new EnterCompanyResult { Company = companyInfo, Capabilities = capabilities };
+            return new EnterCompanyResult { Company = binding.Company, Capabilities = binding.Capabilities };
         }
 
         /// <summary>

@@ -11,3 +11,6 @@ Bee.Definition.Settings.BackendConfiguration.DefaultLanguage.set -> void
 Bee.Definition.Identity.SessionUser.CompanyId.get -> string?
 Bee.Definition.Identity.SessionUser.CompanyId.set -> void
 Bee.Definition.Logging.LoginEvent.ServiceSessionCreated = 4 -> Bee.Definition.Logging.LoginEvent
+*REMOVED*Bee.Definition.ICacheDataSourceProvider.GetSessionUser(System.Guid accessToken) -> Bee.Definition.Identity.SessionUser?
+Bee.Definition.ICacheDataSourceProvider.GetSessionInfo(System.Guid accessToken) -> Bee.Definition.Identity.SessionInfo?
+Bee.Definition.Security.IApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool

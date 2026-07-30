@@ -118,6 +118,12 @@ namespace Bee.Business.Providers
         }
 
         /// <summary>
+        /// Always <c>true</c>: the key is recomputed from the access token, so it survives cache
+        /// eviction — this is the property session rebuild is built on.
+        /// </summary>
+        public bool SupportsSessionRebuild => true;
+
+        /// <summary>
         /// Derives the combined key for the given access token via HKDF-SHA256.
         /// </summary>
         private byte[] Derive(Guid accessToken)

@@ -4,6 +4,7 @@ using Bee.Business;
 using Bee.Business.Form;
 using Bee.Business.Permission;
 using Bee.Business.Providers;
+using Bee.Business.Session;
 using Bee.Expressions;
 using Bee.Db;
 using Bee.Db.CacheNotify;
@@ -189,6 +190,10 @@ namespace Bee.Hosting
             services.AddSingleton<ICacheDataSourceProvider>(sp =>
                 CreateConfigurableService<ICacheDataSourceProvider>(sp,
                     components.CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider));
+
+            // Company binding shared by EnterCompany and session rebuild — both must land on the
+            // same session state, so the derivation lives in one place.
+            services.AddSingleton<SessionCompanyBinder>();
 
             // Expression engine + form rule processor. Both are stateless singletons; the evaluator
             // caches compiled expressions process-wide, so a single instance is preferred.

@@ -40,16 +40,13 @@ namespace Bee.Business.Providers
         }
 
         /// <summary>
-        /// Generates a random encryption key for a newly issued session.
+        /// Always <c>false</c>: the key exists only inside the session, so it cannot be recovered
+        /// for a session that is no longer cached. Deployments that need session rebuild use
+        /// <see cref="StaticApiEncryptionKeyProvider"/> or <see cref="DerivedApiEncryptionKeyProvider"/>.
         /// </summary>
-        /// <param name="accessToken">The access token of the session being created (unused).</param>
-        /// <returns>A 64-byte combined key (AES + HMAC).</returns>
-        /// <remarks>
-        /// The generated key lives only in <c>SessionInfo.ApiEncryptionKey</c>, so it cannot be
-        /// recovered once the cache entry is gone. Deployments that rebuild sessions from
-        /// <c>st_session</c> need <see cref="StaticApiEncryptionKeyProvider"/> or
-        /// <see cref="DerivedApiEncryptionKeyProvider"/> instead.
-        /// </remarks>
+        public bool SupportsSessionRebuild => false;
+
+        /// <inheritdoc/>
         public byte[] GenerateKeyForLogin(Guid accessToken)
         {
             // SessionInfo is created or updated at login and the ApiEncryptionKey is set automatically
