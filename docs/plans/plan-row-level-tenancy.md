@@ -134,14 +134,25 @@ NULL，對已有資料列的表直接 `ALTER ADD ... NOT NULL DEFAULT ''` 會擲
 backfill 值的來源：獨立庫（一庫一公司）可由 `DatabaseSettings` 反查該庫對應的公司代號；
 **一庫多公司在既有部署中不存在**（那是本 plan 才引入的模式），故 backfill 無歧義。
 
-### D4：哪些表要有這個欄位 —— 部分待議
+### D4：以 scope 為準 —— company 庫全部要，common / log 視需求 —— ✅ 已定案
 
-| 類別 | 例 | 是否需要 |
-|------|-----|---------|
-| 業務表（`ft_*`，`CategoryId="company"`） | 訂單、員工、部門 | ✅ 必要 |
-| 存於 company 庫的系統表 | `st_role`、`st_role_grant`、`st_user_role` | ✅ 共用庫下必要，否則權限跨公司互見 |
-| common 庫的系統表 | `st_user`、`st_company`、`st_session` | ❌ 本就跨公司共用；`st_session` 的公司欄位是「目前在哪家」，語意不同但沿用同一命名 |
-| log 庫 | 稽核記錄 | 待議：稽核是否需要按公司區隔查詢 |
+規則不列舉個別表，而是綁在 scope 上：
+
+| Scope | 規則 |
+|-------|------|
+| `company` | **該庫裡的表一律宣告 `sys_company_id`**，不分 `ft_` 業務表或 `st_` 系統表（`st_role` / `st_role_grant` / `st_user_role` 亦然，否則共用庫下權限會跨公司互見） |
+| `common` | **視需求**，預設不宣告。這些表本就跨公司共用（`st_user`、`st_company`） |
+| `log` | **視需求**，預設不宣告。稽核是否需要按公司區隔查詢，由該表自己決定 |
+
+以 scope 為準而非逐表列舉，好處是可以用測試把它變成不變式：
+**所有 `CategoryId="company"` 的 `TableSchema` 必須宣告 `sys_company_id`**——新增表時漏加會
+直接紅，而不是等到共用庫上線才發現某張表沒被隔離。
+
+**common / log 宣告此欄位時的注意事項**：D1 的注入閘門只看「表有沒有宣告該欄位」，
+所以一張 common 表一旦宣告了它，將來若被 FormSchema 納入 CRUD，就會被自動加上
+「等於目前公司」的條件。`st_session` 正是這種情況——它的欄位語意是「這個 session **目前在**
+哪家公司」，不是「這一列**屬於**哪家公司」。實務上它只經 `SessionRepository` 的手寫 SQL 存取，
+D1 的閘門碰不到它；但 common / log 要宣告此欄位前，須先確認語意確實是「歸屬」而非別的意思。
 
 ### D5：畢業流程（試用 → 獨立庫）不納入本 plan
 
@@ -153,7 +164,7 @@ backfill 值的來源：獨立庫（一庫一公司）可由 `DatabaseSettings` 
 | 風險 | 因應 |
 |------|------|
 | 漏掉過濾條件 → 跨租戶外洩 | D1 建構繫結使呼叫端無從省略；D2 讓 raw 路徑漏填變編譯錯誤 |
-| 表忘了宣告 `sys_company_id` → 該表完全不受隔離 | schema 驅動的代價：需有測試釘住「`CategoryId=company` 的業務表必須宣告此欄位」 |
+| 表忘了宣告 `sys_company_id` → 該表完全不受隔離 | schema 驅動的代價：以測試釘住 D4 的不變式（`CategoryId="company"` 的表必須宣告此欄位） |
 | `uk_` 仍為單欄 → 兩家試用公司無法有相同單號 | 階段 2 改複合索引，且需在既有表升級路徑一併處理 |
 | `EmployeeContextResolver` 於共用庫跨公司誤中 | 階段 3 補公司條件，並補測試釘住 |
 | 既有部署 backfill 不完整 → NOT NULL 違反 | D3 決定 nullable 收緊時機；升級腳本需可重跑 |
