@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 基礎設施：analyzer 專案 + `AdditionalFiles` 管線 + 3 條規則走通端到端 | ✅ 已完成（2026-07-30） |
-| 2 | XML 定義檔規則（BEE1xxx 單檔、BEE2xxx 跨檔一致性）完整化 | 📝 待做 |
+| 2 | XML 定義檔規則（BEE1xxx 單檔、BEE2xxx 跨檔一致性）完整化 | ✅ 已完成（2026-07-30） |
 | 3 | 序列化與 wire 合約規則（BEE4xxx） | 📝 待做 |
 | 4 | C# 程式碼慣例規則（BEE3xxx） | 📝 待做 |
 | 5 | 發佈整合、消費端零設定驗證、對外文件 | 📝 待做 |
@@ -150,11 +150,11 @@ BEE2001: FormSchema 'Product' declares CategoryId 'common', but its DbTableName 
 |----|------|----------|
 | BEE1001 | `FormSchema/@CategoryId` 僅接受 `common` / `company` / `log` | error |
 | BEE1002 | `DbCategory/@Id` 僅接受上述三值 | error |
-| BEE1003 | `FormField/@DbType` 必須為合法 `DbType` 列舉值 | error |
+| BEE1003 | `FormField/@DbType` 與 `DbField/@DbType` 必須為合法 `FieldDbType` 成員 | error |
 | BEE1004 | `ListFields` / `LookupFields` 列出的欄位必須是本 schema 已宣告的 `FormField/@FieldName` | error |
 | BEE1005 | `FieldMapping/@DestinationField` 必須是本 schema 已宣告欄位 | error |
 | BEE1006 | 標記 `Type="RelationField"` 的欄位應為某 `FieldMapping` 的 `DestinationField` | warning |
-| BEE1007 | 同一 `FormTable` 內 `FieldName` 不得重複 | error |
+| BEE1007 | 同一 `FormTable`／`TableSchema` 內 `FieldName` 不得重複 | error |
 
 ### B 類：XML 定義檔跨檔一致性（BEE2xxx）— 文件永遠做不到
 
@@ -162,10 +162,10 @@ BEE2001: FormSchema 'Product' declares CategoryId 'common', but its DbTableName 
 |----|------|----------|
 | BEE2001 | `FormSchema/@DbTableName` 必須登記在 `DbCategorySettings.xml` 中**對應 CategoryId** 的 `<TableItem>` 下 | warning |
 | BEE2002 | `FormSchema/@DbTableName` 必須有對應的 `TableSchema/<categoryId>/<dbTableName>.TableSchema.xml`（資料夾必須等於 CategoryId） | warning |
-| BEE2003 | `FormField/@RelationProgId` 指向的 ProgId 必須存在對應 `FormSchema` 檔 | error |
+| BEE2003 | `FormField/@RelationProgId` 指向的 ProgId 必須存在對應 `FormSchema` 檔（框架內建 ProgId 除外，見階段 2） | error |
 | BEE2004 | `FieldMapping/@SourceField` 必須是被引用 ProgId 之 FormSchema 的已宣告欄位 | error |
 | BEE2005 | FormSchema 的每個 ProgId 應有對應 `FormLayout` 檔 | warning |
-| BEE2006 | FormSchema 欄位與對應 TableSchema 的實體欄位應一致（缺漏 / 型別不符） | warning |
+| BEE2006 | FormSchema 的**持久化**欄位必須存在於對應 TableSchema | warning |
 | BEE2007 | `Language/<culture>/` 各語系檔的 sub-key 覆蓋應一致（缺翻譯） | info |
 
 > BEE2001 / BEE2002 直接對應已知的高頻踩雷：`CategoryId` 是 DB scope 選擇器、業務表必須
@@ -346,9 +346,44 @@ Define/FormSchema/Product.FormSchema.xml(4,36): warning BEE2001: FormSchema 'Pro
   單獨執行某個測試時 `MessagePack` 可能尚未載入，導致測試素材編譯出 error type、規則靜默不觸發，
   **徵狀與「規則有 bug」完全相同**。`AnalyzerRunner.GetCompilationDiagnostics` 即為區分兩者而加。
 
-### 階段 2：XML 定義檔規則完整化
+### 階段 2：XML 定義檔規則完整化 ✅
 
-補齊 BEE1002–1007、BEE2002–2007。需先建立定義檔根目錄的解析與快取層（跨檔規則都依賴它）。
+BEE1002–1007、BEE2002–2007 全數完成，共 12 條規則、9 個 analyzer；測試 28 → 87 條全綠。
+
+**共用解析層**（plan 原訂的前置，已建立）
+
+| 元件 | 職責 |
+|------|------|
+| `DefinitionDocumentLoader` | XML 解析 + `ConditionalWeakTable` per-`SourceText` 快取。多個 analyzer 讀同一批檔案，否則每條規則都會重新 parse；弱鍵確保編輯過的舊版本不被長期持有 |
+| `DefinitionContext` | 一次編譯的定義檔索引：FormSchema（含 ProgId 查找）、TableSchema（scope+表名查找）、FormLayout、Language、`DbCategoryRegistry` |
+| `FormSchemaModel` / `TableSchemaModel` / `LanguageResourceModel` | 各定義檔的解析視圖，保留 `XAttribute` 以計算診斷位置 |
+| `DbCategoryScopes` / `FieldDbTypes` / `FrameworkProgIds` | 框架常數的 analyzer 端副本，各有同步斷言測試把關漂移 |
+
+**對真實定義檔的零誤判驗證**
+
+把 `tests/Define` 的 65 個定義檔複製進「只引用 nupkg」的專案建置：**零 error**，6 個 warning
+全部集中在 `PermGateForm.FormSchema.xml` 一個檔案（BEE2001 / BEE2002 / BEE2005 各一，另三個為
+重複輸出）。該檔案是權限閘門測試專用 fixture，只宣告 `PermissionModelId` 供 gate 判定、不做實際
+DB 操作，因此無 TableSchema、無 layout、表未註冊皆為刻意狀態——診斷技術上正確，屬 warning 級的
+正確用途（指出不一致但不阻斷建置）。其餘 64 個定義檔完全乾淨。
+
+**依實作調整的規則範圍**（與 plan 原訂略有差異，皆為擴大覆蓋或避免誤判）
+
+| 規則 | 調整 | 理由 |
+|------|------|------|
+| BEE1003 | 由 `FormField/@DbType` 擴及 `DbField/@DbType` | 同一個列舉、同一種失敗（反序列化失敗導致整份定義檔載入不了），只做一半會留下明顯漏洞 |
+| BEE1007 | 由 FormTable 擴及 TableSchema | 同上；且「同一表內欄位重複」在兩種檔案的後果相同（keyed 集合靜默覆蓋） |
+| BEE2003 | 新增框架內建 ProgId 白名單 | `Department` / `Employee` 的 FormSchema 是 `Bee.Definition` 的**內嵌資源**，消費端引用它們時沒有對應檔案。無此白名單會是 error 級誤判並擋下建置。以 `Defaults.ListEmbedded()` 做同步斷言 |
+| BEE2006 | 僅檢查 `Type` 為 `DbField`（或未指定）的欄位 | `RelationField` / `VirtualField` 依設計不持久化，一併檢查會對每個關聯欄位誤報 |
+| BEE2007 | culture 取自**資料夾**而非 `Lang` 屬性 | 框架以資料夾解析語系；若依屬性分組，analyzer 的分組會與實際載入方式不一致 |
+
+**其他實作發現**
+
+- **C# 14 的 `field` 關鍵字**：屬性存取子內 `field` 已是關鍵字（繫結到合成 backing field），
+  `foreach (var field in ...)` 在存取子內會編譯失敗（CS9273）。repo 使用 `LangVersion latest`，
+  所有屬性存取子內的區域變數都不可命名為 `field`。
+- **重複診斷的來源**：同一個定義檔在 `dotnet build` 輸出中會出現兩次（MSBuild 對 compilation-end
+  診斷的重複回報），非 analyzer 重複報告。
 
 ### 階段 3：序列化與 wire 合約規則
 

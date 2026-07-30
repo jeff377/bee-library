@@ -45,39 +45,22 @@ namespace Bee.Analyzers.Definitions
 
         private static void Analyze(CompilationAnalysisContext context)
         {
-            foreach (var file in context.Options.AdditionalFiles)
+            var definitions = DefinitionContext.Create(context.Options.AdditionalFiles, context.CancellationToken);
+
+            foreach (var schema in definitions.FormSchemas)
             {
                 context.CancellationToken.ThrowIfCancellationRequested();
 
-                if (!DefinitionFileNames.IsFormSchema(file.Path))
+                var categoryId = schema.Root.Attribute("CategoryId");
+                if (categoryId is null || DbCategoryScopes.IsValid(categoryId.Value))
                     continue;
-
-                var text = file.GetText(context.CancellationToken);
-                if (text is null)
-                    continue;
-
-                var document = DefinitionDocumentLoader.TryLoad(text);
-                var root = document?.Root;
-                if (root is null)
-                    continue;
-
-                var categoryId = root.Attribute("CategoryId");
-                if (categoryId is null)
-                    continue;
-
-                var value = categoryId.Value;
-                if (DbCategoryScopes.IsValid(value))
-                    continue;
-
-                var progId = root.Attribute("ProgId")?.Value ?? FormSchemaProgId.FromPath(file.Path);
-                var advice = BuildAdvice(value);
 
                 context.ReportDiagnostic(Diagnostic.Create(
                     Rule,
-                    XmlAttributeLocator.Create(file.Path, text, categoryId),
-                    progId,
-                    value,
-                    advice));
+                    schema.CreateLocation(categoryId),
+                    schema.ProgId,
+                    categoryId.Value,
+                    BuildAdvice(categoryId.Value)));
             }
         }
 

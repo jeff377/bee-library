@@ -2,9 +2,20 @@
 
   <PropertyGroup>
     <!--
-      WARNING: This project must target netstandard2.0. Roslyn loads analyzers into the compiler
-      process, which requires netstandard2.0 regardless of what the rest of the repository targets.
-      Retargeting to net10.0 makes the analyzer silently fail to load in consuming builds.
+      WARNING: This project must target netstandard2.0. That is deliberate and not an oversight, even
+      though every other project in this repository targets net10.0 and the framework itself supports
+      .NET 10 and later only.
+
+      The reason is that an analyzer is loaded by the Roslyn compiler, not by the consuming
+      application, so the target framework has to satisfy the compiler host rather than the consumer:
+
+        * `dotnet build` runs csc on .NET, which would load a net10.0 analyzer.
+        * Visual Studio runs Roslyn on .NET Framework, which would NOT. It fails silently — no error,
+          the diagnostics simply never appear.
+
+      Retargeting therefore trades away Visual Studio support for no gain: nothing in this project
+      needs an API beyond netstandard2.0. Every mainstream analyzer package ships netstandard2.0 for
+      the same reason.
     -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <Nullable>enable</Nullable>

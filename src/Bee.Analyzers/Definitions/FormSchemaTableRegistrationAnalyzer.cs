@@ -43,35 +43,23 @@ namespace Bee.Analyzers.Definitions
 
         private static void Analyze(CompilationAnalysisContext context)
         {
-            var registry = DbCategoryRegistry.TryCreate(context.Options.AdditionalFiles, context.CancellationToken);
+            var definitions = DefinitionContext.Create(context.Options.AdditionalFiles, context.CancellationToken);
+            var registry = definitions.Categories;
             if (registry is null)
                 return;
 
-            foreach (var file in context.Options.AdditionalFiles)
+            foreach (var schema in definitions.FormSchemas)
             {
                 context.CancellationToken.ThrowIfCancellationRequested();
 
-                if (!DefinitionFileNames.IsFormSchema(file.Path))
-                    continue;
-
-                var text = file.GetText(context.CancellationToken);
-                if (text is null)
-                    continue;
-
-                var root = DefinitionDocumentLoader.TryLoad(text)?.Root;
-                if (root is null)
-                    continue;
-
-                var scope = root.Attribute("CategoryId")?.Value;
+                var scope = schema.CategoryId;
 
                 // An unaccepted scope is BEE1001's subject. Reporting it here as well would give two
                 // diagnostics for one mistake, and the registration check cannot succeed anyway.
                 if (string.IsNullOrEmpty(scope) || !DbCategoryScopes.IsValid(scope!))
                     continue;
 
-                var progId = root.Attribute("ProgId")?.Value ?? FormSchemaProgId.FromPath(file.Path);
-
-                foreach (var table in root.Descendants("FormTable"))
+                foreach (var table in schema.Tables)
                 {
                     var dbTableName = table.Attribute("DbTableName");
                     if (dbTableName is null || string.IsNullOrEmpty(dbTableName.Value))
@@ -82,8 +70,8 @@ namespace Bee.Analyzers.Definitions
 
                     context.ReportDiagnostic(Diagnostic.Create(
                         Rule,
-                        XmlAttributeLocator.Create(file.Path, text, dbTableName),
-                        progId,
+                        schema.CreateLocation(dbTableName),
+                        schema.ProgId,
                         scope,
                         dbTableName.Value,
                         BuildAdvice(registry, dbTableName.Value, scope!)));
