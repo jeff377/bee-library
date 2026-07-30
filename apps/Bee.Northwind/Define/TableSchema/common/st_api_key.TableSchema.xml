@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableSchema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DbName="common" TableName="st_api_key" DisplayName="API 金鑰">
+	<Fields>
+		<DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
+		<DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
+		<DbField FieldName="sys_id" Caption="金鑰識別碼" DbType="String" Length="50" />
+		<DbField FieldName="sys_name" Caption="應用程式名稱" DbType="String" Length="100" />
+		<DbField FieldName="hashed_key" Caption="雜湊金鑰" DbType="String" Length="200" />
+		<DbField FieldName="key_type" Caption="金鑰類型" DbType="Integer" DefaultValue="1" />
+		<DbField FieldName="contact" Caption="聯絡窗口" DbType="String" Length="100" AllowNull="true" />
+		<DbField FieldName="enabled" Caption="啟用" DbType="Boolean" DefaultValue="1" />
+		<DbField FieldName="expired_at" Caption="到期時間" DbType="DateTime" AllowNull="true" />
+		<DbField FieldName="sys_insert_time" Caption="寫入時間" DbType="DateTime" />
+	</Fields>
+	<Indexes>
+		<DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+			<IndexFields>
+				<IndexField FieldName="sys_no" />
+			</IndexFields>
+		</DbTableIndex>
+		<DbTableIndex Name="rx_{0}" Unique="true">
+			<IndexFields>
+				<IndexField FieldName="sys_rowid" />
+			</IndexFields>
+		</DbTableIndex>
+		<DbTableIndex Name="ux_{0}" Unique="true">
+			<IndexFields>
+				<IndexField FieldName="sys_id" />
+			</IndexFields>
+		</DbTableIndex>
+	</Indexes>
+</TableSchema>

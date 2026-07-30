@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableSchema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DbName="common" TableName="st_define" DisplayName="定義儲存">
+	<Fields>
+		<DbField FieldName="define_type" Caption="定義類型" DbType="String" Length="50" />
+		<DbField FieldName="customize_id" Caption="客製化代碼" DbType="String" Length="50" />
+		<DbField FieldName="define_key" Caption="定義鍵" DbType="String" Length="200" />
+		<DbField FieldName="content" Caption="定義內容" DbType="Text" />
+		<DbField FieldName="sys_update_time" Caption="更新時間" DbType="DateTime" />
+	</Fields>
+	<Indexes>
+		<DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+			<IndexFields>
+				<IndexField FieldName="define_type" />
+				<IndexField FieldName="customize_id" />
+				<IndexField FieldName="define_key" />
+			</IndexFields>
+		</DbTableIndex>
+		<DbTableIndex Name="ix_{0}_type">
+			<IndexFields>
+				<IndexField FieldName="define_type" />
+			</IndexFields>
+		</DbTableIndex>
+	</Indexes>
+</TableSchema>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableSchema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DbName="common" TableName="st_user_company" DisplayName="用戶可進入公司">
+	<Fields>
+		<DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
+		<DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
+		<DbField FieldName="user_rowid" Caption="用戶唯一識別" DbType="Guid" />
+		<DbField FieldName="company_rowid" Caption="公司唯一識別" DbType="Guid" />
+		<DbField FieldName="sys_insert_time" Caption="寫入時間" DbType="DateTime" />
+	</Fields>
+	<Indexes>
+		<DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+			<IndexFields>
+				<IndexField FieldName="sys_no" />
+			</IndexFields>
+		</DbTableIndex>
+		<DbTableIndex Name="rx_{0}" Unique="true">
+			<IndexFields>
+				<IndexField FieldName="sys_rowid" />
+			</IndexFields>
+		</DbTableIndex>
+		<DbTableIndex Name="ux_{0}" Unique="true">
+			<IndexFields>
+				<IndexField FieldName="user_rowid" />
+				<IndexField FieldName="company_rowid" />
+			</IndexFields>
+		</DbTableIndex>
+	</Indexes>
+</TableSchema>
