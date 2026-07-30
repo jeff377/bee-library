@@ -61,15 +61,15 @@
 | `SessionInfoCache` | 僅由 Login 經 `Set()` 填入；覆寫 `GetNegativePolicy` 關閉負快取（不在本 plan 範圍，見 [plan-session-persistence.md](plan-session-persistence.md)） |
 
 Define 側的快取早已是「注入介面 + `CreateInstance` 自行載入」的形狀，例如
-[TableSchemaCache.cs](../../src/Bee.ObjectCaching/Define/TableSchemaCache.cs) 的 `CreateInstance`
+[TableSchemaCache.cs](../../../src/Bee.ObjectCaching/Define/TableSchemaCache.cs) 的 `CreateInstance`
 直接呼叫注入的 `IDefineStorage`。Database 側缺的是**讀取邏輯放錯層**：三個 service 各自手刻了
-一份 read-through（[CompanyInfoService.cs](../../src/Bee.ObjectCaching/Services/CompanyInfoService.cs)、
-[RolePermissionService.cs](../../src/Bee.ObjectCaching/Services/RolePermissionService.cs)、
-[DepartmentTreeService.cs](../../src/Bee.ObjectCaching/Services/DepartmentTreeService.cs)），
+一份 read-through（[CompanyInfoService.cs](../../../src/Bee.ObjectCaching/Services/CompanyInfoService.cs)、
+[RolePermissionService.cs](../../../src/Bee.ObjectCaching/Services/RolePermissionService.cs)、
+[DepartmentTreeService.cs](../../../src/Bee.ObjectCaching/Services/DepartmentTreeService.cs)），
 base class 的 `CreateInstance` 反而掛空檔。
 
-**接縫已經存在。** [ICacheDataSourceProvider.cs](../../src/Bee.Definition/ICacheDataSourceProvider.cs)
-定義於 `Bee.Definition`，由 [CacheDataSourceProvider.cs](../../src/Bee.Business/Providers/CacheDataSourceProvider.cs)
+**接縫已經存在。** [ICacheDataSourceProvider.cs](../../../src/Bee.Definition/ICacheDataSourceProvider.cs)
+定義於 `Bee.Definition`，由 [CacheDataSourceProvider.cs](../../../src/Bee.Business/Providers/CacheDataSourceProvider.cs)
 實作，並以 `CreateConfigurableService` 註冊（app 可抽換）。介面目前只有 `GetSessionUser`，
 且**全 repo 無呼叫端**——是先行預留、尚未接上的接縫。本計畫即把它接上。
 
@@ -91,7 +91,7 @@ base class 的 `CreateInstance` 反而掛空檔。
 ICacheContainer → ICacheDataSourceProvider → ISystemRepositoryFactory → IDefineAccess → ICacheContainer
 ```
 
-環的閉合點在 [BeeFrameworkServiceCollectionExtensions.cs:101](../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)
+環的閉合點在 [BeeFrameworkServiceCollectionExtensions.cs:101](../../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)
 ——`IDefineAccess` 註冊時明確解析 `ICacheContainer`（`CacheDefineAccess` 以它做讀寫失效）。
 現有三個 service 之所以扛住載入邏輯，正是因為它們註冊在較後段、於自身建構時才解析相依，天然避開環。
 

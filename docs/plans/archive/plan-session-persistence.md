@@ -19,7 +19,7 @@
 使用者就得重新登入。要讓它能重建，有兩個前置缺口：
 
 **缺口 A —— Login 完全沒寫 DB。**
-[SystemBusinessObject.Session.cs:64](../../src/Bee.Business/System/SystemBusinessObject.Session.cs)
+[SystemBusinessObject.Session.cs:64](../../../src/Bee.Business/System/SystemBusinessObject.Session.cs)
 只做 `SessionInfoService.Set(sessionInfo)`。全 repo 唯一寫 `st_session` 的是
 `SessionRepository.CreateSession`（僅 `LocalOnly` 的 `SystemBO.CreateSession` 呼叫）。
 即登入產生的 session 在 DB 沒有任何 row，快取一失效就真的沒了——
@@ -109,7 +109,7 @@ node B，快取與 DB 皆無 → 直接 401，**連 EnterCompany 都做不到**�
 
 **Logout 必須刪除 row（安全需求，非最佳化）。**
 今日 `Logout` 只做 `SessionInfoService.Remove(AccessToken)`
-（[SystemBusinessObject.Session.cs:195](../../src/Bee.Business/System/SystemBusinessObject.Session.cs)），
+（[SystemBusinessObject.Session.cs:195](../../../src/Bee.Business/System/SystemBusinessObject.Session.cs)），
 `LeaveCompany` 同樣只清快取。重建機制一旦上線，登出只清快取將使 token 於下一個請求
 由 `st_session` 重建復活，登出形同虛設。這是本 plan 引入的新漏洞，須一併處理。
 
@@ -186,7 +186,7 @@ client 公鑰 RSA 加密回傳。也不能向 client 索取：伺服器若接受
 攻擊者即可自行指定金鑰，加密機制形同虛設。
 
 不解決則重建後該欄位為空，使用者「帳面上仍登入」但 `Encrypted` 等級 API 全部不可用。
-且失敗形式難看——[DynamicApiEncryptionKeyProvider.cs:38](../../src/Bee.Business/Providers/DynamicApiEncryptionKeyProvider.cs)
+且失敗形式難看——[DynamicApiEncryptionKeyProvider.cs:38](../../../src/Bee.Business/Providers/DynamicApiEncryptionKeyProvider.cs)
 的 `sessionInfo?.ApiEncryptionKey ?? throw` 只擋 `null`，空陣列會被原樣回傳，
 在加解密環節炸出密碼學例外而非乾淨的 401。
 
@@ -202,7 +202,7 @@ per-session 金鑰。金鑰因此成為「可重建」資料，與角色權限�
 - **`IApiEncryptionKeyProvider` 需新增 `GenerateKeyForLogin(Guid accessToken)`**——現有簽章
   無 token 參數，導出無從進行（breaking change）。
 - **Login 的順序必須調整**：目前先產生金鑰
-  （[SystemBusinessObject.Session.cs:50](../../src/Bee.Business/System/SystemBusinessObject.Session.cs)）
+  （[SystemBusinessObject.Session.cs:50](../../../src/Bee.Business/System/SystemBusinessObject.Session.cs)）
   才建立 `SessionInfo` 與 `AccessToken`；改為先產生 `AccessToken`，再導出金鑰。
 - **client 端零影響**：client 由 `LoginResult.ApiEncryptionKey` 解出 RSA 密文存入
   `ApiClientInfo.ApiEncryptionKey`，伺服器如何產生該金鑰對其透明。
@@ -224,7 +224,7 @@ per-session 金鑰。金鑰因此成為「可重建」資料，與角色權限�
 ### D4：`Culture` 改為 `st_user` 的使用者屬性
 
 **問題**：`SessionInfo.Culture` 是「有人讀、沒人寫」的欄位。
-讀的一端是真實路徑——[BusinessObject.cs:117](../../src/Bee.Business/BusinessObject.cs)
+讀的一端是真實路徑——[BusinessObject.cs:117](../../../src/Bee.Business/BusinessObject.cs)
 的 `GetCurrentLang()` 讀取它並餵給 `LanguageService.GetLangText(...)`，BO 端所有多語文字
 都經過這裡。寫的一端則不存在：全 repo 無任何程式碼寫入該屬性，它永遠停在宣告時的預設值
 `"zh-TW"`。來源也不存在——`st_user` 只有 `time_zone` 而無語系欄位，`LoginArgs` 亦無語言參數。
@@ -248,7 +248,7 @@ per-session 金鑰。金鑰因此成為「可重建」資料，與角色權限�
   **兩份都要改**：`src/Bee.Definition/Defaults/TableSchema/common/` 與
   `tests/Define/TableSchema/common/` 互為鏡像。
 - `IUserRepository` 新增讀取方法，實作比照
-  [UserRepository.GetTimeZone](../../src/Bee.Repository/System/UserRepository.cs)
+  [UserRepository.GetTimeZone](../../../src/Bee.Repository/System/UserRepository.cs)
   （含 Oracle 空字串即 `null` 的處理）。
   **效率考量**：Login 目前已為驗證讀一次 `st_user`、`ApplyUserTimeZone` 再讀一次；
   語系若再開第三次查詢並不划算，宜與時區合併為單次讀取。
@@ -261,7 +261,7 @@ per-session 金鑰。金鑰因此成為「可重建」資料，與角色權限�
 ### D5：`CreateSession` 是背景服務的「免密碼 Login」
 
 **`CreateSession` 不是漏洞，`LocalOnly` 是真實的邊界。**
-[ApiAccessValidator.cs:40](../../src/Bee.Api.Core/Validator/ApiAccessValidator.cs) 會擋下非本地
+[ApiAccessValidator.cs:40](../../../src/Bee.Api.Core/Validator/ApiAccessValidator.cs) 會擋下非本地
 呼叫，`JsonRpcExecutor.IsLocalCall` 預設 `false`，全 repo 僅 `LocalApiProvider`（同行程 client）
 會設為 `true`。遠端 HTTP 呼叫者無法觸及此方法。且對已在行程內執行的程式碼而言，簽發 token
 不構成權限提升——它本就能直接寫 `st_session` 與存取整個資料庫。
@@ -281,7 +281,7 @@ per-session 金鑰。金鑰因此成為「可重建」資料，與角色權限�
 `SessionInfo` 建構路徑**——不解析使用者名稱、不套用時區、不產生 `ApiEncryptionKey`、不寫快取。
 
 **因此背景服務這條路今天走不通**：拿到 token 後若要做任何公司範圍的作業，會卡在
-[RepositoryDatabaseRouter.cs:45](../../src/Bee.Repository/RepositoryDatabaseRouter.cs)——
+[RepositoryDatabaseRouter.cs:45](../../../src/Bee.Repository/RepositoryDatabaseRouter.cs)——
 它需要 `_sessionService.Get(accessToken)` 取出 `CompanyId` 決定連哪個公司資料庫，而快取中
 無此 session，直接擲 `UnauthorizedAccessException`。
 （存取控制並非卡點：`ApiAccessValidator` 第 33 行對 `IsLocalCall` 直接放行，不驗 token。
@@ -316,7 +316,7 @@ DB 根本不會被讀取，delete-on-read 永遠不觸發。這不是「要不�
 而是現行機制與新架構本質不相容。
 
 **且找不到涵蓋兩種呼叫路徑的消費點**：`AccessTokenValidator` 對本地呼叫直接放行
-（[ApiAccessValidator.cs:33](../../src/Bee.Api.Core/Validator/ApiAccessValidator.cs)），
+（[ApiAccessValidator.cs:33](../../../src/Bee.Api.Core/Validator/ApiAccessValidator.cs)），
 而本地呼叫正是 `CreateSession` 的主要用途。遠端走驗證、本地不走，一次性無處消費。
 
 **產線無使用者**：全 repo 無任何 production 程式碼傳 `oneTime: true`；
@@ -341,7 +341,7 @@ DB 根本不會被讀取，delete-on-read 永遠不觸發。這不是「要不�
 
 **決策**：比照既有的 `CacheNotifyPoller : BackgroundService` 模式——以 `AddHostedService`
 註冊，並由設定開關控制（見
-[BeeFrameworkServiceCollectionExtensions.cs](../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)
+[BeeFrameworkServiceCollectionExtensions.cs](../../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)
 的 `CacheNotifyOptions.Enabled` 寫法）。依到期時間 DELETE 為冪等操作，多節點同時執行亦安全。
 
 - 設定歸屬 `BackgroundServiceConfiguration`——該類別目前為空的佔位型別，正是此用途。
@@ -361,10 +361,10 @@ DB 根本不會被讀取，delete-on-read 永遠不觸發。這不是「要不�
 - **預設值 fail-safe**：`JsonRpcExecutor.IsLocalCall` 宣告即 `= false`，「忘了設」落在安全的一邊。
   已補回歸測試 `JsonRpcExecutorTests.IsLocalCall_Default_IsFalse` 釘住此預設值。
 - **ASP.NET host 另行明確設 `false`**
-  （[ApiServiceController.cs:146](../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)），
+  （[ApiServiceController.cs:146](../../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)），
   無條件寫死——不取自 header、設定檔或請求內容，屬 defence in depth。
 - **全 repo 僅一處 production 設 `true`**：
-  [LocalApiProvider.cs:46](../../src/Bee.Api.Client/Providers/LocalApiProvider.cs)。
+  [LocalApiProvider.cs:46](../../../src/Bee.Api.Client/Providers/LocalApiProvider.cs)。
   它要求 `ApiClientInfo.LocalServiceProvider` 已指派為同行程建好的 backend service provider，
   未設即擲例外——只能由宿主程式於啟動時自行接上，遠端請求無從觸發。其餘皆為測試。
 - **兩條可能的繞道均不成立**：`IsLocalCall` 位於 executor 而非 `JsonRpcRequest`，
