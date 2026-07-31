@@ -131,6 +131,58 @@ DbCategorySettings.xml      ──▶ 資料表 → 分類 → 資料庫的解�
 
 上述檔案佈局是預設實作（`FileDefineStorage`）。定義也可存放於資料庫 —— 見 [ADR-018](adr/adr-018-db-define-storage.md)。兩種情況下 `IDefineAccess` 都是同一套介面，變的只是背後的儲存體。
 
+## 7. `CustomizePath` 與租戶客製覆蓋層
+
+`DefinePath` 放的是所有租戶共用的 base 定義。`CustomizePath` 是可選的第二個根目錄，讓單一公司在**不分叉 base** 的前提下覆蓋其中一部分 —— 設計背景見 [ADR-016](adr/adr-016-multitenant-customization-overlay.md)。
+
+### 怎麼打開
+
+由 host 自行算出路徑，與 `DefinePath` 一起傳給 `AddBeeFramework`。框架**沒有組態綁定機制**，`PathOptions` 一向由 host 建構，`CustomizePath` 走的是同一條路：
+
+```csharp
+var paths = new PathOptions
+{
+    DefinePath = definePath,
+    CustomizePath = Path.Combine(deployRoot, "Customize"),
+};
+builder.Services.AddBeeFramework(settings.BackendConfiguration, paths);
+```
+
+**`CustomizePath` 留空即整層關閉** —— 所有消費端一律走 base，行為與這個功能不存在時逐位元相同。這是預設值。接線示範見 `samples/Bee.Samples.Shared/DemoBackend.cs`。
+
+### 檔案佈局
+
+```
+{CustomizePath}/{customizeId}/ProgramSettings.xml
+{CustomizePath}/{customizeId}/FormLayout/{layoutId}.FormLayout.xml
+{CustomizePath}/{customizeId}/Language/{lang}/{namespace}.Language.xml
+```
+
+目錄不必存在。某次查找若該租戶沒有對應檔案，就回退 base 層。
+
+### 只有三種型別，三種粒度
+
+| 型別 | 覆蓋粒度 |
+|------|---------|
+| **LanguageResource** | **key 級**。客製檔只放要改的 key，其餘全部來自 base —— 因此 base 日後新增的翻譯會自動傳播 |
+| **ProgramSettings** | **progId 級**。同一個 progId 的客製項目勝過 base 項目 |
+| **FormLayout** | **整檔級**。客製 layout 整份取代該 `layoutId` 的 base layout |
+
+> **FormSchema 與 TableSchema 永久排除。** 兩者同時驅動資料庫結構與驗證規則，不只驅動 UI；逐租戶分歧會讓實體 schema 裂開。這是裁決不是缺口 —— 見 ADR-016。
+
+> 客製層**唯讀**。客製檔由部署工具產生，覆蓋層上所有 `SaveXxx` 一律拋例外。
+
+### `customizeId` 從哪來
+
+`CompanyInfo.CustomizeId`（欄位 `st_company.customize_id`）在 session 進入公司時被複製到 `SessionInfo.CustomizeId`，離開公司 / 登出時清除。伺服端消費者一律只從 `SessionInfo` 讀，不從別處讀。
+
+兩個必須納入規劃的推論：
+
+- **`EnterCompany` 之前沒有任何客製。** 登入畫面、公司選單、以及到那之前的所有訊息都走 base，因為此時還沒有 `CustomizeId`。
+- **`SessionInfo.CustomizeId` 是快照不是即時值。** 它在進公司當下複製，與角色、employee context 的策略一致。事後改 `st_company.customize_id` 不會影響既有 session，要下次 `EnterCompany` 才會拿到新值。
+
+> **安全界線：** 伺服端**永不**採信 client 傳來的 `customizeId` 作為查找依據 —— 那等於讓呼叫端自選要讀哪一家租戶的客製檔。client 從 `EnterCompany` 拿到的那份 `CustomizeId` 只供 client 自己的 UI 在地化使用；伺服端一律讀 `SessionInfo.CustomizeId`。
+
 ---
 
 ## 接下來讀什麼

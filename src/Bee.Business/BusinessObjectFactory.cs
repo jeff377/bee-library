@@ -67,9 +67,27 @@ namespace Bee.Business
         /// <param name="isLocalCall">Whether the call originates from a local source.</param>
         public object CreateFormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
         {
-            var type = _resolver.Resolve(progId);
+            var type = _resolver.Resolve(GetCustomizeId(accessToken), progId);
             var ctx = BuildContext();
             return Activator.CreateInstance(type, ctx, accessToken, progId, isLocalCall)!;
+        }
+
+        /// <summary>
+        /// Reads the session's tenant customization code so the resolver can overlay the
+        /// customization <c>ProgramSettings</c> on top of the base one. Anonymous calls and
+        /// sessions that have not entered a company yield an empty code, which resolves against
+        /// the base layer exactly as before.
+        /// </summary>
+        /// <param name="accessToken">The access token identifying the session.</param>
+        /// <remarks>
+        /// The session is the only accepted source: the code selects which tenant's customization
+        /// files are read, so a caller-supplied value would be a cross-tenant read.
+        /// </remarks>
+        private string GetCustomizeId(Guid accessToken)
+        {
+            if (accessToken == Guid.Empty)
+                return string.Empty;
+            return _sessionInfoService.Get(accessToken)?.CustomizeId ?? string.Empty;
         }
 
         /// <summary>

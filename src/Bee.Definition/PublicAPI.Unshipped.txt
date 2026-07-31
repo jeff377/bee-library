@@ -77,3 +77,5 @@ Bee.Definition.Logging.AuditEntry.ApiKeyName.get -> string?
 Bee.Definition.Logging.AuditEntry.ApiKeyName.init -> void
 Bee.Definition.Settings.ClientSettings.ApiKey.get -> string!
 Bee.Definition.Settings.ClientSettings.ApiKey.set -> void
+Bee.Definition.Language.BeeStringLocalizer<T>.BeeStringLocalizer(Bee.Definition.Language.ILanguageService! service, System.Func<string!>! langProvider, System.Func<string!>! customizeIdProvider) -> void
+Bee.Definition.Language.FormSchemaLocalizer.Localize(Bee.Definition.Forms.FormSchema! schema, string! customizeId, string! lang) -> void

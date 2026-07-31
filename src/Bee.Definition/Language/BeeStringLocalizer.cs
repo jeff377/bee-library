@@ -24,6 +24,7 @@ namespace Bee.Definition.Language
     {
         private readonly ILanguageService _service;
         private readonly Func<string> _langProvider;
+        private readonly Func<string> _customizeIdProvider;
         private readonly string _namespace;
 
         /// <summary>
@@ -44,9 +45,32 @@ namespace Bee.Definition.Language
         /// <param name="service">The underlying language resource service.</param>
         /// <param name="langProvider">A delegate returning the BCP-47 language code for the current call.</param>
         public BeeStringLocalizer(ILanguageService service, Func<string> langProvider)
+            : this(service, langProvider, static () => string.Empty)
+        { }
+
+        /// <summary>
+        /// Initializes a new <see cref="BeeStringLocalizer{T}"/> with an explicit language
+        /// provider and an explicit tenant-customization provider — the customization delegate
+        /// mirrors <paramref name="langProvider"/>, so a host wires both from the same per-request
+        /// state (typically <c>ClientInfo.Company?.CustomizeId</c> on the UI side).
+        /// </summary>
+        /// <param name="service">The underlying language resource service.</param>
+        /// <param name="langProvider">A delegate returning the BCP-47 language code for the current call.</param>
+        /// <param name="customizeIdProvider">
+        /// A delegate returning the tenant customization code for the current call; returning an
+        /// empty string resolves against the base layer only.
+        /// </param>
+        /// <remarks>
+        /// This adapter is a client-side / UI-side surface with no session of its own, which is
+        /// why the customization code arrives as a delegate rather than a parameter. The value it
+        /// yields localizes that client's own UI; server-side lookups always read
+        /// <c>SessionInfo.CustomizeId</c> instead and never a client-supplied code.
+        /// </remarks>
+        public BeeStringLocalizer(ILanguageService service, Func<string> langProvider, Func<string> customizeIdProvider)
         {
             _service = service ?? throw new ArgumentNullException(nameof(service));
             _langProvider = langProvider ?? throw new ArgumentNullException(nameof(langProvider));
+            _customizeIdProvider = customizeIdProvider ?? throw new ArgumentNullException(nameof(customizeIdProvider));
             _namespace = typeof(T).Name;
         }
 
@@ -57,13 +81,14 @@ namespace Bee.Definition.Language
             {
                 ArgumentNullException.ThrowIfNull(name);
                 string lang = _langProvider() ?? string.Empty;
-                bool hit = _service.TryGetLangText(lang, _namespace, name, out string text);
+                string customizeId = _customizeIdProvider() ?? string.Empty;
+                bool hit = _service.TryGetLangText(customizeId, lang, _namespace, name, out string text);
                 if (!hit)
                 {
                     // Fall through to the service-level default-lang fall-back, then return
                     // the full key as the LocalizedString value with ResourceNotFound=true
                     // so consumers can detect missing translations via the standard surface.
-                    string fallback = _service.GetLangText(lang, _namespace, name);
+                    string fallback = _service.GetLangText(customizeId, lang, _namespace, name);
                     bool resourceNotFound = string.Equals(fallback, $"{_namespace}.{name}", StringComparison.Ordinal);
                     return new LocalizedString(name, fallback, resourceNotFound);
                 }

@@ -1,6 +1,6 @@
 # Plan：語系客製化（討論稿）
 
-> 狀態：🚧 進行中（G1–G3 已交接實作；G4、G5 待 G1 / G3 決策）· 2026-07-31
+> 狀態：🚧 進行中（G1–G3 已完成；G4、G5 待 G1 / G3 決策，G6 待 foundation F3）· 2026-07-31
 > 範圍：**語系資源的租戶客製**——某些單據或行為，公司有慣用語（欄位標題、表單名稱、訊息、選項文字）。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 未補則本案無法生效）
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -36,14 +36,14 @@ public bool TryGetLangText(string customizeId, string lang, string @namespace, s
 介面已備妥：`ILanguageService.cs:67,106,139,161` — 4 個 customizeId-aware **default interface method**，
 預設委派 base（fail-safe）。
 
-### 1.2 缺口：消費端沒有 customizeId 管道
+### 1.2 缺口：消費端沒有 customizeId 管道（**G1–G3 已補完**）
 
-| 消費端 | 位置 | 問題 | 影響 |
-|--------|------|------|------|
-| **`FormSchemaLocalizer`** ★ | `:73,89,101,136` | 只用 base overload | **欄位 caption / 表單 DisplayName 無法客製** |
-| `BeeStringLocalizer<T>` | `:60,66` | 建構子只有 `Func<string> langProvider`，**連傳入管道都沒有** | 一般 UI 字串無法客製 |
-| `BusinessObject.GetLangText` | `:95-105` | 只傳 `GetCurrentLang()` | BO 訊息無法客製 |
-| `GetLanguage` API | `SystemBusinessObject.Define.cs:150-165` | 直接 `DefineAccess.GetLanguage(lang, ns)` | **client（含純 JS）拿到的整份資源是 base only** |
+| 消費端 | 位置 | 問題 | 影響 | 狀態 |
+|--------|------|------|------|------|
+| **`FormSchemaLocalizer`** ★ | `:73,89,101,136` | 只用 base overload | **欄位 caption / 表單 DisplayName 無法客製** | ✅ G1 |
+| `BeeStringLocalizer<T>` | `:60,66` | 建構子只有 `Func<string> langProvider`，**連傳入管道都沒有** | 一般 UI 字串無法客製 | ✅ G2（無消費端，未端到端驗證） |
+| `BusinessObject.GetLangText` | `:95-105` | 只傳 `GetCurrentLang()` | BO 訊息無法客製 | ✅ G3 |
+| `GetLanguage` API | `SystemBusinessObject.Define.cs:150-165` | 直接 `DefineAccess.GetLanguage(lang, ns)` | **client（含純 JS）拿到的整份資源是 base only** | 📝 G4 未做（決策 G3 未定 + 相依 foundation 缺口 C） |
 
 > `BusinessObject.GetCurrentLang()`（`:114-119`）讀的是 `SessionInfo.Culture`——
 > **同一個 SessionInfo 就在手上，卻沒讀 `CustomizeId`**。接線成本極低。
@@ -65,6 +65,12 @@ cust 一旦有同名 enum 就**整組取代**，無法只改一個 code 的文�
 per-key 命中/落空、enum、空 id 短路(`:58`)、無 reader(`:73`)。
 **皆為手動傳 customizeId 的元件級測試**；
 **沒有** `BeeStringLocalizer` / `FormSchemaLocalizer` 的客製測試（因為它們根本沒有客製能力）。
+
+> **2026-07-31（G1–G3 落地）補測**：新增 4 檔／25 測試，其中 10 個是**回歸防護**
+> （未設 CustomizeId → reader 零呼叫、結果與舊多載逐位元一致）：
+> `FormSchemaLocalizerCustomizeTests`、`BeeStringLocalizerCustomizeTests`（Bee.Definition.UnitTests）、
+> `BusinessObjectLangCustomizeTests`、`BusinessObjectFactoryCustomizeTests`（Bee.Business.UnitTests）。
+> 仍**全為元件級** —— 端到端（帶 CustomizeId 的 session → API）是 G6，卡在 foundation F3。
 
 ---
 
@@ -117,9 +123,9 @@ client（含**純 JS，無 .NET**）透過 `GetLanguage` 取整份語系資源�
 | 階段 | 範圍 | 前置 | 狀態 |
 |------|------|------|------|
 | G0 | 決策定案（G1 enum 粒度、G2 傳遞方式、G3 API 疊加） | foundation F0 | 🚧 G2 ✅ 已定案（由 A1 涵蓋）；**G1、G3 仍未決** |
-| G1 | `FormSchemaLocalizer` 加 customizeId 管道 ★ | foundation F1、F2 | 🚧 已交接實作（2026-07-31） |
-| G2 | `BeeStringLocalizer<T>` 加 customizeId 管道 | 同上 | 🚧 已交接實作（2026-07-31） |
-| G3 | `BusinessObject.GetLangText` 接線（讀 `SessionInfo.CustomizeId`） | 同上 | 🚧 已交接實作（2026-07-31） |
+| G1 | `FormSchemaLocalizer` 加 customizeId 管道 ★ | foundation F1、F2 | ✅ 已完成（2026-07-31）。`Localize(schema, customizeId, lang)` 多載；呼叫端 `SystemBusinessObject.Define.cs` `LoadAndLocalizeSchema` 傳 `GetCurrentCustomizeId()` |
+| G2 | `BeeStringLocalizer<T>` 加 customizeId 管道 | 同上 | ✅ 已完成（2026-07-31）。3-arg ctor 加 `Func<string> customizeIdProvider`。**注意：repo 內無任何註冊點與消費端**，故只加得了 API，無法端到端驗證 |
+| G3 | `BusinessObject.GetLangText` 接線（讀 `SessionInfo.CustomizeId`） | 同上 | ✅ 已完成（2026-07-31）。新增 `GetCurrentCustomizeId()`（比照 `GetCurrentLang()`）；`GetLangText(fullKey)` 改為就地切 key 後走 customizeId 多載 |
 | G4 | `GetLanguage` API 依 G3 決策疊加 | 決策 G3 + **foundation F3**（client 快取失效） | 📝 待做（決策未定，**不在本次交接範圍**） |
 | G5 | Enum entry 級覆蓋（若選 G1-a） | 決策 G1 | 📝 待做（決策未定，**不在本次交接範圍**） |
 | G6 | 端到端測試：帶 CustomizeId 的 session → API → 拿到客製文字 | foundation F3 | 📝 待做（**不在本次交接範圍**） |

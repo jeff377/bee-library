@@ -54,12 +54,31 @@ namespace Bee.Definition.Language
         }
 
         /// <summary>
-        /// Applies localized text in <paramref name="lang"/> to the supplied <paramref name="schema"/>.
+        /// Applies localized text in <paramref name="lang"/> to the supplied <paramref name="schema"/>,
+        /// resolving against the base language layer only.
         /// Properties whose keys are missing from the language resource are left as-is.
         /// </summary>
         /// <param name="schema">The schema to mutate. Must not be a shared cache instance — clone first.</param>
         /// <param name="lang">The BCP-47 language code (e.g. <c>"zh-TW"</c>).</param>
         public void Localize(FormSchema schema, string lang)
+            => Localize(schema, string.Empty, lang);
+
+        /// <summary>
+        /// Tenant-customization-aware variant of <see cref="Localize(FormSchema, string)"/>: every
+        /// sub-key is resolved through the customization overlay for <paramref name="customizeId"/>,
+        /// so a tenant can rename individual captions and display names without copying the rest.
+        /// </summary>
+        /// <param name="schema">The schema to mutate. Must not be a shared cache instance — clone first.</param>
+        /// <param name="customizeId">
+        /// The tenant customization code, from <c>SessionInfo.CustomizeId</c>. Empty resolves against
+        /// the base layer only — identical to <see cref="Localize(FormSchema, string)"/>.
+        /// </param>
+        /// <param name="lang">The BCP-47 language code (e.g. <c>"zh-TW"</c>).</param>
+        /// <remarks>
+        /// The customization code must come from the server-side session, never from a client-supplied
+        /// argument: it selects which tenant's customization files are read.
+        /// </remarks>
+        public void Localize(FormSchema schema, string customizeId, string lang)
         {
             ArgumentNullException.ThrowIfNull(schema);
             if (string.IsNullOrWhiteSpace(lang))
@@ -70,7 +89,7 @@ namespace Bee.Definition.Language
                 return;
 
             // 1. Schema.DisplayName
-            if (_languageService.TryGetLangText(lang, @namespace, SchemaDisplayNameKey, out string schemaName))
+            if (_languageService.TryGetLangText(customizeId, lang, @namespace, SchemaDisplayNameKey, out string schemaName))
                 schema.DisplayName = schemaName;
 
             // 2. Walk tables → fields.
@@ -78,15 +97,15 @@ namespace Bee.Definition.Language
                 return;
 
             foreach (var table in schema.Tables)
-                LocalizeTable(table, lang, @namespace);
+                LocalizeTable(table, customizeId, lang, @namespace);
         }
 
-        private void LocalizeTable(FormTable table, string lang, string @namespace)
+        private void LocalizeTable(FormTable table, string customizeId, string lang, string @namespace)
         {
             if (!string.IsNullOrWhiteSpace(table.TableName))
             {
                 string tableKey = string.Format(System.Globalization.CultureInfo.InvariantCulture, TableDisplayNameKeyFormat, table.TableName);
-                if (_languageService.TryGetLangText(lang, @namespace, tableKey, out string tableName))
+                if (_languageService.TryGetLangText(customizeId, lang, @namespace, tableKey, out string tableName))
                     table.DisplayName = tableName;
             }
 
@@ -98,12 +117,12 @@ namespace Bee.Definition.Language
                 if (string.IsNullOrWhiteSpace(field.FieldName))
                     continue;
                 string fieldKey = string.Format(System.Globalization.CultureInfo.InvariantCulture, FieldCaptionKeyFormat, field.FieldName);
-                if (_languageService.TryGetLangText(lang, @namespace, fieldKey, out string caption))
+                if (_languageService.TryGetLangText(customizeId, lang, @namespace, fieldKey, out string caption))
                     field.Caption = caption;
 
                 // Populate ListItems from the referenced LanguageEnum when LangEnumName is set.
                 if (!string.IsNullOrWhiteSpace(field.LangEnumName))
-                    ApplyLangEnum(field, lang, @namespace);
+                    ApplyLangEnum(field, customizeId, lang, @namespace);
             }
         }
 
@@ -114,7 +133,7 @@ namespace Bee.Definition.Language
         /// the owning schema's <paramref name="schemaNamespace"/>; fully-qualified names
         /// (<c>"Common.Gender"</c>) target their own namespace.
         /// </summary>
-        private void ApplyLangEnum(FormField field, string lang, string schemaNamespace)
+        private void ApplyLangEnum(FormField field, string customizeId, string lang, string schemaNamespace)
         {
             string langEnumName = field.LangEnumName;
             string @namespace;
@@ -133,7 +152,7 @@ namespace Bee.Definition.Language
                 enumName = langEnumName.Substring(dot + 1);
             }
 
-            var langEnum = _languageService.GetLangEnum(lang, @namespace, enumName);
+            var langEnum = _languageService.GetLangEnum(customizeId, lang, @namespace, enumName);
             if (langEnum is null)
                 return; // missing translation → leave any existing ListItems untouched
 

@@ -111,12 +111,23 @@ namespace Bee.Business
 
         /// <summary>
         /// Resolves localized text for the given full key using the current session's
-        /// language (<c>SessionInfo.Culture</c>), falling back to the system
+        /// language (<c>SessionInfo.Culture</c>) and tenant customization
+        /// (<c>SessionInfo.CustomizeId</c>), falling back to the system
         /// default language and then to the key itself if both miss.
         /// </summary>
         /// <param name="fullKey">The full key (<c>"{namespace}.{subKey}"</c>); split on the first <c>.</c>.</param>
         protected string GetLangText(string fullKey)
-            => LanguageService.GetLangText(GetCurrentLang(), fullKey);
+        {
+            ArgumentNullException.ThrowIfNull(fullKey);
+            // The customization-aware overloads take an explicit (namespace, subKey) pair — a
+            // full-key form would be indistinguishable from the base overload (all-string arity
+            // collision), so the split happens here. Same rule as ILanguageService: first dot wins,
+            // and a key with no dot is namespace-only with an empty sub-key.
+            int dot = fullKey.IndexOf('.');
+            return dot < 0
+                ? GetLangText(fullKey, string.Empty)
+                : GetLangText(fullKey.Substring(0, dot), fullKey.Substring(dot + 1));
+        }
 
         /// <summary>
         /// Resolves localized text using an explicit namespace and sub-key, applying the
@@ -125,7 +136,7 @@ namespace Bee.Business
         /// <param name="namespace">The resource namespace.</param>
         /// <param name="subKey">The sub-key within that namespace.</param>
         protected string GetLangText(string @namespace, string subKey)
-            => LanguageService.GetLangText(GetCurrentLang(), @namespace, subKey);
+            => LanguageService.GetLangText(GetCurrentCustomizeId(), GetCurrentLang(), @namespace, subKey);
 
         /// <summary>
         /// Reads the current session's BCP-47 language code from
@@ -138,6 +149,24 @@ namespace Bee.Business
             if (AccessToken == Guid.Empty)
                 return string.Empty;
             return SessionInfoService.Get(AccessToken)?.Culture ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Reads the current session's tenant customization code from
+        /// <c>SessionInfo.CustomizeId</c>. Returns an empty string when no session is established
+        /// or no company has been entered — the customization overlay then short-circuits and every
+        /// lookup resolves against the base layer.
+        /// </summary>
+        /// <remarks>
+        /// The session is the only accepted source. A customization code arriving as a call
+        /// argument must never be used for lookups: it selects which tenant's customization files
+        /// are read, so trusting the caller would be a cross-tenant read.
+        /// </remarks>
+        protected string GetCurrentCustomizeId()
+        {
+            if (AccessToken == Guid.Empty)
+                return string.Empty;
+            return SessionInfoService.Get(AccessToken)?.CustomizeId ?? string.Empty;
         }
 
         /// <summary>

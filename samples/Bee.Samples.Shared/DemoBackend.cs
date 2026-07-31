@@ -40,7 +40,18 @@ public static class DemoBackend
             Environment.SetEnvironmentVariable("BEE_MASTER_KEY", DemoCredentials.DemoMasterKey);
         }
 
-        var paths = new PathOptions { DefinePath = ResolveDefinePath() };
+        // CustomizePath turns on the tenant customization-override layer. It is set the same way
+        // DefinePath is — the host computes it and hands both to AddBeeFramework; the framework has
+        // no configuration binding of its own. The directory need not exist: a tenant with no
+        // override files resolves every lookup to the base layer, which is what this demo does
+        // (it is single-company and never calls EnterCompany, so SessionInfo.CustomizeId stays
+        // empty and the overlay short-circuits before it ever touches the filesystem).
+        string definePath = ResolveDefinePath();
+        var paths = new PathOptions
+        {
+            DefinePath = definePath,
+            CustomizePath = ResolveCustomizePath(definePath),
+        };
 
         // AddBeeFramework registers the cache-notify poller, which reads st_cache_notify.
         // Its TableSchema ships as an embedded framework default in Bee.Definition, so
@@ -107,4 +118,13 @@ public static class DemoBackend
             "Could not locate 'Define/SystemSettings.xml' walking up from " +
             $"'{AppContext.BaseDirectory}'. Run the sample from inside the bee-library checkout.");
     }
+
+    /// <summary>
+    /// Places the customization root as a sibling of <c>Define/</c>, mirroring the layout a real
+    /// deployment would use: <c>Define/</c> holds the base definitions everyone shares,
+    /// <c>Customize/{customizeId}/</c> holds the per-tenant overrides on top of them.
+    /// </summary>
+    /// <param name="definePath">The resolved base definition directory.</param>
+    private static string ResolveCustomizePath(string definePath)
+        => Path.Combine(Path.GetDirectoryName(definePath)!, "Customize");
 }

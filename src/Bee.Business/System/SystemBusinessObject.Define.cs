@@ -180,8 +180,9 @@ namespace Bee.Business.System
         /// <summary>
         /// Loads the <see cref="FormSchema"/> from the Define cache, deep-clones it via
         /// <see cref="FormSchema.Clone"/>, and applies localized text using the current
-        /// session's <c>Culture</c>. The cloned instance is safe to mutate without
-        /// affecting the shared cached schema.
+        /// session's <c>Culture</c>, overlaid with the session's <c>CustomizeId</c> tenant
+        /// customization. The cloned instance is safe to mutate without affecting the shared
+        /// cached schema.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -216,7 +217,7 @@ namespace Bee.Business.System
 
             var clone = raw.Clone();
             if (hasLang)
-                new FormSchemaLocalizer(LanguageService).Localize(clone, lang);
+                new FormSchemaLocalizer(LanguageService).Localize(clone, GetCurrentCustomizeId(), lang);
             if (needsBake)
                 NumberFormatApplier.Bake(clone, TryGetCompanyInfo());
             return clone;

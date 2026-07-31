@@ -131,6 +131,58 @@ See [Development Constraints § Definition Data Immutability After Init](develop
 
 The file layout above is the default (`FileDefineStorage`). Definitions can also live in a database — see [ADR-018](adr/adr-018-db-define-storage.md). `IDefineAccess` is the same either way; only the backing store changes.
 
+## 7. `CustomizePath` and the Tenant Customization Overlay
+
+`DefinePath` holds the base definitions every tenant shares. `CustomizePath` is the optional second root that lets one company override parts of them without forking the base — see [ADR-016](adr/adr-016-multitenant-customization-overlay.md) for the design.
+
+### Turning it on
+
+The host computes it and hands it to `AddBeeFramework` alongside `DefinePath`. There is no configuration binding — `PathOptions` is constructed by the host, exactly as `DefinePath` always has been:
+
+```csharp
+var paths = new PathOptions
+{
+    DefinePath = definePath,
+    CustomizePath = Path.Combine(deployRoot, "Customize"),
+};
+builder.Services.AddBeeFramework(settings.BackendConfiguration, paths);
+```
+
+**An empty `CustomizePath` disables the overlay entirely** — every consumer resolves against the base layer, bit for bit as if the feature did not exist. That is the default. `samples/Bee.Samples.Shared/DemoBackend.cs` shows the wiring.
+
+### Layout
+
+```
+{CustomizePath}/{customizeId}/ProgramSettings.xml
+{CustomizePath}/{customizeId}/FormLayout/{layoutId}.FormLayout.xml
+{CustomizePath}/{customizeId}/Language/{lang}/{namespace}.Language.xml
+```
+
+The directory need not exist. A tenant that supplies no file for a given lookup falls back to the base layer.
+
+### Only three types, at three granularities
+
+| Type | Overlay granularity |
+|------|--------------------|
+| **LanguageResource** | **Per key.** The customization file holds only the keys it changes; every other key comes from base — so a base translation added later propagates automatically |
+| **ProgramSettings** | **Per progId.** A customization entry wins over the base entry of the same progId |
+| **FormLayout** | **Whole file.** A customization layout replaces the base layout for that `layoutId` |
+
+> **FormSchema and TableSchema are permanently excluded.** Both drive the database schema and the validation rules as well as the UI; letting them diverge per tenant would split the physical schema. This is a decision, not a gap — see ADR-016.
+
+> The overlay is **read-only**. Customization files are produced by deployment tooling; every `SaveXxx` on the override layer throws.
+
+### Where `customizeId` comes from
+
+`CompanyInfo.CustomizeId` (column `st_company.customize_id`) is copied onto `SessionInfo.CustomizeId` when the session enters a company, and cleared on leave / logout. Server-side consumers read it from `SessionInfo` and nowhere else.
+
+Two consequences worth planning around:
+
+- **Nothing is customized before `EnterCompany`.** The login screen, the company picker, and every message on the way there resolve against the base layer, because there is no `CustomizeId` yet.
+- **`SessionInfo.CustomizeId` is a snapshot, not a live value.** It is copied at the moment the session enters the company, the same as roles and the employee context. Editing `st_company.customize_id` afterwards does not move existing sessions — they pick the new value up on the next `EnterCompany`.
+
+> **Security boundary:** the server never accepts a `customizeId` supplied by a client as the lookup key — doing so would let a caller choose which tenant's customization to read. Clients receive their own `CustomizeId` from `EnterCompany` for their own UI localization only; the server always reads `SessionInfo.CustomizeId`.
+
 ---
 
 ## Where to go next

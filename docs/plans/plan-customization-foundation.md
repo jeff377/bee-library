@@ -1,6 +1,6 @@
 # Plan：客製化共同前置（討論稿）
 
-> 狀態：📝 擬定中（決策 A1 / B1 已定案，可動工）· 2026-07-31
+> 狀態：🚧 進行中（F1、F2 已完成；F3、F4 待做）· 2026-07-31
 > 定位：**三類客製的共同基礎**，不屬於任一類，但三類都被它擋住。
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)
 > 依據：[ADR-016 多租戶客製化覆蓋層](../adr/adr-016-multitenant-customization-overlay.md)
@@ -19,6 +19,12 @@ ADR-016 設計的 fail-safe（漏傳 customizeId → 退化純 base）目前是 
 
 > 2026-07-31 討論後，A1（傳遞方式）與 B1（配置來源）已定案，**F1–F4 可動工**；
 > 唯「客製檔誰維護、怎麼產生」保留未決（不擋動工）。決策彙總見 §5。
+
+> **2026-07-31 進度更正（F1 + F2 落地後）**：上述「沒有任何一行讀取 `SessionInfo.CustomizeId`」
+> **已不再成立**——語系與 BO 型別解析四個消費端都已接線（§2.A），`CustomizePath` 也有 host 示範（§2.B）。
+> **仍未生效的是 Layout**（`CacheDefineAccess.GetDefine` 簽章無 customizeId）與**用戶端進公司流程**
+> （§2.C：至今沒有 head 走過 `EnterCompany`，所以實務上 `CustomizeId` 仍恆為空）。
+> 換句話說：伺服端管道已通，但**還沒有任何部署會餵值進去**——這正是 F3 的範圍。
 
 ---
 
@@ -48,17 +54,17 @@ ADR-016 設計的 fail-safe（漏傳 customizeId → 退化純 base）目前是 
 
 ## 2. 橫向缺口
 
-### 🔴 A. 消費端未接線（最嚴重，三類全被擋）
+### 🟢 A. 消費端未接線（**F2 已補完，Layout 除外**）
 
 DI 接線本身完整，reader 已注入；問題純粹是**呼叫端沒傳 `customizeId`**：
 
-| 消費端 | 位置 | 現況呼叫 | 應為 | 影響類別 |
-|--------|------|---------|------|---------|
-| BO 型別解析 | `BusinessObjectFactory.cs:70` | `Resolve(progId)` | `Resolve(session.CustomizeId, progId)` | 業務邏輯 |
-| BO 語系 | `BusinessObject.cs:95-105` | `GetLangText(lang, ...)` | 加 customizeId | 語系 |
-| 一般在地化 | `BeeStringLocalizer.cs:60,66` | base overload | 加 customizeId 管道 | 語系 |
-| Schema 在地化 | `FormSchemaLocalizer.cs:73,89,101,136` | base overload | 加 customizeId 管道 | 語系 |
-| FormLayout | `CacheDefineAccess.cs:112`（`GetDefine`） | `GetFormLayout(keys[0])` | 簽章無 customizeId，需另議 | Layout |
+| 消費端 | 位置 | 現況呼叫 | 應為 | 影響類別 | 狀態 |
+|--------|------|---------|------|---------|------|
+| BO 型別解析 | `BusinessObjectFactory.cs:70` | `Resolve(progId)` | `Resolve(session.CustomizeId, progId)` | 業務邏輯 | ✅ F2 |
+| BO 語系 | `BusinessObject.cs:95-105` | `GetLangText(lang, ...)` | 加 customizeId | 語系 | ✅ F2（新增 `GetCurrentCustomizeId()`） |
+| 一般在地化 | `BeeStringLocalizer.cs:60,66` | base overload | 加 customizeId 管道 | 語系 | ✅ F2（3-arg ctor 委派多載；**repo 內無註冊點／消費端，僅加 API 未端到端驗證**） |
+| Schema 在地化 | `FormSchemaLocalizer.cs:73,89,101,136` | base overload | 加 customizeId 管道 | 語系 | ✅ F2（`Localize` customizeId 多載） |
+| FormLayout | `CacheDefineAccess.cs:112`（`GetDefine`） | `GetFormLayout(keys[0])` | 簽章無 customizeId，需另議 | Layout | 📝 未動（結構問題見 [Layout plan](plan-customization-layout.md)） |
 
 > `BusinessObjectFactory` 連 `ISessionInfoService` 都已注入(`:25`)，只是沒用它讀 `CustomizeId`。
 > 多數接線是「補傳一個參數」，但 Layout 那條有結構問題（見 Layout plan）。
@@ -99,7 +105,7 @@ DI 接線本身完整，reader 已注入；問題純粹是**呼叫端沒傳 `cus
   `st_company.customize_id`，既有 session 不會跟著變（需重新 `EnterCompany`）。與同段的 `Roles` /
   capabilities / employeeContext 快照策略一致，可接受，但**必須寫進文件**，否則會變成「客製改了沒生效」的客訴。
 
-### 🟡 B. `CustomizePath` 沒有任何 host 設定（客製層目前在所有部署中都是關閉的）
+### 🟢 B. `CustomizePath` 沒有任何 host 設定（**F1 已補完**）
 
 > **前提更正（2026-07-31）**：本節原寫「無配置管道」，並把 B1-a 描述為「與 `DefinePath` 同一機制」——
 > 兩者都不正確。**框架完全沒有組態綁定**：`DefinePath` 是 host 自己算好
@@ -196,8 +202,8 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | F0 | 決策定案：A1 傳遞方式、B1 配置來源 | ✅ 已定案（2026-07-31）。§3 的「客製檔誰維護」仍未決，但**不擋 F1–F4** |
-| F1 | **缺口 B**：host 設定 `CustomizePath` 的文件 + 一個 sample 示範 | 🚧 已交接實作（2026-07-31，隨語系客製 G1–G3 一併） |
-| F2 | **缺口 A**：消費端接線，伺服端三處顯式傳參 + `BeeStringLocalizer` 委派多載（Layout 除外，見 Layout plan） | 🚧 已交接實作（2026-07-31，隨語系客製 G1–G3 一併） |
+| F1 | **缺口 B**：host 設定 `CustomizePath` 的文件 + 一個 sample 示範 | ✅ 已完成（2026-07-31）。`DemoBackend` 設 `CustomizePath`（`Define/` 的同層 `Customize/`）；文件見 [`definition-files-overview`](../definition-files-overview.md) §7（雙語）。依使用者決定**不入版控任何樣本客製檔**——只開路徑，客製層仍為空 |
+| F2 | **缺口 A**：消費端接線，伺服端三處顯式傳參 + `BeeStringLocalizer` 委派多載（Layout 除外，見 Layout plan） | ✅ 已完成（2026-07-31）。四處全接：`FormSchemaLocalizer`、`BusinessObject.GetLangText`、`BeeStringLocalizer<T>`、`BusinessObjectFactory` |
 | F3 | **缺口 C + F 合流**：會進公司的 head（或整合測試）走通 `EnterCompany` → `ApplyEnterCompanyResult` → 客製生效，並把 `ResetDefineCache` 責任收回框架 | 📝 待做 |
 | F4 | **缺口 D、E**：客製快取失效訊號、DB 版 reader 條件註冊 | 📝 待做 |
 
