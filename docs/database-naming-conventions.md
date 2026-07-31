@@ -1,6 +1,6 @@
 # Database Naming Conventions
 
-[繁體中文](database-naming-conventions.zh-TW.md)
+[繁體中文](database-naming-conventions.zh-TW.md) · [← Docs Index](README.md)
 
 This document defines the naming rules for database tables, columns, and system fields, applicable to all database object designs.
 A unified naming style avoids cross-database case and semantic inconsistencies and improves maintainability.

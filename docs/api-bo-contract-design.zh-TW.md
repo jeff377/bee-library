@@ -1,6 +1,6 @@
 # API 合約與 BO 參數設計原則
 
-[English](api-bo-contract-design.md)
+[English](api-bo-contract-design.md) · [← 文件索引](README.zh-TW.md)
 
 本文件說明 Bee.NET 框架中 API 合約（Request / Response）與 BO 參數（Args / Result）的設計架構與使用方式，供開發人員在擴充 API 方法或撰寫 BO 邏輯時參考。
 

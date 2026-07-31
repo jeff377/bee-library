@@ -1,6 +1,6 @@
 # API Method Reference
 
-[繁體中文](api-method-reference.zh-TW.md)
+[繁體中文](api-method-reference.zh-TW.md) · [← Docs Index](README.md)
 
 This is the single-page reference of every public BO method exposed through
 `JsonRpcExecutor`, grouped by BO axis. Each row lists the method's wire-level

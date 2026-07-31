@@ -89,6 +89,8 @@ dotnet run
 
 Console 會列出 `System.Ping` 狀態與自訂 BO 回應的訊息。完整 demo 清單與每個 demo 對應到哪些 library 功能，見 [`samples/README.zh-TW.md`](samples/README.zh-TW.md)。
 
+想建自己的專案？[快速上手](docs/getting-started.zh-TW.md)從一個空資料夾走完同一件事 —— 套件、`DefinePath`、DI 接線、第一個商業物件，再由用戶端呼叫。
+
 ## 🐝 旗艦範例 — Bee.Northwind
 
 [`apps/Bee.Northwind`](apps/Bee.Northwind/README.zh-TW.md) 是旗艦級範例：經典 Northwind 進銷存案例，**幾乎完全由定義組成**（八張表單、含 lookup 的主從訂單、僅一個手寫商業物件，其餘皆 XML）。同一套共用 `Bee.Northwind.UI` 跑在 **四個 Avalonia head** —— Desktop、Browser（WASM）、iOS、Android —— 連同一個 JSON-RPC 後端。詳見 [`apps/Bee.Northwind/README.zh-TW.md`](apps/Bee.Northwind/README.zh-TW.md)。

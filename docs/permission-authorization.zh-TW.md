@@ -1,6 +1,6 @@
-[English](permission-authorization.md)
-
 # 權限與授權指南
+
+[English](permission-authorization.md) · [← 文件索引](README.zh-TW.md)
 
 Bee.NET 的權限分為**三個維度**，套用於**兩個把關點**——**後端**是權威安全邊界；**前端**把 UI 元素降級為 UX 輔助（永不作為安全邊界）：
 

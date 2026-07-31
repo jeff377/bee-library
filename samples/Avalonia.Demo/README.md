@@ -56,7 +56,7 @@ dotnet run --configuration Debug
 | Connect → endpoint validation | [src/Bee.UI.Core/ClientInfo.cs](../../src/Bee.UI.Core/ClientInfo.cs) + [src/Bee.Api.Client/ApiConnectValidator.cs](../../src/Bee.Api.Client/ApiConnectValidator.cs) |
 | Endpoint persistence | [src/Bee.UI.Avalonia/Storage/FileEndpointStorage.cs](../../src/Bee.UI.Avalonia/Storage/FileEndpointStorage.cs) |
 | Login → token | [src/Bee.Api.Client/Connectors/SystemApiConnector.cs](../../src/Bee.Api.Client/Connectors/SystemApiConnector.cs) (LoginAsync) |
-| Employee form rendering | [src/Bee.UI.Avalonia/Controls/FormView.cs](../../src/Bee.UI.Avalonia/Controls/FormView.cs) → DynamicForm / DynamicGrid |
+| Employee form rendering | [src/Bee.UI.Avalonia/Controls/FormView.cs](../../src/Bee.UI.Avalonia/Views/FormView.cs) → DynamicForm / DynamicGrid |
 | FormSchema fallback | `FormView` ResolveSystemConnector / ResolveFormConnector / ResolveAccessToken |
 | CRUD wire path | FormApiConnector → RemoteApiProvider → QuickStart.Server `ApiController` → DemoBusinessObjectFactory → FormBusinessObject |
 

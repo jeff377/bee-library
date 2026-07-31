@@ -1,6 +1,6 @@
 # API 方法參考
 
-[English](api-method-reference.md)
+[English](api-method-reference.md) · [← 文件索引](README.zh-TW.md)
 
 本文件為**單頁總覽**：列出所有透過 `JsonRpcExecutor` 對外公開的 BO 方法，
 依 BO 軸分組。每列標註該方法的 wire-level [合約介面](api-bo-contract-design.zh-TW.md)、

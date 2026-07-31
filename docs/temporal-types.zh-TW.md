@@ -1,6 +1,6 @@
 # 時間型別總覽：`Date`、`DateTime`、`Time`
 
-[English](temporal-types.md)
+[English](temporal-types.md) · [← 文件索引](README.zh-TW.md)
 
 框架區分三種時間語意，而每一種在各層 —— 資料庫欄位、`DataColumn`、CLR 值、三種序列化 ——
 的承載方式都不同。本文是跨層的單一對照參考；各語意的深入說明見文末連結。

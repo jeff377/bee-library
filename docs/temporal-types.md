@@ -1,6 +1,6 @@
 # Temporal Types: `Date`, `DateTime` and `Time`
 
-[繁體中文](temporal-types.zh-TW.md)
+[繁體中文](temporal-types.zh-TW.md) · [← Docs Index](README.md)
 
 The framework distinguishes three temporal semantics, and each one is carried differently at every
 layer — database column, `DataColumn`, CLR value, and all three serialization formats. This document

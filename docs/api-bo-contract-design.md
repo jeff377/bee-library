@@ -1,6 +1,6 @@
 # API Contract and BO Parameter Design Principles
 
-[繁體中文](api-bo-contract-design.zh-TW.md)
+[繁體中文](api-bo-contract-design.zh-TW.md) · [← Docs Index](README.md)
 
 This document describes the design architecture and usage of API Contracts (Request / Response) and BO Parameters (Args / Result) in the Bee.NET framework, intended for developers extending API methods or implementing BO logic.
 

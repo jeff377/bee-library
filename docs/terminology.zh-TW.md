@@ -1,6 +1,6 @@
 # BeeNET 框架專有名詞中英文對照表
 
-[English](terminology.md)
+[English](terminology.md) · [← 文件索引](README.zh-TW.md)
 
 本文件為技術文件撰寫的標準用語參考，確保中英文名稱一致。
 

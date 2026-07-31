@@ -1,6 +1,6 @@
 # 專案相依性全景圖
 
-[English](dependency-map.md)
+[English](dependency-map.md) · [← 文件索引](README.zh-TW.md)
 
 本文件以視覺化方式呈現 Bee.NET 框架中 16 個 `src/` 專案之間的相依關係。
 

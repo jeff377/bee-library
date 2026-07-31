@@ -1,6 +1,6 @@
 # JSON-RPC Frontend Integration Guide
 
-[繁體中文](jsonrpc-frontend-integration.zh-TW.md)
+[繁體中文](jsonrpc-frontend-integration.zh-TW.md) · [← Docs Index](README.md)
 
 How to call the Bee.NET JSON-RPC backend from a JavaScript / TypeScript frontend
 (React, Vue, Angular, Svelte, or vanilla) **without any .NET on the client**.

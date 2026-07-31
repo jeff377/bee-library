@@ -1,6 +1,6 @@
-# 資料表結構升級指引
+# 資料庫 Schema 升級指引
 
-[English](database-schema-upgrade.md)
+[English](database-schema-upgrade.md) · [← 文件索引](README.zh-TW.md)
 
 > 本文件說明 Bee.NET 應用如何維護資料庫資料表結構：定義變更後如何同步到實際資料庫、底層採用何種升級策略、以及維運上的注意事項。
 > 命名規範請參閱 [資料庫命名規範](database-naming-conventions.md)，定義驅動的整體理念請參閱 [ADR-005 FormSchema-Driven](adr/adr-005-formschema-driven.md)。

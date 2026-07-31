@@ -35,7 +35,7 @@
 - `Bee.Business`：新增 `SessionCompanyBinder`，收容 `EnterCompany` 與 session 重建共用的公司
   繫結推導，兩條路徑不會各自算出不同的權限狀態。
 - `Bee.Expressions`：運算式沙箱新增 `UtcNow()`，與 `Today()`、`Now()` 並列，供需要明示 UTC
-  意圖（而非由使用者時區推導）時使用。見[運算式規則](docs/expression-rules.md)。
+  意圖（而非由使用者時區推導）時使用。見[運算式規則](docs/expression-rules.zh-TW.md)。
 
 ### 變更 —— 破壞性（編譯期可發現）
 

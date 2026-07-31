@@ -1,6 +1,6 @@
-[English](database-dialect-differences.md)
-
 # 資料庫方言差異（DDL）
+
+[English](database-dialect-differences.md) · [← 文件索引](README.zh-TW.md)
 
 Bee.NET 由單一份 `TableSchema` 定義產生 DDL（CREATE TABLE / ALTER TABLE），並把各資料庫的差異封裝在 `src/Bee.Db/Providers/<Dialect>/` 底下的方言 adapter 內。應用開發者通常感覺不到這些差異——框架自身的 CRUD、seed 與 schema 升級路徑都已統一處理。
 

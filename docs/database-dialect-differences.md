@@ -1,6 +1,6 @@
-[繁體中文](database-dialect-differences.zh-TW.md)
-
 # Database Dialect Differences (DDL)
+
+[繁體中文](database-dialect-differences.zh-TW.md) · [← Docs Index](README.md)
 
 Bee.NET generates DDL (CREATE TABLE / ALTER TABLE) from a single `TableSchema` definition and hides the per-database differences behind dialect adapters under `src/Bee.Db/Providers/<Dialect>/`. Application developers usually never see these differences — the framework's own CRUD, seeding, and schema-upgrade paths handle them uniformly.
 

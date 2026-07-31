@@ -1,6 +1,6 @@
-[繁體中文](permission-authorization.zh-TW.md)
-
 # Permission & Authorization Guide
+
+[繁體中文](permission-authorization.zh-TW.md) · [← Docs Index](README.md)
 
 Bee.NET permissions span **three dimensions**, applied at **two enforcement points** — the **back end** is the authoritative security boundary; the **front end** degrades UI elements as a UX affordance (never a security boundary):
 

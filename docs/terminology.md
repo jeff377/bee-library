@@ -1,6 +1,6 @@
 # BeeNET Framework Terminology Reference (English ↔ Chinese)
 
-[繁體中文](terminology.zh-TW.md)
+[繁體中文](terminology.zh-TW.md) · [← Docs Index](README.md)
 
 This document provides a standard term reference for technical writing, ensuring consistency between English and Chinese names.
 

@@ -1,6 +1,6 @@
 # DatabaseSettings 與 DbCategorySettings 指引
 
-[English](database-settings-guide.md)
+[English](database-settings-guide.md) · [← 文件索引](README.zh-TW.md)
 
 > 本文件說明 Bee.NET 框架中兩個資料庫相關設定檔的結構、定位、存取方式與運作流程，協助開發者理解設定 → 連線 → 分類路由的完整串接。
 

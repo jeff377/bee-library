@@ -1,43 +1,42 @@
-# 運算式與規則（欄位運算與存檔/刪除前驗證）
+# Expressions and Rules (Field Computation and Pre-Save / Pre-Delete Validation)
 
-用**宣告式運算式**在 `FormSchema` 定義檔裡做欄位運算與驗證，取代手寫 BO 程式碼。客戶/顧問於設計期即可自訂，不需改程式、重編、重佈。
+[繁體中文](expression-rules.zh-TW.md) · [← Docs Index](README.md)
 
-設計背景與決策見 [ADR-028](adr/adr-028-expression-rule-engine.md)。
+Use **declarative expressions** inside the `FormSchema` definition file for field computation and validation, instead of hand-written business object code. Customers and consultants can customise the behaviour at design time — no code change, no rebuild, no redeployment.
 
-## 三種能力
+For the background and the decision itself, see [ADR-028](adr/adr-028-expression-rule-engine.md).
 
-| 能力 | 載體 | 時機 |
-|------|------|------|
-| 計算欄 | `FormField.ValueExpression` | 存檔前對新增/異動列重算回填 |
-| 欄位預設值 | `FormField.DefaultValueExpression` | 新增列時，欄位為空才填 |
-| 驗證 / 前置檢查 | `FormSchema` 下的 `FormRule` | `BeforeSave` / `BeforeDelete` |
+## Three Capabilities
 
-> **後端為權威**：存檔時後端一定依定義重算計算欄並覆蓋前端送來的值；驗證也在後端執行。前端即時運算（規劃中）只是 UX 預覽，正確性不依賴前端。
+| Capability | Carrier | When it runs |
+|------------|---------|--------------|
+| Computed field | `FormField.ValueExpression` | Before save, recomputed and written back for added / modified rows |
+| Field default | `FormField.DefaultValueExpression` | On row insert, only when the field is empty |
+| Validation / precondition | `FormRule` under `FormSchema` | `BeforeSave` / `BeforeDelete` |
 
-## 運算式語法
+> **The backend is authoritative.** On save, the backend always recomputes computed fields from the definition and overwrites whatever the client submitted; validation also runs on the backend. Live client-side computation (planned) is a UX preview only — correctness never depends on the client.
 
-- **變數 = 欄位名**：直接寫欄位名即可，如 `unit_price * qty`。同列所有欄位都可用。
-- **運算子**：C# 語法子集（`+ - * /`、`> >= < <= == !=`、`&& || !`、三元 `? :`、字串 `==`）。
-- **可用函式/型別**（沙箱白名單）：`Math`（`Math.Round`、`Math.Abs`…）、`Today()`、`Now()`、`UtcNow()`、`IsNullOrEmpty(s)`、`IsNullOrWhiteSpace(s)`、`Guid`（如 `customer_rowid != Guid.Empty`）。
+## Expression Syntax
 
-  **時間函式的語意**（見 [ADR-032](adr/adr-032-datetime-timezone.md)）：
+- **A variable is a field name.** Write the field name directly, e.g. `unit_price * qty`. Every field on the same row is available.
+- **Operators**: a subset of C# syntax (`+ - * /`, `> >= < <= == !=`, `&& || !`, the ternary `? :`, and string `==`).
+- **Available functions and types** (sandbox allowlist): `Math` (`Math.Round`, `Math.Abs`, …), `Today()`, `Now()`, `UtcNow()`, `IsNullOrEmpty(s)`, `IsNullOrWhiteSpace(s)`, and `Guid` (e.g. `customer_rowid != Guid.Empty`).
 
-  | 函式 | 回傳 | 基準 |
-  |------|------|------|
-  | `Today()` | `DateOnly` | **使用者所在時區**的今天。請假日期預設當天這類用途要的就是它——使用者在紐約登打台北公司的假單，仍會拿到台北的日期 |
-  | `Now()` | `DateTime`（`Kind` 為 `Unspecified`） | 同一時區的當下 |
-  | `UtcNow()` | `DateTime`（`Kind` 為 `Unspecified`） | UTC 當下，供需要明示 UTC 意圖時使用 |
+  **Semantics of the time functions** (see [ADR-032](adr/adr-032-datetime-timezone.md)):
 
-  `Today()` 回傳 `DateOnly` 而非 `DateTime`：日期在框架中一律以 `DateOnly` 表達，`DataSet`
-  儲存格是唯一例外（`DataColumn` 只能以 `DateTime` 承載日曆日）。把 `Today()` 寫進 `Date` 或
-  `DateTime` 欄位都可以，框架會在寫入儲存格時完成轉換。
+  | Function | Returns | Basis |
+  |----------|---------|-------|
+  | `Today()` | `DateOnly` | Today **in the user's time zone**. This is what you want for cases like defaulting a leave date to today — a user in New York filing against a Taipei company still gets the Taipei date |
+  | `Now()` | `DateTime` (`Kind` is `Unspecified`) | The current moment in that same zone |
+  | `UtcNow()` | `DateTime` (`Kind` is `Unspecified`) | The current UTC moment, for when UTC intent must be explicit |
 
-  > **`Now()` / `UtcNow()` 寫進 `DateTime` 欄位時請自行確認語意。** 於用戶端求值的運算式，
-  > 其結果送出時仍會被視為使用者時區值而換算一次；框架不會、也無法判斷某個儲存格是運算式填的。
-- **禁用**：反射、IO、任意型別載入——未在白名單的識別字會在解析期直接報錯（設定錯誤）。
-- **空值**：空欄（`DBNull`）以型別預設值代入（數值 0、字串空字串、`Guid.Empty`…），所以 `unit_price * qty` 遇空值算 0 而不會出錯。
+  `Today()` returns `DateOnly` rather than `DateTime` because a calendar day is always expressed as `DateOnly` in the framework. The `DataSet` cell is the sole exception, since a `DataColumn` can only carry a calendar day as `DateTime`. You may write `Today()` into either a `Date` or a `DateTime` field; the framework performs the conversion when writing the cell.
 
-## 計算欄：`ValueExpression`
+  > **Confirm the intent yourself when writing `Now()` / `UtcNow()` into a `DateTime` field.** An expression evaluated on the client still has its result treated as a user-zone value and converted once more on submission. The framework neither does — nor can — determine that a given cell was filled by an expression.
+- **Forbidden**: reflection, IO, and loading arbitrary types. Any identifier outside the allowlist fails at parse time as a configuration error.
+- **Null handling**: an empty field (`DBNull`) is substituted with its type default (`0` for numbers, an empty string for text, `Guid.Empty`, …), so `unit_price * qty` evaluates to `0` on empty input rather than failing.
+
+## Computed Fields: `ValueExpression`
 
 ```xml
 <FormField FieldName="amount" Caption="Amount" DbType="Currency"
@@ -45,22 +44,22 @@
            ValueExpression="quantity * unit_price * (1 - discount)" />
 ```
 
-- 存檔前對 `Added` / `Modified` 列重算（`Unchanged` 列不動，避免誤標為已異動）。
-- **捨入**：數值結果依欄位 `NumberKind` 捨入（`Amount`→2 位、`Quantity`→0、`UnitPrice`→保留精度…，公司/幣別/單位可調；見 [ADR-026](adr/adr-026-numeric-semantics-rounding.md)）。故明細先各自捨入、加總才不會對不上帳（round-then-sum）。
-- 計算欄通常搭配 `ReadOnly="true"`。
-- 同列多個計算欄可相依：**依宣告順序**求值，後面的看得到前面剛算好的值。
+- Recomputed before save for `Added` / `Modified` rows. `Unchanged` rows are left alone, so they are never falsely marked as modified.
+- **Rounding** follows the field's `NumberKind` (`Amount` → 2 decimals, `Quantity` → 0, `UnitPrice` → full precision, …; adjustable per company / currency / unit — see [ADR-026](adr/adr-026-numeric-semantics-rounding.md)). Detail rows are therefore each rounded first and only then summed (round-then-sum), so the total always reconciles.
+- Computed fields are usually paired with `ReadOnly="true"`.
+- Several computed fields on the same row may depend on each other: evaluation follows **declaration order**, so a later expression sees the values just computed by earlier ones.
 
-## 欄位預設值：`DefaultValueExpression`
+## Field Defaults: `DefaultValueExpression`
 
 ```xml
 <FormField FieldName="order_date" Caption="Order Date" DbType="Date"
            DefaultValueExpression="Today()" />
 ```
 
-- 新增列時求值；**只在欄位為空時填**，不覆寫已有值。
-- 與字面值 `DefaultValue` 併存時，運算式優先。
+- Evaluated on row insert, and **only applied when the field is empty** — an existing value is never overwritten.
+- When a literal `DefaultValue` is also present, the expression wins.
 
-## 驗證與前置檢查：`FormRule`
+## Validation and Preconditions: `FormRule`
 
 ```xml
 <Rules>
@@ -77,37 +76,37 @@
 </Rules>
 ```
 
-| 屬性 | 說明 |
-|------|------|
-| `Condition` | **必須成立**的條件（回傳 bool）；為 `false` 即違規，中斷動作並顯示 `Message` |
-| `When` | 選填的**適用條件**；空＝一律套用，`false`＝略過整條規則（視同通過），`true` 才檢查 `Condition` |
-| `Message` | 不通過時顯示給使用者的訊息 |
-| `Trigger` | `BeforeSave`（預設）或 `BeforeDelete` |
-| `TargetTable` | 空＝主檔；填明細表名＝對該表**逐列**檢查 |
-| `Order` | 同一 trigger 內的求值順序（小的先） |
-| `Enabled` | 是否啟用（預設 true） |
+| Attribute | Description |
+|-----------|-------------|
+| `Condition` | The condition that **must hold** (returns bool). A `false` result is a violation: the action is aborted and `Message` is shown |
+| `When` | Optional **applicability** condition. Empty means always apply; `false` skips the whole rule (treated as passing); only `true` proceeds to check `Condition` |
+| `Message` | The message shown to the user when the rule fails |
+| `Trigger` | `BeforeSave` (default) or `BeforeDelete` |
+| `TargetTable` | Empty targets the master table; a detail table name checks that table **row by row** |
+| `Order` | Evaluation order within the same trigger (lower runs first) |
+| `Enabled` | Whether the rule is active (default true) |
 
-> **兩段式判斷**：`When` 決定「這條規則現在該不該檢查」、`Condition` 是「必須成立的驗證」。例：「訂單已核准時，總額必須 > 0」→ `When = status == "Approved"`、`Condition = total_amount > 0`。狀態非 Approved 的單據自動略過。
+> **The two-part test**: `When` decides whether this rule should be checked at all right now, and `Condition` is the validation that must hold. For example, "an approved order must have a positive total" becomes `When = status == "Approved"` with `Condition = total_amount > 0`. Orders in any other status are skipped automatically.
 >
-> XML 裡 `>` 要寫 `&gt;`、字串引號要寫 `&quot;`。
+> Inside XML, write `>` as `&gt;` and a string quote as `&quot;`.
 
-## 何時仍需寫 BO（當前邊界）
+## When a Business Object Is Still Required (Current Boundary)
 
-Phase 1 的運算式是**逐列（per-row）**模型。以下情境還不能純宣告，需在自訂 BO 覆寫 `DoBeforeSave` / `DoBeforeDelete`：
+The Phase 1 expression engine is a **per-row** model. The following cases cannot yet be expressed declaratively and require overriding `DoBeforeSave` / `DoBeforeDelete` in a custom business object:
 
-- **跨列聚合**：如「表頭合計 = 明細金額加總」「至少一筆明細」——需跨列運算。
-- **需查資料庫**：如「狀態轉移須比對資料庫既存狀態」「自動單號取序列」。
+- **Cross-row aggregation**, such as "the header total is the sum of the detail amounts" or "at least one detail row is required" — both need computation across rows.
+- **Database lookups**, such as "a status transition must be checked against the state already stored" or "fetch the next number from a sequence".
 
-`apps/Bee.Northwind` 的 `OrderBO` 是實例：明細金額與必填檢查已宣告化，只有上述聚合/DB 相依留在 `DoBeforeSave`。
+`OrderBO` in `apps/Bee.Northwind` is a worked example: the detail amounts and required-field checks have been made declarative, leaving only the aggregation and database-dependent logic in `DoBeforeSave`.
 
-### 自訂 BO 覆寫慣例
+### Custom Business Object Override Convention
 
 ```csharp
 protected override void DoBeforeSave(SaveContext context)
 {
-    base.DoBeforeSave(context);   // 先跑規則引擎（預設值 / 計算欄 / BeforeSave 驗證）
-    // 再疊上宣告式表達不了的邏輯（聚合、DB 查詢…）
+    base.DoBeforeSave(context);   // Run the rule engine first (defaults, computed fields, BeforeSave validation).
+    // Then layer on the logic that declarations cannot express, such as aggregation or database queries.
 }
 ```
 
-`Save` / `Delete` 已重構為模板方法：授權、記錄範圍、稽核由框架編排層固定處理，你只覆寫 `DoBeforeSave` / `DoSave` / `DoAfterSave`（及 Delete 對應）需要的那一段。
+`Save` and `Delete` have been refactored into template methods: authorization, record scope and auditing are orchestrated by the framework, and you override only the part you need — `DoBeforeSave` / `DoSave` / `DoAfterSave`, and the matching Delete hooks.

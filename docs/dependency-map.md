@@ -1,6 +1,6 @@
 # Project Dependency Map
 
-[繁體中文](dependency-map.zh-TW.md)
+[繁體中文](dependency-map.zh-TW.md) · [← Docs Index](README.md)
 
 This document visualizes the dependencies among the 16 `src/` projects of the Bee.NET framework.
 

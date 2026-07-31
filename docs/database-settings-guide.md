@@ -1,6 +1,6 @@
 # DatabaseSettings & DbCategorySettings Guide
 
-[繁體中文](database-settings-guide.zh-TW.md)
+[繁體中文](database-settings-guide.zh-TW.md) · [← Docs Index](README.md)
 
 > This document explains the structure, positioning, access patterns, and runtime behavior of the two database-related settings files in the Bee.NET framework, helping developers understand the full chain of settings → connection → category routing.
 

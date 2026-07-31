@@ -56,7 +56,7 @@ dotnet run --configuration Debug
 | Connect → endpoint 驗證 | [src/Bee.UI.Core/ClientInfo.cs](../../src/Bee.UI.Core/ClientInfo.cs) + [src/Bee.Api.Client/ApiConnectValidator.cs](../../src/Bee.Api.Client/ApiConnectValidator.cs) |
 | Endpoint 持久化 | [src/Bee.UI.Avalonia/Storage/FileEndpointStorage.cs](../../src/Bee.UI.Avalonia/Storage/FileEndpointStorage.cs) |
 | Login → token | [src/Bee.Api.Client/Connectors/SystemApiConnector.cs](../../src/Bee.Api.Client/Connectors/SystemApiConnector.cs)（LoginAsync） |
-| Employee 表單渲染 | [src/Bee.UI.Avalonia/Controls/FormView.cs](../../src/Bee.UI.Avalonia/Controls/FormView.cs) → DynamicForm / DynamicGrid |
+| Employee 表單渲染 | [src/Bee.UI.Avalonia/Controls/FormView.cs](../../src/Bee.UI.Avalonia/Views/FormView.cs) → DynamicForm / DynamicGrid |
 | FormSchema fallback | `FormView` 的 ResolveSystemConnector / ResolveFormConnector / ResolveAccessToken |
 | CRUD wire path | FormApiConnector → RemoteApiProvider → QuickStart.Server `ApiController` → DemoBusinessObjectFactory → FormBusinessObject |
 

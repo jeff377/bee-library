@@ -1,6 +1,6 @@
-[English](analyzer-rules.md)
-
 # Analyzer 規則
+
+[English](analyzer-rules.md) · [← 文件索引](README.zh-TW.md)
 
 Bee.NET 隨套件提供 Roslyn analyzer，把框架慣例變成建置期診斷。它由 `Bee.Definition` 自動註冊：
 引用該套件即生效，不需額外安裝，也不需修改專案設定。

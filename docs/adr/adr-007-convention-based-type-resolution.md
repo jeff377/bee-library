@@ -40,7 +40,7 @@ BO 回傳：{Action}Result   ──反射搜尋 Bee.Api.Core 組件──▶   A
 
 ### 實作要點
 
-- 新增 [`ApiOutputConverter`](../../src/Bee.Api.Core/ApiOutputConverter.cs)，於 `JsonRpcExecutor.ExecuteAsyncCore` 完成 BO 呼叫後立即進行型別轉換
+- 新增 [`ApiOutputConverter`](../../src/Bee.Api.Core/Conversion/ApiOutputConverter.cs)，於 `JsonRpcExecutor.ExecuteAsyncCore` 完成 BO 呼叫後立即進行型別轉換
 - 反射結果以 `ConcurrentDictionary<Type, Type>` 快取，每個 BO 型別只掃描一次
 - 透過 `typeof(void)` 作為 sentinel 表示「找不到對應型別」（因 `ConcurrentDictionary` 不接受 null 值）
 - 找不到對應型別時回傳原值，不中斷流程（向後相容）

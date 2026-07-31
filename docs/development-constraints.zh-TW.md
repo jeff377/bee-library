@@ -1,6 +1,6 @@
 # 開發限制與反模式
 
-[English](development-constraints.md)
+[English](development-constraints.md) · [← 文件索引](README.zh-TW.md)
 
 > 本文件列出框架的設計限制與禁止事項，供 AI Coding 工具參考，避免產生違反框架慣例的程式碼。
 > 安全相關規範請參閱 [安全規範](../.claude/rules/security.md)。

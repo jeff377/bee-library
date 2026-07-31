@@ -1,6 +1,6 @@
 # 時區處理
 
-[English](datetime-timezone.md)
+[English](datetime-timezone.md) · [← 文件索引](README.zh-TW.md)
 
 資料庫的每個時間點都以 UTC 儲存，每位使用者看到的則是自己時區的時間。轉換只發生在一個地方
 ——用戶端的 API connector——因此你的 Business Object 與 UI 程式碼都不需要自己換算。
@@ -86,7 +86,7 @@ FilterCondition.Equal("created_at", someDateTime);     // 時間點——送出�
 
 日期在框架中一律以 `DateOnly` 表達，**唯一例外是 `DataSet` 儲存格**——`DataColumn` 只能承載
 `DateTime`，框架會在該邊界替你轉換。運算式的 `Today()` 回傳依使用者時區的 `DateOnly`，
-`UtcNow()` 則明示 UTC。完整函式清單見[運算式規則](expression-rules.md)。
+`UtcNow()` 則明示 UTC。完整函式清單見[運算式規則](expression-rules.zh-TW.md)。
 
 ## 相關文件
 

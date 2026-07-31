@@ -1,6 +1,6 @@
 # 資料庫命名規範  
 
-[English](database-naming-conventions.md)
+[English](database-naming-conventions.md) · [← 文件索引](README.zh-TW.md)
 
 本文件定義資料庫表結構及系統欄位的命名規則，適用於所有資料庫物件設計。  
 統一命名風格可避免跨資料庫時產生大小寫與語意不一致問題，並提升可維護性。  
@@ -155,7 +155,7 @@ Oracle 是 outlier：framework 在 emit DDL/DML 時將識別符 `.ToUpperInvaria
 | **定義** | `FormField.FieldName`、`DbField.FieldName`、`TableSchema` 欄位 | 小寫 `snake_case` |
 | **資料（實體）** | 資料庫表欄位 | 小寫 `snake_case`（§1–2） |
 | **資料（記憶體）** | `DataSet` / `DataTable` 的 `DataColumn.ColumnName` | 小寫 `snake_case` |
-| **運算式** | `FormField.ValueExpression` / `FormRule.Condition` 內的識別字（見 [expression-rules.md](expression-rules.md)） | 精確的宣告 `FieldName`（小寫） |
+| **運算式** | `FormField.ValueExpression` / `FormRule.Condition` 內的識別字（見 [expression-rules.zh-TW.md](expression-rules.zh-TW.md)） | 精確的宣告 `FieldName`（小寫） |
 | **UI** | 欄位編輯器／表格欄的繫結 key | 小寫 `snake_case` |
 
 ### 為何全系統只用一種大小寫

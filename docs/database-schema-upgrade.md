@@ -1,6 +1,6 @@
-# Table Schema Upgrade Guide
+# Database Schema Upgrade Guide
 
-[繁體中文](database-schema-upgrade.zh-TW.md)
+[繁體中文](database-schema-upgrade.zh-TW.md) · [← Docs Index](README.md)
 
 > This guide explains how a Bee.NET application maintains database table schemas: how definition changes are synchronized to the live database, the upgrade strategy used under the hood, and operational considerations.
 > For naming rules see [Database Naming Conventions](database-naming-conventions.md); for the underlying definition-driven philosophy see [ADR-005 FormSchema-Driven](adr/adr-005-formschema-driven.md).
