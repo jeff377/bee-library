@@ -18,7 +18,7 @@
 | **bee-add-cache-object** | 新增框架快取物件（Define 定義快取 / DB 相依快取） |
 | **bee-scaffold-from-formschema** | 從 FormSchema 反推 FormLayout / TableSchema / 雙語 LanguageResource |
 | **bee-serialization** | 物件三棲序列化（XML 持久化 + JSON/MessagePack wire）設計指引 |
-| **bee-framework-review** | 框架全面體檢方法論（八面向唯讀審查 + 分級重構計畫） |
+| **bee-framework-review** | 框架全面體檢方法論（九面向唯讀審查 + 分級重構計畫） |
 | **bee-sample-add** | 為 samples/ 加一個新示範專案 |
 
 ## 通用工作流（不綁 Bee 框架）
@@ -35,10 +35,17 @@ repo 只保留單一來源，避免本地副本與 plugin 版 drift。
 
 | Skill（呼叫名） | Plugin @ Marketplace | 一句話用途 |
 |----------------|---------------------|-----------|
-| **`/plan-workflow:plan-write`** | `plan-workflow` @ `jeff377-plugins` | 撰寫 / 更新 `docs/plans/` 計畫文件（狀態列、階段表格、封存流程） |
-| **`/plan-workflow:plan-handoff`** | `plan-workflow` @ `jeff377-plugins` | 把已定案的 plan 交接給新 session 實作（產出可複製的交接 prompt） |
+| **`/dev-workflow:plan-write`** | `dev-workflow` @ `jeff377-plugins` | 撰寫 / 更新 `docs/plans/` 計畫文件（狀態列、階段表格、連結慣例、封存流程） |
+| **`/dev-workflow:plan-handoff`** | `dev-workflow` @ `jeff377-plugins` | 把已定案的 plan 交接給新 session 實作（產出可複製的交接 prompt） |
+| **`/dev-workflow:plan-execute`** | `dev-workflow` @ `jeff377-plugins` | 依 plan 實作時的驗證閘門（plan 版本確認、範圍對帳、平行路徑檢查） |
+
+三者涵蓋 plan 的完整生命週期：撰寫 → 交接 → 執行。
 
 > **`plan-write` 原本在本目錄**，已移出改由 plugin 提供，故本目錄不再有該資料夾。
+>
+> **plugin 於 2026-07-31 由 `plan-workflow` 改名為 `dev-workflow`**（v2.0.0），
+> 定位擴為「開發流程」以容納後續 CI、源碼掃描、套件發佈等 skill。
+> 呼叫前綴隨之改變；`.claude/settings.json` 的 `enabledPlugins` 已同步。
 
 ## 新增 skill
 
