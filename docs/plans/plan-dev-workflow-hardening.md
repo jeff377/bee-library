@@ -5,8 +5,8 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | bee-library commit 前驗證 hook（clean build + PublicAPI diff 攤開） | ✅ 已完成（2026-07-31） |
-| 2 | plugin `plan-workflow` → `dev-workflow` 改名（僅 plugin 層） | 📝 待做 |
-| 3 | 新增 `plan-execute` skill 至 dev-workflow | 📝 待做 |
+| 2 | plugin `plan-workflow` → `dev-workflow` 改名（僅 plugin 層） | ✅ 已完成（2026-07-31） |
+| 3 | 新增 `plan-execute` skill 至 dev-workflow | 🚧 進行中 |
 
 ## 背景
 
