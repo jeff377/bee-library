@@ -1,6 +1,6 @@
 # Plan：客製化共同前置（討論稿）
 
-> 狀態：📝 擬定中（討論用，尚未動工）· 2026-07-25
+> 狀態：📝 擬定中（決策 A1 / B1 已定案，可動工）· 2026-07-31
 > 定位：**三類客製的共同基礎**，不屬於任一類，但三類都被它擋住。
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)
 > 依據：[ADR-016 多租戶客製化覆蓋層](../adr/adr-016-multitenant-customization-overlay.md)
@@ -17,13 +17,16 @@ ADR-016 設計的 fail-safe（漏傳 customizeId → 退化純 base）目前是 
 
 **本 plan 是三類客製的前置**——不先補完 §2 的 A、B 兩項，任何一類客製都不會生效。
 
+> 2026-07-31 討論後，A1（傳遞方式）與 B1（配置來源）已定案，**F1–F4 可動工**；
+> 唯「客製檔誰維護、怎麼產生」保留未決（不擋動工）。決策彙總見 §5。
+
 ---
 
 ## 1. 已完成的基礎設施（可直接沿用）
 
 | 項目 | 位置 | 狀態 |
 |------|------|------|
-| `CustomizeId` 寫入鏈 | `st_company.customize_id` → `CompanyRepository`(`:46,80`) → `CompanyInfo`(`:59`) → `EnterCompany`(`SystemBusinessObject.Session.cs:120`) → `SessionInfo.CustomizeId`(`:63`) | ✅ 完整 |
+| `CustomizeId` 寫入鏈 | `st_company.customize_id` → `CompanyRepository`(`:80`) → `CompanyInfo`(`:59`) → `SessionCompanyBinder.Bind`(`:68`，由 `EnterCompany` 呼叫) → `SessionInfo.CustomizeId`(`:63`) | ✅ 完整 |
 | `CustomizeId` 清除 | `ClearCompanyContext`(`Session.cs:207`)，由 `LeaveCompany`(`:161`) / `Logout`(`:188`) 共用 | ✅ |
 | 客製路徑解析 | `CustomizeOnlyPathOptions`（含 path traversal 防護 `:41-56`） | ✅ |
 | 客製儲存讀取 | `CustomizeOnlyStorage`（3 getter 有效，其餘 `NotSupportedException`） | ✅ |
@@ -60,37 +63,81 @@ DI 接線本身完整，reader 已注入；問題純粹是**呼叫端沒傳 `cus
 > `BusinessObjectFactory` 連 `ISessionInfoService` 都已注入(`:25`)，只是沒用它讀 `CustomizeId`。
 > 多數接線是「補傳一個參數」，但 Layout 那條有結構問題（見 Layout plan）。
 
-**決策 A1：customizeId 的傳遞方式**
-- **選項 A1-a（建議）**：**維持 ADR-016 的顯式傳參**。消費端各自從 `ISessionInfoService` 取 `CustomizeId` 後顯式傳入。
-  優點：符合現有設計、fail-safe 明確、無隱式狀態。缺點：每個消費端都要改、日後新增消費端容易再漏。
-- **選項 A1-b**：由 DI 提供 `ICustomizeContext`（scoped），消費端注入後自動取得。
-  優點：新增消費端不易漏。缺點：引入隱式上下文，與框架現有「顯式傳參」風格不一致，且 scoped 生命週期在非 HTTP 情境（背景工作）需另外處理。
+**決策 A1：customizeId 的傳遞方式 — ✅ 已定案（2026-07-31）：依消費端性質二分，來源都是 `EnterCompany` 已回傳的值**
 
-> 待討論：漏傳的代價是「靜默退回 base」——不會壞、但客製悄悄失效，難察覺。
-> 若選 A1-a，建議搭配 §2.F 的端到端測試作為防線。
+五個消費端不是同一類東西，用同一種傳遞方式反而彆扭：
 
-### 🔴 B. `CustomizePath` 無配置管道（客製層目前在所有部署中都是關閉的）
+| 消費端類別 | customizeId 來源 | 作法 |
+|-----------|-----------------|------|
+| 伺服端、手上有 session（`BusinessObjectFactory`、BO 語系、`FormSchemaLocalizer`） | `SessionInfo.CustomizeId`（`SessionCompanyBinder` 已填） | 顯式傳參（維持 ADR-016 設計） |
+| UI 端 DI adapter、無 session 概念（`BeeStringLocalizer`） | `ClientInfo.Company?.CustomizeId` | 比照它既有的 `Func<string> langProvider` 多載（`BeeStringLocalizer.cs:46`），加一個 customizeId 委派多載由 host 接 |
 
-- `PathOptions.CustomizePath` 是 `init`-only（`PathOptions.cs:24`）
-- **沒有** `IConfiguration` binding、**沒有** appsettings key、**沒有** `SystemSettings.xml` 欄位
-- 現有 host 都只設 `DefinePath`：`NorthwindBackend.cs:47`、`DemoBackend.cs:43`
+**不新增任何 wire 欄位**：`EnterCompanyResult.Company` 就是 `CompanyInfo`
+（[`SystemBusinessObject.Session.cs:110`](../../src/Bee.Business/System/SystemBusinessObject.Session.cs)），本來就帶 `CustomizeId`；
+用戶端 `ClientInfo.ApplyEnterCompanyResult` 也已把它存進 `ClientInfo.Company`
+（[`ClientInfo.cs:203`](../../src/Bee.UI.Core/ClientInfo.cs)）。兩端所需的值今天都已經在手上。
 
-**決策 B1：配置來源**
-- **選項 B1-a（建議）**：走 `IConfiguration` / appsettings（與 `DefinePath` 同一機制），host 啟動時綁定。
-- **選項 B1-b**：放進 `SystemSettings.xml`（定義檔驅動，與框架其他設定一致）。
-- 兩者可並存（appsettings 優先）。
+> **安全界線（硬性）**：伺服端**永不**採信 client 傳回來的 customizeId 作為查找依據。
+> 做成「client 每次呼叫帶 customizeId」等於讓 client 自選要讀哪一套客製檔——跨租戶讀取的直接破口。
+> client 手上那份**只供 client 自己的 UI 在地化**；伺服端一律只認 `SessionInfo.CustomizeId`。
 
-> 待討論：客製檔的**部署位置**實務上長怎樣？與 `DefinePath` 同一層、還是獨立掛載（如共用磁碟 / 容器 volume）？
-> 這會影響預設值該怎麼給。
+**未採用**：`ICustomizeContext`（scoped DI 隱式上下文）——與框架顯式傳參風格不一致，且非 HTTP 情境
+（背景工作）的生命週期要另解；上表的二分已經避開「強迫沒有 session 概念的 UI adapter 去拿 session」這個原始痛點。
 
-### 🔴 C. `ClientInfo.ResetDefineCache()` 無任何呼叫端
+> 殘留風險：漏傳的代價是「靜默退回 base」——不會壞、但客製悄悄失效，難察覺。以 §2.F 的端到端測試作為長期防線。
 
-`ClientInfo.cs:147-150` 只被兩個測試呼叫。ADR「取捨」段指定「切換公司後呼叫」，
-`ClientInfo.cs:192` 註解也寫「calls this after `SystemApiConnector.EnterCompanyAsync`」——**但實際流程沒呼叫**。
+**客製化維度只到公司層（兩個邊界，須寫進文件）**
 
-**影響**：client 端跨租戶快取污染防護未生效。切換公司後仍可能顯示前一租戶的客製定義。
+`CustomizeId` 掛在 `CompanyInfo` 是對的——它與 `CompanyDatabaseId` / `NumberFormats` / `DefaultCurrency`
+同屬「這家公司套哪一套規則」，基數是 many-to-one（集團多公司共用一套客製），生命週期也與 `EnterCompany`
+／`ClearCompanyContext` 同進同退。但由此推得兩個邊界：
 
-> **建議**：接上 `EnterCompany` / `LeaveCompany` 流程。這是安全性/正確性問題，不是最佳化。
+- **登入前拿不到客製**：`CustomizeId` 要進公司後才有值，所以登入畫面、公司選單、`EnterCompany` 之前的
+  所有訊息與語系**永遠是 base**。若日後需要「第一畫面就換術語」，正解是**加第二層來源**（host 建
+  `PathOptions` 時給部署層 default customizeId，公司層再 override），而非把 `CustomizeId` 從 `CompanyInfo` 搬走。
+- **`SessionInfo.CustomizeId` 是快照不是即時值**：`SessionCompanyBinder:68` 於進公司當下複製；事後改
+  `st_company.customize_id`，既有 session 不會跟著變（需重新 `EnterCompany`）。與同段的 `Roles` /
+  capabilities / employeeContext 快照策略一致，可接受，但**必須寫進文件**，否則會變成「客製改了沒生效」的客訴。
+
+### 🟡 B. `CustomizePath` 沒有任何 host 設定（客製層目前在所有部署中都是關閉的）
+
+> **前提更正（2026-07-31）**：本節原寫「無配置管道」，並把 B1-a 描述為「與 `DefinePath` 同一機制」——
+> 兩者都不正確。**框架完全沒有組態綁定**：`DefinePath` 是 host 自己算好
+> （`NorthwindBackend.ResolveDefinePath()` 往上找 `Define/SystemSettings.xml`），塞進
+> `new PathOptions { ... }` 再傳給 `AddBeeFramework(configuration, pathOptions)`
+> （[`BeeFrameworkServiceCollectionExtensions.cs:55-72`](../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)）。
+> 因此 `CustomizePath` **今天就設得了**（`init` 允許物件初始化器一併給值）。
+
+實際缺的不是機制，是：**沒有任何 host 這樣做**（`NorthwindBackend.cs:47`、`DemoBackend.cs:43` 都只設
+`DefinePath`）、**沒有文件**、**沒有預設慣例**。
+
+**決策 B1：配置來源 — ✅ 已定案（2026-07-31）：維持 host 自建 `PathOptions`，不新增框架機制**
+
+host 在 `new PathOptions { DefinePath = ..., CustomizePath = ... }` 時一併給值，與 `DefinePath` 真正一致。
+框架端只需補**文件** + **一個 sample 示範**，F1 幾乎歸零。
+
+**未採用**：
+- B1-a（框架提供 `IConfiguration` / appsettings 綁定）——會是框架首次引入組態綁定，且 `DefinePath` 沒跟進會造成兩套風格並存。
+- B1-b（放進 `SystemSettings.xml`）——該檔本身要靠 `DefinePath` 才讀得到（`SystemSettingsLoader.Load(paths)`），
+  須先建 `PathOptions`、讀完設定後再重建一次，時序較繞。
+
+### 🔴 C. 用戶端「進公司」流程從未被任何 head 走過
+
+> **改寫（2026-07-31）**：本節原記為「`ClientInfo.ResetDefineCache()` 無任何呼叫端」。實測全域
+> （`src/`、`samples/`、`apps/`、`tools/`）grep 後發現範圍更大——`SystemApiConnector.EnterCompanyAsync`、
+> `ClientInfo.ApplyEnterCompanyResult`、`ClientInfo.ClearCompanyContext()` **三者皆無任何呼叫端**。
+> Northwind 與各 sample 都是單公司、跳過 `EnterCompany`。
+
+`ResetDefineCache` 沒人叫只是**表徵**，不是獨立缺口：整條用戶端 tenant context 流程都還沒有 head 實作過。
+
+**影響**：
+1. client 端跨租戶快取污染防護未生效（切換公司後仍可能顯示前一租戶的客製定義）。
+2. **本 plan 定案的 UI 端路徑（§2.A 第二列）目前無從驗證**——要驗證得先有一個會進公司的 head，
+   或走整合測試。**因此原本分開的「接上 `ResetDefineCache`」與「端到端測試」合流為單一階段 F3**（見 §4）。
+
+**建議**：把 `ResetDefineCache()` 的責任從 host **收回框架**——直接在 `ApplyEnterCompanyResult` /
+`ClearCompanyContext` 內部呼叫。現行 XML doc 寫「The host calls this … alongside `ResetDefineCache`」
+（`ClientInfo.cs:148,200,213`），而事實已證明沒有 host 會記得；靠註解約束跨租戶快取污染防護不可靠。
 
 ### 🟡 D. 客製快取沒有失效訊號
 
@@ -118,14 +165,13 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 **零個測試驗證「從 API 呼叫進來 → 自動套用該 session 的客製」**。
 
 > **建議**：補整合測試——建立帶 `CustomizeId` 的 session，走真實 API 路徑，驗證三類客製都生效。
-> 這同時是缺口 A 的長期防線。
+> 這同時是缺口 A 的長期防線。**與缺口 C 合流為階段 F3**（見 §2.C）：兩者都需要一條真的會進公司的路徑。
 
 ### 🟢 其他觀察
 
 - **無任何 TODO/FIXME 標記**（`grep "// TODO" src/` 零結果）——缺口是「靜默未接線」而非「標記待辦」。
 - `CustomizeDefineReader.GetCustomizeProgramSettings:44-54` 因 `ProgramSettingsCache` 缺檔會 throw，
   改用 `File.Exists` 先探檔 → **每次呼叫都做一次同步檔案 I/O**（非 cache-only 路徑）。可列為最佳化項。
-- ADR-016 引用的 `docs/plans/plan-multitenant-customization.md` **已不存在**（封存後刪除），連結是死的。
 
 ---
 
@@ -136,29 +182,36 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 - **客製定義只讀不寫** — `CustomizeOnlyStorage` 所有 `SaveXxx` 全 throw，客製檔由外部工具/部署流程產生。
 - **不提供 base ∪ cust 聯集列舉**。
 
-> 待討論（跨三類）：**客製檔實務上誰維護、怎麼產生？**
-> ADR 定「只讀不寫」，但若你們需要在系統內編輯客製，就得重新檢視這條，並回答
-> 「編輯後如何不破壞 base 升級路徑」。
+> **⏳ 未決（跨三類）：客製檔實務上誰維護、怎麼產生？** —— 2026-07-31 討論時明確保留，未裁決。
+> ADR 定「只讀不寫」，若需要在系統內編輯客製，就得重新檢視這條，並回答「編輯後如何不破壞 base 升級路徑」。
+>
+> 已知的低成本選項（供日後裁決時參考）：`tools/DefineEditor` 已能編輯 FormLayout / Language /
+> ProgramSettings —— 正好就是 ADR-016 允許客製的三種。讓它多認一個 `{CustomizePath}/{customizeId}/`
+> 根目錄，即可在**不動框架、不重開「只讀不寫」**的前提下解決客製檔的產生。
 
 ---
 
 ## 4. 建議階段
 
-| 階段 | 範圍 | 說明 |
+| 階段 | 範圍 | 狀態 |
 |------|------|------|
-| F0 | 決策定案（A1 傳遞方式、B1 配置來源） | 三類 plan 的共同前提 |
-| F1 | **缺口 B**：`CustomizePath` 配置管道 | 先讓客製層「能被開啟」 |
-| F2 | **缺口 A**：消費端接線（Layout 除外，見 Layout plan） | 讓客製真的生效 |
-| F3 | **缺口 C**：`ClientInfo.ResetDefineCache()` 接上 EnterCompany/LeaveCompany | 跨租戶污染防護 |
-| F4 | **缺口 F**：端到端整合測試 | 缺口 A 的長期防線 |
-| F5 | **缺口 D、E**：客製快取失效訊號、DB 版 reader 條件註冊 | 完備性 |
+| F0 | 決策定案：A1 傳遞方式、B1 配置來源 | ✅ 已定案（2026-07-31）。§3 的「客製檔誰維護」仍未決，但**不擋 F1–F4** |
+| F1 | **缺口 B**：host 設定 `CustomizePath` 的文件 + 一個 sample 示範 | 📝 待做（B1 定案後已縮到最小） |
+| F2 | **缺口 A**：消費端接線，伺服端三處顯式傳參 + `BeeStringLocalizer` 委派多載（Layout 除外，見 Layout plan） | 📝 待做 |
+| F3 | **缺口 C + F 合流**：會進公司的 head（或整合測試）走通 `EnterCompany` → `ApplyEnterCompanyResult` → 客製生效，並把 `ResetDefineCache` 責任收回框架 | 📝 待做 |
+| F4 | **缺口 D、E**：客製快取失效訊號、DB 版 reader 條件註冊 | 📝 待做 |
+
+> F3 為何合流：用戶端進公司流程從未被任何 head 走過（見 §2.C），所以「接上 `ResetDefineCache`」與
+> 「端到端驗證客製生效」必須在同一條路徑上完成——沒有走這條路的 head，兩者都無從驗證。
 
 > 每階段驗證：**未設 `CustomizeId` 的部署行為零變化**（回歸防護）＋**跨租戶隔離**（A 租戶客製不影響 B）。
 
 ---
 
-## 5. 給 review 的提問
+## 5. 決策紀錄
 
-1. **customizeId 傳遞**走顯式傳參（A1-a，維持 ADR 設計）還是 scoped context（A1-b）？
-2. **`CustomizePath` 實務部署位置**在哪？與 `DefinePath` 同層或獨立掛載？影響配置預設值。
-3. **客製檔誰維護、怎麼產生**？是否需要框架提供編輯/寫入能力（目前 `SaveXxx` 全 throw）？
+| # | 問題 | 結論 |
+|---|------|------|
+| 1 | customizeId 傳遞方式 | ✅ **依消費端性質二分**：伺服端讀 `SessionInfo.CustomizeId` 顯式傳參，UI 端 `BeeStringLocalizer` 用委派讀 `ClientInfo.Company?.CustomizeId`。不新增 wire 欄位；伺服端永不採信 client 傳回的 customizeId（見 §2.A） |
+| 2 | `CustomizePath` 配置來源 | ✅ **維持 host 自建 `PathOptions`**，不新增框架組態機制；框架只補文件與 sample（見 §2.B） |
+| 3 | 客製檔誰維護、怎麼產生 | ⏳ **未決**（2026-07-31 明確保留）。不擋 F1–F4；低成本選項見 §3 |

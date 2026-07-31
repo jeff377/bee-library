@@ -11,6 +11,10 @@
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [docs 根目錄文件重編排](plan-docs-reorganization.md) | 2026-07-31 | 索引改旅程分層，新增 getting-started 與定義檔全景（雙語） |
+| [開發流程強化](plan-dev-workflow-hardening.md) | 2026-07-31 | commit 前驗證 hook；`plan-workflow` → `dev-workflow` plugin 改名 |
+| [Bee.Analyzers — 框架慣例編譯期化](plan-bee-analyzers.md) | 2026-07-30 | 22 條 Roslyn 規則（定義檔跨檔一致性 / 序列化 / C# 慣例） |
+| [修復 Bee.Northwind 登入中斷](plan-northwind-session-tables.md) | 2026-07-30 | common 表資料驅動 + 啟動 fail-fast + debug 例外透傳 |
 | [SessionInfo 持久化與重建](plan-session-persistence.md) | 2026-07-30 | `st_session` 種子、四個寫入點、快取失效後重建 |
 | [Database 快取改經 `ICacheDataSourceProvider` 自載](plan-cache-createinstance-db-loading.md) | 2026-07-29 | 三個 DB 快取的自載接縫 |
 | [框架體檢與分級重構](plan-framework-review-2026-07-28.md) | 2026-07-28 | 九面向唯讀審查與 P0–P4 重構計畫 |

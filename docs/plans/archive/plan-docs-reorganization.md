@@ -66,7 +66,7 @@ DbCategorySettings / ProgramSettings 是框架最核心的東西，卻散在四�
 未列入索引、無 `.zh-TW.md` 對版、無語言切換連結、英文檔名裝中文內容。但被
 `CHANGELOG.md` / `CHANGELOG.zh-TW.md`（公開）、`datetime-timezone`、
 `database-naming-conventions`、`../adr/adr-028-expression-rule-engine.md` 共 6 處引用 —— 不是死檔。
-[plan-framework-review-2026-07-28.md](archive/plan-framework-review-2026-07-28.md) 已標記過，未修。
+[plan-framework-review-2026-07-28.md](plan-framework-review-2026-07-28.md) 已標記過，未修。
 
 ### 問題 6 — 三處一致性瑕疵
 

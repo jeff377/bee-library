@@ -40,7 +40,7 @@ warn: Bee.Hosting.Session.ExpiredSessionCleanupService[0]
 | `ee4d2fd0` feat(session) | 2026-07-30 | Login 改為寫入 session 重建種子 → `INSERT INTO st_session` |
 | `908d6214` feat(identity) | 2026-07-30 | `ApplyUserLocale` 讀使用者的 culture / time_zone → `SELECT FROM st_user` |
 
-[`NorthwindSchemaSeeder.cs`](../../apps/Bee.Northwind/Bee.Northwind.Server/NorthwindSchemaSeeder.cs)
+[`NorthwindSchemaSeeder.cs`](../../../apps/Bee.Northwind/Bee.Northwind.Server/NorthwindSchemaSeeder.cs)
 的 `s_frameworkTables` 只有 `st_cache_notify` 一張表，且該檔案上次修改是 2026-06-14
 （`bd6d2321`），趕不上今天的框架異動。兩張表因此從未被建立。
 
@@ -52,7 +52,7 @@ warn: Bee.Hosting.Session.ExpiredSessionCleanupService[0]
 
 1. **Northwind 的建表清單是硬編字串陣列**，框架新增依賴時沒有任何編譯期或啟動期訊號。
 2. **Northwind 不在 `Bee.Library.slnx` 與 CI path filter 內**，框架改動不會觸發任何 Northwind 驗證。
-3. **基礎設施例外在 server 端完全沒有落點**：[`JsonRpcExecutor.cs`](../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs)
+3. **基礎設施例外在 server 端完全沒有落點**：[`JsonRpcExecutor.cs`](../../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs)
    的 catch 只走 `Tracer` 與 `LogApiFailureAnomaly`，而後者被 `AnomalyEnabled`（稽核選項）閘住。
    Northwind 沒開稽核，所以 `SqliteException` 連同堆疊一起消失，客戶端只拿到遮蔽後的
    `Internal server error`。訊息遮蔽本身是對的（避免洩漏內部細節），缺的是**遮蔽前先記一筆**。
@@ -77,10 +77,10 @@ warn: Bee.Hosting.Session.ExpiredSessionCleanupService[0]
 
 **改動點**
 
-- [`NorthwindBackend.cs`](../../apps/Bee.Northwind/Bee.Northwind.Server/NorthwindBackend.cs)：
+- [`NorthwindBackend.cs`](../../../apps/Bee.Northwind/Bee.Northwind.Server/NorthwindBackend.cs)：
   `Defaults.MaterializeTo` 的 filter 放行 `TableSchema/common/st_session.TableSchema.xml`
   與 `TableSchema/common/st_user.TableSchema.xml`。
-- [`NorthwindSchemaSeeder.cs`](../../apps/Bee.Northwind/Bee.Northwind.Server/NorthwindSchemaSeeder.cs)：
+- [`NorthwindSchemaSeeder.cs`](../../../apps/Bee.Northwind/Bee.Northwind.Server/NorthwindSchemaSeeder.cs)：
   `s_frameworkTables` 加入 `"st_session"` 與 `"st_user"`，並更新其上方註解
   （目前寫「Currently just st_cache_notify」）說明這兩張表的用途。
 
@@ -120,10 +120,10 @@ warn: Bee.Hosting.Session.ExpiredSessionCleanupService[0]
 
 這是唯一動到 `src/` 的階段，也是讓下次同類問題「五分鐘查完而不是半小時」的關鍵。
 
-**問題**：[`JsonRpcExecutor.cs`](../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs) 的 catch 走
+**問題**：[`JsonRpcExecutor.cs`](../../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs) 的 catch 走
 `MapException` 把非使用者面例外壓成 `Internal server error` 後回傳，但除了受稽核選項閘住的
 `LogApiFailureAnomaly` 之外沒有其他落點。稽核關閉時 = 完全靜默。
-[`ApiServiceController`](../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)
+[`ApiServiceController`](../../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)
 雖有 development 模式帶原訊息的相同取捨，但 executor 自己 catch 後回傳錯誤回應，例外從未往上拋，
 那層根本沒有機會觸發。
 
