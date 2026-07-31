@@ -2,13 +2,13 @@
 
 **English** | [繁體中文](README.zh-TW.md)
 
-A Bee.NET sample: an Avalonia desktop client that talks to the JSON-RPC API hosted by `samples/QuickStart.Server`, rendering the shared `Define/FormSchema/` definitions (Employee / Department / Project). Structurally symmetric to `samples/Maui.Demo` but targets desktop Avalonia (Windows / macOS / Linux) instead of MAUI's mobile-first matrix, and additionally demonstrates the **lookup picker flow** (relation fields opening a search-and-pick dialog).
+A Bee.NET sample: an Avalonia desktop client that talks to the JSON-RPC API hosted by `samples/QuickStart.Server`, rendering the shared `Define/FormSchema/` definitions (Employee / Department / Project). It targets desktop Avalonia (Windows / macOS / Linux) and additionally demonstrates the **lookup picker flow** (relation fields opening a search-and-pick dialog).
 
 ## What it proves
 
-- The same `FormSchema` renders across **four** UI families now — Blazor Server, Blazor Wasm, MAUI, and Avalonia — all sharing `samples/Define/`
-- When the host passes only `ProgId`, `Bee.UI.Avalonia.Controls.FormView` automatically resolves connector / schema / access token through `Bee.UI.Core.ClientInfo` (mirroring the MAUI `FormPage` fallback)
-- An Avalonia desktop app over `ConnectType.Remote` walks the same JSON-RPC wire path as Blazor.Wasm / Maui.Demo
+- The same `FormSchema` renders across both UI families — Blazor Server and Avalonia — sharing `samples/Define/`
+- When the host passes only `ProgId`, `Bee.UI.Avalonia.Controls.FormView` automatically resolves connector / schema / access token through `Bee.UI.Core.ClientInfo`
+- An Avalonia desktop app over `ConnectType.Remote` walks the same JSON-RPC wire path any remote client uses
 - The Avalonia DataGrid `DataRowView` indexer binding is a viable presentation path for `DataTable`-backed list views (no `ITypedList` schema introspection required)
 
 ## Prerequisites
@@ -62,13 +62,13 @@ dotnet run --configuration Debug
 
 ## Relationship to the other demos
 
-`QuickStart.Server` is the same `Bee.Samples.Shared.DemoBackend` host that backs `Maui.Demo`. Both clients hit the same SQLite seed, so you can run the Avalonia demo and the MAUI demo side-by-side and watch a Save on one immediately surface in the other after the next list reload.
+`QuickStart.Server` is the same `Bee.Samples.Shared.DemoBackend` host that backs `QuickStart.Console`. Both clients hit the same SQLite seed, so you can run the Avalonia demo and the console demo side-by-side and watch a Save on one immediately surface in the other after the next list reload.
 
 | Sample | UI family | Backend | Wire |
 |--------|-----------|---------|------|
+| QuickStart.Console | Console | QuickStart.Server or in-process Local | JSON-RPC over HTTP (Remote mode) |
 | Blazor.Server.Demo | Razor + Blazor Server | in-process Local | none |
-| Blazor.Wasm.Demo | Razor + Blazor Wasm | Blazor.Wasm.Demo.Host | JSON-RPC over HTTP |
-| Maui.Demo | MAUI Shell + ContentPage | QuickStart.Server | JSON-RPC over HTTP |
+| Avalonia.DemoCenter | Avalonia, control layer only | none (no backend) | none |
 | **Avalonia.Demo** | **Avalonia Window + UserControl + MVVM** | **QuickStart.Server** | **JSON-RPC over HTTP** |
 
 ## MVVM conventions

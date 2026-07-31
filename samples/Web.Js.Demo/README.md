@@ -4,10 +4,10 @@
 
 Demonstrates calling the Bee.NET JSON-RPC API from pure JavaScript in a browser —
 no `npm`, no build step, no framework. The JS frontend uses
-`PayloadFormat.Plain` (the wire format opened up by the JSON-RPC frontend
-integration plan), so all requests are plain JSON.
+`PayloadFormat.Plain` (see [ADR-014](../../docs/adr/adr-014-jsonrpc-plain-public-default.md)),
+so all requests are plain JSON.
 
-Covers all 7 methods downgraded for JS access in the plan, plus
+Covers all 7 methods downgraded to `Public` for JS access, plus
 schema-driven UI rendering using the JSON-native FormSchema / FormLayout
 endpoints:
 

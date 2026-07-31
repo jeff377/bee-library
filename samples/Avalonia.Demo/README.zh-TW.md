@@ -2,13 +2,13 @@
 
 [English](README.md) | **繁體中文**
 
-Bee.NET 範例專案：Avalonia 桌面用戶端，連 `samples/QuickStart.Server` 的 JSON-RPC API，渲染共用的 `Define/FormSchema/` 定義（Employee / Department / Project）。結構上對應 `samples/Maui.Demo`，但走桌面 Avalonia（Windows / macOS / Linux）而非 MAUI 的行動裝置矩陣，並額外展示 **lookup 開窗流程**（relation 欄位開啟搜尋選取對話框）。
+Bee.NET 範例專案：Avalonia 桌面用戶端，連 `samples/QuickStart.Server` 的 JSON-RPC API，渲染共用的 `Define/FormSchema/` 定義（Employee / Department / Project）。走桌面 Avalonia（Windows / macOS / Linux），並額外展示 **lookup 開窗流程**（relation 欄位開啟搜尋選取對話框）。
 
 ## 它要證明什麼
 
-- 同一份 `FormSchema` 在 **四種** UI family 都能渲染 — Blazor Server / Blazor Wasm / MAUI / Avalonia — 都共用 `samples/Define/`
-- `Bee.UI.Avalonia.Controls.FormView` 在「host 只給 `ProgId`」的情況下，會自動向 `Bee.UI.Core.ClientInfo` 取 connector / schema / access token（鏡像 MAUI `FormPage` 的 fallback）
-- Avalonia 桌面 app 走 `ConnectType.Remote` 經 HTTP 打 JSON-RPC，與 Blazor.Wasm / Maui.Demo 走同一條 wire path
+- 同一份 `FormSchema` 在兩條 UI family 都能渲染 — Blazor Server / Avalonia — 共用 `samples/Define/`
+- `Bee.UI.Avalonia.Controls.FormView` 在「host 只給 `ProgId`」的情況下，會自動向 `Bee.UI.Core.ClientInfo` 取 connector / schema / access token
+- Avalonia 桌面 app 走 `ConnectType.Remote` 經 HTTP 打 JSON-RPC，與任何 remote client 走同一條 wire path
 - Avalonia DataGrid 的 `DataRowView` indexer binding 對 `DataTable` 驅動的列表呈現是可行路徑（不需要 `ITypedList` schema introspection）
 
 ## 前置條件
@@ -62,13 +62,13 @@ dotnet run --configuration Debug
 
 ## 與其他 demo 的關係
 
-`QuickStart.Server` 就是 `Maui.Demo` 用的同一個 `Bee.Samples.Shared.DemoBackend` host。兩個 client 打同一份 SQLite seed，你可以同時跑 Avalonia demo + MAUI demo，在其中一邊做 Save，另一邊下次重新拉列表就會看到。
+`QuickStart.Server` 就是 `QuickStart.Console` 用的同一個 `Bee.Samples.Shared.DemoBackend` host。兩個 client 打同一份 SQLite seed，你可以同時跑 Avalonia demo + console demo，在其中一邊做 Save，另一邊下次重新拉列表就會看到。
 
 | Sample | UI family | 後端 | Wire |
 |--------|-----------|------|------|
+| QuickStart.Console | Console | QuickStart.Server 或 in-process Local | JSON-RPC over HTTP（Remote 模式） |
 | Blazor.Server.Demo | Razor + Blazor Server | in-process Local | 無 |
-| Blazor.Wasm.Demo | Razor + Blazor Wasm | Blazor.Wasm.Demo.Host | JSON-RPC over HTTP |
-| Maui.Demo | MAUI Shell + ContentPage | QuickStart.Server | JSON-RPC over HTTP |
+| Avalonia.DemoCenter | Avalonia，僅控件層 | 無（不連後端） | 無 |
 | **Avalonia.Demo** | **Avalonia Window + UserControl + MVVM** | **QuickStart.Server** | **JSON-RPC over HTTP** |
 
 ## MVVM 慣例

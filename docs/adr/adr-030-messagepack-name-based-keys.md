@@ -71,7 +71,7 @@
 
 **實作方式**：採 **`[MessagePackObject(keyAsPropertyName: true)]`**（保留標記），**不採**「純去標記、全靠 `ContractlessStandardResolver`」的做法。
 
-**執行條件（gated）**：這是 breaking wire change，不做獨立 breaking release；若做，綁進下一個規劃中的 major 版本，並先通過 plan 的 Phase 0（AOT 冒煙 + 範圍決定）與 go/no-go。
+**執行條件（gated）**：這是 breaking wire change，不做獨立 breaking release；若做，綁進下一個規劃中的 major 版本，並先通過 Phase 0（AOT 冒煙 + 範圍決定）與 go/no-go。
 
 ## 理由
 
@@ -79,7 +79,7 @@
 - **消滅跨繼承 key 編號協調**：不再需要 base `[Key(0)]` / derived `[Key(100+)]` 的避撞規劃。
 - **統一心智模型**：JSON 與 MessagePack 皆以「屬性名」為 wire 合約，一套規則。
 - **保留 source generator 退路**：keyAsPropertyName 仍需 `[MessagePackObject]` 標記，日後行動端 AOT 若被逼上 source-gen，標記已在位，不必回頭全補。純去標記的 contractless 會**關掉這道門**（source-gen 需要標記），故不採。
-  - **註（Phase 0，2026-07-22）**：plan 的 AOT 冒煙已證實 MessagePack 3.x 在 `IsDynamicCodeSupported=false`（無 Emit）下有 **reflection-based fallback**，整數 key 與 keyAsPropertyName **皆正常 round-trip** —— 故 source-gen **並非現行必需**，此條「退路」的急迫性下降。惟保留標記仍是**低成本保險**（免費保留 source-gen 選項），且 B 另外三條理由（消滅 footgun、消滅編號協調、統一心智）不受影響，故決策維持 B。
+  - **註（Phase 0，2026-07-22）**：AOT 冒煙實測已證實 MessagePack 3.x 在 `IsDynamicCodeSupported=false`（無 Emit）下有 **reflection-based fallback**，整數 key 與 keyAsPropertyName **皆正常 round-trip** —— 故 source-gen **並非現行必需**，此條「退路」的急迫性下降。惟保留標記仍是**低成本保險**（免費保留 source-gen 選項），且 B 另外三條理由（消滅 footgun、消滅編號協調、統一心智）不受影響，故決策維持 B。
 
 ## 取捨
 
@@ -97,7 +97,7 @@
 
 **本 ADR（提議階段）僅新增此文件，並於 [ADR-004](adr-004-messagepack-payload.md) 加一行交叉引用。**
 
-採納並執行時（見 plan 各 Phase）：
+採納並執行時：
 
 - `[ADR-004]` 「Schema Evolution：`[Key]` 支援欄位新增/移除」一節改為指向本 ADR 的 name-based 策略。
 - 90 個 `[MessagePackObject]` 型別轉 `keyAsPropertyName: true`、移除整數 `[Key(n)]`；opt-out membership 稽核補 `[IgnoreMember]`。

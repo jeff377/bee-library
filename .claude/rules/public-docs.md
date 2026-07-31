@@ -67,17 +67,36 @@ plan 是**階段性**文件：實作過程中會改、完成後會封存，且**
 改動公開文件後，或懷疑有遺漏時：
 
 ```bash
-# (1) markdown
+# (1) markdown — 路徑 / 連結型引用
 grep -rn --include="*.md" -e "plans/" -e "](plan-" docs/ README*.md CHANGELOG*.md src/ samples/ apps/ tools/ | grep -v "^docs/plans/" | grep -v "^docs/internal/" | grep -v "^docs/blogs/"
 
-# (2) 原始碼註解（XML doc 會進消費端 IntelliSense）
+# (2) markdown — 點名 plan 檔名（含反引號裸名，如 `plan-audit-*` 系列）
+grep -rnE --include="*.md" "plan-[a-z0-9]+(-[a-z0-9]+)+" docs/ README*.md CHANGELOG*.md src/ samples/ apps/ tools/ | grep -v "^docs/plans/" | grep -v "^docs/internal/" | grep -v "^docs/blogs/"
+
+# (3) markdown — 純文字指向現存 plan（「見 plan …」「plan 的 …」「本 plan」等）
+grep -rnE --include="*.md" "見 plan|本 plan|plan (的|內|各)|(the|migration|integration) plan" docs/ README*.md CHANGELOG*.md src/ samples/ apps/ tools/ | grep -v "^docs/plans/" | grep -v "^docs/internal/" | grep -v "^docs/blogs/"
+
+# (4) 原始碼註解（XML doc 會進消費端 IntelliSense）
 grep -rn "docs/plans" src/ samples/ apps/ tools/ --include="*.cs" --include="*.axaml" --include="*.razor" | grep -v "/obj/" | grep -v "/bin/"
 ```
 
 預期輸出：(1) 只剩 `docs/README.md` / `docs/README.zh-TW.md` 對 `plans/` 資料夾的**性質說明**
-（不是連結，且已標明「階段性工作文件、非參考資料」）；(2) 完全無輸出。
+（不是連結，且已標明「階段性工作文件、非參考資料」）；(2) 完全無輸出；(4) 完全無輸出。
 
-> **(2) 是 2026-07-28 才補上的**：先前檢查只 grep `.md`，因此 `src/Bee.Db/Providers/{Oracle,MySql}`
+**(3) 會有已知誤報，須逐筆判讀**，不可無腦清空：
+
+| 誤報樣態 | 例子 | 為何不算違規 |
+|---------|------|------------|
+| `plan` 是 API / 型別名 | `docs/database-schema-upgrade*.md` 的 `Orchestrator.Plan(diff)`、`UpgradePlan`、`plan.Warnings` | 指程式碼識別符，與 `docs/plans/` 無關 |
+| 指向**尚不存在**的未來規劃 | adr-012 / adr-015 / adr-023 的「另立 plan」「另開 plan」「由獨立 plan 評估」 | 語意等同「另案處理」，沒指向任何可讀文件 |
+
+判別法：**這句話指得到一份現在讀得到的 plan 檔嗎？** 指得到才是違規。
+
+> **(2)(3) 是 2026-07-31 才補上的**：先前只有 (1)，抓不到「點名 plan 檔名」與「純文字提及」，
+> 因此 adr-014 / adr-021 / adr-026 / adr-027 / adr-028 / adr-030、`docs/changelogs/4.14.0*`、
+> `samples/Web.Js.Demo/README*` 共 14 處長期漏網。
+>
+> **(4) 是 2026-07-28 補上的**：先前檢查只 grep `.md`，因此 `src/Bee.Db/Providers/{Oracle,MySql}`
 > 底下 14 處指向 `docs/plans/` 的 XML doc 與註解長期漏網。替代寫法見下節——
 > 這些位置的實質說明本來就已寫在註解裡，plan 指標拿掉即可；需要延伸閱讀的改指
 > `docs/database-dialect-differences.md`。

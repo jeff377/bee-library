@@ -17,7 +17,7 @@ ERP 數值（單價、成本、數量、重量、金額、百分比、匯率）�
 
 沒有統一的數值語意，導致三個 ERP 級別的正確性問題無處著力：**合計 ≠ 明細加總**（浮動精度或全精度加總後才捨）、**對來源值誤捨**（把單價/匯率捨到顯示位數注入下游誤差）、**跨 provider 儲存精度不一致**（多餘小數丟給 DB 引擎，SQLite 不強制 scale、其餘 provider 四捨五入，同筆資料存出不同精度）。
 
-此設計借鏡 SAP ECC/S4（CURR/CUKY、QUAN/UNIT、TCURX、T006、T001R、逐行捨入）與 Odoo（`res_currency` decimal_places、`float_round`、`round_per_line`），並依本框架 FormSchema-driven 架構簡化。它橫跨定義層（`Bee.Definition`）、商業邏輯層（`Bee.Business`）、資料存取層（`Bee.Repository`）與 UI 層（`Bee.UI.Avalonia`），是框架對外 API surface 的結構性契約，故立此 ADR。完整設計與 SAP/Odoo 出處見已封存的設計總覽（`plan-numeric-formatting` 系列）；本 ADR 收斂「為何如此」與拒絕的替代方案，供 cookbook 引用。
+此設計借鏡 SAP ECC/S4（CURR/CUKY、QUAN/UNIT、TCURX、T006、T001R、逐行捨入）與 Odoo（`res_currency` decimal_places、`float_round`、`round_per_line`），並依本框架 FormSchema-driven 架構簡化。它橫跨定義層（`Bee.Definition`）、商業邏輯層（`Bee.Business`）、資料存取層（`Bee.Repository`）與 UI 層（`Bee.UI.Avalonia`），是框架對外 API surface 的結構性契約，故立此 ADR。本 ADR 收斂「為何如此」與拒絕的替代方案，供 cookbook 引用。
 
 ## 考慮過的選項
 

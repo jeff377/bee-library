@@ -1,13 +1,13 @@
 # Bee.UI.Core
 
-> `Bee.UI.*` 前端家族（Avalonia / MAUI / Blazor）共享的用戶端基礎層：連線狀態、API 連接器、endpoint 持久化，以及用戶端權限能力解析。
+> `Bee.UI.*` native 前端家族（目前為 Avalonia；未來 WinForms / WPF）共享的用戶端基礎層：連線狀態、API 連接器、endpoint 持久化，以及用戶端權限能力解析。
 
 [English](README.md)
 
 ## 架構定位
 
 - **層級**：UI 層（共享用戶端基礎）
-- **下游**（依賴此專案者）：`Bee.UI.Avalonia`、`Bee.UI.Maui` 與 Blazor 前端
+- **下游**（依賴此專案者）：`Bee.UI.Avalonia`（Blazor 家族**不**消費 `Bee.UI.Core`，見 [ADR-013](../../docs/adr/adr-013-frontend-api-connection-strategy.md)）
 - **上游**（此專案依賴）：`Bee.Api.Client`
 
 ## 目標框架

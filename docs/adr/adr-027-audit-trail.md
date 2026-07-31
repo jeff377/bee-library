@@ -14,7 +14,7 @@
 | 診斷日誌 | `ILogWriter` / `LogEntry` / `Tracer` / `TraceContext` | 記憶體 / UI 導向、**未持久化**、屬 observability 非業務稽核 |
 | DB 異常門檻 | `DbAccessAnomalyLogOptions`（`ExecutionTimeThreshold` 等） | **定義了卻無消費者**（0 caller） |
 
-此設計借鏡 SAP（Security Audit Log、Change Documents `CDHDR`/`CDPOS`、Table Logging `DBTABLOG`、Read Access Logging、System Log `SM21`、`SLG1`/`SM37`）與 Odoo（Chatter `mail.tracking.value`、OCA `auditlog`、`ir.logging`、`res.users.log`），並依本框架 DataSet-centric 與 FormSchema-driven 架構簡化。它橫跨 `Bee.Definition`（型別 / 設定）、`Bee.Business`（BO 埋點）、`Bee.Db`（DB 異常）、`Bee.Api.Core`（API 異常）與 `Bee.Hosting`（背景寫入 / DI），是框架對外 API surface 的結構性契約，故立此 ADR。完整設計、SAP/Odoo 出處與逐項定案見設計文件（`plan-audit-*` 系列，將封存）；本 ADR 收斂「為何如此」與拒絕的替代方案。
+此設計借鏡 SAP（Security Audit Log、Change Documents `CDHDR`/`CDPOS`、Table Logging `DBTABLOG`、Read Access Logging、System Log `SM21`、`SLG1`/`SM37`）與 Odoo（Chatter `mail.tracking.value`、OCA `auditlog`、`ir.logging`、`res.users.log`），並依本框架 DataSet-centric 與 FormSchema-driven 架構簡化。它橫跨 `Bee.Definition`（型別 / 設定）、`Bee.Business`（BO 埋點）、`Bee.Db`（DB 異常）、`Bee.Api.Core`（API 異常）與 `Bee.Hosting`（背景寫入 / DI），是框架對外 API surface 的結構性契約，故立此 ADR。本 ADR 收斂「為何如此」與拒絕的替代方案。
 
 ## 考慮過的選項
 

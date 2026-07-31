@@ -169,4 +169,4 @@ JS 走 `Plain` + HTTPS + Bearer Token 的雙重保護線，與 ADR-013 Family B�
 - **JS 版加密管線實作** — 見〈替代方案 1〉拒絕原因；若未來真有需求，視為獨立 ADR
 - **DTO codegen / TypeScript 自動產生** — 屬工具鏈議題，與 `ProtectionLevel` 決策無關
 - **跨來源呼叫的 CORS 預設值** — host 各自決定，與 BO 方法保護等級獨立
-- **NPM 套件化** — 升級路徑見 plan 內三階段表（純 JS sample → TS + Vite → NPM 套件），觸發條件未到不啟動
+- **NPM 套件化** — 升級路徑分三階段（純 JS sample → TS + Vite → NPM 套件），觸發條件未到不啟動

@@ -1,13 +1,13 @@
 # Bee.UI.Core
 
-> Shared client-side foundation for the `Bee.UI.*` front-end family (Avalonia / MAUI / Blazor): connection state, API connectors, endpoint persistence, and client-side permission capability resolution.
+> Shared client-side foundation for the `Bee.UI.*` native front-end family (Avalonia today; WinForms / WPF in future): connection state, API connectors, endpoint persistence, and client-side permission capability resolution.
 
 [繁體中文](README.zh-TW.md)
 
 ## Architecture Position
 
 - **Layer**: UI Layer (shared client foundation)
-- **Downstream** (dependents): `Bee.UI.Avalonia`, `Bee.UI.Maui`, and the Blazor front ends
+- **Downstream** (dependents): `Bee.UI.Avalonia` (the Blazor family does **not** consume `Bee.UI.Core` -- see [ADR-013](../../docs/adr/adr-013-frontend-api-connection-strategy.md))
 - **Upstream** (dependencies): `Bee.Api.Client`
 
 ## Target Framework

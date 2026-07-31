@@ -4,10 +4,10 @@
 
 示範如何用純 JavaScript（瀏覽器原生）呼叫 Bee.NET 的 JSON-RPC API ——
 不需要 `npm`、不需要 build、不需要任何框架。JS 前端走
-`PayloadFormat.Plain`（由 JSON-RPC 前端整合計畫開放的 wire format），
+`PayloadFormat.Plain`（見 [ADR-014](../../docs/adr/adr-014-jsonrpc-plain-public-default.md)），
 所有請求都是純 JSON。
 
-涵蓋本 plan 開放給 JS 的 7 個方法，加上用 JSON-native FormSchema /
+涵蓋降為 `Public` 供 JS 存取的 7 個方法，加上用 JSON-native FormSchema /
 FormLayout endpoints 做 schema-driven UI 渲染：
 
 | 區塊 | 對應方法 |

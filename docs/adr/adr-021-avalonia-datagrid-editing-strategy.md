@@ -6,7 +6,7 @@
 
 ## 背景
 
-[ADR-020](adr-020-avalonia-datagrid-binding-strategy.md) 確立 `GridControl`（繼承 `Avalonia.Controls.DataGrid`）以 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` 呈現 `DataTable` 列。plan-avalonia-grid-control 階段 4 為明細表加上 in-cell 編輯：`CellEditingTemplate` 依 `LayoutColumn.ControlType` 提供對應編輯控件（`TextBox` / `CheckBox` / `DatePicker` / `ComboBox`），寫回直接落 `DataRow`。
+[ADR-020](adr-020-avalonia-datagrid-binding-strategy.md) 確立 `GridControl`（繼承 `Avalonia.Controls.DataGrid`）以 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` 呈現 `DataTable` 列。其後為明細表加上 in-cell 編輯：`CellEditingTemplate` 依 `LayoutColumn.ControlType` 提供對應編輯控件（`TextBox` / `CheckBox` / `DatePicker` / `ComboBox`），寫回直接落 `DataRow`。
 
 Gallery 實測結果：**文字欄（`TextEdit`）編輯正常，popup 型編輯器全數行為異常**。根因是 Avalonia `DataGrid` 編輯管線的固有設計——
 
@@ -48,7 +48,7 @@ Gallery 實測結果：**文字欄（`TextEdit`）編輯正常，popup 型編輯
 - 寫回仍直接落 `DataRow`（ADR-020 的限制同樣適用顯示模板內的控件），經 `FormDataObject.MarkDirty()` 反映 dirty
 - 控件的變更監聽一律 hook **property changed**（`TextProperty` / `SelectedDateProperty`），不依賴 `TextChanged` / `SelectedDateChanged` 事件——後者對程式設值不保證觸發
 
-選項 4（列級編輯）已落地為 **EditForm 模式**（plan-avalonia-grid-row-edit-panel，2026-06-11）：
+選項 4（列級編輯）已落地為 **EditForm 模式**（2026-06-11）：
 
 - 編輯模式（`GridEditMode`：`InCell` / `EditForm`）是 **UI 層屬性**（`GridControl.EditMode` / `DynamicForm.DetailEditMode`），不進共同定義層——`LayoutGrid` 跨 UI 家族共用，編輯模型屬各框架的呈現決策
 - 呈現採**彈窗**（`RowEditDialog` 包 `RowEditPanel`）而非 grid 下方 inline 面板：批次作業明細列數可能很大，inline 面板有「編輯區離選列太遠」與「展開收合 + 新增列落表尾造成畫面跳動」兩個結構性問題；彈窗零版面位移、與列數無關

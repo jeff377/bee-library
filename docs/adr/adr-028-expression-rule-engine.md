@@ -44,6 +44,6 @@
 
 - **示範**：`apps/Bee.Northwind` 的 `OrderBO` 由「override `Save`」遷移為「override `DoBeforeSave`」——明細金額改 `ValueExpression`、客戶/產品/數量必填改 `FormRule`；僅「至少一筆明細」「表頭合計（跨列 SUM）」「狀態轉移（需查存量狀態）」「單號產生（需 DB 序列）」留在 `DoBeforeSave`，清楚標定宣告式的當前邊界。
 
-- **邊界（另案，見 plan 延後範圍）**：跨列/明細聚合（`SUM(detail)`）、虛擬顯示計算欄、`BeforeInsert`/`BeforeUpdate` 更細觸發、多捨入模式（銀行家/無條件捨去/進位，屬數值子系統擴充）、求值 timeout 與 Session 變數曝露。
+- **邊界（另案，本 ADR 不涵蓋）**：跨列/明細聚合（`SUM(detail)`）、虛擬顯示計算欄、`BeforeInsert`/`BeforeUpdate` 更細觸發、多捨入模式（銀行家/無條件捨去/進位，屬數值子系統擴充）、求值 timeout 與 Session 變數曝露。
 
 - **相依**：新增第三方套件 `DynamicExpresso.Core`（MIT）。引擎經 `Expression.Compile()`，行動端/WASM AOT 目標的即時運算需另行實測（同 ADR-025 的 trim/AOT 脈絡）——但因後端為權威，此風險僅影響前端預覽、不影響資料正確性。

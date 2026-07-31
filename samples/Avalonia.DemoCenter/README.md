@@ -9,7 +9,7 @@
 | 角色 | 說明 |
 |------|------|
 | 展示廳 | 外部框架使用者瀏覽控件能力的門面 |
-| 活文件 / 對齊基準 | 每個控件 / 概念的標準行為與外觀契約；日後移植 Maui/Blazor 的對齊範本 |
+| 活文件 / 對齊基準 | 每個控件 / 概念的標準行為與外觀契約；日後移植其他 UI head 的對齊範本 |
 | 開發驗證面 | 修改控件外觀（如唯讀去框）時的目視回饋場 |
 
 與 `Avalonia.Demo` 區隔：後者示範端到端**應用**（登入 → 連線 → JSON-RPC → 渲染表單）；本 Demo Center 只聚焦**控件層**，不連後端、不涉入 Login / CRUD 流程。
@@ -93,12 +93,12 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 | AllowEditModes | FormMode 顯示狀態 → 控件 × 三態 | 三欄釘 View/Add/Edit，逐欄依 `AllowEditModes` 啟用/停用 |
 | View Source | Demo / Source 分頁 | 每案例 Source 顯示該模組真實 `.cs`，與 Demo 行為一致 |
 
-> 主題範圍：僅 `Semi.Avalonia` × Light/Dark（不納 Fluent runtime 切換，見 plan 拍板決議 #2）。
+> 主題範圍：僅 `Semi.Avalonia` × Light/Dark。不納 Fluent 等其他主題的 runtime 切換 —— 本 Demo Center 的目的是「控件行為與外觀契約的對齊基準」，多主題引擎切換屬另一個題目，納入只會稀釋對齊訊號。
 
-## 作為 Maui / Blazor 移植的對齊基準
+## 作為其他 UI head 移植的對齊基準
 
-`Bee.UI.Avalonia` 是 UI 架構試點：繼承式控件 + View 層先在此定稿，再移植 Maui / Blazor。本 Demo Center 即「對齊範本」——
+`Bee.UI.Avalonia` 是 UI 架構試點：繼承式控件 + View 層先在此定稿，再移植其他 UI head（`Bee.Web.Blazor.Server`，以及未來的 WinForms / WPF）。本 Demo Center 即「對齊範本」——
 
 - 每個控件 / 概念的**標準行為與外觀契約**（綁定、唯讀、必填、FormMode、AllowEditModes、Layout、Grid）在此一處可見、可比對。
-- 日後在 Maui / Blazor 實作對應控件時，以本中心每個案例的行為為驗收基準：相同 schema / 假資料 / FormMode 下，跨平台應呈現一致的綁定與狀態切換。
+- 日後在其他 UI head 實作對應控件時，以本中心每個案例的行為為驗收基準：相同 schema / 假資料 / FormMode 下，跨平台應呈現一致的綁定與狀態切換。
 - 控件外觀變更（如唯讀去框）先在此目視驗證，再回推其他平台。

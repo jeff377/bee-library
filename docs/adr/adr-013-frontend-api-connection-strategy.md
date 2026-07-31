@@ -56,10 +56,9 @@ v4.4 加入 Blazor RCL 時若強行讓 Blazor 走 `Bee.UI.Core`,就會踩到上�
   - `ClientInfo.ApplyLoginResult(loginResponse)` 套用登入結果
   - 透過 `ClientInfo.SystemApiConnector` / `ClientInfo.CreateFormApiConnector(progId)` 取得 connector
   - 持久化由 `IEndpointStorage`(預設實作:檔案);UI 對話流程由 `IUIViewService` 提供
-- **目前成員**:
+- **目前成員**(現況見文末後記):
   - `Bee.UI.Core`(共通)
-  - `Bee.UI.Avalonia`(桌面 — Windows / macOS / Linux,Avalonia 12.x;DataGrid binding 策略見 [ADR-020](adr-020-avalonia-datagrid-binding-strategy.md))
-  - `Bee.UI.Maui`(行動 / 跨平台 — iOS / Android / macOS / Windows,Phase 1 已交付首批控制項)
+  - `Bee.UI.Avalonia`(桌面 — Windows / macOS / Linux,Avalonia 12.x;行動端 iOS / Android 亦由此覆蓋。DataGrid binding 策略見 [ADR-020](adr-020-avalonia-datagrid-binding-strategy.md))
   - 未來:`Bee.UI.WinForms`、`Bee.UI.Wpf` 等同理
 
 ### Family B:`Bee.Web.*`(獨立 family,**不**消費 `Bee.UI.Core`)
@@ -72,7 +71,7 @@ v4.4 加入 Blazor RCL 時若強行讓 Blazor 走 `Bee.UI.Core`,就會踩到上�
   - `SystemApiConnector` / `FormApiConnector` 由 DI scope 注入到 Razor component
   - 狀態管理由 component / `CascadingValue` / Razor scoped service 處理
   - **WASM 嚴禁相依任何後端組件**(Repository / Business / Hosting 等),由相依鏈強制
-- **目前成員**:`Bee.Web.Blazor.Server`、`Bee.Web.Blazor.Wasm`
+- **目前成員**:`Bee.Web.Blazor.Server`(現況見文末後記)
 
 ### Family 判別準則(新加套件時依此判斷)
 
@@ -118,3 +117,17 @@ Web / Blazor 環境結構性不同,**不該勉強套用**。
 - **未來「同時提供 ClientInfo + DI」的混合模式**:目前未需要,實際 use case 出現再評估
 - **`Bee.UI.Core` 本身的 static state DI 化**:屬於桌面端 family 內的重構,不影響 Web family,留後續獨立決策
 - **Blazor Hybrid(MAUI 內嵌 Blazor)**:可能需要橫跨兩 family,屆時開新 ADR 評估
+
+## 後記(2026-07-31)—— 成員名冊更新
+
+**本 ADR 的決策不變**:兩條 family 分流、以及「是否消費 `Bee.UI.Core` 抽象」的判別準則,
+今日仍然有效。變的只是名冊 —— UI 於 2026-07-28 收斂為 **Avalonia + Blazor.Server 雙軌**,
+`Bee.UI.Maui` 與 `Bee.Web.Blazor.Wasm` 兩個套件已移除:
+
+| 原成員 | 現況 | 原因 |
+|--------|------|------|
+| `Bee.UI.Maui` | **已移除** | `Bee.UI.Avalonia` 的 `net10.0-ios` / `net10.0-android` head 已覆蓋行動端,不需第二套 native family |
+| `Bee.Web.Blazor.Wasm` | **已移除** | 夾在 Avalonia(離線 / native 體驗)與 Blazor Server(SEO、嵌入既有網站、螢幕閱讀器、免下載 runtime)之間,無獨有的適用區間 |
+
+因此 Family A 現存成員為 `Bee.UI.Core` + `Bee.UI.Avalonia`,Family B 為 `Bee.Web.Blazor.Server`。
+上文「背景」一節的三類前端表格描述的是 v4.4 當時的狀態,保留以呈現決策脈絡。
