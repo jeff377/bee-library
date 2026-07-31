@@ -1,6 +1,6 @@
 # Plan：語系客製化（討論稿）
 
-> 狀態：📝 擬定中（討論用，尚未動工）· 2026-07-25
+> 狀態：🚧 進行中（G1–G3 已交接實作；G4、G5 待 G1 / G3 決策）· 2026-07-31
 > 範圍：**語系資源的租戶客製**——某些單據或行為，公司有慣用語（欄位標題、表單名稱、訊息、選項文字）。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 未補則本案無法生效）
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -82,18 +82,19 @@ per-key 命中/落空、enum、空 id 短路(`:58`)、無 reader(`:73`)。
 > 待討論：實務上客製 enum 是「改一兩個選項的說法」還是「整組選項都不同」？
 > 前者強烈指向 G1-a。
 
-### 決策 G2：`FormSchemaLocalizer` 的 customizeId 取得方式
+### 決策 G2：customizeId 取得方式 — ✅ 已定案（2026-07-31，由 foundation 決策 A1 涵蓋）
 
-`FormSchemaLocalizer` 目前建構子沒有 customizeId 管道，需決定怎麼傳入。
+**兩個 localizer 走不同路，不是同一種作法**——A1 依「消費端手上有沒有 session」二分：
 
-- **選項 G2-a（建議）**：建構子接受 `Func<string> customizeIdProvider`，
-  與現有 `Func<string> langProvider` 對稱。
-  優點：風格一致、無隱式狀態、fail-safe（provider 回空 → 純 base）。
-- **選項 G2-b**：注入 `ISessionInfoService`，內部自行讀取。
-  優點：呼叫端無感。缺點：`FormSchemaLocalizer` 目前是純函式風格，注入 session 服務會加重相依。
+| 型別 | 作法 | 理由 |
+|------|------|------|
+| `FormSchemaLocalizer` | **顯式傳參**（`Localize` 多載加 customizeId） | 它由 BO 在 `SystemBusinessObject.Define.cs:219` 直接 `new`，**session 就在手上**，繞一層委派沒有好處 |
+| `BeeStringLocalizer<T>` | **委派**（建構子加 `Func<string> customizeIdProvider` 多載，與既有 `Func<string> langProvider` 對稱，`:46`） | 它是註冊進 DI 給 Blazor `@inject IStringLocalizer<T>` 用的 adapter，**沒有 session 概念** |
 
-> 同一決策適用 `BeeStringLocalizer<T>`（`:60,66`）。
-> 註：本項與 foundation plan 的決策 A1（customizeId 傳遞方式）相關，宜一併定案。
+> 原 G2-a 提議「兩者都用委派」——**已由 A1 修正為上表的二分**。
+> 未採用 G2-b（注入 `ISessionInfoService`）：會讓純函式風格的 localizer 加重相依。
+> 完整理由與安全界線（伺服端永不採信 client 傳回的 customizeId）見
+> [plan-customization-foundation.md](plan-customization-foundation.md) §2.A。
 
 ### 決策 G3：`GetLanguage` API 的疊加位置
 
@@ -113,15 +114,15 @@ client（含**純 JS，無 .NET**）透過 `GetLanguage` 取整份語系資源�
 
 ## 3. 建議階段
 
-| 階段 | 範圍 | 前置 |
-|------|------|------|
-| G0 | 決策定案（G1 enum 粒度、G2 傳遞方式、G3 API 疊加） | foundation F0（決策 A1 宜一併定） |
-| G1 | `FormSchemaLocalizer` 加 customizeId 管道 ★ | foundation F1、F2 |
-| G2 | `BeeStringLocalizer<T>` 加 customizeId 管道 | 同上 |
-| G3 | `BusinessObject.GetLangText` 接線（讀 `SessionInfo.CustomizeId`） | 同上 |
-| G4 | `GetLanguage` API 依 G3 決策疊加 | **foundation F3**（client 快取失效） |
-| G5 | Enum entry 級覆蓋（若選 G1-a） | — |
-| G6 | 端到端測試：帶 CustomizeId 的 session → API → 拿到客製文字 | foundation F4 |
+| 階段 | 範圍 | 前置 | 狀態 |
+|------|------|------|------|
+| G0 | 決策定案（G1 enum 粒度、G2 傳遞方式、G3 API 疊加） | foundation F0 | 🚧 G2 ✅ 已定案（由 A1 涵蓋）；**G1、G3 仍未決** |
+| G1 | `FormSchemaLocalizer` 加 customizeId 管道 ★ | foundation F1、F2 | 🚧 已交接實作（2026-07-31） |
+| G2 | `BeeStringLocalizer<T>` 加 customizeId 管道 | 同上 | 🚧 已交接實作（2026-07-31） |
+| G3 | `BusinessObject.GetLangText` 接線（讀 `SessionInfo.CustomizeId`） | 同上 | 🚧 已交接實作（2026-07-31） |
+| G4 | `GetLanguage` API 依 G3 決策疊加 | 決策 G3 + **foundation F3**（client 快取失效） | 📝 待做（決策未定，**不在本次交接範圍**） |
+| G5 | Enum entry 級覆蓋（若選 G1-a） | 決策 G1 | 📝 待做（決策未定，**不在本次交接範圍**） |
+| G6 | 端到端測試：帶 CustomizeId 的 session → API → 拿到客製文字 | foundation F3 | 📝 待做（**不在本次交接範圍**） |
 
 > 回歸防護：**未設 CustomizeId 時，所有語系查找結果與現況逐位元一致**。
 

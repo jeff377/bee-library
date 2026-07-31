@@ -196,8 +196,8 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | F0 | 決策定案：A1 傳遞方式、B1 配置來源 | ✅ 已定案（2026-07-31）。§3 的「客製檔誰維護」仍未決，但**不擋 F1–F4** |
-| F1 | **缺口 B**：host 設定 `CustomizePath` 的文件 + 一個 sample 示範 | 📝 待做（B1 定案後已縮到最小） |
-| F2 | **缺口 A**：消費端接線，伺服端三處顯式傳參 + `BeeStringLocalizer` 委派多載（Layout 除外，見 Layout plan） | 📝 待做 |
+| F1 | **缺口 B**：host 設定 `CustomizePath` 的文件 + 一個 sample 示範 | 🚧 已交接實作（2026-07-31，隨語系客製 G1–G3 一併） |
+| F2 | **缺口 A**：消費端接線，伺服端三處顯式傳參 + `BeeStringLocalizer` 委派多載（Layout 除外，見 Layout plan） | 🚧 已交接實作（2026-07-31，隨語系客製 G1–G3 一併） |
 | F3 | **缺口 C + F 合流**：會進公司的 head（或整合測試）走通 `EnterCompany` → `ApplyEnterCompanyResult` → 客製生效，並把 `ResetDefineCache` 責任收回框架 | 📝 待做 |
 | F4 | **缺口 D、E**：客製快取失效訊號、DB 版 reader 條件註冊 | 📝 待做 |
 
