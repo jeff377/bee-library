@@ -1,12 +1,12 @@
 # 計畫：開發流程強化（commit 驗證 hook + dev-workflow plugin）
 
-**狀態：🚧 進行中（2026-07-31）**
+**狀態：✅ 已完成（2026-07-31）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | bee-library commit 前驗證 hook（clean build + PublicAPI diff 攤開） | ✅ 已完成（2026-07-31） |
 | 2 | plugin `plan-workflow` → `dev-workflow` 改名（僅 plugin 層） | ✅ 已完成（2026-07-31） |
-| 3 | 新增 `plan-execute` skill 至 dev-workflow | 🚧 進行中 |
+| 3 | 新增 `plan-execute` skill 至 dev-workflow | ✅ 已完成（2026-07-31） |
 
 ## 背景
 
@@ -168,6 +168,23 @@ CI 輪詢已有 `/ci-watch`，測試紀律已在 `.claude/rules/testing.md`，�
 
 升格的前提是**去專案化**：目前這些資產含 bee-library 專屬路徑與慣例，
 直接搬進 plugin 會在其他 repo 失效。
+
+## 執行結果與計畫外事項
+
+三階段皆按計畫完成，以下為與計畫書寫時不同、或執行中才確定的事項：
+
+- **hook 需重開 session 才生效**。實地以含警告的 commit 測試，未被阻擋——
+  Claude Code 於 session 啟動時固定 hook 設定，中途新增不會即時套用。
+  探針 commit 已回退，此限制已寫入 `.claude/rules/commit-verification.md`。
+- **建置成本比預估更低**。計畫記的 9.7 秒含 `dotnet clean`；hook 實際採
+  `--no-incremental`，實測約 5 秒。
+- **階段 2 遇到 remote 有未同步的 commit**（`5ec08f1`，改進 `plan-write` 的連結慣例與
+  封存目錄約定），且改的正是改名前的路徑。以 rebase 合併，remote 的改進全數保留。
+  這正是 `plan-execute` 第 1 條要防的情境——本機看到的不等於最新。
+- **plugin README 一併修正兩處既有錯誤**（計畫外，但屬同一批編輯範圍）：
+  安裝指引原用 `/plugin`、`/reload-plugins` 斜線指令，在桌面版 / 網頁版不存在，
+  已改為 `claude plugin` CLI；plugin 表格漏列 `plan-handoff`，已補。
+- **版號**：改名為破壞性變更 → `2.0.0`；新增 skill → `2.1.0`。
 
 ## 風險與回退
 
