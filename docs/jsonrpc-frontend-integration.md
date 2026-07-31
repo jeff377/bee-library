@@ -288,7 +288,7 @@ export interface DataTableColumn {
    * through the browser timezone.
    * 'DateTime' is an instant and is always UTC on the wire: convert it for display, and
    * convert back to UTC before sending it.
-   * See docs/date-semantics.md and docs/datetime-timezone.md.
+   * See docs/temporal-types.md and docs/datetime-timezone.md.
    */
   type: string;
   allowNull: boolean;

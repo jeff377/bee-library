@@ -239,8 +239,7 @@
 問的是「多久」則是時距。
 
 跨層對照見[時間型別總覽](temporal-types.zh-TW.md)；
-[日曆日與時間點的欄位語意](date-semantics.zh-TW.md)與[時區處理](datetime-timezone.zh-TW.md)
-則各自說明其專屬機制。
+時間點如何儲存與換算見[時區處理](datetime-timezone.zh-TW.md)。
 
 
 ### 查詢與篩選

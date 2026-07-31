@@ -87,16 +87,57 @@ table.AddColumn("work_start", FieldDbType.Time);       // DataColumn.DataType ==
 框架建立的每個 `DataTable` 都帶著宣告的型別，可用下列方式取回：
 
 ```csharp
-FieldDbType declared = column.ResolveFieldDbType();    // Date / DateTime / Time
+FieldDbType declared = column.ResolveFieldDbType();      // Date / DateTime / Time
+FieldDbType? marked  = column.GetDeclaredFieldDbType();  // 未標記時回傳 null
 ```
 
+`ResolveFieldDbType` 在欄位未標記時會回退為由 `DataColumn.DataType` 反推，因此隨時呼叫都安全
+—— 未標記的 `DateTime` 欄位讀出來就是 `FieldDbType.DateTime`。
+
 由 schema 驅動的查詢（`GetList`、`GetData`、`GetNewData`）與所有經
-`AddColumn(name, FieldDbType)` 建立的欄位都會自動帶上。**自寫 SQL 是唯一的例外** ——
-見[日曆日與時間點的欄位語意 §4](date-semantics.zh-TW.md)。
+`AddColumn(name, FieldDbType)` 建立的欄位都會自動帶上，自寫 SQL 是唯一的例外。
 
 > **不要把 `DateOnly` 寫回 `DataTable`。** 日曆日欄位是帶著標記的 `DateTime` 欄位，
 > `DataColumn` 會直接拒絕 `DateOnly` —— 它未實作 `IConvertible`，一般的轉換路徑根本不會執行。
 > 寫回時請用 `CDateTime`。
+
+### 自寫 SQL：由你宣告
+
+ADO.NET 把 `date` 欄位一律回報為 `System.DateTime`，因此非框架產生的查詢沒有任何可據以還原
+語意的來源。規則是：
+
+> **框架產生的 SQL 由框架標記；你自己寫的 SQL 由你標記。**
+
+兩種等價寫法，共用同一份實作：
+
+```csharp
+// A. 宣告貼著查詢寫——選項與 SQL 同處一地。
+var spec = new DbCommandSpec(DbCommandKind.DataTable,
+    "SELECT order_date, created_at, amount FROM ft_order WHERE amount > {0}", 1000m);
+spec.DateColumns.Add("order_date");
+var table = dbAccess.Execute(spec).Table!;
+
+// B. 事後標記——適用於自行組裝、或來自他處的表格。
+table.SetDateColumns("order_date", "due_date");
+```
+
+兩者的欄名比對都**不區分大小寫**（結果欄名已正規化為小寫），且對**比對不到的欄名一律擲例外**
+而非略過——打錯字時「看起來宣告了、實際沒作用」正是這個機制要消除的失敗模式。
+把 `DateColumns` 用在不回傳表格的 `DbCommandKind` 上同樣會擲例外，理由相同。
+
+若你手上已經有對應的 `FormTable`，可以直接重播整份 schema，不必逐欄列名：
+
+```csharp
+using Bee.Definition.Forms;
+
+formTable.ApplyFieldDbTypes(table);   // 標記 schema 宣告的每個欄位
+```
+
+schema 未涵蓋的欄位會被略過（彙總欄、運算式欄屬常態），
+schema 宣告了但查詢未回傳的欄位也不會報錯（部分欄位查詢屬常態）。
+
+**忘了宣告是本設計保留下來的唯一失敗模式。** 未標記的日曆日欄位對下游而言就是時間點——
+影響最大的是時區轉換，可能造成跨日偏移。
 
 ## 5. 程式碼層
 
@@ -248,6 +289,7 @@ FilterCondition.Equal("work_start", "08:30");                      // string —
 | 用 `DateTime` 存班別定義 | 帶著無意義的日期，且會被時區位移 | `Time` |
 | 用 `Time` 存打卡記錄 | 遺失哪一天；夜班 06:00 下班無法還原 | `DateTime` |
 | 把 `DateOnly` 寫進 `DataTable` | 擲例外 —— `DataColumn` 拒收 | `CDateTime` |
+| 自寫 SQL 未宣告日曆日欄位 | 下游當成時間點，被時區位移而跨日 | `DateColumns` / `SetDateColumns` / `ApplyFieldDbTypes` |
 | 日曆日經 JS `Date` 再格式化 | 西向時區會退一天 | 擷取日期部分 |
 | 把 `"00:00"` 當成「未設定」 | 午夜是合法值 | 空字串才是未填 |
 | 相減兩個 `Time` 求班長 | 24 小時班算成 0 | 班長存成獨立欄位 |
@@ -255,8 +297,8 @@ FilterCondition.Equal("work_start", "08:30");                      // string —
 
 ## 相關文件
 
-- [日曆日與時間點的欄位語意](date-semantics.zh-TW.md) —— `Date` 標記的運作方式，
-  以及自寫 SQL 時如何宣告。[ADR-031](adr/adr-031-calendar-day-column-semantics.md)。
+- [ADR-031](adr/adr-031-calendar-day-column-semantics.md) —— 日曆日語意為何需要顯式標記、
+  被否決的替代方案，以及背後的 `DataColumn`/`DateOnly` 實測數據。
 - [ADR-033](adr/adr-033-time-of-day-semantics.md) —— `Time` 為何採定寬字串而非資料庫原生時刻型別，
   含決策背後的實測數據。
 - [時區處理](datetime-timezone.zh-TW.md) —— 時間點的 UTC 儲存與轉換。

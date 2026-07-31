@@ -5,10 +5,10 @@
 資料庫的每個時間點都以 UTC 儲存，每位使用者看到的則是自己時區的時間。轉換只發生在一個地方
 ——用戶端的 API connector——因此你的 Business Object 與 UI 程式碼都不需要自己換算。
 
-本文說明框架替你做了什麼、有哪兩種情況需要你動手，以及升級時有什麼變更。
+本文說明框架替你做了什麼、有哪兩種情況需要你動手，以及如何設定使用者時區。
 
 > 設計理由與背後的實測：[ADR-032](adr/adr-032-datetime-timezone.md)。
-> 日曆日與時間點的語意區別：[date-semantics.zh-TW.md](date-semantics.zh-TW.md)。
+> 日曆日與時間點的語意區別，以及另外兩種時間型別：[時間型別總覽](temporal-types.zh-TW.md)。
 
 ---
 
@@ -22,7 +22,6 @@
 | 哪些欄位會被轉換？ | 宣告為 `FieldDbType.DateTime` 的欄位。`Date` 是日曆日，絕不轉換。 |
 | 使用者的時區從哪來？ | `st_user.time_zone`，隨 session 帶出——絕不取裝置時區。 |
 | 我的 BO 要改嗎？ | 不用，除非它自寫 SQL 且以日期做過濾。見 §3。 |
-| 有破壞性變更嗎？ | `ValueUtilities.CDateOnly` 與運算式的 `Today()` 現在回傳 `DateOnly`；時間 `Cxxx` 家族的單參數多載改回傳 nullable。見 §5。 |
 
 ## 2. 什麼都不做就有的行為
 
@@ -48,7 +47,7 @@ UI 新增的列會以使用者自己的今天填入預設值——在紐約登�
 var command = new DbCommandSpec(DbCommandKind.DataTable, sql) { DateColumns = { "invoice_date" } };
 ```
 
-這與 [date-semantics.zh-TW.md](date-semantics.zh-TW.md) 描述的是同一件事，時區不需要額外宣告。
+這與[時間型別總覽 §4](temporal-types.zh-TW.md) 描述的是同一件事，時區不需要額外宣告。
 
 ### 過濾條件的值
 
@@ -83,16 +82,14 @@ FilterCondition.Equal("created_at", someDateTime);     // 時間點——送出�
 員工工作地的時區——請以「UTC 時間欄 + 自訂的時區欄」建模，因為那個需求是逐列的，任何欄位層級的
 設定都表達不了。
 
-## 5. 變更內容
-
-| 變更 | 影響 |
-|------|------|
-| `ValueUtilities.CDateOnly` 回傳 `DateOnly?` | 把結果指派給 `DateTime` 的呼叫端需調整；原本省略預設參數的呼叫端也需改為顯式傳入 fallback。寫進 `DataSet` 儲存格仍可運作——框架會在該邊界完成轉換。 |
-| 運算式 `Today()` 回傳 `DateOnly`，且依使用者時區 | 既有的 `DefaultValueExpression="Today()"` 在 `Date` 與 `DateTime` 欄位上都照常運作。 |
-| 運算式新增 `UtcNow()` | 新增；需要明示 UTC 意圖時使用。 |
-| 新增 `st_user.time_zone` 欄位 | 既有資料列沒有值，會退回 `BackendConfiguration.DefaultTimeZone`（預設 `Asia/Taipei`），因此升級後顯示時刻不會位移。欄位可逐一設定，預設值則依部署設定。 |
-| PostgreSQL 的 `DateTime` 參數改送 `timestamp` | 先前送的是 `timestamptz`，會讓 server 時區重新表達該值。不需任何調整，欄位型別未變。 |
-| 資料庫端的欄位 `DEFAULT` 改為 UTC 形式 | 既有資料表會在下次 schema 升級時收到一道 `ALTER ... SET DEFAULT`（僅異動 metadata，不重寫資料列）。 |
+## 5. `DataSet` 以外的日期
 
 日期在框架中一律以 `DateOnly` 表達，**唯一例外是 `DataSet` 儲存格**——`DataColumn` 只能承載
-`DateTime`，框架會在該邊界替你轉換。
+`DateTime`，框架會在該邊界替你轉換。運算式的 `Today()` 回傳依使用者時區的 `DateOnly`，
+`UtcNow()` 則明示 UTC。完整函式清單見[運算式規則](expression-rules.md)。
+
+## 相關文件
+
+- [時間型別總覽：`Date`、`DateTime`、`Time`](temporal-types.zh-TW.md) —— 跨層對照參考：
+  三種語意如何選擇，以及各自在每一層的承載方式。
+- [ADR-032](adr/adr-032-datetime-timezone.md) —— 決策本身與背後的實測數據。

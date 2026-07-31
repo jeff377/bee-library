@@ -93,16 +93,60 @@ table.AddColumn("work_start", FieldDbType.Time);       // DataColumn.DataType ==
 Every `DataTable` the framework builds carries the declared type, recoverable with:
 
 ```csharp
-FieldDbType declared = column.ResolveFieldDbType();    // Date / DateTime / Time
+FieldDbType declared = column.ResolveFieldDbType();      // Date / DateTime / Time
+FieldDbType? marked  = column.GetDeclaredFieldDbType();  // null when the column carries no marker
 ```
 
+`ResolveFieldDbType` falls back to inferring from `DataColumn.DataType` when a column is unmarked, so
+it is always safe to call — an unmarked `DateTime` column reads back as `FieldDbType.DateTime`.
+
 This is populated automatically for schema-driven queries (`GetList`, `GetData`, `GetNewData`) and
-anything built through `AddColumn(name, FieldDbType)`. **Hand-written SQL is the exception** — see
-[Calendar-Day vs Instant Column Semantics §4](date-semantics.md).
+anything built through `AddColumn(name, FieldDbType)`. Hand-written SQL is the one exception.
 
 > **Do not write a `DateOnly` into a `DataTable`.** A calendar-day column is a `DateTime` column
 > carrying a marker, and `DataColumn` rejects a `DateOnly` outright — `DateOnly` does not implement
 > `IConvertible`, so the usual conversion never runs. Use `CDateTime` when writing back.
+
+### Hand-written SQL: declare it yourself
+
+ADO.NET reports a `date` column as `System.DateTime`, so a query the framework did not generate has
+nothing to recover the semantics from. The rule is:
+
+> **The framework marks the SQL it generates. You mark the SQL you write.**
+
+Two equivalent ways, sharing one implementation:
+
+```csharp
+// A. Declare next to the query — the option travels with the SQL.
+var spec = new DbCommandSpec(DbCommandKind.DataTable,
+    "SELECT order_date, created_at, amount FROM ft_order WHERE amount > {0}", 1000m);
+spec.DateColumns.Add("order_date");
+var table = dbAccess.Execute(spec).Table!;
+
+// B. Mark afterwards — for tables you assemble yourself or receive from elsewhere.
+table.SetDateColumns("order_date", "due_date");
+```
+
+Both match column names case-insensitively (result columns are canonicalized to lowercase), and both
+**throw on a name that matches no column** rather than skipping it — a typo that silently did nothing
+would reproduce the exact failure this mechanism exists to remove. Setting `DateColumns` on a command
+kind that returns no table throws for the same reason.
+
+If you build the table from a `FormTable` you already have, replay the whole schema instead of naming
+columns one at a time:
+
+```csharp
+using Bee.Definition.Forms;
+
+formTable.ApplyFieldDbTypes(table);   // marks every column the schema declares
+```
+
+Columns the schema does not cover are left alone (aggregates and expression columns are normal), and
+fields the query did not return are skipped (partial `SELECT`s are normal).
+
+**Forgetting to declare is the one failure mode this design keeps.** An unmarked calendar-day column
+looks like an instant to everything downstream — most consequentially to time-zone conversion, where
+it can shift across a day boundary.
 
 ## 5. Code layer
 
@@ -262,6 +306,7 @@ field rather than deriving it from two times of day.**
 | Using `DateTime` for a shift definition | Carries a meaningless date, and gets time-zone shifted | `Time` |
 | Using `Time` for a clock-in record | Loses which day; a night shift ending 06:00 is unrecoverable | `DateTime` |
 | Writing a `DateOnly` into a `DataTable` | Throws — `DataColumn` rejects it | `CDateTime` |
+| Not declaring calendar-day columns in hand-written SQL | They look like instants downstream and get time-zone shifted across a day boundary | `DateColumns` / `SetDateColumns` / `ApplyFieldDbTypes` |
 | Reformatting a calendar day through a JS `Date` | Shifts a day backwards in westward zones | Slice the date portion |
 | Treating `"00:00"` as "no time set" | Midnight is a legal value | Empty string means unset |
 | Deriving shift length by subtracting two `Time`s | A 24-hour shift computes as 0 | Store the length |
@@ -269,8 +314,8 @@ field rather than deriving it from two times of day.**
 
 ## Related
 
-- [Calendar-Day vs Instant Column Semantics](date-semantics.md) — how the `Date` marker works and
-  how to declare it for hand-written SQL. [ADR-031](adr/adr-031-calendar-day-column-semantics.md).
+- [ADR-031](adr/adr-031-calendar-day-column-semantics.md) — why the calendar-day semantic needs an
+  explicit marker, the alternatives rejected, and the `DataColumn`/`DateOnly` measurements behind it.
 - [ADR-033](adr/adr-033-time-of-day-semantics.md) — why `Time` is a fixed-width string rather than
   a native database time type, with the measurements behind the decision.
 - [Time Zones](datetime-timezone.md) — UTC storage and conversion for instants.

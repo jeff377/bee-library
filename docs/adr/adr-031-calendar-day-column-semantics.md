@@ -5,7 +5,7 @@
 已採納（2026-07-25）
 
 > 三階段已全部實作完成（commit `fddb38f6` / `c7782308` / `c5578a42`）。
-> 消費端使用方式見 `docs/date-semantics.md`。
+> 消費端使用方式見 `docs/temporal-types.md`。
 
 ## 背景
 
@@ -145,4 +145,4 @@ wire 序列化有 MessagePack 與 JSON 兩份平行實作，且分居不同套�
 - ADR-026（數值語意與捨入）——同屬「定義層語意需貫通到資料層」的家族。
 - ADR-029（欄位名稱一律小寫）——同樣是「wire 表示法對齊定義層」的決策。
 - ADR-030（MessagePack name-based keys）——wire 表示法的另一項決策。
-- `docs/date-semantics.md`——消費端（含 JS/TS）的使用指引。
+- `docs/temporal-types.md`——消費端（含 JS/TS）的使用指引，以及三種時間語意的跨層對照。

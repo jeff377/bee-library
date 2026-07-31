@@ -6,11 +6,12 @@ The database stores every instant in UTC; each user sees it in their own time zo
 happens in one place — the API connector on the client — so neither your business objects nor your
 UI code performs it.
 
-This document covers what the framework does for you, the two cases where you have to act, and what
-changed if you are upgrading.
+This document covers what the framework does for you, the two cases where you have to act, and how to
+configure a user's zone.
 
 > Design rationale and the measurements behind it: [ADR-032](adr/adr-032-datetime-timezone.md).
-> Calendar-day versus instant semantics: [date-semantics.md](date-semantics.md).
+> Calendar-day versus instant semantics, and the other two temporal types:
+> [Temporal Types](temporal-types.md).
 
 ---
 
@@ -24,7 +25,6 @@ changed if you are upgrading.
 | Which columns convert? | Those declared `FieldDbType.DateTime`. A `Date` column is a calendar day and never converts. |
 | Where does the user's zone come from? | `st_user.time_zone`, carried on the session — never the device's zone. |
 | Do my business objects need changing? | No, unless they write hand-rolled SQL that filters on a date. See §3. |
-| Anything breaking? | `ValueUtilities.CDateOnly` and the `Today()` expression helper now return `DateOnly`; the temporal `Cxxx` family's one-argument form returns a nullable. See §5. |
 
 ## 2. What you get without doing anything
 
@@ -55,7 +55,7 @@ boundary:
 var command = new DbCommandSpec(DbCommandKind.DataTable, sql) { DateColumns = { "invoice_date" } };
 ```
 
-This is the same declaration [date-semantics.md](date-semantics.md) describes; there is nothing
+This is the same declaration [Temporal Types §4](temporal-types.md) describes; there is nothing
 extra to do for time zones.
 
 ### Filter values
@@ -97,17 +97,15 @@ There is deliberately no per-company or per-column override. When a value must b
 instant plus a time zone column of your own, because that requirement is per-row and no
 column-level setting can express it.
 
-## 5. What changed
-
-| Change | Impact |
-|--------|--------|
-| `ValueUtilities.CDateOnly` returns `DateOnly?` | Call sites assigning the result to a `DateTime` need updating; so do call sites that relied on an omitted default argument, which now pass the fallback explicitly. Writing the value into a `DataSet` cell still works — the framework widens it at that boundary. |
-| `Today()` in expressions returns `DateOnly`, in the user's zone | Existing `DefaultValueExpression="Today()"` keeps working on both `Date` and `DateTime` fields. |
-| `UtcNow()` added to expressions | New; use it where you want UTC stated outright. |
-| `st_user.time_zone` column added | Existing rows have no value and fall back to `BackendConfiguration.DefaultTimeZone` (`Asia/Taipei` by default), so displayed times do not shift on upgrade. Set the column per user, and the default per deployment. |
-| PostgreSQL `DateTime` parameters now map to `timestamp` | Previously they were sent as `timestamptz`, which let the server's zone re-express the value. No action needed; column types are unchanged. |
-| Database-side column `DEFAULT`s are now UTC-returning | Existing tables pick up one `ALTER ... SET DEFAULT` on the next schema upgrade (metadata only — no rows are rewritten). |
+## 5. Dates outside the `DataSet`
 
 Dates are `DateOnly` throughout the framework. The single exception is a `DataSet` cell, where a
 `DataColumn` can only hold `DateTime` — the framework converts at that boundary so you do not have
-to.
+to. `Today()` in an expression yields a `DateOnly` in the user's zone; `UtcNow()` states UTC
+outright. See [Expression Rules](expression-rules.md) for the full function list.
+
+## Related
+
+- [Temporal Types: `Date`, `DateTime` and `Time`](temporal-types.md) — the cross-layer reference:
+  choosing between the three semantics, and how each is carried at every layer.
+- [ADR-032](adr/adr-032-datetime-timezone.md) — the decision itself, with the measurements behind it.

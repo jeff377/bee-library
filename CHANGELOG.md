@@ -42,6 +42,9 @@ All notable changes to this project will be documented in this file.
   (enabled by default, hourly) reclaims expired `st_session` rows.
 - `Bee.Business`: `SessionCompanyBinder` holds the company-binding derivation shared by
   `EnterCompany` and session rebuild, so the two cannot drift into granting different permissions.
+- `Bee.Expressions`: `UtcNow()` joins `Today()` and `Now()` in the expression sandbox, for the cases
+  where UTC should be stated outright rather than derived from the user's zone. See
+  [Expression Rules](docs/expression-rules.md).
 
 ### Changed — breaking (compile-time)
 

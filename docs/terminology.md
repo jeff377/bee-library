@@ -241,8 +241,7 @@ not and the question is *what time*, it is a time of day. If the question is *ho
 duration.
 
 See [Temporal Types](temporal-types.md) for the cross-layer reference, and
-[Calendar-Day vs Instant Column Semantics](date-semantics.md) / [Time Zones](datetime-timezone.md)
-for the two semantics that carry a mechanism of their own.
+[Time Zones](datetime-timezone.md) for how instants are stored and converted.
 
 
 ### Query and Filter

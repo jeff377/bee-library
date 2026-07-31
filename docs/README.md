@@ -41,8 +41,7 @@ This directory contains the public-facing developer documentation for the Bee.NE
 | [API ↔ BO Contract Design](api-bo-contract-design.md) | Three-tier API contract separation (Contracts / API Type / BO Type) |
 | [API Method Reference](api-method-reference.md) | Single-page table of every BO method exposed through JSON-RPC, with `[ApiAccessControl]` settings + purpose |
 | [FormMap](formmap.md) | Bee.Db's data access pattern, dynamically generating SQL from FormSchema |
-| [Temporal Types: Date, DateTime and Time](temporal-types.md) | The cross-layer reference: choosing between the three, and how each is carried in the database, the `DataSet`, code, and all three serialization formats |
-| [Calendar-Day vs Instant Column Semantics](date-semantics.md) | How a `FieldDbType.Date` column describes itself on the wire, reading it from .NET and JS/TS, and declaring it for hand-written SQL |
+| [Temporal Types: Date, DateTime and Time](temporal-types.md) | The cross-layer reference: choosing between the three, how each is carried in the database, the `DataSet`, code and all three serialization formats, and declaring calendar-day columns for hand-written SQL |
 | [Time Zones](datetime-timezone.md) | UTC storage, where conversion happens, configuring a user's zone, and what hand-written SQL and non-.NET clients must do |
 
 ---
