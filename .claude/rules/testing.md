@@ -361,3 +361,35 @@ var result = access.GetDefine(DefineType.FormSchema, s_employeeKey);
 ### IDE0005 — 不留未使用的 `using`
 
 從別的測試檔 copy header 時容易帶進不相關的 using，補完測試後逐一檢查並移除。
+
+## 「本機綠、CI 紅」的兩個反覆根因
+
+本機環境比 CI「更完整」（有 `tests/Define` 的 DatabaseSettings、有持久 DB 容器、可能殘留舊 seed），
+以下兩類缺口**本機必定測不出來**。踩雷實例與排查過程見
+`docs/repo-ops/gotchas/test-ci-release.md`。
+
+### 1. 會寫 DB 的測試必須用 `SharedDbFixture`
+
+**`BeeTestFixture` 不建 schema**（只有 `SharedDbFixture` 會）。測試若會讓 BO 寫 DB
+（session / 稽核 / 任何 repository 寫入），fixture 必須是 `SharedDbFixture`，否則只有在
+「別的測試行程剛好先把表建好」時才會通過。**看到 `BeeTestFixture` + DB 寫入就是嫌疑。**
+
+判別捷徑：測試環境 `AuditLogOptions.Enabled` 預設 `false` 且 `tests/Define/SystemSettings.xml`
+未覆寫 → 只動稽核寫入的改動在測試中不會求值，可先排除嫌疑。
+
+### 2. 一次重跑轉綠**不足以**判定 flaky
+
+`gh run rerun --failed` 剛好轉綠是競賽條件的正常表現，不是結案依據。重跑只用來**收集證據**：
+至少要看「不同 commit 的**首次**執行是否都紅」——都紅就當真 bug 查。
+
+> 這條與上方「並行 flaky 的容錯空間」不衝突：那條講的是**同一 commit 內 isolated 通過 /
+> full suite 失敗**（連跑 2–3 次判定）；這條講的是**跨 commit 首次執行都紅**。
+
+### 3. seed 的冪等必須跨行程原子
+
+`SharedDatabaseState` 的 seed 會被多個平行 test 行程對**同一實體 DB**同時執行。
+以 per-table `SELECT COUNT(*)>0 then skip` 做冪等**不具跨行程原子性**——兩行程同時見 0 就各插一次。
+有 unique 業務鍵（`sys_id`）的表靠 unique 衝突讓輸家丟例外自保；**無唯一業務鍵的表會被重複 seed**。
+
+**正解**：整個 seed 包**單一 transaction**，gate 改判**第一張具 unique `sys_id` 的表**是否已有列。
+贏家原子提交全套、輸家 rollback，其他行程因交易隔離只會看到「空」或「完整」兩態。

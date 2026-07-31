@@ -81,6 +81,12 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 進行中 / 已完成的規劃見 `docs/plans/`（階段性文件，舊 plan 未必符合現行行為，勿當規格）；
 各套件細節見各 `src/` 專案的 `README.md`。
 
+**踩雷誌 `docs/repo-ops/gotchas/`**（維護者視角，非公開文件）記錄實際踩過、下次很可能再踩的雷，
+含症狀、根因與正解。硬規則已收進 `rules/`（常駐），gotchas 是**按需查閱**的脈絡。
+動到下列範圍前先讀對應那份：**資料庫 / provider dialect**、**序列化與運算式引擎**、
+**Avalonia 控件**、**測試 / CI / 發佈**、**Northwind 各 head**。索引見
+`docs/repo-ops/gotchas/README.md`。
+
 核心心智模型（實作時的定錨，細節見上述文件）：
 - **FormSchema** 為定義中樞，同時驅動 UI（FormLayout）、資料庫（DbTable）與驗證規則
 - **DataSet** 為跨層 DTO，承載 Master-Detail 資料，不含邏輯
@@ -93,6 +99,9 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 跨專案共用規則（`code-style`、`scanning`、`pull-request`、`releasing`）由使用者層 `~/.claude/CLAUDE.md` 統一載入，本檔僅引用本專案特化規則：
 
 @rules/public-docs.md
+@rules/database.md
+@rules/definition.md
+@rules/serialization.md
 @rules/testing.md
 @rules/security.md
 @rules/sonarcloud.md

@@ -89,7 +89,18 @@ reflection-only 的 `XmlSerializer`（iOS AOT 路徑）對型別形狀比桌面�
 
 這兩點在桌面完全不會顯現，只在行動端 reflection-only 路徑爆炸。
 
+## 診斷雜訊（省得再走一次冤枉路）
+
+- 錯誤 `There is an error in XML document (2, 2)` 看起來像 XML 內容壞掉，**實際多半是 AOT 路徑
+  問題**（`2,2` 只是根節點開頭）。不要往 XML 內容查。
+- 真正的 on-device `XmlSerializer` 觸發點是**行動 head 這一端**：head 是 remote JSON-RPC client，
+  FormSchema 以 **XML 字串夾在 JSON wire** 傳到 client，client 端 `XmlCodec.Deserialize<T>(result.Xml)`
+  才反序列化 —— **不是** Server 讀 `Define/*.xml`。
+- 曾誤判為單純 trim 雷，試 `MtouchLink=None`（→ `load_aot_module` SIGABRT）與 linker.xml
+  `TrimmerRootDescriptor` 皆無效，真因是多載 `Add`。
+
 ## 相關
 
 - `rules/avalonia.md` —— Avalonia 專屬規範（版本相容性、控件雷區）
+- `rules/serialization.md` —— MessagePack / DynamicExpresso 的 AOT 結論（皆有 reflection fallback）
 - `src/Bee.Definition/ILLink.Descriptors.xml` —— 採用解法的實際檔案
