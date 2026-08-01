@@ -1,6 +1,6 @@
 # Plan：語系客製化
 
-> 狀態：🚧 進行中（G1–G3 已完成，G5 裁決不做；**G3 決策定案 G3-b**，G4 待做，G6 待 foundation F3）· 2026-08-01
+> 狀態：🚧 進行中（G1–G3、G6 已完成，G5 裁決不做；**G3 決策定案 G3-b**，僅剩 G4）· 2026-08-01
 > 範圍：**語系資源的租戶客製**——某些單據或行為，公司有慣用語（欄位標題、表單名稱、訊息、選項文字）。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 未補則本案無法生效）
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -157,9 +157,9 @@ client（含**純 JS，無 .NET**）透過 `GetLanguage` 取整份語系資源�
 | G1 | `FormSchemaLocalizer` 加 customizeId 管道 ★ | foundation F1、F2 | ✅ 已完成（2026-07-31）。`Localize(schema, customizeId, lang)` 多載；呼叫端 `SystemBusinessObject.Define.cs` `LoadAndLocalizeSchema` 傳 `GetCurrentCustomizeId()` |
 | G2 | `BeeStringLocalizer<T>` 加 customizeId 管道 | 同上 | ✅ 已完成（2026-07-31）。3-arg ctor 加 `Func<string> customizeIdProvider`。**注意：repo 內無任何註冊點與消費端**，故只加得了 API，無法端到端驗證 |
 | G3 | `BusinessObject.GetLangText` 接線（讀 `SessionInfo.CustomizeId`） | 同上 | ✅ 已完成（2026-07-31）。新增 `GetCurrentCustomizeId()`（比照 `GetCurrentLang()`）；`GetLangText(fullKey)` 改為就地切 key 後走 customizeId 多載 |
-| G4 | `GetLanguage` 改回原始定義 + 補「取客製語系」的對應方法；疊加交給共用取用類別 | foundation 決策 A2 | 📝 待做 |
+| G4 | `GetLanguage` 改回原始定義 + 補「取客製語系」的對應方法；疊加交給共用取用類別 | foundation 決策 A2 | ✅ 已完成（2026-08-01）。`GetLanguage` 回原始 XML（`ec94d0aa`）、新增 `System.GetCustomizeLanguage` 與 connector 方法（`bbd2fd2a`）、疊加走 `CustomizeOverlay`（`450ae846`） |
 | G5 | Enum entry 級覆蓋（若選 G1-a） | 決策 G1 | ❌ 不做（2026-08-01）。決策 G1 定案 G1-b，維持整組取代；此階段取消 |
-| G6 | 端到端測試：帶 CustomizeId 的 session → API → 拿到客製文字 | foundation F3 | 📝 待做（**不在本次交接範圍**） |
+| G6 | 端到端測試：帶 CustomizeId 的 session → API → 拿到客製文字 | foundation F3 | ✅ 已完成（2026-08-01，隨 foundation F3）。`TenantCustomizationEndToEndTests`：進入帶 `customize_id` 的公司後，`FormDefinitionLoader` 取得的欄位 caption 為客製值、未覆寫的 key 仍為 base；離開公司即回 base；另一租戶（無客製檔）與未進公司的 session 皆與純 base 逐位元一致 |
 
 > 回歸防護：**未設 CustomizeId 時，所有語系查找結果與現況逐位元一致**。
 

@@ -21,6 +21,7 @@ namespace Bee.Tests.Shared
         private static readonly object _initLock = new();
         private static bool _initialized;
         private static string? _sharedDefinePath;
+        private static string? _sharedCustomizePath;
 
         /// <summary>
         /// Hard-coded Base64 AES-CBC-HMAC combined key (64 bytes) used by the test
@@ -52,6 +53,35 @@ namespace Bee.Tests.Shared
         }
 
         /// <summary>
+        /// Process-wide tenant customization root (<c>PathOptions.CustomizePath</c>). Created empty
+        /// on first <see cref="EnsureInitialized"/> and cleaned up on process exit.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The directory exists but holds nothing, so every session still resolves against the base
+        /// layer: the customization reader is reached only for a non-empty
+        /// <c>SessionInfo.CustomizeId</c>, and an id with no folder here yields <c>null</c>. A test
+        /// that wants a tenant to have overrides writes them under
+        /// <c>{SharedCustomizePath}/{its own customization code}/</c> and picks a code no other test
+        /// class uses.
+        /// </para>
+        /// <para>
+        /// Rooted here rather than per fixture because the near-end API path
+        /// (<c>ApiClientInfo.LocalServiceProvider</c>) runs on the bootstrap container: a fixture-only
+        /// customization root would leave every call made through a connector reading a different
+        /// root from the one the test wrote to.
+        /// </para>
+        /// </remarks>
+        public static string SharedCustomizePath
+        {
+            get
+            {
+                EnsureInitialized();
+                return _sharedCustomizePath!;
+            }
+        }
+
+        /// <summary>
         /// 首次呼叫時觸發 process-wide 靜態 wire-up；後續呼叫直接 return。
         /// </summary>
         public static void EnsureInitialized()
@@ -77,9 +107,11 @@ namespace Bee.Tests.Shared
             }
 
             _sharedDefinePath = CreateSharedDefinePath();
+            _sharedCustomizePath = CreateSharedCustomizePath();
             var pathOptions = new PathOptions
             {
-                DefinePath = _sharedDefinePath
+                DefinePath = _sharedDefinePath,
+                CustomizePath = _sharedCustomizePath
             };
 
             // Bootstrap 暫時用一個 DefineAccess 讓 SharedDatabaseState.EnsureRegistered
@@ -161,6 +193,28 @@ namespace Bee.Tests.Shared
             };
 
             return sharedDir;
+        }
+
+        /// <summary>
+        /// Creates the process-wide customization root as an empty directory and registers a
+        /// process-exit cleanup hook. See <see cref="SharedCustomizePath"/> for why it is
+        /// process-wide rather than per fixture.
+        /// </summary>
+        private static string CreateSharedCustomizePath()
+        {
+            var customizeDir = Path.Combine(
+                Path.GetTempPath(),
+                $"bee-tests-customize-{Environment.ProcessId}-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(customizeDir);
+
+            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+            {
+                try { Directory.Delete(customizeDir, recursive: true); }
+                catch (IOException) { /* best effort */ }
+                catch (UnauthorizedAccessException) { /* best effort */ }
+            };
+
+            return customizeDir;
         }
 
         private static void CopyDirectory(string source, string dest)

@@ -1,6 +1,6 @@
 # Plan：客製化共同前置
 
-> 狀態：🚧 進行中（F1、F2 已完成，F4 的缺口 E 已補；F3、F4 缺口 D 待做）· 2026-08-01
+> 狀態：🚧 進行中（F1、F2、F3 已完成，F4 的缺口 E 已補；僅剩 F4 缺口 D）· 2026-08-01
 > 定位：**三類客製的共同基礎**，不屬於任一類，但三類都被它擋住。
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)
 > 依據：[ADR-016 多租戶客製化覆蓋層](../adr/adr-016-multitenant-customization-overlay.md)
@@ -26,6 +26,11 @@ ADR-016 設計的 fail-safe（漏傳 customizeId → 退化純 base）目前是 
 > （§2.C：至今沒有 head 走過 `EnterCompany`，所以實務上 `CustomizeId` 仍恆為空）。
 > 換句話說：伺服端管道已通，但**還沒有任何部署會餵值進去**——這正是 F3 的範圍。
 
+> **2026-08-01 再更正（F3 落地後）**：整條鏈已由端到端整合測試走通並驗證
+> （`st_company.customize_id` → `EnterCompany` → `SessionInfo.CustomizeId` → 語系／BO 型別／
+> Layout 三類客製生效，見 §2.F）。**尚無 head 走 `EnterCompany` 仍然為真**，
+> 但那已是「能力備妥、尚無部署使用」，不再是驗證缺口。
+
 ---
 
 ## 1. 已完成的基礎設施（可直接沿用）
@@ -39,7 +44,7 @@ ADR-016 設計的 fail-safe（漏傳 customizeId → 退化純 base）目前是 
 | 客製快取容器 | `CacheContainerProvider`（per-`CustomizeId` 隔離 `:38-43`） | ✅ |
 | 客製讀取器 | `CustomizeDefineReader` + `ICustomizeDefineReader`（空值短路 `:69-70`） | ✅ |
 | DI 註冊 | `BeeFrameworkServiceCollectionExtensions:88-102,175-178,205-209` | ✅ reader 已注入三個消費端 |
-| 測試 | 10 檔 / 約 66 測試 | ✅ 元件級完整 |
+| 測試 | 10 檔 / 約 66 測試（元件級）＋ `TenantCustomizationEndToEndTests` 9 測試（端到端，F3） | ✅ |
 
 **客製檔路徑**（`CustomizeOnlyPathOptions:60-70`）：
 ```
@@ -183,7 +188,7 @@ host 在 `new PathOptions { DefinePath = ..., CustomizePath = ... }` 時一併�
 4. UI head 改為：取原始 schema + 兩份語系 → 在地化 → 取兩份 layout 定義（缺則由 schema 生成）。
 5. 回收 commit `8a418382` 中因本決策而不再需要的部分（見 Layout plan 階段表）。
 
-### 🔴 C. 用戶端「進公司」流程從未被任何 head 走過
+### 🟢 C. 用戶端「進公司」流程從未被任何 head 走過（**F3 已補完**）
 
 > **改寫（2026-07-31）**：本節原記為「`ClientInfo.ResetDefineCache()` 無任何呼叫端」。實測全域
 > （`src/`、`samples/`、`apps/`、`tools/`）grep 後發現範圍更大——`SystemApiConnector.EnterCompanyAsync`、
@@ -203,9 +208,16 @@ host 在 `new PathOptions { DefinePath = ..., CustomizePath = ... }` 時一併�
 
 > **✅ 前半已完成（2026-08-01，commit `5f741647`）**：`ResetDefineCache()` 現由
 > `ApplyEnterCompanyResult` 與 `ClearCompanyContext` 內部呼叫，host 不需再記得。
-> **後半（端到端驗證）仍待做**——至今沒有任何 head 或測試真的走過
-> `EnterCompany` → 客製生效這條路，所以 `SessionInfo.CustomizeId` 在實務上仍恆為空，
-> 三類客製的伺服端與用戶端管道雖已全通，卻從未被端到端驗證過。
+>
+> **✅ 後半（端到端驗證）已完成（2026-08-01）**：依使用者裁決採**整合測試自建 session**
+> （選項 a），不改造既有 head。`TenantCustomizationEndToEndTests`
+> （`tests/Bee.Api.Client.UnitTests/Customization/`）走完整條路：`st_company.customize_id`
+> → `SystemApiConnector.EnterCompanyAsync` → `SessionInfo.CustomizeId` → 客製生效。
+> 詳見 §2.F。
+>
+> 仍成立的一點：**沒有任何 head 走過 `EnterCompany`**（Northwind 與各 sample 都是單公司）。
+> 這已不是驗證缺口（整合測試蓋掉了），而是「框架能力已備、尚無部署使用」——與 Layout plan
+> §3 對 base 手工 layout 的結論同性質。
 
 ### 🟡 D. 客製快取沒有失效訊號
 
@@ -238,13 +250,35 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 > 客製是同一張 `st_define` 的不同列，只差 `customize_id`（base 用哨兵 `"*"`），同一組 SQL 兩用，
 > 拆開只會複製連線與序列化。
 
-### 🟡 F. 無端到端測試（缺口 A 從未被測出的原因）
+### 🟢 F. 無端到端測試（缺口 A 從未被測出的原因）—— **F3 已補完**
 
 66 個測試**全部是元件級**，都是測試自己手動傳 `"acme"` 字串。
 **零個測試驗證「從 API 呼叫進來 → 自動套用該 session 的客製」**。
 
-> **建議**：補整合測試——建立帶 `CustomizeId` 的 session，走真實 API 路徑，驗證三類客製都生效。
-> 這同時是缺口 A 的長期防線。**與缺口 C 合流為階段 F3**（見 §2.C）：兩者都需要一條真的會進公司的路徑。
+> **✅ 已補（2026-08-01）**：`tests/Bee.Api.Client.UnitTests/Customization/TenantCustomizationEndToEndTests.cs`
+> ——9 個測試，**沒有任何一個手動傳 customizeId**，租戶一律由 session 決定。
+>
+> | 覆蓋 | 驗證內容 |
+> |------|---------|
+> | 語系 | 進帶 `customize_id` 的公司後，`FormDefinitionLoader.GetLocalizedSchemaAsync` 取得的 `Field.sys_name.Caption` 為客製值、`city` 仍為 base（per-key 疊加），`Schema.DisplayName` 為客製值 |
+> | BO 型別解析 | 客製 `ProgramSettings` 綁定的 BO 型別被實際解析並建立（base 未註冊該 progId） |
+> | Layout | 執行階段 layout 整檔採用客製定義（欄位數 2 vs base 7），且 caption 取自在地化 schema（決策 L5-a）——三層鏈在同一個斷言裡 |
+> | 離開公司 | `LeaveCompanyAsync` 後重新取得即回到 base 文字 |
+> | 跨租戶隔離 | 另一個 `customize_id`（無客製檔）→ schema 序列化後與純 base **逐位元一致**、BO 型別為預設 `FormBusinessObject` |
+> | 回歸防護 | 未進公司的 session → 同上逐位元一致；layout 來自 base 定義檔 |
+>
+> **測試基礎設施的兩項改動**：
+> 1. `TestProcessBootstrap` 新增 `SharedCustomizePath`（per-process 空 temp 目錄），並寫進
+>    bootstrap 的 `PathOptions.CustomizePath`。**必須是 bootstrap 那一份**——近端 API 走
+>    `ApiClientInfo.LocalServiceProvider`，只給 fixture 設客製根目錄的話，測試寫入的目錄
+>    與 API 讀取的目錄會是兩個。
+> 2. `BeeTestFixtureBuilder` 讓 fixture 的 `PathOptions` 指向同一個根目錄，兩邊一致。
+>
+> 根目錄預設為空，所以**其他測試行為零變化**：客製 reader 只在 `CustomizeId` 非空時才被觸及，
+> 而沒有對應資料夾的 id 一律回 `null`。
+>
+> **反向驗證**（確認測試不是假通過）：暫時讓 `INSERT st_company` 不寫 `customize_id`，
+> 3 個客製測試立刻失敗、6 個 base/回歸測試仍通過——證明整條鏈真的被走到，而非被短路。
 
 ### 🟢 其他觀察
 
@@ -277,7 +311,7 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 | F0 | 決策定案：A1 傳遞方式、B1 配置來源 | ✅ 已定案（2026-07-31）。§3 的「客製檔誰維護」仍未決，但**不擋 F1–F4** |
 | F1 | **缺口 B**：host 設定 `CustomizePath` 的文件 + 一個 sample 示範 | ✅ 已完成（2026-07-31）。`DemoBackend` 設 `CustomizePath`（`Define/` 的同層 `Customize/`）；文件見 [`definition-files-overview`](../definition-files-overview.md) §7（雙語）。依使用者決定**不入版控任何樣本客製檔**——只開路徑，客製層仍為空 |
 | F2 | **缺口 A**：消費端接線，伺服端三處顯式傳參 + `BeeStringLocalizer` 委派多載（Layout 除外，見 Layout plan） | ✅ 已完成（2026-07-31）。四處全接：`FormSchemaLocalizer`、`BusinessObject.GetLangText`、`BeeStringLocalizer<T>`、`BusinessObjectFactory` |
-| F3 | **缺口 C + F 合流**：會進公司的 head（或整合測試）走通 `EnterCompany` → `ApplyEnterCompanyResult` → 客製生效，並把 `ResetDefineCache` 責任收回框架 | 🚧 進行中——**`ResetDefineCache` 收回框架已完成**（2026-08-01，commit `5f741647`：改由 `ApplyEnterCompanyResult` / `ClearCompanyContext` 內部呼叫）；**端到端驗證仍待做** |
+| F3 | **缺口 C + F 合流**：會進公司的 head（或整合測試）走通 `EnterCompany` → `ApplyEnterCompanyResult` → 客製生效，並把 `ResetDefineCache` 責任收回框架 | ✅ 已完成（2026-08-01）。前半 commit `5f741647`（`ResetDefineCache` 收回框架）；後半採**整合測試自建 session**（使用者裁決選項 a），`TenantCustomizationEndToEndTests` 9 測試，語系／BO 型別／Layout／跨租戶隔離／回歸防護全覆蓋（見 §2.F） |
 | F4 | **缺口 D、E**：客製快取失效訊號、DB 版 reader 條件註冊 | 🚧 進行中——**缺口 E（DB 版 reader 條件註冊）已完成**（2026-08-01，隨 Layout L1／L2 一併）；缺口 D（`CustomizeOnlyStorage.GetChangeSource` 的客製快取失效訊號）仍待做 |
 
 > F3 為何合流：用戶端進公司流程從未被任何 head 走過（見 §2.C），所以「接上 `ResetDefineCache`」與

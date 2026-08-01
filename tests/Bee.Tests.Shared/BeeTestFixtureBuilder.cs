@@ -61,17 +61,22 @@ namespace Bee.Tests.Shared
             // defaults materialised from Bee.Definition.Defaults). Built once by
             // TestProcessBootstrap.EnsureInitialized() before any fixture ctor runs.
             var sharedDefine = TestProcessBootstrap.SharedDefinePath;
+            // The customization root is process-wide and empty, so every fixture behaves as a
+            // standard non-customized deployment until a test writes a tenant folder into it.
+            // Sharing it with the bootstrap container matters: near-end API calls run there, so
+            // two different roots would mean a test writes to one and the API reads the other.
+            var sharedCustomize = TestProcessBootstrap.SharedCustomizePath;
 
             if (!_useTempDefinePath)
             {
                 tempDir = null;
-                return new PathOptions { DefinePath = sharedDefine };
+                return new PathOptions { DefinePath = sharedDefine, CustomizePath = sharedCustomize };
             }
 
             tempDir = Path.Combine(Path.GetTempPath(), $"bee-fixture-{Guid.NewGuid():N}");
             Directory.CreateDirectory(tempDir);
             CopyDirectory(sharedDefine, tempDir);
-            return new PathOptions { DefinePath = tempDir };
+            return new PathOptions { DefinePath = tempDir, CustomizePath = sharedCustomize };
         }
 
         internal ServiceProvider BuildServiceProvider(PathOptions paths)
