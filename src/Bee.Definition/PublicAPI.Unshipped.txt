@@ -95,3 +95,4 @@ static Bee.Definition.Customization.CustomizeOverlay.FindProgramItem(Bee.Definit
 static Bee.Definition.Customization.CustomizeOverlay.PickFormLayout(Bee.Definition.Layouts.FormLayout? customize, Bee.Definition.Layouts.FormLayout? base) -> Bee.Definition.Layouts.FormLayout?
 const Bee.Definition.SystemActions.GetCustomizeFormLayout = "GetCustomizeFormLayout" -> string!
 const Bee.Definition.SystemActions.GetCustomizeLanguage = "GetCustomizeLanguage" -> string!
+Bee.Definition.Storage.CustomizeOnlyStorage.GetChangeSource(Bee.Definition.DefineType defineType, params string![]! keys) -> Bee.Definition.Storage.DefineChangeSource

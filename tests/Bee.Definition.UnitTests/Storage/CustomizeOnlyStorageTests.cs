@@ -109,5 +109,54 @@ namespace Bee.Definition.UnitTests.Storage
         {
             Assert.Throws<ArgumentNullException>(() => new CustomizeOnlyStorage(null!));
         }
+
+        [Fact]
+        [DisplayName("GetChangeSource 三個客製型別應回報 getter 實際讀取的檔案路徑")]
+        public void GetChangeSource_CustomizableTypes_ReportsSameFilePathAsGetter()
+        {
+            var paths = new CustomizeOnlyPathOptions(_root, CustomizeId);
+            var storage = CreateStorage();
+
+            Assert.Equal(
+                new[] { paths.GetProgramSettingsFilePath() },
+                storage.GetChangeSource(DefineType.ProgramSettings).FilePaths);
+            Assert.Equal(
+                new[] { paths.GetFormLayoutFilePath("EmployeeDefault") },
+                storage.GetChangeSource(DefineType.FormLayout, "EmployeeDefault").FilePaths);
+            Assert.Equal(
+                new[] { paths.GetLanguageFilePath("zh-TW", "Customer") },
+                storage.GetChangeSource(DefineType.Language, "zh-TW", "Customer").FilePaths);
+        }
+
+        [Fact]
+        [DisplayName("GetChangeSource 客製檔尚未建立時仍回報路徑（檔案出現本身就是變更）")]
+        public void GetChangeSource_FileMissing_StillReportsPath()
+        {
+            var source = CreateStorage().GetChangeSource(DefineType.FormLayout, "NeverCreated");
+
+            Assert.NotNull(source.FilePaths);
+            Assert.False(File.Exists(source.FilePaths![0]));
+        }
+
+        [Fact]
+        [DisplayName("GetChangeSource 對 override 層不服務的型別應回報無訊號而非丟例外")]
+        public void GetChangeSource_UnsupportedTypes_ReturnsNone()
+        {
+            var storage = CreateStorage();
+
+            Assert.Equal(DefineChangeSource.None, storage.GetChangeSource(DefineType.FormSchema, "Employee"));
+            Assert.Equal(DefineChangeSource.None, storage.GetChangeSource(DefineType.TableSchema, "common", "st_user"));
+            Assert.Equal(DefineChangeSource.None, storage.GetChangeSource(DefineType.DbCategorySettings));
+        }
+
+        [Fact]
+        [DisplayName("GetChangeSource 缺少必要 key 時應回報無訊號")]
+        public void GetChangeSource_MissingKeys_ReturnsNone()
+        {
+            var storage = CreateStorage();
+
+            Assert.Equal(DefineChangeSource.None, storage.GetChangeSource(DefineType.FormLayout));
+            Assert.Equal(DefineChangeSource.None, storage.GetChangeSource(DefineType.Language, "zh-TW"));
+        }
     }
 }

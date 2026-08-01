@@ -123,5 +123,33 @@ namespace Bee.Definition.Storage
         /// <summary>Not supported — the override layer is strictly read-only.</summary>
         public void SaveLanguage(LanguageResource resource)
             => throw new NotSupportedException(ReadOnlyMessage);
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// Only the three customizable types report a signal, and each resolves through the same
+        /// <see cref="CustomizeOnlyPathOptions"/> the getters use, so a consumer watches exactly the
+        /// file this storage would read. Every other type reports no signal rather than throwing —
+        /// unlike the getters, a consumer may ask about any define type here without first knowing
+        /// what the override layer serves.
+        /// </para>
+        /// <para>
+        /// The path is reported whether or not the file exists today. A tenant adding an override
+        /// that was previously absent is itself a change worth reacting to, and the file no longer
+        /// having a modification time is exactly how a watcher notices it appearing.
+        /// </para>
+        /// </remarks>
+        public DefineChangeSource GetChangeSource(DefineType defineType, params string[] keys)
+        {
+            string[]? filePaths = defineType switch
+            {
+                DefineType.ProgramSettings => [_paths.GetProgramSettingsFilePath()],
+                DefineType.FormLayout when keys.Length >= 1 => [_paths.GetFormLayoutFilePath(keys[0])],
+                DefineType.Language when keys.Length >= 2 => [_paths.GetLanguageFilePath(keys[0], keys[1])],
+                _ => null
+            };
+
+            return filePaths is null ? DefineChangeSource.None : new DefineChangeSource { FilePaths = filePaths };
+        }
     }
 }
