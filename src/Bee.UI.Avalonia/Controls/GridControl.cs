@@ -112,7 +112,7 @@ namespace Bee.UI.Avalonia.Controls
         /// <see cref="NumberKind.Amount"/> columns. When <c>null</c> (the default), amount columns use
         /// their delivered <see cref="LayoutFieldBase.NumberFormat"/> unchanged — currency awareness is off.
         /// Hosts set this once the currency master is available and call <see cref="RefreshRows"/> after
-        /// changing the document currency (see plan-numeric-multicurrency.md §3.2c).
+        /// changing the document currency.
         /// </summary>
         public CurrencySettings? CurrencySettings { get; set; }
 

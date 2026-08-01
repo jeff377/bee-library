@@ -4,7 +4,7 @@ namespace Bee.Definition
     /// Semantic classification of a numeric field. Drives the field's rounding
     /// policy (<see cref="RoundingPolicy"/>), decimal-places source
     /// (<see cref="DecimalsSource"/>), and display format. The members and their
-    /// framework defaults are the signed-off contract in plan-numeric-core.md.
+    /// framework defaults are the signed-off contract.
     /// </summary>
     public enum NumberKind
     {

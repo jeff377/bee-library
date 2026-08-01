@@ -55,9 +55,8 @@ namespace Bee.Api.Client
         /// application wants to execute backend logic in-process.
         /// </summary>
         /// <remarks>
-        /// Phase 4 transitional storage — see plan-backendinfo-di-phase4-api-di.md and the main
-        /// plan's range-boundary section: <c>Bee.Api.Client</c> near-end mode is out-of-scope
-        /// for the DI migration; a follow-up phase will refactor it to constructor injection.
+        /// Transitional storage: <c>Bee.Api.Client</c> near-end mode was left out of the DI
+        /// migration, so the service provider lives here rather than being constructor-injected.
         /// </remarks>
         public static IServiceProvider? LocalServiceProvider { get; set; }
 

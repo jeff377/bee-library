@@ -4,7 +4,7 @@ namespace Bee.UI.Avalonia.Controls
     /// Decides whether an amount column's footer total is meaningful. Summing across different
     /// currencies has no meaning (USD + JPY), so an original-currency column shows a total only when
     /// every populated row shares one currency; a home-currency column is always one currency and
-    /// therefore always totalable (see plan-numeric-multicurrency.md §3.2c, mirroring SAP ALV
+    /// therefore always totalable (mirroring SAP ALV
     /// <c>DO_SUM</c>). This is display-only logic — it does not round; callers format the returned sum
     /// with the resolved currency's decimals.
     /// </summary>

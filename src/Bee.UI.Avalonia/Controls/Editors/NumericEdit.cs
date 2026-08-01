@@ -42,7 +42,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// <see cref="NumberKind.Amount"/> fields. When <c>null</c> (the default), the editor uses the
         /// delivered/baked format — currency awareness is off, so existing non-amount behaviour is
         /// unchanged. Hosts set this (with <see cref="DefaultCurrencyCode"/>) to format amounts by the
-        /// bound row's currency (see plan-numeric-multicurrency.md §3.2).
+        /// bound row's currency.
         /// </summary>
         public CurrencySettings? CurrencySettings { get; set; }
 

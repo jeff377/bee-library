@@ -6,7 +6,7 @@ namespace Bee.Definition
     /// Resolves the framework defaults for each <see cref="NumberKind"/>: format letter,
     /// default decimal places, rounding policy, and decimals source. Replaces the former
     /// string-keyed <c>NumberFormatPresets</c>. The returned values are the signed-off
-    /// contract in plan-numeric-core.md.
+    /// framework contract.
     /// </summary>
     public static class NumberKindProfile
     {

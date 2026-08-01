@@ -147,10 +147,16 @@ namespace Bee.UI.Core
         /// Discards the locally cached definition data.
         /// </summary>
         /// <remarks>
-        /// Must be called after switching tenant context (<c>EnterCompany</c> / <c>LeaveCompany</c>),
-        /// because <see cref="ClientDefineAccess"/> caches the server-overlaid FormLayout / Language /
-        /// ProgramSettings keyed only by progId / layoutId / namespace — stale entries would otherwise
-        /// leak the previous tenant's customization. No-op when the accessor has not been created yet.
+        /// Called automatically by <see cref="ApplyEnterCompanyResult"/> and
+        /// <see cref="ClearCompanyContext"/>, which is where a tenant switch actually happens —
+        /// hosts do not need to remember it. Exposed for the rare case of discarding the cache
+        /// without a tenant change. No-op when the accessor has not been created yet.
+        /// <para>
+        /// The flush matters because <see cref="ClientDefineAccess"/> keys its cache by
+        /// progId / layoutId / namespace alone. The customization layer it holds belongs to whichever
+        /// tenant was current when it was fetched, so entries that outlive the switch would serve the
+        /// previous tenant's customization to the next one.
+        /// </para>
         /// </remarks>
         public static void ResetDefineCache()
         {
@@ -190,32 +196,43 @@ namespace Bee.UI.Core
         /// <summary>
         /// Gets the current company entered through <c>EnterCompany</c>, or <c>null</c> when no company
         /// context is active. Carries the company-level decimal-place overrides and default (home)
-        /// currency used to round computed numeric fields client-side (see plan-expression-rule-engine.md
-        /// Phase 2 Tier 2). Read-only UX aid; the server rounds authoritatively on save.
+        /// currency used to round computed numeric fields client-side. Read-only UX aid; the server rounds authoritatively on save.
         /// </summary>
         public static CompanyInfo? Company => _company;
 
         /// <summary>
-        /// Caches the capability snapshot and company info from an <c>EnterCompany</c> response. The host
-        /// calls this after <c>SystemApiConnector.EnterCompanyAsync</c> (alongside <see cref="ResetDefineCache"/>).
+        /// Caches the capability snapshot and company info from an <c>EnterCompany</c> response, and
+        /// discards definitions cached for the previous tenant. The host calls this after
+        /// <c>SystemApiConnector.EnterCompanyAsync</c>.
         /// </summary>
+        /// <remarks>
+        /// The cache flush is done here rather than left to the caller. Entering a company is exactly
+        /// the moment the tenant changes, and a host that forgets to flush gets the previous tenant's
+        /// customized layouts and captions with no error to point at it — a cross-tenant leak that
+        /// only shows up as wrong text on screen.
+        /// </remarks>
         /// <param name="response">The EnterCompany response carrying the capability snapshot and company.</param>
         public static void ApplyEnterCompanyResult(EnterCompanyResponse response)
         {
             ArgumentNullException.ThrowIfNull(response);
             _capabilities = response.Capabilities;
             _company = response.Company;
+            ResetDefineCache();
         }
 
         /// <summary>
-        /// Clears the cached capability snapshot and company info. The host calls this on
-        /// <c>LeaveCompany</c> (alongside <see cref="ResetDefineCache"/>) so a stale snapshot never leaks
-        /// across companies.
+        /// Clears the cached capability snapshot, company info and definition cache. The host calls
+        /// this on <c>LeaveCompany</c> / logout so nothing from the previous tenant survives.
         /// </summary>
+        /// <remarks>
+        /// Mirrors <see cref="ApplyEnterCompanyResult"/>: leaving a company is a tenant change too,
+        /// so the definition cache is flushed here rather than left to the caller.
+        /// </remarks>
         public static void ClearCompanyContext()
         {
             _capabilities = null;
             _company = null;
+            ResetDefineCache();
         }
 
         private static void SetConnectType(ConnectType connectType, string endpoint)
