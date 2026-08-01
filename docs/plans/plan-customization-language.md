@@ -97,7 +97,7 @@ per-key 命中/落空、enum、空 id 短路(`:58`)、無 reader(`:73`)。
 > 這條分界已寫進公開文件 [`definition-files-overview`](../definition-files-overview.md) §7（雙語），
 > 免得日後有人把「enum 沒做 entry 級」當成缺口去「修」。
 
-> **2026-08-01 一度誤實作為 G1-a 後已回退**（commit `9e3ce317` → `48d2ba5f`）。
+> **2026-08-01 一度誤實作為 G1-a 後已回退**（commit `9e3ce317` → `70d703aa`）。
 > 誤判來源：把使用者對文字 key 的通則描述外推到 enum entry。
 > `LookupEnum` 現況即最終樣貌：cust 有同名 enum 直接回 cust 實例，否則回 base 實例，
 > 兩者都是快取實例、零複製、零配置。
