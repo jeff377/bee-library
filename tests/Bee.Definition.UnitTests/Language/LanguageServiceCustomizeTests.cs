@@ -81,6 +81,58 @@ namespace Bee.Definition.UnitTests.Language
         }
 
         [Fact]
+        [DisplayName("同 namespace 同時載入套裝與客製：20 key 只客製 5 個，其餘延用套裝，客製獨有 key 亦生效")]
+        public void TryGetLangText_PartialOverride_MergesPerKeyAtLookupTime()
+        {
+            // 套裝語系檔：20 個 key。
+            var baseItems = Enumerable.Range(1, 20)
+                .Select(i => ($"Key{i:00}", $"套裝{i:00}"))
+                .ToArray();
+            var defineAccess = new StubDefineAccess("zh-TW");
+            defineAccess.AddResource("zh-TW", "Customer", baseItems);
+
+            // 客製語系檔：只改其中 5 個 key，另加 1 個套裝沒有的 key。
+            var reader = new SpyCustomizeReader();
+            reader.AddLanguage("acme", "zh-TW", "Customer",
+                ("Key03", "客製03"), ("Key07", "客製07"), ("Key11", "客製11"),
+                ("Key15", "客製15"), ("Key20", "客製20"),
+                ("KeyOnlyInCustomize", "客製獨有"));
+            var svc = new LanguageService(defineAccess, reader);
+
+            var overridden = new[] { "Key03", "Key07", "Key11", "Key15", "Key20" };
+            foreach (var (key, _) in baseItems)
+            {
+                string expected = overridden.Contains(key, StringComparer.Ordinal)
+                    ? $"客製{key.Substring(3)}"   // 同一個 key 兩邊都有 → 客製優先
+                    : $"套裝{key.Substring(3)}";  // 客製沒有 → 延用套裝
+                Assert.Equal(expected, svc.GetLangText("acme", "zh-TW", "Customer", key));
+            }
+
+            // 客製獨有的 key 也查得到（套裝無則加入）。
+            Assert.Equal("客製獨有", svc.GetLangText("acme", "zh-TW", "Customer", "KeyOnlyInCustomize"));
+
+            // 同一份套裝資源在未帶 customizeId 時完全不受影響（另一家公司 / 未客製的公司）。
+            Assert.Equal("套裝03", svc.GetLangText("zh-TW", "Customer", "Key03"));
+        }
+
+        [Fact]
+        [DisplayName("跨租戶隔離：A 公司的客製不影響 B 公司的查找結果")]
+        public void TryGetLangText_DifferentCustomizeIds_AreIsolated()
+        {
+            var defineAccess = new StubDefineAccess("zh-TW");
+            defineAccess.AddResource("zh-TW", "Customer", ("Key01", "套裝01"));
+            var reader = new SpyCustomizeReader();
+            reader.AddLanguage("acme", "zh-TW", "Customer", ("Key01", "acme 客製"));
+            reader.AddLanguage("globex", "zh-TW", "Customer", ("Key01", "globex 客製"));
+            var svc = new LanguageService(defineAccess, reader);
+
+            Assert.Equal("acme 客製", svc.GetLangText("acme", "zh-TW", "Customer", "Key01"));
+            Assert.Equal("globex 客製", svc.GetLangText("globex", "zh-TW", "Customer", "Key01"));
+            // 沒有客製檔的公司照樣拿套裝值。
+            Assert.Equal("套裝01", svc.GetLangText("initech", "zh-TW", "Customer", "Key01"));
+        }
+
+        [Fact]
         [DisplayName("Enum 疊加：cust 有同名 enum 時回 cust enum")]
         public void GetLangEnum_CustHasEnum_ReturnsCustEnum()
         {
