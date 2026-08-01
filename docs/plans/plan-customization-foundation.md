@@ -64,10 +64,15 @@ DI 接線本身完整，reader 已注入；問題純粹是**呼叫端沒傳 `cus
 | BO 語系 | `BusinessObject.cs:95-105` | `GetLangText(lang, ...)` | 加 customizeId | 語系 | ✅ F2（新增 `GetCurrentCustomizeId()`） |
 | 一般在地化 | `BeeStringLocalizer.cs:60,66` | base overload | 加 customizeId 管道 | 語系 | ✅ F2（3-arg ctor 委派多載；**repo 內無註冊點／消費端，僅加 API 未端到端驗證**） |
 | Schema 在地化 | `FormSchemaLocalizer.cs:73,89,101,136` | base overload | 加 customizeId 管道 | 語系 | ✅ F2（`Localize` customizeId 多載） |
-| FormLayout | `CacheDefineAccess.cs:112`（`GetDefine`） | `GetFormLayout(keys[0])` | 簽章無 customizeId，需另議 | Layout | 📝 未動（結構問題見 [Layout plan](plan-customization-layout.md)） |
+| FormLayout | `CacheDefineAccess.cs:112`（`GetDefine`） | `GetFormLayout(keys[0])` | ~~簽章無 customizeId，需另議~~ **不需改** | Layout | ✅ 非缺口（2026-08-01 裁決） |
 
 > `BusinessObjectFactory` 連 `ISessionInfoService` 都已注入(`:25`)，只是沒用它讀 `CustomizeId`。
 > 多數接線是「補傳一個參數」，但 Layout 那條有結構問題（見 Layout plan）。
+
+> **2026-08-01 裁決：最後一列不是缺口。** `GetDefine` 的語意是**未經任何處理的原始定義檔**，
+> 客製疊加、生成、在地化等運行階段加工一律歸 `GetFormLayout`——所以 `GetDefine` 走單參數
+> 多載是正確的，不需要 customizeId。Layout 真正的結構問題在別處（API 從 schema 即時生成、
+> 且兩個 UI head 根本不向 server 要 layout），見 [Layout plan](plan-customization-layout.md) §1.2 與決策 L4。
 
 **決策 A1：customizeId 的傳遞方式 — ✅ 已定案（2026-07-31）：依消費端性質二分，來源都是 `EnterCompany` 已回傳的值**
 
