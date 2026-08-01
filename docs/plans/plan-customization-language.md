@@ -1,4 +1,4 @@
-# Plan：語系客製化（討論稿）
+# Plan：語系客製化
 
 > 狀態：🚧 進行中（G1–G3 已完成，G5 裁決不做；G4 待決策 G3，G6 待 foundation F3）· 2026-08-01
 > 範圍：**語系資源的租戶客製**——某些單據或行為，公司有慣用語（欄位標題、表單名稱、訊息、選項文字）。
@@ -13,6 +13,12 @@
 `LanguageService` 的 **per-key 疊加**已正確實作，但兩個主要消費端
 （`FormSchemaLocalizer` / `BeeStringLocalizer`）**沒有 customizeId 管道**——
 導致最常見的客製需求「**欄位標題／表單名稱改成公司慣用語**」目前完全不支援。
+
+> **2026-08-01 進度更正（G1–G3 落地後）**：上述缺口**已補完**——四個伺服端消費端都接上
+> `SessionInfo.CustomizeId`，「欄位標題／表單名稱改成公司慣用語」在伺服端已支援（§1.2）。
+> 仍未做的是 `GetLanguage` API 的疊加（G4，決策 G3 未定）與端到端驗證（G6，卡 foundation F3）。
+> 且**實務上還沒有部署會餵值進來**：至今沒有 head 走過 `EnterCompany`，`CustomizeId` 恆為空
+> （foundation §2.C）。
 
 ---
 
