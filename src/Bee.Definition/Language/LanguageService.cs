@@ -12,11 +12,14 @@ namespace Bee.Definition.Language
     /// the <c>LanguageResourceCache</c> slot behind <see cref="IDefineAccess"/>;
     /// this service does no caching of its own.
     ///
-    /// When a non-empty customization code is supplied, the lookup is overlaid per key: the
-    /// customization resource wins when it contains the requested key, otherwise the base value
-    /// is used. base and cust resources are never merged into a single object, and the base cache
-    /// is never mutated. An empty customization code (or no <see cref="ICustomizeDefineReader"/>)
-    /// short-circuits straight to the base lookup — bit-for-bit identical to the non-customized path.
+    /// When a non-empty customization code is supplied, the lookup is overlaid at the finest
+    /// granularity the artifact has: per text key, and per <see cref="LanguageEnum"/> entry. The
+    /// customization value wins where it exists, the base value applies everywhere else, and a
+    /// key / entry only the customization declares is added. The two resources are looked up
+    /// independently and the base cache is never mutated — an overlaid enum is returned as a fresh
+    /// instance rather than by writing into either layer. An empty customization code (or no
+    /// <see cref="ICustomizeDefineReader"/>) short-circuits straight to the base lookup —
+    /// bit-for-bit identical to the non-customized path.
     /// </remarks>
     public sealed class LanguageService : ILanguageService
     {
@@ -157,16 +160,65 @@ namespace Bee.Definition.Language
 
         private LanguageEnum? LookupEnum(string customizeId, string lang, string @namespace, string enumName)
         {
-            // Customization overlay: a cust enum wins over the base enum of the same name.
+            LanguageEnum? custEnum = null;
             if (TryGetCustomizeResource(customizeId, lang, @namespace, out var custResource))
+                custEnum = custResource!.GetEnum(enumName);
+
+            var baseEnum = _defineAccess.GetLanguage(lang, @namespace)?.GetEnum(enumName);
+
+            // The common paths hand back the cached instance untouched: no customization at all,
+            // or only one of the two layers declares this enum.
+            if (custEnum is null)
+                return baseEnum;
+            if (baseEnum is null)
+                return custEnum;
+
+            return MergeEnum(baseEnum, custEnum);
+        }
+
+        /// <summary>
+        /// Overlays a customization enum onto its base counterpart at <b>entry</b> granularity,
+        /// mirroring how text keys overlay: an entry the customization declares wins, every other
+        /// entry keeps its base text, and an entry only the customization declares is appended.
+        /// </summary>
+        /// <param name="baseEnum">The base-layer enum. Never mutated.</param>
+        /// <param name="custEnum">The customization-layer enum. Never mutated.</param>
+        /// <returns>A new <see cref="LanguageEnum"/> owned by nobody, safe for the caller to read.</returns>
+        /// <remarks>
+        /// <para>
+        /// Order is the base document order, with customization-only entries appended in their own
+        /// order — so a customization that renames two options does not reshuffle the dropdown.
+        /// </para>
+        /// <para>
+        /// A customization <b>cannot remove</b> a base entry: the file expresses "override or add",
+        /// with no way to say "drop this code". Removal would change which values the field accepts
+        /// and is deliberately not expressible here.
+        /// </para>
+        /// <para>
+        /// Both inputs are process-shared cache instances, so the merge allocates a fresh result
+        /// rather than writing into either one. The allocation happens only when a tenant customizes
+        /// an enum the base layer also declares; every other path returns a cached instance directly.
+        /// </para>
+        /// </remarks>
+        private static LanguageEnum MergeEnum(LanguageEnum baseEnum, LanguageEnum custEnum)
+        {
+            var merged = new LanguageEnum { Name = baseEnum.Name };
+
+            foreach (var entry in baseEnum.Entries)
             {
-                var custEnum = custResource!.GetEnum(enumName);
-                if (custEnum != null)
-                    return custEnum;
+                string text = custEnum.Entries.Contains(entry.Code)
+                    ? custEnum.Entries[entry.Code].Text
+                    : entry.Text;
+                merged.Entries.Add(entry.Code, text);
             }
 
-            var resource = _defineAccess.GetLanguage(lang, @namespace);
-            return resource?.GetEnum(enumName);
+            foreach (var entry in custEnum.Entries)
+            {
+                if (!baseEnum.Entries.Contains(entry.Code))
+                    merged.Entries.Add(entry.Code, entry.Text);
+            }
+
+            return merged;
         }
 
         /// <summary>

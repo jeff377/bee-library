@@ -164,9 +164,11 @@ The directory need not exist. A tenant that supplies no file for a given lookup 
 
 | Type | Overlay granularity |
 |------|--------------------|
-| **LanguageResource** | **Per key.** The customization file holds only the keys it changes; every other key comes from base — so a base translation added later propagates automatically |
+| **LanguageResource** | **Per key, and per enum entry.** The customization file holds only what it changes; everything else comes from base — so a base translation added later propagates automatically. A `LanguageEnum` overlays entry by entry: customized entries win, untouched entries keep their base text in base order, and customization-only entries are appended. A customization can override or add an entry, never remove one |
 | **ProgramSettings** | **Per progId.** A customization entry wins over the base entry of the same progId |
 | **FormLayout** | **Whole file.** A customization layout replaces the base layout for that `layoutId` |
+
+The granularities differ on purpose. A language resource is a flat bag of independent keys, so merging key by key is both cheap and obvious — "this label reads differently here" leaves everything else alone. A layout is a single visual arrangement: sections, ordering, column spans and nesting only make sense as a whole, and a partial merge would raise questions ("this section moved — do the fields under it follow?") with no intuitive answer. So a tenant that customizes a layout owns that layout, and one that does not gets the base layout untouched.
 
 > **FormSchema and TableSchema are permanently excluded.** Both drive the database schema and the validation rules as well as the UI; letting them diverge per tenant would split the physical schema. This is a decision, not a gap — see ADR-016.
 

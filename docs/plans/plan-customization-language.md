@@ -1,6 +1,6 @@
 # Plan：語系客製化（討論稿）
 
-> 狀態：🚧 進行中（G1–G3 已完成；G4、G5 待 G1 / G3 決策，G6 待 foundation F3）· 2026-07-31
+> 狀態：🚧 進行中（G1–G3、G5 已完成；G4 待決策 G3，G6 待 foundation F3）· 2026-08-01
 > 範圍：**語系資源的租戶客製**——某些單據或行為，公司有慣用語（欄位標題、表單名稱、訊息、選項文字）。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 未補則本案無法生效）
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -52,12 +52,15 @@ public bool TryGetLangText(string customizeId, string lang, string @namespace, s
 > （sub-key 規範：`Schema.DisplayName` / `Table.X.DisplayName` / `Field.X.Caption`），
 > 也是目前缺口最明確的一項。
 
-### 1.3 Enum 客製粒度較粗
+### 1.3 Enum 客製粒度較粗（**G5 已補完**）
 
 `LanguageService.LookupEnum`（`:158-170`）是 **enum 級**（非 entry 級）——
 cust 一旦有同名 enum 就**整組取代**，無法只改一個 code 的文字。
 
 > 與文字的 key 級疊加不一致。客製只想改一個選項，就得複製整組 enum 的所有 entry。
+
+> **2026-08-01 已修**：改為 entry 級（決策 G1-a）。`LookupEnum` 在兩層皆宣告該 enum 時
+> 走 `MergeEnum` 另建新實例；只有一層宣告或未帶 customizeId 時維持回傳快取實例、零配置。
 
 ### 1.4 測試
 
@@ -76,17 +79,28 @@ per-key 命中/落空、enum、空 id 短路(`:58`)、無 reader(`:73`)。
 
 ## 2. 設計決策
 
-### 決策 G1：Enum 覆蓋粒度
+### 決策 G1：Enum 覆蓋粒度 — ✅ 已定案（2026-08-01）：採 G1-a，entry 級覆蓋
 
-- **選項 G1-a（建議）**：改為 **entry 級**覆蓋，與文字 key 級一致。
+- **選項 G1-a（採用）**：改為 **entry 級**覆蓋，與文字 key 級一致。
   客製檔只放要改的 entry，其餘 fallback base。
   優點：一致、客製檔最小、base 新增 entry 自動傳播。
   缺點：需改 `LookupEnum` 疊加邏輯；「刪除某個 entry」的語意需另外表達（若有此需求）。
 - **選項 G1-b**：維持整組取代。
   優點：零改動、語意單純。缺點：客製檔冗長、base 新增 entry 不會傳播到客製版。
 
-> 待討論：實務上客製 enum 是「改一兩個選項的說法」還是「整組選項都不同」？
-> 前者強烈指向 G1-a。
+> 定案理由：使用者已明確把客製化語系的通則講成「客製只改其中幾個 key，其餘延用套裝、
+> 無則加入，同一 key 客製優先」。enum entry 就是同一個通則的另一個粒度，沒有理由自成例外。
+
+**落地時一併裁決的兩個附帶語意**（原 G1-a 標為「需另外表達」的部分）：
+
+| 議題 | 結論 |
+|------|------|
+| entry 順序 | 維持 **base 文件順序**，客製獨有的 entry **接在最後**。客製改兩個選項的說法，不應重排下拉選單 |
+| 刪除 entry | **不支援**。客製檔語意是「覆寫或新增」，沒有「移除這個 code」的表達方式——移除會改變欄位可接受的值域，刻意不開放 |
+
+> 實作為 `LanguageService.MergeEnum`：兩層皆宣告該 enum 時**另建新實例**回傳，不寫入任一層
+> （兩者都是 process-wide 快取實例，見 `../development-constraints.md`）。
+> 只有一層宣告或未帶 customizeId 時，直接回快取實例、零配置。
 
 ### 決策 G2：customizeId 取得方式 — ✅ 已定案（2026-07-31，由 foundation 決策 A1 涵蓋）
 
@@ -122,12 +136,12 @@ client（含**純 JS，無 .NET**）透過 `GetLanguage` 取整份語系資源�
 
 | 階段 | 範圍 | 前置 | 狀態 |
 |------|------|------|------|
-| G0 | 決策定案（G1 enum 粒度、G2 傳遞方式、G3 API 疊加） | foundation F0 | 🚧 G2 ✅ 已定案（由 A1 涵蓋）；**G1、G3 仍未決** |
+| G0 | 決策定案（G1 enum 粒度、G2 傳遞方式、G3 API 疊加） | foundation F0 | 🚧 G1 ✅ 定案 G1-a（2026-08-01）、G2 ✅ 已定案（由 A1 涵蓋）；**G3 仍未決** |
 | G1 | `FormSchemaLocalizer` 加 customizeId 管道 ★ | foundation F1、F2 | ✅ 已完成（2026-07-31）。`Localize(schema, customizeId, lang)` 多載；呼叫端 `SystemBusinessObject.Define.cs` `LoadAndLocalizeSchema` 傳 `GetCurrentCustomizeId()` |
 | G2 | `BeeStringLocalizer<T>` 加 customizeId 管道 | 同上 | ✅ 已完成（2026-07-31）。3-arg ctor 加 `Func<string> customizeIdProvider`。**注意：repo 內無任何註冊點與消費端**，故只加得了 API，無法端到端驗證 |
 | G3 | `BusinessObject.GetLangText` 接線（讀 `SessionInfo.CustomizeId`） | 同上 | ✅ 已完成（2026-07-31）。新增 `GetCurrentCustomizeId()`（比照 `GetCurrentLang()`）；`GetLangText(fullKey)` 改為就地切 key 後走 customizeId 多載 |
 | G4 | `GetLanguage` API 依 G3 決策疊加 | 決策 G3 + **foundation F3**（client 快取失效） | 📝 待做（決策未定，**不在本次交接範圍**） |
-| G5 | Enum entry 級覆蓋（若選 G1-a） | 決策 G1 | 📝 待做（決策未定，**不在本次交接範圍**） |
+| G5 | Enum entry 級覆蓋（若選 G1-a） | 決策 G1 | ✅ 已完成（2026-08-01）。`LanguageService.MergeEnum`；順序沿用 base、客製獨有 entry 附加於後、不支援刪除 |
 | G6 | 端到端測試：帶 CustomizeId 的 session → API → 拿到客製文字 | foundation F3 | 📝 待做（**不在本次交接範圍**） |
 
 > 回歸防護：**未設 CustomizeId 時，所有語系查找結果與現況逐位元一致**。
@@ -136,7 +150,8 @@ client（含**純 JS，無 .NET**）透過 `GetLanguage` 取整份語系資源�
 
 ## 4. 給 review 的提問
 
-1. **客製 enum 是「改一兩個選項說法」還是「整組不同」？** → 決定 G1 是否要做 entry 級。
+1. ~~**客製 enum 是「改一兩個選項說法」還是「整組不同」？** → 決定 G1 是否要做 entry 級。~~
+   ✅ 2026-08-01 定案：前者，做 entry 級（G1-a，見 §2 決策 G1）。
 2. **客製語系的涵蓋面**：主要是欄位標題／表單名稱（`FormSchemaLocalizer`），
    還是也包含 BO 訊息、驗證錯誤文字、UI 一般字串？→ 決定 G1~G3 的優先序。
 3. **`GetLanguage` API 疊加**走 server 端疊好（G3-a）還是 client 自行疊加（G3-b）？
