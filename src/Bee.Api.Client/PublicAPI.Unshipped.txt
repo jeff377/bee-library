@@ -32,3 +32,4 @@ static Bee.Api.Client.Definitions.LanguageLayers.operator ==(Bee.Api.Client.Defi
 static Bee.Api.Client.Definitions.SnapshotLanguageService.BuildKey(string! lang, string! ns) -> string!
 ~override Bee.Api.Client.Definitions.LanguageLayers.Equals(object obj) -> bool
 ~override Bee.Api.Client.Definitions.LanguageLayers.ToString() -> string
+Bee.Api.Client.Connectors.SystemApiConnector.SetDeploymentAdminAsync(string! userId, bool isDeploymentAdmin) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetDeploymentAdminResponse!>!

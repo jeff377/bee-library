@@ -87,5 +87,38 @@ namespace Bee.Repository.System
             var value = table.Rows[0][0];
             return value == null || value == DBNull.Value ? string.Empty : ValueUtilities.CStr(value).Trim();
         }
+
+        /// <inheritdoc/>
+        public bool IsDeploymentAdmin(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) { return false; }
+
+            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            string tbl = dbType.QuoteIdentifier("st_user");
+            string colFlag = dbType.QuoteIdentifier("deployment_admin");
+            string colId = dbType.QuoteIdentifier("sys_id");
+
+            string sql = $"SELECT {colFlag} FROM {tbl} WHERE {colId} = {{0}}";
+            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar, sql, userId));
+            // Null covers "no such user" and a column not yet populated by an older row. Both deny.
+            return result.Scalar != null && result.Scalar != DBNull.Value && ValueUtilities.CBool(result.Scalar);
+        }
+
+        /// <inheritdoc/>
+        public bool SetDeploymentAdmin(string userId, bool isDeploymentAdmin)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) { return false; }
+
+            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            string tbl = dbType.QuoteIdentifier("st_user");
+            string colFlag = dbType.QuoteIdentifier("deployment_admin");
+            string colId = dbType.QuoteIdentifier("sys_id");
+
+            string sql = $"UPDATE {tbl} SET {colFlag} = {{0}} WHERE {colId} = {{1}}";
+            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var spec = new DbCommandSpec(DbCommandKind.NonQuery, sql, isDeploymentAdmin, userId);
+            return dbAccess.Execute(spec).RowsAffected > 0;
+        }
     }
 }

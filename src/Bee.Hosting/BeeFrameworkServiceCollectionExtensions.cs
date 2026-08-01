@@ -265,6 +265,12 @@ namespace Bee.Hosting
                 new AuthorizationService(
                     sp.GetRequiredService<ISessionInfoService>(),
                     sp.GetRequiredService<IRolePermissionService>()));
+            // Deployment-level authorization: a separate axis from the company-scoped service above.
+            // The two never fall back to one another — see IDeploymentAuthorizationService.
+            services.AddSingleton<IDeploymentAuthorizationService>(sp =>
+                new DeploymentAuthorizationService(
+                    sp.GetRequiredService<ISessionInfoService>(),
+                    sp.GetRequiredService<ISystemRepositoryFactory>()));
 
             // API key validation (application identity). Registered plainly rather than through the
             // configurable-component path: a host that wants different key storage replaces it with

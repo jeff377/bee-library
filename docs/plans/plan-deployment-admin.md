@@ -1,10 +1,10 @@
 # 計畫：部署層管理員（不綁公司的營運權限）
 
-**狀態：📝 擬定中（2026-07-30）**
+**狀態：🚧 進行中（2026-08-01）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 身分來源與判定接縫：`IDeploymentAuthorizationService` ＋ 首位管理員的產生路徑 | 📝 待做 |
+| 1 | 身分來源與判定接縫：`IDeploymentAuthorizationService` ＋ 首位管理員的產生路徑 | ✅ 已完成（2026-08-01） |
 | 2 | 套用至 API Key：`CreateApiKey` 等改由部署層權限把關，遠端管理成立 | 📝 待做 |
 | 3 | 稽核、文件（雙語）與既有部署的升級指引 | 📝 待做 |
 
@@ -51,66 +51,173 @@ API Key plan 階段 1 因此把 `CreateApiKey` 定為 `LocalOnly`，並留下「
 |------|------|----------------|
 | `IAuthorizationService.Can(accessToken, modelId, action)` | 無 `CompanyId` 即回 `false` | 不改它；另立一條平行判定，避免把公司層語意攪混 |
 | `RepositoryDatabaseRouter.Resolve` | `DbScope.Common` / `Log` 不需要公司即可解析 | 部署層操作只碰 common / log 庫，**天然不需要進公司**，router 已支援 |
-| `st_user` | 位於 common 庫，無任何管理員欄位 | 身分來源的候選位置（見 D1） |
+| `st_user` | 位於 common 庫，無任何管理員欄位 | 身分來源（D1） |
+| `st_user` **沒有出貨的 FormSchema** | 框架只出貨 TableSchema | 自我提權的防線現況只是「框架碰巧沒開這扇門」，不是機制（見 D6） |
+| [UserRepository.cs](../../src/Bee.Repository/System/UserRepository.cs) | 目前**純讀**（`GetRowIdBySysId` / `GetLocale` / `GetName`） | 旗標的讀寫是它的第一組寫入方法 |
 | `CreateApiKey` | `LocalOnly` | 階段 2 改為部署層權限把關後，遠端管理才成立 |
 
-## 決策待議
+## 設計定案
 
-### D1：管理員身分放哪裡
+四項原「決策待議」於 2026-08-01 定案，另補三項實作時必然撞上、原 plan 未涵蓋的決策（D5–D7）。
 
-| 選項 | 說明 | 評估 |
-|------|------|------|
-| **A. `st_user` 加旗標欄** | 如 `deployment_admin`（Boolean） | 最簡、common 庫天然不綁公司、立刻可用。粒度是全有全無 |
-| B. common 庫另建一組 RBAC | `st_deployment_role` / `_grant` / `st_user_deployment_role`，鏡像公司層那三張表 | 粒度細、可擴充；為了目前唯一的消費者（API Key）造一整套，成本明顯過頭 |
-| C. 設定檔列舉管理員帳號 | 寫在 `SystemSettings` | 不進 DB、無管理介面；改名單要改檔案，且「營運行為不該是部署設定」正是 API Key plan 否決定義檔的理由 |
-| D. 沿用 `PermissionModels` 加部署層 model | 模型定義複用，角色資料另存 common | 看似省事，但會讓同一套 model id 有兩種 scope 語意，日後難解釋 |
+### D1：管理員身分放在 `st_user` 的旗標欄（定案）
 
-**傾向 A，但判定走新接縫**：`IDeploymentAuthorizationService`（`Bee.Definition/Identity/`），
-呼叫端只問「這個 token 能不能做這件事」。今天以旗標實作，日後若真需要細粒度，
-換掉實作即可、呼叫端不動。**先立接縫、後補粒度**，而不是先造一套沒人用的 RBAC。
+`st_user` 增設 `deployment_admin`（Boolean）。common 庫天然不綁公司、立刻可用，
+粒度是全有全無。
 
-### D2：授權粒度
+落選方案與理由：
 
-- **全有全無**（`IsDeploymentAdmin(accessToken)`）——與 D1-A 相稱，一句話講得清楚。
-- **動作別**（`Can(accessToken, DeploymentAction.ManageApiKey)`）——接縫上先留列舉，
-  實作先一律以旗標回答；日後細分不必改簽章。
+| 選項 | 不採用的理由 |
+|------|------------|
+| common 庫另建一組 RBAC（`st_deployment_role` 等三張表） | 為目前唯一的消費者（API Key）造一整套，成本明顯過頭 |
+| 設定檔列舉管理員帳號 | 不進 DB、無管理介面；「營運行為不該是部署設定」正是 API Key plan 否決定義檔的理由 |
+| 沿用 `PermissionModels` 加部署層 model | 同一套 model id 會有兩種 scope 語意，日後難解釋 |
 
-傾向**後者的簽章 ＋ 前者的實作**：介面帶動作參數，實作階段先全有全無。
-簽章多一個參數的成本，遠低於日後回頭改所有呼叫端。
+**判定一律走新接縫** [IDeploymentAuthorizationService](../../src/Bee.Definition/Identity/IDeploymentAuthorizationService.cs)
+（`Bee.Definition/Identity/`），呼叫端只問「這個 token 能不能做這件事」。
+今天以旗標實作，日後若真需要細粒度，換掉實作即可、呼叫端不動——**先立接縫、後補粒度**。
 
-### D3：首位管理員怎麼產生（雞生蛋）
+### D2：介面帶動作參數，實作先全有全無（定案）
 
-沒有管理員就沒人能指派管理員。比照 API Key plan 階段 1 讓第一把金鑰得以產生的處理方式：
+簽章為 `Can(Guid accessToken, DeploymentAction action)`，
+[DeploymentAction](../../src/Bee.Definition/Identity/DeploymentAction.cs) 目前只有 `ManageApiKey`。
+實作階段一律以旗標回答，不看 action。簽章多一個參數的成本，遠低於日後回頭改所有呼叫端。
 
-| 選項 | 說明 |
-|------|------|
-| A. 本機宿主指派 | 保留一條 `LocalOnly` 的指派方法，第一位在主機上設定，之後遠端接手 |
-| B. seed 資料 | 建庫時把 seed 使用者標為管理員 |
-| C. 設定檔 bootstrap 帳號 | 設定檔指定一個帳號永遠具管理員身分（救援用） |
+### D3：首位管理員由本機指派產生（定案）
 
-傾向 **A ＋ B**：新部署由 seed 直接有一位；既有部署以本機方法指派第一位。
-C 留作救援手段時要注意它等於一個永久後門，需明確權衡。
+- **框架提供的路徑只有一條**：`SystemBO.SetDeploymentAdmin` 為 `LocalOnly`，第一位在主機上指派，
+  之後遠端接手。
+- **seed 由部署端決定**：框架的 `Defaults/` 只出貨 TableSchema，不出貨 `st_user` 資料列，
+  因此「新部署預先標一位管理員」是各部署 seeder 的事，框架只保證欄位預設為非管理員。
+- **設定檔 bootstrap 帳號（原 D3-C）否決**——它等於一個永久後門，與 D1 否決設定檔路徑同一理由。
+  移入「不在範圍」。
 
-### D4：本 plan 的涵蓋範圍
+### D4：本 plan 只解 API Key（定案）
 
-- **僅解 API Key**（最小，解鎖 api-key-store 階段 3 即收工），或
-- **一併把公司管理納入**（建立 / 停用試用公司），與租賃方向對齊。
+公司管理的形狀要等列級租戶隔離落地才看得清楚，現在一起做會兩邊互相等待。
+接縫立起來後，公司管理只是多一個 `DeploymentAction`。
 
-傾向**僅解 API Key**：公司管理的形狀要等列級租戶隔離落地才看得清楚，
-現在一起做會兩邊互相等待。接縫立起來後，公司管理只是多一個 `DeploymentAction`。
+### D5：判定路徑每次查 DB，刻意不快取（新增，定案）
+
+`AuthorizationService` 的 class summary 明寫 **"both from cache — zero DB on the check path"**；
+本條路徑**刻意不對稱**：`Can()` → session → `IUserRepository.IsDeploymentAdmin(userId)` 直接查 DB。
+
+理由：部署層操作（鑄金鑰、指派管理員）低頻，省下的那次查詢不值得引入一組快取與其一致性問題；
+更重要的是**撤銷管理員必須即時生效**，而快取方案都會帶一段延遲。
+
+落選方案：
+
+| 選項 | 不採用的理由 |
+|------|------------|
+| Cache 物件 + cache-notify（比照 `ApiKeyCache`） | 為單一 bool 造一整組快取（`ICacheContainer` 三處同步、兩個 CacheNotify stub），成本與收益不成比例 |
+| 登入時寫進 `SessionInfo` | 零 DB 零新元件，但**撤銷要等既有 session 過期**——提權旗標不該吃這個延遲 |
+
+> 這條要寫進 `IDeploymentAuthorizationService` 實作的 XML doc，否則日後 review 會被當成
+> 「忘了加快取」的不一致。
+
+### D6：旗標的唯一寫入口是 `SetDeploymentAdmin`（新增，定案）
+
+原 plan 的風險表只寫「不得經一般使用者維護表單寫入」這個**原則**，沒有機制。
+現況能成立純粹是框架沒出貨 `st_user` 的 FormSchema——部署端自建一張含該欄的維護表單，防線就沒了。
+
+定案為 **runtime 硬性排除**：FormSchema 驅動的寫入路徑
+（[DataFormRepository.Update](../../src/Bee.Repository/Form/DataFormRepository.cs) →
+`TableSchemaCommandBuilder.BuildUpdateSpec`）必須剔除受保護欄，即使 FormSchema 宣告了它。
+
+階段 1 要決的實作細節（兩者不互斥，runtime 那層是必要條件）：
+
+| 層 | 作用 | 限制 |
+|----|------|------|
+| runtime 剔除（**必做**） | 組 INSERT / UPDATE 欄位時濾掉 `st_user.deployment_admin` | 需要一份「受保護欄」清單（table + column），落點是 `DataFormRepository` 或 `TableSchemaCommandBuilder` |
+| 定義層驗證（可選） | 比照 `FormSchemaTableRegistrationAnalyzer`，宣告期就擋 | 擋不住部署端 runtime 才載入的定義檔，只能當早期警示 |
+
+### D7：`SetDeploymentAdmin` 走既有 BO / wire 樣板（定案）
+
+即使是 `LocalOnly`，方法仍經 executor 派發，因此照 `bee-add-bo-method` 的跨層樣板走：
+`SystemActions.SetDeploymentAdmin` 常數、`ISetDeploymentAdminRequest/Response` 契約、
+`SetDeploymentAdminRequest/Response` wire 型別、`IUserRepository.SetDeploymentAdmin`。
+比照 `CreateApiKey` 的形狀，不另開特例。
+
+依 D1 的「BO 介面是 BO-to-BO 解耦層」規範，此方法**無跨 BO 消費者，不放 `ISystemBusinessObject`**。
+
+## 階段 1：身分來源與判定接縫
+
+> 工作區已有部分骨架（`DeploymentAction`、`IDeploymentAuthorizationService`、
+> `IUserRepository` 兩個方法、`SetDeploymentAdmin` 的 contract / wire 型別、`SystemActions` 常數），
+> 尚未 commit、尚未接線、尚未有實作與測試。
+
+1. **`st_user` 加欄 `deployment_admin`**（`DbType="Boolean"`、`AllowNull=false`），三份 TableSchema
+   同步：[Defaults](../../src/Bee.Definition/Defaults/TableSchema/common/st_user.TableSchema.xml)、
+   `tests/Define/TableSchema/common/`、`apps/Bee.Northwind/Define/TableSchema/common/`。
+   既有部署走框架自動 schema 升級（ALTER ADD），既有列由 DEFAULT 填 0。
+   > **不要顯式寫 `DefaultValue="0"`** —— 會讓 schema 比對永遠判定需升級，見執行結果與
+   > `docs/repo-ops/gotchas/database.md`。
+   > `DefaultsTests` 有嵌入檔數斷言，改 Defaults 時留意。
+2. **`UserRepository` 補 `IsDeploymentAdmin` / `SetDeploymentAdmin`**——它目前純讀，這是第一組寫入。
+   查無使用者時 `IsDeploymentAdmin` 回 `false`（授權問題，兩種情況都該拒）、`SetDeploymentAdmin` 回 `false`。
+3. **`DeploymentAuthorizationService` 實作**（落點比照 `AuthorizationService`，
+   `Bee.ObjectCaching/Services/`），由 `AddBeeFramework` 註冊。依 D5 每次查 DB，
+   並在 XML doc 寫明「刻意不快取」的理由。DB 異常時 **fail-closed**（回 `false`，比照 API Key gate）。
+4. **`SystemBO.SetDeploymentAdmin`**：`[ApiAccessControl(LocalOnly, Authenticated)]`，
+   比照 `SaveDefine` 加一道 defence-in-depth 的 `IsLocalCall` 檢查。
+5. **D6 的 runtime 排除**：受保護欄清單 + 寫入路徑剔除。
+6. **測試 seed 不標管理員**（D3）：測試環境若預設有管理員，「無權」路徑就測不到。
+   會改寫旗標的測試一律建立自己的使用者列，不共用 seed 使用者。
+7. **測試**：旗標讀寫 round-trip（各 dialect）／查無使用者回 `false`／`Can` 對非管理員回 `false`／
+   DB 異常 fail-closed／`SetDeploymentAdmin` 遠端呼叫被拒／**D6：FormSchema 宣告了該欄仍寫不進去**。
+
+**驗收**：主機上可指派第一位管理員；`Can(token, ManageApiKey)` 對管理員回 `true`、對其他
+已登入使用者回 `false`；經一般 FormSchema 寫入路徑改不到該欄。
+
+### 執行結果（2026-08-01）
+
+驗收條件全數達成，`dotnet build Bee.Library.slnx -c Release --no-incremental` 0w/0e、
+`./test.sh` 全綠（新增 21 個測試）。與計畫的差異與追加決策：
+
+| 項目 | 落地情況 |
+|------|---------|
+| **D3-B「seed 直接有一位管理員」不由框架落地** | 計畫寫「建庫 seed 標一位管理員」，但框架的 `Defaults/` 只出貨 TableSchema、**沒有出貨 `st_user` 資料列的機制**——seed 使用者是各部署（與測試 fixture）自己的事。框架能提供的就是欄位 DEFAULT 0 與 `SetDeploymentAdmin` 這條指派路徑；「新部署要不要預先標一位」由部署端 seeder 決定。測試 seed 使用者刻意**不**標管理員，「無權」路徑才測得到 |
+| **`DefaultValue="0"` 反而讓 schema 比對永遠不一致** | 原本照 `st_api_key` 的樣子寫 `DefaultValue="0"`，結果 `TableSchemaBuilder` 對 `st_user` 永遠回 `Upgrade`（3 個既有測試連續失敗）。根因是讀回端把「等於內建預設」的 default 正規化成空字串，兩側因此永遠不等。正解是**不要顯式寫**——內建預設本來就是 0，DDL 產出完全相同。已記入 `docs/repo-ops/gotchas/database.md` |
+| **測試不得共用 seed 使用者 `001`** | 第一版讓 repository 與 BO 兩組測試都改 `001` 的旗標，兩個測試專案是不同行程 → 跨行程競賽（實際紅過一次）。改為各自建立唯一使用者、finally 刪除，helper 落在 `tests/Bee.Tests.Shared/TestUsers.cs` |
+| D6 的 runtime 剔除落點 | 定在 `DataFormRepository.Save`（`RemoveProtectedFields`），**不放 `TableSchemaCommandBuilder`**——後者是 `Bee.Db` 的通用 DML 工具，沒有理由知道框架保留哪些欄。清單是 `Bee.Definition.ProtectedFields`，以 `table.column` 成對判定 |
+| D6 的定義層 analyzer | 未做。runtime 剔除已是必要且充分的防線，analyzer 只是早期警示，等真的有人踩到再說 |
+| `docs/api-method-reference.md`（雙語） | 同步新增 `SetDeploymentAdmin` 一列（`BoApiSurfaceTests` 的 baseline 亦同步） |
+
+## 階段 2：套用至 API Key
+
+`CreateApiKey`（及日後 API Key plan 階段 3 的停用 / 列出）**不能單純從 `LocalOnly` 降級**——
+那會斷掉階段 1 刻意保留的 bootstrap 路徑：**尚無管理員的既有部署會連第一把金鑰都鑄不出來**。
+
+定案形狀為**同一方法內分流**：
+
+- `IsLocalCall` → 直通（維持既有的部署期作業能力，不需要管理員）
+- 遠端 → 要求 `IDeploymentAuthorizationService.Can(token, DeploymentAction.ManageApiKey)`
+
+保護等級因此從 `LocalOnly` 放寬為 `Encrypted`，把關改由部署層授權承擔。
+
+**驗收**：管理員可從遠端鑄金鑰；一般已登入使用者被拒；行程內呼叫行為與升級前一致。
+
+## 階段 3：稽核與文件
+
+1. 所有部署層操作進稽核並明確記錄操作者，與 API Key 的呼叫端識別同一套。
+   **`SetDeploymentAdmin` 本身是提權動作，必須留痕。**
+2. 雙語文件說明部署層管理員的定位，明寫「**部署層管理員不會因此取得任何公司的資料權限**」。
+3. 既有部署的升級指引：加欄自動升級、第一位管理員如何指派。
 
 ## 風險
 
 | 風險 | 因應 |
 |------|------|
-| **自我提權**：能編輯 `st_user` 的人把自己標成管理員 | 管理員欄位**不得**經一般使用者維護表單寫入——欄位層保護，且指派本身要是一個獨立的、需管理員權限的動作 |
-| 部署層操作繞過公司隔離而無痕 | 所有部署層操作一律進稽核，且明確記錄操作者；與 API Key 的呼叫端識別同一套 |
-| 與公司層權限混淆 | 兩條判定分屬不同介面、不同資料來源，不互相 fallback；文件明寫「部署層管理員**不會**因此取得任何公司的資料權限」 |
+| **自我提權**：能編輯 `st_user` 的人把自己標成管理員 | D6 的 runtime 硬性排除——旗標唯一寫入口是需管理員權限（或本機）的獨立動作 |
+| 部署層操作繞過公司隔離而無痕 | 階段 3：所有部署層操作一律進稽核且記錄操作者 |
+| 與公司層權限混淆 | 兩條判定分屬不同介面、不同資料來源，**不互相 fallback**；文件明寫互不授予 |
 | 旗標粒度不足，日後回頭大改 | D2 的簽章先帶動作參數；替換實作不動呼叫端 |
-| 救援後門（若採 D3-C） | 若採用，須為明確且可稽核的設定，並在文件標示風險 |
+| 判定每次查 DB 成為熱點 | D5 已評估：部署層操作低頻。若日後 `DeploymentAction` 長出高頻消費者，再回頭上快取 |
+| 測試共用同一使用者列造成競賽 | 已踩過：改寫旗標的測試一律建立專屬使用者（`tests/Bee.Tests.Shared/TestUsers.cs`） |
 
 ## 不在範圍
 
 - **公司 / 租戶管理介面**：見 D4，待列級租戶隔離落地後另案。
-- **部署層的細粒度 RBAC**：D1-B，等真的出現第二、第三個消費者再說。
+- **部署層的細粒度 RBAC**：等真的出現第二、第三個消費者再說。
 - **公司層權限模型的任何改動**：`IAuthorizationService` 與 `st_role*` 維持原狀。
+- **設定檔 bootstrap 管理員帳號**：D3 已否決——永久後門。

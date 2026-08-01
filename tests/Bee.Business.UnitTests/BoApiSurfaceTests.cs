@@ -88,6 +88,9 @@ namespace Bee.Business.UnitTests
             // LocalOnly：寫入定義是部署期作業。先前僅擋 SystemSettings / DatabaseSettings，
             // 其餘定義型別（含 PermissionModels、DbCategorySettings、FormSchema）任何已驗證帳號皆可覆寫。
             new ApiSurfaceEntry("SystemBusinessObject", "SaveDefine",             ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated),
+            // LocalOnly：指派部署層管理員是提權動作，屬部署期作業。理由同 SaveDefine / CreateApiKey
+            // —— 僅「已驗證」的遠端帳號不該能把自己或他人升為管理員。
+            new ApiSurfaceEntry("SystemBusinessObject", "SetDeploymentAdmin",     ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated),
         };
 
         [Fact]

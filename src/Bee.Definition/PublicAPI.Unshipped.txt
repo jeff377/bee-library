@@ -96,3 +96,11 @@ static Bee.Definition.Customization.CustomizeOverlay.PickFormLayout(Bee.Definiti
 const Bee.Definition.SystemActions.GetCustomizeFormLayout = "GetCustomizeFormLayout" -> string!
 const Bee.Definition.SystemActions.GetCustomizeLanguage = "GetCustomizeLanguage" -> string!
 Bee.Definition.Storage.CustomizeOnlyStorage.GetChangeSource(Bee.Definition.DefineType defineType, params string![]! keys) -> Bee.Definition.Storage.DefineChangeSource
+Bee.Definition.Identity.DeploymentAction
+Bee.Definition.Identity.DeploymentAction.ManageApiKey = 1 -> Bee.Definition.Identity.DeploymentAction
+Bee.Definition.Identity.IDeploymentAuthorizationService
+Bee.Definition.Identity.IDeploymentAuthorizationService.Can(System.Guid accessToken, Bee.Definition.Identity.DeploymentAction action) -> bool
+Bee.Definition.ProtectedFields
+const Bee.Definition.ProtectedFields.DeploymentAdmin = "deployment_admin" -> string!
+static Bee.Definition.ProtectedFields.IsProtected(string! tableName, string! fieldName) -> bool
+const Bee.Definition.SystemActions.SetDeploymentAdmin = "SetDeploymentAdmin" -> string!

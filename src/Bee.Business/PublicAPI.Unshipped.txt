@@ -79,3 +79,16 @@ Bee.Business.System.GetLanguageResult.Xml.get -> string?
 Bee.Business.System.GetLanguageResult.Xml.set -> void
 virtual Bee.Business.System.SystemBusinessObject.GetCustomizeFormLayout(Bee.Business.System.GetFormLayoutArgs! args) -> Bee.Business.System.GetFormLayoutResult!
 virtual Bee.Business.System.SystemBusinessObject.GetCustomizeLanguage(Bee.Business.System.GetLanguageArgs! args) -> Bee.Business.System.GetLanguageResult!
+Bee.Business.System.SetDeploymentAdminArgs
+Bee.Business.System.SetDeploymentAdminArgs.SetDeploymentAdminArgs() -> void
+Bee.Business.System.SetDeploymentAdminArgs.UserId.get -> string!
+Bee.Business.System.SetDeploymentAdminArgs.UserId.set -> void
+Bee.Business.System.SetDeploymentAdminArgs.IsDeploymentAdmin.get -> bool
+Bee.Business.System.SetDeploymentAdminArgs.IsDeploymentAdmin.set -> void
+Bee.Business.System.SetDeploymentAdminResult
+Bee.Business.System.SetDeploymentAdminResult.SetDeploymentAdminResult() -> void
+Bee.Business.System.SetDeploymentAdminResult.UserId.get -> string!
+Bee.Business.System.SetDeploymentAdminResult.UserId.set -> void
+Bee.Business.System.SetDeploymentAdminResult.IsDeploymentAdmin.get -> bool
+Bee.Business.System.SetDeploymentAdminResult.IsDeploymentAdmin.set -> void
+virtual Bee.Business.System.SystemBusinessObject.SetDeploymentAdmin(Bee.Business.System.SetDeploymentAdminArgs! args) -> Bee.Business.System.SetDeploymentAdminResult!

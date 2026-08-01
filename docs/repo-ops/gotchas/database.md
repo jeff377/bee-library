@@ -20,6 +20,32 @@ nullable —— 欄根本沒有 NOT NULL 約束。CI 每次 fresh CREATE 才走�
 上層只見空字串。這是成套變更（DDL 生成 + schema diff 的反覆-ALTER 風險 + 10+ Oracle DDL 測試）。
 **在該修正落地前**，「常態為空且需 Oracle」的 String 欄暫用 `AllowNull="true"` 過渡。
 
+## `DefaultValue` 寫成該型別的內建預設值 → schema 比對永遠判定「需升級」
+
+**症狀**：新增一個 `DbType="Boolean" DefaultValue="0"` 的欄之後，`TableSchemaBuilder` 對該表
+**永遠**回 `DbUpgradeAction.Upgrade`，`GetCommandText` 永遠吐一段 drop-then-add default constraint
+的 SQL——即使升級剛跑完、DB 裡的欄位和 default 都完全正確。三個「結構已同步應回 None / 空字串 /
+false」的測試（`TableSchemaBuilderTests`）因此連續失敗。
+
+**根因**：讀回端會把「等於內建預設」的 default **正規化成空字串**。
+`SqlTableSchemaProvider.ParseDBDefaultValue` 先把 SQL Server 存的 `((0))` 剝成 `0`，接著比對
+`SqlSchemaSyntax.GetDefaultValueExpression(FieldDbType.Boolean)`——也是 `"0"`——相同就回
+`string.Empty`。於是 DB 側讀出 `""`，定義側是 `"0"`，
+`SqlTableAlterCommandBuilder` 的 `IsEquals(oldField.DefaultValue, newField.DefaultValue)`
+永遠不成立，每次比對都要求重建 constraint。
+
+**為何 `st_api_key` 不踩**：它的 `enabled` / `key_type` 都是 `DefaultValue="1"`，
+不等於內建的 `"0"`，所以讀回端原樣保留 `"1"`，兩側一致。**只有「顯式寫出的值剛好等於內建預設」
+才會撞上**——數值型與 Boolean 的 `0`、String 的空字串。
+
+**正解**：**不要顯式寫 `DefaultValue="0"`**。內建預設本來就是 0，DDL 生成端
+（`SqlSchemaSyntax`，其他 provider 同構）在 `DefaultValue` 為空時就會輸出 `DEFAULT (0)`，
+CREATE 與 ALTER ADD 都涵蓋，既有列一樣會被填 0。省略它得到的 DDL 完全相同，卻不會製造這個
+永久 diff。
+
+> 更根本的修法是讓比對兩側都做同一套正規化，但那會動到全部 5 個 provider 的 diff 行為；
+> 在那之前，加欄時記得「預設值等於內建值就別寫」。
+
 ## MySQL：`TEXT` 不能有 DEFAULT → 省略該欄的 INSERT 直接失敗
 
 **症狀**：只有 MySQL 爆 `Field 'x' doesn't have a default value`（strict mode）。

@@ -28,3 +28,5 @@ Bee.Repository.Abstractions.System.IApiKeyRepository.Exists(string! sysId) -> bo
 Bee.Repository.Abstractions.System.IApiKeyRepository.GetEnabledById(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
 Bee.Repository.Abstractions.System.IApiKeyRepository.GetGateState() -> Bee.Definition.Security.ApiKeyGateState!
 Bee.Repository.Abstractions.System.IApiKeyRepository.Insert(Bee.Definition.Security.ApiKeyInfo! apiKey) -> void
+Bee.Repository.Abstractions.System.IUserRepository.IsDeploymentAdmin(string! userId) -> bool
+Bee.Repository.Abstractions.System.IUserRepository.SetDeploymentAdmin(string! userId, bool isDeploymentAdmin) -> bool

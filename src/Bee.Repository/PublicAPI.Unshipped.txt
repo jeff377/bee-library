@@ -15,3 +15,5 @@ Bee.Repository.System.ApiKeyRepository.GetGateState() -> Bee.Definition.Security
 Bee.Repository.System.ApiKeyRepository.Insert(Bee.Definition.Security.ApiKeyInfo! apiKey) -> void
 Bee.Repository.Factories.SystemRepositoryFactory.SystemRepositoryFactory(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Db.CacheNotify.ICacheNotifyService? cacheNotify) -> void
 Bee.Repository.System.ApiKeyRepository.ApiKeyRepository(Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Db.CacheNotify.ICacheNotifyService? cacheNotify = null) -> void
+Bee.Repository.System.UserRepository.IsDeploymentAdmin(string! userId) -> bool
+Bee.Repository.System.UserRepository.SetDeploymentAdmin(string! userId, bool isDeploymentAdmin) -> bool

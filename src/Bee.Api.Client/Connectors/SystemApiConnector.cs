@@ -300,6 +300,26 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
+        /// Asynchronously grants or revokes a user's deployment administrator flag.
+        /// </summary>
+        /// <param name="userId">The user business id (<c>st_user.sys_id</c>) whose flag is being set.</param>
+        /// <param name="isDeploymentAdmin">The flag value to store.</param>
+        /// <remarks>
+        /// WARNING: a deployment administrator may act on installation-wide assets such as API keys.
+        /// The server restricts this to local calls, so this reaches it through an in-process
+        /// connector only.
+        /// </remarks>
+        public async Task<SetDeploymentAdminResponse> SetDeploymentAdminAsync(string userId, bool isDeploymentAdmin)
+        {
+            var request = new SetDeploymentAdminRequest()
+            {
+                UserId = userId,
+                IsDeploymentAdmin = isDeploymentAdmin
+            };
+            return await ExecuteAsync<SetDeploymentAdminResponse>(SystemActions.SetDeploymentAdmin, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Asynchronously enters the specified company for the current session.
         /// Also used to switch between companies — the previous company binding is overwritten.
         /// </summary>

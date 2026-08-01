@@ -109,6 +109,8 @@ namespace Bee.ObjectCaching.UnitTests.Services
             public Guid GetRowIdBySysId(string userId) => _rowId;
             public UserLocale GetLocale(string userId) => UserLocale.Empty;
             public string? GetName(string userId) => string.Empty;
+            public bool IsDeploymentAdmin(string userId) => false;
+            public bool SetDeploymentAdmin(string userId, bool isDeploymentAdmin) => throw new NotSupportedException();
         }
 
         private sealed class FakeEmployeeRepository : IEmployeeRepository

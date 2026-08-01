@@ -263,6 +263,7 @@ namespace Bee.Repository.Form
                 if (changes is null) { continue; }   // nothing pending for this table
 
                 var tableSchema = formTable.GenerateDbTable();
+                RemoveProtectedFields(tableSchema);
                 var spec = new Bee.Db.Dml.TableSchemaCommandBuilder(dbType, tableSchema).BuildUpdateSpec(dataTable);
                 specs.Add(spec);
                 specTableNames.Add(formTable.TableName);
@@ -329,6 +330,29 @@ namespace Bee.Repository.Form
             // the caller-visible count.
             var lastIndex = result.Results.Count - 1;
             return lastIndex >= 0 ? result.Results[lastIndex].RowsAffected : 0;
+        }
+
+        /// <summary>
+        /// Drops any <see cref="ProtectedFields"/> column from the schema that drives the INSERT and
+        /// UPDATE commands, so a form declaring one cannot write it.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: this is a privilege boundary, not a tidy-up. It is applied here rather than in
+        /// `TableSchemaCommandBuilder` on purpose — the builder is a general DML tool with no
+        /// business of knowing which columns the framework reserves, whereas this path is exactly
+        /// the one a deployment's own FormSchema reaches. The generated schema is a fresh object per
+        /// call (`FormTable.GenerateDbTable`), so removing from it never touches cached definitions.
+        /// </remarks>
+        private static void RemoveProtectedFields(TableSchema tableSchema)
+        {
+            var fields = tableSchema.Fields;
+            if (fields == null) { return; }
+
+            for (int i = fields.Count - 1; i >= 0; i--)
+            {
+                if (ProtectedFields.IsProtected(tableSchema.TableName, fields[i].FieldName))
+                    fields.RemoveAt(i);
+            }
         }
 
         private IEnumerable<FormTable> EnumerateDetailTables()

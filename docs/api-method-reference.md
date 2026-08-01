@@ -60,6 +60,7 @@ Singleton system-level BO, accessed as `System.<action>` over the wire.
 | `GetDefine` | Public | Authenticated | Returns definition data as an XML envelope (universal — .NET clients use this for FormSchema / FormLayout / LanguageResource). |
 | `SaveDefine` | LocalOnly | Authenticated | Persists definition data via XML envelope; invalidates the matching cache slot. Writing definitions is a deployment-time operation, so remote callers are rejected outright — read them with `GetDefine`. |
 | `CreateApiKey` | LocalOnly | Authenticated | Issues an API key and returns the complete plaintext key **once** — only a hash is stored, so it cannot be shown again. Minting a credential is a deployment-time operation, so remote callers are rejected. |
+| `SetDeploymentAdmin` | LocalOnly | Authenticated | Grants or revokes a user's deployment administrator flag (`st_user.deployment_admin`), which governs installation-wide assets rather than any company's data. Appointing an administrator is a deployment-time operation, so remote callers are rejected; this is also the only write path to the column. |
 | `GetFormSchema` | Public | Authenticated | **JS-only.** Returns a `FormSchema` as a typed JSON tree (auto-localized using session's `Culture`). |
 | `GetFormLayout` | Public | Authenticated | **JS-only.** Returns a `FormLayout` (generated from auto-localized FormSchema). |
 | `GetDepartmentTree` | Public | Authenticated | Returns the current company's department tree (per-company org hierarchy) as a typed object (JSON / MessagePack); `null` when no company is entered. |

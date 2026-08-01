@@ -82,6 +82,10 @@ namespace Bee.Definition
         /// </summary>
         public const string CreateApiKey = "CreateApiKey";
         /// <summary>
+        /// Grants or revokes a user's deployment administrator flag.
+        /// </summary>
+        public const string SetDeploymentAdmin = "SetDeploymentAdmin";
+        /// <summary>
         /// Executes a custom function.
         /// </summary>
         public const string ExecFunc = "ExecFunc";

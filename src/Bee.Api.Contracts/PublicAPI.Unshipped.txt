@@ -15,3 +15,9 @@ Bee.Api.Contracts.System.ICreateApiKeyResponse.SysId.get -> string!
 Bee.Api.Contracts.System.IGetFormLayoutResponse.Xml.get -> string?
 Bee.Api.Contracts.System.IGetFormSchemaResponse.Xml.get -> string?
 Bee.Api.Contracts.System.IGetLanguageResponse.Xml.get -> string?
+Bee.Api.Contracts.System.ISetDeploymentAdminRequest
+Bee.Api.Contracts.System.ISetDeploymentAdminRequest.UserId.get -> string!
+Bee.Api.Contracts.System.ISetDeploymentAdminRequest.IsDeploymentAdmin.get -> bool
+Bee.Api.Contracts.System.ISetDeploymentAdminResponse
+Bee.Api.Contracts.System.ISetDeploymentAdminResponse.UserId.get -> string!
+Bee.Api.Contracts.System.ISetDeploymentAdminResponse.IsDeploymentAdmin.get -> bool

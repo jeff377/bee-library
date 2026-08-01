@@ -36,3 +36,15 @@ Bee.Api.Core.Messages.System.GetFormSchemaResponse.Xml.get -> string?
 Bee.Api.Core.Messages.System.GetFormSchemaResponse.Xml.set -> void
 Bee.Api.Core.Messages.System.GetLanguageResponse.Xml.get -> string?
 Bee.Api.Core.Messages.System.GetLanguageResponse.Xml.set -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest.SetDeploymentAdminRequest() -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest.UserId.get -> string!
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest.UserId.set -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest.IsDeploymentAdmin.get -> bool
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest.IsDeploymentAdmin.set -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.SetDeploymentAdminResponse() -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.UserId.get -> string!
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.UserId.set -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.IsDeploymentAdmin.get -> bool
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.IsDeploymentAdmin.set -> void

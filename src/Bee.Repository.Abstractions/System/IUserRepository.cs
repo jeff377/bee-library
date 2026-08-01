@@ -40,5 +40,29 @@ namespace Bee.Repository.Abstractions.System
         /// at all.
         /// </remarks>
         string? GetName(string userId);
+
+        /// <summary>
+        /// Reads a user's deployment administrator flag (<c>st_user.deployment_admin</c>).
+        /// Returns <c>false</c> when no such user exists.
+        /// </summary>
+        /// <param name="userId">The user business id (<c>st_user.sys_id</c>).</param>
+        /// <remarks>
+        /// An unknown user collapsing into <c>false</c> is deliberate: every caller is asking an
+        /// authorization question, and "no such user" and "not an administrator" both deny.
+        /// </remarks>
+        bool IsDeploymentAdmin(string userId);
+
+        /// <summary>
+        /// Grants or revokes a user's deployment administrator flag, returning <c>false</c> when no
+        /// such user exists.
+        /// </summary>
+        /// <param name="userId">The user business id (<c>st_user.sys_id</c>).</param>
+        /// <param name="isDeploymentAdmin">The flag value to store.</param>
+        /// <remarks>
+        /// WARNING: this is a privilege escalation path and must never be reachable from an ordinary
+        /// user-maintenance form. The column is not part of any shipped FormSchema, and the only
+        /// framework caller is a local-only business object method.
+        /// </remarks>
+        bool SetDeploymentAdmin(string userId, bool isDeploymentAdmin);
     }
 }
