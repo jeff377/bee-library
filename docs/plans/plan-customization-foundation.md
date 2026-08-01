@@ -132,6 +132,52 @@ host 在 `new PathOptions { DefinePath = ..., CustomizePath = ... }` 時一併�
 - B1-b（放進 `SystemSettings.xml`）——該檔本身要靠 `DefinePath` 才讀得到（`SystemSettingsLoader.Load(paths)`），
   須先建 `PathOptions`、讀完設定後再重建一次，時序較繞。
 
+### 決策 A2：定義供應與客製選用的分工 — ✅ 已定案（2026-08-01）
+
+> **本決策推翻先前多項裁決**，是本輪最大的架構調整。原先假設「伺服端把客製疊加好、
+> client 無感」，實作到 Layout 的用戶端環節時撞牆：`FormLayout` 家族的巢狀集合是 get-only，
+> **JSON / MessagePack 送得出去、收不回來**（`SystemApiConnector.cs:191-203`），
+> .NET 遠端用戶端會拿到「有純量欄位、沒有 sections」的 layout **且不報錯**。
+> 由此重新檢視，得到下列原則。
+
+**原則：API 只供應原始定義；套裝／客製的「選用」是一段前後端共用的邏輯，不是伺服端特權。**
+
+| API | 定位 | 序列化 | 內容 |
+|-----|------|--------|------|
+| `GetDefine` | **全類型**入口，**存取權限要求高**，供工具程式使用（定義編輯器、部署腳本） | XML | 原始定義 |
+| `GetFormSchema` / `GetFormLayout` / `GetLanguage` | **分型別**入口，供**一般用戶端**使用 | XML | 原始定義 |
+
+四個方法**一律 XML、一律原始**——不生成、不疊加、不在地化。
+
+**套裝與客製各取一次**，不合併成單一回應：connector 負責 XML → 物件的轉換，
+維持既有方法合約不變，只是多一個取客製的對應方法。
+
+**選用邏輯抽成前後端通用的取用類別，放 `Bee.Definition`**：需求端把套裝與客製兩份定義交給它，
+由它決定每個 key（或整檔）取哪一邊。**伺服端現有的疊加邏輯改用同一個類別**——
+`LanguageService`、`FormSchemaLocalizer`、`ProgramSettingsFormBoTypeResolver` 都不再各自實作疊加，
+避免「server 算出一種、client 算出另一種」。
+
+> **安全界線不變**：client 取客製定義時**不得指定 customizeId**——要哪一個租戶的客製，
+> 一律由伺服端依 `SessionInfo.CustomizeId` 決定。共用的是**選用演算法**，不是**選擇權**。
+
+**被本決策推翻 / 修正的先前裁決**：
+
+| 出處 | 原裁決 | 現況 |
+|------|--------|------|
+| [Layout plan](plan-customization-layout.md) 決策 L4 | `GetFormLayout` = 運行階段版本（含生成、疊加、在地化） | ❌ 推翻：改為原始定義。生成與在地化移到需求端 |
+| [Layout plan](plan-customization-layout.md) 決策 L5-a | 伺服端讀檔後以在地化 schema 回填 caption | ❌ 不在伺服端做；回填仍需要，但發生在組裝運行階段 layout 的那一端 |
+| [語系 plan](plan-customization-language.md) 決策 G3 | 傾向 G3-a（server 疊好再回傳） | ✅ 改採 **G3-b**（回兩份，需求端以共用類別疊加） |
+| 本檔 §2.A | 伺服端疊加後回傳，client 無感 | 修正：**伺服端仍需疊加能力**（BO 訊息、驗證文字都在 server 算），但改用共用類別；API 回傳則是原始定義 |
+| `GetFormSchema` | server 先在地化再回傳 | ❌ 改回原始 schema，在地化交給 client |
+
+**待辦（本決策落地前，客製對 .NET head 仍不生效）**：
+
+1. 抽出共用取用類別（`Bee.Definition`），伺服端三個消費端改用它。
+2. `GetFormSchema` / `GetFormLayout` / `GetLanguage` 改回原始定義 + XML 信封。
+3. connector 補「取客製定義」的對應方法（租戶由 session 決定，不收參數）。
+4. UI head 改為：取原始 schema + 兩份語系 → 在地化 → 取兩份 layout 定義（缺則由 schema 生成）。
+5. 回收 commit `8a418382` 中因本決策而不再需要的部分（見 Layout plan 階段表）。
+
 ### 🔴 C. 用戶端「進公司」流程從未被任何 head 走過
 
 > **改寫（2026-07-31）**：本節原記為「`ClientInfo.ResetDefineCache()` 無任何呼叫端」。實測全域

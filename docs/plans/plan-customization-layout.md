@@ -1,6 +1,7 @@
 # Plan：Layout 客製化
 
-> 狀態：🚧 進行中（決策全數定案；階段 L1、L2 已完成，**L3–L5 待做**）· 2026-08-01
+> 狀態：🚧 進行中（**2026-08-01 架構翻案：決策 L4／L5 已被 foundation 決策 A2 推翻**，
+> 階段 L1／L2 需回收重做；見 §2 決策 L7）· 2026-08-01
 > 範圍：**FormLayout 的租戶客製**——版面重排、欄位隱藏、區塊調整。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 已於 F1／F2 補完）
 > 相關：[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -198,6 +199,34 @@ default interface method（預設回 `null`，第三方實作行為不變）。
 
 ---
 
+### 決策 L7：執行階段 layout 怎麼送到 .NET 用戶端 — ✅ 已定案（2026-08-01）：不送，改送原始定義
+
+實作階段 L3 時發現**沒有任何 wire 路徑能把運行階段的 `FormLayout` 送到 .NET 用戶端**：
+
+| 管道 | 內容 | .NET client |
+|------|------|------------|
+| `GetDefine`（`DefineType.FormLayout`） | 原始定義，XML 信封 | ✅ 可用 |
+| `GetFormLayout` | 運行階段 layout | ❌ **JS-only** |
+
+`SystemApiConnector.cs:191-203` 寫明理由：`FormLayout` 家族的巢狀集合是 get-only，
+XmlSerializer 以填充既有實例處理，但 **JSON / MessagePack 依可寫性繫結——送得出去、收不回來**，
+.NET 呼叫端會拿到沒有 sections 的 layout **且不報錯**。
+
+加重問題的一點：**本地（in-process）呼叫不經序列化**（`LocalApiProvider` 直接交付物件圖），
+所以照原計畫改 UI head 會**在本機與 demo 通過、在遠端部署靜默回空 layout**——本機測不出來。
+
+**裁決**：不為此新增 wire 管道，而是改採 foundation [決策 A2](plan-customization-foundation.md)
+——API 只供應原始定義（XML），運行階段的組裝（套裝／客製選用、缺檔生成、caption 在地化）
+移到需求端，選用邏輯以前後端共用類別實作。
+
+**對本 plan 的影響**：
+
+- **決策 L4 推翻**：`GetFormLayout` 不再是「運行階段版本」，改與 `GetDefine` 同樣供應原始定義，
+  差別只在「分型別、一般用戶端」vs「全類型、高權限、工具程式」。
+- **決策 L5-a 保留語意、換位置**：「layout 檔只定義結構、caption 取自在地化 schema」仍成立，
+  但**不在伺服端做**——由組裝運行階段 layout 的那一端做。
+- **決策 L1／L2／L3／L6 仍成立**：定義檔優先、整檔取代、不加欄位、缺檔以 `null` 表達。
+
 ## 3. 建議階段
 
 > 依 L1／L4 重寫；原稿的階段 L1 低估了工程量（漏了 UI head，見 §1.2 第 3 條），
@@ -205,12 +234,25 @@ default interface method（預設回 `null`，第三方實作行為不變）。
 
 | 階段 | 範圍 | 前置 | 狀態 |
 |------|------|------|------|
-| L0 | 決策定案 | — | ✅ L1–L6 全數定案（2026-08-01） |
-| L1 | `SystemBusinessObject.GetFormLayout` 改為「cust 檔 → base 檔 → 生成」，讀到檔則以在地化 schema 回填 caption（L5-a）。`GetDefine` 不動 | foundation F1、L6 | ✅ 已完成（2026-08-01） |
-| L2 | 接上 `SessionInfo.CustomizeId`（比照語系 G1 的作法），客製 layout 在 API 路徑生效 | foundation F2（已完成） | ✅ 已完成（2026-08-01，與 L1 同一處改動） |
-| L3 | **UI head 改為向 server 取 layout**（Avalonia `FormView`、Blazor `FormPage`），不再本地生成。需保留 Avalonia 端的 `LayoutCapabilityApplier` 權限降級 | L1、L2 | 📝 待做（**客製 layout 對現有兩個 head 生效與否，全繫於此**） |
-| L4 | 過期偵測：FormSchema 欄位集與 layout 檔不符時記錄警告（決策 L1） | L1 | 📝 待做 |
-| L5 | 端到端測試：帶 CustomizeId 的 session → API → 拿到客製 layout | foundation F3 | 📝 待做 |
+| L0 | 決策定案 | — | ✅ L1–L7 全數定案（2026-08-01） |
+| L1 | ~~`SystemBusinessObject.GetFormLayout` 改為「cust 檔 → base 檔 → 生成」+ 回填 caption~~ | — | ⚠️ **需回收**（commit `8a418382`）：決策 L7／A2 後伺服端不做運行階段組裝 |
+| L2 | ~~接上 `SessionInfo.CustomizeId`，客製 layout 在 API 路徑生效~~ | — | ⚠️ **需回收**：同上（客製 layout 的取得改由 client 另呼叫一次） |
+| L3 | `GetFormLayout` 改為供應**原始定義**（XML 信封）；另補「取客製 layout 定義」的對應方法（租戶由 session 決定） | foundation 決策 A2 | 📝 待做 |
+| L4 | UI head 改為：取原始 schema → 以兩份語系在地化 → 取兩份 layout 定義（缺則由 schema 生成）→ 回填 caption。需保留 Avalonia 端的 `LayoutCapabilityApplier` 權限降級 | L3、共用取用類別 | 📝 待做（**客製 layout 對兩個 head 生效與否，全繫於此**） |
+| L5 | 過期偵測：FormSchema 欄位集與 layout 檔不符時記錄警告（決策 L1） | L4 | 📝 待做 |
+| L6 | 端到端測試：帶 CustomizeId 的 session → 拿到客製 layout | foundation F3 | 📝 待做 |
+
+**commit `8a418382` 的回收範圍**（決策 L7 後逐項判定）：
+
+| 成果 | 去留 | 理由 |
+|------|------|------|
+| `FormLayout.Clone()` 家族（5 型別） | ❌ **移除** | 加它的唯一理由是「伺服端回填 caption 會改到快取實例」。伺服端不再組裝，用戶端的定義是每次反序列化出來的新實例，不需要 clone |
+| `FormLayoutCaptionApplier` | 🔁 **保留但換位置** | L5-a 的語意仍成立，只是改在組裝運行階段 layout 的那一端執行 |
+| `SystemBusinessObject.GetFormLayout` 的「客製→base→生成 + 回填」 | ❌ **改回供應原始定義** | 決策 L7 |
+| 空 `LayoutId` 解析為 ProgId | ✅ **保留** | 與供應原始定義相容：檔案就是 `{ProgId}.FormLayout.xml` |
+| storage 的 nullable 契約（`FileDefineStorage` / `DbDefineStorage` 缺件回 `null`） | ✅ **保留** | 獨立正確，且新設計仍要能表達「沒有這份定義」 |
+| `CacheDefineAccess.FindFormLayout` + `IDefineAccess` DIM | ✅ **保留** | 同上，供應端仍需區分「沒有」與「錯誤」 |
+| DI 條件註冊（DB storage 的客製 reader，foundation 缺口 E） | ✅ **保留** | 與本決策無關，獨立修好的缺口 |
 
 **動工前的前置檢查（來自 §1.5）—— ✅ 已執行（2026-08-01）**：以一次性稽核把
 `apps/Bee.Northwind/Define/FormLayout/` 那 8 個檔逐一與 `FormLayoutGenerator.Generate` 的結果

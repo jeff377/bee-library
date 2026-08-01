@@ -1,6 +1,6 @@
 # Plan：語系客製化
 
-> 狀態：🚧 進行中（G1–G3 已完成，G5 裁決不做；G4 待決策 G3，G6 待 foundation F3）· 2026-08-01
+> 狀態：🚧 進行中（G1–G3 已完成，G5 裁決不做；**G3 決策定案 G3-b**，G4 待做，G6 待 foundation F3）· 2026-08-01
 > 範圍：**語系資源的租戶客製**——某些單據或行為，公司有慣用語（欄位標題、表單名稱、訊息、選項文字）。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 未補則本案無法生效）
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -16,7 +16,7 @@
 
 > **2026-08-01 進度更正（G1–G3 落地後）**：上述缺口**已補完**——四個伺服端消費端都接上
 > `SessionInfo.CustomizeId`，「欄位標題／表單名稱改成公司慣用語」在伺服端已支援（§1.2）。
-> 仍未做的是 `GetLanguage` API 的疊加（G4，決策 G3 未定）與端到端驗證（G6，卡 foundation F3）。
+> 仍未做的是 `GetLanguage` 的客製管道（G4）與端到端驗證（G6，卡 foundation F3）。
 > 且**實務上還沒有部署會餵值進來**：至今沒有 head 走過 `EnterCompany`，`CustomizeId` 恆為空
 > （foundation §2.C）。
 
@@ -49,7 +49,7 @@ public bool TryGetLangText(string customizeId, string lang, string @namespace, s
 | **`FormSchemaLocalizer`** ★ | `:73,89,101,136` | 只用 base overload | **欄位 caption / 表單 DisplayName 無法客製** | ✅ G1 |
 | `BeeStringLocalizer<T>` | `:60,66` | 建構子只有 `Func<string> langProvider`，**連傳入管道都沒有** | 一般 UI 字串無法客製 | ✅ G2（無消費端，未端到端驗證） |
 | `BusinessObject.GetLangText` | `:95-105` | 只傳 `GetCurrentLang()` | BO 訊息無法客製 | ✅ G3 |
-| `GetLanguage` API | `SystemBusinessObject.Define.cs:150-165` | 直接 `DefineAccess.GetLanguage(lang, ns)` | **client（含純 JS）拿到的整份資源是 base only** | 📝 G4 未做（決策 G3 未定 + 相依 foundation 缺口 C） |
+| `GetLanguage` API | `SystemBusinessObject.Define.cs:150-165` | 直接 `DefineAccess.GetLanguage(lang, ns)` | client 拿到的整份資源是 base only | 📝 G4 未做——但**方向已由 A2 改為「回原始定義、需求端疊加」**，不是原本設想的 server 疊好 |
 
 > `BusinessObject.GetCurrentLang()`（`:114-119`）讀的是 `SessionInfo.Culture`——
 > **同一個 SessionInfo 就在手上，卻沒讀 `CustomizeId`**。接線成本極低。
@@ -122,7 +122,18 @@ per-key 命中/落空、enum、空 id 短路(`:58`)、無 reader(`:73`)。
 > 完整理由與安全界線（伺服端永不採信 client 傳回的 customizeId）見
 > [plan-customization-foundation.md](plan-customization-foundation.md) §2.A。
 
-### 決策 G3：`GetLanguage` API 的疊加位置
+### 決策 G3：`GetLanguage` API 的疊加位置 — ✅ 已定案（2026-08-01）：採 G3-b
+
+> 由 foundation [決策 A2](plan-customization-foundation.md) 定調：API 只供應**原始定義**，
+> 套裝／客製的選用抽成**前後端通用的取用類別**（放 `Bee.Definition`），需求端拿到兩份後自行疊加。
+> 套裝與客製**各取一次**，讓 connector 的方法合約不變。
+>
+> 這同時修正了 §1.2 表格最後一列與階段 G4 的方向：**不是**「server 疊好再回傳」，
+> 而是「回原始定義，需求端用共用類別疊加」。伺服端自己的疊加（BO 訊息、schema 在地化）
+> 也改用同一個類別，確保兩端演算法只有一份。
+>
+> 安全界線不變：client 取客製語系時**不得指定 customizeId**，要哪個租戶一律由
+> `SessionInfo.CustomizeId` 決定。共用的是選用演算法，不是選擇權。
 
 client（含**純 JS，無 .NET**）透過 `GetLanguage` 取整份語系資源，目前回 base only。
 
@@ -142,11 +153,11 @@ client（含**純 JS，無 .NET**）透過 `GetLanguage` 取整份語系資源�
 
 | 階段 | 範圍 | 前置 | 狀態 |
 |------|------|------|------|
-| G0 | 決策定案（G1 enum 粒度、G2 傳遞方式、G3 API 疊加） | foundation F0 | 🚧 G1 ✅ 定案 G1-b（2026-08-01）、G2 ✅ 已定案（由 A1 涵蓋）；**G3 仍未決** |
+| G0 | 決策定案（G1 enum 粒度、G2 傳遞方式、G3 API 疊加） | foundation F0 | ✅ 全數定案（2026-08-01）：G1-b、G2 由 A1 涵蓋、G3-b 由 A2 定調 |
 | G1 | `FormSchemaLocalizer` 加 customizeId 管道 ★ | foundation F1、F2 | ✅ 已完成（2026-07-31）。`Localize(schema, customizeId, lang)` 多載；呼叫端 `SystemBusinessObject.Define.cs` `LoadAndLocalizeSchema` 傳 `GetCurrentCustomizeId()` |
 | G2 | `BeeStringLocalizer<T>` 加 customizeId 管道 | 同上 | ✅ 已完成（2026-07-31）。3-arg ctor 加 `Func<string> customizeIdProvider`。**注意：repo 內無任何註冊點與消費端**，故只加得了 API，無法端到端驗證 |
 | G3 | `BusinessObject.GetLangText` 接線（讀 `SessionInfo.CustomizeId`） | 同上 | ✅ 已完成（2026-07-31）。新增 `GetCurrentCustomizeId()`（比照 `GetCurrentLang()`）；`GetLangText(fullKey)` 改為就地切 key 後走 customizeId 多載 |
-| G4 | `GetLanguage` API 依 G3 決策疊加 | 決策 G3 + **foundation F3**（client 快取失效） | 📝 待做（決策未定，**不在本次交接範圍**） |
+| G4 | `GetLanguage` 改回原始定義 + 補「取客製語系」的對應方法；疊加交給共用取用類別 | foundation 決策 A2 | 📝 待做 |
 | G5 | Enum entry 級覆蓋（若選 G1-a） | 決策 G1 | ❌ 不做（2026-08-01）。決策 G1 定案 G1-b，維持整組取代；此階段取消 |
 | G6 | 端到端測試：帶 CustomizeId 的 session → API → 拿到客製文字 | foundation F3 | 📝 待做（**不在本次交接範圍**） |
 
@@ -160,7 +171,7 @@ client（含**純 JS，無 .NET**）透過 `GetLanguage` 取整份語系資源�
    ✅ 2026-08-01 定案：**整組取代**（G1-b，見 §2 決策 G1）。per-key 疊加只適用 `LanguageItem` 的 Key。
 2. **客製語系的涵蓋面**：主要是欄位標題／表單名稱（`FormSchemaLocalizer`），
    還是也包含 BO 訊息、驗證錯誤文字、UI 一般字串？→ 決定 G1~G3 的優先序。
-3. **`GetLanguage` API 疊加**走 server 端疊好（G3-a）還是 client 自行疊加（G3-b）？
-   若走 G3-a，foundation 缺口 C（client 快取失效）必須一起補。
+3. ~~**`GetLanguage` API 疊加**走 server 端疊好（G3-a）還是 client 自行疊加（G3-b）？~~
+   ✅ 2026-08-01 定案：**G3-b**，由 foundation 決策 A2 定調（API 回原始定義、共用取用類別疊加）。
 4. **客製語系檔的維護方式**？由誰產生、是否需要系統內編輯
    （目前 `SaveXxx` 全 throw，見 foundation §3）。
