@@ -201,6 +201,12 @@ host 在 `new PathOptions { DefinePath = ..., CustomizePath = ... }` 時一併�
 `ClearCompanyContext` 內部呼叫。現行 XML doc 寫「The host calls this … alongside `ResetDefineCache`」
 （`ClientInfo.cs:148,200,213`），而事實已證明沒有 host 會記得；靠註解約束跨租戶快取污染防護不可靠。
 
+> **✅ 前半已完成（2026-08-01，commit `5f741647`）**：`ResetDefineCache()` 現由
+> `ApplyEnterCompanyResult` 與 `ClearCompanyContext` 內部呼叫，host 不需再記得。
+> **後半（端到端驗證）仍待做**——至今沒有任何 head 或測試真的走過
+> `EnterCompany` → 客製生效這條路，所以 `SessionInfo.CustomizeId` 在實務上仍恆為空，
+> 三類客製的伺服端與用戶端管道雖已全通，卻從未被端到端驗證過。
+
 ### 🟡 D. 客製快取沒有失效訊號
 
 `CustomizeOnlyStorage` **未實作 `GetChangeSource`**，落到 `IDefineStorage` 的 default
@@ -271,7 +277,7 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 | F0 | 決策定案：A1 傳遞方式、B1 配置來源 | ✅ 已定案（2026-07-31）。§3 的「客製檔誰維護」仍未決，但**不擋 F1–F4** |
 | F1 | **缺口 B**：host 設定 `CustomizePath` 的文件 + 一個 sample 示範 | ✅ 已完成（2026-07-31）。`DemoBackend` 設 `CustomizePath`（`Define/` 的同層 `Customize/`）；文件見 [`definition-files-overview`](../definition-files-overview.md) §7（雙語）。依使用者決定**不入版控任何樣本客製檔**——只開路徑，客製層仍為空 |
 | F2 | **缺口 A**：消費端接線，伺服端三處顯式傳參 + `BeeStringLocalizer` 委派多載（Layout 除外，見 Layout plan） | ✅ 已完成（2026-07-31）。四處全接：`FormSchemaLocalizer`、`BusinessObject.GetLangText`、`BeeStringLocalizer<T>`、`BusinessObjectFactory` |
-| F3 | **缺口 C + F 合流**：會進公司的 head（或整合測試）走通 `EnterCompany` → `ApplyEnterCompanyResult` → 客製生效，並把 `ResetDefineCache` 責任收回框架 | 📝 待做 |
+| F3 | **缺口 C + F 合流**：會進公司的 head（或整合測試）走通 `EnterCompany` → `ApplyEnterCompanyResult` → 客製生效，並把 `ResetDefineCache` 責任收回框架 | 🚧 進行中——**`ResetDefineCache` 收回框架已完成**（2026-08-01，commit `5f741647`：改由 `ApplyEnterCompanyResult` / `ClearCompanyContext` 內部呼叫）；**端到端驗證仍待做** |
 | F4 | **缺口 D、E**：客製快取失效訊號、DB 版 reader 條件註冊 | 🚧 進行中——**缺口 E（DB 版 reader 條件註冊）已完成**（2026-08-01，隨 Layout L1／L2 一併）；缺口 D（`CustomizeOnlyStorage.GetChangeSource` 的客製快取失效訊號）仍待做 |
 
 > F3 為何合流：用戶端進公司流程從未被任何 head 走過（見 §2.C），所以「接上 `ResetDefineCache`」與
