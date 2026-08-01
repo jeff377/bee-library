@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Bee.Base;
 using Bee.Business.Form;
+using Bee.Definition.Customization;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 
@@ -130,9 +131,9 @@ namespace Bee.Business
 
         private static Type ResolveCore(ProgramSettings? custSettings, ProgramSettings? baseSettings, string progId)
         {
-            // Customization wins per-progId; otherwise fall through to the base entry.
-            var item = (custSettings != null ? FindItem(custSettings, progId) : null)
-                       ?? (baseSettings != null ? FindItem(baseSettings, progId) : null);
+            // Which layer wins is decided by CustomizeOverlay — the same class a client runs over
+            // the two copies it fetched, so both ends resolve identically.
+            var item = CustomizeOverlay.FindProgramItem(custSettings, baseSettings, progId);
             if (item == null || string.IsNullOrWhiteSpace(item.BusinessObject))
                 return typeof(FormBusinessObject);
 
@@ -165,18 +166,6 @@ namespace Bee.Business
                 return typeof(FormBusinessObject);
 
             return type;
-        }
-
-        private static ProgramItem? FindItem(ProgramSettings settings, string progId)
-        {
-            if (settings.Categories == null) return null;
-
-            foreach (var category in settings.Categories)
-            {
-                var item = category.Items?.GetOrDefault(progId);
-                if (item != null) return item;
-            }
-            return null;
         }
     }
 }

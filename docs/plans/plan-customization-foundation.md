@@ -172,7 +172,12 @@ host 在 `new PathOptions { DefinePath = ..., CustomizePath = ... }` 時一併�
 
 **待辦（本決策落地前，客製對 .NET head 仍不生效）**：
 
-1. 抽出共用取用類別（`Bee.Definition`），伺服端三個消費端改用它。
+1. ~~抽出共用取用類別（`Bee.Definition`），伺服端三個消費端改用它。~~
+   ✅ **已完成（2026-08-01）**：`Bee.Definition.Customization.CustomizeOverlay`——純決策邏輯，
+   不碰 storage / cache / session / DI。四個方法各自編碼該型別的粒度：
+   `TryGetLangText`（per key）、`GetLangEnum`（整組）、`FindProgramItem`（per progId）、
+   `PickFormLayout`（整檔）。`LanguageService`、`ProgramSettingsFormBoTypeResolver`、
+   `CacheDefineAccess` 都改為「取得兩層 → 交給它決定」，疊加演算法全 repo 只剩一份。
 2. `GetFormSchema` / `GetFormLayout` / `GetLanguage` 改回原始定義 + XML 信封。
 3. connector 補「取客製定義」的對應方法（租戶由 session 決定，不收參數）。
 4. UI head 改為：取原始 schema + 兩份語系 → 在地化 → 取兩份 layout 定義（缺則由 schema 生成）。

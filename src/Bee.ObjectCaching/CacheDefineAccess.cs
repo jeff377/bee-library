@@ -1,5 +1,6 @@
 using Bee.Base.Serialization;
 using Bee.Definition;
+using Bee.Definition.Customization;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Language;
@@ -402,13 +403,12 @@ namespace Bee.ObjectCaching
         /// </remarks>
         public FormLayout? FindFormLayout(string customizeId, string layoutId)
         {
-            if (!string.IsNullOrEmpty(customizeId) && _customizeReader is not null)
-            {
-                var custom = _customizeReader.GetCustomizeFormLayout(customizeId, layoutId);
-                if (custom is not null)
-                    return custom;
-            }
-            return _cache.FormLayout.Get(layoutId);
+            var custom = !string.IsNullOrEmpty(customizeId) && _customizeReader is not null
+                ? _customizeReader.GetCustomizeFormLayout(customizeId, layoutId)
+                : null;
+            // Which layer wins is decided by CustomizeOverlay — the same class a client runs over
+            // the two copies it fetched, so both ends select identically.
+            return CustomizeOverlay.PickFormLayout(custom, _cache.FormLayout.Get(layoutId));
         }
 
         /// <summary>
@@ -419,16 +419,8 @@ namespace Bee.ObjectCaching
         /// <param name="layoutId">The layout identifier.</param>
         public FormLayout GetFormLayout(string customizeId, string layoutId)
         {
-            // Short-circuit: no customization code (or no reader) → base layout, untouched.
-            if (!string.IsNullOrEmpty(customizeId) && _customizeReader is not null)
-            {
-                // Whole-file selection: a customization layout wins outright; this does not merge
-                // base and cust, and the base cache is never mutated.
-                var custom = _customizeReader.GetCustomizeFormLayout(customizeId, layoutId);
-                if (custom is not null)
-                    return custom;
-            }
-            return GetFormLayout(layoutId);
+            return FindFormLayout(customizeId, layoutId)
+                ?? throw new InvalidOperationException($"FormLayout '{layoutId}' not found.");
         }
 
         /// <summary>

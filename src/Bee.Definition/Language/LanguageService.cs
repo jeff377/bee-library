@@ -1,3 +1,4 @@
+using Bee.Definition.Customization;
 using Bee.Definition.Storage;
 
 namespace Bee.Definition.Language
@@ -91,26 +92,13 @@ namespace Bee.Definition.Language
         /// <inheritdoc/>
         public bool TryGetLangText(string customizeId, string lang, string @namespace, string subKey, out string text)
         {
-            // Customization overlay: a cust resource that contains the key wins. base and cust are
-            // looked up independently and never merged — the base cache stays untouched.
-            if (TryGetCustomizeResource(customizeId, lang, @namespace, out var custResource)
-                && custResource!.Items.Contains(subKey))
-            {
-                text = custResource.Items[subKey].Value;
-                return true;
-            }
-
-            // Storage / cache returns LanguageResource (non-nullable signature) but
-            // the underlying file may legitimately not exist. The actual value can
-            // be null and we must guard.
+            // This service's job is to obtain the two layers; which one wins is decided by
+            // CustomizeOverlay, the same class a client runs over the two copies it fetched.
+            // Storage / cache returns LanguageResource (non-nullable signature) but the underlying
+            // file may legitimately not exist, so the base value can be null.
+            TryGetCustomizeResource(customizeId, lang, @namespace, out var custResource);
             var resource = _defineAccess.GetLanguage(lang, @namespace);
-            if (resource is null || !resource.Items.Contains(subKey))
-            {
-                text = string.Empty;
-                return false;
-            }
-            text = resource.Items[subKey].Value;
-            return true;
+            return CustomizeOverlay.TryGetLangText(custResource, resource, subKey, out text);
         }
 
         /// <inheritdoc/>
@@ -172,16 +160,9 @@ namespace Bee.Definition.Language
         /// </remarks>
         private LanguageEnum? LookupEnum(string customizeId, string lang, string @namespace, string enumName)
         {
-            // Customization overlay: a cust enum wins over the base enum of the same name.
-            if (TryGetCustomizeResource(customizeId, lang, @namespace, out var custResource))
-            {
-                var custEnum = custResource!.GetEnum(enumName);
-                if (custEnum != null)
-                    return custEnum;
-            }
-
+            TryGetCustomizeResource(customizeId, lang, @namespace, out var custResource);
             var resource = _defineAccess.GetLanguage(lang, @namespace);
-            return resource?.GetEnum(enumName);
+            return CustomizeOverlay.GetLangEnum(custResource, resource, enumName);
         }
 
         /// <summary>
