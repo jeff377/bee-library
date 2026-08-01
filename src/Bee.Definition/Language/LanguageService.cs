@@ -12,14 +12,13 @@ namespace Bee.Definition.Language
     /// the <c>LanguageResourceCache</c> slot behind <see cref="IDefineAccess"/>;
     /// this service does no caching of its own.
     ///
-    /// When a non-empty customization code is supplied, the lookup is overlaid at the finest
-    /// granularity the artifact has: per text key, and per <see cref="LanguageEnum"/> entry. The
-    /// customization value wins where it exists, the base value applies everywhere else, and a
-    /// key / entry only the customization declares is added. The two resources are looked up
-    /// independently and the base cache is never mutated — an overlaid enum is returned as a fresh
-    /// instance rather than by writing into either layer. An empty customization code (or no
-    /// <see cref="ICustomizeDefineReader"/>) short-circuits straight to the base lookup —
-    /// bit-for-bit identical to the non-customized path.
+    /// When a non-empty customization code is supplied, text lookups are overlaid per key: the
+    /// customization resource wins when it contains the requested key, otherwise the base value
+    /// is used. Enums overlay at whole-enum granularity instead — a customization enum of the same
+    /// name replaces the base enum outright (see <c>LookupEnum</c>). base and cust resources are
+    /// never merged into a single object, and the base cache is never mutated. An empty
+    /// customization code (or no <see cref="ICustomizeDefineReader"/>) short-circuits straight to
+    /// the base lookup — bit-for-bit identical to the non-customized path.
     /// </remarks>
     public sealed class LanguageService : ILanguageService
     {
@@ -158,67 +157,31 @@ namespace Bee.Definition.Language
             return GetLangEnum(customizeId, lang, @namespace, enumName)?.GetText(code);
         }
 
+        /// <summary>
+        /// Resolves an enum for one language, applying the customization overlay at
+        /// <b>whole-enum</b> granularity — a customization enum of the same name replaces the base
+        /// enum outright.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately coarser than the per-key overlay used for text. A <see cref="LanguageEnum"/>
+        /// is an ordered option set, not a bag of independent values: merging entry by entry would
+        /// leave the order, and the meaning of an entry the customization omits, ambiguous. A tenant
+        /// that customizes an option set therefore owns it whole, and one that does not gets the
+        /// base set untouched. Either way the returned instance is the cached one — nothing is
+        /// copied and neither layer is mutated.
+        /// </remarks>
         private LanguageEnum? LookupEnum(string customizeId, string lang, string @namespace, string enumName)
         {
-            LanguageEnum? custEnum = null;
+            // Customization overlay: a cust enum wins over the base enum of the same name.
             if (TryGetCustomizeResource(customizeId, lang, @namespace, out var custResource))
-                custEnum = custResource!.GetEnum(enumName);
-
-            var baseEnum = _defineAccess.GetLanguage(lang, @namespace)?.GetEnum(enumName);
-
-            // The common paths hand back the cached instance untouched: no customization at all,
-            // or only one of the two layers declares this enum.
-            if (custEnum is null)
-                return baseEnum;
-            if (baseEnum is null)
-                return custEnum;
-
-            return MergeEnum(baseEnum, custEnum);
-        }
-
-        /// <summary>
-        /// Overlays a customization enum onto its base counterpart at <b>entry</b> granularity,
-        /// mirroring how text keys overlay: an entry the customization declares wins, every other
-        /// entry keeps its base text, and an entry only the customization declares is appended.
-        /// </summary>
-        /// <param name="baseEnum">The base-layer enum. Never mutated.</param>
-        /// <param name="custEnum">The customization-layer enum. Never mutated.</param>
-        /// <returns>A new <see cref="LanguageEnum"/> owned by nobody, safe for the caller to read.</returns>
-        /// <remarks>
-        /// <para>
-        /// Order is the base document order, with customization-only entries appended in their own
-        /// order — so a customization that renames two options does not reshuffle the dropdown.
-        /// </para>
-        /// <para>
-        /// A customization <b>cannot remove</b> a base entry: the file expresses "override or add",
-        /// with no way to say "drop this code". Removal would change which values the field accepts
-        /// and is deliberately not expressible here.
-        /// </para>
-        /// <para>
-        /// Both inputs are process-shared cache instances, so the merge allocates a fresh result
-        /// rather than writing into either one. The allocation happens only when a tenant customizes
-        /// an enum the base layer also declares; every other path returns a cached instance directly.
-        /// </para>
-        /// </remarks>
-        private static LanguageEnum MergeEnum(LanguageEnum baseEnum, LanguageEnum custEnum)
-        {
-            var merged = new LanguageEnum { Name = baseEnum.Name };
-
-            foreach (var entry in baseEnum.Entries)
             {
-                string text = custEnum.Entries.Contains(entry.Code)
-                    ? custEnum.Entries[entry.Code].Text
-                    : entry.Text;
-                merged.Entries.Add(entry.Code, text);
+                var custEnum = custResource!.GetEnum(enumName);
+                if (custEnum != null)
+                    return custEnum;
             }
 
-            foreach (var entry in custEnum.Entries)
-            {
-                if (!baseEnum.Entries.Contains(entry.Code))
-                    merged.Entries.Add(entry.Code, entry.Text);
-            }
-
-            return merged;
+            var resource = _defineAccess.GetLanguage(lang, @namespace);
+            return resource?.GetEnum(enumName);
         }
 
         /// <summary>

@@ -16,8 +16,8 @@ namespace Bee.Definition.UnitTests.Language
     /// </summary>
     public class FormSchemaLocalizerCustomizeTests
     {
-        private static readonly string[] s_statusCodes = ["0", "1", "2", "9"];
-        private static readonly string[] s_statusOverlaidTexts = ["啟用", "暫停", "凍結", "客製狀態"];
+        private static readonly string[] s_statusCodes = ["1", "9"];
+        private static readonly string[] s_statusTexts = ["暫停", "客製狀態"];
 
         private static string FieldKey(string fieldName)
             => string.Format(CultureInfo.InvariantCulture, FormSchemaLocalizer.FieldCaptionKeyFormat, fieldName);
@@ -66,13 +66,13 @@ namespace Bee.Definition.UnitTests.Language
         }
 
         [Fact]
-        [DisplayName("cust 有同名 LanguageEnum 時 ListItems 應反映 entry 級疊加結果")]
-        public void Localize_CustHasLangEnum_ListItemsReflectEntryLevelOverlay()
+        [DisplayName("cust 有同名 LanguageEnum 時 ListItems 應整組換成客製選項集")]
+        public void Localize_CustHasLangEnum_ListItemsReplacedByCustEnum()
         {
             var defineAccess = new StubDefineAccess("zh-TW");
             defineAccess.AddEnum("zh-TW", "Customer", "Status", ("0", "啟用"), ("1", "停用"), ("2", "凍結"));
             var reader = new SpyCustomizeReader();
-            // 客製只改一個選項的說法，並新增一個套裝沒有的選項
+            // 客製檔必須列出它要的完整選項集——沒列的套裝選項不會被併進來
             reader.AddEnum("acme", "zh-TW", "Customer", "Status", ("1", "暫停"), ("9", "客製狀態"));
             var localizer = new FormSchemaLocalizer(new LanguageService(defineAccess, reader));
             var schema = BuildSchemaWithLangEnumField("Status");
@@ -81,7 +81,7 @@ namespace Bee.Definition.UnitTests.Language
 
             var statusField = schema.Tables![0].Fields!["status"];
             Assert.Equal(s_statusCodes, statusField.ListItems!.Select(i => i.Value).ToArray());
-            Assert.Equal(s_statusOverlaidTexts, statusField.ListItems!.Select(i => i.Text).ToArray());
+            Assert.Equal(s_statusTexts, statusField.ListItems!.Select(i => i.Text).ToArray());
         }
 
         [Fact]

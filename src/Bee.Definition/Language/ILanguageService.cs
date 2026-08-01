@@ -45,12 +45,12 @@ namespace Bee.Definition.Language
         /// <returns>The localized text, or <c>"{namespace}.{subKey}"</c> if all fall-backs miss.</returns>
         string GetLangText(string lang, string @namespace, string subKey);
 
-        // ----- Tenant customization overlay (per key / per enum entry) ----------------------
-        // These overloads thread an explicit customization code through the lookup. The overlay
-        // applies at the finest granularity the artifact has: per text key, and per enum entry.
-        // The customization value wins where it exists, the base value applies everywhere else,
-        // and a key or entry only the customization declares is added. A customization file
-        // therefore holds only what it changes. An empty `customizeId` short-circuits straight
+        // ----- Tenant customization overlay -------------------------------------------------
+        // These overloads thread an explicit customization code through the lookup. Text overlays
+        // per key: a customization resource that contains the requested key wins, otherwise the
+        // base value is used, so a customization file holds only the keys it changes. Enums
+        // overlay per enum, not per entry — see GetLangEnum below. The base and customization
+        // values are never merged into one object. An empty `customizeId` short-circuits straight
         // to the base lookup.
         //
         // Customization-aware overloads use the explicit (namespace, subKey/enumName) shape; the
@@ -139,10 +139,11 @@ namespace Bee.Definition.Language
         /// <param name="enumName">The enum name within that namespace.</param>
         /// <returns>The matching <see cref="LanguageEnum"/>, or <c>null</c> if not found after fall-back.</returns>
         /// <remarks>
-        /// When both layers declare the enum the result is overlaid <b>per entry</b>: a customized
-        /// entry wins, untouched entries keep their base text in base order, and entries only the
-        /// customization declares are appended. A customization cannot remove a base entry. The
-        /// overlaid result is a fresh instance — neither cached layer is mutated.
+        /// The overlay is <b>whole-enum</b>, not per entry: a customization enum of the same name
+        /// replaces the base enum outright, so the customization file must list every entry it
+        /// wants the option set to have. This is deliberately coarser than the per-key overlay
+        /// used for text — an enum is an ordered option set, where a partial merge would leave
+        /// both the ordering and the meaning of an omitted entry ambiguous.
         /// </remarks>
         LanguageEnum? GetLangEnum(string customizeId, string lang, string @namespace, string enumName)
             => GetLangEnum(lang, @namespace, enumName);

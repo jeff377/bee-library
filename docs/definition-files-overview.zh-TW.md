@@ -164,11 +164,15 @@ builder.Services.AddBeeFramework(settings.BackendConfiguration, paths);
 
 | 型別 | 覆蓋粒度 |
 |------|---------|
-| **LanguageResource** | **key 級，enum 則到 entry 級**。客製檔只放要改的部分，其餘全部來自 base —— 因此 base 日後新增的翻譯會自動傳播。`LanguageEnum` 逐 entry 疊加：客製有的 entry 勝出、沒動到的沿用 base 文字並維持 base 順序、客製獨有的 entry 接在最後。客製只能覆寫或新增 entry，**不能刪除** |
+| **LanguageResource** | 文字（`LanguageItem`）是 **key 級**。客製檔只放要改的 key，其餘全部來自 base —— 因此 base 日後新增的翻譯會自動傳播。**`LanguageEnum` 是例外：整組取代。** 客製檔有同名 enum 就整組換掉 base 的，因此客製檔必須列出該選項集要有的**全部** entry |
 | **ProgramSettings** | **progId 級**。同一個 progId 的客製項目勝過 base 項目 |
 | **FormLayout** | **整檔級**。客製 layout 整份取代該 `layoutId` 的 base layout |
 
-**粒度不同是刻意的。** 語系資源是一袋彼此獨立的 key，逐 key 疊加既省成本又直覺——「這個標題我們叫法不同」不影響其餘任何一個 key。但 layout 是**一整個版面**：區塊、排列順序、欄寬與巢狀只有整體看才有意義，局部疊加會冒出無從直覺回答的問題（「這個區塊搬走了，底下的欄位跟著走嗎？」）。所以客製了某個 layout 的租戶就完整擁有那個 layout，沒客製的租戶則原封不動拿到 base layout。
+**粒度不同是刻意的**，分界線在於：這份東西是**一袋彼此獨立的值**，還是**一個組合起來才成立的整體**。
+
+文字 key 彼此獨立——「這個標題我們叫法不同」不影響其餘任何一個 key，所以逐 key 疊加既省成本又直覺。但 layout 是**一整個版面**：區塊、排列順序、欄寬與巢狀只有整體看才有意義，局部疊加會冒出無從直覺回答的問題（「這個區塊搬走了，底下的欄位跟著走嗎？」）。**enum 屬於後者而非前者**：它是一組**有順序的選項集**，逐 entry 合併會讓順序、以及「客製檔沒列到的 entry 是什麼意思」兩件事都變得曖昧。
+
+所以 layout 與 enum 一樣：客製了就完整擁有那一份，沒客製的租戶則原封不動拿到 base 版本。
 
 > **FormSchema 與 TableSchema 永久排除。** 兩者同時驅動資料庫結構與驗證規則，不只驅動 UI；逐租戶分歧會讓實體 schema 裂開。這是裁決不是缺口 —— 見 ADR-016。
 

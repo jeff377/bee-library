@@ -14,10 +14,10 @@ namespace Bee.Definition.UnitTests.Language
     /// </summary>
     public class LanguageServiceCustomizeTests
     {
-        private static readonly string[] s_orderStatusCodes = ["0", "1", "2", "3", "4"];
-        private static readonly string[] s_orderStatusOverlaidTexts = ["草稿", "待簽核", "已審", "出貨", "註銷"];
-        private static readonly string[] s_appendedCodes = ["0", "1", "9"];
-        private static readonly string[] s_appendedTexts = ["初稿", "待審", "客製狀態"];
+        private static readonly string[] s_custOnlyStatusCodes = ["1", "4"];
+        private static readonly string[] s_custOnlyStatusTexts = ["待簽核", "註銷"];
+        private static readonly string[] s_custOrderCodes = ["9", "0"];
+        private static readonly string[] s_custOrderTexts = ["客製狀態", "初稿"];
 
         [Fact]
         [DisplayName("cust 有 key 時應回傳 cust 值（覆寫 base）")]
@@ -155,27 +155,29 @@ namespace Bee.Definition.UnitTests.Language
         }
 
         [Fact]
-        [DisplayName("Enum entry 級疊加：客製只改 2 個 entry，其餘延用套裝且維持套裝順序")]
-        public void GetLangEnum_CustOverridesSomeEntries_KeepsBaseEntriesAndOrder()
+        [DisplayName("Enum 是整組取代不是逐 entry 疊加：套裝有而客製沒有的 entry 不會保留")]
+        public void GetLangEnum_CustHasEnum_ReplacesWholeSetWithoutMergingBaseEntries()
         {
             var defineAccess = new StubDefineAccess("zh-TW");
             defineAccess.AddEnum("zh-TW", "Order", "OrderStatus",
                 ("0", "草稿"), ("1", "待審"), ("2", "已審"), ("3", "出貨"), ("4", "作廢"));
             var reader = new SpyCustomizeReader();
-            // 客製只改「待審」與「作廢」的說法
+            // 客製只列 2 個 entry → 結果就只有這 2 個，套裝其餘 3 個不會被併進來
             reader.AddEnum("acme", "zh-TW", "Order", "OrderStatus", ("1", "待簽核"), ("4", "註銷"));
             var svc = new LanguageService(defineAccess, reader);
 
             var result = svc.GetLangEnum("acme", "zh-TW", "Order", "OrderStatus");
 
             Assert.NotNull(result);
-            Assert.Equal(s_orderStatusCodes, result!.Entries.Select(e => e.Code).ToArray());
-            Assert.Equal(s_orderStatusOverlaidTexts, result.Entries.Select(e => e.Text).ToArray());
+            Assert.Equal(s_custOnlyStatusCodes, result!.Entries.Select(e => e.Code).ToArray());
+            Assert.Equal(s_custOnlyStatusTexts, result.Entries.Select(e => e.Text).ToArray());
+            Assert.Null(result.GetText("0"));
+            Assert.Null(result.GetText("2"));
         }
 
         [Fact]
-        [DisplayName("Enum entry 級疊加：客製獨有的 entry 應接在套裝順序之後")]
-        public void GetLangEnum_CustOnlyEntry_IsAppendedAfterBaseEntries()
+        [DisplayName("Enum 整組取代：客製檔的 entry 順序即為結果順序")]
+        public void GetLangEnum_CustHasEnum_PreservesCustomizeDocumentOrder()
         {
             var defineAccess = new StubDefineAccess("zh-TW");
             defineAccess.AddEnum("zh-TW", "Order", "OrderStatus", ("0", "草稿"), ("1", "待審"));
@@ -186,26 +188,8 @@ namespace Bee.Definition.UnitTests.Language
             var result = svc.GetLangEnum("acme", "zh-TW", "Order", "OrderStatus");
 
             Assert.NotNull(result);
-            Assert.Equal(s_appendedCodes, result!.Entries.Select(e => e.Code).ToArray());
-            Assert.Equal(s_appendedTexts, result.Entries.Select(e => e.Text).ToArray());
-        }
-
-        [Fact]
-        [DisplayName("Enum entry 級疊加：客製無法刪除套裝 entry（只能覆寫或新增）")]
-        public void GetLangEnum_CustCannotRemoveBaseEntry()
-        {
-            var defineAccess = new StubDefineAccess("zh-TW");
-            defineAccess.AddEnum("zh-TW", "Order", "OrderStatus", ("0", "草稿"), ("1", "待審"), ("2", "已審"));
-            var reader = new SpyCustomizeReader();
-            reader.AddEnum("acme", "zh-TW", "Order", "OrderStatus", ("0", "初稿"));
-            var svc = new LanguageService(defineAccess, reader);
-
-            var result = svc.GetLangEnum("acme", "zh-TW", "Order", "OrderStatus");
-
-            Assert.NotNull(result);
-            Assert.Equal(3, result!.Entries.Count);
-            Assert.Equal("待審", result.GetText("1"));
-            Assert.Equal("已審", result.GetText("2"));
+            Assert.Equal(s_custOrderCodes, result!.Entries.Select(e => e.Code).ToArray());
+            Assert.Equal(s_custOrderTexts, result.Entries.Select(e => e.Text).ToArray());
         }
 
         [Fact]
@@ -225,7 +209,7 @@ namespace Bee.Definition.UnitTests.Language
         }
 
         [Fact]
-        [DisplayName("Enum 疊加不得污染套裝快取實例（定義資料 init 後不可異動）")]
+        [DisplayName("Enum 取代不得污染套裝快取實例（定義資料 init 後不可異動）")]
         public void GetLangEnum_Overlay_DoesNotMutateBaseCachedInstance()
         {
             var defineAccess = new StubDefineAccess("zh-TW");
@@ -245,7 +229,7 @@ namespace Bee.Definition.UnitTests.Language
         }
 
         [Fact]
-        [DisplayName("回歸防護：未帶 customizeId 時直接回套裝快取實例（未複製、未疊加）")]
+        [DisplayName("回歸防護：未帶 customizeId 時直接回套裝快取實例（未複製）")]
         public void GetLangEnum_NoCustomizeId_ReturnsBaseCachedInstance()
         {
             var defineAccess = new StubDefineAccess("zh-TW");
