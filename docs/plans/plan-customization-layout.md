@@ -238,7 +238,26 @@ XmlSerializer 以填充既有實例處理，但 **JSON / MessagePack 依可寫�
 | L1 | ~~`SystemBusinessObject.GetFormLayout` 改為「cust 檔 → base 檔 → 生成」+ 回填 caption~~ | — | ⚠️ **需回收**（commit `8a418382`）：決策 L7／A2 後伺服端不做運行階段組裝 |
 | L2 | ~~接上 `SessionInfo.CustomizeId`，客製 layout 在 API 路徑生效~~ | — | ⚠️ **需回收**：同上（客製 layout 的取得改由 client 另呼叫一次） |
 | L3 | `GetFormLayout` 改為供應**原始定義**（XML 信封）；另補「取客製 layout 定義」的對應方法（租戶由 session 決定） | foundation 決策 A2 | 📝 待做 |
-| L4 | UI head 改為：取原始 schema → 以兩份語系在地化 → 取兩份 layout 定義（缺則由 schema 生成）→ 回填 caption。需保留 Avalonia 端的 `LayoutCapabilityApplier` 權限降級 | L3、共用取用類別 | 📝 待做（**客製 layout 對兩個 head 生效與否，全繫於此**） |
+| L4 | UI head 改為：取原始 schema → 以兩份語系在地化 → 取兩份 layout 定義（缺則由 schema 生成）→ 回填 caption。需保留 Avalonia 端的 `LayoutCapabilityApplier` 權限降級 | L3、共用取用類別 | 🚧 組裝器已完成（`FormDefinitionLoader`），**head 接線未完成** —— 見下方未解問題 |
+
+**L4 未解問題：預先給定 `Schema` 的 host 不該被迫打 API 取 layout。**
+
+一次接線嘗試（已回退）把 `FormView` 的 `Schema.GetFormLayout()` 直接換成
+`loader.GetRuntimeLayoutAsync(...)`，結果 11 個 Avalonia 與 2 個 Blazor 測試失敗——它們
+**預先設定 `Schema`、沒有後端**，而新路徑無條件要打兩次 API 取 layout 定義。
+
+這不只是測試要改：`FormView.Schema` 是公開屬性，host 本來就可以直接餵 schema 而不經
+`ClientInfo.DefineAccess`（`ResolveSchemaAsync` 的 XML doc 明寫這個用途）。強制取 layout
+會讓那條路突然需要後端。
+
+可能的解法（未裁決）：
+
+| 選項 | 作法 | 取捨 |
+|------|------|------|
+| a | 比照 `ResolveSchemaAsync`，加 `protected virtual ResolveLayoutAsync`，預設走 loader | 與既有 override 模式一致；但預設仍打 API，既有測試與無後端 host 要各自 override |
+| b | host 預先給 `Schema` 時就跳過 layout 定義查找、直接由 schema 生成 | 無後端情境自動退化；但「預先給 schema」與「要不要客製 layout」其實是兩件事，綁在一起有點巧合 |
+| c | 讓 `FormView` 收一個可選的 `FormDefinitionLoader`，為 null 時純本地生成 | 相依顯式、可測；但多一個要接的東西 |
+
 | L5 | 過期偵測：FormSchema 欄位集與 layout 檔不符時記錄警告（決策 L1） | L4 | 📝 待做 |
 | L6 | 端到端測試：帶 CustomizeId 的 session → 拿到客製 layout | foundation F3 | 📝 待做 |
 
