@@ -1,6 +1,6 @@
 # Plan：Layout 客製化
 
-> 狀態：🚧 進行中（決策全數定案；階段 L1–L4、L6 已完成，**僅剩 L5（過期警告）**）· 2026-08-01
+> 狀態：✅ 已完成（決策全數定案；階段 L1–L4、L6 落地，L5 裁決不做）· 2026-08-01
 > 範圍：**FormLayout 的租戶客製**——版面重排、欄位隱藏、區塊調整。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 已於 F1／F2 補完）
 > 相關：[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -110,8 +110,18 @@ public FormLayout GetFormLayout(string customizeId, string layoutId)
 - **選項 L1-b**：維持即時生成，客製改為「生成後套 patch」。**已由決策 L2 排除。**
 - **選項 L1-c**：只在有 customizeId 時查檔。治標——base 的手工 layout 仍然失效。
 
-**「layout 檔過期」的處置**：採 **(iii) 偵測不符時記錄警告**，不自動 merge
-（自動 merge 等於走向 L1-b，已排除）。定義維護流程負責重新產生。
+**~~「layout 檔過期」的處置~~ — ✅ 2026-08-01 裁決：沒有「過期」這個概念，不做偵測**
+（原訂 (iii) 偵測不符時記錄警告，見階段 L5）。
+
+> 理由（使用者裁決，分兩層）：
+>
+> 1. **base layout**：正式流程中是**開發階段**與 FormSchema 一起產出的，之後可能手調版面，
+>    但欄位集與 schema 同步——「檔案落後於 schema」不是這條路徑會發生的事。
+> 2. **客製 layout**：**FormLayout 是畫面的權威來源**，不因 FormSchema 有異動就該主動更新。
+>    schema 新增欄位而某租戶版面沒有它，是那份 layout 的決定，不是缺陷。
+>
+> 兩層合起來：不一致要嘛不會發生（base），要嘛本來就是對的（客製）。
+> 為此加執行階段偵測，只會把正常狀態報成警告，並多一份要維護的 API 表面。
 
 ### 決策 L2：整檔取代 vs 部分覆寫 — ✅ 已定案（2026-08-01）：採 L2-a，整檔取代
 
@@ -123,8 +133,14 @@ public FormLayout GetFormLayout(string customizeId, string layoutId)
 > 同屬後者。這條分界已寫進公開文件
 > [`definition-files-overview`](../definition-files-overview.md) §7（雙語）。
 >
-> 已知取捨（ADR-016 未列）：base 日後新增欄位／改版**不會傳播**到客製版，長期分歧。
-> 由 L1 的「過期偵測警告」承接這個風險，不另做 patch 機制。
+> **base 日後新增欄位不會傳播到客製版——這是語意，不是取捨**（使用者 2026-08-01 定調）：
+> **FormLayout 是畫面的權威來源**，schema 加了欄位不代表那個欄位該出現在某租戶的版面上。
+> 客製層一旦寫定就不動，框架**既不 patch、也不告警、也不「提醒該更新了」**。
+> 要讓新欄位出現在該租戶畫面上，是維護客製檔的人的決定與動作。
+>
+> 原稿把這寫成「長期分歧的已知風險」、並指名由 L1 的過期偵測警告承接——**框錯了**。
+> 那個偵測已裁決不做（見決策 L1 與階段 L5），且理由不是「風險可接受」，而是
+> **根本沒有「過期」這回事**：layout 與 schema 不一致是版面決定的正常結果。
 
 **連帶排除**：選項 L1-b、原階段 L4（patch 機制）。
 
@@ -234,9 +250,9 @@ XmlSerializer 以填充既有實例處理，但 **JSON / MessagePack 依可寫�
 | 階段 | 範圍 | 前置 | 狀態 |
 |------|------|------|------|
 | L0 | 決策定案 | — | ✅ L1–L7 全數定案（2026-08-01） |
-| L1 | ~~`SystemBusinessObject.GetFormLayout` 改為「cust 檔 → base 檔 → 生成」+ 回填 caption~~ | — | ⚠️ **需回收**（commit `8a418382`）：決策 L7／A2 後伺服端不做運行階段組裝 |
-| L2 | ~~接上 `SessionInfo.CustomizeId`，客製 layout 在 API 路徑生效~~ | — | ⚠️ **需回收**：同上（客製 layout 的取得改由 client 另呼叫一次） |
-| L3 | `GetFormLayout` 改為供應**原始定義**（XML 信封）；另補「取客製 layout 定義」的對應方法（租戶由 session 決定） | foundation 決策 A2 | 📝 待做 |
+| L1 | ~~`SystemBusinessObject.GetFormLayout` 改為「cust 檔 → base 檔 → 生成」+ 回填 caption~~ | — | ✅ **已回收**（2026-08-01，commit `ec94d0aa`）：伺服端改為供應原始定義，運行階段組裝移到 client。逐項去留見下方回收表 |
+| L2 | ~~接上 `SessionInfo.CustomizeId`，客製 layout 在 API 路徑生效~~ | — | ✅ **已回收**：同上。客製 layout 改由 client 以 `GetCustomizeFormLayout` 另取一次，租戶仍由 session 決定 |
+| L3 | `GetFormLayout` 改為供應**原始定義**（XML 信封）；另補「取客製 layout 定義」的對應方法（租戶由 session 決定） | foundation 決策 A2 | ✅ 已完成（2026-08-01）。commit `ec94d0aa`（定義類 API 一律供應原始定義 + XML 信封）＋ `bbd2fd2a`（`SystemActions.GetCustomizeFormLayout` 伺服端 action 與 .NET connector） |
 | L4 | UI head 改為：取原始 schema → 以兩份語系在地化 → 取兩份 layout 定義（缺則由 schema 生成）→ 回填 caption。需保留 Avalonia 端的 `LayoutCapabilityApplier` 權限降級 | L3、共用取用類別 | ✅ 已完成（2026-08-01）。`FormDefinitionLoader` + 兩個 head 的可選 `DefinitionLoader` 屬性（採選項 c） |
 
 **L4 曾遇到的問題（已解，採選項 c）：預先給定 `Schema` 的 host 不該被迫打 API 取 layout。**
@@ -260,15 +276,15 @@ XmlSerializer 以填充既有實例處理，但 **JSON / MessagePack 依可寫�
 > 未設 loader 時行為與改版前逐位元相同，所以既有測試與無後端 host 全部不受影響；
 > 要啟用客製就設 `DefinitionLoader = new FormDefinitionLoader(ClientInfo.DefineAccess)`。
 
-| L5 | 過期偵測：FormSchema 欄位集與 layout 檔不符時記錄警告（決策 L1） | L4 | 📝 待做 |
+| L5 | ~~過期偵測：FormSchema 欄位集與 layout 檔不符時記錄警告（決策 L1）~~ | L4 | ❌ **裁決不做**（2026-08-01）。base layout 在開發階段與 schema 一起產出，欄位集本就同步；客製 layout 則是**畫面的權威來源**，不因 schema 異動而該更新——兩者都不存在「過期」。詳見決策 L1、L2 |
 | L6 | 端到端測試：帶 CustomizeId 的 session → 拿到客製 layout | foundation F3 | ✅ 已完成（2026-08-01，隨 foundation F3）。`TenantCustomizationEndToEndTests`：進入帶 `customize_id` 的公司後，`FormDefinitionLoader.GetRuntimeLayoutAsync` 整檔採用客製 layout（欄位數 2 vs base 7，驗證 L2-a），且 caption 取自在地化 schema（驗證 L5-a）——客製 layout 檔本身不寫 caption；未進公司的 session 則取得 base 定義檔的 layout 與 base caption |
 
 **commit `8a418382` 的回收範圍**（決策 L7 後逐項判定）：
 
 | 成果 | 去留 | 理由 |
 |------|------|------|
-| `FormLayout.Clone()` 家族（5 型別） | ❌ **移除** | 加它的唯一理由是「伺服端回填 caption 會改到快取實例」。伺服端不再組裝，用戶端的定義是每次反序列化出來的新實例，不需要 clone |
-| `FormLayoutCaptionApplier` | 🔁 **保留但換位置** | L5-a 的語意仍成立，只是改在組裝運行階段 layout 的那一端執行 |
+| `FormLayout.Clone()` 家族（5 型別） | ✅ **保留**（原判定為移除，實作時更正） | 原以為「用戶端的定義是每次反序列化出來的新實例」，實際不然——`ClientDefineAccess` 也有快取，`FormDefinitionLoader` 拿到的同樣是共用實例，而 `FormLayoutCaptionApplier` 就地 mutate。移除 clone 會讓 caption 寫回 client 快取，跨 session 污染 |
+| `FormLayoutCaptionApplier` | 🔁 **保留但換位置** | L5-a 的語意仍成立，只是改在組裝運行階段 layout 的那一端執行（`FormDefinitionLoader.GetRuntimeLayoutAsync`） |
 | `SystemBusinessObject.GetFormLayout` 的「客製→base→生成 + 回填」 | ❌ **改回供應原始定義** | 決策 L7 |
 | 空 `LayoutId` 解析為 ProgId | ✅ **保留** | 與供應原始定義相容：檔案就是 `{ProgId}.FormLayout.xml` |
 | storage 的 nullable 契約（`FileDefineStorage` / `DbDefineStorage` 缺件回 `null`） | ✅ **保留** | 獨立正確，且新設計仍要能表達「沒有這份定義」 |
@@ -317,4 +333,5 @@ XmlSerializer 以填充既有實例處理，但 **JSON / MessagePack 依可寫�
   但**全 repo 沒有任何 `default.FormLayout.xml`**——現存檔案一律是
   `{ProgId}.FormLayout.xml` 且檔內 `LayoutId == ProgId`。因此留空時改以 **ProgId 當 layoutId**，
   否則現存檔案永遠查不到。（`"default"` 目前只是生成器的佔位字串。）
-- **回填找不到對應欄位時**：保留 layout 檔原值，不清空、不丟例外——交由 L1 的過期偵測記錄警告。
+- **回填找不到對應欄位時**：保留 layout 檔原值，不清空、不丟例外。（原訂交由 L1 的過期偵測記錄警告，
+  該偵測已裁決不做——保留原值本來就是對的：layout 是畫面權威，applier 只補文字，不評斷版面該有什麼。）

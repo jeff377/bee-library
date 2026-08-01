@@ -1,6 +1,6 @@
 # Plan：客製化共同前置
 
-> 狀態：🚧 進行中（F1、F2、F3 已完成，F4 的缺口 E 已補；僅剩 F4 缺口 D）· 2026-08-01
+> 狀態：✅ 已完成（F1–F4 全數落地；橫向缺口 A–F 全補）· 2026-08-01
 > 定位：**三類客製的共同基礎**，不屬於任一類，但三類都被它擋住。
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)
 > 依據：[ADR-016 多租戶客製化覆蓋層](../adr/adr-016-multitenant-customization-overlay.md)
@@ -25,6 +25,11 @@ ADR-016 設計的 fail-safe（漏傳 customizeId → 退化純 base）目前是 
 > **仍未生效的是用戶端進公司流程**
 > （§2.C：至今沒有 head 走過 `EnterCompany`，所以實務上 `CustomizeId` 仍恆為空）。
 > 換句話說：伺服端管道已通，但**還沒有任何部署會餵值進去**——這正是 F3 的範圍。
+
+> **2026-08-01 結案（F4 落地後）**：橫向缺口 A–F 全部補完，本 plan 的前置任務結束。
+> §0 開頭那段「消費端接線完全沒做」描述的是 2026-07-30 的起點，**已全數不成立**——
+> 保留原文是為了讓後來讀者看得出這份 plan 從哪裡開始。剩下的唯一未決項是 §3 的
+> 「客製檔實務上誰維護、怎麼產生」，它不擋任何一類客製生效。
 
 > **2026-08-01 再更正（F3 落地後）**：整條鏈已由端到端整合測試走通並驗證
 > （`st_company.customize_id` → `EnterCompany` → `SessionInfo.CustomizeId` → 語系／BO 型別／
@@ -219,7 +224,7 @@ host 在 `new PathOptions { DefinePath = ..., CustomizePath = ... }` 時一併�
 > 這已不是驗證缺口（整合測試蓋掉了），而是「框架能力已備、尚無部署使用」——與 Layout plan
 > §3 對 base 手工 layout 的結論同性質。
 
-### 🟡 D. 客製快取沒有失效訊號
+### 🟢 D. 客製快取沒有失效訊號（**已修，2026-08-01**）
 
 `CustomizeOnlyStorage` **未實作 `GetChangeSource`**，落到 `IDefineStorage` 的 default
 （`IDefineStorage.cs:108-123`，「The default reports no signal」）。
@@ -231,6 +236,20 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 **只有客製層兩者皆無**。
 
 > **建議**：實作 `CustomizeOnlyStorage.GetChangeSource`，比照 base 的 file-watch。
+
+> **✅ 已修（2026-08-01）**：`CustomizeOnlyStorage.GetChangeSource` 比照 `FileDefineStorage`，
+> 對 ProgramSettings / FormLayout / Language 三型別回報 **getter 實際會讀的那個檔案路徑**
+> （同樣經 `CustomizeOnlyPathOptions` 解析，兩者不可能對不上），其餘型別回 `DefineChangeSource.None`
+> ——不丟例外，因為呼叫端（快取）可以問任何型別而不需先知道 override 層服務哪幾種。
+>
+> **檔案不存在時仍回報路徑**：客製檔「從無到有」本身就是要反應的變更，而
+> `MemoryCacheProvider.FileModificationToken` 對缺檔取到的是 sentinel 時間戳，檔案出現後即判定 `HasChanged`。
+>
+> 未一併處理（刻意）：`KeyObjectCache.GetNegativePolicy` 的負向項仍只有 5 分鐘絕對到期、不掛檔案監控。
+> 客製層最常見的正是「無檔」，但 5 分鐘已是有界延遲，不值得為此改動共用的快取基底。
+>
+> **DB 後端無對應缺口**：`DbDefineStorage.GetCustomizeXxx` 不經快取容器、每次直接查 DB，
+> 沒有需要失效的快取項。
 
 ### 🟢 E. DB 儲存 + 客製的組合是壞的（**已修，2026-08-01**）
 
@@ -312,7 +331,7 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 | F1 | **缺口 B**：host 設定 `CustomizePath` 的文件 + 一個 sample 示範 | ✅ 已完成（2026-07-31）。`DemoBackend` 設 `CustomizePath`（`Define/` 的同層 `Customize/`）；文件見 [`definition-files-overview`](../definition-files-overview.md) §7（雙語）。依使用者決定**不入版控任何樣本客製檔**——只開路徑，客製層仍為空 |
 | F2 | **缺口 A**：消費端接線，伺服端三處顯式傳參 + `BeeStringLocalizer` 委派多載（Layout 除外，見 Layout plan） | ✅ 已完成（2026-07-31）。四處全接：`FormSchemaLocalizer`、`BusinessObject.GetLangText`、`BeeStringLocalizer<T>`、`BusinessObjectFactory` |
 | F3 | **缺口 C + F 合流**：會進公司的 head（或整合測試）走通 `EnterCompany` → `ApplyEnterCompanyResult` → 客製生效，並把 `ResetDefineCache` 責任收回框架 | ✅ 已完成（2026-08-01）。前半 commit `5f741647`（`ResetDefineCache` 收回框架）；後半採**整合測試自建 session**（使用者裁決選項 a），`TenantCustomizationEndToEndTests` 9 測試，語系／BO 型別／Layout／跨租戶隔離／回歸防護全覆蓋（見 §2.F） |
-| F4 | **缺口 D、E**：客製快取失效訊號、DB 版 reader 條件註冊 | 🚧 進行中——**缺口 E（DB 版 reader 條件註冊）已完成**（2026-08-01，隨 Layout L1／L2 一併）；缺口 D（`CustomizeOnlyStorage.GetChangeSource` 的客製快取失效訊號）仍待做 |
+| F4 | **缺口 D、E**：客製快取失效訊號、DB 版 reader 條件註冊 | ✅ 已完成（2026-08-01）。缺口 E（DB 版 reader 條件註冊）隨 Layout L1／L2 一併；缺口 D 補上 `CustomizeOnlyStorage.GetChangeSource`（三個客製型別回報 getter 實際讀的檔案路徑，其餘回 `None`），客製檔改動改由 file-watch 觸發失效，不再只能等 20 分鐘 sliding expiration |
 
 > F3 為何合流：用戶端進公司流程從未被任何 head 走過（見 §2.C），所以「接上 `ResetDefineCache`」與
 > 「端到端驗證客製生效」必須在同一條路徑上完成——沒有走這條路的 head，兩者都無從驗證。
