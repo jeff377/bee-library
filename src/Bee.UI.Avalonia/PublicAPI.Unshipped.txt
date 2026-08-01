@@ -3,3 +3,6 @@ Bee.UI.Avalonia.Storage.FileEndpointStorage.ApiKeyFilePath.get -> string!
 Bee.UI.Avalonia.Storage.FileEndpointStorage.LoadApiKey() -> string!
 Bee.UI.Avalonia.Storage.FileEndpointStorage.SaveApiKey(string! apiKey) -> void
 Bee.UI.Avalonia.Storage.FileEndpointStorage.SetApiKey(string! apiKey) -> void
+Bee.UI.Avalonia.Views.FormView.DefinitionLoader.get -> Bee.Api.Client.Definitions.FormDefinitionLoader?
+Bee.UI.Avalonia.Views.FormView.DefinitionLoader.set -> void
+virtual Bee.UI.Avalonia.Views.FormView.ResolveLang() -> string!

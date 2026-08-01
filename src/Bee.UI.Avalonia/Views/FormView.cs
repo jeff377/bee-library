@@ -1,3 +1,5 @@
+using System.Globalization;
+using Bee.Api.Client.Definitions;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -299,7 +301,36 @@ namespace Bee.UI.Avalonia.Views
         /// override to supply a schema without touching the static <see cref="ClientInfo"/>.
         /// </summary>
         protected virtual async Task<FormSchema?> ResolveSchemaAsync(string progId)
-            => await ClientInfo.DefineAccess.GetFormSchemaAsync(progId).ConfigureAwait(false);
+            => DefinitionLoader is null
+                ? await ClientInfo.DefineAccess.GetFormSchemaAsync(progId).ConfigureAwait(false)
+                : await DefinitionLoader.GetLocalizedSchemaAsync(progId, ResolveLang()).ConfigureAwait(false);
+
+        /// <summary>
+        /// Gets or sets the assembler that turns the raw definitions the server serves into a
+        /// localized schema and a runtime layout. <c>null</c> — the default — keeps the view purely
+        /// local: the schema is fetched as stored and the layout is generated from it.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Opt-in on purpose. Assembling the runtime definitions costs API round trips (both
+        /// language layers, both layout layers), and <see cref="Schema"/> is a public property, so a
+        /// host may legitimately supply a schema with no backend behind it at all. Making the loader
+        /// an explicit dependency keeps that case working and states plainly which forms pay for
+        /// tenant customization.
+        /// </para>
+        /// <para>
+        /// Set it to enable customized layouts and localized captions:
+        /// <c>view.DefinitionLoader = new FormDefinitionLoader(ClientInfo.DefineAccess)</c>.
+        /// </para>
+        /// </remarks>
+        public FormDefinitionLoader? DefinitionLoader { get; set; }
+
+        /// <summary>
+        /// Resolves the language the form renders in. Defaults to the UI culture, the same source
+        /// <c>BeeStringLocalizer</c> falls back to. Only consulted when
+        /// <see cref="DefinitionLoader"/> is set.
+        /// </summary>
+        protected virtual string ResolveLang() => CultureInfo.CurrentUICulture.Name;
 
         /// <summary>
         /// Resolves the <see cref="FormApiConnector"/> for the load / save round-trips.
@@ -400,8 +431,15 @@ namespace Bee.UI.Avalonia.Views
             _liveComputation = new FormLiveComputation(Schema, _roundingContext);
             _dataObject.FieldValueChanged += OnLiveFieldValueChanged;
             _dataObject.RowAdded += OnLiveRowAdded;
-            _formLayout = Schema.GetFormLayout();
-            // Degrade the freshly generated layout against the cached capability snapshot before it
+            // Without a loader the layout is generated from the schema, exactly as before. With one,
+            // it comes from the tenant's layout definition when it has one, else the base
+            // definition, else generation — with captions from the localized schema either way.
+            _formLayout = DefinitionLoader is null
+                ? Schema.GetFormLayout()
+                : await DefinitionLoader
+                    .GetRuntimeLayoutAsync(string.IsNullOrEmpty(ProgId) ? Schema.ProgId : ProgId, Schema)
+                    .ConfigureAwait(true);
+            // Degrade the layout against the cached capability snapshot before it
             // renders: hide sensitive fields without Read and mark them read-only without Update
             // (detail grid actions follow the form's edit mode, not permission). No-op when no
             // company context is active.

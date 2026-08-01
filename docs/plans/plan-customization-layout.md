@@ -1,7 +1,6 @@
 # Plan：Layout 客製化
 
-> 狀態：🚧 進行中（**2026-08-01 架構翻案：決策 L4／L5 已被 foundation 決策 A2 推翻**，
-> 階段 L1／L2 需回收重做；見 §2 決策 L7）· 2026-08-01
+> 狀態：🚧 進行中（決策全數定案；階段 L1–L4 已完成，**L5（過期警告）、L6（端到端測試）待做**）· 2026-08-01
 > 範圍：**FormLayout 的租戶客製**——版面重排、欄位隱藏、區塊調整。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 已於 F1／F2 補完）
 > 相關：[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -238,9 +237,9 @@ XmlSerializer 以填充既有實例處理，但 **JSON / MessagePack 依可寫�
 | L1 | ~~`SystemBusinessObject.GetFormLayout` 改為「cust 檔 → base 檔 → 生成」+ 回填 caption~~ | — | ⚠️ **需回收**（commit `8a418382`）：決策 L7／A2 後伺服端不做運行階段組裝 |
 | L2 | ~~接上 `SessionInfo.CustomizeId`，客製 layout 在 API 路徑生效~~ | — | ⚠️ **需回收**：同上（客製 layout 的取得改由 client 另呼叫一次） |
 | L3 | `GetFormLayout` 改為供應**原始定義**（XML 信封）；另補「取客製 layout 定義」的對應方法（租戶由 session 決定） | foundation 決策 A2 | 📝 待做 |
-| L4 | UI head 改為：取原始 schema → 以兩份語系在地化 → 取兩份 layout 定義（缺則由 schema 生成）→ 回填 caption。需保留 Avalonia 端的 `LayoutCapabilityApplier` 權限降級 | L3、共用取用類別 | 🚧 組裝器已完成（`FormDefinitionLoader`），**head 接線未完成** —— 見下方未解問題 |
+| L4 | UI head 改為：取原始 schema → 以兩份語系在地化 → 取兩份 layout 定義（缺則由 schema 生成）→ 回填 caption。需保留 Avalonia 端的 `LayoutCapabilityApplier` 權限降級 | L3、共用取用類別 | ✅ 已完成（2026-08-01）。`FormDefinitionLoader` + 兩個 head 的可選 `DefinitionLoader` 屬性（採選項 c） |
 
-**L4 未解問題：預先給定 `Schema` 的 host 不該被迫打 API 取 layout。**
+**L4 曾遇到的問題（已解，採選項 c）：預先給定 `Schema` 的 host 不該被迫打 API 取 layout。**
 
 一次接線嘗試（已回退）把 `FormView` 的 `Schema.GetFormLayout()` 直接換成
 `loader.GetRuntimeLayoutAsync(...)`，結果 11 個 Avalonia 與 2 個 Blazor 測試失敗——它們
@@ -250,13 +249,16 @@ XmlSerializer 以填充既有實例處理，但 **JSON / MessagePack 依可寫�
 `ClientInfo.DefineAccess`（`ResolveSchemaAsync` 的 XML doc 明寫這個用途）。強制取 layout
 會讓那條路突然需要後端。
 
-可能的解法（未裁決）：
+解法（2026-08-01 裁決採 **c**）：
 
 | 選項 | 作法 | 取捨 |
 |------|------|------|
 | a | 比照 `ResolveSchemaAsync`，加 `protected virtual ResolveLayoutAsync`，預設走 loader | 與既有 override 模式一致；但預設仍打 API，既有測試與無後端 host 要各自 override |
 | b | host 預先給 `Schema` 時就跳過 layout 定義查找、直接由 schema 生成 | 無後端情境自動退化；但「預先給 schema」與「要不要客製 layout」其實是兩件事，綁在一起有點巧合 |
-| c | 讓 `FormView` 收一個可選的 `FormDefinitionLoader`，為 null 時純本地生成 | 相依顯式、可測；但多一個要接的東西 |
+| **c（採用）** | 讓 `FormView` / `FormPage` 收一個可選的 `FormDefinitionLoader`，為 null 時純本地生成 | 相依顯式、可測；多一個要接的東西，但那正是重點——「這張表單要不要付出客製的往返成本」變成明講的決定，而非從別的狀態推論 |
+
+> 未設 loader 時行為與改版前逐位元相同，所以既有測試與無後端 host 全部不受影響；
+> 要啟用客製就設 `DefinitionLoader = new FormDefinitionLoader(ClientInfo.DefineAccess)`。
 
 | L5 | 過期偵測：FormSchema 欄位集與 layout 檔不符時記錄警告（決策 L1） | L4 | 📝 待做 |
 | L6 | 端到端測試：帶 CustomizeId 的 session → 拿到客製 layout | foundation F3 | 📝 待做 |

@@ -1,3 +1,5 @@
+using System.Globalization;
+using Bee.Api.Client.Definitions;
 using System.Data;
 using Bee.Api.Client.Connectors;
 using Bee.Definition;
@@ -52,6 +54,17 @@ namespace Bee.Web.Blazor.Server.Components
         [Inject]
         private BeeApiConnectorFactory Factory { get; set; } = default!;
 
+        /// <summary>
+        /// Gets or sets the assembler that turns raw definitions into a localized schema and a
+        /// runtime layout. <c>null</c> — the default — keeps the page purely local.
+        /// </summary>
+        /// <remarks>
+        /// Opt-in for the same reason as <c>FormView.DefinitionLoader</c>: assembling costs extra
+        /// round trips, so a page states plainly whether it pays for tenant customization.
+        /// </remarks>
+        [Parameter]
+        public FormDefinitionLoader? DefinitionLoader { get; set; }
+
         /// <inheritdoc/>
         protected override async Task OnInitializedAsync()
         {
@@ -65,11 +78,25 @@ namespace Bee.Web.Blazor.Server.Components
             try
             {
                 var system = Factory.CreateSystemConnector(AccessToken);
-                _schema = await system
-                    .GetDefineAsync<FormSchema>(DefineType.FormSchema, [ProgId])
-                    .ConfigureAwait(true);
-
-                _formLayout = _schema.GetFormLayout();
+                // Without a loader the page stays purely local: raw schema, layout generated from
+                // it. With one, both layers of language and layout are fetched and assembled so
+                // tenant customization takes effect. See FormView.DefinitionLoader for why this is
+                // opt-in rather than always on.
+                if (DefinitionLoader is null)
+                {
+                    _schema = await system
+                        .GetDefineAsync<FormSchema>(DefineType.FormSchema, [ProgId])
+                        .ConfigureAwait(true);
+                    _formLayout = _schema.GetFormLayout();
+                }
+                else
+                {
+                    _schema = await DefinitionLoader
+                        .GetLocalizedSchemaAsync(ProgId, CultureInfo.CurrentUICulture.Name)
+                        .ConfigureAwait(true);
+                    _formLayout = await DefinitionLoader
+                        .GetRuntimeLayoutAsync(ProgId, _schema).ConfigureAwait(true);
+                }
                 _listLayout = _schema.GetListLayout();
 
                 _dataObject = new FormDataObject(_schema, Factory.CreateFormConnector(AccessToken, ProgId));
