@@ -1,6 +1,6 @@
 # Plan：客製化共同前置
 
-> 狀態：🚧 進行中（F1、F2 已完成；F3、F4 待做）· 2026-07-31
+> 狀態：🚧 進行中（F1、F2 已完成，F4 的缺口 E 已補；F3、F4 缺口 D 待做）· 2026-08-01
 > 定位：**三類客製的共同基礎**，不屬於任一類，但三類都被它擋住。
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)
 > 依據：[ADR-016 多租戶客製化覆蓋層](../adr/adr-016-multitenant-customization-overlay.md)
@@ -22,7 +22,7 @@ ADR-016 設計的 fail-safe（漏傳 customizeId → 退化純 base）目前是 
 
 > **2026-07-31 進度更正（F1 + F2 落地後）**：上述「沒有任何一行讀取 `SessionInfo.CustomizeId`」
 > **已不再成立**——語系與 BO 型別解析四個消費端都已接線（§2.A），`CustomizePath` 也有 host 示範（§2.B）。
-> **仍未生效的是 Layout**（`CacheDefineAccess.GetDefine` 簽章無 customizeId）與**用戶端進公司流程**
+> **仍未生效的是用戶端進公司流程**
 > （§2.C：至今沒有 head 走過 `EnterCompany`，所以實務上 `CustomizeId` 仍恆為空）。
 > 換句話說：伺服端管道已通，但**還沒有任何部署會餵值進去**——這正是 F3 的範圍。
 
@@ -163,12 +163,23 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 
 > **建議**：實作 `CustomizeOnlyStorage.GetChangeSource`，比照 base 的 file-watch。
 
-### 🟡 E. DB 儲存 + 客製的組合是壞的
+### 🟢 E. DB 儲存 + 客製的組合是壞的（**已修，2026-08-01**）
 
 `DbDefineStorage.cs:36,201-213` 已實作完整的 DB 版 `ICustomizeDefineReader`（base 用 sentinel `customize_id = "*"`），
 但 `BeeFrameworkServiceCollectionExtensions.cs:90-93` **無條件註冊檔案版** `CustomizeDefineReader`。
 
 > **建議**：條件註冊——若 `IDefineStorage` 本身實作 `ICustomizeDefineReader` 就用它。
+
+> **✅ 已修（2026-08-01）**：`BeeFrameworkServiceCollectionExtensions` 改為
+> `sp.GetRequiredService<IDefineStorage>() as ICustomizeDefineReader ?? new CustomizeDefineReader(...)`。
+> 兩個方向都有測試（storage 有實作 → 選 storage 本身；沒有 → 退回檔案版）。
+>
+> 順帶記下**兩種 storage 的客製實作方式刻意不同**，這不是不一致而是依差異程度分的：
+> File 走**獨立類別**（`CustomizeOnlyStorage` + `CustomizeDefineReader`）——base 與客製是不同根
+> 目錄、不同路徑組成，且客製只服務 3 型別且唯讀，拆開能把約束編碼進型別；
+> DB 走**同一類別加方法**（`DbDefineStorage : IDefineStorage, ICustomizeDefineReader`）——base 與
+> 客製是同一張 `st_define` 的不同列，只差 `customize_id`（base 用哨兵 `"*"`），同一組 SQL 兩用，
+> 拆開只會複製連線與序列化。
 
 ### 🟡 F. 無端到端測試（缺口 A 從未被測出的原因）
 
@@ -210,7 +221,7 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 | F1 | **缺口 B**：host 設定 `CustomizePath` 的文件 + 一個 sample 示範 | ✅ 已完成（2026-07-31）。`DemoBackend` 設 `CustomizePath`（`Define/` 的同層 `Customize/`）；文件見 [`definition-files-overview`](../definition-files-overview.md) §7（雙語）。依使用者決定**不入版控任何樣本客製檔**——只開路徑，客製層仍為空 |
 | F2 | **缺口 A**：消費端接線，伺服端三處顯式傳參 + `BeeStringLocalizer` 委派多載（Layout 除外，見 Layout plan） | ✅ 已完成（2026-07-31）。四處全接：`FormSchemaLocalizer`、`BusinessObject.GetLangText`、`BeeStringLocalizer<T>`、`BusinessObjectFactory` |
 | F3 | **缺口 C + F 合流**：會進公司的 head（或整合測試）走通 `EnterCompany` → `ApplyEnterCompanyResult` → 客製生效，並把 `ResetDefineCache` 責任收回框架 | 📝 待做 |
-| F4 | **缺口 D、E**：客製快取失效訊號、DB 版 reader 條件註冊 | 📝 待做 |
+| F4 | **缺口 D、E**：客製快取失效訊號、DB 版 reader 條件註冊 | 🚧 進行中——**缺口 E（DB 版 reader 條件註冊）已完成**（2026-08-01，隨 Layout L1／L2 一併）；缺口 D（`CustomizeOnlyStorage.GetChangeSource` 的客製快取失效訊號）仍待做 |
 
 > F3 為何合流：用戶端進公司流程從未被任何 head 走過（見 §2.C），所以「接上 `ResetDefineCache`」與
 > 「端到端驗證客製生效」必須在同一條路徑上完成——沒有走這條路的 head，兩者都無從驗證。

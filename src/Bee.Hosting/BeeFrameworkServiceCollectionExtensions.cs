@@ -95,8 +95,14 @@ namespace Bee.Hosting
             //     registered; behaviour is gated entirely by CustomizePath, not by presence.
             services.AddSingleton<ICacheContainerProvider>(sp =>
                 new CacheContainerProvider(sp.GetRequiredService<PathOptions>()));
+            //     The reader follows the storage. A DB-backed IDefineStorage keeps base and
+            //     customization rows in one table, told apart by customize_id, so it implements
+            //     ICustomizeDefineReader itself and must be preferred — registering the file-based
+            //     reader unconditionally would send every customization lookup to the filesystem and
+            //     leave DB customizations permanently unreachable.
             services.AddSingleton<ICustomizeDefineReader>(sp =>
-                new CustomizeDefineReader(
+                sp.GetRequiredService<IDefineStorage>() as ICustomizeDefineReader
+                ?? new CustomizeDefineReader(
                     sp.GetRequiredService<ICacheContainerProvider>(),
                     sp.GetRequiredService<PathOptions>()));
 

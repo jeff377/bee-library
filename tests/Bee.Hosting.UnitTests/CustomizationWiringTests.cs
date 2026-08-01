@@ -1,6 +1,9 @@
 using System.ComponentModel;
 using Bee.Base.Serialization;
 using Bee.Definition;
+using Bee.Definition.Database;
+using Bee.Definition.Forms;
+using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
@@ -43,6 +46,36 @@ namespace Bee.Hosting.UnitTests
                 new PathOptions { DefinePath = _defineDir, CustomizePath = customizePath },
                 autoCreateMasterKey: true);
             return services.BuildServiceProvider();
+        }
+
+        [Fact]
+        [DisplayName("IDefineStorage 自身實作 ICustomizeDefineReader 時應優先採用它，而非檔案版")]
+        public void AddBeeFramework_StorageImplementsReader_PrefersStorage()
+        {
+            var services = new ServiceCollection();
+            var configuration = new BackendConfiguration();
+            configuration.Components.DefineStorage =
+                $"{typeof(CustomizeAwareStorage).FullName}, {typeof(CustomizeAwareStorage).Assembly.GetName().Name}";
+            services.AddBeeFramework(
+                configuration,
+                new PathOptions { DefinePath = _defineDir, CustomizePath = _customizeDir },
+                autoCreateMasterKey: true);
+            using var sp = services.BuildServiceProvider();
+
+            var reader = sp.GetRequiredService<ICustomizeDefineReader>();
+
+            // 走 storage 自己的實作，而不是繞回 CustomizePath 底下的檔案
+            Assert.IsType<CustomizeAwareStorage>(reader);
+            Assert.Same(sp.GetRequiredService<IDefineStorage>(), reader);
+        }
+
+        [Fact]
+        [DisplayName("IDefineStorage 未實作 ICustomizeDefineReader 時應退回檔案版 reader")]
+        public void AddBeeFramework_StorageWithoutReader_FallsBackToFileReader()
+        {
+            using var sp = BuildProvider(_customizeDir);
+
+            Assert.IsType<CustomizeDefineReader>(sp.GetRequiredService<ICustomizeDefineReader>());
         }
 
         [Fact]
@@ -96,6 +129,40 @@ namespace Bee.Hosting.UnitTests
 
             Assert.NotNull(result);
             Assert.Equal(layoutId, result.LayoutId);
+        }
+
+        /// <summary>
+        /// 模擬 DB 式儲存：base 與客製同住一處，只差一個識別欄，因此 storage 自己就是
+        /// <see cref="ICustomizeDefineReader"/>（比照 <c>DbDefineStorage</c>）。
+        /// 測試只在意 DI 選了誰，各方法不需真的有行為。
+        /// </summary>
+        public sealed class CustomizeAwareStorage : IDefineStorage, ICustomizeDefineReader
+        {
+            public CustomizeAwareStorage(PathOptions paths)
+            {
+                ArgumentNullException.ThrowIfNull(paths);
+            }
+
+            public LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns) => null;
+            public ProgramSettings? GetCustomizeProgramSettings(string customizeId) => null;
+            public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId) => null;
+
+            public DbCategorySettings? GetDbCategorySettings() => null;
+            public void SaveDbCategorySettings(DbCategorySettings settings) { }
+            public CurrencySettings? GetCurrencySettings() => null;
+            public void SaveCurrencySettings(CurrencySettings settings) { }
+            public UnitSettings? GetUnitSettings() => null;
+            public void SaveUnitSettings(UnitSettings settings) { }
+            public TableSchema? GetTableSchema(string categoryId, string tableName) => null;
+            public void SaveTableSchema(string categoryId, TableSchema tableSchema) { }
+            public FormSchema? GetFormSchema(string progId) => null;
+            public void SaveFormSchema(FormSchema formSchema) { }
+            public ProgramSettings? GetProgramSettings() => null;
+            public void SaveProgramSettings(ProgramSettings settings) { }
+            public FormLayout? GetFormLayout(string layoutId) => null;
+            public void SaveFormLayout(FormLayout formLayout) { }
+            public LanguageResource? GetLanguage(string lang, string ns) => null;
+            public void SaveLanguage(LanguageResource resource) { }
         }
     }
 }

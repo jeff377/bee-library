@@ -58,5 +58,16 @@ namespace Bee.Definition.Layouts
         [Description("Form modes in which this field is editable.")]
         [DefaultValue(FormEditModes.All)]
         public FormEditModes AllowEditModes { get; set; } = FormEditModes.All;
+
+        /// <summary>
+        /// Creates a fully independent copy of this field.
+        /// </summary>
+        /// <returns>A new <see cref="LayoutField"/> sharing no mutable state with this one.</returns>
+        public LayoutField Clone()
+        {
+            var copy = new LayoutField { AllowEditModes = AllowEditModes };
+            CopyBaseTo(copy);
+            return copy;
+        }
     }
 }

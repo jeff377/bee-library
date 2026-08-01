@@ -110,16 +110,16 @@ namespace Bee.Definition.UnitTests.Storage
         }
 
         [Fact]
-        [DisplayName("GetFormLayout 檔案不存在應拋出 FileNotFoundException")]
-        public void GetFormLayout_FileNotFound_Throws()
+        [DisplayName("GetFormLayout 檔案不存在應回 null（履行介面宣告的 nullable 契約）")]
+        public void GetFormLayout_FileNotFound_ReturnsNull()
         {
             WithTempDefinePath(paths =>
             {
                 // Arrange
                 var storage = new FileDefineStorage(paths);
 
-                // Act & Assert
-                Assert.Throws<FileNotFoundException>(() => storage.GetFormLayout("missing"));
+                // Act & Assert —— 缺 layout 檔是正常情境（框架改以 FormSchema 生成），不是錯誤
+                Assert.Null(storage.GetFormLayout("missing"));
             });
         }
 

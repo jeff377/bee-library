@@ -171,8 +171,14 @@ namespace Bee.Db.Storage
         }
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// Optional, unlike the other base reads: a missing layout row is a normal scenario, since
+        /// the framework generates a layout from the <see cref="FormSchema"/> when none is stored.
+        /// <c>ReadOptional</c> distinguishes "no such row" (returns <c>null</c>) from a row that
+        /// fails to deserialize, which still surfaces as an error.
+        /// </remarks>
         public FormLayout? GetFormLayout(string layoutId)
-            => ReadRequired<FormLayout>(BaseCustomizeId, layoutId);
+            => ReadOptional<FormLayout>(BaseCustomizeId, layoutId);
 
         /// <inheritdoc/>
         public void SaveFormLayout(FormLayout formLayout)

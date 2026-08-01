@@ -87,13 +87,12 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("FormLayout.Get 於未定義 layoutId 應拋 FileNotFoundException")]
-        public void FormLayout_UnknownLayoutId_ThrowsFileNotFound()
+        [DisplayName("FormLayout.Get 於未定義 layoutId 應回 null（缺檔為正常情境）")]
+        public void FormLayout_UnknownLayoutId_ReturnsNull()
         {
-            // 指定不存在的 layoutId,FileDefineStorage.GetFormLayout 會對檔案路徑驗證失敗
-            // 並拋 FileNotFoundException;目的是覆蓋 FormLayoutCache.Get 的 file-load 路徑。
-            Assert.Throws<FileNotFoundException>(() =>
-                Cache.FormLayout.Get("__non_existent_layout_" + Guid.NewGuid().ToString("N")));
+            // 缺 layout 檔不是錯誤：執行階段路徑改以 FormSchema 生成，所以 storage 回 null、
+            // 快取以負向快取記住這個 miss。目的是覆蓋 FormLayoutCache.Get 的 file-load 路徑。
+            Assert.Null(Cache.FormLayout.Get("__non_existent_layout_" + Guid.NewGuid().ToString("N")));
         }
     }
 }

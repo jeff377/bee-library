@@ -373,9 +373,42 @@ namespace Bee.ObjectCaching
         /// Gets the form layout for the specified layout identifier.
         /// </summary>
         /// <param name="layoutId">The layout identifier.</param>
+        /// <exception cref="InvalidOperationException">Thrown when no layout is stored under that identifier.</exception>
+        /// <remarks>
+        /// Kept mandatory even though the storage layer now reports a missing layout as
+        /// <c>null</c>: callers of this overload ask for a layout that must exist (the raw-definition
+        /// path behind <c>GetDefine</c>). Callers that treat "absent" as a normal answer — the
+        /// runtime path, which generates from the <c>FormSchema</c> instead — use
+        /// <see cref="FindFormLayout"/>.
+        /// </remarks>
         public FormLayout GetFormLayout(string layoutId)
         {
-            return _cache.FormLayout.Get(layoutId)!;
+            return _cache.FormLayout.Get(layoutId)
+                ?? throw new InvalidOperationException($"FormLayout '{layoutId}' not found.");
+        }
+
+        /// <summary>
+        /// Looks up the form layout definition for the supplied customization code and layout
+        /// identifier, returning <c>null</c> when neither layer stores one.
+        /// </summary>
+        /// <param name="customizeId">The tenant customization code; empty resolves against the base layer only.</param>
+        /// <param name="layoutId">The layout identifier.</param>
+        /// <returns>The customization layout, else the base layout, else <c>null</c>.</returns>
+        /// <remarks>
+        /// The optional counterpart of <see cref="GetFormLayout(string, string)"/>, for the runtime
+        /// path where "no layout definition exists" is a normal answer that means "generate one from
+        /// the <c>FormSchema</c>". Whole-file selection, same as the mandatory overload: a
+        /// customization layout wins outright and the two layers are never merged.
+        /// </remarks>
+        public FormLayout? FindFormLayout(string customizeId, string layoutId)
+        {
+            if (!string.IsNullOrEmpty(customizeId) && _customizeReader is not null)
+            {
+                var custom = _customizeReader.GetCustomizeFormLayout(customizeId, layoutId);
+                if (custom is not null)
+                    return custom;
+            }
+            return _cache.FormLayout.Get(layoutId);
         }
 
         /// <summary>

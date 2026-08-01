@@ -164,6 +164,38 @@ namespace Bee.Definition.Layouts
         }
 
         /// <summary>
+        /// Copies every member declared on this base class onto <paramref name="target"/>.
+        /// Derived types call this from their own <c>Clone</c> and then copy their own members.
+        /// </summary>
+        /// <param name="target">The clone receiving the values.</param>
+        /// <remarks>
+        /// Reads the backing field for the extended properties rather than the public getter,
+        /// because the getter reports <c>null</c> while a serialization pass is in progress.
+        /// </remarks>
+        protected void CopyBaseTo(LayoutFieldBase target)
+        {
+            ArgumentNullException.ThrowIfNull(target);
+
+            target.FieldName = FieldName;
+            target.Caption = Caption;
+            target.ControlType = ControlType;
+            target.DisplayFields = DisplayFields;
+            target.DisplayFormat = DisplayFormat;
+            target.NumberFormat = NumberFormat;
+            target.NumberKind = NumberKind;
+            target.CurrencyField = CurrencyField;
+            target.UnitField = UnitField;
+            target.Visible = Visible;
+            target.ReadOnly = ReadOnly;
+            target.Required = Required;
+
+            if (_extendedProperties == null)
+                return;
+            foreach (var property in _extendedProperties)
+                target.ExtendedProperties!.Add(property.Name, property.Value);
+        }
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()

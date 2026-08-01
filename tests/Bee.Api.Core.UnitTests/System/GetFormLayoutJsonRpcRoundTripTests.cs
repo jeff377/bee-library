@@ -20,7 +20,7 @@ namespace Bee.Api.Core.UnitTests.System
     /// <item>ApiInputConverter（GetFormLayoutRequest → GetFormLayoutArgs）保留 ProgId / LayoutId</item>
     /// <item>ApiOutputConverter（GetFormLayoutResult → GetFormLayoutResponse）命名慣例反射有作用，
     ///   FormLayout 物件 deep-copy 正確</item>
-    /// <item>LayoutId 空字串時 server 預設取 "default"</item>
+    /// <item>LayoutId 空字串時 server 以 ProgId 當 layoutId（layout 定義檔命名為 {ProgId}.FormLayout.xml）</item>
     /// </list>
     /// </summary>
     public class GetFormLayoutJsonRpcRoundTripTests : IClassFixture<BeeTestFixture>
@@ -71,7 +71,8 @@ namespace Bee.Api.Core.UnitTests.System
             var result = Assert.IsType<GetFormLayoutResponse>(response.Result!.Value);
             Assert.NotNull(result.Layout);
             Assert.Equal("Employee", result.Layout!.ProgId);
-            Assert.Equal("default", result.Layout.LayoutId);
+            // 空 LayoutId 解析為 ProgId；tests/Define 有 Employee.FormLayout.xml，故走定義檔路徑
+            Assert.Equal("Employee", result.Layout.LayoutId);
             Assert.NotNull(result.Layout.Sections);
             Assert.True(result.Layout.Sections!.Count > 0, "Layout 應至少有一個 section");
         }

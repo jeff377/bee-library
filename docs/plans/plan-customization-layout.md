@@ -1,6 +1,6 @@
-# Plan：Layout 客製化（討論稿）
+# Plan：Layout 客製化
 
-> 狀態：📝 擬定中（L1–L5 已定案；**L6 待裁決後即可動工**）· 2026-08-01
+> 狀態：🚧 進行中（決策全數定案；階段 L1、L2 已完成，**L3–L5 待做**）· 2026-08-01
 > 範圍：**FormLayout 的租戶客製**——版面重排、欄位隱藏、區塊調整。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 已於 F1／F2 補完）
 > 相關：[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -167,7 +167,7 @@ Layout 客製**只能重排／隱藏既有欄位，欄位集仍由共用 FormSch
 同理取自 `FormTable.DisplayName`，`FormLayout.Caption` 取自 `FormSchema.DisplayName`。
 schema 裡找不到對應欄位時保留 layout 檔原值（layout 檔可能落後於 schema，見 L1 的過期偵測）。
 
-### 決策 L6：缺檔怎麼探測 — ⏳ **待裁決（新的擋動工項，2026-08-01 實作時發現）**
+### 決策 L6：缺檔怎麼探測 — ✅ 已定案（2026-08-01）：採 L6-a
 
 L1-a 的「缺檔才生成」需要一個**不靠例外**判斷定義檔是否存在的方式，而現況做不到：
 
@@ -183,11 +183,18 @@ L1-a 的「缺檔才生成」需要一個**不靠例外**判斷定義檔是否�
 
 | 選項 | 作法 | 取捨 |
 |------|------|------|
-| **L6-a（建議）** | 讓 base storage **履行介面已宣告的 nullable 契約**：`FileDefineStorage` / `DbDefineStorage` 缺件回 `null`。`CacheDefineAccess` 另加 `FormLayout? FindFormLayout(customizeId, layoutId)` 供「缺檔才生成」用；既有 `GetFormLayout(layoutId)` 維持缺件丟例外，呼叫端契約不變 | 語意最正；但要改 1 個既有測試斷言（`FileDefineStorageTests:122` 目前斷言丟 `FileNotFoundException`），且 `DbDefineStorage` 要區分「沒這筆」與「反序列化失敗」 |
+| **L6-a（採用）** | 讓 base storage **履行介面已宣告的 nullable 契約**：`FileDefineStorage` / `DbDefineStorage` 缺件回 `null`。`CacheDefineAccess` 另加 `FormLayout? FindFormLayout(customizeId, layoutId)` 供「缺檔才生成」用；既有 `GetFormLayout(layoutId)` 維持缺件丟例外，呼叫端契約不變 | 語意最正；但要改 1 個既有測試斷言（`FileDefineStorageTests:122` 目前斷言丟 `FileNotFoundException`），且 `DbDefineStorage` 要區分「沒這筆」與「反序列化失敗」 |
 | **L6-b** | 不動 storage，在 `SystemBusinessObject.GetFormLayout` 內同時 catch `FileNotFoundException` 與 `InvalidOperationException` | 零 API 異動；但 DB 後端的**反序列化失敗會被吞成「當作沒檔 → 改用生成」**，真錯誤靜默消失。且違反 `rules/scanning.md` 對寬泛 catch 的精神 |
 | **L6-c** | 新增 `IDefineStorage.Exists(DefineType, key)`，先探測再讀 | 語意清楚；但每個 `IDefineStorage` 實作者（含 host 自訂）都要補一個成員，公開介面擴張 |
 
-> 這條沒定不能動工——它決定「讀檔」這個動作本身怎麼寫。
+**落地內容**：`FileDefineStorage.GetFormLayout` 缺檔回 `null`；`DbDefineStorage.GetFormLayout`
+改用 `ReadOptional`（保留「反序列化失敗」仍為錯誤）；`CacheDefineAccess.GetFormLayout(layoutId)`
+改為自己在 null 時丟 `InvalidOperationException`，維持既有呼叫端的「必存在」契約；
+新增 `CacheDefineAccess.FindFormLayout(customizeId, layoutId)` 與 `IDefineAccess` 的同名
+default interface method（預設回 `null`，第三方實作行為不變）。
+
+> 快取層本來就有負向快取（`KeyObjectCache.GetNegativePolicy`，預設 5 分鐘），
+> 所以「缺檔」不會每次都重探檔案系統。
 
 ---
 
@@ -198,15 +205,20 @@ L1-a 的「缺檔才生成」需要一個**不靠例外**判斷定義檔是否�
 
 | 階段 | 範圍 | 前置 | 狀態 |
 |------|------|------|------|
-| L0 | 決策定案 | — | 🚧 L1–L5 ✅ 已定案；**L6 待裁決** |
-| L1 | `SystemBusinessObject.GetFormLayout` 改為「cust 檔 → base 檔 → 生成」，讀到檔則以在地化 schema 回填 caption（L5-a）。`GetDefine` 不動 | foundation F1、L6 | 📝 待做 |
-| L2 | 接上 `SessionInfo.CustomizeId`（比照語系 G1 的作法），客製 layout 在 API 路徑生效 | foundation F2（已完成） | 📝 待做 |
-| L3 | **UI head 改為向 server 取 layout**（Avalonia `FormView`、Blazor `FormPage`），不再本地生成。需保留 Avalonia 端的 `LayoutCapabilityApplier` 權限降級 | L1、L2 | 📝 待做 |
+| L0 | 決策定案 | — | ✅ L1–L6 全數定案（2026-08-01） |
+| L1 | `SystemBusinessObject.GetFormLayout` 改為「cust 檔 → base 檔 → 生成」，讀到檔則以在地化 schema 回填 caption（L5-a）。`GetDefine` 不動 | foundation F1、L6 | ✅ 已完成（2026-08-01） |
+| L2 | 接上 `SessionInfo.CustomizeId`（比照語系 G1 的作法），客製 layout 在 API 路徑生效 | foundation F2（已完成） | ✅ 已完成（2026-08-01，與 L1 同一處改動） |
+| L3 | **UI head 改為向 server 取 layout**（Avalonia `FormView`、Blazor `FormPage`），不再本地生成。需保留 Avalonia 端的 `LayoutCapabilityApplier` 權限降級 | L1、L2 | 📝 待做（**客製 layout 對現有兩個 head 生效與否，全繫於此**） |
 | L4 | 過期偵測：FormSchema 欄位集與 layout 檔不符時記錄警告（決策 L1） | L1 | 📝 待做 |
 | L5 | 端到端測試：帶 CustomizeId 的 session → API → 拿到客製 layout | foundation F3 | 📝 待做 |
 
-**動工前的前置檢查**（來自 §1.5）：確認 `apps/Bee.Northwind/Define/FormLayout/` 那 8 個檔
-與現行 FormSchema 一致。它們甦醒後就是 Northwind 的實際版面，內容過期會直接改壞 demo。
+**動工前的前置檢查（來自 §1.5）—— ✅ 已執行（2026-08-01）**：以一次性稽核把
+`apps/Bee.Northwind/Define/FormLayout/` 那 8 個檔逐一與 `FormLayoutGenerator.Generate` 的結果
+比對（欄位順序、明細表與欄集、ColumnCount），**8 個全數相同**。
+它們甦醒後 Northwind 的版面零變化。
+
+> 附帶結論：這 8 個檔顯然是由生成結果存檔而來，並未手工調整過——所以本案「讓 base 手工
+> layout 生效」的價值目前是**能力補上了、但還沒有人用到**。
 
 > 回歸防護：**未設 CustomizeId 時，layout 取得結果與現況逐位元一致**——
 > 但注意 L1-a **刻意改變 base 行為**（開始讀檔），所以「逐位元一致」只在

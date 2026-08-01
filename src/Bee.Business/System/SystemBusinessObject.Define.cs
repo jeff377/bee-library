@@ -129,12 +129,32 @@ namespace Bee.Business.System
             if (string.IsNullOrWhiteSpace(args.ProgId))
                 throw new ArgumentException("ProgId is required.", nameof(args));
 
-            // Localize the schema first so the generated layout inherits localized
-            // DisplayName / Caption values rather than the raw fixture text.
+            // Localize the schema first: a generated layout inherits its localized DisplayName /
+            // Caption values, and a layout read from a definition file takes its text from the same
+            // source (see FormLayoutCaptionApplier).
             var schema = LoadAndLocalizeSchema(args.ProgId);
 
-            var layoutId = string.IsNullOrWhiteSpace(args.LayoutId) ? "default" : args.LayoutId;
-            var layout = schema.GetFormLayout(layoutId);
+            // An empty LayoutId means "this form's own layout". It resolves to the ProgId rather
+            // than a literal "default" because layout definition files are named after the progId
+            // ({ProgId}.FormLayout.xml, LayoutId == ProgId); "default" would never match a file.
+            var layoutId = string.IsNullOrWhiteSpace(args.LayoutId) ? args.ProgId : args.LayoutId;
+
+            // Definition file first (tenant customization, then base), generation only as the
+            // fall-back. This is what makes both a tenant's customized layout and a base hand-edited
+            // layout take effect; without a file the behaviour is exactly as before.
+            var definition = DefineAccess.FindFormLayout(GetCurrentCustomizeId(), layoutId);
+            FormLayout layout;
+            if (definition is null)
+            {
+                layout = schema.GetFormLayout(layoutId);
+            }
+            else
+            {
+                // The definition is a process-shared cache instance; clone before the applier
+                // mutates it.
+                layout = definition.Clone();
+                FormLayoutCaptionApplier.Apply(layout, schema);
+            }
 
             return new GetFormLayoutResult { Layout = layout };
         }

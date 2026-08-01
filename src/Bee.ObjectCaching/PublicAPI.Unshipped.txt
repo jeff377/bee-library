@@ -27,3 +27,4 @@ override Bee.ObjectCaching.Database.ApiKeyCache.GetPolicy(string! key) -> Bee.Ob
 override Bee.ObjectCaching.Database.ApiKeyGateCache.CacheGroup.get -> string!
 override Bee.ObjectCaching.Database.ApiKeyGateCache.CreateInstance(string! key) -> Bee.Definition.Security.ApiKeyGateState?
 override Bee.ObjectCaching.Database.ApiKeyGateCache.GetPolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy!
+Bee.ObjectCaching.CacheDefineAccess.FindFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?

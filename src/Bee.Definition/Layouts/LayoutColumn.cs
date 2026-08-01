@@ -38,5 +38,16 @@ namespace Bee.Definition.Layouts
         [Description("Column width in pixels. Zero means auto/unset.")]
         [DefaultValue(0)]
         public int Width { get; set; } = 0;
+
+        /// <summary>
+        /// Creates a fully independent copy of this column.
+        /// </summary>
+        /// <returns>A new <see cref="LayoutColumn"/> sharing no mutable state with this one.</returns>
+        public LayoutColumn Clone()
+        {
+            var copy = new LayoutColumn { Width = Width };
+            CopyBaseTo(copy);
+            return copy;
+        }
     }
 }

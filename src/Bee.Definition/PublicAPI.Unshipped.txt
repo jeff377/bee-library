@@ -79,3 +79,12 @@ Bee.Definition.Settings.ClientSettings.ApiKey.get -> string!
 Bee.Definition.Settings.ClientSettings.ApiKey.set -> void
 Bee.Definition.Language.BeeStringLocalizer<T>.BeeStringLocalizer(Bee.Definition.Language.ILanguageService! service, System.Func<string!>! langProvider, System.Func<string!>! customizeIdProvider) -> void
 Bee.Definition.Language.FormSchemaLocalizer.Localize(Bee.Definition.Forms.FormSchema! schema, string! customizeId, string! lang) -> void
+Bee.Definition.Layouts.FormLayout.Clone() -> Bee.Definition.Layouts.FormLayout!
+Bee.Definition.Layouts.FormLayoutCaptionApplier
+static Bee.Definition.Layouts.FormLayoutCaptionApplier.Apply(Bee.Definition.Layouts.FormLayout! layout, Bee.Definition.Forms.FormSchema! schema) -> void
+Bee.Definition.Layouts.LayoutColumn.Clone() -> Bee.Definition.Layouts.LayoutColumn!
+Bee.Definition.Layouts.LayoutField.Clone() -> Bee.Definition.Layouts.LayoutField!
+Bee.Definition.Layouts.LayoutFieldBase.CopyBaseTo(Bee.Definition.Layouts.LayoutFieldBase! target) -> void
+Bee.Definition.Layouts.LayoutGrid.Clone() -> Bee.Definition.Layouts.LayoutGrid!
+Bee.Definition.Layouts.LayoutSection.Clone() -> Bee.Definition.Layouts.LayoutSection!
+Bee.Definition.Storage.IDefineAccess.FindFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?

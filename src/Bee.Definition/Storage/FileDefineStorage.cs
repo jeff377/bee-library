@@ -160,10 +160,17 @@ namespace Bee.Definition.Storage
         /// Gets the form layout for the specified layout ID.
         /// </summary>
         /// <param name="layoutId">The form layout ID.</param>
+        /// <remarks>
+        /// Returns <c>null</c> rather than throwing when the file is absent, honouring the
+        /// nullable return type declared on <see cref="IDefineStorage.GetFormLayout"/>. A missing
+        /// layout file is a normal scenario: the framework generates a layout from the
+        /// <see cref="FormSchema"/> when no file exists, so "absent" is an answer, not a fault.
+        /// </remarks>
         public FormLayout? GetFormLayout(string layoutId)
         {
             string filePath = _paths.GetFormLayoutFilePath(layoutId);
-            ValidateFilePath(filePath);
+            if (!File.Exists(filePath))
+                return null;
             return XmlCodec.DeserializeFromFile<FormLayout>(filePath);
         }
 

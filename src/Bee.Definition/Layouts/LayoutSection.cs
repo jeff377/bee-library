@@ -69,6 +69,26 @@ namespace Bee.Definition.Layouts
         }
 
         /// <summary>
+        /// Creates a fully independent copy of this section, including its fields.
+        /// </summary>
+        /// <returns>A new <see cref="LayoutSection"/> sharing no mutable state with this one.</returns>
+        public LayoutSection Clone()
+        {
+            var copy = new LayoutSection
+            {
+                Name = Name,
+                Caption = Caption,
+                ShowCaption = ShowCaption,
+            };
+            // Reads the backing field, not the public getter: the getter reports null while a
+            // serialization pass is in progress.
+            if (_fields != null)
+                foreach (var field in _fields)
+                    copy.Fields!.Add(field.Clone());
+            return copy;
+        }
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()

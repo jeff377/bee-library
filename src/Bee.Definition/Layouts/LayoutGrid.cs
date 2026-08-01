@@ -99,6 +99,25 @@ namespace Bee.Definition.Layouts
         }
 
         /// <summary>
+        /// Creates a fully independent copy of this grid, including its columns.
+        /// </summary>
+        /// <returns>A new <see cref="LayoutGrid"/> sharing no mutable state with this one.</returns>
+        public LayoutGrid Clone()
+        {
+            var copy = new LayoutGrid(TableName, Caption)
+            {
+                AllowActions = AllowActions,
+                AllowEditModes = AllowEditModes,
+            };
+            // Reads the backing field, not the public getter: the getter reports null while a
+            // serialization pass is in progress.
+            if (_columns != null)
+                foreach (var column in _columns)
+                    copy.Columns!.Add(column.Clone());
+            return copy;
+        }
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()

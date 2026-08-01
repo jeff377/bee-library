@@ -143,6 +143,36 @@ namespace Bee.Definition.Layouts
         }
 
         /// <summary>
+        /// Creates a fully independent copy of this layout, including every section, field,
+        /// detail grid and column.
+        /// </summary>
+        /// <returns>A new <see cref="FormLayout"/> sharing no mutable state with this one.</returns>
+        /// <remarks>
+        /// Layouts obtained through <c>IDefineAccess</c> are process-wide cached instances shared
+        /// by every session — clone before mutating. See
+        /// <c>docs/development-constraints.md</c> § <i>Definition Data Immutability After Init</i>.
+        /// </remarks>
+        public FormLayout Clone()
+        {
+            var copy = new FormLayout
+            {
+                LayoutId = LayoutId,
+                ProgId = ProgId,
+                Caption = Caption,
+                ColumnCount = ColumnCount,
+            };
+            // Reads the backing fields, not the public getters: the getters report null while a
+            // serialization pass is in progress.
+            if (_sections != null)
+                foreach (var section in _sections)
+                    copy.Sections!.Add(section.Clone());
+            if (_details != null)
+                foreach (var grid in _details)
+                    copy.Details!.Add(grid.Clone());
+            return copy;
+        }
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
