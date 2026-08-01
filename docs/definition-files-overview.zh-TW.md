@@ -174,6 +174,8 @@ builder.Services.AddBeeFramework(settings.BackendConfiguration, paths);
 
 所以 layout 與 enum 一樣：客製了就完整擁有那一份，沒客製的租戶則原封不動拿到 base 版本。
 
+**完整擁有**是雙向的：日後 base `FormSchema` 新增的欄位，**不會**出現在已客製該 layout 的租戶畫面上，框架既不合併也不對這個差異提出警告。這是設計意圖而非限制 —— **layout 才是「畫面上有什麼」的權威來源**，schema 多了一個欄位並不等於每個租戶的表單從此都該顯示它。要讓新欄位出現在那個租戶的表單上是一個決定，而這個決定的執行方式就是去改那份客製 layout 檔。
+
 > **FormSchema 與 TableSchema 永久排除。** 兩者同時驅動資料庫結構與驗證規則，不只驅動 UI；逐租戶分歧會讓實體 schema 裂開。這是裁決不是缺口 —— 見 ADR-016。
 
 > 客製層**唯讀**。客製檔由部署工具產生，覆蓋層上所有 `SaveXxx` 一律拋例外。

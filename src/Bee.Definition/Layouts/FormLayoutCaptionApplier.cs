@@ -16,9 +16,10 @@ namespace Bee.Definition.Layouts
     /// arrangement.
     /// </para>
     /// <para>
-    /// Fields the schema does not know about keep the text the layout file gives them. A layout file
-    /// can legitimately lag behind its schema, and silently blanking those captions would turn a
-    /// stale file into an unreadable form.
+    /// Fields the schema does not know about keep the text the layout file gives them. The layout is
+    /// the authority on what the screen shows, so this applier only supplies words — it never judges
+    /// which fields belong on the form, and silently blanking a caption it cannot match would make
+    /// the form unreadable rather than correct.
     /// </para>
     /// <para>
     /// The layout is mutated in place, so callers must not pass a shared cache instance — clone

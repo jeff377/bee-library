@@ -218,9 +218,10 @@ namespace Bee.Api.Client
         /// </summary>
         /// <param name="layoutId">The layout identifier.</param>
         /// <remarks>
-        /// The tenant customization overlay is applied server-side per the session's customization
-        /// code, so the client fetches by <paramref name="layoutId"/> only; <see cref="ClearCache"/>
-        /// on tenant switch keeps the cache consistent.
+        /// This is the base layer exactly as stored — no customization overlay, no generation. The
+        /// tenant's layer comes from <see cref="GetCustomizeFormLayoutAsync"/> as a separate call,
+        /// and picking between the two is the caller's job (see <c>FormDefinitionLoader</c>).
+        /// <see cref="ClearCache"/> on tenant switch keeps the cache consistent.
         /// </remarks>
         public Task<FormLayout> GetFormLayoutAsync(string layoutId)
         {

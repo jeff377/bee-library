@@ -174,6 +174,8 @@ Text keys are independent: "this label reads differently here" leaves every othe
 
 So for layouts and enums, a tenant that customizes one owns it whole, and a tenant that does not gets the base version untouched.
 
+Owning it whole cuts both ways: a field added to the base `FormSchema` later **does not** appear on a tenant that has customized that layout, and the framework neither merges it in nor warns about the difference. This is the intent rather than a limitation — **the layout is the authority on what the screen shows**, and a schema gaining a field is not a statement that every tenant's form should now display it. Putting the new field on that tenant's form is a decision, and it is made by editing that tenant's layout file.
+
 > **FormSchema and TableSchema are permanently excluded.** Both drive the database schema and the validation rules as well as the UI; letting them diverge per tenant would split the physical schema. This is a decision, not a gap — see ADR-016.
 
 > The overlay is **read-only**. Customization files are produced by deployment tooling; every `SaveXxx` on the override layer throws.
