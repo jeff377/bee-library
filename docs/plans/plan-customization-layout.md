@@ -1,6 +1,6 @@
 # Plan：Layout 客製化
 
-> 狀態：🚧 進行中（決策全數定案；階段 L1–L4 已完成，**L5（過期警告）、L6（端到端測試）待做**）· 2026-08-01
+> 狀態：🚧 進行中（決策全數定案；階段 L1–L4、L6 已完成，**僅剩 L5（過期警告）**）· 2026-08-01
 > 範圍：**FormLayout 的租戶客製**——版面重排、欄位隱藏、區塊調整。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 已於 F1／F2 補完）
 > 相關：[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -261,7 +261,7 @@ XmlSerializer 以填充既有實例處理，但 **JSON / MessagePack 依可寫�
 > 要啟用客製就設 `DefinitionLoader = new FormDefinitionLoader(ClientInfo.DefineAccess)`。
 
 | L5 | 過期偵測：FormSchema 欄位集與 layout 檔不符時記錄警告（決策 L1） | L4 | 📝 待做 |
-| L6 | 端到端測試：帶 CustomizeId 的 session → 拿到客製 layout | foundation F3 | 📝 待做 |
+| L6 | 端到端測試：帶 CustomizeId 的 session → 拿到客製 layout | foundation F3 | ✅ 已完成（2026-08-01，隨 foundation F3）。`TenantCustomizationEndToEndTests`：進入帶 `customize_id` 的公司後，`FormDefinitionLoader.GetRuntimeLayoutAsync` 整檔採用客製 layout（欄位數 2 vs base 7，驗證 L2-a），且 caption 取自在地化 schema（驗證 L5-a）——客製 layout 檔本身不寫 caption；未進公司的 session 則取得 base 定義檔的 layout 與 base caption |
 
 **commit `8a418382` 的回收範圍**（決策 L7 後逐項判定）：
 

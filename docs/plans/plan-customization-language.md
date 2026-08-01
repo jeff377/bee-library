@@ -1,6 +1,6 @@
 # Plan：語系客製化
 
-> 狀態：🚧 進行中（G1–G3、G6 已完成，G5 裁決不做；**G3 決策定案 G3-b**，僅剩 G4）· 2026-08-01
+> 狀態：✅ 已完成（G1–G4、G6 全數落地，G5 裁決不做）· 2026-08-01
 > 範圍：**語系資源的租戶客製**——某些單據或行為，公司有慣用語（欄位標題、表單名稱、訊息、選項文字）。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 未補則本案無法生效）
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -19,6 +19,11 @@
 > 仍未做的是 `GetLanguage` 的客製管道（G4）與端到端驗證（G6，卡 foundation F3）。
 > 且**實務上還沒有部署會餵值進來**：至今沒有 head 走過 `EnterCompany`，`CustomizeId` 恆為空
 > （foundation §2.C）。
+
+> **2026-08-01 再更正（G4 + G6 落地後，本案結案）**：`GetLanguage` 的客製管道（G4）與
+> 端到端驗證（G6，隨 foundation F3）都已完成。「帶 `CustomizeId` 的 session →
+> 欄位 caption 取到客製值」已有整合測試把關，不再是紙上能力。
+> 唯 head 端仍無部署會走 `EnterCompany`（foundation §2.C），屬「能力備妥、尚無使用者」。
 
 ---
 
@@ -81,6 +86,9 @@ per-key 命中/落空、enum、空 id 短路(`:58`)、無 reader(`:73`)。
 > `FormSchemaLocalizerCustomizeTests`、`BeeStringLocalizerCustomizeTests`（Bee.Definition.UnitTests）、
 > `BusinessObjectLangCustomizeTests`、`BusinessObjectFactoryCustomizeTests`（Bee.Business.UnitTests）。
 > 仍**全為元件級** —— 端到端（帶 CustomizeId 的 session → API）是 G6，卡在 foundation F3。
+>
+> **2026-08-01（G6 落地）補測**：`tests/Bee.Api.Client.UnitTests/Customization/TenantCustomizationEndToEndTests.cs`
+> 補上端到端層——租戶一律由 session 決定，測試本身不傳 customizeId。
 
 ---
 
