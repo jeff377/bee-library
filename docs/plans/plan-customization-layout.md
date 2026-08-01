@@ -1,6 +1,6 @@
 # Plan：Layout 客製化（討論稿）
 
-> 狀態：📝 擬定中（L1–L4 已定案；**L5 待裁決後即可動工**）· 2026-08-01
+> 狀態：📝 擬定中（L1–L5 已定案；**L6 待裁決後即可動工**）· 2026-08-01
 > 範圍：**FormLayout 的租戶客製**——版面重排、欄位隱藏、區塊調整。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 已於 F1／F2 補完）
 > 相關：[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
@@ -151,18 +151,43 @@ Layout 客製**只能重排／隱藏既有欄位，欄位集仍由共用 FormSch
 - 生成、客製疊加、在地化等「運行階段加工」全部歸 `GetFormLayout`。
 - **UI head 應改呼叫 `GetFormLayout` API**，不再本地生成。
 
-### 決策 L5：layout 定義檔的 caption 在地化 — ⏳ **待裁決（唯一擋動工項）**
+### 決策 L5：layout 定義檔的 caption 在地化 — ✅ 已定案（2026-08-01）：採 L5-a
 
 背景見 §1.6：改讀定義檔後，layout 檔裡的 caption 是靜態文字，不再經過語系層。
 現行「即時生成」路徑則是先在地化 schema 再生成，caption 一定是在地化過的。
 
 | 選項 | 作法 | 取捨 |
 |------|------|------|
-| **L5-a** | **layout 檔只定義結構，caption 一律由在地化後的 FormSchema 覆寫** | 語系與版面職責分離：改文字去語系檔、改版面去 layout 檔。layout 檔作者不必也不能決定文字。需在讀檔後多一道「以 schema caption 回填 layout」 |
-| **L5-b** | **layout 檔的 caption 原樣使用**，不經語系層 | 最單純；但同一份 layout 檔在多語系部署下只會有一種語言，且與現行生成路徑的行為不一致（同一個表單，有 layout 檔就不翻譯、沒有就翻譯） |
-| **L5-c** | **layout 檔的 caption 視為語系 key**，經 `FormSchemaLocalizer` 同一套 sub-key 規範查找 | 表達力最好；但需為 layout 定義新的 sub-key 規範，工程量與概念負擔都最大 |
+| **L5-a（採用）** | **layout 檔只定義結構，caption 一律由在地化後的 FormSchema 覆寫** | 語系與版面職責分離：改文字去語系檔（已有 per-key 客製機制）、改版面去 layout 檔。與現行行為一致（caption 永遠是翻過的）。代價：layout 檔作者不能在 layout 裡決定文字 |
+| **L5-b** | layout 檔的 caption 原樣使用，不經語系層 | 最單純；但同一份 layout 檔在多語系部署下只會有一種語言，且行為不一致（同一張表單「有 layout 檔就不翻譯、沒有就翻譯」） |
+| **L5-c** | layout 檔的 caption 視為語系 key，經 `FormSchemaLocalizer` 同一套 sub-key 規範查找 | 表達力最好；但需為 layout 另定一套 sub-key 規範，工程量與概念負擔最大 |
 
-> 未裁決前不動工——這條決定「讀檔」這件事本身要怎麼寫，動了再改成本高。
+**落地方式**：讀到 layout 檔後，逐 `LayoutField` / `LayoutColumn` 以
+`FormField.Caption`（已在地化）回填 `LayoutFieldBase.Caption`；section / grid 的 caption
+同理取自 `FormTable.DisplayName`，`FormLayout.Caption` 取自 `FormSchema.DisplayName`。
+schema 裡找不到對應欄位時保留 layout 檔原值（layout 檔可能落後於 schema，見 L1 的過期偵測）。
+
+### 決策 L6：缺檔怎麼探測 — ⏳ **待裁決（新的擋動工項，2026-08-01 實作時發現）**
+
+L1-a 的「缺檔才生成」需要一個**不靠例外**判斷定義檔是否存在的方式，而現況做不到：
+
+| 後端 | 缺件時的行為 |
+|------|------------|
+| `FileDefineStorage.GetFormLayout`（`:163`） | 丟 `FileNotFoundException` |
+| `DbDefineStorage.GetFormLayout`（`:175` → `ReadRequired:227-233`） | 丟 `InvalidOperationException` |
+| `CustomizeOnlyStorage.GetFormLayout`（`:41`） | 回 `null` |
+
+**兩個 base 後端丟不同型別的例外，第三個回 null** ——而 `IDefineStorage` 的簽章
+本來就宣告 `FormLayout? GetFormLayout(string layoutId)`（**nullable**），
+只有 `CustomizeOnlyStorage` 履行了這個契約。
+
+| 選項 | 作法 | 取捨 |
+|------|------|------|
+| **L6-a（建議）** | 讓 base storage **履行介面已宣告的 nullable 契約**：`FileDefineStorage` / `DbDefineStorage` 缺件回 `null`。`CacheDefineAccess` 另加 `FormLayout? FindFormLayout(customizeId, layoutId)` 供「缺檔才生成」用；既有 `GetFormLayout(layoutId)` 維持缺件丟例外，呼叫端契約不變 | 語意最正；但要改 1 個既有測試斷言（`FileDefineStorageTests:122` 目前斷言丟 `FileNotFoundException`），且 `DbDefineStorage` 要區分「沒這筆」與「反序列化失敗」 |
+| **L6-b** | 不動 storage，在 `SystemBusinessObject.GetFormLayout` 內同時 catch `FileNotFoundException` 與 `InvalidOperationException` | 零 API 異動；但 DB 後端的**反序列化失敗會被吞成「當作沒檔 → 改用生成」**，真錯誤靜默消失。且違反 `rules/scanning.md` 對寬泛 catch 的精神 |
+| **L6-c** | 新增 `IDefineStorage.Exists(DefineType, key)`，先探測再讀 | 語意清楚；但每個 `IDefineStorage` 實作者（含 host 自訂）都要補一個成員，公開介面擴張 |
+
+> 這條沒定不能動工——它決定「讀檔」這個動作本身怎麼寫。
 
 ---
 
@@ -173,8 +198,8 @@ Layout 客製**只能重排／隱藏既有欄位，欄位集仍由共用 FormSch
 
 | 階段 | 範圍 | 前置 | 狀態 |
 |------|------|------|------|
-| L0 | 決策定案 | — | 🚧 L1–L4 ✅ 已定案；**L5 待裁決** |
-| L1 | `SystemBusinessObject.GetFormLayout` 改為「cust 檔 → base 檔 → 生成」，並依 L5 決策處理 caption。`GetDefine` 不動 | foundation F1、L5 | 📝 待做 |
+| L0 | 決策定案 | — | 🚧 L1–L5 ✅ 已定案；**L6 待裁決** |
+| L1 | `SystemBusinessObject.GetFormLayout` 改為「cust 檔 → base 檔 → 生成」，讀到檔則以在地化 schema 回填 caption（L5-a）。`GetDefine` 不動 | foundation F1、L6 | 📝 待做 |
 | L2 | 接上 `SessionInfo.CustomizeId`（比照語系 G1 的作法），客製 layout 在 API 路徑生效 | foundation F2（已完成） | 📝 待做 |
 | L3 | **UI head 改為向 server 取 layout**（Avalonia `FormView`、Blazor `FormPage`），不再本地生成。需保留 Avalonia 端的 `LayoutCapabilityApplier` 權限降級 | L1、L2 | 📝 待做 |
 | L4 | 過期偵測：FormSchema 欄位集與 layout 檔不符時記錄警告（決策 L1） | L1 | 📝 待做 |
@@ -206,4 +231,15 @@ Layout 客製**只能重排／隱藏既有欄位，欄位集仍由共用 FormSch
    ✅ 2026-08-01 定案：**同意**（L1-a）。
 3. ~~**客製 layout 需不需要「加欄位」？**~~
    ✅ 2026-08-01 確認：**不需要**，維持 ADR-016 邊界（L3）。
-4. **（新）layout 檔的 caption 怎麼在地化？** → 決策 L5，**唯一擋動工項**。
+4. ~~**（新）layout 檔的 caption 怎麼在地化？**~~
+   ✅ 2026-08-01 定案：**layout 檔只定義結構，caption 由在地化後的 schema 回填**（L5-a）。
+5. **（新）缺檔怎麼探測？** 兩個 base storage 對「沒有這份定義」丟不同型別的例外，
+   而介面簽章本來就宣告 nullable。→ 決策 L6，**目前唯一擋動工項**。
+
+### 動工前另外兩個小約定（實作時自行採用，如有異議請提）
+
+- **layoutId 的預設值**：`GetFormLayoutArgs.LayoutId` 留空時，現行程式碼填 `"default"`，
+  但**全 repo 沒有任何 `default.FormLayout.xml`**——現存檔案一律是
+  `{ProgId}.FormLayout.xml` 且檔內 `LayoutId == ProgId`。因此留空時改以 **ProgId 當 layoutId**，
+  否則現存檔案永遠查不到。（`"default"` 目前只是生成器的佔位字串。）
+- **回填找不到對應欄位時**：保留 layout 檔原值，不清空、不丟例外——交由 L1 的過期偵測記錄警告。
