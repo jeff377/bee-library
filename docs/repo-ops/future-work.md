@@ -29,3 +29,47 @@
 
 **啟動時第一步**：寫 `docs/plans/plan-bee-developer-skills.md`（plugin 結構、各 skill 的消費端改寫、
 散佈/維護機制、與發版綁定）。消費端最易錯的觀念是 DB scope，見 `.claude/rules/database.md`。
+
+## 部署期作業的工具程式
+
+> 原記為「API 金鑰管理工具程式」。2026-08-01 部署層管理員階段 1 落地後多了第二個消費者，
+> 範圍隨之從「金鑰管理」擴為「所有 `LocalOnly` 的部署期作業」——這改變了下方落點的權衡。
+
+**目標**：讓部署端不必寫程式就能執行部署期作業。
+
+**為什麼需要**：`LocalOnly` 的方法只能在主機、行程內呼叫。能力都已交付，
+但缺一個「在主機上跑一下就好」的入口，否則部署端得自己在 host 行程內寫呼叫程式碼。
+
+**目前的消費者**：
+
+| 作業 | 方法 | 現況 |
+|------|------|------|
+| 發放 API 金鑰 | `SystemBO.CreateApiKey` | 已交付，缺入口 |
+| 指派部署層管理員 | `SystemBO.SetDeploymentAdmin` | 已交付，缺入口。**且它是該欄唯一的寫入口**——沒有工具就只能自己寫程式，或手動 `UPDATE st_user` |
+| 停用 / 列出金鑰 | 尚無 | 屬 API Key plan 的階段 3 |
+
+`SetDeploymentAdmin` 這一列尤其尷尬：它是**首位管理員的唯一產生路徑**（設定檔 bootstrap 帳號
+已否決為永久後門），新部署接上框架後的第一件事就會撞到它。
+
+**現況限制**：框架目前**只有發放有程式路徑**。`IApiKeyRepository` 只有 `GetEnabledById` /
+`GetGateState` / `Exists` / `Insert`，停用只能直接下 `UPDATE st_api_key`——而直接改 DB 不會 bump
+`st_cache_notify`，其他行程最壞要等 `ApiKeyCache.AbsoluteMinutes`（60 分）才失效。
+停用 / 列出的 API 屬 API Key plan 的階段 3（受阻於部署層管理員 plan），本工具屆時才能做全套。
+
+**兩個候選落點**：
+
+| 落點 | 取捨 |
+|------|------|
+| `dotnet bee apikey ...` / `dotnet bee admin ...` | CLI 天然是部署期工具、可進腳本。但 `tools/Bee.Cli` 目前只引用 `Bee.Base` / `Bee.Definition` / `Bee.Expressions`，要接 DB 得把 `Bee.Business` 與 repository 一起拉進來——**這是本項最主要的決策**，會讓 CLI 從「定義檔工具」變成「需要連得上資料庫的維運工具」 |
+| DefineEditor 加一個分頁 | 已是本機 Avalonia 工具、已有 DI 宿主。但它的定位是編輯定義檔，而金鑰與管理員旗標都在 DB 不在定義檔 |
+
+**第二個消費者如何改變權衡**：CLI 那一格的成本（把 `Bee.Business` 與 repository 拉進
+`tools/Bee.Cli`）是**一次性**的，接上之後每個新的部署期作業都只是多一個子命令。原本為單一功能
+付這筆相依成本顯得重，現在有兩個消費者、且 API Key plan 階段 3 還會再加三個，攤提就合理得多。
+反過來說，DefineEditor 那一格的「定位不符」問題只會隨消費者增加而放大——它的分頁會逐漸變成
+一個與定義檔無關的維運面板。
+
+**要等什麼**：現有兩個消費者都不等任何東西（能力已交付），純粹是還沒排；
+停用 / 列出要等 API Key plan 的階段 3。遠端管理表單是另一回事（等部署層管理員 plan 的階段 2）。
+
+**啟動時第一步**：先決上表的落點與相依取捨，再寫 plan。
