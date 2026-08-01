@@ -93,3 +93,5 @@ static Bee.Definition.Customization.CustomizeOverlay.TryGetLangText(Bee.Definiti
 static Bee.Definition.Customization.CustomizeOverlay.GetLangEnum(Bee.Definition.Language.LanguageResource? customize, Bee.Definition.Language.LanguageResource? base, string! enumName) -> Bee.Definition.Language.LanguageEnum?
 static Bee.Definition.Customization.CustomizeOverlay.FindProgramItem(Bee.Definition.Settings.ProgramSettings? customize, Bee.Definition.Settings.ProgramSettings? base, string! progId) -> Bee.Definition.Settings.ProgramItem?
 static Bee.Definition.Customization.CustomizeOverlay.PickFormLayout(Bee.Definition.Layouts.FormLayout? customize, Bee.Definition.Layouts.FormLayout? base) -> Bee.Definition.Layouts.FormLayout?
+const Bee.Definition.SystemActions.GetCustomizeFormLayout = "GetCustomizeFormLayout" -> string!
+const Bee.Definition.SystemActions.GetCustomizeLanguage = "GetCustomizeLanguage" -> string!

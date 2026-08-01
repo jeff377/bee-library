@@ -77,3 +77,5 @@ Bee.Business.System.GetFormSchemaResult.Xml.get -> string?
 Bee.Business.System.GetFormSchemaResult.Xml.set -> void
 Bee.Business.System.GetLanguageResult.Xml.get -> string?
 Bee.Business.System.GetLanguageResult.Xml.set -> void
+virtual Bee.Business.System.SystemBusinessObject.GetCustomizeFormLayout(Bee.Business.System.GetFormLayoutArgs! args) -> Bee.Business.System.GetFormLayoutResult!
+virtual Bee.Business.System.SystemBusinessObject.GetCustomizeLanguage(Bee.Business.System.GetLanguageArgs! args) -> Bee.Business.System.GetLanguageResult!

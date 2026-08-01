@@ -1,2 +1,6 @@
 #nullable enable
 Bee.Api.Client.Connectors.SystemApiConnector.CreateApiKeyAsync(string! sysId, string! sysName, Bee.Definition.Security.ApiKeyType keyType = Bee.Definition.Security.ApiKeyType.Internal, string? contact = null, System.DateTime? expiredAt = null) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.CreateApiKeyResponse!>!
+Bee.Api.Client.ClientDefineAccess.GetCustomizeFormLayoutAsync(string! progId, string! layoutId = "") -> System.Threading.Tasks.Task<Bee.Definition.Layouts.FormLayout?>!
+Bee.Api.Client.ClientDefineAccess.GetCustomizeLanguageAsync(string! lang, string! ns) -> System.Threading.Tasks.Task<Bee.Definition.Language.LanguageResource?>!
+virtual Bee.Api.Client.Connectors.SystemApiConnector.GetCustomizeFormLayoutAsync(string! progId, string! layoutId = "") -> System.Threading.Tasks.Task<Bee.Definition.Layouts.FormLayout?>!
+virtual Bee.Api.Client.Connectors.SystemApiConnector.GetCustomizeLanguageAsync(string! lang, string! ns) -> System.Threading.Tasks.Task<Bee.Definition.Language.LanguageResource?>!

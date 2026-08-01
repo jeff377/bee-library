@@ -228,6 +228,63 @@ namespace Bee.Api.Client
         }
 
         /// <summary>
+        /// Asynchronously gets the tenant customization layer of a form layout definition;
+        /// <c>null</c> when this session's tenant supplies no override.
+        /// </summary>
+        /// <param name="progId">The program identifier.</param>
+        /// <param name="layoutId">The layout identifier; empty resolves to <paramref name="progId"/>.</param>
+        /// <remarks>
+        /// Cached alongside the base layer under a distinct key, so both layers survive one round
+        /// trip each. <see cref="ClearCache"/> on tenant switch is what keeps the customization
+        /// entries from outliving the tenant they belong to.
+        /// </remarks>
+        public Task<FormLayout?> GetCustomizeFormLayoutAsync(string progId, string layoutId = "")
+            => GetCustomizeAsync(
+                $"Customize_{DefineType.FormLayout}_{progId}.{layoutId}",
+                () => Connector.GetCustomizeFormLayoutAsync(progId, layoutId));
+
+        /// <summary>
+        /// Asynchronously gets the tenant customization layer of a language resource;
+        /// <c>null</c> when this session's tenant supplies no override.
+        /// </summary>
+        /// <param name="lang">The BCP-47 language code.</param>
+        /// <param name="ns">The resource namespace.</param>
+        public Task<LanguageResource?> GetCustomizeLanguageAsync(string lang, string ns)
+            => GetCustomizeAsync(
+                $"Customize_{DefineType.Language}_{lang}.{ns}",
+                () => Connector.GetCustomizeLanguageAsync(lang, ns));
+
+        /// <summary>
+        /// Shares the definition task cache for customization fetches. "No override" is a normal
+        /// answer, so a <c>null</c> result is cached too rather than re-fetched on every lookup;
+        /// the boxed sentinel is needed because the cache stores <c>Task&lt;object&gt;</c>.
+        /// </summary>
+        private async Task<T?> GetCustomizeAsync<T>(string cacheKey, Func<Task<T?>> fetch) where T : class
+        {
+            if (!this.List.TryGetValue(cacheKey, out Task<object>? task))
+            {
+                task = FetchCustomizeAsync(fetch);
+                this.List[cacheKey] = task;
+            }
+            try
+            {
+                return await task.ConfigureAwait(false) as T;
+            }
+            catch
+            {
+                if (this.List.TryGetValue(cacheKey, out Task<object>? cached) && ReferenceEquals(cached, task))
+                    this.List.Remove(cacheKey);
+                throw;
+            }
+        }
+
+        private static async Task<object> FetchCustomizeAsync<T>(Func<Task<T?>> fetch) where T : class
+            => (object?)await fetch().ConfigureAwait(false) ?? NoCustomize;
+
+        /// <summary>Marks "this tenant has no override" in the task cache, which cannot hold nulls.</summary>
+        private static readonly object NoCustomize = new();
+
+        /// <summary>
         /// Asynchronously gets the language resource for the specified language and namespace.
         /// </summary>
         /// <param name="lang">The BCP-47 language code.</param>

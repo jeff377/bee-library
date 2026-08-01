@@ -6,6 +6,7 @@ using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Organization;
 using Bee.Definition.Security;
+using Bee.Definition.Storage;
 
 namespace Bee.Business.System
 {
@@ -176,6 +177,66 @@ namespace Bee.Business.System
             // GetLanguage returns null when the resource file does not exist;
             // that is a normal scenario (missing translation), not an error.
             var resource = DefineAccess.GetLanguage(args.Lang, args.Namespace);
+            return new GetLanguageResult { Xml = resource is null ? string.Empty : SerializeDefine(resource) };
+        }
+
+        /// <summary>
+        /// Returns the tenant customization layer of a form layout definition as XML, or an empty
+        /// string when this session's tenant supplies no override.
+        /// </summary>
+        /// <remarks>
+        /// The companion of <see cref="GetFormLayout"/>: a caller fetches both layers and picks
+        /// between them with <c>CustomizeOverlay</c>. Kept as a separate call rather than a second
+        /// field on one response so the connector's existing method contracts stay as they are.
+        /// <para>
+        /// <b>Which tenant is not negotiable.</b> The customization code comes from
+        /// <c>SessionInfo.CustomizeId</c> and is deliberately absent from the arguments — accepting
+        /// it from the caller would let anyone read any tenant's customization.
+        /// </para>
+        /// </remarks>
+        /// <param name="args">The input arguments. <c>ProgId</c> is required; an empty <c>LayoutId</c> resolves to <c>ProgId</c>.</param>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        public virtual GetFormLayoutResult GetCustomizeFormLayout(GetFormLayoutArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            if (string.IsNullOrWhiteSpace(args.ProgId))
+                throw new ArgumentException("ProgId is required.", nameof(args));
+
+            string customizeId = GetCurrentCustomizeId();
+            if (string.IsNullOrEmpty(customizeId))
+                return new GetFormLayoutResult { Xml = string.Empty };
+
+            var layoutId = string.IsNullOrWhiteSpace(args.LayoutId) ? args.ProgId : args.LayoutId;
+            var layout = Services.GetRequiredService<ICustomizeDefineReader>()
+                .GetCustomizeFormLayout(customizeId, layoutId);
+            return new GetFormLayoutResult { Xml = layout is null ? string.Empty : SerializeDefine(layout) };
+        }
+
+        /// <summary>
+        /// Returns the tenant customization layer of a language resource as XML, or an empty string
+        /// when this session's tenant supplies no override.
+        /// </summary>
+        /// <remarks>
+        /// The companion of <see cref="GetLanguage"/>; see
+        /// <see cref="GetCustomizeFormLayout"/> for why the customization code is taken from the
+        /// session rather than the arguments.
+        /// </remarks>
+        /// <param name="args">The input arguments carrying <c>Lang</c> and <c>Namespace</c>.</param>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        public virtual GetLanguageResult GetCustomizeLanguage(GetLanguageArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            if (string.IsNullOrWhiteSpace(args.Lang))
+                throw new ArgumentException("Lang is required.", nameof(args));
+            if (string.IsNullOrWhiteSpace(args.Namespace))
+                throw new ArgumentException("Namespace is required.", nameof(args));
+
+            string customizeId = GetCurrentCustomizeId();
+            if (string.IsNullOrEmpty(customizeId))
+                return new GetLanguageResult { Xml = string.Empty };
+
+            var resource = Services.GetRequiredService<ICustomizeDefineReader>()
+                .GetCustomizeLanguage(customizeId, args.Lang, args.Namespace);
             return new GetLanguageResult { Xml = resource is null ? string.Empty : SerializeDefine(resource) };
         }
 

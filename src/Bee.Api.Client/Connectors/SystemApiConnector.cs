@@ -5,6 +5,8 @@ using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Api.Core.Messages.System;
 using Bee.Definition;
+using Bee.Definition.Layouts;
+using Bee.Definition.Language;
 using Bee.Definition.Organization;
 using Bee.Definition.Security;
 using Bee.Api.Core.Messages;
@@ -186,6 +188,42 @@ namespace Bee.Api.Client.Connectors
                 return XmlCodec.Deserialize<T>(result.Xml)!;
             else
                 return default!;
+        }
+
+        /// <summary>
+        /// Asynchronously gets the tenant customization layer of a form layout definition;
+        /// <c>null</c> when this session's tenant supplies no override.
+        /// </summary>
+        /// <param name="progId">The program identifier.</param>
+        /// <param name="layoutId">The layout identifier; empty resolves to <paramref name="progId"/>.</param>
+        /// <remarks>
+        /// The companion of the base-layer fetch: obtain both layers and pick between them with
+        /// <c>CustomizeOverlay</c>. There is deliberately no customization-code parameter — the
+        /// server takes it from the session, so a caller cannot ask for another tenant's overrides.
+        /// </remarks>
+        public virtual async Task<FormLayout?> GetCustomizeFormLayoutAsync(string progId, string layoutId = "")
+        {
+            var request = new GetFormLayoutRequest { ProgId = progId, LayoutId = layoutId };
+            var result = await ExecuteAsync<GetFormLayoutResponse>(SystemActions.GetCustomizeFormLayout, request)
+                .ConfigureAwait(false);
+            return StringUtilities.IsNotEmpty(result.Xml) ? XmlCodec.Deserialize<FormLayout>(result.Xml!) : null;
+        }
+
+        /// <summary>
+        /// Asynchronously gets the tenant customization layer of a language resource;
+        /// <c>null</c> when this session's tenant supplies no override.
+        /// </summary>
+        /// <param name="lang">The BCP-47 language code.</param>
+        /// <param name="ns">The resource namespace.</param>
+        /// <remarks>
+        /// See <see cref="GetCustomizeFormLayoutAsync"/> for why there is no customization-code parameter.
+        /// </remarks>
+        public virtual async Task<LanguageResource?> GetCustomizeLanguageAsync(string lang, string ns)
+        {
+            var request = new GetLanguageRequest { Lang = lang, Namespace = ns };
+            var result = await ExecuteAsync<GetLanguageResponse>(SystemActions.GetCustomizeLanguage, request)
+                .ConfigureAwait(false);
+            return StringUtilities.IsNotEmpty(result.Xml) ? XmlCodec.Deserialize<LanguageResource>(result.Xml!) : null;
         }
 
         // Note: GetFormSchema, GetFormLayout and GetLanguage have no .NET client methods. Those BO

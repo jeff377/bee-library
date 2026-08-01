@@ -51,6 +51,12 @@ namespace Bee.Definition
         public const string GetFormLayout = "GetFormLayout";
 
         /// <summary>
+        /// Gets the tenant customization layer of a form layout definition. Which tenant is
+        /// decided by the session, never by the caller.
+        /// </summary>
+        public const string GetCustomizeFormLayout = "GetCustomizeFormLayout";
+
+        /// <summary>
         /// Gets the current company's department tree (per-company organisation hierarchy,
         /// JSON-friendly for frontends).
         /// </summary>
@@ -61,6 +67,12 @@ namespace Bee.Definition
         /// for JS / TypeScript frontends consuming localized UI text.
         /// </summary>
         public const string GetLanguage = "GetLanguage";
+
+        /// <summary>
+        /// Gets the tenant customization layer of a language resource. Which tenant is decided
+        /// by the session, never by the caller.
+        /// </summary>
+        public const string GetCustomizeLanguage = "GetCustomizeLanguage";
         /// <summary>
         /// Saves definition data.
         /// </summary>
