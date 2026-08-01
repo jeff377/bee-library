@@ -37,8 +37,8 @@ namespace Bee.Definition.Forms
         /// </summary>
         /// <remarks>
         /// <see cref="DecimalsSource.Currency"/> amounts are deliberately <b>not</b> baked: their
-        /// decimals depend on the amount's runtime currency and are resolved by the UI (see
-        /// plan-numeric-multicurrency.md §2.1 / §3.2). Instead, an amount field with no explicit
+        /// decimals depend on the amount's runtime currency and are resolved by the UI.
+        /// Instead, an amount field with no explicit
         /// <see cref="FormField.CurrencyField"/> inherits the master document currency field
         /// (<see cref="FormSchema.CurrencyField"/>) so every amount carries a concrete currency
         /// reference for the UI to resolve against. Likewise, <see cref="DecimalsSource.Unit"/>

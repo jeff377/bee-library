@@ -13,8 +13,8 @@ namespace Bee.Definition.Identity
     /// a logical <c>DatabaseSettings</c> entry; multiple companies may point at the
     /// same id and rely on the <c>sys_company_rowid</c> column for row-level
     /// isolation. The log database is shared across all companies under a fixed
-    /// <c>"log"</c> databaseId (see <c>DbScope.Log</c> in plan-bo-repo-db-routing),
-    /// so there is no per-company log database id property.
+    /// <c>"log"</c> databaseId (see <c>DbScope.Log</c>), so there is no per-company
+    /// log database id property.
     /// </remarks>
     [MessagePackObject(keyAsPropertyName: true)]
     public class CompanyInfo : IKeyObject
@@ -62,7 +62,7 @@ namespace Bee.Definition.Identity
         /// Gets or sets the company-level decimal-places override table. Empty means every kind uses
         /// the framework default. Loaded from the <c>number_formats_xml</c> column by
         /// <c>CompanyRepository</c>; carries Percent and UnitPrice/Cost display decimals plus the
-        /// Quantity/Weight fallback when no unit is bound (see plan-numeric-core.md).
+        /// Quantity/Weight fallback when no unit is bound.
         /// </summary>
         public CompanyNumberFormats NumberFormats { get; set; } = [];
 

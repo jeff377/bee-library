@@ -77,7 +77,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Gets or sets the numeric semantic kind, propagated from <see cref="Forms.FormField.NumberKind"/>.
         /// Drives the field's rounding policy and decimal-places source during delivery-time format baking
-        /// and runtime reference resolution (see plan-numeric-core.md).
+        /// and runtime reference resolution.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
@@ -88,7 +88,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Gets or sets the name of the field that holds this amount field's currency code (a SAP
         /// CUKY reference), propagated from <see cref="Forms.FormField.CurrencyField"/>. Drives
-        /// per-cell currency-aware decimal resolution at runtime (see plan-numeric-multicurrency.md §3.2c).
+        /// per-cell currency-aware decimal resolution at runtime.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
@@ -99,7 +99,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Gets or sets the name of the field that holds this quantity/weight field's unit-of-measure
         /// code (a SAP UNIT reference), propagated from <see cref="Forms.FormField.UnitField"/>. Drives
-        /// per-cell unit-aware decimal resolution at runtime (see plan-numeric-uom.md §3.2c).
+        /// per-cell unit-aware decimal resolution at runtime.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]

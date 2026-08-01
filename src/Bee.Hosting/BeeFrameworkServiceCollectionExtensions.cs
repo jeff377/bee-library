@@ -225,7 +225,7 @@ namespace Bee.Hosting
             // 7. Login attempt tracker — optional service with no default impl. Apps wanting
             //    brute-force protection register their own impl via
             //    services.AddSingleton<ILoginAttemptTracker, MyTracker>() after AddBeeFramework.
-            //    Tests inject per-call via TestOverrideServiceProvider; see plan-backendinfo-di-phase4.md.
+            //    Tests inject per-call via TestOverrideServiceProvider.
 
             // 8. Business-object factory + form-bo type resolver.
             //    ProgramSettingsFormBoTypeResolver looks up ProgramItem.TypeName from

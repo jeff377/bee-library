@@ -49,7 +49,7 @@ namespace Bee.Definition.Storage
         /// <summary>
         /// Gets the system-level currency master. Returns <c>null</c> when the file does not exist —
         /// a missing currency master is a normal scenario (unlike <see cref="GetDbCategorySettings"/>),
-        /// so callers fall back to framework-default decimals (see plan-numeric-multicurrency.md).
+        /// so callers fall back to framework-default decimals.
         /// </summary>
         public CurrencySettings? GetCurrencySettings()
         {
@@ -72,7 +72,7 @@ namespace Bee.Definition.Storage
         /// <summary>
         /// Gets the system-level unit-of-measure master. Returns <c>null</c> when the file does not
         /// exist — a missing unit master is a normal scenario, so callers fall back to framework
-        /// defaults (see plan-numeric-uom.md).
+        /// defaults.
         /// </summary>
         public UnitSettings? GetUnitSettings()
         {

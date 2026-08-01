@@ -116,8 +116,7 @@ namespace Bee.Definition.Forms
         /// Gets or sets the name of the master field that holds the document currency code (by
         /// convention <c>sys_currency</c>). Amount fields with no explicit
         /// <see cref="FormField.CurrencyField"/> resolve their currency from this field; detail amount
-        /// fields read the master row's value. Empty falls back to the company default currency
-        /// (see plan-numeric-multicurrency.md §1.4).
+        /// fields read the master row's value. Empty falls back to the company default currency.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]

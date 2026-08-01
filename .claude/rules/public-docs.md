@@ -76,12 +76,15 @@ grep -rnE --include="*.md" "plan-[a-z0-9]+(-[a-z0-9]+)+" docs/ README*.md CHANGE
 # (3) markdown — 純文字指向現存 plan（「見 plan …」「plan 的 …」「本 plan」等）
 grep -rnE --include="*.md" "見 plan|本 plan|plan (的|內|各)|(the|migration|integration) plan" docs/ README*.md CHANGELOG*.md src/ samples/ apps/ tools/ | grep -v "^docs/plans/" | grep -v "^docs/internal/" | grep -v "^docs/blogs/"
 
-# (4) 原始碼註解（XML doc 會進消費端 IntelliSense）
+# (4) 原始碼註解 — 路徑型引用（XML doc 會進消費端 IntelliSense）
 grep -rn "docs/plans" src/ samples/ apps/ tools/ --include="*.cs" --include="*.axaml" --include="*.razor" | grep -v "/obj/" | grep -v "/bin/"
+
+# (5) 原始碼註解 — 點名 plan 檔名（如 `(see plan-numeric-core.md §1.4)`），比照 (2)
+grep -rnE "plan-[a-z0-9]+(-[a-z0-9]+)+" src/ samples/ apps/ tools/ --include="*.cs" --include="*.axaml" --include="*.razor" | grep -v "/obj/" | grep -v "/bin/"
 ```
 
 預期輸出：(1) 只剩 `docs/README.md` / `docs/README.zh-TW.md` 對 `plans/` 資料夾的**性質說明**
-（不是連結，且已標明「階段性工作文件、非參考資料」）；(2) 完全無輸出；(4) 完全無輸出。
+（不是連結，且已標明「階段性工作文件、非參考資料」）；(2)(4)(5) 完全無輸出。
 
 **(3) 會有已知誤報，須逐筆判讀**，不可無腦清空：
 
@@ -100,3 +103,9 @@ grep -rn "docs/plans" src/ samples/ apps/ tools/ --include="*.cs" --include="*.a
 > 底下 14 處指向 `docs/plans/` 的 XML doc 與註解長期漏網。替代寫法見下節——
 > 這些位置的實質說明本來就已寫在註解裡，plan 指標拿掉即可；需要延伸閱讀的改指
 > `docs/database-dialect-differences.md`。
+>
+> **(5) 是 2026-08-01 補上的**：(4) 只抓路徑型 `docs/plans`，抓不到只寫檔名的
+> `(see plan-numeric-core.md §1.4)` 這種形式——正因如此，`Bee.Definition` 的
+> `FormField` / `FormSchema` / `LayoutFieldBase` / `CompanyInfo` / `FileDefineStorage` /
+> `NumberFormatApplier` 與 `Bee.Hosting`、`Bee.UI.*` 共 14 處長期漏網。處理方式同 (4)：
+> 實質說明留著，plan 指標直接拿掉。

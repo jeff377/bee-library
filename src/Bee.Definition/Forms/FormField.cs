@@ -173,7 +173,7 @@ namespace Bee.Definition.Forms
         /// <summary>
         /// Gets or sets the numeric semantic kind of this field. Propagated by the layout generator
         /// to <see cref="Layouts.LayoutFieldBase.NumberKind"/>; drives the field's rounding policy and
-        /// decimal-places source (see plan-numeric-core.md). The default <see cref="Definition.NumberKind.None"/>
+        /// decimal-places source. The default <see cref="Definition.NumberKind.None"/>
         /// means no numeric handling is applied.
         /// </summary>
         [Category(PropertyCategories.Data)]
@@ -187,7 +187,7 @@ namespace Bee.Definition.Forms
         /// CUKY reference). Applies to <see cref="Definition.NumberKind.Amount"/> fields: when set,
         /// the amount's decimal places resolve from that field's current currency. Empty falls back to
         /// the master document currency (<see cref="FormSchema.CurrencyField"/>), then the company
-        /// default currency (see plan-numeric-multicurrency.md §1.4).
+        /// default currency.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
@@ -199,7 +199,7 @@ namespace Bee.Definition.Forms
         /// Gets or sets the name of the field that holds this quantity/weight field's unit-of-measure
         /// code (a SAP UNIT reference). Applies to <see cref="Definition.NumberKind.Quantity"/> /
         /// <see cref="Definition.NumberKind.Weight"/> fields: when set, the decimal places resolve from
-        /// that field's current unit. Empty falls back to the company decimals (see plan-numeric-uom.md §1.4).
+        /// that field's current unit. Empty falls back to the company decimals.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
