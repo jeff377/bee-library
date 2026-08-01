@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using Bee.Base.Serialization;
+using Bee.Definition.Forms;
 using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.Messages.System;
 using Bee.Business;
@@ -65,10 +67,13 @@ namespace Bee.Api.Core.UnitTests.System
 
             Assert.Null(response.Error);
             var result = Assert.IsType<GetFormSchemaResponse>(response.Result!.Value);
-            Assert.NotNull(result.Schema);
-            Assert.Equal("Employee", result.Schema!.ProgId);
-            Assert.NotNull(result.Schema.Tables);
-            Assert.True(result.Schema.Tables!.Count > 0, "Schema 應至少有一個 master table");
+            // 定義一律以 XML 上線——巢狀集合是 get-only，JSON / MessagePack 收不回來
+            Assert.False(string.IsNullOrEmpty(result.Xml));
+            var schema = XmlCodec.Deserialize<FormSchema>(result.Xml!);
+            Assert.NotNull(schema);
+            Assert.Equal("Employee", schema!.ProgId);
+            Assert.NotNull(schema.Tables);
+            Assert.True(schema.Tables!.Count > 0, "Schema 應至少有一個 master table");
         }
 
         [Fact]

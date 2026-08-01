@@ -1,10 +1,11 @@
 using System.ComponentModel;
+using Bee.Base.Serialization;
+using Bee.Definition.Language;
 using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.Messages.System;
 using Bee.Business;
 using Bee.Definition;
 using Bee.Definition.Identity;
-using Bee.Definition.Language;
 using Bee.Definition.Security;
 using Bee.Definition.Storage;
 using Bee.Tests.Shared;
@@ -69,18 +70,20 @@ namespace Bee.Api.Core.UnitTests.System
 
             Assert.Null(response.Error);
             var result = Assert.IsType<GetLanguageResponse>(response.Result!.Value);
-            Assert.NotNull(result.Resource);
-            Assert.Equal(LangFixture.SeedNamespace, result.Resource!.Namespace);
-            Assert.Equal(LangFixture.SeedLang, result.Resource.Lang);
-            Assert.Equal("你好", result.Resource.GetText("Greeting"));
-            var gender = result.Resource.GetEnum("Gender");
+            Assert.False(string.IsNullOrEmpty(result.Xml));
+            var resource = XmlCodec.Deserialize<LanguageResource>(result.Xml!);
+            Assert.NotNull(resource);
+            Assert.Equal(LangFixture.SeedNamespace, resource!.Namespace);
+            Assert.Equal(LangFixture.SeedLang, resource.Lang);
+            Assert.Equal("你好", resource.GetText("Greeting"));
+            var gender = resource.GetEnum("Gender");
             Assert.NotNull(gender);
             Assert.Equal("男", gender!.GetText("M"));
         }
 
         [Fact]
-        [DisplayName("System.GetLanguage 對不存在的 namespace 應 dispatch 成功並回 Resource = null")]
-        public void GetLanguage_MissingNamespace_DispatchSucceedsWithNullResource()
+        [DisplayName("System.GetLanguage 對不存在的 namespace 應 dispatch 成功並回空 Xml")]
+        public void GetLanguage_MissingNamespace_DispatchSucceedsWithEmptyXml()
         {
             var accessToken = TestSessionFactory.CreateAccessToken(_fx);
 
@@ -114,7 +117,7 @@ namespace Bee.Api.Core.UnitTests.System
 
             Assert.Null(response.Error);
             var result = Assert.IsType<GetLanguageResponse>(response.Result!.Value);
-            Assert.Null(result.Resource);
+            Assert.True(string.IsNullOrEmpty(result.Xml));
         }
 
         [Fact]

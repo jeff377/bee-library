@@ -1,5 +1,4 @@
 using Bee.Api.Contracts.System;
-using Bee.Definition.Forms;
 using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
@@ -11,9 +10,14 @@ namespace Bee.Api.Core.Messages.System
     public class GetFormSchemaResponse : ApiResponse, IGetFormSchemaResponse
     {
         /// <summary>
-        /// Gets or sets the form schema as a typed object (serialised as a JSON
-        /// tree on the Plain wire format).
+        /// Gets or sets the raw definition serialised as XML; empty when no definition exists.
         /// </summary>
-        public FormSchema? Schema { get; set; }
+        /// <remarks>
+        /// Every definition-fetching API carries XML. Definition types declare XML as their
+        /// serialisation contract — their nested collections are get-only, which XmlSerializer
+        /// handles by populating the existing instance, while JSON and MessagePack bind by
+        /// writability and would silently drop those collections on the way back.
+        /// </remarks>
+        public string? Xml { get; set; }
     }
 }

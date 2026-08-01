@@ -99,20 +99,73 @@ export const systemApi = {
     rpcCall('System.Logout', {}),
 
   /**
-   * Fetch a form schema as a typed JSON object (field metadata, db types,
-   * relations) for the given progId. JSON-friendly alternative to GetDefine.
+   * Fetch the raw FormSchema definition for the given progId, parsed from the
+   * XML the server returns. See parseDefineXml for why definitions travel as XML.
    */
-  getFormSchema: (progId) =>
-    rpcCall('System.GetFormSchema', { progId }),
+  getFormSchema: async (progId) =>
+    parseDefineXml((await rpcCall('System.GetFormSchema', { progId })).xml),
 
   /**
-   * Fetch a form layout as a typed JSON object (sections, fields, control
-   * types, row/column spans) for the given progId. layoutId defaults to
-   * "default" server-side when omitted.
+   * Fetch the raw base-layer FormLayout definition for the given progId.
+   * Returns null when no layout is stored — the caller then generates one from
+   * the schema, exactly as the .NET clients do. An empty layoutId resolves to
+   * the progId server-side, matching the {ProgId}.FormLayout.xml convention.
    */
-  getFormLayout: (progId, layoutId = '') =>
-    rpcCall('System.GetFormLayout', { progId, layoutId }),
+  getFormLayout: async (progId, layoutId = '') =>
+    parseDefineXml((await rpcCall('System.GetFormLayout', { progId, layoutId })).xml),
 };
+
+/**
+ * Parses a definition XML document into the same shape the JSON wire format
+ * used to produce: attributes become camelCase properties and each container
+ * element (Sections, Fields, Details, Columns, Tables...) becomes an array.
+ *
+ * Definitions travel as XML on every API because their nested collections are
+ * get-only on the .NET side: XmlSerializer populates the existing instance,
+ * while JSON and MessagePack bind by writability and would silently drop those
+ * collections on the way back. One wire format for every client beats a
+ * JSON-shaped API that only works one way.
+ *
+ * @param {string} xml  The definition XML; empty means "no such definition".
+ * @returns {object|null} The parsed definition, or null when xml is empty.
+ */
+function parseDefineXml(xml) {
+  if (!xml) return null;
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  const failure = doc.querySelector('parsererror');
+  if (failure) throw new Error(`Definition XML is malformed: ${failure.textContent}`);
+  return elementToObject(doc.documentElement);
+}
+
+const camelCase = (name) => name.charAt(0).toLowerCase() + name.slice(1);
+
+function elementToObject(el) {
+  const obj = {};
+  for (const attr of el.attributes) {
+    // Skip the xsi/xsd namespace declarations XmlSerializer emits on the root.
+    if (attr.name.startsWith('xmlns')) continue;
+    obj[camelCase(attr.name)] = coerce(attr.value);
+  }
+  for (const child of el.children) {
+    // A wrapper element (Sections, Fields, ...) holds a list; anything else is
+    // a nested object. Wrappers are recognised by having element children whose
+    // tag differs from their own, which is how XmlSerializer writes XmlArray.
+    const items = Array.from(child.children);
+    obj[camelCase(child.tagName)] = items.length > 0 && items[0].tagName !== child.tagName
+      ? items.map(elementToObject)
+      : elementToObject(child);
+  }
+  return obj;
+}
+
+// XML carries everything as text; restore the booleans and integers the
+// renderer branches on (visible, showCaption, columnCount, rowSpan...).
+function coerce(value) {
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  if (/^-?\d+$/.test(value)) return Number(value);
+  return value;
+}
 
 /**
  * Builds a thin form-API wrapper for the given progId. Mirrors

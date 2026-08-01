@@ -5,7 +5,6 @@ using Bee.Definition.Forms;
 using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Organization;
-using Bee.Definition.Identity;
 using Bee.Definition.Security;
 
 namespace Bee.Business.System
@@ -54,20 +53,23 @@ namespace Bee.Business.System
         }
 
         /// <summary>
-        /// Returns a <see cref="FormSchema"/> as a typed object, intended for JS /
-        /// TypeScript frontends that prefer JSON over the XML envelope returned by
-        /// <see cref="GetDefine"/>. The Plain wire format serialises the schema as
-        /// a JSON tree directly.
+        /// Returns the raw <see cref="FormSchema"/> definition as XML.
         /// </summary>
         /// <remarks>
-        /// **JS-only API**, on the same convention as <see cref="GetLanguage"/>.
-        /// <see cref="FormSchema"/> declares XML as its serialisation contract: its nested
-        /// collections are get-only, which XmlSerializer handles by populating the existing
-        /// instance. JSON and MessagePack bind by writability instead, so a .NET caller
-        /// deserialising this response would receive a schema carrying its scalar fields and no
-        /// tables, with no error raised. .NET clients must use <see cref="GetDefine"/> with
-        /// <c>DefineType.FormSchema</c>, and the .NET client deliberately exposes no method for
-        /// this action.
+        /// <para>
+        /// The per-type entry point for ordinary clients, as against <see cref="GetDefine"/>, which
+        /// serves every definition type and is gated for tooling. Both carry XML and both serve the
+        /// definition <b>as stored</b>: no localization, no number-format baking, no customization
+        /// overlay. Callers apply those themselves — <c>FormSchemaLocalizer</c>,
+        /// <c>NumberFormatApplier</c> and <c>CustomizeOverlay</c> all live in <c>Bee.Definition</c>
+        /// so the server and every client run the identical code.
+        /// </para>
+        /// <para>
+        /// XML rather than a JSON tree because definition types declare XML as their serialisation
+        /// contract: their nested collections are get-only, which XmlSerializer handles by
+        /// populating the existing instance, while JSON and MessagePack bind by writability and
+        /// would silently drop those collections on the way back.
+        /// </para>
         /// </remarks>
         /// <param name="args">The input arguments carrying the target <c>ProgId</c>.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
@@ -77,8 +79,9 @@ namespace Bee.Business.System
             if (string.IsNullOrWhiteSpace(args.ProgId))
                 throw new ArgumentException("ProgId is required.", nameof(args));
 
-            var schema = LoadAndLocalizeSchema(args.ProgId);
-            return new GetFormSchemaResult { Schema = schema };
+            var schema = DefineAccess.GetDefine(DefineType.FormSchema, new[] { args.ProgId }) as FormSchema
+                ?? throw new InvalidOperationException($"FormSchema '{args.ProgId}' not found.");
+            return new GetFormSchemaResult { Xml = SerializeDefine(schema) };
         }
 
         /// <summary>
@@ -104,23 +107,20 @@ namespace Bee.Business.System
         }
 
         /// <summary>
-        /// Returns a <see cref="FormLayout"/> for the specified <c>ProgId</c> and
-        /// optional <c>LayoutId</c>. The layout is generated on demand from the
-        /// underlying <see cref="FormSchema"/>; for JS / TypeScript frontends the
-        /// Plain wire format serialises it as a JSON tree ready for direct UI
-        /// rendering.
+        /// Returns the raw base-layer <see cref="FormLayout"/> definition as XML, or an empty
+        /// string when no layout is stored for that identifier.
         /// </summary>
         /// <remarks>
-        /// **JS-only API**, on the same convention as <see cref="GetLanguage"/>. <see
-        /// cref="FormLayout"/> declares XML as its serialisation contract and its nested
-        /// collections are get-only, so a .NET caller deserialising this response would receive a
-        /// layout with no sections and no error raised. .NET clients must use <see
-        /// cref="GetDefine"/> with <c>DefineType.FormLayout</c>, and the .NET client deliberately
-        /// exposes no method for this action.
+        /// Serves the definition as stored — the layout is <b>not</b> generated from the
+        /// <see cref="FormSchema"/> here, and the customization layer is a separate call. A caller
+        /// assembles the runtime layout itself: fetch this and the customization layout, pick
+        /// between them with <c>CustomizeOverlay</c>, generate from the schema when neither exists,
+        /// and take the captions from the localized schema. An empty result is a normal answer
+        /// meaning "no layout definition — generate one".
         /// </remarks>
         /// <param name="args">
-        /// The input arguments. <c>ProgId</c> is required; <c>LayoutId</c> may be
-        /// empty (defaults to <c>"default"</c> server-side).
+        /// The input arguments. <c>ProgId</c> is required; an empty <c>LayoutId</c> resolves to
+        /// <c>ProgId</c>, matching the <c>{ProgId}.FormLayout.xml</c> file convention.
         /// </param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual GetFormLayoutResult GetFormLayout(GetFormLayoutArgs args)
@@ -129,34 +129,16 @@ namespace Bee.Business.System
             if (string.IsNullOrWhiteSpace(args.ProgId))
                 throw new ArgumentException("ProgId is required.", nameof(args));
 
-            // Localize the schema first: a generated layout inherits its localized DisplayName /
-            // Caption values, and a layout read from a definition file takes its text from the same
-            // source (see FormLayoutCaptionApplier).
-            var schema = LoadAndLocalizeSchema(args.ProgId);
-
             // An empty LayoutId means "this form's own layout". It resolves to the ProgId rather
             // than a literal "default" because layout definition files are named after the progId
             // ({ProgId}.FormLayout.xml, LayoutId == ProgId); "default" would never match a file.
             var layoutId = string.IsNullOrWhiteSpace(args.LayoutId) ? args.ProgId : args.LayoutId;
 
-            // Definition file first (tenant customization, then base), generation only as the
-            // fall-back. This is what makes both a tenant's customized layout and a base hand-edited
-            // layout take effect; without a file the behaviour is exactly as before.
-            var definition = DefineAccess.FindFormLayout(GetCurrentCustomizeId(), layoutId);
-            FormLayout layout;
-            if (definition is null)
-            {
-                layout = schema.GetFormLayout(layoutId);
-            }
-            else
-            {
-                // The definition is a process-shared cache instance; clone before the applier
-                // mutates it.
-                layout = definition.Clone();
-                FormLayoutCaptionApplier.Apply(layout, schema);
-            }
-
-            return new GetFormLayoutResult { Layout = layout };
+            // Base layer only. The caller fetches the customization layer through
+            // GetCustomizeFormLayout and picks between them with CustomizeOverlay, and generates
+            // one from the FormSchema when neither layer has a definition.
+            var layout = DefineAccess.FindFormLayout(string.Empty, layoutId);
+            return new GetFormLayoutResult { Xml = layout is null ? string.Empty : SerializeDefine(layout) };
         }
 
         /// <summary>
@@ -194,66 +176,19 @@ namespace Bee.Business.System
             // GetLanguage returns null when the resource file does not exist;
             // that is a normal scenario (missing translation), not an error.
             var resource = DefineAccess.GetLanguage(args.Lang, args.Namespace);
-            return new GetLanguageResult { Resource = resource };
+            return new GetLanguageResult { Xml = resource is null ? string.Empty : SerializeDefine(resource) };
         }
 
         /// <summary>
-        /// Loads the <see cref="FormSchema"/> from the Define cache, deep-clones it via
-        /// <see cref="FormSchema.Clone"/>, and applies localized text using the current
-        /// session's <c>Culture</c>, overlaid with the session's <c>CustomizeId</c> tenant
-        /// customization. The cloned instance is safe to mutate without affecting the shared
-        /// cached schema.
+        /// Serializes a definition for the wire, copying first when the type asks for it so the
+        /// serialization lifecycle never touches the process-shared cache instance.
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// The cached <see cref="FormSchema"/> is process-shared (every session reads
-        /// the same in-memory instance) — see <c>docs/development-constraints.md</c>
-        /// § <i>Definition Data Immutability After Init</i>. We must <b>not</b> mutate
-        /// it, and we must <b>not</b> use <see cref="XmlCodec.Serialize(object)"/> as
-        /// a deep-clone shortcut either: the serialization lifecycle flips
-        /// <c>SerializeState</c> on the source, which races under concurrent load.
-        /// </para>
-        /// <para>
-        /// <see cref="FormSchema.Clone"/> is a pure read of the source and produces a
-        /// fully independent copy with no shared mutable state — safe under any number
-        /// of concurrent callers in any combination of languages.
-        /// </para>
-        /// </remarks>
-        /// <param name="progId">The program identifier.</param>
-        private FormSchema LoadAndLocalizeSchema(string progId)
+        /// <param name="define">The definition object taken from the Define cache.</param>
+        private static string SerializeDefine(object define)
         {
-            var raw = DefineAccess.GetDefine(DefineType.FormSchema, new[] { progId }) as FormSchema
-                ?? throw new InvalidOperationException($"FormSchema '{progId}' not found.");
-
-            // Both localization and number-format baking mutate the schema, so both require a clone —
-            // the cached instance is process-shared and must not be touched. Skip the clone entirely
-            // when there is neither a session language nor a numeric field to bake (anonymous flows
-            // over a non-numeric schema shouldn't pay for a deep clone).
-            string lang = GetCurrentLang();
-            bool hasLang = !string.IsNullOrWhiteSpace(lang);
-            bool needsBake = NumberFormatApplier.HasNumericField(raw);
-            if (!hasLang && !needsBake)
-                return raw;
-
-            var clone = raw.Clone();
-            if (hasLang)
-                new FormSchemaLocalizer(LanguageService).Localize(clone, GetCurrentCustomizeId(), lang);
-            if (needsBake)
-                NumberFormatApplier.Bake(clone, TryGetCompanyInfo());
-            return clone;
-        }
-
-        /// <summary>
-        /// Resolves the current session's <see cref="CompanyInfo"/>, or <c>null</c> when there is no
-        /// session or no company has been entered. Used to bake company-aware number formats; a
-        /// <c>null</c> company makes the applier fall back to framework default decimals.
-        /// </summary>
-        private CompanyInfo? TryGetCompanyInfo()
-        {
-            var session = SessionInfoService.Get(AccessToken);
-            if (session == null || string.IsNullOrEmpty(session.CompanyId))
-                return null;
-            return Services.GetRequiredService<ICompanyInfoService>().Get(session.CompanyId);
+            if (define is ISerializableClone cloneable)
+                define = cloneable.CreateSerializableCopy();
+            return XmlCodec.Serialize(define);
         }
 
         /// <summary>

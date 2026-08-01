@@ -9,3 +9,9 @@ Bee.Api.Contracts.System.ICreateApiKeyRequest.SysName.get -> string!
 Bee.Api.Contracts.System.ICreateApiKeyResponse
 Bee.Api.Contracts.System.ICreateApiKeyResponse.ApiKey.get -> string!
 Bee.Api.Contracts.System.ICreateApiKeyResponse.SysId.get -> string!
+*REMOVED*Bee.Api.Contracts.System.IGetFormLayoutResponse.Layout.get -> Bee.Definition.Layouts.FormLayout?
+*REMOVED*Bee.Api.Contracts.System.IGetFormSchemaResponse.Schema.get -> Bee.Definition.Forms.FormSchema?
+*REMOVED*Bee.Api.Contracts.System.IGetLanguageResponse.Resource.get -> Bee.Definition.Language.LanguageResource?
+Bee.Api.Contracts.System.IGetFormLayoutResponse.Xml.get -> string?
+Bee.Api.Contracts.System.IGetFormSchemaResponse.Xml.get -> string?
+Bee.Api.Contracts.System.IGetLanguageResponse.Xml.get -> string?

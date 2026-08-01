@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using Bee.Base.Serialization;
+using Bee.Definition.Layouts;
 using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.Messages.System;
 using Bee.Business;
@@ -69,12 +71,14 @@ namespace Bee.Api.Core.UnitTests.System
 
             Assert.Null(response.Error);
             var result = Assert.IsType<GetFormLayoutResponse>(response.Result!.Value);
-            Assert.NotNull(result.Layout);
-            Assert.Equal("Employee", result.Layout!.ProgId);
-            // 空 LayoutId 解析為 ProgId；tests/Define 有 Employee.FormLayout.xml，故走定義檔路徑
-            Assert.Equal("Employee", result.Layout.LayoutId);
-            Assert.NotNull(result.Layout.Sections);
-            Assert.True(result.Layout.Sections!.Count > 0, "Layout 應至少有一個 section");
+            // 空 LayoutId 解析為 ProgId；tests/Define 有 Employee.FormLayout.xml
+            Assert.False(string.IsNullOrEmpty(result.Xml));
+            var layout = XmlCodec.Deserialize<FormLayout>(result.Xml!);
+            Assert.NotNull(layout);
+            Assert.Equal("Employee", layout!.ProgId);
+            Assert.Equal("Employee", layout.LayoutId);
+            Assert.NotNull(layout.Sections);
+            Assert.True(layout.Sections!.Count > 0, "Layout 應至少有一個 section");
         }
 
         [Fact]

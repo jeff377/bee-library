@@ -1,5 +1,3 @@
-using Bee.Definition.Layouts;
-
 namespace Bee.Api.Contracts.System
 {
     /// <summary>
@@ -8,9 +6,14 @@ namespace Bee.Api.Contracts.System
     public interface IGetFormLayoutResponse
     {
         /// <summary>
-        /// Gets the form layout as a typed object (serialised as a JSON tree on
-        /// the Plain wire format).
+        /// Gets the raw definition serialised as XML; empty when no definition exists.
         /// </summary>
-        FormLayout? Layout { get; }
+        /// <remarks>
+        /// Every definition-fetching API carries XML. Definition types declare XML as their
+        /// serialisation contract — their nested collections are get-only, which XmlSerializer
+        /// handles by populating the existing instance, while JSON and MessagePack bind by
+        /// writability and would silently drop those collections on the way back.
+        /// </remarks>
+        string? Xml { get; }
     }
 }

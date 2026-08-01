@@ -24,3 +24,15 @@ Bee.Api.Core.Messages.System.CreateApiKeyResponse.ApiKey.set -> void
 Bee.Api.Core.Messages.System.CreateApiKeyResponse.CreateApiKeyResponse() -> void
 Bee.Api.Core.Messages.System.CreateApiKeyResponse.SysId.get -> string!
 Bee.Api.Core.Messages.System.CreateApiKeyResponse.SysId.set -> void
+*REMOVED*Bee.Api.Core.Messages.System.GetFormLayoutResponse.Layout.get -> Bee.Definition.Layouts.FormLayout?
+*REMOVED*Bee.Api.Core.Messages.System.GetFormLayoutResponse.Layout.set -> void
+*REMOVED*Bee.Api.Core.Messages.System.GetFormSchemaResponse.Schema.get -> Bee.Definition.Forms.FormSchema?
+*REMOVED*Bee.Api.Core.Messages.System.GetFormSchemaResponse.Schema.set -> void
+*REMOVED*Bee.Api.Core.Messages.System.GetLanguageResponse.Resource.get -> Bee.Definition.Language.LanguageResource?
+*REMOVED*Bee.Api.Core.Messages.System.GetLanguageResponse.Resource.set -> void
+Bee.Api.Core.Messages.System.GetFormLayoutResponse.Xml.get -> string?
+Bee.Api.Core.Messages.System.GetFormLayoutResponse.Xml.set -> void
+Bee.Api.Core.Messages.System.GetFormSchemaResponse.Xml.get -> string?
+Bee.Api.Core.Messages.System.GetFormSchemaResponse.Xml.set -> void
+Bee.Api.Core.Messages.System.GetLanguageResponse.Xml.get -> string?
+Bee.Api.Core.Messages.System.GetLanguageResponse.Xml.set -> void

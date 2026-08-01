@@ -165,15 +165,17 @@ $('btn-load-formdef').addEventListener('click', async () => {
     // Fetch schema + layout in parallel — schema is currently unused by the
     // renderer (no client validation) but is included to demonstrate the
     // typical Promise.all pattern that React/Vue apps would use.
-    const [schemaResp, layoutResp] = await Promise.all([
+    // Both APIs serve the raw definition as XML; the client parses and assembles.
+    const [schema, layout] = await Promise.all([
       systemApi.getFormSchema('Employee'),
       systemApi.getFormLayout('Employee'),
     ]);
     log('GetFormSchema + GetFormLayout', {
-      schemaProgId: schemaResp.schema?.progId,
-      layoutId: schemaResp.schema ? layoutResp.layout?.layoutId : null,
+      schemaProgId: schema?.progId,
+      layoutId: layout?.layoutId ?? '(no layout definition — a real client would generate one from the schema)',
     });
-    _formController = renderFormLayout(layoutResp.layout, $('rendered-form'));
+    if (!layout) throw new Error('No FormLayout definition is stored for Employee.');
+    _formController = renderFormLayout(layout, $('rendered-form'));
   } catch (err) {
     logError('Load Form Definition', err);
   }

@@ -157,9 +157,11 @@
   <section>
     <h2>5. FormDefinition-driven rendering (end-to-end demo)</h2>
     <p class="hint">
-      Fetches <code>System.GetFormSchema</code> + <code>System.GetFormLayout</code>
-      to get the JSON needed for schema-driven rendering, builds an Employee
-      form dynamically, and wires up GetData / GetNewData / Save end-to-end.
+      Fetches <code>System.GetFormSchema</code> + <code>System.GetFormLayout</code>,
+      parses the definition XML they return, builds an Employee form dynamically,
+      and wires up GetData / GetNewData / Save end-to-end. Definitions travel as
+      XML on every API — their nested collections are get-only server-side, so a
+      JSON tree would serialise out but not back.
     </p>
     <p class="hint">
       <strong>No client-side validation</strong>: the demo relies on

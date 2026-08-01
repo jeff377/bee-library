@@ -65,3 +65,15 @@ virtual Bee.Business.System.SystemBusinessObject.CreateApiKey(Bee.Business.Syste
 Bee.Business.BusinessObject.ApiKeyId.get -> string?
 Bee.Business.BusinessObject.ApiKeyName.get -> string?
 Bee.Business.BusinessObject.GetCurrentCustomizeId() -> string!
+*REMOVED*Bee.Business.System.GetFormLayoutResult.Layout.get -> Bee.Definition.Layouts.FormLayout?
+*REMOVED*Bee.Business.System.GetFormLayoutResult.Layout.set -> void
+*REMOVED*Bee.Business.System.GetFormSchemaResult.Schema.get -> Bee.Definition.Forms.FormSchema?
+*REMOVED*Bee.Business.System.GetFormSchemaResult.Schema.set -> void
+*REMOVED*Bee.Business.System.GetLanguageResult.Resource.get -> Bee.Definition.Language.LanguageResource?
+*REMOVED*Bee.Business.System.GetLanguageResult.Resource.set -> void
+Bee.Business.System.GetFormLayoutResult.Xml.get -> string?
+Bee.Business.System.GetFormLayoutResult.Xml.set -> void
+Bee.Business.System.GetFormSchemaResult.Xml.get -> string?
+Bee.Business.System.GetFormSchemaResult.Xml.set -> void
+Bee.Business.System.GetLanguageResult.Xml.get -> string?
+Bee.Business.System.GetLanguageResult.Xml.set -> void

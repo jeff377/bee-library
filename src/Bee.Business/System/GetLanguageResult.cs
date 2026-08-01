@@ -1,5 +1,4 @@
 using Bee.Api.Contracts.System;
-using Bee.Definition.Language;
 
 namespace Bee.Business.System
 {
@@ -9,9 +8,14 @@ namespace Bee.Business.System
     public class GetLanguageResult : BusinessResult, IGetLanguageResponse
     {
         /// <summary>
-        /// Gets or sets the language resource as a typed object (serialised as
-        /// a JSON tree on the Plain wire format).
+        /// Gets or sets the raw definition serialised as XML; empty when no definition exists.
         /// </summary>
-        public LanguageResource? Resource { get; set; }
+        /// <remarks>
+        /// Every definition-fetching API carries XML. Definition types declare XML as their
+        /// serialisation contract — their nested collections are get-only, which XmlSerializer
+        /// handles by populating the existing instance, while JSON and MessagePack bind by
+        /// writability and would silently drop those collections on the way back.
+        /// </remarks>
+        public string? Xml { get; set; }
     }
 }
