@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | `st_api_key` 表 + 兩段式金鑰格式 + 產生金鑰 BO 方法 + `IApiKeyValidator` + 快取與失效，未設定時維持相容 | ✅ 已完成（2026-07-30） |
 | 2 | 呼叫端識別：驗證結果帶入呼叫上下文並落進稽核記錄 | ✅ 已完成（2026-07-30） |
-| 3 | 金鑰管理表單（框架自身 CRUD dogfooding）+ 產生 / 輪替流程與文件 | 🚫 受阻於 [plan-deployment-admin.md](plan-deployment-admin.md) |
+| 3 | 金鑰管理表單（框架自身 CRUD dogfooding）+ 產生 / 輪替流程與文件 | 📝 待做（2026-08-03 解除受阻） |
 | 4 | 用戶端存放：脫離原始碼 hardcode，samples / Northwind 遷移 | ✅ 已完成（2026-07-30） |
 
 ## 背景
@@ -417,11 +417,19 @@ build 0w/0e、`./test.sh` 全綠（新增 7 個測試）。與計畫的差異：
 
 ## 階段 3：金鑰管理與輪替
 
-> **受阻（2026-07-30）**：管理表單是遠端操作，而 `CreateApiKey` 依階段 1 的決定為 `LocalOnly`
-> ——鑄造憑證不該只憑「已驗證」。放寬需要一條「遠端可用、但不是誰登入都行」的授權路徑，
-> 而框架現有的權限判定寫死在公司範圍內（`AuthorizationService.Can` 無 `CompanyId` 即回 `false`），
-> 且角色資料存在各公司的資料庫——用公司層權限守部署層資產，等於讓 A 公司的管理員能鑄出
-> 整個部署通用的金鑰。該路徑另立 [plan-deployment-admin.md](plan-deployment-admin.md)，完成後本階段解鎖。
+> **✅ 受阻已解除（2026-08-03）**：[plan-deployment-admin.md](plan-deployment-admin.md) 的階段 2
+> 已落地——`CreateApiKey` 從 `LocalOnly` 放寬為 `Encrypted`，遠端呼叫改由
+> `IDeploymentAuthorizationService.Can(token, ManageApiKey)` 把關，本機呼叫維持直通以保住
+> bootstrap 路徑。停用 / 列出等本階段要新增的方法比照同一分流。
+>
+> <details><summary>原受阻紀錄（2026-07-30）</summary>
+>
+> 管理表單是遠端操作，而 `CreateApiKey` 依階段 1 的決定為 `LocalOnly`——鑄造憑證不該只憑
+> 「已驗證」。放寬需要一條「遠端可用、但不是誰登入都行」的授權路徑，而框架現有的權限判定
+> 寫死在公司範圍內（`AuthorizationService.Can` 無 `CompanyId` 即回 `false`），且角色資料存在
+> 各公司的資料庫——用公司層權限守部署層資產，等於讓 A 公司的管理員能鑄出整個部署通用的金鑰。
+>
+> </details>
 >
 > **另一項待修正**：下方第 1 點寫「以框架自身的 FormSchema CRUD 做管理表單」，但**新增這一格
 > 泛用 Insert 撐不住**——Insert 是「客戶端送什麼就存什麼」，而金鑰必須由伺服器產生、雜湊存放、

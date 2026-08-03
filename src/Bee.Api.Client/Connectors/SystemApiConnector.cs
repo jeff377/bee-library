@@ -281,8 +281,9 @@ namespace Bee.Api.Client.Connectors
         /// IMPORTANT: <c>CreateApiKeyResponse.ApiKey</c> is the only time the plaintext key exists
         /// outside the caller — the server keeps just a hash. Persist it here or issue a replacement.
         /// <para>
-        /// The server restricts this to local calls, so this reaches it through an in-process
-        /// connector only.
+        /// A remote call requires the signed-in user to be a deployment administrator; an
+        /// in-process call passes without one, so a deployment with no administrator yet can still
+        /// mint its first key on the host.
         /// </para>
         /// </remarks>
         public async Task<CreateApiKeyResponse> CreateApiKeyAsync(string sysId, string sysName,

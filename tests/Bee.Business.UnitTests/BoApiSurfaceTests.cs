@@ -65,9 +65,9 @@ namespace Bee.Business.UnitTests
 
             // System axis — SystemBusinessObject (system-level operations).
             new ApiSurfaceEntry("SystemBusinessObject", "CheckPackageUpdate",     ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous),
-            // LocalOnly：發放金鑰是鑄造憑證，屬部署期作業。理由同 SaveDefine —— 僅「已驗證」
-            // 的遠端帳號不該能自行鑄一把 API 金鑰；遠端管理路徑待階段 3 以權限模型把關。
-            new ApiSurfaceEntry("SystemBusinessObject", "CreateApiKey",           ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated),
+            // Encrypted（原為 LocalOnly）：把關移交 IDeploymentAuthorizationService —— 遠端須是
+            // 部署層管理員，僅「已驗證」仍不足。本機呼叫免管理員，維持首把金鑰的 bootstrap 路徑。
+            new ApiSurfaceEntry("SystemBusinessObject", "CreateApiKey",           ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
             // LocalOnly：從 UserID 直接發 token、不驗憑證，屬受信任呼叫端操作。
             // 先前為 Public + Anonymous，未被利用只是因為 SessionInfoCache.CreateInstance 尚未實作。
             new ApiSurfaceEntry("SystemBusinessObject", "CreateSession",          ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Anonymous),

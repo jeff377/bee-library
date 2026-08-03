@@ -44,7 +44,7 @@
 
 | 作業 | 方法 | 現況 |
 |------|------|------|
-| 發放 API 金鑰 | `SystemBO.CreateApiKey` | 已交付，缺入口 |
+| 發放 API 金鑰 | `SystemBO.CreateApiKey` | 已交付，缺入口。2026-08-03 起遠端也走得通（須為部署層管理員），但**尚無管理員的部署仍只有本機這條路**——bootstrap 依舊需要入口 |
 | 指派部署層管理員 | `SystemBO.SetDeploymentAdmin` | 已交付，缺入口。**且它是該欄唯一的寫入口**——沒有工具就只能自己寫程式，或手動 `UPDATE st_user` |
 | 停用 / 列出金鑰 | 尚無 | 屬 API Key plan 的階段 3 |
 
@@ -54,7 +54,7 @@
 **現況限制**：框架目前**只有發放有程式路徑**。`IApiKeyRepository` 只有 `GetEnabledById` /
 `GetGateState` / `Exists` / `Insert`，停用只能直接下 `UPDATE st_api_key`——而直接改 DB 不會 bump
 `st_cache_notify`，其他行程最壞要等 `ApiKeyCache.AbsoluteMinutes`（60 分）才失效。
-停用 / 列出的 API 屬 API Key plan 的階段 3（受阻於部署層管理員 plan），本工具屆時才能做全套。
+停用 / 列出的 API 屬 API Key plan 的階段 3，本工具屆時才能做全套。
 
 **兩個候選落點**：
 
@@ -70,6 +70,7 @@
 一個與定義檔無關的維運面板。
 
 **要等什麼**：現有兩個消費者都不等任何東西（能力已交付），純粹是還沒排；
-停用 / 列出要等 API Key plan 的階段 3。遠端管理表單是另一回事（等部署層管理員 plan 的階段 2）。
+停用 / 列出要等 API Key plan 的階段 3——該階段已於 2026-08-03 解除受阻（遠端管理表單所需的
+授權路徑已就緒），本工具屆時才能做全套。
 
 **啟動時第一步**：先決上表的落點與相依取捨，再寫 plan。

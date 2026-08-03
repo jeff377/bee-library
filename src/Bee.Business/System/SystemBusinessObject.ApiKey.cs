@@ -3,6 +3,7 @@ using Bee.Base.Exceptions;
 using Bee.Base.Security;
 using Bee.Definition;
 using Bee.Definition.Attributes;
+using Bee.Definition.Identity;
 using Bee.Definition.Security;
 using Bee.Repository.Abstractions.Factories;
 
@@ -22,16 +23,27 @@ namespace Bee.Business.System
         /// stored, so losing the value means issuing a replacement and retiring this one — which is
         /// the rotation procedure in any case.
         /// <para>
-        /// Restricted to local calls, on the same reasoning as <c>SaveDefine</c>: minting a
-        /// credential is a deployment-time operation, and a merely authenticated remote account must
-        /// not be able to mint one for itself. A permission-gated remote path belongs with the key
-        /// management form, where the permission model can be applied properly.
+        /// An API key belongs to the installation rather than to any company, so a remote caller is
+        /// gated on <see cref="IDeploymentAuthorizationService"/> rather than on company roles:
+        /// being merely authenticated has never been enough to mint a credential, and a company
+        /// administrator must not gain that ability either. Local calls pass without an
+        /// administrator, which is what keeps the bootstrap path open — a deployment with no
+        /// administrator yet has to be able to mint its first key on the host.
         /// </para>
         /// </remarks>
-        [ApiAccessControl(ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
         public virtual CreateApiKeyResult CreateApiKey(CreateApiKeyArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
+
+            // Authorization first: nothing about the request is worth validating if the caller may
+            // not mint keys at all.
+            if (!IsLocalCall &&
+                !Services.GetRequiredService<IDeploymentAuthorizationService>()
+                         .Can(AccessToken, DeploymentAction.ManageApiKey))
+            {
+                throw new UnauthorizedAccessException("Not authorized to issue API keys.");
+            }
 
             if (!ApiKeyFormat.IsValidSysId(args.SysId))
             {

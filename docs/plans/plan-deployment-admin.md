@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 身分來源與判定接縫：`IDeploymentAuthorizationService` ＋ 首位管理員的產生路徑 | ✅ 已完成（2026-08-01） |
-| 2 | 套用至 API Key：`CreateApiKey` 等改由部署層權限把關，遠端管理成立 | 📝 待做 |
+| 2 | 套用至 API Key：`CreateApiKey` 等改由部署層權限把關，遠端管理成立 | ✅ 已完成（2026-08-03） |
 | 3 | 稽核、文件（雙語）與既有部署的升級指引 | 📝 待做 |
 
 > 直接解鎖 [plan-api-key-store.md](plan-api-key-store.md) 的階段 3——該階段的管理表單需要一條
@@ -196,6 +196,23 @@ API Key plan 階段 1 因此把 `CreateApiKey` 定為 `LocalOnly`，並留下「
 保護等級因此從 `LocalOnly` 放寬為 `Encrypted`，把關改由部署層授權承擔。
 
 **驗收**：管理員可從遠端鑄金鑰；一般已登入使用者被拒；行程內呼叫行為與升級前一致。
+
+### 執行結果（2026-08-03）
+
+驗收條件全數達成，`dotnet build Bee.Library.slnx -c Release --no-incremental` 0w/0e、
+`./test.sh` 全綠（新增 4 個測試）。實作與計畫一致，另記四項執行時的判斷：
+
+| 項目 | 落地情況 |
+|------|---------|
+| **授權排在輸入驗證之前** | `CreateApiKey` 的分流 gate 緊接在 `ArgumentNullException.ThrowIfNull` 之後、`sys_id` 格式檢查之前。無權呼叫端不該從錯誤訊息反推出「哪些 `sys_id` 合法」「哪個 id 已被使用」——後者本來就是 `Exists` 查詢的回音 |
+| **不抽共用 helper** | 階段 3 的停用 / 列出會有相同分流，但目前只有一個呼叫端。三行的安全判定留在呼叫端看得見，比包成 `RequireDeploymentPermission` 後讓「本機直通」藏進 helper 好；真的長到三處再抽 |
+| **拒絕用 `UnauthorizedAccessException`** | 比照 `LogBusinessObject` 的稽核查詢授權，不用 `UserMessageException`——後者語意是「使用者輸入有問題」，會被前端當成可修正的表單錯誤顯示 |
+| 平行路徑 | `SystemApiConnector.CreateApiKeyAsync` 的 XML doc 原寫「伺服端限定本機呼叫，只能經行程內 connector」，已同步改寫。全 repo 再無其他位置把 `CreateApiKey` 記為 `LocalOnly`（`docs/repo-ops/future-work.md` 的部署期工具一節同步更新） |
+
+新增測試（`SystemBusinessObjectApiKeyTests`）：遠端非管理員被拒（fake 授權服務）／遠端管理員
+可鑄金鑰（真實服務，建使用者→標旗標→建 session→遠端呼叫）／有效 session 但無旗標仍被拒／
+本機呼叫免管理員。最後一項刻意存在：它盯的是**日後有人把「本機直通」當成漏洞而刪掉**時，
+bootstrap 路徑會立刻斷在測試上，而不是斷在某個新部署的第一天。
 
 ## 階段 3：稽核與文件
 
