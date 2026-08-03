@@ -33,3 +33,6 @@ static Bee.Api.Client.Definitions.SnapshotLanguageService.BuildKey(string! lang,
 ~override Bee.Api.Client.Definitions.LanguageLayers.Equals(object obj) -> bool
 ~override Bee.Api.Client.Definitions.LanguageLayers.ToString() -> string
 Bee.Api.Client.Connectors.SystemApiConnector.SetDeploymentAdminAsync(string! userId, bool isDeploymentAdmin) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetDeploymentAdminResponse!>!
+Bee.Api.Client.Connectors.SystemApiConnector.ListApiKeysAsync() -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.ListApiKeysResponse!>!
+Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyEnabledAsync(string! sysId, bool enabled) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse!>!
+Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyExpiryAsync(string! sysId, System.DateTime? expiredAt) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse!>!

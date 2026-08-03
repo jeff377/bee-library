@@ -30,3 +30,6 @@ Bee.Repository.Abstractions.System.IApiKeyRepository.GetGateState() -> Bee.Defin
 Bee.Repository.Abstractions.System.IApiKeyRepository.Insert(Bee.Definition.Security.ApiKeyInfo! apiKey) -> void
 Bee.Repository.Abstractions.System.IUserRepository.IsDeploymentAdmin(string! userId) -> bool
 Bee.Repository.Abstractions.System.IUserRepository.SetDeploymentAdmin(string! userId, bool isDeploymentAdmin) -> bool
+Bee.Repository.Abstractions.System.IApiKeyRepository.GetList() -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Security.ApiKeySummary!>!
+Bee.Repository.Abstractions.System.IApiKeyRepository.SetEnabled(string! sysId, bool enabled) -> bool
+Bee.Repository.Abstractions.System.IApiKeyRepository.SetExpiry(string! sysId, System.DateTime? expiredAt) -> bool

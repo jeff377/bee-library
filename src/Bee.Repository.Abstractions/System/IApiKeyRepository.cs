@@ -62,5 +62,45 @@ namespace Bee.Repository.Abstractions.System
         /// secret is never passed here, and the framework keeps no copy of it.
         /// </param>
         void Insert(ApiKeyInfo apiKey);
+
+        /// <summary>
+        /// Lists every issued key, enabled or not, ordered by identifier.
+        /// </summary>
+        /// <returns>The keys as operator-facing summaries.</returns>
+        /// <remarks>
+        /// WARNING: returns <see cref="ApiKeySummary"/>, never <see cref="ApiKeyInfo"/> — the latter
+        /// carries the credential hash and must not leave the server.
+        /// <para>
+        /// Unlike <see cref="GetEnabledById"/>, disabled rows are included: hiding them here would
+        /// make a disabled key indistinguishable from a free identifier, and re-issuing that
+        /// identifier is exactly what must not silently happen.
+        /// </para>
+        /// </remarks>
+        IReadOnlyList<ApiKeySummary> GetList();
+
+        /// <summary>
+        /// Enables or disables a key, returning <c>false</c> when the identifier is unknown.
+        /// </summary>
+        /// <param name="sysId">The key identifier (<c>sys_id</c>).</param>
+        /// <param name="enabled">The value to store.</param>
+        /// <remarks>
+        /// WARNING: the write and its cache invalidation must share one transaction, as in
+        /// <see cref="Insert"/>. Disabling is a revocation — an announcement that is missed leaves
+        /// the key working until the cached entry lapses, which is the one outcome revocation may
+        /// not have.
+        /// </remarks>
+        bool SetEnabled(string sysId, bool enabled);
+
+        /// <summary>
+        /// Sets or clears a key's expiry, returning <c>false</c> when the identifier is unknown.
+        /// </summary>
+        /// <param name="sysId">The key identifier (<c>sys_id</c>).</param>
+        /// <param name="expiredAt">The UTC expiry, or <c>null</c> for a key that does not expire.</param>
+        /// <remarks>
+        /// Expiry is evaluated on every validation rather than through cache expiry, but the cached
+        /// entry still holds the old value, so this invalidates on the same terms as
+        /// <see cref="SetEnabled"/>.
+        /// </remarks>
+        bool SetExpiry(string sysId, DateTime? expiredAt);
     }
 }

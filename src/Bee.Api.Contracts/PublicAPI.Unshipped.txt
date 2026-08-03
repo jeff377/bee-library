@@ -21,3 +21,18 @@ Bee.Api.Contracts.System.ISetDeploymentAdminRequest.IsDeploymentAdmin.get -> boo
 Bee.Api.Contracts.System.ISetDeploymentAdminResponse
 Bee.Api.Contracts.System.ISetDeploymentAdminResponse.UserId.get -> string!
 Bee.Api.Contracts.System.ISetDeploymentAdminResponse.IsDeploymentAdmin.get -> bool
+Bee.Api.Contracts.System.IListApiKeysRequest
+Bee.Api.Contracts.System.IListApiKeysResponse
+Bee.Api.Contracts.System.IListApiKeysResponse.ApiKeys.get -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Security.ApiKeySummary!>!
+Bee.Api.Contracts.System.ISetApiKeyEnabledRequest
+Bee.Api.Contracts.System.ISetApiKeyEnabledRequest.Enabled.get -> bool
+Bee.Api.Contracts.System.ISetApiKeyEnabledRequest.SysId.get -> string!
+Bee.Api.Contracts.System.ISetApiKeyEnabledResponse
+Bee.Api.Contracts.System.ISetApiKeyEnabledResponse.Enabled.get -> bool
+Bee.Api.Contracts.System.ISetApiKeyEnabledResponse.SysId.get -> string!
+Bee.Api.Contracts.System.ISetApiKeyExpiryRequest
+Bee.Api.Contracts.System.ISetApiKeyExpiryRequest.ExpiredAt.get -> System.DateTime?
+Bee.Api.Contracts.System.ISetApiKeyExpiryRequest.SysId.get -> string!
+Bee.Api.Contracts.System.ISetApiKeyExpiryResponse
+Bee.Api.Contracts.System.ISetApiKeyExpiryResponse.ExpiredAt.get -> System.DateTime?
+Bee.Api.Contracts.System.ISetApiKeyExpiryResponse.SysId.get -> string!

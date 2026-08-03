@@ -82,6 +82,18 @@ namespace Bee.Definition
         /// </summary>
         public const string CreateApiKey = "CreateApiKey";
         /// <summary>
+        /// Lists the issued API keys, without any credential material.
+        /// </summary>
+        public const string ListApiKeys = "ListApiKeys";
+        /// <summary>
+        /// Enables or disables an issued API key.
+        /// </summary>
+        public const string SetApiKeyEnabled = "SetApiKeyEnabled";
+        /// <summary>
+        /// Sets or clears an issued API key's expiry.
+        /// </summary>
+        public const string SetApiKeyExpiry = "SetApiKeyExpiry";
+        /// <summary>
         /// Grants or revokes a user's deployment administrator flag.
         /// </summary>
         public const string SetDeploymentAdmin = "SetDeploymentAdmin";

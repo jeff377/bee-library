@@ -104,3 +104,22 @@ Bee.Definition.ProtectedFields
 const Bee.Definition.ProtectedFields.DeploymentAdmin = "deployment_admin" -> string!
 static Bee.Definition.ProtectedFields.IsProtected(string! tableName, string! fieldName) -> bool
 const Bee.Definition.SystemActions.SetDeploymentAdmin = "SetDeploymentAdmin" -> string!
+const Bee.Definition.SystemActions.ListApiKeys = "ListApiKeys" -> string!
+const Bee.Definition.SystemActions.SetApiKeyEnabled = "SetApiKeyEnabled" -> string!
+const Bee.Definition.SystemActions.SetApiKeyExpiry = "SetApiKeyExpiry" -> string!
+Bee.Definition.Security.ApiKeySummary
+Bee.Definition.Security.ApiKeySummary.ApiKeySummary() -> void
+Bee.Definition.Security.ApiKeySummary.SysId.get -> string!
+Bee.Definition.Security.ApiKeySummary.SysId.set -> void
+Bee.Definition.Security.ApiKeySummary.SysName.get -> string!
+Bee.Definition.Security.ApiKeySummary.SysName.set -> void
+Bee.Definition.Security.ApiKeySummary.KeyType.get -> Bee.Definition.Security.ApiKeyType
+Bee.Definition.Security.ApiKeySummary.KeyType.set -> void
+Bee.Definition.Security.ApiKeySummary.Contact.get -> string!
+Bee.Definition.Security.ApiKeySummary.Contact.set -> void
+Bee.Definition.Security.ApiKeySummary.Enabled.get -> bool
+Bee.Definition.Security.ApiKeySummary.Enabled.set -> void
+Bee.Definition.Security.ApiKeySummary.ExpiredAt.get -> System.DateTime?
+Bee.Definition.Security.ApiKeySummary.ExpiredAt.set -> void
+Bee.Definition.Security.ApiKeySummary.IssuedAt.get -> System.DateTime?
+Bee.Definition.Security.ApiKeySummary.IssuedAt.set -> void

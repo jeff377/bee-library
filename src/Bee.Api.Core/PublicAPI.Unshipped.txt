@@ -48,3 +48,33 @@ Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.UserId.get -> string!
 Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.UserId.set -> void
 Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.IsDeploymentAdmin.get -> bool
 Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.IsDeploymentAdmin.set -> void
+Bee.Api.Core.Messages.System.ListApiKeysRequest
+Bee.Api.Core.Messages.System.ListApiKeysRequest.ListApiKeysRequest() -> void
+Bee.Api.Core.Messages.System.ListApiKeysResponse
+Bee.Api.Core.Messages.System.ListApiKeysResponse.ApiKeys.get -> System.Collections.Generic.List<Bee.Definition.Security.ApiKeySummary!>!
+Bee.Api.Core.Messages.System.ListApiKeysResponse.ApiKeys.set -> void
+Bee.Api.Core.Messages.System.ListApiKeysResponse.ListApiKeysResponse() -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest.Enabled.get -> bool
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest.Enabled.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest.SetApiKeyEnabledRequest() -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest.SysId.get -> string!
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest.SysId.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse.Enabled.get -> bool
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse.Enabled.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse.SetApiKeyEnabledResponse() -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse.SysId.get -> string!
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse.SysId.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest.ExpiredAt.get -> System.DateTime?
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest.ExpiredAt.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest.SetApiKeyExpiryRequest() -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest.SysId.get -> string!
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest.SysId.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse.ExpiredAt.get -> System.DateTime?
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse.ExpiredAt.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse.SetApiKeyExpiryResponse() -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse.SysId.get -> string!
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse.SysId.set -> void

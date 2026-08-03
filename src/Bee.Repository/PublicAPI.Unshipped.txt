@@ -17,3 +17,6 @@ Bee.Repository.Factories.SystemRepositoryFactory.SystemRepositoryFactory(Bee.Def
 Bee.Repository.System.ApiKeyRepository.ApiKeyRepository(Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Db.CacheNotify.ICacheNotifyService? cacheNotify = null) -> void
 Bee.Repository.System.UserRepository.IsDeploymentAdmin(string! userId) -> bool
 Bee.Repository.System.UserRepository.SetDeploymentAdmin(string! userId, bool isDeploymentAdmin) -> bool
+Bee.Repository.System.ApiKeyRepository.GetList() -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Security.ApiKeySummary!>!
+Bee.Repository.System.ApiKeyRepository.SetEnabled(string! sysId, bool enabled) -> bool
+Bee.Repository.System.ApiKeyRepository.SetExpiry(string! sysId, System.DateTime? expiredAt) -> bool

@@ -162,6 +162,105 @@ namespace Bee.Repository.System
             transaction.Commit();
         }
 
+        /// <inheritdoc/>
+        public IReadOnlyList<ApiKeySummary> GetList()
+        {
+            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            string tbl = dbType.QuoteIdentifier(TableName);
+            string colId = dbType.QuoteIdentifier(SysIdColumn);
+            string colName = dbType.QuoteIdentifier("sys_name");
+            string colKeyType = dbType.QuoteIdentifier("key_type");
+            string colContact = dbType.QuoteIdentifier("contact");
+            string colEnabled = dbType.QuoteIdentifier("enabled");
+            string colExpired = dbType.QuoteIdentifier("expired_at");
+            string colInsert = dbType.QuoteIdentifier("sys_insert_time");
+
+            // `hashed_key` is deliberately absent from the projection, not merely unmapped: the
+            // credential hash never travels beyond the validation path.
+            string sql = $"SELECT {colId}, {colName}, {colKeyType}, {colContact}, {colEnabled}, {colExpired}, {colInsert} \n" +
+                         $"FROM {tbl} \n" +
+                         $"ORDER BY {colId}";
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
+            var result = new DbAccess(DbCategoryIds.Common, _connectionManager).Execute(command);
+
+            var list = new List<ApiKeySummary>();
+            foreach (global::System.Data.DataRow row in result.Table!.Rows)
+            {
+                object expiredAt = row["expired_at"];
+                object issuedAt = row["sys_insert_time"];
+                list.Add(new ApiKeySummary
+                {
+                    SysId = ValueUtilities.CStr(row[SysIdColumn]),
+                    SysName = ValueUtilities.CStr(row["sys_name"]),
+                    KeyType = (ApiKeyType)ValueUtilities.CInt(row["key_type"], (int)ApiKeyType.Internal),
+                    Contact = ValueUtilities.CStr(row["contact"]),
+                    Enabled = ValueUtilities.CBool(row["enabled"]),
+                    ExpiredAt = expiredAt is DateTime expiry ? expiry : null,
+                    IssuedAt = issuedAt is DateTime issued ? issued : null,
+                });
+            }
+            return list;
+        }
+
+        /// <inheritdoc/>
+        public bool SetEnabled(string sysId, bool enabled)
+        {
+            return UpdateColumn(sysId, "enabled", enabled);
+        }
+
+        /// <inheritdoc/>
+        public bool SetExpiry(string sysId, DateTime? expiredAt)
+        {
+            return UpdateColumn(sysId, "expired_at", expiredAt.HasValue ? expiredAt.Value : DBNull.Value);
+        }
+
+        /// <summary>
+        /// Updates one column of one key row and announces the change, in a single transaction.
+        /// </summary>
+        /// <param name="sysId">The key identifier.</param>
+        /// <param name="columnName">The column to write.</param>
+        /// <param name="value">The value to store.</param>
+        /// <returns><c>true</c> when a row was updated; otherwise, <c>false</c>.</returns>
+        /// <remarks>
+        /// WARNING: the update and both cache-notify bumps share one transaction, exactly as in
+        /// <see cref="Insert"/>. The gate bump is not optional even for a single-key change —
+        /// disabling the last enabled key takes the gate out of force, and a deployment left
+        /// believing the gate is still closed would keep rejecting callers it should now accept
+        /// (and the reverse when re-enabling).
+        /// </remarks>
+        private bool UpdateColumn(string sysId, string columnName, object value)
+        {
+            if (StringUtilities.IsEmpty(sysId)) { return false; }
+
+            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            string tbl = dbType.QuoteIdentifier(TableName);
+            string colId = dbType.QuoteIdentifier(SysIdColumn);
+            string col = dbType.QuoteIdentifier(columnName);
+
+            string sql = $"UPDATE {tbl} SET {col} = {{0}} WHERE {colId} = {{1}}";
+            var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, value, sysId);
+
+            using var connection = _connectionManager.CreateConnection(DbCategoryIds.Common);
+            connection.Open();
+            using var transaction = connection.BeginTransaction();
+
+            var dbAccess = new DbAccess(connection, dbType);
+            if (dbAccess.Execute(command, transaction).RowsAffected == 0)
+            {
+                transaction.Rollback();
+                return false;
+            }
+
+            if (_cacheNotify != null)
+            {
+                _cacheNotify.Touch(NotifyKey(sysId), transaction, dbType);
+                _cacheNotify.Touch(NotifyKey(ApiKeyGateState.CacheKey), transaction, dbType);
+            }
+
+            transaction.Commit();
+            return true;
+        }
+
         /// <summary>
         /// Builds the cache-notify key for an API key entry.
         /// </summary>

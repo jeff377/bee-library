@@ -93,3 +93,36 @@ Bee.Business.System.SetDeploymentAdminResult.IsDeploymentAdmin.get -> bool
 Bee.Business.System.SetDeploymentAdminResult.IsDeploymentAdmin.set -> void
 virtual Bee.Business.System.SystemBusinessObject.SetDeploymentAdmin(Bee.Business.System.SetDeploymentAdminArgs! args) -> Bee.Business.System.SetDeploymentAdminResult!
 Bee.Business.BusinessObject.ResolveAuditIdentity() -> (string? UserId, string? UserName, string? CompanyId, string? CompanyName)
+Bee.Business.System.ListApiKeysArgs
+Bee.Business.System.ListApiKeysArgs.ListApiKeysArgs() -> void
+Bee.Business.System.ListApiKeysResult
+Bee.Business.System.ListApiKeysResult.ApiKeys.get -> System.Collections.Generic.List<Bee.Definition.Security.ApiKeySummary!>!
+Bee.Business.System.ListApiKeysResult.ApiKeys.set -> void
+Bee.Business.System.ListApiKeysResult.ListApiKeysResult() -> void
+Bee.Business.System.SetApiKeyEnabledArgs
+Bee.Business.System.SetApiKeyEnabledArgs.Enabled.get -> bool
+Bee.Business.System.SetApiKeyEnabledArgs.Enabled.set -> void
+Bee.Business.System.SetApiKeyEnabledArgs.SetApiKeyEnabledArgs() -> void
+Bee.Business.System.SetApiKeyEnabledArgs.SysId.get -> string!
+Bee.Business.System.SetApiKeyEnabledArgs.SysId.set -> void
+Bee.Business.System.SetApiKeyEnabledResult
+Bee.Business.System.SetApiKeyEnabledResult.Enabled.get -> bool
+Bee.Business.System.SetApiKeyEnabledResult.Enabled.set -> void
+Bee.Business.System.SetApiKeyEnabledResult.SetApiKeyEnabledResult() -> void
+Bee.Business.System.SetApiKeyEnabledResult.SysId.get -> string!
+Bee.Business.System.SetApiKeyEnabledResult.SysId.set -> void
+Bee.Business.System.SetApiKeyExpiryArgs
+Bee.Business.System.SetApiKeyExpiryArgs.ExpiredAt.get -> System.DateTime?
+Bee.Business.System.SetApiKeyExpiryArgs.ExpiredAt.set -> void
+Bee.Business.System.SetApiKeyExpiryArgs.SetApiKeyExpiryArgs() -> void
+Bee.Business.System.SetApiKeyExpiryArgs.SysId.get -> string!
+Bee.Business.System.SetApiKeyExpiryArgs.SysId.set -> void
+Bee.Business.System.SetApiKeyExpiryResult
+Bee.Business.System.SetApiKeyExpiryResult.ExpiredAt.get -> System.DateTime?
+Bee.Business.System.SetApiKeyExpiryResult.ExpiredAt.set -> void
+Bee.Business.System.SetApiKeyExpiryResult.SetApiKeyExpiryResult() -> void
+Bee.Business.System.SetApiKeyExpiryResult.SysId.get -> string!
+Bee.Business.System.SetApiKeyExpiryResult.SysId.set -> void
+virtual Bee.Business.System.SystemBusinessObject.ListApiKeys(Bee.Business.System.ListApiKeysArgs! args) -> Bee.Business.System.ListApiKeysResult!
+virtual Bee.Business.System.SystemBusinessObject.SetApiKeyEnabled(Bee.Business.System.SetApiKeyEnabledArgs! args) -> Bee.Business.System.SetApiKeyEnabledResult!
+virtual Bee.Business.System.SystemBusinessObject.SetApiKeyExpiry(Bee.Business.System.SetApiKeyExpiryArgs! args) -> Bee.Business.System.SetApiKeyExpiryResult!

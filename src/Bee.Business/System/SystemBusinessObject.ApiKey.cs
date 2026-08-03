@@ -43,12 +43,7 @@ namespace Bee.Business.System
 
             // Authorization first: nothing about the request is worth validating if the caller may
             // not mint keys at all.
-            if (!IsLocalCall &&
-                !Services.GetRequiredService<IDeploymentAuthorizationService>()
-                         .Can(AccessToken, DeploymentAction.ManageApiKey))
-            {
-                throw new UnauthorizedAccessException("Not authorized to issue API keys.");
-            }
+            RequireApiKeyManagement("issue API keys");
 
             if (!ApiKeyFormat.IsValidSysId(args.SysId))
             {
@@ -110,5 +105,150 @@ namespace Bee.Business.System
                 ApiKey = ApiKeyFormat.Compose(args.SysId, secret),
             };
         }
+
+        /// <summary>
+        /// Lists the issued API keys, enabled and disabled alike.
+        /// </summary>
+        /// <param name="args">The input arguments; carries no criteria.</param>
+        /// <remarks>
+        /// IMPORTANT: returns <see cref="ApiKeySummary"/>, which has no credential material. The
+        /// stored hash stays on the server — listing keys is an operator's view of what exists, not
+        /// a way to read what was issued.
+        /// </remarks>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual ListApiKeysResult ListApiKeys(ListApiKeysArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+
+            RequireApiKeyManagement("list API keys");
+
+            var repository = Services.GetRequiredService<ISystemRepositoryFactory>().CreateApiKeyRepository();
+            return new ListApiKeysResult { ApiKeys = [.. repository.GetList()] };
+        }
+
+        /// <summary>
+        /// Enables or disables an issued API key.
+        /// </summary>
+        /// <param name="args">The input arguments.</param>
+        /// <remarks>
+        /// IMPORTANT: disabling is the revocation path, and it takes effect at once — the repository
+        /// announces the change in the same transaction as the write, so other processes drop their
+        /// cached copy rather than honouring the key until it lapses.
+        /// <para>
+        /// Disabling the last enabled key takes the key gate out of force, after which any non-empty
+        /// <c>X-Api-Key</c> is accepted again. That is the documented pre-gate behaviour rather than
+        /// a failure, but it makes "disable the old key" the wrong last step of a rotation on a
+        /// deployment that holds only one.
+        /// </para>
+        /// </remarks>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual SetApiKeyEnabledResult SetApiKeyEnabled(SetApiKeyEnabledArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+
+            RequireApiKeyManagement("manage API keys");
+
+            var repository = Services.GetRequiredService<ISystemRepositoryFactory>().CreateApiKeyRepository();
+            bool auditing = DeploymentAuditEnabled();
+            // Read before writing so the audit records the direction; enable and disable are both an
+            // Update and are otherwise indistinguishable.
+            bool before = auditing && IsEnabled(repository, args.SysId);
+
+            if (!repository.SetEnabled(args.SysId, args.Enabled))
+            {
+                throw new UserMessageException($"No API key with id '{args.SysId}' exists.");
+            }
+
+            if (auditing)
+            {
+                WriteDeploymentAudit(ApiKeyTableName, args.SysId, ChangeKind.Update,
+                    AuditDiffGram.ForFieldUpdate(ApiKeyTableName, args.SysId, "enabled", before, args.Enabled,
+                        [(SysFields.Id, args.SysId)]),
+                    SystemActions.SetApiKeyEnabled);
+            }
+
+            return new SetApiKeyEnabledResult { SysId = args.SysId, Enabled = args.Enabled };
+        }
+
+        /// <summary>
+        /// Sets or clears an issued API key's expiry.
+        /// </summary>
+        /// <param name="args">The input arguments.</param>
+        /// <remarks>
+        /// A past expiry is accepted here, unlike on <see cref="CreateApiKey"/>: issuing a key that
+        /// is already dead is a mistake, whereas expiring a live one as of a moment that has passed
+        /// is a legitimate way to retire it.
+        /// </remarks>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual SetApiKeyExpiryResult SetApiKeyExpiry(SetApiKeyExpiryArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+
+            RequireApiKeyManagement("manage API keys");
+
+            var repository = Services.GetRequiredService<ISystemRepositoryFactory>().CreateApiKeyRepository();
+            bool auditing = DeploymentAuditEnabled();
+            DateTime? before = auditing ? FindExpiry(repository, args.SysId) : null;
+
+            if (!repository.SetExpiry(args.SysId, args.ExpiredAt))
+            {
+                throw new UserMessageException($"No API key with id '{args.SysId}' exists.");
+            }
+
+            if (auditing)
+            {
+                WriteDeploymentAudit(ApiKeyTableName, args.SysId, ChangeKind.Update,
+                    AuditDiffGram.ForFieldUpdate(ApiKeyTableName, args.SysId, "expired_at", before, args.ExpiredAt,
+                        [(SysFields.Id, args.SysId)]),
+                    SystemActions.SetApiKeyExpiry);
+            }
+
+            return new SetApiKeyExpiryResult { SysId = args.SysId, ExpiredAt = args.ExpiredAt };
+        }
+
+        /// <summary>
+        /// Rejects a caller who may not manage API keys.
+        /// </summary>
+        /// <param name="what">The attempted operation, as it reads in the rejection message.</param>
+        /// <exception cref="UnauthorizedAccessException">The caller is not authorized.</exception>
+        /// <remarks>
+        /// WARNING: a local call passes without an administrator, and that is deliberate — it is the
+        /// bootstrap path a deployment with no administrator yet depends on. Removing the
+        /// <see cref="BusinessObject.IsLocalCall"/> branch as a "hardening" would lock such a
+        /// deployment out of its own key management.
+        /// </remarks>
+        private void RequireApiKeyManagement(string what)
+        {
+            if (IsLocalCall) { return; }
+
+            if (!Services.GetRequiredService<IDeploymentAuthorizationService>()
+                         .Can(AccessToken, DeploymentAction.ManageApiKey))
+            {
+                throw new UnauthorizedAccessException($"Not authorized to {what}.");
+            }
+        }
+
+        /// <summary>
+        /// Reads a key's current enabled state for the audit before-image.
+        /// </summary>
+        private static bool IsEnabled(Repository.Abstractions.System.IApiKeyRepository repository, string sysId)
+            => Find(repository, sysId)?.Enabled ?? false;
+
+        /// <summary>
+        /// Reads a key's current expiry for the audit before-image.
+        /// </summary>
+        private static DateTime? FindExpiry(Repository.Abstractions.System.IApiKeyRepository repository, string sysId)
+            => Find(repository, sysId)?.ExpiredAt;
+
+        /// <summary>
+        /// Finds a key's summary by identifier, including disabled rows.
+        /// </summary>
+        /// <remarks>
+        /// NOTE: <c>GetEnabledById</c> cannot serve here — it filters disabled rows out, so
+        /// re-enabling a key would read its before-image as "not found" and the audit would claim
+        /// the key was created rather than changed.
+        /// </remarks>
+        private static ApiKeySummary? Find(Repository.Abstractions.System.IApiKeyRepository repository, string sysId)
+            => repository.GetList().FirstOrDefault(k => string.Equals(k.SysId, sysId, StringComparison.Ordinal));
     }
 }

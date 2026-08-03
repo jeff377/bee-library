@@ -301,6 +301,55 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
+        /// Asynchronously lists the issued API keys, enabled and disabled alike.
+        /// </summary>
+        /// <remarks>
+        /// The response carries no credential material — the stored hash never leaves the server.
+        /// Like the rest of key management, a remote call requires a deployment administrator.
+        /// </remarks>
+        public async Task<ListApiKeysResponse> ListApiKeysAsync()
+        {
+            return await ExecuteAsync<ListApiKeysResponse>(SystemActions.ListApiKeys, new ListApiKeysRequest())
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously enables or disables an issued API key.
+        /// </summary>
+        /// <param name="sysId">The key identifier (<c>st_api_key.sys_id</c>).</param>
+        /// <param name="enabled">Whether the key is accepted from now on.</param>
+        /// <remarks>
+        /// IMPORTANT: disabling revokes the key immediately across every server process, not when
+        /// some cache lapses.
+        /// </remarks>
+        public async Task<SetApiKeyEnabledResponse> SetApiKeyEnabledAsync(string sysId, bool enabled)
+        {
+            var request = new SetApiKeyEnabledRequest()
+            {
+                SysId = sysId,
+                Enabled = enabled
+            };
+            return await ExecuteAsync<SetApiKeyEnabledResponse>(SystemActions.SetApiKeyEnabled, request)
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously sets or clears an issued API key's expiry.
+        /// </summary>
+        /// <param name="sysId">The key identifier (<c>st_api_key.sys_id</c>).</param>
+        /// <param name="expiredAt">The UTC expiry, or <c>null</c> to clear it.</param>
+        public async Task<SetApiKeyExpiryResponse> SetApiKeyExpiryAsync(string sysId, DateTime? expiredAt)
+        {
+            var request = new SetApiKeyExpiryRequest()
+            {
+                SysId = sysId,
+                ExpiredAt = expiredAt
+            };
+            return await ExecuteAsync<SetApiKeyExpiryResponse>(SystemActions.SetApiKeyExpiry, request)
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Asynchronously grants or revokes a user's deployment administrator flag.
         /// </summary>
         /// <param name="userId">The user business id (<c>st_user.sys_id</c>) whose flag is being set.</param>

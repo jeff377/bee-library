@@ -1,12 +1,12 @@
 # 計畫：API Key 存放機制與預設驗證強化
 
-**狀態：🚧 進行中（2026-07-30）**
+**狀態：✅ 已完成（階段 1–4 全數落地）· 2026-08-03**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | `st_api_key` 表 + 兩段式金鑰格式 + 產生金鑰 BO 方法 + `IApiKeyValidator` + 快取與失效，未設定時維持相容 | ✅ 已完成（2026-07-30） |
 | 2 | 呼叫端識別：驗證結果帶入呼叫上下文並落進稽核記錄 | ✅ 已完成（2026-07-30） |
-| 3 | 金鑰生命週期的後端能力（列出 / 停用 / 設到期）+ 輪替流程與文件（雙語） | 📝 待做（2026-08-03 解除受阻並重新定範圍） |
+| 3 | 金鑰生命週期的後端能力（列出 / 停用 / 設到期）+ 輪替流程與文件（雙語） | ✅ 已完成（2026-08-03） |
 | 4 | 用戶端存放：脫離原始碼 hardcode，samples / Northwind 遷移 | ✅ 已完成（2026-07-30） |
 
 ## 背景
@@ -460,10 +460,15 @@ FormSchema 就會經 `GetList` 送到前端（讀取端沒有 `ProtectedFields` 
 
 #### D12：撤銷必須即時生效（定案）
 
-`ApiKeyCache` 是 60 分鐘絕對過期且有負快取，目前**沒有任何 `Touch`**。停用若不主動失效快取，
-最壞情況下被撤銷的金鑰仍可通行近一小時。與 deployment-admin 的 D5（撤銷不該吃快取延遲）同一
-原則，故停用 / 啟用 / 設到期一律失效 `ApiKeyCache`；停用最後一把還會改變閘門狀態，
+`ApiKeyCache` 是 60 分鐘絕對過期且有負快取。停用若不主動失效快取，最壞情況下被撤銷的金鑰仍可
+通行近一小時 —— 與 deployment-admin 的 D5（撤銷不該吃快取延遲）同一原則。故停用 / 啟用 /
+設到期一律在**與寫入同一個交易內**失效 `ApiKeyCache`；停用最後一把還會改變閘門狀態，
 `ApiKeyGateCache` 一併失效。
+
+> **訂正（2026-08-03）**：本條初稿寫「目前沒有任何 `Touch`」，**不正確**——
+> [`ApiKeyRepository.Insert`](../../src/Bee.Repository/System/ApiKeyRepository.cs) 早已在同一交易內
+> `Touch` 金鑰與閘門兩個鍵。本條的要求因此不是「補上一個缺失的機制」，而是
+> **新增的寫入方法必須沿用 `Insert` 已經建立的形狀**。
 
 ### 步驟
 
@@ -481,6 +486,25 @@ FormSchema 就會經 `GetList` 送到前端（讀取端沒有 `ProtectedFields` 
 
 **驗收**：可在不直接下 SQL 的前提下完成一次完整輪替（發第二把 → 換過去 → 停用舊把），
 且停用後的金鑰**立即**被拒；被拒與被撤銷的動作都查得到稽核。
+
+### 執行結果（2026-08-03）
+
+驗收條件全數達成，`dotnet build Bee.Library.slnx -c Release --no-incremental` 0w/0e、
+`./test.sh` 全綠（新增 12 個測試）。與計畫的差異與追加判斷：
+
+| 項目 | 落地情況 |
+|------|---------|
+| **D12 的前提被實作推翻（見上方訂正）** | 計畫寫「目前沒有任何 `Touch`」，實際上 `Insert` 早已在同一交易內 `Touch` 金鑰與閘門兩鍵。新方法沿用該形狀，落點是 `ApiKeyRepository.UpdateColumn`（`SetEnabled` / `SetExpiry` 共用），影響零列時 rollback 並回 `false` |
+| **`ApiKeySummary` 落在 `Bee.Definition.Security`** | 原想放 `Bee.Api.Contracts`（比照 `PackageUpdateInfo`），但 repository 也要產出它，而 `Bee.Repository.Abstractions` 只依賴 `Bee.Definition`。放 Definition 讓 repository / contracts / business 三層共用同一型別，不必在中間再轉一次 |
+| **授權判定抽成 `RequireApiKeyManagement`** | 階段 2 的執行結果寫「只有一個呼叫端，三行留在呼叫端看得見；真的長到三處再抽」。現在是四處，照約定抽出，並在 XML doc 寫明「本機直通不是漏洞，是 bootstrap 路徑」 |
+| **`SetApiKeyExpiry` 接受過去的時間** | 與 `CreateApiKey` 刻意不同：發一把出生即死的金鑰是失誤，把既有金鑰設為此刻起失效則是退役的正當手段。兩者不共用同一條驗證 |
+| **稽核前值不能用 `GetEnabledById` 讀** | 它濾掉停用列，重新啟用時前值會讀成「查無」，稽核就會宣稱這把金鑰是新建的。改以 `GetList` 找（含停用列） |
+| 文件落點 | 新增雙語 `docs/api-key-management.md` / `.zh-TW.md`（定位、閘門自啟、誰能管理、輪替、第三方介接、用戶端存放、留下什麼記錄），並列入 `docs/README*` 索引兩處 |
+
+實作時才想清楚、且已寫進文件的一個坑：**只有一把金鑰的部署，停用它會讓閘門退出生效狀態**
+（沒有啟用中的金鑰 → 回到「任何非空標頭皆通過」）。這是既有的相容性設計、不是缺陷，
+但它讓「停用舊金鑰」成為輪替的錯誤最後一步 —— 除非新的那把已經先發出來。
+`SetApiKeyEnabled` 的 XML doc 與輪替文件都明寫了這點。
 
 > **管理介面移出本 plan**：落點（`dotnet bee apikey …` vs DefineEditor 分頁）記在
 > `docs/repo-ops/future-work.md` 的「部署期作業工具」一案，與 `SetDeploymentAdmin` 的入口

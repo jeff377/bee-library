@@ -82,12 +82,17 @@ namespace Bee.Business.UnitTests
             new ApiSurfaceEntry("SystemBusinessObject", "GetLanguage",            ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetPackage",             ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous),
             new ApiSurfaceEntry("SystemBusinessObject", "LeaveCompany",           ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
+            // 以下三個與 CreateApiKey 同一把關：金鑰屬整個部署，遠端須是部署層管理員，
+            // 本機直通以保住 bootstrap。ListApiKeys 不回傳雜湊。
+            new ApiSurfaceEntry("SystemBusinessObject", "ListApiKeys",           ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "Login",                  ApiProtectionLevel.Public,  ApiAccessRequirement.Anonymous),
             new ApiSurfaceEntry("SystemBusinessObject", "Logout",                 ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "Ping",                   ApiProtectionLevel.Public,  ApiAccessRequirement.Anonymous),
             // LocalOnly：寫入定義是部署期作業。先前僅擋 SystemSettings / DatabaseSettings，
             // 其餘定義型別（含 PermissionModels、DbCategorySettings、FormSchema）任何已驗證帳號皆可覆寫。
             new ApiSurfaceEntry("SystemBusinessObject", "SaveDefine",             ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("SystemBusinessObject", "SetApiKeyEnabled",      ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("SystemBusinessObject", "SetApiKeyExpiry",       ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
             // LocalOnly：指派部署層管理員是提權動作，屬部署期作業。理由同 SaveDefine / CreateApiKey
             // —— 僅「已驗證」的遠端帳號不該能把自己或他人升為管理員。
             new ApiSurfaceEntry("SystemBusinessObject", "SetDeploymentAdmin",     ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated),
