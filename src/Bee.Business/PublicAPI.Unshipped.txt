@@ -92,3 +92,4 @@ Bee.Business.System.SetDeploymentAdminResult.UserId.set -> void
 Bee.Business.System.SetDeploymentAdminResult.IsDeploymentAdmin.get -> bool
 Bee.Business.System.SetDeploymentAdminResult.IsDeploymentAdmin.set -> void
 virtual Bee.Business.System.SystemBusinessObject.SetDeploymentAdmin(Bee.Business.System.SetDeploymentAdminArgs! args) -> Bee.Business.System.SetDeploymentAdminResult!
+Bee.Business.BusinessObject.ResolveAuditIdentity() -> (string? UserId, string? UserName, string? CompanyId, string? CompanyName)

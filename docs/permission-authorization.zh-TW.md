@@ -14,6 +14,8 @@ Bee.NET 的權限分為**三個維度**，套用於**兩個把關點**——**�
 
 兩個後端維度皆於請求時完全走記憶體快照（DB 只在載入快取、登入、`EnterCompany`、改配置時碰）。授權與 `ApiAccessControlAttribute`（管加密等級與是否需登入）**正交**。設計理由見 [ADR-019](adr/adr-019-permission-authorization-model.md)。
 
+三個維度全部**以公司為範圍**。屬於整個部署、不屬於任何公司的資產 —— API 金鑰，以及部署端日後新增的其他項目 —— 由另一條平行判定管轄，見**第三部分**。
+
 ---
 
 # 第一部分 — 後端 enforcement（動作 + 列）
@@ -210,6 +212,60 @@ capability **未接線前一律 inert**，既有 app 不受影響。要啟用：
 3. `LeaveCompany` 時清除：`ClientInfo.ClearCompanyContext();`。
 
 > **警語 — 欄權限是 UX，不是資料邊界。** `GetList` / `GetData` 仍會回傳敏感欄的值；前端只是把它隱藏／鎖定。繞過標準 UI 的 client 仍可能從 API 取得原始值。請把欄權限視為*呈現層*。任何**絕不能離開伺服器**的資料，應放在**動作**或**列**邊界（第一部分）或自成一個 permission model——而非僅靠 `SensitiveCategory`。伺服器端欄位遮罩屬另案（見非目標）。
+
+---
+
+# 第三部分 — 部署層管理（公司模型之外）
+
+以上全部以公司為範圍：角色、授權、部門樹都放在**各公司自己的資料庫**，session 未進入公司時 `IAuthorizationService.Can` 一律回 `false`。
+
+但有一類資產屬於**整個部署**、不屬於任何公司 —— API 金鑰識別的是呼叫的*應用程式*，不是租戶。用公司層權限去守它，等於讓一家租戶的管理員替所有租戶做決定。因此另立一條平行的判定。
+
+| | 公司層授權 | 部署層授權 |
+|---|---|---|
+| 介面 | `IAuthorizationService.Can(token, modelId, action)` | `IDeploymentAuthorizationService.Can(token, action)` |
+| 問題 | 這位使用者能不能**在公司 C 內**做 X？ | 這位使用者能不能對**整個部署**做 X？ |
+| 身分來源 | 各公司資料庫的 `st_role` / `st_role_grant` / `st_user_role` | common 資料庫的 `st_user.deployment_admin` |
+| 需要公司脈絡 | 需要 —— 沒進公司就無權 | 不需要 —— 依定義本來就沒有 |
+
+> **兩者互不授予。** 部署層管理員**不會因此取得任何公司的資料權限**：讀寫某公司的資料仍走第一部分的動作與列邊界，那兩道閘查的是該公司的角色，對這個旗標一無所知。反過來，公司管理員在部署層也什麼都不是。兩條判定不互相 fallback。
+
+## 11. 部署層授權涵蓋哪些作業
+
+`DeploymentAction` 刻意維持極小，目前只有一個成員：
+
+| 動作 | 受管的作業 |
+|------|-----------|
+| `ManageApiKey` | `SystemBO.CreateApiKey` —— 發放 API 金鑰 |
+
+`CreateApiKey` **只對遠端呼叫**做這道判定。行程內呼叫免管理員 —— 這正是讓全新部署在還沒有任何管理員時，仍能在主機上鑄出第一把金鑰的原因。
+
+判定**每次都查資料庫**，刻意與公司層不對稱（後者從快取回答、完全不碰 DB）。理由：部署層作業低頻，而**撤銷管理員必須即時生效**，任何形式的快取都會帶來延遲。
+
+## 12. 指派管理員
+
+`SystemBO.SetDeploymentAdmin(userId, isDeploymentAdmin)` 是 `st_user.deployment_admin` 的**唯一**寫入路徑，且為 `LocalOnly`：第一位管理員在主機上指派，之後就能由部署端自建的管理介面接手。
+
+「唯一寫入路徑」是 runtime 強制的，不是靠約定：`ProtectedFields` 列有該欄，FormSchema 驅動的寫入路徑（`DataFormRepository.Save`）會把它從所有 INSERT / UPDATE 剔除，**即使表單宣告了它**。少了這道，部署端只要自建一張 `st_user` 維護表單，就等於給了一般使用者自我提權的路。讀取不受影響 —— 表單可以顯示該欄，只是存不進去。
+
+框架不出貨任何 `st_user` 資料列，因此「全新部署要不要預先標一位管理員」由部署端的 seeder 決定；無論如何欄位預設都是「非管理員」。
+
+## 13. 稽核留痕
+
+部署層作業記在變更軸（`st_log_change`），`prog_id` 為 `System`，`source` 標明作業（`System.SetDeploymentAdmin`、`System.CreateApiKey`），操作者一如其他稽核列去正規化寫進 `user_id` / `user_name`。`changes_xml` 帶前後值，因此追蹤得出是**授予**還是**撤銷** —— 兩者同為 `Update`，沒有前後值就分不出來。
+
+兩個值得知道的性質：
+
+- **一律標為敏感**（`is_sensitive`），把日誌篩到只剩重點時仍看得到它們。
+- **不受 `AuditLogOptions.ChangeEnabled` 影響。** 那個開關是給「業務資料歷程量太大」用的；指派管理員既不日常、量也不大。關掉它這些留痕照樣寫入 —— 只有整個關掉 `AuditLogOptions.Enabled` 才會停。
+
+API 金鑰的稽核列記錄金鑰的 id、名稱、類型、聯絡人與到期時間，**絕不**記錄祕密段或其雜湊：日誌資料庫是獨立的儲存體，讀者群通常更廣。
+
+## 14. 既有部署的升級
+
+1. **欄位會自動加上。** `st_user.deployment_admin` 由框架的 schema 升級機制補上（`ALTER … ADD`），既有列取預設值、*不是*管理員。不需手動 DDL。
+2. **除非你覆寫過該表的定義。** 框架 runtime 只從你的 `DefinePath` 讀取表定義。若部署端自帶 `st_user.TableSchema.xml`，必須自行補上該欄 —— 框架內嵌的預設檔不會被參考。（見[框架保留名稱 §3](framework-reserved-names.zh-TW.md#3-消費者命名守則)。）
+3. **在主機上指派第一位管理員**，以行程內呼叫 `SetDeploymentAdmin`。在那之前沒有任何遠端呼叫者鑄得出 API 金鑰，而本機呼叫的行為與升級前完全相同。
 
 ---
 

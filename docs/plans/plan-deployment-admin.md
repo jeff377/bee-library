@@ -1,12 +1,12 @@
 # 計畫：部署層管理員（不綁公司的營運權限）
 
-**狀態：🚧 進行中（2026-08-01）**
+**狀態：✅ 已完成（階段 1–3 全數落地）· 2026-08-03**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 身分來源與判定接縫：`IDeploymentAuthorizationService` ＋ 首位管理員的產生路徑 | ✅ 已完成（2026-08-01） |
 | 2 | 套用至 API Key：`CreateApiKey` 等改由部署層權限把關，遠端管理成立 | ✅ 已完成（2026-08-03） |
-| 3 | 稽核、文件（雙語）與既有部署的升級指引 | 📝 待做 |
+| 3 | 稽核、文件（雙語）與既有部署的升級指引 | ✅ 已完成（2026-08-03） |
 
 > 直接解鎖 [plan-api-key-store.md](plan-api-key-store.md) 的階段 3——該階段的管理表單需要一條
 > 「遠端可用、但不是誰登入都行」的授權路徑，而框架現有的權限模型給不出來。
@@ -220,6 +220,28 @@ bootstrap 路徑會立刻斷在測試上，而不是斷在某個新部署的第�
    **`SetDeploymentAdmin` 本身是提權動作，必須留痕。**
 2. 雙語文件說明部署層管理員的定位，明寫「**部署層管理員不會因此取得任何公司的資料權限**」。
 3. 既有部署的升級指引：加欄自動升級、第一位管理員如何指派。
+
+### 執行結果（2026-08-03）
+
+三項全數達成，`dotnet build Bee.Library.slnx -c Release --no-incremental` 0w/0e、
+`./test.sh` 全綠（新增 5 個測試）。四項實作時才定的決策：
+
+| 項目 | 落地情況 |
+|------|---------|
+| **D8：走既有變更軸，不另開稽核軸** | 部署層作業寫進 `st_log_change`、`prog_id` 為 `SysProgIds.System`、`source` 為 `System.<Action>`。要記的形狀（誰、改了哪張表的哪一列、從什麼變成什麼）**就是**變更軸；另開一張表得再配一套查詢 API 與每個稽核 UI 的位置，才能講同一件事 |
+| **D9：只受 `AuditLogOptions.Enabled` 管，不受 `ChangeEnabled` 管** | 與 `FormBusinessObject` 的資料變更路徑刻意不對稱。`ChangeEnabled` 的存在理由是「業務資料歷程量太大」，而指派管理員既不日常、量也不大。已有測試釘住這條不對稱（關掉 `ChangeEnabled` 仍留痕） |
+| **前後值以 DiffGram 承載** | 授予與撤銷同為 `ChangeKind.Update`，沒有 payload 就分不出方向。新增 `Bee.Business/AuditLog/AuditDiffGram.cs` 合成最小 DataSet 再吐 DiffGram，沿用既有 `ChangeDiffGramReader`，變更明細 API 與其上的 UI 都不必知道這列是哪條路徑產生的。`FormBusinessObject` 原本的私有 `SerializeDiffGram` 一併收斂進來 |
+| **`ResolveAuditIdentity` 上移到 `BusinessObject`** | FormBO 與 SystemBO 都要「從 session 去正規化操作者 / 公司」，且它只用到基底成員。改為 `protected`（`PublicAPI.Unshipped.txt` 純新增，二進位相容） |
+
+已知取捨：`SetDeploymentAdmin` 的稽核列以**被指派者的 `sys_rowid`** 作 `row_key`，其 `sys_id` 只以
+context 欄存在 payload 裡——`ChangeDiffGramReader` 依設計只回報「有差異」的欄，因此
+`GetChangeDetail` 目前看不到它。操作者（`user_id` / `user_name`）不受影響，這正是本階段要求要記的對象。
+`CreateApiKey` 是 Insert、所有欄都會回報，沒有這個問題。
+
+文件落點：`docs/permission-authorization.md` / `.zh-TW.md` 新增**第三部分「部署層管理」**
+（§11 涵蓋範圍、§12 指派與唯一寫入口、§13 稽核、§14 既有部署升級），並在導言與 `docs/README*`
+的索引描述補上指引。升級指引特別寫出「**若部署端自帶 `st_user.TableSchema.xml` 就得自己補欄**」——
+runtime 只讀 `DefinePath`，內嵌預設不會被參考，這是自動升級唯一漏得掉的情況。
 
 ## 風險
 

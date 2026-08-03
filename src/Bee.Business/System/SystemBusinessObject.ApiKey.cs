@@ -1,9 +1,11 @@
 using Bee.Base;
 using Bee.Base.Exceptions;
 using Bee.Base.Security;
+using Bee.Business.AuditLog;
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Definition.Identity;
+using Bee.Definition.Logging;
 using Bee.Definition.Security;
 using Bee.Repository.Abstractions.Factories;
 
@@ -14,6 +16,9 @@ namespace Bee.Business.System
     /// </summary>
     public partial class SystemBusinessObject
     {
+        /// <summary>The common-database table holding issued API keys.</summary>
+        private const string ApiKeyTableName = "st_api_key";
+
         /// <summary>
         /// Issues a new API key and returns the complete plaintext key once.
         /// </summary>
@@ -78,6 +83,26 @@ namespace Bee.Business.System
                 Contact = args.Contact ?? string.Empty,
                 ExpiredAt = args.ExpiredAt,
             });
+
+            if (DeploymentAuditEnabled())
+            {
+                // WARNING: the secret and its hash are absent from this list and must stay absent.
+                // The log database is a separate store with its own (usually wider) readership, and
+                // an audit row that carried the hash would put an offline-crackable credential
+                // somewhere the credential itself never goes.
+                string changes = AuditDiffGram.ForInsert(ApiKeyTableName,
+                [
+                    (SysFields.Id, args.SysId),
+                    (SysFields.Name, args.SysName),
+                    ("key_type", args.KeyType),
+                    ("contact", args.Contact ?? string.Empty),
+                    ("expired_at", args.ExpiredAt),
+                ]);
+                // The key's sys_id stands in for a row id: it is this row's identity, it is not a
+                // secret, and the repository surfaces no row id to record instead.
+                WriteDeploymentAudit(ApiKeyTableName, args.SysId, ChangeKind.Insert, changes,
+                    SystemActions.CreateApiKey);
+            }
 
             return new CreateApiKeyResult
             {

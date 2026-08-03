@@ -45,7 +45,7 @@ How to actually do a thing.
 |----------|------|--------|-------------|
 | [End-to-End Development Cookbook](development-cookbook.md) | Guide | Long | The core development flow from definition to API: initialization order, request pipeline, ExecFunc pattern, cache invalidation |
 | [Expressions and Rules](expression-rules.md) | Guide | Short | Declarative field computation and pre-save / pre-delete validation in FormSchema, instead of hand-written BO code |
-| [Permission & Authorization](permission-authorization.md) | Guide | Medium | The two-layer authorization model (action gate + record scope): PermissionModels, `FormField.ScopeRole`, the role/grant tables, read filtering and authoritative write-side re-query |
+| [Permission & Authorization](permission-authorization.md) | Guide | Medium | The two-layer authorization model (action gate + record scope): PermissionModels, `FormField.ScopeRole`, the role/grant tables, read filtering and authoritative write-side re-query — plus the separate deployment-level axis for installation-wide assets |
 | [JSON-RPC Frontend Integration](jsonrpc-frontend-integration.md) | Guide | Long | Calling the JSON-RPC API from a JavaScript / TypeScript frontend with no .NET on the client: wire format, auth flow, TypeScript wrapper |
 | [DatabaseSettings & DbCategorySettings Guide](database-settings-guide.md) | Guide | Long | Structure, access patterns and runtime behaviour of the two database-related settings files |
 | [Database Schema Upgrade](database-schema-upgrade.md) | Guide | Medium | Synchronising definition changes to a live database: the diff → plan → execute pipeline, ALTER vs rebuild, dry runs |

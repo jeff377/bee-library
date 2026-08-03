@@ -14,6 +14,8 @@ The **Action** dimension applies at *both* points: the back end enforces it at t
 
 Both back-end dimensions run entirely from in-memory snapshots at request time (the database is touched only when loading the caches, at login, on `EnterCompany`, or when configuration changes). Authorization is **orthogonal** to `ApiAccessControlAttribute` (which governs encryption level and whether login is required). See [ADR-019](adr/adr-019-permission-authorization-model.md) for the design rationale.
 
+All three dimensions are **company-scoped**. Assets that belong to the installation rather than to any company — API keys, and whatever a deployment adds later — are governed by a separate, parallel decision described in **Part 3**.
+
 ---
 
 # Part 1 — Back-end enforcement (Action + Record)
@@ -210,6 +212,60 @@ Capability is **inert until wired**, so existing apps are unaffected. To turn it
 3. On `LeaveCompany`, clear it: `ClientInfo.ClearCompanyContext();`.
 
 > **Caveat — the Field dimension is UX, not a data boundary.** `GetList` / `GetData` still return the sensitive column's value; the client merely hides or locks it. A client that bypasses the standard UI could still receive the raw value over the API. Treat field permission as *presentation*. Anything that must never leave the server belongs behind an **Action** or **Record** boundary (Part 1), or its own permission model — not solely a `SensitiveCategory`. Server-side column masking is a separate future concern (see Non-goals).
+
+---
+
+# Part 3 — Deployment-level administration (outside the company model)
+
+Everything above is scoped to a company: roles, grants and the department tree all live in **each company's own database**, and `IAuthorizationService.Can` returns `false` when the session has entered no company.
+
+Some assets belong to the **installation** rather than to any company — an API key identifies a calling *application*, not a tenant. Guarding those with company permissions would mean one tenant's administrator could act for all of them. They are therefore governed by a separate, parallel decision.
+
+| | Company authorization | Deployment authorization |
+|---|---|---|
+| Interface | `IAuthorizationService.Can(token, modelId, action)` | `IDeploymentAuthorizationService.Can(token, action)` |
+| Question | May this user do X **inside company C**? | May this user do X **to the installation**? |
+| Identity source | `st_role` / `st_role_grant` / `st_user_role` in each company database | `st_user.deployment_admin` in the common database |
+| Requires a company | Yes — no company context, no permission | No — by definition there is none |
+
+> **The two never grant each other anything.** A deployment administrator gains **no data rights in any company**: reading or writing a company's records still runs the Action and Record gates of Part 1, which consult that company's roles and know nothing about the flag. A company administrator gains nothing here. Neither check falls back to the other.
+
+## 11. What deployment authorization covers
+
+`DeploymentAction` is a deliberately small enumeration; today it has one member:
+
+| Action | Gated operation |
+|--------|-----------------|
+| `ManageApiKey` | `SystemBO.CreateApiKey` — issuing an API key |
+
+`CreateApiKey` runs the check only for **remote** callers. An in-process call passes without an administrator, which is what keeps a fresh deployment able to mint its first key on the host before any administrator exists.
+
+The check reads the flag from the database **on every call**, deliberately unlike the company path (which answers from cache and touches no database). Deployment operations are rare, and revoking an administrator has to take effect immediately — any cached form of the flag would delay it.
+
+## 12. Appointing an administrator
+
+`SystemBO.SetDeploymentAdmin(userId, isDeploymentAdmin)` is the **only** write path to `st_user.deployment_admin`, and it is `LocalOnly`: the first administrator is appointed on the host, after which appointments can be made through whatever administration surface the deployment builds on top of it.
+
+The framework enforces "only write path" at runtime, not by convention: `ProtectedFields` lists the column, and the FormSchema-driven write path (`DataFormRepository.Save`) strips it from every INSERT and UPDATE **even if a form declares it**. Without that, a deployment that built its own user-maintenance form over `st_user` would have handed its ordinary users a route to promote themselves. Reads are unaffected — a form may display the column, it simply cannot store it.
+
+The framework ships no `st_user` rows, so seeding a first administrator on a brand-new deployment is the deployment's own decision; the column defaults to "not an administrator" either way.
+
+## 13. Audit trail
+
+Deployment operations are recorded on the change axis (`st_log_change`) under the `System` prog id, with `source` naming the operation (`System.SetDeploymentAdmin`, `System.CreateApiKey`) and the acting user denormalised into `user_id` / `user_name` as with any other audit row. The `changes_xml` payload carries before/after values, so the trail distinguishes a **grant** from a **revoke** — both are an `Update` and would otherwise be indistinguishable.
+
+Two properties are worth knowing:
+
+- **Always marked sensitive** (`is_sensitive`), so a log filtered down to what matters still shows them.
+- **Not subject to `AuditLogOptions.ChangeEnabled`.** That switch exists so a deployment can opt out of the volume of ordinary business-data history; appointing an administrator is neither ordinary nor voluminous. Turning it off leaves these entries in place — only turning off `AuditLogOptions.Enabled` entirely stops them.
+
+An API key audit entry records the key's id, name, type, contact and expiry. It **never** records the secret or its hash: the log database is a separate store with its own, usually wider, readership.
+
+## 14. Upgrading an existing deployment
+
+1. **The column arrives automatically.** `st_user.deployment_admin` is added by the framework's schema upgrade (an `ALTER … ADD`); existing rows take the default and are *not* administrators. No manual DDL.
+2. **Unless you have overridden the table's definition.** The framework reads table definitions only from your `DefinePath` at runtime. If your deployment ships its own `st_user.TableSchema.xml`, add the column there — the framework's embedded default is not consulted. (See [Framework-Reserved Names §3](framework-reserved-names.md#3-consumer-guidelines).)
+3. **Appoint the first administrator on the host**, through an in-process call to `SetDeploymentAdmin`. Until then no remote caller can mint an API key, while local calls continue to work exactly as before the upgrade.
 
 ---
 

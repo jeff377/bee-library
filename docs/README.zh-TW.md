@@ -45,7 +45,7 @@
 |------|------|------|------|
 | [端到端開發指引](development-cookbook.zh-TW.md) | 指引 | 長 | 從定義到 API 的核心開發流程：初始化順序、請求管線、ExecFunc 模式、快取失效 |
 | [運算式與規則](expression-rules.zh-TW.md) | 指引 | 短 | 在 FormSchema 以宣告式運算式做欄位運算與存檔/刪除前驗證，取代手寫 BO 程式碼 |
-| [權限與授權指南](permission-authorization.zh-TW.md) | 指引 | 中 | 兩層授權（動作 gate + record scope）的設定與運作：PermissionModels、`FormField.ScopeRole`、roles/grants 三表、讀取過濾與寫入端權威 re-query |
+| [權限與授權指南](permission-authorization.zh-TW.md) | 指引 | 中 | 兩層授權（動作 gate + record scope）的設定與運作：PermissionModels、`FormField.ScopeRole`、roles/grants 三表、讀取過濾與寫入端權威 re-query；另含部署層授權（管的是整個部署的資產，與公司權限互不授予） |
 | [JSON-RPC 前端整合指引](jsonrpc-frontend-integration.zh-TW.md) | 指引 | 長 | 從 JavaScript / TypeScript 前端呼叫 JSON-RPC API（前端無 .NET）：wire format、認證流程、TypeScript wrapper |
 | [DatabaseSettings 與 DbCategorySettings 指引](database-settings-guide.zh-TW.md) | 指引 | 長 | 兩個資料庫相關設定檔的結構、存取方式與運作流程 |
 | [資料庫 Schema 升級](database-schema-upgrade.zh-TW.md) | 指引 | 中 | 將定義變更同步到線上資料庫：diff → plan → execute 管線、ALTER vs 重建、乾跑 |

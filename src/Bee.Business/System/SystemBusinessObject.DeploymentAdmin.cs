@@ -1,7 +1,9 @@
 using Bee.Base;
 using Bee.Base.Exceptions;
+using Bee.Business.AuditLog;
 using Bee.Definition;
 using Bee.Definition.Attributes;
+using Bee.Definition.Logging;
 using Bee.Definition.Security;
 using Bee.Repository.Abstractions.Factories;
 
@@ -13,6 +15,9 @@ namespace Bee.Business.System
     /// </summary>
     public partial class SystemBusinessObject
     {
+        /// <summary>The common-database table holding the administrator flag.</summary>
+        private const string UserTableName = "st_user";
+
         /// <summary>
         /// Grants or revokes a user's deployment administrator flag.
         /// </summary>
@@ -45,9 +50,28 @@ namespace Bee.Business.System
             }
 
             var repository = Services.GetRequiredService<ISystemRepositoryFactory>().CreateUserRepository();
+
+            // Read before writing, and only when the value will actually be recorded: the audit row
+            // has to say which direction this went — grant and revoke are both an Update, so without
+            // the before value the trail cannot tell them apart.
+            bool auditing = DeploymentAuditEnabled();
+            bool before = auditing && repository.IsDeploymentAdmin(args.UserId);
+
             if (!repository.SetDeploymentAdmin(args.UserId, args.IsDeploymentAdmin))
             {
                 throw new UserMessageException($"No user with id '{args.UserId}' exists.");
+            }
+
+            if (auditing)
+            {
+                string rowKey = repository.GetRowIdBySysId(args.UserId).ToString();
+                // The affected user is the row key; the business id rides along as context so the
+                // entry names someone rather than only a row identifier.
+                string changes = AuditDiffGram.ForFieldUpdate(UserTableName, rowKey,
+                    ProtectedFields.DeploymentAdmin, before, args.IsDeploymentAdmin,
+                    [(SysFields.Id, args.UserId)]);
+                WriteDeploymentAudit(UserTableName, rowKey, ChangeKind.Update, changes,
+                    SystemActions.SetDeploymentAdmin);
             }
 
             return new SetDeploymentAdminResult

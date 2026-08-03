@@ -170,6 +170,30 @@ namespace Bee.Business
         }
 
         /// <summary>
+        /// Resolves the denormalised audit identity (who / which company, by id and display name)
+        /// from the current session.
+        /// </summary>
+        /// <returns>The acting user and company, each id paired with its display name.</returns>
+        /// <remarks>
+        /// Log rows are self-sufficient: the log database is physically separate from the common and
+        /// company databases, so a row that stored only ids could not be resolved to names by any
+        /// join. Every audit-writing path therefore denormalises here rather than at read time.
+        /// <para>
+        /// Values are null when there is no session (an in-process call) or no company has been
+        /// entered — both are ordinary states, not failures.
+        /// </para>
+        /// </remarks>
+        protected (string? UserId, string? UserName, string? CompanyId, string? CompanyName) ResolveAuditIdentity()
+        {
+            var session = SessionInfoService.Get(AccessToken);
+            var companyId = session?.CompanyId;
+            string? companyName = null;
+            if (!string.IsNullOrEmpty(companyId))
+                companyName = Services.GetService<ICompanyInfoService>()?.Get(companyId)?.CompanyName;
+            return (session?.UserId, session?.UserName, companyId, companyName);
+        }
+
+        /// <summary>
         /// Executes a custom method; requires authentication.
         /// </summary>
         /// <param name="args">The input arguments.</param>

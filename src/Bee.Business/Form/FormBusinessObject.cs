@@ -1,5 +1,6 @@
 using System.Data;
 using Bee.Base;
+using Bee.Business.AuditLog;
 using Bee.Base.Data;
 using Bee.Definition;
 using Bee.Definition.Attributes;
@@ -247,7 +248,7 @@ namespace Bee.Business.Form
             DoSave(context);
 
             if (auditChange && changes != null)
-                WriteChangeAudit(changeKind, rowKey, SerializeDiffGram(changes), masterTableName, ProgId + ".Save");
+                WriteChangeAudit(changeKind, rowKey, AuditDiffGram.Serialize(changes), masterTableName, ProgId + ".Save");
 
             DoAfterSave(context);
 

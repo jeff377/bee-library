@@ -1,8 +1,7 @@
 using System.Data;
-using System.Globalization;
 using Bee.Base;
+using Bee.Business.AuditLog;
 using Bee.Definition;
-using Bee.Definition.Identity;
 using Bee.Definition.Logging;
 using Bee.Definition.Settings;
 
@@ -47,17 +46,6 @@ namespace Bee.Business.Form
         }
 
         /// <summary>
-        /// Serialises the changed rows to a DataSet DiffGram, which carries both the current and the
-        /// original (before) values. Plain <c>WriteXml</c> would only write current values.
-        /// </summary>
-        private static string SerializeDiffGram(DataSet changes)
-        {
-            using var writer = new StringWriter(CultureInfo.InvariantCulture);
-            changes.WriteXml(writer, XmlWriteMode.DiffGram);
-            return writer.ToString();
-        }
-
-        /// <summary>
         /// Writes the delete audit. When the pre-delete <paramref name="snapshot"/> is available its
         /// rows are marked deleted and serialised as a DiffGram before-image (full deleted content);
         /// otherwise the deleted key alone is recorded.
@@ -73,7 +61,7 @@ namespace Bee.Business.Form
                 MarkAllRowsDeleted(snapshot);
                 using var changes = snapshot.GetChanges();
                 if (changes != null)
-                    xml = SerializeDiffGram(changes);
+                    xml = AuditDiffGram.Serialize(changes);
             }
 
             WriteChangeAudit(ChangeKind.Delete, rowKey, xml, masterTableName, ProgId + ".Delete");
@@ -107,20 +95,6 @@ namespace Bee.Business.Form
 
         private static string MinimalDeleteXml(string masterTableName, string rowKey)
             => $"<DeletedRow table=\"{masterTableName}\" sys_rowid=\"{rowKey}\" />";
-
-        /// <summary>
-        /// Resolves the denormalised audit identity (who / company display values) from the session,
-        /// so log rows stay self-sufficient without joining the user / company tables.
-        /// </summary>
-        private (string? userId, string? userName, string? companyId, string? companyName) ResolveAuditIdentity()
-        {
-            var session = SessionInfoService.Get(AccessToken);
-            var companyId = session?.CompanyId;
-            string? companyName = null;
-            if (!string.IsNullOrEmpty(companyId))
-                companyName = Services.GetService<ICompanyInfoService>()?.Get(companyId)?.CompanyName;
-            return (session?.UserId, session?.UserName, companyId, companyName);
-        }
 
         /// <summary>
         /// Builds a <see cref="ChangeAuditEntry"/> from the session (denormalised who / company) and
