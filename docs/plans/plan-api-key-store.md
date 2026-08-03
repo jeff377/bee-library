@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | `st_api_key` 表 + 兩段式金鑰格式 + 產生金鑰 BO 方法 + `IApiKeyValidator` + 快取與失效，未設定時維持相容 | ✅ 已完成（2026-07-30） |
 | 2 | 呼叫端識別：驗證結果帶入呼叫上下文並落進稽核記錄 | ✅ 已完成（2026-07-30） |
-| 3 | 金鑰管理表單（框架自身 CRUD dogfooding）+ 產生 / 輪替流程與文件 | 📝 待做（2026-08-03 解除受阻） |
+| 3 | 金鑰生命週期的後端能力（列出 / 停用 / 設到期）+ 輪替流程與文件（雙語） | 📝 待做（2026-08-03 解除受阻並重新定範圍） |
 | 4 | 用戶端存放：脫離原始碼 hardcode，samples / Northwind 遷移 | ✅ 已完成（2026-07-30） |
 
 ## 背景
@@ -415,12 +415,12 @@ build 0w/0e、`./test.sh` 全綠（新增 7 個測試）。與計畫的差異：
 | 既有部署的升級 | 兩個欄位皆 nullable，落在框架自動 schema 升級（ALTER ADD）的範圍內，不需手動 DDL |
 | ADR-027 D4 補記 | 去正規化 who / company 的同一決策現含呼叫端應用，已在 ADR 內註明日期與理由 |
 
-## 階段 3：金鑰管理與輪替
+## 階段 3：金鑰生命週期與輪替
 
 > **✅ 受阻已解除（2026-08-03）**：[plan-deployment-admin.md](plan-deployment-admin.md) 的階段 2
 > 已落地——`CreateApiKey` 從 `LocalOnly` 放寬為 `Encrypted`，遠端呼叫改由
 > `IDeploymentAuthorizationService.Can(token, ManageApiKey)` 把關，本機呼叫維持直通以保住
-> bootstrap 路徑。停用 / 列出等本階段要新增的方法比照同一分流。
+> bootstrap 路徑。本階段新增的方法比照同一分流。
 >
 > <details><summary>原受阻紀錄（2026-07-30）</summary>
 >
@@ -430,20 +430,61 @@ build 0w/0e、`./test.sh` 全綠（新增 7 個測試）。與計畫的差異：
 > 各公司的資料庫——用公司層權限守部署層資產，等於讓 A 公司的管理員能鑄出整個部署通用的金鑰。
 >
 > </details>
->
-> **另一項待修正**：下方第 1 點寫「以框架自身的 FormSchema CRUD 做管理表單」，但**新增這一格
-> 泛用 Insert 撐不住**——Insert 是「客戶端送什麼就存什麼」，而金鑰必須由伺服器產生、雜湊存放、
-> 明文只回傳一次。dogfooding 實際涵蓋的是停用 / 設到期 / 刪除 / 檢視，新增須綁階段 1 已交付的
-> `CreateApiKey` BO 方法（`SystemApiConnector.CreateApiKeyAsync` 用戶端側已備妥）。
 
-1. 以**框架自身的 FormSchema CRUD** 做管理表單（dogfooding，不需為此擴充 DefineEditor）：
-   新增（顯示一次完整金鑰並提示不再顯示）、停用、設到期、刪除。
-2. 產生動作沿用階段 1 已交付的 BO 方法，不由前端組金鑰。
-3. 輪替流程文件：發第二把 → 用戶端逐步換 → 停用舊把 → 確認無流量後刪除。
-4. 文件（雙語）：API Key 的定位（應用識別 ≠ 使用者鑑別）、發放與輪替流程、第三方介接指引；
-   `framework-reserved-names.md` 補 `st_api_key`。
+### 範圍重訂（2026-08-03）
 
-**驗收**：不寫任何程式碼即可完成「發一組給第三方」與一次完整輪替。
+原範圍是「以框架自身的 FormSchema CRUD 做管理表單（dogfooding）」。**該前提已被階段 2 的
+結論推翻**，改為「後端能力 + 文件」，管理介面移出本 plan。
+
+#### D10：不走 FormSchema CRUD（定案）
+
+泛用 Form 路徑上**沒有位置掛部署層授權**——把關者 `IDeploymentAuthorizationService` 只接在
+`SystemBO`。[FormBusinessObject.Authorize](../../src/Bee.Business/Form/FormBusinessObject.Permission.cs)
+的兩條路都是死的：
+
+| FormSchema 怎麼標 | 結果 |
+|------------------|------|
+| 不標 `PermissionModelId` | 未標即 `return`，**任何已登入使用者**都能列出 / 停用整個部署的金鑰 |
+| 標了 `PermissionModelId` | `IAuthorizationService.Can` 無公司脈絡即回 `false`，且角色存在各公司的資料庫——正是本 plan 與 deployment-admin 都在否定的那條路 |
+
+要在 Form 路徑掛部署層旁路，等於把兩條刻意分開的判定又縫回去。加上原註記的「泛用 Insert
+撐不住」（金鑰必須伺服器產生、雜湊存放、明文只回一次），以及 `hashed_key` 只要被列進
+FormSchema 就會經 `GetList` 送到前端（讀取端沒有 `ProtectedFields` 那種機制）——三項獨立理由
+指向同一結論。
+
+#### D11：不做刪除，停用即撤銷（定案）
+
+停用即時撤銷、到期可排程，兩者都保留 `st_api_key` 的歷史列。**刪除會讓「這把金鑰曾經存在」
+從資料庫消失，而稽核裡的 `api_key_id` 從此對不到任何列**——階段 2 才剛把呼叫端識別落進四張
+稽核表，刪除會反過來砍掉它的解釋能力。需要清理時由部署端自行下 SQL，框架不提供這條路。
+
+#### D12：撤銷必須即時生效（定案）
+
+`ApiKeyCache` 是 60 分鐘絕對過期且有負快取，目前**沒有任何 `Touch`**。停用若不主動失效快取，
+最壞情況下被撤銷的金鑰仍可通行近一小時。與 deployment-admin 的 D5（撤銷不該吃快取延遲）同一
+原則，故停用 / 啟用 / 設到期一律失效 `ApiKeyCache`；停用最後一把還會改變閘門狀態，
+`ApiKeyGateCache` 一併失效。
+
+### 步驟
+
+1. **`IApiKeyRepository` 補生命週期方法**：`GetList`（不含雜湊的摘要）、`SetEnabled`、`SetExpiry`。
+   寫入後失效 `ApiKeyCache` 與 `ApiKeyGateCache`（D12）。
+2. **對應的 SystemBO 方法**，照 `bee-add-bo-method` 的跨層樣板走（`SystemActions` 常數 →
+   contract → wire 型別 → BO → connector），把關比照 `CreateApiKey`：`IsLocalCall` 直通、
+   遠端要 `Can(token, ManageApiKey)`。全部經 `WriteDeploymentAudit` 留痕
+   （deployment-admin 階段 3 已備妥）。
+3. **列出用的摘要型別不得帶 `HashedKey`**——`ApiKeyInfo` 是 cache 的載體、帶雜湊，不可直接上
+   wire。另立摘要型別。
+4. **文件（雙語）**：API Key 的定位（應用識別 ≠ 使用者鑑別）、發放與輪替流程
+   （發第二把 → 用戶端逐步換 → 停用舊把）、第三方介接指引。
+   `framework-reserved-names.md` 的 `st_api_key` 一列已存在，確認描述與現況一致即可。
+
+**驗收**：可在不直接下 SQL 的前提下完成一次完整輪替（發第二把 → 換過去 → 停用舊把），
+且停用後的金鑰**立即**被拒；被拒與被撤銷的動作都查得到稽核。
+
+> **管理介面移出本 plan**：落點（`dotnet bee apikey …` vs DefineEditor 分頁）記在
+> `docs/repo-ops/future-work.md` 的「部署期作業工具」一案，與 `SetDeploymentAdmin` 的入口
+> 同時決定——那個工具本來就要服務兩者，綁進本 plan 會讓更大的落點決定被單一 feature 綁架。
 
 ## 階段 4：用戶端存放
 
