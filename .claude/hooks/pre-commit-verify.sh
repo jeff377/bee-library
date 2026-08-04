@@ -26,7 +26,26 @@ payload=$(cat 2>/dev/null) || exit 0
 # costs one build and nothing else.
 printf '%s' "$payload" | grep -Eq '(^|[;&|"[:space:]])git[[:space:]]+commit' || exit 0
 
-repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+# The hook process starts in the Claude Code project directory, not in the directory the
+# intercepted command will run in. Resolving the repository from the hook's own cwd
+# therefore always landed on *this* repository, so a command like
+# `cd ../other-repo && git commit ...` built this solution and blocked a commit this hook
+# has no say over. Recover the intended directory from the last `cd` in the command.
+target_dir=$PWD
+cd_arg=$(printf '%s' "$payload" \
+    | grep -oE '(^|[;&|"[:space:]])cd[[:space:]]+[^[:space:];&|"]+' \
+    | tail -1 \
+    | sed -E 's/^(.*[^[:alnum:]_])?cd[[:space:]]+//' 2>/dev/null)
+if [ -n "$cd_arg" ]; then
+    # The payload carries the command text verbatim, so a leading ~ is still literal.
+    case "$cd_arg" in
+        "~") cd_arg=$HOME ;;
+        "~/"*) cd_arg="$HOME/${cd_arg#\~/}" ;;
+    esac
+    [ -d "$cd_arg" ] && target_dir=$cd_arg
+fi
+
+repo_root=$(git -C "$target_dir" rev-parse --show-toplevel 2>/dev/null) || exit 0
 cd "$repo_root" 2>/dev/null || exit 0
 
 # Guards the case where the agent is committing in some other repository — the plugin

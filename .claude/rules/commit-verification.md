@@ -33,6 +33,23 @@ agent 無法略過。以下兩種失誤都屬於「agent 沒有自覺去檢查�
 
 驗證 hook 卡死整個 repo，比偶爾漏檢更糟。
 
+### 「其他 repo」這條如何判定（2026-08-04 修正）
+
+hook 行程的 cwd 是 Claude Code 的 **專案目錄**，不是被攔截指令實際執行的目錄。
+原本以 `git rev-parse --show-toplevel` 從 hook 自己的 cwd 解析 repo，**永遠解到本 repo**——
+於是 `cd <其他 repo> && git commit ...` 也會被拿來建置本 repo 的方案並阻擋，
+而上面那條 fail-open 完全沒有生效。實際踩到兩次：在 `claude-plugins` 提交 plugin 改動時被擋，
+理由卻是 bee-library 建置失敗。
+
+現在改為**從指令文字中最後一個 `cd` 推導目標目錄**，再以該目錄解析 repo root：
+
+- 支援 `~` 開頭（payload 內是未展開的字面值）與絕對路徑
+- 指令無 `cd` → 沿用 hook 的 cwd（本 repo，行為不變）
+- `cd` 的目標不存在 → 退回本 repo（保守，寧可多建一次）
+- 詞界判定避免 `abcd` 這類字串誤觸
+
+判別法：**這次 commit 的目標 repo 是不是 bee-library？** 不是就該完全放行。
+
 ## 涵蓋範圍與限制
 
 **只攔截 agent 透過 Bash 工具發出的 `git commit`。** 使用者在自己的終端機直接 commit
