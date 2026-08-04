@@ -1,12 +1,12 @@
 # 計畫：ProgramSettings 型別註冊表化與 Repository 取得機制統一
 
-**狀態：📝 擬定中（2026-08-04）**
+**狀態：🚧 進行中（2026-08-04）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | `ProgramSettings` 定位收斂：選單分離為獨立定義，註冊表只留 progId → 型別綁定 | 📝 待做 |
-| 2 | BO 型別解析全面 ProgId 化（`ProgId` 上移基底、`IBoTypeResolver`、保留字 progId 的啟動自我註冊） | 📝 待做 |
-| 3 | `IRepositoryFactory` 介面定案，三個既有工廠合併（含 DI 註冊與 `BackendComponents` 契約調整） | 📝 待做 |
+| 1 | `ProgramSettings` 定位收斂：選單分離為獨立定義，註冊表只留 progId → 型別綁定 | ✅ 已完成（2026-08-04） |
+| 2 | BO 型別解析全面 ProgId 化（`ProgId` 上移基底、`IBoTypeResolver`、保留字 progId 的啟動自我註冊） | ✅ 已完成（2026-08-04） |
+| 3 | `IRepositoryFactory` 介面定案，三個既有工廠合併（含 DI 註冊與 `BackendComponents` 契約調整） | ✅ 已完成（2026-08-04） |
 | 4 | 消費端遷移至新工廠，移除 `ISystemRepositoryFactory` / `IFormRepositoryFactory` / `IAuditLogRepositoryFactory` | 📝 待做 |
 | 5 | `ProgramItem.Repository` 屬性、解析鏈與 fail-fast 建構 | 📝 待做 |
 | 6 | 專屬 Repository 介面樣式落地與文件同步 | 📝 待做 |
@@ -263,6 +263,46 @@ public interface IRepositoryFactory
 **無。** 設計已全數定案，四份設計說明分別為：
 〈附錄：選單定義檔設計〉、〈附錄：`IRepositoryContext` 設計〉、
 〈保留字 progId 的解析防護〉、〈自我註冊的執行時機與寫檔邊界〉。
+
+## 落地紀錄：與本文件不同之處
+
+實作過程中與上文敘述有出入的決定，記於此處而非改寫原文——原文是當初的判斷，這裡是實際做法。
+行為與定案一致，差異都在機制或範圍。
+
+### 階段 1
+
+| 事項 | 本文件 | 實際 |
+|------|--------|------|
+| 既有型別 | 未提及 | `Bee.Definition.Settings` 已有一組死碼 `MenuSettings` / `MenuFolder` / `MenuItem` 族（45 條 `PublicAPI.Shipped`、無 `DefineType`、無 storage、production 零消費者）。`MenuSettings` / `MenuFolder` 名稱直接衝突，兩套無法並存，故整組取代。附錄以「避開 UI 框架撞名」為由選 `MenuEntry`，但 `MenuItem` 本就在同一 namespace |
+| 選單的租戶 overlay | 未指明由誰解析 | server 端於 `GetDefineCore` 以 session 的 customizeId 解析後回傳結果，client 只拿一份。附錄指定的 client API 是 `ClientDefineAccess.GetMenuSettingsAsync()`（`GetDefine` 路徑），該路徑沒有第二層的位置 |
+| `MenuEntry.ProgId` 參照完整性 | 「載入期或 CLI 檢查」 | 只在設計期工具（DefineEditor 與 `Validate(registry)` 多載）。storage 讀選單時手上沒有註冊表，載入期檢查會製造載入順序相依 |
+
+### 階段 2
+
+| 事項 | 本文件 | 實際 |
+|------|--------|------|
+| 「記憶體優先」的落地方式 | 「補寫結果必須參與解析」，未指明機制 | 由 resolver 實作「保留字**缺項** → 框架預設型別」。不可改 mutate cache 內的 `ProgramSettings`（[development-constraints.md](../development-constraints.md) 的 Definition Data Immutability After Init），這是唯一相容的作法。**與被否決的方案 C 不同**：C 是解析**失敗**時退回，此處失敗（型別載不到／基底不符）一律拋，只有「註冊表根本沒提到」才用預設 |
+| 自訂 `IBoTypeResolver` | 未提及 | 未處理保留字的自訂 resolver 會被啟動期驗證擋下（QuickStart sample 已同步）。這是設計預期，但構成新的實作義務 |
+
+### 階段 3
+
+| 事項 | 本文件 | 實際 |
+|------|--------|------|
+| `IRepositoryContext` 位置 | `namespace Bee.Repository.Abstractions` | 改放 `Bee.Repository`。Abstractions 只 reference `Bee.Definition`，而該介面成員都是 `Bee.Db` 型別；放 Abstractions 會把 `Bee.Db` 拉進只 reference Abstractions 的 `Bee.Business` 與 `Bee.ObjectCaching`。消費端只需 `IRepositoryFactory`，它仍在 Abstractions |
+| `RepositoryBase.Scope` | `protected abstract DbScope Scope` | 改為建構函式參數且可為 `null`（表示「本身沒有資料庫，每個方法各自指定」）。非 virtual 屬性是為了避免建構期呼叫可覆寫成員（CA2214） |
+| per-company Repository 的範圍 | 只點名 `EmployeeContextResolver` 需保留呼叫端指定 databaseId | `RolePermissionRepository` / `DepartmentRepository` / `EmployeeRepository` 的**全部**呼叫端只有 `CacheDataSourceProvider` 與 `EmployeeContextResolver`，**兩者都沒有 accessToken**（前者是以 companyId 為鍵的 cache 回填）。改 token 驅動會讀成「呼叫者的公司」而非「被指定的公司」，是行為錯誤而非不便 |
+| `Bee.Repository` 相依 | 未提及 | 新增 `Microsoft.Extensions.DependencyInjection.Abstractions`（僅為 `ActivatorUtilities`，不含容器實作） |
+
+### 交接時列出的待驗證項目：驗證結果
+
+| # | 項目 | 結果 |
+|---|------|------|
+| 1 | 多型 XML 在 `KeyCollectionBase` 上的行為 | ✅ 逐子型別 `[XmlArrayItem(typeof(T))]` 產生各自元素名、無 `xsi:type`，三層巢狀 round-trip 通過。集合基底不影響此行為 |
+| 2 | `ActivatorUtilities` 對衍生型別的注入 | ✅ 框架參數依**型別**而非位置繫結，額外的介面型別 DI 相依可正確注入，參數順序不同亦可。⚠️ **衍生型別不得再宣告第二個 `string` 或 `Guid` 參數**——同型別已被引數佔用，容器會被要求解析 `string` 而失敗 |
+| 3 | 三個 per-company Repository 的等價性 | ⚠️ 範圍比預期大，見上表 |
+| 4 | 原子 rename 的跨平台行為 | ✅ `File.Move` 三參數多載 Unix 走 `rename(2)`、Windows 走 `MoveFileEx(MOVEFILE_REPLACE_EXISTING)`，同 volume 內原子取代；**兩參數多載會擲例外而非取代**。Windows 上目的檔被他行程開啟且未共享刪除時 rename 會失敗，故寫入失敗一律降級為 warning（Windows 行為依 API 契約推導，未實機驗證） |
+| 5 | `IHostedService` 啟動順序 | ✅ repo 未設 `HostOptions.ServicesStartConcurrently`（預設 `false`），依註冊順序循序啟動；自我註冊已排在 `CacheNotifyPoller` 之前 |
+| 6 | `ProgramSettingsCache` 是否可能提前載入 | ✅ 全 repo 僅 `ProgramSettingsBoTypeResolver.Resolve` 會讀，且無人在建構期解析 resolver 或工廠，故 `StartAsync` 之前 cache 必為冷 |
 
 ## 自我註冊的執行時機與寫檔邊界（已定案）
 
