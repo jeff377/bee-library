@@ -26,7 +26,6 @@ using Bee.Repository;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
-using Bee.Repository.AuditLog;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.Hosting
@@ -175,7 +174,12 @@ namespace Bee.Hosting
             services.AddSingleton(configuration.AuditLogOptions);
             if (configuration.AuditLogOptions.Enabled)
             {
-                services.AddSingleton<IAuditLogWriteRepository, AuditLogWriteRepository>();
+                // Built through the factory, not by the container: every repository now takes
+                // (IRepositoryContext, Guid, string), and the container can supply none of those
+                // three. Registering the concrete type directly would resolve at first use, not
+                // at registration — and only in a host that has audit logging on.
+                services.AddSingleton<IAuditLogWriteRepository>(sp =>
+                    sp.GetRequiredService<IRepositoryFactory>().Create<IAuditLogWriteRepository>());
                 services.AddSingleton<IAuditLogSink, AuditLogDbSink>();
                 if (configuration.AuditLogOptions.UseBackgroundWriter)
                 {

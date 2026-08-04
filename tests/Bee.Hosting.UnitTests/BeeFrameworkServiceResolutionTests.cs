@@ -4,14 +4,18 @@ using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Definition;
 using Bee.Definition.Identity;
+using Bee.Definition.Logging;
 using Bee.Definition.Organization;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Bee.ObjectCaching;
 using Bee.Repository.Abstractions;
+using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Bee.Hosting.UnitTests
 {
@@ -21,6 +25,40 @@ namespace Bee.Hosting.UnitTests
     /// </summary>
     public class BeeFrameworkServiceResolutionTests
     {
+        [Fact]
+        [DisplayName("啟用稽核記錄時 IAuditLogWriteRepository 應可解析")]
+        public void AddBeeFramework_AuditLogEnabled_ResolvesWriteRepository()
+        {
+            // 這條註冊只在 AuditLogOptions.Enabled 時存在，預設關閉，因此其他測試碰不到它。
+            // Repository 統一為 (IRepositoryContext, Guid, string) 之後，容器無法自行建構
+            // 具體型別（三個參數都拿不到），只有經工廠才建得起來。
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-fw-audit-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var configuration = new BackendConfiguration();
+                configuration.AuditLogOptions.Enabled = true;
+                configuration.AuditLogOptions.UseBackgroundWriter = false;
+
+                var services = new ServiceCollection();
+                // 稽核鏈上的 sink 需要 ILogger；正式 host 一定有，裸 ServiceCollection 沒有。
+                services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+                services.AddBeeFramework(
+                    configuration,
+                    new PathOptions { DefinePath = tempDir },
+                    autoCreateMasterKey: true);
+
+                using var sp = services.BuildServiceProvider();
+
+                Assert.NotNull(sp.GetRequiredService<IAuditLogWriteRepository>());
+                Assert.NotNull(sp.GetRequiredService<IAuditLogWriter>());
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { /* best effort */ }
+            }
+        }
+
         [Fact]
         [DisplayName("AddBeeFramework 預設組態應能解析完整 DI 服務鏈（IDbConnectionManager 至 JsonRpcExecutor）")]
         public void AddBeeFramework_DefaultConfig_ResolvesFullServiceChain()
