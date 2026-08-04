@@ -147,12 +147,14 @@ Northwind 是正規化的關聯式 schema；bee 是 `sys_rowid`（Guid）關連�
 | 新增／修改／刪除分派 | **框架** | `FormBusinessObject` + repository |
 | Lookup 對話框、外鍵寫回、JOIN 重載 | **定義 + 框架** | 關連欄位 + `RelationFieldMappings`；框架 `GetLookup` |
 | Master-detail 整筆一次儲存 | **框架** | repository，由多表 `FormSchema` 驅動 |
-| progId 對業務物件的綁定 | **定義** | `ProgramSettings.xml`（型別註冊表） |
+| progId 對業務物件與 Repository 的綁定 | **定義** | `ProgramSettings.xml`（型別註冊表） |
 | 導航選單（分組表單清單） | **定義** | `MenuSettings.xml` |
 | 登入／工作階段／加密 | **框架** | `SystemBusinessObject`、API 管線 |
 | **單據編號、狀態轉移、驗證、金額** | **應用程式碼** | `OrderBO`（全應用唯一的業務邏輯） |
 
 唯一的 C# 業務物件 [`OrderBO`](Bee.Northwind.Server/BusinessObjects/OrderBO.cs) 覆寫 `Save` / `GetNewData`，補上一般表單無法表達的規則。其純規則拆到 [`OrderRules`](Bee.Northwind.Server/BusinessObjects/OrderRules.cs) 與 [`OrderDataSet`](Bee.Northwind.Server/BusinessObjects/OrderDataSet.cs)，不依賴資料庫、與協調流程分離。
+
+它的兩個資料庫查詢放在 [`IOrderRepository`](Bee.Northwind.Server/Repositories/IOrderRepository.cs) / [`OrderRepository`](Bee.Northwind.Server/Repositories/OrderRepository.cs)，與業務物件綁在**同一筆**註冊表項目上 —— 一支程式、一個業務物件、一個 Repository。這是「表單需要產生式 CRUD 以外的資料存取」時的樣式範本：**擴充** `IDataFormRepository` 而非取代它、衍生自 `DataFormRepository`，BO 端以介面取得（`CreateFormRepository<IOrderRepository>()`）。把 SQL 移出業務物件，也正是這兩個查詢得以路由到訂單自己的公司資料庫、而非業務物件當初隨手指名那個資料庫的原因。
 
 ## 終章：三十分鐘加一張 Region 表單，零程式碼
 
@@ -219,7 +221,7 @@ Region 是業務資料,所以放在 **company** 分類(`TableSchema/company/`),�
 <ProgramItem ProgId="Region" DisplayName="Regions" />
 ```
 
-`ProgramSettings.xml` 是型別註冊表：把 progId 對應到綁定於它的型別。（沒有 `BusinessObject` 屬性，代表使用框架預設 CRUD。）
+`ProgramSettings.xml` 是型別註冊表：把 progId 對應到綁定於它的型別 —— 一個商業物件與一個 Repository。（兩個屬性都沒有，代表使用框架預設 CRUD；本專案除 `Order` 外皆是如此。）
 
 ### 5. 放上選單 —— 加到 `Define/MenuSettings.xml`
 
@@ -242,7 +244,7 @@ apps/Bee.Northwind/
 │   ├── TableSchema/company/      業務表（company/ + common/ 放框架表）
 │   ├── DatabaseSettings.xml      common + company 兩個資料庫
 │   ├── DbCategorySettings.xml    各分類有哪些表（驅動建表）
-│   ├── ProgramSettings.xml       型別註冊表（progId 對業務物件）
+│   ├── ProgramSettings.xml       型別註冊表（progId 對業務物件 + Repository）
 │   └── MenuSettings.xml          導航選單（資料夾、排序、標題）
 ├── Bee.Northwind.Server/         JSON-RPC 後端、OrderBO、JSON 種子資料
 ├── Bee.Northwind.UI/             Avalonia 共用 UI（views、view models、導航）

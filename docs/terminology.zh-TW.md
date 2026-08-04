@@ -262,7 +262,7 @@
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `DefineType` | 定義資料類別 | `SystemSettings`、`DatabaseSettings`、`DbCategorySettings`、`ProgramSettings`、`TableSchema`、`FormSchema`、`FormLayout`、`Language` 共 8 個值 |
+| `DefineType` | 定義資料類別 | `SystemSettings`、`DatabaseSettings`、`DbCategorySettings`、`ProgramSettings`、`MenuSettings`、`TableSchema`、`FormSchema`、`FormLayout`、`Language`、`PermissionModels`、`CurrencySettings`、`UnitSettings` 共 12 個值 |
 
 ### 資料庫
 
@@ -298,7 +298,8 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 | `SystemSettings.xml` | 系統設定檔 | 全域系統參數 |
 | `DatabaseSettings.xml` | 資料庫連線設定檔 | 資料庫連線字串與類型 |
 | `DbCategorySettings.xml` | 資料庫類別設定檔 | 所有邏輯資料庫類別與其包含的資料表清單 |
-| `ProgramSettings.xml` | 程式設定檔 | 功能程式的參數設定；每個 `ProgramItem` 可選擇性宣告 `BusinessObject` 綁定特定 `FormBusinessObject` 子類別，未填則 fallback 回框架預設 |
+| `ProgramSettings.xml` | 型別註冊表 | 每個 progId 一筆攤平項目，對映到綁定其上的型別。`BusinessObject` 綁定 `FormBusinessObject` 子類（留空回退框架預設）；`Repository` 綁定 `DataFormRepository` 子類（留空同樣回退，但型別名載不到是直接拋而非降級）。**不含任何 per-program 參數，也不含選單** —— 選單見 `MenuSettings.xml`。僅供 server 端 |
+| `MenuSettings.xml` | 選單定義檔 | 導覽選單：巢狀的 `MenuFolder` / `MenuEntry` 節點，帶標題、排序與可見性。每個 `MenuEntry` 指向一個註冊於 `ProgramSettings.xml` 的 progId；`Id` 是節點的鍵且全樹唯一 |
 | `ClientSettings.xml` | 用戶端設定檔 | 前端 / 用戶端的行為設定 |
 | `FormSchema.xml` | 表單結構定義檔 | 各功能程式的 FormSchema 序列化檔 |
 | `FormLayout.xml` | 表單版面配置檔 | 各功能程式的 FormLayout 序列化檔 |

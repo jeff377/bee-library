@@ -42,7 +42,7 @@
 ### Tenant Customization Overlay
 
 - `ICacheContainerProvider` / `CacheContainerProvider` -- lazily builds a per-`CustomizeId` read-only override cache container (`CachePrefix=customizeId`, backed by `CustomizeOnlyStorage`), reusing the existing cache classes unchanged
-- `CustomizeDefineReader` -- `ICustomizeDefineReader` implementation that reads Language / FormLayout / ProgramSettings from the per-tenant override containers; a missing override returns `null` (see [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md))
+- `CustomizeDefineReader` -- `ICustomizeDefineReader` implementation that reads Language / FormLayout / ProgramSettings / MenuSettings from the per-tenant override containers; a missing override returns `null` (see [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md))
 
 ## Key Public APIs
 

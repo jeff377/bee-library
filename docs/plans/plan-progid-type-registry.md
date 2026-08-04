@@ -1,6 +1,6 @@
 # 計畫：ProgramSettings 型別註冊表化與 Repository 取得機制統一
 
-**狀態：🚧 進行中（2026-08-04）**
+**狀態：✅ 已完成（2026-08-04）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -9,7 +9,7 @@
 | 3 | `IRepositoryFactory` 介面定案，三個既有工廠合併（含 DI 註冊與 `BackendComponents` 契約調整） | ✅ 已完成（2026-08-04） |
 | 4 | 消費端遷移至新工廠，移除 `ISystemRepositoryFactory` / `IFormRepositoryFactory` / `IAuditLogRepositoryFactory` | ✅ 已完成（2026-08-04） |
 | 5 | `ProgramItem.Repository` 屬性、解析鏈與 fail-fast 建構 | ✅ 已完成（2026-08-04） |
-| 6 | 專屬 Repository 介面樣式落地與文件同步 | 📝 待做 |
+| 6 | 專屬 Repository 介面樣式落地與文件同步 | ✅ 已完成（2026-08-04） |
 
 ## 設計淵源
 
@@ -313,6 +313,16 @@ public interface IRepositoryFactory
 | 選用參數的靜默風險 | 未提及 | `ActivatorUtilities` 若沒填這兩個參數，結果是**靜默停用租戶客製**且無其他症狀。已在 `BeeFrameworkServiceResolutionTests` 補一條以反射檢查欄位的接線測試——行為上驗不出來，只能直接看欄位 |
 | `ReservedProgIdRegistrationService` 的連帶修正 | 未提及 | 自我註冊補寫時會**整份重寫**註冊表，其複製迴圈原本只帶 `BusinessObject`，新屬性會被靜默抹除（且只發生在「剛好缺保留字」的 host 上，罕見難歸因）。已補複製與 `WARNING` 註解，並加測試守住 |
 | DefineEditor | 未提及 | `ProgramSettingsDocumentViewModel` 的節點明細補上 `Repository` 一行 |
+
+### 階段 6
+
+| 事項 | 本文件 | 實際 |
+|------|--------|------|
+| 樣式範本的落點 | 「於 `apps/Bee.Northwind` 落地一個 `IOrderRepository : IDataFormRepository` 的實例」 | 照做，並順帶修掉一個既有的路由不一致：`OrderBO` 原本以 `ResolveDatabaseId(DbScope.Common)` 對 `ft_order` 下原生 SQL，但 `Order.FormSchema` 是 **company** scope——company 表走 common 路由。demo 之所以沒出事，只因兩個 category 都指向同一個 SQLite 檔。搬進 `OrderRepository` 後由 `RepositoryBase` 依 schema 的 `CategoryId` 路由，語意才正確 |
+| `BusinessObject` 的泛型便利方法 | 未列於階段 6 條目，但〈目標形狀〉載明「泛型回傳讓自訂 BO 直接取得 `IOrderRepository`，免 cast」 | 新增 `CreateFormRepository<T>()` 與 `CreateFormRepository<T>(progId)` 兩個 protected 方法，讓該目標真正成立（否則範本得自行 `Services.GetRequiredService<IRepositoryFactory>()`）。既有的 `CreateDataFormRepository(progId)` 改為委派給後者 |
+| 文件範圍 | 只點名 `definition-files-overview`（雙語）與 `terminology.zh-TW` | 實際 13 檔。除上述外，另修階段 1–2 遺留的漂移：`development-cookbook`（雙語，resolver 舊名 `ProgramSettingsFormBoTypeResolver`、「驗證繼承自 `FormBusinessObject`」已放寬為 `BusinessObject`、缺保留字的嚴格策略、缺 `Repository` 綁定一節）、`architecture-overview`（雙語，客製 overlay 少列 `MenuSettings`）、`Bee.Definition` / `Bee.ObjectCaching` 的 README（雙語，同上＋「`ProgramSettings` 兼任註冊表」的舊定位）、`adr-025`（舉例用的 `ProgramCategoryCollection` 已不存在）、`Bee.Northwind` README（雙語） |
+| `terminology` 的 `DefineType` | 未提及 | 兩份都寫「共 8 個值」，實際已是 12 個（`MenuSettings` / `PermissionModels` / `CurrencySettings` / `UnitSettings` 陸續加入未同步）。一併更正 |
+| ADR 編號 | 未指定 | `adr-034-progid-type-registry.md`，三個決策合為一份（型別註冊表含 COM+ 淵源、選單分離、1:1 規則只適用表單軌），已登錄 `docs/adr/README.md` |
 
 ### 交接時列出的待驗證項目：驗證結果
 

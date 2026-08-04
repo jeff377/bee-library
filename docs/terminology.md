@@ -264,7 +264,7 @@ See [Temporal Types](temporal-types.md) for the cross-layer reference, and
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `DefineType` | 定義資料類別 | `SystemSettings`, `DatabaseSettings`, `DbCategorySettings`, `ProgramSettings`, `TableSchema`, `FormSchema`, `FormLayout`, `Language` — 8 values total |
+| `DefineType` | 定義資料類別 | `SystemSettings`, `DatabaseSettings`, `DbCategorySettings`, `ProgramSettings`, `MenuSettings`, `TableSchema`, `FormSchema`, `FormLayout`, `Language`, `PermissionModels`, `CurrencySettings`, `UnitSettings` — 12 values total |
 
 ### Database
 
@@ -300,7 +300,8 @@ The BeeNET framework automatically maintains the following system fields in all 
 | `SystemSettings.xml` | 系統設定檔 | Global system parameters |
 | `DatabaseSettings.xml` | 資料庫連線設定檔 | Database connection strings and types |
 | `DbCategorySettings.xml` | 資料庫類別設定檔 | All logical database categories and the tables they contain |
-| `ProgramSettings.xml` | 程式設定檔 | Parameters for functional programs. Each `ProgramItem` optionally declares `BusinessObject` to bind a specific `FormBusinessObject` subclass; empty falls back to the framework default |
+| `ProgramSettings.xml` | 型別註冊表 | One flat entry per progId, mapping it to the types bound to it. `BusinessObject` binds a `FormBusinessObject` subclass (empty falls back to the framework default); `Repository` binds a `DataFormRepository` subclass (empty falls back likewise, but a name that will not load throws instead of degrading). Holds no per-program parameters, and no menu — see `MenuSettings.xml`. Server-side only |
+| `MenuSettings.xml` | 選單定義檔 | The navigation menu: nested `MenuFolder` / `MenuEntry` nodes carrying caption, order and visibility. Each `MenuEntry` points at a progId registered in `ProgramSettings.xml`; `Id` is the node key and is unique across the whole tree |
 | `ClientSettings.xml` | 用戶端設定檔 | Front-end / client behavior settings |
 | `FormSchema.xml` | 表單結構定義檔 | Serialized FormSchema files for each functional program |
 | `FormLayout.xml` | 表單版面配置檔 | Serialized FormLayout files for each functional program |

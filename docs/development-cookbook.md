@@ -332,9 +332,47 @@ public class CustomerBo : FormBusinessObject
 
 #### 3. Resolution behaviour
 
-`ProgramSettingsFormBoTypeResolver` (registered by `AddBeeFramework`) looks up `ProgramItem.BusinessObject`, loads the type via `AssemblyLoader`, and verifies it derives from `FormBusinessObject`. Any failure (missing file, unresolved type, wrong base class) falls back to `FormBusinessObject` rather than failing the request — incremental adoption is safe.
+`ProgramSettingsBoTypeResolver` (registered by `AddBeeFramework`) looks up `ProgramItem.BusinessObject`, loads the type via `AssemblyLoader`, and verifies it derives from `BusinessObject`. For an ordinary progId, any failure (missing file, unresolved type, wrong base class) falls back to `FormBusinessObject` rather than failing the request — incremental adoption is safe.
+
+The **reserved progIds** `System` and `AuditLog` are held to a stricter rule: a type that will not load, or one that does not derive from the framework object for that axis, fails the host instead of degrading. A silent fallback there would surface as a JSON-RPC "method not found", pointing the diagnosis at the API layer rather than at the registry. The host registers both progIds at startup when they are absent, so an existing `ProgramSettings.xml` needs no manual edit.
 
 Resolved types are cached for the lifetime of the in-memory `ProgramSettings` instance; when `ProgramSettingsCache` reloads the file (via its file watcher), the cache resets automatically.
+
+### Customising the Repository for a ProgId
+
+Data access is bound the same way, on the same registry entry. Subclass `DataFormRepository`, declare the members the business object needs on an interface extending `IDataFormRepository`, and name the type in `ProgramItem.Repository`:
+
+```csharp
+public interface IOrderRepository : IDataFormRepository
+{
+    string GetStoredStatus(Guid rowId);
+}
+
+public sealed class OrderRepository : DataFormRepository, IOrderRepository
+{
+    public OrderRepository(IRepositoryContext ctx, Guid accessToken, string progId)
+        : base(ctx, accessToken, progId) { }
+
+    public string GetStoredStatus(Guid rowId) { /* CreateDbAccess().Execute(...) */ }
+}
+```
+
+```xml
+<ProgramItem ProgId="Order"
+             DisplayName="Orders"
+             BusinessObject="MyErp.Business.OrderBo, MyErp.Business"
+             Repository="MyErp.Repositories.OrderRepository, MyErp.Repositories" />
+```
+
+The business object asks for it by interface, with no cast and no database id to name — the binding comes from the registry and the routing from the form schema's `CategoryId`:
+
+```csharp
+private IOrderRepository Repository() => CreateFormRepository<IOrderRepository>();
+```
+
+**Unlike `BusinessObject`, a `Repository` that will not load throws.** Data access has no harmless degraded mode: falling back would run this program's reads and writes through the generic SQL its author replaced on purpose, and the failure would surface later with the data already wrong.
+
+A subclass may add its own dependencies — the factory builds it with `ActivatorUtilities`, so interface-typed constructor parameters are injected from DI. It must not add a second `string` or `Guid` parameter, since those are already supplied by the factory.
 
 ### FormSchema → SQL Generation
 

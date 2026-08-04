@@ -150,12 +150,14 @@ This is the whole argument in one table.
 | Insert / update / delete dispatch | **framework** | `FormBusinessObject` + repository |
 | Lookup dialog, foreign key write-back, JOIN reload | **definition + framework** | relation field + `RelationFieldMappings`; framework `GetLookup` |
 | Master-detail save as one unit | **framework** | repository, driven by the multi-table `FormSchema` |
-| progId to business-object binding | **definition** | `ProgramSettings.xml` (the type registry) |
+| progId to business-object and repository binding | **definition** | `ProgramSettings.xml` (the type registry) |
 | Navigation menu (grouped form list) | **definition** | `MenuSettings.xml` |
 | Login / session / encryption | **framework** | `SystemBusinessObject`, API pipeline |
 | **Order number, status transitions, validation, amounts** | **application code** | `OrderBO` (the only business logic in the app) |
 
 The single C# business object, [`OrderBO`](Bee.Northwind.Server/BusinessObjects/OrderBO.cs), overrides `Save` / `GetNewData` to add what a generic form cannot express. Its pure rules are factored into [`OrderRules`](Bee.Northwind.Server/BusinessObjects/OrderRules.cs) and [`OrderDataSet`](Bee.Northwind.Server/BusinessObjects/OrderDataSet.cs), kept free of database dependencies and separate from the orchestration.
+
+Its two database queries live in [`IOrderRepository`](Bee.Northwind.Server/Repositories/IOrderRepository.cs) / [`OrderRepository`](Bee.Northwind.Server/Repositories/OrderRepository.cs), bound to the *same* registry entry as the business object — one progId, one business object, one repository. That is the style template for a form that needs data access beyond the generated CRUD: extend `IDataFormRepository` rather than replace it, derive from `DataFormRepository`, and let the business object ask for it by interface (`CreateFormRepository<IOrderRepository>()`). Keeping the SQL out of the business object is also what let these two queries route to the order's own company database instead of the one the business object happened to name.
 
 ## Closing chapter: add a Region form in 30 minutes, with zero code
 
@@ -222,7 +224,7 @@ This is what makes the seeder build the table on the next start (it builds every
 <ProgramItem ProgId="Region" DisplayName="Regions" />
 ```
 
-`ProgramSettings.xml` is the type registry: it maps a progId to the types bound to it. (No `BusinessObject` attribute means it uses the framework's default CRUD.)
+`ProgramSettings.xml` is the type registry: it maps a progId to the types bound to it — a business object and a repository. (Neither attribute present means the framework's default CRUD, which is the case for every program here except `Order`.)
 
 ### 5. Put it on the menu — add to `Define/MenuSettings.xml`
 
@@ -245,7 +247,7 @@ apps/Bee.Northwind/
 │   ├── TableSchema/company/      business tables (company/ + common/ for framework)
 │   ├── DatabaseSettings.xml      the common + company databases
 │   ├── DbCategorySettings.xml    which tables exist, per category (drives schema build)
-│   ├── ProgramSettings.xml       the type registry (progId to business object)
+│   ├── ProgramSettings.xml       the type registry (progId to business object + repository)
 │   └── MenuSettings.xml          the navigation menu (folders, order, captions)
 ├── Bee.Northwind.Server/         JSON-RPC backend, OrderBO, JSON seed data
 ├── Bee.Northwind.UI/             Avalonia shared UI (views, view models, navigation)

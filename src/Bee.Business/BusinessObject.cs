@@ -125,8 +125,36 @@ namespace Bee.Business
         /// </summary>
         /// <param name="progId">The program identifier.</param>
         protected IDataFormRepository CreateDataFormRepository(string progId)
+            => CreateFormRepository<IDataFormRepository>(progId);
+
+        /// <summary>
+        /// Obtains this program's repository through its own interface, auto-passing the current
+        /// <see cref="AccessToken"/> and <see cref="ProgId"/>.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The repository interface the registry binds this progId to, e.g. <c>IOrderRepository</c>.
+        /// </typeparam>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the bound repository does not implement <typeparamref name="T"/> — the
+        /// registry names a type that is not the one this business object was written against.
+        /// </exception>
+        /// <remarks>
+        /// The typed form is why <c>CreateFormRepository</c> is generic: a business object with its
+        /// own repository asks for it by interface and calls its members directly, with no cast and
+        /// no downstream check for one.
+        /// </remarks>
+        protected T CreateFormRepository<T>() where T : class, IDataFormRepository
+            => CreateFormRepository<T>(ProgId);
+
+        /// <summary>
+        /// Obtains another program's repository through its own interface, auto-passing the current
+        /// <see cref="AccessToken"/>.
+        /// </summary>
+        /// <typeparam name="T">The repository interface the registry binds <paramref name="progId"/> to.</typeparam>
+        /// <param name="progId">The program identifier.</param>
+        protected T CreateFormRepository<T>(string progId) where T : class, IDataFormRepository
             => Services.GetRequiredService<IRepositoryFactory>()
-                       .CreateFormRepository<IDataFormRepository>(AccessToken, progId);
+                       .CreateFormRepository<T>(AccessToken, progId);
 
         /// <summary>
         /// Resolves localized text for the given full key using the current session's

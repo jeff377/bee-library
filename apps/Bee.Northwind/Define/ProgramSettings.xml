@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The application's type registry: one flat entry per progId, mapping it to the types bound to
-     it. ProgramSettingsBoTypeResolver reads BusinessObject to route a progId to a custom
-     FormBusinessObject; only Order needs application code, every other entry leaves it empty and
-     resolves to the framework's default FormBusinessObject (pure definition CRUD).
-
-     Where each program appears in the navigation menu is MenuSettings.xml's business, not this
-     file's. Adding a new form to the running app is therefore: a FormSchema, a TableSchema, a
-     DbCategorySettings table entry, one ProgramItem below, and one MenuEntry in MenuSettings.xml
-     — no code. -->
 <ProgramSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Items>
-    <!-- The reserved System progId, bound to the app's own subclass so login accepts the demo
-         credential without seeding st_user. Before the registry covered every business object this
-         needed a replacement IBusinessObjectFactory; now it is one line of definition. -->
     <ProgramItem ProgId="System" DisplayName="System" BusinessObject="Bee.Northwind.Server.NorthwindAuthenticatingSystemBusinessObject, Bee.Northwind.Server" />
     <ProgramItem ProgId="Category" DisplayName="Categories" />
     <ProgramItem ProgId="Supplier" DisplayName="Suppliers" />
@@ -21,6 +9,7 @@
     <ProgramItem ProgId="Product" DisplayName="Products" />
     <ProgramItem ProgId="Department" DisplayName="Departments" />
     <ProgramItem ProgId="Employee" DisplayName="Employees" />
-    <ProgramItem ProgId="Order" DisplayName="Orders" BusinessObject="Bee.Northwind.Server.BusinessObjects.OrderBO, Bee.Northwind.Server" />
+    <ProgramItem ProgId="Order" DisplayName="Orders" BusinessObject="Bee.Northwind.Server.BusinessObjects.OrderBO, Bee.Northwind.Server" Repository="Bee.Northwind.Server.Repositories.OrderRepository, Bee.Northwind.Server" />
+    <ProgramItem ProgId="AuditLog" DisplayName="AuditLog" BusinessObject="Bee.Business.AuditLog.LogBusinessObject, Bee.Business" />
   </Items>
 </ProgramSettings>

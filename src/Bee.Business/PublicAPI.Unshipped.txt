@@ -16,6 +16,8 @@ Bee.Business.BusinessObject.ApiKeyName.get -> string?
 Bee.Business.BusinessObject.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
 Bee.Business.BusinessObject.ApiKeyValidation.set -> void
 Bee.Business.BusinessObject.BusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = true) -> void
+Bee.Business.BusinessObject.CreateFormRepository<T>() -> T!
+Bee.Business.BusinessObject.CreateFormRepository<T>(string! progId) -> T!
 Bee.Business.BusinessObject.GetCurrentCustomizeId() -> string!
 Bee.Business.BusinessObject.ProgId.get -> string!
 Bee.Business.BusinessObject.ResolveAuditIdentity() -> (string? UserId, string? UserName, string? CompanyId, string? CompanyName)

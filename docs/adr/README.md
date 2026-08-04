@@ -42,3 +42,4 @@ ADR 記錄**決策當下的脈絡與理由**，是理解「為何這樣設計」
 | [031](adr-031-calendar-day-column-semantics.md) | 日曆日欄位語意以顯式標記承載，不改 CLR 型別 | ✅ 已採納 |
 | [032](adr-032-datetime-timezone.md) | DateTime 以 UTC 為單一時區來源，Connector 為唯一轉換點 | ✅ 已採納 |
 | [033](adr-033-time-of-day-semantics.md) | 時刻語意（`FieldDbType.Time`）以定寬字串承載 | ✅ 已採納 |
+| [034](adr-034-progid-type-registry.md) | ProgramSettings 作為全框架型別註冊表（選單分離、Repository 以 progId 綁定） | ✅ 已採納 |

@@ -42,7 +42,7 @@
 ### 多租戶客製化覆蓋層
 
 - `ICacheContainerProvider` / `CacheContainerProvider` -- 延遲建立 per-`CustomizeId` 唯讀覆蓋快取容器（`CachePrefix=customizeId`，backing 為 `CustomizeOnlyStorage`），重用既有快取類別、一行不改
-- `CustomizeDefineReader` -- `ICustomizeDefineReader` 實作，從 per-租戶覆蓋容器讀取 Language / FormLayout / ProgramSettings；無客製檔回 `null`（見 [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md)）
+- `CustomizeDefineReader` -- `ICustomizeDefineReader` 實作，從 per-租戶覆蓋容器讀取 Language / FormLayout / ProgramSettings / MenuSettings；無客製檔回 `null`（見 [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md)）
 
 ## 主要公開 API
 

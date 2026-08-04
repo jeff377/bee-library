@@ -11,7 +11,7 @@ Bee 的定義型別（`FormSchema`、`TableSchema`、`ProgramSettings`、`FormLa
 新增 `Bee.Northwind.iOS`（Avalonia iOS head）時，連線 + 登入成功，但**載入任何 XML 定義即崩**。根因：**iOS 禁止動態產碼（無 `Reflection.Emit`）**，XmlSerializer 退回 **reflection-only** 路徑（`ReflectionXmlSerializationReader`），暴露 Bee 定義型別兩個與該路徑不相容之處：
 
 1. **集合多載 `Add` → `AmbiguousMatchException`**：reflection reader 以 `Type.GetMethod("Add")`（**不帶參數型別**）尋找集合的 add 方法。Bee 集合（`KeyCollectionBase<T>` / `CollectionBase<T>` 子類）通常有多個 public `Add`：繼承的 `Add(T)`、基底介面的 `Add(I…CollectionItem)`、各集合的便利 `Add(string, …)`。多於一個即丟 `AmbiguousMatchException`。
-2. **集合無無參數建構子 → `MissingMethodException`**：reflection reader 以 `Activator.CreateInstance(type)` 建立集合。許多定義集合是 **owner-coupled**（建構子只收 owner，如 `ProgramCategoryCollection(ProgramSettings)`），無 public 無參數建構子。code-gen 路徑用 getter 的既有實例（lazy-init with owner）故無此需求，reflection 路徑則需要。
+2. **集合無無參數建構子 → `MissingMethodException`**：reflection reader 以 `Activator.CreateInstance(type)` 建立集合。許多定義集合是 **owner-coupled**（建構子只收 owner，如 `ProgramItemCollection(ProgramSettings)`），無 public 無參數建構子。code-gen 路徑用 getter 的既有實例（lazy-init with owner）故無此需求，reflection 路徑則需要。
 
 兩者皆**僅在 AOT/reflection 路徑觸發**；桌面 / WASM 的 code-gen 路徑本就正常。此為框架對外 API surface（定義型別）與其序列化機制之間的結構性約束，故立此 ADR。
 

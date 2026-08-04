@@ -29,8 +29,8 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 - **DI-injected runtime services** — interfaces such as `IDefineAccess`, `ISessionInfoService`, `IDatabaseSettingsProvider`, `IApiEncryptionKeyProvider`, and `IAccessTokenValidator` are defined here and registered through `AddBeeFramework` at host startup, decoupling Definition from concrete implementations.
 - **Security contracts** — interfaces like `IAccessTokenValidator` and `IApiEncryptionKeyProvider` define security boundaries without imposing implementation details.
 - **DefineType-driven CRUD** — the `DefineType` enum and the `DefineTypeExtensions.ToClrType()` extension method map definition categories to CLR types, enabling generic load/save through `IDefineAccess` and `IDefineStorage`.
-- **Centralized settings model** — `SystemSettings`, `DatabaseSettings`, `ProgramSettings`, and `MenuSettings` provide a typed configuration surface that replaces ad-hoc key-value lookups. `ProgramSettings` doubles as the ProgId registry and binds each ProgId to its concrete BO via `ProgramItem.BusinessObject` (empty falls back to the base `FormBusinessObject`).
-- **Tenant customization overlay** — `ICustomizeDefineReader` + `CustomizeOnlyStorage` provide a per-tenant read-only override layer over base definitions, for Language / FormLayout / ProgramSettings only, driven by `SessionInfo.CustomizeId`. The base cache is never mutated; lookups overlay per key / progId / whole-file without merging (see [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md)).
+- **Centralized settings model** — `SystemSettings`, `DatabaseSettings`, `ProgramSettings`, and `MenuSettings` provide a typed configuration surface that replaces ad-hoc key-value lookups. `ProgramSettings` is the framework's type registry: one flat entry per progId, binding it to a business object (`ProgramItem.BusinessObject`) and a repository (`ProgramItem.Repository`); either left empty falls back to the framework default. `MenuSettings` owns the navigation menu, which the registry no longer carries (see [ADR-034](../../docs/adr/adr-034-progid-type-registry.md)).
+- **Tenant customization overlay** — `ICustomizeDefineReader` + `CustomizeOnlyStorage` provide a per-tenant read-only override layer over base definitions, for Language / FormLayout / ProgramSettings / MenuSettings only, driven by `SessionInfo.CustomizeId`. The base cache is never mutated; lookups overlay per key / progId / whole-file without merging (see [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md)).
 
 ## Key Public APIs
 
@@ -45,7 +45,7 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 | `IDatabaseSettingsProvider` | DI service exposing the current `DatabaseSettings` snapshot and lookup helpers |
 | `SessionInfo` / `SessionUser` | Session and user context |
 | `IDefineAccess` / `IDefineStorage` | Definition load/save contracts |
-| `ICustomizeDefineReader` | Tenant customization-override reader (Language / FormLayout / ProgramSettings) |
+| `ICustomizeDefineReader` | Tenant customization-override reader (Language / FormLayout / ProgramSettings / MenuSettings) |
 | `CustomizeOnlyStorage` / `CustomizeOnlyPathOptions` | Strict read-only storage for the customization layer (`{CustomizePath}/{customizeId}/...`, missing file → null) |
 | `IBusinessObjectFactory` | Factory contract for business object creation |
 | `DefineTypeExtensions.ToClrType()` | Extension method for DefineType-to-CLR-type resolution |

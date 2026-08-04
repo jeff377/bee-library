@@ -3,9 +3,8 @@ using System.Globalization;
 using Bee.Base;
 using Bee.Base.Exceptions;
 using Bee.Business.Form;
-using Bee.Db;
 using Bee.Definition;
-using Microsoft.Extensions.DependencyInjection;
+using Bee.Northwind.Server.Repositories;
 
 namespace Bee.Northwind.Server.BusinessObjects;
 
@@ -23,8 +22,14 @@ namespace Bee.Northwind.Server.BusinessObjects;
 /// Registered for progId <c>Order</c> via <c>Define/ProgramSettings.xml</c>; the framework's
 /// <c>ProgramSettingsBoTypeResolver</c> loads this type by its assembly-qualified name. The
 /// pure rules live in <see cref="OrderRules"/> and the in-memory DataSet logic in
-/// <see cref="OrderDataSet"/> (both unit-tested); this class owns only the database-dependent
-/// parts — reading the stored status and the per-month number sequence.
+/// <see cref="OrderDataSet"/> (both unit-tested); the two database queries live in
+/// <see cref="IOrderRepository"/>, bound to the same registry entry as this class.
+/// <para>
+/// That split is the point of the pairing: the same progId names the business object and the
+/// repository, so this class states <i>what</i> the rule is and the repository states <i>how</i> the
+/// data is read. It also keeps SQL out of the business object, which is what let these queries be
+/// routed to the order's own database instead of the one the business object happened to name.
+/// </para>
 /// </remarks>
 public sealed class OrderBO : FormBusinessObject
 {
@@ -81,7 +86,7 @@ public sealed class OrderBO : FormBusinessObject
     {
         if (master.RowState == DataRowState.Added) { return; }
 
-        var storedStatus = QueryStoredStatus(ValueUtilities.CGuid(master["sys_rowid"]));
+        var storedStatus = Repository().GetStoredStatus(ValueUtilities.CGuid(master["sys_rowid"]));
         if (string.IsNullOrEmpty(storedStatus)) { return; }
 
         var newStatus = ValueUtilities.CStr(master["status"]);
@@ -108,28 +113,13 @@ public sealed class OrderBO : FormBusinessObject
         if (!string.IsNullOrEmpty(ValueUtilities.CStr(master["sys_id"]))) { return; }
 
         var yearMonth = DateTime.Today.ToString("yyyyMM", CultureInfo.InvariantCulture);
-        var currentMax = QueryMaxOrderNumber($"ORD-{yearMonth}-%");
+        var currentMax = Repository().GetMaxOrderNumber($"ORD-{yearMonth}-%");
         master["sys_id"] = OrderRules.NextOrderNumber(yearMonth, currentMax);
     }
 
-    /// <summary>Reads the persisted status of an order by its row id (empty string when absent).</summary>
-    private string QueryStoredStatus(Guid rowId)
-    {
-        if (rowId == Guid.Empty) { return string.Empty; }
-        var spec = new DbCommandSpec(DbCommandKind.Scalar,
-            "SELECT status FROM ft_order WHERE sys_rowid = {0}", rowId);
-        return ValueUtilities.CStr(CommonDbAccess().Execute(spec).Scalar ?? string.Empty);
-    }
-
-    /// <summary>Reads the highest existing order number matching the month's LIKE prefix.</summary>
-    private string? QueryMaxOrderNumber(string likePrefix)
-    {
-        var spec = new DbCommandSpec(DbCommandKind.Scalar,
-            "SELECT MAX(sys_id) FROM ft_order WHERE sys_id LIKE {0}", likePrefix);
-        return CommonDbAccess().Execute(spec).Scalar as string;
-    }
-
-    /// <summary>Creates a <see cref="DbAccess"/> bound to the shared "common" database.</summary>
-    private DbAccess CommonDbAccess()
-        => Services.GetRequiredService<IDbAccessFactory>().Create(ResolveDatabaseId(DbScope.Common));
+    /// <summary>
+    /// Obtains this program's repository by its own interface — no cast, and no database id to
+    /// name: the binding comes from the registry and the routing from the form schema's category.
+    /// </summary>
+    private IOrderRepository Repository() => CreateFormRepository<IOrderRepository>();
 }

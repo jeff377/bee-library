@@ -29,8 +29,8 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 - **DI 注入的執行時期服務** — `IDefineAccess`、`ISessionInfoService`、`IDatabaseSettingsProvider`、`IApiEncryptionKeyProvider`、`IAccessTokenValidator` 等介面在此宣告，於 host 啟動時由 `AddBeeFramework` 註冊到 DI 容器，使 Definition 層與具體實作解耦。
 - **安全合約** — `IAccessTokenValidator`、`IApiEncryptionKeyProvider` 等介面定義安全邊界，不強制綁定實作細節。
 - **DefineType 驅動的 CRUD** — `DefineType` 列舉與 `DefineTypeExtensions.ToClrType()` 擴充方法將定義類別對應至 CLR 型別，透過 `IDefineAccess` 與 `IDefineStorage` 實現泛型載入/儲存。
-- **集中式設定模型** — `SystemSettings`、`DatabaseSettings`、`ProgramSettings` 與 `MenuSettings` 提供具型別的組態介面，取代零散的鍵值查詢。`ProgramSettings` 同時兼任 ProgId 註冊表,透過 `ProgramItem.BusinessObject` 將每個 ProgId 綁定到對應的 BO 實作(未填則 fallback 回 `FormBusinessObject`)。
-- **多租戶客製化覆蓋層** — `ICustomizeDefineReader` + `CustomizeOnlyStorage` 在 base 定義之上提供 per-租戶唯讀覆蓋層，僅服務 Language / FormLayout / ProgramSettings 三類，由 `SessionInfo.CustomizeId` 驅動。base 快取永不異動；疊加以 key / progId / 整檔粒度擇一、不合併（見 [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md)）。
+- **集中式設定模型** — `SystemSettings`、`DatabaseSettings`、`ProgramSettings` 與 `MenuSettings` 提供具型別的組態介面，取代零散的鍵值查詢。`ProgramSettings` 是框架的型別註冊表:每個 progId 一筆攤平項目,綁定其商業物件(`ProgramItem.BusinessObject`)與 Repository(`ProgramItem.Repository`),任一留空則回退框架預設。導覽選單由 `MenuSettings` 承接,註冊表不再兼任(見 [ADR-034](../../docs/adr/adr-034-progid-type-registry.md))。
+- **多租戶客製化覆蓋層** — `ICustomizeDefineReader` + `CustomizeOnlyStorage` 在 base 定義之上提供 per-租戶唯讀覆蓋層，僅服務 Language / FormLayout / ProgramSettings / MenuSettings 四類，由 `SessionInfo.CustomizeId` 驅動。base 快取永不異動；疊加以 key / progId / 整檔粒度擇一、不合併（見 [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md)）。
 
 ## 主要公開 API
 
@@ -45,7 +45,7 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 | `IDatabaseSettingsProvider` | DI 服務，提供當前 `DatabaseSettings` 快照與查找輔助 |
 | `SessionInfo` / `SessionUser` | Session 與使用者上下文 |
 | `IDefineAccess` / `IDefineStorage` | 定義載入/儲存合約 |
-| `ICustomizeDefineReader` | 租戶客製化覆蓋讀取器（Language / FormLayout / ProgramSettings） |
+| `ICustomizeDefineReader` | 租戶客製化覆蓋讀取器（Language / FormLayout / ProgramSettings / MenuSettings） |
 | `CustomizeOnlyStorage` / `CustomizeOnlyPathOptions` | 客製化層的嚴格只讀儲存（`{CustomizePath}/{customizeId}/...`，無檔回 null） |
 | `IBusinessObjectFactory` | 商業物件建立的工廠合約 |
 | `DefineTypeExtensions.ToClrType()` | DefineType 至 CLR 型別的解析擴充方法 |

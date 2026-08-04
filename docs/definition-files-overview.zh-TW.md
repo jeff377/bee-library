@@ -21,7 +21,8 @@ Bee.NET 是定義驅動的：`DefinePath` 下的 XML 不是外掛在應用上的
 | **SystemSettings** | `SystemSettings.xml` | 行程層級設定：主金鑰來源、payload 選項、debug 模式 | [端到端開發指引](development-cookbook.zh-TW.md) |
 | **DatabaseSettings** | `DatabaseSettings.xml` | 實體資料庫與其連線字串 | [資料庫設定指引](database-settings-guide.zh-TW.md) |
 | **DbCategorySettings** | `DbCategorySettings.xml` | 各資料表屬於哪個邏輯分類、該分類由哪個資料庫承載 | [資料庫設定指引](database-settings-guide.zh-TW.md) |
-| **ProgramSettings** | `ProgramSettings.xml` | 程式清單：progId → 自訂商業物件綁定，以及導覽選單 | — |
+| **ProgramSettings** | `ProgramSettings.xml` | 型別註冊表：progId → 綁定其上的商業物件與 Repository。僅供 server 端 | — |
+| **MenuSettings** | `MenuSettings.xml` | 導覽選單：分組、排序、標題與可見性，每個項目指向一個 progId | — |
 | **PermissionModels** | `PermissionModels.xml` | 權限模型 registry：模型、動作與 record scope 策略 | [權限與授權](permission-authorization.zh-TW.md) |
 | **CurrencySettings** | `CurrencySettings.xml` | 幣別主檔：各幣別小數位與自然最小單位 | [端到端開發指引](development-cookbook.zh-TW.md) |
 | **UnitSettings** | `UnitSettings.xml` | 計量單位主檔：各單位顯示小數位 | [端到端開發指引](development-cookbook.zh-TW.md) |
@@ -81,32 +82,77 @@ DbCategorySettings.xml      ──▶ 資料表 → 分類 → 資料庫的解�
 
 表前綴（`st_` / `ft_`）表示這張表**歸誰所有**，分類表示**資料落在哪裡**。兩者是**正交**的軸。見[資料庫設定指引](database-settings-guide.zh-TW.md)與[框架保留命名](framework-reserved-names.zh-TW.md)。
 
-## 4. ProgramSettings 身兼二職
+## 4. ProgramSettings 是型別註冊表
 
-`ProgramSettings.xml` 既是路由表也是選單來源：
+`ProgramSettings.xml` 把每個 progId 對映到綁定其上的型別，僅此而已。它是**單層攤平**的清單 ——
+progId 就是鍵，因此全域唯一性由結構本身保證，重複項在載入期即被擋下。
 
 ```xml
-<ProgramCategory Id="transactions" DisplayName="交易">
+<ProgramSettings>
   <Items>
     <ProgramItem ProgId="Customer" DisplayName="客戶" />
     <ProgramItem ProgId="Order" DisplayName="訂單"
-                 BusinessObject="MyApp.Server.BusinessObjects.OrderBO, MyApp.Server" />
+                 BusinessObject="MyApp.Server.BusinessObjects.OrderBO, MyApp.Server"
+                 Repository="MyApp.Server.Repositories.OrderRepository, MyApp.Server" />
   </Items>
-</ProgramCategory>
+</ProgramSettings>
 ```
 
 - **`BusinessObject` 留空** → 該 progId 解析到框架預設的 `FormBusinessObject`，即純定義驅動的 CRUD。
 - **`BusinessObject` 有值** → 由該型別承接此 progId，用於宣告式表達不了的情況（跨列聚合、資料庫查詢）。
-- **Categories 與 Items** 同時也是 shell 建構導覽選單的來源。
+- **`Repository` 留空** → 框架預設的 `DataFormRepository`，其語句由 FormSchema 產生。
+- **`Repository` 有值** → 由該型別承接，且必須衍生自 `DataFormRepository`，CRUD 表面才完整。BO 端以自己的介面取得它：`CreateFormRepository<IOrderRepository>()`。
 
-因此在運行中的應用加一張表單，是四處 XML 修改、零程式碼。
+兩個屬性彼此獨立 —— 一支程式可以只客製邏輯、只客製資料存取、兩者皆客製，或都不客製。兩者都有值時，
+它們是同一個 progId 的一對：一支程式、一個商業物件、一個 Repository。
+
+**兩者的失敗策略刻意不同。** `BusinessObject` 型別名載不到會**退回**框架預設：`Order` 設錯只是退化成
+通用行為，惱人但服務不中斷。`Repository` 型別名載不到則**直接拋**。資料存取沒有無害的降級模式 ——
+退回等於讓這支程式的讀寫改跑作者刻意替換掉的通用 SQL，而故障會延後到資料已經錯了的時候才浮現。
+
+`System` 與 `AuditLog` 是**保留字 progId**，在此檔中與其他項目無異。host 啟動時若發現缺項會自行補寫；
+它們受比一般 progId 更嚴的規則約束：型別名載不到、或不衍生自該軸的框架物件，會讓 host 起不來而非退回。
+它們的 `Repository` 留空 —— 其商業物件不是 schema 驅動的 CRUD，改走框架 Repository 取數。
+
+`ProgramSettings` **僅供 server 端**。它承載組件限定型別名，client 端毫無用處，因此遠端 `GetDefine`
+比照 `SystemSettings` 與 `DatabaseSettings` 一併擋下。
+
+## 4b. MenuSettings 是導覽選單
+
+一支程式**出現在哪裡**是另一份定義，由 client 端讀取：
+
+```xml
+<MenuSettings>
+  <Items>
+    <MenuFolder Id="transactions" Caption="交易" Order="10">
+      <Items>
+        <MenuEntry Id="sales-order" Caption="訂單" Order="10" ProgId="Order" />
+      </Items>
+    </MenuFolder>
+  </Items>
+</MenuSettings>
+```
+
+- **`Id` 是節點的鍵，且全樹唯一**，與 `ProgId` 各自獨立。同一支程式合理地可以出現在多處，
+  因此 shell 追蹤目前開啟的節點要用 `Id` 而非 `ProgId`。
+- **資料夾可任意巢狀**，其存在只為分組。
+- **`Visible` 是設計期開關，不是權限。** 它對每個使用者都一樣；逐使用者的可見性屬
+  [權限與授權](permission-authorization.zh-TW.md) 的職責。**client 目前對選單不做任何權限過濾。**
+- **`Caption` 的多語**走 `LanguageResource` 的 `Menu` namespace，sub-key 為
+  `Folder.{id}.Caption` / `Entry.{id}.Caption` —— 以 `Id` 而非 `ProgId` 為鍵，因為同一支程式
+  可能以不同標題出現在多處。
+
+兩者分家的理由來自各自的用途：註冊表由 server 讀、裝的是型別名；選單由 client 讀、裝的是排序、
+標題與可見性。讀者不同、生命週期不同、敏感度也不同 —— 而「型別名不上 wire」正是這個切分的直接結果。
+
+因此在運行中的應用加一張表單，是五處 XML 修改、零程式碼。
 
 ## 5. 改了 X 要同步改什麼
 
 | 你改了 | 還要一併更新 |
 |--------|------------|
 | 在 **FormSchema** 加欄位 | 對應 **TableSchema** 的欄位，然後執行 [schema 升級](database-schema-upgrade.zh-TW.md)；要顯示就加進 **FormLayout**；標題加進 **Language** |
-| 新增**一張表單** | **FormSchema** + **TableSchema** + **DbCategorySettings** 的資料表登錄 + **ProgramSettings** 的一個 `ProgramItem` |
+| 新增**一張表單** | **FormSchema** + **TableSchema** + **DbCategorySettings** 的資料表登錄 + **ProgramSettings** 的一個 `ProgramItem` + **MenuSettings** 的一個 `MenuEntry` |
 | 新增**一張資料表** | 它的 **TableSchema** 必須放在與 `DbCategorySettings` 分類相符的 `TableSchema/{categoryId}/` 資料夾 —— 資料夾名**就是**分類 |
 | 新增**一個資料庫** | 先加 **DatabaseSettings** 項目，再於 **DbCategorySettings** 把分類指過去 |
 | 改**幣別或單位精度** | **CurrencySettings** / **UnitSettings**；欄位層級的捨入依 `NumberKind`，不是原始欄位型別 |
@@ -154,18 +200,20 @@ builder.Services.AddBeeFramework(settings.BackendConfiguration, paths);
 
 ```
 {CustomizePath}/{customizeId}/ProgramSettings.xml
+{CustomizePath}/{customizeId}/MenuSettings.xml
 {CustomizePath}/{customizeId}/FormLayout/{layoutId}.FormLayout.xml
 {CustomizePath}/{customizeId}/Language/{lang}/{namespace}.Language.xml
 ```
 
 目錄不必存在。某次查找若該租戶沒有對應檔案，就回退 base 層。
 
-### 只有三種型別，三種粒度
+### 四種型別，三種粒度
 
 | 型別 | 覆蓋粒度 |
 |------|---------|
 | **LanguageResource** | 文字（`LanguageItem`）是 **key 級**。客製檔只放要改的 key，其餘全部來自 base —— 因此 base 日後新增的翻譯會自動傳播。**`LanguageEnum` 是例外：整組取代。** 客製檔有同名 enum 就整組換掉 base 的，因此客製檔必須列出該選項集要有的**全部** entry |
-| **ProgramSettings** | **progId 級**。同一個 progId 的客製項目勝過 base 項目 |
+| **ProgramSettings** | **progId 級**。同一個 progId 的客製項目勝過 base 項目 —— 是**整筆**取代，因此只設了 `BusinessObject` 的客製項，其 `Repository` 就是留空，不會繼承 base 的值 |
+| **MenuSettings** | **整檔級**。客製選單整份取代 base 選單 |
 | **FormLayout** | **整檔級**。客製 layout 整份取代該 `layoutId` 的 base layout |
 
 **粒度不同是刻意的**，分界線在於：這份東西是**一袋彼此獨立的值**，還是**一個組合起來才成立的整體**。

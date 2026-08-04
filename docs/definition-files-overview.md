@@ -21,7 +21,8 @@ Eleven definition types, enumerated as `DefineType` and all reached through `IDe
 | **SystemSettings** | `SystemSettings.xml` | Process-wide settings: master key source, payload options, debug mode | [Development Cookbook](development-cookbook.md) |
 | **DatabaseSettings** | `DatabaseSettings.xml` | Physical databases and their connection strings | [Database Settings Guide](database-settings-guide.md) |
 | **DbCategorySettings** | `DbCategorySettings.xml` | Which logical category each table belongs to, and which database serves it | [Database Settings Guide](database-settings-guide.md) |
-| **ProgramSettings** | `ProgramSettings.xml` | The program list: progId → custom business object binding, and the navigation menu | — |
+| **ProgramSettings** | `ProgramSettings.xml` | The type registry: progId → the business object and repository bound to it. Server-side only | — |
+| **MenuSettings** | `MenuSettings.xml` | The navigation menu: folders, ordering, captions and visibility, each entry pointing at a progId | — |
 | **PermissionModels** | `PermissionModels.xml` | Permission model registry: models, actions and record-scope strategies | [Permission & Authorization](permission-authorization.md) |
 | **CurrencySettings** | `CurrencySettings.xml` | Currency master: per-currency decimals and natural minor units | [Development Cookbook](development-cookbook.md) |
 | **UnitSettings** | `UnitSettings.xml` | Unit-of-measure master: display decimals per unit | [Development Cookbook](development-cookbook.md) |
@@ -81,32 +82,87 @@ DbCategorySettings.xml      ──▶ table → category → database resolution
 
 A table prefix (`st_` / `ft_`) indicates *who owns* the table; the category indicates *where the data lives*. They are independent axes. See [Database Settings Guide](database-settings-guide.md) and [Framework-Reserved Names](framework-reserved-names.md).
 
-## 4. ProgramSettings Does Double Duty
+## 4. ProgramSettings Is the Type Registry
 
-`ProgramSettings.xml` is both a routing table and a menu source:
+`ProgramSettings.xml` maps each progId to the types bound to it, and to nothing else. It is one
+flat list — a progId is the key, so global uniqueness is a property of the structure and a
+duplicate is rejected when the file loads.
 
 ```xml
-<ProgramCategory Id="transactions" DisplayName="Transactions">
+<ProgramSettings>
   <Items>
     <ProgramItem ProgId="Customer" DisplayName="Customers" />
     <ProgramItem ProgId="Order" DisplayName="Orders"
-                 BusinessObject="MyApp.Server.BusinessObjects.OrderBO, MyApp.Server" />
+                 BusinessObject="MyApp.Server.BusinessObjects.OrderBO, MyApp.Server"
+                 Repository="MyApp.Server.Repositories.OrderRepository, MyApp.Server" />
   </Items>
-</ProgramCategory>
+</ProgramSettings>
 ```
 
 - **`BusinessObject` empty** → the progId resolves to the framework's default `FormBusinessObject`, i.e. pure definition-driven CRUD.
 - **`BusinessObject` set** → that type handles the progId, for the cases declarations cannot express (cross-row aggregation, database lookups).
-- **The categories and items** are also what a shell builds its navigation menu from.
+- **`Repository` empty** → the framework's `DataFormRepository`, whose statements are generated from the FormSchema.
+- **`Repository` set** → that type, which must derive from `DataFormRepository` so the CRUD surface stays intact. A business object asks for it by its own interface: `CreateFormRepository<IOrderRepository>()`.
 
-Adding a form to a running application is therefore four XML edits and no code.
+The two attributes are independent — a program may customise its logic, its data access, both, or
+neither. When both are set they are the same progId's pair: one program, one business object, one
+repository.
+
+**The two failure policies differ, deliberately.** A `BusinessObject` name that will not load
+degrades to the framework default: a misconfigured `Order` behaves generically, which is annoying
+but not an outage. A `Repository` name that will not load **throws**. Data access has no harmless
+degraded mode — falling back would run the program's reads and writes through the generic SQL its
+author replaced on purpose, and the failure would surface later, with the data already wrong.
+
+`System` and `AuditLog` are reserved progIds and are entries like any other. The host registers
+them at startup if they are absent, and they are held to a stricter rule than ordinary progIds: a
+name that will not load, or one that does not derive from the framework object for that axis,
+fails the host rather than degrading. Their `Repository` is left empty — their business objects are
+not schema-driven CRUD and reach data through the framework repositories instead.
+
+`ProgramSettings` is **server-side only**. It carries assembly-qualified type names that no client
+has any use for, so remote `GetDefine` refuses it alongside `SystemSettings` and `DatabaseSettings`.
+
+## 4b. MenuSettings Is the Navigation Menu
+
+Where a program *appears* is a separate definition, read by the client:
+
+```xml
+<MenuSettings>
+  <Items>
+    <MenuFolder Id="transactions" Caption="Transactions" Order="10">
+      <Items>
+        <MenuEntry Id="sales-order" Caption="Orders" Order="10" ProgId="Order" />
+      </Items>
+    </MenuFolder>
+  </Items>
+</MenuSettings>
+```
+
+- **`Id` is the node key and is unique across the whole tree**, independent of `ProgId`. The same
+  program may legitimately appear in several places, so a shell tracks the open node by `Id`, not
+  by `ProgId`.
+- **Folders nest arbitrarily** and exist only to group entries.
+- **`Visible` is a design-time switch, not a permission.** It is the same for every user;
+  per-user visibility belongs to [PermissionModels](permission-authorization.md). The client
+  applies no permission filter to the menu today.
+- **`Caption` localisation** goes through `LanguageResource` in the `Menu` namespace, sub-keys
+  `Folder.{id}.Caption` / `Entry.{id}.Caption` — keyed by `Id` rather than `ProgId`, since the same
+  program may appear under different titles.
+
+Splitting the two apart follows from what each is for. The registry is read by the server and holds
+type names; the menu is read by the client and holds ordering, captions and visibility. They have
+different readers, different lifecycles and different sensitivity — and keeping type names off the
+wire is a direct consequence.
+
+Adding a form to a running application is therefore five XML edits and no code.
 
 ## 5. Change One, Change What Else
 
 | You changed | Also update |
 |-------------|-------------|
 | Added a field to a **FormSchema** | The matching **TableSchema** column, then run a [schema upgrade](database-schema-upgrade.md); add it to the **FormLayout** if it should be visible; add its caption to **Language** |
-| Added a **new form** | **FormSchema** + **TableSchema** + a table entry in **DbCategorySettings** + a `ProgramItem` in **ProgramSettings** |
+| Added a **new form** | **FormSchema** + **TableSchema** + a table entry in **DbCategorySettings** + a `ProgramItem` in **ProgramSettings** + a `MenuEntry` in **MenuSettings** |
 | Added a **table** | Its **TableSchema** must sit in the `TableSchema/{categoryId}/` folder matching its `DbCategorySettings` category — the folder name *is* the category |
 | Added a **database** | **DatabaseSettings** entry first, then point a category at it in **DbCategorySettings** |
 | Changed a **currency or unit precision** | **CurrencySettings** / **UnitSettings**; field-level rounding follows `NumberKind`, not the raw column type |
@@ -154,18 +210,20 @@ builder.Services.AddBeeFramework(settings.BackendConfiguration, paths);
 
 ```
 {CustomizePath}/{customizeId}/ProgramSettings.xml
+{CustomizePath}/{customizeId}/MenuSettings.xml
 {CustomizePath}/{customizeId}/FormLayout/{layoutId}.FormLayout.xml
 {CustomizePath}/{customizeId}/Language/{lang}/{namespace}.Language.xml
 ```
 
 The directory need not exist. A tenant that supplies no file for a given lookup falls back to the base layer.
 
-### Only three types, at three granularities
+### Four types, at three granularities
 
 | Type | Overlay granularity |
 |------|--------------------|
 | **LanguageResource** | **Per key** for text (`LanguageItem`). The customization file holds only the keys it changes; every other key comes from base — so a base translation added later propagates automatically. **A `LanguageEnum` is the exception: whole-enum.** A customization enum of the same name replaces the base one outright, so it must list every entry the option set should have |
-| **ProgramSettings** | **Per progId.** A customization entry wins over the base entry of the same progId |
+| **ProgramSettings** | **Per progId.** A customization entry wins over the base entry of the same progId — as a whole entry, so a customization that sets only `BusinessObject` leaves `Repository` empty rather than inheriting the base value |
+| **MenuSettings** | **Whole file.** A customization menu replaces the base menu outright |
 | **FormLayout** | **Whole file.** A customization layout replaces the base layout for that `layoutId` |
 
 The granularities differ on purpose, and the dividing line is whether the artifact is a bag of independent values or a single composed whole.
