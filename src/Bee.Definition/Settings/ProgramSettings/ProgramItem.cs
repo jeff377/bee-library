@@ -69,6 +69,31 @@ namespace Bee.Definition.Settings
         public string BusinessObject { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the assembly-qualified type name of the repository bound
+        /// to this program. When empty, the framework falls back to the base data
+        /// form repository.
+        /// </summary>
+        /// <remarks>
+        /// Same format and naming rule as <see cref="BusinessObject"/>:
+        /// <c>"Namespace.Type, AssemblyName"</c>.
+        /// <para>
+        /// The named type must derive from <c>DataFormRepository</c>, and unlike
+        /// <see cref="BusinessObject"/> a name that will not load is <b>never</b> tolerated — the
+        /// factory throws rather than degrading to the default. Data access has no harmless
+        /// degraded mode: silently substituting the generic repository would run a custom program's
+        /// reads and writes through logic its author replaced on purpose.
+        /// </para>
+        /// <para>
+        /// Left empty for the reserved progIds. Their business objects are not schema-driven CRUD
+        /// and reach data through the framework repositories instead.
+        /// </para>
+        /// </remarks>
+        [XmlAttribute]
+        [Description("Repository bound to this program (assembly-qualified type name).")]
+        [DefaultValue("")]
+        public string Repository { get; set; } = string.Empty;
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         /// <returns></returns>

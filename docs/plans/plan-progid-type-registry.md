@@ -8,7 +8,7 @@
 | 2 | BO 型別解析全面 ProgId 化（`ProgId` 上移基底、`IBoTypeResolver`、保留字 progId 的啟動自我註冊） | ✅ 已完成（2026-08-04） |
 | 3 | `IRepositoryFactory` 介面定案，三個既有工廠合併（含 DI 註冊與 `BackendComponents` 契約調整） | ✅ 已完成（2026-08-04） |
 | 4 | 消費端遷移至新工廠，移除 `ISystemRepositoryFactory` / `IFormRepositoryFactory` / `IAuditLogRepositoryFactory` | ✅ 已完成（2026-08-04） |
-| 5 | `ProgramItem.Repository` 屬性、解析鏈與 fail-fast 建構 | 📝 待做 |
+| 5 | `ProgramItem.Repository` 屬性、解析鏈與 fail-fast 建構 | ✅ 已完成（2026-08-04） |
 | 6 | 專屬 Repository 介面樣式落地與文件同步 | 📝 待做 |
 
 ## 設計淵源
@@ -302,6 +302,17 @@ public interface IRepositoryFactory
 | `Bee.Repository.UnitTests` 的工廠測試檔 | 未提及 | `SystemRepositoryFactoryTests` 刪除（覆蓋率已由 `RepositoryFactoryTests` 的框架軸 theory 承接）；`FormRepositoryFactoryTests` 更名為 `RepositoryFactoryGuardTests`，保留 ctor 相依防護與 `CategoryId` 失敗語意（後者現由 `DataFormRepository` 建構期拋出，非工廠），移除轉接器專屬案例；`ReportFormRepositoryTests` 隨型別移除 |
 | CHANGELOG | 交接時列為本階段工作 | **不寫**，與階段 1–3 一致（三者同樣移除了公開 API 卻未寫入 `Unreleased`）。本 plan 是六階段系列，階段 4 單獨成條會被階段 5–6 取代；整份於發版時由 `/changelog-draft` 自 tag 起算一次產出。`~/.claude/rules/releasing.md` 目前不存在 |
 | 公開文件連帶更新 | 未提及 | `Bee.Repository` / `Bee.Repository.Abstractions` 的 README 雙語、`docs/terminology`（雙語）、`docs/development-cookbook`（雙語）、`docs/database-schema-upgrade`（雙語）、`adr-010`（型別名漂移，階段 3 未同步）共 10 檔 |
+
+### 階段 5
+
+| 事項 | 本文件 | 實際 |
+|------|--------|------|
+| `CustomizeOverlay` 的改動 | 「`CustomizeOverlay` 納入 `Repository` 的 per-progId 取代」 | **無需改動**。`FindProgramItem` 回傳的是整個 `ProgramItem`，客製項本就整筆取代基底項，新屬性自動比照 `BusinessObject`。已補測試釘住此行為（含「客製層未宣告該 progId 時落回基底」與「客製項的 `Repository` 留空即為留空、不繼承基底值」的整筆取代語意） |
+| 型別解析的快取 | 未提及 | **不做**，與 BO 軸的 `ProgramSettingsBoTypeResolver` 刻意不同。後者有 (customizeId, progId) 型別快取＋reference-equality 的 reload 偵測；工廠這邊不設快取，換得「定義重載下一次呼叫即生效、零失效機制」。代價僅一次 `AssemblyLoader.GetType`，而其昂貴的一半（組件載入）已在 `AssemblyLoader` 內快取。理由記在 `ResolveFormRepositoryType` 的 XML doc |
+| customizeId 的來源 | 未提及 | `RepositoryFactory` ctor 新增兩個**選用** nullable 參數 `ICustomizeDefineReader?` / `ISessionInfoService?`（沿用 `cacheNotify` 既有的選用參數形式，既有 5 引數呼叫端不受影響）。未走 `IRepositoryContext.Services` escape hatch，是為了讓相依顯式、可測；亦不放進 `IRepositoryContext`——repository 本身不需要 session |
+| 選用參數的靜默風險 | 未提及 | `ActivatorUtilities` 若沒填這兩個參數，結果是**靜默停用租戶客製**且無其他症狀。已在 `BeeFrameworkServiceResolutionTests` 補一條以反射檢查欄位的接線測試——行為上驗不出來，只能直接看欄位 |
+| `ReservedProgIdRegistrationService` 的連帶修正 | 未提及 | 自我註冊補寫時會**整份重寫**註冊表，其複製迴圈原本只帶 `BusinessObject`，新屬性會被靜默抹除（且只發生在「剛好缺保留字」的 host 上，罕見難歸因）。已補複製與 `WARNING` 註解，並加測試守住 |
+| DefineEditor | 未提及 | `ProgramSettingsDocumentViewModel` 的節點明細補上 `Repository` 一行 |
 
 ### 交接時列出的待驗證項目：驗證結果
 

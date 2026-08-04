@@ -23,7 +23,8 @@ Bee.Repository.Factories.RepositoryFactory
 Bee.Repository.Factories.RepositoryFactory.Context.get -> Bee.Repository.IRepositoryContext!
 Bee.Repository.Factories.RepositoryFactory.Create<T>(System.Guid accessToken = default(System.Guid)) -> T!
 Bee.Repository.Factories.RepositoryFactory.CreateFormRepository<T>(System.Guid accessToken, string! progId) -> T!
-Bee.Repository.Factories.RepositoryFactory.RepositoryFactory(System.IServiceProvider! services, Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Db.IDbAccessFactory! dbAccessFactory, Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Repository.Abstractions.IRepositoryDatabaseRouter! router, Bee.Db.CacheNotify.ICacheNotifyService? cacheNotify = null) -> void
+Bee.Repository.Factories.RepositoryFactory.RepositoryFactory(System.IServiceProvider! services, Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Db.IDbAccessFactory! dbAccessFactory, Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Repository.Abstractions.IRepositoryDatabaseRouter! router, Bee.Db.CacheNotify.ICacheNotifyService? cacheNotify = null, Bee.Definition.Storage.ICustomizeDefineReader? customizeReader = null, Bee.Definition.Identity.ISessionInfoService? sessionInfoService = null) -> void
+Bee.Repository.Factories.RepositoryFactory.ResolveFormRepositoryType(System.Guid accessToken, string! progId) -> System.Type!
 Bee.Repository.Form.DataFormRepository.DataFormRepository(Bee.Repository.IRepositoryContext! ctx, System.Guid accessToken, string! progId) -> void
 Bee.Repository.Form.DataFormRepository.DataFormRepository(Bee.Repository.IRepositoryContext! ctx, string! progId, Bee.Definition.Forms.FormSchema! schema, string! databaseId) -> void
 Bee.Repository.IRepositoryContext

@@ -83,6 +83,27 @@ namespace Bee.Hosting.UnitTests
         }
 
         [Fact]
+        [DisplayName("補寫保留字時應保留既有項目的 Repository 綁定")]
+        public async Task StartAsync_ExistingRegistryWithRepository_PreservesIt()
+        {
+            // 補寫會整份重寫檔案，任何沒被複製到的屬性就此消失——而且只發生在「剛好缺保留字」
+            // 的 host 上，罕見且難歸因。ProgramItem 每加一個屬性都要有這樣一條測試守著。
+            var existing = new ProgramSettings();
+            var order = existing.Items!.Add("Order", "訂單");
+            order.BusinessObject = "MyErp.OrderBO, MyErp";
+            order.Repository = "MyErp.OrderRepository, MyErp";
+            new FileDefineStorage(_paths).SaveProgramSettings(existing);
+
+            await CreateService(CreateAccess()).StartAsync(CancellationToken.None);
+
+            var registry = ReadRegistryFromDisk();
+            Assert.Equal("MyErp.OrderRepository, MyErp", registry.Items!["Order"].Repository);
+            // 保留字的 Repository 留空：它們的 BO 不是 schema 驅動 CRUD，走框架 repository 取數。
+            Assert.Equal(string.Empty, registry.Items![SysProgIds.System].Repository);
+            Assert.Equal(string.Empty, registry.Items![SysProgIds.AuditLog].Repository);
+        }
+
+        [Fact]
         [DisplayName("已宣告的保留字不應被覆寫——客製的 System BO 要留著")]
         public async Task StartAsync_ReservedProgIdAlreadyDeclared_IsNotOverwritten()
         {

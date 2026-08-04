@@ -36,7 +36,10 @@ namespace Bee.Repository.UnitTests
             public SystemSettings GetSystemSettings() => throw new NotImplementedException();
             public void SaveSystemSettings(SystemSettings settings) => throw new NotImplementedException();
             public void SaveDatabaseSettings(DatabaseSettings settings) => throw new NotImplementedException();
-            public ProgramSettings GetProgramSettings() => throw new NotImplementedException();
+            // 本檔不驗註冊表綁定，一律回報「沒有 ProgramSettings.xml」——這是正式
+            // IDefineAccess 在檔案不存在時的行為，工廠據此落回框架預設 repository。
+            // 綁定本身的解析見 ProgramItemRepositoryBindingTests。
+            public ProgramSettings GetProgramSettings() => throw new FileNotFoundException("ProgramSettings.xml");
             public void SaveProgramSettings(ProgramSettings settings) => throw new NotImplementedException();
             public DbCategorySettings GetDbCategorySettings() => throw new NotImplementedException();
             public void SaveDbCategorySettings(DbCategorySettings settings) => throw new NotImplementedException();

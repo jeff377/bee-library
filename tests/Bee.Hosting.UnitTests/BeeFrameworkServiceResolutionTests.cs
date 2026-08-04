@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Reflection;
 using Bee.Api.Core.JsonRpc;
 using Bee.Db;
 using Bee.Db.Manager;
@@ -102,5 +103,39 @@ namespace Bee.Hosting.UnitTests
                 try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { /* best effort */ }
             }
         }
+
+        [Fact]
+        [DisplayName("容器建出的 RepositoryFactory 應接到客製 overlay 所需的兩個選用相依")]
+        public void AddBeeFramework_RepositoryFactory_ReceivesCustomizationDependencies()
+        {
+            // 這兩個相依是選用參數（預設 null），ActivatorUtilities 沒填就是靜默停用租戶客製
+            // ——progId 一律解析基底綁定，而且不會有任何其他症狀。行為上看不出來，只能直接
+            // 檢查欄位；這正是本測試存在的理由。
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-fw-repocust-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var services = new ServiceCollection();
+                services.AddBeeFramework(
+                    new BackendConfiguration(),
+                    new PathOptions { DefinePath = tempDir },
+                    autoCreateMasterKey: true);
+
+                using var sp = services.BuildServiceProvider();
+                var factory = sp.GetRequiredService<IRepositoryFactory>();
+
+                Assert.NotNull(PrivateField(factory, "_customizeReader"));
+                Assert.NotNull(PrivateField(factory, "_sessionInfoService"));
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { /* best effort */ }
+            }
+        }
+
+        private static object? PrivateField(object instance, string name)
+            => instance.GetType()
+                .GetField(name, BindingFlags.NonPublic | BindingFlags.Instance)!
+                .GetValue(instance);
     }
 }

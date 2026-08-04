@@ -101,10 +101,20 @@ namespace Bee.Hosting.Registry
             var updated = new ProgramSettings();
             foreach (var item in registry.Items ?? [])
             {
-                updated.Items!.Add(new ProgramItem(item.ProgId, item.DisplayName) { BusinessObject = item.BusinessObject });
+                // WARNING: every ProgramItem property must be copied here. This rewrites the whole
+                // registry file, so anything omitted is silently erased from the host's definition
+                // — and only for hosts that happen to be missing a reserved progId, which makes the
+                // loss both rare and hard to attribute.
+                updated.Items!.Add(new ProgramItem(item.ProgId, item.DisplayName)
+                {
+                    BusinessObject = item.BusinessObject,
+                    Repository = item.Repository,
+                });
             }
             foreach (var binding in missing)
             {
+                // Repository is left empty on purpose: a reserved progId's business object is not
+                // schema-driven CRUD and reaches data through the framework repositories instead.
                 updated.Items!.Add(new ProgramItem(binding.ProgId, binding.ProgId) { BusinessObject = binding.DefaultTypeName });
             }
 

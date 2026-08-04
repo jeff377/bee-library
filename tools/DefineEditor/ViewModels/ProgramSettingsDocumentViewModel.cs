@@ -79,7 +79,8 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
         node.Detail = string.Join(Environment.NewLine,
             $"ProgId：{p.ProgId}",
             $"DisplayName：{p.DisplayName}",
-            $"BusinessObject：{p.BusinessObject}");
+            $"BusinessObject：{p.BusinessObject}",
+            $"Repository：{p.Repository}");
     }
 
     [RelayCommand(CanExecute = nameof(CanAddProgram))]

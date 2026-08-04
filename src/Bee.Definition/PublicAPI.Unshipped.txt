@@ -130,6 +130,8 @@ Bee.Definition.Settings.MenuSettings.EnumerateNodes() -> System.Collections.Gene
 Bee.Definition.Settings.MenuSettings.FindNode(string! id) -> Bee.Definition.Settings.MenuNodeBase?
 Bee.Definition.Settings.MenuSettings.Items.get -> Bee.Definition.Settings.MenuNodeCollection?
 Bee.Definition.Settings.MenuSettings.Validate(Bee.Definition.Settings.ProgramSettings? registry = null) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Definition.Settings.ProgramItem.Repository.get -> string!
+Bee.Definition.Settings.ProgramItem.Repository.set -> void
 Bee.Definition.Settings.ProgramItemCollection.ProgramItemCollection(Bee.Definition.Settings.ProgramSettings! settings) -> void
 Bee.Definition.Settings.ProgramSettings.Items.get -> Bee.Definition.Settings.ProgramItemCollection?
 Bee.Definition.Settings.ProgramSettingsFormat

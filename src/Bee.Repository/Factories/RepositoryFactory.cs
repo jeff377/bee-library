@@ -3,7 +3,10 @@ using Bee.Db;
 using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
 using Bee.Definition;
+using Bee.Definition.Customization;
 using Bee.Definition.Database;
+using Bee.Definition.Identity;
+using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.AuditLog;
@@ -25,6 +28,8 @@ namespace Bee.Repository.Factories
     {
         private readonly IRepositoryContext _ctx;
         private readonly IServiceProvider _services;
+        private readonly ICustomizeDefineReader? _customizeReader;
+        private readonly ISessionInfoService? _sessionInfoService;
 
         /// <summary>
         /// The framework axis, as data. These repositories have fixed types and no progId, so the
@@ -55,15 +60,21 @@ namespace Bee.Repository.Factories
         /// <param name="connectionManager">The connection manager.</param>
         /// <param name="router">Resolves a logical scope to a physical database id.</param>
         /// <param name="cacheNotify">Cross-process cache invalidation channel; <c>null</c> when the host does not poll it.</param>
+        /// <param name="customizeReader">The customization-override reader; <c>null</c> disables the overlay, so every progId resolves against the base registry.</param>
+        /// <param name="sessionInfoService">Reads the session's customization code; <c>null</c> has the same effect as a host with no sessions — the base registry applies.</param>
         public RepositoryFactory(
             IServiceProvider services,
             IDefineAccess defineAccess,
             IDbAccessFactory dbAccessFactory,
             IDbConnectionManager connectionManager,
             IRepositoryDatabaseRouter router,
-            ICacheNotifyService? cacheNotify = null)
+            ICacheNotifyService? cacheNotify = null,
+            ICustomizeDefineReader? customizeReader = null,
+            ISessionInfoService? sessionInfoService = null)
         {
             _services = services ?? throw new ArgumentNullException(nameof(services));
+            _customizeReader = customizeReader;
+            _sessionInfoService = sessionInfoService;
             _ctx = new RepositoryContext
             {
                 DefineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess)),
@@ -97,7 +108,117 @@ namespace Bee.Repository.Factories
         /// <param name="accessToken">The current request's access token.</param>
         /// <param name="progId">The program identifier.</param>
         protected virtual IDataFormRepository CreateFormRepositoryCore(Guid accessToken, string progId)
-            => new DataFormRepository(_ctx, accessToken, progId);
+        {
+            var type = ResolveFormRepositoryType(accessToken, progId);
+            return type == typeof(DataFormRepository)
+                ? new DataFormRepository(_ctx, accessToken, progId)
+                : (IDataFormRepository)ActivatorUtilities.CreateInstance(_services, type, _ctx, accessToken, progId);
+        }
+
+        /// <summary>
+        /// Resolves the repository type registered for a progId in <c>ProgramSettings</c>, applying
+        /// the tenant customization overlay.
+        /// </summary>
+        /// <param name="accessToken">The current request's access token, used only to read the session's customization code.</param>
+        /// <param name="progId">The program identifier.</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the registry names a type that will not load, or one that does not derive
+        /// from <see cref="DataFormRepository"/>.
+        /// </exception>
+        /// <remarks>
+        /// <para>
+        /// <b>Every failure throws</b> — deliberately the opposite of the business-object axis,
+        /// where an unloadable name degrades to the generic CRUD object. There the cost of a typo
+        /// in <c>Order</c> is a program that behaves generically; here it would be reads and writes
+        /// running through the framework's own SQL after an author replaced that logic on purpose.
+        /// A fallback would not avert the failure, only postpone it to a point where the data is
+        /// already wrong.
+        /// </para>
+        /// <para>
+        /// Unlike the business-object resolver this holds no type cache, so a definition reload
+        /// takes effect on the next call with no invalidation machinery. What that costs is one
+        /// <see cref="AssemblyLoader.GetType(string)"/> per creation, and its expensive half — the
+        /// assembly load — is already cached inside <see cref="AssemblyLoader"/>.
+        /// </para>
+        /// </remarks>
+        protected Type ResolveFormRepositoryType(Guid accessToken, string progId)
+        {
+            var item = FindProgramItem(accessToken, progId);
+            if (item == null || StringUtilities.IsEmpty(item.Repository))
+                return typeof(DataFormRepository);
+
+            Type? type;
+            try
+            {
+                type = AssemblyLoader.GetType(item.Repository);
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or FileLoadException or BadImageFormatException)
+            {
+                throw UnloadableRepository(progId, item.Repository, ex);
+            }
+
+            if (type == null)
+                throw UnloadableRepository(progId, item.Repository, inner: null);
+
+            if (!typeof(DataFormRepository).IsAssignableFrom(type))
+            {
+                throw new InvalidOperationException(
+                    $"ProgramSettings binds progId '{progId}' to repository '{item.Repository}', " +
+                    $"which does not derive from {typeof(DataFormRepository).FullName}. " +
+                    "A form repository must extend the framework's own so the CRUD surface stays intact.");
+            }
+
+            return type;
+        }
+
+        /// <summary>
+        /// Reads the registry entry for a progId, letting a tenant customization entry replace the
+        /// base one outright — the same per-progId granularity the business-object axis uses, and
+        /// the same <see cref="CustomizeOverlay"/> a client runs, so both ends agree.
+        /// </summary>
+        /// <param name="accessToken">The current request's access token.</param>
+        /// <param name="progId">The program identifier.</param>
+        private ProgramItem? FindProgramItem(Guid accessToken, string progId)
+        {
+            ProgramSettings? baseSettings;
+            try
+            {
+                baseSettings = _ctx.DefineAccess.GetProgramSettings();
+            }
+            catch (FileNotFoundException)
+            {
+                // No ProgramSettings.xml means no progId is bound to anything; a customization entry
+                // may still apply below. Same tolerance as the business-object resolver, so a host
+                // can adopt the binding feature without shipping a base registry first.
+                baseSettings = null;
+            }
+
+            string customizeId = GetCustomizeId(accessToken);
+            ProgramSettings? custSettings = null;
+            if (StringUtilities.IsNotEmpty(customizeId) && _customizeReader is not null)
+                custSettings = _customizeReader.GetCustomizeProgramSettings(customizeId);
+
+            return CustomizeOverlay.FindProgramItem(custSettings, baseSettings, progId);
+        }
+
+        /// <summary>
+        /// Reads the session's tenant customization code. The session is the only accepted source:
+        /// the code selects which tenant's definition files are read, so honouring a caller-supplied
+        /// value would be a cross-tenant read.
+        /// </summary>
+        /// <param name="accessToken">The access token identifying the session.</param>
+        private string GetCustomizeId(Guid accessToken)
+        {
+            if (accessToken == Guid.Empty || _sessionInfoService == null)
+                return string.Empty;
+            return _sessionInfoService.Get(accessToken)?.CustomizeId ?? string.Empty;
+        }
+
+        private static InvalidOperationException UnloadableRepository(string progId, string typeName, Exception? inner)
+            => new(
+                $"ProgramSettings binds progId '{progId}' to repository '{typeName}', which cannot be loaded. " +
+                "Fix the assembly-qualified type name, or clear the attribute to use the framework default.",
+                inner);
 
         /// <inheritdoc/>
         public T Create<T>(Guid accessToken = default) where T : class
