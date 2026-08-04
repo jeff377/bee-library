@@ -21,7 +21,7 @@ namespace Bee.Northwind.Server.BusinessObjects;
 /// </summary>
 /// <remarks>
 /// Registered for progId <c>Order</c> via <c>Define/ProgramSettings.xml</c>; the framework's
-/// <c>ProgramSettingsFormBoTypeResolver</c> loads this type by its assembly-qualified name. The
+/// <c>ProgramSettingsBoTypeResolver</c> loads this type by its assembly-qualified name. The
 /// pure rules live in <see cref="OrderRules"/> and the in-memory DataSet logic in
 /// <see cref="OrderDataSet"/> (both unit-tested); this class owns only the database-dependent
 /// parts — reading the stored status and the per-month number sequence.

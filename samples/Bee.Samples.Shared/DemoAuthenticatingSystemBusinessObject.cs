@@ -11,8 +11,8 @@ namespace Bee.Samples.Shared;
 /// </summary>
 public sealed class DemoAuthenticatingSystemBusinessObject : SystemBusinessObject
 {
-    public DemoAuthenticatingSystemBusinessObject(IBeeContext ctx, Guid accessToken, bool isLocalCall = true)
-        : base(ctx, accessToken, isLocalCall)
+    public DemoAuthenticatingSystemBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+        : base(ctx, accessToken, progId, isLocalCall)
     {
     }
 

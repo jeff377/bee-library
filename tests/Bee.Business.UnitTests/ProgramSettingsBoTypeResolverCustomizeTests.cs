@@ -11,10 +11,10 @@ using Bee.Definition.Storage;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
-    /// <see cref="ProgramSettingsFormBoTypeResolver"/> 租戶客製化疊加測試：cust 有 progId→客製 BO；
+    /// <see cref="ProgramSettingsBoTypeResolver"/> 租戶客製化疊加測試：cust 有 progId→客製 BO；
     /// cust 無→base BO；type cache 以 (customizeId, progId) 隔離；customizeId 空 / 無 reader→短路純 base。
     /// </summary>
-    public class ProgramSettingsFormBoTypeResolverCustomizeTests
+    public class ProgramSettingsBoTypeResolverCustomizeTests
     {
         public class TenantFormBo : FormBusinessObject
         {
@@ -26,8 +26,8 @@ namespace Bee.Business.UnitTests
             $"{typeof(TenantFormBo).FullName}, {typeof(TenantFormBo).Assembly.GetName().Name}";
 
         private static string BaseFormBoFqn =>
-            $"{typeof(ProgramSettingsFormBoTypeResolverTests.TestableCustomFormBo).FullName}, " +
-            $"{typeof(ProgramSettingsFormBoTypeResolverTests.TestableCustomFormBo).Assembly.GetName().Name}";
+            $"{typeof(ProgramSettingsBoTypeResolverTests.TestableCustomFormBo).FullName}, " +
+            $"{typeof(ProgramSettingsBoTypeResolverTests.TestableCustomFormBo).Assembly.GetName().Name}";
 
         private static ProgramSettings BuildSettings(params (string progId, string? businessObject)[] items)
         {
@@ -47,7 +47,7 @@ namespace Bee.Business.UnitTests
             var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("P001", BaseFormBoFqn)));
             var reader = new SpyCustomizeReader();
             reader.SetProgramSettings("acme", BuildSettings(("P001", TenantFormBoFqn)));
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess, reader);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, reader);
 
             var result = resolver.Resolve("acme", "P001");
 
@@ -62,11 +62,11 @@ namespace Bee.Business.UnitTests
             var reader = new SpyCustomizeReader();
             // cust settings 只覆寫 P999，沒有 P001
             reader.SetProgramSettings("acme", BuildSettings(("P999", TenantFormBoFqn)));
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess, reader);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, reader);
 
             var result = resolver.Resolve("acme", "P001");
 
-            Assert.Equal(typeof(ProgramSettingsFormBoTypeResolverTests.TestableCustomFormBo), result);
+            Assert.Equal(typeof(ProgramSettingsBoTypeResolverTests.TestableCustomFormBo), result);
         }
 
         [Fact]
@@ -77,15 +77,15 @@ namespace Bee.Business.UnitTests
             var reader = new SpyCustomizeReader();
             reader.SetProgramSettings("acme", BuildSettings(("P001", TenantFormBoFqn)));
             // globex 沒有客製
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess, reader);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, reader);
 
             var acme = resolver.Resolve("acme", "P001");
             var globex = resolver.Resolve("globex", "P001");
             var baseOnly = resolver.Resolve("P001");
 
             Assert.Equal(typeof(TenantFormBo), acme);
-            Assert.Equal(typeof(ProgramSettingsFormBoTypeResolverTests.TestableCustomFormBo), globex);
-            Assert.Equal(typeof(ProgramSettingsFormBoTypeResolverTests.TestableCustomFormBo), baseOnly);
+            Assert.Equal(typeof(ProgramSettingsBoTypeResolverTests.TestableCustomFormBo), globex);
+            Assert.Equal(typeof(ProgramSettingsBoTypeResolverTests.TestableCustomFormBo), baseOnly);
         }
 
         [Fact]
@@ -95,11 +95,11 @@ namespace Bee.Business.UnitTests
             var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("P001", BaseFormBoFqn)));
             var reader = new SpyCustomizeReader();
             reader.SetProgramSettings("acme", BuildSettings(("P001", TenantFormBoFqn)));
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess, reader);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, reader);
 
             var result = resolver.Resolve("P001");
 
-            Assert.Equal(typeof(ProgramSettingsFormBoTypeResolverTests.TestableCustomFormBo), result);
+            Assert.Equal(typeof(ProgramSettingsBoTypeResolverTests.TestableCustomFormBo), result);
             Assert.Equal(0, reader.GetCustomizeProgramSettingsCallCount);
         }
 
@@ -108,11 +108,11 @@ namespace Bee.Business.UnitTests
         public void Resolve_NoReader_BehavesAsBase()
         {
             var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("P001", BaseFormBoFqn)));
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess); // 無 reader
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess); // 無 reader
 
             var result = resolver.Resolve("acme", "P001");
 
-            Assert.Equal(typeof(ProgramSettingsFormBoTypeResolverTests.TestableCustomFormBo), result);
+            Assert.Equal(typeof(ProgramSettingsBoTypeResolverTests.TestableCustomFormBo), result);
         }
 
         [Fact]
@@ -122,7 +122,7 @@ namespace Bee.Business.UnitTests
             var defineAccess = new ThrowingProgramSettingsDefineAccess();
             var reader = new SpyCustomizeReader();
             reader.SetProgramSettings("acme", BuildSettings(("P001", TenantFormBoFqn)));
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess, reader);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, reader);
 
             var result = resolver.Resolve("acme", "P001");
 

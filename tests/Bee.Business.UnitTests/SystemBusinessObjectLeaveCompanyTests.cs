@@ -3,6 +3,7 @@ using Bee.Business.System;
 using Bee.Definition.Identity;
 using Bee.Tests.Shared;
 
+using Bee.Definition;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
@@ -23,7 +24,7 @@ namespace Bee.Business.UnitTests
             var session = sessionService.Get(accessToken)!;
             session.CompanyId = "C001";
             sessionService.Set(session);
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System);
 
             try
             {
@@ -44,7 +45,7 @@ namespace Bee.Business.UnitTests
         {
             var sessionService = _fx.GetRequiredService<ISessionInfoService>();
             var accessToken = TestSessionFactory.CreateAccessToken(_fx);
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System);
 
             try
             {
@@ -64,7 +65,7 @@ namespace Bee.Business.UnitTests
         public void LeaveCompany_NullArgs_ThrowsArgumentNullException()
         {
             var accessToken = TestSessionFactory.CreateAccessToken(_fx);
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System);
             var sessionService = _fx.GetRequiredService<ISessionInfoService>();
 
             try
@@ -82,7 +83,7 @@ namespace Bee.Business.UnitTests
         public void LeaveCompany_NoSession_ThrowsUnauthorizedAccessException()
         {
             // 直接用一個未植入的 AccessToken
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.NewGuid());
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.NewGuid(), SysProgIds.System);
 
             Assert.Throws<UnauthorizedAccessException>(() => bo.LeaveCompany(new LeaveCompanyArgs()));
         }

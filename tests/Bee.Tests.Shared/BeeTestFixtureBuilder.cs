@@ -82,7 +82,6 @@ namespace Bee.Tests.Shared
         internal ServiceProvider BuildServiceProvider(PathOptions paths)
         {
             var settings = SystemSettingsLoader.Load(paths);
-            settings.BackendConfiguration.Components.BusinessObjectFactory = BackendDefaultTypes.BusinessObjectFactory;
 
             // tests/Define/SystemSettings.xml 預設 MasterKeySource.Type=Environment、
             // Value=BEE_MASTER_KEY。TestProcessBootstrap 已於 process 啟動時為缺值的

@@ -18,12 +18,12 @@ namespace Bee.Business.UnitTests
         private IBusinessObjectFactory Factory => _fx.GetRequiredService<IBusinessObjectFactory>();
 
         [Fact]
-        [DisplayName("CreateSystemBusinessObject 應回傳 SystemBusinessObject 並保留 AccessToken")]
-        public void CreateSystemBusinessObject_ReturnsSystemBusinessObject()
+        [DisplayName("CreateBusinessObject 應回傳 SystemBusinessObject 並保留 AccessToken")]
+        public void CreateBusinessObject_System_ReturnsSystemBusinessObject()
         {
             var token = Guid.NewGuid();
 
-            var obj = Factory.CreateSystemBusinessObject(token);
+            var obj = Factory.CreateBusinessObject(token, SysProgIds.System);
 
             var bo = Assert.IsType<SystemBusinessObject>(obj);
             Assert.Equal(token, bo.AccessToken);
@@ -31,22 +31,22 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("CreateSystemBusinessObject 傳入 isLocalCall=false 應保留設定")]
-        public void CreateSystemBusinessObject_WithIsLocalCallFalse_PreservesFlag()
+        [DisplayName("CreateBusinessObject 傳入 isLocalCall=false 應保留設定")]
+        public void CreateBusinessObject_System_WithIsLocalCallFalse_PreservesFlag()
         {
-            var obj = Factory.CreateSystemBusinessObject(Guid.NewGuid(), isLocalCall: false);
+            var obj = Factory.CreateBusinessObject(Guid.NewGuid(), SysProgIds.System, isLocalCall: false);
 
             var bo = Assert.IsType<SystemBusinessObject>(obj);
             Assert.False(bo.IsLocalCall);
         }
 
         [Fact]
-        [DisplayName("CreateFormBusinessObject 應回傳 FormBusinessObject 並保留 ProgId")]
-        public void CreateFormBusinessObject_ReturnsFormBusinessObject()
+        [DisplayName("CreateBusinessObject 應回傳 FormBusinessObject 並保留 ProgId")]
+        public void CreateBusinessObject_Form_ReturnsFormBusinessObject()
         {
             var token = Guid.NewGuid();
 
-            var obj = Factory.CreateFormBusinessObject(token, "prog01");
+            var obj = Factory.CreateBusinessObject(token, "prog01");
 
             var bo = Assert.IsType<FormBusinessObject>(obj);
             Assert.Equal(token, bo.AccessToken);
@@ -55,10 +55,10 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("CreateFormBusinessObject 傳入 isLocalCall=false 應保留設定")]
-        public void CreateFormBusinessObject_WithIsLocalCallFalse_PreservesFlag()
+        [DisplayName("CreateBusinessObject 傳入 isLocalCall=false 應保留設定")]
+        public void CreateBusinessObject_Form_WithIsLocalCallFalse_PreservesFlag()
         {
-            var obj = Factory.CreateFormBusinessObject(Guid.NewGuid(), "prog01", isLocalCall: false);
+            var obj = Factory.CreateBusinessObject(Guid.NewGuid(), "prog01", isLocalCall: false);
 
             var bo = Assert.IsType<FormBusinessObject>(obj);
             Assert.False(bo.IsLocalCall);

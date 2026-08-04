@@ -6,6 +6,7 @@ using Bee.Definition.Database;
 using Bee.Definition.Identity;
 using Bee.Tests.Shared;
 
+using Bee.Definition;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
@@ -50,7 +51,7 @@ namespace Bee.Business.UnitTests
                 Assert.Null(sessionService.Get(accessToken)!.CompanyId);
 
                 // 後續方法用一般 SystemBusinessObject + Login 取得的 AccessToken
-                var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+                var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System);
 
                 // 2. EnterCompany(A) — 首次進公司
                 var enterA = bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyA });
@@ -128,7 +129,7 @@ namespace Bee.Business.UnitTests
                     TestBeeContext.Create(_fx), Guid.Empty,
                     _ => (true, "User"));
                 var accessToken = loginBo.Login(new LoginArgs { UserId = "u", Password = "p" }).AccessToken;
-                var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+                var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System);
                 bo.Logout(new LogoutArgs());
 
                 Assert.Throws<UnauthorizedAccessException>(
@@ -149,7 +150,7 @@ namespace Bee.Business.UnitTests
                 TestBeeContext.Create(_fx), Guid.Empty,
                 _ => (true, "User"));
             var accessToken = loginBo.Login(new LoginArgs { UserId = "u", Password = "p" }).AccessToken;
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System);
 
             bo.Logout(new LogoutArgs());
 
@@ -165,7 +166,7 @@ namespace Bee.Business.UnitTests
                 TestBeeContext.Create(_fx), Guid.Empty,
                 _ => (true, "User"));
             var accessToken = loginBo.Login(new LoginArgs { UserId = "u", Password = "p" }).AccessToken;
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System);
 
             try
             {

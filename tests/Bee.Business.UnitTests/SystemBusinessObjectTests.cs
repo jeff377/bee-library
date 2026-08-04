@@ -5,6 +5,7 @@ using Bee.Tests.Shared;
 using Bee.Definition.Database;
 using Bee.Definition.Identity;
 
+using Bee.Definition;
 namespace Bee.Business.UnitTests
 {
     public class SystemBusinessObjectTests : IClassFixture<SharedDbFixture>
@@ -20,7 +21,7 @@ namespace Bee.Business.UnitTests
         public void CreateSession_ValidArgs_ReturnsTokenWithExpiry()
         {
             // Arrange
-            var business = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            var business = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
             var args = new CreateSessionArgs
             {
                 UserID = "001",
@@ -57,7 +58,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("CreateSession 傳入不存在的使用者編號應擲 InvalidOperationException")]
         public void CreateSession_NonExistentUserId_ThrowsInvalidOperation()
         {
-            var business = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            var business = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
             var args = new CreateSessionArgs { UserID = "__nonexistent_user_xyz__", ExpiresIn = 600 };
 
             Assert.Throws<InvalidOperationException>(() => business.CreateSession(args));
@@ -67,7 +68,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("CreateSession 要求一次性 token 應擲 NotSupportedException 而非靜默降級")]
         public void CreateSession_OneTime_ThrowsNotSupported()
         {
-            var business = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            var business = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
             var args = new CreateSessionArgs { UserID = "001", ExpiresIn = 600, OneTime = true };
 
             // 建立時即寫入快取後，第一次使用是 cache hit，delete-on-read 永遠不會觸發，
@@ -90,7 +91,7 @@ namespace Bee.Business.UnitTests
             // 產生 RSA 金鑰對
             RsaCryptor.GenerateRsaKeyPair(out var publicKey, out var privateKey);
 
-            var sbo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            var sbo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
             var args = new LoginArgs
             {
                 UserId = "testuser",

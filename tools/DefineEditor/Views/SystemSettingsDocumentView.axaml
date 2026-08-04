@@ -97,7 +97,6 @@
                            Text="{loc:Loc SystemSettings_BackendComponentsHint}"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="ApiEncryptionKeyProvider"/><TextBox Text="{Binding ApiEncryptionKeyProvider, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="AccessTokenValidator"/><TextBox Text="{Binding AccessTokenValidator, Mode=TwoWay}"/></DockPanel>
-                <DockPanel Classes="row"><TextBlock Classes="label" Text="BusinessObjectFactory"/><TextBox Text="{Binding BusinessObjectFactory, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="CacheProvider"/><TextBox Text="{Binding CacheProvider, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="CacheDataSourceProvider"/><TextBox Text="{Binding CacheDataSourceProvider, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="DefineStorage"/><TextBox Text="{Binding DefineStorage, Mode=TwoWay}"/></DockPanel>

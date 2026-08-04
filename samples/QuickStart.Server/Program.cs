@@ -18,9 +18,9 @@ internal static class Program
 
         // Override the default resolver so progId "Echo" dispatches to the sample's
         // EchoBusinessObject. Order matters: this AddSingleton runs after
-        // AddBeeFramework's DefaultFormBoTypeResolver, so the last registration wins
-        // when the container resolves IFormBoTypeResolver.
-        builder.Services.AddSingleton<IFormBoTypeResolver, QuickStartFormBoTypeResolver>();
+        // AddBeeFramework's DefaultBoTypeResolver, so the last registration wins
+        // when the container resolves IBoTypeResolver.
+        builder.Services.AddSingleton<IBoTypeResolver, QuickStartBoTypeResolver>();
 
         // CORS for the Web.Js.Demo sample (cross-origin JS calling the JSON-RPC endpoint).
         // Demo-only permissive policy — production hosts must restrict origins explicitly.

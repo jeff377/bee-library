@@ -1,6 +1,3 @@
-using Bee.Business.Form;
-using Bee.Business.AuditLog;
-using Bee.Business.System;
 using Bee.Definition;
 using Bee.Definition.Identity;
 using Bee.Definition.Language;
@@ -9,8 +6,8 @@ using Bee.Definition.Storage;
 namespace Bee.Business
 {
     /// <summary>
-    /// Default implementation of <see cref="IBusinessObjectFactory"/>; creates business logic objects
-    /// (<see cref="SystemBusinessObject"/> or <see cref="FormBusinessObject"/>) for incoming API calls.
+    /// Default implementation of <see cref="IBusinessObjectFactory"/>; creates the business logic
+    /// object bound to a progId for incoming API calls.
     /// </summary>
     /// <remarks>
     /// Dependencies are supplied via constructor injection by the host DI container. The injected
@@ -24,7 +21,7 @@ namespace Bee.Business
         private readonly IDefineAccess _defineAccess;
         private readonly ISessionInfoService _sessionInfoService;
         private readonly ILanguageService _languageService;
-        private readonly IFormBoTypeResolver _resolver;
+        private readonly IBoTypeResolver _resolver;
 
         /// <summary>
         /// Initializes a new <see cref="BusinessObjectFactory"/>.
@@ -39,7 +36,7 @@ namespace Bee.Business
             IDefineAccess defineAccess,
             ISessionInfoService sessionInfoService,
             ILanguageService languageService,
-            IFormBoTypeResolver resolver)
+            IBoTypeResolver resolver)
         {
             _services = services ?? throw new ArgumentNullException(nameof(services));
             _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
@@ -49,24 +46,21 @@ namespace Bee.Business
         }
 
         /// <summary>
-        /// Creates a system-level business logic object.
-        /// </summary>
-        /// <param name="accessToken">The access token.</param>
-        /// <param name="isLocalCall">Whether the call originates from a local source.</param>
-        public object CreateSystemBusinessObject(Guid accessToken, bool isLocalCall = true)
-        {
-            var ctx = BuildContext();
-            return new SystemBusinessObject(ctx, accessToken, isLocalCall);
-        }
-
-        /// <summary>
-        /// Creates a form-level business logic object.
+        /// Creates the business logic object registered for the supplied progId.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
         /// <param name="progId">The program identifier.</param>
         /// <param name="isLocalCall">Whether the call originates from a local source.</param>
-        public object CreateFormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
+        /// <remarks>
+        /// One method for every business object, of every family. The type comes from the registry
+        /// and construction is uniform, so the factory needs to know nothing about which family the
+        /// resolved type belongs to — the same property that lets COM+ expose a single
+        /// <c>CoCreateInstance</c>.
+        /// </remarks>
+        public object CreateBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(progId);
+
             var type = _resolver.Resolve(GetCustomizeId(accessToken), progId);
             var ctx = BuildContext();
             return Activator.CreateInstance(type, ctx, accessToken, progId, isLocalCall)!;
@@ -88,17 +82,6 @@ namespace Bee.Business
             if (accessToken == Guid.Empty)
                 return string.Empty;
             return _sessionInfoService.Get(accessToken)?.CustomizeId ?? string.Empty;
-        }
-
-        /// <summary>
-        /// Creates the audit-log business logic object (read-only queries over the <c>st_log_*</c> tables).
-        /// </summary>
-        /// <param name="accessToken">The access token.</param>
-        /// <param name="isLocalCall">Whether the call originates from a local source.</param>
-        public object CreateLogBusinessObject(Guid accessToken, bool isLocalCall = true)
-        {
-            var ctx = BuildContext();
-            return new LogBusinessObject(ctx, accessToken, isLocalCall);
         }
 
         private BeeContext BuildContext() => new BeeContext

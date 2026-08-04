@@ -10,6 +10,7 @@ using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Tests.Shared;
 
+using Bee.Definition;
 namespace Bee.Business.UnitTests.AuditLog
 {
     /// <summary>
@@ -30,7 +31,7 @@ namespace Bee.Business.UnitTests.AuditLog
             var ctx = TestBeeContext.CreateWithOverrides(_fx,
                 (typeof(IAuthorizationService), new FakeAuth(authorized)),
                 (typeof(IAuditLogRepositoryFactory), new StubAuditLogRepositoryFactory(repo)));
-            return new LogBusinessObject(ctx, Guid.NewGuid());
+            return new LogBusinessObject(ctx, Guid.NewGuid(), SysProgIds.AuditLog);
         }
 
         // ---- GetChangeLog (filtered list) ----

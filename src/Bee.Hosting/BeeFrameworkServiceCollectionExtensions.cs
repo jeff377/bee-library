@@ -142,6 +142,13 @@ namespace Bee.Hosting
             services.AddSingleton<ICacheNotifyService, CacheNotifyService>();
             services.AddSingleton<ICacheNotifyReader, CacheNotifyReader>();
 
+            // 6b-2. Reserved progId self-registration. Registered ahead of every other hosted
+            //       service on purpose: hosted services start in registration order (the default,
+            //       HostOptions.ServicesStartConcurrently being false), and this one both writes the
+            //       registry and refuses to start a host whose reserved progIds do not resolve — a
+            //       check worth failing before anything else comes up.
+            services.AddHostedService<Registry.ReservedProgIdRegistrationService>();
+
             // 6c. Cache-notify polling hosted service. The poller publishes observed versions to
             //     CacheInfo.NotifyVersions; each cache entry carrying a matching ChangeNotifyKey
             //     expires on its next read. The poller is only registered when enabled; hosts without
@@ -227,15 +234,20 @@ namespace Bee.Hosting
             //    services.AddSingleton<ILoginAttemptTracker, MyTracker>() after AddBeeFramework.
             //    Tests inject per-call via TestOverrideServiceProvider.
 
-            // 8. Business-object factory + form-bo type resolver.
-            //    ProgramSettingsFormBoTypeResolver looks up ProgramItem.TypeName from
-            //    ProgramSettings.xml; ProgIds without TypeName fall back to FormBusinessObject.
-            services.AddSingleton<IFormBoTypeResolver>(sp =>
-                new ProgramSettingsFormBoTypeResolver(
+            // 8. Business-object factory + progId → BO type resolver.
+            //    ProgramSettingsBoTypeResolver looks up ProgramItem.BusinessObject in
+            //    ProgramSettings.xml. Ordinary progIds without one fall back to FormBusinessObject;
+            //    the reserved progIds resolve to the framework's own objects and fail fast when the
+            //    registry names something that will not load (see ProgramSettingsBoTypeResolver).
+            services.AddSingleton<IBoTypeResolver>(sp =>
+                new ProgramSettingsBoTypeResolver(
                     sp.GetRequiredService<IDefineAccess>(),
                     sp.GetRequiredService<ICustomizeDefineReader>()));
-            services.AddSingleton<IBusinessObjectFactory>(sp =>
-                CreateBusinessObjectFactory(sp, components.BusinessObjectFactory));
+            //    The factory is no longer replaceable through BackendComponents: what it builds is
+            //    decided by the registry, one progId at a time, which is both finer-grained and
+            //    per-tenant. Swapping the whole factory was the only way to change a system business
+            //    object before, and it was process-wide.
+            services.AddSingleton<IBusinessObjectFactory, BusinessObjectFactory>();
 
             // 9. Repository factories — consumed via ctor injection (PR 5.3a dropped the
             //    RepositoryInfo static + bootstrapper).
@@ -412,20 +424,6 @@ namespace Bee.Hosting
                     : DerivedApiEncryptionKeyProvider.FromMasterKey(keys.MasterKey);
             }
             return (IApiEncryptionKeyProvider)ActivatorUtilities.CreateInstance(sp, type);
-        }
-
-        /// <summary>
-        /// Creates the configured <see cref="IBusinessObjectFactory"/>. The default
-        /// <see cref="BusinessObjectFactory"/> ctor needs <see cref="IServiceProvider"/>,
-        /// <see cref="IDefineAccess"/>, <see cref="ISessionInfoService"/>, and
-        /// <see cref="IFormBoTypeResolver"/>.
-        /// </summary>
-        private static IBusinessObjectFactory CreateBusinessObjectFactory(IServiceProvider sp, string? configured)
-        {
-            var typeName = string.IsNullOrWhiteSpace(configured) ? BackendDefaultTypes.BusinessObjectFactory : configured;
-            var type = AssemblyLoader.GetType(typeName)
-                ?? throw new InvalidOperationException($"Type '{typeName}' not found for IBusinessObjectFactory.");
-            return (IBusinessObjectFactory)ActivatorUtilities.CreateInstance(sp, type);
         }
 
         /// <summary>

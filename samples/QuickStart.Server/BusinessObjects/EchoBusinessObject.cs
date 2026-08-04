@@ -8,7 +8,7 @@ namespace QuickStart.Server.BusinessObjects;
 /// <summary>
 /// Demo business object that echoes a message. Inherits <see cref="FormBusinessObject"/>
 /// because the framework dispatches non-"System" progIds through
-/// <c>IBusinessObjectFactory.CreateFormBusinessObject</c>, which expects the
+/// <c>IBusinessObjectFactory.CreateBusinessObject</c>, which expects the
 /// <c>(IBeeContext, Guid, string, bool)</c> constructor signature.
 /// </summary>
 /// <remarks>

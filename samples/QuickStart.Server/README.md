@@ -42,7 +42,7 @@ The console should print `Now listening on: http://localhost:5050`.
 | `DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory())` | `Bee.Db.Providers.Sqlite` — SQLite dialect (form CRUD, schema reflection, DDL) |
 | `SystemSettingsLoader.Load(paths)` | `Bee.Definition.SystemSettingsLoader` — boot-time XML loading |
 | `services.AddBeeFramework(...)` | `Bee.Hosting.BeeFrameworkServiceCollectionExtensions` — backend composition root |
-| `IFormBoTypeResolver` override | `Bee.Business.IFormBoTypeResolver` — custom progId → BO type mapping |
+| `IBoTypeResolver` override | `Bee.Business.IBoTypeResolver` — custom progId → BO type mapping |
 | Empty `: ApiServiceController` controller | `Bee.Api.AspNetCore.Controllers.ApiServiceController` — `[Route("api")]` JSON-RPC endpoint |
 | `[ApiAccessControl(Public, Anonymous)]` | `Bee.Definition.Attributes.ApiAccessControlAttribute` — API access control |
 

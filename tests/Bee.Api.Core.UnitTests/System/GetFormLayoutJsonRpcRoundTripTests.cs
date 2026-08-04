@@ -38,7 +38,7 @@ namespace Bee.Api.Core.UnitTests.System
                 _fx.GetRequiredService<IDefineAccess>(),
                 _fx.GetRequiredService<ISessionInfoService>(),
                 _fx.GetRequiredService<ILanguageService>(),
-                _fx.GetRequiredService<IFormBoTypeResolver>());
+                _fx.GetRequiredService<IBoTypeResolver>());
 
             return new JsonRpcExecutor(
                 boFactory,

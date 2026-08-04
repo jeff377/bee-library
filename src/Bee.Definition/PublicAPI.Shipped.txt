@@ -489,9 +489,6 @@ Bee.Definition.IBeeContext.LanguageService.get -> Bee.Definition.Language.ILangu
 Bee.Definition.IBeeContext.Services.get -> System.IServiceProvider!
 Bee.Definition.IBeeContext.SessionInfoService.get -> Bee.Definition.Identity.ISessionInfoService!
 Bee.Definition.IBusinessObjectFactory
-Bee.Definition.IBusinessObjectFactory.CreateFormBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall = true) -> object!
-Bee.Definition.IBusinessObjectFactory.CreateLogBusinessObject(System.Guid accessToken, bool isLocalCall = true) -> object!
-Bee.Definition.IBusinessObjectFactory.CreateSystemBusinessObject(System.Guid accessToken, bool isLocalCall = true) -> object!
 Bee.Definition.ICacheDataSourceProvider
 Bee.Definition.ICacheDataSourceProvider.GetSessionUser(System.Guid accessToken) -> Bee.Definition.Identity.SessionUser?
 Bee.Definition.IDatabaseSettingsProvider
@@ -1167,8 +1164,6 @@ Bee.Definition.Settings.BackendComponents.AccessTokenValidator.set -> void
 Bee.Definition.Settings.BackendComponents.ApiEncryptionKeyProvider.get -> string!
 Bee.Definition.Settings.BackendComponents.ApiEncryptionKeyProvider.set -> void
 Bee.Definition.Settings.BackendComponents.BackendComponents() -> void
-Bee.Definition.Settings.BackendComponents.BusinessObjectFactory.get -> string!
-Bee.Definition.Settings.BackendComponents.BusinessObjectFactory.set -> void
 Bee.Definition.Settings.BackendComponents.CacheDataSourceProvider.get -> string!
 Bee.Definition.Settings.BackendComponents.CacheDataSourceProvider.set -> void
 Bee.Definition.Settings.BackendComponents.CacheProvider.get -> string!
@@ -1580,7 +1575,6 @@ abstract Bee.Definition.Logging.AuditEntry.AddColumns(System.Collections.Generic
 abstract Bee.Definition.Logging.AuditEntry.TableName.get -> string!
 const Bee.Definition.BackendDefaultTypes.AccessTokenValidator = "Bee.Business.Validator.AccessTokenValidator, Bee.Business" -> string!
 const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DynamicApiEncryptionKeyProvider, Bee.Business" -> string!
-const Bee.Definition.BackendDefaultTypes.BusinessObjectFactory = "Bee.Business.BusinessObjectFactory, Bee.Business" -> string!
 const Bee.Definition.BackendDefaultTypes.CacheDataSourceProvider = "Bee.Business.Providers.CacheDataSourceProvider, Bee.Business" -> string!
 const Bee.Definition.BackendDefaultTypes.CacheProvider = "Bee.ObjectCaching.Providers.MemoryCacheProvider, Bee.ObjectCaching" -> string!
 const Bee.Definition.BackendDefaultTypes.CompanyInfoService = "Bee.ObjectCaching.Services.CompanyInfoService, Bee.ObjectCaching" -> string!

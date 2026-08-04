@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The application's type registry: one flat entry per progId, mapping it to the types bound to
-     it. ProgramSettingsFormBoTypeResolver reads BusinessObject to route a progId to a custom
+     it. ProgramSettingsBoTypeResolver reads BusinessObject to route a progId to a custom
      FormBusinessObject; only Order needs application code, every other entry leaves it empty and
      resolves to the framework's default FormBusinessObject (pure definition CRUD).
 
@@ -10,6 +10,10 @@
      — no code. -->
 <ProgramSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Items>
+    <!-- The reserved System progId, bound to the app's own subclass so login accepts the demo
+         credential without seeding st_user. Before the registry covered every business object this
+         needed a replacement IBusinessObjectFactory; now it is one line of definition. -->
+    <ProgramItem ProgId="System" DisplayName="System" BusinessObject="Bee.Northwind.Server.NorthwindAuthenticatingSystemBusinessObject, Bee.Northwind.Server" />
     <ProgramItem ProgId="Category" DisplayName="Categories" />
     <ProgramItem ProgId="Supplier" DisplayName="Suppliers" />
     <ProgramItem ProgId="Customer" DisplayName="Customers" />

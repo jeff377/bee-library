@@ -10,8 +10,8 @@ namespace Bee.Northwind.Server;
 /// </summary>
 public sealed class NorthwindAuthenticatingSystemBusinessObject : SystemBusinessObject
 {
-    public NorthwindAuthenticatingSystemBusinessObject(IBeeContext ctx, Guid accessToken, bool isLocalCall = true)
-        : base(ctx, accessToken, isLocalCall)
+    public NorthwindAuthenticatingSystemBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+        : base(ctx, accessToken, progId, isLocalCall)
     {
     }
 

@@ -3,6 +3,7 @@ using Bee.Business.System;
 using Bee.Definition.Security;
 using Bee.Tests.Shared;
 
+using Bee.Definition;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
@@ -17,7 +18,7 @@ namespace Bee.Business.UnitTests
 
         private PingResult PingWith(ApiKeyValidationResult validation)
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty)
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System)
             {
                 ApiKeyValidation = validation,
             };

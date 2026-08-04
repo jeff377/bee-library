@@ -16,7 +16,7 @@ namespace Bee.Business.UnitTests.Fakes
             Guid accessToken,
             Func<LoginArgs, (bool Authenticated, string UserName)> authenticator,
             bool isLocalCall = true)
-            : base(ctx, accessToken, isLocalCall)
+            : base(ctx, accessToken, SysProgIds.System, isLocalCall)
         {
             _authenticator = authenticator;
         }

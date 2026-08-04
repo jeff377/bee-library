@@ -128,7 +128,6 @@ namespace Bee.Tests.Shared
             // tests/Define/SystemSettings.xml 已將 MasterKeySource.Type 設為 Environment、
             // Value 設為 BEE_MASTER_KEY，配合本方法開頭的 env var 注入即可解密 payload。
             var settings = SystemSettingsLoader.Load(pathOptions);
-            settings.BackendConfiguration.Components.BusinessObjectFactory = BackendDefaultTypes.BusinessObjectFactory;
             SysInfo.Initialize(settings.CommonConfiguration);
 
             // 用 AddBeeFramework 建 DI 容器。Phase 7 後框架不再有 process-wide 靜態 facade，

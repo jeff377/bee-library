@@ -40,7 +40,7 @@ console 應顯示 `Now listening on: http://localhost:5050`。
 | `DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory())` | `Bee.Db.Providers.Sqlite` — SQLite dialect（form CRUD / schema 反射 / DDL） |
 | `SystemSettingsLoader.Load(paths)` | `Bee.Definition.SystemSettingsLoader` — boot-time 載入 XML |
 | `services.AddBeeFramework(...)` | `Bee.Hosting.BeeFrameworkServiceCollectionExtensions` — backend composition root |
-| `IFormBoTypeResolver` override | `Bee.Business.IFormBoTypeResolver` — 自訂 progId → BO type 對應 |
+| `IBoTypeResolver` override | `Bee.Business.IBoTypeResolver` — 自訂 progId → BO type 對應 |
 | `: ApiServiceController` 空殼 controller | `Bee.Api.AspNetCore.Controllers.ApiServiceController` — `[Route("api")]` JSON-RPC endpoint |
 | `[ApiAccessControl(Public, Anonymous)]` | `Bee.Definition.Attributes.ApiAccessControlAttribute` — API 存取控制 |
 

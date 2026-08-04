@@ -34,6 +34,54 @@ namespace Bee.Base.UnitTests
         private string TempPath(string relative) => Path.Combine(_tempDir, relative);
 
         [Fact]
+        [DisplayName("FileWriteTextAtomic 應以 UTF-8 no BOM 寫入並可讀回")]
+        public void FileWriteTextAtomic_DefaultEncoding_NoBom()
+        {
+            string path = TempPath("atomic.txt");
+            FileUtilities.FileWriteTextAtomic(path, "哈囉 World");
+
+            byte[] raw = File.ReadAllBytes(path);
+            Assert.False(raw.Length >= 3 && raw[0] == 0xEF && raw[1] == 0xBB && raw[2] == 0xBF,
+                "FileWriteTextAtomic 不應寫入 UTF-8 BOM");
+            Assert.Equal("哈囉 World", FileUtilities.FileReadText(path));
+        }
+
+        [Fact]
+        [DisplayName("FileWriteTextAtomic 應取代既有檔案（三參數 File.Move 的 overwrite 語意）")]
+        public void FileWriteTextAtomic_ExistingFile_IsReplaced()
+        {
+            string path = TempPath("atomic-replace.txt");
+            FileUtilities.FileWriteTextAtomic(path, "OLD");
+
+            FileUtilities.FileWriteTextAtomic(path, "NEW");
+
+            Assert.Equal("NEW", FileUtilities.FileReadText(path));
+        }
+
+        [Fact]
+        [DisplayName("FileWriteTextAtomic 不應留下暫存檔")]
+        public void FileWriteTextAtomic_LeavesNoTempFile()
+        {
+            string dir = TempPath("atomic-dir");
+            string path = Path.Combine(dir, "target.xml");
+
+            FileUtilities.FileWriteTextAtomic(path, "<root/>");
+
+            Assert.Equal("target.xml", Assert.Single(Directory.GetFiles(dir).Select(Path.GetFileName)));
+        }
+
+        [Fact]
+        [DisplayName("FileWriteTextAtomic 應自動建立目標目錄")]
+        public void FileWriteTextAtomic_CreatesDirectory()
+        {
+            string path = TempPath(Path.Combine("nested", "deeper", "file.txt"));
+
+            FileUtilities.FileWriteTextAtomic(path, "x");
+
+            Assert.True(File.Exists(path));
+        }
+
+        [Fact]
         [DisplayName("FileWriteText 預設應以 UTF-8 no BOM 寫入並可讀回")]
         public void FileWriteText_DefaultEncoding_NoBom()
         {

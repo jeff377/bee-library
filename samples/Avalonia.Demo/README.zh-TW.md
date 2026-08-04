@@ -58,7 +58,7 @@ dotnet run --configuration Debug
 | Login → token | [src/Bee.Api.Client/Connectors/SystemApiConnector.cs](../../src/Bee.Api.Client/Connectors/SystemApiConnector.cs)（LoginAsync） |
 | Employee 表單渲染 | [src/Bee.UI.Avalonia/Controls/FormView.cs](../../src/Bee.UI.Avalonia/Views/FormView.cs) → DynamicForm / DynamicGrid |
 | FormSchema fallback | `FormView` 的 ResolveSystemConnector / ResolveFormConnector / ResolveAccessToken |
-| CRUD wire path | FormApiConnector → RemoteApiProvider → QuickStart.Server `ApiController` → DemoBusinessObjectFactory → FormBusinessObject |
+| CRUD wire path | FormApiConnector → RemoteApiProvider → QuickStart.Server `ApiController` → BusinessObjectFactory → FormBusinessObject |
 
 ## 與其他 demo 的關係
 

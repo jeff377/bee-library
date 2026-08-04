@@ -5,6 +5,7 @@ using Bee.Definition.Database;
 using Bee.Definition.Identity;
 using Bee.Tests.Shared;
 
+using Bee.Definition;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
@@ -36,7 +37,7 @@ namespace Bee.Business.UnitTests
         public void Get_AfterCacheEviction_RebuildsFromSeed()
         {
             var accessToken = LoginAsSeedUser();
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System);
             try
             {
                 bo.EnterCompany(new EnterCompanyArgs { CompanyId = SeedCompanyId });
@@ -60,7 +61,7 @@ namespace Bee.Business.UnitTests
             }
             finally
             {
-                new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken).Logout(new LogoutArgs());
+                new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System).Logout(new LogoutArgs());
             }
         }
 
@@ -80,7 +81,7 @@ namespace Bee.Business.UnitTests
             }
             finally
             {
-                new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken).Logout(new LogoutArgs());
+                new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System).Logout(new LogoutArgs());
             }
         }
 
@@ -89,7 +90,7 @@ namespace Bee.Business.UnitTests
         public void Get_AfterLogout_DoesNotRebuild()
         {
             var accessToken = LoginAsSeedUser();
-            new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken).Logout(new LogoutArgs());
+            new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System).Logout(new LogoutArgs());
 
             Assert.Null(SessionService.Get(accessToken));
         }

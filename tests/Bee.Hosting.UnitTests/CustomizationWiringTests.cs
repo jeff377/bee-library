@@ -95,7 +95,7 @@ namespace Bee.Hosting.UnitTests
             using var sp = BuildProvider(_customizeDir);
 
             Assert.NotNull(sp.GetRequiredService<Bee.Definition.Language.ILanguageService>());
-            Assert.NotNull(sp.GetRequiredService<Bee.Business.IFormBoTypeResolver>());
+            Assert.NotNull(sp.GetRequiredService<Bee.Business.IBoTypeResolver>());
             Assert.NotNull(sp.GetRequiredService<IDefineAccess>());
         }
 

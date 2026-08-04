@@ -17,7 +17,7 @@ namespace Bee.Samples.Shared;
 /// <summary>
 /// One-line bootstrap for the Blazor demos. Resolves the shared
 /// <c>samples/Define</c> directory, registers SQLite, loads SystemSettings,
-/// wires <c>AddBeeFramework</c>, then swaps in <see cref="DemoBusinessObjectFactory"/>
+/// wires <c>AddBeeFramework</c>; <c>Define/ProgramSettings.xml</c> binds the reserved "System" progId
 /// so the login panel can authenticate against <see cref="DemoCredentials"/>
 /// without seeding system tables.
 /// </summary>
@@ -78,10 +78,9 @@ public static class DemoBackend
             paths,
             autoCreateMasterKey: true);
 
-        // Replace the default factory so SystemBusinessObject calls (Login etc.) dispatch
-        // to DemoAuthenticatingSystemBusinessObject. The default IFormBoTypeResolver is left
-        // in place — Employee CRUD continues to resolve via FormBusinessObject.
-        builder.Services.AddSingleton<IBusinessObjectFactory, DemoBusinessObjectFactory>();
+        // Nothing to register for the custom login: Define/ProgramSettings.xml binds the reserved
+        // progId "System" to DemoAuthenticatingSystemBusinessObject, and the framework resolves it
+        // from there like any other progId.
 
         return paths;
     }

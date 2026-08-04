@@ -10,7 +10,7 @@ namespace Bee.Business.UnitTests.Fakes
     public class TestableBusinessObject : BusinessObject
     {
         public TestableBusinessObject(IBeeContext ctx, Guid accessToken, bool isLocalCall = true)
-            : base(ctx, accessToken, isLocalCall)
+            : base(ctx, accessToken, "TestProg", isLocalCall)
         {
         }
 
@@ -39,7 +39,7 @@ namespace Bee.Business.UnitTests.Fakes
     public class BareBusinessObject : BusinessObject
     {
         public BareBusinessObject(IBeeContext ctx, Guid accessToken, bool isLocalCall = true)
-            : base(ctx, accessToken, isLocalCall)
+            : base(ctx, accessToken, "TestProg", isLocalCall)
         {
         }
     }

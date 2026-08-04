@@ -17,11 +17,6 @@ namespace Bee.Definition
         /// Default access token validator, used to verify the validity of access tokens.
         /// </summary>
         public const string AccessTokenValidator = "Bee.Business.Validator.AccessTokenValidator, Bee.Business";
-        /// <summary>
-        /// Default business object factory type, used for creating BusinessObjects per API call.
-        /// </summary>
-        public const string BusinessObjectFactory = "Bee.Business.BusinessObjectFactory, Bee.Business";
-
         // ---------------- Cache ----------------
         /// <summary>
         /// Default cache provider type.

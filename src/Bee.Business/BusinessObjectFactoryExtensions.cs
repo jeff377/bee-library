@@ -1,3 +1,4 @@
+using Bee.Business.AuditLog;
 using Bee.Business.Form;
 using Bee.Business.System;
 using Bee.Definition;
@@ -36,7 +37,7 @@ namespace Bee.Business
             bool isLocalCall = true)
         {
             ArgumentNullException.ThrowIfNull(factory);
-            return (IFormBusinessObject)factory.CreateFormBusinessObject(accessToken, progId, isLocalCall);
+            return (IFormBusinessObject)factory.CreateBusinessObject(accessToken, progId, isLocalCall);
         }
 
         /// <summary>
@@ -51,7 +52,22 @@ namespace Bee.Business
             bool isLocalCall = true)
         {
             ArgumentNullException.ThrowIfNull(factory);
-            return (ISystemBusinessObject)factory.CreateSystemBusinessObject(accessToken, isLocalCall);
+            return (ISystemBusinessObject)factory.CreateBusinessObject(accessToken, SysProgIds.System, isLocalCall);
+        }
+
+        /// <summary>
+        /// Creates the audit-log business object and returns it as <see cref="ILogBusinessObject"/>.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="isLocalCall">Indicates whether the call originates from a local source.</param>
+        public static ILogBusinessObject CreateLogBO(
+            this IBusinessObjectFactory factory,
+            Guid accessToken,
+            bool isLocalCall = true)
+        {
+            ArgumentNullException.ThrowIfNull(factory);
+            return (ILogBusinessObject)factory.CreateBusinessObject(accessToken, SysProgIds.AuditLog, isLocalCall);
         }
     }
 }

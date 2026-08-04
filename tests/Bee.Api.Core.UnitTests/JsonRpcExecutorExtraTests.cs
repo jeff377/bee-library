@@ -188,12 +188,12 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("Execute 於非 System progId 應進入 CreateFormBusinessObject 分支")]
-        public void Execute_NonSystemProgId_InvokesCreateFormBusinessObject()
+        [DisplayName("Execute 於非 System progId 應進入 CreateBusinessObject 分支")]
+        public void Execute_NonSystemProgId_InvokesCreateBusinessObject()
         {
             // 使用已定義的 Department progId,未知 action 會被 MissingMethodException 攔截;
             // 無論 Form BO 是否成功建立,CreateBusinessObject 的 else 分支
-            // 皆會被執行,覆蓋 CreateFormBusinessObject 的 delegation。
+            // 皆會被執行,覆蓋 CreateBusinessObject 的 delegation。
             var request = new JsonRpcRequest
             {
                 Method = "Department.DefinitelyNotAMethod",

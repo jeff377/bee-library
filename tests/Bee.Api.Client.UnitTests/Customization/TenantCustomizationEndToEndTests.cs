@@ -73,12 +73,12 @@ namespace Bee.Api.Client.UnitTests.Customization
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("進入帶 customize_id 的公司後，BO 型別應解析為客製 ProgramSettings 綁定的型別")]
-        public async Task CreateFormBusinessObject_AfterEnteringCustomizedCompany_ResolvesTenantType()
+        public async Task CreateBusinessObject_Form_AfterEnteringCustomizedCompany_ResolvesTenantType()
         {
             using var scope = await TenantScope.EnterAsync(this, TenantCustomizationFixture.CustomizeId);
 
             var bo = _fx.GetRequiredService<IBusinessObjectFactory>()
-                .CreateFormBusinessObject(scope.AccessToken, TenantCustomizationFixture.ProgId);
+                .CreateBusinessObject(scope.AccessToken, TenantCustomizationFixture.ProgId);
 
             Assert.IsType<TenantCustomerBusinessObject>(bo);
         }
@@ -134,12 +134,12 @@ namespace Bee.Api.Client.UnitTests.Customization
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("跨租戶隔離：另一個 customize_id 的 BO 型別應解析為框架預設 FormBusinessObject")]
-        public async Task CreateFormBusinessObject_OtherTenantWithoutOverrides_ResolvesDefaultType()
+        public async Task CreateBusinessObject_Form_OtherTenantWithoutOverrides_ResolvesDefaultType()
         {
             using var scope = await TenantScope.EnterAsync(this, TenantCustomizationFixture.UncustomizedId);
 
             var bo = _fx.GetRequiredService<IBusinessObjectFactory>()
-                .CreateFormBusinessObject(scope.AccessToken, TenantCustomizationFixture.ProgId);
+                .CreateBusinessObject(scope.AccessToken, TenantCustomizationFixture.ProgId);
 
             Assert.IsType<FormBusinessObject>(bo);
         }
@@ -190,14 +190,14 @@ namespace Bee.Api.Client.UnitTests.Customization
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("回歸防護：未進公司的 session 應解析為框架預設 FormBusinessObject")]
-        public void CreateFormBusinessObject_SessionWithoutCompany_ResolvesDefaultType()
+        public void CreateBusinessObject_Form_SessionWithoutCompany_ResolvesDefaultType()
         {
             var sessions = _fx.GetRequiredService<ISessionInfoService>();
             var accessToken = TestSessionFactory.CreateAccessToken(_fx, SeedUserId);
             try
             {
                 var bo = _fx.GetRequiredService<IBusinessObjectFactory>()
-                    .CreateFormBusinessObject(accessToken, TenantCustomizationFixture.ProgId);
+                    .CreateBusinessObject(accessToken, TenantCustomizationFixture.ProgId);
 
                 Assert.IsType<FormBusinessObject>(bo);
             }

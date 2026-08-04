@@ -25,11 +25,20 @@ namespace Bee.Business
         /// </summary>
         /// <param name="ctx">The per-call context aggregating cross-cutting services.</param>
         /// <param name="accessToken">The access token.</param>
+        /// <param name="progId">The program identifier this instance was addressed by.</param>
         /// <param name="isLocalCall">Whether the call originates from a local source.</param>
-        protected BusinessObject(IBeeContext ctx, Guid accessToken, bool isLocalCall = true)
+        /// <remarks>
+        /// Every business object is reached by progId and is created from the progId to type
+        /// registry, so the identifier belongs on the base rather than on one derived family. The
+        /// uniform signature is what lets the factory construct any registered type without knowing
+        /// which family it belongs to — the same reason COM+ has a single <c>CoCreateInstance</c>
+        /// rather than one entry point per component kind.
+        /// </remarks>
+        protected BusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
         {
             _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
             AccessToken = accessToken;
+            ProgId = progId ?? string.Empty;
             IsLocalCall = isLocalCall;
         }
 
@@ -39,6 +48,16 @@ namespace Bee.Business
         /// Gets the access token.
         /// </summary>
         public Guid AccessToken { get; }
+
+        /// <summary>
+        /// Gets the program identifier this instance was addressed by.
+        /// </summary>
+        /// <remarks>
+        /// Meaningful to the form family, which resolves its schema and repository from it. The
+        /// system and audit-log objects accept it for signature uniformity and do not read it: they
+        /// each serve a single reserved progId, so it tells them nothing they did not already know.
+        /// </remarks>
+        public string ProgId { get; }
 
         /// <summary>
         /// Gets the session information.

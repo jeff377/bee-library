@@ -8,30 +8,48 @@ using Bee.Definition.Storage;
 namespace Bee.Business
 {
     /// <summary>
-    /// Resolves the concrete <see cref="FormBusinessObject"/>-derived type for a given
-    /// progId by looking up <c>ProgramItem.BusinessObject</c> in <see cref="ProgramSettings"/>,
-    /// with an optional tenant customization overlay via <see cref="ICustomizeDefineReader"/>.
+    /// Resolves the concrete <see cref="BusinessObject"/>-derived type for a given progId by
+    /// looking up <c>ProgramItem.BusinessObject</c> in <see cref="ProgramSettings"/>, with an
+    /// optional tenant customization overlay via <see cref="ICustomizeDefineReader"/>.
     /// </summary>
     /// <remarks>
-    /// Resolution behaviour (silent fallback on misconfiguration to avoid taking the
-    /// whole system down for a single bad entry):
-    /// <list type="bullet">
-    ///   <item><description><c>ProgramSettings.xml</c> missing — returns <see cref="FormBusinessObject"/>. Hosts that have not yet shipped a ProgramSettings file behave as if every progId is unregistered.</description></item>
-    ///   <item><description>ProgId not registered in <see cref="ProgramSettings"/> — returns <see cref="FormBusinessObject"/>.</description></item>
-    ///   <item><description>ProgId registered but <c>BusinessObject</c> empty — returns <see cref="FormBusinessObject"/>.</description></item>
-    ///   <item><description><c>BusinessObject</c> set but the type cannot be loaded — returns <see cref="FormBusinessObject"/>.</description></item>
-    ///   <item><description><c>BusinessObject</c> set and loaded but the type is not assignable to <see cref="FormBusinessObject"/> — returns <see cref="FormBusinessObject"/>.</description></item>
-    ///   <item><description><c>BusinessObject</c> set, loaded, and assignable — returns that type.</description></item>
-    /// </list>
-    /// When a non-empty customization code is supplied, the customization <see cref="ProgramSettings"/>
-    /// is consulted first (per-progId: a customization entry wins, otherwise the base entry applies).
-    /// base and cust settings are never merged.
-    ///
+    /// <para>
+    /// <b>Ordinary progIds — silent fallback</b>, so one bad entry does not take the whole system
+    /// down. Missing <c>ProgramSettings.xml</c>, unregistered progId, empty <c>BusinessObject</c>,
+    /// a type name that will not load, or a type that does not derive from
+    /// <see cref="BusinessObject"/> all yield <see cref="FormBusinessObject"/>, which serves
+    /// definition-driven CRUD. The cost of a misconfigured <c>Order</c> is that it degrades to
+    /// generic CRUD — annoying, not an outage.
+    /// </para>
+    /// <para>
+    /// <b>Reserved progIds — fail fast.</b> The same policy applied to <c>System</c> would produce
+    /// a misleading failure: a <see cref="FormBusinessObject"/> has no <c>Login</c>, so the symptom
+    /// would be a JSON-RPC "method not found" pointing the diagnosis at the API layer rather than
+    /// at the registry. A named type that will not load, or one that does not derive from the
+    /// binding's <see cref="ReservedProgIdBinding.ExpectedBaseType"/>, therefore throws.
+    /// </para>
+    /// <para>
+    /// A reserved progId that the registry does not mention at all resolves to the framework's own
+    /// type. That is not the rejected "fall back on failure" policy — nothing failed, the entry is
+    /// simply absent, and it is exactly what startup self-registration is there to fill in. Keeping
+    /// it here rather than mutating the cached <see cref="ProgramSettings"/> is what lets a
+    /// read-only deployment start at all: the registration result takes part in resolution whether
+    /// or not the file write succeeded, and the process-wide cache instance is never mutated (see
+    /// <c>docs/development-constraints.md</c>, Definition Data Immutability After Init). A
+    /// <b>customization typo still fails</b>, because that entry exists and simply will not load.
+    /// </para>
+    /// <para>
+    /// When a non-empty customization code is supplied, the customization
+    /// <see cref="ProgramSettings"/> is consulted first (per-progId: a customization entry wins,
+    /// otherwise the base entry applies). Base and customization settings are never merged.
+    /// </para>
+    /// <para>
     /// Resolved types are cached keyed by <c>(customizeId, progId)</c>. When either the base or a
     /// customization <see cref="ProgramSettings"/> instance changes (e.g. after a file-watcher
     /// reload, detected by reference inequality), the type cache is reset on the next call.
+    /// </para>
     /// </remarks>
-    public sealed class ProgramSettingsFormBoTypeResolver : IFormBoTypeResolver
+    public sealed class ProgramSettingsBoTypeResolver : IBoTypeResolver
     {
         private readonly IDefineAccess _defineAccess;
         private readonly ICustomizeDefineReader? _customizeReader;
@@ -41,21 +59,21 @@ namespace Bee.Business
         private readonly ConcurrentDictionary<string, ProgramSettings?> _lastCustRefs = new(StringComparer.Ordinal);
 
         /// <summary>
-        /// Initializes a new <see cref="ProgramSettingsFormBoTypeResolver"/> without customization
-        /// support (pure base layer). Backward-compatible convenience overload.
+        /// Initializes a new <see cref="ProgramSettingsBoTypeResolver"/> without customization
+        /// support (pure base layer). Convenience overload.
         /// </summary>
         /// <param name="defineAccess">The define access used to load <see cref="ProgramSettings"/>.</param>
-        public ProgramSettingsFormBoTypeResolver(IDefineAccess defineAccess) : this(defineAccess, null)
+        public ProgramSettingsBoTypeResolver(IDefineAccess defineAccess) : this(defineAccess, null)
         {
         }
 
         /// <summary>
-        /// Initializes a new <see cref="ProgramSettingsFormBoTypeResolver"/> with an optional
+        /// Initializes a new <see cref="ProgramSettingsBoTypeResolver"/> with an optional
         /// tenant customization reader.
         /// </summary>
         /// <param name="defineAccess">The define access used to load <see cref="ProgramSettings"/>.</param>
         /// <param name="customizeReader">The customization-override reader; <c>null</c> disables the overlay (pure base layer).</param>
-        public ProgramSettingsFormBoTypeResolver(IDefineAccess defineAccess, ICustomizeDefineReader? customizeReader)
+        public ProgramSettingsBoTypeResolver(IDefineAccess defineAccess, ICustomizeDefineReader? customizeReader)
         {
             _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
             _customizeReader = customizeReader;
@@ -134,38 +152,61 @@ namespace Bee.Business
             // Which layer wins is decided by CustomizeOverlay — the same class a client runs over
             // the two copies it fetched, so both ends resolve identically.
             var item = CustomizeOverlay.FindProgramItem(custSettings, baseSettings, progId);
+            var reserved = ReservedProgIds.Find(progId);
+
             if (item == null || string.IsNullOrWhiteSpace(item.BusinessObject))
-                return typeof(FormBusinessObject);
+            {
+                // A reserved progId the registry does not name yet resolves to the framework's own
+                // type — the startup self-registration result, taking effect whether or not it
+                // managed to reach the file. Ordinary progIds get the generic CRUD object.
+                return reserved?.DefaultType ?? typeof(FormBusinessObject);
+            }
 
             Type? type;
             try
             {
-                // AssemblyLoader.LoadAssembly throws FileNotFoundException when the
-                // assembly cannot be located; AssemblyLoader.GetType returns null
-                // when the assembly loads but the type is absent. Both cases mean
-                // "unresolvable BusinessObject type name" — fall back rather than crash the host.
+                // AssemblyLoader.LoadAssembly throws FileNotFoundException when the assembly cannot
+                // be located; AssemblyLoader.GetType returns null when the assembly loads but the
+                // type is absent. Both mean "unresolvable BusinessObject type name".
                 type = AssemblyLoader.GetType(item.BusinessObject);
             }
-            catch (FileNotFoundException)
+            catch (Exception ex) when (ex is FileNotFoundException or FileLoadException or BadImageFormatException)
             {
-                return typeof(FormBusinessObject);
-            }
-            catch (FileLoadException)
-            {
-                return typeof(FormBusinessObject);
-            }
-            catch (BadImageFormatException)
-            {
-                return typeof(FormBusinessObject);
+                return Unresolvable(reserved, progId, item.BusinessObject, ex);
             }
 
             if (type == null)
-                return typeof(FormBusinessObject);
+                return Unresolvable(reserved, progId, item.BusinessObject, inner: null);
 
-            if (!typeof(FormBusinessObject).IsAssignableFrom(type))
+            var expectedBase = reserved?.ExpectedBaseType ?? typeof(BusinessObject);
+            if (!expectedBase.IsAssignableFrom(type))
+            {
+                if (reserved != null)
+                {
+                    throw new InvalidOperationException(
+                        $"ProgramSettings registers reserved progId '{progId}' as '{item.BusinessObject}', " +
+                        $"which does not derive from {expectedBase.FullName}. " +
+                        "A reserved progId must resolve to the framework's business object for that axis, or a subclass of it.");
+                }
                 return typeof(FormBusinessObject);
+            }
 
             return type;
+        }
+
+        /// <summary>
+        /// Decides what an unloadable <c>BusinessObject</c> type name means: a hard failure for a
+        /// reserved progId, a silent degrade to generic CRUD for an ordinary one.
+        /// </summary>
+        private static Type Unresolvable(ReservedProgIdBinding? reserved, string progId, string typeName, Exception? inner)
+        {
+            if (reserved == null)
+                return typeof(FormBusinessObject);
+
+            throw new InvalidOperationException(
+                $"ProgramSettings registers reserved progId '{progId}' as '{typeName}', which cannot be loaded. " +
+                "Fix the assembly-qualified type name, or remove the entry to fall back to the framework default.",
+                inner);
         }
     }
 }

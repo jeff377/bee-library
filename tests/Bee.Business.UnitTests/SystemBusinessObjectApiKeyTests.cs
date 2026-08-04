@@ -10,6 +10,7 @@ using Bee.Definition.Security;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Tests.Shared;
 
+using Bee.Definition;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
@@ -30,7 +31,7 @@ namespace Bee.Business.UnitTests
         /// 本機呼叫端（<c>isLocalCall</c> 預設 true），即部署期在主機上的呼叫路徑。
         /// </summary>
         private SystemBusinessObject CreateBo()
-            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
 
         private static string NewSysId() => "bo-" + Guid.NewGuid().ToString("N");
 
@@ -154,7 +155,7 @@ namespace Bee.Business.UnitTests
         {
             var ctx = TestBeeContext.CreateWithOverrides(_fx,
                 (typeof(IDeploymentAuthorizationService), new FakeDeploymentAuthorization(allowed: false)));
-            var bo = new SystemBusinessObject(ctx, Guid.NewGuid(), isLocalCall: false);
+            var bo = new SystemBusinessObject(ctx, Guid.NewGuid(), SysProgIds.System, isLocalCall: false);
 
             // 授權在輸入驗證之前：合法的 args 也照樣被擋，拒絕的理由不會被輸入錯誤蓋掉。
             Assert.Throws<UnauthorizedAccessException>(() =>
@@ -225,7 +226,7 @@ namespace Bee.Business.UnitTests
                 token = NewSession(userId);
 
                 // 尚無管理員的部署必須鑄得出第一把金鑰，否則階段 1 保留的 bootstrap 路徑就斷了。
-                var result = new SystemBusinessObject(TestBeeContext.Create(_fx), token)
+                var result = new SystemBusinessObject(TestBeeContext.Create(_fx), token, SysProgIds.System)
                     .CreateApiKey(new CreateApiKeyArgs { SysId = sysId, SysName = "Bootstrap" });
 
                 Assert.Equal(sysId, result.SysId);
@@ -240,7 +241,7 @@ namespace Bee.Business.UnitTests
         /// 遠端呼叫端（<c>isLocalCall: false</c>），走真實的 <see cref="IDeploymentAuthorizationService"/>。
         /// </summary>
         private SystemBusinessObject RemoteBo(Guid accessToken)
-            => new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, isLocalCall: false);
+            => new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System, isLocalCall: false);
 
         private Guid NewSession(string userId)
             => CreateBo().CreateSession(new CreateSessionArgs { UserID = userId, ExpiresIn = 600 }).AccessToken;

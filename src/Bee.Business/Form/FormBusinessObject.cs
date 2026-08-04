@@ -29,17 +29,10 @@ namespace Bee.Business.Form
         /// <param name="progId">The program identifier.</param>
         /// <param name="isLocalCall">Whether the call originates from a local source.</param>
         public FormBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
-            : base(ctx, accessToken, isLocalCall)
-        {
-            ProgId = progId;
-        }
+            : base(ctx, accessToken, progId, isLocalCall)
+        { }
 
         #endregion
-
-        /// <summary>
-        /// Gets the program identifier.
-        /// </summary>
-        public string ProgId { get; }
 
         /// <summary>
         /// Override to provide the implementation for <see cref="BusinessObject.ExecFunc"/>.
@@ -61,7 +54,7 @@ namespace Bee.Business.Form
 
         /// <summary>
         /// Retrieves list-view rows by executing the FormSchema-driven SELECT statement
-        /// for <see cref="ProgId"/>.
+        /// for <see cref="BusinessObject.ProgId"/>.
         /// </summary>
         /// <param name="args">The input arguments.</param>
         /// <remarks>

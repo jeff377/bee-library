@@ -4,6 +4,7 @@
 *REMOVED*const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DynamicApiEncryptionKeyProvider, Bee.Business" -> string!
 Bee.Definition.Customization.CustomizeOverlay
 Bee.Definition.DefineType.MenuSettings = 11 -> Bee.Definition.DefineType
+Bee.Definition.IBusinessObjectFactory.CreateBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall = true) -> object!
 Bee.Definition.ICacheDataSourceProvider.GetApiKey(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
 Bee.Definition.ICacheDataSourceProvider.GetApiKeyGateState() -> Bee.Definition.Security.ApiKeyGateState!
 Bee.Definition.ICacheDataSourceProvider.GetCompanyInfo(string! companyId) -> Bee.Definition.Identity.CompanyInfo?

@@ -26,7 +26,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("Ping 應回傳包含 TraceId 與 OK 狀態的 PingResult")]
         public void Ping_ReturnsOkResult()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
             var result = bo.Ping(new PingArgs { TraceId = "T-42", ClientName = "unit" });
 
             Assert.NotNull(result);
@@ -39,7 +39,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetCommonConfiguration 應回傳非空 XML")]
         public void GetCommonConfiguration_ReturnsXml()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
             var result = bo.GetCommonConfiguration(new GetCommonConfigurationArgs());
 
             Assert.NotNull(result);
@@ -50,7 +50,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetDefine(SystemSettings) 非本地呼叫應拋 NotSupportedException")]
         public void GetDefine_SystemSettings_NonLocal_Throws()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, isLocalCall: false);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System, isLocalCall: false);
             Assert.Throws<NotSupportedException>(() =>
                 bo.GetDefine(new GetDefineArgs { DefineType = DefineType.SystemSettings }));
         }
@@ -59,7 +59,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetDefine(DatabaseSettings) 非本地呼叫應拋 NotSupportedException")]
         public void GetDefine_DatabaseSettings_NonLocal_Throws()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, isLocalCall: false);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System, isLocalCall: false);
             Assert.Throws<NotSupportedException>(() =>
                 bo.GetDefine(new GetDefineArgs { DefineType = DefineType.DatabaseSettings }));
         }
@@ -68,7 +68,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetDefine(FormSchema) 本地呼叫應回傳含 XML 的結果")]
         public void GetDefine_FormSchema_ReturnsXml()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, isLocalCall: true);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System, isLocalCall: true);
             var result = bo.GetDefine(new GetDefineArgs
             {
                 DefineType = DefineType.FormSchema,
@@ -83,7 +83,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("SaveDefine(SystemSettings) 非本地呼叫應拋 NotSupportedException")]
         public void SaveDefine_SystemSettings_NonLocal_Throws()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, isLocalCall: false);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System, isLocalCall: false);
             Assert.Throws<NotSupportedException>(() =>
                 bo.SaveDefine(new SaveDefineArgs { DefineType = DefineType.SystemSettings, Xml = "<x/>" }));
         }
@@ -92,7 +92,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("SaveDefine(DatabaseSettings) 非本地呼叫應拋 NotSupportedException")]
         public void SaveDefine_DatabaseSettings_NonLocal_Throws()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, isLocalCall: false);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System, isLocalCall: false);
             Assert.Throws<NotSupportedException>(() =>
                 bo.SaveDefine(new SaveDefineArgs { DefineType = DefineType.DatabaseSettings, Xml = "<x/>" }));
         }
@@ -101,7 +101,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("CheckPackageUpdate 基底實作應拋 NotSupportedException")]
         public void CheckPackageUpdate_BaseImpl_Throws()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
             Assert.Throws<NotSupportedException>(() =>
                 bo.CheckPackageUpdate(new CheckPackageUpdateArgs()));
         }
@@ -110,7 +110,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetPackage 基底實作應拋 NotSupportedException")]
         public void GetPackage_BaseImpl_Throws()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
             Assert.Throws<NotSupportedException>(() =>
                 bo.GetPackage(new GetPackageArgs()));
         }

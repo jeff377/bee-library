@@ -118,10 +118,18 @@ namespace Bee.Definition.Storage
         /// Saves the program settings.
         /// </summary>
         /// <param name="settings">The program settings.</param>
+        /// <remarks>
+        /// Written atomically, unlike the other definitions: several instances of a host may start
+        /// at once and each self-register the reserved progIds into this one file. A plain write
+        /// could interleave into a truncated file that then fails to parse on the next start, while
+        /// an atomic replace leaves every reader seeing either the old file or the new one. The
+        /// content is idempotent, so which writer wins does not matter.
+        /// </remarks>
         public void SaveProgramSettings(ProgramSettings settings)
         {
             string filePath = _paths.GetProgramSettingsFilePath();
-            XmlCodec.SerializeToFile(settings, filePath);
+            FileUtilities.FileWriteTextAtomic(filePath, XmlCodec.Serialize(settings));
+            settings.SetObjectFilePath(filePath);
         }
 
         /// <summary>

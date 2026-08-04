@@ -248,7 +248,7 @@ var defineResult = systemBo.GetDefine(new GetDefineArgs { /* ... */ });
 **呼叫端在不能引用 `Bee.Business` 的專案時**（例如 `Bee.Api.Core` 內部派發路徑），仍直接用 `IBusinessObjectFactory.CreateXxxBusinessObject(...)` 拿 `object` 後 cast：
 
 ```csharp
-var rawBo = factory.CreateFormBusinessObject(token, progId);
+var rawBo = factory.CreateBusinessObject(token, progId);
 // 此情境下通常不會 cast 到 IFormBusinessObject（會引入 Bee.Business 依賴），
 // 而是經由 reflection / dynamic dispatch 操作。
 ```
@@ -353,7 +353,7 @@ public class <Action>JsonRpcRoundTripTests : IClassFixture<BeeTestFixture>
             overrideServices,
             _fx.GetRequiredService<IDefineAccess>(),
             _fx.GetRequiredService<ISessionInfoService>(),
-            _fx.GetRequiredService<IFormBoTypeResolver>());
+            _fx.GetRequiredService<IBoTypeResolver>());
 
         var executor = new JsonRpcExecutor(
             boFactory,

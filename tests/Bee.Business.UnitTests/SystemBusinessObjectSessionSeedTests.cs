@@ -7,6 +7,7 @@ using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
 using Bee.Tests.Shared;
 
+using Bee.Definition;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
@@ -35,7 +36,7 @@ namespace Bee.Business.UnitTests
         }
 
         private SystemBusinessObject CreateBo(Guid accessToken)
-            => new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+            => new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken, SysProgIds.System);
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("Login 應寫入未帶公司的種子")]

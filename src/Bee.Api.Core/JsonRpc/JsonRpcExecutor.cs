@@ -358,17 +358,18 @@ namespace Bee.Api.Core.JsonRpc
         /// <param name="accessToken">The access token.</param>
         /// <param name="progId">The program identifier.</param>
         /// <returns>The business object instance.</returns>
+        /// <remarks>
+        /// No dispatch of its own: the reserved progIds resolve through the same registry as every
+        /// other, so the transport layer has nothing left to decide. It used to branch on
+        /// <c>System</c> and <c>AuditLog</c>, which meant two identifiers were progIds on the wire
+        /// but not in the registry.
+        /// </remarks>
         private object CreateBusinessObject(Guid accessToken, string progId)
         {
             if (string.IsNullOrWhiteSpace(progId))
                 throw new ArgumentException("ProgId cannot be null or empty.", nameof(progId));
 
-            if (progId == SysProgIds.System)
-                return _boFactory.CreateSystemBusinessObject(accessToken, IsLocalCall);
-            else if (progId == SysProgIds.AuditLog)
-                return _boFactory.CreateLogBusinessObject(accessToken, IsLocalCall);
-            else
-                return _boFactory.CreateFormBusinessObject(accessToken, progId, IsLocalCall);
+            return _boFactory.CreateBusinessObject(accessToken, progId, IsLocalCall);
         }
     }
 

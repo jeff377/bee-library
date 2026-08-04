@@ -29,9 +29,10 @@ namespace Bee.Business.AuditLog
         /// </summary>
         /// <param name="ctx">The per-call context aggregating cross-cutting services.</param>
         /// <param name="accessToken">The access token.</param>
+        /// <param name="progId">The program identifier; always <see cref="SysProgIds.AuditLog"/>, accepted for signature uniformity and not read.</param>
         /// <param name="isLocalCall">Whether the call originates from a local source.</param>
-        public LogBusinessObject(IBeeContext ctx, Guid accessToken, bool isLocalCall = true)
-            : base(ctx, accessToken, isLocalCall)
+        public LogBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+            : base(ctx, accessToken, progId, isLocalCall)
         { }
 
         /// <summary>

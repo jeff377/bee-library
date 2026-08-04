@@ -21,7 +21,7 @@ namespace Bee.Business.UnitTests
         private sealed class ExposedBusinessObject : BusinessObject
         {
             public ExposedBusinessObject(IBeeContext ctx, Guid accessToken)
-                : base(ctx, accessToken) { }
+                : base(ctx, accessToken, "TestProg") { }
 
             public IDefineAccess ExposedDefineAccess => DefineAccess;
             public ISessionInfoService ExposedSessionInfoService => SessionInfoService;

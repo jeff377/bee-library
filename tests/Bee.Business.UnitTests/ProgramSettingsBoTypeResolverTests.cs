@@ -11,9 +11,9 @@ using Bee.Definition.Storage;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
-    /// <see cref="ProgramSettingsFormBoTypeResolver"/> 的單元測試。
+    /// <see cref="ProgramSettingsBoTypeResolver"/> 的單元測試。
     /// </summary>
-    public class ProgramSettingsFormBoTypeResolverTests
+    public class ProgramSettingsBoTypeResolverTests
     {
         // Test subclass used to verify the "valid FormBusinessObject derivative" branch.
         // Reachable via its assembly-qualified type name from inside the same test assembly.
@@ -42,7 +42,7 @@ namespace Bee.Business.UnitTests
         public void Resolve_ProgramSettingsFileMissing_FallsBackToFormBusinessObject()
         {
             var defineAccess = new ThrowingDefineAccess();
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
             var result = resolver.Resolve("P001");
 
@@ -54,7 +54,7 @@ namespace Bee.Business.UnitTests
         public void Resolve_ProgIdNotRegistered_ReturnsFormBusinessObject()
         {
             var defineAccess = new ProgramSettingsDefineAccess(new ProgramSettings());
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
             var result = resolver.Resolve("UNKNOWN");
 
@@ -66,7 +66,7 @@ namespace Bee.Business.UnitTests
         public void Resolve_BusinessObjectEmpty_ReturnsFormBusinessObject()
         {
             var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("P001", null)));
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
             var result = resolver.Resolve("P001");
 
@@ -79,7 +79,7 @@ namespace Bee.Business.UnitTests
         {
             var settings = BuildSettings(("P001", "NonExistent.Bo, NonExistent.Assembly"));
             var defineAccess = new ProgramSettingsDefineAccess(settings);
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
             var result = resolver.Resolve("P001");
 
@@ -93,7 +93,7 @@ namespace Bee.Business.UnitTests
             // System.Object is a real type but not assignable to FormBusinessObject.
             var settings = BuildSettings(("P001", "System.Object, System.Private.CoreLib"));
             var defineAccess = new ProgramSettingsDefineAccess(settings);
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
             var result = resolver.Resolve("P001");
 
@@ -106,7 +106,7 @@ namespace Bee.Business.UnitTests
         {
             var settings = BuildSettings(("P001", TestableCustomFormBoFqn));
             var defineAccess = new ProgramSettingsDefineAccess(settings);
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
             var result = resolver.Resolve("P001");
 
@@ -119,7 +119,7 @@ namespace Bee.Business.UnitTests
         {
             var settings = BuildSettings(("P001", TestableCustomFormBoFqn));
             var defineAccess = new ProgramSettingsDefineAccess(settings);
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
             var first = resolver.Resolve("P001");
 
@@ -139,7 +139,7 @@ namespace Bee.Business.UnitTests
         {
             var first = BuildSettings(("P001", TestableCustomFormBoFqn));
             var defineAccess = new ProgramSettingsDefineAccess(first);
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
             var initial = resolver.Resolve("P001");
             Assert.Equal(typeof(TestableCustomFormBo), initial);

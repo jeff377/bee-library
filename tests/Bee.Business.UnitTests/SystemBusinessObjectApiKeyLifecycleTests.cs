@@ -12,6 +12,7 @@ using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Tests.Shared;
 
+using Bee.Definition;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
@@ -32,7 +33,7 @@ namespace Bee.Business.UnitTests
         private IDbConnectionManager ConnectionManager => _fx.GetRequiredService<IDbConnectionManager>();
 
         private SystemBusinessObject CreateBo()
-            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
 
         private static string NewSysId() => "life-" + Guid.NewGuid().ToString("N");
 
@@ -218,7 +219,7 @@ namespace Bee.Business.UnitTests
         {
             var ctx = TestBeeContext.CreateWithOverrides(_fx,
                 (typeof(IDeploymentAuthorizationService), new DenyingDeploymentAuthorization()));
-            var bo = new SystemBusinessObject(ctx, Guid.NewGuid(), isLocalCall: false);
+            var bo = new SystemBusinessObject(ctx, Guid.NewGuid(), SysProgIds.System, isLocalCall: false);
 
             Assert.Throws<UnauthorizedAccessException>(() => Invoke(bo, action));
         }
@@ -250,7 +251,7 @@ namespace Bee.Business.UnitTests
                 var ctx = TestBeeContext.CreateWithOverrides(_fx,
                     (typeof(AuditLogOptions), new AuditLogOptions { Enabled = true }),
                     (typeof(IAuditLogWriter), writer));
-                var bo = new SystemBusinessObject(ctx, Guid.Empty);
+                var bo = new SystemBusinessObject(ctx, Guid.Empty, SysProgIds.System);
 
                 bo.SetApiKeyEnabled(new SetApiKeyEnabledArgs { SysId = sysId, Enabled = false });
 

@@ -4,6 +4,7 @@ Bee.Base.Security.ApiKeyHasher
 const Bee.Base.Security.ApiKeyFormat.MaxSysIdLength = 50 -> int
 const Bee.Base.Security.ApiKeyFormat.MinSysIdLength = 3 -> int
 const Bee.Base.Security.ApiKeyFormat.Separator = '.' -> char
+static Bee.Base.FileUtilities.FileWriteTextAtomic(string! filePath, string! contents) -> void
 static Bee.Base.Security.ApiKeyFormat.Compose(string! sysId, string! secret) -> string!
 static Bee.Base.Security.ApiKeyFormat.CreateSecret() -> string!
 static Bee.Base.Security.ApiKeyFormat.IsValidSysId(string? sysId) -> bool

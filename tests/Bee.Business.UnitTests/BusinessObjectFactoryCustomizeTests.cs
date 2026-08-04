@@ -8,14 +8,14 @@ namespace Bee.Business.UnitTests
 {
     /// <summary>
     /// <see cref="BusinessObjectFactory"/> 的 BO 型別解析客製化接線測試：
-    /// 應以 <c>SessionInfo.CustomizeId</c> 呼叫 <see cref="IFormBoTypeResolver.Resolve(string, string)"/>；
+    /// 應以 <c>SessionInfo.CustomizeId</c> 呼叫 <see cref="IBoTypeResolver.Resolve(string, string)"/>；
     /// 無 session / CustomizeId 為空時傳空字串（解析結果逐位元同現況）。
     /// </summary>
     public class BusinessObjectFactoryCustomizeTests
     {
         [Fact]
-        [DisplayName("CreateFormBusinessObject 應以 session 的 CustomizeId 解析 BO 型別")]
-        public void CreateFormBusinessObject_PassesSessionCustomizeIdToResolver()
+        [DisplayName("CreateBusinessObject 應以 session 的 CustomizeId 解析 BO 型別")]
+        public void CreateBusinessObject_Form_PassesSessionCustomizeIdToResolver()
         {
             var resolver = new SpyResolver();
             var token = Guid.NewGuid();
@@ -23,7 +23,7 @@ namespace Bee.Business.UnitTests
             sessions.Add(new SessionInfo { AccessToken = token, CustomizeId = "acme" });
             var factory = CreateFactory(resolver, sessions);
 
-            factory.CreateFormBusinessObject(token, "P001");
+            factory.CreateBusinessObject(token, "P001");
 
             Assert.Equal("acme", resolver.LastCustomizeId);
             Assert.Equal("P001", resolver.LastProgId);
@@ -31,7 +31,7 @@ namespace Bee.Business.UnitTests
 
         [Fact]
         [DisplayName("解析出的客製 BO 型別應被實際建立")]
-        public void CreateFormBusinessObject_InstantiatesResolvedType()
+        public void CreateBusinessObject_Form_InstantiatesResolvedType()
         {
             var resolver = new SpyResolver { ResolvedType = typeof(TenantFormBo) };
             var token = Guid.NewGuid();
@@ -39,7 +39,7 @@ namespace Bee.Business.UnitTests
             sessions.Add(new SessionInfo { AccessToken = token, CustomizeId = "acme" });
             var factory = CreateFactory(resolver, sessions);
 
-            var bo = factory.CreateFormBusinessObject(token, "P001");
+            var bo = factory.CreateBusinessObject(token, "P001");
 
             Assert.IsType<TenantFormBo>(bo);
         }
@@ -48,7 +48,7 @@ namespace Bee.Business.UnitTests
 
         [Fact]
         [DisplayName("回歸防護：session 未設 CustomizeId 時應以空字串解析（純 base）")]
-        public void CreateFormBusinessObject_SessionWithoutCustomizeId_PassesEmpty()
+        public void CreateBusinessObject_Form_SessionWithoutCustomizeId_PassesEmpty()
         {
             var resolver = new SpyResolver();
             var token = Guid.NewGuid();
@@ -56,20 +56,20 @@ namespace Bee.Business.UnitTests
             sessions.Add(new SessionInfo { AccessToken = token });
             var factory = CreateFactory(resolver, sessions);
 
-            factory.CreateFormBusinessObject(token, "P001");
+            factory.CreateBusinessObject(token, "P001");
 
             Assert.Equal(string.Empty, resolver.LastCustomizeId);
         }
 
         [Fact]
         [DisplayName("回歸防護：AccessToken 為空時不查 session，以空字串解析")]
-        public void CreateFormBusinessObject_EmptyAccessToken_SkipsSessionLookup()
+        public void CreateBusinessObject_Form_EmptyAccessToken_SkipsSessionLookup()
         {
             var resolver = new SpyResolver();
             var sessions = new StubSessionInfoService();
             var factory = CreateFactory(resolver, sessions);
 
-            factory.CreateFormBusinessObject(Guid.Empty, "P001");
+            factory.CreateBusinessObject(Guid.Empty, "P001");
 
             Assert.Equal(string.Empty, resolver.LastCustomizeId);
             Assert.Equal(0, sessions.GetCallCount);
@@ -77,13 +77,13 @@ namespace Bee.Business.UnitTests
 
         [Fact]
         [DisplayName("回歸防護：session 不存在時以空字串解析，不拋例外")]
-        public void CreateFormBusinessObject_NoSession_PassesEmpty()
+        public void CreateBusinessObject_Form_NoSession_PassesEmpty()
         {
             var resolver = new SpyResolver();
             var sessions = new StubSessionInfoService(); // 未註冊任何 session
             var factory = CreateFactory(resolver, sessions);
 
-            var exception = Record.Exception(() => factory.CreateFormBusinessObject(Guid.NewGuid(), "P001"));
+            var exception = Record.Exception(() => factory.CreateBusinessObject(Guid.NewGuid(), "P001"));
 
             Assert.Null(exception);
             Assert.Equal(string.Empty, resolver.LastCustomizeId);
@@ -100,13 +100,13 @@ namespace Bee.Business.UnitTests
         // DefineAccess / LanguageService are only forwarded onto the BeeContext and never touched by
         // the resolution path under test, but the factory ctor null-checks every dependency, so
         // inert stubs stand in for them.
-        private static BusinessObjectFactory CreateFactory(IFormBoTypeResolver resolver, ISessionInfoService sessions)
+        private static BusinessObjectFactory CreateFactory(IBoTypeResolver resolver, ISessionInfoService sessions)
             => new BusinessObjectFactory(
                 new EmptyServiceProvider(), new FakeDefineAccess(), sessions, new InertLanguageService(), resolver);
 
         // ---- Test doubles ----
 
-        private sealed class SpyResolver : IFormBoTypeResolver
+        private sealed class SpyResolver : IBoTypeResolver
         {
             public Type ResolvedType { get; set; } = typeof(FormBusinessObject);
             public string? LastCustomizeId { get; private set; }

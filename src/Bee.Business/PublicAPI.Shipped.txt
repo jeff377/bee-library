@@ -137,7 +137,6 @@ Bee.Business.AuditLog.LogAggregateResult.LogAggregateResult() -> void
 Bee.Business.AuditLog.LogAggregateResult.Table.get -> System.Data.DataTable?
 Bee.Business.AuditLog.LogAggregateResult.Table.set -> void
 Bee.Business.AuditLog.LogBusinessObject
-Bee.Business.AuditLog.LogBusinessObject.LogBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, bool isLocalCall = true) -> void
 Bee.Business.AuditLog.LogListResult
 Bee.Business.AuditLog.LogListResult.LogListResult() -> void
 Bee.Business.AuditLog.LogListResult.Paging.get -> Bee.Definition.Paging.PagingInfo?
@@ -151,7 +150,6 @@ Bee.Business.BusinessArgs.Parameters.set -> void
 Bee.Business.BusinessObject
 Bee.Business.BusinessObject.AccessToken.get -> System.Guid
 Bee.Business.BusinessObject.BoFactory.get -> Bee.Definition.IBusinessObjectFactory!
-Bee.Business.BusinessObject.BusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, bool isLocalCall = true) -> void
 Bee.Business.BusinessObject.CreateDataFormRepository(string! progId) -> Bee.Repository.Abstractions.Form.IDataFormRepository!
 Bee.Business.BusinessObject.DefineAccess.get -> Bee.Definition.Storage.IDefineAccess!
 Bee.Business.BusinessObject.ExecFunc(Bee.Business.ExecFuncArgs! args) -> Bee.Business.ExecFuncResult!
@@ -166,18 +164,11 @@ Bee.Business.BusinessObject.Services.get -> System.IServiceProvider!
 Bee.Business.BusinessObject.SessionInfo.get -> Bee.Definition.Identity.SessionInfo?
 Bee.Business.BusinessObject.SessionInfoService.get -> Bee.Definition.Identity.ISessionInfoService!
 Bee.Business.BusinessObjectFactory
-Bee.Business.BusinessObjectFactory.BusinessObjectFactory(System.IServiceProvider! services, Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Definition.Language.ILanguageService! languageService, Bee.Business.IFormBoTypeResolver! resolver) -> void
-Bee.Business.BusinessObjectFactory.CreateFormBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall = true) -> object!
-Bee.Business.BusinessObjectFactory.CreateLogBusinessObject(System.Guid accessToken, bool isLocalCall = true) -> object!
-Bee.Business.BusinessObjectFactory.CreateSystemBusinessObject(System.Guid accessToken, bool isLocalCall = true) -> object!
 Bee.Business.BusinessObjectFactoryExtensions
 Bee.Business.BusinessResult
 Bee.Business.BusinessResult.BusinessResult() -> void
 Bee.Business.BusinessResult.Parameters.get -> Bee.Definition.Collections.ParameterCollection!
 Bee.Business.BusinessResult.Parameters.set -> void
-Bee.Business.DefaultFormBoTypeResolver
-Bee.Business.DefaultFormBoTypeResolver.DefaultFormBoTypeResolver() -> void
-Bee.Business.DefaultFormBoTypeResolver.Resolve(string! progId) -> System.Type!
 Bee.Business.ExecFuncArgs
 Bee.Business.ExecFuncArgs.ExecFuncArgs() -> void
 Bee.Business.ExecFuncArgs.ExecFuncArgs(string! funcID) -> void
@@ -206,7 +197,6 @@ Bee.Business.Form.DeleteResult.RowsAffected.get -> int
 Bee.Business.Form.DeleteResult.RowsAffected.set -> void
 Bee.Business.Form.FormBusinessObject
 Bee.Business.Form.FormBusinessObject.FormBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = true) -> void
-Bee.Business.Form.FormBusinessObject.ProgId.get -> string!
 Bee.Business.Form.FormRuleProcessor
 Bee.Business.Form.FormRuleProcessor.ApplyBeforeDelete(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! snapshot, string! timeZoneId = "") -> void
 Bee.Business.Form.FormRuleProcessor.ApplyBeforeSave(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! dataSet, Bee.Definition.RoundingContext! roundingContext, string! timeZoneId = "") -> void
@@ -287,17 +277,9 @@ Bee.Business.IBusinessObject
 Bee.Business.IBusinessObject.ExecFunc(Bee.Business.ExecFuncArgs! args) -> Bee.Business.ExecFuncResult!
 Bee.Business.IBusinessObject.ExecFuncAnonymous(Bee.Business.ExecFuncArgs! args) -> Bee.Business.ExecFuncResult!
 Bee.Business.IExecFuncHandler
-Bee.Business.IFormBoTypeResolver
-Bee.Business.IFormBoTypeResolver.Resolve(string! customizeId, string! progId) -> System.Type!
-Bee.Business.IFormBoTypeResolver.Resolve(string! progId) -> System.Type!
 Bee.Business.Permission.ScopeResolver
 Bee.Business.Permission.ScopeResolver.ResolveFilter(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action, Bee.Definition.Forms.FormSchema! formSchema) -> Bee.Definition.Filters.FilterNode?
 Bee.Business.Permission.ScopeResolver.ScopeResolver(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Definition.Identity.IRolePermissionService! rolePermissionService, Bee.Definition.Organization.IDepartmentTreeService! departmentTreeService, Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
-Bee.Business.ProgramSettingsFormBoTypeResolver
-Bee.Business.ProgramSettingsFormBoTypeResolver.ProgramSettingsFormBoTypeResolver(Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
-Bee.Business.ProgramSettingsFormBoTypeResolver.ProgramSettingsFormBoTypeResolver(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Definition.Storage.ICustomizeDefineReader? customizeReader) -> void
-Bee.Business.ProgramSettingsFormBoTypeResolver.Resolve(string! customizeId, string! progId) -> System.Type!
-Bee.Business.ProgramSettingsFormBoTypeResolver.Resolve(string! progId) -> System.Type!
 Bee.Business.Providers.CacheDataSourceProvider
 Bee.Business.Providers.CacheDataSourceProvider.CacheDataSourceProvider(Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory) -> void
 Bee.Business.Providers.CacheDataSourceProvider.GetSessionUser(System.Guid accessToken) -> Bee.Definition.Identity.SessionUser?
@@ -491,7 +473,6 @@ Bee.Business.System.SaveDefineArgs.Xml.set -> void
 Bee.Business.System.SaveDefineResult
 Bee.Business.System.SaveDefineResult.SaveDefineResult() -> void
 Bee.Business.System.SystemBusinessObject
-Bee.Business.System.SystemBusinessObject.SystemBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, bool isLocalCall = true) -> void
 Bee.Business.Validator.AccessTokenValidator
 Bee.Business.Validator.AccessTokenValidator.AccessTokenValidator(Bee.Definition.Identity.ISessionInfoService! sessionInfoService) -> void
 Bee.Business.Validator.AccessTokenValidator.Validate(System.Guid accessToken) -> bool

@@ -99,7 +99,7 @@ description: 在 bee-library（或畢業後的獨立 repo）搭一個「獨立 B
 ## Part 6 — ProgramSettings 身兼兩職
 
 `Define/ProgramSettings.xml` 一檔兩用：
-1. **BO 綁定**：`ProgramItem.BusinessObject="Ns.Type, Asm"` → `ProgramSettingsFormBoTypeResolver` 載入自訂 `FormBusinessObject`。空 → 框架預設（純定義 CRUD）。
+1. **BO 綁定**：`ProgramItem.BusinessObject="Ns.Type, Asm"` → `ProgramSettingsBoTypeResolver` 載入自訂 `FormBusinessObject`。空 → 框架預設（純定義 CRUD）。
 2. **導航選單來源**：前端從 `ClientInfo.DefineAccess.GetProgramSettings()` 列舉 category→header、item→表單連結（資料驅動，非硬編 `NavItems`）。`ProgramCategory` 做選單分組（與 DB 的 common/company 無關）。
 
 > GetDefine 透過 `GetDefineResult.Xml`（XML-string）傳輸；定義型別 XML-serializable 即可遠端取（與 FormSchema 同路徑）。`SystemBusinessObject.GetDefine` 只擋遠端取 `SystemSettings`/`DatabaseSettings`，ProgramSettings 可遠端取。

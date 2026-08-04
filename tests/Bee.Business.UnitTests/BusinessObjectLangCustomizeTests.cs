@@ -139,7 +139,7 @@ namespace Bee.Business.UnitTests
         /// </summary>
         private sealed class LangProbeBusinessObject : BusinessObject
         {
-            public LangProbeBusinessObject(IBeeContext ctx, Guid accessToken) : base(ctx, accessToken) { }
+            public LangProbeBusinessObject(IBeeContext ctx, Guid accessToken) : base(ctx, accessToken, "TestProg") { }
 
             public string CallGetLangText(string fullKey) => GetLangText(fullKey);
 

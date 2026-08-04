@@ -6,6 +6,7 @@ using Bee.Definition.Database;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Tests.Shared;
 
+using Bee.Definition;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
@@ -23,7 +24,7 @@ namespace Bee.Business.UnitTests
         public SystemBusinessObjectDeploymentAdminTests(SharedDbFixture fx) { _fx = fx; }
 
         private SystemBusinessObject CreateBo()
-            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
+            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
 
         private IDbConnectionManager ConnectionManager => _fx.GetRequiredService<IDbConnectionManager>();
 

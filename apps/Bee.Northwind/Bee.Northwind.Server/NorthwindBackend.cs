@@ -18,7 +18,7 @@ namespace Bee.Northwind.Server;
 /// <summary>
 /// One-line bootstrap for the Bee.Northwind demo. Resolves the sibling <c>Define</c>
 /// directory, registers SQLite, loads SystemSettings, wires <c>AddBeeFramework</c>, then
-/// swaps in <see cref="NorthwindBusinessObjectFactory"/> so login authenticates against
+/// binds the reserved "System" progId in ProgramSettings.xml so login authenticates against
 /// <see cref="NorthwindCredentials"/> without seeding system tables.
 /// </summary>
 /// <remarks>
@@ -77,10 +77,9 @@ public static class NorthwindBackend
             paths,
             autoCreateMasterKey: true);
 
-        // Replace the default factory so SystemBusinessObject calls (Login etc.) dispatch
-        // to NorthwindAuthenticatingSystemBusinessObject. The default IFormBoTypeResolver
-        // is left in place — Category CRUD continues to resolve via FormBusinessObject.
-        builder.Services.AddSingleton<IBusinessObjectFactory, NorthwindBusinessObjectFactory>();
+        // Nothing to register for the custom login: Define/ProgramSettings.xml binds the reserved
+        // progId "System" to NorthwindAuthenticatingSystemBusinessObject, and the framework
+        // resolves it from there like any other progId.
 
         // Replace the default ICompanyInfoService (which reads st_company) with a hard-coded
         // demo company, so company-scoped forms route to the company database without seeding

@@ -11,19 +11,19 @@ using Bee.Definition.Storage;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
-    /// <see cref="ProgramSettingsFormBoTypeResolver"/> 補洞覆蓋測試：建構子 null 防護、
+    /// <see cref="ProgramSettingsBoTypeResolver"/> 補洞覆蓋測試：建構子 null 防護、
     /// 型別載入成功但型別不存在（GetType→null）回退、客製 ProgramSettings reference 變更觸發 cache reset、
     /// FindItem 跨多個 category 尋找。
     /// </summary>
-    public class ProgramSettingsFormBoTypeResolverCoverageTests
+    public class ProgramSettingsBoTypeResolverCoverageTests
     {
         private static string BaseFormBoFqn =>
-            $"{typeof(ProgramSettingsFormBoTypeResolverTests.TestableCustomFormBo).FullName}, " +
-            $"{typeof(ProgramSettingsFormBoTypeResolverTests.TestableCustomFormBo).Assembly.GetName().Name}";
+            $"{typeof(ProgramSettingsBoTypeResolverTests.TestableCustomFormBo).FullName}, " +
+            $"{typeof(ProgramSettingsBoTypeResolverTests.TestableCustomFormBo).Assembly.GetName().Name}";
 
         private static string TenantFormBoFqn =>
-            $"{typeof(ProgramSettingsFormBoTypeResolverCustomizeTests.TenantFormBo).FullName}, " +
-            $"{typeof(ProgramSettingsFormBoTypeResolverCustomizeTests.TenantFormBo).Assembly.GetName().Name}";
+            $"{typeof(ProgramSettingsBoTypeResolverCustomizeTests.TenantFormBo).FullName}, " +
+            $"{typeof(ProgramSettingsBoTypeResolverCustomizeTests.TenantFormBo).Assembly.GetName().Name}";
 
         private static ProgramSettings BuildSettings(params (string progId, string? businessObject)[] items)
         {
@@ -41,7 +41,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("建構子 defineAccess 為 null 應丟 ArgumentNullException")]
         public void Ctor_NullDefineAccess_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new ProgramSettingsFormBoTypeResolver(null!));
+            Assert.Throws<ArgumentNullException>(() => new ProgramSettingsBoTypeResolver(null!));
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace Bee.Business.UnitTests
         {
             var settings = BuildSettings(("P001", "Bee.Business.NoSuchTypeXyz, Bee.Business"));
             var defineAccess = new MutableDefineAccess(settings);
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
             var result = resolver.Resolve("P001");
 
@@ -64,10 +64,10 @@ namespace Bee.Business.UnitTests
             var defineAccess = new MutableDefineAccess(BuildSettings(("P001", BaseFormBoFqn)));
             var reader = new MutableCustomizeReader();
             reader.Set("acme", BuildSettings(("P001", TenantFormBoFqn)));
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess, reader);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, reader);
 
             var first = resolver.Resolve("acme", "P001");
-            Assert.Equal(typeof(ProgramSettingsFormBoTypeResolverCustomizeTests.TenantFormBo), first);
+            Assert.Equal(typeof(ProgramSettingsBoTypeResolverCustomizeTests.TenantFormBo), first);
 
             // File-watcher reload: hand back a new instance that no longer carries P001 at all.
             reader.Set("acme", BuildSettings(("P999", null)));
@@ -75,7 +75,7 @@ namespace Bee.Business.UnitTests
             var second = resolver.Resolve("acme", "P001");
 
             // Cust no longer overrides P001 → falls through to the base entry's BO.
-            Assert.Equal(typeof(ProgramSettingsFormBoTypeResolverTests.TestableCustomFormBo), second);
+            Assert.Equal(typeof(ProgramSettingsBoTypeResolverTests.TestableCustomFormBo), second);
         }
 
         [Fact]
@@ -84,11 +84,11 @@ namespace Bee.Business.UnitTests
         {
             var defineAccess = new MutableDefineAccess(
                 BuildSettings(("P001", null), ("P002", TenantFormBoFqn), ("P003", null)));
-            var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
             var result = resolver.Resolve("P002");
 
-            Assert.Equal(typeof(ProgramSettingsFormBoTypeResolverCustomizeTests.TenantFormBo), result);
+            Assert.Equal(typeof(ProgramSettingsBoTypeResolverCustomizeTests.TenantFormBo), result);
         }
 
         // ---- Test doubles ----
