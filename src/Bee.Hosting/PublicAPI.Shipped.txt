@@ -5,4 +5,10 @@ Bee.Hosting.CacheNotify.CacheNotifyPollSession.CacheNotifyPollSession(string! da
 Bee.Hosting.CacheNotify.CacheNotifyPollSession.Poll() -> void
 Bee.Hosting.CacheNotify.CacheNotifyPoller
 Bee.Hosting.CacheNotify.CacheNotifyPoller.CacheNotifyPoller(Bee.Db.CacheNotify.ICacheNotifyReader! reader, Bee.Definition.Settings.CacheNotifyOptions! options, Microsoft.Extensions.Logging.ILogger<Bee.Hosting.CacheNotify.CacheNotifyPoller!>! logger) -> void
+Bee.Hosting.Registry.ReservedProgIdRegistrationService
+Bee.Hosting.Registry.ReservedProgIdRegistrationService.ReservedProgIdRegistrationService(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Business.IBoTypeResolver! resolver, Microsoft.Extensions.Logging.ILogger<Bee.Hosting.Registry.ReservedProgIdRegistrationService!>! logger) -> void
+Bee.Hosting.Registry.ReservedProgIdRegistrationService.StartAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Bee.Hosting.Registry.ReservedProgIdRegistrationService.StopAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Bee.Hosting.Session.ExpiredSessionCleanupService
+Bee.Hosting.Session.ExpiredSessionCleanupService.ExpiredSessionCleanupService(Bee.Repository.Abstractions.Factories.IRepositoryFactory! repositoryFactory, Bee.Definition.Settings.SessionCleanupOptions! options, Microsoft.Extensions.Logging.ILogger<Bee.Hosting.Session.ExpiredSessionCleanupService!>! logger) -> void
 static Bee.Hosting.BeeFrameworkServiceCollectionExtensions.AddBeeFramework(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Bee.Definition.Settings.BackendConfiguration! configuration, Bee.Definition.PathOptions! pathOptions, bool autoCreateMasterKey = false) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

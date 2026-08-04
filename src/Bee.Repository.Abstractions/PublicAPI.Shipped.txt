@@ -83,20 +83,9 @@ Bee.Repository.Abstractions.AuditLog.LoginLogQuery.ToUtc.get -> System.DateTime?
 Bee.Repository.Abstractions.AuditLog.LoginLogQuery.ToUtc.init -> void
 Bee.Repository.Abstractions.AuditLog.LoginLogQuery.UserId.get -> string?
 Bee.Repository.Abstractions.AuditLog.LoginLogQuery.UserId.init -> void
-Bee.Repository.Abstractions.Factories.IAuditLogRepositoryFactory
-Bee.Repository.Abstractions.Factories.IAuditLogRepositoryFactory.CreateAuditLogRepository() -> Bee.Repository.Abstractions.AuditLog.IAuditLogRepository!
-Bee.Repository.Abstractions.Factories.IFormRepositoryFactory
-Bee.Repository.Abstractions.Factories.IFormRepositoryFactory.CreateDataFormRepository(string! progId, System.Guid accessToken) -> Bee.Repository.Abstractions.Form.IDataFormRepository!
-Bee.Repository.Abstractions.Factories.IFormRepositoryFactory.CreateReportFormRepository(string! progId) -> Bee.Repository.Abstractions.Form.IReportFormRepository!
-Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory
-Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateCompanyRepository() -> Bee.Repository.Abstractions.System.ICompanyRepository!
-Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateDatabaseRepository() -> Bee.Repository.Abstractions.System.IDatabaseRepository!
-Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateDepartmentRepository() -> Bee.Repository.Abstractions.System.IDepartmentRepository!
-Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateEmployeeRepository() -> Bee.Repository.Abstractions.System.IEmployeeRepository!
-Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateRolePermissionRepository() -> Bee.Repository.Abstractions.System.IRolePermissionRepository!
-Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateSessionRepository() -> Bee.Repository.Abstractions.System.ISessionRepository!
-Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateUserCompanyRepository() -> Bee.Repository.Abstractions.System.IUserCompanyRepository!
-Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateUserRepository() -> Bee.Repository.Abstractions.System.IUserRepository!
+Bee.Repository.Abstractions.Factories.IRepositoryFactory
+Bee.Repository.Abstractions.Factories.IRepositoryFactory.Create<T>(System.Guid accessToken = default(System.Guid)) -> T!
+Bee.Repository.Abstractions.Factories.IRepositoryFactory.CreateFormRepository<T>(System.Guid accessToken, string! progId) -> T!
 Bee.Repository.Abstractions.Form.DataFormListResult
 Bee.Repository.Abstractions.Form.DataFormListResult.DataFormListResult() -> void
 Bee.Repository.Abstractions.Form.DataFormListResult.Paging.get -> Bee.Definition.Paging.PagingInfo?
@@ -110,9 +99,16 @@ Bee.Repository.Abstractions.Form.IDataFormRepository.GetData(System.Guid rowId, 
 Bee.Repository.Abstractions.Form.IDataFormRepository.GetList(string! selectFields, Bee.Definition.Filters.FilterNode? filter, Bee.Definition.Sorting.SortFieldCollection? sortFields, Bee.Definition.Paging.PagingOptions? paging = null) -> Bee.Repository.Abstractions.Form.DataFormListResult!
 Bee.Repository.Abstractions.Form.IDataFormRepository.GetNewData(string! timeZoneId = "") -> System.Data.DataSet!
 Bee.Repository.Abstractions.Form.IDataFormRepository.Save(System.Data.DataSet! dataSet) -> (System.Data.DataSet? Refreshed, System.Collections.Generic.Dictionary<string!, int>! AffectedRows)
-Bee.Repository.Abstractions.Form.IReportFormRepository
 Bee.Repository.Abstractions.IRepositoryDatabaseRouter
 Bee.Repository.Abstractions.IRepositoryDatabaseRouter.Resolve(Bee.Definition.DbScope scope, System.Guid accessToken) -> string!
+Bee.Repository.Abstractions.System.IApiKeyRepository
+Bee.Repository.Abstractions.System.IApiKeyRepository.Exists(string! sysId) -> bool
+Bee.Repository.Abstractions.System.IApiKeyRepository.GetEnabledById(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
+Bee.Repository.Abstractions.System.IApiKeyRepository.GetGateState() -> Bee.Definition.Security.ApiKeyGateState!
+Bee.Repository.Abstractions.System.IApiKeyRepository.GetList() -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Security.ApiKeySummary!>!
+Bee.Repository.Abstractions.System.IApiKeyRepository.Insert(Bee.Definition.Security.ApiKeyInfo! apiKey) -> void
+Bee.Repository.Abstractions.System.IApiKeyRepository.SetEnabled(string! sysId, bool enabled) -> bool
+Bee.Repository.Abstractions.System.IApiKeyRepository.SetExpiry(string! sysId, System.DateTime? expiredAt) -> bool
 Bee.Repository.Abstractions.System.ICompanyRepository
 Bee.Repository.Abstractions.System.ICompanyRepository.GetById(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
 Bee.Repository.Abstractions.System.IDatabaseRepository
@@ -126,10 +122,31 @@ Bee.Repository.Abstractions.System.IRolePermissionRepository
 Bee.Repository.Abstractions.System.IRolePermissionRepository.GetRoleGrants(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Identity.RoleGrantRow!>!
 Bee.Repository.Abstractions.System.IRolePermissionRepository.GetUserRoles(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Identity.UserRoleRow!>!
 Bee.Repository.Abstractions.System.ISessionRepository
-Bee.Repository.Abstractions.System.ISessionRepository.CreateSession(string! userID, int expiresIn = 3600, bool oneTime = false) -> Bee.Definition.Identity.SessionUser!
+Bee.Repository.Abstractions.System.ISessionRepository.DeleteExpiredSessions() -> int
+Bee.Repository.Abstractions.System.ISessionRepository.DeleteSession(System.Guid accessToken) -> void
 Bee.Repository.Abstractions.System.ISessionRepository.GetSession(System.Guid accessToken) -> Bee.Definition.Identity.SessionUser?
+Bee.Repository.Abstractions.System.ISessionRepository.InsertSession(Bee.Definition.Identity.SessionUser! sessionUser) -> void
+Bee.Repository.Abstractions.System.ISessionRepository.UpdateSession(Bee.Definition.Identity.SessionUser! sessionUser) -> void
 Bee.Repository.Abstractions.System.IUserCompanyRepository
 Bee.Repository.Abstractions.System.IUserCompanyRepository.HasAccess(string! userId, string! companyId) -> bool
 Bee.Repository.Abstractions.System.IUserRepository
+Bee.Repository.Abstractions.System.IUserRepository.GetLocale(string! userId) -> Bee.Repository.Abstractions.System.UserLocale
+Bee.Repository.Abstractions.System.IUserRepository.GetName(string! userId) -> string?
 Bee.Repository.Abstractions.System.IUserRepository.GetRowIdBySysId(string! userId) -> System.Guid
-Bee.Repository.Abstractions.System.IUserRepository.GetTimeZone(string! userId) -> string!
+Bee.Repository.Abstractions.System.IUserRepository.IsDeploymentAdmin(string! userId) -> bool
+Bee.Repository.Abstractions.System.IUserRepository.SetDeploymentAdmin(string! userId, bool isDeploymentAdmin) -> bool
+Bee.Repository.Abstractions.System.UserLocale
+Bee.Repository.Abstractions.System.UserLocale.Culture.get -> string!
+Bee.Repository.Abstractions.System.UserLocale.Culture.init -> void
+Bee.Repository.Abstractions.System.UserLocale.Deconstruct(out string! TimeZone, out string! Culture) -> void
+Bee.Repository.Abstractions.System.UserLocale.Equals(Bee.Repository.Abstractions.System.UserLocale other) -> bool
+Bee.Repository.Abstractions.System.UserLocale.TimeZone.get -> string!
+Bee.Repository.Abstractions.System.UserLocale.TimeZone.init -> void
+Bee.Repository.Abstractions.System.UserLocale.UserLocale() -> void
+Bee.Repository.Abstractions.System.UserLocale.UserLocale(string! TimeZone, string! Culture) -> void
+override Bee.Repository.Abstractions.System.UserLocale.GetHashCode() -> int
+static Bee.Repository.Abstractions.System.UserLocale.Empty.get -> Bee.Repository.Abstractions.System.UserLocale
+static Bee.Repository.Abstractions.System.UserLocale.operator !=(Bee.Repository.Abstractions.System.UserLocale left, Bee.Repository.Abstractions.System.UserLocale right) -> bool
+static Bee.Repository.Abstractions.System.UserLocale.operator ==(Bee.Repository.Abstractions.System.UserLocale left, Bee.Repository.Abstractions.System.UserLocale right) -> bool
+~override Bee.Repository.Abstractions.System.UserLocale.Equals(object obj) -> bool
+~override Bee.Repository.Abstractions.System.UserLocale.ToString() -> string

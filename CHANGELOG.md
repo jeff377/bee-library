@@ -4,188 +4,67 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [4.16.0]
 
-> Contains **breaking changes that predate this section**: several commits after the `v4.15.0` tag
-> altered published API surface without marking the subject `!`, so `/changelog-draft` would not
-> have surfaced them. They are listed here explicitly. The most dangerous kind is at the end —
-> changes that produce no compiler error at all.
+> Bee.NET remains in pre-stable evolution. This is the largest release since the changelog began: 227 commits across four themes. **ProgId becomes the framework's single addressing model** — `ProgramSettings` is now a pure type registry binding each progId to its business object *and* its repository, with the navigation menu split into its own definition [ADR-034](docs/adr/adr-034-progid-type-registry.md). **Tenant customization reaches language and layout**, with client and server sharing one overlay algorithm [ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md). **Application identity gets a lifecycle** — API keys are stored, validated and managed behind a deployment-level permission axis. And **framework conventions move to build time** as 22 analyzer rules. Several changes are breaking; they ship as a minor under the pre-stable policy, as there are no external consumers yet. This entry also lists breaking changes made after `v4.15.0` whose commits were not marked `!`.
+
+📄 Full notes & design context: [docs/changelogs/4.16.0.md](docs/changelogs/4.16.0.md)
 
 ### Added
 
-- **Framework conventions are now enforced at build time.** `Bee.Definition` ships Roslyn analyzers
-  that register automatically, turning 22 conventions into build diagnostics: definition file
-  validity and cross-file consistency (database scope selection, table registration, relation
-  references, sidecar existence), wire contract shape (formatter registration, key strategy,
-  constructor order, parameterless constructors) and coding conventions (business object access
-  control). Diagnostics state the cause and the fix in one message rather than merely flagging a
-  violation, because the conventions they cover otherwise fail at run time — often far from the
-  definition responsible. Consumers need no setup: the package supplies the definition files to the
-  compiler itself. Every rule is individually adjustable and the definition file group can be
-  disabled wholesale. See [Analyzer Rules](docs/analyzer-rules.md) for the rule list, the severity
-  adjustment mechanism (which differs by rule group) and the versioning policy.
-
-- **Sessions survive cache eviction, restart and multi-node routing.** Signing in now writes a
-  rebuild seed to `st_session` (token, user, expiry, company) and `SessionInfoCache` rebuilds the
-  session from it on a miss. The seed is deliberately not a snapshot of `SessionInfo`: roles,
-  customization code and record-scope row ids are recomputed on every rebuild, so a company
-  permission revoked after sign-in takes effect instead of living on in a stale copy. Entering or
-  leaving a company updates the seed, and signing out deletes it — without that, clearing only the
-  cache would let the next request restore the token from its row.
-- `Bee.Business`: `DerivedApiEncryptionKeyProvider` derives a per-session key from a root key and
-  the access token via HKDF-SHA256, so the key needs no storage, survives cache eviction and is
-  identical on every node. It is now the default provider. With no `SecurityKeySettings.
-  ApiEncryptionKey` configured it derives its root key from the master key, so an unconfigured
-  deployment still works.
-- `Bee.Definition`: `st_user.culture`, `BackendConfiguration.DefaultLanguage` and
-  `BackendConfiguration.SessionCleanupOptions`; `Bee.Hosting`: `ExpiredSessionCleanupService`
-  (enabled by default, hourly) reclaims expired `st_session` rows.
-- `Bee.Business`: `SessionCompanyBinder` holds the company-binding derivation shared by
-  `EnterCompany` and session rebuild, so the two cannot drift into granting different permissions.
-- `Bee.Expressions`: `UtcNow()` joins `Today()` and `Now()` in the expression sandbox, for the cases
-  where UTC should be stated outright rather than derived from the user's zone. See
-  [Expression Rules](docs/expression-rules.md).
+- `Bee.Definition`: Roslyn analyzers ship with the package and turn 22 framework conventions into build diagnostics — definition file validity, wire contract shape, business object access control. See [Analyzer Rules](docs/analyzer-rules.md).
+- `Bee.Definition`: `MenuSettings` — a new definition type owning the navigation menu (nested `MenuFolder` / `MenuEntry`, tree-unique `Id`, design-time `Visible`).
+- `Bee.Definition`: `ProgramItem.Repository` binds a progId to its repository, alongside `BusinessObject`.
+- `Bee.Repository.Abstractions`: `IRepositoryFactory` — one entry point for every repository, on two generic axes.
+- Sessions survive cache eviction, restart and multi-node routing: sign-in writes a rebuild seed to `st_session` and roles / customization / record-scope are recomputed on every rebuild.
+- Application identity: API keys stored in `st_api_key`, validated by `IApiKeyValidator`, managed behind `IDeploymentAuthorizationService`. See [API Key Management](docs/api-key-management.md).
+- `Bee.Api.Client`: `FormDefinitionLoader` assembles runtime schema and layout from raw definitions.
+- `Bee.Business`: `DerivedApiEncryptionKeyProvider` (now the default), `SessionCompanyBinder`, `BusinessObject.CreateFormRepository<T>()`.
+- `Bee.Definition`: `st_user.culture`, `BackendConfiguration.DefaultLanguage` / `SessionCleanupOptions`; `Bee.Hosting`: `ExpiredSessionCleanupService`.
+- `Bee.Expressions`: `UtcNow()` joins `Today()` and `Now()` in the expression sandbox. See [Expression Rules](docs/expression-rules.md).
 
 ### Changed — breaking (compile-time)
 
-- `Bee.UI.Maui` and `Bee.Web.Blazor.Wasm` are removed, along with their sample projects. The UI
-  surface consolidates onto two families: `Bee.UI.Avalonia` covers desktop, iOS, Android and WASM
-  from one `net10.0` project plus per-platform heads, and `Bee.Web.Blazor.Server` remains for the
-  one thing Avalonia cannot do — real HTML DOM with server-side rendering (SEO, embedding in an
-  existing site, screen readers, no runtime download). `Bee.Web.Blazor.Wasm` sat between the two
-  with no distinct role: same WASM runtime download as Avalonia Browser, and 950 lines identical to
-  the Server variant.
-- `Bee.ObjectCaching`: `IEvictableCache` and `ICacheContainer.TryEvict(string)` are removed;
-  `KeyObjectCache<T>` / `ObjectCache<T>` no longer implement that interface. Cache invalidation now
-  publishes a notify-key version and lets entries expire lazily. (`c45ff350`)
-- `Bee.Repository.Abstractions`: `IDataFormRepository.GetNewData()` takes a `timeZoneId` argument.
-  Implementers must update their signature. (`b759894f`)
-- `Bee.Business` / `Bee.Expressions`: `IFormRuleProcessor` (five members) and
-  `IExpressionEvaluator.Evaluate` / `Evaluate<T>` take a `timeZoneId` argument. (`5f28f9a3`)
-- `Bee.Definition`: `IDefineStorage` gains `GetChangeSource(...)`. (`bb5e4473`, `f7459cc2`)
-- `Bee.Base`: the temporal `Cxxx` family returns nullable from its one-argument form, and
-  `CDate` is renamed `CDateOnly`. (`ba56cef0`, `49641789`, `c5578a42`)
-- `Bee.Base` / `Bee.Db`: `FieldDbType.Time` added (appended to the enum — existing values are
-  unchanged). (`50a2e7d8`)
-- `Bee.Api.Core` (**wire**): `SerializableData*` moves to property-name keys, completing the
-  migration 4.15.0 had deliberately excluded. (`d64decf9`)
-- `Bee.Api.Client`: `SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync` are removed.
-  They only ever returned an empty shell to .NET callers: definition types declare XML as their
-  serialization contract and their nested collections are get-only, which JSON and MessagePack drop
-  on deserialization. Use `ClientInfo.DefineAccess.*` or `GetDefineAsync` with the matching
-  `DefineType`.
-- `Bee.Business`: `SystemBO.SaveDefine` and `SystemBO.CreateSession` are now `LocalOnly`; remote
-  callers are rejected. Writing definitions and minting a token from a user id without a credential
-  check are both trusted-caller operations.
-- Dead public surface is removed: eight types (`IEnterpriseObjectService`, `EnterpriseObjectService`,
-  `InitializeOptions`, `ApplicationType`, `SysFuncIDs`, `VersionFiles`, `DefaultBoolean`,
-  `NotSetBoolean`) plus three members (`SystemActions.GetLocalDefine` / `SaveLocalDefine`,
-  `DateTimeExtensions.IsEmpty`). None had a consumer anywhere in the framework.
-  `IEnterpriseObjectService` is the one worth calling out: it had the full look of an extension
-  point — a `BackendDefaultTypes` constant, a `BackendComponents.EnterpriseObjectService` setting
-  and a DI registration — but the interface declared no members, so substituting an implementation
-  could never change any behaviour. An `EnterpriseObjectService` element left in an existing
-  `SystemSettings.xml` is ignored on load; no file migration is needed.
-  `DateTimeExtensions.IsEmpty` treated anything before 1753-01-01 as empty, a boundary that stopped
-  being a database limit when SQL Server moved to `datetime2`.
-
-- `Bee.Definition`: `IApiEncryptionKeyProvider.GenerateKeyForLogin()` takes the access token
-  (`GenerateKeyForLogin(Guid)`) and the interface gains `SupportsSessionRebuild`. A deriving
-  provider needs the token as key material, so the token is now generated before the key.
-- `Bee.Definition`: `ICacheDataSourceProvider.GetSessionUser(Guid)` is replaced by
-  `GetSessionInfo(Guid)`, which returns a rebuilt session rather than the raw seed.
-- `Bee.Repository.Abstractions`: `ISessionRepository.CreateSession(...)` is replaced by
-  `InsertSession` / `UpdateSession` / `DeleteSession` / `DeleteExpiredSessions` — creating a session
-  is a business-object concern, not a repository one. `IUserRepository.GetTimeZone(string)` is
-  replaced by `GetLocale(string)` (time zone and culture in one query) and gains `GetName(string)`.
-- `Bee.Business`: `SystemBusinessObject.ApplyUserTimeZone` is renamed `ApplyUserLocale` (it now
-  fills the culture too); `CacheDataSourceProvider`'s constructor takes an `IServiceProvider`.
+- `Bee.Definition`: `ProgramSettings` is a flat, server-only type registry; `ProgramCategory` is removed and the menu moves to `MenuSettings`. Definition files need splitting. [ADR-034](docs/adr/adr-034-progid-type-registry.md)
+- `Bee.Business`: every business object resolves through the registry — `ProgId` moves to the `BusinessObject` base, `IFormBoTypeResolver` becomes `IBoTypeResolver`, the three `Create` methods collapse into `CreateBusinessObject(token, progId, isLocalCall)`, and `BackendComponents.BusinessObjectFactory` is removed.
+- `Bee.Repository.Abstractions`: `ISystemRepositoryFactory` / `IFormRepositoryFactory` / `IAuditLogRepositoryFactory` and `IReportFormRepository` are removed; repositories take a uniform `(ctx, accessToken, progId)` constructor via `RepositoryBase`.
+- `Bee.Api.Core` / `Bee.Api.Client` (**wire**): definition APIs serve raw definitions in an XML envelope; `SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync` are removed. [ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md)
+- `Bee.UI.Maui` and `Bee.Web.Blazor.Wasm` are removed; the UI surface consolidates onto Avalonia + Blazor.Server.
+- `Bee.ObjectCaching`: `IEvictableCache` and `ICacheContainer.TryEvict(string)` are removed.
+- `Bee.Repository.Abstractions`: `IDataFormRepository.GetNewData()` takes `timeZoneId`; `ISessionRepository.CreateSession(...)` splits into `Insert` / `Update` / `Delete` / `DeleteExpiredSessions`; `IUserRepository.GetTimeZone` becomes `GetLocale` and gains `GetName`.
+- `Bee.Business` / `Bee.Expressions`: `IFormRuleProcessor` and `IExpressionEvaluator.Evaluate` take `timeZoneId`.
+- `Bee.Definition`: `IDefineStorage` gains `GetChangeSource(...)`; `IApiEncryptionKeyProvider.GenerateKeyForLogin` takes the token and the interface gains `SupportsSessionRebuild`; `ICacheDataSourceProvider.GetSessionUser` becomes `GetSessionInfo`.
+- `Bee.Base`: the temporal `Cxxx` family returns nullable from its one-argument form; `CDate` is renamed `CDateOnly`; `FieldDbType.Time` is appended.
+- `Bee.Api.Core` (**wire**): `SerializableData*` moves to property-name keys.
+- `Bee.Business`: `SystemBO.SaveDefine` and `SystemBO.CreateSession` are `LocalOnly`.
+- Dead public surface is removed: eight types (including `IEnterpriseObjectService`) and three members.
 
 ### Changed — breaking (silent, no compiler error)
 
-- **System timestamps are UTC.** `CreateTime`-style properties, cache expiry, session expiry,
-  database column `DEFAULT`s and the PostgreSQL parameter layer all moved from local time to UTC.
-  Downstream code that reads these values or compares them shifts by one time-zone offset with no
-  compilation failure. (`122184e4`, `52ddb24a`, `9aadf9eb`, `1eb0e09f`, `11aedcc4`, `c990aa9e`)
-- **Dates are `DateOnly`.** `FormRowDefaults.Apply` and `FieldDbTypeExtensions.DefaultForDbType`
-  gain default arguments (binary breaking), and the `Today()` expression helper returns `DateOnly`
-  instead of `DateTime`. (`f028ba04`)
-- **Default time zone.** `SessionInfo.TimeZone` and `UserInfo.TimeZone` default to an empty string
-  (which every conversion point already treats as UTC) instead of `Asia/Taipei`. Login fills the
-  session from `st_user.time_zone`, falling back to the new
-  `BackendConfiguration.DefaultTimeZone` — which ships as `Asia/Taipei`, so existing deployments do
-  not shift. A custom authentication flow that constructs `SessionInfo` directly without calling
-  `ApplyUserTimeZone` will produce UTC sessions.
-- **Deserialization allow-list.** `SysInfo`'s built-in namespace list had `Bee.Contracts`, which
-  does not exist in this framework; it is corrected to `Bee.Api.Contracts`. A consumer type placed
-  in a `Bee.Contracts` namespace would go from allowed to rejected.
-
-- **Default API encryption key provider.** `BackendDefaultTypes.ApiEncryptionKeyProvider` now names
-  `DerivedApiEncryptionKeyProvider` instead of `DynamicApiEncryptionKeyProvider`. Session rebuild
-  depends on it: the dynamic provider keeps the key inside the session, so a rebuilt session would
-  look signed in while every encrypted call failed — which is why sessions issued under it are not
-  rebuilt at all. Live sessions are invalidated once on upgrade because the key is produced
-  differently. Deployments wanting the old behaviour set
-  `BackendComponents.ApiEncryptionKeyProvider` explicitly. The constant's value is also inlined by
-  the compiler, so consumers that referenced it must rebuild.
-- **Default culture.** `SessionInfo.Culture` defaults to an empty string instead of `zh-TW`, making
-  the language service's fallback reachable for signed-in calls for the first time. Login fills it
-  from the new `st_user.culture` column, falling back to `BackendConfiguration.DefaultLanguage`,
-  which ships as `zh-TW` so existing deployments do not change language. A custom authentication
-  flow that builds `SessionInfo` directly without `ApplyUserLocale` produces sessions with no
-  culture.
-- **`SystemBO.CreateSession` issues a usable session.** It previously wrote a bare `st_session` row
-  and nothing else, so the token it returned resolved to no session and could not enter a company.
-  It now takes the same construction path as login minus the credential check, and writes a
-  `ServiceSessionCreated` audit entry. It is still `LocalOnly`. Passing `OneTime` now throws
-  `NotSupportedException`: one-time semantics rested on delete-on-read, and a session cached at
-  creation is never read back from the row, so the guarantee could no longer be honoured — failing
-  loudly beats degrading a security promise in silence.
-- **Session reads have no side effects.** `SessionRepository.GetSession` filters expired rows in the
-  query instead of deleting them on the way past. Reclaiming them is `ExpiredSessionCleanupService`'s
-  job; a deployment that disables it should reclaim `st_session` by its own means.
+- **System timestamps are UTC** — anything reading or comparing them shifts by one time-zone offset with no compilation failure.
+- **Dates are `DateOnly`** — `FormRowDefaults.Apply` and `FieldDbTypeExtensions.DefaultForDbType` gain default arguments; `Today()` returns `DateOnly`.
+- **Defaults changed**: `SessionInfo.TimeZone` / `Culture` default to empty (filled at login from `st_user`, falling back to `BackendConfiguration`); `BackendDefaultTypes.ApiEncryptionKeyProvider` names the derived provider, invalidating live sessions once on upgrade.
+- **`SysInfo`'s deserialization allow-list** corrects `Bee.Contracts` to `Bee.Api.Contracts`.
+- **`SystemBO.CreateSession` issues a usable session** and rejects `OneTime` with `NotSupportedException`.
+- **Session reads have no side effects** — expired rows are filtered, not deleted; `ExpiredSessionCleanupService` reclaims them.
 
 ### Fixed
 
-- `Bee.Api.Core`: an infrastructure exception now reaches the caller with its own message when
-  `CommonConfiguration.IsDebugMode` is enabled, instead of always being replaced by
-  `"Internal server error"`. `JsonRpcExecutor` handles these exceptions itself rather than letting
-  them reach the transport, so the replacement left a developer with nothing at all to work from —
-  the transport's own development-mode passthrough never got the chance to fire. Production
-  behaviour is unchanged, and the stack trace is never included in either mode.
-- `Bee.Definition`: `FieldDbType.Date` columns resolve to `DateEdit` instead of falling through to
-  a plain text box.
-- `Bee.Db`: a freshly created SQL Server table now declares `FieldDbType.DateTime` columns as
-  `datetime2(7)`, matching the ALTER and rebuild paths. `SqlCreateTableCommandBuilder` carried its
-  own copy of the type map and was missed by the 4.15.0 `datetime` → `datetime2(7)` migration, so
-  that migration only reached tables that were *upgraded* — a new deployment silently got the old
-  `datetime` (≈3.33 ms rounding, minimum 1753-01-01). The duplicate map is removed and CREATE now
-  goes through the same `SqlSchemaSyntax` primitives every other provider already used.
-- `Bee.Base`: `StringUtilities.Replace` uses ordinal comparison. Under the Turkish locale the
-  connection-string placeholders (`{@Password}` and friends) failed to match and were sent verbatim.
-- `Bee.Base`: `DataTable` JSON round-trip no longer rewrites date-shaped text in string columns, and
-  no longer loses precision on decimals beyond `double`'s range.
-- `Bee.Base`: `XmlCodec.Deserialize` prohibits DTD processing (internal-entity expansion / billion
-  laughs).
-- `Bee.Definition`: definition file paths reject segments that would escape the definition root.
-- `Bee.Definition`: master key files are created owner-only on Unix.
-- `Bee.Repository`: session lookup failures no longer echo the user id back to the caller.
-- `Bee.Api.Core`: a local time that does not exist because of a daylight-saving spring-forward
-  (e.g. 02:30 on a transition day) is moved forward by the gap's own length instead of throwing.
-  A date picker cannot know the time is missing, so the user's pick was reasonable; previously
-  `ArgumentException` escaped through the JSON-RPC boundary as an opaque failure. This matches the
-  convention of the mainstream pickers (iOS, Android, Google Calendar). Ambiguous fall-back times
-  were already resolved deterministically and are unchanged.
+- `Bee.Hosting`: `IAuditLogWriteRepository` failed to resolve when audit logging was enabled.
+- `Bee.Api.Core`: infrastructure exceptions keep their message when `IsDebugMode` is enabled; a DST spring-forward gap no longer throws.
+- `Bee.Db`: a freshly created SQL Server table declares `FieldDbType.DateTime` as `datetime2(7)`, matching the ALTER and rebuild paths.
+- `Bee.Definition`: `FieldDbType.Date` columns resolve to `DateEdit`.
+- `Bee.Base`: `StringUtilities.Replace` uses ordinal comparison; `DataTable` JSON round-trip preserves string and decimal fidelity.
 
 ### Security
 
-- Identifier-shaped string comparisons are ordinal throughout, including the deserialization
-  allow-list in `SysInfo` and the `enc:` sentinel in `DatabaseSettingsCryptor`.
-- `IPValidator` copies its allow/deny lists and exposes them read-only; `UpgradeStage.Statements` is
-  read-only.
-- The three hand-rolled constant-time comparison loops (`AesCbcHmacCryptor`, `PasswordHasher`,
-  `FileHashValidator`) are replaced by `CryptographicOperations.FixedTimeEquals`. All three were
-  correct; one primitive is one thing to keep correct.
+- Application identity is gated by a deployment-level permission axis that never falls back to the company-scoped one; every deployment-level operation is audited.
+- Identifier-shaped string comparisons are ordinal throughout; the three hand-rolled constant-time loops are replaced by `CryptographicOperations.FixedTimeEquals`.
+- `XmlCodec.Deserialize` prohibits DTD processing; definition paths reject root escapes; master key files are owner-only on Unix; session lookup failures no longer echo the user id.
+
+### Upgrade
+
+See [docs/changelogs/4.16.0.md](docs/changelogs/4.16.0.md#upgrade) for the definition-file split, the repository-factory migration and the list of silent changes to audit by hand.
 
 ## [4.15.0]
 

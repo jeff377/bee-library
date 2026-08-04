@@ -3,8 +3,11 @@ Bee.ObjectCaching.CacheContainerProvider
 Bee.ObjectCaching.CacheContainerProvider.CacheContainerProvider(Bee.Definition.PathOptions! paths) -> void
 Bee.ObjectCaching.CacheContainerProvider.For(string! customizeId) -> Bee.ObjectCaching.ICacheContainer!
 Bee.ObjectCaching.CacheContainerService
+Bee.ObjectCaching.CacheContainerService.ApiKey.get -> Bee.ObjectCaching.Database.ApiKeyCache!
+Bee.ObjectCaching.CacheContainerService.ApiKeyGate.get -> Bee.ObjectCaching.Database.ApiKeyGateCache!
 Bee.ObjectCaching.CacheContainerService.CacheContainerService(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths) -> void
 Bee.ObjectCaching.CacheContainerService.CacheContainerService(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix) -> void
+Bee.ObjectCaching.CacheContainerService.CacheContainerService(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix, System.Func<Bee.Definition.ICacheDataSourceProvider!>? dataSource) -> void
 Bee.ObjectCaching.CacheContainerService.CachePrefix.get -> string!
 Bee.ObjectCaching.CacheContainerService.CompanyInfo.get -> Bee.ObjectCaching.Database.CompanyInfoCache!
 Bee.ObjectCaching.CacheContainerService.CompanyRolePermissions.get -> Bee.ObjectCaching.Database.CompanyRolePermissionsCache!
@@ -15,6 +18,7 @@ Bee.ObjectCaching.CacheContainerService.DepartmentTree.get -> Bee.ObjectCaching.
 Bee.ObjectCaching.CacheContainerService.FormLayout.get -> Bee.ObjectCaching.Define.FormLayoutCache!
 Bee.ObjectCaching.CacheContainerService.FormSchema.get -> Bee.ObjectCaching.Define.FormSchemaCache!
 Bee.ObjectCaching.CacheContainerService.LanguageResource.get -> Bee.ObjectCaching.Define.LanguageResourceCache!
+Bee.ObjectCaching.CacheContainerService.MenuSettings.get -> Bee.ObjectCaching.Define.MenuSettingsCache!
 Bee.ObjectCaching.CacheContainerService.PermissionModels.get -> Bee.ObjectCaching.Define.PermissionModelsCache!
 Bee.ObjectCaching.CacheContainerService.ProgramSettings.get -> Bee.ObjectCaching.Define.ProgramSettingsCache!
 Bee.ObjectCaching.CacheContainerService.SessionInfo.get -> Bee.ObjectCaching.Database.SessionInfoCache!
@@ -25,6 +29,7 @@ Bee.ObjectCaching.CacheDefineAccess
 Bee.ObjectCaching.CacheDefineAccess.CacheDefineAccess(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths) -> void
 Bee.ObjectCaching.CacheDefineAccess.CacheDefineAccess(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, Bee.ObjectCaching.ICacheContainer! cache, byte[]! configEncryptionKey) -> void
 Bee.ObjectCaching.CacheDefineAccess.CacheDefineAccess(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, Bee.ObjectCaching.ICacheContainer! cache, byte[]! configEncryptionKey, Bee.Definition.Storage.ICustomizeDefineReader? customizeReader) -> void
+Bee.ObjectCaching.CacheDefineAccess.FindFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?
 Bee.ObjectCaching.CacheDefineAccess.GetCurrencySettings() -> Bee.Definition.Settings.CurrencySettings!
 Bee.ObjectCaching.CacheDefineAccess.GetDatabaseSettings() -> Bee.Definition.Settings.DatabaseSettings!
 Bee.ObjectCaching.CacheDefineAccess.GetDbCategorySettings() -> Bee.Definition.Settings.DbCategorySettings!
@@ -33,6 +38,8 @@ Bee.ObjectCaching.CacheDefineAccess.GetFormLayout(string! customizeId, string! l
 Bee.ObjectCaching.CacheDefineAccess.GetFormLayout(string! layoutId) -> Bee.Definition.Layouts.FormLayout!
 Bee.ObjectCaching.CacheDefineAccess.GetFormSchema(string! progId) -> Bee.Definition.Forms.FormSchema!
 Bee.ObjectCaching.CacheDefineAccess.GetLanguage(string! lang, string! ns) -> Bee.Definition.Language.LanguageResource!
+Bee.ObjectCaching.CacheDefineAccess.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings!
+Bee.ObjectCaching.CacheDefineAccess.GetMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings!
 Bee.ObjectCaching.CacheDefineAccess.GetPermissionModels() -> Bee.Definition.Settings.PermissionModels!
 Bee.ObjectCaching.CacheDefineAccess.GetProgramSettings() -> Bee.Definition.Settings.ProgramSettings!
 Bee.ObjectCaching.CacheDefineAccess.GetSystemSettings() -> Bee.Definition.Settings.SystemSettings!
@@ -45,6 +52,7 @@ Bee.ObjectCaching.CacheDefineAccess.SaveDefine(Bee.Definition.DefineType defineT
 Bee.ObjectCaching.CacheDefineAccess.SaveFormLayout(Bee.Definition.Layouts.FormLayout! formLayout) -> void
 Bee.ObjectCaching.CacheDefineAccess.SaveFormSchema(Bee.Definition.Forms.FormSchema! formSchema) -> void
 Bee.ObjectCaching.CacheDefineAccess.SaveLanguage(Bee.Definition.Language.LanguageResource! resource) -> void
+Bee.ObjectCaching.CacheDefineAccess.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
 Bee.ObjectCaching.CacheDefineAccess.SavePermissionModels(Bee.Definition.Settings.PermissionModels! models) -> void
 Bee.ObjectCaching.CacheDefineAccess.SaveProgramSettings(Bee.Definition.Settings.ProgramSettings! settings) -> void
 Bee.ObjectCaching.CacheDefineAccess.SaveSystemSettings(Bee.Definition.Settings.SystemSettings! settings) -> void
@@ -73,7 +81,14 @@ Bee.ObjectCaching.CustomizeDefineReader
 Bee.ObjectCaching.CustomizeDefineReader.CustomizeDefineReader(Bee.ObjectCaching.ICacheContainerProvider! provider, Bee.Definition.PathOptions! paths) -> void
 Bee.ObjectCaching.CustomizeDefineReader.GetCustomizeFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?
 Bee.ObjectCaching.CustomizeDefineReader.GetCustomizeLanguage(string! customizeId, string! lang, string! ns) -> Bee.Definition.Language.LanguageResource?
+Bee.ObjectCaching.CustomizeDefineReader.GetCustomizeMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings?
 Bee.ObjectCaching.CustomizeDefineReader.GetCustomizeProgramSettings(string! customizeId) -> Bee.Definition.Settings.ProgramSettings?
+Bee.ObjectCaching.Database.ApiKeyCache
+Bee.ObjectCaching.Database.ApiKeyCache.ApiKeyCache(string! cachePrefix = "") -> void
+Bee.ObjectCaching.Database.ApiKeyGateCache
+Bee.ObjectCaching.Database.ApiKeyGateCache.ApiKeyGateCache(string! cachePrefix = "") -> void
+Bee.ObjectCaching.Database.ApiKeyGateCache.GetState() -> Bee.Definition.Security.ApiKeyGateState?
+Bee.ObjectCaching.Database.ApiKeyGateCache.RemoveState() -> void
 Bee.ObjectCaching.Database.CompanyInfoCache
 Bee.ObjectCaching.Database.CompanyInfoCache.CompanyInfoCache(string! cachePrefix = "") -> void
 Bee.ObjectCaching.Database.CompanyRolePermissionsCache
@@ -98,6 +113,8 @@ Bee.ObjectCaching.Define.LanguageResourceCache
 Bee.ObjectCaching.Define.LanguageResourceCache.Get(string! lang, string! ns) -> Bee.Definition.Language.LanguageResource?
 Bee.ObjectCaching.Define.LanguageResourceCache.LanguageResourceCache(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix = "") -> void
 Bee.ObjectCaching.Define.LanguageResourceCache.Remove(string! lang, string! ns) -> void
+Bee.ObjectCaching.Define.MenuSettingsCache
+Bee.ObjectCaching.Define.MenuSettingsCache.MenuSettingsCache(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix = "") -> void
 Bee.ObjectCaching.Define.PermissionModelsCache
 Bee.ObjectCaching.Define.PermissionModelsCache.PermissionModelsCache(Bee.Definition.PathOptions! paths, string! cachePrefix = "") -> void
 Bee.ObjectCaching.Define.ProgramSettingsCache
@@ -111,6 +128,8 @@ Bee.ObjectCaching.Define.TableSchemaCache.TableSchemaCache(Bee.Definition.Storag
 Bee.ObjectCaching.Define.UnitSettingsCache
 Bee.ObjectCaching.Define.UnitSettingsCache.UnitSettingsCache(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix = "") -> void
 Bee.ObjectCaching.ICacheContainer
+Bee.ObjectCaching.ICacheContainer.ApiKey.get -> Bee.ObjectCaching.Database.ApiKeyCache!
+Bee.ObjectCaching.ICacheContainer.ApiKeyGate.get -> Bee.ObjectCaching.Database.ApiKeyGateCache!
 Bee.ObjectCaching.ICacheContainer.CompanyInfo.get -> Bee.ObjectCaching.Database.CompanyInfoCache!
 Bee.ObjectCaching.ICacheContainer.CompanyRolePermissions.get -> Bee.ObjectCaching.Database.CompanyRolePermissionsCache!
 Bee.ObjectCaching.ICacheContainer.CurrencySettings.get -> Bee.ObjectCaching.Define.CurrencySettingsCache!
@@ -120,6 +139,7 @@ Bee.ObjectCaching.ICacheContainer.DepartmentTree.get -> Bee.ObjectCaching.Databa
 Bee.ObjectCaching.ICacheContainer.FormLayout.get -> Bee.ObjectCaching.Define.FormLayoutCache!
 Bee.ObjectCaching.ICacheContainer.FormSchema.get -> Bee.ObjectCaching.Define.FormSchemaCache!
 Bee.ObjectCaching.ICacheContainer.LanguageResource.get -> Bee.ObjectCaching.Define.LanguageResourceCache!
+Bee.ObjectCaching.ICacheContainer.MenuSettings.get -> Bee.ObjectCaching.Define.MenuSettingsCache!
 Bee.ObjectCaching.ICacheContainer.PermissionModels.get -> Bee.ObjectCaching.Define.PermissionModelsCache!
 Bee.ObjectCaching.ICacheContainer.ProgramSettings.get -> Bee.ObjectCaching.Define.ProgramSettingsCache!
 Bee.ObjectCaching.ICacheContainer.SessionInfo.get -> Bee.ObjectCaching.Database.SessionInfoCache!
@@ -150,30 +170,42 @@ Bee.ObjectCaching.Providers.MemoryCacheProvider.MemoryCacheProvider() -> void
 Bee.ObjectCaching.Providers.MemoryCacheProvider.MemoryCacheProvider(Microsoft.Extensions.Caching.Memory.MemoryCache! memoryCache) -> void
 Bee.ObjectCaching.Providers.MemoryCacheProvider.Remove(string! key) -> void
 Bee.ObjectCaching.Providers.MemoryCacheProvider.Set(string! key, object! value, Bee.ObjectCaching.CacheItemPolicy! policy) -> void
+Bee.ObjectCaching.Services.ApiKeyValidator
+Bee.ObjectCaching.Services.ApiKeyValidator.ApiKeyValidator(Bee.ObjectCaching.ICacheContainer! cache) -> void
+Bee.ObjectCaching.Services.ApiKeyValidator.Validate(string? apiKey) -> Bee.Definition.Security.ApiKeyValidationResult!
 Bee.ObjectCaching.Services.AuthorizationService
 Bee.ObjectCaching.Services.AuthorizationService.AuthorizationService(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Definition.Identity.IRolePermissionService! rolePermissionService) -> void
 Bee.ObjectCaching.Services.AuthorizationService.Can(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action) -> bool
 Bee.ObjectCaching.Services.CompanyInfoService
-Bee.ObjectCaching.Services.CompanyInfoService.CompanyInfoService(Bee.ObjectCaching.ICacheContainer! cache, Bee.Repository.Abstractions.System.ICompanyRepository! companyRepository) -> void
+Bee.ObjectCaching.Services.CompanyInfoService.CompanyInfoService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.CompanyInfoService.Get(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
 Bee.ObjectCaching.Services.CompanyInfoService.Remove(string! companyId) -> void
 Bee.ObjectCaching.Services.CompanyInfoService.Set(Bee.Definition.Identity.CompanyInfo! companyInfo) -> void
 Bee.ObjectCaching.Services.DepartmentTreeService
-Bee.ObjectCaching.Services.DepartmentTreeService.DepartmentTreeService(Bee.ObjectCaching.ICacheContainer! cache, Bee.Definition.Identity.ICompanyInfoService! companyInfoService, Bee.Repository.Abstractions.System.IDepartmentRepository! repository) -> void
+Bee.ObjectCaching.Services.DepartmentTreeService.DepartmentTreeService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.DepartmentTreeService.Get(string! companyId) -> Bee.Definition.Organization.DepartmentTree?
 Bee.ObjectCaching.Services.DepartmentTreeService.Remove(string! companyId) -> void
+Bee.ObjectCaching.Services.DeploymentAuthorizationService
+Bee.ObjectCaching.Services.DeploymentAuthorizationService.Can(System.Guid accessToken, Bee.Definition.Identity.DeploymentAction action) -> bool
+Bee.ObjectCaching.Services.DeploymentAuthorizationService.DeploymentAuthorizationService(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Repository.Abstractions.Factories.IRepositoryFactory! repositoryFactory) -> void
 Bee.ObjectCaching.Services.EmployeeContextResolver
-Bee.ObjectCaching.Services.EmployeeContextResolver.EmployeeContextResolver(Bee.Repository.Abstractions.System.IUserRepository! userRepository, Bee.Repository.Abstractions.System.IEmployeeRepository! employeeRepository) -> void
+Bee.ObjectCaching.Services.EmployeeContextResolver.EmployeeContextResolver(Bee.Repository.Abstractions.Factories.IRepositoryFactory! repositoryFactory) -> void
 Bee.ObjectCaching.Services.EmployeeContextResolver.Resolve(string! userId, string! databaseId) -> Bee.Definition.Identity.EmployeeContext!
 Bee.ObjectCaching.Services.RolePermissionService
 Bee.ObjectCaching.Services.RolePermissionService.Get(string! companyId) -> Bee.Definition.Identity.CompanyRolePermissions?
 Bee.ObjectCaching.Services.RolePermissionService.Remove(string! companyId) -> void
-Bee.ObjectCaching.Services.RolePermissionService.RolePermissionService(Bee.ObjectCaching.ICacheContainer! cache, Bee.Definition.Identity.ICompanyInfoService! companyInfoService, Bee.Repository.Abstractions.System.IRolePermissionRepository! repository) -> void
+Bee.ObjectCaching.Services.RolePermissionService.RolePermissionService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.SessionInfoService
 Bee.ObjectCaching.Services.SessionInfoService.Get(System.Guid accessToken) -> Bee.Definition.Identity.SessionInfo!
 Bee.ObjectCaching.Services.SessionInfoService.Remove(System.Guid accessToken) -> void
 Bee.ObjectCaching.Services.SessionInfoService.SessionInfoService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.SessionInfoService.Set(Bee.Definition.Identity.SessionInfo! sessionInfo) -> void
+const Bee.ObjectCaching.Database.ApiKeyCache.AbsoluteMinutes = 60 -> int
+override Bee.ObjectCaching.Database.ApiKeyCache.CreateInstance(string! key) -> Bee.Definition.Security.ApiKeyInfo?
+override Bee.ObjectCaching.Database.ApiKeyCache.GetPolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy!
+override Bee.ObjectCaching.Database.ApiKeyGateCache.CacheGroup.get -> string!
+override Bee.ObjectCaching.Database.ApiKeyGateCache.CreateInstance(string! key) -> Bee.Definition.Security.ApiKeyGateState?
+override Bee.ObjectCaching.Database.ApiKeyGateCache.GetPolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy!
 override Bee.ObjectCaching.Database.CompanyInfoCache.CreateInstance(string! key) -> Bee.Definition.Identity.CompanyInfo?
 override Bee.ObjectCaching.Database.CompanyRolePermissionsCache.CreateInstance(string! key) -> Bee.Definition.Identity.CompanyRolePermissions?
 override Bee.ObjectCaching.Database.DepartmentTreeCache.CreateInstance(string! key) -> Bee.Definition.Organization.DepartmentTree?
@@ -191,6 +223,8 @@ override Bee.ObjectCaching.Define.FormSchemaCache.CreateInstance(string! key) ->
 override Bee.ObjectCaching.Define.FormSchemaCache.GetPolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy!
 override Bee.ObjectCaching.Define.LanguageResourceCache.CreateInstance(string! key) -> Bee.Definition.Language.LanguageResource?
 override Bee.ObjectCaching.Define.LanguageResourceCache.GetPolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy!
+override Bee.ObjectCaching.Define.MenuSettingsCache.CreateInstance() -> Bee.Definition.Settings.MenuSettings?
+override Bee.ObjectCaching.Define.MenuSettingsCache.GetPolicy() -> Bee.ObjectCaching.CacheItemPolicy!
 override Bee.ObjectCaching.Define.PermissionModelsCache.CreateInstance() -> Bee.Definition.Settings.PermissionModels?
 override Bee.ObjectCaching.Define.PermissionModelsCache.GetPolicy() -> Bee.ObjectCaching.CacheItemPolicy!
 override Bee.ObjectCaching.Define.ProgramSettingsCache.CreateInstance() -> Bee.Definition.Settings.ProgramSettings?

@@ -1,3 +1,1 @@
 #nullable enable
-Bee.Web.Blazor.Server.Components.FormPage.DefinitionLoader.get -> Bee.Api.Client.Definitions.FormDefinitionLoader?
-Bee.Web.Blazor.Server.Components.FormPage.DefinitionLoader.set -> void

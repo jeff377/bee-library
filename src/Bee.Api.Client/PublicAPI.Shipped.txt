@@ -5,11 +5,14 @@ Bee.Api.Client.ClientDefineAccess
 Bee.Api.Client.ClientDefineAccess.ClearCache() -> void
 Bee.Api.Client.ClientDefineAccess.ClientDefineAccess(Bee.Api.Client.Connectors.SystemApiConnector! connector) -> void
 Bee.Api.Client.ClientDefineAccess.GetCurrencySettingsAsync() -> System.Threading.Tasks.Task<Bee.Definition.Settings.CurrencySettings!>!
+Bee.Api.Client.ClientDefineAccess.GetCustomizeFormLayoutAsync(string! progId, string! layoutId = "") -> System.Threading.Tasks.Task<Bee.Definition.Layouts.FormLayout?>!
+Bee.Api.Client.ClientDefineAccess.GetCustomizeLanguageAsync(string! lang, string! ns) -> System.Threading.Tasks.Task<Bee.Definition.Language.LanguageResource?>!
 Bee.Api.Client.ClientDefineAccess.GetDatabaseSettingsAsync() -> System.Threading.Tasks.Task<Bee.Definition.Settings.DatabaseSettings!>!
 Bee.Api.Client.ClientDefineAccess.GetDbCategorySettingsAsync() -> System.Threading.Tasks.Task<Bee.Definition.Settings.DbCategorySettings!>!
 Bee.Api.Client.ClientDefineAccess.GetFormLayoutAsync(string! layoutId) -> System.Threading.Tasks.Task<Bee.Definition.Layouts.FormLayout!>!
 Bee.Api.Client.ClientDefineAccess.GetFormSchemaAsync(string! progId) -> System.Threading.Tasks.Task<Bee.Definition.Forms.FormSchema!>!
 Bee.Api.Client.ClientDefineAccess.GetLanguageAsync(string! lang, string! ns) -> System.Threading.Tasks.Task<Bee.Definition.Language.LanguageResource!>!
+Bee.Api.Client.ClientDefineAccess.GetMenuSettingsAsync() -> System.Threading.Tasks.Task<Bee.Definition.Settings.MenuSettings!>!
 Bee.Api.Client.ClientDefineAccess.GetPermissionModelsAsync() -> System.Threading.Tasks.Task<Bee.Definition.Settings.PermissionModels!>!
 Bee.Api.Client.ClientDefineAccess.GetProgramSettingsAsync() -> System.Threading.Tasks.Task<Bee.Definition.Settings.ProgramSettings!>!
 Bee.Api.Client.ClientDefineAccess.GetSystemSettingsAsync() -> System.Threading.Tasks.Task<Bee.Definition.Settings.SystemSettings!>!
@@ -46,6 +49,7 @@ Bee.Api.Client.Connectors.LogApiConnector.ExecuteAsync<T>(string! action, object
 Bee.Api.Client.Connectors.LogApiConnector.LogApiConnector(System.Guid accessToken) -> void
 Bee.Api.Client.Connectors.LogApiConnector.LogApiConnector(string! endpoint, System.Guid accessToken) -> void
 Bee.Api.Client.Connectors.SystemApiConnector
+Bee.Api.Client.Connectors.SystemApiConnector.CreateApiKeyAsync(string! sysId, string! sysName, Bee.Definition.Security.ApiKeyType keyType = Bee.Definition.Security.ApiKeyType.Internal, string? contact = null, System.DateTime? expiredAt = null) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.CreateApiKeyResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.CreateSessionAsync(string! userID, int expiresIn = 3600, bool oneTime = false) -> System.Threading.Tasks.Task<System.Guid>!
 Bee.Api.Client.Connectors.SystemApiConnector.EnterCompanyAsync(string! companyId) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.EnterCompanyResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.ExecFuncAnonymousAsync(Bee.Api.Core.Messages.ExecFuncRequest! args) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.ExecFuncResponse!>!
@@ -54,12 +58,38 @@ Bee.Api.Client.Connectors.SystemApiConnector.ExecFuncLocalAsync(Bee.Api.Core.Mes
 Bee.Api.Client.Connectors.SystemApiConnector.ExecuteAsync<T>(string! action, object! value, Bee.Api.Core.Messages.PayloadFormat format = Bee.Api.Core.Messages.PayloadFormat.Encrypted) -> System.Threading.Tasks.Task<T>!
 Bee.Api.Client.Connectors.SystemApiConnector.InitializeAsync() -> System.Threading.Tasks.Task!
 Bee.Api.Client.Connectors.SystemApiConnector.LeaveCompanyAsync() -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.LeaveCompanyResponse!>!
+Bee.Api.Client.Connectors.SystemApiConnector.ListApiKeysAsync() -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.ListApiKeysResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.LoginAsync(string! userID, string! password) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.LoginResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.LogoutAsync() -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.LogoutResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.PingAsync() -> System.Threading.Tasks.Task!
 Bee.Api.Client.Connectors.SystemApiConnector.SaveDefineAsync(Bee.Definition.DefineType defineType, object! defineObject, string![]? keys = null) -> System.Threading.Tasks.Task!
+Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyEnabledAsync(string! sysId, bool enabled) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse!>!
+Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyExpiryAsync(string! sysId, System.DateTime? expiredAt) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse!>!
+Bee.Api.Client.Connectors.SystemApiConnector.SetDeploymentAdminAsync(string! userId, bool isDeploymentAdmin) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetDeploymentAdminResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.SystemApiConnector(System.Guid accessToken) -> void
 Bee.Api.Client.Connectors.SystemApiConnector.SystemApiConnector(string! endpoint, System.Guid accessToken) -> void
+Bee.Api.Client.Definitions.FormDefinitionLoader
+Bee.Api.Client.Definitions.FormDefinitionLoader.FormDefinitionLoader(Bee.Api.Client.ClientDefineAccess! defineAccess, string! defaultLang = "") -> void
+Bee.Api.Client.Definitions.FormDefinitionLoader.GetLocalizedSchemaAsync(string! progId, string! lang) -> System.Threading.Tasks.Task<Bee.Definition.Forms.FormSchema!>!
+Bee.Api.Client.Definitions.FormDefinitionLoader.GetRuntimeLayoutAsync(string! progId, Bee.Definition.Forms.FormSchema! localizedSchema, string! layoutId = "") -> System.Threading.Tasks.Task<Bee.Definition.Layouts.FormLayout!>!
+Bee.Api.Client.Definitions.LanguageLayers
+Bee.Api.Client.Definitions.LanguageLayers.Base.get -> Bee.Definition.Language.LanguageResource?
+Bee.Api.Client.Definitions.LanguageLayers.Base.init -> void
+Bee.Api.Client.Definitions.LanguageLayers.Customize.get -> Bee.Definition.Language.LanguageResource?
+Bee.Api.Client.Definitions.LanguageLayers.Customize.init -> void
+Bee.Api.Client.Definitions.LanguageLayers.Deconstruct(out Bee.Definition.Language.LanguageResource? Base, out Bee.Definition.Language.LanguageResource? Customize) -> void
+Bee.Api.Client.Definitions.LanguageLayers.Equals(Bee.Api.Client.Definitions.LanguageLayers other) -> bool
+Bee.Api.Client.Definitions.LanguageLayers.LanguageLayers() -> void
+Bee.Api.Client.Definitions.LanguageLayers.LanguageLayers(Bee.Definition.Language.LanguageResource? Base, Bee.Definition.Language.LanguageResource? Customize) -> void
+Bee.Api.Client.Definitions.SnapshotLanguageService
+Bee.Api.Client.Definitions.SnapshotLanguageService.GetLangEnum(string! lang, string! fullName) -> Bee.Definition.Language.LanguageEnum?
+Bee.Api.Client.Definitions.SnapshotLanguageService.GetLangEnum(string! lang, string! namespace, string! enumName) -> Bee.Definition.Language.LanguageEnum?
+Bee.Api.Client.Definitions.SnapshotLanguageService.GetLangEnumText(string! lang, string! fullName, string! code) -> string?
+Bee.Api.Client.Definitions.SnapshotLanguageService.GetLangText(string! lang, string! fullKey) -> string!
+Bee.Api.Client.Definitions.SnapshotLanguageService.GetLangText(string! lang, string! namespace, string! subKey) -> string!
+Bee.Api.Client.Definitions.SnapshotLanguageService.SnapshotLanguageService(System.Collections.Generic.IReadOnlyDictionary<string!, Bee.Api.Client.Definitions.LanguageLayers>! snapshot, string! defaultLang) -> void
+Bee.Api.Client.Definitions.SnapshotLanguageService.TryGetLangText(string! lang, string! fullKey, out string! text) -> bool
+Bee.Api.Client.Definitions.SnapshotLanguageService.TryGetLangText(string! lang, string! namespace, string! subKey, out string! text) -> bool
 Bee.Api.Client.Providers.IJsonRpcProvider
 Bee.Api.Client.Providers.IJsonRpcProvider.ExecuteAsync(Bee.Api.Core.JsonRpc.JsonRpcRequest! request) -> System.Threading.Tasks.Task<Bee.Api.Core.JsonRpc.JsonRpcResponse!>!
 Bee.Api.Client.Providers.LocalApiProvider
@@ -75,6 +105,7 @@ Bee.Api.Client.SupportedConnectTypes
 Bee.Api.Client.SupportedConnectTypes.Both = Bee.Api.Client.SupportedConnectTypes.Local | Bee.Api.Client.SupportedConnectTypes.Remote -> Bee.Api.Client.SupportedConnectTypes
 Bee.Api.Client.SupportedConnectTypes.Local = 1 -> Bee.Api.Client.SupportedConnectTypes
 Bee.Api.Client.SupportedConnectTypes.Remote = 2 -> Bee.Api.Client.SupportedConnectTypes
+override Bee.Api.Client.Definitions.LanguageLayers.GetHashCode() -> int
 static Bee.Api.Client.ApiClientInfo.ApiEncryptionKey.get -> byte[]!
 static Bee.Api.Client.ApiClientInfo.ApiEncryptionKey.set -> void
 static Bee.Api.Client.ApiClientInfo.ApiKey.get -> string!
@@ -90,6 +121,9 @@ static Bee.Api.Client.ApiClientInfo.SupportedConnectTypes.set -> void
 static Bee.Api.Client.ApiClientInfo.UserTimeZoneId.get -> string!
 static Bee.Api.Client.ApiClientInfo.UserTimeZoneId.set -> void
 static Bee.Api.Client.ApiConnectValidator.ValidateAsync(string! endpoint, bool allowGenerateSettings = false) -> System.Threading.Tasks.Task<Bee.Api.Client.ConnectType>!
+static Bee.Api.Client.Definitions.LanguageLayers.operator !=(Bee.Api.Client.Definitions.LanguageLayers left, Bee.Api.Client.Definitions.LanguageLayers right) -> bool
+static Bee.Api.Client.Definitions.LanguageLayers.operator ==(Bee.Api.Client.Definitions.LanguageLayers left, Bee.Api.Client.Definitions.LanguageLayers right) -> bool
+static Bee.Api.Client.Definitions.SnapshotLanguageService.BuildKey(string! lang, string! ns) -> string!
 virtual Bee.Api.Client.Connectors.FormApiConnector.DeleteAsync(System.Guid rowId) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.Form.DeleteResponse!>!
 virtual Bee.Api.Client.Connectors.FormApiConnector.GetDataAsync(System.Guid rowId) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.Form.GetDataResponse!>!
 virtual Bee.Api.Client.Connectors.FormApiConnector.GetListAsync(string! selectFields = "", Bee.Definition.Filters.FilterNode? filter = null, Bee.Definition.Sorting.SortFieldCollection? sortFields = null, Bee.Definition.Paging.PagingOptions? paging = null) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.Form.GetListResponse!>!
@@ -105,5 +139,9 @@ virtual Bee.Api.Client.Connectors.LogApiConnector.GetDbAnomalyLogAsync(Bee.Api.C
 virtual Bee.Api.Client.Connectors.LogApiConnector.GetDbAnomalySummaryAsync(Bee.Api.Core.Messages.AuditLog.GetDbAnomalySummaryRequest! request) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.AuditLog.LogAggregateResponse!>!
 virtual Bee.Api.Client.Connectors.LogApiConnector.GetLoginLogAsync(Bee.Api.Core.Messages.AuditLog.GetLoginLogRequest! request) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.AuditLog.LogListResponse!>!
 virtual Bee.Api.Client.Connectors.LogApiConnector.GetTopApiMethodsAsync(Bee.Api.Core.Messages.AuditLog.GetTopApiMethodsRequest! request) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.AuditLog.LogAggregateResponse!>!
+virtual Bee.Api.Client.Connectors.SystemApiConnector.GetCustomizeFormLayoutAsync(string! progId, string! layoutId = "") -> System.Threading.Tasks.Task<Bee.Definition.Layouts.FormLayout?>!
+virtual Bee.Api.Client.Connectors.SystemApiConnector.GetCustomizeLanguageAsync(string! lang, string! ns) -> System.Threading.Tasks.Task<Bee.Definition.Language.LanguageResource?>!
 virtual Bee.Api.Client.Connectors.SystemApiConnector.GetDefineAsync<T>(Bee.Definition.DefineType defineType, string![]? keys = null) -> System.Threading.Tasks.Task<T>!
 virtual Bee.Api.Client.Connectors.SystemApiConnector.GetDepartmentTreeAsync() -> System.Threading.Tasks.Task<Bee.Definition.Organization.DepartmentTree?>!
+~override Bee.Api.Client.Definitions.LanguageLayers.Equals(object obj) -> bool
+~override Bee.Api.Client.Definitions.LanguageLayers.ToString() -> string

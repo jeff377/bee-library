@@ -4,151 +4,67 @@
 
 本檔記錄專案的所有重要變更。
 
-## [Unreleased]
+## [4.16.0]
 
-> 本區段含**先前未被標示的破壞性變更**：`v4.15.0` tag 之後有數個 commit 改動了已發布的 API
-> 表面卻未在 subject 標 `!`，`/changelog-draft` 掃不到，因此在此明列。最危險的一類在最後
-> ——完全不會產生編譯錯誤的變更。
+> Bee.NET 仍處 pre-stable 演進階段。本版是 CHANGELOG 開始記錄以來最大的一版：227 個 commit、四條主線。**ProgId 成為框架唯一的定址模型**——`ProgramSettings` 收斂為純型別註冊表，把每個 progId 綁定到它的商業物件**與** Repository，導覽選單分離為獨立定義 [ADR-034](docs/adr/adr-034-progid-type-registry.md)。**多租戶客製化延伸到語系與版面**，前後端共用同一套疊加演算法 [ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md)。**應用程式身分有了生命週期**——API 金鑰可儲存、驗證，並由部署層權限軸把關其管理。以及**框架慣例移到建置期**，成為 22 條 analyzer 規則。數項變更屬破壞性，依 pre-stable 政策以 minor 發佈，因目前尚無外部消費者。本條目並含 `v4.15.0` 之後未在 subject 標 `!` 的破壞性變更。
+
+📄 完整說明與設計脈絡：[docs/changelogs/4.16.0.zh-TW.md](docs/changelogs/4.16.0.zh-TW.md)
 
 ### 新增
 
-- **框架慣例改於建置期把關。** `Bee.Definition` 隨套件提供並自動註冊 Roslyn analyzer，把 22 條慣例
-  變成建置期診斷：定義檔的合法性與跨檔一致性（資料庫 scope 選擇、表登記、關聯引用、sidecar 存在性）、
-  wire 合約形狀（formatter 註冊、鍵策略、建構子順序、無參數建構子）、以及程式碼慣例（BO 存取控制）。
-  診斷訊息同時交代原因與修法，而非僅指出違規——因為這些慣例原本都在執行期才失敗，且往往離肇因的
-  定義很遠。消費端不需任何設定：套件會自行把定義檔交給編譯器。每條規則可個別調整，定義檔規則可
-  整組關閉。規則清單、嚴重度調整機制（依規則群組而異）與版本政策見
-  [Analyzer 規則](docs/analyzer-rules.zh-TW.md)。
-
-- **Session 撐得過快取逐出、行程重啟與多節點路由。** 登入時寫入重建種子至 `st_session`
-  （token、使用者、到期、公司），`SessionInfoCache` 在快取失效時據以重建。種子刻意不是
-  `SessionInfo` 的快照：角色、客製代碼、record scope 一律於每次重建重算，因此登入後被撤銷的
-  公司權限會即刻生效，而非殘留在舊快照裡。進入 / 離開公司同步更新種子，登出則刪除種子——
-  否則只清快取會讓下一個請求把 token 由該列復活。
-- `Bee.Business`：新增 `DerivedApiEncryptionKeyProvider`，以 HKDF-SHA256 由根金鑰與 accessToken
-  導出 per-session 金鑰。金鑰因此不需儲存、撐得過快取逐出，且任何節點算出同一把；現為預設
-  provider。未設定 `SecurityKeySettings.ApiEncryptionKey` 時改由 master key 導出根金鑰，
-  未設定的部署一樣可用。
-- `Bee.Definition`：新增 `st_user.culture` 欄位、`BackendConfiguration.DefaultLanguage` 與
-  `BackendConfiguration.SessionCleanupOptions`；`Bee.Hosting`：新增 `ExpiredSessionCleanupService`
-  （預設啟用、每小時一次）回收過期的 `st_session` 列。
-- `Bee.Business`：新增 `SessionCompanyBinder`，收容 `EnterCompany` 與 session 重建共用的公司
-  繫結推導，兩條路徑不會各自算出不同的權限狀態。
-- `Bee.Expressions`：運算式沙箱新增 `UtcNow()`，與 `Today()`、`Now()` 並列，供需要明示 UTC
-  意圖（而非由使用者時區推導）時使用。見[運算式規則](docs/expression-rules.zh-TW.md)。
+- `Bee.Definition`：隨套件提供 Roslyn analyzer，把 22 條框架慣例變成建置期診斷——定義檔合法性、wire 合約形狀、BO 存取控制。見 [Analyzer 規則](docs/analyzer-rules.zh-TW.md)。
+- `Bee.Definition`：新增 `MenuSettings` 定義型別，承接導覽選單（巢狀 `MenuFolder` / `MenuEntry`、全樹唯一 `Id`、設計期 `Visible`）。
+- `Bee.Definition`：`ProgramItem.Repository`，與 `BusinessObject` 並列，把 progId 綁定到它的 Repository。
+- `Bee.Repository.Abstractions`：新增 `IRepositoryFactory`，以兩個泛型軸成為所有 Repository 的唯一入口。
+- Session 撐得過快取逐出、行程重啟與多節點路由：登入寫入重建種子至 `st_session`，角色 / 客製代碼 / record scope 於每次重建重算。
+- 應用程式身分：API 金鑰存於 `st_api_key`、由 `IApiKeyValidator` 驗證、經 `IDeploymentAuthorizationService` 管理。見 [API 金鑰管理](docs/api-key-management.zh-TW.md)。
+- `Bee.Api.Client`：新增 `FormDefinitionLoader`，把原始定義組裝成執行階段的 schema 與 layout。
+- `Bee.Business`：新增 `DerivedApiEncryptionKeyProvider`（現為預設）、`SessionCompanyBinder`、`BusinessObject.CreateFormRepository<T>()`。
+- `Bee.Definition`：新增 `st_user.culture`、`BackendConfiguration.DefaultLanguage` / `SessionCleanupOptions`；`Bee.Hosting`：新增 `ExpiredSessionCleanupService`。
+- `Bee.Expressions`：運算式沙箱新增 `UtcNow()`，與 `Today()`、`Now()` 並列。見[運算式規則](docs/expression-rules.zh-TW.md)。
 
 ### 變更 —— 破壞性（編譯期可發現）
 
-- 移除 `Bee.UI.Maui` 與 `Bee.Web.Blazor.Wasm` 及其 sample 專案。UI 收斂為兩個家族：
-  `Bee.UI.Avalonia` 以單一 `net10.0` 專案加各平台 head 覆蓋桌面 / iOS / Android / WASM；
-  `Bee.Web.Blazor.Server` 保留，因為它提供 Avalonia 做不到的事——真 HTML DOM 與伺服器渲染
-  （SEO、嵌入既有網站、螢幕閱讀器、免下載 runtime）。`Bee.Web.Blazor.Wasm` 夾在兩者之間而無
-  獨立定位：與 Avalonia Browser 同樣要下載 WASM runtime，又與 Server 版有 950 行完全相同。
-- `Bee.ObjectCaching`：移除 `IEvictableCache` 與 `ICacheContainer.TryEvict(string)`；
-  `KeyObjectCache<T>` / `ObjectCache<T>` 不再實作該介面。快取失效改為發布 notify-key 版本、
-  由條目 lazy 過期。（`c45ff350`）
-- `Bee.Repository.Abstractions`：`IDataFormRepository.GetNewData()` 增加 `timeZoneId` 引數，
-  實作端須同步改簽章。（`b759894f`）
-- `Bee.Business` / `Bee.Expressions`：`IFormRuleProcessor`（五個成員）與
-  `IExpressionEvaluator.Evaluate` / `Evaluate<T>` 增加 `timeZoneId` 引數。（`5f28f9a3`）
-- `Bee.Definition`：`IDefineStorage` 新增 `GetChangeSource(...)`。（`bb5e4473`、`f7459cc2`）
-- `Bee.Base`：時間 `Cxxx` 家族的單參數多載改回傳 nullable，`CDate` 更名為 `CDateOnly`。
-  （`ba56cef0`、`49641789`、`c5578a42`）
-- `Bee.Base` / `Bee.Db`：新增 `FieldDbType.Time`（附加於列舉末端，既有值不變）。（`50a2e7d8`）
-- `Bee.Api.Core`（**wire**）：`SerializableData*` 改採 property-name key，完成 4.15.0 當時
-  刻意排除的部分。（`d64decf9`）
-- `Bee.Api.Client`：移除 `SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync`。
-  這兩個方法對 .NET 呼叫端一直只會回傳空殼——定義型別的序列化契約是 XML，其巢狀集合為
-  get-only，JSON 與 MessagePack 反序列化時會丟棄。請改用 `ClientInfo.DefineAccess.*`
-  或 `GetDefineAsync` 搭配對應的 `DefineType`。
-- `Bee.Business`：`SystemBO.SaveDefine` 與 `SystemBO.CreateSession` 改為 `LocalOnly`，
-  遠端呼叫一律拒絕。寫入定義、以及不驗憑證就從 UserID 發 token，都屬受信任呼叫端操作。
-- 移除零使用的公開表面：八個型別（`IEnterpriseObjectService`、`EnterpriseObjectService`、
-  `InitializeOptions`、`ApplicationType`、`SysFuncIDs`、`VersionFiles`、`DefaultBoolean`、
-  `NotSetBoolean`）與三個成員（`SystemActions.GetLocalDefine` / `SaveLocalDefine`、
-  `DateTimeExtensions.IsEmpty`），框架內外皆無呼叫端。其中 `IEnterpriseObjectService` 值得特別
-  說明：它具備擴充點的完整外觀——`BackendDefaultTypes` 常數、`BackendComponents.EnterpriseObjectService`
-  設定項、DI 註冊——但介面零成員，因此替換實作什麼都改變不了。既有 `SystemSettings.xml` 若殘留
-  `EnterpriseObjectService` 節點，載入時會被忽略，不需遷移檔案。`DateTimeExtensions.IsEmpty`
-  以 1753-01-01 為判準，而該界線在 SQL Server 改用 `datetime2` 後已不再是資料庫限制。
-
-- `Bee.Definition`：`IApiEncryptionKeyProvider.GenerateKeyForLogin()` 改為接收 accessToken
-  （`GenerateKeyForLogin(Guid)`），介面並新增 `SupportsSessionRebuild`。導出式 provider 需要
-  token 作為金鑰材料，故現在先產生 token 再產生金鑰。
-- `Bee.Definition`：`ICacheDataSourceProvider.GetSessionUser(Guid)` 換為 `GetSessionInfo(Guid)`，
-  回傳重建後的 session 而非原始種子。
-- `Bee.Repository.Abstractions`：`ISessionRepository.CreateSession(...)` 換為 `InsertSession` /
-  `UpdateSession` / `DeleteSession` / `DeleteExpiredSessions`——建立 session 屬業務物件職責，
-  不屬 repository。`IUserRepository.GetTimeZone(string)` 換為 `GetLocale(string)`（時區與語系
-  單次查詢取回），並新增 `GetName(string)`。
-- `Bee.Business`：`SystemBusinessObject.ApplyUserTimeZone` 更名為 `ApplyUserLocale`（現在也填語系）；
-  `CacheDataSourceProvider` 建構子新增 `IServiceProvider` 參數。
+- `Bee.Definition`：`ProgramSettings` 改為攤平、server 端專用的型別註冊表；移除 `ProgramCategory`，選單移至 `MenuSettings`。定義檔需拆分。[ADR-034](docs/adr/adr-034-progid-type-registry.md)
+- `Bee.Business`：所有商業物件改由註冊表解析——`ProgId` 上移至 `BusinessObject` 基底、`IFormBoTypeResolver` 更名 `IBoTypeResolver`、三個 `Create` 方法收斂為 `CreateBusinessObject(token, progId, isLocalCall)`，並移除 `BackendComponents.BusinessObjectFactory`。
+- `Bee.Repository.Abstractions`：移除 `ISystemRepositoryFactory` / `IFormRepositoryFactory` / `IAuditLogRepositoryFactory` 與 `IReportFormRepository`；Repository 經 `RepositoryBase` 統一為 `(ctx, accessToken, progId)` 建構子。
+- `Bee.Api.Core` / `Bee.Api.Client`（**wire**）：定義類 API 一律供應原始定義 + XML 信封；移除 `SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync`。[ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md)
+- 移除 `Bee.UI.Maui` 與 `Bee.Web.Blazor.Wasm`；UI 收斂為 Avalonia + Blazor.Server 雙軌。
+- `Bee.ObjectCaching`：移除 `IEvictableCache` 與 `ICacheContainer.TryEvict(string)`。
+- `Bee.Repository.Abstractions`：`IDataFormRepository.GetNewData()` 增加 `timeZoneId`；`ISessionRepository.CreateSession(...)` 拆為 `Insert` / `Update` / `Delete` / `DeleteExpiredSessions`；`IUserRepository.GetTimeZone` 換為 `GetLocale` 並新增 `GetName`。
+- `Bee.Business` / `Bee.Expressions`：`IFormRuleProcessor` 與 `IExpressionEvaluator.Evaluate` 增加 `timeZoneId`。
+- `Bee.Definition`：`IDefineStorage` 新增 `GetChangeSource(...)`；`IApiEncryptionKeyProvider.GenerateKeyForLogin` 改收 token 並新增 `SupportsSessionRebuild`；`ICacheDataSourceProvider.GetSessionUser` 換為 `GetSessionInfo`。
+- `Bee.Base`：時間 `Cxxx` 家族單參數多載改回傳 nullable；`CDate` 更名 `CDateOnly`；列舉末端新增 `FieldDbType.Time`。
+- `Bee.Api.Core`（**wire**）：`SerializableData*` 改採 property-name key。
+- `Bee.Business`：`SystemBO.SaveDefine` 與 `SystemBO.CreateSession` 改為 `LocalOnly`。
+- 移除零使用的公開表面：八個型別（含 `IEnterpriseObjectService`）與三個成員。
 
 ### 變更 —— 破壞性（靜默，無編譯錯誤）
 
-- **系統時間戳改為 UTC。** `CreateTime` 類屬性、快取到期、session 到期、資料庫欄位 `DEFAULT`
-  與 PostgreSQL 參數層全面由本地時間改為 UTC。下游若讀取或比較這些值，會整體位移一個時區
-  且不會有任何編譯失敗。（`122184e4`、`52ddb24a`、`9aadf9eb`、`1eb0e09f`、`11aedcc4`、`c990aa9e`）
-- **日期一律 `DateOnly`。** `FormRowDefaults.Apply` 與 `FieldDbTypeExtensions.DefaultForDbType`
-  增加預設參數（binary breaking），運算式 `Today()` 由 `DateTime` 改回傳 `DateOnly`。（`f028ba04`）
-- **預設時區。** `SessionInfo.TimeZone` 與 `UserInfo.TimeZone` 的預設值由 `Asia/Taipei` 改為
-  空字串（所有轉換點本就將空字串視為 UTC）。登入時由 `st_user.time_zone` 填入，若為空則退回
-  新增的 `BackendConfiguration.DefaultTimeZone`——其出廠預設為 `Asia/Taipei`，故既有部署不會
-  位移。但自訂認證流程若直接建構 `SessionInfo` 而未呼叫 `ApplyUserTimeZone`，該 session 會是 UTC。
-- **反序列化允許清單。** `SysInfo` 內建的命名空間清單原本列 `Bee.Contracts`，而框架中無此
-  命名空間；已更正為 `Bee.Api.Contracts`。若有消費端型別放在 `Bee.Contracts` 命名空間下，
-  會由允許變成拒絕。
-
-- **預設的 API 加密金鑰 provider 改變。** `BackendDefaultTypes.ApiEncryptionKeyProvider` 由
-  `DynamicApiEncryptionKeyProvider` 改指 `DerivedApiEncryptionKeyProvider`。session 重建依賴於此：
-  dynamic provider 把金鑰只放在 session 內，重建出的 session 會「看似已登入但每個加密呼叫都失敗」，
-  因此它簽發的 session 一律不重建。升級後現存 session 會因金鑰產生方式改變而失效一次。需維持
-  舊行為者，於 `BackendComponents.ApiEncryptionKeyProvider` 明確指定。該常數值會被編譯器內嵌，
-  引用過它的消費端需重新建置。
-- **預設語系改變。** `SessionInfo.Culture` 預設由 `zh-TW` 改為空字串，語言服務的 fallback 路徑
-  對已登入的呼叫首次可達。登入時由新增的 `st_user.culture` 欄位填入，未設值則退回
-  `BackendConfiguration.DefaultLanguage`（出廠即 `zh-TW`，既有部署不會換語言）。自訂認證流程若
-  直接建構 `SessionInfo` 而未呼叫 `ApplyUserLocale`，該 session 不帶語系。
-- **`SystemBO.CreateSession` 簽發的 session 現在真的可用。** 先前它只寫一列 `st_session` 而已，
-  取得的 token 找不到對應 session、也進不了公司。現在改走與登入相同的建構路徑（僅少了密碼驗證），
-  並寫入 `ServiceSessionCreated` 稽核；保護等級維持 `LocalOnly`。傳入 `OneTime` 改擲
-  `NotSupportedException`：一次性語意原本靠 delete-on-read，而建立時即入快取的 session 永遠不會
-  再由該列讀回，保證已無從兌現——明確失敗優於讓帶安全意味的承諾無聲失效。
-- **Session 讀取不再有副作用。** `SessionRepository.GetSession` 改以查詢條件過濾過期列，不再
-  順手刪除。回收改由 `ExpiredSessionCleanupService` 負責；停用該排程的部署需自行回收 `st_session`。
+- **系統時間戳改為 UTC** —— 任何讀取或比較這些值之處會整體位移一個時區，且不會有編譯失敗。
+- **日期一律 `DateOnly`** —— `FormRowDefaults.Apply` 與 `FieldDbTypeExtensions.DefaultForDbType` 增加預設參數；`Today()` 改回傳 `DateOnly`。
+- **預設值改變**：`SessionInfo.TimeZone` / `Culture` 預設改為空字串（登入時由 `st_user` 填入，未設值退回 `BackendConfiguration`）；`BackendDefaultTypes.ApiEncryptionKeyProvider` 改指導出式 provider，升級後現存 session 失效一次。
+- **`SysInfo` 的反序列化允許清單**由 `Bee.Contracts` 更正為 `Bee.Api.Contracts`。
+- **`SystemBO.CreateSession` 簽發的 session 現在真的可用**，傳入 `OneTime` 改擲 `NotSupportedException`。
+- **Session 讀取不再有副作用** —— 過期列改以查詢過濾而非順手刪除，回收由 `ExpiredSessionCleanupService` 負責。
 
 ### 修正
 
-- `Bee.Api.Core`：`CommonConfiguration.IsDebugMode` 啟用時，基礎設施例外改為原訊息回傳呼叫端，
-  不再一律替換為 `"Internal server error"`。這類例外由 `JsonRpcExecutor` 自行處理、不會往上拋到
-  transport，訊息一旦被換掉，開發者就完全沒有線索——transport 自己的 development 模式透傳根本
-  沒有機會觸發。正式環境行為不變，且兩種模式都不含堆疊追蹤。
-- `Bee.Definition`：`FieldDbType.Date` 欄位改對映到 `DateEdit`，不再落入純文字框。
-- `Bee.Db`：全新建立的 SQL Server 表，`FieldDbType.DateTime` 欄位改宣告為 `datetime2(7)`，
-  與 ALTER 及 rebuild 路徑一致。`SqlCreateTableCommandBuilder` 自帶一份型別對映複本，
-  4.15.0 的 `datetime` → `datetime2(7)` 遷移漏改了它，導致該遷移只到達「升級過的表」——
-  全新部署會靜默拿到舊的 `datetime`（約 3.33 毫秒捨入、下限 1753-01-01）。
-  已移除該複本，CREATE 改與其他四家 provider 一樣走 `SqlSchemaSyntax` 的共用原語。
-- `Bee.Base`：`StringUtilities.Replace` 改用 ordinal 比對。土耳其地區設定下連線字串佔位符
-  （`{@Password}` 等）會比對失敗而原樣送出。
-- `Bee.Base`：`DataTable` 的 JSON round-trip 不再改寫字串欄位中的日期樣式文字，
-  也不再讓超出 `double` 精度的 decimal 失精。
-- `Bee.Base`：`XmlCodec.Deserialize` 禁用 DTD 處理（內部實體展開 / billion laughs）。
-- `Bee.Definition`：定義檔路徑拒絕會逃出定義根目錄的片段。
-- `Bee.Definition`：master key 檔案在 Unix 上建立為僅擁有者可讀寫。
-- `Bee.Repository`：session 查詢失敗不再把 UserID 回傳給呼叫端。
-- `Bee.Api.Core`：因日光節約前推而不存在的本地時刻（例如轉換日的 02:30）改為前推該次轉換的
-  delta，不再擲例外。日期選擇器無從得知該時刻不存在，使用者的選擇是合理的；先前
-  `ArgumentException` 會原樣穿透 JSON-RPC 邊界成為不明失敗。此行為與 iOS / Android /
-  Google 日曆等主流選擇器一致。反向的 fall-back 重疊時刻本就有確定性解析，不受影響。
+- `Bee.Hosting`：啟用稽核記錄時 `IAuditLogWriteRepository` 無法解析。
+- `Bee.Api.Core`：`IsDebugMode` 啟用時基礎設施例外保留原訊息；日光節約前推缺口不再擲例外。
+- `Bee.Db`：全新建立的 SQL Server 表，`FieldDbType.DateTime` 改宣告為 `datetime2(7)`，與 ALTER 及 rebuild 路徑一致。
+- `Bee.Definition`：`FieldDbType.Date` 欄位改對映到 `DateEdit`。
+- `Bee.Base`：`StringUtilities.Replace` 改用 ordinal 比對；`DataTable` 的 JSON round-trip 保留字串與 decimal 的保真度。
 
 ### 安全性
 
-- 識別碼型字串比對全面改為 ordinal，包含 `SysInfo` 的反序列化允許清單與
-  `DatabaseSettingsCryptor` 的 `enc:` 哨兵。
-- `IPValidator` 複製其允許／拒絕清單並以唯讀公開；`UpgradeStage.Statements` 改為唯讀。
-- 三處手寫的常數時間比對迴圈（`AesCbcHmacCryptor`、`PasswordHasher`、`FileHashValidator`）
-  改用 `CryptographicOperations.FixedTimeEquals`。三者實作原本都正確；但一個原語只需維持一次正確。
+- 應用程式身分由部署層權限軸把關，該軸與公司層權限永不互相 fallback；每個部署層操作皆寫入稽核。
+- 識別碼型字串比對全面改為 ordinal；三處手寫的常數時間比對迴圈改用 `CryptographicOperations.FixedTimeEquals`。
+- `XmlCodec.Deserialize` 禁用 DTD 處理；定義檔路徑拒絕逃出根目錄；master key 檔案於 Unix 僅擁有者可讀寫；session 查詢失敗不再回傳 UserID。
+
+### 升級指引
+
+定義檔拆分、Repository 工廠遷移，以及需要人工稽核的靜默變更清單，見 [docs/changelogs/4.16.0.zh-TW.md](docs/changelogs/4.16.0.zh-TW.md#升級指引)。
 
 ## [4.15.0]
 

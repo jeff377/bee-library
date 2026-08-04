@@ -1,15 +1,1 @@
 #nullable enable
-Bee.UI.Core.ApiKeyStorage
-Bee.UI.Core.ApiKeyStorage.ApiKeyStorage() -> void
-Bee.UI.Core.ApiKeyStorage.LoadApiKey() -> string!
-Bee.UI.Core.ApiKeyStorage.SaveApiKey(string! apiKey) -> void
-Bee.UI.Core.ApiKeyStorage.SetApiKey(string! apiKey) -> void
-Bee.UI.Core.IApiKeyStorage
-Bee.UI.Core.IApiKeyStorage.LoadApiKey() -> string!
-Bee.UI.Core.IApiKeyStorage.SaveApiKey(string! apiKey) -> void
-Bee.UI.Core.IApiKeyStorage.SetApiKey(string! apiKey) -> void
-static Bee.UI.Core.ClientInfo.ApiKeyStorage.get -> Bee.UI.Core.IApiKeyStorage!
-static Bee.UI.Core.ClientInfo.ApiKeyStorage.set -> void
-static Bee.UI.Core.ClientInfo.ApplyApiKey(string! defaultApiKey = "") -> void
-static Bee.UI.Core.ClientInfo.GetApiKey() -> string!
-static Bee.UI.Core.ClientInfo.SetApiKey(string! apiKey) -> void

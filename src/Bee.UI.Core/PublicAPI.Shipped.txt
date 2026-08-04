@@ -1,10 +1,19 @@
 #nullable enable
+Bee.UI.Core.ApiKeyStorage
+Bee.UI.Core.ApiKeyStorage.ApiKeyStorage() -> void
+Bee.UI.Core.ApiKeyStorage.LoadApiKey() -> string!
+Bee.UI.Core.ApiKeyStorage.SaveApiKey(string! apiKey) -> void
+Bee.UI.Core.ApiKeyStorage.SetApiKey(string! apiKey) -> void
 Bee.UI.Core.ClientInfo
 Bee.UI.Core.EndpointStorage
 Bee.UI.Core.EndpointStorage.EndpointStorage() -> void
 Bee.UI.Core.EndpointStorage.LoadEndpoint() -> string!
 Bee.UI.Core.EndpointStorage.SaveEndpoint(string! endpoint) -> void
 Bee.UI.Core.EndpointStorage.SetEndpoint(string! endpoint) -> void
+Bee.UI.Core.IApiKeyStorage
+Bee.UI.Core.IApiKeyStorage.LoadApiKey() -> string!
+Bee.UI.Core.IApiKeyStorage.SaveApiKey(string! apiKey) -> void
+Bee.UI.Core.IApiKeyStorage.SetApiKey(string! apiKey) -> void
 Bee.UI.Core.IEndpointStorage
 Bee.UI.Core.IEndpointStorage.LoadEndpoint() -> string!
 Bee.UI.Core.IEndpointStorage.SaveEndpoint(string! endpoint) -> void
@@ -32,6 +41,9 @@ override Bee.UI.Core.Permissions.FieldCapability.GetHashCode() -> int
 static Bee.UI.Core.ClientInfo.AccessToken.get -> System.Guid
 static Bee.UI.Core.ClientInfo.AllowGenerateSettings.get -> bool
 static Bee.UI.Core.ClientInfo.AllowGenerateSettings.set -> void
+static Bee.UI.Core.ClientInfo.ApiKeyStorage.get -> Bee.UI.Core.IApiKeyStorage!
+static Bee.UI.Core.ClientInfo.ApiKeyStorage.set -> void
+static Bee.UI.Core.ClientInfo.ApplyApiKey(string! defaultApiKey = "") -> void
 static Bee.UI.Core.ClientInfo.ApplyEnterCompanyResult(Bee.Api.Core.Messages.System.EnterCompanyResponse! response) -> void
 static Bee.UI.Core.ClientInfo.ApplyLoginResult(Bee.Api.Core.Messages.System.LoginResponse! loginResponse) -> void
 static Bee.UI.Core.ClientInfo.Arguments.get -> System.Collections.Generic.Dictionary<string!, string!>?
@@ -44,10 +56,12 @@ static Bee.UI.Core.ClientInfo.CreateLogApiConnector() -> Bee.Api.Client.Connecto
 static Bee.UI.Core.ClientInfo.DefineAccess.get -> Bee.Api.Client.ClientDefineAccess!
 static Bee.UI.Core.ClientInfo.EndpointStorage.get -> Bee.UI.Core.IEndpointStorage!
 static Bee.UI.Core.ClientInfo.EndpointStorage.set -> void
+static Bee.UI.Core.ClientInfo.GetApiKey() -> string!
 static Bee.UI.Core.ClientInfo.GetEndpoint() -> string!
 static Bee.UI.Core.ClientInfo.InitializeAsync(Bee.UI.Core.IUIViewService! service, Bee.Api.Client.SupportedConnectTypes connectTypes) -> System.Threading.Tasks.Task<bool>!
 static Bee.UI.Core.ClientInfo.InitializeAsync(string! endpoint) -> System.Threading.Tasks.Task!
 static Bee.UI.Core.ClientInfo.ResetDefineCache() -> void
+static Bee.UI.Core.ClientInfo.SetApiKey(string! apiKey) -> void
 static Bee.UI.Core.ClientInfo.SetEndpointAsync(string! endpoint) -> System.Threading.Tasks.Task!
 static Bee.UI.Core.ClientInfo.SystemApiConnector.get -> Bee.Api.Client.Connectors.SystemApiConnector!
 static Bee.UI.Core.ClientInfo.UIViewService.get -> Bee.UI.Core.IUIViewService?

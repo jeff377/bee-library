@@ -38,6 +38,8 @@ Bee.Web.Blazor.Server.Components.DynamicGrid.Rows.set -> void
 Bee.Web.Blazor.Server.Components.FormPage
 Bee.Web.Blazor.Server.Components.FormPage.AccessToken.get -> System.Guid
 Bee.Web.Blazor.Server.Components.FormPage.AccessToken.set -> void
+Bee.Web.Blazor.Server.Components.FormPage.DefinitionLoader.get -> Bee.Api.Client.Definitions.FormDefinitionLoader?
+Bee.Web.Blazor.Server.Components.FormPage.DefinitionLoader.set -> void
 Bee.Web.Blazor.Server.Components.FormPage.FormPage() -> void
 Bee.Web.Blazor.Server.Components.FormPage.ProgId.get -> string!
 Bee.Web.Blazor.Server.Components.FormPage.ProgId.set -> void

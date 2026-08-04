@@ -149,6 +149,8 @@ Bee.Base.ITagProperty.Tag.set -> void
 Bee.Base.MemberPath
 Bee.Base.Security.AesCbcHmacCryptor
 Bee.Base.Security.AesCbcHmacKeyGenerator
+Bee.Base.Security.ApiKeyFormat
+Bee.Base.Security.ApiKeyHasher
 Bee.Base.Security.FileHashValidator
 Bee.Base.Security.PasswordHasher
 Bee.Base.Security.RsaCryptor
@@ -246,6 +248,9 @@ Bee.Base.Tracing.TraceStatus.Error = 1 -> Bee.Base.Tracing.TraceStatus
 Bee.Base.Tracing.TraceStatus.Ok = 0 -> Bee.Base.Tracing.TraceStatus
 Bee.Base.Tracing.Tracer
 Bee.Base.ValueUtilities
+const Bee.Base.Security.ApiKeyFormat.MaxSysIdLength = 50 -> int
+const Bee.Base.Security.ApiKeyFormat.MinSysIdLength = 3 -> int
+const Bee.Base.Security.ApiKeyFormat.Separator = '.' -> char
 const Bee.Base.Tracing.TraceCategories.General = "General" -> string!
 const Bee.Base.Tracing.TraceCategories.JsonRpc = "JsonRpc" -> string!
 const Bee.Base.ValueUtilities.TimeOnlyFormat = "HH:mm" -> string!
@@ -305,6 +310,7 @@ static Bee.Base.Exceptions.ExceptionExtensions.Unwrap(this System.Exception! ex)
 static Bee.Base.FileUtilities.FileReadText(string! filePath) -> string!
 static Bee.Base.FileUtilities.FileWriteText(string! filePath, string! contents) -> void
 static Bee.Base.FileUtilities.FileWriteText(string! filePath, string! contents, System.Text.Encoding! encoding) -> void
+static Bee.Base.FileUtilities.FileWriteTextAtomic(string! filePath, string! contents) -> void
 static Bee.Base.FileUtilities.GetAssemblyPath() -> string!
 static Bee.Base.FileUtilities.IsLocalPath(string! input) -> bool
 static Bee.Base.FrameworkClock.Now(string! timeZoneId) -> System.DateTime
@@ -320,6 +326,12 @@ static Bee.Base.Security.AesCbcHmacKeyGenerator.FromBase64CombinedKey(string! ba
 static Bee.Base.Security.AesCbcHmacKeyGenerator.FromCombinedKey(byte[]! combinedKey, out byte[]! aesKey, out byte[]! hmacKey) -> void
 static Bee.Base.Security.AesCbcHmacKeyGenerator.GenerateBase64CombinedKey() -> string!
 static Bee.Base.Security.AesCbcHmacKeyGenerator.GenerateCombinedKey() -> byte[]!
+static Bee.Base.Security.ApiKeyFormat.Compose(string! sysId, string! secret) -> string!
+static Bee.Base.Security.ApiKeyFormat.CreateSecret() -> string!
+static Bee.Base.Security.ApiKeyFormat.IsValidSysId(string? sysId) -> bool
+static Bee.Base.Security.ApiKeyFormat.TryParse(string? key, out string! sysId, out string! secret) -> bool
+static Bee.Base.Security.ApiKeyHasher.HashSecret(string! secret) -> string!
+static Bee.Base.Security.ApiKeyHasher.VerifySecret(string? secret, string? hashedSecret) -> bool
 static Bee.Base.Security.FileHashValidator.ComputeSha256(string! filePath) -> string!
 static Bee.Base.Security.FileHashValidator.VerifySha256(string! filePath, string! expectedSha256Hex) -> bool
 static Bee.Base.Security.PasswordHasher.HashPassword(string! password) -> string!

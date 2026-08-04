@@ -513,11 +513,13 @@ Bee.Db.Storage.DbDefineStorage.GetChangeSource(Bee.Definition.DefineType defineT
 Bee.Db.Storage.DbDefineStorage.GetCurrencySettings() -> Bee.Definition.Settings.CurrencySettings?
 Bee.Db.Storage.DbDefineStorage.GetCustomizeFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?
 Bee.Db.Storage.DbDefineStorage.GetCustomizeLanguage(string! customizeId, string! lang, string! ns) -> Bee.Definition.Language.LanguageResource?
+Bee.Db.Storage.DbDefineStorage.GetCustomizeMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings?
 Bee.Db.Storage.DbDefineStorage.GetCustomizeProgramSettings(string! customizeId) -> Bee.Definition.Settings.ProgramSettings?
 Bee.Db.Storage.DbDefineStorage.GetDbCategorySettings() -> Bee.Definition.Settings.DbCategorySettings?
 Bee.Db.Storage.DbDefineStorage.GetFormLayout(string! layoutId) -> Bee.Definition.Layouts.FormLayout?
 Bee.Db.Storage.DbDefineStorage.GetFormSchema(string! progId) -> Bee.Definition.Forms.FormSchema?
 Bee.Db.Storage.DbDefineStorage.GetLanguage(string! lang, string! ns) -> Bee.Definition.Language.LanguageResource?
+Bee.Db.Storage.DbDefineStorage.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings?
 Bee.Db.Storage.DbDefineStorage.GetProgramSettings() -> Bee.Definition.Settings.ProgramSettings?
 Bee.Db.Storage.DbDefineStorage.GetTableSchema(string! categoryId, string! tableName) -> Bee.Definition.Database.TableSchema?
 Bee.Db.Storage.DbDefineStorage.GetUnitSettings() -> Bee.Definition.Settings.UnitSettings?
@@ -526,6 +528,7 @@ Bee.Db.Storage.DbDefineStorage.SaveDbCategorySettings(Bee.Definition.Settings.Db
 Bee.Db.Storage.DbDefineStorage.SaveFormLayout(Bee.Definition.Layouts.FormLayout! formLayout) -> void
 Bee.Db.Storage.DbDefineStorage.SaveFormSchema(Bee.Definition.Forms.FormSchema! formSchema) -> void
 Bee.Db.Storage.DbDefineStorage.SaveLanguage(Bee.Definition.Language.LanguageResource! resource) -> void
+Bee.Db.Storage.DbDefineStorage.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
 Bee.Db.Storage.DbDefineStorage.SaveProgramSettings(Bee.Definition.Settings.ProgramSettings! settings) -> void
 Bee.Db.Storage.DbDefineStorage.SaveTableSchema(string! categoryId, Bee.Definition.Database.TableSchema! tableSchema) -> void
 Bee.Db.Storage.DbDefineStorage.SaveUnitSettings(Bee.Definition.Settings.UnitSettings! settings) -> void

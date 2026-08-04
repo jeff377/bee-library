@@ -1,4 +1,1 @@
 #nullable enable
-Bee.Db.Storage.DbDefineStorage.GetCustomizeMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings?
-Bee.Db.Storage.DbDefineStorage.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings?
-Bee.Db.Storage.DbDefineStorage.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void

@@ -4,6 +4,8 @@ Bee.Api.Core.Authorization.ApiAuthorizationContext
 Bee.Api.Core.Authorization.ApiAuthorizationContext.ApiAuthorizationContext() -> void
 Bee.Api.Core.Authorization.ApiAuthorizationContext.ApiKey.get -> string!
 Bee.Api.Core.Authorization.ApiAuthorizationContext.ApiKey.set -> void
+Bee.Api.Core.Authorization.ApiAuthorizationContext.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
+Bee.Api.Core.Authorization.ApiAuthorizationContext.ApiKeyValidation.set -> void
 Bee.Api.Core.Authorization.ApiAuthorizationContext.Authorization.get -> string!
 Bee.Api.Core.Authorization.ApiAuthorizationContext.Authorization.set -> void
 Bee.Api.Core.Authorization.ApiAuthorizationContext.Method.get -> string!
@@ -68,6 +70,8 @@ Bee.Api.Core.JsonRpc.JsonRpcException.RpcMessage.get -> string!
 Bee.Api.Core.JsonRpc.JsonRpcExecutor
 Bee.Api.Core.JsonRpc.JsonRpcExecutor.AccessToken.get -> System.Guid
 Bee.Api.Core.JsonRpc.JsonRpcExecutor.AccessToken.set -> void
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.ApiKeyValidation.set -> void
 Bee.Api.Core.JsonRpc.JsonRpcExecutor.Execute(Bee.Api.Core.JsonRpc.JsonRpcRequest! request) -> Bee.Api.Core.JsonRpc.JsonRpcResponse!
 Bee.Api.Core.JsonRpc.JsonRpcExecutor.ExecuteAsync(Bee.Api.Core.JsonRpc.JsonRpcRequest! request) -> System.Threading.Tasks.Task<Bee.Api.Core.JsonRpc.JsonRpcResponse!>!
 Bee.Api.Core.JsonRpc.JsonRpcExecutor.IsLocalCall.get -> bool
@@ -400,6 +404,24 @@ Bee.Api.Core.Messages.System.CheckPackageUpdateResponse
 Bee.Api.Core.Messages.System.CheckPackageUpdateResponse.CheckPackageUpdateResponse() -> void
 Bee.Api.Core.Messages.System.CheckPackageUpdateResponse.Updates.get -> System.Collections.Generic.List<Bee.Api.Contracts.System.PackageUpdateInfo!>!
 Bee.Api.Core.Messages.System.CheckPackageUpdateResponse.Updates.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyRequest
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.Contact.get -> string?
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.Contact.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.CreateApiKeyRequest() -> void
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.ExpiredAt.get -> System.DateTime?
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.ExpiredAt.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.KeyType.get -> Bee.Definition.Security.ApiKeyType
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.KeyType.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.SysId.get -> string!
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.SysId.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.SysName.get -> string!
+Bee.Api.Core.Messages.System.CreateApiKeyRequest.SysName.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyResponse
+Bee.Api.Core.Messages.System.CreateApiKeyResponse.ApiKey.get -> string!
+Bee.Api.Core.Messages.System.CreateApiKeyResponse.ApiKey.set -> void
+Bee.Api.Core.Messages.System.CreateApiKeyResponse.CreateApiKeyResponse() -> void
+Bee.Api.Core.Messages.System.CreateApiKeyResponse.SysId.get -> string!
+Bee.Api.Core.Messages.System.CreateApiKeyResponse.SysId.set -> void
 Bee.Api.Core.Messages.System.CreateSessionRequest
 Bee.Api.Core.Messages.System.CreateSessionRequest.CreateSessionRequest() -> void
 Bee.Api.Core.Messages.System.CreateSessionRequest.ExpiresIn.get -> int
@@ -454,16 +476,16 @@ Bee.Api.Core.Messages.System.GetFormLayoutRequest.ProgId.get -> string!
 Bee.Api.Core.Messages.System.GetFormLayoutRequest.ProgId.set -> void
 Bee.Api.Core.Messages.System.GetFormLayoutResponse
 Bee.Api.Core.Messages.System.GetFormLayoutResponse.GetFormLayoutResponse() -> void
-Bee.Api.Core.Messages.System.GetFormLayoutResponse.Layout.get -> Bee.Definition.Layouts.FormLayout?
-Bee.Api.Core.Messages.System.GetFormLayoutResponse.Layout.set -> void
+Bee.Api.Core.Messages.System.GetFormLayoutResponse.Xml.get -> string?
+Bee.Api.Core.Messages.System.GetFormLayoutResponse.Xml.set -> void
 Bee.Api.Core.Messages.System.GetFormSchemaRequest
 Bee.Api.Core.Messages.System.GetFormSchemaRequest.GetFormSchemaRequest() -> void
 Bee.Api.Core.Messages.System.GetFormSchemaRequest.ProgId.get -> string!
 Bee.Api.Core.Messages.System.GetFormSchemaRequest.ProgId.set -> void
 Bee.Api.Core.Messages.System.GetFormSchemaResponse
 Bee.Api.Core.Messages.System.GetFormSchemaResponse.GetFormSchemaResponse() -> void
-Bee.Api.Core.Messages.System.GetFormSchemaResponse.Schema.get -> Bee.Definition.Forms.FormSchema?
-Bee.Api.Core.Messages.System.GetFormSchemaResponse.Schema.set -> void
+Bee.Api.Core.Messages.System.GetFormSchemaResponse.Xml.get -> string?
+Bee.Api.Core.Messages.System.GetFormSchemaResponse.Xml.set -> void
 Bee.Api.Core.Messages.System.GetLanguageRequest
 Bee.Api.Core.Messages.System.GetLanguageRequest.GetLanguageRequest() -> void
 Bee.Api.Core.Messages.System.GetLanguageRequest.Lang.get -> string!
@@ -472,8 +494,8 @@ Bee.Api.Core.Messages.System.GetLanguageRequest.Namespace.get -> string!
 Bee.Api.Core.Messages.System.GetLanguageRequest.Namespace.set -> void
 Bee.Api.Core.Messages.System.GetLanguageResponse
 Bee.Api.Core.Messages.System.GetLanguageResponse.GetLanguageResponse() -> void
-Bee.Api.Core.Messages.System.GetLanguageResponse.Resource.get -> Bee.Definition.Language.LanguageResource?
-Bee.Api.Core.Messages.System.GetLanguageResponse.Resource.set -> void
+Bee.Api.Core.Messages.System.GetLanguageResponse.Xml.get -> string?
+Bee.Api.Core.Messages.System.GetLanguageResponse.Xml.set -> void
 Bee.Api.Core.Messages.System.GetPackageRequest
 Bee.Api.Core.Messages.System.GetPackageRequest.AppId.get -> string!
 Bee.Api.Core.Messages.System.GetPackageRequest.AppId.set -> void
@@ -504,6 +526,12 @@ Bee.Api.Core.Messages.System.LeaveCompanyRequest
 Bee.Api.Core.Messages.System.LeaveCompanyRequest.LeaveCompanyRequest() -> void
 Bee.Api.Core.Messages.System.LeaveCompanyResponse
 Bee.Api.Core.Messages.System.LeaveCompanyResponse.LeaveCompanyResponse() -> void
+Bee.Api.Core.Messages.System.ListApiKeysRequest
+Bee.Api.Core.Messages.System.ListApiKeysRequest.ListApiKeysRequest() -> void
+Bee.Api.Core.Messages.System.ListApiKeysResponse
+Bee.Api.Core.Messages.System.ListApiKeysResponse.ApiKeys.get -> System.Collections.Generic.List<Bee.Definition.Security.ApiKeySummary!>!
+Bee.Api.Core.Messages.System.ListApiKeysResponse.ApiKeys.set -> void
+Bee.Api.Core.Messages.System.ListApiKeysResponse.ListApiKeysResponse() -> void
 Bee.Api.Core.Messages.System.LoginRequest
 Bee.Api.Core.Messages.System.LoginRequest.ClientPublicKey.get -> string!
 Bee.Api.Core.Messages.System.LoginRequest.ClientPublicKey.set -> void
@@ -537,6 +565,8 @@ Bee.Api.Core.Messages.System.PingRequest.PingRequest() -> void
 Bee.Api.Core.Messages.System.PingRequest.TraceId.get -> string?
 Bee.Api.Core.Messages.System.PingRequest.TraceId.set -> void
 Bee.Api.Core.Messages.System.PingResponse
+Bee.Api.Core.Messages.System.PingResponse.ApiKeyStatus.get -> Bee.Definition.Security.ApiKeyStatus
+Bee.Api.Core.Messages.System.PingResponse.ApiKeyStatus.set -> void
 Bee.Api.Core.Messages.System.PingResponse.PingResponse() -> void
 Bee.Api.Core.Messages.System.PingResponse.ServerTime.get -> System.DateTime
 Bee.Api.Core.Messages.System.PingResponse.ServerTime.set -> void
@@ -556,6 +586,42 @@ Bee.Api.Core.Messages.System.SaveDefineRequest.Xml.get -> string!
 Bee.Api.Core.Messages.System.SaveDefineRequest.Xml.set -> void
 Bee.Api.Core.Messages.System.SaveDefineResponse
 Bee.Api.Core.Messages.System.SaveDefineResponse.SaveDefineResponse() -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest.Enabled.get -> bool
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest.Enabled.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest.SetApiKeyEnabledRequest() -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest.SysId.get -> string!
+Bee.Api.Core.Messages.System.SetApiKeyEnabledRequest.SysId.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse.Enabled.get -> bool
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse.Enabled.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse.SetApiKeyEnabledResponse() -> void
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse.SysId.get -> string!
+Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse.SysId.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest.ExpiredAt.get -> System.DateTime?
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest.ExpiredAt.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest.SetApiKeyExpiryRequest() -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest.SysId.get -> string!
+Bee.Api.Core.Messages.System.SetApiKeyExpiryRequest.SysId.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse.ExpiredAt.get -> System.DateTime?
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse.ExpiredAt.set -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse.SetApiKeyExpiryResponse() -> void
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse.SysId.get -> string!
+Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse.SysId.set -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest.IsDeploymentAdmin.get -> bool
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest.IsDeploymentAdmin.set -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest.SetDeploymentAdminRequest() -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest.UserId.get -> string!
+Bee.Api.Core.Messages.System.SetDeploymentAdminRequest.UserId.set -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.IsDeploymentAdmin.get -> bool
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.IsDeploymentAdmin.set -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.SetDeploymentAdminResponse() -> void
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.UserId.get -> string!
+Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.UserId.set -> void
 Bee.Api.Core.Registry.ApiContractRegistry
 Bee.Api.Core.Transformers.AesPayloadEncryptor
 Bee.Api.Core.Transformers.AesPayloadEncryptor.AesPayloadEncryptor() -> void
@@ -657,6 +723,7 @@ static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateCompressor(strin
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateEncryptor(string! name, bool isDebugMode) -> Bee.Api.Core.Transformers.IApiPayloadEncryptor!
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateSerializer(string! name) -> Bee.Api.Core.Transformers.IApiPayloadSerializer!
 static Bee.Api.Core.Validator.ApiAccessValidator.ValidateAccess(System.Reflection.MethodInfo! method, Bee.Api.Core.Messages.ApiCallContext! context, Bee.Definition.Security.IAccessTokenValidator! tokenValidator) -> void
+virtual Bee.Api.Core.Authorization.ApiAuthorizationValidator.IsApiKeyRequired(string! method) -> bool
 virtual Bee.Api.Core.Authorization.ApiAuthorizationValidator.IsAuthorizationRequired(string! method) -> bool
 virtual Bee.Api.Core.JsonRpc.ApiPayload.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
 virtual Bee.Api.Core.JsonRpc.JsonRpcRequest.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void

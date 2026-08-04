@@ -137,6 +137,7 @@ Bee.Business.AuditLog.LogAggregateResult.LogAggregateResult() -> void
 Bee.Business.AuditLog.LogAggregateResult.Table.get -> System.Data.DataTable?
 Bee.Business.AuditLog.LogAggregateResult.Table.set -> void
 Bee.Business.AuditLog.LogBusinessObject
+Bee.Business.AuditLog.LogBusinessObject.LogBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = true) -> void
 Bee.Business.AuditLog.LogListResult
 Bee.Business.AuditLog.LogListResult.LogListResult() -> void
 Bee.Business.AuditLog.LogListResult.Paging.get -> Bee.Definition.Paging.PagingInfo?
@@ -149,26 +150,41 @@ Bee.Business.BusinessArgs.Parameters.get -> Bee.Definition.Collections.Parameter
 Bee.Business.BusinessArgs.Parameters.set -> void
 Bee.Business.BusinessObject
 Bee.Business.BusinessObject.AccessToken.get -> System.Guid
+Bee.Business.BusinessObject.ApiKeyId.get -> string?
+Bee.Business.BusinessObject.ApiKeyName.get -> string?
+Bee.Business.BusinessObject.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
+Bee.Business.BusinessObject.ApiKeyValidation.set -> void
 Bee.Business.BusinessObject.BoFactory.get -> Bee.Definition.IBusinessObjectFactory!
+Bee.Business.BusinessObject.BusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = true) -> void
 Bee.Business.BusinessObject.CreateDataFormRepository(string! progId) -> Bee.Repository.Abstractions.Form.IDataFormRepository!
+Bee.Business.BusinessObject.CreateFormRepository<T>() -> T!
+Bee.Business.BusinessObject.CreateFormRepository<T>(string! progId) -> T!
 Bee.Business.BusinessObject.DefineAccess.get -> Bee.Definition.Storage.IDefineAccess!
 Bee.Business.BusinessObject.ExecFunc(Bee.Business.ExecFuncArgs! args) -> Bee.Business.ExecFuncResult!
 Bee.Business.BusinessObject.ExecFuncAnonymous(Bee.Business.ExecFuncArgs! args) -> Bee.Business.ExecFuncResult!
+Bee.Business.BusinessObject.GetCurrentCustomizeId() -> string!
 Bee.Business.BusinessObject.GetCurrentLang() -> string!
 Bee.Business.BusinessObject.GetLangText(string! fullKey) -> string!
 Bee.Business.BusinessObject.GetLangText(string! namespace, string! subKey) -> string!
 Bee.Business.BusinessObject.IsLocalCall.get -> bool
 Bee.Business.BusinessObject.LanguageService.get -> Bee.Definition.Language.ILanguageService!
+Bee.Business.BusinessObject.ProgId.get -> string!
+Bee.Business.BusinessObject.ResolveAuditIdentity() -> (string? UserId, string? UserName, string? CompanyId, string? CompanyName)
 Bee.Business.BusinessObject.ResolveDatabaseId(Bee.Definition.DbScope scope) -> string!
 Bee.Business.BusinessObject.Services.get -> System.IServiceProvider!
 Bee.Business.BusinessObject.SessionInfo.get -> Bee.Definition.Identity.SessionInfo?
 Bee.Business.BusinessObject.SessionInfoService.get -> Bee.Definition.Identity.ISessionInfoService!
 Bee.Business.BusinessObjectFactory
+Bee.Business.BusinessObjectFactory.BusinessObjectFactory(System.IServiceProvider! services, Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Definition.Language.ILanguageService! languageService, Bee.Business.IBoTypeResolver! resolver) -> void
+Bee.Business.BusinessObjectFactory.CreateBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall = true) -> object!
 Bee.Business.BusinessObjectFactoryExtensions
 Bee.Business.BusinessResult
 Bee.Business.BusinessResult.BusinessResult() -> void
 Bee.Business.BusinessResult.Parameters.get -> Bee.Definition.Collections.ParameterCollection!
 Bee.Business.BusinessResult.Parameters.set -> void
+Bee.Business.DefaultBoTypeResolver
+Bee.Business.DefaultBoTypeResolver.DefaultBoTypeResolver() -> void
+Bee.Business.DefaultBoTypeResolver.Resolve(string! progId) -> System.Type!
 Bee.Business.ExecFuncArgs
 Bee.Business.ExecFuncArgs.ExecFuncArgs() -> void
 Bee.Business.ExecFuncArgs.ExecFuncArgs(string! funcID) -> void
@@ -273,6 +289,9 @@ Bee.Business.Form.SaveResult.AffectedRows.set -> void
 Bee.Business.Form.SaveResult.DataSet.get -> System.Data.DataSet?
 Bee.Business.Form.SaveResult.DataSet.set -> void
 Bee.Business.Form.SaveResult.SaveResult() -> void
+Bee.Business.IBoTypeResolver
+Bee.Business.IBoTypeResolver.Resolve(string! customizeId, string! progId) -> System.Type!
+Bee.Business.IBoTypeResolver.Resolve(string! progId) -> System.Type!
 Bee.Business.IBusinessObject
 Bee.Business.IBusinessObject.ExecFunc(Bee.Business.ExecFuncArgs! args) -> Bee.Business.ExecFuncResult!
 Bee.Business.IBusinessObject.ExecFuncAnonymous(Bee.Business.ExecFuncArgs! args) -> Bee.Business.ExecFuncResult!
@@ -280,17 +299,47 @@ Bee.Business.IExecFuncHandler
 Bee.Business.Permission.ScopeResolver
 Bee.Business.Permission.ScopeResolver.ResolveFilter(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action, Bee.Definition.Forms.FormSchema! formSchema) -> Bee.Definition.Filters.FilterNode?
 Bee.Business.Permission.ScopeResolver.ScopeResolver(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Definition.Identity.IRolePermissionService! rolePermissionService, Bee.Definition.Organization.IDepartmentTreeService! departmentTreeService, Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
+Bee.Business.ProgramSettingsBoTypeResolver
+Bee.Business.ProgramSettingsBoTypeResolver.ProgramSettingsBoTypeResolver(Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
+Bee.Business.ProgramSettingsBoTypeResolver.ProgramSettingsBoTypeResolver(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Definition.Storage.ICustomizeDefineReader? customizeReader) -> void
+Bee.Business.ProgramSettingsBoTypeResolver.Resolve(string! customizeId, string! progId) -> System.Type!
+Bee.Business.ProgramSettingsBoTypeResolver.Resolve(string! progId) -> System.Type!
 Bee.Business.Providers.CacheDataSourceProvider
-Bee.Business.Providers.CacheDataSourceProvider.CacheDataSourceProvider(Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory) -> void
-Bee.Business.Providers.CacheDataSourceProvider.GetSessionUser(System.Guid accessToken) -> Bee.Definition.Identity.SessionUser?
+Bee.Business.Providers.CacheDataSourceProvider.CacheDataSourceProvider(Bee.Repository.Abstractions.Factories.IRepositoryFactory! repositoryFactory, System.IServiceProvider! services) -> void
+Bee.Business.Providers.CacheDataSourceProvider.GetApiKey(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
+Bee.Business.Providers.CacheDataSourceProvider.GetApiKeyGateState() -> Bee.Definition.Security.ApiKeyGateState!
+Bee.Business.Providers.CacheDataSourceProvider.GetCompanyInfo(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
+Bee.Business.Providers.CacheDataSourceProvider.GetCompanyRolePermissions(string! companyId) -> Bee.Definition.Identity.CompanyRolePermissions?
+Bee.Business.Providers.CacheDataSourceProvider.GetDepartmentTree(string! companyId) -> Bee.Definition.Organization.DepartmentTree?
+Bee.Business.Providers.CacheDataSourceProvider.GetSessionInfo(System.Guid accessToken) -> Bee.Definition.Identity.SessionInfo?
+Bee.Business.Providers.DerivedApiEncryptionKeyProvider
+Bee.Business.Providers.DerivedApiEncryptionKeyProvider.DerivedApiEncryptionKeyProvider(byte[]! rootKey) -> void
+Bee.Business.Providers.DerivedApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
+Bee.Business.Providers.DerivedApiEncryptionKeyProvider.GetKey(System.Guid accessToken) -> byte[]!
+Bee.Business.Providers.DerivedApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool
 Bee.Business.Providers.DynamicApiEncryptionKeyProvider
 Bee.Business.Providers.DynamicApiEncryptionKeyProvider.DynamicApiEncryptionKeyProvider(Bee.Definition.Identity.ISessionInfoService! sessionInfoService) -> void
-Bee.Business.Providers.DynamicApiEncryptionKeyProvider.GenerateKeyForLogin() -> byte[]!
+Bee.Business.Providers.DynamicApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
 Bee.Business.Providers.DynamicApiEncryptionKeyProvider.GetKey(System.Guid accessToken) -> byte[]!
+Bee.Business.Providers.DynamicApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool
 Bee.Business.Providers.StaticApiEncryptionKeyProvider
-Bee.Business.Providers.StaticApiEncryptionKeyProvider.GenerateKeyForLogin() -> byte[]!
+Bee.Business.Providers.StaticApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
 Bee.Business.Providers.StaticApiEncryptionKeyProvider.GetKey(System.Guid accessToken) -> byte[]!
 Bee.Business.Providers.StaticApiEncryptionKeyProvider.StaticApiEncryptionKeyProvider(byte[]! apiEncryptionKey) -> void
+Bee.Business.Providers.StaticApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool
+Bee.Business.ReservedProgIdBinding
+Bee.Business.ReservedProgIdBinding.<Clone>$() -> Bee.Business.ReservedProgIdBinding!
+Bee.Business.ReservedProgIdBinding.Deconstruct(out string! ProgId, out System.Type! DefaultType, out System.Type! ExpectedBaseType) -> void
+Bee.Business.ReservedProgIdBinding.DefaultType.get -> System.Type!
+Bee.Business.ReservedProgIdBinding.DefaultType.init -> void
+Bee.Business.ReservedProgIdBinding.DefaultTypeName.get -> string!
+Bee.Business.ReservedProgIdBinding.Equals(Bee.Business.ReservedProgIdBinding? other) -> bool
+Bee.Business.ReservedProgIdBinding.ExpectedBaseType.get -> System.Type!
+Bee.Business.ReservedProgIdBinding.ExpectedBaseType.init -> void
+Bee.Business.ReservedProgIdBinding.ProgId.get -> string!
+Bee.Business.ReservedProgIdBinding.ProgId.init -> void
+Bee.Business.ReservedProgIdBinding.ReservedProgIdBinding(string! ProgId, System.Type! DefaultType, System.Type! ExpectedBaseType) -> void
+Bee.Business.ReservedProgIds
 Bee.Business.Security.LoginAttemptTracker
 Bee.Business.Security.LoginAttemptTracker.IsLockedOut(string! userId) -> bool
 Bee.Business.Security.LoginAttemptTracker.LockoutDuration.get -> System.TimeSpan
@@ -300,6 +349,18 @@ Bee.Business.Security.LoginAttemptTracker.LoginAttemptTracker(int maxFailedAttem
 Bee.Business.Security.LoginAttemptTracker.MaxFailedAttempts.get -> int
 Bee.Business.Security.LoginAttemptTracker.RecordFailure(string! userId) -> void
 Bee.Business.Security.LoginAttemptTracker.Reset(string! userId) -> void
+Bee.Business.Session.SessionCompanyBinder
+Bee.Business.Session.SessionCompanyBinder.Bind(Bee.Definition.Identity.SessionInfo! sessionInfo, string! companyId) -> Bee.Business.Session.SessionCompanyBinding?
+Bee.Business.Session.SessionCompanyBinder.SessionCompanyBinder(Bee.Definition.Identity.ICompanyInfoService! companyInfoService, Bee.Repository.Abstractions.Factories.IRepositoryFactory! repositoryFactory, Bee.Definition.Identity.IRolePermissionService! rolePermissionService, Bee.Definition.Identity.IEmployeeContextResolver! employeeContextResolver) -> void
+Bee.Business.Session.SessionCompanyBinding
+Bee.Business.Session.SessionCompanyBinding.<Clone>$() -> Bee.Business.Session.SessionCompanyBinding!
+Bee.Business.Session.SessionCompanyBinding.Capabilities.get -> System.Collections.Generic.Dictionary<string!, Bee.Definition.Settings.PermissionAction>!
+Bee.Business.Session.SessionCompanyBinding.Capabilities.init -> void
+Bee.Business.Session.SessionCompanyBinding.Company.get -> Bee.Definition.Identity.CompanyInfo!
+Bee.Business.Session.SessionCompanyBinding.Company.init -> void
+Bee.Business.Session.SessionCompanyBinding.Deconstruct(out Bee.Definition.Identity.CompanyInfo! Company, out System.Collections.Generic.Dictionary<string!, Bee.Definition.Settings.PermissionAction>! Capabilities) -> void
+Bee.Business.Session.SessionCompanyBinding.Equals(Bee.Business.Session.SessionCompanyBinding? other) -> bool
+Bee.Business.Session.SessionCompanyBinding.SessionCompanyBinding(Bee.Definition.Identity.CompanyInfo! Company, System.Collections.Generic.Dictionary<string!, Bee.Definition.Settings.PermissionAction>! Capabilities) -> void
 Bee.Business.System.CheckPackageUpdateArgs
 Bee.Business.System.CheckPackageUpdateArgs.CheckPackageUpdateArgs() -> void
 Bee.Business.System.CheckPackageUpdateArgs.Queries.get -> System.Collections.Generic.List<Bee.Api.Contracts.System.PackageUpdateQuery!>!
@@ -308,6 +369,24 @@ Bee.Business.System.CheckPackageUpdateResult
 Bee.Business.System.CheckPackageUpdateResult.CheckPackageUpdateResult() -> void
 Bee.Business.System.CheckPackageUpdateResult.Updates.get -> System.Collections.Generic.List<Bee.Api.Contracts.System.PackageUpdateInfo!>!
 Bee.Business.System.CheckPackageUpdateResult.Updates.set -> void
+Bee.Business.System.CreateApiKeyArgs
+Bee.Business.System.CreateApiKeyArgs.Contact.get -> string?
+Bee.Business.System.CreateApiKeyArgs.Contact.set -> void
+Bee.Business.System.CreateApiKeyArgs.CreateApiKeyArgs() -> void
+Bee.Business.System.CreateApiKeyArgs.ExpiredAt.get -> System.DateTime?
+Bee.Business.System.CreateApiKeyArgs.ExpiredAt.set -> void
+Bee.Business.System.CreateApiKeyArgs.KeyType.get -> Bee.Definition.Security.ApiKeyType
+Bee.Business.System.CreateApiKeyArgs.KeyType.set -> void
+Bee.Business.System.CreateApiKeyArgs.SysId.get -> string!
+Bee.Business.System.CreateApiKeyArgs.SysId.set -> void
+Bee.Business.System.CreateApiKeyArgs.SysName.get -> string!
+Bee.Business.System.CreateApiKeyArgs.SysName.set -> void
+Bee.Business.System.CreateApiKeyResult
+Bee.Business.System.CreateApiKeyResult.ApiKey.get -> string!
+Bee.Business.System.CreateApiKeyResult.ApiKey.set -> void
+Bee.Business.System.CreateApiKeyResult.CreateApiKeyResult() -> void
+Bee.Business.System.CreateApiKeyResult.SysId.get -> string!
+Bee.Business.System.CreateApiKeyResult.SysId.set -> void
 Bee.Business.System.CreateSessionArgs
 Bee.Business.System.CreateSessionArgs.CreateSessionArgs() -> void
 Bee.Business.System.CreateSessionArgs.ExpiresIn.get -> int
@@ -362,16 +441,16 @@ Bee.Business.System.GetFormLayoutArgs.ProgId.get -> string!
 Bee.Business.System.GetFormLayoutArgs.ProgId.set -> void
 Bee.Business.System.GetFormLayoutResult
 Bee.Business.System.GetFormLayoutResult.GetFormLayoutResult() -> void
-Bee.Business.System.GetFormLayoutResult.Layout.get -> Bee.Definition.Layouts.FormLayout?
-Bee.Business.System.GetFormLayoutResult.Layout.set -> void
+Bee.Business.System.GetFormLayoutResult.Xml.get -> string?
+Bee.Business.System.GetFormLayoutResult.Xml.set -> void
 Bee.Business.System.GetFormSchemaArgs
 Bee.Business.System.GetFormSchemaArgs.GetFormSchemaArgs() -> void
 Bee.Business.System.GetFormSchemaArgs.ProgId.get -> string!
 Bee.Business.System.GetFormSchemaArgs.ProgId.set -> void
 Bee.Business.System.GetFormSchemaResult
 Bee.Business.System.GetFormSchemaResult.GetFormSchemaResult() -> void
-Bee.Business.System.GetFormSchemaResult.Schema.get -> Bee.Definition.Forms.FormSchema?
-Bee.Business.System.GetFormSchemaResult.Schema.set -> void
+Bee.Business.System.GetFormSchemaResult.Xml.get -> string?
+Bee.Business.System.GetFormSchemaResult.Xml.set -> void
 Bee.Business.System.GetLanguageArgs
 Bee.Business.System.GetLanguageArgs.GetLanguageArgs() -> void
 Bee.Business.System.GetLanguageArgs.Lang.get -> string!
@@ -380,8 +459,8 @@ Bee.Business.System.GetLanguageArgs.Namespace.get -> string!
 Bee.Business.System.GetLanguageArgs.Namespace.set -> void
 Bee.Business.System.GetLanguageResult
 Bee.Business.System.GetLanguageResult.GetLanguageResult() -> void
-Bee.Business.System.GetLanguageResult.Resource.get -> Bee.Definition.Language.LanguageResource?
-Bee.Business.System.GetLanguageResult.Resource.set -> void
+Bee.Business.System.GetLanguageResult.Xml.get -> string?
+Bee.Business.System.GetLanguageResult.Xml.set -> void
 Bee.Business.System.GetPackageArgs
 Bee.Business.System.GetPackageArgs.AppId.get -> string!
 Bee.Business.System.GetPackageArgs.AppId.set -> void
@@ -420,6 +499,12 @@ Bee.Business.System.LeaveCompanyArgs
 Bee.Business.System.LeaveCompanyArgs.LeaveCompanyArgs() -> void
 Bee.Business.System.LeaveCompanyResult
 Bee.Business.System.LeaveCompanyResult.LeaveCompanyResult() -> void
+Bee.Business.System.ListApiKeysArgs
+Bee.Business.System.ListApiKeysArgs.ListApiKeysArgs() -> void
+Bee.Business.System.ListApiKeysResult
+Bee.Business.System.ListApiKeysResult.ApiKeys.get -> System.Collections.Generic.List<Bee.Definition.Security.ApiKeySummary!>!
+Bee.Business.System.ListApiKeysResult.ApiKeys.set -> void
+Bee.Business.System.ListApiKeysResult.ListApiKeysResult() -> void
 Bee.Business.System.LoginArgs
 Bee.Business.System.LoginArgs.ClientPublicKey.get -> string!
 Bee.Business.System.LoginArgs.ClientPublicKey.set -> void
@@ -453,6 +538,8 @@ Bee.Business.System.PingArgs.PingArgs() -> void
 Bee.Business.System.PingArgs.TraceId.get -> string?
 Bee.Business.System.PingArgs.TraceId.set -> void
 Bee.Business.System.PingResult
+Bee.Business.System.PingResult.ApiKeyStatus.get -> Bee.Definition.Security.ApiKeyStatus
+Bee.Business.System.PingResult.ApiKeyStatus.set -> void
 Bee.Business.System.PingResult.PingResult() -> void
 Bee.Business.System.PingResult.ServerTime.get -> System.DateTime
 Bee.Business.System.PingResult.ServerTime.set -> void
@@ -472,7 +559,44 @@ Bee.Business.System.SaveDefineArgs.Xml.get -> string!
 Bee.Business.System.SaveDefineArgs.Xml.set -> void
 Bee.Business.System.SaveDefineResult
 Bee.Business.System.SaveDefineResult.SaveDefineResult() -> void
+Bee.Business.System.SetApiKeyEnabledArgs
+Bee.Business.System.SetApiKeyEnabledArgs.Enabled.get -> bool
+Bee.Business.System.SetApiKeyEnabledArgs.Enabled.set -> void
+Bee.Business.System.SetApiKeyEnabledArgs.SetApiKeyEnabledArgs() -> void
+Bee.Business.System.SetApiKeyEnabledArgs.SysId.get -> string!
+Bee.Business.System.SetApiKeyEnabledArgs.SysId.set -> void
+Bee.Business.System.SetApiKeyEnabledResult
+Bee.Business.System.SetApiKeyEnabledResult.Enabled.get -> bool
+Bee.Business.System.SetApiKeyEnabledResult.Enabled.set -> void
+Bee.Business.System.SetApiKeyEnabledResult.SetApiKeyEnabledResult() -> void
+Bee.Business.System.SetApiKeyEnabledResult.SysId.get -> string!
+Bee.Business.System.SetApiKeyEnabledResult.SysId.set -> void
+Bee.Business.System.SetApiKeyExpiryArgs
+Bee.Business.System.SetApiKeyExpiryArgs.ExpiredAt.get -> System.DateTime?
+Bee.Business.System.SetApiKeyExpiryArgs.ExpiredAt.set -> void
+Bee.Business.System.SetApiKeyExpiryArgs.SetApiKeyExpiryArgs() -> void
+Bee.Business.System.SetApiKeyExpiryArgs.SysId.get -> string!
+Bee.Business.System.SetApiKeyExpiryArgs.SysId.set -> void
+Bee.Business.System.SetApiKeyExpiryResult
+Bee.Business.System.SetApiKeyExpiryResult.ExpiredAt.get -> System.DateTime?
+Bee.Business.System.SetApiKeyExpiryResult.ExpiredAt.set -> void
+Bee.Business.System.SetApiKeyExpiryResult.SetApiKeyExpiryResult() -> void
+Bee.Business.System.SetApiKeyExpiryResult.SysId.get -> string!
+Bee.Business.System.SetApiKeyExpiryResult.SysId.set -> void
+Bee.Business.System.SetDeploymentAdminArgs
+Bee.Business.System.SetDeploymentAdminArgs.IsDeploymentAdmin.get -> bool
+Bee.Business.System.SetDeploymentAdminArgs.IsDeploymentAdmin.set -> void
+Bee.Business.System.SetDeploymentAdminArgs.SetDeploymentAdminArgs() -> void
+Bee.Business.System.SetDeploymentAdminArgs.UserId.get -> string!
+Bee.Business.System.SetDeploymentAdminArgs.UserId.set -> void
+Bee.Business.System.SetDeploymentAdminResult
+Bee.Business.System.SetDeploymentAdminResult.IsDeploymentAdmin.get -> bool
+Bee.Business.System.SetDeploymentAdminResult.IsDeploymentAdmin.set -> void
+Bee.Business.System.SetDeploymentAdminResult.SetDeploymentAdminResult() -> void
+Bee.Business.System.SetDeploymentAdminResult.UserId.get -> string!
+Bee.Business.System.SetDeploymentAdminResult.UserId.set -> void
 Bee.Business.System.SystemBusinessObject
+Bee.Business.System.SystemBusinessObject.SystemBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = true) -> void
 Bee.Business.Validator.AccessTokenValidator
 Bee.Business.Validator.AccessTokenValidator.AccessTokenValidator(Bee.Definition.Identity.ISessionInfoService! sessionInfoService) -> void
 Bee.Business.Validator.AccessTokenValidator.Validate(System.Guid accessToken) -> bool
@@ -480,11 +604,25 @@ const Bee.Business.Security.LoginAttemptTracker.DefaultLockoutMinutes = 15 -> in
 const Bee.Business.Security.LoginAttemptTracker.DefaultMaxFailedAttempts = 5 -> int
 override Bee.Business.Form.FormBusinessObject.DoExecFunc(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 override Bee.Business.Form.FormBusinessObject.DoExecFuncAnonymous(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
+override Bee.Business.ReservedProgIdBinding.Equals(object? obj) -> bool
+override Bee.Business.ReservedProgIdBinding.GetHashCode() -> int
+override Bee.Business.ReservedProgIdBinding.ToString() -> string!
+override Bee.Business.Session.SessionCompanyBinding.Equals(object? obj) -> bool
+override Bee.Business.Session.SessionCompanyBinding.GetHashCode() -> int
+override Bee.Business.Session.SessionCompanyBinding.ToString() -> string!
 override Bee.Business.System.SystemBusinessObject.DoExecFunc(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 override Bee.Business.System.SystemBusinessObject.DoExecFuncAnonymous(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 static Bee.Business.BusinessObjectFactoryExtensions.CreateFormBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, string! progId, bool isLocalCall = true) -> Bee.Business.Form.IFormBusinessObject!
+static Bee.Business.BusinessObjectFactoryExtensions.CreateLogBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.AuditLog.ILogBusinessObject!
 static Bee.Business.BusinessObjectFactoryExtensions.CreateSystemBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.System.ISystemBusinessObject!
 static Bee.Business.ExecFuncHandlerExtensions.InvokeExecFunc(this Bee.Business.IExecFuncHandler! handler, Bee.Definition.Security.ApiAccessRequirement currentRequirement, Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
+static Bee.Business.Providers.DerivedApiEncryptionKeyProvider.FromMasterKey(byte[]! masterKey) -> Bee.Business.Providers.DerivedApiEncryptionKeyProvider!
+static Bee.Business.ReservedProgIdBinding.operator !=(Bee.Business.ReservedProgIdBinding? left, Bee.Business.ReservedProgIdBinding? right) -> bool
+static Bee.Business.ReservedProgIdBinding.operator ==(Bee.Business.ReservedProgIdBinding? left, Bee.Business.ReservedProgIdBinding? right) -> bool
+static Bee.Business.ReservedProgIds.All.get -> System.Collections.Generic.IReadOnlyList<Bee.Business.ReservedProgIdBinding!>!
+static Bee.Business.ReservedProgIds.Find(string! progId) -> Bee.Business.ReservedProgIdBinding?
+static Bee.Business.Session.SessionCompanyBinding.operator !=(Bee.Business.Session.SessionCompanyBinding? left, Bee.Business.Session.SessionCompanyBinding? right) -> bool
+static Bee.Business.Session.SessionCompanyBinding.operator ==(Bee.Business.Session.SessionCompanyBinding? left, Bee.Business.Session.SessionCompanyBinding? right) -> bool
 virtual Bee.Business.AuditLog.LogBusinessObject.GetAccessLog(Bee.Business.AuditLog.GetAccessLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetApiAnomalyLog(Bee.Business.AuditLog.GetApiAnomalyLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetApiAnomalySummary(Bee.Business.AuditLog.GetApiAnomalySummaryArgs! args) -> Bee.Business.AuditLog.LogAggregateResult!
@@ -509,12 +647,15 @@ virtual Bee.Business.Form.FormBusinessObject.GetLookup(Bee.Business.Form.GetLook
 virtual Bee.Business.Form.FormBusinessObject.GetLookupFilter() -> Bee.Definition.Filters.FilterNode?
 virtual Bee.Business.Form.FormBusinessObject.GetNewData(Bee.Business.Form.GetNewDataArgs! args) -> Bee.Business.Form.GetNewDataResult!
 virtual Bee.Business.Form.FormBusinessObject.Save(Bee.Business.Form.SaveArgs! args) -> Bee.Business.Form.SaveResult!
-virtual Bee.Business.System.SystemBusinessObject.ApplyUserTimeZone(Bee.Definition.Identity.SessionInfo! sessionInfo) -> void
+virtual Bee.Business.System.SystemBusinessObject.ApplyUserLocale(Bee.Definition.Identity.SessionInfo! sessionInfo) -> void
 virtual Bee.Business.System.SystemBusinessObject.AuthenticateUser(Bee.Business.System.LoginArgs! args, out string! userName) -> bool
 virtual Bee.Business.System.SystemBusinessObject.CheckPackageUpdate(Bee.Business.System.CheckPackageUpdateArgs! args) -> Bee.Business.System.CheckPackageUpdateResult!
+virtual Bee.Business.System.SystemBusinessObject.CreateApiKey(Bee.Business.System.CreateApiKeyArgs! args) -> Bee.Business.System.CreateApiKeyResult!
 virtual Bee.Business.System.SystemBusinessObject.CreateSession(Bee.Business.System.CreateSessionArgs! args) -> Bee.Business.System.CreateSessionResult!
 virtual Bee.Business.System.SystemBusinessObject.EnterCompany(Bee.Business.System.EnterCompanyArgs! args) -> Bee.Business.System.EnterCompanyResult!
 virtual Bee.Business.System.SystemBusinessObject.GetCommonConfiguration(Bee.Business.System.GetCommonConfigurationArgs! args) -> Bee.Business.System.GetCommonConfigurationResult!
+virtual Bee.Business.System.SystemBusinessObject.GetCustomizeFormLayout(Bee.Business.System.GetFormLayoutArgs! args) -> Bee.Business.System.GetFormLayoutResult!
+virtual Bee.Business.System.SystemBusinessObject.GetCustomizeLanguage(Bee.Business.System.GetLanguageArgs! args) -> Bee.Business.System.GetLanguageResult!
 virtual Bee.Business.System.SystemBusinessObject.GetDefine(Bee.Business.System.GetDefineArgs! args) -> Bee.Business.System.GetDefineResult!
 virtual Bee.Business.System.SystemBusinessObject.GetDepartmentTree(Bee.Business.System.GetDepartmentTreeArgs! args) -> Bee.Business.System.GetDepartmentTreeResult!
 virtual Bee.Business.System.SystemBusinessObject.GetFormLayout(Bee.Business.System.GetFormLayoutArgs! args) -> Bee.Business.System.GetFormLayoutResult!
@@ -522,7 +663,11 @@ virtual Bee.Business.System.SystemBusinessObject.GetFormSchema(Bee.Business.Syst
 virtual Bee.Business.System.SystemBusinessObject.GetLanguage(Bee.Business.System.GetLanguageArgs! args) -> Bee.Business.System.GetLanguageResult!
 virtual Bee.Business.System.SystemBusinessObject.GetPackage(Bee.Business.System.GetPackageArgs! args) -> Bee.Business.System.GetPackageResult!
 virtual Bee.Business.System.SystemBusinessObject.LeaveCompany(Bee.Business.System.LeaveCompanyArgs! args) -> Bee.Business.System.LeaveCompanyResult!
+virtual Bee.Business.System.SystemBusinessObject.ListApiKeys(Bee.Business.System.ListApiKeysArgs! args) -> Bee.Business.System.ListApiKeysResult!
 virtual Bee.Business.System.SystemBusinessObject.Login(Bee.Business.System.LoginArgs! args) -> Bee.Business.System.LoginResult!
 virtual Bee.Business.System.SystemBusinessObject.Logout(Bee.Business.System.LogoutArgs! args) -> Bee.Business.System.LogoutResult!
 virtual Bee.Business.System.SystemBusinessObject.Ping(Bee.Business.System.PingArgs! args) -> Bee.Business.System.PingResult!
 virtual Bee.Business.System.SystemBusinessObject.SaveDefine(Bee.Business.System.SaveDefineArgs! args) -> Bee.Business.System.SaveDefineResult!
+virtual Bee.Business.System.SystemBusinessObject.SetApiKeyEnabled(Bee.Business.System.SetApiKeyEnabledArgs! args) -> Bee.Business.System.SetApiKeyEnabledResult!
+virtual Bee.Business.System.SystemBusinessObject.SetApiKeyExpiry(Bee.Business.System.SetApiKeyExpiryArgs! args) -> Bee.Business.System.SetApiKeyExpiryResult!
+virtual Bee.Business.System.SystemBusinessObject.SetDeploymentAdmin(Bee.Business.System.SetDeploymentAdminArgs! args) -> Bee.Business.System.SetDeploymentAdminResult!
