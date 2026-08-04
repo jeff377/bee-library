@@ -1,33 +1,43 @@
 #nullable enable
-*REMOVED*Bee.ObjectCaching.Services.EmployeeContextResolver.EmployeeContextResolver(Bee.Repository.Abstractions.System.IUserRepository! userRepository, Bee.Repository.Abstractions.System.IEmployeeRepository! employeeRepository) -> void
-Bee.ObjectCaching.Services.EmployeeContextResolver.EmployeeContextResolver(Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory) -> void
 *REMOVED*Bee.ObjectCaching.Services.CompanyInfoService.CompanyInfoService(Bee.ObjectCaching.ICacheContainer! cache, Bee.Repository.Abstractions.System.ICompanyRepository! companyRepository) -> void
 *REMOVED*Bee.ObjectCaching.Services.DepartmentTreeService.DepartmentTreeService(Bee.ObjectCaching.ICacheContainer! cache, Bee.Definition.Identity.ICompanyInfoService! companyInfoService, Bee.Repository.Abstractions.System.IDepartmentRepository! repository) -> void
+*REMOVED*Bee.ObjectCaching.Services.EmployeeContextResolver.EmployeeContextResolver(Bee.Repository.Abstractions.System.IUserRepository! userRepository, Bee.Repository.Abstractions.System.IEmployeeRepository! employeeRepository) -> void
 *REMOVED*Bee.ObjectCaching.Services.RolePermissionService.RolePermissionService(Bee.ObjectCaching.ICacheContainer! cache, Bee.Definition.Identity.ICompanyInfoService! companyInfoService, Bee.Repository.Abstractions.System.IRolePermissionRepository! repository) -> void
-Bee.ObjectCaching.CacheContainerService.CacheContainerService(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix, System.Func<Bee.Definition.ICacheDataSourceProvider!>? dataSource) -> void
-Bee.ObjectCaching.Services.CompanyInfoService.CompanyInfoService(Bee.ObjectCaching.ICacheContainer! cache) -> void
-Bee.ObjectCaching.Services.DepartmentTreeService.DepartmentTreeService(Bee.ObjectCaching.ICacheContainer! cache) -> void
-Bee.ObjectCaching.Services.RolePermissionService.RolePermissionService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.CacheContainerService.ApiKey.get -> Bee.ObjectCaching.Database.ApiKeyCache!
 Bee.ObjectCaching.CacheContainerService.ApiKeyGate.get -> Bee.ObjectCaching.Database.ApiKeyGateCache!
+Bee.ObjectCaching.CacheContainerService.CacheContainerService(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix, System.Func<Bee.Definition.ICacheDataSourceProvider!>? dataSource) -> void
+Bee.ObjectCaching.CacheContainerService.MenuSettings.get -> Bee.ObjectCaching.Define.MenuSettingsCache!
+Bee.ObjectCaching.CacheDefineAccess.FindFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?
+Bee.ObjectCaching.CacheDefineAccess.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings!
+Bee.ObjectCaching.CacheDefineAccess.GetMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings!
+Bee.ObjectCaching.CacheDefineAccess.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
+Bee.ObjectCaching.CustomizeDefineReader.GetCustomizeMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings?
 Bee.ObjectCaching.Database.ApiKeyCache
 Bee.ObjectCaching.Database.ApiKeyCache.ApiKeyCache(string! cachePrefix = "") -> void
 Bee.ObjectCaching.Database.ApiKeyGateCache
 Bee.ObjectCaching.Database.ApiKeyGateCache.ApiKeyGateCache(string! cachePrefix = "") -> void
 Bee.ObjectCaching.Database.ApiKeyGateCache.GetState() -> Bee.Definition.Security.ApiKeyGateState?
 Bee.ObjectCaching.Database.ApiKeyGateCache.RemoveState() -> void
+Bee.ObjectCaching.Define.MenuSettingsCache
+Bee.ObjectCaching.Define.MenuSettingsCache.MenuSettingsCache(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix = "") -> void
 Bee.ObjectCaching.ICacheContainer.ApiKey.get -> Bee.ObjectCaching.Database.ApiKeyCache!
 Bee.ObjectCaching.ICacheContainer.ApiKeyGate.get -> Bee.ObjectCaching.Database.ApiKeyGateCache!
+Bee.ObjectCaching.ICacheContainer.MenuSettings.get -> Bee.ObjectCaching.Define.MenuSettingsCache!
 Bee.ObjectCaching.Services.ApiKeyValidator
 Bee.ObjectCaching.Services.ApiKeyValidator.ApiKeyValidator(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.ApiKeyValidator.Validate(string? apiKey) -> Bee.Definition.Security.ApiKeyValidationResult!
+Bee.ObjectCaching.Services.CompanyInfoService.CompanyInfoService(Bee.ObjectCaching.ICacheContainer! cache) -> void
+Bee.ObjectCaching.Services.DepartmentTreeService.DepartmentTreeService(Bee.ObjectCaching.ICacheContainer! cache) -> void
+Bee.ObjectCaching.Services.DeploymentAuthorizationService
+Bee.ObjectCaching.Services.DeploymentAuthorizationService.Can(System.Guid accessToken, Bee.Definition.Identity.DeploymentAction action) -> bool
+Bee.ObjectCaching.Services.DeploymentAuthorizationService.DeploymentAuthorizationService(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory) -> void
+Bee.ObjectCaching.Services.EmployeeContextResolver.EmployeeContextResolver(Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory) -> void
+Bee.ObjectCaching.Services.RolePermissionService.RolePermissionService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 const Bee.ObjectCaching.Database.ApiKeyCache.AbsoluteMinutes = 60 -> int
 override Bee.ObjectCaching.Database.ApiKeyCache.CreateInstance(string! key) -> Bee.Definition.Security.ApiKeyInfo?
 override Bee.ObjectCaching.Database.ApiKeyCache.GetPolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy!
 override Bee.ObjectCaching.Database.ApiKeyGateCache.CacheGroup.get -> string!
 override Bee.ObjectCaching.Database.ApiKeyGateCache.CreateInstance(string! key) -> Bee.Definition.Security.ApiKeyGateState?
 override Bee.ObjectCaching.Database.ApiKeyGateCache.GetPolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy!
-Bee.ObjectCaching.CacheDefineAccess.FindFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?
-Bee.ObjectCaching.Services.DeploymentAuthorizationService
-Bee.ObjectCaching.Services.DeploymentAuthorizationService.DeploymentAuthorizationService(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory) -> void
-Bee.ObjectCaching.Services.DeploymentAuthorizationService.Can(System.Guid accessToken, Bee.Definition.Identity.DeploymentAction action) -> bool
+override Bee.ObjectCaching.Define.MenuSettingsCache.CreateInstance() -> Bee.Definition.Settings.MenuSettings?
+override Bee.ObjectCaching.Define.MenuSettingsCache.GetPolicy() -> Bee.ObjectCaching.CacheItemPolicy!

@@ -28,25 +28,14 @@ namespace Bee.Business.UnitTests
         private static ProgramSettings BuildSettings(params (string progId, string? businessObject)[] items)
         {
             var settings = new ProgramSettings();
-            var category = settings.Categories!.Add("C01", "主檔");
             foreach (var (progId, businessObject) in items)
             {
-                var item = category.Items!.Add(progId, progId);
+                var item = settings.Items!.Add(progId, progId);
                 if (businessObject != null) item.BusinessObject = businessObject;
             }
             return settings;
         }
 
-        // Two categories; the target progId lives only in the second one → exercises FindItem's loop.
-        private static ProgramSettings BuildTwoCategorySettings(string progId, string businessObject)
-        {
-            var settings = new ProgramSettings();
-            settings.Categories!.Add("C01", "主檔一"); // 空的第一分類
-            var second = settings.Categories!.Add("C02", "主檔二");
-            var item = second.Items!.Add(progId, progId);
-            item.BusinessObject = businessObject;
-            return settings;
-        }
 
         [Fact]
         [DisplayName("建構子 defineAccess 為 null 應丟 ArgumentNullException")]
@@ -90,10 +79,11 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("FindItem 應跨多個 category 尋找目標 progId")]
-        public void Resolve_ProgIdInSecondCategory_Resolves()
+        [DisplayName("註冊表有多筆時應以 progId 為 key 取到正確的一筆")]
+        public void Resolve_ProgIdAmongSeveral_Resolves()
         {
-            var defineAccess = new MutableDefineAccess(BuildTwoCategorySettings("P002", TenantFormBoFqn));
+            var defineAccess = new MutableDefineAccess(
+                BuildSettings(("P001", null), ("P002", TenantFormBoFqn), ("P003", null)));
             var resolver = new ProgramSettingsFormBoTypeResolver(defineAccess);
 
             var result = resolver.Resolve("P002");
@@ -114,6 +104,7 @@ namespace Bee.Business.UnitTests
 
             public LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns) => null;
             public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId) => null;
+            public MenuSettings? GetCustomizeMenuSettings(string customizeId) => null;
         }
 
         private sealed class MutableDefineAccess : IDefineAccess

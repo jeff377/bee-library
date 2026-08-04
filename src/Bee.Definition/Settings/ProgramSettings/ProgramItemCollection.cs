@@ -24,8 +24,8 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Initializes a new instance of <see cref="ProgramItemCollection"/>.
         /// </summary>
-        /// <param name="category">The owning program category.</param>
-        public ProgramItemCollection(ProgramCategory category) : base(category)
+        /// <param name="settings">The owning program settings.</param>
+        public ProgramItemCollection(ProgramSettings settings) : base(settings)
         { }
     }
 

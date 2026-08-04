@@ -30,6 +30,7 @@
     <Project Path="tests/Bee.Api.Client.UnitTests/Bee.Api.Client.UnitTests.csproj" />
     <Project Path="tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj" />
     <Project Path="tests/Bee.Base.UnitTests/Bee.Base.UnitTests.csproj" />
+    <Project Path="tests/Bee.Cli.UnitTests/Bee.Cli.UnitTests.csproj" />
     <Project Path="tests/Bee.Business.UnitTests/Bee.Business.UnitTests.csproj" />
     <Project Path="tests/Bee.Db.UnitTests/Bee.Db.UnitTests.csproj" />
     <Project Path="tests/Bee.Definition.UnitTests/Bee.Definition.UnitTests.csproj" />

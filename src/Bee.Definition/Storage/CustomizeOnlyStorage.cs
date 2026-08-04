@@ -1,3 +1,4 @@
+using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
@@ -10,10 +11,10 @@ namespace Bee.Definition.Storage
     /// <summary>
     /// Read-only define storage for the tenant customization-override layer. Resolves files
     /// strictly under <c>{CustomizePath}/{customizeId}/</c> (via <see cref="CustomizeOnlyPathOptions"/>)
-    /// and serves only the three customizable types: Language, FormLayout, ProgramSettings.
+    /// and serves only the four customizable types: Language, FormLayout, ProgramSettings, MenuSettings.
     /// </summary>
     /// <remarks>
-    /// A missing customization file is a normal scenario, so the three supported getters return
+    /// A missing customization file is a normal scenario, so the four supported getters return
     /// <c>null</c> rather than throwing or falling back to the base layer. Every other member
     /// throws <see cref="NotSupportedException"/> — the override layer never owns FormSchema,
     /// TableSchema, DbCategorySettings, nor any write operation.
@@ -97,11 +98,33 @@ namespace Bee.Definition.Storage
             string filePath = _paths.GetProgramSettingsFilePath();
             if (!File.Exists(filePath))
                 return null;
-            return XmlCodec.DeserializeFromFile<ProgramSettings>(filePath);
+            string xml = FileUtilities.FileReadText(filePath);
+            ProgramSettingsFormat.EnsureCurrentFormat(xml, filePath);
+            var settings = XmlCodec.Deserialize<ProgramSettings>(xml);
+            settings?.SetObjectFilePath(filePath);
+            return settings;
         }
 
         /// <summary>Not supported — the override layer is strictly read-only.</summary>
         public void SaveProgramSettings(ProgramSettings settings)
+            => throw new NotSupportedException(ReadOnlyMessage);
+
+        /// <summary>
+        /// Gets the customization override of the menu definition, or <c>null</c> when the tenant
+        /// provides no override.
+        /// </summary>
+        public MenuSettings? GetMenuSettings()
+        {
+            string filePath = _paths.GetMenuSettingsFilePath();
+            if (!File.Exists(filePath))
+                return null;
+            var settings = XmlCodec.DeserializeFromFile<MenuSettings>(filePath);
+            settings?.EnsureValid();
+            return settings;
+        }
+
+        /// <summary>Not supported — the override layer is strictly read-only.</summary>
+        public void SaveMenuSettings(MenuSettings settings)
             => throw new NotSupportedException(ReadOnlyMessage);
 
         /// <summary>Not supported — the override layer is strictly read-only.</summary>
@@ -127,7 +150,7 @@ namespace Bee.Definition.Storage
         /// <inheritdoc/>
         /// <remarks>
         /// <para>
-        /// Only the three customizable types report a signal, and each resolves through the same
+        /// Only the four customizable types report a signal, and each resolves through the same
         /// <see cref="CustomizeOnlyPathOptions"/> the getters use, so a consumer watches exactly the
         /// file this storage would read. Every other type reports no signal rather than throwing —
         /// unlike the getters, a consumer may ask about any define type here without first knowing
@@ -144,6 +167,7 @@ namespace Bee.Definition.Storage
             string[]? filePaths = defineType switch
             {
                 DefineType.ProgramSettings => [_paths.GetProgramSettingsFilePath()],
+                DefineType.MenuSettings => [_paths.GetMenuSettingsFilePath()],
                 DefineType.FormLayout when keys.Length >= 1 => [_paths.GetFormLayoutFilePath(keys[0])],
                 DefineType.Language when keys.Length >= 2 => [_paths.GetLanguageFilePath(keys[0], keys[1])],
                 _ => null

@@ -47,6 +47,8 @@ namespace Bee.Hosting.UnitTests
         public void SaveUnitSettings(UnitSettings settings) { }
         public ProgramSettings? GetProgramSettings() => null;
         public void SaveProgramSettings(ProgramSettings settings) { }
+        public MenuSettings? GetMenuSettings() => null;
+        public void SaveMenuSettings(MenuSettings settings) { }
         public TableSchema? GetTableSchema(string categoryId, string tableName) => null;
         public void SaveTableSchema(string categoryId, TableSchema tableSchema) { }
         public FormSchema? GetFormSchema(string progId) => null;

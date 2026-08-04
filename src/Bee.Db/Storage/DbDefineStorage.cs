@@ -138,11 +138,40 @@ namespace Bee.Db.Storage
         }
 
         /// <inheritdoc/>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the stored row still uses the pre-flattening nested layout, which
+        /// XmlSerializer would otherwise read as an empty registry without complaint.
+        /// </exception>
         public ProgramSettings? GetProgramSettings()
-            => ReadRequired<ProgramSettings>(BaseCustomizeId, SingletonKey);
+        {
+            var xml = ReadContent(nameof(ProgramSettings), BaseCustomizeId, SingletonKey)
+                ?? throw new InvalidOperationException($"Definition not found: {nameof(ProgramSettings)} / {BaseCustomizeId} / {SingletonKey}.");
+            ProgramSettingsFormat.EnsureCurrentFormat(xml, $"{nameof(ProgramSettings)} / {BaseCustomizeId}");
+            return XmlCodec.Deserialize<ProgramSettings>(xml)
+                ?? throw new InvalidOperationException($"Failed to deserialize definition: {nameof(ProgramSettings)} / {BaseCustomizeId} / {SingletonKey}.");
+        }
 
         /// <inheritdoc/>
         public void SaveProgramSettings(ProgramSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+            Write(settings, SingletonKey);
+        }
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Optional, unlike <see cref="GetProgramSettings"/>: a host that ships no menu is a
+        /// normal deployment rather than a misconfiguration.
+        /// </remarks>
+        public MenuSettings? GetMenuSettings()
+        {
+            var settings = ReadOptional<MenuSettings>(BaseCustomizeId, SingletonKey);
+            settings?.EnsureValid();
+            return settings;
+        }
+
+        /// <inheritdoc/>
+        public void SaveMenuSettings(MenuSettings settings)
         {
             ArgumentNullException.ThrowIfNull(settings);
             Write(settings, SingletonKey);
@@ -212,7 +241,20 @@ namespace Bee.Db.Storage
 
         /// <inheritdoc/>
         public ProgramSettings? GetCustomizeProgramSettings(string customizeId)
-            => ReadOptional<ProgramSettings>(customizeId, SingletonKey);
+        {
+            var xml = ReadContent(nameof(ProgramSettings), customizeId, SingletonKey);
+            if (xml == null) { return null; }
+            ProgramSettingsFormat.EnsureCurrentFormat(xml, $"{nameof(ProgramSettings)} / {customizeId}");
+            return XmlCodec.Deserialize<ProgramSettings>(xml);
+        }
+
+        /// <inheritdoc/>
+        public MenuSettings? GetCustomizeMenuSettings(string customizeId)
+        {
+            var settings = ReadOptional<MenuSettings>(customizeId, SingletonKey);
+            settings?.EnsureValid();
+            return settings;
+        }
 
         /// <inheritdoc/>
         public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId)
@@ -359,6 +401,7 @@ namespace Bee.Db.Storage
                 DefineType.CurrencySettings => BuildNotifyKey(nameof(CurrencySettings), SingletonKey),
                 DefineType.UnitSettings => BuildNotifyKey(nameof(UnitSettings), SingletonKey),
                 DefineType.ProgramSettings => BuildNotifyKey(nameof(ProgramSettings), SingletonKey),
+                DefineType.MenuSettings => BuildNotifyKey(nameof(MenuSettings), SingletonKey),
                 DefineType.FormSchema when keys.Length >= 1 => BuildNotifyKey(nameof(FormSchema), keys[0]),
                 DefineType.FormLayout when keys.Length >= 1 => BuildNotifyKey(nameof(FormLayout), keys[0]),
                 DefineType.TableSchema when keys.Length >= 2

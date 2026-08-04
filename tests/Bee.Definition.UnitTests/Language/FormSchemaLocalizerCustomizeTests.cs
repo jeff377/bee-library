@@ -242,6 +242,7 @@ namespace Bee.Definition.UnitTests.Language
 
             public ProgramSettings? GetCustomizeProgramSettings(string customizeId) => null;
             public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId) => null;
+            public MenuSettings? GetCustomizeMenuSettings(string customizeId) => null;
         }
 
         private sealed class StubDefineAccess : IDefineAccess

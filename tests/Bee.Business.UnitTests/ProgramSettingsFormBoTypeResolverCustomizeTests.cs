@@ -32,10 +32,9 @@ namespace Bee.Business.UnitTests
         private static ProgramSettings BuildSettings(params (string progId, string? businessObject)[] items)
         {
             var settings = new ProgramSettings();
-            var category = settings.Categories!.Add("C01", "主檔");
             foreach (var (progId, businessObject) in items)
             {
-                var item = category.Items!.Add(progId, progId);
+                var item = settings.Items!.Add(progId, progId);
                 if (businessObject != null) item.BusinessObject = businessObject;
             }
             return settings;
@@ -148,6 +147,7 @@ namespace Bee.Business.UnitTests
 
             public LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns) => null;
             public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId) => null;
+            public MenuSettings? GetCustomizeMenuSettings(string customizeId) => null;
         }
 
         private sealed class ProgramSettingsDefineAccess : IDefineAccess

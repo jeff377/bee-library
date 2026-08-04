@@ -1,3 +1,4 @@
+using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Definition.Settings;
 using Bee.DefineEditor.Models;
@@ -6,14 +7,12 @@ using CommunityToolkit.Mvvm.Input;
 namespace Bee.DefineEditor.ViewModels;
 
 /// <summary>
-/// Editor for <see cref="ProgramSettings"/>. Two-level tree:
-/// ProgramSettings → ProgramCategory[] → ProgramItem[]. Validation: duplicate /
-/// empty category Ids, duplicate / empty ProgIds within a category.
+/// Editor for <see cref="ProgramSettings"/>. Flat tree: ProgramSettings → ProgramItem[].
+/// Validation: empty or duplicate ProgIds across the whole registry.
 /// </summary>
 public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocumentViewModelBase
 {
     public const string KindRoot = "ProgramSettings";
-    public const string KindCategory = "ProgramCategory";
     public const string KindProgram = "ProgramItem";
 
     public ProgramSettings Root { get; }
@@ -23,15 +22,12 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
     public override string TabIcon => "DefProgramSettings";
 
     public bool SelectedKindIsRoot => SelectedTreeNode?.Kind == KindRoot;
-    public bool SelectedKindIsCategory => SelectedTreeNode?.Kind == KindCategory;
 
-    protected override bool HasVisibleAddMenuItems =>
-        SelectedKindIsRoot || SelectedKindIsCategory;
+    protected override bool HasVisibleAddMenuItems => SelectedKindIsRoot;
 
     protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
     {
         OnPropertyChanged(nameof(SelectedKindIsRoot));
-        OnPropertyChanged(nameof(SelectedKindIsCategory));
     }
 
     private ProgramSettingsDocumentViewModel(string filePath, ProgramSettings root)
@@ -47,24 +43,20 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
         if (!File.Exists(filePath))
             throw new FileNotFoundException("ProgramSettings file not found.", filePath);
-        var root = XmlCodec.DeserializeFromFile<ProgramSettings>(filePath)
+        // The same guard the runtime storages apply: an un-migrated file would otherwise open as an
+        // empty registry, and saving it would silently discard every entry it still contains.
+        var xml = FileUtilities.FileReadText(filePath);
+        ProgramSettingsFormat.EnsureCurrentFormat(xml, filePath);
+        var root = XmlCodec.Deserialize<ProgramSettings>(xml)
             ?? throw new InvalidOperationException($"ProgramSettings deserialized to null: {filePath}");
+        root.SetObjectFilePath(filePath);
         return new ProgramSettingsDocumentViewModel(filePath, root);
     }
 
     private static SettingsTreeNode BuildRootNode(ProgramSettings root)
     {
         var node = SettingsTreeNode.Create("DefProgramSettings", KindRoot, root, RefreshRoot, isExpanded: true);
-        if (root.Categories is { } categories)
-            foreach (var category in categories)
-                node.AddChild(BuildCategoryNode(category));
-        return node;
-    }
-
-    private static SettingsTreeNode BuildCategoryNode(ProgramCategory category)
-    {
-        var node = SettingsTreeNode.Create("DefCategory", KindCategory, category, RefreshCategory, isExpanded: false);
-        if (category.Items is { } items)
+        if (root.Items is { } items)
             foreach (var program in items)
                 node.AddChild(BuildProgramNode(program));
         return node;
@@ -77,17 +69,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
     {
         var root = (ProgramSettings)node.Payload!;
         node.Header = "ProgramSettings";
-        node.Detail = $"{root.Categories?.Count ?? 0} ProgramCategory item(s)";
-    }
-
-    private static void RefreshCategory(SettingsTreeNode node)
-    {
-        var c = (ProgramCategory)node.Payload!;
-        node.Header = $"{c.Id}  —  {c.DisplayName}";
-        node.Detail = string.Join(Environment.NewLine,
-            $"Id：{c.Id}",
-            $"DisplayName：{c.DisplayName}",
-            $"Items：{c.Items?.Count ?? 0}");
+        node.Detail = $"{root.Items?.Count ?? 0} ProgramItem(s)";
     }
 
     private static void RefreshProgram(SettingsTreeNode node)
@@ -100,79 +82,52 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
             $"BusinessObject：{p.BusinessObject}");
     }
 
-    [RelayCommand(CanExecute = nameof(CanAddCategory))]
-    private void AddCategory()
-    {
-        if (SelectedTreeNode is not { Kind: KindRoot, Payload: ProgramSettings root } rootNode)
-            return;
-        var id = UniqueKey(root.Categories!.Select(c => c.Id), "new_category");
-        var category = new ProgramCategory(id, "New category");
-        root.Categories!.Add(category);
-        var node = BuildCategoryNode(category);
-        rootNode.AddChild(node);
-        SelectedTreeNode = node;
-        IsDirty = true;
-        StatusText = L("Status_AddedNamed", "ProgramCategory", id);
-    }
-
-    private bool CanAddCategory() => SelectedTreeNode?.Kind == KindRoot;
-
     [RelayCommand(CanExecute = nameof(CanAddProgram))]
     private void AddProgram()
     {
-        var categoryNode = FindAncestor(SelectedTreeNode, KindCategory);
-        if (categoryNode?.Payload is not ProgramCategory category) return;
-        var id = UniqueKey(category.Items!.Select(p => p.ProgId), "NewProgram");
+        if (SelectedTreeNode is not { Kind: KindRoot, Payload: ProgramSettings root } rootNode)
+            return;
+        var id = UniqueKey(root.Items!.Select(p => p.ProgId), "NewProgram");
         var program = new ProgramItem { ProgId = id, DisplayName = "New program" };
-        category.Items!.Add(program);
+        root.Items!.Add(program);
         var node = BuildProgramNode(program);
-        categoryNode.AddChild(node);
-        categoryNode.IsExpanded = true;
+        rootNode.AddChild(node);
+        rootNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
         StatusText = L("Status_AddedNamed", "ProgramItem", id);
     }
 
-    private bool CanAddProgram() => FindAncestor(SelectedTreeNode, KindCategory) is not null;
+    private bool CanAddProgram() => SelectedTreeNode?.Kind == KindRoot;
 
     protected override Action? GetDeleteAction(SettingsTreeNode node) => node.Kind switch
     {
-        KindCategory when node.Payload is ProgramCategory c && node.Parent?.Payload is ProgramSettings p
-            => () => p.Categories!.Remove(c),
-        KindProgram when node.Payload is ProgramItem prog && node.Parent?.Payload is ProgramCategory pc
-            => () => pc.Items!.Remove(prog),
+        KindProgram when node.Payload is ProgramItem prog && node.Parent?.Payload is ProgramSettings p
+            => () => p.Items!.Remove(prog),
         _ => null,
     };
 
     protected override IReadOnlyList<ValidationIssue> PerformValidation()
     {
         var issues = new List<ValidationIssue>();
-        var categories = Root.Categories;
-        if (categories is null || categories.Count == 0)
+        var items = Root.Items;
+        if (items is null || items.Count == 0)
         {
-            issues.Add(new(ValidationSeverity.Warning, "ProgramSettings", "No ProgramCategory has been defined."));
+            issues.Add(new(ValidationSeverity.Warning, "ProgramSettings", "No ProgramItem has been registered."));
             return issues;
         }
-        var seenCategoryIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var category in categories)
-        {
-            var catPath = !string.IsNullOrWhiteSpace(category.Id) ? category.Id : "(unnamed)";
-            if (string.IsNullOrWhiteSpace(category.Id))
-                issues.Add(new(ValidationSeverity.Error, catPath, "ProgramCategory.Id cannot be empty."));
-            else if (!seenCategoryIds.Add(category.Id))
-                issues.Add(new(ValidationSeverity.Error, catPath,
-                    $"ProgramCategory.Id '{category.Id}' is a duplicate."));
 
-            var seenProgIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var program in category.Items ?? Enumerable.Empty<ProgramItem>())
-            {
-                var path = $"{catPath}.{(string.IsNullOrEmpty(program.ProgId) ? "(unnamed)" : program.ProgId)}";
-                if (string.IsNullOrWhiteSpace(program.ProgId))
-                    issues.Add(new(ValidationSeverity.Error, path, "ProgramItem.ProgId cannot be empty."));
-                else if (!seenProgIds.Add(program.ProgId))
-                    issues.Add(new(ValidationSeverity.Error, path,
-                        $"ProgramItem.ProgId '{program.ProgId}' is a duplicate within '{catPath}'."));
-            }
+        // The registry is flat, so duplicate detection is global — which is the point of the flat
+        // shape. Under the earlier nested layout this check only ever ran within one category.
+        var seenProgIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var program in items)
+        {
+            var path = string.IsNullOrEmpty(program.ProgId) ? "(unnamed)" : program.ProgId;
+            if (string.IsNullOrWhiteSpace(program.ProgId))
+                issues.Add(new(ValidationSeverity.Error, path, "ProgramItem.ProgId cannot be empty."));
+            else if (!seenProgIds.Add(program.ProgId))
+                issues.Add(new(ValidationSeverity.Error, path,
+                    $"ProgramItem.ProgId '{program.ProgId}' is a duplicate."));
         }
         return issues;
     }

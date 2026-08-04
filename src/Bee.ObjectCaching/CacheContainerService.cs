@@ -66,6 +66,7 @@ namespace Bee.ObjectCaching
             SystemSettings = new SystemSettingsCache(paths, CachePrefix);
             DatabaseSettings = new DatabaseSettingsCache(paths, CachePrefix);
             ProgramSettings = new ProgramSettingsCache(storage, paths, CachePrefix);
+            MenuSettings = new MenuSettingsCache(storage, paths, CachePrefix);
             PermissionModels = new PermissionModelsCache(paths, CachePrefix);
             DbCategorySettings = new DbCategorySettingsCache(storage, paths, CachePrefix);
             CurrencySettings = new CurrencySettingsCache(storage, paths, CachePrefix);
@@ -97,6 +98,9 @@ namespace Bee.ObjectCaching
 
         /// <inheritdoc/>
         public ProgramSettingsCache ProgramSettings { get; }
+
+        /// <inheritdoc/>
+        public MenuSettingsCache MenuSettings { get; }
 
         /// <inheritdoc/>
         public PermissionModelsCache PermissionModels { get; }

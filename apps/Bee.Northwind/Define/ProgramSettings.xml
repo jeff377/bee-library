@@ -1,33 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The application's program list. It serves double duty:
-       1. ProgramSettingsFormBoTypeResolver reads BusinessObject to route a progId to a custom
-          FormBusinessObject. Only Order needs application code; every other entry leaves it
-          empty and resolves to the framework's default FormBusinessObject (pure definition CRUD).
-       2. The Avalonia shell builds its left navigation menu from these categories and items
-          (Bee.Northwind.UI FormsViewModel), so adding a form to the menu is pure XML here.
-     Adding a new form to the running app is therefore: a FormSchema, a TableSchema, a
-     DbCategorySettings table entry, and one ProgramItem below — no code. -->
+<!-- The application's type registry: one flat entry per progId, mapping it to the types bound to
+     it. ProgramSettingsFormBoTypeResolver reads BusinessObject to route a progId to a custom
+     FormBusinessObject; only Order needs application code, every other entry leaves it empty and
+     resolves to the framework's default FormBusinessObject (pure definition CRUD).
+
+     Where each program appears in the navigation menu is MenuSettings.xml's business, not this
+     file's. Adding a new form to the running app is therefore: a FormSchema, a TableSchema, a
+     DbCategorySettings table entry, one ProgramItem below, and one MenuEntry in MenuSettings.xml
+     — no code. -->
 <ProgramSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <Categories>
-    <ProgramCategory Id="master-data" DisplayName="Master Data">
-      <Items>
-        <ProgramItem ProgId="Category" DisplayName="Categories" />
-        <ProgramItem ProgId="Supplier" DisplayName="Suppliers" />
-        <ProgramItem ProgId="Customer" DisplayName="Customers" />
-        <ProgramItem ProgId="Shipper" DisplayName="Shippers" />
-        <ProgramItem ProgId="Product" DisplayName="Products" />
-      </Items>
-    </ProgramCategory>
-    <ProgramCategory Id="organization" DisplayName="Organization">
-      <Items>
-        <ProgramItem ProgId="Department" DisplayName="Departments" />
-        <ProgramItem ProgId="Employee" DisplayName="Employees" />
-      </Items>
-    </ProgramCategory>
-    <ProgramCategory Id="transactions" DisplayName="Transactions">
-      <Items>
-        <ProgramItem ProgId="Order" DisplayName="Orders" BusinessObject="Bee.Northwind.Server.BusinessObjects.OrderBO, Bee.Northwind.Server" />
-      </Items>
-    </ProgramCategory>
-  </Categories>
+  <Items>
+    <ProgramItem ProgId="Category" DisplayName="Categories" />
+    <ProgramItem ProgId="Supplier" DisplayName="Suppliers" />
+    <ProgramItem ProgId="Customer" DisplayName="Customers" />
+    <ProgramItem ProgId="Shipper" DisplayName="Shippers" />
+    <ProgramItem ProgId="Product" DisplayName="Products" />
+    <ProgramItem ProgId="Department" DisplayName="Departments" />
+    <ProgramItem ProgId="Employee" DisplayName="Employees" />
+    <ProgramItem ProgId="Order" DisplayName="Orders" BusinessObject="Bee.Northwind.Server.BusinessObjects.OrderBO, Bee.Northwind.Server" />
+  </Items>
 </ProgramSettings>

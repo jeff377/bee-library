@@ -1,9 +1,12 @@
 #nullable enable
-Bee.Api.Client.Connectors.SystemApiConnector.CreateApiKeyAsync(string! sysId, string! sysName, Bee.Definition.Security.ApiKeyType keyType = Bee.Definition.Security.ApiKeyType.Internal, string? contact = null, System.DateTime? expiredAt = null) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.CreateApiKeyResponse!>!
 Bee.Api.Client.ClientDefineAccess.GetCustomizeFormLayoutAsync(string! progId, string! layoutId = "") -> System.Threading.Tasks.Task<Bee.Definition.Layouts.FormLayout?>!
 Bee.Api.Client.ClientDefineAccess.GetCustomizeLanguageAsync(string! lang, string! ns) -> System.Threading.Tasks.Task<Bee.Definition.Language.LanguageResource?>!
-virtual Bee.Api.Client.Connectors.SystemApiConnector.GetCustomizeFormLayoutAsync(string! progId, string! layoutId = "") -> System.Threading.Tasks.Task<Bee.Definition.Layouts.FormLayout?>!
-virtual Bee.Api.Client.Connectors.SystemApiConnector.GetCustomizeLanguageAsync(string! lang, string! ns) -> System.Threading.Tasks.Task<Bee.Definition.Language.LanguageResource?>!
+Bee.Api.Client.ClientDefineAccess.GetMenuSettingsAsync() -> System.Threading.Tasks.Task<Bee.Definition.Settings.MenuSettings!>!
+Bee.Api.Client.Connectors.SystemApiConnector.CreateApiKeyAsync(string! sysId, string! sysName, Bee.Definition.Security.ApiKeyType keyType = Bee.Definition.Security.ApiKeyType.Internal, string? contact = null, System.DateTime? expiredAt = null) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.CreateApiKeyResponse!>!
+Bee.Api.Client.Connectors.SystemApiConnector.ListApiKeysAsync() -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.ListApiKeysResponse!>!
+Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyEnabledAsync(string! sysId, bool enabled) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse!>!
+Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyExpiryAsync(string! sysId, System.DateTime? expiredAt) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse!>!
+Bee.Api.Client.Connectors.SystemApiConnector.SetDeploymentAdminAsync(string! userId, bool isDeploymentAdmin) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetDeploymentAdminResponse!>!
 Bee.Api.Client.Definitions.FormDefinitionLoader
 Bee.Api.Client.Definitions.FormDefinitionLoader.FormDefinitionLoader(Bee.Api.Client.ClientDefineAccess! defineAccess, string! defaultLang = "") -> void
 Bee.Api.Client.Definitions.FormDefinitionLoader.GetLocalizedSchemaAsync(string! progId, string! lang) -> System.Threading.Tasks.Task<Bee.Definition.Forms.FormSchema!>!
@@ -30,9 +33,7 @@ override Bee.Api.Client.Definitions.LanguageLayers.GetHashCode() -> int
 static Bee.Api.Client.Definitions.LanguageLayers.operator !=(Bee.Api.Client.Definitions.LanguageLayers left, Bee.Api.Client.Definitions.LanguageLayers right) -> bool
 static Bee.Api.Client.Definitions.LanguageLayers.operator ==(Bee.Api.Client.Definitions.LanguageLayers left, Bee.Api.Client.Definitions.LanguageLayers right) -> bool
 static Bee.Api.Client.Definitions.SnapshotLanguageService.BuildKey(string! lang, string! ns) -> string!
+virtual Bee.Api.Client.Connectors.SystemApiConnector.GetCustomizeFormLayoutAsync(string! progId, string! layoutId = "") -> System.Threading.Tasks.Task<Bee.Definition.Layouts.FormLayout?>!
+virtual Bee.Api.Client.Connectors.SystemApiConnector.GetCustomizeLanguageAsync(string! lang, string! ns) -> System.Threading.Tasks.Task<Bee.Definition.Language.LanguageResource?>!
 ~override Bee.Api.Client.Definitions.LanguageLayers.Equals(object obj) -> bool
 ~override Bee.Api.Client.Definitions.LanguageLayers.ToString() -> string
-Bee.Api.Client.Connectors.SystemApiConnector.SetDeploymentAdminAsync(string! userId, bool isDeploymentAdmin) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetDeploymentAdminResponse!>!
-Bee.Api.Client.Connectors.SystemApiConnector.ListApiKeysAsync() -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.ListApiKeysResponse!>!
-Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyEnabledAsync(string! sysId, bool enabled) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse!>!
-Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyExpiryAsync(string! sysId, System.DateTime? expiredAt) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse!>!

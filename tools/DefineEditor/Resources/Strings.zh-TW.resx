@@ -82,12 +82,18 @@
   <data name="DbCategory_TableProps" xml:space="preserve"><value>TableItem 屬性</value></data>
 
   <!-- ProgramSettings -->
-  <data name="Program_AddCategory" xml:space="preserve"><value>新增 ProgramCategory</value></data>
   <data name="Program_AddProgram" xml:space="preserve"><value>新增 ProgramItem</value></data>
-  <data name="Program_RootSubtitle" xml:space="preserve"><value>ProgramSettings（程式清單根節點）</value></data>
-  <data name="Program_RootHint" xml:space="preserve"><value>於根節點右鍵新增 ProgramCategory；於 Category 節點右鍵新增 ProgramItem。</value></data>
-  <data name="Program_CategoryProps" xml:space="preserve"><value>ProgramCategory 屬性</value></data>
+  <data name="Program_RootSubtitle" xml:space="preserve"><value>ProgramSettings（型別註冊表根節點）</value></data>
+  <data name="Program_RootHint" xml:space="preserve"><value>於根節點右鍵新增 ProgramItem。一個 progId 只註冊一次；出現在選單哪裡由 MenuSettings 決定。</value></data>
   <data name="Program_ProgramProps" xml:space="preserve"><value>ProgramItem 屬性</value></data>
+
+  <!-- MenuSettings -->
+  <data name="Menu_AddFolder" xml:space="preserve"><value>新增 MenuFolder</value></data>
+  <data name="Menu_AddEntry" xml:space="preserve"><value>新增 MenuEntry</value></data>
+  <data name="Menu_RootSubtitle" xml:space="preserve"><value>MenuSettings（選單樹根節點）</value></data>
+  <data name="Menu_RootHint" xml:space="preserve"><value>於根節點或任一 Folder 右鍵新增 Folder 或 Entry。Id 需全樹唯一；Visible 是設計期開關，不是權限機制。</value></data>
+  <data name="Menu_FolderProps" xml:space="preserve"><value>MenuFolder 屬性</value></data>
+  <data name="Menu_EntryProps" xml:space="preserve"><value>MenuEntry 屬性</value></data>
 
   <!-- PermissionModels -->
   <data name="Permission_AddModel" xml:space="preserve"><value>新增 PermissionModel</value></data>

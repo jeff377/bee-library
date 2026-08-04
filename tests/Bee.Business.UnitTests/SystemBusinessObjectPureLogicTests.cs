@@ -63,7 +63,10 @@ namespace Bee.Business.UnitTests
         [Theory]
         [InlineData(DefineType.SystemSettings)]
         [InlineData(DefineType.DatabaseSettings)]
-        [DisplayName("GetDefine 非本地呼叫且為敏感 DefineType 應拋 NotSupportedException")]
+        // ProgramSettings 於型別註冊表化後收緊為 server 專用：它只剩組件限定型別名，
+        // client 需要的選單已移至 MenuSettings。
+        [InlineData(DefineType.ProgramSettings)]
+        [DisplayName("GetDefine 非本地呼叫且為 server 專用 DefineType 應拋 NotSupportedException")]
         public void GetDefine_NonLocalCallWithSensitiveType_ThrowsNotSupported(DefineType defineType)
         {
             var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, isLocalCall: false);

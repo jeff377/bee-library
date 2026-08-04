@@ -95,12 +95,18 @@
   <data name="DbCategory_TableProps" xml:space="preserve"><value>TableItem properties</value></data>
 
   <!-- ProgramSettings -->
-  <data name="Program_AddCategory" xml:space="preserve"><value>Add ProgramCategory</value></data>
   <data name="Program_AddProgram" xml:space="preserve"><value>Add ProgramItem</value></data>
-  <data name="Program_RootSubtitle" xml:space="preserve"><value>ProgramSettings (program list root)</value></data>
-  <data name="Program_RootHint" xml:space="preserve"><value>Right-click the root to add a ProgramCategory; right-click a category to add a ProgramItem under it.</value></data>
-  <data name="Program_CategoryProps" xml:space="preserve"><value>ProgramCategory properties</value></data>
+  <data name="Program_RootSubtitle" xml:space="preserve"><value>ProgramSettings (type registry root)</value></data>
+  <data name="Program_RootHint" xml:space="preserve"><value>Right-click the root to add a ProgramItem. A progId is registered once; where it appears in the menu is MenuSettings' business.</value></data>
   <data name="Program_ProgramProps" xml:space="preserve"><value>ProgramItem properties</value></data>
+
+  <!-- MenuSettings -->
+  <data name="Menu_AddFolder" xml:space="preserve"><value>Add MenuFolder</value></data>
+  <data name="Menu_AddEntry" xml:space="preserve"><value>Add MenuEntry</value></data>
+  <data name="Menu_RootSubtitle" xml:space="preserve"><value>MenuSettings (menu tree root)</value></data>
+  <data name="Menu_RootHint" xml:space="preserve"><value>Right-click the root or any folder to add a folder or an entry. Ids must be unique across the whole tree; Visible is a design-time switch, not a permission.</value></data>
+  <data name="Menu_FolderProps" xml:space="preserve"><value>MenuFolder properties</value></data>
+  <data name="Menu_EntryProps" xml:space="preserve"><value>MenuEntry properties</value></data>
 
   <!-- PermissionModels -->
   <data name="Permission_AddModel" xml:space="preserve"><value>Add PermissionModel</value></data>

@@ -20,6 +20,9 @@ namespace Bee.ObjectCaching
         /// <summary>The program settings cache.</summary>
         ProgramSettingsCache ProgramSettings { get; }
 
+        /// <summary>The menu definition cache.</summary>
+        MenuSettingsCache MenuSettings { get; }
+
         /// <summary>The permission model registry cache.</summary>
         PermissionModelsCache PermissionModels { get; }
 

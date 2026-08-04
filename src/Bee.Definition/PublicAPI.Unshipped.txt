@@ -1,31 +1,37 @@
 #nullable enable
+*REMOVED*Bee.Definition.ICacheDataSourceProvider.GetSessionUser(System.Guid accessToken) -> Bee.Definition.Identity.SessionUser?
+*REMOVED*Bee.Definition.Security.IApiEncryptionKeyProvider.GenerateKeyForLogin() -> byte[]!
+*REMOVED*const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DynamicApiEncryptionKeyProvider, Bee.Business" -> string!
+Bee.Definition.Customization.CustomizeOverlay
+Bee.Definition.DefineType.MenuSettings = 11 -> Bee.Definition.DefineType
+Bee.Definition.ICacheDataSourceProvider.GetApiKey(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
+Bee.Definition.ICacheDataSourceProvider.GetApiKeyGateState() -> Bee.Definition.Security.ApiKeyGateState!
 Bee.Definition.ICacheDataSourceProvider.GetCompanyInfo(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
 Bee.Definition.ICacheDataSourceProvider.GetCompanyRolePermissions(string! companyId) -> Bee.Definition.Identity.CompanyRolePermissions?
 Bee.Definition.ICacheDataSourceProvider.GetDepartmentTree(string! companyId) -> Bee.Definition.Organization.DepartmentTree?
-*REMOVED*Bee.Definition.Security.IApiEncryptionKeyProvider.GenerateKeyForLogin() -> byte[]!
-*REMOVED*const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DynamicApiEncryptionKeyProvider, Bee.Business" -> string!
-Bee.Definition.Security.IApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
-const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DerivedApiEncryptionKeyProvider, Bee.Business" -> string!
-Bee.Definition.Settings.BackendConfiguration.DefaultLanguage.get -> string!
-Bee.Definition.Settings.BackendConfiguration.DefaultLanguage.set -> void
+Bee.Definition.ICacheDataSourceProvider.GetSessionInfo(System.Guid accessToken) -> Bee.Definition.Identity.SessionInfo?
+Bee.Definition.Identity.DeploymentAction
+Bee.Definition.Identity.DeploymentAction.ManageApiKey = 1 -> Bee.Definition.Identity.DeploymentAction
+Bee.Definition.Identity.IDeploymentAuthorizationService
+Bee.Definition.Identity.IDeploymentAuthorizationService.Can(System.Guid accessToken, Bee.Definition.Identity.DeploymentAction action) -> bool
 Bee.Definition.Identity.SessionUser.CompanyId.get -> string?
 Bee.Definition.Identity.SessionUser.CompanyId.set -> void
-Bee.Definition.Logging.LoginEvent.ServiceSessionCreated = 4 -> Bee.Definition.Logging.LoginEvent
-*REMOVED*Bee.Definition.ICacheDataSourceProvider.GetSessionUser(System.Guid accessToken) -> Bee.Definition.Identity.SessionUser?
-Bee.Definition.ICacheDataSourceProvider.GetSessionInfo(System.Guid accessToken) -> Bee.Definition.Identity.SessionInfo?
-Bee.Definition.Security.IApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool
-Bee.Definition.Settings.BackendConfiguration.SessionCleanupOptions.get -> Bee.Definition.Settings.SessionCleanupOptions!
-Bee.Definition.Settings.BackendConfiguration.SessionCleanupOptions.set -> void
-Bee.Definition.Settings.SessionCleanupOptions
-Bee.Definition.Settings.SessionCleanupOptions.Enabled.get -> bool
-Bee.Definition.Settings.SessionCleanupOptions.Enabled.set -> void
-Bee.Definition.Settings.SessionCleanupOptions.IntervalSeconds.get -> int
-Bee.Definition.Settings.SessionCleanupOptions.IntervalSeconds.set -> void
-Bee.Definition.Settings.SessionCleanupOptions.SessionCleanupOptions() -> void
-override Bee.Definition.Settings.SessionCleanupOptions.ToString() -> string!
-Bee.Definition.ICacheDataSourceProvider.GetApiKey(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
-Bee.Definition.ICacheDataSourceProvider.GetApiKeyGateState() -> Bee.Definition.Security.ApiKeyGateState!
+Bee.Definition.Language.BeeStringLocalizer<T>.BeeStringLocalizer(Bee.Definition.Language.ILanguageService! service, System.Func<string!>! langProvider, System.Func<string!>! customizeIdProvider) -> void
+Bee.Definition.Language.FormSchemaLocalizer.Localize(Bee.Definition.Forms.FormSchema! schema, string! customizeId, string! lang) -> void
+Bee.Definition.Layouts.FormLayout.Clone() -> Bee.Definition.Layouts.FormLayout!
+Bee.Definition.Layouts.FormLayoutCaptionApplier
+Bee.Definition.Layouts.LayoutColumn.Clone() -> Bee.Definition.Layouts.LayoutColumn!
+Bee.Definition.Layouts.LayoutField.Clone() -> Bee.Definition.Layouts.LayoutField!
+Bee.Definition.Layouts.LayoutFieldBase.CopyBaseTo(Bee.Definition.Layouts.LayoutFieldBase! target) -> void
+Bee.Definition.Layouts.LayoutGrid.Clone() -> Bee.Definition.Layouts.LayoutGrid!
+Bee.Definition.Layouts.LayoutSection.Clone() -> Bee.Definition.Layouts.LayoutSection!
 Bee.Definition.Logging.AnomalyKind.Unauthorized = 6 -> Bee.Definition.Logging.AnomalyKind
+Bee.Definition.Logging.AuditEntry.ApiKeyId.get -> string?
+Bee.Definition.Logging.AuditEntry.ApiKeyId.init -> void
+Bee.Definition.Logging.AuditEntry.ApiKeyName.get -> string?
+Bee.Definition.Logging.AuditEntry.ApiKeyName.init -> void
+Bee.Definition.Logging.LoginEvent.ServiceSessionCreated = 4 -> Bee.Definition.Logging.LoginEvent
+Bee.Definition.ProtectedFields
 Bee.Definition.Security.ApiKeyGateState
 Bee.Definition.Security.ApiKeyGateState.ApiKeyGateState() -> void
 Bee.Definition.Security.ApiKeyGateState.GetKey() -> string!
@@ -53,6 +59,22 @@ Bee.Definition.Security.ApiKeyStatus.NotChecked = 0 -> Bee.Definition.Security.A
 Bee.Definition.Security.ApiKeyStatus.NotConfigured = 1 -> Bee.Definition.Security.ApiKeyStatus
 Bee.Definition.Security.ApiKeyStatus.NotProvided = 2 -> Bee.Definition.Security.ApiKeyStatus
 Bee.Definition.Security.ApiKeyStatus.Valid = 4 -> Bee.Definition.Security.ApiKeyStatus
+Bee.Definition.Security.ApiKeySummary
+Bee.Definition.Security.ApiKeySummary.ApiKeySummary() -> void
+Bee.Definition.Security.ApiKeySummary.Contact.get -> string!
+Bee.Definition.Security.ApiKeySummary.Contact.set -> void
+Bee.Definition.Security.ApiKeySummary.Enabled.get -> bool
+Bee.Definition.Security.ApiKeySummary.Enabled.set -> void
+Bee.Definition.Security.ApiKeySummary.ExpiredAt.get -> System.DateTime?
+Bee.Definition.Security.ApiKeySummary.ExpiredAt.set -> void
+Bee.Definition.Security.ApiKeySummary.IssuedAt.get -> System.DateTime?
+Bee.Definition.Security.ApiKeySummary.IssuedAt.set -> void
+Bee.Definition.Security.ApiKeySummary.KeyType.get -> Bee.Definition.Security.ApiKeyType
+Bee.Definition.Security.ApiKeySummary.KeyType.set -> void
+Bee.Definition.Security.ApiKeySummary.SysId.get -> string!
+Bee.Definition.Security.ApiKeySummary.SysId.set -> void
+Bee.Definition.Security.ApiKeySummary.SysName.get -> string!
+Bee.Definition.Security.ApiKeySummary.SysName.set -> void
 Bee.Definition.Security.ApiKeyType
 Bee.Definition.Security.ApiKeyType.Internal = 1 -> Bee.Definition.Security.ApiKeyType
 Bee.Definition.Security.ApiKeyType.ThirdParty = 2 -> Bee.Definition.Security.ApiKeyType
@@ -63,63 +85,93 @@ Bee.Definition.Security.ApiKeyValidationResult.IsAccepted.get -> bool
 Bee.Definition.Security.ApiKeyValidationResult.Status.get -> Bee.Definition.Security.ApiKeyStatus
 Bee.Definition.Security.ApiKeyValidationResult.SysId.get -> string!
 Bee.Definition.Security.ApiKeyValidationResult.SysName.get -> string!
+Bee.Definition.Security.IApiEncryptionKeyProvider.GenerateKeyForLogin(System.Guid accessToken) -> byte[]!
+Bee.Definition.Security.IApiEncryptionKeyProvider.SupportsSessionRebuild.get -> bool
 Bee.Definition.Security.IApiKeyContextAware
 Bee.Definition.Security.IApiKeyContextAware.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
 Bee.Definition.Security.IApiKeyContextAware.ApiKeyValidation.set -> void
 Bee.Definition.Security.IApiKeyValidator
 Bee.Definition.Security.IApiKeyValidator.Validate(string? apiKey) -> Bee.Definition.Security.ApiKeyValidationResult!
-const Bee.Definition.Security.ApiKeyGateState.CacheKey = "[gate]" -> string!
-static readonly Bee.Definition.Security.ApiKeyValidationResult.NotChecked -> Bee.Definition.Security.ApiKeyValidationResult!
-const Bee.Definition.SystemActions.CreateApiKey = "CreateApiKey" -> string!
-Bee.Definition.Logging.AuditEntry.ApiKeyId.get -> string?
-Bee.Definition.Logging.AuditEntry.ApiKeyId.init -> void
-Bee.Definition.Logging.AuditEntry.ApiKeyName.get -> string?
-Bee.Definition.Logging.AuditEntry.ApiKeyName.init -> void
+Bee.Definition.Settings.BackendConfiguration.DefaultLanguage.get -> string!
+Bee.Definition.Settings.BackendConfiguration.DefaultLanguage.set -> void
+Bee.Definition.Settings.BackendConfiguration.SessionCleanupOptions.get -> Bee.Definition.Settings.SessionCleanupOptions!
+Bee.Definition.Settings.BackendConfiguration.SessionCleanupOptions.set -> void
 Bee.Definition.Settings.ClientSettings.ApiKey.get -> string!
 Bee.Definition.Settings.ClientSettings.ApiKey.set -> void
-Bee.Definition.Language.BeeStringLocalizer<T>.BeeStringLocalizer(Bee.Definition.Language.ILanguageService! service, System.Func<string!>! langProvider, System.Func<string!>! customizeIdProvider) -> void
-Bee.Definition.Language.FormSchemaLocalizer.Localize(Bee.Definition.Forms.FormSchema! schema, string! customizeId, string! lang) -> void
-Bee.Definition.Layouts.FormLayout.Clone() -> Bee.Definition.Layouts.FormLayout!
-Bee.Definition.Layouts.FormLayoutCaptionApplier
-static Bee.Definition.Layouts.FormLayoutCaptionApplier.Apply(Bee.Definition.Layouts.FormLayout! layout, Bee.Definition.Forms.FormSchema! schema) -> void
-Bee.Definition.Layouts.LayoutColumn.Clone() -> Bee.Definition.Layouts.LayoutColumn!
-Bee.Definition.Layouts.LayoutField.Clone() -> Bee.Definition.Layouts.LayoutField!
-Bee.Definition.Layouts.LayoutFieldBase.CopyBaseTo(Bee.Definition.Layouts.LayoutFieldBase! target) -> void
-Bee.Definition.Layouts.LayoutGrid.Clone() -> Bee.Definition.Layouts.LayoutGrid!
-Bee.Definition.Layouts.LayoutSection.Clone() -> Bee.Definition.Layouts.LayoutSection!
+Bee.Definition.Settings.MenuEntry
+Bee.Definition.Settings.MenuEntry.MenuEntry() -> void
+Bee.Definition.Settings.MenuEntry.MenuEntry(string! id, string! progId, string! caption) -> void
+Bee.Definition.Settings.MenuEntry.ProgId.get -> string!
+Bee.Definition.Settings.MenuEntry.ProgId.set -> void
+Bee.Definition.Settings.MenuFolder.Items.get -> Bee.Definition.Settings.MenuNodeCollection?
+Bee.Definition.Settings.MenuFolder.MenuFolder(string! id, string! caption) -> void
+Bee.Definition.Settings.MenuNodeBase
+Bee.Definition.Settings.MenuNodeBase.Caption.get -> string!
+Bee.Definition.Settings.MenuNodeBase.Caption.set -> void
+Bee.Definition.Settings.MenuNodeBase.Icon.get -> string!
+Bee.Definition.Settings.MenuNodeBase.Icon.set -> void
+Bee.Definition.Settings.MenuNodeBase.Id.get -> string!
+Bee.Definition.Settings.MenuNodeBase.Id.set -> void
+Bee.Definition.Settings.MenuNodeBase.MenuNodeBase() -> void
+Bee.Definition.Settings.MenuNodeBase.Order.get -> int
+Bee.Definition.Settings.MenuNodeBase.Order.set -> void
+Bee.Definition.Settings.MenuNodeBase.Visible.get -> bool
+Bee.Definition.Settings.MenuNodeBase.Visible.set -> void
+Bee.Definition.Settings.MenuNodeCollection
+Bee.Definition.Settings.MenuNodeCollection.GetDisplayNodes() -> System.Collections.Generic.IEnumerable<Bee.Definition.Settings.MenuNodeBase!>!
+Bee.Definition.Settings.MenuNodeCollection.MenuNodeCollection() -> void
+Bee.Definition.Settings.MenuNodeCollection.MenuNodeCollection(object! owner) -> void
+Bee.Definition.Settings.MenuNodeCollectionExtensions
+Bee.Definition.Settings.MenuSettings.EnsureValid(Bee.Definition.Settings.ProgramSettings? registry = null) -> void
+Bee.Definition.Settings.MenuSettings.EnumerateNodes() -> System.Collections.Generic.IEnumerable<Bee.Definition.Settings.MenuNodeBase!>!
+Bee.Definition.Settings.MenuSettings.FindNode(string! id) -> Bee.Definition.Settings.MenuNodeBase?
+Bee.Definition.Settings.MenuSettings.Items.get -> Bee.Definition.Settings.MenuNodeCollection?
+Bee.Definition.Settings.MenuSettings.Validate(Bee.Definition.Settings.ProgramSettings? registry = null) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Definition.Settings.ProgramItemCollection.ProgramItemCollection(Bee.Definition.Settings.ProgramSettings! settings) -> void
+Bee.Definition.Settings.ProgramSettings.Items.get -> Bee.Definition.Settings.ProgramItemCollection?
+Bee.Definition.Settings.ProgramSettingsFormat
+Bee.Definition.Settings.SessionCleanupOptions
+Bee.Definition.Settings.SessionCleanupOptions.Enabled.get -> bool
+Bee.Definition.Settings.SessionCleanupOptions.Enabled.set -> void
+Bee.Definition.Settings.SessionCleanupOptions.IntervalSeconds.get -> int
+Bee.Definition.Settings.SessionCleanupOptions.IntervalSeconds.set -> void
+Bee.Definition.Settings.SessionCleanupOptions.SessionCleanupOptions() -> void
+Bee.Definition.Storage.CustomizeOnlyStorage.GetChangeSource(Bee.Definition.DefineType defineType, params string![]! keys) -> Bee.Definition.Storage.DefineChangeSource
+Bee.Definition.Storage.CustomizeOnlyStorage.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings?
+Bee.Definition.Storage.CustomizeOnlyStorage.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
+Bee.Definition.Storage.FileDefineStorage.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings?
+Bee.Definition.Storage.FileDefineStorage.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
+Bee.Definition.Storage.ICustomizeDefineReader.GetCustomizeMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings?
 Bee.Definition.Storage.IDefineAccess.FindFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?
-Bee.Definition.Customization.CustomizeOverlay
-static Bee.Definition.Customization.CustomizeOverlay.TryGetLangText(Bee.Definition.Language.LanguageResource? customize, Bee.Definition.Language.LanguageResource? base, string! subKey, out string! text) -> bool
-static Bee.Definition.Customization.CustomizeOverlay.GetLangEnum(Bee.Definition.Language.LanguageResource? customize, Bee.Definition.Language.LanguageResource? base, string! enumName) -> Bee.Definition.Language.LanguageEnum?
-static Bee.Definition.Customization.CustomizeOverlay.FindProgramItem(Bee.Definition.Settings.ProgramSettings? customize, Bee.Definition.Settings.ProgramSettings? base, string! progId) -> Bee.Definition.Settings.ProgramItem?
-static Bee.Definition.Customization.CustomizeOverlay.PickFormLayout(Bee.Definition.Layouts.FormLayout? customize, Bee.Definition.Layouts.FormLayout? base) -> Bee.Definition.Layouts.FormLayout?
+Bee.Definition.Storage.IDefineAccess.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings!
+Bee.Definition.Storage.IDefineAccess.GetMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings!
+Bee.Definition.Storage.IDefineAccess.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
+Bee.Definition.Storage.IDefineStorage.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings?
+Bee.Definition.Storage.IDefineStorage.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
+const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DerivedApiEncryptionKeyProvider, Bee.Business" -> string!
+const Bee.Definition.ProtectedFields.DeploymentAdmin = "deployment_admin" -> string!
+const Bee.Definition.Security.ApiKeyGateState.CacheKey = "[gate]" -> string!
+const Bee.Definition.SystemActions.CreateApiKey = "CreateApiKey" -> string!
 const Bee.Definition.SystemActions.GetCustomizeFormLayout = "GetCustomizeFormLayout" -> string!
 const Bee.Definition.SystemActions.GetCustomizeLanguage = "GetCustomizeLanguage" -> string!
-Bee.Definition.Storage.CustomizeOnlyStorage.GetChangeSource(Bee.Definition.DefineType defineType, params string![]! keys) -> Bee.Definition.Storage.DefineChangeSource
-Bee.Definition.Identity.DeploymentAction
-Bee.Definition.Identity.DeploymentAction.ManageApiKey = 1 -> Bee.Definition.Identity.DeploymentAction
-Bee.Definition.Identity.IDeploymentAuthorizationService
-Bee.Definition.Identity.IDeploymentAuthorizationService.Can(System.Guid accessToken, Bee.Definition.Identity.DeploymentAction action) -> bool
-Bee.Definition.ProtectedFields
-const Bee.Definition.ProtectedFields.DeploymentAdmin = "deployment_admin" -> string!
-static Bee.Definition.ProtectedFields.IsProtected(string! tableName, string! fieldName) -> bool
-const Bee.Definition.SystemActions.SetDeploymentAdmin = "SetDeploymentAdmin" -> string!
 const Bee.Definition.SystemActions.ListApiKeys = "ListApiKeys" -> string!
 const Bee.Definition.SystemActions.SetApiKeyEnabled = "SetApiKeyEnabled" -> string!
 const Bee.Definition.SystemActions.SetApiKeyExpiry = "SetApiKeyExpiry" -> string!
-Bee.Definition.Security.ApiKeySummary
-Bee.Definition.Security.ApiKeySummary.ApiKeySummary() -> void
-Bee.Definition.Security.ApiKeySummary.SysId.get -> string!
-Bee.Definition.Security.ApiKeySummary.SysId.set -> void
-Bee.Definition.Security.ApiKeySummary.SysName.get -> string!
-Bee.Definition.Security.ApiKeySummary.SysName.set -> void
-Bee.Definition.Security.ApiKeySummary.KeyType.get -> Bee.Definition.Security.ApiKeyType
-Bee.Definition.Security.ApiKeySummary.KeyType.set -> void
-Bee.Definition.Security.ApiKeySummary.Contact.get -> string!
-Bee.Definition.Security.ApiKeySummary.Contact.set -> void
-Bee.Definition.Security.ApiKeySummary.Enabled.get -> bool
-Bee.Definition.Security.ApiKeySummary.Enabled.set -> void
-Bee.Definition.Security.ApiKeySummary.ExpiredAt.get -> System.DateTime?
-Bee.Definition.Security.ApiKeySummary.ExpiredAt.set -> void
-Bee.Definition.Security.ApiKeySummary.IssuedAt.get -> System.DateTime?
-Bee.Definition.Security.ApiKeySummary.IssuedAt.set -> void
+const Bee.Definition.SystemActions.SetDeploymentAdmin = "SetDeploymentAdmin" -> string!
+override Bee.Definition.CustomizeOnlyPathOptions.GetMenuSettingsFilePath() -> string!
+override Bee.Definition.Settings.MenuEntry.ToString() -> string!
+override Bee.Definition.Settings.MenuFolder.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+override Bee.Definition.Settings.SessionCleanupOptions.ToString() -> string!
+static Bee.Definition.Customization.CustomizeOverlay.FindProgramItem(Bee.Definition.Settings.ProgramSettings? customize, Bee.Definition.Settings.ProgramSettings? base, string! progId) -> Bee.Definition.Settings.ProgramItem?
+static Bee.Definition.Customization.CustomizeOverlay.GetLangEnum(Bee.Definition.Language.LanguageResource? customize, Bee.Definition.Language.LanguageResource? base, string! enumName) -> Bee.Definition.Language.LanguageEnum?
+static Bee.Definition.Customization.CustomizeOverlay.PickFormLayout(Bee.Definition.Layouts.FormLayout? customize, Bee.Definition.Layouts.FormLayout? base) -> Bee.Definition.Layouts.FormLayout?
+static Bee.Definition.Customization.CustomizeOverlay.PickMenuSettings(Bee.Definition.Settings.MenuSettings? customize, Bee.Definition.Settings.MenuSettings? base) -> Bee.Definition.Settings.MenuSettings?
+static Bee.Definition.Customization.CustomizeOverlay.TryGetLangText(Bee.Definition.Language.LanguageResource? customize, Bee.Definition.Language.LanguageResource? base, string! subKey, out string! text) -> bool
+static Bee.Definition.Layouts.FormLayoutCaptionApplier.Apply(Bee.Definition.Layouts.FormLayout! layout, Bee.Definition.Forms.FormSchema! schema) -> void
+static Bee.Definition.ProtectedFields.IsProtected(string! tableName, string! fieldName) -> bool
+static Bee.Definition.Settings.MenuNodeCollectionExtensions.AddEntry(this Bee.Definition.Settings.MenuNodeCollection? collection, string! id, string! progId, string! caption) -> Bee.Definition.Settings.MenuEntry!
+static Bee.Definition.Settings.MenuNodeCollectionExtensions.AddFolder(this Bee.Definition.Settings.MenuNodeCollection? collection, string! id, string! caption) -> Bee.Definition.Settings.MenuFolder!
+static Bee.Definition.Settings.ProgramSettingsFormat.EnsureCurrentFormat(string! xml, string! source) -> void
+static Bee.Definition.Settings.ProgramSettingsFormat.IsLegacyFormat(string! xml) -> bool
+static readonly Bee.Definition.Security.ApiKeyValidationResult.NotChecked -> Bee.Definition.Security.ApiKeyValidationResult!
+virtual Bee.Definition.PathOptions.GetMenuSettingsFilePath() -> string!

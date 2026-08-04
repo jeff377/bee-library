@@ -7,13 +7,30 @@ using System.Text.Json.Serialization;
 namespace Bee.Definition.Settings
 {
     /// <summary>
-    /// Program settings (program list).
+    /// The framework type registry: one flat list mapping each progId to the types bound to it.
     /// </summary>
+    /// <remarks>
+    /// Modelled on the COM+ registry, which maps a ProgID to a component type and says nothing
+    /// about where that program sits in a menu. Presentation is <see cref="MenuSettings"/>'s job;
+    /// this definition holds only type bindings.
+    /// <para>
+    /// The list is flat rather than grouped by category because a progId is the registry key: a
+    /// single <see cref="ProgramItemCollection"/> makes global uniqueness a property of the
+    /// structure — a duplicate is rejected at load time — and turns lookup into one key hit. Under
+    /// the earlier nested shape uniqueness held only within a category, so the same progId could
+    /// appear twice and which one won depended on document order.
+    /// </para>
+    /// <para>
+    /// Server-side only: it carries assembly-qualified type names that no client has any use for,
+    /// so it is gated out of remote <c>GetDefine</c> alongside <c>SystemSettings</c> and
+    /// <c>DatabaseSettings</c>.
+    /// </para>
+    /// </remarks>
     [Description("Program settings.")]
     [TreeNode("Program Settings")]
     public class ProgramSettings : IObjectSerializeFile
     {
-        private ProgramCategoryCollection? _categories = null;
+        private ProgramItemCollection? _items = null;
 
         #region Constructors
 
@@ -43,7 +60,7 @@ namespace Bee.Definition.Settings
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            _categories?.SetSerializeState(serializeState);
+            _items?.SetSerializeState(serializeState);
         }
 
         /// <summary>
@@ -66,18 +83,18 @@ namespace Bee.Definition.Settings
         #endregion
 
         /// <summary>
-        /// Gets the program category collection.
+        /// Gets the registered program collection, keyed by progId.
         /// </summary>
-        [Description("Program category collection.")]
+        [Description("Program item collection.")]
         [DefaultValue(null)]
-        public ProgramCategoryCollection? Categories
+        public ProgramItemCollection? Items
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _categories!)) { return null; }
-                if (_categories == null) { _categories = new ProgramCategoryCollection(this); }
-                return _categories;
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _items!)) { return null; }
+                if (_items == null) { _items = new ProgramItemCollection(this); }
+                return _items;
             }
         }
     }

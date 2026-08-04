@@ -1,21 +1,18 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
 using Bee.Base.Attributes;
-using Bee.Base.Collections;
 using Bee.Base.Serialization;
 
 namespace Bee.Definition.Settings
 {
     /// <summary>
-    /// A menu folder.
+    /// A grouping node. Owns child nodes and references no program of its own.
     /// </summary>
-    [Description("Menu folder.")]
-    [TreeNode("{0}", "DisplayName")]
-    public class MenuFolder : KeyCollectionItem, IDisplayName
+    [Description("Menu folder (grouping node).")]
+    [TreeNode]
+    public class MenuFolder : MenuNodeBase
     {
-        private MenuFolderCollection? _folders = null;
-        private MenuItemCollection? _items = null;
+        private MenuNodeCollection? _items = null;
 
         #region Constructors
 
@@ -28,102 +25,57 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Initializes a new instance of <see cref="MenuFolder"/>.
         /// </summary>
-        /// <param name="folderID">The folder ID.</param>
-        /// <param name="displayName">The display name.</param>
-        public MenuFolder(string folderID, string displayName)
+        /// <param name="id">The node ID.</param>
+        /// <param name="caption">The caption.</param>
+        public MenuFolder(string id, string caption)
         {
-            FolderId = folderID;
-            DisplayName = displayName;
+            Id = id;
+            Caption = caption;
         }
 
         #endregion
 
         /// <summary>
-        /// Gets or sets the folder ID.
+        /// Gets the child node collection.
         /// </summary>
-        [XmlAttribute]
-        [Description("Folder ID.")]
-        public string FolderId
-        {
-            get { return this.Key; }
-            set { this.Key = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the display name.
-        /// </summary>
-        [XmlAttribute]
-        [Description("Display name.")]
-        public string DisplayName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets the sub-folder collection.
-        /// </summary>
-        [Description("Sub-folder collection.")]
+        /// <remarks>
+        /// Each subtype is declared with its own <see cref="XmlArrayItemAttribute"/> so the
+        /// serializer writes <c>&lt;MenuFolder&gt;</c> and <c>&lt;MenuEntry&gt;</c> elements.
+        /// Without the per-subtype declarations it falls back to one element name plus an
+        /// <c>xsi:type</c> discriminator, which is markedly harder to read and to hand-edit.
+        /// </remarks>
+        [Description("Child node collection.")]
+        [Browsable(false)]
         [DefaultValue(null)]
-        public MenuFolderCollection? Folders
-        {
-            get
-            {
-                // Return null if the collection is empty during serialization
-                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _folders!)) { return null; }
-                if (_folders == null) { _folders = new MenuFolderCollection(this); }
-                return _folders;
-            }
-        }
-
-        /// <summary>
-        /// Gets the menu item collection.
-        /// </summary>
-        [Description("Menu item collection.")]
-        [DefaultValue(null)]
-        public MenuItemCollection? Items
+        [XmlArrayItem(typeof(MenuFolder))]
+        [XmlArrayItem(typeof(MenuEntry))]
+        public MenuNodeCollection? Items
         {
             get
             {
                 // Return null if the collection is empty during serialization
                 if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _items!)) { return null; }
-                if (_items == null) { _items = new MenuItemCollection(this); }
+                if (_items == null) { _items = new MenuNodeCollection(this); }
                 return _items;
             }
         }
 
         /// <summary>
-        /// Finds a menu item by program ID.
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="progId">The program ID.</param>
-        /// <returns></returns>
-        public MenuItem? FindItem(string progId)
+        /// <param name="serializeState">The serialization state.</param>
+        public override void SetSerializeState(SerializeState serializeState)
         {
-            var matched = this.Items!.FirstOrDefault(i => StringUtilities.IsEquals(i.ProgId, progId));
-            if (matched != null) return matched;
-
-            foreach (MenuFolder folder in this.Folders!)
-            {
-                var Item = folder.FindItem(progId);
-                if (Item != null)
-                    return Item;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the language key for this folder.
-        /// </summary>
-        /// <returns></returns>
-        public string GetLanguageKey()
-        {
-            return StringUtilities.Format("MenuFolder_{0}", this.FolderId);
+            base.SetSerializeState(serializeState);
+            _items?.SetSerializeState(serializeState);
         }
 
         /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
-            return StringUtilities.Format("{0} - {1}", this.FolderId, this.DisplayName);
+            return $"{this.Id} - {this.Caption}";
         }
     }
 }

@@ -171,11 +171,26 @@ namespace Bee.Api.Client
         }
 
         /// <summary>
-        /// Asynchronously gets the program settings.
+        /// Asynchronously gets the program type registry.
         /// </summary>
+        /// <remarks>
+        /// Server-side definition: this succeeds on a local connection (tooling) and is rejected
+        /// on a remote one, alongside <see cref="GetSystemSettingsAsync"/> and
+        /// <see cref="GetDatabaseSettingsAsync"/>. A shell wanting navigation calls
+        /// <see cref="GetMenuSettingsAsync"/> instead.
+        /// </remarks>
         public Task<ProgramSettings> GetProgramSettingsAsync()
         {
             return GetDefineAsync<ProgramSettings>(DefineType.ProgramSettings);
+        }
+
+        /// <summary>
+        /// Asynchronously gets the menu definition, already resolved against this session's tenant
+        /// customization by the server.
+        /// </summary>
+        public Task<MenuSettings> GetMenuSettingsAsync()
+        {
+            return GetDefineAsync<MenuSettings>(DefineType.MenuSettings);
         }
 
         /// <summary>

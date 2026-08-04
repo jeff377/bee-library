@@ -11,6 +11,7 @@ namespace Bee.Definition
             { DefineType.DatabaseSettings, "Bee.Definition.Settings.DatabaseSettings" },
             { DefineType.DbCategorySettings, "Bee.Definition.Settings.DbCategorySettings" },
             { DefineType.ProgramSettings,  "Bee.Definition.Settings.ProgramSettings" },
+            { DefineType.MenuSettings,     "Bee.Definition.Settings.MenuSettings" },
             { DefineType.TableSchema,      "Bee.Definition.Database.TableSchema" },
             { DefineType.FormSchema,       "Bee.Definition.Forms.FormSchema" },
             { DefineType.FormLayout,       "Bee.Definition.Layouts.FormLayout" },

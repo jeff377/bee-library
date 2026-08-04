@@ -98,12 +98,10 @@ namespace Bee.Api.Client.UnitTests.Customization
         private static void WriteProgramSettingsOverride(string tenantRoot)
         {
             var settings = new ProgramSettings();
-            var category = new ProgramCategory("customized", "Customized");
-            category.Items!.Add(new ProgramItem(ProgId, "Customers")
+            settings.Items!.Add(new ProgramItem(ProgId, "Customers")
             {
                 BusinessObject = OverriddenBusinessObject
             });
-            settings.Categories!.Add(category);
 
             Directory.CreateDirectory(tenantRoot);
             File.WriteAllText(Path.Combine(tenantRoot, "ProgramSettings.xml"), XmlCodec.Serialize(settings));

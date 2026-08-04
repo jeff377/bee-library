@@ -23,6 +23,7 @@ namespace Bee.Definition.Customization
     ///   <item><description><b>Language text — per key.</b> A customization resource holds only the keys it changes; every other key comes from base, so a base translation added later propagates on its own.</description></item>
     ///   <item><description><b>Language enum — whole enum.</b> An option set only means something as an ordered whole; merging entry by entry would leave both the ordering and the meaning of an omitted entry ambiguous.</description></item>
     ///   <item><description><b>ProgramSettings — per progId.</b> Each program's binding is independent of the others.</description></item>
+    ///   <item><description><b>MenuSettings — whole file.</b> A menu is one arrangement; merging node by node would produce groupings and orderings no author chose.</description></item>
     ///   <item><description><b>FormLayout — whole file.</b> A layout is one visual arrangement; a partial merge has no intuitive answer ("this section moved — do the fields under it follow?").</description></item>
     /// </list>
     /// <para>
@@ -80,7 +81,16 @@ namespace Bee.Definition.Customization
         /// <param name="progId">The program identifier.</param>
         /// <returns>The customization entry, else the base entry, else <c>null</c>.</returns>
         public static ProgramItem? FindProgramItem(ProgramSettings? customize, ProgramSettings? @base, string progId)
-            => FindItem(customize, progId) ?? FindItem(@base, progId);
+            => customize?.Items?.GetOrDefault(progId) ?? @base?.Items?.GetOrDefault(progId);
+
+        /// <summary>
+        /// Selects the menu definition: a customization menu replaces the base menu outright.
+        /// </summary>
+        /// <param name="customize">The customization menu, or <c>null</c> when the tenant provides none.</param>
+        /// <param name="base">The base menu, or <c>null</c> when the host defines none.</param>
+        /// <returns>The customization menu, else the base menu, else <c>null</c>.</returns>
+        public static MenuSettings? PickMenuSettings(MenuSettings? customize, MenuSettings? @base)
+            => customize ?? @base;
 
         /// <summary>
         /// Selects the form layout definition: a customization layout replaces the base layout
@@ -93,17 +103,5 @@ namespace Bee.Definition.Customization
         public static FormLayout? PickFormLayout(FormLayout? customize, FormLayout? @base)
             => customize ?? @base;
 
-        private static ProgramItem? FindItem(ProgramSettings? settings, string progId)
-        {
-            if (settings?.Categories == null)
-                return null;
-
-            foreach (var category in settings.Categories)
-            {
-                var item = category.Items?.GetOrDefault(progId);
-                if (item != null) return item;
-            }
-            return null;
-        }
     }
 }

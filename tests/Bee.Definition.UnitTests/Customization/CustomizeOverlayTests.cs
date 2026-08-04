@@ -168,6 +168,42 @@ namespace Bee.Definition.UnitTests.Customization
             Assert.Null(CustomizeOverlay.PickFormLayout(null, null));
         }
 
+        [Fact]
+        [DisplayName("MenuSettings：客製存在時整份取代套裝（不逐節點合併）")]
+        public void PickMenuSettings_CustomizeExists_WinsOutright()
+        {
+            var cust = new MenuSettings();
+            cust.Items!.AddEntry("tenant", "Order", "客製選單");
+            var @base = new MenuSettings();
+            @base.Items!.AddEntry("standard", "Order", "套裝選單");
+
+            Assert.Same(cust, CustomizeOverlay.PickMenuSettings(cust, @base));
+        }
+
+        [Fact]
+        [DisplayName("MenuSettings：客製不存在時回套裝；兩者皆無時回 null")]
+        public void PickMenuSettings_FallsBackThenNull()
+        {
+            var @base = new MenuSettings();
+
+            Assert.Same(@base, CustomizeOverlay.PickMenuSettings(null, @base));
+            Assert.Null(CustomizeOverlay.PickMenuSettings(null, null));
+        }
+
+        [Fact]
+        [DisplayName("ProgramSettings：攤平後仍為 per-progId 覆寫，客製未宣告者落回套裝")]
+        public void FindProgramItem_FlatRegistry_OverlaysPerProgId()
+        {
+            var cust = Settings(("Order", "Tenant.OrderBO, Tenant"));
+            var @base = Settings(("Order", "Pkg.OrderBO, Pkg"), ("Customer", "Pkg.CustomerBO, Pkg"));
+
+            Assert.Equal("Tenant.OrderBO, Tenant",
+                CustomizeOverlay.FindProgramItem(cust, @base, "Order")!.BusinessObject);
+            Assert.Equal("Pkg.CustomerBO, Pkg",
+                CustomizeOverlay.FindProgramItem(cust, @base, "Customer")!.BusinessObject);
+            Assert.Null(CustomizeOverlay.FindProgramItem(cust, @base, "Nope"));
+        }
+
         // ---- Fixtures ----
 
         private static LanguageResource Resource(params (string Key, string Value)[] items)
@@ -191,9 +227,8 @@ namespace Bee.Definition.UnitTests.Customization
         private static ProgramSettings Settings(params (string ProgId, string BusinessObject)[] items)
         {
             var settings = new ProgramSettings();
-            var category = settings.Categories!.Add("C01", "主檔");
             foreach (var (progId, bo) in items)
-                category.Items!.Add(progId, progId).BusinessObject = bo;
+                settings.Items!.Add(progId, progId).BusinessObject = bo;
             return settings;
         }
     }

@@ -1,16 +1,17 @@
 namespace Bee.Definition
 {
     /// <summary>
-    /// Path options for the tenant customization-override layer. Resolves the three
-    /// customizable artifact paths (Language, FormLayout, ProgramSettings) strictly under
-    /// <c>{CustomizePath}/{customizeId}/</c> and never falls back to the base
+    /// Path options for the tenant customization-override layer. Resolves the four
+    /// customizable artifact paths (Language, FormLayout, ProgramSettings, MenuSettings) strictly
+    /// under <c>{CustomizePath}/{customizeId}/</c> and never falls back to the base
     /// <see cref="PathOptions.DefinePath"/>.
     /// </summary>
     /// <remarks>
-    /// Only <see cref="GetLanguageFilePath"/>, <see cref="GetFormLayoutFilePath"/> and
-    /// <see cref="GetProgramSettingsFilePath"/> are overridden — the override layer serves only
-    /// those three types. Any other path method inherited from <see cref="PathOptions"/> resolves
-    /// against an empty <see cref="PathOptions.DefinePath"/> and must not be used by override-layer code.
+    /// Only <see cref="GetLanguageFilePath"/>, <see cref="GetFormLayoutFilePath"/>,
+    /// <see cref="GetProgramSettingsFilePath"/> and <see cref="GetMenuSettingsFilePath"/> are
+    /// overridden — the override layer serves only those four types. Any other path method
+    /// inherited from <see cref="PathOptions"/> resolves against an empty
+    /// <see cref="PathOptions.DefinePath"/> and must not be used by override-layer code.
     /// </remarks>
     public sealed class CustomizeOnlyPathOptions : PathOptions
     {
@@ -57,6 +58,10 @@ namespace Bee.Definition
         /// <inheritdoc/>
         public override string GetProgramSettingsFilePath()
             => System.IO.Path.Combine(_customizeRoot, "ProgramSettings.xml");
+
+        /// <inheritdoc/>
+        public override string GetMenuSettingsFilePath()
+            => System.IO.Path.Combine(_customizeRoot, "MenuSettings.xml");
 
         /// <inheritdoc/>
         public override string GetFormLayoutFilePath(string layoutId)

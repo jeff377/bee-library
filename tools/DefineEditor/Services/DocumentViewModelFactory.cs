@@ -22,6 +22,7 @@ public static class DocumentViewModelFactory
             DefineType.PermissionModels => LoadOrFallback(node, () => PermissionModelsDocumentViewModel.Load(node.FilePath!)),
             DefineType.DbCategorySettings => LoadOrFallback(node, () => DbCategorySettingsDocumentViewModel.Load(node.FilePath!)),
             DefineType.ProgramSettings => LoadOrFallback(node, () => ProgramSettingsDocumentViewModel.Load(node.FilePath!)),
+            DefineType.MenuSettings => LoadOrFallback(node, () => MenuSettingsDocumentViewModel.Load(node.FilePath!)),
             DefineType.SystemSettings => LoadOrFallback(node, () => SystemSettingsDocumentViewModel.Load(node.FilePath!)),
             DefineType.DatabaseSettings => LoadOrFallback(node, () => DatabaseSettingsDocumentViewModel.Load(node.FilePath!)),
             DefineType.TableSchema => LoadOrFallback(node, () => TableSchemaDocumentViewModel.Load(node.FilePath!)),

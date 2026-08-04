@@ -150,7 +150,8 @@ This is the whole argument in one table.
 | Insert / update / delete dispatch | **framework** | `FormBusinessObject` + repository |
 | Lookup dialog, foreign key write-back, JOIN reload | **definition + framework** | relation field + `RelationFieldMappings`; framework `GetLookup` |
 | Master-detail save as one unit | **framework** | repository, driven by the multi-table `FormSchema` |
-| Navigation menu (grouped form list) | **definition** | `ProgramSettings.xml` |
+| progId to business-object binding | **definition** | `ProgramSettings.xml` (the type registry) |
+| Navigation menu (grouped form list) | **definition** | `MenuSettings.xml` |
 | Login / session / encryption | **framework** | `SystemBusinessObject`, API pipeline |
 | **Order number, status transitions, validation, amounts** | **application code** | `OrderBO` (the only business logic in the app) |
 
@@ -215,17 +216,25 @@ There is no `FormLayout` file to write — the framework generates the layout fr
 
 This is what makes the seeder build the table on the next start (it builds every table registered here, into the database the category maps to).
 
-### 4. Put it on the menu — add to `Define/ProgramSettings.xml`
+### 4. Register the program — add to `Define/ProgramSettings.xml`
 
 ```xml
 <ProgramItem ProgId="Region" DisplayName="Regions" />
 ```
 
-`ProgramSettings.xml` *is* the app's program list — the navigation menu is built from it, so a new entry appears in the left menu. (No `BusinessObject` attribute means it uses the framework's default CRUD.)
+`ProgramSettings.xml` is the type registry: it maps a progId to the types bound to it. (No `BusinessObject` attribute means it uses the framework's default CRUD.)
 
-### 5. Restart
+### 5. Put it on the menu — add to `Define/MenuSettings.xml`
 
-Restart the server (it creates `ft_region`) and the desktop client. **Regions** is now in the left menu under Master Data, with working list, new, edit, delete, and a unique-code check from the `uk_` index — all from four definition edits, no compilation of your own code.
+```xml
+<MenuEntry Id="region" Caption="Regions" Order="60" ProgId="Region" />
+```
+
+Add it inside the `master-data` folder. `Id` is the node key and must be unique across the whole menu tree; it is separate from `ProgId` so the same program can appear in more than one place.
+
+### 6. Restart
+
+Restart the server (it creates `ft_region`) and the desktop client. **Regions** is now in the left menu under Master Data, with working list, new, edit, delete, and a unique-code check from the `uk_` index — all from five definition edits, no compilation of your own code.
 
 ## Project layout
 
@@ -236,7 +245,8 @@ apps/Bee.Northwind/
 │   ├── TableSchema/company/      business tables (company/ + common/ for framework)
 │   ├── DatabaseSettings.xml      the common + company databases
 │   ├── DbCategorySettings.xml    which tables exist, per category (drives schema build)
-│   └── ProgramSettings.xml       the program list (drives the menu + BO binding)
+│   ├── ProgramSettings.xml       the type registry (progId to business object)
+│   └── MenuSettings.xml          the navigation menu (folders, order, captions)
 ├── Bee.Northwind.Server/         JSON-RPC backend, OrderBO, JSON seed data
 ├── Bee.Northwind.UI/             Avalonia shared UI (views, view models, navigation)
 ├── Bee.Northwind.Desktop/        desktop entry point (Avalonia.Desktop)

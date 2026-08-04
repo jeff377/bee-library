@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The application's navigation menu. Each MenuEntry points at a progId registered in
+     ProgramSettings.xml; folders exist only to group them and may nest arbitrarily.
+
+     Id is the node key and is unique across the whole tree, independent of ProgId — the same
+     program may legitimately appear in several places. A shell tracks the open node by Id.
+
+     Visible is a design-time switch, not a permission: it is the same for every user. Per-user
+     visibility belongs to PermissionModels. -->
+<MenuSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Items>
+    <MenuFolder Id="master-data" Caption="Master Data" Order="10">
+      <Items>
+        <MenuEntry Id="category" Caption="Categories" Order="10" ProgId="Category" />
+        <MenuEntry Id="supplier" Caption="Suppliers" Order="20" ProgId="Supplier" />
+        <MenuEntry Id="customer" Caption="Customers" Order="30" ProgId="Customer" />
+        <MenuEntry Id="shipper" Caption="Shippers" Order="40" ProgId="Shipper" />
+        <MenuEntry Id="product" Caption="Products" Order="50" ProgId="Product" />
+      </Items>
+    </MenuFolder>
+    <MenuFolder Id="organization" Caption="Organization" Order="20">
+      <Items>
+        <MenuEntry Id="department" Caption="Departments" Order="10" ProgId="Department" />
+        <MenuEntry Id="employee" Caption="Employees" Order="20" ProgId="Employee" />
+      </Items>
+    </MenuFolder>
+    <MenuFolder Id="transactions" Caption="Transactions" Order="30">
+      <Items>
+        <MenuEntry Id="order" Caption="Orders" Order="10" ProgId="Order" />
+      </Items>
+    </MenuFolder>
+  </Items>
+</MenuSettings>

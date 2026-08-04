@@ -5,8 +5,8 @@ using Bee.Definition.Settings;
 namespace Bee.Definition.Storage
 {
     /// <summary>
-    /// Reads the tenant customization-override layer for the three customizable definition
-    /// types (Language, ProgramSettings, FormLayout). Each accessor returns the pure
+    /// Reads the tenant customization-override layer for the four customizable definition
+    /// types (Language, ProgramSettings, MenuSettings, FormLayout). Each accessor returns the pure
     /// customization content for the given customization code, or <c>null</c> when the tenant
     /// provides no override (no file) — it never falls back to nor merges with the base layer.
     /// </summary>
@@ -33,6 +33,13 @@ namespace Bee.Definition.Storage
         /// </summary>
         /// <param name="customizeId">The tenant customization code.</param>
         ProgramSettings? GetCustomizeProgramSettings(string customizeId);
+
+        /// <summary>
+        /// Gets the customization override of the menu definition for the given customization
+        /// code; <c>null</c> when no override exists.
+        /// </summary>
+        /// <param name="customizeId">The tenant customization code.</param>
+        MenuSettings? GetCustomizeMenuSettings(string customizeId);
 
         /// <summary>
         /// Gets the customization override of the form layout for the given customization code

@@ -76,7 +76,7 @@ public static class Program
         writer.WriteLine("Usage: dotnet bee <command> [options]");
         writer.WriteLine();
         writer.WriteLine("Commands:");
-        writer.WriteLine("  defines       Manage framework default define files (materialize / list)");
+        writer.WriteLine("  defines       Manage define files (materialize / list / split-menu)");
         writer.WriteLine();
         writer.WriteLine("Options:");
         writer.WriteLine("  --version, -v Print the CLI version and exit");

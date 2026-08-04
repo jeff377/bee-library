@@ -18,7 +18,7 @@ namespace Bee.Definition
         /// </summary>
         DbCategorySettings,
         /// <summary>
-        /// Program settings list.
+        /// Program type registry (progId to business object / repository bindings).
         /// </summary>
         ProgramSettings,
         /// <summary>
@@ -48,6 +48,15 @@ namespace Bee.Definition
         /// <summary>
         /// System-level unit-of-measure master (unit display decimals).
         /// </summary>
-        UnitSettings
+        UnitSettings,
+        /// <summary>
+        /// Menu definition (the presentation tree referencing registered programs).
+        /// </summary>
+        /// <remarks>
+        /// Appended rather than placed next to <see cref="ProgramSettings"/>, which reads better:
+        /// the values travel on the wire, so renumbering the existing members would be a change
+        /// with no upside.
+        /// </remarks>
+        MenuSettings
     }
 }

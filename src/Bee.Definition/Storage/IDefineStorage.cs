@@ -55,6 +55,17 @@ namespace Bee.Definition.Storage
         void SaveProgramSettings(ProgramSettings settings);
 
         /// <summary>
+        /// Gets the menu definition.
+        /// </summary>
+        MenuSettings? GetMenuSettings();
+
+        /// <summary>
+        /// Saves the menu definition.
+        /// </summary>
+        /// <param name="settings">The menu definition.</param>
+        void SaveMenuSettings(MenuSettings settings);
+
+        /// <summary>
         /// Gets the table schema for the specified category and table.
         /// </summary>
         /// <param name="categoryId">The database category id.</param>

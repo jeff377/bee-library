@@ -102,6 +102,7 @@ namespace Bee.ObjectCaching.UnitTests
 
             public LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns) => null;
             public ProgramSettings? GetCustomizeProgramSettings(string customizeId) => null;
+            public MenuSettings? GetCustomizeMenuSettings(string customizeId) => null;
         }
     }
 }

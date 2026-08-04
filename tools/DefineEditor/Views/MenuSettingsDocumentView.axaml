@@ -8,34 +8,72 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
-             x:Class="Bee.DefineEditor.Views.ProgramSettingsDocumentView"
-             x:DataType="vm:ProgramSettingsDocumentViewModel"
+             x:Class="Bee.DefineEditor.Views.MenuSettingsDocumentView"
+             x:DataType="vm:MenuSettingsDocumentViewModel"
              x:CompileBindings="True">
 
     <UserControl.DataTemplates>
-        <DataTemplate DataType="settings:ProgramItem">
-            <StackPanel x:DataType="settings:ProgramItem" Spacing="2">
-                <TextBlock Classes="h2" Text="{loc:Loc Program_ProgramProps}" Margin="0,0,0,8"/>
+        <DataTemplate DataType="settings:MenuFolder">
+            <StackPanel x:DataType="settings:MenuFolder" Spacing="2">
+                <TextBlock Classes="h2" Text="{loc:Loc Menu_FolderProps}" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
+                    <TextBlock Classes="label" Text="Id"/>
+                    <TextBox Text="{Binding Id, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
+                    <TextBlock Classes="label" Text="Caption"/>
+                    <TextBox Text="{Binding Caption, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
+                    <TextBlock Classes="label" Text="Order"/>
+                    <NumericUpDown Value="{Binding Order, Mode=TwoWay}" FormatString="0" Increment="10"/>
+                </DockPanel>
+                <DockPanel Classes="row">
+                    <TextBlock Classes="label" Text="Icon"/>
+                    <TextBox Text="{Binding Icon, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
+                    <TextBlock Classes="label" Text="Visible"/>
+                    <CheckBox IsChecked="{Binding Visible, Mode=TwoWay}"/>
+                </DockPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="settings:MenuEntry">
+            <StackPanel x:DataType="settings:MenuEntry" Spacing="2">
+                <TextBlock Classes="h2" Text="{loc:Loc Menu_EntryProps}" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
+                    <TextBlock Classes="label" Text="Id"/>
+                    <TextBox Text="{Binding Id, Mode=TwoWay}"/>
+                </DockPanel>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ProgId"/>
                     <TextBox Text="{Binding ProgId, Mode=TwoWay}"/>
                 </DockPanel>
                 <DockPanel Classes="row">
-                    <TextBlock Classes="label" Text="DisplayName"/>
-                    <TextBox Text="{Binding DisplayName, Mode=TwoWay}"/>
+                    <TextBlock Classes="label" Text="Caption"/>
+                    <TextBox Text="{Binding Caption, Mode=TwoWay}"/>
                 </DockPanel>
                 <DockPanel Classes="row">
-                    <TextBlock Classes="label" Text="BusinessObject"/>
-                    <TextBox Text="{Binding BusinessObject, Mode=TwoWay}"/>
+                    <TextBlock Classes="label" Text="Order"/>
+                    <NumericUpDown Value="{Binding Order, Mode=TwoWay}" FormatString="0" Increment="10"/>
+                </DockPanel>
+                <DockPanel Classes="row">
+                    <TextBlock Classes="label" Text="Icon"/>
+                    <TextBox Text="{Binding Icon, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
+                    <TextBlock Classes="label" Text="Visible"/>
+                    <CheckBox IsChecked="{Binding Visible, Mode=TwoWay}"/>
                 </DockPanel>
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate DataType="settings:ProgramSettings">
+        <DataTemplate DataType="settings:MenuSettings">
             <StackPanel Spacing="6">
-                <TextBlock Classes="h2" Text="{loc:Loc Program_RootSubtitle}"/>
+                <TextBlock Classes="h2" Text="{loc:Loc Menu_RootSubtitle}"/>
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="{loc:Loc Program_RootHint}"/>
+                           Text="{loc:Loc Menu_RootHint}"/>
             </StackPanel>
         </DataTemplate>
     </UserControl.DataTemplates>
@@ -80,9 +118,16 @@
                 </TreeView.Styles>
                 <TreeView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="{loc:Loc Program_AddProgram}"
-                                  Command="{Binding AddProgramCommand}"
-                                  IsVisible="{Binding SelectedKindIsRoot}">
+                        <MenuItem Header="{loc:Loc Menu_AddFolder}"
+                                  Command="{Binding AddFolderCommand}"
+                                  IsVisible="{Binding SelectedKindCanOwnChildren}">
+                            <MenuItem.Icon>
+                                <PathIcon Data="{StaticResource IconAdd}" Width="14" Height="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="{loc:Loc Menu_AddEntry}"
+                                  Command="{Binding AddEntryCommand}"
+                                  IsVisible="{Binding SelectedKindCanOwnChildren}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconBox}" Width="14" Height="14"/>
                             </MenuItem.Icon>

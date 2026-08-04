@@ -29,10 +29,9 @@ namespace Bee.Business.UnitTests
         private static ProgramSettings BuildSettings(params (string progId, string? businessObject)[] items)
         {
             var settings = new ProgramSettings();
-            var category = settings.Categories!.Add("C01", "主檔");
             foreach (var (progId, businessObject) in items)
             {
-                var item = category.Items!.Add(progId, progId);
+                var item = settings.Items!.Add(progId, progId);
                 if (businessObject != null) item.BusinessObject = businessObject;
             }
             return settings;
@@ -126,7 +125,7 @@ namespace Bee.Business.UnitTests
 
             // Mutate the BusinessObject after first resolve; if cache works the
             // second call must still return the original type.
-            settings.Categories!["C01"].Items!["P001"].BusinessObject = "Garbage, Garbage";
+            settings.Items!["P001"].BusinessObject = "Garbage, Garbage";
 
             var second = resolver.Resolve("P001");
 

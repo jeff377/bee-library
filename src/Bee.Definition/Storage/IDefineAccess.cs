@@ -59,6 +59,34 @@ namespace Bee.Definition.Storage
         void SaveProgramSettings(ProgramSettings settings);
 
         /// <summary>
+        /// Gets the base-layer menu definition.
+        /// </summary>
+        /// <remarks>
+        /// Default implementation delegates to <see cref="GetDefine"/>; <c>CacheDefineAccess</c>
+        /// overrides it with its cache path.
+        /// </remarks>
+        MenuSettings GetMenuSettings() => (MenuSettings)GetDefine(DefineType.MenuSettings);
+
+        /// <summary>
+        /// Gets the menu definition for the supplied customization code. The customization menu
+        /// replaces the base menu outright — a menu is one arrangement, so per-node merging would
+        /// produce combinations no author intended.
+        /// </summary>
+        /// <param name="customizeId">The tenant customization code; empty resolves against the base layer only.</param>
+        /// <remarks>
+        /// Default implementation ignores <paramref name="customizeId"/> and delegates to
+        /// <see cref="GetMenuSettings()"/> — an access layer without customization support behaves
+        /// as the base layer. <c>CacheDefineAccess</c> overrides this to overlay.
+        /// </remarks>
+        MenuSettings GetMenuSettings(string customizeId) => GetMenuSettings();
+
+        /// <summary>
+        /// Saves the menu definition.
+        /// </summary>
+        /// <param name="settings">The menu definition.</param>
+        void SaveMenuSettings(MenuSettings settings) => SaveDefine(DefineType.MenuSettings, settings);
+
+        /// <summary>
         /// Gets the permission model registry.
         /// </summary>
         /// <remarks>

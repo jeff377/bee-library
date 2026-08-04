@@ -146,6 +146,7 @@ namespace Bee.Hosting.UnitTests
             public LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns) => null;
             public ProgramSettings? GetCustomizeProgramSettings(string customizeId) => null;
             public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId) => null;
+            public MenuSettings? GetCustomizeMenuSettings(string customizeId) => null;
 
             public DbCategorySettings? GetDbCategorySettings() => null;
             public void SaveDbCategorySettings(DbCategorySettings settings) { }
@@ -159,6 +160,8 @@ namespace Bee.Hosting.UnitTests
             public void SaveFormSchema(FormSchema formSchema) { }
             public ProgramSettings? GetProgramSettings() => null;
             public void SaveProgramSettings(ProgramSettings settings) { }
+            public MenuSettings? GetMenuSettings() => null;
+            public void SaveMenuSettings(MenuSettings settings) { }
             public FormLayout? GetFormLayout(string layoutId) => null;
             public void SaveFormLayout(FormLayout formLayout) { }
             public LanguageResource? GetLanguage(string lang, string ns) => null;

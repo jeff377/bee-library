@@ -71,6 +71,52 @@ namespace Bee.ObjectCaching.UnitTests
             Assert.IsType<ProgramSettings>(result);
         }
 
+        // ── MenuSettings ─────────────────────────────────────────────────────
+
+        [Fact]
+        [DisplayName("SaveMenuSettings 應寫入 MenuSettings.xml，GetDefine 應回傳 MenuSettings 實例")]
+        public void SaveAndGetMenuSettings_RoundTrips()
+        {
+            using var temp = new TempDir();
+            var access = CreateAccess(temp.Options);
+            var settings = new MenuSettings();
+            settings.Items!.AddFolder("sales", "銷售").Items!.AddEntry("order", "Order", "訂單");
+
+            access.SaveMenuSettings(settings);
+
+            Assert.True(File.Exists(temp.Options.GetMenuSettingsFilePath()));
+            var result = Assert.IsType<MenuSettings>(access.GetDefine(DefineType.MenuSettings));
+            Assert.NotNull(result.FindNode("order"));
+        }
+
+        [Fact]
+        [DisplayName("無 MenuSettings.xml 時 GetMenuSettings 應回傳空選單而非 null")]
+        public void GetMenuSettings_NoFile_ReturnsEmptyMenu()
+        {
+            using var temp = new TempDir();
+            var access = CreateAccess(temp.Options);
+
+            var result = access.GetMenuSettings();
+
+            Assert.NotNull(result);
+            Assert.Empty(result.Items!);
+        }
+
+        [Fact]
+        [DisplayName("未帶客製碼時 GetMenuSettings(customizeId) 應回傳 base 選單")]
+        public void GetMenuSettings_EmptyCustomizeId_ReturnsBase()
+        {
+            using var temp = new TempDir();
+            var access = CreateAccess(temp.Options);
+            var settings = new MenuSettings();
+            settings.Items!.AddEntry("order", "Order", "訂單");
+            access.SaveMenuSettings(settings);
+
+            var result = access.GetMenuSettings(string.Empty);
+
+            Assert.NotNull(result.FindNode("order"));
+        }
+
         // ── PermissionModels ─────────────────────────────────────────────────
 
         [Fact]

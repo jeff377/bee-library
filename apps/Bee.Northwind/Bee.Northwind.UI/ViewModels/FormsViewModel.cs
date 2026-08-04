@@ -14,12 +14,16 @@ namespace Bee.Northwind.UI.ViewModels;
 /// <see cref="TogglePaneCommand"/>.
 /// </summary>
 /// <remarks>
-/// The menu is built from <see cref="ProgramSettings"/> fetched from the server, so the
-/// navigation is pure definition — adding a form to the menu is a ProgramSettings.xml entry,
-/// not a code change. The fetch goes through <see cref="ClientInfo.DefineAccess"/>, the async
-/// typed definition cache; it is safe on the single browser-wasm thread (no sync-over-async
-/// bridge) and serves later reads from cache. It runs once, right after login, when the
-/// session token is already set.
+/// The menu is built from <see cref="MenuSettings"/> fetched from the server, so the navigation
+/// is pure definition — adding a form to the menu is a MenuSettings.xml entry, not a code change.
+/// The fetch goes through <see cref="ClientInfo.DefineAccess"/>, the async typed definition cache;
+/// it is safe on the single browser-wasm thread (no sync-over-async bridge) and serves later reads
+/// from cache. It runs once, right after login, when the session token is already set.
+/// <para>
+/// The definition allows folders to nest arbitrarily, while this shell's menu is a flat list of
+/// headers and links, so nested folders are flattened into successive header rows. A shell with a
+/// tree control would bind the node hierarchy directly instead.
+/// </para>
 /// </remarks>
 public partial class FormsViewModel : ViewModelBase
 {
@@ -44,16 +48,16 @@ public partial class FormsViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Builds the menu from the server's <see cref="ProgramSettings"/>: each category becomes a
-    /// header row, each program item a form link.
+    /// Builds the menu from the server's <see cref="MenuSettings"/>: each folder becomes a header
+    /// row, each entry a form link.
     /// </summary>
     private async Task LoadNavItemsAsync()
     {
-        ProgramSettings settings;
+        MenuSettings settings;
         try
         {
             settings = await ClientInfo.DefineAccess
-                .GetProgramSettingsAsync()
+                .GetMenuSettingsAsync()
                 .ConfigureAwait(true);
         }
         catch (Exception ex)
@@ -64,14 +68,31 @@ public partial class FormsViewModel : ViewModelBase
             return;
         }
 
-        if (settings?.Categories is null) { return; }
+        AddNodes(settings?.Items);
+    }
 
-        foreach (var category in settings.Categories)
+    /// <summary>
+    /// Appends one level of menu nodes, recursing into folders.
+    /// </summary>
+    /// <param name="nodes">The nodes to append; <c>null</c> appends nothing.</param>
+    private void AddNodes(MenuNodeCollection? nodes)
+    {
+        if (nodes is null) { return; }
+
+        // GetDisplayNodes applies Order and the Visible switch, so every UI head orders the menu
+        // the same way.
+        foreach (var node in nodes.GetDisplayNodes())
         {
-            NavItems.Add(NavItem.Header(category.DisplayName));
-            if (category.Items is null) { continue; }
-            foreach (var item in category.Items)
-                NavItems.Add(NavItem.Form(item.DisplayName, item.ProgId));
+            switch (node)
+            {
+                case MenuFolder folder:
+                    NavItems.Add(NavItem.Header(folder.Caption));
+                    AddNodes(folder.Items);
+                    break;
+                case MenuEntry entry:
+                    NavItems.Add(NavItem.Form(entry.Caption, entry.ProgId));
+                    break;
+            }
         }
     }
 

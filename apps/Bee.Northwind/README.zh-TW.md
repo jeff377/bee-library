@@ -147,7 +147,8 @@ Northwind 是正規化的關聯式 schema；bee 是 `sys_rowid`（Guid）關連�
 | 新增／修改／刪除分派 | **框架** | `FormBusinessObject` + repository |
 | Lookup 對話框、外鍵寫回、JOIN 重載 | **定義 + 框架** | 關連欄位 + `RelationFieldMappings`；框架 `GetLookup` |
 | Master-detail 整筆一次儲存 | **框架** | repository，由多表 `FormSchema` 驅動 |
-| 導航選單（分組表單清單） | **定義** | `ProgramSettings.xml` |
+| progId 對業務物件的綁定 | **定義** | `ProgramSettings.xml`（型別註冊表） |
+| 導航選單（分組表單清單） | **定義** | `MenuSettings.xml` |
 | 登入／工作階段／加密 | **框架** | `SystemBusinessObject`、API 管線 |
 | **單據編號、狀態轉移、驗證、金額** | **應用程式碼** | `OrderBO`（全應用唯一的業務邏輯） |
 
@@ -212,17 +213,25 @@ Region 是業務資料,所以放在 **company** 分類(`TableSchema/company/`),�
 
 這讓 seeder 在下次啟動時建立此表（它會把此處註冊的每一張表，建到該分類對應的資料庫）。
 
-### 4. 放上選單 —— 加到 `Define/ProgramSettings.xml`
+### 4. 註冊程式 —— 加到 `Define/ProgramSettings.xml`
 
 ```xml
 <ProgramItem ProgId="Region" DisplayName="Regions" />
 ```
 
-`ProgramSettings.xml` **就是**應用的程式清單 —— 導航選單由它建立，新項目會出現在左側選單。（沒有 `BusinessObject` 屬性，代表使用框架預設 CRUD。）
+`ProgramSettings.xml` 是型別註冊表：把 progId 對應到綁定於它的型別。（沒有 `BusinessObject` 屬性，代表使用框架預設 CRUD。）
 
-### 5. 重啟
+### 5. 放上選單 —— 加到 `Define/MenuSettings.xml`
 
-重啟 server（它會建立 `ft_region`）與桌面前端。**Regions** 現在出現在左側選單的 Master Data 之下，具備可用的清單、新增、修改、刪除，以及來自 `uk_` 索引的唯一代碼檢查 —— 全部來自四處定義修改，不編譯你自己的任何程式碼。
+```xml
+<MenuEntry Id="region" Caption="Regions" Order="60" ProgId="Region" />
+```
+
+放進 `master-data` 資料夾內。`Id` 是節點的 key、需全樹唯一；它與 `ProgId` 分離，因此同一支程式可以出現在選單的多個位置。
+
+### 6. 重啟
+
+重啟 server（它會建立 `ft_region`）與桌面前端。**Regions** 現在出現在左側選單的 Master Data 之下，具備可用的清單、新增、修改、刪除，以及來自 `uk_` 索引的唯一代碼檢查 —— 全部來自五處定義修改，不編譯你自己的任何程式碼。
 
 ## 專案結構
 
@@ -233,7 +242,8 @@ apps/Bee.Northwind/
 │   ├── TableSchema/company/      業務表（company/ + common/ 放框架表）
 │   ├── DatabaseSettings.xml      common + company 兩個資料庫
 │   ├── DbCategorySettings.xml    各分類有哪些表（驅動建表）
-│   └── ProgramSettings.xml       程式清單（驅動選單 + BO 綁定）
+│   ├── ProgramSettings.xml       型別註冊表（progId 對業務物件）
+│   └── MenuSettings.xml          導航選單（資料夾、排序、標題）
 ├── Bee.Northwind.Server/         JSON-RPC 後端、OrderBO、JSON 種子資料
 ├── Bee.Northwind.UI/             Avalonia 共用 UI（views、view models、導航）
 ├── Bee.Northwind.Desktop/        桌面進入點（Avalonia.Desktop）

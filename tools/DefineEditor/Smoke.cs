@@ -108,6 +108,7 @@ internal static class Smoke
             RunPermissionModelsSmoke,
             RunDbCategorySettingsSmoke,
             RunProgramSettingsSmoke,
+            RunMenuSettingsSmoke,
             RunSystemSettingsSmoke,
             RunDatabaseSettingsSmoke,
             RunConnectionStringParserSmoke,
@@ -207,33 +208,68 @@ internal static class Smoke
         try
         {
             var root = new ProgramSettings();
-            var cat = new ProgramCategory("hr", "人事");
-            cat.Items!.Add(new ProgramItem { ProgId = "Employee", DisplayName = "員工", BusinessObject = "EmployeeBO" });
-            root.Categories!.Add(cat);
+            root.Items!.Add(new ProgramItem { ProgId = "Employee", DisplayName = "員工", BusinessObject = "EmployeeBO" });
             Bee.Base.Serialization.XmlCodec.SerializeToFile(root, target);
 
             var vm = ProgramSettingsDocumentViewModel.Load(target);
-            var loadedCat = vm.Root.Categories!.FirstOrDefault(c => c.Id == "hr");
-            if (loadedCat is null) return Fail(61, "ProgramCategory missing after reload");
-            var loadedProg = loadedCat.Items?.FirstOrDefault(p => p.ProgId == "Employee");
-            if (loadedProg?.BusinessObject != "EmployeeBO")
-                return Fail(62, $"ProgramItem.BusinessObject expected 'EmployeeBO' got '{loadedProg?.BusinessObject}'");
+            var loadedProg = vm.Root.Items?.FirstOrDefault(p => p.ProgId == "Employee");
+            if (loadedProg is null) return Fail(61, "ProgramItem missing after reload");
+            if (loadedProg.BusinessObject != "EmployeeBO")
+                return Fail(62, $"ProgramItem.BusinessObject expected 'EmployeeBO' got '{loadedProg.BusinessObject}'");
 
             vm.SelectedTreeNode = vm.Roots[0];
-            vm.AddCategoryCommand.Execute(null);
-            var newCat = vm.Root.Categories!.Last();
-            newCat.DisplayName = "SmokeNew";
+            vm.AddProgramCommand.Execute(null);
+            var added = vm.Root.Items!.Last();
+            added.DisplayName = "SmokeNew";
             vm.SaveCommand.Execute(null);
 
             var vm2 = ProgramSettingsDocumentViewModel.Load(target);
-            if (vm2.Root.Categories!.LastOrDefault()?.DisplayName != "SmokeNew")
-                return Fail(63, "New ProgramCategory did not round-trip");
+            if (vm2.Root.Items!.LastOrDefault()?.DisplayName != "SmokeNew")
+                return Fail(63, "New ProgramItem did not round-trip");
 
             vm2.ValidateCommand.Execute(null);
             Console.WriteLine($"[smoke:program] OK ({vm2.Issues.Count} non-error issues)");
             return 0;
         }
         catch (Exception ex) { return Fail(64, $"ProgramSettings smoke crashed: {ex.Message}"); }
+        finally { TryDelete(tempDir); }
+    }
+
+    private static int RunMenuSettingsSmoke()
+    {
+        var tempDir = MakeTempDir("menu");
+        var target = Path.Combine(tempDir, "MenuSettings.xml");
+        try
+        {
+            var root = new MenuSettings();
+            var folder = root.Items!.AddFolder("hr", "人事");
+            folder.Items!.AddEntry("employee", "Employee", "員工");
+            Bee.Base.Serialization.XmlCodec.SerializeToFile(root, target);
+
+            var vm = MenuSettingsDocumentViewModel.Load(target);
+            if (vm.Root.FindNode("hr") is not MenuFolder loadedFolder)
+                return Fail(65, "MenuFolder missing after reload");
+            if (vm.Root.FindNode("employee") is not MenuEntry loadedEntry || loadedEntry.ProgId != "Employee")
+                return Fail(66, "MenuEntry.ProgId did not round-trip");
+
+            // Adding under the folder proves the nested owner path, which is the part a flat
+            // settings editor does not exercise.
+            vm.SelectedTreeNode = vm.Roots[0].Children.First();
+            vm.AddEntryCommand.Execute(null);
+            var added = (MenuEntry)loadedFolder.Items!.Last();
+            added.Caption = "SmokeNew";
+            added.ProgId = "Employee";
+            vm.SaveCommand.Execute(null);
+
+            var vm2 = MenuSettingsDocumentViewModel.Load(target);
+            if (vm2.Root.EnumerateNodes().OfType<MenuEntry>().LastOrDefault()?.Caption != "SmokeNew")
+                return Fail(67, "New MenuEntry did not round-trip");
+
+            vm2.ValidateCommand.Execute(null);
+            Console.WriteLine($"[smoke:menu] OK ({vm2.Issues.Count} non-error issues)");
+            return 0;
+        }
+        catch (Exception ex) { return Fail(68, $"MenuSettings smoke crashed: {ex.Message}"); }
         finally { TryDelete(tempDir); }
     }
 

@@ -213,6 +213,108 @@ namespace Bee.Definition.UnitTests.Storage
             });
         }
 
+        [Fact]
+        [DisplayName("SaveMenuSettings / GetMenuSettings 應可寫入後讀回巢狀結構")]
+        public void SaveAndGetMenuSettings_RoundTrips()
+        {
+            WithTempDefinePath(paths =>
+            {
+                // Arrange
+                var storage = new FileDefineStorage(paths);
+                var settings = new MenuSettings();
+                var folder = settings.Items!.AddFolder("sales", "銷售");
+                folder.Items!.AddEntry("sales-order", "Order", "訂單");
+
+                // Act
+                storage.SaveMenuSettings(settings);
+                var restored = storage.GetMenuSettings();
+
+                // Assert
+                Assert.NotNull(restored);
+                var restoredFolder = Assert.IsType<MenuFolder>(restored!.Items!.Single());
+                var entry = Assert.IsType<MenuEntry>(restoredFolder.Items!.Single());
+                Assert.Equal("Order", entry.ProgId);
+            });
+        }
+
+        [Fact]
+        [DisplayName("MenuSettings.xml 不存在時 GetMenuSettings 應回傳 null（無選單的部署屬正常）")]
+        public void GetMenuSettings_FileMissing_ReturnsNull()
+        {
+            WithTempDefinePath(paths =>
+            {
+                var storage = new FileDefineStorage(paths);
+
+                Assert.Null(storage.GetMenuSettings());
+            });
+        }
+
+        [Fact]
+        [DisplayName("MenuSettings 全樹 Id 重複時 GetMenuSettings 應於載入期拋出")]
+        public void GetMenuSettings_DuplicateIdAcrossTree_Throws()
+        {
+            WithTempDefinePath(paths =>
+            {
+                // Written by hand: the collection would reject the duplicate if it were built in
+                // memory, which is precisely why the tree walk has to run at load time.
+                File.WriteAllText(paths.GetMenuSettingsFilePath(), """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <MenuSettings>
+                      <Items>
+                        <MenuFolder Id="dup" Caption="資料夾">
+                          <Items><MenuEntry Id="dup" ProgId="Order" Caption="訂單" /></Items>
+                        </MenuFolder>
+                      </Items>
+                    </MenuSettings>
+                    """);
+                var storage = new FileDefineStorage(paths);
+
+                var ex = Assert.Throws<InvalidOperationException>(() => storage.GetMenuSettings());
+                Assert.Contains("'dup'", ex.Message, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        [DisplayName("舊版巢狀 ProgramSettings.xml 應於載入期拋出並指向遷移命令，而非靜默讀成空註冊表")]
+        public void GetProgramSettings_LegacyLayout_ThrowsPointingAtMigration()
+        {
+            WithTempDefinePath(paths =>
+            {
+                File.WriteAllText(paths.GetProgramSettingsFilePath(), """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <ProgramSettings>
+                      <Categories>
+                        <ProgramCategory Id="master-data" DisplayName="主檔">
+                          <Items><ProgramItem ProgId="Customer" DisplayName="客戶" /></Items>
+                        </ProgramCategory>
+                      </Categories>
+                    </ProgramSettings>
+                    """);
+                var storage = new FileDefineStorage(paths);
+
+                var ex = Assert.Throws<NotSupportedException>(() => storage.GetProgramSettings());
+                Assert.Contains("split-menu", ex.Message, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        [DisplayName("攤平後的註冊表項目（含 BusinessObject）應可寫入後讀回")]
+        public void SaveAndGetProgramSettings_FlatItems_RoundTrip()
+        {
+            WithTempDefinePath(paths =>
+            {
+                var storage = new FileDefineStorage(paths);
+                var settings = new ProgramSettings();
+                settings.Items!.Add("Order", "訂單").BusinessObject = "MyErp.OrderBO, MyErp";
+
+                storage.SaveProgramSettings(settings);
+                var restored = storage.GetProgramSettings();
+
+                Assert.NotNull(restored);
+                Assert.Equal("MyErp.OrderBO, MyErp", restored!.Items!["Order"].BusinessObject);
+            });
+        }
+
         /// <summary>
         /// 建立新的臨時目錄並把對應的 <see cref="PathOptions"/> 傳給 <paramref name="action"/>，
         /// 測試結束後刪除目錄。Tests inject the supplied <see cref="PathOptions"/> directly into

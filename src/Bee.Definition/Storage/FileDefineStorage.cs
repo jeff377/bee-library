@@ -3,6 +3,7 @@ using Bee.Definition.Forms;
 using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
+using Bee.Base;
 using Bee.Base.Serialization;
 
 namespace Bee.Definition.Storage
@@ -95,11 +96,22 @@ namespace Bee.Definition.Storage
         /// <summary>
         /// Gets the program settings.
         /// </summary>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the file still uses the pre-flattening nested layout, which XmlSerializer
+        /// would otherwise read as an empty registry without complaint.
+        /// </exception>
         public ProgramSettings? GetProgramSettings()
         {
             string filePath = _paths.GetProgramSettingsFilePath();
             ValidateFilePath(filePath);
-            return XmlCodec.DeserializeFromFile<ProgramSettings>(filePath);
+            // Read the text first so the layout can be checked: an un-migrated file deserializes
+            // cleanly into zero entries, and the resulting "every progId falls back to the default"
+            // is far harder to diagnose than an error naming the migration command.
+            string xml = FileUtilities.FileReadText(filePath);
+            ProgramSettingsFormat.EnsureCurrentFormat(xml, filePath);
+            var settings = XmlCodec.Deserialize<ProgramSettings>(xml);
+            settings?.SetObjectFilePath(filePath);
+            return settings;
         }
 
         /// <summary>
@@ -109,6 +121,35 @@ namespace Bee.Definition.Storage
         public void SaveProgramSettings(ProgramSettings settings)
         {
             string filePath = _paths.GetProgramSettingsFilePath();
+            XmlCodec.SerializeToFile(settings, filePath);
+        }
+
+        /// <summary>
+        /// Gets the menu definition. Returns <c>null</c> when the file does not exist — a host that
+        /// ships no menu (a service with no UI, or one whose shell builds navigation its own way)
+        /// is a normal deployment, not a misconfiguration.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown when the menu tree is structurally invalid.</exception>
+        public MenuSettings? GetMenuSettings()
+        {
+            string filePath = _paths.GetMenuSettingsFilePath();
+            if (!File.Exists(filePath))
+                return null;
+            var settings = XmlCodec.DeserializeFromFile<MenuSettings>(filePath);
+            // Cross-tree id uniqueness cannot be expressed by the collection, so it is enforced
+            // where the definition is read. The registry is not available here, so ProgId
+            // references are left to the editor and the CLI.
+            settings?.EnsureValid();
+            return settings;
+        }
+
+        /// <summary>
+        /// Saves the menu definition.
+        /// </summary>
+        /// <param name="settings">The menu definition.</param>
+        public void SaveMenuSettings(MenuSettings settings)
+        {
+            string filePath = _paths.GetMenuSettingsFilePath();
             XmlCodec.SerializeToFile(settings, filePath);
         }
 
@@ -235,6 +276,7 @@ namespace Bee.Definition.Storage
                 DefineType.CurrencySettings => [_paths.GetCurrencySettingsFilePath()],
                 DefineType.UnitSettings => [_paths.GetUnitSettingsFilePath()],
                 DefineType.ProgramSettings => [_paths.GetProgramSettingsFilePath()],
+                DefineType.MenuSettings => [_paths.GetMenuSettingsFilePath()],
                 DefineType.FormSchema when keys.Length >= 1 => [_paths.GetFormSchemaFilePath(keys[0])],
                 DefineType.FormLayout when keys.Length >= 1 => [_paths.GetFormLayoutFilePath(keys[0])],
                 DefineType.TableSchema when keys.Length >= 2 => [_paths.GetTableSchemaFilePath(keys[0], keys[1])],

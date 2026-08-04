@@ -94,6 +94,8 @@ namespace Bee.ObjectCaching
                     return this.GetDatabaseSettings();
                 case DefineType.ProgramSettings:
                     return  this.GetProgramSettings();
+                case DefineType.MenuSettings:
+                    return this.GetMenuSettings();
                 case DefineType.PermissionModels:
                     return this.GetPermissionModels();
                 case DefineType.DbCategorySettings:
@@ -149,6 +151,9 @@ namespace Bee.ObjectCaching
                     break;
                 case DefineType.ProgramSettings:
                     this.SaveProgramSettings((defineObject as ProgramSettings)!);
+                    break;
+                case DefineType.MenuSettings:
+                    this.SaveMenuSettings((defineObject as MenuSettings)!);
                     break;
                 case DefineType.PermissionModels:
                     this.SavePermissionModels((defineObject as PermissionModels)!);
@@ -243,6 +248,40 @@ namespace Bee.ObjectCaching
             // Save program settings through the active storage, then invalidate the cache.
             _storage.SaveProgramSettings(settings);
             _cache.ProgramSettings.Remove();
+        }
+
+        /// <summary>
+        /// Gets the base-layer menu definition.
+        /// </summary>
+        public MenuSettings GetMenuSettings()
+        {
+            return _cache.MenuSettings.Get()!;
+        }
+
+        /// <summary>
+        /// Gets the menu definition for the supplied customization code; the customization menu
+        /// replaces the base menu outright.
+        /// </summary>
+        /// <param name="customizeId">The tenant customization code; empty resolves against the base layer only.</param>
+        public MenuSettings GetMenuSettings(string customizeId)
+        {
+            var custom = !string.IsNullOrEmpty(customizeId) && _customizeReader is not null
+                ? _customizeReader.GetCustomizeMenuSettings(customizeId)
+                : null;
+            // Which layer wins is decided by CustomizeOverlay — the same class a client runs over
+            // the two copies it fetched, so both ends select identically.
+            return CustomizeOverlay.PickMenuSettings(custom, GetMenuSettings())!;
+        }
+
+        /// <summary>
+        /// Saves the menu definition.
+        /// </summary>
+        /// <param name="settings">The menu definition.</param>
+        public void SaveMenuSettings(MenuSettings settings)
+        {
+            // Save the menu through the active storage, then invalidate the cache.
+            _storage.SaveMenuSettings(settings);
+            _cache.MenuSettings.Remove();
         }
 
         /// <summary>

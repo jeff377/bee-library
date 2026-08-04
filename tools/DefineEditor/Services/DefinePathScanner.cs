@@ -18,6 +18,7 @@ public static class DefinePathScanner
         new("DatabaseSettings.xml", DefineType.DatabaseSettings, "DatabaseSettings", "DefDatabaseSettings"),
         new("DbCategorySettings.xml", DefineType.DbCategorySettings, "DbCategorySettings", "DefDbCategorySettings"),
         new("ProgramSettings.xml", DefineType.ProgramSettings, "ProgramSettings", "DefProgramSettings"),
+        new("MenuSettings.xml", DefineType.MenuSettings, "MenuSettings", "DefMenuSettings"),
         new("PermissionModels.xml", DefineType.PermissionModels, "PermissionModels", "DefPermissionModels"),
     };
 

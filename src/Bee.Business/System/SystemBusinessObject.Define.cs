@@ -23,7 +23,13 @@ namespace Bee.Business.System
         private GetDefineResult GetDefineCore(GetDefineArgs args)
         {
             var result = new GetDefineResult();
-            object value = DefineAccess.GetDefine(args.DefineType, args.Keys);
+            // The menu is the one definition served here that carries a tenant overlay, and the
+            // overlay is whole-file, so the resolved menu is returned rather than the two layers.
+            // The customization code comes from the session, never from the arguments — accepting
+            // it from the caller would let anyone read any tenant's menu.
+            object value = args.DefineType == DefineType.MenuSettings
+                ? DefineAccess.GetMenuSettings(GetCurrentCustomizeId())
+                : DefineAccess.GetDefine(args.DefineType, args.Keys);
 
             if (value != null)
             {
@@ -41,17 +47,33 @@ namespace Bee.Business.System
         }
 
         /// <summary>
-        /// Gets definition data (public). Sensitive definitions such as SystemSettings and DatabaseSettings are excluded.
+        /// Gets definition data (public). Server-side definitions — SystemSettings,
+        /// DatabaseSettings and ProgramSettings — are excluded from remote calls.
         /// </summary>
+        /// <remarks>
+        /// ProgramSettings joined that list when it became the pure type registry: it holds
+        /// assembly-qualified type names, no client has any use for them, and the menu that clients
+        /// actually need moved to <c>MenuSettings</c>.
+        /// </remarks>
         /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual GetDefineResult GetDefine(GetDefineArgs args)
         {
-            // Non-local calls are not permitted to access SystemSettings or DatabaseSettings
-            if ((args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings) && !IsLocalCall)
+            // Non-local calls are not permitted to access the server-side definition types.
+            if (IsServerOnlyDefine(args.DefineType) && !IsLocalCall)
                 throw new NotSupportedException("The specified DefineType is not supported.");
             return GetDefineCore(args);
         }
+
+        /// <summary>
+        /// Returns whether the definition type is server-side only and therefore unavailable to
+        /// remote callers.
+        /// </summary>
+        /// <param name="defineType">The definition type in question.</param>
+        private static bool IsServerOnlyDefine(DefineType defineType)
+            => defineType is DefineType.SystemSettings
+                          or DefineType.DatabaseSettings
+                          or DefineType.ProgramSettings;
 
         /// <summary>
         /// Returns the raw <see cref="FormSchema"/> definition as XML.

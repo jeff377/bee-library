@@ -7,7 +7,7 @@ using Bee.Definition.Storage;
 namespace Bee.ObjectCaching
 {
     /// <summary>
-    /// Default <see cref="ICustomizeDefineReader"/>: reads the three customizable types from the
+    /// Default <see cref="ICustomizeDefineReader"/>: reads the four customizable types from the
     /// per-customization-code override containers supplied by an
     /// <see cref="ICacheContainerProvider"/>. Hits return the cached read-only instance; a missing
     /// override file returns <c>null</c> without falling back to the base layer.
@@ -51,6 +51,22 @@ namespace Bee.ObjectCaching
             if (!File.Exists(custPaths.GetProgramSettingsFilePath()))
                 return null;
             return _provider.For(customizeId).ProgramSettings.Get();
+        }
+
+        /// <inheritdoc/>
+        public MenuSettings? GetCustomizeMenuSettings(string customizeId)
+        {
+            if (!IsCustomizeEnabled(customizeId))
+                return null;
+
+            // MenuSettingsCache substitutes an empty menu when the file is absent, which is the
+            // right answer for the base layer but not here: "the tenant overrides nothing" and
+            // "the tenant overrides the menu with an empty one" have to stay distinguishable, so
+            // probe for the file and skip the cache entirely when there is no override.
+            var custPaths = new CustomizeOnlyPathOptions(_paths.CustomizePath, customizeId);
+            if (!File.Exists(custPaths.GetMenuSettingsFilePath()))
+                return null;
+            return _provider.For(customizeId).MenuSettings.Get();
         }
 
         /// <inheritdoc/>

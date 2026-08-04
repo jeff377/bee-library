@@ -72,6 +72,10 @@ namespace Bee.Definition
         public virtual string GetProgramSettingsFilePath()
             => System.IO.Path.Combine(DefinePath, "ProgramSettings.xml");
 
+        /// <summary>Gets the absolute path of <c>MenuSettings.xml</c>.</summary>
+        public virtual string GetMenuSettingsFilePath()
+            => System.IO.Path.Combine(DefinePath, "MenuSettings.xml");
+
         /// <summary>Gets the absolute path of <c>DbCategorySettings.xml</c>.</summary>
         public string GetDbCategorySettingsFilePath()
             => System.IO.Path.Combine(DefinePath, "DbCategorySettings.xml");

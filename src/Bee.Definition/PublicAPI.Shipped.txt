@@ -1340,39 +1340,8 @@ Bee.Definition.Settings.MasterKeySource.Type.set -> void
 Bee.Definition.Settings.MasterKeySource.Value.get -> string!
 Bee.Definition.Settings.MasterKeySource.Value.set -> void
 Bee.Definition.Settings.MenuFolder
-Bee.Definition.Settings.MenuFolder.DisplayName.get -> string!
-Bee.Definition.Settings.MenuFolder.DisplayName.set -> void
-Bee.Definition.Settings.MenuFolder.FindItem(string! progId) -> Bee.Definition.Settings.MenuItem?
-Bee.Definition.Settings.MenuFolder.FolderId.get -> string!
-Bee.Definition.Settings.MenuFolder.FolderId.set -> void
-Bee.Definition.Settings.MenuFolder.Folders.get -> Bee.Definition.Settings.MenuFolderCollection?
-Bee.Definition.Settings.MenuFolder.GetLanguageKey() -> string!
-Bee.Definition.Settings.MenuFolder.Items.get -> Bee.Definition.Settings.MenuItemCollection?
 Bee.Definition.Settings.MenuFolder.MenuFolder() -> void
-Bee.Definition.Settings.MenuFolder.MenuFolder(string! folderID, string! displayName) -> void
-Bee.Definition.Settings.MenuFolderCollection
-Bee.Definition.Settings.MenuFolderCollection.MenuFolderCollection() -> void
-Bee.Definition.Settings.MenuFolderCollection.MenuFolderCollection(Bee.Definition.Settings.MenuFolder! folder) -> void
-Bee.Definition.Settings.MenuFolderCollection.MenuFolderCollection(Bee.Definition.Settings.MenuSettings! settings) -> void
-Bee.Definition.Settings.MenuFolderCollectionExtensions
-Bee.Definition.Settings.MenuItem
-Bee.Definition.Settings.MenuItem.Clone() -> Bee.Definition.Settings.MenuItem!
-Bee.Definition.Settings.MenuItem.DisplayName.get -> string!
-Bee.Definition.Settings.MenuItem.DisplayName.set -> void
-Bee.Definition.Settings.MenuItem.MenuItem() -> void
-Bee.Definition.Settings.MenuItem.MenuItem(string! progId, string! displayName) -> void
-Bee.Definition.Settings.MenuItem.ProgId.get -> string!
-Bee.Definition.Settings.MenuItem.ProgId.set -> void
-Bee.Definition.Settings.MenuItemCollection
-Bee.Definition.Settings.MenuItemCollection.MenuItemCollection() -> void
-Bee.Definition.Settings.MenuItemCollection.MenuItemCollection(Bee.Definition.Settings.MenuFolder! folder) -> void
-Bee.Definition.Settings.MenuItemCollectionExtensions
 Bee.Definition.Settings.MenuSettings
-Bee.Definition.Settings.MenuSettings.CreateTime.get -> System.DateTime
-Bee.Definition.Settings.MenuSettings.FindItem(string! progId) -> Bee.Definition.Settings.MenuItem?
-Bee.Definition.Settings.MenuSettings.Folders.get -> Bee.Definition.Settings.MenuFolderCollection?
-Bee.Definition.Settings.MenuSettings.GetFolders() -> System.Collections.Generic.List<Bee.Definition.Settings.MenuFolder!>!
-Bee.Definition.Settings.MenuSettings.GetItems() -> System.Collections.Generic.List<Bee.Definition.Settings.MenuItem!>!
 Bee.Definition.Settings.MenuSettings.MenuSettings() -> void
 Bee.Definition.Settings.MenuSettings.ObjectFilePath.get -> string!
 Bee.Definition.Settings.MenuSettings.SerializeState.get -> Bee.Base.Serialization.SerializeState
@@ -1418,18 +1387,6 @@ Bee.Definition.Settings.PermissionRuleCollection
 Bee.Definition.Settings.PermissionRuleCollection.PermissionRuleCollection() -> void
 Bee.Definition.Settings.PermissionRuleCollection.PermissionRuleCollection(Bee.Definition.Settings.PermissionModel! model) -> void
 Bee.Definition.Settings.PermissionRuleCollectionExtensions
-Bee.Definition.Settings.ProgramCategory
-Bee.Definition.Settings.ProgramCategory.DisplayName.get -> string!
-Bee.Definition.Settings.ProgramCategory.DisplayName.set -> void
-Bee.Definition.Settings.ProgramCategory.Id.get -> string!
-Bee.Definition.Settings.ProgramCategory.Id.set -> void
-Bee.Definition.Settings.ProgramCategory.Items.get -> Bee.Definition.Settings.ProgramItemCollection?
-Bee.Definition.Settings.ProgramCategory.ProgramCategory() -> void
-Bee.Definition.Settings.ProgramCategory.ProgramCategory(string! id, string! displayName) -> void
-Bee.Definition.Settings.ProgramCategoryCollection
-Bee.Definition.Settings.ProgramCategoryCollection.ProgramCategoryCollection() -> void
-Bee.Definition.Settings.ProgramCategoryCollection.ProgramCategoryCollection(Bee.Definition.Settings.ProgramSettings! settings) -> void
-Bee.Definition.Settings.ProgramCategoryCollectionExtensions
 Bee.Definition.Settings.ProgramItem
 Bee.Definition.Settings.ProgramItem.BusinessObject.get -> string!
 Bee.Definition.Settings.ProgramItem.BusinessObject.set -> void
@@ -1441,10 +1398,8 @@ Bee.Definition.Settings.ProgramItem.ProgramItem() -> void
 Bee.Definition.Settings.ProgramItem.ProgramItem(string! progId, string! displayName) -> void
 Bee.Definition.Settings.ProgramItemCollection
 Bee.Definition.Settings.ProgramItemCollection.ProgramItemCollection() -> void
-Bee.Definition.Settings.ProgramItemCollection.ProgramItemCollection(Bee.Definition.Settings.ProgramCategory! category) -> void
 Bee.Definition.Settings.ProgramItemCollectionExtensions
 Bee.Definition.Settings.ProgramSettings
-Bee.Definition.Settings.ProgramSettings.Categories.get -> Bee.Definition.Settings.ProgramCategoryCollection?
 Bee.Definition.Settings.ProgramSettings.ObjectFilePath.get -> string!
 Bee.Definition.Settings.ProgramSettings.ProgramSettings() -> void
 Bee.Definition.Settings.ProgramSettings.SerializeState.get -> Bee.Base.Serialization.SerializeState
@@ -1774,12 +1729,9 @@ override Bee.Definition.Settings.DbCategory.ToString() -> string!
 override Bee.Definition.Settings.FrontendConfiguration.ToString() -> string!
 override Bee.Definition.Settings.MasterKeySource.ToString() -> string!
 override Bee.Definition.Settings.MenuFolder.ToString() -> string!
-override Bee.Definition.Settings.MenuItem.ToString() -> string!
 override Bee.Definition.Settings.PermissionModel.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
 override Bee.Definition.Settings.PermissionModel.ToString() -> string!
 override Bee.Definition.Settings.PermissionRule.ToString() -> string!
-override Bee.Definition.Settings.ProgramCategory.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
-override Bee.Definition.Settings.ProgramCategory.ToString() -> string!
 override Bee.Definition.Settings.ProgramItem.ToString() -> string!
 override Bee.Definition.Settings.SecurityKeySettings.ToString() -> string!
 override Bee.Definition.Settings.SystemSettings.ToString() -> string!
@@ -1863,12 +1815,9 @@ static Bee.Definition.Settings.CurrencySettings.DecimalsFromRounding(decimal rou
 static Bee.Definition.Settings.DatabaseSettingsCryptor.DecryptInPlace(Bee.Definition.Settings.DatabaseSettings! settings, byte[]? combinedKey) -> void
 static Bee.Definition.Settings.DatabaseSettingsCryptor.EncryptInPlace(Bee.Definition.Settings.DatabaseSettings! settings, byte[]? combinedKey) -> void
 static Bee.Definition.Settings.EndpointItemCollectionExtensions.Add(this Bee.Definition.Settings.EndpointItemCollection? collection, string! name, string! endpoint) -> Bee.Definition.Settings.EndpointItem!
-static Bee.Definition.Settings.MenuFolderCollectionExtensions.Add(this Bee.Definition.Settings.MenuFolderCollection? collection, string! folderID, string! displayName) -> Bee.Definition.Settings.MenuFolder!
-static Bee.Definition.Settings.MenuItemCollectionExtensions.Add(this Bee.Definition.Settings.MenuItemCollection? collection, string! progId, string! displayName) -> Bee.Definition.Settings.MenuItem!
 static Bee.Definition.Settings.PermissionBindingValidator.Validate(System.Collections.Generic.IEnumerable<Bee.Definition.Forms.FormSchema!>! schemas, Bee.Definition.Settings.PermissionModels! models) -> System.Collections.Generic.IReadOnlyList<string!>!
 static Bee.Definition.Settings.PermissionModelCollectionExtensions.Add(this Bee.Definition.Settings.PermissionModelCollection? collection, string! modelId, string! displayName) -> Bee.Definition.Settings.PermissionModel!
 static Bee.Definition.Settings.PermissionRuleCollectionExtensions.Add(this Bee.Definition.Settings.PermissionRuleCollection? collection, Bee.Definition.Settings.PermissionAction action, Bee.Definition.Settings.ScopeStrategy scope = Bee.Definition.Settings.ScopeStrategy.Inherit) -> Bee.Definition.Settings.PermissionRule!
-static Bee.Definition.Settings.ProgramCategoryCollectionExtensions.Add(this Bee.Definition.Settings.ProgramCategoryCollection? collection, string! id, string! displayName) -> Bee.Definition.Settings.ProgramCategory!
 static Bee.Definition.Settings.ProgramItemCollectionExtensions.Add(this Bee.Definition.Settings.ProgramItemCollection? collection, string! progId, string! displayName) -> Bee.Definition.Settings.ProgramItem!
 static Bee.Definition.Storage.DefineChangeSource.None.get -> Bee.Definition.Storage.DefineChangeSource
 static Bee.Definition.Storage.DefineChangeSource.operator !=(Bee.Definition.Storage.DefineChangeSource left, Bee.Definition.Storage.DefineChangeSource right) -> bool
@@ -1886,8 +1835,6 @@ virtual Bee.Definition.Logging.AuditEntry.AddCommonColumns(System.Collections.Ge
 virtual Bee.Definition.PathOptions.GetFormLayoutFilePath(string! layoutId) -> string!
 virtual Bee.Definition.PathOptions.GetLanguageFilePath(string! lang, string! ns) -> string!
 virtual Bee.Definition.PathOptions.GetProgramSettingsFilePath() -> string!
-virtual Bee.Definition.Settings.MenuSettings.DisplayName.get -> string!
-virtual Bee.Definition.Settings.MenuSettings.DisplayName.set -> void
 ~override Bee.Definition.Logging.AuditColumn.Equals(object obj) -> bool
 ~override Bee.Definition.Logging.AuditColumn.ToString() -> string
 ~override Bee.Definition.Storage.DefineChangeSource.Equals(object obj) -> bool
