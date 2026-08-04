@@ -1,8 +1,8 @@
 using Bee.Base;
 using Bee.Base.Data;
 using Bee.Db;
-using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
+using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Security;
 using Bee.Repository.Abstractions.System;
@@ -16,26 +16,24 @@ namespace Bee.Repository.System
     /// Disabled keys are excluded at the query layer — to callers they look exactly like keys that
     /// never existed, which is what keeps the API from reporting which identifiers are real.
     /// </remarks>
-    public class ApiKeyRepository : IApiKeyRepository
+    public class ApiKeyRepository : RepositoryBase, IApiKeyRepository
     {
         private const string TableName = "st_api_key";
         private const string SysIdColumn = "sys_id";
 
-        private readonly IDbConnectionManager _connectionManager;
-        private readonly ICacheNotifyService? _cacheNotify;
-
         /// <summary>
         /// Initializes a new <see cref="ApiKeyRepository"/>.
         /// </summary>
-        /// <param name="connectionManager">The DI-resolved connection manager.</param>
-        /// <param name="cacheNotify">
-        /// Optional cross-process cache invalidation channel. <c>null</c> means writes are not
-        /// announced, so other processes pick the change up when their cached entry lapses.
+        /// <param name="ctx">
+        /// The shared repository context. Its <see cref="IRepositoryContext.CacheNotify"/> is the
+        /// cross-process invalidation channel this repository announces writes on; <c>null</c> means
+        /// other processes pick a change up when their cached entry lapses.
         /// </param>
-        public ApiKeyRepository(IDbConnectionManager connectionManager, ICacheNotifyService? cacheNotify = null)
+        /// <param name="accessToken">The current request's access token.</param>
+        /// <param name="progId">Unused on the framework axis; accepted for signature uniformity.</param>
+        public ApiKeyRepository(IRepositoryContext ctx, Guid accessToken, string progId)
+            : base(ctx, accessToken, progId, DbScope.Common)
         {
-            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
-            _cacheNotify = cacheNotify;
         }
 
         /// <inheritdoc/>
@@ -43,7 +41,7 @@ namespace Bee.Repository.System
         {
             if (StringUtilities.IsEmpty(sysId)) { return null; }
 
-            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colId = dbType.QuoteIdentifier(SysIdColumn);
             string colName = dbType.QuoteIdentifier("sys_name");
@@ -57,7 +55,7 @@ namespace Bee.Repository.System
                          $"FROM {tbl} \n" +
                          $"WHERE {colId} = {{0}} AND {colEnabled} = {{1}}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, sysId, true);
-            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var dbAccess = CreateDbAccess();
             var result = dbAccess.Execute(command);
             var table = result.Table!;
             if (table.IsEmpty()) { return null; }
@@ -86,9 +84,9 @@ namespace Bee.Repository.System
         /// </remarks>
         public ApiKeyGateState GetGateState()
         {
-            var connInfo = _connectionManager.GetConnectionInfo(DbCategoryIds.Common);
+            var connInfo = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common);
             var schemaProvider = DbDialectRegistry.Get(connInfo.DatabaseType)
-                .CreateTableSchemaProvider(DbCategoryIds.Common, _connectionManager);
+                .CreateTableSchemaProvider(DbCategoryIds.Common, Context.ConnectionManager);
             if (schemaProvider.GetTableSchema(TableName) == null)
             {
                 return new ApiKeyGateState { InForce = false };
@@ -102,13 +100,13 @@ namespace Bee.Repository.System
         {
             if (StringUtilities.IsEmpty(sysId)) { return false; }
 
-            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colId = dbType.QuoteIdentifier(SysIdColumn);
 
             string sql = $"SELECT COUNT(*) FROM {tbl} WHERE {colId} = {{0}}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, sysId);
-            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var dbAccess = CreateDbAccess();
             return ValueUtilities.CInt(dbAccess.Execute(command).Scalar!) > 0;
         }
 
@@ -125,7 +123,7 @@ namespace Bee.Repository.System
         {
             ArgumentNullException.ThrowIfNull(apiKey);
 
-            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
             string colId = dbType.QuoteIdentifier(SysIdColumn);
@@ -148,15 +146,15 @@ namespace Bee.Repository.System
                 Guid.NewGuid(), apiKey.SysId, apiKey.SysName, apiKey.HashedKey, (int)apiKey.KeyType,
                 apiKey.Contact, true, expiredAt, DateTime.UtcNow);
 
-            using var connection = _connectionManager.CreateConnection(DbCategoryIds.Common);
+            using var connection = Context.ConnectionManager.CreateConnection(DbCategoryIds.Common);
             connection.Open();
             using var transaction = connection.BeginTransaction();
 
             new DbAccess(connection, dbType).Execute(command, transaction);
-            if (_cacheNotify != null)
+            if (Context.CacheNotify != null)
             {
-                _cacheNotify.Touch(NotifyKey(apiKey.SysId), transaction, dbType);
-                _cacheNotify.Touch(NotifyKey(ApiKeyGateState.CacheKey), transaction, dbType);
+                Context.CacheNotify.Touch(NotifyKey(apiKey.SysId), transaction, dbType);
+                Context.CacheNotify.Touch(NotifyKey(ApiKeyGateState.CacheKey), transaction, dbType);
             }
 
             transaction.Commit();
@@ -165,7 +163,7 @@ namespace Bee.Repository.System
         /// <inheritdoc/>
         public IReadOnlyList<ApiKeySummary> GetList()
         {
-            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colId = dbType.QuoteIdentifier(SysIdColumn);
             string colName = dbType.QuoteIdentifier("sys_name");
@@ -181,7 +179,7 @@ namespace Bee.Repository.System
                          $"FROM {tbl} \n" +
                          $"ORDER BY {colId}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
-            var result = new DbAccess(DbCategoryIds.Common, _connectionManager).Execute(command);
+            var result = CreateDbAccess().Execute(command);
 
             var list = new List<ApiKeySummary>();
             foreach (global::System.Data.DataRow row in result.Table!.Rows)
@@ -232,7 +230,7 @@ namespace Bee.Repository.System
         {
             if (StringUtilities.IsEmpty(sysId)) { return false; }
 
-            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colId = dbType.QuoteIdentifier(SysIdColumn);
             string col = dbType.QuoteIdentifier(columnName);
@@ -240,7 +238,7 @@ namespace Bee.Repository.System
             string sql = $"UPDATE {tbl} SET {col} = {{0}} WHERE {colId} = {{1}}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, value, sysId);
 
-            using var connection = _connectionManager.CreateConnection(DbCategoryIds.Common);
+            using var connection = Context.ConnectionManager.CreateConnection(DbCategoryIds.Common);
             connection.Open();
             using var transaction = connection.BeginTransaction();
 
@@ -251,10 +249,10 @@ namespace Bee.Repository.System
                 return false;
             }
 
-            if (_cacheNotify != null)
+            if (Context.CacheNotify != null)
             {
-                _cacheNotify.Touch(NotifyKey(sysId), transaction, dbType);
-                _cacheNotify.Touch(NotifyKey(ApiKeyGateState.CacheKey), transaction, dbType);
+                Context.CacheNotify.Touch(NotifyKey(sysId), transaction, dbType);
+                Context.CacheNotify.Touch(NotifyKey(ApiKeyGateState.CacheKey), transaction, dbType);
             }
 
             transaction.Commit();
@@ -280,13 +278,13 @@ namespace Bee.Repository.System
         /// </summary>
         private int CountEnabled()
         {
-            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colEnabled = dbType.QuoteIdentifier("enabled");
 
             string sql = $"SELECT COUNT(*) FROM {tbl} WHERE {colEnabled} = {{0}}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, true);
-            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var dbAccess = CreateDbAccess();
             return ValueUtilities.CInt(dbAccess.Execute(command).Scalar!);
         }
     }

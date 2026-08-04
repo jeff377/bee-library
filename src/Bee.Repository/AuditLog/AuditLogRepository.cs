@@ -2,7 +2,7 @@ using System.Data;
 using System.Globalization;
 using Bee.Db;
 using Bee.Db.Dml;
-using Bee.Db.Manager;
+using Bee.Definition;
 using Bee.Definition.Paging;
 using Bee.Repository.Abstractions.AuditLog;
 
@@ -13,7 +13,7 @@ namespace Bee.Repository.AuditLog
     /// log database via <see cref="DbAccess"/>. Table and column names match the write-side sink
     /// (unquoted lower-case snake_case) so reads line up with writes across every provider.
     /// </summary>
-    public class AuditLogRepository : IAuditLogRepository
+    public class AuditLogRepository : RepositoryBase, IAuditLogRepository
     {
         /// <summary>The framework-wide upper bound for <see cref="PagingOptions.PageSize"/>.</summary>
         private const int MaxPageSize = 1000;
@@ -42,22 +42,25 @@ namespace Bee.Repository.AuditLog
         private const string DbAnomalyHeaderColumns =
             "sys_rowid, log_time, database_id, command, anomaly_kind, elapsed_ms, threshold_ms, affected_rows, result_rows, error_type, error_message";
 
-        private readonly IDbConnectionManager _connectionManager;
-        private readonly string _databaseId;
+        /// <summary>
+        /// Initializes a new <see cref="AuditLogRepository"/> bound to the log database.
+        /// </summary>
+        /// <param name="ctx">The shared repository context.</param>
+        /// <param name="accessToken">The current request's access token.</param>
+        /// <param name="progId">Unused on the framework axis; accepted for signature uniformity.</param>
+        public AuditLogRepository(IRepositoryContext ctx, Guid accessToken, string progId)
+            : base(ctx, accessToken, progId, DbScope.Log)
+        {
+        }
 
         /// <summary>
-        /// Initializes a new <see cref="AuditLogRepository"/>.
+        /// Initializes a new <see cref="AuditLogRepository"/> against an explicit log database.
         /// </summary>
-        /// <param name="connectionManager">The DI-resolved connection manager.</param>
-        /// <param name="databaseId">
-        /// The log database id to target (production resolves this to <c>DbCategoryIds.Log</c>; tests
-        /// pass a per-dialect id such as <c>log_sqlserver</c>).
-        /// </param>
-        public AuditLogRepository(IDbConnectionManager connectionManager, string databaseId)
+        /// <param name="ctx">The shared repository context.</param>
+        /// <param name="databaseId">The log database id (tests pass a per-dialect id such as <c>log_sqlserver</c>).</param>
+        public AuditLogRepository(IRepositoryContext ctx, string databaseId)
+            : base(ctx, string.Empty, databaseId)
         {
-            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
-            ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
-            _databaseId = databaseId;
         }
 
         /// <inheritdoc/>
@@ -78,7 +81,7 @@ namespace Bee.Repository.AuditLog
         /// <inheritdoc/>
         public DataTable? GetChangeById(Guid sysRowId, string? companyId)
         {
-            var dbAccess = new DbAccess(_databaseId, _connectionManager);
+            var dbAccess = CreateDbAccess();
             var spec = string.IsNullOrEmpty(companyId)
                 ? new DbCommandSpec(DbCommandKind.DataTable,
                     "SELECT " + ChangeDetailColumns + " FROM st_log_change WHERE sys_rowid = {0}", sysRowId)
@@ -177,7 +180,7 @@ namespace Bee.Repository.AuditLog
         public DataTable GetTopApiMethods(DateTime? fromUtc, DateTime? toUtc, int topN, string? companyId)
         {
             int take = Math.Clamp(topN, 1, MaxTopN);
-            var dbType = _connectionManager.GetConnectionInfo(_databaseId).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DatabaseId).DatabaseType;
             var where = new WhereBuilder()
                 .Eq(ColCompanyId, companyId)
                 .Gte(ColLogTime, fromUtc)
@@ -194,7 +197,7 @@ namespace Bee.Repository.AuditLog
         /// <summary>Executes a read-only DataTable query against the log database.</summary>
         private DataTable ExecuteQuery(string sql, object[] values)
         {
-            var dbAccess = new DbAccess(_databaseId, _connectionManager);
+            var dbAccess = CreateDbAccess();
             return dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable, sql, values)).Table ?? new DataTable();
         }
 
@@ -209,8 +212,8 @@ namespace Bee.Repository.AuditLog
         {
             ArgumentNullException.ThrowIfNull(paging);
 
-            var dbType = _connectionManager.GetConnectionInfo(_databaseId).DatabaseType;
-            var dbAccess = new DbAccess(_databaseId, _connectionManager);
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DatabaseId).DatabaseType;
+            var dbAccess = CreateDbAccess();
             var (whereSql, values) = where.Build();
 
             int pageSize = Math.Clamp(paging.PageSize, 1, MaxPageSize);

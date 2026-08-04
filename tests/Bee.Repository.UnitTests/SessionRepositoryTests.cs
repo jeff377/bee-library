@@ -20,7 +20,7 @@ namespace Bee.Repository.UnitTests
         public SessionRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
         private SessionRepository CreateRepo()
-            => new SessionRepository(_fx.GetRequiredService<IDbConnectionManager>());
+            => new SessionRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
 
         private static SessionUser CreateSeed(int expiresInSeconds = 3600, string? companyId = null)
             => new SessionUser

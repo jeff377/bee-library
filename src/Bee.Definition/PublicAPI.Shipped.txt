@@ -1174,12 +1174,8 @@ Bee.Definition.Settings.BackendComponents.DefineAccess.get -> string!
 Bee.Definition.Settings.BackendComponents.DefineAccess.set -> void
 Bee.Definition.Settings.BackendComponents.DefineStorage.get -> string!
 Bee.Definition.Settings.BackendComponents.DefineStorage.set -> void
-Bee.Definition.Settings.BackendComponents.FormRepositoryFactory.get -> string!
-Bee.Definition.Settings.BackendComponents.FormRepositoryFactory.set -> void
 Bee.Definition.Settings.BackendComponents.SessionInfoService.get -> string!
 Bee.Definition.Settings.BackendComponents.SessionInfoService.set -> void
-Bee.Definition.Settings.BackendComponents.SystemRepositoryFactory.get -> string!
-Bee.Definition.Settings.BackendComponents.SystemRepositoryFactory.set -> void
 Bee.Definition.Settings.BackendConfiguration
 Bee.Definition.Settings.BackendConfiguration.AuditLogOptions.get -> Bee.Definition.Settings.AuditLogOptions!
 Bee.Definition.Settings.BackendConfiguration.AuditLogOptions.set -> void
@@ -1580,9 +1576,7 @@ const Bee.Definition.BackendDefaultTypes.CacheProvider = "Bee.ObjectCaching.Prov
 const Bee.Definition.BackendDefaultTypes.CompanyInfoService = "Bee.ObjectCaching.Services.CompanyInfoService, Bee.ObjectCaching" -> string!
 const Bee.Definition.BackendDefaultTypes.DefineAccess = "Bee.ObjectCaching.CacheDefineAccess, Bee.ObjectCaching" -> string!
 const Bee.Definition.BackendDefaultTypes.DefineStorage = "Bee.Definition.Storage.FileDefineStorage, Bee.Definition" -> string!
-const Bee.Definition.BackendDefaultTypes.FormRepositoryFactory = "Bee.Repository.Factories.FormRepositoryFactory, Bee.Repository" -> string!
 const Bee.Definition.BackendDefaultTypes.SessionInfoService = "Bee.ObjectCaching.Services.SessionInfoService, Bee.ObjectCaching" -> string!
-const Bee.Definition.BackendDefaultTypes.SystemRepositoryFactory = "Bee.Repository.Factories.SystemRepositoryFactory, Bee.Repository" -> string!
 const Bee.Definition.Database.DbCategoryIds.Common = "common" -> string!
 const Bee.Definition.Database.DbCategoryIds.Company = "company" -> string!
 const Bee.Definition.Database.DbCategoryIds.Log = "log" -> string!

@@ -1,6 +1,26 @@
 #nullable enable
+*REMOVED*Bee.Repository.Abstractions.System.ISessionRepository.CreateSession(string! userID, int expiresIn = 3600, bool oneTime = false) -> Bee.Definition.Identity.SessionUser!
 *REMOVED*Bee.Repository.Abstractions.System.IUserRepository.GetTimeZone(string! userId) -> string!
+Bee.Repository.Abstractions.Factories.IRepositoryFactory
+Bee.Repository.Abstractions.Factories.IRepositoryFactory.Create<T>(System.Guid accessToken = default(System.Guid)) -> T!
+Bee.Repository.Abstractions.Factories.IRepositoryFactory.CreateFormRepository<T>(System.Guid accessToken, string! progId) -> T!
+Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateApiKeyRepository() -> Bee.Repository.Abstractions.System.IApiKeyRepository!
+Bee.Repository.Abstractions.System.IApiKeyRepository
+Bee.Repository.Abstractions.System.IApiKeyRepository.Exists(string! sysId) -> bool
+Bee.Repository.Abstractions.System.IApiKeyRepository.GetEnabledById(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
+Bee.Repository.Abstractions.System.IApiKeyRepository.GetGateState() -> Bee.Definition.Security.ApiKeyGateState!
+Bee.Repository.Abstractions.System.IApiKeyRepository.GetList() -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Security.ApiKeySummary!>!
+Bee.Repository.Abstractions.System.IApiKeyRepository.Insert(Bee.Definition.Security.ApiKeyInfo! apiKey) -> void
+Bee.Repository.Abstractions.System.IApiKeyRepository.SetEnabled(string! sysId, bool enabled) -> bool
+Bee.Repository.Abstractions.System.IApiKeyRepository.SetExpiry(string! sysId, System.DateTime? expiredAt) -> bool
+Bee.Repository.Abstractions.System.ISessionRepository.DeleteExpiredSessions() -> int
+Bee.Repository.Abstractions.System.ISessionRepository.DeleteSession(System.Guid accessToken) -> void
+Bee.Repository.Abstractions.System.ISessionRepository.InsertSession(Bee.Definition.Identity.SessionUser! sessionUser) -> void
+Bee.Repository.Abstractions.System.ISessionRepository.UpdateSession(Bee.Definition.Identity.SessionUser! sessionUser) -> void
 Bee.Repository.Abstractions.System.IUserRepository.GetLocale(string! userId) -> Bee.Repository.Abstractions.System.UserLocale
+Bee.Repository.Abstractions.System.IUserRepository.GetName(string! userId) -> string?
+Bee.Repository.Abstractions.System.IUserRepository.IsDeploymentAdmin(string! userId) -> bool
+Bee.Repository.Abstractions.System.IUserRepository.SetDeploymentAdmin(string! userId, bool isDeploymentAdmin) -> bool
 Bee.Repository.Abstractions.System.UserLocale
 Bee.Repository.Abstractions.System.UserLocale.Culture.get -> string!
 Bee.Repository.Abstractions.System.UserLocale.Culture.init -> void
@@ -16,20 +36,3 @@ static Bee.Repository.Abstractions.System.UserLocale.operator !=(Bee.Repository.
 static Bee.Repository.Abstractions.System.UserLocale.operator ==(Bee.Repository.Abstractions.System.UserLocale left, Bee.Repository.Abstractions.System.UserLocale right) -> bool
 ~override Bee.Repository.Abstractions.System.UserLocale.Equals(object obj) -> bool
 ~override Bee.Repository.Abstractions.System.UserLocale.ToString() -> string
-*REMOVED*Bee.Repository.Abstractions.System.ISessionRepository.CreateSession(string! userID, int expiresIn = 3600, bool oneTime = false) -> Bee.Definition.Identity.SessionUser!
-Bee.Repository.Abstractions.System.ISessionRepository.InsertSession(Bee.Definition.Identity.SessionUser! sessionUser) -> void
-Bee.Repository.Abstractions.System.ISessionRepository.UpdateSession(Bee.Definition.Identity.SessionUser! sessionUser) -> void
-Bee.Repository.Abstractions.System.ISessionRepository.DeleteSession(System.Guid accessToken) -> void
-Bee.Repository.Abstractions.System.IUserRepository.GetName(string! userId) -> string?
-Bee.Repository.Abstractions.System.ISessionRepository.DeleteExpiredSessions() -> int
-Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateApiKeyRepository() -> Bee.Repository.Abstractions.System.IApiKeyRepository!
-Bee.Repository.Abstractions.System.IApiKeyRepository
-Bee.Repository.Abstractions.System.IApiKeyRepository.Exists(string! sysId) -> bool
-Bee.Repository.Abstractions.System.IApiKeyRepository.GetEnabledById(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
-Bee.Repository.Abstractions.System.IApiKeyRepository.GetGateState() -> Bee.Definition.Security.ApiKeyGateState!
-Bee.Repository.Abstractions.System.IApiKeyRepository.Insert(Bee.Definition.Security.ApiKeyInfo! apiKey) -> void
-Bee.Repository.Abstractions.System.IUserRepository.IsDeploymentAdmin(string! userId) -> bool
-Bee.Repository.Abstractions.System.IUserRepository.SetDeploymentAdmin(string! userId, bool isDeploymentAdmin) -> bool
-Bee.Repository.Abstractions.System.IApiKeyRepository.GetList() -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Security.ApiKeySummary!>!
-Bee.Repository.Abstractions.System.IApiKeyRepository.SetEnabled(string! sysId, bool enabled) -> bool
-Bee.Repository.Abstractions.System.IApiKeyRepository.SetExpiry(string! sysId, System.DateTime? expiredAt) -> bool

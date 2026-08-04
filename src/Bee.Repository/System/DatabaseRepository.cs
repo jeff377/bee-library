@@ -1,7 +1,7 @@
 using Bee.Definition.Settings;
-using Bee.Definition.Storage;
 using Bee.Base;
 using Bee.Db.Manager;
+using Bee.Definition;
 using Bee.Db.Schema;
 using Bee.Repository.Abstractions.System;
 
@@ -10,15 +10,17 @@ namespace Bee.Repository.System
     /// <summary>
     /// Default implementation of database operations.
     /// </summary>
-    internal class DatabaseRepository : IDatabaseRepository
+    internal class DatabaseRepository : RepositoryBase, IDatabaseRepository
     {
-        private readonly IDefineAccess _defineAccess;
-        private readonly IDbConnectionManager _connectionManager;
-
-        public DatabaseRepository(IDefineAccess defineAccess, IDbConnectionManager connectionManager)
+        /// <summary>
+        /// Initializes a new <see cref="DatabaseRepository"/>.
+        /// </summary>
+        /// <param name="ctx">The shared repository context.</param>
+        /// <param name="accessToken">The current request's access token.</param>
+        /// <param name="progId">Unused on the framework axis; accepted for signature uniformity.</param>
+        public DatabaseRepository(IRepositoryContext ctx, Guid accessToken, string progId)
+            : base(ctx, accessToken, progId, DbScope.Common)
         {
-            _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
-            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         }
 
         /// <summary>
@@ -40,7 +42,7 @@ namespace Bee.Repository.System
 
             if (StringUtilities.IsNotEmpty(item.ServerId))
             {
-                var settings = _defineAccess.GetDatabaseSettings();
+                var settings = Context.DefineAccess.GetDatabaseSettings();
                 if (settings.Servers == null || !settings.Servers.Contains(item.ServerId))
                 {
                     throw new InvalidOperationException(
@@ -83,7 +85,7 @@ namespace Bee.Repository.System
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             ArgumentException.ThrowIfNullOrWhiteSpace(categoryId);
             ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
-            var builder = new TableSchemaBuilder(databaseId, _defineAccess, _connectionManager);
+            var builder = new TableSchemaBuilder(databaseId, Context.DefineAccess, Context.ConnectionManager);
             return builder.Execute(categoryId, tableName);
         }
     }

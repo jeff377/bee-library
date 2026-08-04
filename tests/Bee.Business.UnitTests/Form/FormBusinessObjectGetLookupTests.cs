@@ -192,13 +192,7 @@ namespace Bee.Business.UnitTests.Form
                 var defineAccess = fx.GetRequiredService<IDefineAccess>();
                 EmployeeSchema = defineAccess.GetFormSchema("Employee");
 
-                _repository = new DataFormRepository(
-                    ProgId,
-                    EmployeeSchema,
-                    defineAccess,
-                    fx.GetRequiredService<IDbAccessFactory>(),
-                    fx.GetRequiredService<IDbConnectionManager>(),
-                    databaseId);
+                _repository = new DataFormRepository(TestRepositoryContext.Create(fx.GetRequiredService<IDbConnectionManager>(), defineAccess: defineAccess, dbAccessFactory: fx.GetRequiredService<IDbAccessFactory>()), ProgId, EmployeeSchema, databaseId);
             }
 
             public DatabaseType DbType { get; }

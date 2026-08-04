@@ -10,7 +10,6 @@ using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
-using Bee.Definition.Storage;
 using Bee.Repository.Abstractions.Form;
 
 namespace Bee.Repository.Form
@@ -20,49 +19,55 @@ namespace Bee.Repository.Form
     /// statements against the master table via the dialect-specific
     /// <c>IFormCommandBuilder</c>.
     /// </summary>
-    public class DataFormRepository : IDataFormRepository
+    public class DataFormRepository : RepositoryBase, IDataFormRepository
     {
         private readonly FormSchema _schema;
-        private readonly IDefineAccess _defineAccess;
-        private readonly IDbAccessFactory _dbAccessFactory;
-        private readonly IDbConnectionManager _connectionManager;
-        private readonly string _databaseId;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="DataFormRepository"/>.
+        /// Initializes a new <see cref="DataFormRepository"/> for the supplied progId, routed to the
+        /// database its form schema's category resolves to.
         /// </summary>
+        /// <param name="ctx">The shared repository context.</param>
+        /// <param name="accessToken">The current request's access token; required when the schema's category resolves to a company database.</param>
         /// <param name="progId">The program identifier (also the master table name).</param>
-        /// <param name="schema">The resolved form schema for <paramref name="progId"/>.</param>
-        /// <param name="defineAccess">
-        /// The define access service, forwarded to <c>IFormCommandBuilder</c> to resolve
-        /// relation-form schemas during SELECT construction.
-        /// </param>
-        /// <param name="dbAccessFactory">The DI-resolved database access factory.</param>
-        /// <param name="connectionManager">
-        /// The DI-resolved connection manager, used to look up the database type for
-        /// dialect routing.
-        /// </param>
-        /// <param name="databaseId">The database identifier used for connection and dialect resolution.</param>
-        public DataFormRepository(
-            string progId,
-            FormSchema schema,
-            IDefineAccess defineAccess,
-            IDbAccessFactory dbAccessFactory,
-            IDbConnectionManager connectionManager,
-            string databaseId)
+        /// <remarks>
+        /// WARNING: A subclass adding its own dependencies must not add a second <c>string</c> or
+        /// <c>Guid</c> parameter. The factory builds it with <c>ActivatorUtilities</c>, which matches
+        /// the supplied arguments to parameters by type: a second parameter of a type already
+        /// supplied leaves nothing to bind it to and the container is asked for a <c>string</c>,
+        /// which fails at construction. Interface-typed dependencies are resolved from DI and are
+        /// the intended way to extend this.
+        /// </remarks>
+        public DataFormRepository(IRepositoryContext ctx, Guid accessToken, string progId)
+            : this(ctx, accessToken, progId, Factories.RepositoryFactory.LoadSchema(
+                (ctx ?? throw new ArgumentNullException(nameof(ctx))).DefineAccess, progId))
         {
-            ProgId = progId ?? throw new ArgumentNullException(nameof(progId));
-            _schema = schema ?? throw new ArgumentNullException(nameof(schema));
-            _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
-            _dbAccessFactory = dbAccessFactory ?? throw new ArgumentNullException(nameof(dbAccessFactory));
-            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
-            _databaseId = databaseId ?? throw new ArgumentNullException(nameof(databaseId));
+        }
+
+        private DataFormRepository(IRepositoryContext ctx, Guid accessToken, string progId, FormSchema schema)
+            : base(ctx, accessToken, progId, Factories.RepositoryFactory.ParseCategoryId(schema.CategoryId))
+        {
+            _schema = schema;
         }
 
         /// <summary>
-        /// Gets the program identifier.
+        /// Initializes a new <see cref="DataFormRepository"/> against an explicit schema and
+        /// database, skipping both the definition lookup and the router.
         /// </summary>
-        public string ProgId { get; }
+        /// <param name="ctx">The shared repository context.</param>
+        /// <param name="progId">The program identifier (also the master table name).</param>
+        /// <param name="schema">The form schema to drive SELECT construction with.</param>
+        /// <param name="databaseId">The database identifier used for connection and dialect resolution.</param>
+        /// <remarks>
+        /// For tests, and for callers holding a schema that is not (or not yet) in the define store.
+        /// A separate constructor rather than optional parameters, so the two construction paths are
+        /// distinguishable at the call site.
+        /// </remarks>
+        public DataFormRepository(IRepositoryContext ctx, string progId, FormSchema schema, string databaseId)
+            : base(ctx, progId, databaseId)
+        {
+            _schema = schema ?? throw new ArgumentNullException(nameof(schema));
+        }
 
         /// <summary>
         /// The framework-wide upper bound for <see cref="PagingOptions.PageSize"/>.
@@ -84,10 +89,10 @@ namespace Bee.Repository.Form
                 ? selectFields
                 : _schema.ListFields;  // empty falls through to SelectCommandBuilder as "all fields"
 
-            var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
+            var connInfo = Context.ConnectionManager.GetConnectionInfo(DatabaseId);
             var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
-                .CreateFormCommandBuilder(_schema, _defineAccess);
-            var dbAccess = _dbAccessFactory.Create(_databaseId);
+                .CreateFormCommandBuilder(_schema, Context.DefineAccess);
+            var dbAccess = Context.DbAccessFactory.Create(DatabaseId);
 
             if (paging == null)
             {
@@ -201,10 +206,10 @@ namespace Bee.Repository.Form
         /// <inheritdoc/>
         public DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null)
         {
-            var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
+            var connInfo = Context.ConnectionManager.GetConnectionInfo(DatabaseId);
             var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
-                .CreateFormCommandBuilder(_schema, _defineAccess);
-            var dbAccess = _dbAccessFactory.Create(_databaseId);
+                .CreateFormCommandBuilder(_schema, Context.DefineAccess);
+            var dbAccess = Context.DbAccessFactory.Create(DatabaseId);
 
             // Master row by sys_rowid, AND-combined with the record-scope filter when supplied so
             // an out-of-scope row reads as "not found" (null).
@@ -241,7 +246,7 @@ namespace Bee.Repository.Form
         {
             ArgumentNullException.ThrowIfNull(dataSet);
 
-            var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
+            var connInfo = Context.ConnectionManager.GetConnectionInfo(DatabaseId);
             var dbType = connInfo.DatabaseType;
 
             var masterTable = _schema.MasterTable
@@ -273,7 +278,7 @@ namespace Bee.Repository.Form
             var affected = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             if (specs.Count > 0)
             {
-                var dbAccess = _dbAccessFactory.Create(_databaseId);
+                var dbAccess = Context.DbAccessFactory.Create(DatabaseId);
                 var counts = dbAccess.UpdateDataTables(specs);
                 for (int i = 0; i < specs.Count; i++)
                     affected[specTableNames[i]] = counts[i];
@@ -290,10 +295,10 @@ namespace Bee.Repository.Form
         /// <inheritdoc/>
         public bool ExistsInScope(Guid rowId, FilterNode? scopeFilter)
         {
-            var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
+            var connInfo = Context.ConnectionManager.GetConnectionInfo(DatabaseId);
             var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
-                .CreateFormCommandBuilder(_schema, _defineAccess);
-            var dbAccess = _dbAccessFactory.Create(_databaseId);
+                .CreateFormCommandBuilder(_schema, Context.DefineAccess);
+            var dbAccess = Context.DbAccessFactory.Create(DatabaseId);
 
             var filter = CombineWithScope(FilterCondition.Equal(SysFields.RowId, rowId), scopeFilter);
             var spec = builder.BuildSelect(ProgId, SysFields.RowId, filter);
@@ -304,9 +309,9 @@ namespace Bee.Repository.Form
         /// <inheritdoc/>
         public int Delete(Guid rowId, FilterNode? scopeFilter = null)
         {
-            var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
+            var connInfo = Context.ConnectionManager.GetConnectionInfo(DatabaseId);
             var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
-                .CreateFormCommandBuilder(_schema, _defineAccess);
+                .CreateFormCommandBuilder(_schema, Context.DefineAccess);
 
             // Record-scope gate: when a scope filter is supplied, confirm the master row is in scope
             // before touching anything. Out of scope → delete nothing (no cascade), report zero.
@@ -323,7 +328,7 @@ namespace Bee.Repository.Form
             var masterFilter = FilterCondition.Equal(SysFields.RowId, rowId);
             batch.Commands.Add(builder.BuildDelete(ProgId, masterFilter));
 
-            var dbAccess = _dbAccessFactory.Create(_databaseId);
+            var dbAccess = Context.DbAccessFactory.Create(DatabaseId);
             var result = dbAccess.ExecuteBatch(batch);
 
             // The master DELETE is the last command; its RowsAffected drives

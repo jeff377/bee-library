@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- ActivatorUtilities only: the abstractions package carries no container, so a custom
+         repository can declare its own DI dependencies without this package pulling one in. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Bee.Db\Bee.Db.csproj" />
     <ProjectReference Include="..\Bee.Repository.Abstractions\Bee.Repository.Abstractions.csproj" />
   </ItemGroup>

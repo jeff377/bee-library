@@ -19,7 +19,7 @@ namespace Bee.Repository.UnitTests
         public RolePermissionRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
         private RolePermissionRepository CreateRepo()
-            => new RolePermissionRepository(_fx.GetRequiredService<IDbConnectionManager>());
+            => new RolePermissionRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
 
         private void RunRoundTrip(DatabaseType dbType)
         {

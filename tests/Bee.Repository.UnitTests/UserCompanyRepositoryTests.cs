@@ -18,7 +18,7 @@ namespace Bee.Repository.UnitTests
         public UserCompanyRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
         private UserCompanyRepository CreateRepo()
-            => new UserCompanyRepository(_fx.GetRequiredService<IDbConnectionManager>());
+            => new UserCompanyRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
 
         #region HasAccess — Granted + Enabled
 

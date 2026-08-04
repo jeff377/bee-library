@@ -10,6 +10,7 @@ using Bee.Definition.Settings;
 using Bee.ObjectCaching;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.Hosting.UnitTests
@@ -50,8 +51,12 @@ namespace Bee.Hosting.UnitTests
                 Assert.NotNull(sp.GetRequiredService<IDepartmentTreeService>());
                 Assert.NotNull(sp.GetRequiredService<IBusinessObjectFactory>());
                 Assert.NotNull(sp.GetRequiredService<IRepositoryDatabaseRouter>());
+                // 統一入口，以及暫時保留的三個轉接器（階段 4 移除）。
+                Assert.NotNull(sp.GetRequiredService<IRepositoryFactory>());
+                Assert.NotNull(sp.GetRequiredService<IRepositoryFactory>().Create<ICompanyRepository>());
                 Assert.NotNull(sp.GetRequiredService<ISystemRepositoryFactory>());
                 Assert.NotNull(sp.GetRequiredService<IFormRepositoryFactory>());
+                Assert.NotNull(sp.GetRequiredService<IAuditLogRepositoryFactory>());
                 // Individual system repositories are not DI-registered by design — consumers go
                 // through the factory, so resolving one from it is what this asserts.
                 Assert.NotNull(sp.GetRequiredService<ISystemRepositoryFactory>().CreateCompanyRepository());

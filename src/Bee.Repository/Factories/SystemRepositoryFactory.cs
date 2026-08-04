@@ -1,126 +1,55 @@
-using Bee.Db.CacheNotify;
-using Bee.Db.Manager;
-using Bee.Definition.Storage;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
-using Bee.Repository.System;
 
 namespace Bee.Repository.Factories
 {
     /// <summary>
-    /// Default implementation of <see cref="ISystemRepositoryFactory"/>.
+    /// Default implementation of <see cref="ISystemRepositoryFactory"/>, now a thin adapter over
+    /// <see cref="IRepositoryFactory"/>.
     /// </summary>
+    /// <remarks>
+    /// Kept only so consumers can move across one at a time; every method forwards to
+    /// <see cref="IRepositoryFactory.Create{T}"/>. The interface it implements is what this work
+    /// set out to remove — it grew a method per system table — so nothing new should be added here.
+    /// </remarks>
     public class SystemRepositoryFactory : ISystemRepositoryFactory
     {
-        private readonly IDefineAccess _defineAccess;
-        private readonly IDbConnectionManager _connectionManager;
-        private readonly ICacheNotifyService? _cacheNotify;
-
-        /// <summary>
-        /// Initializes a new <see cref="SystemRepositoryFactory"/> without a cache invalidation
-        /// channel.
-        /// </summary>
-        /// <param name="defineAccess">The define access service used by repositories that need to read
-        /// the defined table schema (e.g., schema upgrade).</param>
-        /// <param name="connectionManager">The DI-resolved connection manager.</param>
-        /// <remarks>
-        /// NOTE: kept as a separate overload rather than giving the channel parameter a default value.
-        /// Adding an optional parameter to a shipped public constructor keeps source compatibility but
-        /// breaks binary compatibility for already-compiled consumers, and this type ships in a NuGet
-        /// package.
-        /// </remarks>
-        public SystemRepositoryFactory(IDefineAccess defineAccess, IDbConnectionManager connectionManager)
-            : this(defineAccess, connectionManager, null) { }
+        private readonly IRepositoryFactory _factory;
 
         /// <summary>
         /// Initializes a new <see cref="SystemRepositoryFactory"/>.
         /// </summary>
-        /// <param name="defineAccess">The define access service used by repositories that need to read
-        /// the defined table schema (e.g., schema upgrade).</param>
-        /// <param name="connectionManager">The DI-resolved connection manager.</param>
-        /// <param name="cacheNotify">
-        /// Cross-process cache invalidation channel, required only by repositories that write data a
-        /// cache holds. <c>null</c> leaves those writes without a notification, which is the correct
-        /// shape for hosts and tests that never poll the channel.
-        /// </param>
-        public SystemRepositoryFactory(IDefineAccess defineAccess, IDbConnectionManager connectionManager,
-            ICacheNotifyService? cacheNotify)
+        /// <param name="factory">The unified repository factory every method delegates to.</param>
+        public SystemRepositoryFactory(IRepositoryFactory factory)
         {
-            _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
-            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
-            _cacheNotify = cacheNotify;
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        /// <summary>
-        /// Creates an <see cref="IDatabaseRepository"/>.
-        /// </summary>
-        public IDatabaseRepository CreateDatabaseRepository()
-        {
-            return new DatabaseRepository(_defineAccess, _connectionManager);
-        }
+        /// <inheritdoc/>
+        public IDatabaseRepository CreateDatabaseRepository() => _factory.Create<IDatabaseRepository>();
 
-        /// <summary>
-        /// Creates an <see cref="ISessionRepository"/>.
-        /// </summary>
-        public ISessionRepository CreateSessionRepository()
-        {
-            return new SessionRepository(_connectionManager);
-        }
+        /// <inheritdoc/>
+        public ISessionRepository CreateSessionRepository() => _factory.Create<ISessionRepository>();
 
-        /// <summary>
-        /// Creates an <see cref="ICompanyRepository"/>.
-        /// </summary>
-        public ICompanyRepository CreateCompanyRepository()
-        {
-            return new CompanyRepository(_connectionManager);
-        }
+        /// <inheritdoc/>
+        public ICompanyRepository CreateCompanyRepository() => _factory.Create<ICompanyRepository>();
 
-        /// <summary>
-        /// Creates an <see cref="IUserCompanyRepository"/>.
-        /// </summary>
-        public IUserCompanyRepository CreateUserCompanyRepository()
-        {
-            return new UserCompanyRepository(_connectionManager);
-        }
+        /// <inheritdoc/>
+        public IUserCompanyRepository CreateUserCompanyRepository() => _factory.Create<IUserCompanyRepository>();
 
-        /// <summary>
-        /// Creates an <see cref="IRolePermissionRepository"/> (per-company permission tables).
-        /// </summary>
-        public IRolePermissionRepository CreateRolePermissionRepository()
-        {
-            return new RolePermissionRepository(_connectionManager);
-        }
+        /// <inheritdoc/>
+        public IRolePermissionRepository CreateRolePermissionRepository() => _factory.Create<IRolePermissionRepository>();
 
-        /// <summary>
-        /// Creates an <see cref="IDepartmentRepository"/> (per-company <c>st_department</c> reader).
-        /// </summary>
-        public IDepartmentRepository CreateDepartmentRepository()
-        {
-            return new DepartmentRepository(_connectionManager);
-        }
+        /// <inheritdoc/>
+        public IDepartmentRepository CreateDepartmentRepository() => _factory.Create<IDepartmentRepository>();
 
-        /// <summary>
-        /// Creates an <see cref="IUserRepository"/> (common <c>st_user</c> reader).
-        /// </summary>
-        public IUserRepository CreateUserRepository()
-        {
-            return new UserRepository(_connectionManager);
-        }
+        /// <inheritdoc/>
+        public IUserRepository CreateUserRepository() => _factory.Create<IUserRepository>();
 
-        /// <summary>
-        /// Creates an <see cref="IEmployeeRepository"/> (per-company <c>st_employee</c> reader).
-        /// </summary>
-        public IEmployeeRepository CreateEmployeeRepository()
-        {
-            return new EmployeeRepository(_connectionManager);
-        }
+        /// <inheritdoc/>
+        public IEmployeeRepository CreateEmployeeRepository() => _factory.Create<IEmployeeRepository>();
 
-        /// <summary>
-        /// Creates an <see cref="IApiKeyRepository"/> (common <c>st_api_key</c> access).
-        /// </summary>
-        public IApiKeyRepository CreateApiKeyRepository()
-        {
-            return new ApiKeyRepository(_connectionManager, _cacheNotify);
-        }
+        /// <inheritdoc/>
+        public IApiKeyRepository CreateApiKeyRepository() => _factory.Create<IApiKeyRepository>();
     }
 }

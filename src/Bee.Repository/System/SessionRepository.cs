@@ -2,8 +2,7 @@ using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Db;
-using Bee.Db.Manager;
-using Bee.Definition.Database;
+using Bee.Definition;
 using Bee.Repository.Abstractions.System;
 using Bee.Definition.Identity;
 
@@ -17,17 +16,17 @@ namespace Bee.Repository.System
     /// Writes are driven by the session lifecycle in <c>SystemBusinessObject</c>: sign-in inserts
     /// the seed, entering or leaving a company updates it, and sign-out deletes it.
     /// </remarks>
-    public class SessionRepository : ISessionRepository
+    public class SessionRepository : RepositoryBase, ISessionRepository
     {
-        private readonly IDbConnectionManager _connectionManager;
-
         /// <summary>
         /// Initializes a new <see cref="SessionRepository"/>.
         /// </summary>
-        /// <param name="connectionManager">The DI-resolved connection manager.</param>
-        public SessionRepository(IDbConnectionManager connectionManager)
+        /// <param name="ctx">The shared repository context.</param>
+        /// <param name="accessToken">The current request's access token.</param>
+        /// <param name="progId">Unused on the framework axis; accepted for signature uniformity.</param>
+        public SessionRepository(IRepositoryContext ctx, Guid accessToken, string progId)
+            : base(ctx, accessToken, progId, DbScope.Common)
         {
-            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         }
 
         /// <inheritdoc/>
@@ -40,7 +39,7 @@ namespace Bee.Repository.System
                                  "(access_token, session_user_xml, sys_insert_time, sys_invalid_time) \n" +
                                  "VALUES (" + CommandTextVariable.Parameters + ")";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, sessionUser.AccessToken, xml, DateTime.UtcNow, sessionUser.EndTime);
-            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var dbAccess = CreateDbAccess();
             dbAccess.Execute(command);
         }
 
@@ -57,7 +56,7 @@ namespace Bee.Repository.System
                                  "SET session_user_xml={1}, sys_invalid_time={2} \n" +
                                  "WHERE access_token={0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, sessionUser.AccessToken, xml, sessionUser.EndTime);
-            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var dbAccess = CreateDbAccess();
             dbAccess.Execute(command);
         }
 
@@ -67,7 +66,7 @@ namespace Bee.Repository.System
             string sql = "DELETE FROM st_session \n" +
                                  "WHERE access_token={0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, accessToken);
-            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var dbAccess = CreateDbAccess();
             dbAccess.Execute(command);
         }
 
@@ -77,7 +76,7 @@ namespace Bee.Repository.System
             string sql = "DELETE FROM st_session \n" +
                                  "WHERE sys_invalid_time <= {0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, DateTime.UtcNow);
-            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var dbAccess = CreateDbAccess();
             var result = dbAccess.Execute(command);
             return result.RowsAffected;
         }
@@ -100,7 +99,7 @@ namespace Bee.Repository.System
                                  "FROM st_session \n" +
                                  "WHERE access_token={0} AND sys_invalid_time > {1}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, accessToken, DateTime.UtcNow);
-            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var dbAccess = CreateDbAccess();
             var result = dbAccess.Execute(command);
             var table = result.Table!;
             if (table.IsEmpty()) { return null; }

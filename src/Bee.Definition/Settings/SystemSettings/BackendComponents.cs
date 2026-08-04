@@ -76,20 +76,17 @@ namespace Bee.Definition.Settings
         public string CompanyInfoService { get; set; } = BackendDefaultTypes.CompanyInfoService;
 
         /// <summary>
-        /// System level repository factory type.
+        /// Repository factory type.
         /// </summary>
+        /// <remarks>
+        /// One entry for both axes: the same factory serves progId-bound repositories and framework
+        /// ones, so replacing it replaces all repository creation at once. It used to take two
+        /// entries, which meant a host overriding one silently kept the framework's own for the other.
+        /// </remarks>
         [Category("Repository")]
-        [Description("System level Repository factory type.")]
-        [DefaultValue(BackendDefaultTypes.SystemRepositoryFactory)]
-        public string SystemRepositoryFactory { get; set; } = BackendDefaultTypes.SystemRepositoryFactory;
-
-        /// <summary>
-        /// Form level repository factory type.
-        /// </summary>
-        [Category("Repository")]
-        [Description("Form level Repository factory type.")]
-        [DefaultValue(BackendDefaultTypes.FormRepositoryFactory)]
-        public string FormRepositoryFactory { get; set; } = BackendDefaultTypes.FormRepositoryFactory;
+        [Description("Repository factory type, defines how every repository is created.")]
+        [DefaultValue(BackendDefaultTypes.RepositoryFactory)]
+        public string RepositoryFactory { get; set; } = BackendDefaultTypes.RepositoryFactory;
 
 
     }

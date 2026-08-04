@@ -25,7 +25,7 @@ namespace Bee.Repository.UnitTests
         public UserRepositoryLocaleTests(SharedDbFixture fx) { _fx = fx; }
 
         private UserRepository CreateRepo()
-            => new UserRepository(_fx.GetRequiredService<IDbConnectionManager>());
+            => new UserRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("GetLocale('001') 應回傳 seed 使用者的時區與語系")]

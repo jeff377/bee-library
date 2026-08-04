@@ -1,7 +1,6 @@
 using System.Data;
 using Bee.Base;
 using Bee.Db;
-using Bee.Db.Manager;
 using Bee.Definition.Organization;
 using Bee.Repository.Abstractions.System;
 
@@ -12,17 +11,23 @@ namespace Bee.Repository.System
     /// employee linked to a user (<c>user_rowid</c>) so the user's department can be derived for
     /// record-scope filtering.
     /// </summary>
-    public class EmployeeRepository : IEmployeeRepository
+    public class EmployeeRepository : RepositoryBase, IEmployeeRepository
     {
-        private readonly IDbConnectionManager _connectionManager;
-
         /// <summary>
         /// Initializes a new <see cref="EmployeeRepository"/>.
         /// </summary>
-        /// <param name="connectionManager">The DI-resolved connection manager.</param>
-        public EmployeeRepository(IDbConnectionManager connectionManager)
+        /// <param name="ctx">The shared repository context.</param>
+        /// <param name="accessToken">The current request's access token.</param>
+        /// <param name="progId">Unused on the framework axis; accepted for signature uniformity.</param>
+        /// <remarks>
+        /// Declares no scope: its tables live in a company database, but its callers are cache
+        /// providers and session bootstrap, which are told which company to read and hold no token
+        /// to route with. Routing by session here would read the caller's company instead of the
+        /// requested one.
+        /// </remarks>
+        public EmployeeRepository(IRepositoryContext ctx, Guid accessToken, string progId)
+            : base(ctx, accessToken, progId, null)
         {
-            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         }
 
         /// <inheritdoc/>
@@ -31,7 +36,7 @@ namespace Bee.Repository.System
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             if (userRowId == Guid.Empty) { return null; }
 
-            var dbType = _connectionManager.GetConnectionInfo(databaseId).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(databaseId).DatabaseType;
             string tbl = dbType.QuoteIdentifier("st_employee");
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
             string colId = dbType.QuoteIdentifier("sys_id");
@@ -40,7 +45,7 @@ namespace Bee.Repository.System
             string colUser = dbType.QuoteIdentifier("user_rowid");
 
             string sql = $"SELECT {colRowId}, {colId}, {colName}, {colDept}, {colUser} FROM {tbl} WHERE {colUser} = {{0}}";
-            var dbAccess = new DbAccess(databaseId, _connectionManager);
+            var dbAccess = CreateDbAccess(databaseId);
             var table = dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable, sql, userRowId)).Table!;
             if (table.Rows.Count == 0) { return null; }
 

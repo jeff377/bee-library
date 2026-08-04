@@ -249,20 +249,21 @@ namespace Bee.Hosting
             //    object before, and it was process-wide.
             services.AddSingleton<IBusinessObjectFactory, BusinessObjectFactory>();
 
-            // 9. Repository factories — consumed via ctor injection (PR 5.3a dropped the
-            //    RepositoryInfo static + bootstrapper).
+            // 9. Repository factory — one registration for every repository, on both axes.
             services.AddSingleton<IRepositoryDatabaseRouter, RepositoryDatabaseRouter>();
+            services.AddSingleton<IRepositoryFactory>(sp =>
+                CreateConfigurableService<IRepositoryFactory>(sp,
+                    components.RepositoryFactory, BackendDefaultTypes.RepositoryFactory));
+
+            // The three superseded factories, kept registered as adapters so consumers can move to
+            // IRepositoryFactory one at a time rather than in a single sweep. They are removed once
+            // the last consumer has.
             services.AddSingleton<ISystemRepositoryFactory>(sp =>
-                CreateConfigurableService<ISystemRepositoryFactory>(sp,
-                    components.SystemRepositoryFactory, BackendDefaultTypes.SystemRepositoryFactory));
+                new Bee.Repository.Factories.SystemRepositoryFactory(sp.GetRequiredService<IRepositoryFactory>()));
             services.AddSingleton<IFormRepositoryFactory>(sp =>
-                CreateConfigurableService<IFormRepositoryFactory>(sp,
-                    components.FormRepositoryFactory, BackendDefaultTypes.FormRepositoryFactory));
-            // Audit-log reads target the log database (DbScope.Log); its factory needs only the
-            // connection manager, so it is registered directly rather than via the configurable path.
+                new Bee.Repository.Factories.FormRepositoryFactory(sp.GetRequiredService<IRepositoryFactory>()));
             services.AddSingleton<IAuditLogRepositoryFactory>(sp =>
-                new Bee.Repository.Factories.AuditLogRepositoryFactory(
-                    sp.GetRequiredService<IDbConnectionManager>()));
+                new Bee.Repository.Factories.AuditLogRepositoryFactory(sp.GetRequiredService<IRepositoryFactory>()));
 
             // NOTE: individual system repositories are deliberately NOT registered here. Consumers
             // ctor-inject ISystemRepositoryFactory and create what they need per call, the same way

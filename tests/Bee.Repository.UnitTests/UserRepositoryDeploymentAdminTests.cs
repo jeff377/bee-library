@@ -24,7 +24,7 @@ namespace Bee.Repository.UnitTests
 
         private IDbConnectionManager ConnectionManager => _fx.GetRequiredService<IDbConnectionManager>();
 
-        private UserRepository CreateRepo() => new UserRepository(ConnectionManager);
+        private UserRepository CreateRepo() => new UserRepository(TestRepositoryContext.Create(ConnectionManager), Guid.Empty, string.Empty);
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SetDeploymentAdmin 寫入後 IsDeploymentAdmin 應讀回同一值")]

@@ -14,6 +14,7 @@ using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 using Bee.Repository.Form;
 
+using Bee.Tests.Shared;
 namespace Bee.Repository.UnitTests
 {
     /// <summary>
@@ -68,13 +69,7 @@ namespace Bee.Repository.UnitTests
 
         private static DataFormRepository CreateRepository(FormSchema schema)
         {
-            return new DataFormRepository(
-                schema.ProgId,
-                schema,
-                new StubDefineAccess(),
-                new StubDbAccessFactory(),
-                new StubConnectionManager(),
-                "testdb");
+            return new DataFormRepository(TestRepositoryContext.Create(new StubConnectionManager(), defineAccess: new StubDefineAccess(), dbAccessFactory: new StubDbAccessFactory()), schema.ProgId, schema, "testdb");
         }
 
         #endregion

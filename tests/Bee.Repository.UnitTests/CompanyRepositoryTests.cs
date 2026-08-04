@@ -17,7 +17,7 @@ namespace Bee.Repository.UnitTests
         public CompanyRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
         private CompanyRepository CreateRepo()
-            => new CompanyRepository(_fx.GetRequiredService<IDbConnectionManager>());
+            => new CompanyRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
 
         #region GetById — Enabled (seed company 'C001')
 

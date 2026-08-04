@@ -13,6 +13,7 @@ using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 using Bee.Repository.Form;
 
+using Bee.Tests.Shared;
 namespace Bee.Repository.UnitTests
 {
     /// <summary>
@@ -68,13 +69,7 @@ namespace Bee.Repository.UnitTests
         private static DataFormRepository CreateRepository(FormSchema? schema = null)
         {
             schema ??= BuildSchema();
-            return new DataFormRepository(
-                "Employee",
-                schema,
-                new StubDefineAccess(),
-                new StubDbAccessFactory(),
-                new StubConnectionManager(),
-                "testdb");
+            return new DataFormRepository(TestRepositoryContext.Create(new StubConnectionManager(), defineAccess: new StubDefineAccess(), dbAccessFactory: new StubDbAccessFactory()), "Employee", schema, "testdb");
         }
 
         private static FormSchema BuildSchema()
@@ -99,13 +94,11 @@ namespace Bee.Repository.UnitTests
         #region 建構子驗證
 
         [Fact]
-        [DisplayName("DataFormRepository 建構子傳入 null progId 應拋 ArgumentNullException")]
-        public void Constructor_NullProgId_ThrowsArgumentNullException()
+        [DisplayName("DataFormRepository 建構子傳入 null ctx 應拋 ArgumentNullException")]
+        public void Constructor_NullContext_ThrowsArgumentNullException()
         {
-            var schema = BuildSchema();
             Assert.Throws<ArgumentNullException>(() =>
-                new DataFormRepository(null!, schema, new StubDefineAccess(),
-                    new StubDbAccessFactory(), new StubConnectionManager(), "testdb"));
+                new DataFormRepository(null!, "Employee", BuildSchema(), "testdb"));
         }
 
         [Fact]
@@ -113,35 +106,7 @@ namespace Bee.Repository.UnitTests
         public void Constructor_NullSchema_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new DataFormRepository("Employee", null!, new StubDefineAccess(),
-                    new StubDbAccessFactory(), new StubConnectionManager(), "testdb"));
-        }
-
-        [Fact]
-        [DisplayName("DataFormRepository 建構子傳入 null defineAccess 應拋 ArgumentNullException")]
-        public void Constructor_NullDefineAccess_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                new DataFormRepository("Employee", BuildSchema(), null!,
-                    new StubDbAccessFactory(), new StubConnectionManager(), "testdb"));
-        }
-
-        [Fact]
-        [DisplayName("DataFormRepository 建構子傳入 null dbAccessFactory 應拋 ArgumentNullException")]
-        public void Constructor_NullDbAccessFactory_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                new DataFormRepository("Employee", BuildSchema(), new StubDefineAccess(),
-                    null!, new StubConnectionManager(), "testdb"));
-        }
-
-        [Fact]
-        [DisplayName("DataFormRepository 建構子傳入 null connectionManager 應拋 ArgumentNullException")]
-        public void Constructor_NullConnectionManager_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                new DataFormRepository("Employee", BuildSchema(), new StubDefineAccess(),
-                    new StubDbAccessFactory(), null!, "testdb"));
+                new DataFormRepository(TestRepositoryContext.Create(new StubConnectionManager(), defineAccess: new StubDefineAccess(), dbAccessFactory: new StubDbAccessFactory()), "Employee", null!, "testdb"));
         }
 
         [Fact]
@@ -149,8 +114,28 @@ namespace Bee.Repository.UnitTests
         public void Constructor_NullDatabaseId_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new DataFormRepository("Employee", BuildSchema(), new StubDefineAccess(),
-                    new StubDbAccessFactory(), new StubConnectionManager(), null!));
+                new DataFormRepository(TestRepositoryContext.Create(new StubConnectionManager(), defineAccess: new StubDefineAccess(), dbAccessFactory: new StubDbAccessFactory()), "Employee", BuildSchema(), null!));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [DisplayName("DataFormRepository 建構子傳入空白 databaseId 應拋 ArgumentException")]
+        public void Constructor_BlankDatabaseId_ThrowsArgumentException(string databaseId)
+        {
+            Assert.Throws<ArgumentException>(() =>
+                new DataFormRepository(TestRepositoryContext.Create(new StubConnectionManager(), defineAccess: new StubDefineAccess(), dbAccessFactory: new StubDbAccessFactory()), "Employee", BuildSchema(), databaseId));
+        }
+
+        [Fact]
+        [DisplayName("統一簽章後 null progId 正規化為空字串，不再拋例外")]
+        public void Constructor_NullProgId_NormalizesToEmpty()
+        {
+            // 註冊表軸的 repository 一定有 progId；框架軸沒有，統一簽章下傳空字串即可。
+            // 兩者共用同一個建構函式，因此 progId 不再是必填。
+            var repo = new DataFormRepository(TestRepositoryContext.Create(new StubConnectionManager(), defineAccess: new StubDefineAccess(), dbAccessFactory: new StubDbAccessFactory()), null!, BuildSchema(), "testdb");
+
+            Assert.Equal(string.Empty, repo.ProgId);
         }
 
         [Fact]

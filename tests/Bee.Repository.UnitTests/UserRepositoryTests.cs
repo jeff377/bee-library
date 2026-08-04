@@ -16,13 +16,13 @@ namespace Bee.Repository.UnitTests
         public UserRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
         private UserRepository CreateRepo()
-            => new UserRepository(_fx.GetRequiredService<IDbConnectionManager>());
+            => new UserRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
 
         [Fact]
         [DisplayName("建構子傳入 null connectionManager 應拋出 ArgumentNullException")]
         public void Constructor_NullConnectionManager_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => new UserRepository(null!));
+            Assert.Throws<ArgumentNullException>(() => new UserRepository(TestRepositoryContext.Create(null!), Guid.Empty, string.Empty));
         }
 
         [Theory]
@@ -32,7 +32,7 @@ namespace Bee.Repository.UnitTests
         [DisplayName("GetRowIdBySysId 傳入 null 或空白字串應直接回傳 Guid.Empty")]
         public void GetRowIdBySysId_NullOrWhitespace_ReturnsGuidEmpty(string? userId)
         {
-            var repo = new UserRepository(new StubConnectionManager());
+            var repo = new UserRepository(TestRepositoryContext.Create(new StubConnectionManager()), Guid.Empty, string.Empty);
             var result = repo.GetRowIdBySysId(userId!);
             Assert.Equal(Guid.Empty, result);
         }

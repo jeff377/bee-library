@@ -49,12 +49,8 @@ namespace Bee.Definition
 
         // ---------------- Repository ----------------
         /// <summary>
-        /// Default system-level repository factory type.
+        /// Default repository factory type, used for creating every repository on both axes.
         /// </summary>
-        public const string SystemRepositoryFactory = "Bee.Repository.Factories.SystemRepositoryFactory, Bee.Repository";
-        /// <summary>
-        /// Default form-level repository factory type.
-        /// </summary>
-        public const string FormRepositoryFactory = "Bee.Repository.Factories.FormRepositoryFactory, Bee.Repository";
+        public const string RepositoryFactory = "Bee.Repository.Factories.RepositoryFactory, Bee.Repository";
     }
 }

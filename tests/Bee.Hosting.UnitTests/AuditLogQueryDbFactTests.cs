@@ -38,7 +38,7 @@ namespace Bee.Hosting.UnitTests
             dbAccess.Execute(AuditLogWriteRepository.BuildInsert(ChangeEntry(olderId, progId, rowKey, "c1", ChangeKind.Insert, older)));
             dbAccess.Execute(AuditLogWriteRepository.BuildInsert(ChangeEntry(newerId, progId, rowKey, "c2", ChangeKind.Update, newer)));
 
-            var repository = new AuditLogRepository(connectionManager, databaseId);
+            var repository = new AuditLogRepository(TestRepositoryContext.Create(connectionManager), databaseId);
             var byRecord = new ChangeLogQuery { ProgId = progId, RowKey = rowKey };
 
             // No company filter → both rows, newest first (log_time DESC).
@@ -90,7 +90,7 @@ namespace Bee.Hosting.UnitTests
             var databaseId = TestDbConventions.GetDatabaseId(databaseType, "log");
             var connectionManager = _fx.GetRequiredService<IDbConnectionManager>();
             var dbAccess = new Bee.Db.DbAccess(databaseId, connectionManager);
-            var repository = new AuditLogRepository(connectionManager, databaseId);
+            var repository = new AuditLogRepository(TestRepositoryContext.Create(connectionManager), databaseId);
 
             // Login: write one failed-login for a unique user, read it back by user + event filter.
             var loginUser = "u_" + Guid.NewGuid().ToString("N");
@@ -172,7 +172,7 @@ namespace Bee.Hosting.UnitTests
             var databaseId = TestDbConventions.GetDatabaseId(databaseType, "log");
             var connectionManager = _fx.GetRequiredService<IDbConnectionManager>();
             var dbAccess = new Bee.Db.DbAccess(databaseId, connectionManager);
-            var repository = new AuditLogRepository(connectionManager, databaseId);
+            var repository = new AuditLogRepository(TestRepositoryContext.Create(connectionManager), databaseId);
 
             // Seed a unique method with 3 Slow anomalies within a tight window so the aggregates are
             // isolated from other rows in the shared append-only table.

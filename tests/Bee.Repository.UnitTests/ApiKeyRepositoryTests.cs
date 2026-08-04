@@ -23,7 +23,7 @@ namespace Bee.Repository.UnitTests
         public ApiKeyRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
         private ApiKeyRepository CreateRepo()
-            => new ApiKeyRepository(_fx.GetRequiredService<IDbConnectionManager>());
+            => new ApiKeyRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
 
         private static string NewSysId() => "rt-" + Guid.NewGuid().ToString("N");
 

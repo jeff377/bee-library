@@ -1,6 +1,6 @@
 using Bee.Base;
 using Bee.Db;
-using Bee.Db.Manager;
+using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Repository.Abstractions.System;
 
@@ -11,17 +11,17 @@ namespace Bee.Repository.System
     /// <see cref="HasAccess"/> via a three-table JOIN against <c>st_user</c> and
     /// <c>st_company</c>, filtered by the company's <c>enabled</c> flag.
     /// </summary>
-    public class UserCompanyRepository : IUserCompanyRepository
+    public class UserCompanyRepository : RepositoryBase, IUserCompanyRepository
     {
-        private readonly IDbConnectionManager _connectionManager;
-
         /// <summary>
         /// Initializes a new <see cref="UserCompanyRepository"/>.
         /// </summary>
-        /// <param name="connectionManager">The DI-resolved connection manager.</param>
-        public UserCompanyRepository(IDbConnectionManager connectionManager)
+        /// <param name="ctx">The shared repository context.</param>
+        /// <param name="accessToken">The current request's access token.</param>
+        /// <param name="progId">Unused on the framework axis; accepted for signature uniformity.</param>
+        public UserCompanyRepository(IRepositoryContext ctx, Guid accessToken, string progId)
+            : base(ctx, accessToken, progId, DbScope.Common)
         {
-            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Bee.Repository.System
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(companyId))
                 return false;
 
-            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string ucTbl = dbType.QuoteIdentifier("st_user_company");
             string userTbl = dbType.QuoteIdentifier("st_user");
             string companyTbl = dbType.QuoteIdentifier("st_company");
@@ -51,7 +51,7 @@ namespace Bee.Repository.System
                 $"WHERE u.{sysId} = {{0}} AND c.{sysId} = {{1}} AND c.{enabled} = {{2}}";
 
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, userId, companyId, true);
-            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var dbAccess = CreateDbAccess();
             var result = dbAccess.Execute(command);
             return ValueUtilities.CInt(result.Scalar!) > 0;
         }

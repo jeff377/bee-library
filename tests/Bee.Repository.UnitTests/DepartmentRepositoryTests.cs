@@ -17,7 +17,7 @@ namespace Bee.Repository.UnitTests
         public DepartmentRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
         private DepartmentRepository CreateRepo()
-            => new DepartmentRepository(_fx.GetRequiredService<IDbConnectionManager>());
+            => new DepartmentRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
 
         private void RunRoundTrip(DatabaseType dbType)
         {

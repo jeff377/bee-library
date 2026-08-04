@@ -557,13 +557,7 @@ namespace Bee.Business.UnitTests.Form
                 EmployeeSchema = defineAccess.GetFormSchema("Employee");
                 DepartmentSchema = defineAccess.GetFormSchema("Department");
 
-                _repository = new DataFormRepository(
-                    ProgId,
-                    EmployeeSchema,
-                    defineAccess,
-                    fx.GetRequiredService<IDbAccessFactory>(),
-                    fx.GetRequiredService<IDbConnectionManager>(),
-                    _databaseId);
+                _repository = new DataFormRepository(TestRepositoryContext.Create(fx.GetRequiredService<IDbConnectionManager>(), defineAccess: defineAccess, dbAccessFactory: fx.GetRequiredService<IDbAccessFactory>()), ProgId, EmployeeSchema, _databaseId);
             }
 
             public DatabaseType DbType { get; }

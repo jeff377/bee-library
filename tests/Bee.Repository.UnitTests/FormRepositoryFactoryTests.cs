@@ -13,6 +13,7 @@ using Bee.Repository.Abstractions;
 using Bee.Repository.Factories;
 using Bee.Repository.Form;
 
+using Bee.Tests.Shared;
 namespace Bee.Repository.UnitTests
 {
     /// <summary>
@@ -71,44 +72,56 @@ namespace Bee.Repository.UnitTests
             IDbAccessFactory? dbAccessFactory = null,
             IDbConnectionManager? connectionManager = null,
             IRepositoryDatabaseRouter? router = null)
-            => new(
+            => new(new RepositoryFactory(
+                TestRepositoryContext.CreateServices(),
                 defineAccess ?? new StubDefineAccess(),
                 dbAccessFactory ?? new StubDbAccessFactory(),
                 connectionManager ?? new StubConnectionManager(),
-                router ?? new StubRouter());
+                router ?? new StubRouter()));
 
         #endregion
 
         [Fact]
-        [DisplayName("建構子傳入 null defineAccess 應拋 ArgumentNullException")]
-        public void Constructor_NullDefineAccess_ThrowsArgumentNullException()
+        [DisplayName("RepositoryFactory 建構子傳入 null defineAccess 應拋 ArgumentNullException")]
+        public void RepositoryFactory_NullDefineAccess_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() =>
-                new FormRepositoryFactory(null!, new StubDbAccessFactory(), new StubConnectionManager(), new StubRouter()));
+            Assert.Throws<ArgumentNullException>(() => new RepositoryFactory(
+                TestRepositoryContext.CreateServices(), null!, new StubDbAccessFactory(),
+                new StubConnectionManager(), new StubRouter()));
         }
 
         [Fact]
-        [DisplayName("建構子傳入 null dbAccessFactory 應拋 ArgumentNullException")]
-        public void Constructor_NullDbAccessFactory_ThrowsArgumentNullException()
+        [DisplayName("RepositoryFactory 建構子傳入 null dbAccessFactory 應拋 ArgumentNullException")]
+        public void RepositoryFactory_NullDbAccessFactory_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() =>
-                new FormRepositoryFactory(new StubDefineAccess(), null!, new StubConnectionManager(), new StubRouter()));
+            Assert.Throws<ArgumentNullException>(() => new RepositoryFactory(
+                TestRepositoryContext.CreateServices(), new StubDefineAccess(), null!,
+                new StubConnectionManager(), new StubRouter()));
         }
 
         [Fact]
-        [DisplayName("建構子傳入 null connectionManager 應拋 ArgumentNullException")]
-        public void Constructor_NullConnectionManager_ThrowsArgumentNullException()
+        [DisplayName("RepositoryFactory 建構子傳入 null connectionManager 應拋 ArgumentNullException")]
+        public void RepositoryFactory_NullConnectionManager_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() =>
-                new FormRepositoryFactory(new StubDefineAccess(), new StubDbAccessFactory(), null!, new StubRouter()));
+            Assert.Throws<ArgumentNullException>(() => new RepositoryFactory(
+                TestRepositoryContext.CreateServices(), new StubDefineAccess(), new StubDbAccessFactory(),
+                null!, new StubRouter()));
         }
 
         [Fact]
-        [DisplayName("建構子傳入 null router 應拋 ArgumentNullException")]
-        public void Constructor_NullRouter_ThrowsArgumentNullException()
+        [DisplayName("RepositoryFactory 建構子傳入 null router 應拋 ArgumentNullException")]
+        public void RepositoryFactory_NullRouter_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() =>
-                new FormRepositoryFactory(new StubDefineAccess(), new StubDbAccessFactory(), new StubConnectionManager(), null!));
+            Assert.Throws<ArgumentNullException>(() => new RepositoryFactory(
+                TestRepositoryContext.CreateServices(), new StubDefineAccess(), new StubDbAccessFactory(),
+                new StubConnectionManager(), null!));
+        }
+
+        [Fact]
+        [DisplayName("FormRepositoryFactory 轉接器建構子傳入 null 應拋 ArgumentNullException")]
+        public void Adapter_NullFactory_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new FormRepositoryFactory(null!));
         }
 
         [Theory]

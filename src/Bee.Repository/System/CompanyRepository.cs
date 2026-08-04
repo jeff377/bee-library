@@ -2,7 +2,6 @@ using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Db;
-using Bee.Db.Manager;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Identity;
@@ -18,17 +17,17 @@ namespace Bee.Repository.System
     /// callers they look exactly like nonexistent companies, which matches the merged
     /// "Company access denied" error surface of <c>EnterCompany</c>.
     /// </remarks>
-    public class CompanyRepository : ICompanyRepository
+    public class CompanyRepository : RepositoryBase, ICompanyRepository
     {
-        private readonly IDbConnectionManager _connectionManager;
-
         /// <summary>
         /// Initializes a new <see cref="CompanyRepository"/>.
         /// </summary>
-        /// <param name="connectionManager">The DI-resolved connection manager.</param>
-        public CompanyRepository(IDbConnectionManager connectionManager)
+        /// <param name="ctx">The shared repository context.</param>
+        /// <param name="accessToken">The current request's access token.</param>
+        /// <param name="progId">Unused on the framework axis; accepted for signature uniformity.</param>
+        public CompanyRepository(IRepositoryContext ctx, Guid accessToken, string progId)
+            : base(ctx, accessToken, progId, DbScope.Common)
         {
-            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         }
 
         /// <summary>
@@ -38,7 +37,7 @@ namespace Bee.Repository.System
         /// <param name="companyId">The company business id.</param>
         public CompanyInfo? GetById(string companyId)
         {
-            var dbType = _connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier("st_company");
             string colId = dbType.QuoteIdentifier("sys_id");
             string colName = dbType.QuoteIdentifier("sys_name");
@@ -54,7 +53,7 @@ namespace Bee.Repository.System
                          $"FROM {tbl} \n" +
                          $"WHERE {colId} = {{0}} AND {colEnabled} = {{1}}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, companyId, true);
-            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
+            var dbAccess = CreateDbAccess();
             var result = dbAccess.Execute(command);
             var table = result.Table!;
             if (table.IsEmpty()) { return null; }

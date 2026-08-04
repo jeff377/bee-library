@@ -1,4 +1,5 @@
 using System.Text;
+using Bee.Definition;
 using Bee.Db;
 using Bee.Definition.Database;
 using Bee.Definition.Logging;
@@ -12,18 +13,17 @@ namespace Bee.Repository.AuditLog
     /// the read side (<see cref="AuditLogRepository"/>) so reads line up with writes across every
     /// provider.
     /// </summary>
-    public class AuditLogWriteRepository : IAuditLogWriteRepository
+    public class AuditLogWriteRepository : RepositoryBase, IAuditLogWriteRepository
     {
-        private readonly IDbAccessFactory _dbAccessFactory;
-
         /// <summary>
         /// Initializes a new <see cref="AuditLogWriteRepository"/>.
         /// </summary>
-        /// <param name="dbAccessFactory">The DI-resolved database access factory.</param>
-        public AuditLogWriteRepository(IDbAccessFactory dbAccessFactory)
+        /// <param name="ctx">The shared repository context.</param>
+        /// <param name="accessToken">The current request's access token.</param>
+        /// <param name="progId">Unused on the framework axis; accepted for signature uniformity.</param>
+        public AuditLogWriteRepository(IRepositoryContext ctx, Guid accessToken, string progId)
+            : base(ctx, accessToken, progId, DbScope.Log)
         {
-            ArgumentNullException.ThrowIfNull(dbAccessFactory);
-            _dbAccessFactory = dbAccessFactory;
         }
 
         /// <inheritdoc/>
@@ -34,7 +34,7 @@ namespace Bee.Repository.AuditLog
 
             // Log tables live in the conventional 'log' database (a fixed databaseId, like
             // 'common'); the physical mapping is resolved by DatabaseSettings, not configured here.
-            var dbAccess = _dbAccessFactory.Create(DbCategoryIds.Log);
+            var dbAccess = Context.DbAccessFactory.Create(DbCategoryIds.Log);
             foreach (var entry in entries)
             {
                 dbAccess.Execute(BuildInsert(entry));

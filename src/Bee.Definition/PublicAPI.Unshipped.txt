@@ -93,6 +93,8 @@ Bee.Definition.Security.IApiKeyContextAware.ApiKeyValidation.get -> Bee.Definiti
 Bee.Definition.Security.IApiKeyContextAware.ApiKeyValidation.set -> void
 Bee.Definition.Security.IApiKeyValidator
 Bee.Definition.Security.IApiKeyValidator.Validate(string? apiKey) -> Bee.Definition.Security.ApiKeyValidationResult!
+Bee.Definition.Settings.BackendComponents.RepositoryFactory.get -> string!
+Bee.Definition.Settings.BackendComponents.RepositoryFactory.set -> void
 Bee.Definition.Settings.BackendConfiguration.DefaultLanguage.get -> string!
 Bee.Definition.Settings.BackendConfiguration.DefaultLanguage.set -> void
 Bee.Definition.Settings.BackendConfiguration.SessionCleanupOptions.get -> Bee.Definition.Settings.SessionCleanupOptions!
@@ -150,6 +152,7 @@ Bee.Definition.Storage.IDefineAccess.SaveMenuSettings(Bee.Definition.Settings.Me
 Bee.Definition.Storage.IDefineStorage.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings?
 Bee.Definition.Storage.IDefineStorage.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
 const Bee.Definition.BackendDefaultTypes.ApiEncryptionKeyProvider = "Bee.Business.Providers.DerivedApiEncryptionKeyProvider, Bee.Business" -> string!
+const Bee.Definition.BackendDefaultTypes.RepositoryFactory = "Bee.Repository.Factories.RepositoryFactory, Bee.Repository" -> string!
 const Bee.Definition.ProtectedFields.DeploymentAdmin = "deployment_admin" -> string!
 const Bee.Definition.Security.ApiKeyGateState.CacheKey = "[gate]" -> string!
 const Bee.Definition.SystemActions.CreateApiKey = "CreateApiKey" -> string!
