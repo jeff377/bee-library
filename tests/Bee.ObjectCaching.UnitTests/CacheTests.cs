@@ -9,11 +9,16 @@ namespace Bee.ObjectCaching.UnitTests
     /// 透過 fixture 的 DI 容器執行快取行為測試。PR 5.7 後 cache 改為接 <c>PathOptions</c> 注入，
     /// 不再走 process-wide static，可與其他 test class 平行執行。
     /// </summary>
-    public class CacheTests : IClassFixture<BeeTestFixture>
+    /// <remarks>
+    /// fixture 必須是 <see cref="SharedDbFixture"/>：<c>SessionInfo_SetAndRemove_BehavesCorrectly</c>
+    /// 在移除後再 <c>Get</c> 同一權杖，該次必定 cache miss 而轉走 rebuild 路徑讀 <c>st_session</c>
+    /// ——「查無此 session」正是靠這條查詢回空來成立的。只有 <c>SharedDbFixture</c> 會建 schema。
+    /// </remarks>
+    public class CacheTests : IClassFixture<SharedDbFixture>
     {
-        private readonly BeeTestFixture _fx;
+        private readonly SharedDbFixture _fx;
 
-        public CacheTests(BeeTestFixture fx)
+        public CacheTests(SharedDbFixture fx)
         {
             _fx = fx;
         }

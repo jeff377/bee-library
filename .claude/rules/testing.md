@@ -384,9 +384,27 @@ var result = access.GetDefine(DefineType.FormSchema, s_employeeKey);
 2026-08-04 `ClientDefineAccessTests` 即因此在 CI 以 `Invalid object name 'st_session'` 現形，
 本機恆綠是因為容器內的表早被前次執行建好。
 
-**本機重現法**：`docker exec sql2025 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '<pw>' -C
--d common -Q "DROP TABLE IF EXISTS st_session;"`，再單獨跑該測試專案。表會由下一次
+**別靠靜態 grep 判定範圍。** 觸發面比想像廣：不只 `IAccessTokenValidator`，任何
+`SessionInfoService.Get(未快取 token)` 都算——包含 BO 內部的 `GetLangText` /
+`GetCurrentCustomizeId` / 查目前公司。用下面的窮盡掃描，不要用推理代替執行。
+
+**窮盡掃描法（確定性，不靠運氣）**：drop 掉 `st_session`，再逐專案跑「排除所有
+`SharedDbFixture` 類別」的子集——建表的類別不參與，依賴該表的測試就必定現形：
+
+```bash
+docker exec sql2025 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '<pw>' -C \
+  -d common -Q "DROP TABLE IF EXISTS st_session;"
+# <SharedList> = 該專案內所有繼承 SharedDbFixture 的類別名
+dotnet test tests/<Proj>/<Proj>.csproj -c Release --settings .runsettings \
+  --filter "FullyQualifiedName!~.ClassA.&FullyQualifiedName!~.ClassB."
+```
+
+`--filter` 的值務必用雙引號包住（含 `&`，否則 shell 會吃掉）。表由下一次
 `SharedDatabaseState.EnsureSchemaAndSeed` 重建，對其他測試無殘留影響。
+
+> 2026-08-04 用此法一次掃出 4 個違規類別（`ClientDefineAccessTests`、
+> `JsonRpcExecutorCoverageTests`、`LogBusinessObjectTests`、`CacheTests`），
+> 而先前僅以 grep 推理只找到第 1 個。
 
 ### 2. 一次重跑轉綠**不足以**判定 flaky
 

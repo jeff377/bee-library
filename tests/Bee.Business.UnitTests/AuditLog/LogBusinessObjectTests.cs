@@ -20,12 +20,17 @@ namespace Bee.Business.UnitTests.AuditLog
     /// 明細方法（<c>GetChangeDetail</c>）把 changes_xml DiffGram 還原為結構化 before/after、
     /// 查無資料丟例外；三方法皆有權限 gate 與參數驗證。
     /// </summary>
-    public class LogBusinessObjectTests : IClassFixture<BeeTestFixture>
+    /// <remarks>
+    /// fixture 必須是 <see cref="SharedDbFixture"/>：BO 以裸 <c>Guid.NewGuid()</c> 權杖建構，
+    /// 而它的方法會 <c>SessionInfoService.Get(AccessToken)</c>（查目前公司、取語系），該權杖
+    /// 不在 cache 內因而走 rebuild 路徑讀 <c>st_session</c>。只有 <c>SharedDbFixture</c> 會建 schema。
+    /// </remarks>
+    public class LogBusinessObjectTests : IClassFixture<SharedDbFixture>
     {
         private const string ProgId = "Employee";
-        private readonly BeeTestFixture _fx;
+        private readonly SharedDbFixture _fx;
 
-        public LogBusinessObjectTests(BeeTestFixture fx) { _fx = fx; }
+        public LogBusinessObjectTests(SharedDbFixture fx) { _fx = fx; }
 
         private LogBusinessObject Bo(StubAuditLogRepository repo, bool authorized = true)
         {

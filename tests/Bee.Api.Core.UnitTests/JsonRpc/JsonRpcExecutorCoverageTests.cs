@@ -14,11 +14,16 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
     /// JsonRpcExecutor 覆蓋率補強測試：聚焦建構子 null 防護、異常記錄（anomaly detection）
     /// 路徑（成功慢查詢 / 失敗錯誤記錄 / AnomalyEnabled 組合分支）與加密金鑰取得分支。
     /// </summary>
-    public class JsonRpcExecutorCoverageTests : IClassFixture<BeeTestFixture>
+    /// <remarks>
+    /// fixture 必須是 <see cref="SharedDbFixture"/>：本檔的 executor 收到的是裸 <c>Guid.NewGuid()</c>
+    /// 權杖，真實 <see cref="IAccessTokenValidator"/> 因此必定 session cache miss，轉而走 rebuild
+    /// 路徑讀 <c>st_session</c>。只有 <c>SharedDbFixture</c> 會建 schema。
+    /// </remarks>
+    public class JsonRpcExecutorCoverageTests : IClassFixture<SharedDbFixture>
     {
-        private readonly BeeTestFixture _fx;
+        private readonly SharedDbFixture _fx;
 
-        public JsonRpcExecutorCoverageTests(BeeTestFixture fx)
+        public JsonRpcExecutorCoverageTests(SharedDbFixture fx)
         {
             _fx = fx;
         }
