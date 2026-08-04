@@ -368,14 +368,25 @@ var result = access.GetDefine(DefineType.FormSchema, s_employeeKey);
 以下兩類缺口**本機必定測不出來**。踩雷實例與排查過程見
 `docs/repo-ops/gotchas/test-ci-release.md`。
 
-### 1. 會寫 DB 的測試必須用 `SharedDbFixture`
+### 1. 會碰 DB 的測試必須用 `SharedDbFixture`
 
-**`BeeTestFixture` 不建 schema**（只有 `SharedDbFixture` 會）。測試若會讓 BO 寫 DB
-（session / 稽核 / 任何 repository 寫入），fixture 必須是 `SharedDbFixture`，否則只有在
-「別的測試行程剛好先把表建好」時才會通過。**看到 `BeeTestFixture` + DB 寫入就是嫌疑。**
+**`BeeTestFixture` 不建 schema**（只有 `SharedDbFixture` 會）。測試若會讓 BO 碰 DB
+（session / 稽核 / 任何 repository 讀寫），fixture 必須是 `SharedDbFixture`，否則只有在
+「別的測試類別或行程剛好先把表建好」時才會通過。**看到 `BeeTestFixture` + DB 存取就是嫌疑。**
 
 判別捷徑：測試環境 `AuditLogOptions.Enabled` 預設 `false` 且 `tests/Define/SystemSettings.xml`
 未覆寫 → 只動稽核寫入的改動在測試中不會求值，可先排除嫌疑。
+
+**「寫入」不是唯一觸發條件——讀取一樣會炸。** 只要測試以一個**未植入 cache 的 token**
+呼叫需要驗證身分的 API，server 端就會 session cache miss → 走 rebuild 路徑讀 `st_session`。
+辨識法：測試直接拿 `Guid.NewGuid()` 當 access token（而非
+`TestSessionFactory.CreateAccessToken(fx)`，後者會把 SessionInfo 寫進 cache 因而永不觸及 DB）。
+2026-08-04 `ClientDefineAccessTests` 即因此在 CI 以 `Invalid object name 'st_session'` 現形，
+本機恆綠是因為容器內的表早被前次執行建好。
+
+**本機重現法**：`docker exec sql2025 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '<pw>' -C
+-d common -Q "DROP TABLE IF EXISTS st_session;"`，再單獨跑該測試專案。表會由下一次
+`SharedDatabaseState.EnsureSchemaAndSeed` 重建，對其他測試無殘留影響。
 
 ### 2. 一次重跑轉綠**不足以**判定 flaky
 

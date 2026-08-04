@@ -10,14 +10,21 @@ namespace Bee.Api.Client.UnitTests
     /// <summary>
     /// 針對 <see cref="ClientDefineAccess"/> 的 async 型別化存取、快取與例外傳遞測試。
     /// 以 local <see cref="SystemApiConnector"/> 建構，需要 <c>ApiClientInfo.LocalServiceProvider</c>
-    /// 由 <see cref="Bee.Tests.Shared.GlobalFixture"/> 一次性 wire up；
-    /// 透過 <see cref="Bee.Tests.Shared.BeeTestFixture"/> 的 ctor 觸發完成。
+    /// 由 <see cref="Bee.Tests.Shared.SharedDbFixture"/> 的 ctor 一次性 wire up。
     /// </summary>
-    public class ClientDefineAccessTests : IClassFixture<Bee.Tests.Shared.BeeTestFixture>
+    /// <remarks>
+    /// fixture 必須是 <see cref="Bee.Tests.Shared.SharedDbFixture"/> 而非 <c>BeeTestFixture</c>：
+    /// 每個測試都以一個隨機 token 打本機 <c>GetDefine</c>，而該方法要求已驗證身分，因此 server 端
+    /// 會 session cache miss → 走 rebuild 路徑讀 <c>st_session</c>。只有 <c>SharedDbFixture</c> 會建
+    /// schema，用 <c>BeeTestFixture</c> 等於指望同行程內另一個測試類別先把表建好——那是競賽條件，
+    /// 曾在 CI 以 <c>Invalid object name 'st_session'</c> 現形。
+    /// </remarks>
+    public class ClientDefineAccessTests : IClassFixture<Bee.Tests.Shared.SharedDbFixture>
     {
-        public ClientDefineAccessTests(Bee.Tests.Shared.BeeTestFixture _)
+        public ClientDefineAccessTests(Bee.Tests.Shared.SharedDbFixture _)
         {
-            // fixture 僅用於觸發 GlobalFixture 一次性 wire up ApiClientInfo.LocalServiceProvider。
+            // fixture 僅用於觸發 wire up 與 schema 建立；測試方法直接用 process-wide 的
+            // ApiClientInfo.LocalServiceProvider。
         }
 
         private static ClientDefineAccess CreateAccess()
