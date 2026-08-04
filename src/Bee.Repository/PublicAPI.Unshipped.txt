@@ -1,21 +1,31 @@
 #nullable enable
+*REMOVED*Bee.Repository.Factories.AuditLogRepositoryFactory
+*REMOVED*Bee.Repository.Factories.AuditLogRepositoryFactory.CreateAuditLogRepository() -> Bee.Repository.Abstractions.AuditLog.IAuditLogRepository!
+*REMOVED*Bee.Repository.Factories.FormRepositoryFactory
+*REMOVED*Bee.Repository.Factories.FormRepositoryFactory.CreateDataFormRepository(string! progId, System.Guid accessToken) -> Bee.Repository.Abstractions.Form.IDataFormRepository!
+*REMOVED*Bee.Repository.Factories.FormRepositoryFactory.CreateReportFormRepository(string! progId) -> Bee.Repository.Abstractions.Form.IReportFormRepository!
+*REMOVED*Bee.Repository.Factories.SystemRepositoryFactory
+*REMOVED*Bee.Repository.Factories.SystemRepositoryFactory.CreateCompanyRepository() -> Bee.Repository.Abstractions.System.ICompanyRepository!
+*REMOVED*Bee.Repository.Factories.SystemRepositoryFactory.CreateDatabaseRepository() -> Bee.Repository.Abstractions.System.IDatabaseRepository!
+*REMOVED*Bee.Repository.Factories.SystemRepositoryFactory.CreateDepartmentRepository() -> Bee.Repository.Abstractions.System.IDepartmentRepository!
+*REMOVED*Bee.Repository.Factories.SystemRepositoryFactory.CreateEmployeeRepository() -> Bee.Repository.Abstractions.System.IEmployeeRepository!
+*REMOVED*Bee.Repository.Factories.SystemRepositoryFactory.CreateRolePermissionRepository() -> Bee.Repository.Abstractions.System.IRolePermissionRepository!
+*REMOVED*Bee.Repository.Factories.SystemRepositoryFactory.CreateSessionRepository() -> Bee.Repository.Abstractions.System.ISessionRepository!
+*REMOVED*Bee.Repository.Factories.SystemRepositoryFactory.CreateUserCompanyRepository() -> Bee.Repository.Abstractions.System.IUserCompanyRepository!
+*REMOVED*Bee.Repository.Factories.SystemRepositoryFactory.CreateUserRepository() -> Bee.Repository.Abstractions.System.IUserRepository!
+*REMOVED*Bee.Repository.Form.ReportFormRepository
 *REMOVED*Bee.Repository.System.SessionRepository.CreateSession(string! userID, int expiresIn = 3600, bool oneTime = false) -> Bee.Definition.Identity.SessionUser!
 *REMOVED*Bee.Repository.System.UserRepository.GetTimeZone(string! userId) -> string!
 Bee.Repository.AuditLog.AuditLogRepository.AuditLogRepository(Bee.Repository.IRepositoryContext! ctx, System.Guid accessToken, string! progId) -> void
 Bee.Repository.AuditLog.AuditLogRepository.AuditLogRepository(Bee.Repository.IRepositoryContext! ctx, string! databaseId) -> void
 Bee.Repository.AuditLog.AuditLogWriteRepository.AuditLogWriteRepository(Bee.Repository.IRepositoryContext! ctx, System.Guid accessToken, string! progId) -> void
-Bee.Repository.Factories.AuditLogRepositoryFactory.AuditLogRepositoryFactory(Bee.Repository.Abstractions.Factories.IRepositoryFactory! factory) -> void
-Bee.Repository.Factories.FormRepositoryFactory.FormRepositoryFactory(Bee.Repository.Abstractions.Factories.IRepositoryFactory! factory) -> void
 Bee.Repository.Factories.RepositoryFactory
 Bee.Repository.Factories.RepositoryFactory.Context.get -> Bee.Repository.IRepositoryContext!
 Bee.Repository.Factories.RepositoryFactory.Create<T>(System.Guid accessToken = default(System.Guid)) -> T!
 Bee.Repository.Factories.RepositoryFactory.CreateFormRepository<T>(System.Guid accessToken, string! progId) -> T!
 Bee.Repository.Factories.RepositoryFactory.RepositoryFactory(System.IServiceProvider! services, Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Db.IDbAccessFactory! dbAccessFactory, Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Repository.Abstractions.IRepositoryDatabaseRouter! router, Bee.Db.CacheNotify.ICacheNotifyService? cacheNotify = null) -> void
-Bee.Repository.Factories.SystemRepositoryFactory.CreateApiKeyRepository() -> Bee.Repository.Abstractions.System.IApiKeyRepository!
-Bee.Repository.Factories.SystemRepositoryFactory.SystemRepositoryFactory(Bee.Repository.Abstractions.Factories.IRepositoryFactory! factory) -> void
 Bee.Repository.Form.DataFormRepository.DataFormRepository(Bee.Repository.IRepositoryContext! ctx, System.Guid accessToken, string! progId) -> void
 Bee.Repository.Form.DataFormRepository.DataFormRepository(Bee.Repository.IRepositoryContext! ctx, string! progId, Bee.Definition.Forms.FormSchema! schema, string! databaseId) -> void
-Bee.Repository.Form.ReportFormRepository.ReportFormRepository(Bee.Repository.IRepositoryContext! ctx, System.Guid accessToken, string! progId) -> void
 Bee.Repository.IRepositoryContext
 Bee.Repository.IRepositoryContext.CacheNotify.get -> Bee.Db.CacheNotify.ICacheNotifyService?
 Bee.Repository.IRepositoryContext.ConnectionManager.get -> Bee.Db.Manager.IDbConnectionManager!

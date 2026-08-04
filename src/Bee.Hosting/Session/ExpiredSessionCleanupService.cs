@@ -1,6 +1,7 @@
 using System.Data.Common;
 using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -17,22 +18,22 @@ namespace Bee.Hosting.Session
     /// </remarks>
     public sealed class ExpiredSessionCleanupService : BackgroundService
     {
-        private readonly ISystemRepositoryFactory _systemFactory;
+        private readonly IRepositoryFactory _repositoryFactory;
         private readonly SessionCleanupOptions _options;
         private readonly ILogger<ExpiredSessionCleanupService> _logger;
 
         /// <summary>
         /// Initializes a new <see cref="ExpiredSessionCleanupService"/>.
         /// </summary>
-        /// <param name="systemFactory">Factory that builds the session repository on demand.</param>
+        /// <param name="repositoryFactory">Factory that builds the session repository on demand.</param>
         /// <param name="options">Cleanup settings.</param>
         /// <param name="logger">Logger.</param>
         public ExpiredSessionCleanupService(
-            ISystemRepositoryFactory systemFactory,
+            IRepositoryFactory repositoryFactory,
             SessionCleanupOptions options,
             ILogger<ExpiredSessionCleanupService> logger)
         {
-            _systemFactory = systemFactory ?? throw new ArgumentNullException(nameof(systemFactory));
+            _repositoryFactory = repositoryFactory ?? throw new ArgumentNullException(nameof(repositoryFactory));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -64,7 +65,7 @@ namespace Bee.Hosting.Session
         {
             try
             {
-                int deleted = _systemFactory.CreateSessionRepository().DeleteExpiredSessions();
+                int deleted = _repositoryFactory.Create<ISessionRepository>().DeleteExpiredSessions();
                 if (deleted > 0 && _logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation("Deleted {Count} expired session row(s).", deleted);

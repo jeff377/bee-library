@@ -7,9 +7,9 @@ namespace Bee.Repository.Abstractions.AuditLog
     /// Counterpart to <see cref="IAuditLogRepository"/>, which reads them back.
     /// </summary>
     /// <remarks>
-    /// Deliberately separate from <see cref="IAuditLogRepository"/>: the read side is queried
-    /// per-database by <c>IAuditLogRepositoryFactory</c>, whereas writes always target the
-    /// conventional log database and are driven by the hosting layer's writer pipeline.
+    /// Deliberately separate from <see cref="IAuditLogRepository"/>: the read side answers a business
+    /// object's queries within a request, whereas writes always target the conventional log database
+    /// and are driven by the hosting layer's writer pipeline.
     /// </remarks>
     public interface IAuditLogWriteRepository
     {

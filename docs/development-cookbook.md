@@ -180,11 +180,11 @@ public class FormExecFuncHandler
 // System-level example (authentication required)
 public class SystemExecFuncHandler
 {
-    private readonly ISystemRepositoryFactory _systemFactory;
+    private readonly IRepositoryFactory _repositoryFactory;
 
-    public SystemExecFuncHandler(ISystemRepositoryFactory systemFactory)
+    public SystemExecFuncHandler(IRepositoryFactory repositoryFactory)
     {
-        _systemFactory = systemFactory;
+        _repositoryFactory = repositoryFactory;
     }
 
     /// <summary>
@@ -197,7 +197,7 @@ public class SystemExecFuncHandler
         string dbName = args.Parameters.GetValue<string>("DbName");
         string tableName = args.Parameters.GetValue<string>("TableName");
 
-        var repo = _systemFactory.CreateDatabaseRepository();
+        var repo = _repositoryFactory.Create<IDatabaseRepository>();
         bool upgraded = repo.UpgradeTableSchema(databaseId, dbName, tableName);
         result.Parameters.Add("Upgraded", upgraded);
     }
@@ -282,8 +282,8 @@ A BO method should never hard-code a `databaseId` string or read `SessionInfo.Co
 // FormSchema-driven CRUD — one-liner, auto-routed
 var repository = CreateDataFormRepository(ProgId);
 // Equivalent to:
-// Services.GetRequiredService<IFormRepositoryFactory>()
-//         .CreateDataFormRepository(ProgId, AccessToken);
+// Services.GetRequiredService<IRepositoryFactory>()
+//         .CreateFormRepository<IDataFormRepository>(AccessToken, ProgId);
 
 // Custom bo repo — resolve databaseId for the target scope, then build the repo
 var dbId = ResolveDatabaseId(DbScope.Log);   // "log" (no session needed)

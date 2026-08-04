@@ -175,11 +175,11 @@ public class FormExecFuncHandler
 // 系統層級範例（需要認證）
 public class SystemExecFuncHandler
 {
-    private readonly ISystemRepositoryFactory _systemFactory;
+    private readonly IRepositoryFactory _repositoryFactory;
 
-    public SystemExecFuncHandler(ISystemRepositoryFactory systemFactory)
+    public SystemExecFuncHandler(IRepositoryFactory repositoryFactory)
     {
-        _systemFactory = systemFactory;
+        _repositoryFactory = repositoryFactory;
     }
 
     /// <summary>
@@ -192,7 +192,7 @@ public class SystemExecFuncHandler
         string dbName = args.Parameters.GetValue<string>("DbName");
         string tableName = args.Parameters.GetValue<string>("TableName");
 
-        var repo = _systemFactory.CreateDatabaseRepository();
+        var repo = _repositoryFactory.Create<IDatabaseRepository>();
         bool upgraded = repo.UpgradeTableSchema(databaseId, dbName, tableName);
         result.Parameters.Add("Upgraded", upgraded);
     }
@@ -277,8 +277,8 @@ BO 方法**不應**寫死 `databaseId` 字串，也**不應**自行讀 `SessionI
 // FormSchema-driven CRUD —— one-liner，自動路由
 var repository = CreateDataFormRepository(ProgId);
 // 等同於：
-// Services.GetRequiredService<IFormRepositoryFactory>()
-//         .CreateDataFormRepository(ProgId, AccessToken);
+// Services.GetRequiredService<IRepositoryFactory>()
+//         .CreateFormRepository<IDataFormRepository>(AccessToken, ProgId);
 
 // 自訂 bo repo —— 取目標 scope 的 databaseId 再建 repo
 var dbId = ResolveDatabaseId(DbScope.Log);   // "log"（不需 session）

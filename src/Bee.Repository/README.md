@@ -25,18 +25,18 @@
 
 ### Database Operations
 
-- `DatabaseRepository` (`internal`) -- connection testing with parameter substitution (`{@DbName}`, `{@UserId}`, `{@Password}`); exposed only through `IDatabaseRepository`, aggregated internally by `SystemRepositoryFactory`, not a public API
+- `DatabaseRepository` (`internal`) -- connection testing with parameter substitution (`{@DbName}`, `{@UserId}`, `{@Password}`); exposed only through `IDatabaseRepository`, built by `RepositoryFactory`, not a public API
 - Schema upgrades via `TableSchemaBuilder` for FormSchema-driven table management
 
 ### Form Data Access
 
 - `DataFormRepository` -- default implementation of `IDataFormRepository` for data form CRUD, resolved by ProgId
-- `ReportFormRepository` -- default implementation of `IReportFormRepository` for report form queries, resolved by ProgId
 
-### Provider Implementations
+### Factory Implementation
 
-- `SystemRepositoryFactory` -- wires `SessionRepository` and `DatabaseRepository` into a single provider
-- `FormRepositoryFactory` -- factory that creates form repository instances by ProgId
+- `RepositoryFactory` -- default `IRepositoryFactory`: builds every repository, on both axes, from one
+  shared `IRepositoryContext`. The framework axis is a type table rather than a method apiece, so it
+  does not grow a member per system table.
 
 ## Key Public APIs
 
@@ -44,9 +44,7 @@
 |-------|---------|
 | `SessionRepository` | Session CRUD against `st_session` / `st_user` tables |
 | `DataFormRepository` | Data form data access implementation |
-| `ReportFormRepository` | Report form data access implementation |
-| `SystemRepositoryFactory` | Default `ISystemRepositoryFactory` implementation |
-| `FormRepositoryFactory` | Default `IFormRepositoryFactory` implementation |
+| `RepositoryFactory` | Default `IRepositoryFactory` implementation |
 
 ## Design Conventions
 
@@ -62,7 +60,7 @@
 ```
 Bee.Repository/
   AuditLog/   # AuditLogRepository (read), AuditLogWriteRepository (write)
-  Form/       # DataFormRepository, ReportFormRepository
-  Factories/   # SystemRepositoryFactory, FormRepositoryFactory
+  Form/       # DataFormRepository
+  Factories/   # RepositoryFactory
   System/     # SessionRepository, DatabaseRepository
 ```

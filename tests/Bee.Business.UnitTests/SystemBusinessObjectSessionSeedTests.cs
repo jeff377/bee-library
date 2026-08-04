@@ -26,7 +26,7 @@ namespace Bee.Business.UnitTests
         public SystemBusinessObjectSessionSeedTests(SharedDbFixture fx) { _fx = fx; }
 
         private ISessionRepository SessionRepository
-            => _fx.GetRequiredService<ISystemRepositoryFactory>().CreateSessionRepository();
+            => _fx.GetRequiredService<IRepositoryFactory>().Create<ISessionRepository>();
 
         private Guid LoginAsSeedUser()
         {

@@ -4,6 +4,7 @@ using Bee.Business.System;
 using Bee.Db.Manager;
 using Bee.Definition.Database;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 using Bee.Tests.Shared;
 
 using Bee.Definition;
@@ -29,7 +30,7 @@ namespace Bee.Business.UnitTests
         private IDbConnectionManager ConnectionManager => _fx.GetRequiredService<IDbConnectionManager>();
 
         private Repository.Abstractions.System.IUserRepository Repo
-            => _fx.GetRequiredService<ISystemRepositoryFactory>().CreateUserRepository();
+            => _fx.GetRequiredService<IRepositoryFactory>().Create<IUserRepository>();
 
         [DbFact(DatabaseType.SQLite)]
         [DisplayName("SetDeploymentAdmin 應把旗標寫進 st_user，且可再撤銷")]

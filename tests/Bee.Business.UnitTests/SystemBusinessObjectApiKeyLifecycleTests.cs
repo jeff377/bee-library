@@ -10,6 +10,7 @@ using Bee.Definition.Logging;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 using Bee.Tests.Shared;
 
 using Bee.Definition;
@@ -113,7 +114,7 @@ namespace Bee.Business.UnitTests
             string sysId = IssueKey(NewSysId());
             try
             {
-                var repository = _fx.GetRequiredService<ISystemRepositoryFactory>().CreateApiKeyRepository();
+                var repository = _fx.GetRequiredService<IRepositoryFactory>().Create<IApiKeyRepository>();
                 Assert.NotNull(repository.GetEnabledById(sysId));
 
                 CreateBo().SetApiKeyEnabled(new SetApiKeyEnabledArgs { SysId = sysId, Enabled = false });
@@ -138,8 +139,8 @@ namespace Bee.Business.UnitTests
                 bo.SetApiKeyEnabled(new SetApiKeyEnabledArgs { SysId = sysId, Enabled = false });
                 bo.SetApiKeyEnabled(new SetApiKeyEnabledArgs { SysId = sysId, Enabled = true });
 
-                Assert.NotNull(_fx.GetRequiredService<ISystemRepositoryFactory>()
-                    .CreateApiKeyRepository().GetEnabledById(sysId));
+                Assert.NotNull(_fx.GetRequiredService<IRepositoryFactory>()
+                    .Create<IApiKeyRepository>().GetEnabledById(sysId));
             }
             finally
             {

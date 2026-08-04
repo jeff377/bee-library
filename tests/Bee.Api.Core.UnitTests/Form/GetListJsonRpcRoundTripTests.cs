@@ -50,10 +50,10 @@ namespace Bee.Api.Core.UnitTests.Form
 
             var overrideServices = new TestOverrideServiceProvider(
                 _fx.Provider,
-                (typeof(IFormRepositoryFactory), stubFactory));
+                (typeof(IRepositoryFactory), stubFactory));
 
             // 自建 BO factory 注入覆寫後的 IServiceProvider —— production BO 透過
-            // BeeContext.Services 取 IFormRepositoryFactory 時就會拿到 stub。
+            // BeeContext.Services 取 IRepositoryFactory 時就會拿到 stub。
             var boFactory = new BusinessObjectFactory(
                 overrideServices,
                 _fx.GetRequiredService<IDefineAccess>(),
@@ -130,7 +130,7 @@ namespace Bee.Api.Core.UnitTests.Form
 
             var overrideServices = new TestOverrideServiceProvider(
                 _fx.Provider,
-                (typeof(IFormRepositoryFactory), stubFactory));
+                (typeof(IRepositoryFactory), stubFactory));
 
             var boFactory = new BusinessObjectFactory(
                 overrideServices,
@@ -180,12 +180,12 @@ namespace Bee.Api.Core.UnitTests.Form
             Assert.True(result.Paging.HasMore);
         }
 
-        private sealed class StubFormRepositoryFactory : IFormRepositoryFactory
+        private sealed class StubFormRepositoryFactory : IRepositoryFactory
         {
             private readonly IDataFormRepository _data;
             public StubFormRepositoryFactory(IDataFormRepository data) { _data = data; }
-            public IDataFormRepository CreateDataFormRepository(string progId, Guid accessToken) => _data;
-            public IReportFormRepository CreateReportFormRepository(string progId)
+            public T CreateFormRepository<T>(Guid accessToken, string progId) where T : class, IDataFormRepository => (T)_data;
+            public T Create<T>(Guid accessToken = default) where T : class
                 => throw new NotSupportedException();
         }
 

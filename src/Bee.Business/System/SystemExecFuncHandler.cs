@@ -2,6 +2,7 @@ using Bee.Definition.Settings;
 using Bee.Definition.Collections;
 using Bee.Business.Attributes;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 using Bee.Definition.Security;
 
 namespace Bee.Business.System
@@ -11,7 +12,7 @@ namespace Bee.Business.System
     /// </summary>
     internal class SystemExecFuncHandler : IExecFuncHandler
     {
-        private readonly ISystemRepositoryFactory _systemFactory;
+        private readonly IRepositoryFactory _repositoryFactory;
 
         #region 建構函式
 
@@ -19,11 +20,11 @@ namespace Bee.Business.System
         /// Initializes a new instance of the <see cref="SystemExecFuncHandler"/> class.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        /// <param name="systemFactory">Factory that builds system-level repositories on demand.</param>
-        public SystemExecFuncHandler(Guid accessToken, ISystemRepositoryFactory systemFactory)
+        /// <param name="repositoryFactory">Factory that builds framework repositories on demand.</param>
+        public SystemExecFuncHandler(Guid accessToken, IRepositoryFactory repositoryFactory)
         {
             AccessToken = accessToken;
-            _systemFactory = systemFactory ?? throw new ArgumentNullException(nameof(systemFactory));
+            _repositoryFactory = repositoryFactory ?? throw new ArgumentNullException(nameof(repositoryFactory));
         }
 
         #endregion
@@ -55,7 +56,7 @@ namespace Bee.Business.System
             string categoryId = args.Parameters.GetValue<string>("CategoryId");
             string tableName = args.Parameters.GetValue<string>("TableName");
 
-            var repo = _systemFactory.CreateDatabaseRepository();
+            var repo = _repositoryFactory.Create<IDatabaseRepository>();
             bool upgraded = repo.UpgradeTableSchema(databaseId, categoryId, tableName);
             result.Parameters.Add("Upgraded", upgraded);
         }
@@ -67,7 +68,7 @@ namespace Bee.Business.System
         {
             var item = args.Parameters.GetValue<DatabaseItem>("DatabaseItem");
 
-            var repo = _systemFactory.CreateDatabaseRepository();
+            var repo = _repositoryFactory.Create<IDatabaseRepository>();
             repo.TestConnection(item);
         }
 

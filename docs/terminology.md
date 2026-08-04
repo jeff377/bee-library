@@ -150,9 +150,8 @@ This document provides a standard term reference for technical writing, ensuring
 | English | 中文 | Description |
 |---------|------|-------------|
 | `IDataFormRepository` | 資料表單 Repository 介面 | FormSchema-driven CRUD operations (auto-generated SQL) |
-| `IReportFormRepository` | 報表表單 Repository 介面 | For complex queries and reporting; SQL implemented by BO (AnyCode) |
 | `IRepositoryDatabaseRouter` | Repository 資料庫路由介面 | Resolves the physical `databaseId` for a given `DbScope` and access token. `Common` / `Log` map to fixed databaseIds; `Company` resolves via `SessionInfo.CompanyId` → `CompanyInfo.CompanyDatabaseId` |
-| `IFormRepositoryFactory` | 表單 Repository 工廠介面 | Creates form-level repositories. `CreateDataFormRepository(progId, accessToken)` reads the form schema, converts `CategoryId` to `DbScope`, and delegates routing to the router |
+| `IRepositoryFactory` | Repository 工廠介面 | The single entry point for every repository, on two axes. `CreateFormRepository<T>(accessToken, progId)` resolves the type bound to a progId; `Create<T>(accessToken)` names a framework repository by its interface. Reporting and batch work follow the AnyCode track — the business object writes its own SQL rather than going through a repository |
 
 ---
 

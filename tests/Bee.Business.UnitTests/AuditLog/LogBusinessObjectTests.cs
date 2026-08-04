@@ -7,6 +7,7 @@ using Bee.Definition.Logging;
 using Bee.Definition.Paging;
 using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.AuditLog;
+using Bee.Repository.Abstractions.Form;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Tests.Shared;
 
@@ -30,7 +31,7 @@ namespace Bee.Business.UnitTests.AuditLog
         {
             var ctx = TestBeeContext.CreateWithOverrides(_fx,
                 (typeof(IAuthorizationService), new FakeAuth(authorized)),
-                (typeof(IAuditLogRepositoryFactory), new StubAuditLogRepositoryFactory(repo)));
+                (typeof(IRepositoryFactory), new StubAuditLogRepositoryFactory(repo)));
             return new LogBusinessObject(ctx, Guid.NewGuid(), SysProgIds.AuditLog);
         }
 
@@ -330,11 +331,18 @@ namespace Bee.Business.UnitTests.AuditLog
             public DataTable GetTopApiMethods(DateTime? fromUtc, DateTime? toUtc, int topN, string? companyId) { LastTopN = topN; return AggregateResult; }
         }
 
-        private sealed class StubAuditLogRepositoryFactory : IAuditLogRepositoryFactory
+        private sealed class StubAuditLogRepositoryFactory : IRepositoryFactory
         {
             private readonly IAuditLogRepository _repo;
             public StubAuditLogRepositoryFactory(IAuditLogRepository repo) { _repo = repo; }
-            public IAuditLogRepository CreateAuditLogRepository() => _repo;
+
+            public T Create<T>(Guid accessToken = default) where T : class
+                => typeof(T) == typeof(IAuditLogRepository)
+                    ? (T)_repo
+                    : throw new NotSupportedException(typeof(T).FullName);
+
+            public T CreateFormRepository<T>(Guid accessToken, string progId) where T : class, IDataFormRepository
+                => throw new NotSupportedException();
         }
     }
 }

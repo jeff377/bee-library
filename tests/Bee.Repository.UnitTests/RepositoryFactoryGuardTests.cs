@@ -10,6 +10,7 @@ using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 using Bee.Repository.Abstractions;
+using Bee.Repository.Abstractions.Form;
 using Bee.Repository.Factories;
 using Bee.Repository.Form;
 
@@ -17,9 +18,10 @@ using Bee.Tests.Shared;
 namespace Bee.Repository.UnitTests
 {
     /// <summary>
-    /// <see cref="FormRepositoryFactory"/> 建構子驗證與工廠方法測試。
+    /// <see cref="RepositoryFactory"/> 建構子的相依防護，以及 progId 軸解析定義錯誤時的失敗語意。
+    /// 以 stub 相依隔離，不需要資料庫；兩軸的正常解析路徑見 <see cref="RepositoryFactoryTests"/>。
     /// </summary>
-    public class FormRepositoryFactoryTests
+    public class RepositoryFactoryGuardTests
     {
         #region Stubs
 
@@ -67,17 +69,17 @@ namespace Bee.Repository.UnitTests
             public string Resolve(DbScope scope, Guid accessToken) => DbCategoryIds.Common;
         }
 
-        private static FormRepositoryFactory CreateFactory(
+        private static RepositoryFactory CreateFactory(
             StubDefineAccess? defineAccess = null,
             IDbAccessFactory? dbAccessFactory = null,
             IDbConnectionManager? connectionManager = null,
             IRepositoryDatabaseRouter? router = null)
-            => new(new RepositoryFactory(
+            => new(
                 TestRepositoryContext.CreateServices(),
                 defineAccess ?? new StubDefineAccess(),
                 dbAccessFactory ?? new StubDbAccessFactory(),
                 connectionManager ?? new StubConnectionManager(),
-                router ?? new StubRouter()));
+                router ?? new StubRouter());
 
         #endregion
 
@@ -118,50 +120,32 @@ namespace Bee.Repository.UnitTests
         }
 
         [Fact]
-        [DisplayName("FormRepositoryFactory 轉接器建構子傳入 null 應拋 ArgumentNullException")]
-        public void Adapter_NullFactory_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => new FormRepositoryFactory(null!));
-        }
-
-        [Theory]
-        [InlineData("SalesReport")]
-        [InlineData("EmployeeList")]
-        [DisplayName("CreateReportFormRepository 應回傳 ReportFormRepository 實例")]
-        public void CreateReportFormRepository_ValidProgId_ReturnsReportFormRepository(string progId)
+        [DisplayName("CreateFormRepository 傳入空白 progId 應拋 ArgumentException")]
+        public void CreateFormRepository_WhitespaceProgId_ThrowsArgumentException()
         {
             var factory = CreateFactory();
-            var repo = factory.CreateReportFormRepository(progId);
-            Assert.IsType<ReportFormRepository>(repo);
+            Assert.Throws<ArgumentException>(() => factory.CreateFormRepository<IDataFormRepository>(Guid.NewGuid(), "   "));
         }
 
         [Fact]
-        [DisplayName("CreateDataFormRepository 傳入空白 progId 應拋 ArgumentException")]
-        public void CreateDataFormRepository_WhitespaceProgId_ThrowsArgumentException()
-        {
-            var factory = CreateFactory();
-            Assert.Throws<ArgumentException>(() => factory.CreateDataFormRepository("   ", Guid.NewGuid()));
-        }
-
-        [Fact]
-        [DisplayName("CreateDataFormRepository Schema 無 CategoryId 應拋 InvalidOperationException 且訊息含 CategoryId")]
-        public void CreateDataFormRepository_EmptyCategoryId_ThrowsInvalidOperationException()
+        [DisplayName("CreateFormRepository Schema 無 CategoryId 應拋 InvalidOperationException 且訊息含 CategoryId")]
+        public void CreateFormRepository_EmptyCategoryId_ThrowsInvalidOperationException()
         {
             var stub = new StubDefineAccess { CategoryId = string.Empty };
             var factory = CreateFactory(defineAccess: stub);
             var ex = Assert.Throws<InvalidOperationException>(
-                () => factory.CreateDataFormRepository("Employee", Guid.NewGuid()));
+                () => factory.CreateFormRepository<IDataFormRepository>(Guid.NewGuid(), "Employee"));
             Assert.Contains("CategoryId", ex.Message);
         }
 
         [Fact]
-        [DisplayName("CreateDataFormRepository 未知 CategoryId 應拋 InvalidOperationException 且訊息含未知值")]
-        public void CreateDataFormRepository_UnknownCategoryId_ThrowsInvalidOperationException()
+        [DisplayName("CreateFormRepository 未知 CategoryId 應拋 InvalidOperationException 且訊息含未知值")]
+        public void CreateFormRepository_UnknownCategoryId_ThrowsInvalidOperationException()
         {
             var stub = new StubDefineAccess { CategoryId = "unknown_db" };
             var factory = CreateFactory(defineAccess: stub);
             var ex = Assert.Throws<InvalidOperationException>(
-                () => factory.CreateDataFormRepository("Employee", Guid.NewGuid()));
+                () => factory.CreateFormRepository<IDataFormRepository>(Guid.NewGuid(), "Employee"));
             Assert.Contains("unknown_db", ex.Message);
         }
 
@@ -169,12 +153,12 @@ namespace Bee.Repository.UnitTests
         [InlineData(DbCategoryIds.Common)]
         [InlineData(DbCategoryIds.Company)]
         [InlineData(DbCategoryIds.Log)]
-        [DisplayName("CreateDataFormRepository 有效 CategoryId 應回傳 DataFormRepository")]
-        public void CreateDataFormRepository_ValidCategoryId_ReturnsDataFormRepository(string categoryId)
+        [DisplayName("CreateFormRepository 有效 CategoryId 應回傳 DataFormRepository")]
+        public void CreateFormRepository_ValidCategoryId_ReturnsDataFormRepository(string categoryId)
         {
             var stub = new StubDefineAccess { CategoryId = categoryId };
             var factory = CreateFactory(defineAccess: stub);
-            var repo = factory.CreateDataFormRepository("Employee", Guid.NewGuid());
+            var repo = factory.CreateFormRepository<IDataFormRepository>(Guid.NewGuid(), "Employee");
             Assert.IsType<DataFormRepository>(repo);
         }
     }

@@ -6,6 +6,7 @@ using Bee.Definition.Attributes;
 using Bee.Definition.Logging;
 using Bee.Definition.Security;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 
 namespace Bee.Business.System
 {
@@ -49,7 +50,7 @@ namespace Bee.Business.System
                 throw new UserMessageException("A user id is required.");
             }
 
-            var repository = Services.GetRequiredService<ISystemRepositoryFactory>().CreateUserRepository();
+            var repository = Services.GetRequiredService<IRepositoryFactory>().Create<IUserRepository>();
 
             // Read before writing, and only when the value will actually be recorded: the audit row
             // has to say which direction this went — grant and revoke are both an Update, so without

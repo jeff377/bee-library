@@ -21,7 +21,7 @@ namespace Bee.Repository.UnitTests
         private const string ValidTableName = "TableName";
 
         private IDatabaseRepository CreateRepository()
-            => _fx.GetRequiredService<ISystemRepositoryFactory>().CreateDatabaseRepository();
+            => _fx.GetRequiredService<IRepositoryFactory>().Create<IDatabaseRepository>();
 
         [Theory]
         [InlineData(null)]

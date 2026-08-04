@@ -569,17 +569,17 @@ namespace Bee.Business.UnitTests.Form
             public FormBusinessObject CreateBo()
             {
                 var factory = new StubFactory(_repository);
-                var ctx = TestBeeContext.CreateWithOverrides(_fx, (typeof(IFormRepositoryFactory), factory));
+                var ctx = TestBeeContext.CreateWithOverrides(_fx, (typeof(IRepositoryFactory), factory));
                 return new FormBusinessObject(ctx, Guid.NewGuid(), ProgId);
             }
         }
 
-        private sealed class StubFactory : IFormRepositoryFactory
+        private sealed class StubFactory : IRepositoryFactory
         {
             private readonly IDataFormRepository _repository;
             public StubFactory(IDataFormRepository repository) => _repository = repository;
-            public IDataFormRepository CreateDataFormRepository(string progId, Guid accessToken) => _repository;
-            public IReportFormRepository CreateReportFormRepository(string progId)
+            public T CreateFormRepository<T>(Guid accessToken, string progId) where T : class, IDataFormRepository => (T)_repository;
+            public T Create<T>(Guid accessToken = default) where T : class
                 => throw new NotSupportedException();
         }
     }

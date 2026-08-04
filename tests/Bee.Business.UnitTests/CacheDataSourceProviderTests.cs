@@ -18,7 +18,7 @@ namespace Bee.Business.UnitTests
         private CacheDataSourceProvider CreateProvider()
         {
             return new CacheDataSourceProvider(
-                _fx.GetRequiredService<ISystemRepositoryFactory>(), _fx.Provider);
+                _fx.GetRequiredService<IRepositoryFactory>(), _fx.Provider);
         }
 
         [DbFact(DatabaseType.SQLServer)]

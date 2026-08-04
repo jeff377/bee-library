@@ -28,13 +28,13 @@ This is the only thing that matters from the application's perspective. Whether 
 The simplest call, suitable for most scenarios:
 
 ```csharp
-// Resolve via DI: inject ISystemRepositoryFactory in the consuming class ctor,
+// Resolve via DI: inject IRepositoryFactory in the consuming class ctor,
 // then create the repository on demand.
-public class MyService(ISystemRepositoryFactory repoFactory)
+public class MyService(IRepositoryFactory repoFactory)
 {
     public bool UpgradeEmployeeTable()
     {
-        var repo = repoFactory.CreateDatabaseRepository();
+        var repo = repoFactory.Create<IDatabaseRepository>();
         // Parameter order: databaseId (physical connection id), categoryId (logical category), tableName
         return repo.UpgradeTableSchema("myDb", "company", "st_employee");
     }

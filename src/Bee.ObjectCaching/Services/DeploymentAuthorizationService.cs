@@ -1,5 +1,6 @@
 using Bee.Definition.Identity;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 
 namespace Bee.ObjectCaching.Services
 {
@@ -23,17 +24,17 @@ namespace Bee.ObjectCaching.Services
     public class DeploymentAuthorizationService : IDeploymentAuthorizationService
     {
         private readonly ISessionInfoService _sessionInfoService;
-        private readonly ISystemRepositoryFactory _systemFactory;
+        private readonly IRepositoryFactory _repositoryFactory;
 
         /// <summary>
         /// Initializes a new <see cref="DeploymentAuthorizationService"/>.
         /// </summary>
         /// <param name="sessionInfoService">Provides the session behind the access token.</param>
-        /// <param name="systemFactory">Factory that builds system-level repositories on demand.</param>
-        public DeploymentAuthorizationService(ISessionInfoService sessionInfoService, ISystemRepositoryFactory systemFactory)
+        /// <param name="repositoryFactory">Factory that builds framework repositories on demand.</param>
+        public DeploymentAuthorizationService(ISessionInfoService sessionInfoService, IRepositoryFactory repositoryFactory)
         {
             _sessionInfoService = sessionInfoService ?? throw new ArgumentNullException(nameof(sessionInfoService));
-            _systemFactory = systemFactory ?? throw new ArgumentNullException(nameof(systemFactory));
+            _repositoryFactory = repositoryFactory ?? throw new ArgumentNullException(nameof(repositoryFactory));
         }
 
         /// <inheritdoc/>
@@ -47,7 +48,7 @@ namespace Bee.ObjectCaching.Services
 
             // No company context is required or consulted: a deployment administrator is an
             // administrator of the installation, and company membership says nothing about it.
-            return _systemFactory.CreateUserRepository().IsDeploymentAdmin(session.UserId);
+            return _repositoryFactory.Create<IUserRepository>().IsDeploymentAdmin(session.UserId);
         }
     }
 }

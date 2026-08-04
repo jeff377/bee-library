@@ -259,21 +259,11 @@ namespace Bee.Hosting
                 CreateConfigurableService<IRepositoryFactory>(sp,
                     components.RepositoryFactory, BackendDefaultTypes.RepositoryFactory));
 
-            // The three superseded factories, kept registered as adapters so consumers can move to
-            // IRepositoryFactory one at a time rather than in a single sweep. They are removed once
-            // the last consumer has.
-            services.AddSingleton<ISystemRepositoryFactory>(sp =>
-                new Bee.Repository.Factories.SystemRepositoryFactory(sp.GetRequiredService<IRepositoryFactory>()));
-            services.AddSingleton<IFormRepositoryFactory>(sp =>
-                new Bee.Repository.Factories.FormRepositoryFactory(sp.GetRequiredService<IRepositoryFactory>()));
-            services.AddSingleton<IAuditLogRepositoryFactory>(sp =>
-                new Bee.Repository.Factories.AuditLogRepositoryFactory(sp.GetRequiredService<IRepositoryFactory>()));
-
-            // NOTE: individual system repositories are deliberately NOT registered here. Consumers
-            // ctor-inject ISystemRepositoryFactory and create what they need per call, the same way
-            // FormBusinessObject obtains its form repository from IFormRepositoryFactory by progId.
-            // Registering them one by one made every new system table a three-place edit (factory
-            // method, DI line, consumer ctor); this keeps it to the factory interface alone.
+            // NOTE: individual repositories are deliberately NOT registered here. Consumers
+            // ctor-inject IRepositoryFactory and create what they need per call, the same way
+            // FormBusinessObject obtains its form repository by progId. Registering them one by one
+            // made every new system table a three-place edit (factory method, DI line, consumer
+            // ctor); this keeps it to the one factory registration above.
 
             // Permission services: per-company role-permission snapshot cache + layer-1 Can check.
             services.AddSingleton<IRolePermissionService>(sp =>
@@ -287,7 +277,7 @@ namespace Bee.Hosting
             services.AddSingleton<IDeploymentAuthorizationService>(sp =>
                 new DeploymentAuthorizationService(
                     sp.GetRequiredService<ISessionInfoService>(),
-                    sp.GetRequiredService<ISystemRepositoryFactory>()));
+                    sp.GetRequiredService<IRepositoryFactory>()));
 
             // API key validation (application identity). Registered plainly rather than through the
             // configurable-component path: a host that wants different key storage replaces it with
@@ -301,7 +291,7 @@ namespace Bee.Hosting
             // Record-scope identity: resolves the current user's employee/department (EnterCompany
             // snapshots the result onto SessionInfo for zero-DB scope filtering).
             services.AddSingleton<IEmployeeContextResolver>(sp =>
-                new EmployeeContextResolver(sp.GetRequiredService<ISystemRepositoryFactory>()));
+                new EmployeeContextResolver(sp.GetRequiredService<IRepositoryFactory>()));
             // Record-scope (layer-2): resolves (model, action) + session identity + grants + model
             // default + department tree into a read filter / per-row verdict.
             services.AddSingleton<IScopeResolver>(sp =>

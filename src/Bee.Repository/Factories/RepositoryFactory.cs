@@ -44,7 +44,6 @@ namespace Bee.Repository.Factories
             [typeof(IEmployeeRepository)] = typeof(EmployeeRepository),
             [typeof(IAuditLogRepository)] = typeof(AuditLogRepository),
             [typeof(IAuditLogWriteRepository)] = typeof(AuditLogWriteRepository),
-            [typeof(IReportFormRepository)] = typeof(ReportFormRepository),
         };
 
         /// <summary>

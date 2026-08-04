@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Definition.Identity;
 using Bee.ObjectCaching.Services;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.Form;
 using Bee.Repository.Abstractions.System;
 
 namespace Bee.ObjectCaching.UnitTests.Services
@@ -17,7 +18,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
         private static DeploymentAuthorizationService Create(SessionInfo? session, bool isAdmin, bool repositoryThrows = false)
             => new DeploymentAuthorizationService(
                 new FakeSessionInfoService(session),
-                new FakeSystemRepositoryFactory(new FakeUserRepository(isAdmin, repositoryThrows)));
+                new FakeRepositoryFactory(new FakeUserRepository(isAdmin, repositoryThrows)));
 
         private static SessionInfo NewSession(string userId, string? companyId = null)
             => new SessionInfo { AccessToken = s_token, UserId = userId, CompanyId = companyId };
@@ -77,19 +78,18 @@ namespace Bee.ObjectCaching.UnitTests.Services
             public void Remove(Guid accessToken) => throw new NotSupportedException();
         }
 
-        private sealed class FakeSystemRepositoryFactory : ISystemRepositoryFactory
+        private sealed class FakeRepositoryFactory : IRepositoryFactory
         {
             private readonly IUserRepository _userRepository;
-            public FakeSystemRepositoryFactory(IUserRepository userRepository) { _userRepository = userRepository; }
-            public IUserRepository CreateUserRepository() => _userRepository;
-            public IEmployeeRepository CreateEmployeeRepository() => throw new NotSupportedException();
-            public IDatabaseRepository CreateDatabaseRepository() => throw new NotSupportedException();
-            public IApiKeyRepository CreateApiKeyRepository() => throw new NotSupportedException();
-            public ISessionRepository CreateSessionRepository() => throw new NotSupportedException();
-            public ICompanyRepository CreateCompanyRepository() => throw new NotSupportedException();
-            public IUserCompanyRepository CreateUserCompanyRepository() => throw new NotSupportedException();
-            public IRolePermissionRepository CreateRolePermissionRepository() => throw new NotSupportedException();
-            public IDepartmentRepository CreateDepartmentRepository() => throw new NotSupportedException();
+            public FakeRepositoryFactory(IUserRepository userRepository) { _userRepository = userRepository; }
+
+            public T Create<T>(Guid accessToken = default) where T : class
+                => typeof(T) == typeof(IUserRepository)
+                    ? (T)_userRepository
+                    : throw new NotSupportedException(typeof(T).FullName);
+
+            public T CreateFormRepository<T>(Guid accessToken, string progId) where T : class, IDataFormRepository
+                => throw new NotSupportedException();
         }
 
         private sealed class FakeUserRepository : IUserRepository

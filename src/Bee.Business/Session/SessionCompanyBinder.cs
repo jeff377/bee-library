@@ -1,5 +1,6 @@
 using Bee.Definition.Identity;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 
 namespace Bee.Business.Session
 {
@@ -17,7 +18,7 @@ namespace Bee.Business.Session
     public class SessionCompanyBinder
     {
         private readonly ICompanyInfoService _companyInfoService;
-        private readonly ISystemRepositoryFactory _systemFactory;
+        private readonly IRepositoryFactory _repositoryFactory;
         private readonly IRolePermissionService _rolePermissionService;
         private readonly IEmployeeContextResolver _employeeContextResolver;
 
@@ -25,17 +26,17 @@ namespace Bee.Business.Session
         /// Initializes a new <see cref="SessionCompanyBinder"/>.
         /// </summary>
         /// <param name="companyInfoService">Company record lookup.</param>
-        /// <param name="systemFactory">Factory for the user-company grant repository.</param>
+        /// <param name="repositoryFactory">Factory for the user-company grant repository.</param>
         /// <param name="rolePermissionService">Per-company role permission snapshot.</param>
         /// <param name="employeeContextResolver">Record-scope identity resolver.</param>
         public SessionCompanyBinder(
             ICompanyInfoService companyInfoService,
-            ISystemRepositoryFactory systemFactory,
+            IRepositoryFactory repositoryFactory,
             IRolePermissionService rolePermissionService,
             IEmployeeContextResolver employeeContextResolver)
         {
             _companyInfoService = companyInfoService ?? throw new ArgumentNullException(nameof(companyInfoService));
-            _systemFactory = systemFactory ?? throw new ArgumentNullException(nameof(systemFactory));
+            _repositoryFactory = repositoryFactory ?? throw new ArgumentNullException(nameof(repositoryFactory));
             _rolePermissionService = rolePermissionService ?? throw new ArgumentNullException(nameof(rolePermissionService));
             _employeeContextResolver = employeeContextResolver ?? throw new ArgumentNullException(nameof(employeeContextResolver));
         }
@@ -59,7 +60,7 @@ namespace Bee.Business.Session
             var companyInfo = _companyInfoService.Get(companyId);
             if (companyInfo == null) { return null; }
 
-            var userCompanyRepository = _systemFactory.CreateUserCompanyRepository();
+            var userCompanyRepository = _repositoryFactory.Create<IUserCompanyRepository>();
             if (!userCompanyRepository.HasAccess(sessionInfo.UserId, companyId)) { return null; }
 
             sessionInfo.CompanyId = companyId;

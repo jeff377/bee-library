@@ -31,7 +31,7 @@ namespace Bee.Business.UnitTests.Form
         private FormBusinessObject Bo(PermissionAction allowed, IDataFormRepository? repo = null, string progId = GatedProgId)
         {
             var overrides = new List<(Type, object?)> { (typeof(IAuthorizationService), new FakeAuth(allowed)) };
-            if (repo != null) { overrides.Add((typeof(IFormRepositoryFactory), new FakeFactory(repo))); }
+            if (repo != null) { overrides.Add((typeof(IRepositoryFactory), new FakeFactory(repo))); }
             var ctx = TestBeeContext.CreateWithOverrides(_fx, overrides.ToArray());
             return new FormBusinessObject(ctx, Guid.NewGuid(), progId);
         }
@@ -182,12 +182,12 @@ namespace Bee.Business.UnitTests.Form
             public bool Can(Guid accessToken, string modelId, PermissionAction action) => _allowed.HasFlag(action);
         }
 
-        private sealed class FakeFactory : IFormRepositoryFactory
+        private sealed class FakeFactory : IRepositoryFactory
         {
             private readonly IDataFormRepository _repo;
             public FakeFactory(IDataFormRepository repo) { _repo = repo; }
-            public IDataFormRepository CreateDataFormRepository(string progId, Guid accessToken) => _repo;
-            public IReportFormRepository CreateReportFormRepository(string progId) => throw new NotSupportedException();
+            public T CreateFormRepository<T>(Guid accessToken, string progId) where T : class, IDataFormRepository => (T)_repo;
+            public T Create<T>(Guid accessToken = default) where T : class => throw new NotSupportedException();
         }
 
         private sealed class StubRepo : IDataFormRepository

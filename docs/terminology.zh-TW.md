@@ -150,9 +150,8 @@
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
 | `IDataFormRepository` | 資料表單 Repository 介面 | FormSchema 驅動的 CRUD 操作（自動產生 SQL） |
-| `IReportFormRepository` | 報表表單 Repository 介面 | 複雜查詢與報表用，由 BO 自行實作 SQL（AnyCode） |
 | `IRepositoryDatabaseRouter` | Repository 資料庫路由介面 | 從 `DbScope` 與 access token 解析出實際 `databaseId`。`Common` / `Log` 對映固定 databaseId；`Company` 透過 `SessionInfo.CompanyId` → `CompanyInfo.CompanyDatabaseId` 解析 |
-| `IFormRepositoryFactory` | 表單 Repository 工廠介面 | 建立 form-level repository。`CreateDataFormRepository(progId, accessToken)` 讀取 schema、把 `CategoryId` 轉成 `DbScope`、再委派給 router 解析 databaseId |
+| `IRepositoryFactory` | Repository 工廠介面 | 取得 Repository 的唯一入口，涵蓋兩軸。`CreateFormRepository<T>(accessToken, progId)` 解析綁定該 progId 的型別；`Create<T>(accessToken)` 以介面指名框架 Repository。報表與批次走 AnyCode 軌，由 BO 自行寫 SQL，不經 Repository |
 
 ---
 

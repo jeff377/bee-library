@@ -25,18 +25,17 @@
 
 ### 資料庫操作
 
-- `DatabaseRepository`（`internal`）-- 連線測試，支援參數替換（`{@DbName}`、`{@UserId}`、`{@Password}`）；僅透過 `IDatabaseRepository` 對外公開，由 `SystemRepositoryFactory` 內部聚合，非公開 API
+- `DatabaseRepository`（`internal`）-- 連線測試，支援參數替換（`{@DbName}`、`{@UserId}`、`{@Password}`）；僅透過 `IDatabaseRepository` 對外公開，由 `RepositoryFactory` 建構，非公開 API
 - 透過 `TableSchemaBuilder` 進行結構升級，配合 FormSchema 驅動的資料表管理
 
 ### 表單資料存取
 
 - `DataFormRepository` -- `IDataFormRepository` 的預設實作，依 ProgId 解析，處理資料表單 CRUD
-- `ReportFormRepository` -- `IReportFormRepository` 的預設實作，依 ProgId 解析，處理報表表單查詢
 
-### Provider 實作
+### 工廠實作
 
-- `SystemRepositoryFactory` -- 將 `SessionRepository` 與 `DatabaseRepository` 組裝為單一 Provider
-- `FormRepositoryFactory` -- 依 ProgId 建立表單 Repository 實例的工廠
+- `RepositoryFactory` -- `IRepositoryFactory` 的預設實作：兩軸的每個 Repository 都由它以共用的
+  `IRepositoryContext` 建構。框架軸是一張型別對應表而非一個方法一個，因此不會每加一張系統表就長一個成員。
 
 ## 主要公開 API
 
@@ -44,9 +43,7 @@
 |------|------|
 | `SessionRepository` | 針對 `st_session` / `st_user` 資料表的 Session CRUD |
 | `DataFormRepository` | 資料表單資料存取實作 |
-| `ReportFormRepository` | 報表表單資料存取實作 |
-| `SystemRepositoryFactory` | 預設 `ISystemRepositoryFactory` 實作 |
-| `FormRepositoryFactory` | 預設 `IFormRepositoryFactory` 實作 |
+| `RepositoryFactory` | 預設 `IRepositoryFactory` 實作 |
 
 ## 設計慣例
 
@@ -62,7 +59,7 @@
 ```
 Bee.Repository/
   AuditLog/   # AuditLogRepository（讀）、AuditLogWriteRepository（寫）
-  Form/       # DataFormRepository、ReportFormRepository
-  Factories/   # SystemRepositoryFactory、FormRepositoryFactory
+  Form/       # DataFormRepository
+  Factories/   # RepositoryFactory
   System/     # SessionRepository、DatabaseRepository
 ```

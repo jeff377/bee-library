@@ -8,6 +8,7 @@ using Bee.Definition.Database;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 using Bee.Tests.Shared;
 
 using Bee.Definition;
@@ -67,8 +68,8 @@ namespace Bee.Business.UnitTests
                 Assert.True(ApiKeyFormat.TryParse(result.ApiKey, out string parsedId, out string secret));
                 Assert.Equal(sysId, parsedId);
 
-                var stored = _fx.GetRequiredService<ISystemRepositoryFactory>()
-                    .CreateApiKeyRepository().GetEnabledById(sysId);
+                var stored = _fx.GetRequiredService<IRepositoryFactory>()
+                    .Create<IApiKeyRepository>().GetEnabledById(sysId);
                 Assert.NotNull(stored);
                 Assert.Equal("Issued app", stored!.SysName);
                 Assert.Equal(ApiKeyType.ThirdParty, stored.KeyType);

@@ -60,7 +60,7 @@ namespace Bee.Api.Core.UnitTests.Form
 
             var overrideServices = new TestOverrideServiceProvider(
                 _fx.Provider,
-                (typeof(IFormRepositoryFactory), stubFactory));
+                (typeof(IRepositoryFactory), stubFactory));
 
             var boFactory = new BusinessObjectFactory(
                 overrideServices,

@@ -241,7 +241,7 @@ namespace Bee.Business.AuditLog
 
         /// <summary>Resolves the log-scoped repository from the DI escape hatch.</summary>
         private IAuditLogRepository Repository()
-            => Services.GetRequiredService<IAuditLogRepositoryFactory>().CreateAuditLogRepository();
+            => Services.GetRequiredService<IRepositoryFactory>().Create<IAuditLogRepository>();
 
         /// <summary>Resolves the caller's current company id (denormalised query scope); null when none.</summary>
         private string? CurrentCompanyId() => SessionInfoService.Get(AccessToken)?.CompanyId;

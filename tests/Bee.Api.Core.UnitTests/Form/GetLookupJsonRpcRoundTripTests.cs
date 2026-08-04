@@ -121,7 +121,7 @@ namespace Bee.Api.Core.UnitTests.Form
             var stubFactory = new StubFormRepositoryFactory(stubRepository);
             var overrideServices = new TestOverrideServiceProvider(
                 _fx.Provider,
-                (typeof(IFormRepositoryFactory), stubFactory));
+                (typeof(IRepositoryFactory), stubFactory));
 
             var boFactory = new BusinessObjectFactory(
                 overrideServices,
@@ -140,12 +140,12 @@ namespace Bee.Api.Core.UnitTests.Form
             };
         }
 
-        private sealed class StubFormRepositoryFactory : IFormRepositoryFactory
+        private sealed class StubFormRepositoryFactory : IRepositoryFactory
         {
             private readonly IDataFormRepository _data;
             public StubFormRepositoryFactory(IDataFormRepository data) { _data = data; }
-            public IDataFormRepository CreateDataFormRepository(string progId, Guid accessToken) => _data;
-            public IReportFormRepository CreateReportFormRepository(string progId)
+            public T CreateFormRepository<T>(Guid accessToken, string progId) where T : class, IDataFormRepository => (T)_data;
+            public T Create<T>(Guid accessToken = default) where T : class
                 => throw new NotSupportedException();
         }
 

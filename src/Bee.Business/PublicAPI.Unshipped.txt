@@ -32,7 +32,7 @@ Bee.Business.ProgramSettingsBoTypeResolver.ProgramSettingsBoTypeResolver(Bee.Def
 Bee.Business.ProgramSettingsBoTypeResolver.ProgramSettingsBoTypeResolver(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Definition.Storage.ICustomizeDefineReader? customizeReader) -> void
 Bee.Business.ProgramSettingsBoTypeResolver.Resolve(string! customizeId, string! progId) -> System.Type!
 Bee.Business.ProgramSettingsBoTypeResolver.Resolve(string! progId) -> System.Type!
-Bee.Business.Providers.CacheDataSourceProvider.CacheDataSourceProvider(Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory, System.IServiceProvider! services) -> void
+Bee.Business.Providers.CacheDataSourceProvider.CacheDataSourceProvider(Bee.Repository.Abstractions.Factories.IRepositoryFactory! repositoryFactory, System.IServiceProvider! services) -> void
 Bee.Business.Providers.CacheDataSourceProvider.GetApiKey(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
 Bee.Business.Providers.CacheDataSourceProvider.GetApiKeyGateState() -> Bee.Definition.Security.ApiKeyGateState!
 Bee.Business.Providers.CacheDataSourceProvider.GetCompanyInfo(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
@@ -63,7 +63,7 @@ Bee.Business.ReservedProgIdBinding.ReservedProgIdBinding(string! ProgId, System.
 Bee.Business.ReservedProgIds
 Bee.Business.Session.SessionCompanyBinder
 Bee.Business.Session.SessionCompanyBinder.Bind(Bee.Definition.Identity.SessionInfo! sessionInfo, string! companyId) -> Bee.Business.Session.SessionCompanyBinding?
-Bee.Business.Session.SessionCompanyBinder.SessionCompanyBinder(Bee.Definition.Identity.ICompanyInfoService! companyInfoService, Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory, Bee.Definition.Identity.IRolePermissionService! rolePermissionService, Bee.Definition.Identity.IEmployeeContextResolver! employeeContextResolver) -> void
+Bee.Business.Session.SessionCompanyBinder.SessionCompanyBinder(Bee.Definition.Identity.ICompanyInfoService! companyInfoService, Bee.Repository.Abstractions.Factories.IRepositoryFactory! repositoryFactory, Bee.Definition.Identity.IRolePermissionService! rolePermissionService, Bee.Definition.Identity.IEmployeeContextResolver! employeeContextResolver) -> void
 Bee.Business.Session.SessionCompanyBinding
 Bee.Business.Session.SessionCompanyBinding.<Clone>$() -> Bee.Business.Session.SessionCompanyBinding!
 Bee.Business.Session.SessionCompanyBinding.Capabilities.get -> System.Collections.Generic.Dictionary<string!, Bee.Definition.Settings.PermissionAction>!

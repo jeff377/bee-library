@@ -7,6 +7,7 @@ using Bee.Definition.Organization;
 using Bee.Definition.Security;
 using Bee.Definition.Storage;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 
 namespace Bee.Business.Providers
 {
@@ -15,7 +16,7 @@ namespace Bee.Business.Providers
     /// repositories and shapes it into the definition-layer type the cache stores.
     /// </summary>
     /// <remarks>
-    /// Repositories are obtained from <see cref="ISystemRepositoryFactory"/> per call rather than
+    /// Repositories are obtained from <see cref="IRepositoryFactory"/> per call rather than
     /// injected one by one, mirroring how <c>FormBusinessObject</c> obtains its form repository.
     /// A new database-backed cache therefore adds a method here and leaves this constructor alone.
     /// <para>
@@ -26,19 +27,19 @@ namespace Bee.Business.Providers
     /// </remarks>
     public class CacheDataSourceProvider : ICacheDataSourceProvider
     {
-        private readonly ISystemRepositoryFactory _systemFactory;
+        private readonly IRepositoryFactory _repositoryFactory;
         private readonly IServiceProvider _services;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CacheDataSourceProvider"/> class.
         /// </summary>
-        /// <param name="systemFactory">Factory that builds system-level repositories on demand.</param>
+        /// <param name="repositoryFactory">Factory that builds framework repositories on demand.</param>
         /// <param name="services">
         /// Service provider used to resolve session-rebuild collaborators on first use.
         /// </param>
-        public CacheDataSourceProvider(ISystemRepositoryFactory systemFactory, IServiceProvider services)
+        public CacheDataSourceProvider(IRepositoryFactory repositoryFactory, IServiceProvider services)
         {
-            _systemFactory = systemFactory ?? throw new ArgumentNullException(nameof(systemFactory));
+            _repositoryFactory = repositoryFactory ?? throw new ArgumentNullException(nameof(repositoryFactory));
             _services = services ?? throw new ArgumentNullException(nameof(services));
         }
 
@@ -67,7 +68,7 @@ namespace Bee.Business.Providers
             // authenticates.
             if (!HasCommonDatabase()) { return null; }
 
-            var seed = _systemFactory.CreateSessionRepository().GetSession(accessToken);
+            var seed = _repositoryFactory.Create<ISessionRepository>().GetSession(accessToken);
             if (seed == null) { return null; }
 
             var sessionInfo = new SessionInfo
@@ -79,7 +80,7 @@ namespace Bee.Business.Providers
                 ApiEncryptionKey = keyProvider.GetKey(seed.AccessToken),
             };
 
-            var locale = _systemFactory.CreateUserRepository().GetLocale(seed.UserID);
+            var locale = _repositoryFactory.Create<IUserRepository>().GetLocale(seed.UserID);
             var backend = _services.GetRequiredService<IDefineAccess>().GetSystemSettings().BackendConfiguration;
             sessionInfo.TimeZone = StringUtilities.IsNotEmpty(locale.TimeZone) ? locale.TimeZone : backend.DefaultTimeZone;
             sessionInfo.Culture = StringUtilities.IsNotEmpty(locale.Culture) ? locale.Culture : backend.DefaultLanguage;
@@ -98,7 +99,7 @@ namespace Bee.Business.Providers
         /// <inheritdoc/>
         public CompanyInfo? GetCompanyInfo(string companyId)
         {
-            return _systemFactory.CreateCompanyRepository().GetById(companyId);
+            return _repositoryFactory.Create<ICompanyRepository>().GetById(companyId);
         }
 
         /// <inheritdoc/>
@@ -108,7 +109,7 @@ namespace Bee.Business.Providers
             if (company == null) { return null; }
 
             string databaseId = company.CompanyDatabaseId;
-            var repository = _systemFactory.CreateRolePermissionRepository();
+            var repository = _repositoryFactory.Create<IRolePermissionRepository>();
             var grants = repository.GetRoleGrants(databaseId);
             var userRoles = repository.GetUserRoles(databaseId);
             return new CompanyRolePermissions(companyId, grants, userRoles);
@@ -120,7 +121,7 @@ namespace Bee.Business.Providers
             var company = GetCompanyInfo(companyId);
             if (company == null) { return null; }
 
-            var rows = _systemFactory.CreateDepartmentRepository().GetDepartments(company.CompanyDatabaseId);
+            var rows = _repositoryFactory.Create<IDepartmentRepository>().GetDepartments(company.CompanyDatabaseId);
             return new DepartmentTree(companyId, rows);
         }
 
@@ -132,7 +133,7 @@ namespace Bee.Business.Providers
             // failure.
             if (!HasCommonDatabase()) { return null; }
 
-            return _systemFactory.CreateApiKeyRepository().GetEnabledById(sysId);
+            return _repositoryFactory.Create<IApiKeyRepository>().GetEnabledById(sysId);
         }
 
         /// <inheritdoc/>
@@ -146,7 +147,7 @@ namespace Bee.Business.Providers
         {
             if (!HasCommonDatabase()) { return new ApiKeyGateState { InForce = false }; }
 
-            return _systemFactory.CreateApiKeyRepository().GetGateState();
+            return _repositoryFactory.Create<IApiKeyRepository>().GetGateState();
         }
 
         /// <summary>

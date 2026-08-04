@@ -246,7 +246,7 @@ namespace Bee.Business.System
         /// Gets the session seed repository.
         /// </summary>
         private ISessionRepository SessionRepository
-            => Services.GetRequiredService<ISystemRepositoryFactory>().CreateSessionRepository();
+            => Services.GetRequiredService<IRepositoryFactory>().Create<ISessionRepository>();
 
         /// <summary>
         /// Projects a session onto the seed persisted in <c>st_session</c>: the values that cannot
@@ -332,7 +332,7 @@ namespace Bee.Business.System
         {
             ArgumentNullException.ThrowIfNull(sessionInfo);
 
-            var repo = Services.GetRequiredService<ISystemRepositoryFactory>().CreateUserRepository();
+            var repo = Services.GetRequiredService<IRepositoryFactory>().Create<IUserRepository>();
             var locale = repo.GetLocale(sessionInfo.UserId);
             var backend = DefineAccess.GetSystemSettings().BackendConfiguration;
             sessionInfo.TimeZone = StringUtilities.IsNotEmpty(locale.TimeZone)
@@ -386,7 +386,7 @@ namespace Bee.Business.System
                     "One-time sessions are no longer supported. Create an ordinary session and " +
                     "keep its lifetime short instead.");
 
-            var userRepository = Services.GetRequiredService<ISystemRepositoryFactory>().CreateUserRepository();
+            var userRepository = Services.GetRequiredService<IRepositoryFactory>().Create<IUserRepository>();
             // The message deliberately omits the user id: InvalidOperationException is on the
             // user-facing allow-list in JsonRpcExecutor, so its text reaches the caller verbatim
             // and would confirm whether an account exists.

@@ -28,13 +28,13 @@ Bee.NET 採 **define-driven schema**：資料表結構由 FormSchema / TableSche
 最簡單的呼叫方式，適用於大多數場景：
 
 ```csharp
-// 透過 DI 解析：在使用端 class ctor 注入 ISystemRepositoryFactory，
+// 透過 DI 解析：在使用端 class ctor 注入 IRepositoryFactory，
 // 需要時透過 factory 建立 repository
-public class MyService(ISystemRepositoryFactory repoFactory)
+public class MyService(IRepositoryFactory repoFactory)
 {
     public bool UpgradeEmployeeTable()
     {
-        var repo = repoFactory.CreateDatabaseRepository();
+        var repo = repoFactory.Create<IDatabaseRepository>();
         // 參數順序：databaseId（實體連線識別）、categoryId（邏輯分類）、tableName
         return repo.UpgradeTableSchema("myDb", "company", "st_employee");
     }

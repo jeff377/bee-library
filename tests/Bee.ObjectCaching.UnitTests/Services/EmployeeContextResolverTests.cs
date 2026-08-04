@@ -3,6 +3,7 @@ using Bee.Definition.Identity;
 using Bee.Definition.Organization;
 using Bee.ObjectCaching.Services;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.Form;
 using Bee.Repository.Abstractions.System;
 
 namespace Bee.ObjectCaching.UnitTests.Services
@@ -20,7 +21,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
         private static readonly Guid s_deptRowId = Guid.NewGuid();
 
         private static EmployeeContextResolver Create(Guid userRowId, EmployeeRow? employee)
-            => new(new FakeSystemRepositoryFactory(userRowId, employee));
+            => new(new FakeRepositoryFactory(userRowId, employee));
 
         [Fact]
         [DisplayName("Resolve 有對應員工回完整 context（user/employee/dept）")]
@@ -76,30 +77,29 @@ namespace Bee.ObjectCaching.UnitTests.Services
         }
 
         /// <summary>
-        /// 只實作 EmployeeContextResolver 會用到的兩個 Create 方法；其餘一律擲例外，
+        /// 只回應 EmployeeContextResolver 會用到的兩個介面；其餘一律擲例外，
         /// 讓非預期的 repository 取用在測試中立即現形。
         /// </summary>
-        private sealed class FakeSystemRepositoryFactory : ISystemRepositoryFactory
+        private sealed class FakeRepositoryFactory : IRepositoryFactory
         {
             private readonly Guid _userRowId;
             private readonly EmployeeRow? _employee;
 
-            public FakeSystemRepositoryFactory(Guid userRowId, EmployeeRow? employee)
+            public FakeRepositoryFactory(Guid userRowId, EmployeeRow? employee)
             {
                 _userRowId = userRowId;
                 _employee = employee;
             }
 
-            public IUserRepository CreateUserRepository() => new FakeUserRepository(_userRowId);
-            public IEmployeeRepository CreateEmployeeRepository() => new FakeEmployeeRepository(_employee);
+            public T Create<T>(Guid accessToken = default) where T : class
+            {
+                if (typeof(T) == typeof(IUserRepository)) { return (T)(object)new FakeUserRepository(_userRowId); }
+                if (typeof(T) == typeof(IEmployeeRepository)) { return (T)(object)new FakeEmployeeRepository(_employee); }
+                throw new NotSupportedException(typeof(T).FullName);
+            }
 
-            public IDatabaseRepository CreateDatabaseRepository() => throw new NotSupportedException();
-            public IApiKeyRepository CreateApiKeyRepository() => throw new NotSupportedException();
-            public ISessionRepository CreateSessionRepository() => throw new NotSupportedException();
-            public ICompanyRepository CreateCompanyRepository() => throw new NotSupportedException();
-            public IUserCompanyRepository CreateUserCompanyRepository() => throw new NotSupportedException();
-            public IRolePermissionRepository CreateRolePermissionRepository() => throw new NotSupportedException();
-            public IDepartmentRepository CreateDepartmentRepository() => throw new NotSupportedException();
+            public T CreateFormRepository<T>(Guid accessToken, string progId) where T : class, IDataFormRepository
+                => throw new NotSupportedException();
         }
 
         private sealed class FakeUserRepository : IUserRepository

@@ -30,8 +30,8 @@ Bee.ObjectCaching.Services.CompanyInfoService.CompanyInfoService(Bee.ObjectCachi
 Bee.ObjectCaching.Services.DepartmentTreeService.DepartmentTreeService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.DeploymentAuthorizationService
 Bee.ObjectCaching.Services.DeploymentAuthorizationService.Can(System.Guid accessToken, Bee.Definition.Identity.DeploymentAction action) -> bool
-Bee.ObjectCaching.Services.DeploymentAuthorizationService.DeploymentAuthorizationService(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory) -> void
-Bee.ObjectCaching.Services.EmployeeContextResolver.EmployeeContextResolver(Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory! systemFactory) -> void
+Bee.ObjectCaching.Services.DeploymentAuthorizationService.DeploymentAuthorizationService(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Repository.Abstractions.Factories.IRepositoryFactory! repositoryFactory) -> void
+Bee.ObjectCaching.Services.EmployeeContextResolver.EmployeeContextResolver(Bee.Repository.Abstractions.Factories.IRepositoryFactory! repositoryFactory) -> void
 Bee.ObjectCaching.Services.RolePermissionService.RolePermissionService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 const Bee.ObjectCaching.Database.ApiKeyCache.AbsoluteMinutes = 60 -> int
 override Bee.ObjectCaching.Database.ApiKeyCache.CreateInstance(string! key) -> Bee.Definition.Security.ApiKeyInfo?

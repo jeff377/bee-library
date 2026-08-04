@@ -8,6 +8,7 @@ using Bee.Definition.Identity;
 using Bee.Definition.Logging;
 using Bee.Definition.Security;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 
 namespace Bee.Business.System
 {
@@ -60,7 +61,7 @@ namespace Bee.Business.System
                 throw new UserMessageException("The expiry time must be in the future.");
             }
 
-            var repository = Services.GetRequiredService<ISystemRepositoryFactory>().CreateApiKeyRepository();
+            var repository = Services.GetRequiredService<IRepositoryFactory>().Create<IApiKeyRepository>();
             // Checked up front so a duplicate id reports something actionable instead of surfacing a
             // unique-index violation from the provider.
             if (repository.Exists(args.SysId))
@@ -122,7 +123,7 @@ namespace Bee.Business.System
 
             RequireApiKeyManagement("list API keys");
 
-            var repository = Services.GetRequiredService<ISystemRepositoryFactory>().CreateApiKeyRepository();
+            var repository = Services.GetRequiredService<IRepositoryFactory>().Create<IApiKeyRepository>();
             return new ListApiKeysResult { ApiKeys = [.. repository.GetList()] };
         }
 
@@ -148,7 +149,7 @@ namespace Bee.Business.System
 
             RequireApiKeyManagement("manage API keys");
 
-            var repository = Services.GetRequiredService<ISystemRepositoryFactory>().CreateApiKeyRepository();
+            var repository = Services.GetRequiredService<IRepositoryFactory>().Create<IApiKeyRepository>();
             bool auditing = DeploymentAuditEnabled();
             // Read before writing so the audit records the direction; enable and disable are both an
             // Update and are otherwise indistinguishable.
@@ -186,7 +187,7 @@ namespace Bee.Business.System
 
             RequireApiKeyManagement("manage API keys");
 
-            var repository = Services.GetRequiredService<ISystemRepositoryFactory>().CreateApiKeyRepository();
+            var repository = Services.GetRequiredService<IRepositoryFactory>().Create<IApiKeyRepository>();
             bool auditing = DeploymentAuditEnabled();
             DateTime? before = auditing ? FindExpiry(repository, args.SysId) : null;
 

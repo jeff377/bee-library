@@ -7,7 +7,7 @@
 | 1 | `ProgramSettings` 定位收斂：選單分離為獨立定義，註冊表只留 progId → 型別綁定 | ✅ 已完成（2026-08-04） |
 | 2 | BO 型別解析全面 ProgId 化（`ProgId` 上移基底、`IBoTypeResolver`、保留字 progId 的啟動自我註冊） | ✅ 已完成（2026-08-04） |
 | 3 | `IRepositoryFactory` 介面定案，三個既有工廠合併（含 DI 註冊與 `BackendComponents` 契約調整） | ✅ 已完成（2026-08-04） |
-| 4 | 消費端遷移至新工廠，移除 `ISystemRepositoryFactory` / `IFormRepositoryFactory` / `IAuditLogRepositoryFactory` | 📝 待做 |
+| 4 | 消費端遷移至新工廠，移除 `ISystemRepositoryFactory` / `IFormRepositoryFactory` / `IAuditLogRepositoryFactory` | ✅ 已完成（2026-08-04） |
 | 5 | `ProgramItem.Repository` 屬性、解析鏈與 fail-fast 建構 | 📝 待做 |
 | 6 | 專屬 Repository 介面樣式落地與文件同步 | 📝 待做 |
 
@@ -292,6 +292,16 @@ public interface IRepositoryFactory
 | `RepositoryBase.Scope` | `protected abstract DbScope Scope` | 改為建構函式參數且可為 `null`（表示「本身沒有資料庫，每個方法各自指定」）。非 virtual 屬性是為了避免建構期呼叫可覆寫成員（CA2214） |
 | per-company Repository 的範圍 | 只點名 `EmployeeContextResolver` 需保留呼叫端指定 databaseId | `RolePermissionRepository` / `DepartmentRepository` / `EmployeeRepository` 的**全部**呼叫端只有 `CacheDataSourceProvider` 與 `EmployeeContextResolver`，**兩者都沒有 accessToken**（前者是以 companyId 為鍵的 cache 回填）。改 token 驅動會讀成「呼叫者的公司」而非「被指定的公司」，是行為錯誤而非不便 |
 | `Bee.Repository` 相依 | 未提及 | 新增 `Microsoft.Extensions.DependencyInjection.Abstractions`（僅為 `ActivatorUtilities`，不含容器實作） |
+
+### 階段 4
+
+| 事項 | 本文件 | 實際 |
+|------|--------|------|
+| `IReportFormRepository` / `ReportFormRepository` | 未提及（階段 3 轉接時已記下「該歸哪一軸」是待決問題） | **一併移除**。它刻意為空、零 production 消費者，而其唯一存在理由——`IFormRepositoryFactory.CreateReportFormRepository` 的繫結目標——本階段消失。留在框架軸只會固化成死型別：`RepositoryFactory.Create<T>` 非 virtual 且 `s_frameworkTypes` 為 private static，應用**無法**再換上自己的實作，progId 也會被工廠填成 `string.Empty` 而丟失。報表走 AnyCode 軌本就由 BO 自行寫 SQL，不需要這個繫結點。該介面自身的 XML doc 與 `plan-framework-review-2026-07-28.md` 都預留了此出口 |
+| 測試工廠的縮減幅度 | 只點名兩個 `FakeSystemRepositoryFactory` | 實際縮減 9 個手工 stub 工廠：兩個 `FakeSystemRepositoryFactory`（各 9 方法 → 2 方法）外，`Bee.Api.Core.UnitTests` 3 個、`Bee.Business.UnitTests` 4 個 form / auditlog stub 亦同步收斂為兩個泛型方法 |
+| `Bee.Repository.UnitTests` 的工廠測試檔 | 未提及 | `SystemRepositoryFactoryTests` 刪除（覆蓋率已由 `RepositoryFactoryTests` 的框架軸 theory 承接）；`FormRepositoryFactoryTests` 更名為 `RepositoryFactoryGuardTests`，保留 ctor 相依防護與 `CategoryId` 失敗語意（後者現由 `DataFormRepository` 建構期拋出，非工廠），移除轉接器專屬案例；`ReportFormRepositoryTests` 隨型別移除 |
+| CHANGELOG | 交接時列為本階段工作 | **不寫**，與階段 1–3 一致（三者同樣移除了公開 API 卻未寫入 `Unreleased`）。本 plan 是六階段系列，階段 4 單獨成條會被階段 5–6 取代；整份於發版時由 `/changelog-draft` 自 tag 起算一次產出。`~/.claude/rules/releasing.md` 目前不存在 |
+| 公開文件連帶更新 | 未提及 | `Bee.Repository` / `Bee.Repository.Abstractions` 的 README 雙語、`docs/terminology`（雙語）、`docs/development-cookbook`（雙語）、`docs/database-schema-upgrade`（雙語）、`adr-010`（型別名漂移，階段 3 未同步）共 10 檔 |
 
 ### 交接時列出的待驗證項目：驗證結果
 

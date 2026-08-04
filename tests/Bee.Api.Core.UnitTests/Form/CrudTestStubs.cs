@@ -64,7 +64,7 @@ namespace Bee.Api.Core.UnitTests.Form
     /// factory contract, so tests can inject the same recording stub for any
     /// requested <c>progId</c>.
     /// </summary>
-    internal sealed class StubCrudFormRepositoryFactory : IFormRepositoryFactory
+    internal sealed class StubCrudFormRepositoryFactory : IRepositoryFactory
     {
         private readonly IDataFormRepository _data;
 
@@ -73,9 +73,10 @@ namespace Bee.Api.Core.UnitTests.Form
             _data = data;
         }
 
-        public IDataFormRepository CreateDataFormRepository(string progId, Guid accessToken) => _data;
+        public T CreateFormRepository<T>(Guid accessToken, string progId) where T : class, IDataFormRepository
+            => (T)_data;
 
-        public IReportFormRepository CreateReportFormRepository(string progId)
+        public T Create<T>(Guid accessToken = default) where T : class
             => throw new NotSupportedException();
     }
 }

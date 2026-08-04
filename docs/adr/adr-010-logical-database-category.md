@@ -208,11 +208,11 @@ public enum DbScope { Common, Company, Log }
 
 ### 與 FormSchema 的銜接
 
-`FormRepositoryFactory.CreateDataFormRepository(progId, accessToken)` 內部把 `schema.CategoryId` 轉成 `DbScope`，再呼叫 router 解析出實際 databaseId：
+`IRepositoryFactory.CreateFormRepository<T>(accessToken, progId)` 建出的 repository 於建構期把 `schema.CategoryId` 轉成 `DbScope`，再呼叫 router 解析出實際 databaseId：
 
 ```text
 schema.CategoryId (string)
-    ↓ FormRepositoryFactory.ParseCategoryId(string)
+    ↓ RepositoryFactory.ParseCategoryId(string)
 DbScope (enum)
     ↓ IRepositoryDatabaseRouter.Resolve(DbScope, accessToken)
 databaseId (string, DatabaseItem.Id)

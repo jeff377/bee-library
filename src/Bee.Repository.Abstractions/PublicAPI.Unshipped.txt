@@ -1,10 +1,24 @@
 #nullable enable
+*REMOVED*Bee.Repository.Abstractions.Factories.IAuditLogRepositoryFactory
+*REMOVED*Bee.Repository.Abstractions.Factories.IAuditLogRepositoryFactory.CreateAuditLogRepository() -> Bee.Repository.Abstractions.AuditLog.IAuditLogRepository!
+*REMOVED*Bee.Repository.Abstractions.Factories.IFormRepositoryFactory
+*REMOVED*Bee.Repository.Abstractions.Factories.IFormRepositoryFactory.CreateDataFormRepository(string! progId, System.Guid accessToken) -> Bee.Repository.Abstractions.Form.IDataFormRepository!
+*REMOVED*Bee.Repository.Abstractions.Factories.IFormRepositoryFactory.CreateReportFormRepository(string! progId) -> Bee.Repository.Abstractions.Form.IReportFormRepository!
+*REMOVED*Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory
+*REMOVED*Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateCompanyRepository() -> Bee.Repository.Abstractions.System.ICompanyRepository!
+*REMOVED*Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateDatabaseRepository() -> Bee.Repository.Abstractions.System.IDatabaseRepository!
+*REMOVED*Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateDepartmentRepository() -> Bee.Repository.Abstractions.System.IDepartmentRepository!
+*REMOVED*Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateEmployeeRepository() -> Bee.Repository.Abstractions.System.IEmployeeRepository!
+*REMOVED*Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateRolePermissionRepository() -> Bee.Repository.Abstractions.System.IRolePermissionRepository!
+*REMOVED*Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateSessionRepository() -> Bee.Repository.Abstractions.System.ISessionRepository!
+*REMOVED*Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateUserCompanyRepository() -> Bee.Repository.Abstractions.System.IUserCompanyRepository!
+*REMOVED*Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateUserRepository() -> Bee.Repository.Abstractions.System.IUserRepository!
+*REMOVED*Bee.Repository.Abstractions.Form.IReportFormRepository
 *REMOVED*Bee.Repository.Abstractions.System.ISessionRepository.CreateSession(string! userID, int expiresIn = 3600, bool oneTime = false) -> Bee.Definition.Identity.SessionUser!
 *REMOVED*Bee.Repository.Abstractions.System.IUserRepository.GetTimeZone(string! userId) -> string!
 Bee.Repository.Abstractions.Factories.IRepositoryFactory
 Bee.Repository.Abstractions.Factories.IRepositoryFactory.Create<T>(System.Guid accessToken = default(System.Guid)) -> T!
 Bee.Repository.Abstractions.Factories.IRepositoryFactory.CreateFormRepository<T>(System.Guid accessToken, string! progId) -> T!
-Bee.Repository.Abstractions.Factories.ISystemRepositoryFactory.CreateApiKeyRepository() -> Bee.Repository.Abstractions.System.IApiKeyRepository!
 Bee.Repository.Abstractions.System.IApiKeyRepository
 Bee.Repository.Abstractions.System.IApiKeyRepository.Exists(string! sysId) -> bool
 Bee.Repository.Abstractions.System.IApiKeyRepository.GetEnabledById(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?

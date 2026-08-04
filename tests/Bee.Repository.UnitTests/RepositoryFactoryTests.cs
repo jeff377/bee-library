@@ -58,7 +58,6 @@ namespace Bee.Repository.UnitTests
         [InlineData(typeof(IEmployeeRepository))]
         [InlineData(typeof(IAuditLogRepository))]
         [InlineData(typeof(IAuditLogWriteRepository))]
-        [InlineData(typeof(IReportFormRepository))]
         [DisplayName("Create<T> 應能建立每一個框架 repository")]
         public void Create_EveryFrameworkRepository_Resolves(Type contract)
         {

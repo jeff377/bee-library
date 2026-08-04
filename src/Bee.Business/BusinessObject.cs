@@ -120,13 +120,13 @@ namespace Bee.Business
                        .Resolve(scope, AccessToken);
 
         /// <summary>
-        /// Convenience wrapper around <see cref="IFormRepositoryFactory.CreateDataFormRepository"/>
-        /// that auto-passes the current <see cref="AccessToken"/>.
+        /// Convenience wrapper around <see cref="IRepositoryFactory.CreateFormRepository{T}"/> that
+        /// auto-passes the current <see cref="AccessToken"/>.
         /// </summary>
         /// <param name="progId">The program identifier.</param>
         protected IDataFormRepository CreateDataFormRepository(string progId)
-            => Services.GetRequiredService<IFormRepositoryFactory>()
-                       .CreateDataFormRepository(progId, AccessToken);
+            => Services.GetRequiredService<IRepositoryFactory>()
+                       .CreateFormRepository<IDataFormRepository>(AccessToken, progId);
 
         /// <summary>
         /// Resolves localized text for the given full key using the current session's
