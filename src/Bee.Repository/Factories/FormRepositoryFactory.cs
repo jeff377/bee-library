@@ -28,6 +28,15 @@ namespace Bee.Repository.Factories
             => _factory.CreateFormRepository<IDataFormRepository>(accessToken, progId);
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// NOTE: <paramref name="progId"/> is not forwarded. <see cref="IRepositoryFactory"/>'s
+        /// framework axis carries no progId, and the progId axis is constrained to
+        /// <c>IDataFormRepository</c>, which a report repository does not implement — so there is
+        /// currently no way to pass one. It changes nothing today: <c>IReportFormRepository</c> has
+        /// no production consumer and <c>ReportFormRepository</c> does nothing with the value.
+        /// Which axis a report repository belongs on is an open question for the stage that removes
+        /// this adapter.
+        /// </remarks>
         public IReportFormRepository CreateReportFormRepository(string progId)
             => _factory.Create<IReportFormRepository>();
     }
