@@ -105,6 +105,46 @@ public abstract class FormBusinessPlugin
 }
 ```
 
+#### 宣告粒度：設定檔只列型別，時點由類別自己 override
+
+```xml
+<Program ProgId="Order">
+  <Plugin Type="Cust.A.CreditLimitPlugin, Cust.A" />
+</Program>
+```
+
+**否決的替代方案**是設定檔明寫「時點 × 型別」（`<BeforeSave Type="..."/>`）＋ 每個時點一個介面。
+它的設定檔一眼看得出各時點的執行順序、儲存時也能驗得更精確（型別必須實作該時點的介面），但代價
+是**一個業務需求得拆成兩個類別**——「檢查信用額度（`BeforeSave`）＋ 超額時通知風控
+（`AfterSave`）」是 ERP 客製的常態而非例外，拆開後兩段之間沒有共享狀態的地方。那是把框架的形狀
+強加到業務邏輯上。
+
+##### plugin 實例的生命週期＝per-operation ★這條是 A 成立的前提
+
+**每次 `Save` / `Delete` 呼叫建構一次，該次呼叫的所有時點共用同一個實例。** 上面那個例子裡
+「超了多少」就放在 instance field，由 `BeforeSave` 算、`AfterSave` 用。
+
+若改成每個時點各建一次，跨時點的狀態就無處可放，A 相對於 B 的優勢只剩「設定檔少打幾行」——不值得
+為此放棄 B 的可讀性。**這條不落實等於沒選到 A。**
+
+連帶：plugin 不是 singleton，不需要考慮執行緒安全；也因此 instance field 是合法的設計手段，而非
+要在文件勸阻的東西。
+
+##### 代價：設定檔看不出各時點的執行順序
+
+`Plugin1` 只 override `AfterSave`、`Plugin2` override `BeforeSave` 與 `AfterSave` 時，實際執行是：
+
+```
+BeforeSave: Plugin2
+AfterSave:  Plugin1 → Plugin2
+```
+
+從 XML 完全看不出來，得翻兩個類別的原始碼。而「為什麼我的檢查沒跑」正是這類機制最常見的求助。
+
+**中和方式見 G2**：框架反正要在載入時掃型別，順手用反射算出「各時點實際會跑哪些 plugin」——維護
+工具顯示它，同一份資料也拿來過濾無效呼叫。用工具給可讀性，不用把 XML 結構改成 B（Dynamics 365
+的 registration tool 走的也是這條路）。
+
 **選用準則（要寫進文件）**：
 
 | 需求 | 手段 | 能力 |
@@ -296,11 +336,20 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
 ### G2 — `FormBusinessPlugin` 基底與執行接線
 
 - `FormBusinessPlugin` 抽象基底，四個掛載點各一個虛擬空實作，plugin 只 override 需要的時點。
-  設定檔只列型別，不宣告時點。
+  設定檔只列型別，不宣告時點（D2）。
 - plugin 建構走 `ActivatorUtilities.CreateInstance`，簽章比照 repository 的三參數慣例
   `(IBeeContext ctx, Guid accessToken, string progId)`——session、`DefineAccess`、`BoFactory`、
   `Services` 都從 `IBeeContext` 拿。**不把 BO 本身傳進去**：那會連 protected 成員一併曝光，
   鼓勵錯誤耦合。
+- **實例生命週期 per-operation**（D2）：`Save` / `Delete` 各建構一次，該次呼叫的所有時點共用同一
+  實例。實作上是在 public `Save` / `Delete` 建構一次後放進 context 或區域變數往下傳，**不是**在每
+  個時點各建一次。要有測試釘住這件事——它是宣告粒度那個決策的前提，改壞了不會有編譯錯誤。
+- **反射算出各時點的執行清單**：載入型別時一併判斷它 override 了哪四個方法中的哪些，得到
+  「時點 → 有序 plugin 清單」。兩個用途：(1) 過濾無效呼叫，沒 override 的時點不進 plugin 迴圈；
+  (2) 供維護工具顯示執行順序，中和「設定檔看不出誰在哪個時點跑」的可讀性代價（D2）。
+  判斷方式是比對 `MethodInfo.DeclaringType` 是否為 `FormBusinessPlugin` 本身。
+- 一個什麼時點都沒 override 的 plugin 是**設定錯誤**（掛了等於沒掛），儲存時就該擋下——見 G3 的
+  儲存時驗證。
 - `FormBusinessObject` 在四個位置的**最終實作之後**依序執行 plugin。注意 `DoBeforeSave` 的
   base 實作會跑規則引擎，plugin 因此看到的是已算好預設值 / 計算欄的資料。
 - **修正 `DeleteContext.Snapshot` 的載入條件**：目前是
@@ -321,7 +370,8 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
 - 兩個 BO 方法：讀回某 customizeId 的 plugin 設定、整份儲存。掛在 `System` 軸（與
   `SaveDefine` / `GetFormSchema` 同源），不另立 reserved progId。
 - **兩者都標 `LocalOnly` + `IsLocalCall` 防禦**。不另設權限檢查。
-- **儲存時驗證**每個 plugin 型別可載入且繼承 `FormBusinessPlugin`，不通過即拒存並指出是哪一筆。
+- **儲存時驗證**每個 plugin 型別可載入、繼承 `FormBusinessPlugin`、且**至少 override 一個時點**
+  （否則掛了等於沒掛，是設定錯誤）。任一不通過即拒存並指出是哪一筆。
 - 儲存成功後 invalidate 該 customizeId 的 cache slot 並發 cache-notify（**多節點必要**：其他節點
   的快取不會因為本節點寫入而自動更新）。
 - 稽核：設定變更寫入稽核記錄（誰、哪個 customizeId、改成什麼）。`LocalOnly` 擋掉了遠端濫用，
@@ -331,6 +381,8 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
 
 - 帶 CustomizeId 的 session → API → 執行客製 plugin。
 - 四個掛載點各一個順序驗證；多 plugin 依宣告順序；例外往上拋致 Save 失敗。
+- **同一次 `Save` 的 `BeforeSave` 與 `AfterSave` 拿到同一個 plugin 實例**（釘住 D2 的
+  per-operation 生命週期）；不同次呼叫則是不同實例。
 - `BeforeSave` 改的資料**進得了稽核**（釘住「稽核快照之前」這個位置）；`AfterDelete` 拿得到
   `Snapshot`（釘住載入條件的修正，且要在**稽核關閉**的組態下測，否則測不到）。
 - API 維護路徑：遠端呼叫被拒（attribute 與 `IsLocalCall` 各驗一次）、型別打錯字被拒存、
@@ -342,8 +394,6 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
 
 ## 4. 仍未定案
 
-- **plugin 宣告粒度**採「設定檔只列型別、一個類別可 override 多個時點」。若要改成設定檔明寫
-  「時點 × 型別」，動工前提出即可，影響僅止於 XML 結構與解析。
 - **客製層寫入要不要一次做通用**：G3 採「PluginSettings 專屬的兩個 BO 方法」。另一種形狀是給
   `GetDefineArgs` / `SaveDefineArgs` 加 `CustomizeId` 欄位，讓既有的泛型 define 路徑同時服務兩層
   （空值＝套裝層），由 storage 決定哪些型別支援客製寫入。後者在「日後客製 Language /
