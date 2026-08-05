@@ -1,6 +1,6 @@
 # 計畫：BO 擴充點的交易邊界契約
 
-**狀態：📝 擬定中（決策已定案，待實作）· 2026-08-05**
+**狀態：✅ 已完成（2026-08-05）**
 
 > 範圍：把 `FormBusinessObject` 的 `Save` / `Delete` 六個可覆寫子方法的**交易邊界寫成明文契約**。
 > **純文件，零程式行為變更。** 與客製化無關——覆寫子方法的客製今天就能用，這份契約讓它用得安全。
@@ -93,13 +93,20 @@ DoAfterSave    交易外
 
 ---
 
-## 3. 實作
+## 3. 實作（✅ 已完成 2026-08-05）
 
-單一階段，純文件：
+單一階段，純文件，無程式行為變更：
 
-- `Save` / `Delete` 六個子方法的 XML doc 補上 §1 的契約與 §2 D2 的三個後果——呼叫端在 IDE
-  IntelliSense 就該看到「這一段在不在交易中」，這是決定邏輯寫在哪的第一個判準。
-- 公開文件（雙語）補一節「BO 擴充點與交易邊界」，含 D1 的 `UserMessageException` 用法與
-  D2 第 1 點的 TOCTOU 提醒。
+- [`FormBusinessObject`](../../src/Bee.Business/Form/FormBusinessObject.cs)：六個子方法各加
+  `<remarks>` 標明在不在交易中；`DoBeforeSave` / `DoBeforeDelete` 額外寫 TOCTOU 與
+  `UserMessageException`，`DoAfterSave` / `DoAfterDelete` 寫「資料已提交」與佇列建議。
+  public `Save` / `Delete` 加管線圖與「覆寫子方法而非本方法」的指引，稽核不原子記在 `Save`。
+- [`development-cookbook.md`](../development-cookbook.md) /
+  [`.zh-TW.md`](../development-cookbook.zh-TW.md)：新增「BO 擴充點與交易邊界」一節，置於
+  「客製化 ProgId 對應的 BO」與「為 ProgId 客製 Repository」之間。
+- 同節既有範例原本示範 `override SaveResult Save`——覆寫 public 方法會接手 `AuthorizeSave` 與
+  寫入 scope 檢查，與本契約牴觸，一併改為覆寫 `DoBeforeSave`。
 
-無程式行為變更，無回歸風險。
+平行路徑檢查：全 repo 已無 `override SaveResult Save` / `override DeleteResult Delete`；
+`expression-rules.md`（雙語）與 adr-028 早已教 `DoBeforeSave` 的覆寫方式，本次改動使 cookbook
+與其一致。

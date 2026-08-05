@@ -315,8 +315,13 @@ public class CustomerBo : FormBusinessObject
     public CustomerBo(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
         : base(ctx, accessToken, progId, isLocalCall) { }
 
-    // Override hooks or add custom methods exposed via [ApiAccessControl].
-    public override SaveResult Save(SaveArgs args) { /* custom logic */ }
+    // Override a Do* hook (see the next section) or add custom methods
+    // exposed via [ApiAccessControl].
+    protected override void DoBeforeSave(SaveContext context)
+    {
+        base.DoBeforeSave(context);
+        // custom validation or computed values
+    }
 }
 ```
 
@@ -337,6 +342,67 @@ public class CustomerBo : FormBusinessObject
 The **reserved progIds** `System` and `AuditLog` are held to a stricter rule: a type that will not load, or one that does not derive from the framework object for that axis, fails the host instead of degrading. A silent fallback there would surface as a JSON-RPC "method not found", pointing the diagnosis at the API layer rather than at the registry. The host registers both progIds at startup when they are absent, so an existing `ProgramSettings.xml` needs no manual edit.
 
 Resolved types are cached for the lifetime of the in-memory `ProgramSettings` instance; when `ProgramSettingsCache` reloads the file (via its file watcher), the cache resets automatically.
+
+### BO Extension Points and the Transaction Boundary
+
+`Save` and `Delete` are each split into three overridable steps. **Override one of those, not the
+public method** — the authorization and record-scope checks live in the public method, and replacing
+it takes them over too.
+
+```text
+Save:   DoBeforeSave  →  DoSave  →  [change audit]  →  DoAfterSave
+Delete: DoBeforeDelete → DoDelete → [delete audit]  → DoAfterDelete
+                          ↑
+                only this step runs inside the database transaction
+```
+
+The transaction is opened and committed by the repository, within `DoSave` / `DoDelete`. Everything
+else — including work you add around `base.DoSave(context)` in an override — runs outside it.
+
+That boundary is deliberate: `DoBeforeSave` evaluates expressions, reads lookups and may call other
+business objects, while `DoAfterSave` is where notifications and calls to other systems belong.
+Holding a transaction open across those ties lock duration to external latency, which is how
+connection pools drain and distributed deadlocks appear.
+
+#### Aborting the operation
+
+Throw `UserMessageException` — the framework's business-flow interruption signal. It travels to the
+client as `JsonRpcErrorCode.UserMessage` and is rebuilt there as the same type, so the message
+reaches the end user unchanged. The schema-driven rule engine uses the same mechanism for its
+`BeforeSave` validation rules.
+
+```csharp
+protected override void DoBeforeSave(SaveContext context)
+{
+    base.DoBeforeSave(context);
+    if (/* business condition fails */)
+        throw new UserMessageException("The credit limit for this customer has been exceeded.");
+}
+```
+
+#### Three consequences to design around
+
+**Validation in `DoBeforeSave` has a time-of-check to time-of-use gap.** A read that finds stock
+sufficient can be invalidated by another transaction before `DoSave` runs, and the save still
+proceeds. Throwing an exception settles *how* to abort; it does not make the check current at write
+time. Checks that must be atomic belong inside the transaction — a conditional UPDATE, a unique
+index, or a check constraint in a repository subclass. Reads in `DoBeforeSave` are for rejecting
+obviously wrong input, not for guarding against concurrency.
+
+**The change audit is not atomic with the data.** It is written after `DoSave` returns, so a record
+can persist while its audit entry fails. Raising the audit into the transaction would make `DoSave`
+more than persistence and require a transaction API at the business-object layer; the framework
+accepts the gap instead.
+
+**A failure in `DoAfterSave` leaves the data saved.** The exception propagates and the call reports
+failure, but the transaction committed before that step began. Side effects placed there must
+tolerate being retried, or be handed to a queue rather than performed inline — a notification sent
+synchronously and then failing leaves nothing to retry from.
+
+#### When logic must be atomic with the record
+
+Put it in the repository, not the business object. Subclass `DataFormRepository` and extend its
+`Save` so the extra statements join the same batch — see the next section.
 
 ### Customising the Repository for a ProgId
 

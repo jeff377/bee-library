@@ -310,8 +310,12 @@ public class CustomerBo : FormBusinessObject
     public CustomerBo(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
         : base(ctx, accessToken, progId, isLocalCall) { }
 
-    // 覆寫鉤子或新增以 [ApiAccessControl] 公開的客製方法。
-    public override SaveResult Save(SaveArgs args) { /* 客製邏輯 */ }
+    // 覆寫 Do* 鉤子(見下一節)或新增以 [ApiAccessControl] 公開的客製方法。
+    protected override void DoBeforeSave(SaveContext context)
+    {
+        base.DoBeforeSave(context);
+        // 客製驗證或計算欄位
+    }
 }
 ```
 
@@ -332,6 +336,60 @@ public class CustomerBo : FormBusinessObject
 **保留字 progId** `System` 與 `AuditLog` 受更嚴的規則約束:型別載不到、或不衍生自該軸的框架物件,會讓 host 起不來而非降級。那裡若沿用靜默退回,症狀會是 JSON-RPC「找不到方法」,把診斷者導向 API 層而非真正的成因(註冊表)。host 啟動時若發現缺項會自行補寫,既有的 `ProgramSettings.xml` 不需手動改。
 
 解析結果在記憶體內的 `ProgramSettings` 實例存活期間快取;當 `ProgramSettingsCache` 透過 file watcher 重載檔案時,快取自動 reset。
+
+### BO 擴充點與交易邊界
+
+`Save` 與 `Delete` 各切成三段可覆寫的步驟。**要客製就覆寫其中一段,不要覆寫 public 方法**——
+授權與 record-scope 檢查寫在 public 方法裡,覆寫它等於把那些檢查一併接手。
+
+```text
+Save:   DoBeforeSave  →  DoSave  →  [變更稽核]  →  DoAfterSave
+Delete: DoBeforeDelete → DoDelete → [刪除稽核]  → DoAfterDelete
+                          ↑
+                    只有這一段在資料庫交易中
+```
+
+交易由 repository 在 `DoSave` / `DoDelete` 內部開啟並提交。其餘全部在交易外——**包含你在覆寫中
+加在 `base.DoSave(context)` 前後的程式碼**。
+
+這條邊界是刻意的:`DoBeforeSave` 會求值運算式、查 lookup、可能呼叫其他 BO,而 `DoAfterSave`
+正是發通知、呼叫外部系統該待的位置。把交易撐過這些呼叫,等於讓鎖持有時間被外部延遲綁架,
+連線池耗盡與分散式死結都由此而來。
+
+#### 中止流程
+
+丟 `UserMessageException`——框架的業務流程中止訊號。它以 `JsonRpcErrorCode.UserMessage` 傳到
+用戶端並還原成同一型別,訊息原樣呈現給使用者。schema 驅動的規則引擎,其 `BeforeSave` 驗證規則
+走的也是同一個機制。
+
+```csharp
+protected override void DoBeforeSave(SaveContext context)
+{
+    base.DoBeforeSave(context);
+    if (/* 業務條件不成立 */)
+        throw new UserMessageException("此客戶已超出信用額度。");
+}
+```
+
+#### 三個必須納入設計的後果
+
+**`DoBeforeSave` 的驗證有 TOCTOU 空窗。** 讀到「庫存足夠」之後、`DoSave` 執行之前,另一個交易
+可能已把庫存扣光,而本次存檔照樣寫入。丟例外解決的是「怎麼中止」,不會讓檢查結果在寫入當下仍然
+成立。**需要原子性的檢查要放進交易內**——條件式 UPDATE、唯一索引,或 repository 子類裡的 check
+constraint。`DoBeforeSave` 的讀取只適合擋明顯錯誤的輸入,不能當並發防線。
+
+**變更稽核與資料不是原子的。** 它寫在 `DoSave` 回傳之後,所以「資料寫成功、稽核寫失敗」有可能
+發生。把稽核拉進交易會讓 `DoSave` 不只是持久化,且需要在 BO 層提供交易 API;框架選擇接受這個
+落差。
+
+**`DoAfterSave` 失敗時資料已經存進去了。** 例外會往上拋、該次呼叫回報失敗,但交易在這一段開始前
+就已提交。放在這裡的副作用必須能被重試,或交給佇列而非同步執行——通知同步送出後失敗,就沒有任何
+東西可以重試。
+
+#### 邏輯必須與資料同交易時
+
+寫進 repository,不要寫在 BO。繼承 `DataFormRepository` 並延伸它的 `Save`,讓額外的
+statement 加入同一個批次——見下一節。
 
 ### 為 ProgId 客製 Repository
 

@@ -203,6 +203,28 @@ namespace Bee.Business.Form
         /// Persists a <c>DataSet</c> by dispatching INSERT / UPDATE / DELETE
         /// based on each row's <c>RowState</c>.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The pipeline, and where the database transaction sits in it:
+        /// </para>
+        /// <code>
+        /// DoBeforeSave    outside the transaction
+        /// DoSave          INSIDE the transaction
+        /// change audit    outside the transaction
+        /// DoAfterSave     outside the transaction
+        /// </code>
+        /// <para>
+        /// Customise by overriding one of those three, not this method: the authorization and
+        /// write-scope checks above them live here, and an override that replaces this method takes
+        /// them over as well.
+        /// </para>
+        /// <para>
+        /// Because the audit write sits outside the transaction, a record can persist while its
+        /// change-audit entry fails. Raising the audit into the transaction would make <c>DoSave</c>
+        /// more than persistence and require a transaction API at this layer; the framework accepts
+        /// the gap instead.
+        /// </para>
+        /// </remarks>
         /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual SaveResult Save(SaveArgs args)
@@ -258,6 +280,26 @@ namespace Bee.Business.Form
         /// computed-field expressions, then <c>BeforeSave</c> validation rules). Overrides should call
         /// <c>base.DoBeforeSave(context)</c> first, then add custom logic.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Runs outside the database transaction.</b> The transaction covers
+        /// <see cref="DoSave"/> alone, so nothing done here is rolled back by a later failure and
+        /// nothing read here is protected from concurrent change.
+        /// </para>
+        /// <para>
+        /// <b>Validation here has a time-of-check to time-of-use gap.</b> A read that finds stock
+        /// sufficient can be invalidated by another transaction before <see cref="DoSave"/> runs,
+        /// and the save still proceeds. Checks that must be atomic belong inside
+        /// <see cref="DoSave"/>, expressed as a conditional UPDATE, a unique index or a check
+        /// constraint. Reads here are for rejecting obviously wrong input, not for guarding against
+        /// concurrency.
+        /// </para>
+        /// <para>
+        /// To abort the save, throw
+        /// <see cref="Bee.Base.Exceptions.UserMessageException"/> — the framework's
+        /// business-flow interruption signal, which reaches the end user as its message.
+        /// </para>
+        /// </remarks>
         /// <param name="context">The save context.</param>
         protected virtual void DoBeforeSave(SaveContext context)
         {
@@ -269,6 +311,18 @@ namespace Bee.Business.Form
         /// state through the repository and records the refreshed data set and affected-row counts on
         /// <paramref name="context"/>.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>The only step that runs inside the database transaction</b>, which the repository
+        /// opens and commits within this call. Logic that must succeed or fail atomically with the
+        /// record belongs here — in practice, inside a repository subclass whose own <c>Save</c>
+        /// extends the same batch.
+        /// </para>
+        /// <para>
+        /// Work added around <c>base.DoSave(context)</c> in an override is <b>not</b> in that
+        /// transaction: the transaction is already committed when control returns.
+        /// </para>
+        /// </remarks>
         /// <param name="context">The save context.</param>
         protected virtual void DoSave(SaveContext context)
         {
@@ -281,6 +335,20 @@ namespace Bee.Business.Form
         /// Business extension point invoked after persistence and change-audit write. The base
         /// implementation does nothing; override to run post-save side effects.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Runs outside the database transaction, after it has committed.</b> Throwing here
+        /// fails the call while the record stays saved, so the caller sees an error against data
+        /// that is already persisted. Side effects placed here must therefore tolerate being
+        /// retried, or be handed to a queue rather than performed inline — sending a notification
+        /// synchronously and failing leaves nothing to retry from.
+        /// </para>
+        /// <para>
+        /// This is also the right side of the boundary for anything that talks to the outside
+        /// world. Holding a transaction open across an external call ties lock duration to that
+        /// call's latency.
+        /// </para>
+        /// </remarks>
         /// <param name="context">The save context.</param>
         protected virtual void DoAfterSave(SaveContext context)
         {
@@ -289,6 +357,13 @@ namespace Bee.Business.Form
         /// <summary>
         /// Deletes a single master row directly by <c>RowId</c>.
         /// </summary>
+        /// <remarks>
+        /// Same shape as <see cref="Save(SaveArgs)"/>: <c>DoBeforeDelete</c> and
+        /// <c>DoAfterDelete</c> run outside the database transaction, <c>DoDelete</c> inside it, and
+        /// the delete audit is written between <c>DoDelete</c> and <c>DoAfterDelete</c> — outside.
+        /// Customise by overriding one of those three rather than this method, which carries the
+        /// authorization and record-scope resolution.
+        /// </remarks>
         /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual DeleteResult Delete(DeleteArgs args)
@@ -327,6 +402,12 @@ namespace Bee.Business.Form
         /// <see cref="DeleteContext.Snapshot"/>. Overrides should call
         /// <c>base.DoBeforeDelete(context)</c> first, then add custom logic.
         /// </summary>
+        /// <remarks>
+        /// <b>Runs outside the database transaction</b>, which covers <see cref="DoDelete"/> alone.
+        /// The same time-of-check to time-of-use gap described on <see cref="DoBeforeSave"/> applies
+        /// to any guard written here. To abort the delete, throw
+        /// <see cref="Bee.Base.Exceptions.UserMessageException"/>.
+        /// </remarks>
         /// <param name="context">The delete context.</param>
         protected virtual void DoBeforeDelete(DeleteContext context)
         {
@@ -338,6 +419,11 @@ namespace Bee.Business.Form
         /// Deletes the record. The base implementation deletes the master row (cascading to details)
         /// through the repository and records the affected-row count on <paramref name="context"/>.
         /// </summary>
+        /// <remarks>
+        /// <b>The only step that runs inside the database transaction</b> (details then master, one
+        /// batch). As with <see cref="DoSave"/>, work added around <c>base.DoDelete(context)</c> in
+        /// an override is outside it.
+        /// </remarks>
         /// <param name="context">The delete context.</param>
         protected virtual void DoDelete(DeleteContext context)
         {
@@ -348,6 +434,11 @@ namespace Bee.Business.Form
         /// Business extension point invoked after deletion and delete-audit write. The base
         /// implementation does nothing; override to run post-delete side effects.
         /// </summary>
+        /// <remarks>
+        /// <b>Runs outside the database transaction, after it has committed.</b> Throwing here
+        /// fails the call while the record stays deleted; the retry and queueing guidance on
+        /// <see cref="DoAfterSave"/> applies unchanged.
+        /// </remarks>
         /// <param name="context">The delete context.</param>
         protected virtual void DoAfterDelete(DeleteContext context)
         {
