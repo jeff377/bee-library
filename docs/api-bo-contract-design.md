@@ -109,6 +109,19 @@ public class LoginArgs : BusinessArgs, ILoginRequest
 | API output | `XxxResponse` | `LoginResponse` | Bee.Api.Core |
 | BO input | `XxxArgs` | `LoginArgs` | Bee.Business |
 | BO output | `XxxResult` | `LoginResult` | Bee.Business |
+| BO pipeline state | `XxxContext` | `SaveContext` | Bee.Business |
+
+**Which one to reach for: `Args` / `Result` cross a layer boundary, `Context` is shared within one
+operation.** An `XxxArgs` is deserialized from the caller and an `XxxResult` is serialized back, so
+both are pure POCOs that only ever hold data a client may see. An `XxxContext` never leaves the
+server: it carries what the steps of a single call need in common — the resolved repository and form
+schema, a pre-delete snapshot, the outputs one step produces for the next — including server objects
+that have no business on the wire.
+
+Two consequences worth knowing before choosing. Anything stored on `Args` **could have been set by
+the caller**, so intermediate state placed there is caller-influenced by construction. And because a
+context is one object rather than a signature, giving the steps one more shared value is a new
+property rather than a signature change that breaks every existing override.
 
 ---
 

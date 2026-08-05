@@ -109,6 +109,16 @@ public class LoginArgs : BusinessArgs, ILoginRequest
 | API 輸出 | `XxxResponse` | `LoginResponse` | Bee.Api.Core |
 | BO 輸入 | `XxxArgs` | `LoginArgs` | Bee.Business |
 | BO 輸出 | `XxxResult` | `LoginResult` | Bee.Business |
+| BO 流程內狀態 | `XxxContext` | `SaveContext` | Bee.Business |
+
+**判別法：跨層傳輸用 `Args` / `Result`，流程內共享狀態用 `Context`。** `XxxArgs` 由呼叫端反序列化
+而來、`XxxResult` 序列化回去，兩者都是純 POCO，只承載 client 可以看到的資料。`XxxContext` 則
+**不離開伺服端**：它承載單一次呼叫的各段所共用的東西——已解析的 repository 與 form schema、刪除前
+的快照、前一段產生給後一段用的輸出——其中不乏不該上 wire 的伺服端物件。
+
+選型前值得知道兩個推論。放在 `Args` 上的東西**呼叫端也可能填過**，所以把中間狀態擺在那裡，結構上
+就是可被呼叫端影響的。而 context 是一個物件而非一組簽章，因此「多給各段一樣共享的值」是新增一個
+屬性，不是簽章變更——後者會讓所有既有覆寫編譯失敗。
 
 ---
 
