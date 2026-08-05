@@ -1,139 +1,161 @@
-# Plan：業務邏輯客製化（討論稿）
+# 計畫：客製 BO 與 Repository 類別
 
-> 狀態：📝 擬定中（討論用，尚未動工）· 2026-07-25
-> 範圍：**Business Object 的租戶客製**——單據行為、驗證規則、流程差異。
-> 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 未補則本案無法生效）
-> 相關：[Layout 客製](plan-customization-layout.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
+**狀態：📝 擬定中（決策已定案，待實作）· 2026-08-05**
+
+| 階段 | 範圍 | 狀態 |
+|------|------|------|
+| B1 | `ProgramItem` 欄位級繼承：客製只寫要改的屬性，空值沿用套裝 | 📝 待做 |
+| B2 | BO 型別解析失敗的可觀測性：降級但記錄（訊息帶 customizeId） | 📝 待做 |
+
+> 範圍：**以租戶客製的類別整個換掉套裝的 BO / Repository**——`ProgramSettings` 的 progId 綁定。
+> 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 已於 F1／F2 補完，本案無阻塞）
+> 相關：[業務邏輯 plugin](plan-customization-plugin.md)（輕量擴充的另一條路）｜[BO 擴充點的交易邊界契約](plan-bo-transaction-contract.md)｜[Layout 客製](plan-customization-layout.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)｜[ProgId 型別註冊表](plan-progid-type-registry.md)
 
 ---
 
 ## 0. 一句話結論
 
-機制方向正確（per-progId 換 BO 類別）、疊加邏輯已實作，但**未接線**；
-且擴充模型只有「**整個換掉 BO 類別**」一種，無 hook / 無組合能力，
-失敗還會**靜默降級**——客製 BO 打錯字不會報錯，只是悄悄失效。
+**「換掉整個 BO / Repository」這條路已經完整可用**——接線、快取、fail-fast 都在 2026-08-04 的
+註冊表重構中落地。剩下兩個缺口，都不大但都會靜默出錯：
+
+1. **覆寫粒度太粗**——客製只想換 BO，卻會連帶把套裝的專屬 Repository 打掉，且無聲。
+2. **一般 progId 的 BO 型別解析失敗完全無訊號**——打錯字只是悄悄退化成通用 CRUD。
+
+兩項合起來的改動不大，可獨立出貨、獨立回歸，**不依賴任何其他 plan**。
 
 ---
 
-## 1. 現況
+## 1. 現況（2026-08-05 覆核）
 
-### 1.1 已實作的 overlay（但呼叫端永遠傳空字串）
+> 本節依實際程式碼寫成。2026-07-25 初版的「未接線」「五種失敗全部靜默吞掉」等描述已被
+> [ProgId 型別註冊表](plan-progid-type-registry.md) 的落地推翻，不再適用。
 
-`ProgramSettingsFormBoTypeResolver.cs`：
-- 複合鍵 cache `customizeId + "\0" + progId`（`:94-96`）
-- `ResolveCore`（`:134-135`）：`FindItem(cust) ?? FindItem(base)` — **per-progId 擇一**
+### 1.1 覆寫語意：per-progId 擇一，且兩軸都已接線
 
-**未接線**：`BusinessObjectFactory.CreateFormBusinessObject`（`BusinessObjectFactory.cs:70`）
-呼叫**單參數** `_resolver.Resolve(progId)` → 內部委派 `Resolve("", progId)`（`:64`）
-→ **customizeId 永遠是空字串**。
+[`CustomizeOverlay.FindProgramItem`](../../src/Bee.Definition/Customization/CustomizeOverlay.cs)：
 
-> `BusinessObjectFactory` 已注入 `ISessionInfoService`（`:25`），只是沒用它讀 `CustomizeId`。
-> 這條接線是三類裡最單純的——補一個參數即可。
+```
+客製 ProgramSettings 有該 progId → 整個 ProgramItem 取代套裝的同 progId
+客製沒有                        → 用套裝的
+兩邊都沒有                      → null（BO 降級 FormBusinessObject、Repository 用 DataFormRepository）
+```
 
-### 1.2 客製方式：換掉 BO 類別字串
+兩個消費端都已從 `SessionInfo.CustomizeId` 取值，不再是空字串：
 
-客製 `ProgramSettings.xml` 的 `ProgramItem.BusinessObject`（`ProgramItem.cs:69`）指向不同型別。
+- [`BusinessObjectFactory.GetCustomizeId`](../../src/Bee.Business/BusinessObjectFactory.cs)
+- [`RepositoryFactory.FindProgramItem`](../../src/Bee.Repository/Factories/RepositoryFactory.cs)
 
-**組件載入**（`AssemblyLoader.cs:132-137` → `LoadAssembly:57-88`）：
-1. 掃 `AppDomain.CurrentDomain.GetAssemblies()`
-2. `Assembly.Load(new AssemblyName(simpleName))`
-3. fallback `AssemblyLoadContext.Default.LoadFromAssemblyPath(...)` → **host 的 bin 目錄**
+### 1.2 失敗語意：三種行為並存
 
-**無 plugin 目錄、無 per-tenant 組件隔離、無版本並存。**
-註解（`:64-67`）明確說明**刻意**使用 default context，以免 static 狀態分裂。
+| 對象 | 型別載不到 / 不相容 | 依據 |
+|------|-------------------|------|
+| reserved progId 的 BusinessObject | **throw** | 降級成 `FormBusinessObject` 會讓症狀變成 JSON-RPC method not found，誤導診斷方向 |
+| 任何 progId 的 Repository | **throw** | 資料存取沒有無害的降級模式；跑框架自己的 SQL 等於繞過作者刻意換掉的邏輯 |
+| 一般 progId 的 BusinessObject | **靜默降級** | 一個 progId 設錯只該讓那張單據退化成通用 CRUD，不該讓系統停擺 |
 
-### 1.3 靜默降級 ★風險點
+第三列是 B2 要補的：行為保留，但要留下訊號。
 
-`ProgramSettingsFormBoTypeResolver.cs:148-165`：**五種失敗情況全部吞掉**，
-一律降級為 `typeof(FormBusinessObject)`。
+### 1.3 ★缺口：`ProgramItem` 現在有兩個綁定，whole-item 覆寫變成陷阱
 
-> 客製 BO 型別名打錯、組件沒部署、型別不相容——**都不會報錯**，
-> 只會靜默失去客製。多租戶部署下極難診斷。
+[`ProgramItem`](../../src/Bee.Definition/Settings/ProgramSettings/ProgramItem.cs) 現在承載
+`DisplayName` + `BusinessObject` + `Repository`。整個 item 取代的語意下：
 
-### 1.4 現有擴充點（編譯期繼承）
+```xml
+<!-- 套裝 -->
+<ProgramItem ProgId="Order" DisplayName="訂單"
+             BusinessObject="Erp.OrderBo, Erp" Repository="Erp.OrderRepository, Erp" />
 
-`FormBusinessObject` 可 override：
-`DoBeforeSave`(`:263`)、`DoSave`(`:274`)、`DoAfterSave`(`:286`)、
-`DoBeforeDelete`(`:332`)、`DoDelete`(`:343`)、`DoAfterDelete`(`:353`)、`GetLookupFilter`(`:135`)
+<!-- 客製：只想換 BO -->
+<ProgramItem ProgId="Order" BusinessObject="Cust.A.OrderBo, Cust.A" />
+```
 
-**這些是編譯期繼承，不是 per-tenant 註冊**——多個客製需求疊加時無法組合，只能寫成一個子類。
+結果 `Repository` 變空 → 整張單據的資料存取從 `Erp.OrderRepository` **無聲**掉回通用
+`DataFormRepository`（空字串是合法的「用預設」，只有型別載不到才 throw）。反向（只寫
+Repository）則 BO 掉回 `FormBusinessObject`，同樣無聲。`DisplayName` 也一併變空。
 
-### 1.5 規則引擎未接上客製層
+客製作者的直覺必然是「只寫要改的那個」，踩中率高，而症狀（客製 BO 生效了，但 SQL 行為變成
+通用的）極難聯想到根因。
 
-`architecture-overview:338` 描述的 LowCode「Events, conditions, and rules to extend BO」
-（ADR-028 `IFormRuleProcessor`）**沒有接上客製層**——
-規則存在 **FormSchema** 裡，而 FormSchema **明確不可客製**（ADR-016 永久排除）。
+### 1.4 現有測試
 
-### 1.6 測試
-
-`tests/Bee.Business.UnitTests/ProgramSettingsFormBoTypeResolverCustomizeTests.cs`（6 測試）：
-per-progId 擇一、cache 隔離(`:75`)、base 缺檔(`:121`)。**皆為手動傳 customizeId 的元件級測試。**
-
----
-
-## 2. 設計決策
-
-### 決策 B1：客製 BO 的擴充模型 ★核心
-
-- **選項 B1-a（建議，第一階段）**：**沿用「整個換掉 BO 類別」**，先接線讓它生效。
-  客製 BO 繼承 base BO 後 override（§1.4 的擴充點）。
-  優點：零新機制、立即可用、與現有設計一致。
-  缺點：多個客製需求疊加時只能寫成一個「大雜燴」子類；不同來源的客製無法組合。
-
-- **選項 B1-b**：引入 **hook / 擴充點註冊**——per-tenant 註冊多個 handler，依序執行。
-  優點：客製可組合、彼此不覆蓋、來源可分離。
-  缺點：需設計 hook 生命週期、執行順序、失敗語意（一個 handler 失敗要不要中止？）；是新的架構決策，需 ADR。
-
-- **選項 B1-c**：接上 ADR-028 規則引擎作為 LowCode 客製途徑。
-  **障礙**：規則存在 FormSchema，而 FormSchema 不可客製 → 需先決定「客製規則存哪」
-  （獨立的客製規則檔？ProgramSettings 擴充？），否則此路不通。
-
-> **選擇取決於**：實務上是否常有「多個客製需求疊加在同一張單據」（見 §4 提問 1）。
-> 若是，B1-a 會很快撞牆；若客製多由單一單位交付，B1-a 長期可行。
-
-### 決策 B2：失敗可觀測性
-
-> **建議（不論 B1 選什麼都該做）**：客製 BO 解析失敗應**可觀測**——至少寫 log / 稽核事件，
-> 而非五種情況全部靜默吞掉。可保留「降級不中斷服務」的行為，但必須留下訊號。
-
-> 待討論：要「降級 + 記錄」還是「啟動時驗證 + 快速失敗」？
-> 後者（部署時就驗證所有客製 BO 型別可解析）在多租戶下更安全，但需要列舉所有 customizeId。
-
-### 決策 B3：組件部署模型
-
-目前所有租戶的客製 BO DLL 共用 host bin，無隔離、無版本並存。
-
-- **選項 B3-a（建議）**：**維持共用 bin**，不在本次範圍。
-  多數 ERP 部署是單一供應商交付，共用 bin 可接受。
-- **選項 B3-b**：引入 `AssemblyLoadContext` per-tenant 隔離。
-  **衝突**：與現有刻意使用 default context 的設計相斥（`AssemblyLoader.cs:64-67` 註解），
-  會讓 static 狀態分裂。需重新檢視框架的 static 使用。
-
-> 待確認：客製 BO 由誰開發？若由不同單位/夥伴各自交付、需版本並存，B3-a 會不夠。
+[`ProgramSettingsBoTypeResolverCustomizeTests`](../../tests/Bee.Business.UnitTests/ProgramSettingsFormBoTypeResolverCustomizeTests.cs)
+（per-progId 擇一、cache 隔離、base 缺檔）與
+[`CustomizeOverlayTests`](../../tests/Bee.Definition.UnitTests/Customization/CustomizeOverlayTests.cs)
+皆為手動傳 customizeId 的元件級測試。B1 會改變 `FindProgramItem` 的行為，這兩處需同步調整。
 
 ---
 
-## 3. 建議階段
+## 2. 決策紀錄（2026-08-05 定案）
 
-| 階段 | 範圍 | 前置 |
-|------|------|------|
-| B0 | 決策定案（B1 擴充模型、B2 可觀測性、B3 部署模型） | — |
-| B1 | 接線：`BusinessObjectFactory.cs:70` 傳入 `session.CustomizeId` | foundation F1、F2 |
-| B2 | 失敗可觀測性：解析失敗寫 log / 稽核 | — |
-| B3 | 端到端測試：帶 CustomizeId 的 session → API → 解析到客製 BO | foundation F4 |
-| B4（選配） | hook / 擴充點註冊機制（若選 B1-b） | 需新 ADR |
-| B5（選配） | 客製規則存放位置（若選 B1-c，解 ADR-028 與 FormSchema 不可客製的衝突） | 需新 ADR |
+### D1：`ProgramItem` 內採欄位級繼承，空值沿用套裝
 
-> 回歸防護：**未設 CustomizeId 時，BO 解析結果與現況一致**。
+`CustomizeOverlay.FindProgramItem` 從「擇一回傳」改為「合成回傳」：
+
+```
+cust 有、base 無 → 直接回 cust（不合成）
+cust 無、base 有 → 直接回 base（不合成）
+兩邊都有         → new 一個 ProgramItem，逐屬性：cust 非空取 cust，否則取 base
+```
+
+- **必須 new，不可 mutate**——兩層都是 process-wide cache 實例，改任一邊會跨 session 污染
+  （見 [development-constraints.md](../development-constraints.md) 的 Definition Data
+  Immutability After Init）。
+- 判空用 `StringUtilities.IsEmpty`（含純空白），與 `RepositoryFactory.ResolveFormRepositoryType`
+  現有判定一致。
+- **「刻意退回框架通用」以顯式型別名表達**：BO 寫
+  `Bee.Business.Form.FormBusinessObject, Bee.Business`、Repository 寫
+  `Bee.Repository.Form.DataFormRepository, Bee.Repository`。後者剛好命中
+  `CreateFormRepositoryCore` 既有的 `type == typeof(DataFormRepository)` 特判，走 `new` 而非
+  `ActivatorUtilities`，與空值路徑等價。
+- **維護風險**：日後 `ProgramItem` 再加屬性、忘了加進合成邏輯 → 該屬性靜默退回 whole-item
+  語意，症狀與本次要修的一模一樣。防護見 §3 B1 的反射測試。
+
+**否決**：維持 whole-item 取代（僅補警告 log 或只寫文件）——踩中率太高，且症狀離根因太遠。
+
+### D2：一般 progId 的 BO 解析失敗＝降級 + 記錄
+
+保留降級到 `FormBusinessObject` 的行為（不中斷服務），但寫一筆 error log。
+
+- `Bee.Business` 目前無 logging 依賴（`ILogger` 只出現在 `Bee.Hosting` /
+  `Bee.Api.AspNetCore`），需加 `Microsoft.Extensions.Logging.Abstractions`。
+- 走 optional ctor 參數 `ILogger<ProgramSettingsBoTypeResolver>? logger = null`，與現有的
+  `ICustomizeDefineReader?` 同風格——null 即不記錄，便利建構子與既有測試不受影響。
+- **訊息必須帶 customizeId 與來源層**，否則多租戶下分不出是哪一層的錯字。`ResolveCore` 目前
+  是 static 且不知道 item 來自哪層，需一併調整。
+- 只記兩種情況：型別載不到、型別不繼承 `BusinessObject`。「item 為空 / progId 未註冊」是正常
+  路徑，不記。
+- **type cache 會讓同一組 `(customizeId, progId)` 只記一次**（只有 cache miss 才進
+  `ResolveCore`）。不洗版是好事，但要在 XML doc 寫明「不會每次呼叫重複，定義重載後才會再
+  出現」，否則維運會誤判成問題自己好了。
+
+**否決**：改 fail-fast（一個租戶的錯字會讓該單據完全不能用）；啟動時驗證所有客製型別（需能
+列舉所有 customizeId，且客製檔新增時不會重驗）。
 
 ---
 
-## 4. 給 review 的提問
+## 3. 階段
 
-1. **實務上是否常有「多個客製需求疊加在同一張單據」？**
-   （例：A 客戶要改存檔驗證、同時又要改預設值來源）
-   → 決定 B1 是否需要 hook 機制，還是「換掉整個 BO」就夠。
-2. **客製 BO 由誰開發、怎麼部署？** 單一供應商 vs 多夥伴各自交付？
-   → 決定 B3 是否需要組件隔離。
-3. **客製 BO 解析失敗的期望行為？** 靜默降級（現況）／降級但記錄／啟動時快速失敗？
-4. **LowCode 規則客製有需求嗎？** 若有，需先解決「規則存在不可客製的 FormSchema 裡」的衝突。
+### B1 — `ProgramItem` 欄位級繼承
+
+- 改 `CustomizeOverlay.FindProgramItem` 為 D1 的合成語意。
+- 補**反射防護測試**：列舉 `ProgramItem` 所有 public 可寫字串屬性（排除 `ProgId`），斷言每個都
+  參與合成。日後加屬性沒補就紅。
+- 調整既有 `CustomizeOverlayTests` 中假設 whole-item 取代的案例。
+- 文件：客製化說明補「空值＝沿用套裝」與「顯式退回框架通用」的寫法。
+
+回歸防護：未設 CustomizeId 時解析結果與現況一致；客製 item 完整重述所有屬性時行為亦與現況一致。
+
+### B2 — BO 解析失敗可觀測性
+
+- `Bee.Business` 加 `Microsoft.Extensions.Logging.Abstractions`（版本對齊 `Bee.Hosting`）。
+- `ProgramSettingsBoTypeResolver` 加 optional logger，`ResolveCore` 取得 customizeId 與來源層。
+- XML doc 寫明「因 type cache，同一組 (customizeId, progId) 只記一次」。
+- 測試：以 fake logger 驗證兩種失敗各記一筆、正常路徑不記。
+
+---
+
+## 4. 仍未定案
+
+- **組件部署模型**：所有租戶的客製 BO / Repository DLL 共用 host bin，無隔離、無版本並存。
+  維持現狀不在本案範圍。若日後客製由多個夥伴各自交付、需版本並存，得重新檢視——但
+  `AssemblyLoader` 刻意使用 default context（避免 static 狀態分裂），改動面不小。
