@@ -7,6 +7,7 @@ using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace Bee.Business.UnitTests
 {
@@ -129,7 +130,92 @@ namespace Bee.Business.UnitTests
             Assert.Equal(typeof(TenantFormBo), result);
         }
 
+        // ---- 解析失敗的可觀測性 ----
+
+        [Fact]
+        [DisplayName("客製 BO 型別載不到時應降級並記錄一筆 error，訊息標示客製來源")]
+        public void Resolve_CustomizeTypeUnloadable_DegradesAndLogsWithCustomizeOrigin()
+        {
+            var reader = new SpyCustomizeReader();
+            reader.SetProgramSettings("acme", BuildSettings(("Order", "Acme.Typo.OrderBo, Acme.Typo")));
+            var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("Order", BaseFormBoFqn)));
+            var logger = new RecordingLogger();
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, reader, logger);
+
+            var result = resolver.Resolve("acme", "Order");
+
+            Assert.Equal(typeof(FormBusinessObject), result);
+            var entry = Assert.Single(logger.Entries);
+            Assert.Equal(LogLevel.Error, entry.Level);
+            Assert.Contains("Order", entry.Message, StringComparison.Ordinal);
+            Assert.Contains("Acme.Typo.OrderBo, Acme.Typo", entry.Message, StringComparison.Ordinal);
+            Assert.Contains("acme", entry.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        [DisplayName("型別不繼承 BusinessObject 時應降級並記錄一筆 error，訊息標示套裝來源")]
+        public void Resolve_TypeNotBusinessObject_DegradesAndLogsWithBaseOrigin()
+        {
+            var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("Order", NotABusinessObjectFqn)));
+            var logger = new RecordingLogger();
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, null, logger);
+
+            var result = resolver.Resolve("Order");
+
+            Assert.Equal(typeof(FormBusinessObject), result);
+            var entry = Assert.Single(logger.Entries);
+            Assert.Equal(LogLevel.Error, entry.Level);
+            Assert.Contains("base registry", entry.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        [DisplayName("解析成功時不應記錄任何訊息")]
+        public void Resolve_Succeeds_LogsNothing()
+        {
+            var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("Order", BaseFormBoFqn)));
+            var logger = new RecordingLogger();
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, null, logger);
+
+            resolver.Resolve("Order");
+
+            Assert.Empty(logger.Entries);
+        }
+
+        [Fact]
+        [DisplayName("因 type cache，同一 (customizeId, progId) 的失敗只記錄一次")]
+        public void Resolve_RepeatedFailure_LogsOnlyOnceBecauseOfTypeCache()
+        {
+            var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("Order", "Nope.OrderBo, Nope")));
+            var logger = new RecordingLogger();
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, null, logger);
+
+            resolver.Resolve("Order");
+            resolver.Resolve("Order");
+            resolver.Resolve("Order");
+
+            Assert.Single(logger.Entries);
+        }
+
         // ---- Test doubles ----
+
+        /// <summary>不繼承 <see cref="BusinessObject"/> 的型別，用於驗證「型別不相容」的降級路徑。</summary>
+        public sealed class NotABusinessObject { }
+
+        private static string NotABusinessObjectFqn =>
+            $"{typeof(NotABusinessObject).FullName}, {typeof(NotABusinessObject).Assembly.GetName().Name}";
+
+        private sealed class RecordingLogger : ILogger<ProgramSettingsBoTypeResolver>
+        {
+            public List<(LogLevel Level, string Message)> Entries { get; } = [];
+
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+                Func<TState, Exception?, string> formatter)
+                => Entries.Add((logLevel, formatter(state, exception)));
+        }
 
         private sealed class SpyCustomizeReader : ICustomizeDefineReader
         {

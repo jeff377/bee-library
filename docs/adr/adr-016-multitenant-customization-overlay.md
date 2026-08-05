@@ -43,10 +43,18 @@ Bee.NET 的租戶概念原本只到**資料庫層**（[ADR-012](adr-012-session-
    | 類型 | 疊加粒度 | 查找語意 |
    |------|---------|---------|
    | **Language** | key 級 | cust resource 含該 key → 用 cust 值；否則 base 值（enum 同理） |
-   | **ProgramSettings** | progId 級 | cust settings 命中該 progId → 用之；否則 base |
+   | **ProgramSettings** | progId 級 → 屬性級（見下方修訂） | cust settings 命中該 progId → 逐屬性取捨；否則 base |
    | **FormLayout** | 整檔擇一 | cust 檔存在 → 回 cust 物件；否則 base 物件 |
 
    `FormSchema` / `TableSchema` / `SystemSettings` / `DatabaseSettings` / `DbCategorySettings` **永遠走 `DefinePath`，不進客製分支**。
+
+   > **修訂（2026-08-05）：`ProgramSettings` 的粒度由「progId 級整筆取代」細化為「progId 級 →
+   > 屬性級」。** 本 ADR 定案時 `ProgramItem` 只承載 `BusinessObject` 一個綁定，整筆取代與屬性級
+   > 繼承在行為上沒有差別。`ProgramItem.Repository` 加入後兩者開始分歧：整筆取代會讓「只換 BO」的
+   > 客製連帶把套裝的專屬 Repository 清掉，而**空字串是合法的「用框架預設」而非錯誤**，這個損失
+   > 不會有任何回報。現行語意是客製項目只覆寫它指名的屬性，留空者沿用 base；要刻意退回框架通用
+   > 型別則顯式指名該型別。此修訂**不影響**「不 merge 成單一物件」的核心決策（見下方「為何否決
+   > merge」）——合成結果是查找當下產生的新實例，兩層的快取物件都不被異動。
 
 3. **`CustomizeId` 為獨立代碼，非等同 `CompanyId`**
 

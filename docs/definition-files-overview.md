@@ -222,9 +222,20 @@ The directory need not exist. A tenant that supplies no file for a given lookup 
 | Type | Overlay granularity |
 |------|--------------------|
 | **LanguageResource** | **Per key** for text (`LanguageItem`). The customization file holds only the keys it changes; every other key comes from base — so a base translation added later propagates automatically. **A `LanguageEnum` is the exception: whole-enum.** A customization enum of the same name replaces the base one outright, so it must list every entry the option set should have |
-| **ProgramSettings** | **Per progId.** A customization entry wins over the base entry of the same progId — as a whole entry, so a customization that sets only `BusinessObject` leaves `Repository` empty rather than inheriting the base value |
+| **ProgramSettings** | **Per progId, then per property.** A customization entry wins over the base entry of the same progId, and within that entry each binding is independent: a customization that names only `BusinessObject` keeps the base `Repository`. Write only what you are changing |
 | **MenuSettings** | **Whole file.** A customization menu replaces the base menu outright |
 | **FormLayout** | **Whole file.** A customization layout replaces the base layout for that `layoutId` |
+
+Property-level inheritance inside a `ProgramSettings` entry is what stops a partial customization from
+undoing a base binding. An entry carries two independent bindings, and an empty one is a legal "use the
+framework default" rather than an error — so replacing the entry wholesale would drop the base
+repository and report nothing. To deliberately return a binding to the framework's own type, name that
+type explicitly rather than clearing the attribute:
+
+```xml
+<!-- This program keeps its custom repository and goes back to generic CRUD behaviour. -->
+<ProgramItem ProgId="Order" BusinessObject="Bee.Business.Form.FormBusinessObject, Bee.Business" />
+```
 
 The granularities differ on purpose, and the dividing line is whether the artifact is a bag of independent values or a single composed whole.
 

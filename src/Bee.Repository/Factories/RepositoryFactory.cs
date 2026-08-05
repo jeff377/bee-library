@@ -172,10 +172,17 @@ namespace Bee.Repository.Factories
         }
 
         /// <summary>
-        /// Reads the registry entry for a progId, letting a tenant customization entry replace the
-        /// base one outright — the same per-progId granularity the business-object axis uses, and
-        /// the same <see cref="CustomizeOverlay"/> a client runs, so both ends agree.
+        /// Reads the registry entry for a progId, letting a tenant customization override the
+        /// bindings it names while the rest keep their base values — the same per-progId,
+        /// per-property granularity the business-object axis uses, through the same
+        /// <see cref="CustomizeOverlay"/> a client runs, so both ends agree.
         /// </summary>
+        /// <remarks>
+        /// The per-property part matters most here: a customization that replaces only
+        /// <c>BusinessObject</c> must not silently return this program's data access to the generic
+        /// repository, which is what a whole-entry replacement would do — an empty
+        /// <c>Repository</c> is a legal "use the default" and would never be reported as an error.
+        /// </remarks>
         /// <param name="accessToken">The current request's access token.</param>
         /// <param name="progId">The program identifier.</param>
         private ProgramItem? FindProgramItem(Guid accessToken, string progId)

@@ -1,1 +1,2 @@
 #nullable enable
+Bee.Business.ProgramSettingsBoTypeResolver.ProgramSettingsBoTypeResolver(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Definition.Storage.ICustomizeDefineReader? customizeReader, Microsoft.Extensions.Logging.ILogger<Bee.Business.ProgramSettingsBoTypeResolver!>? logger) -> void

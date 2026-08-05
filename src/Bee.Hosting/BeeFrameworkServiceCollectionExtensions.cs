@@ -27,6 +27,7 @@ using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Bee.Hosting
 {
@@ -246,7 +247,10 @@ namespace Bee.Hosting
             services.AddSingleton<IBoTypeResolver>(sp =>
                 new ProgramSettingsBoTypeResolver(
                     sp.GetRequiredService<IDefineAccess>(),
-                    sp.GetRequiredService<ICustomizeDefineReader>()));
+                    sp.GetRequiredService<ICustomizeDefineReader>(),
+                    // Optional: a host with no logging configured still resolves types, it just
+                    // reports nothing when a binding degrades.
+                    sp.GetService<ILogger<ProgramSettingsBoTypeResolver>>()));
             //    The factory is no longer replaceable through BackendComponents: what it builds is
             //    decided by the registry, one progId at a time, which is both finer-grained and
             //    per-tenant. Swapping the whole factory was the only way to change a system business

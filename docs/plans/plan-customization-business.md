@@ -1,11 +1,11 @@
 # 計畫：客製 BO 與 Repository 類別
 
-**狀態：📝 擬定中（決策已定案，待實作）· 2026-08-05**
+**狀態：✅ 已完成（B1、B2 全數落地）· 2026-08-05**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| B1 | `ProgramItem` 欄位級繼承：客製只寫要改的屬性，空值沿用套裝 | 📝 待做 |
-| B2 | BO 型別解析失敗的可觀測性：降級但記錄（訊息帶 customizeId） | 📝 待做 |
+| B1 | `ProgramItem` 欄位級繼承：客製只寫要改的屬性，空值沿用套裝 | ✅ 已完成（2026-08-05） |
+| B2 | BO 型別解析失敗的可觀測性：降級但記錄（訊息帶 customizeId） | ✅ 已完成（2026-08-05） |
 
 > 範圍：**以租戶客製的類別整個換掉套裝的 BO / Repository**——`ProgramSettings` 的 progId 綁定。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 已於 F1／F2 補完，本案無阻塞）
@@ -78,7 +78,7 @@ Repository）則 BO 掉回 `FormBusinessObject`，同樣無聲。`DisplayName` �
 
 ### 1.4 現有測試
 
-[`ProgramSettingsBoTypeResolverCustomizeTests`](../../tests/Bee.Business.UnitTests/ProgramSettingsFormBoTypeResolverCustomizeTests.cs)
+[`ProgramSettingsBoTypeResolverCustomizeTests`](../../tests/Bee.Business.UnitTests/ProgramSettingsBoTypeResolverCustomizeTests.cs)
 （per-progId 擇一、cache 隔離、base 缺檔）與
 [`CustomizeOverlayTests`](../../tests/Bee.Definition.UnitTests/Customization/CustomizeOverlayTests.cs)
 皆為手動傳 customizeId 的元件級測試。B1 會改變 `FindProgramItem` 的行為，這兩處需同步調整。
@@ -135,22 +135,41 @@ cust 無、base 有 → 直接回 base（不合成）
 
 ## 3. 階段
 
-### B1 — `ProgramItem` 欄位級繼承
+### B1 — `ProgramItem` 欄位級繼承（✅ 已完成 2026-08-05）
 
-- 改 `CustomizeOverlay.FindProgramItem` 為 D1 的合成語意。
-- 補**反射防護測試**：列舉 `ProgramItem` 所有 public 可寫字串屬性（排除 `ProgId`），斷言每個都
-  參與合成。日後加屬性沒補就紅。
-- 調整既有 `CustomizeOverlayTests` 中假設 whole-item 取代的案例。
-- 文件：客製化說明補「空值＝沿用套裝」與「顯式退回框架通用」的寫法。
+- [`CustomizeOverlay.FindProgramItem`](../../src/Bee.Definition/Customization/CustomizeOverlay.cs)
+  改為 D1 的合成語意；兩層都有時 `new` 一個 `ProgramItem`，只有一層宣告時直接回該層實例。
+- 反射防護測試落在 `CustomizeOverlayTests`：列舉 `ProgramItem` 所有 public 可寫字串屬性
+  （排除 `ProgId` / `Key`），逐一驗證「客製有值取客製、其餘取套裝」。日後加屬性沒補就紅。
+- 既有 4 個 `FindProgramItem` 測試只斷言 `BusinessObject`，合成語意下結果不變，無需調整；
+  另加 4 個新案例（只寫 BO、只寫 Repository、不 mutate 兩層、單層直接回實例）。
+- 文件：[definition-files-overview](../definition-files-overview.md) 雙語的粒度表由「整筆取代」
+  改為「progId 級 → 屬性級」，並補「顯式指名框架型別」的退回寫法。
 
 回歸防護：未設 CustomizeId 時解析結果與現況一致；客製 item 完整重述所有屬性時行為亦與現況一致。
 
-### B2 — BO 解析失敗可觀測性
+### B2 — BO 解析失敗可觀測性（✅ 已完成 2026-08-05）
 
-- `Bee.Business` 加 `Microsoft.Extensions.Logging.Abstractions`（版本對齊 `Bee.Hosting`）。
-- `ProgramSettingsBoTypeResolver` 加 optional logger，`ResolveCore` 取得 customizeId 與來源層。
-- XML doc 寫明「因 type cache，同一組 (customizeId, progId) 只記一次」。
-- 測試：以 fake logger 驗證兩種失敗各記一筆、正常路徑不記。
+- `Bee.Business` 加 `Microsoft.Extensions.Logging.Abstractions` 10.0.0（對齊 `Bee.Hosting`）。
+- [`ProgramSettingsBoTypeResolver`](../../src/Bee.Business/ProgramSettingsBoTypeResolver.cs) 新增
+  **三參數建構子**承載 optional logger。改為新多載而非在既有二參數建構子加預設參數——後者雖然
+  source 相容，但屬二進位破壞性變更。DI 以 `sp.GetService<ILogger<...>>()` 注入，無 logging 的
+  host 照常運作。
+- 合成後的 item 不再帶「來源層」，故 `DescribeOrigin` 直接查客製副本判斷 `BusinessObject` 由哪層
+  宣告，訊息寫成 `declared by customization 'acme'` / `declared by the base registry`。
+- XML doc 寫明「因 type cache，同一組 (customizeId, progId) 只記一次，重載才會再出現」。
+- 測試：4 個（載不到 + 客製來源、不繼承 `BusinessObject` + 套裝來源、成功不記、重複呼叫只記一次）。
+
+### 平行路徑與連帶修正
+
+- `FindProgramItem` 的兩個消費端（`ProgramSettingsBoTypeResolver`、`RepositoryFactory`）共用同一個
+  overlay，改動自動生效——這正是把疊加邏輯集中在 `CustomizeOverlay` 的用意。
+- 兩處 XML doc 明說「整筆取代 / 從不合併」，已隨語意更新：resolver 的類別 remarks 與
+  `RepositoryFactory.FindProgramItem`。
+- [ADR-016](../adr/adr-016-multitenant-customization-overlay.md) 的粒度表加註 2026-08-05 修訂：
+  定案時 `ProgramItem` 只有 `BusinessObject` 一個綁定，整筆取代與屬性級繼承無差別；
+  `Repository` 加入後才分歧。修訂不影響「不 merge 成單一物件」的核心決策——合成結果是查找當下
+  產生的新實例，兩層快取物件都不被異動。
 
 ---
 

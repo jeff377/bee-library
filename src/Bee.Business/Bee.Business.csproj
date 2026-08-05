@@ -11,6 +11,10 @@
     <InternalsVisibleTo Include="Bee.Business.UnitTests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+  </ItemGroup>
+
   <!--
     Framework convention analyzers applied to this project itself: BEE3001 checks that every public
     business object method declares access control, and this is where the business objects live.

@@ -4,6 +4,7 @@ using Bee.Business.Form;
 using Bee.Definition.Customization;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace Bee.Business
 {
@@ -40,19 +41,31 @@ namespace Bee.Business
     /// </para>
     /// <para>
     /// When a non-empty customization code is supplied, the customization
-    /// <see cref="ProgramSettings"/> is consulted first (per-progId: a customization entry wins,
-    /// otherwise the base entry applies). Base and customization settings are never merged.
+    /// <see cref="ProgramSettings"/> is consulted first. The overlay is per progId and then per
+    /// property: a customization entry wins for the bindings it names, and every binding it leaves
+    /// empty keeps the base value, so a customization that replaces only the business object does
+    /// not disturb the repository bound to the same program.
     /// </para>
     /// <para>
     /// Resolved types are cached keyed by <c>(customizeId, progId)</c>. When either the base or a
     /// customization <see cref="ProgramSettings"/> instance changes (e.g. after a file-watcher
     /// reload, detected by reference inequality), the type cache is reset on the next call.
     /// </para>
+    /// <para>
+    /// <b>A silent degrade is still logged.</b> Falling back keeps the deployment running, but a
+    /// misconfigured binding that produces no signal at all is undiagnosable in a multi-tenant
+    /// deployment — the symptom is a program quietly behaving generically. The log entry names the
+    /// progId, the type that would not resolve, and which layer declared it. Because resolution is
+    /// cached, <b>each (customizeId, progId) is logged once</b> and not again until a definition
+    /// reload clears the cache; a single line is the expected volume, not a sign that the problem
+    /// went away.
+    /// </para>
     /// </remarks>
     public sealed class ProgramSettingsBoTypeResolver : IBoTypeResolver
     {
         private readonly IDefineAccess _defineAccess;
         private readonly ICustomizeDefineReader? _customizeReader;
+        private readonly ILogger<ProgramSettingsBoTypeResolver>? _logger;
         private readonly ConcurrentDictionary<string, Type> _typeCache = new(StringComparer.OrdinalIgnoreCase);
         private readonly object _resetLock = new();
         private ProgramSettings? _lastSettingsRef;
@@ -74,9 +87,25 @@ namespace Bee.Business
         /// <param name="defineAccess">The define access used to load <see cref="ProgramSettings"/>.</param>
         /// <param name="customizeReader">The customization-override reader; <c>null</c> disables the overlay (pure base layer).</param>
         public ProgramSettingsBoTypeResolver(IDefineAccess defineAccess, ICustomizeDefineReader? customizeReader)
+            : this(defineAccess, customizeReader, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="ProgramSettingsBoTypeResolver"/> with an optional
+        /// tenant customization reader and an optional logger.
+        /// </summary>
+        /// <param name="defineAccess">The define access used to load <see cref="ProgramSettings"/>.</param>
+        /// <param name="customizeReader">The customization-override reader; <c>null</c> disables the overlay (pure base layer).</param>
+        /// <param name="logger">Receives the degrade notices described in the type remarks; <c>null</c> silences them.</param>
+        public ProgramSettingsBoTypeResolver(
+            IDefineAccess defineAccess,
+            ICustomizeDefineReader? customizeReader,
+            ILogger<ProgramSettingsBoTypeResolver>? logger)
         {
             _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
             _customizeReader = customizeReader;
+            _logger = logger;
         }
 
         /// <inheritdoc/>
@@ -114,7 +143,7 @@ namespace Bee.Business
                 ? progId
                 : customizeId + "\0" + progId;
 
-            return _typeCache.GetOrAdd(cacheKey, _ => ResolveCore(custSettings, baseSettings, progId));
+            return _typeCache.GetOrAdd(cacheKey, _ => ResolveCore(custSettings, baseSettings, customizeId, progId));
         }
 
         /// <summary>
@@ -147,7 +176,7 @@ namespace Bee.Business
             }
         }
 
-        private static Type ResolveCore(ProgramSettings? custSettings, ProgramSettings? baseSettings, string progId)
+        private Type ResolveCore(ProgramSettings? custSettings, ProgramSettings? baseSettings, string customizeId, string progId)
         {
             // Which layer wins is decided by CustomizeOverlay — the same class a client runs over
             // the two copies it fetched, so both ends resolve identically.
@@ -162,6 +191,11 @@ namespace Bee.Business
                 return reserved?.DefaultType ?? typeof(FormBusinessObject);
             }
 
+            // The merged entry no longer says which layer each binding came from, so ask the
+            // customization copy directly. Only the business-object name matters here — the
+            // repository name may well have come from the other layer.
+            string origin = DescribeOrigin(custSettings, customizeId, progId);
+
             Type? type;
             try
             {
@@ -172,11 +206,11 @@ namespace Bee.Business
             }
             catch (Exception ex) when (ex is FileNotFoundException or FileLoadException or BadImageFormatException)
             {
-                return Unresolvable(reserved, progId, item.BusinessObject, ex);
+                return Unresolvable(reserved, progId, item.BusinessObject, origin, ex);
             }
 
             if (type == null)
-                return Unresolvable(reserved, progId, item.BusinessObject, inner: null);
+                return Unresolvable(reserved, progId, item.BusinessObject, origin, inner: null);
 
             var expectedBase = reserved?.ExpectedBaseType ?? typeof(BusinessObject);
             if (!expectedBase.IsAssignableFrom(type))
@@ -188,6 +222,11 @@ namespace Bee.Business
                         $"which does not derive from {expectedBase.FullName}. " +
                         "A reserved progId must resolve to the framework's business object for that axis, or a subclass of it.");
                 }
+
+                _logger?.LogError(
+                    "ProgramSettings binds progId '{ProgId}' to business object '{TypeName}' ({Origin}), " +
+                    "which does not derive from {ExpectedBase}. The program degrades to schema-driven CRUD.",
+                    progId, item.BusinessObject, origin, expectedBase.FullName);
                 return typeof(FormBusinessObject);
             }
 
@@ -195,13 +234,33 @@ namespace Bee.Business
         }
 
         /// <summary>
-        /// Decides what an unloadable <c>BusinessObject</c> type name means: a hard failure for a
-        /// reserved progId, a silent degrade to generic CRUD for an ordinary one.
+        /// Names the layer that supplied the business-object binding, for the log entry. Reported as
+        /// prose rather than a bare code so an operator reading one line knows whether to look in the
+        /// shipped registry or in a specific tenant's override.
         /// </summary>
-        private static Type Unresolvable(ReservedProgIdBinding? reserved, string progId, string typeName, Exception? inner)
+        private static string DescribeOrigin(ProgramSettings? custSettings, string customizeId, string progId)
+        {
+            bool fromCustomize = !string.IsNullOrEmpty(customizeId)
+                && StringUtilities.IsNotEmpty(custSettings?.Items?.GetOrDefault(progId)?.BusinessObject);
+            return fromCustomize
+                ? $"declared by customization '{customizeId}'"
+                : "declared by the base registry";
+        }
+
+        /// <summary>
+        /// Decides what an unloadable <c>BusinessObject</c> type name means: a hard failure for a
+        /// reserved progId, a logged degrade to generic CRUD for an ordinary one.
+        /// </summary>
+        private Type Unresolvable(ReservedProgIdBinding? reserved, string progId, string typeName, string origin, Exception? inner)
         {
             if (reserved == null)
+            {
+                _logger?.LogError(inner,
+                    "ProgramSettings binds progId '{ProgId}' to business object '{TypeName}' ({Origin}), " +
+                    "which cannot be loaded. The program degrades to schema-driven CRUD.",
+                    progId, typeName, origin);
                 return typeof(FormBusinessObject);
+            }
 
             throw new InvalidOperationException(
                 $"ProgramSettings registers reserved progId '{progId}' as '{typeName}', which cannot be loaded. " +

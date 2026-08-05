@@ -1,3 +1,4 @@
+using Bee.Base;
 using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
@@ -22,7 +23,7 @@ namespace Bee.Definition.Customization
     /// <list type="bullet">
     ///   <item><description><b>Language text — per key.</b> A customization resource holds only the keys it changes; every other key comes from base, so a base translation added later propagates on its own.</description></item>
     ///   <item><description><b>Language enum — whole enum.</b> An option set only means something as an ordered whole; merging entry by entry would leave both the ordering and the meaning of an omitted entry ambiguous.</description></item>
-    ///   <item><description><b>ProgramSettings — per progId.</b> Each program's binding is independent of the others.</description></item>
+    ///   <item><description><b>ProgramSettings — per progId, then per property.</b> Each program's bindings are independent of the others, and within one program each binding is independent of its siblings: a customization that names only a business object keeps the base repository.</description></item>
     ///   <item><description><b>MenuSettings — whole file.</b> A menu is one arrangement; merging node by node would produce groupings and orderings no author chose.</description></item>
     ///   <item><description><b>FormLayout — whole file.</b> A layout is one visual arrangement; a partial merge has no intuitive answer ("this section moved — do the fields under it follow?").</description></item>
     /// </list>
@@ -72,16 +73,62 @@ namespace Bee.Definition.Customization
             => customize?.GetEnum(enumName) ?? @base?.GetEnum(enumName);
 
         /// <summary>
-        /// Resolves the program entry for a progId, preferring the customization settings when they
-        /// declare that progId. Programs are independent of one another, so the overlay is per entry
-        /// rather than whole-file.
+        /// Resolves the program entry for a progId. Programs are independent of one another, so the
+        /// overlay is per entry rather than whole-file; within an entry it is per property, so a
+        /// customization declares only what it changes and every property it leaves empty keeps the
+        /// base value.
         /// </summary>
         /// <param name="customize">The customization settings, or <c>null</c> when the tenant provides none.</param>
         /// <param name="base">The base settings, or <c>null</c> when none are configured.</param>
         /// <param name="progId">The program identifier.</param>
-        /// <returns>The customization entry, else the base entry, else <c>null</c>.</returns>
+        /// <returns>
+        /// The merged entry when both layers declare the progId; the single declaring entry when
+        /// only one does; <c>null</c> when neither does.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// Property-level inheritance is what keeps a partial customization from silently undoing a
+        /// base binding. An entry now carries two independent bindings, so replacing it wholesale
+        /// would mean a customization that sets only <c>BusinessObject</c> drops the base
+        /// <c>Repository</c> — and an empty repository is a legal "use the framework default"
+        /// rather than an error, so the loss would never be reported. To deliberately return a
+        /// binding to the framework's own type, name that type explicitly instead of clearing it.
+        /// </para>
+        /// <para>
+        /// The merged entry is always a new instance: both inputs come from a process-wide
+        /// definition cache and must never be mutated (see <c>docs/development-constraints.md</c>,
+        /// Definition Data Immutability After Init). When only one layer declares the progId that
+        /// layer's own instance is returned as-is — there is nothing to merge, and callers only read.
+        /// </para>
+        /// </remarks>
         public static ProgramItem? FindProgramItem(ProgramSettings? customize, ProgramSettings? @base, string progId)
-            => customize?.Items?.GetOrDefault(progId) ?? @base?.Items?.GetOrDefault(progId);
+        {
+            var customizeItem = customize?.Items?.GetOrDefault(progId);
+            var baseItem = @base?.Items?.GetOrDefault(progId);
+
+            if (customizeItem == null) { return baseItem; }
+            if (baseItem == null) { return customizeItem; }
+
+            // WARNING: every ProgramItem property must be merged here. One that is forgotten falls
+            // back to whole-entry replacement for that property alone — exactly the silent loss this
+            // method exists to prevent. `CustomizeOverlayTests` enumerates the properties by
+            // reflection and fails when a new one is not covered.
+            return new ProgramItem(progId, Prefer(customizeItem.DisplayName, baseItem.DisplayName))
+            {
+                BusinessObject = Prefer(customizeItem.BusinessObject, baseItem.BusinessObject),
+                Repository = Prefer(customizeItem.Repository, baseItem.Repository),
+            };
+        }
+
+        /// <summary>
+        /// Returns the customization value when it says something, otherwise the base value.
+        /// Whitespace counts as saying nothing, matching how the consuming factories test these
+        /// bindings for emptiness.
+        /// </summary>
+        /// <param name="customize">The customization layer's value.</param>
+        /// <param name="base">The base layer's value.</param>
+        private static string Prefer(string customize, string @base)
+            => StringUtilities.IsEmpty(customize) ? @base : customize;
 
         /// <summary>
         /// Selects the menu definition: a customization menu replaces the base menu outright.

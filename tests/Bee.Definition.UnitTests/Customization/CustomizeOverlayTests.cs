@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Reflection;
 using Bee.Definition.Customization;
 using Bee.Definition.Language;
 using Bee.Definition.Layouts;
@@ -145,6 +146,119 @@ namespace Bee.Definition.UnitTests.Customization
             Assert.Null(CustomizeOverlay.FindProgramItem(Settings(), Settings(), "P999"));
             Assert.Null(CustomizeOverlay.FindProgramItem(null, null, "P001"));
         }
+
+        [Fact]
+        [DisplayName("ProgramItem：客製只寫 BusinessObject 時 Repository 沿用套裝")]
+        public void FindProgramItem_CustomizeOmitsRepository_InheritsBaseRepository()
+        {
+            var cust = Settings(("Order", "Tenant.OrderBO, Tenant"));
+            var @base = new ProgramSettings();
+            @base.Items!.Add(new ProgramItem("Order", "訂單")
+            {
+                BusinessObject = "Pkg.OrderBO, Pkg",
+                Repository = "Pkg.OrderRepository, Pkg",
+            });
+
+            var merged = CustomizeOverlay.FindProgramItem(cust, @base, "Order")!;
+
+            Assert.Equal("Tenant.OrderBO, Tenant", merged.BusinessObject);
+            Assert.Equal("Pkg.OrderRepository, Pkg", merged.Repository);
+        }
+
+        [Fact]
+        [DisplayName("ProgramItem：客製只寫 Repository 時 BusinessObject 沿用套裝")]
+        public void FindProgramItem_CustomizeOmitsBusinessObject_InheritsBaseBusinessObject()
+        {
+            var cust = new ProgramSettings();
+            cust.Items!.Add(new ProgramItem("Order", string.Empty)
+            {
+                Repository = "Tenant.OrderRepository, Tenant",
+            });
+            var @base = new ProgramSettings();
+            @base.Items!.Add(new ProgramItem("Order", "訂單")
+            {
+                BusinessObject = "Pkg.OrderBO, Pkg",
+                Repository = "Pkg.OrderRepository, Pkg",
+            });
+
+            var merged = CustomizeOverlay.FindProgramItem(cust, @base, "Order")!;
+
+            Assert.Equal("Pkg.OrderBO, Pkg", merged.BusinessObject);
+            Assert.Equal("Tenant.OrderRepository, Tenant", merged.Repository);
+            Assert.Equal("訂單", merged.DisplayName);
+        }
+
+        [Fact]
+        [DisplayName("ProgramItem：合成產生新實例，兩層的快取實例都不被異動")]
+        public void FindProgramItem_BothLayersDeclare_ReturnsNewInstanceWithoutMutatingEither()
+        {
+            var cust = Settings(("Order", "Tenant.OrderBO, Tenant"));
+            var @base = new ProgramSettings();
+            @base.Items!.Add(new ProgramItem("Order", "訂單")
+            {
+                BusinessObject = "Pkg.OrderBO, Pkg",
+                Repository = "Pkg.OrderRepository, Pkg",
+            });
+
+            var merged = CustomizeOverlay.FindProgramItem(cust, @base, "Order")!;
+
+            Assert.NotSame(cust.Items!["Order"], merged);
+            Assert.NotSame(@base.Items!["Order"], merged);
+            Assert.Equal(string.Empty, cust.Items!["Order"].Repository);
+            Assert.Equal("Pkg.OrderBO, Pkg", @base.Items!["Order"].BusinessObject);
+        }
+
+        [Fact]
+        [DisplayName("ProgramItem：只有一層宣告時直接回該層實例，不做多餘配置")]
+        public void FindProgramItem_SingleLayerDeclares_ReturnsThatInstance()
+        {
+            var cust = Settings(("Order", "Tenant.OrderBO, Tenant"));
+            var @base = Settings(("Customer", "Pkg.CustomerBO, Pkg"));
+
+            Assert.Same(cust.Items!["Order"], CustomizeOverlay.FindProgramItem(cust, @base, "Order"));
+            Assert.Same(@base.Items!["Customer"], CustomizeOverlay.FindProgramItem(cust, @base, "Customer"));
+        }
+
+        [Fact]
+        [DisplayName("ProgramItem：每個可寫字串屬性都參與欄位級合成（新增屬性未同步就會紅）")]
+        public void FindProgramItem_EveryWritableStringProperty_TakesPartInTheMerge()
+        {
+            var properties = MergedProgramItemProperties();
+            Assert.NotEmpty(properties);
+
+            foreach (var property in properties)
+            {
+                // 套裝每個屬性都有值；客製只填目前受測的這一個。
+                var baseItem = new ProgramItem { ProgId = "Order" };
+                foreach (var other in properties)
+                    other.SetValue(baseItem, $"base-{other.Name}");
+
+                var customizeItem = new ProgramItem { ProgId = "Order" };
+                property.SetValue(customizeItem, $"cust-{property.Name}");
+
+                var cust = new ProgramSettings();
+                cust.Items!.Add(customizeItem);
+                var @base = new ProgramSettings();
+                @base.Items!.Add(baseItem);
+
+                var merged = CustomizeOverlay.FindProgramItem(cust, @base, "Order")!;
+
+                Assert.Equal($"cust-{property.Name}", property.GetValue(merged));
+                foreach (var other in properties.Where(p => p.Name != property.Name))
+                    Assert.Equal($"base-{other.Name}", other.GetValue(merged));
+            }
+        }
+
+        /// <summary>
+        /// The writable string properties a merged <see cref="ProgramItem"/> must carry, i.e. every
+        /// one except the identity the two layers share.
+        /// </summary>
+        private static PropertyInfo[] MergedProgramItemProperties()
+            => typeof(ProgramItem)
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.PropertyType == typeof(string) && p.CanRead && p.CanWrite)
+                .Where(p => p.Name is not (nameof(ProgramItem.ProgId) or nameof(ProgramItem.Key)))
+                .ToArray();
 
         // ---- FormLayout：整檔取代 ----
 

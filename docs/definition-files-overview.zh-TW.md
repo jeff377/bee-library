@@ -212,9 +212,19 @@ builder.Services.AddBeeFramework(settings.BackendConfiguration, paths);
 | 型別 | 覆蓋粒度 |
 |------|---------|
 | **LanguageResource** | 文字（`LanguageItem`）是 **key 級**。客製檔只放要改的 key，其餘全部來自 base —— 因此 base 日後新增的翻譯會自動傳播。**`LanguageEnum` 是例外：整組取代。** 客製檔有同名 enum 就整組換掉 base 的，因此客製檔必須列出該選項集要有的**全部** entry |
-| **ProgramSettings** | **progId 級**。同一個 progId 的客製項目勝過 base 項目 —— 是**整筆**取代，因此只設了 `BusinessObject` 的客製項，其 `Repository` 就是留空，不會繼承 base 的值 |
+| **ProgramSettings** | **progId 級，其下再分屬性級**。同一個 progId 的客製項目勝過 base 項目；而該項目內每個綁定各自獨立——只指名 `BusinessObject` 的客製項，`Repository` 仍沿用 base 的值。**只寫你要改的那個** |
 | **MenuSettings** | **整檔級**。客製選單整份取代 base 選單 |
 | **FormLayout** | **整檔級**。客製 layout 整份取代該 `layoutId` 的 base layout |
+
+`ProgramSettings` 項目內的屬性級繼承，是為了讓「只改一部分的客製」不會把 base 的綁定弄不見。
+一筆項目承載兩個彼此獨立的綁定，而**空值是合法的「用框架預設」而非錯誤**——整筆取代會讓 base 的
+repository 就這樣消失，且不會有任何回報。若要**刻意**讓某個綁定退回框架自己的型別，請顯式指名該
+型別，而不是把屬性清空：
+
+```xml
+<!-- 這個程式保留自己的客製 repository，但行為退回通用 CRUD。 -->
+<ProgramItem ProgId="Order" BusinessObject="Bee.Business.Form.FormBusinessObject, Bee.Business" />
+```
 
 **粒度不同是刻意的**，分界線在於：這份東西是**一袋彼此獨立的值**，還是**一個組合起來才成立的整體**。
 
