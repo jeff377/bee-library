@@ -10,8 +10,9 @@
 | G4 | 端到端測試與雙語文件 | 📝 待做 |
 
 > 範圍：**在套裝 BO 的既有流程上掛載客製程式碼**——不換掉整個 BO 類別，只在特定時點追加一段。
-> 掛載點：`Save` / `Delete` 的六個 `Do*` 子方法。**其他 BO 方法不拆三段**（2026-08-05 裁決，
-> 見 [BO 擴充點的交易邊界契約](plan-bo-transaction-contract.md) D4），所以掛載點集合已固定。
+> 掛載點：`BeforeSave` / `AfterSave` / `BeforeDelete` / `AfterDelete` 四個（D2）。
+> **其他 BO 方法不拆三段**（2026-08-05 裁決，見
+> [BO 擴充點的交易邊界契約](plan-bo-transaction-contract.md) D4），可掛載的範圍因此已封閉。
 > 相關：[客製 BO / Repository 類別](plan-customization-business.md)｜[客製化共同前置](plan-customization-foundation.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)｜[ProgId 型別註冊表](plan-progid-type-registry.md)
 
 ---
@@ -39,7 +40,7 @@ Delete: DoBeforeDelete → DoDelete → [寫刪除稽核] → DoAfterDelete
 ```
 
 要在其中任一段加東西，只能繼承整個 BO 類別。讀取類方法（`GetList` / `GetData` 等）沒有三段式，
-也**裁決不拆**——本案的掛載點因此就是上面這六個。
+也**裁決不拆**——可掛載的範圍因此封閉在上面這兩條管線內，實際開幾個點由 D2 決定。
 
 ### 1.2 客製層目前全面唯讀
 
@@ -81,14 +82,28 @@ Delete: DoBeforeDelete → DoDelete → [寫刪除稽核] → DoAfterDelete
 **否決**：型別綁定也搬新檔（推翻剛收斂的註冊表定位）；在 `ProgramItem` 下加 `<Plugins>` 子元素
 （撞上理由 2 與 3）。
 
-### D2：plugin 掛在 `Do*` 子方法，一律後置
+### D2：四個掛載點，每個時點一個控點
 
-掛載點＝BO 的可覆寫子方法。plugin 跑在該子方法**最終實作之後**——不論那是套裝 BO 的 base 實作，
-還是客製 BO 的覆寫。兩種手段因此可疊著用。
+| 掛載點 | 執行位置 | 拿得到什麼 | 典型用途 |
+|--------|---------|-----------|---------|
+| `BeforeSave` | `DoBeforeSave` 尾端——規則引擎之後、**稽核快照之前** | `SaveContext`（`DataSet` 可改） | 驗證、補值、擋單 |
+| `AfterSave` | `DoAfterSave` 尾端 | `SaveContext`（`RefreshedDataSet` / `AffectedRows` 已填） | 通知、外部系統同步、開後續單據 |
+| `BeforeDelete` | `DoBeforeDelete` 尾端——guard 規則之後 | `DeleteContext`（`Snapshot` 可讀） | 擋刪除 |
+| `AfterDelete` | `DoAfterDelete` 尾端 | `DeleteContext`（`Snapshot` 與 `RowsAffected`） | 清理關聯、外部系統同步 |
 
-**掛載點固定為六個**：`DoBeforeSave` / `DoSave` / `DoAfterSave` / `DoBeforeDelete` / `DoDelete` /
-`DoAfterDelete`。讀取類方法不拆三段（[交易邊界契約](plan-bo-transaction-contract.md) D4），
-所以這個集合不會再增加。
+plugin 一律跑在該段**最終實作之後**——不論那是套裝 BO 的 base 實作，還是客製 BO 的覆寫。兩種手段
+因此可疊著用。命名用生命週期階段而非 BO 方法名：`Do*` 前綴屬於 BO 的可覆寫步驟，plugin 不是在
+覆寫它們。
+
+```csharp
+public abstract class FormBusinessPlugin
+{
+    public virtual void BeforeSave(SaveContext context) { }
+    public virtual void AfterSave(SaveContext context) { }
+    public virtual void BeforeDelete(DeleteContext context) { }
+    public virtual void AfterDelete(DeleteContext context) { }
+}
+```
 
 **選用準則（要寫進文件）**：
 
@@ -97,15 +112,50 @@ Delete: DoBeforeDelete → DoDelete → [寫刪除稽核] → DoAfterDelete
 | 攔截或取代既有邏輯 | 繼承 BO 覆寫子方法 | 可包夾 `base.DoXxx()` 前後，也可不呼叫 base 完全取代 |
 | 在既有邏輯之後追加 | plugin | 只有後置一個控點 |
 
-三點附帶結論：
+#### 新增掛載點的判準（三關全過才加）
 
-- **`DoSave` 後置與 `DoAfterSave` 只差變更稽核的寫入位置**：`DoSave` 後置在稽核**之前**，
-  `DoAfterSave` 在**之後**。兩個都開，但這個差異必須寫清楚，否則沒人分得出該掛哪個。
-  注意 `DoSave` 的 plugin **不在交易內**——交易在 repository 內部就已提交
-  （見[交易邊界契約](plan-bo-transaction-contract.md) §1）。**plugin 永遠在交易外。**
-- **`DoSave` 後置的 plugin 能改 `context.RefreshedDataSet` 與 `AffectedRows`**（`SaveContext`
-  是可變的），等於能左右回給 client 的內容。是能力也是風險，文件要標明。
-- **`DoBeforeSave` 後置仍可阻擋存檔**——丟例外即可。「只有後置」不損失擋單能力。
+先前草案是六個（每個 `Do*` 子方法一個）。砍成四個的理由不是「想不到用途」，而是
+`DoSave` / `DoDelete` 後置**與 After 行為完全相同**：都在交易外、都能改
+`RefreshedDataSet`、稽核讀的是 `DoSave` 之前擷取的 diffgram，兩者皆不影響。留著只是逼使用者做
+一個沒有正確答案的選擇題。
+
+日後有人提議加掛載點時，套這三關：
+
+1. **與相鄰掛載點可區分**——行為必須有可觀察的差異。不可區分的選項是純負成本：文件要解釋、
+   使用者要猜、猜錯又沒差別。
+2. **有具體用途**——必要但不充分。講不出真實需求就別開。
+3. **不會把人引到危險位置**——這關會刷掉「有用途」的候選。「`DoSave` 前置」用途清楚（存檔前
+   最後一刻改資料），但它落在稽核快照之後，改了資料**會寫進 DB 卻不進稽核**。位置本身是錯的，
+   開了等於發邀請函。
+
+**成本不對稱決定了預設偏少**：掛載點是公開契約，**加是非破壞性的、減是破壞性的**。客戶一旦掛了
+plugin 上去，那個點就永久存在。反過來，日後真需要「規則引擎之前」，隨時可加一個 `BeforeCompute`，
+既有 plugin 不受影響。反面教材是 SAP 的 Enhancement Framework——implicit enhancement point 幾乎
+鋪滿每個 method 的頭尾，結果升級時沒人說得清哪些客戶程式碼會受影響。
+
+#### 三點附帶結論
+
+- **plugin 永遠在交易外**——交易在 repository 內部就已開閉
+  （見[交易邊界契約](plan-bo-transaction-contract.md) §1）。這對「外部系統同步」這個用途有直接
+  影響，見下方分工表。
+- **`AfterSave` 能改的只有回給 client 的內容**。改 `context.DataSet` 沒有意義（已存檔），改
+  `RefreshedDataSet` 會影響 client 收到什麼。文件要講，否則會有人在那裡改 `DataSet` 然後困惑為
+  什麼沒進資料庫。
+- **`BeforeSave` 是 plugin 唯一能安全改資料的位置**：在稽核快照之前，所以改動會被稽核記到；
+  也在持久化之前，所以改動真的會寫進去。擋單丟例外即可，「只有後置」不損失擋單能力。
+
+#### 外部系統同步該寫在哪
+
+`AfterSave` / `AfterDelete` 的典型用途之一是同步資料到其他系統。因為 plugin 在交易外，**plugin
+執行前行程掛掉，資料已提交而同步沒發生，且不留痕跡**。要「不漏」的標準解是 transactional
+outbox：在同一個交易內寫一筆待同步記錄，背景 worker 再送——而那個寫入點在交易內，不是 plugin。
+
+| 同步的可靠性要求 | 正確位置 |
+|---|---|
+| 不能漏（財務、庫存、對外承諾） | 客製 Repository 交易內登記 outbox ＋ 背景送出；plugin 頂多戳一下 worker |
+| 盡力而為，或有對帳／排程兜底 | `AfterSave` / `AfterDelete` plugin 直接送 |
+
+這條要寫進文件，否則「用 AfterSave 做同步」會在某天變成一張漏單的客訴。
 
 ### D3：plugin 例外一律往上拋
 
@@ -120,6 +170,20 @@ After 時點的 plugin 失敗時資料已寫入，呼叫端會看到「失敗但
 
 **否決**：吞例外 + 記 log（客製的重要後續動作失敗時無人知道）；包進同一 transaction 回滾
 （交易不上提到 BO 層，見[交易邊界契約](plan-bo-transaction-contract.md) D3）。
+
+#### After 時點的失敗，由 plugin 自己判斷要不要中斷
+
+「拋出即中斷」對驗證類 plugin 是對的，但對外部系統同步會變成：**對方系統維護中，使用者就存不了
+單**。實務上的反應必然是把 plugin 整包 `try-catch` 吞掉——框架定了規則、大家都繞過，規則就沒了
+意義。
+
+不加機制，改在文件把責任講明：
+
+> 外部同步類的 plugin 應自行處理失敗（記錄後不重拋，或登記重試），不要讓外部系統的可用性決定
+> 使用者能不能完成作業。框架的預設是「拋出即中斷」，因為驗證類 plugin 需要它；哪些失敗該中斷
+> 作業，是 plugin 作者的判斷。
+
+這樣既保住「失敗不可靜默」（plugin 自己要記錄），又不把外部系統的可用性綁進使用者的作業流程。
 
 ### D4：兩層都開，套裝層目前不出檔
 
@@ -231,12 +295,23 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
 
 ### G2 — `FormBusinessPlugin` 基底與執行接線
 
-- `FormBusinessPlugin` 抽象基底，每個掛載點一個虛擬空實作，plugin 只 override 需要的時點。
+- `FormBusinessPlugin` 抽象基底，四個掛載點各一個虛擬空實作，plugin 只 override 需要的時點。
   設定檔只列型別，不宣告時點。
-- plugin 建構走 `ActivatorUtilities.CreateInstance`，與 repository 一致，可注入 host 服務。
-- `FormBusinessObject` 在各子方法的**最終實作之後**依序執行 plugin。注意 `DoBeforeSave` 的
+- plugin 建構走 `ActivatorUtilities.CreateInstance`，簽章比照 repository 的三參數慣例
+  `(IBeeContext ctx, Guid accessToken, string progId)`——session、`DefineAccess`、`BoFactory`、
+  `Services` 都從 `IBeeContext` 拿。**不把 BO 本身傳進去**：那會連 protected 成員一併曝光，
+  鼓勵錯誤耦合。
+- `FormBusinessObject` 在四個位置的**最終實作之後**依序執行 plugin。注意 `DoBeforeSave` 的
   base 實作會跑規則引擎，plugin 因此看到的是已算好預設值 / 計算欄的資料。
+- **修正 `DeleteContext.Snapshot` 的載入條件**：目前是
+  `if (auditChange || HasBeforeDeleteRules(schema))`
+  （[FormBusinessObject.cs](../../src/Bee.Business/Form/FormBusinessObject.cs)），稽核關閉且 schema
+  無 BeforeDelete 規則時 `Snapshot` 為 `null`。而 `AfterDelete` 做外部系統同步時**一定需要知道刪
+  掉的是什麼**（只有 `RowId` 不夠），`BeforeDelete` 擋刪除也常要讀內容。條件必須加上「該 progId
+  有沒有 plugin」，否則 plugin 拿到的 context 內容取決於一個與它無關的稽核開關——某些部署正常、
+  某些拿到 null，是最難查的那種差異。
 - 解析與快取：plugin 型別清單依 `(customizeId, progId)` 快取，比照 BO resolver 的 reload 偵測。
+  這份清單同時是上一點的判斷依據（清單非空 → 載入 Snapshot）。
 - 失敗語意依 D3。
 
 ### G3 — 客製 plugin 設定的 API 維護
@@ -255,11 +330,13 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
 ### G4 — 端到端測試與文件
 
 - 帶 CustomizeId 的 session → API → 執行客製 plugin。
-- 各時點各一個順序驗證；多 plugin 依宣告順序；例外往上拋致 Save 失敗。
+- 四個掛載點各一個順序驗證；多 plugin 依宣告順序；例外往上拋致 Save 失敗。
+- `BeforeSave` 改的資料**進得了稽核**（釘住「稽核快照之前」這個位置）；`AfterDelete` 拿得到
+  `Snapshot`（釘住載入條件的修正，且要在**稽核關閉**的組態下測，否則測不到）。
 - API 維護路徑：遠端呼叫被拒（attribute 與 `IsLocalCall` 各驗一次）、型別打錯字被拒存、
   存檔後新 plugin 立即生效。
-- 雙語文件：客製化指南補 plugin 章節（D2 選用準則、D3 的 After 時點警告、D7 的分界表、
-  D6 的 `LocalOnly` 定位與多節點限制）。
+- 雙語文件：客製化指南補 plugin 章節（D2 的選用準則、掛載點表與外部同步分工表、D3 的 After
+  失敗處理指引、D7 的分界表、D6 的 `LocalOnly` 定位與多節點限制）。
 
 ---
 
