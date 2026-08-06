@@ -30,7 +30,7 @@ DoAfterSave    交易外
 `Delete` 同理（`DoBeforeDelete` / `DoDelete` / `DoAfterDelete`）。
 
 **這是現況的明文化**——交易完全落在 repository 內部
-（[`DataFormRepository.Save`](../../src/Bee.Repository/Form/DataFormRepository.cs) 的
+（[`DataFormRepository.Save`](../../../src/Bee.Repository/Form/DataFormRepository.cs) 的
 `UpdateDataTables`、`Delete` 的 `DbBatchSpec { UseTransaction = true }`），BO 層沒有跨三段的交易。
 
 契約的實質內容是一句話：**外部呼叫不能在交易裡**。`DoBeforeSave` 會跑運算式引擎、查 lookup、
@@ -43,11 +43,11 @@ DoAfterSave    交易外
 
 ### D1：中止流程＝丟 `UserMessageException`
 
-機制已備，不需新增：[`UserMessageException`](../../src/Bee.Base/Exceptions/UserMessageException.cs)
+機制已備，不需新增：[`UserMessageException`](../../../src/Bee.Base/Exceptions/UserMessageException.cs)
 就是「業務流程中止訊號」，規則引擎的 BeforeSave 規則已在用
-（[`FormExpressionCalculator`](../../src/Bee.Definition/Forms/FormExpressionCalculator.cs)），
+（[`FormExpressionCalculator`](../../../src/Bee.Definition/Forms/FormExpressionCalculator.cs)），
 `JsonRpcExecutor` 轉為 `JsonRpcErrorCode.UserMessage`，client 端
-[`ApiConnector`](../../src/Bee.Api.Client/Connectors/ApiConnector.cs) 還原成同型別。
+[`ApiConnector`](../../../src/Bee.Api.Client/Connectors/ApiConnector.cs) 還原成同型別。
 
 覆寫子方法的客製、以及日後的 plugin，都直接沿用：要給使用者看的訊息丟
 `UserMessageException`，其餘例外照常往上拋。
@@ -59,7 +59,7 @@ DoAfterSave    交易外
    下推到 `DoSave` 內**（條件式 UPDATE、唯一索引、check constraint）；Before 的讀取只適合擋
    明顯錯誤，不能當並發防線。客製作者的直覺一定是「我在 Before 檢查過了」，所以這條必須明講。
 2. **變更稽核與資料不原子**。`WriteChangeAudit` 在 `DoSave` 之後、`DoAfterSave` 之前
-   （[`FormBusinessObject`](../../src/Bee.Business/Form/FormBusinessObject.cs)），所以「資料寫
+   （[`FormBusinessObject`](../../../src/Bee.Business/Form/FormBusinessObject.cs)），所以「資料寫
    成功、稽核寫失敗」可能發生。這是既有狀況，但立約等於明文承認，文件要寫。
 3. **`DoAfterSave` 失敗時資料已提交**。呼叫端看到失敗但資料在。After 的副作用必須自負可重試性，
    發通知這類動作應進佇列。
@@ -97,12 +97,12 @@ DoAfterSave    交易外
 
 單一階段，純文件，無程式行為變更：
 
-- [`FormBusinessObject`](../../src/Bee.Business/Form/FormBusinessObject.cs)：六個子方法各加
+- [`FormBusinessObject`](../../../src/Bee.Business/Form/FormBusinessObject.cs)：六個子方法各加
   `<remarks>` 標明在不在交易中；`DoBeforeSave` / `DoBeforeDelete` 額外寫 TOCTOU 與
   `UserMessageException`，`DoAfterSave` / `DoAfterDelete` 寫「資料已提交」與佇列建議。
   public `Save` / `Delete` 加管線圖與「覆寫子方法而非本方法」的指引，稽核不原子記在 `Save`。
-- [`development-cookbook.md`](../development-cookbook.md) /
-  [`.zh-TW.md`](../development-cookbook.zh-TW.md)：新增「BO 擴充點與交易邊界」一節，置於
+- [`development-cookbook.md`](../../development-cookbook.md) /
+  [`.zh-TW.md`](../../development-cookbook.zh-TW.md)：新增「BO 擴充點與交易邊界」一節，置於
   「客製化 ProgId 對應的 BO」與「為 ProgId 客製 Repository」之間。
 - 同節既有範例原本示範 `override SaveResult Save`——覆寫 public 方法會接手 `AuthorizeSave` 與
   寫入 scope 檢查，與本契約牴觸，一併改為覆寫 `DoBeforeSave`。

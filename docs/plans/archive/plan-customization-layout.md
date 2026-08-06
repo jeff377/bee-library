@@ -3,7 +3,7 @@
 > 狀態：✅ 已完成（決策全數定案；階段 L1–L4、L6 落地，L5 裁決不做）· 2026-08-01
 > 範圍：**FormLayout 的租戶客製**——版面重排、欄位隱藏、區塊調整。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 已於 F1／F2 補完）
-> 相關：[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
+> 相關：[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../../adr/adr-016-multitenant-customization-overlay.md)
 
 ---
 
@@ -131,7 +131,7 @@ public FormLayout GetFormLayout(string customizeId, string layoutId)
 > 兩者刻意不同——**FormLayout 是整個版面，很難用局部疊加方式，也不直覺**。
 > 判別線是「一袋彼此獨立的值」vs「組合起來才成立的整體」；layout 與 `LanguageEnum`
 > 同屬後者。這條分界已寫進公開文件
-> [`definition-files-overview`](../definition-files-overview.md) §7（雙語）。
+> [`definition-files-overview`](../../definition-files-overview.md) §7（雙語）。
 >
 > **base 日後新增欄位不會傳播到客製版——這是語意，不是取捨**（使用者 2026-08-01 定調）：
 > **FormLayout 是畫面的權威來源**，schema 加了欄位不代表那個欄位該出現在某租戶的版面上。

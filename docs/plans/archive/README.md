@@ -11,6 +11,15 @@
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [業務邏輯 plugin](plan-customization-plugin.md) | 2026-08-06 | `PluginSettings.xml`：四個掛載點、每次操作一個實例、兩層相加；`LocalOnly` 維護 API 與客製層第一條寫入路徑 |
+| [BO 擴充點的交易邊界契約](plan-bo-transaction-contract.md) | 2026-08-05 | 明訂只有 `Do*` 在交易中；裁決其他 BO 方法不拆三段、交易不上提到 BO 層 |
+| [客製 BO 與 Repository 類別](plan-customization-business.md) | 2026-08-05 | `ProgramItem` 改屬性級繼承（只換 BO 不再打掉套裝 Repository）；解析失敗改為降級 + log |
+| [ProgramSettings 型別註冊表化與 Repository 取得機制統一](plan-progid-type-registry.md) | 2026-08-04 | 選單分離為 `MenuSettings`、BO 解析全面 ProgId 化、三個工廠合併為 `IRepositoryFactory` |
+| [部署層管理員（不綁公司的營運權限）](plan-deployment-admin.md) | 2026-08-03 | `IDeploymentAuthorizationService`：不屬於任何公司的資產的授權路徑 |
+| [API Key 存放機制與預設驗證強化](plan-api-key-store.md) | 2026-08-03 | `st_api_key` + 兩段式金鑰 + 雜湊存放；呼叫端識別落進稽核、生命週期與輪替 |
+| [客製化共同前置](plan-customization-foundation.md) | 2026-08-01 | 三類客製的共同基礎：消費端接線、`CustomizePath` 設定、客製快取失效訊號 |
+| [Layout 客製化](plan-customization-layout.md) | 2026-08-01 | `FormLayout` 整檔取代；實作中翻案（L7）改由用戶端 `FormDefinitionLoader` 組裝 |
+| [語系客製化](plan-customization-language.md) | 2026-08-01 | 語系資源 per-key 疊加；四個伺服端消費端接上 `SessionInfo.CustomizeId` |
 | [docs 根目錄文件重編排](plan-docs-reorganization.md) | 2026-07-31 | 索引改旅程分層，新增 getting-started 與定義檔全景（雙語） |
 | [開發流程強化](plan-dev-workflow-hardening.md) | 2026-07-31 | commit 前驗證 hook；`plan-workflow` → `dev-workflow` plugin 改名 |
 | [Bee.Analyzers — 框架慣例編譯期化](plan-bee-analyzers.md) | 2026-07-30 | 22 條 Roslyn 規則（定義檔跨檔一致性 / 序列化 / C# 慣例） |

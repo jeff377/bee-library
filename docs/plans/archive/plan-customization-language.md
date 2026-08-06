@@ -3,7 +3,7 @@
 > 狀態：✅ 已完成（G1–G4、G6 全數落地，G5 裁決不做）· 2026-08-01
 > 範圍：**語系資源的租戶客製**——某些單據或行為，公司有慣用語（欄位標題、表單名稱、訊息、選項文字）。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 未補則本案無法生效）
-> 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)
+> 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[ADR-016](../../adr/adr-016-multitenant-customization-overlay.md)
 
 ---
 
@@ -108,7 +108,7 @@ per-key 命中/落空、enum、空 id 短路(`:58`)、無 reader(`:73`)。
 > 兩件事都變曖昧。判別線是「一袋彼此獨立的值」vs「組合起來才成立的整體」——
 > **enum 與 FormLayout 同屬後者**，客製了就完整擁有那一份。
 >
-> 這條分界已寫進公開文件 [`definition-files-overview`](../definition-files-overview.md) §7（雙語），
+> 這條分界已寫進公開文件 [`definition-files-overview`](../../definition-files-overview.md) §7（雙語），
 > 免得日後有人把「enum 沒做 entry 級」當成缺口去「修」。
 
 > **2026-08-01 一度誤實作為 G1-a 後已回退**（commit `9e3ce317` → `70d703aa`）。

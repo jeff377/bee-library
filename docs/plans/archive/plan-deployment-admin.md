@@ -14,7 +14,7 @@
 ## 背景：公司層權限守不住部署層資產
 
 框架的授權判定寫死在公司範圍內
-（[AuthorizationService.cs](../../src/Bee.ObjectCaching/Services/AuthorizationService.cs)）：
+（[AuthorizationService.cs](../../../src/Bee.ObjectCaching/Services/AuthorizationService.cs)）：
 
 ```csharp
 var session = _sessionInfoService.Get(accessToken);
@@ -41,7 +41,7 @@ var snapshot = _rolePermissionService.Get(session.CompanyId);
 API Key plan 階段 1 因此把 `CreateApiKey` 定為 `LocalOnly`，並留下「階段 3 需要一條權限把關的
 路徑，屆時才處理」——本 plan 就是那條路徑。
 
-租賃方向（見 [plan-row-level-tenancy.md](plan-row-level-tenancy.md)）會讓這個面持續長大：
+租賃方向（見 [plan-row-level-tenancy.md](../plan-row-level-tenancy.md)）會讓這個面持續長大：
 建立試用公司、監看用量、處理畢業，全都是不綁公司的營運操作。與其為 API Key 開一個特例，
 不如把「部署層管理員」這個概念一次立起來。
 
@@ -53,7 +53,7 @@ API Key plan 階段 1 因此把 `CreateApiKey` 定為 `LocalOnly`，並留下「
 | `RepositoryDatabaseRouter.Resolve` | `DbScope.Common` / `Log` 不需要公司即可解析 | 部署層操作只碰 common / log 庫，**天然不需要進公司**，router 已支援 |
 | `st_user` | 位於 common 庫，無任何管理員欄位 | 身分來源（D1） |
 | `st_user` **沒有出貨的 FormSchema** | 框架只出貨 TableSchema | 自我提權的防線現況只是「框架碰巧沒開這扇門」，不是機制（見 D6） |
-| [UserRepository.cs](../../src/Bee.Repository/System/UserRepository.cs) | 目前**純讀**（`GetRowIdBySysId` / `GetLocale` / `GetName`） | 旗標的讀寫是它的第一組寫入方法 |
+| [UserRepository.cs](../../../src/Bee.Repository/System/UserRepository.cs) | 目前**純讀**（`GetRowIdBySysId` / `GetLocale` / `GetName`） | 旗標的讀寫是它的第一組寫入方法 |
 | `CreateApiKey` | `LocalOnly` | 階段 2 改為部署層權限把關後，遠端管理才成立 |
 
 ## 設計定案
@@ -73,14 +73,14 @@ API Key plan 階段 1 因此把 `CreateApiKey` 定為 `LocalOnly`，並留下「
 | 設定檔列舉管理員帳號 | 不進 DB、無管理介面；「營運行為不該是部署設定」正是 API Key plan 否決定義檔的理由 |
 | 沿用 `PermissionModels` 加部署層 model | 同一套 model id 會有兩種 scope 語意，日後難解釋 |
 
-**判定一律走新接縫** [IDeploymentAuthorizationService](../../src/Bee.Definition/Identity/IDeploymentAuthorizationService.cs)
+**判定一律走新接縫** [IDeploymentAuthorizationService](../../../src/Bee.Definition/Identity/IDeploymentAuthorizationService.cs)
 （`Bee.Definition/Identity/`），呼叫端只問「這個 token 能不能做這件事」。
 今天以旗標實作，日後若真需要細粒度，換掉實作即可、呼叫端不動——**先立接縫、後補粒度**。
 
 ### D2：介面帶動作參數，實作先全有全無（定案）
 
 簽章為 `Can(Guid accessToken, DeploymentAction action)`，
-[DeploymentAction](../../src/Bee.Definition/Identity/DeploymentAction.cs) 目前只有 `ManageApiKey`。
+[DeploymentAction](../../../src/Bee.Definition/Identity/DeploymentAction.cs) 目前只有 `ManageApiKey`。
 實作階段一律以旗標回答，不看 action。簽章多一個參數的成本，遠低於日後回頭改所有呼叫端。
 
 ### D3：首位管理員由本機指派產生（定案）
@@ -121,7 +121,7 @@ API Key plan 階段 1 因此把 `CreateApiKey` 定為 `LocalOnly`，並留下「
 現況能成立純粹是框架沒出貨 `st_user` 的 FormSchema——部署端自建一張含該欄的維護表單，防線就沒了。
 
 定案為 **runtime 硬性排除**：FormSchema 驅動的寫入路徑
-（[DataFormRepository.Update](../../src/Bee.Repository/Form/DataFormRepository.cs) →
+（[DataFormRepository.Update](../../../src/Bee.Repository/Form/DataFormRepository.cs) →
 `TableSchemaCommandBuilder.BuildUpdateSpec`）必須剔除受保護欄，即使 FormSchema 宣告了它。
 
 階段 1 要決的實作細節（兩者不互斥，runtime 那層是必要條件）：
@@ -147,7 +147,7 @@ API Key plan 階段 1 因此把 `CreateApiKey` 定為 `LocalOnly`，並留下「
 > 尚未 commit、尚未接線、尚未有實作與測試。
 
 1. **`st_user` 加欄 `deployment_admin`**（`DbType="Boolean"`、`AllowNull=false`），三份 TableSchema
-   同步：[Defaults](../../src/Bee.Definition/Defaults/TableSchema/common/st_user.TableSchema.xml)、
+   同步：[Defaults](../../../src/Bee.Definition/Defaults/TableSchema/common/st_user.TableSchema.xml)、
    `tests/Define/TableSchema/common/`、`apps/Bee.Northwind/Define/TableSchema/common/`。
    既有部署走框架自動 schema 升級（ALTER ADD），既有列由 DEFAULT 填 0。
    > **不要顯式寫 `DefaultValue="0"`** —— 會讓 schema 比對永遠判定需升級，見執行結果與

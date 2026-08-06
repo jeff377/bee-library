@@ -3,7 +3,7 @@
 > 狀態：✅ 已完成（F1–F4 全數落地；橫向缺口 A–F 全補）· 2026-08-01
 > 定位：**三類客製的共同基礎**，不屬於任一類，但三類都被它擋住。
 > 相關：[Layout 客製](plan-customization-layout.md)｜[業務邏輯客製](plan-customization-business.md)｜[語系客製](plan-customization-language.md)
-> 依據：[ADR-016 多租戶客製化覆蓋層](../adr/adr-016-multitenant-customization-overlay.md)
+> 依據：[ADR-016 多租戶客製化覆蓋層](../../adr/adr-016-multitenant-customization-overlay.md)
 
 ---
 
@@ -94,9 +94,9 @@ DI 接線本身完整，reader 已注入；問題純粹是**呼叫端沒傳 `cus
 | UI 端 DI adapter、無 session 概念（`BeeStringLocalizer`） | `ClientInfo.Company?.CustomizeId` | 比照它既有的 `Func<string> langProvider` 多載（`BeeStringLocalizer.cs:46`），加一個 customizeId 委派多載由 host 接 |
 
 **不新增任何 wire 欄位**：`EnterCompanyResult.Company` 就是 `CompanyInfo`
-（[`SystemBusinessObject.Session.cs:110`](../../src/Bee.Business/System/SystemBusinessObject.Session.cs)），本來就帶 `CustomizeId`；
+（[`SystemBusinessObject.Session.cs:110`](../../../src/Bee.Business/System/SystemBusinessObject.Session.cs)），本來就帶 `CustomizeId`；
 用戶端 `ClientInfo.ApplyEnterCompanyResult` 也已把它存進 `ClientInfo.Company`
-（[`ClientInfo.cs:203`](../../src/Bee.UI.Core/ClientInfo.cs)）。兩端所需的值今天都已經在手上。
+（[`ClientInfo.cs:203`](../../../src/Bee.UI.Core/ClientInfo.cs)）。兩端所需的值今天都已經在手上。
 
 > **安全界線（硬性）**：伺服端**永不**採信 client 傳回來的 customizeId 作為查找依據。
 > 做成「client 每次呼叫帶 customizeId」等於讓 client 自選要讀哪一套客製檔——跨租戶讀取的直接破口。
@@ -126,7 +126,7 @@ DI 接線本身完整，reader 已注入；問題純粹是**呼叫端沒傳 `cus
 > 兩者都不正確。**框架完全沒有組態綁定**：`DefinePath` 是 host 自己算好
 > （`NorthwindBackend.ResolveDefinePath()` 往上找 `Define/SystemSettings.xml`），塞進
 > `new PathOptions { ... }` 再傳給 `AddBeeFramework(configuration, pathOptions)`
-> （[`BeeFrameworkServiceCollectionExtensions.cs:55-72`](../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)）。
+> （[`BeeFrameworkServiceCollectionExtensions.cs:55-72`](../../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)）。
 > 因此 `CustomizePath` **今天就設得了**（`init` 允許物件初始化器一併給值）。
 
 實際缺的不是機制，是：**沒有任何 host 這樣做**（`NorthwindBackend.cs:47`、`DemoBackend.cs:43` 都只設
@@ -328,7 +328,7 @@ base 層有 file-watch（`FileDefineStorage.cs:232`）、DB 層有 cache-notify�
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | F0 | 決策定案：A1 傳遞方式、B1 配置來源 | ✅ 已定案（2026-07-31）。§3 的「客製檔誰維護」仍未決，但**不擋 F1–F4** |
-| F1 | **缺口 B**：host 設定 `CustomizePath` 的文件 + 一個 sample 示範 | ✅ 已完成（2026-07-31）。`DemoBackend` 設 `CustomizePath`（`Define/` 的同層 `Customize/`）；文件見 [`definition-files-overview`](../definition-files-overview.md) §7（雙語）。依使用者決定**不入版控任何樣本客製檔**——只開路徑，客製層仍為空 |
+| F1 | **缺口 B**：host 設定 `CustomizePath` 的文件 + 一個 sample 示範 | ✅ 已完成（2026-07-31）。`DemoBackend` 設 `CustomizePath`（`Define/` 的同層 `Customize/`）；文件見 [`definition-files-overview`](../../definition-files-overview.md) §7（雙語）。依使用者決定**不入版控任何樣本客製檔**——只開路徑，客製層仍為空 |
 | F2 | **缺口 A**：消費端接線，伺服端三處顯式傳參 + `BeeStringLocalizer` 委派多載（Layout 除外，見 Layout plan） | ✅ 已完成（2026-07-31）。四處全接：`FormSchemaLocalizer`、`BusinessObject.GetLangText`、`BeeStringLocalizer<T>`、`BusinessObjectFactory` |
 | F3 | **缺口 C + F 合流**：會進公司的 head（或整合測試）走通 `EnterCompany` → `ApplyEnterCompanyResult` → 客製生效，並把 `ResetDefineCache` 責任收回框架 | ✅ 已完成（2026-08-01）。前半 commit `5f741647`（`ResetDefineCache` 收回框架）；後半採**整合測試自建 session**（使用者裁決選項 a），`TenantCustomizationEndToEndTests` 9 測試，語系／BO 型別／Layout／跨租戶隔離／回歸防護全覆蓋（見 §2.F） |
 | F4 | **缺口 D、E**：客製快取失效訊號、DB 版 reader 條件註冊 | ✅ 已完成（2026-08-01）。缺口 E（DB 版 reader 條件註冊）隨 Layout L1／L2 一併；缺口 D 補上 `CustomizeOnlyStorage.GetChangeSource`（三個客製型別回報 getter 實際讀的檔案路徑，其餘回 `None`），客製檔改動改由 file-watch 觸發失效，不再只能等 20 分鐘 sliding expiration |

@@ -45,13 +45,13 @@ COM+ 的登錄檔只管「ProgID → 型別」，不管「這個程式在功能�
 | 職責 | 消費者 | 用到的欄位 |
 |------|--------|-----------|
 | **型別註冊表** | `ProgramSettingsFormBoTypeResolver` → `IBusinessObjectFactory` | `ProgId` + `BusinessObject` |
-| **選單來源** | client shell 整份抓回自行建樹（[FormsViewModel.cs:50](../../apps/Bee.Northwind/Bee.Northwind.UI/ViewModels/FormsViewModel.cs)） | `Category.DisplayName` + `Item.DisplayName` |
+| **選單來源** | client shell 整份抓回自行建樹（[FormsViewModel.cs:50](../../../apps/Bee.Northwind/Bee.Northwind.UI/ViewModels/FormsViewModel.cs)） | `Category.DisplayName` + `Item.DisplayName` |
 
 兩職的讀者、生命週期與敏感度都不同：註冊表只有 server 需要（且含組件限定型別名），
 選單只有 client 需要（且需要 i18n、排序、可見性等純呈現屬性）。
 
 **直接後果**：client 建選單時**無條件走訪所有 category 的所有 item**
-（[FormsViewModel.cs:68-74](../../apps/Bee.Northwind/Bee.Northwind.UI/ViewModels/FormsViewModel.cs)），
+（[FormsViewModel.cs:68-74](../../../apps/Bee.Northwind/Bee.Northwind.UI/ViewModels/FormsViewModel.cs)），
 沒有任何過濾。因此一旦把 `System` / `AuditLog` 納入註冊表，它們會直接變成兩個選單項。
 
 ### progId 的全域唯一性目前沒有任何一層在保證
@@ -59,10 +59,10 @@ COM+ 的登錄檔只管「ProgID → 型別」，不管「這個程式在功能�
 註冊表的前提是「progId 是唯一的鍵」，但巢狀結構讓這個保證只存在於分類之內：
 
 - `ProgramItemCollection : KeyCollectionBase<ProgramItem>` 只保證**同一個 category 內**不重複
-- `CustomizeOverlay.FindItem` 是**巢狀線性掃描、取第一個命中**（[CustomizeOverlay.cs:96-107](../../src/Bee.Definition/Customization/CustomizeOverlay.cs)）
+- `CustomizeOverlay.FindItem` 是**巢狀線性掃描、取第一個命中**（[CustomizeOverlay.cs:96-107](../../../src/Bee.Definition/Customization/CustomizeOverlay.cs)）
   → 同一個 progId 出現在兩個分類時，**哪一筆生效取決於 XML 的文件順序**
 - DefineEditor 的驗證同樣擋不住：`seenProgIds` 宣告在 category 迴圈**內**
-  （[ProgramSettingsDocumentViewModel.cs:166](../../tools/DefineEditor/ViewModels/ProgramSettingsDocumentViewModel.cs)），
+  （[ProgramSettingsDocumentViewModel.cs:166](../../../tools/DefineEditor/ViewModels/ProgramSettingsDocumentViewModel.cs)），
   只查分類內重複；`seenCategoryIds` 才是全域的
 
 攤平為單層後，`ProgramItemCollection` 的 key 機制**本身就是**全域唯一性保證，
@@ -70,7 +70,7 @@ COM+ 的登錄檔只管「ProgID → 型別」，不管「這個程式在功能�
 
 ### BO 解析：兩個保留字 progId 繞過了註冊表
 
-`JsonRpcExecutor.CreateBusinessObject` 是三岔硬編分派（[JsonRpcExecutor.cs:361](../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs)）：
+`JsonRpcExecutor.CreateBusinessObject` 是三岔硬編分派（[JsonRpcExecutor.cs:361](../../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs)）：
 
 ```csharp
 if (progId == SysProgIds.System)        return _boFactory.CreateSystemBusinessObject(...);
@@ -78,16 +78,16 @@ else if (progId == SysProgIds.AuditLog) return _boFactory.CreateLogBusinessObjec
 else                                    return _boFactory.CreateFormBusinessObject(accessToken, progId, ...);
 ```
 
-`System` 與 `AuditLog` 已經是 progId（定義於 [`SysProgIds`](../../src/Bee.Definition/SysProgIds.cs)），
+`System` 與 `AuditLog` 已經是 progId（定義於 [`SysProgIds`](../../../src/Bee.Definition/SysProgIds.cs)），
 卻不走 progId 解析機制。**同樣是 progId，兩套待遇**——這是與設計淵源不一致之處。
 
 ### 客製化缺口：SystemBO 目前只能整族、跨租戶地替換
 
-[`BackendComponents`](../../src/Bee.Definition/Settings/SystemSettings/BackendComponents.cs) 共 11 個欄位，
+[`BackendComponents`](../../../src/Bee.Definition/Settings/SystemSettings/BackendComponents.cs) 共 11 個欄位，
 其中**沒有 `SystemBusinessObject` 項目**，只有 `BusinessObjectFactory`。因此今天要改變 SystemBO 的行為，
 唯一的辦法是**整個換掉工廠**，而且是 process-wide、不分租戶。
 
-反觀 form BO 已能經 [`CustomizeOverlay.FindProgramItem`](../../src/Bee.Definition/Customization/CustomizeOverlay.cs)
+反觀 form BO 已能經 [`CustomizeOverlay.FindProgramItem`](../../../src/Bee.Definition/Customization/CustomizeOverlay.cs)
 做 per-progId、per-tenant 的覆寫。把 SystemBO 納入註冊表**不是新增機制，而是把既有機制套用到本來就該套用的對象**。
 
 ### BO 建構形狀：差異只有一個參數
@@ -99,7 +99,7 @@ else                                    return _boFactory.CreateFormBusinessObje
 | `LogBusinessObject` | `(ctx, accessToken, isLocalCall)` |
 
 差別只在 `progId`，而 `ProgId` 屬性宣告在 `FormBusinessObject` 上、**不在 `BusinessObject` 基底**
-（[FormBusinessObject.cs:42](../../src/Bee.Business/Form/FormBusinessObject.cs)）。
+（[FormBusinessObject.cs:42](../../../src/Bee.Business/Form/FormBusinessObject.cs)）。
 上移至基底即可讓三者 ctor 一致，統一以 `Activator.CreateInstance(type, ctx, accessToken, progId, isLocalCall)` 建構。
 
 順帶修掉一個小矛盾：`SystemBusinessObject` 目前不知道自己的 progId，但它明明是被 progId 定址的。
@@ -120,9 +120,9 @@ else                                    return _boFactory.CreateFormBusinessObje
 
 | 工廠 | 方法數 | 性質 | 會不會隨新增 Repository 長大 |
 |------|--------|------|------------------------------|
-| [`IFormRepositoryFactory`](../../src/Bee.Repository.Abstractions/Factories/IFormRepositoryFactory.cs) | 2 | **真工廠**：讀 FormSchema → 解析 `CategoryId` → `DbScope` → 經 `IRepositoryDatabaseRouter` 算出 databaseId → 6 個參數建構（[FormRepositoryFactory.cs:46](../../src/Bee.Repository/Factories/FormRepositoryFactory.cs)） | 否。加再多表單仍是 2 個方法 |
-| [`ISystemRepositoryFactory`](../../src/Bee.Repository.Abstractions/Factories/ISystemRepositoryFactory.cs) | 9 | 無參數方法，內容皆為 `new XxxRepository(_connectionManager)` | **是。唯一的 churn 來源** |
-| [`IAuditLogRepositoryFactory`](../../src/Bee.Repository.Abstractions/Factories/IAuditLogRepositoryFactory.cs) | 1 | log scope 專用 | 否 |
+| [`IFormRepositoryFactory`](../../../src/Bee.Repository.Abstractions/Factories/IFormRepositoryFactory.cs) | 2 | **真工廠**：讀 FormSchema → 解析 `CategoryId` → `DbScope` → 經 `IRepositoryDatabaseRouter` 算出 databaseId → 6 個參數建構（[FormRepositoryFactory.cs:46](../../../src/Bee.Repository/Factories/FormRepositoryFactory.cs)） | 否。加再多表單仍是 2 個方法 |
+| [`ISystemRepositoryFactory`](../../../src/Bee.Repository.Abstractions/Factories/ISystemRepositoryFactory.cs) | 9 | 無參數方法，內容皆為 `new XxxRepository(_connectionManager)` | **是。唯一的 churn 來源** |
+| [`IAuditLogRepositoryFactory`](../../../src/Bee.Repository.Abstractions/Factories/IAuditLogRepositoryFactory.cs) | 1 | log scope 專用 | 否 |
 
 因此問題不是「沒走工廠」，而是 `ISystemRepositoryFactory` 每加一個 Repository 就長一個方法。
 
@@ -150,8 +150,8 @@ SystemBO 在單一 progId 底下用掉 9 個 Repository，`CreateRepository(toke
 
 | 消費者 | 情境 | 為何給不出 progId |
 |--------|------|------------------|
-| [`ExpiredSessionCleanupService`](../../src/Bee.Hosting/Session/ExpiredSessionCleanupService.cs) | `BackgroundService`，計時器驅動清理過期 session | 沒有請求、沒有 session、沒有 token |
-| [`EmployeeContextResolver`](../../src/Bee.ObjectCaching/Services/EmployeeContextResolver.cs) | session 建立 / 進公司時解析員工脈絡 | 在任何 progId 請求**之前**執行；且**單一方法內要用兩個 Repository**（先 `IUserRepository` 再 `IEmployeeRepository`） |
+| [`ExpiredSessionCleanupService`](../../../src/Bee.Hosting/Session/ExpiredSessionCleanupService.cs) | `BackgroundService`，計時器驅動清理過期 session | 沒有請求、沒有 session、沒有 token |
+| [`EmployeeContextResolver`](../../../src/Bee.ObjectCaching/Services/EmployeeContextResolver.cs) | session 建立 / 進公司時解析員工脈絡 | 在任何 progId 請求**之前**執行；且**單一方法內要用兩個 Repository**（先 `IUserRepository` 再 `IEmployeeRepository`） |
 
 `SessionCompanyBinder`、`DeploymentAuthorizationService`、`CacheDataSourceProvider` 屬同一類。
 **這些消費者根本不是 BO**，所以 BO 軸的 ProgId 化對它們毫無影響，也無法涵蓋它們。
@@ -281,7 +281,7 @@ public interface IRepositoryFactory
 
 | 事項 | 本文件 | 實際 |
 |------|--------|------|
-| 「記憶體優先」的落地方式 | 「補寫結果必須參與解析」，未指明機制 | 由 resolver 實作「保留字**缺項** → 框架預設型別」。不可改 mutate cache 內的 `ProgramSettings`（[development-constraints.md](../development-constraints.md) 的 Definition Data Immutability After Init），這是唯一相容的作法。**與被否決的方案 C 不同**：C 是解析**失敗**時退回，此處失敗（型別載不到／基底不符）一律拋，只有「註冊表根本沒提到」才用預設 |
+| 「記憶體優先」的落地方式 | 「補寫結果必須參與解析」，未指明機制 | 由 resolver 實作「保留字**缺項** → 框架預設型別」。不可改 mutate cache 內的 `ProgramSettings`（[development-constraints.md](../../development-constraints.md) 的 Definition Data Immutability After Init），這是唯一相容的作法。**與被否決的方案 C 不同**：C 是解析**失敗**時退回，此處失敗（型別載不到／基底不符）一律拋，只有「註冊表根本沒提到」才用預設 |
 | 自訂 `IBoTypeResolver` | 未提及 | 未處理保留字的自訂 resolver 會被啟動期驗證擋下（QuickStart sample 已同步）。這是設計預期，但構成新的實作義務 |
 
 ### 階段 3
@@ -341,7 +341,7 @@ public interface IRepositoryFactory
 
 理由：
 
-- `AddBeeFramework` 是 `IServiceCollection` 擴充（[BeeFrameworkServiceCollectionExtensions.cs:54](../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)），
+- `AddBeeFramework` 是 `IServiceCollection` 擴充（[BeeFrameworkServiceCollectionExtensions.cs:54](../../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)），
   執行當下 **ServiceProvider 尚未建立**。自我註冊需要 `IDefineAccess` / `IDefineStorage`，
   在裡面取用就得 `BuildServiceProvider()`，那會產生**與最終容器不同的第二個容器**（singleton 各一份，ASP.NET Core 有 ASP0000 警告）。
 - `AddBeeFramework` 會在**非執行情境**被呼叫：design-time build、單元測試建 `ServiceCollection`、
@@ -377,7 +377,7 @@ repo 內已有三個 hosted service 的先例（`CacheNotifyPoller`、`ExpiredSe
 
 ### 問題
 
-[`ProgramSettingsFormBoTypeResolver.ResolveCore`](../../src/Bee.Business/ProgramSettingsFormBoTypeResolver.cs)
+[`ProgramSettingsFormBoTypeResolver.ResolveCore`](../../../src/Bee.Business/ProgramSettingsFormBoTypeResolver.cs)
 目前**每一條失敗路徑都回傳 `typeof(FormBusinessObject)`** —— 檔案不存在、progId 未註冊、
 `BusinessObject` 留空、型別載不到、型別非 `FormBusinessObject` 衍生，全部靜默退回。
 這對一般 progId 是合理的：`Order` 設定打錯只是退化成通用 CRUD，惱人但服務不中斷。
@@ -419,11 +419,11 @@ A 與 B 互補：A 在部署期把關，B 涵蓋執行期。一般 progId 的 si
 因此 `ProgramSettings` 可進一步收緊為 server 專用（比照 `SystemSettings` / `DatabaseSettings`
 在 `GetDefine` 的 `IsLocalCall` 閘內），型別名不再上 wire。此舉在階段 1 一併處理。
 
-> 佐證（現況）：`ApiProtectionLevel.LocalOnly` 由 [`ApiAccessValidator`](../../src/Bee.Api.Core/Validator/ApiAccessValidator.cs) 統一把關，全 repo 標註者僅 `SaveDefine`、`CreateSession` 與部署層管理方法三個。`GetDefine` 標的是 `Public` + `Authenticated`（[SystemBusinessObject.Define.cs:47](../../src/Bee.Business/System/SystemBusinessObject.Define.cs)），其 `IsLocalCall` 閘只擋 `SystemSettings` 與 `DatabaseSettings` 兩型；HTTP 請求一律 `executor.IsLocalCall = false`（[ApiServiceController.cs:259](../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)）。
+> 佐證（現況）：`ApiProtectionLevel.LocalOnly` 由 [`ApiAccessValidator`](../../../src/Bee.Api.Core/Validator/ApiAccessValidator.cs) 統一把關，全 repo 標註者僅 `SaveDefine`、`CreateSession` 與部署層管理方法三個。`GetDefine` 標的是 `Public` + `Authenticated`（[SystemBusinessObject.Define.cs:47](../../../src/Bee.Business/System/SystemBusinessObject.Define.cs)），其 `IsLocalCall` 閘只擋 `SystemSettings` 與 `DatabaseSettings` 兩型；HTTP 請求一律 `executor.IsLocalCall = false`（[ApiServiceController.cs:259](../../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)）。
 
 ## 已查核事項
 
-**客製 BO 覆寫不會弄丟 API 保護。** `ApiAccessValidator` 的屬性解析順序是「method → 被覆寫的 method → 宣告型別」（[ApiAccessValidator.cs:20](../../src/Bee.Api.Core/Validator/ApiAccessValidator.cs)），因此客製 `SystemBusinessObject` 子類覆寫 `SaveDefine` 時仍受 `LocalOnly` 保護；子類新增的 public 方法另有 analyzer BEE3001 在 build 期強制標註。開放 SystemBO 客製化**不會**降低 API 存取控制的保證。
+**客製 BO 覆寫不會弄丟 API 保護。** `ApiAccessValidator` 的屬性解析順序是「method → 被覆寫的 method → 宣告型別」（[ApiAccessValidator.cs:20](../../../src/Bee.Api.Core/Validator/ApiAccessValidator.cs)），因此客製 `SystemBusinessObject` 子類覆寫 `SaveDefine` 時仍受 `LocalOnly` 保護；子類新增的 public 方法另有 analyzer BEE3001 在 build 期強制標註。開放 SystemBO 客製化**不會**降低 API 存取控制的保證。
 
 ## 階段規劃
 
@@ -464,8 +464,8 @@ A 與 B 互補：A 在部署期把關，B 涵蓋執行期。一般 progId 的 si
 - 依〈附錄：`IRepositoryContext` 設計〉實作；`IRepositoryFactory` 簽章於本階段定案
 - 所有 Repository 收斂為統一建構函式；測試需要處補建構函式多載
 - 實作 `RepositoryFactory`，內含框架軸的型別對應（`IXxxRepository` → `XxxRepository`）
-- DI 註冊由 3 條併為 1 條（[BeeFrameworkServiceCollectionExtensions.cs:242-252](../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)）
-- `BackendComponents` 的 `SystemRepositoryFactory` / `FormRepositoryFactory` 兩欄併為單一 `RepositoryFactory`（[BackendComponents.cs:91-100](../../src/Bee.Definition/Settings/SystemSettings/BackendComponents.cs)），`BackendDefaultTypes` 同步
+- DI 註冊由 3 條併為 1 條（[BeeFrameworkServiceCollectionExtensions.cs:242-252](../../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)）
+- `BackendComponents` 的 `SystemRepositoryFactory` / `FormRepositoryFactory` 兩欄併為單一 `RepositoryFactory`（[BackendComponents.cs:91-100](../../../src/Bee.Definition/Settings/SystemSettings/BackendComponents.cs)），`BackendDefaultTypes` 同步
 - 舊三介面暫時保留、以新工廠實作，讓階段 4 可漸進遷移
 
 **驗收**：`dotnet build -c Release` 零警告；既有測試全綠；`BeeFrameworkServiceResolutionTests` 能解析新工廠。
@@ -493,9 +493,9 @@ fail-fast 的例外訊息足以定位是哪個 progId 的哪個型別名。
 ### 階段 6：專屬介面樣式與文件
 
 - 於 `apps/Bee.Northwind` 落地一個 `IOrderRepository : IDataFormRepository` 的實例，作為樣式範本
-- 更新 [`docs/definition-files-overview.md`](../definition-files-overview.md) 與 `.zh-TW` 版（雙語同步）——
+- 更新 [`docs/definition-files-overview.md`](../../definition-files-overview.md) 與 `.zh-TW` 版（雙語同步）——
   其「ProgramSettings 身兼二職」一節需改寫為「型別註冊表」＋新增選單定義一節
-- 修正 [`docs/terminology.zh-TW.md`](../terminology.zh-TW.md) 對 `ProgramSettings.xml` 的描述 —— 現寫「功能程式的參數設定」，
+- 修正 [`docs/terminology.zh-TW.md`](../../terminology.zh-TW.md) 對 `ProgramSettings.xml` 的描述 —— 現寫「功能程式的參數設定」，
   但其內容是 registry，無任何 per-program 參數，屬文件漂移
 - 升格一份 ADR 記錄三個長效決策：**ProgramSettings 作為全框架型別註冊表**（含 COM+ 淵源）、
   **選單與註冊表分離**、**Repository 1:1 規則只適用表單軌**
@@ -570,7 +570,7 @@ public bool ShouldSerializeNodes() => Nodes != null && Nodes.Count > 0;
   且 `ILLink.Descriptors.xml` 的 `Bee.Definition.*` wildcard 已涵蓋子型別
 
 回歸測試比照 `FilterGroupTests.FilterGroup_DeepNested_XmlRoundtrip_PreservesStructure`
-（[FilterGroupTests.cs:160](../../tests/Bee.Definition.UnitTests/Filters/FilterGroupTests.cs)），
+（[FilterGroupTests.cs:160](../../../tests/Bee.Definition.UnitTests/Filters/FilterGroupTests.cs)），
 以三層巢狀驗證結構還原。
 
 ### 已定案的設計決策
@@ -714,7 +714,7 @@ form repository 的 scope 由 `FormSchema.CategoryId` 推導，框架 repository
 #### 選項一必須先解決的問題
 
 1. **`EmployeeContextResolver` 手上沒有可用的 accessToken。**
-   它的簽章是 `Resolve(userId, databaseId)`（[EmployeeContextResolver.cs:30](../../src/Bee.ObjectCaching/Services/EmployeeContextResolver.cs)），
+   它的簽章是 `Resolve(userId, databaseId)`（[EmployeeContextResolver.cs:30](../../../src/Bee.ObjectCaching/Services/EmployeeContextResolver.cs)），
    在 session 建立 / 進公司的過程中被呼叫——**此時 session 尚未能解析出公司**，所以它是拿著
    `databaseId` 而非 token。若路由改為 token 驅動，這個呼叫端會斷。
    → 解法：保留 (c) 的「呼叫端指定 databaseId」方法多載，定位為
@@ -745,7 +745,7 @@ form repository 的 scope 由 `FormSchema.CategoryId` 推導，框架 repository
 
 統一簽章後，只需要少數相依的測試不必組出完整 ctx，以**額外多載**提供輕量入口
 （比照既有 `SystemRepositoryFactory` 的雙 ctor 作法，
-[SystemRepositoryFactory.cs:32](../../src/Bee.Repository/Factories/SystemRepositoryFactory.cs)）。
+[SystemRepositoryFactory.cs:32](../../../src/Bee.Repository/Factories/SystemRepositoryFactory.cs)）。
 用多載而非可選參數，是為了讓「測試用」與「正式」兩條建構路徑在簽章上就分得開。
 
 ### review 時待確認

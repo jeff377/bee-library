@@ -9,7 +9,7 @@
 
 > 範圍：**以租戶客製的類別整個換掉套裝的 BO / Repository**——`ProgramSettings` 的 progId 綁定。
 > 前置：[客製化共同前置](plan-customization-foundation.md)（缺口 A、B 已於 F1／F2 補完，本案無阻塞）
-> 相關：[業務邏輯 plugin](plan-customization-plugin.md)（輕量擴充的另一條路）｜[BO 擴充點的交易邊界契約](plan-bo-transaction-contract.md)｜[Layout 客製](plan-customization-layout.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)｜[ProgId 型別註冊表](plan-progid-type-registry.md)
+> 相關：[業務邏輯 plugin](plan-customization-plugin.md)（輕量擴充的另一條路）｜[BO 擴充點的交易邊界契約](plan-bo-transaction-contract.md)｜[Layout 客製](plan-customization-layout.md)｜[語系客製](plan-customization-language.md)｜[ADR-016](../../adr/adr-016-multitenant-customization-overlay.md)｜[ProgId 型別註冊表](plan-progid-type-registry.md)
 
 ---
 
@@ -32,7 +32,7 @@
 
 ### 1.1 覆寫語意：per-progId 擇一，且兩軸都已接線
 
-[`CustomizeOverlay.FindProgramItem`](../../src/Bee.Definition/Customization/CustomizeOverlay.cs)：
+[`CustomizeOverlay.FindProgramItem`](../../../src/Bee.Definition/Customization/CustomizeOverlay.cs)：
 
 ```
 客製 ProgramSettings 有該 progId → 整個 ProgramItem 取代套裝的同 progId
@@ -42,8 +42,8 @@
 
 兩個消費端都已從 `SessionInfo.CustomizeId` 取值，不再是空字串：
 
-- [`BusinessObjectFactory.GetCustomizeId`](../../src/Bee.Business/BusinessObjectFactory.cs)
-- [`RepositoryFactory.FindProgramItem`](../../src/Bee.Repository/Factories/RepositoryFactory.cs)
+- [`BusinessObjectFactory.GetCustomizeId`](../../../src/Bee.Business/BusinessObjectFactory.cs)
+- [`RepositoryFactory.FindProgramItem`](../../../src/Bee.Repository/Factories/RepositoryFactory.cs)
 
 ### 1.2 失敗語意：三種行為並存
 
@@ -57,7 +57,7 @@
 
 ### 1.3 ★缺口：`ProgramItem` 現在有兩個綁定，whole-item 覆寫變成陷阱
 
-[`ProgramItem`](../../src/Bee.Definition/Settings/ProgramSettings/ProgramItem.cs) 現在承載
+[`ProgramItem`](../../../src/Bee.Definition/Settings/ProgramSettings/ProgramItem.cs) 現在承載
 `DisplayName` + `BusinessObject` + `Repository`。整個 item 取代的語意下：
 
 ```xml
@@ -78,9 +78,9 @@ Repository）則 BO 掉回 `FormBusinessObject`，同樣無聲。`DisplayName` �
 
 ### 1.4 現有測試
 
-[`ProgramSettingsBoTypeResolverCustomizeTests`](../../tests/Bee.Business.UnitTests/ProgramSettingsBoTypeResolverCustomizeTests.cs)
+[`ProgramSettingsBoTypeResolverCustomizeTests`](../../../tests/Bee.Business.UnitTests/ProgramSettingsBoTypeResolverCustomizeTests.cs)
 （per-progId 擇一、cache 隔離、base 缺檔）與
-[`CustomizeOverlayTests`](../../tests/Bee.Definition.UnitTests/Customization/CustomizeOverlayTests.cs)
+[`CustomizeOverlayTests`](../../../tests/Bee.Definition.UnitTests/Customization/CustomizeOverlayTests.cs)
 皆為手動傳 customizeId 的元件級測試。B1 會改變 `FindProgramItem` 的行為，這兩處需同步調整。
 
 ---
@@ -98,7 +98,7 @@ cust 無、base 有 → 直接回 base（不合成）
 ```
 
 - **必須 new，不可 mutate**——兩層都是 process-wide cache 實例，改任一邊會跨 session 污染
-  （見 [development-constraints.md](../development-constraints.md) 的 Definition Data
+  （見 [development-constraints.md](../../development-constraints.md) 的 Definition Data
   Immutability After Init）。
 - 判空用 `StringUtilities.IsEmpty`（含純空白），與 `RepositoryFactory.ResolveFormRepositoryType`
   現有判定一致。
@@ -137,13 +137,13 @@ cust 無、base 有 → 直接回 base（不合成）
 
 ### B1 — `ProgramItem` 欄位級繼承（✅ 已完成 2026-08-05）
 
-- [`CustomizeOverlay.FindProgramItem`](../../src/Bee.Definition/Customization/CustomizeOverlay.cs)
+- [`CustomizeOverlay.FindProgramItem`](../../../src/Bee.Definition/Customization/CustomizeOverlay.cs)
   改為 D1 的合成語意；兩層都有時 `new` 一個 `ProgramItem`，只有一層宣告時直接回該層實例。
 - 反射防護測試落在 `CustomizeOverlayTests`：列舉 `ProgramItem` 所有 public 可寫字串屬性
   （排除 `ProgId` / `Key`），逐一驗證「客製有值取客製、其餘取套裝」。日後加屬性沒補就紅。
 - 既有 4 個 `FindProgramItem` 測試只斷言 `BusinessObject`，合成語意下結果不變，無需調整；
   另加 4 個新案例（只寫 BO、只寫 Repository、不 mutate 兩層、單層直接回實例）。
-- 文件：[definition-files-overview](../definition-files-overview.md) 雙語的粒度表由「整筆取代」
+- 文件：[definition-files-overview](../../definition-files-overview.md) 雙語的粒度表由「整筆取代」
   改為「progId 級 → 屬性級」，並補「顯式指名框架型別」的退回寫法。
 
 回歸防護：未設 CustomizeId 時解析結果與現況一致；客製 item 完整重述所有屬性時行為亦與現況一致。
@@ -151,7 +151,7 @@ cust 無、base 有 → 直接回 base（不合成）
 ### B2 — BO 解析失敗可觀測性（✅ 已完成 2026-08-05）
 
 - `Bee.Business` 加 `Microsoft.Extensions.Logging.Abstractions` 10.0.0（對齊 `Bee.Hosting`）。
-- [`ProgramSettingsBoTypeResolver`](../../src/Bee.Business/ProgramSettingsBoTypeResolver.cs) 新增
+- [`ProgramSettingsBoTypeResolver`](../../../src/Bee.Business/ProgramSettingsBoTypeResolver.cs) 新增
   **三參數建構子**承載 optional logger。改為新多載而非在既有二參數建構子加預設參數——後者雖然
   source 相容，但屬二進位破壞性變更。DI 以 `sp.GetService<ILogger<...>>()` 注入，無 logging 的
   host 照常運作。
@@ -166,7 +166,7 @@ cust 無、base 有 → 直接回 base（不合成）
   overlay，改動自動生效——這正是把疊加邏輯集中在 `CustomizeOverlay` 的用意。
 - 兩處 XML doc 明說「整筆取代 / 從不合併」，已隨語意更新：resolver 的類別 remarks 與
   `RepositoryFactory.FindProgramItem`。
-- [ADR-016](../adr/adr-016-multitenant-customization-overlay.md) 的粒度表加註 2026-08-05 修訂：
+- [ADR-016](../../adr/adr-016-multitenant-customization-overlay.md) 的粒度表加註 2026-08-05 修訂：
   定案時 `ProgramItem` 只有 `BusinessObject` 一個綁定，整筆取代與屬性級繼承無差別；
   `Repository` 加入後才分歧。修訂不影響「不 merge 成單一物件」的核心決策——合成結果是查找當下
   產生的新實例，兩層快取物件都不被異動。

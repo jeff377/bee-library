@@ -13,14 +13,14 @@
 
 框架目前**沒有 API Key 的存放機制**，伺服端與用戶端都沒有。
 
-伺服端 [`ApiAuthorizationValidator.Validate`](../../src/Bee.Api.Core/Authorization/ApiAuthorizationValidator.cs) 只做
+伺服端 [`ApiAuthorizationValidator.Validate`](../../../src/Bee.Api.Core/Authorization/ApiAuthorizationValidator.cs) 只做
 `IsNullOrWhiteSpace` 檢查，任何非空字串通過。框架裡沒有任何位置承載合法金鑰。已有的防護是
-[`UseBeeFramework` 的啟動警告](../../src/Bee.Api.AspNetCore/BeeFrameworkApplicationBuilderExtensions.cs)
+[`UseBeeFramework` 的啟動警告](../../../src/Bee.Api.AspNetCore/BeeFrameworkApplicationBuilderExtensions.cs)
 與 validator 的 `<remarks>`，兩者都只是「請部署端自己寫程式覆寫」。
 
-用戶端 [`ApiClientInfo.ApiKey`](../../src/Bee.Api.Client/ApiClientInfo.cs) 是 static 欄位，
+用戶端 [`ApiClientInfo.ApiKey`](../../../src/Bee.Api.Client/ApiClientInfo.cs) 是 static 欄位，
 註解寫 "typically loaded from configuration" 但框架沒提供那個 configuration；
-[`IEndpointStorage`](../../src/Bee.UI.Core/IEndpointStorage.cs) 三個方法全部只處理 endpoint。
+[`IEndpointStorage`](../../../src/Bee.UI.Core/IEndpointStorage.cs) 三個方法全部只處理 endpoint。
 實務上就是硬寫在原始碼（`AppDefaults.ApiKey = "northwind-demo"`）。
 
 **缺口的實質是「沒有地方放」**：就算把 validator 改成比對合法金鑰，也沒有位置可放那份金鑰。
@@ -41,7 +41,7 @@
 
 ### 為何 DB 的效能與相依疑慮不成立
 
-- **熱路徑**：框架已有 [`src/Bee.ObjectCaching/Database/`](../../src/Bee.ObjectCaching/Database/)
+- **熱路徑**：框架已有 [`src/Bee.ObjectCaching/Database/`](../../../src/Bee.ObjectCaching/Database/)
   這條成熟路徑（`SessionInfoCache` / `CompanyInfoCache` / `CompanyRolePermissionsCache`）——
   DB 為源、`KeyObjectCache` 快取、`st_cache_notify` 跨行程失效。API Key 直接沿用同一套。
 - **相依方向**：AccessToken 驗證本來就查 DB（`SessionRepository`）。API Key 查 DB 與之一致，
@@ -112,7 +112,7 @@ northwind-desktop.xLq9Kv2mNp8wR4tZ...
 
 ### D3：雜湊用 salt + SHA-256，**不用** `PasswordHasher`
 
-[`PasswordHasher`](../../src/Bee.Base/Security/PasswordHasher.cs) 是 PBKDF2-SHA256、**100,000 次迭代**——
+[`PasswordHasher`](../../../src/Bee.Base/Security/PasswordHasher.cs) 是 PBKDF2-SHA256、**100,000 次迭代**——
 那是為「人選的低熵密碼」設計的，代價是單次驗證刻意很慢。
 
 API Key 情境相反：**每個 request 都要驗一次**。把 100k 次迭代放進請求熱路徑等於自製 DoS 面。
@@ -137,7 +137,7 @@ API Key 情境相反：**每個 request 都要驗一次**。把 100k 次迭代�
 > **2026-07-29 修訂**：本節原本論證「`ApiKeyCache` 是框架第一個必須自己去 DB 撈的快取」，
 > 並在兩條路線間選了 per-cache 載入委派。該前提已不成立——
 > `CompanyInfoCache` / `CompanyRolePermissionsCache` / `DepartmentTreeCache` 已於同日改為自載
-> （見 [plan-cache-createinstance-db-loading.md](archive/plan-cache-createinstance-db-loading.md)），
+> （見 [plan-cache-createinstance-db-loading.md](plan-cache-createinstance-db-loading.md)），
 > 自載成為 Database 快取的既定慣例，`ApiKeyCache` 照既有樣板走即可，不需要獨有形狀。
 
 `ApiKeyCache : KeyObjectCache<ApiKeyInfo>`（`src/Bee.ObjectCaching/Database/`），key 為 `sys_id`，
@@ -145,7 +145,7 @@ API Key 情境相反：**每個 request 都要驗一次**。把 100k 次迭代�
 
 負向快取（查無此 `sys_id`）沿用 `KeyObjectCache` 既有機制，避免以隨機 `sys_id` 掃描造成
 每次都穿透到 DB。**這也是必須自載的理由**：
-[`KeyObjectCache.Get`](../../src/Bee.ObjectCaching/KeyObjectCache.cs) 的 miss sentinel 與
+[`KeyObjectCache.Get`](../../../src/Bee.ObjectCaching/KeyObjectCache.cs) 的 miss sentinel 與
 正/負向 policy 都掛在 `CreateInstance` 上，把載入寫到 service 等於繞過 base class 再手寫一份。
 
 **載入接縫**：`ICacheDataSourceProvider`（`Bee.Definition`）新增 `ApiKeyInfo? GetApiKey(string sysId)`，
@@ -226,11 +226,11 @@ D4 的樣板不直接覆蓋，須一併設計：
 `ApiServiceOptions.AuthorizationValidator` 是 **static** 屬性，預設 validator 沒有 ctor 注入機會，
 拿不到 repository / cache。
 
-沿用框架既有先例：[`IAccessTokenValidator`](../../src/Bee.Definition/Security/IAccessTokenValidator.cs)
+沿用框架既有先例：[`IAccessTokenValidator`](../../../src/Bee.Definition/Security/IAccessTokenValidator.cs)
 正是「授權驗證需要後端服務」時抽出的政策介面，放 `Bee.Definition/Security/`（依 `security.md`
 的原語 / 政策分層，金鑰驗證屬政策層）。
 
-接線點是 [`ApiServiceController.ValidateAuthorization`](../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)——
+接線點是 [`ApiServiceController.ValidateAuthorization`](../../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)——
 它是 `protected virtual` 且能取用 `HttpContext.RequestServices`，由此解析 `IApiKeyValidator`。
 
 **controller 解析後就在該處驗完，`ApiAuthorizationContext` 只承載「驗證結果」，不承載驗證器**
@@ -262,7 +262,7 @@ validator 本身維持無狀態。
 硬塞 ApiKey 要嘛改名（breaking，四個實作 + 所有 host）、要嘛加不對稱的方法。
 
 改為**在既有的 `ClientSettings` 上增欄位**——`IEndpointStorage` 的實作端本來就以 `ClientSettings`
-為後盾（[`EndpointStorage`](../../src/Bee.UI.Core/EndpointStorage.cs)），沿用同一份持久化載體即可，
+為後盾（[`EndpointStorage`](../../../src/Bee.UI.Core/EndpointStorage.cs)），沿用同一份持久化載體即可，
 不動介面。行動端 sandbox 情境仍走各平台既有的 storage 實作。
 
 ### D9：每請求驗證，不引入 token 交換
@@ -271,7 +271,7 @@ validator 本身維持無狀態。
 
 1. **成本已經被 D2 / D3 設計掉**：切字串 → `sys_id` O(1) 查記憶體快取 → 一次 SHA-256（約 48 bytes）
    → `FixedTimeEquals`。框架每個需授權的請求本來就在付同級成本——
-   [`AccessTokenValidator`](../../src/Bee.Business/Validator/AccessTokenValidator.cs) →
+   [`AccessTokenValidator`](../../../src/Bee.Business/Validator/AccessTokenValidator.cs) →
    `SessionInfoCache.Get` 命中時是純記憶體查表。
 2. **交換式會多養一條 token 生命週期**：金鑰驗證與 session 是兩套獨立的失效機制，
    交換式等於把兩者綁在一起，任何一邊的過期 / 撤銷規則改動都要重新推導另一邊。
@@ -282,7 +282,7 @@ validator 本身維持無狀態。
 
 > **2026-07-29 修訂**：本節原本以「session 只能由 Login 灌入、token 僅在鑄造它的行程有效」
 > 作為最關鍵理由（原理由 2）。該前提正被
-> [plan-session-persistence.md](archive/plan-session-persistence.md) 移除——session 將可由
+> [plan-session-persistence.md](plan-session-persistence.md) 移除——session 將可由
 > `st_session` 種子重建、跨行程一致。**結論不受影響**：其餘三個理由
 > 與 session 無關，per-request 驗證仍是正解。但原理由 2 的論證已反轉（屆時交換式反而可行），
 > 故改寫為與 session 實作無關的論據。同理原理由 1 的「從不查 DB」也已不成立，一併修正。
@@ -296,7 +296,7 @@ ping 是連通性檢查，不碰 DB、不回業務資料。排除後健康檢查
 （`待確認 1` 由此收斂）。三個落地約束：
 
 1. **獨立豁免清單，不重用 `NoAuthMethods`**。
-   [`ApiAuthorizationValidator.NoAuthMethods`](../../src/Bee.Api.Core/Authorization/ApiAuthorizationValidator.cs)
+   [`ApiAuthorizationValidator.NoAuthMethods`](../../../src/Bee.Api.Core/Authorization/ApiAuthorizationValidator.cs)
    是 **Bearer 豁免**清單（含 `System.Login` 與 `System.GetApiPayloadOptions`），與金鑰是不同軸；
    合用會一次放掉三個：`Login` 恰恰**最需要**金鑰（階段 2 要記「哪個 app 在嘗試登入」），
    `GetApiPayloadOptions` 揭露 payload / 加密協商設定、不是連通性檢查。新清單預設**只有
@@ -321,7 +321,7 @@ ping 是連通性檢查，不碰 DB、不回業務資料。排除後健康檢查
 
    副作用是 ping 成為「金鑰是否有效」的 oracle——以 D2 的 256-bit secret 而言無實際可利用性
    （攻擊者須先持有完整金鑰），此判斷要寫進註解，別讓後人誤以為是疏漏。
-3. **`Version` 改為金鑰有效才回**。[`SystemBusinessObject.Ping`](../../src/Bee.Business/System/SystemBusinessObject.cs)
+3. **`Version` 改為金鑰有效才回**。[`SystemBusinessObject.Ping`](../../../src/Bee.Business/System/SystemBusinessObject.cs)
    現在無條件回 `SysInfo.Version`；免金鑰後等於對全網公開框架版本（fingerprinting 起手式）。
    `Status` / `ServerTime` 對連通性檢查已足夠；監控要版本號的話本來就該帶金鑰。
 
@@ -439,7 +439,7 @@ build 0w/0e、`./test.sh` 全綠（新增 7 個測試）。與計畫的差異：
 #### D10：不走 FormSchema CRUD（定案）
 
 泛用 Form 路徑上**沒有位置掛部署層授權**——把關者 `IDeploymentAuthorizationService` 只接在
-`SystemBO`。[FormBusinessObject.Authorize](../../src/Bee.Business/Form/FormBusinessObject.Permission.cs)
+`SystemBO`。[FormBusinessObject.Authorize](../../../src/Bee.Business/Form/FormBusinessObject.Permission.cs)
 的兩條路都是死的：
 
 | FormSchema 怎麼標 | 結果 |
@@ -466,7 +466,7 @@ FormSchema 就會經 `GetList` 送到前端（讀取端沒有 `ProtectedFields` 
 `ApiKeyGateCache` 一併失效。
 
 > **訂正（2026-08-03）**：本條初稿寫「目前沒有任何 `Touch`」，**不正確**——
-> [`ApiKeyRepository.Insert`](../../src/Bee.Repository/System/ApiKeyRepository.cs) 早已在同一交易內
+> [`ApiKeyRepository.Insert`](../../../src/Bee.Repository/System/ApiKeyRepository.cs) 早已在同一交易內
 > `Touch` 金鑰與閘門兩個鍵。本條的要求因此不是「補上一個缺失的機制」，而是
 > **新增的寫入方法必須沿用 `Insert` 已經建立的形狀**。
 
@@ -564,7 +564,7 @@ breaking，故保留原名並在類別註解說明它承載兩個值。
 2. ~~**金鑰是否綁 CompanyId**~~ —— **已決策（2026-07-30）：不綁**，維持金鑰只識別應用。
    一旦金鑰帶公司語意，就與 session 公司情境形成兩個來源、需交叉驗證。
 
-   與 [plan-row-level-tenancy.md](plan-row-level-tenancy.md) **正交無衝突**：`st_api_key` 是
+   與 [plan-row-level-tenancy.md](../plan-row-level-tenancy.md) **正交無衝突**：`st_api_key` 是
    common scope 表，`sys_company_id` 只作用於 company 表。租賃（pooled）模式下公司情境仍來自
    session，此決策不受影響。
 

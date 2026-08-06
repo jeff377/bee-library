@@ -13,7 +13,7 @@
 > 掛載點：`BeforeSave` / `AfterSave` / `BeforeDelete` / `AfterDelete` 四個（D2）。
 > **其他 BO 方法不拆三段**（2026-08-05 裁決，見
 > [BO 擴充點的交易邊界契約](plan-bo-transaction-contract.md) D4），可掛載的範圍因此已封閉。
-> 相關：[客製 BO / Repository 類別](plan-customization-business.md)｜[客製化共同前置](plan-customization-foundation.md)｜[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)｜[ProgId 型別註冊表](plan-progid-type-registry.md)
+> 相關：[客製 BO / Repository 類別](plan-customization-business.md)｜[客製化共同前置](plan-customization-foundation.md)｜[ADR-016](../../adr/adr-016-multitenant-customization-overlay.md)｜[ProgId 型別註冊表](plan-progid-type-registry.md)
 
 ---
 
@@ -31,7 +31,7 @@
 
 ### 1.1 缺口：擴充只有「繼承整個 BO」一種
 
-[`FormBusinessObject`](../../src/Bee.Business/Form/FormBusinessObject.cs) 的 Save / Delete 各切
+[`FormBusinessObject`](../../../src/Bee.Business/Form/FormBusinessObject.cs) 的 Save / Delete 各切
 三段可覆寫子方法：
 
 ```
@@ -44,7 +44,7 @@ Delete: DoBeforeDelete → DoDelete → [寫刪除稽核] → DoAfterDelete
 
 ### 1.2 客製層目前全面唯讀
 
-[`CustomizeOnlyStorage`](../../src/Bee.Definition/Storage/CustomizeOnlyStorage.cs) 除了四個 getter
+[`CustomizeOnlyStorage`](../../../src/Bee.Definition/Storage/CustomizeOnlyStorage.cs) 除了四個 getter
 之外全部丟 `NotSupportedException`，訊息就是 `The customization-override layer is read-only.`。
 也因為從來不會變，**客製層沒有快取失效機制**。
 
@@ -74,7 +74,7 @@ Delete: DoBeforeDelete → DoDelete → [寫刪除稽核] → DoAfterDelete
    [客製 BO / Repository 類別](plan-customization-business.md) 的欄位級繼承）；plugin 是疊加。
    同一個檔內兩種粒度會讓 overlay 規則說不清。
 3. **`ProgramSettings.xml` 會被框架整檔改寫**：
-   [`ReservedProgIdRegistrationService.Register`](../../src/Bee.Hosting/Registry/ReservedProgIdRegistrationService.cs)
+   [`ReservedProgIdRegistrationService.Register`](../../../src/Bee.Hosting/Registry/ReservedProgIdRegistrationService.cs)
    在缺 reserved progId 時重建整份檔案再存回，程式碼裡已有一段
    `WARNING: every ProgramItem property must be copied here`。把手寫且**有序**的 plugin 鏈放進
    一個會被 wholesale rewrite 的檔案，等於再開一個「漏抄就靜默消失」的坑。
@@ -202,7 +202,7 @@ outbox：在同一個交易內寫一筆待同步記錄，背景 worker 再送—
 任一時點的 plugin 拋例外 → 例外往上拋，`Save` / `Delete` 回報失敗。
 
 要給使用者看的訊息丟
-[`UserMessageException`](../../src/Bee.Base/Exceptions/UserMessageException.cs)——框架既有的業務
+[`UserMessageException`](../../../src/Bee.Base/Exceptions/UserMessageException.cs)——框架既有的業務
 流程中止訊號，規則引擎已在用。plugin 不需要任何新機制。
 
 After 時點的 plugin 失敗時資料已寫入，呼叫端會看到「失敗但資料已存」——文件必須明訂
@@ -250,7 +250,7 @@ API 表面與現有四種客製型別對稱（`DefineType` / `IDefineAccess` / c
 #### 授權：`LocalOnly`，不另設權限
 
 存取方法標 `ApiProtectionLevel.LocalOnly`，比照
-[`SystemBO.SaveDefine`](../../src/Bee.Business/System/SystemBusinessObject.Define.cs)：
+[`SystemBO.SaveDefine`](../../../src/Bee.Business/System/SystemBusinessObject.Define.cs)：
 
 ```csharp
 [ApiAccessControl(ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated)]
@@ -269,7 +269,7 @@ public virtual SaveCustomizePluginSettingsResult SaveCustomizePluginSettings(...
 API 流量，`IsLocalCall` 擋其餘所有進入方式。
 
 「用戶端自行維護」指的是**本機維護工具**（DefineEditor 這類）透過
-[`LocalApiProvider`](../../src/Bee.Api.Client/Providers/LocalApiProvider.cs)（`IsLocalCall = true`）
+[`LocalApiProvider`](../../../src/Bee.Api.Client/Providers/LocalApiProvider.cs)（`IsLocalCall = true`）
 走同一組 API 介面，**不是**遠端 client。這與既有的定義維護模型一致——定義寫入是部署時操作，
 不是應用操作。
 
@@ -282,7 +282,7 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
 
 #### 儲存後端：兩種都支援，多節點限制寫進文件
 
-[`DbDefineStorage`](../../src/Bee.Db/Storage/DbDefineStorage.cs) 同時實作 `IDefineStorage` 與
+[`DbDefineStorage`](../../../src/Bee.Db/Storage/DbDefineStorage.cs) 同時實作 `IDefineStorage` 與
 `ICustomizeDefineReader`，已有 `customize_id` 欄（base 以 `"*"` 為哨兵值）——**客製層的可寫模型
 在 DB backend 上等於已經備好**，且多節點天然共享。
 
@@ -319,7 +319,7 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
 ### G1 — `PluginSettings` 定義型別與讀取管線
 
 - `PluginSettings` / `ProgramPluginItem`（或等價命名）+ 集合型別，依
-  [rules/definition.md](../../.claude/rules/definition.md) 繼承 `KeyCollectionBase<T>`。
+  [rules/definition.md](../../../.claude/rules/definition.md) 繼承 `KeyCollectionBase<T>`。
   命名需通過 CA1724 與跨 UI 撞名檢查。
 - `DefineType` 新增成員（**加在尾端**，wire 值不可重排）。
 - `PathOptions.GetPluginSettingsFilePath()` + `CustomizeOnlyPathOptions` 覆寫。
@@ -373,7 +373,7 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
   base 實作會跑規則引擎，plugin 因此看到的是已算好預設值 / 計算欄的資料。
 - **修正 `DeleteContext.Snapshot` 的載入條件**：目前是
   `if (auditChange || HasBeforeDeleteRules(schema))`
-  （[FormBusinessObject.cs](../../src/Bee.Business/Form/FormBusinessObject.cs)），稽核關閉且 schema
+  （[FormBusinessObject.cs](../../../src/Bee.Business/Form/FormBusinessObject.cs)），稽核關閉且 schema
   無 BeforeDelete 規則時 `Snapshot` 為 `null`。而 `AfterDelete` 做外部系統同步時**一定需要知道刪
   掉的是什麼**（只有 `RowId` 不夠），`BeforeDelete` 擋刪除也常要讀內容。條件必須加上「該 progId
   有沒有 plugin」，否則 plugin 拿到的 context 內容取決於一個與它無關的稽核開關——某些部署正常、
