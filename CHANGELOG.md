@@ -4,6 +4,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.17.0]
+
+> The headline of this release is **business logic plugins** — attaching customer code to the existing flow of a packaged BO without replacing the whole BO class, adding only a step at a specific point. This is the fifth customization mechanism and fills the "lightweight extension" gap; it also brings the customization layer's **first write path** (`PluginSettings` is the only customization definition with a maintenance API). Two customization behaviour fixes ship alongside: `ProgramItem` override semantics move from whole-item replacement to **property-level inheritance**, and BO type resolution failure now **falls back and logs** — both surfaced only after `ProgramItem` gained its `Repository` binding in 4.16.0.
+
+📄 Full notes and design context: [docs/changelogs/4.17.0.md](docs/changelogs/4.17.0.md)
+
+### Added
+
+- `Bee.Definition`: new `PluginSettings` definition type (the 13th `DefineType` member, appended to the enum) with its full read pipeline — paths, three storages, cache, reader, overlay.
+- `Bee.Business`: new `FormBusinessPlugin` base and four mount points (`BeforeSave` / `AfterSave` / `BeforeDelete` / `AfterDelete`), executed after the final implementation of each `Do*` sub-method — **composable with inheritance**. [ADR-035](docs/adr/adr-035-business-logic-plugin.md)
+- `Bee.Business`: new `FormPluginChain` / `FormPluginRunner` / `IFormPluginResolver` / `PluginSettingsResolver` — **the two layers add** (packaged first, tenant after), **per-operation instances**, resolution failure always throws.
+- `Bee.Business`: new `SystemBO.GetCustomizePluginSettings` / `SaveCustomizePluginSettings` (`LocalOnly`), **validating every type before the write** — loadable, derives from `FormBusinessPlugin`, overrides at least one point.
+- `Bee.Definition`: new `ICustomizeDefineWriter` and `CustomizeDefineWriter` — the customization layer's first write path, evicting that tenant's cache slot on write.
+- `Bee.Business`: `BusinessObject` gains `protected IBeeContext Context`.
+- New [tenant customization guide](docs/customization.md) (bilingual): a decision table for the five mechanisms, how-tos for language and layout, and what cannot be customized and why.
+
+### Changed
+
+- `Bee.Definition`: `ProgramItem` customization override moves from **whole-item replacement** to **property-level inheritance** — a customization writes only what it changes; unwritten properties inherit the packaged value. Fixes "swapping only the BO silently drops the packaged Repository". [ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md)
+- `Bee.Business`: BO type resolution failure for a regular progId still falls back to `FormBusinessObject`, but now **logs an error** (with progId, type name, and declaring layer).
+- `Bee.Business`: `DeleteContext.Snapshot` loading now also considers whether the progId has a delete-point plugin, so its presence no longer depends on the change-audit toggle.
+- `Bee.Definition`: `IDefineAccess` / `IDefineStorage` / `ICustomizeDefineReader` **gain `PluginSettings` members** — implementers of these interfaces must add them.
+- `Bee.Db`: `DbDefineStorage.Write` gains a `customizeId` parameter; tenant and base rows differ only by `customize_id`, so no schema change is required.
+- `FormBusinessObject`: the six `Do*` sub-methods gain `<remarks>` stating **whether they run inside the transaction**, documenting the TOCTOU window in `DoBefore*` and "throwing here leaves data committed" in `DoAfter*`. Documentation only, zero behaviour change.
+- `api-bo-contract-design`: naming table gains an `XxxContext` row — `Args`/`Result` for cross-layer transport, `Context` for state shared within a flow.
+
 ## [4.16.0]
 
 > Bee.NET remains in pre-stable evolution. This is the largest release since the changelog began: 227 commits across four themes. **ProgId becomes the framework's single addressing model** — `ProgramSettings` is now a pure type registry binding each progId to its business object *and* its repository, with the navigation menu split into its own definition [ADR-034](docs/adr/adr-034-progid-type-registry.md). **Tenant customization reaches language and layout**, with client and server sharing one overlay algorithm [ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md). **Application identity gets a lifecycle** — API keys are stored, validated and managed behind a deployment-level permission axis. And **framework conventions move to build time** as 22 analyzer rules. Several changes are breaking; they ship as a minor under the pre-stable policy, as there are no external consumers yet. This entry also lists breaking changes made after `v4.15.0` whose commits were not marked `!`.

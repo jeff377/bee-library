@@ -242,6 +242,7 @@ Bee.Definition.DefineType.FormSchema = 5 -> Bee.Definition.DefineType
 Bee.Definition.DefineType.Language = 7 -> Bee.Definition.DefineType
 Bee.Definition.DefineType.MenuSettings = 11 -> Bee.Definition.DefineType
 Bee.Definition.DefineType.PermissionModels = 8 -> Bee.Definition.DefineType
+Bee.Definition.DefineType.PluginSettings = 12 -> Bee.Definition.DefineType
 Bee.Definition.DefineType.ProgramSettings = 3 -> Bee.Definition.DefineType
 Bee.Definition.DefineType.SystemSettings = 0 -> Bee.Definition.DefineType
 Bee.Definition.DefineType.TableSchema = 4 -> Bee.Definition.DefineType
@@ -1504,6 +1505,23 @@ Bee.Definition.Settings.PermissionRuleCollection
 Bee.Definition.Settings.PermissionRuleCollection.PermissionRuleCollection() -> void
 Bee.Definition.Settings.PermissionRuleCollection.PermissionRuleCollection(Bee.Definition.Settings.PermissionModel! model) -> void
 Bee.Definition.Settings.PermissionRuleCollectionExtensions
+Bee.Definition.Settings.PluginItem
+Bee.Definition.Settings.PluginItem.PluginItem() -> void
+Bee.Definition.Settings.PluginItem.PluginItem(string! type) -> void
+Bee.Definition.Settings.PluginItem.Type.get -> string!
+Bee.Definition.Settings.PluginItem.Type.set -> void
+Bee.Definition.Settings.PluginItemCollection
+Bee.Definition.Settings.PluginItemCollection.PluginItemCollection() -> void
+Bee.Definition.Settings.PluginItemCollection.PluginItemCollection(Bee.Definition.Settings.ProgramPluginItem! item) -> void
+Bee.Definition.Settings.PluginItemCollectionExtensions
+Bee.Definition.Settings.PluginSettings
+Bee.Definition.Settings.PluginSettings.GetPluginTypes(string! progId) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Definition.Settings.PluginSettings.Items.get -> Bee.Definition.Settings.ProgramPluginItemCollection?
+Bee.Definition.Settings.PluginSettings.ObjectFilePath.get -> string!
+Bee.Definition.Settings.PluginSettings.PluginSettings() -> void
+Bee.Definition.Settings.PluginSettings.SerializeState.get -> Bee.Base.Serialization.SerializeState
+Bee.Definition.Settings.PluginSettings.SetObjectFilePath(string! filePath) -> void
+Bee.Definition.Settings.PluginSettings.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
 Bee.Definition.Settings.ProgramItem
 Bee.Definition.Settings.ProgramItem.BusinessObject.get -> string!
 Bee.Definition.Settings.ProgramItem.BusinessObject.set -> void
@@ -1519,6 +1537,16 @@ Bee.Definition.Settings.ProgramItemCollection
 Bee.Definition.Settings.ProgramItemCollection.ProgramItemCollection() -> void
 Bee.Definition.Settings.ProgramItemCollection.ProgramItemCollection(Bee.Definition.Settings.ProgramSettings! settings) -> void
 Bee.Definition.Settings.ProgramItemCollectionExtensions
+Bee.Definition.Settings.ProgramPluginItem
+Bee.Definition.Settings.ProgramPluginItem.Plugins.get -> Bee.Definition.Settings.PluginItemCollection?
+Bee.Definition.Settings.ProgramPluginItem.ProgId.get -> string!
+Bee.Definition.Settings.ProgramPluginItem.ProgId.set -> void
+Bee.Definition.Settings.ProgramPluginItem.ProgramPluginItem() -> void
+Bee.Definition.Settings.ProgramPluginItem.ProgramPluginItem(string! progId) -> void
+Bee.Definition.Settings.ProgramPluginItemCollection
+Bee.Definition.Settings.ProgramPluginItemCollection.ProgramPluginItemCollection() -> void
+Bee.Definition.Settings.ProgramPluginItemCollection.ProgramPluginItemCollection(Bee.Definition.Settings.PluginSettings! settings) -> void
+Bee.Definition.Settings.ProgramPluginItemCollectionExtensions
 Bee.Definition.Settings.ProgramSettings
 Bee.Definition.Settings.ProgramSettings.Items.get -> Bee.Definition.Settings.ProgramItemCollection?
 Bee.Definition.Settings.ProgramSettings.ObjectFilePath.get -> string!
@@ -1616,6 +1644,7 @@ Bee.Definition.Storage.CustomizeOnlyStorage.GetFormLayout(string! layoutId) -> B
 Bee.Definition.Storage.CustomizeOnlyStorage.GetFormSchema(string! progId) -> Bee.Definition.Forms.FormSchema?
 Bee.Definition.Storage.CustomizeOnlyStorage.GetLanguage(string! lang, string! ns) -> Bee.Definition.Language.LanguageResource?
 Bee.Definition.Storage.CustomizeOnlyStorage.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings?
+Bee.Definition.Storage.CustomizeOnlyStorage.GetPluginSettings() -> Bee.Definition.Settings.PluginSettings?
 Bee.Definition.Storage.CustomizeOnlyStorage.GetProgramSettings() -> Bee.Definition.Settings.ProgramSettings?
 Bee.Definition.Storage.CustomizeOnlyStorage.GetTableSchema(string! categoryId, string! tableName) -> Bee.Definition.Database.TableSchema?
 Bee.Definition.Storage.CustomizeOnlyStorage.GetUnitSettings() -> Bee.Definition.Settings.UnitSettings?
@@ -1625,6 +1654,7 @@ Bee.Definition.Storage.CustomizeOnlyStorage.SaveFormLayout(Bee.Definition.Layout
 Bee.Definition.Storage.CustomizeOnlyStorage.SaveFormSchema(Bee.Definition.Forms.FormSchema! formSchema) -> void
 Bee.Definition.Storage.CustomizeOnlyStorage.SaveLanguage(Bee.Definition.Language.LanguageResource! resource) -> void
 Bee.Definition.Storage.CustomizeOnlyStorage.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
+Bee.Definition.Storage.CustomizeOnlyStorage.SavePluginSettings(Bee.Definition.Settings.PluginSettings! settings) -> void
 Bee.Definition.Storage.CustomizeOnlyStorage.SaveProgramSettings(Bee.Definition.Settings.ProgramSettings! settings) -> void
 Bee.Definition.Storage.CustomizeOnlyStorage.SaveTableSchema(string! categoryId, Bee.Definition.Database.TableSchema! tableSchema) -> void
 Bee.Definition.Storage.CustomizeOnlyStorage.SaveUnitSettings(Bee.Definition.Settings.UnitSettings! settings) -> void
@@ -1644,6 +1674,7 @@ Bee.Definition.Storage.FileDefineStorage.GetFormLayout(string! layoutId) -> Bee.
 Bee.Definition.Storage.FileDefineStorage.GetFormSchema(string! progId) -> Bee.Definition.Forms.FormSchema?
 Bee.Definition.Storage.FileDefineStorage.GetLanguage(string! lang, string! ns) -> Bee.Definition.Language.LanguageResource?
 Bee.Definition.Storage.FileDefineStorage.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings?
+Bee.Definition.Storage.FileDefineStorage.GetPluginSettings() -> Bee.Definition.Settings.PluginSettings?
 Bee.Definition.Storage.FileDefineStorage.GetProgramSettings() -> Bee.Definition.Settings.ProgramSettings?
 Bee.Definition.Storage.FileDefineStorage.GetTableSchema(string! categoryId, string! tableName) -> Bee.Definition.Database.TableSchema?
 Bee.Definition.Storage.FileDefineStorage.GetUnitSettings() -> Bee.Definition.Settings.UnitSettings?
@@ -1653,6 +1684,7 @@ Bee.Definition.Storage.FileDefineStorage.SaveFormLayout(Bee.Definition.Layouts.F
 Bee.Definition.Storage.FileDefineStorage.SaveFormSchema(Bee.Definition.Forms.FormSchema! formSchema) -> void
 Bee.Definition.Storage.FileDefineStorage.SaveLanguage(Bee.Definition.Language.LanguageResource! resource) -> void
 Bee.Definition.Storage.FileDefineStorage.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
+Bee.Definition.Storage.FileDefineStorage.SavePluginSettings(Bee.Definition.Settings.PluginSettings! settings) -> void
 Bee.Definition.Storage.FileDefineStorage.SaveProgramSettings(Bee.Definition.Settings.ProgramSettings! settings) -> void
 Bee.Definition.Storage.FileDefineStorage.SaveTableSchema(string! categoryId, Bee.Definition.Database.TableSchema! tableSchema) -> void
 Bee.Definition.Storage.FileDefineStorage.SaveUnitSettings(Bee.Definition.Settings.UnitSettings! settings) -> void
@@ -1660,7 +1692,10 @@ Bee.Definition.Storage.ICustomizeDefineReader
 Bee.Definition.Storage.ICustomizeDefineReader.GetCustomizeFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?
 Bee.Definition.Storage.ICustomizeDefineReader.GetCustomizeLanguage(string! customizeId, string! lang, string! ns) -> Bee.Definition.Language.LanguageResource?
 Bee.Definition.Storage.ICustomizeDefineReader.GetCustomizeMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings?
+Bee.Definition.Storage.ICustomizeDefineReader.GetCustomizePluginSettings(string! customizeId) -> Bee.Definition.Settings.PluginSettings?
 Bee.Definition.Storage.ICustomizeDefineReader.GetCustomizeProgramSettings(string! customizeId) -> Bee.Definition.Settings.ProgramSettings?
+Bee.Definition.Storage.ICustomizeDefineWriter
+Bee.Definition.Storage.ICustomizeDefineWriter.SaveCustomizePluginSettings(string! customizeId, Bee.Definition.Settings.PluginSettings! settings) -> void
 Bee.Definition.Storage.IDefineAccess
 Bee.Definition.Storage.IDefineAccess.FindFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?
 Bee.Definition.Storage.IDefineAccess.GetCurrencySettings() -> Bee.Definition.Settings.CurrencySettings!
@@ -1674,6 +1709,7 @@ Bee.Definition.Storage.IDefineAccess.GetLanguage(string! lang, string! ns) -> Be
 Bee.Definition.Storage.IDefineAccess.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings!
 Bee.Definition.Storage.IDefineAccess.GetMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings!
 Bee.Definition.Storage.IDefineAccess.GetPermissionModels() -> Bee.Definition.Settings.PermissionModels!
+Bee.Definition.Storage.IDefineAccess.GetPluginSettings() -> Bee.Definition.Settings.PluginSettings!
 Bee.Definition.Storage.IDefineAccess.GetProgramSettings() -> Bee.Definition.Settings.ProgramSettings!
 Bee.Definition.Storage.IDefineAccess.GetSystemSettings() -> Bee.Definition.Settings.SystemSettings!
 Bee.Definition.Storage.IDefineAccess.GetTableSchema(string! categoryId, string! tableName) -> Bee.Definition.Database.TableSchema!
@@ -1687,6 +1723,7 @@ Bee.Definition.Storage.IDefineAccess.SaveFormSchema(Bee.Definition.Forms.FormSch
 Bee.Definition.Storage.IDefineAccess.SaveLanguage(Bee.Definition.Language.LanguageResource! resource) -> void
 Bee.Definition.Storage.IDefineAccess.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
 Bee.Definition.Storage.IDefineAccess.SavePermissionModels(Bee.Definition.Settings.PermissionModels! models) -> void
+Bee.Definition.Storage.IDefineAccess.SavePluginSettings(Bee.Definition.Settings.PluginSettings! settings) -> void
 Bee.Definition.Storage.IDefineAccess.SaveProgramSettings(Bee.Definition.Settings.ProgramSettings! settings) -> void
 Bee.Definition.Storage.IDefineAccess.SaveSystemSettings(Bee.Definition.Settings.SystemSettings! settings) -> void
 Bee.Definition.Storage.IDefineAccess.SaveTableSchema(string! categoryId, Bee.Definition.Database.TableSchema! tableSchema) -> void
@@ -1699,6 +1736,7 @@ Bee.Definition.Storage.IDefineStorage.GetFormLayout(string! layoutId) -> Bee.Def
 Bee.Definition.Storage.IDefineStorage.GetFormSchema(string! progId) -> Bee.Definition.Forms.FormSchema?
 Bee.Definition.Storage.IDefineStorage.GetLanguage(string! lang, string! ns) -> Bee.Definition.Language.LanguageResource?
 Bee.Definition.Storage.IDefineStorage.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings?
+Bee.Definition.Storage.IDefineStorage.GetPluginSettings() -> Bee.Definition.Settings.PluginSettings?
 Bee.Definition.Storage.IDefineStorage.GetProgramSettings() -> Bee.Definition.Settings.ProgramSettings?
 Bee.Definition.Storage.IDefineStorage.GetTableSchema(string! categoryId, string! tableName) -> Bee.Definition.Database.TableSchema?
 Bee.Definition.Storage.IDefineStorage.GetUnitSettings() -> Bee.Definition.Settings.UnitSettings?
@@ -1708,6 +1746,7 @@ Bee.Definition.Storage.IDefineStorage.SaveFormLayout(Bee.Definition.Layouts.Form
 Bee.Definition.Storage.IDefineStorage.SaveFormSchema(Bee.Definition.Forms.FormSchema! formSchema) -> void
 Bee.Definition.Storage.IDefineStorage.SaveLanguage(Bee.Definition.Language.LanguageResource! resource) -> void
 Bee.Definition.Storage.IDefineStorage.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
+Bee.Definition.Storage.IDefineStorage.SavePluginSettings(Bee.Definition.Settings.PluginSettings! settings) -> void
 Bee.Definition.Storage.IDefineStorage.SaveProgramSettings(Bee.Definition.Settings.ProgramSettings! settings) -> void
 Bee.Definition.Storage.IDefineStorage.SaveTableSchema(string! categoryId, Bee.Definition.Database.TableSchema! tableSchema) -> void
 Bee.Definition.Storage.IDefineStorage.SaveUnitSettings(Bee.Definition.Settings.UnitSettings! settings) -> void
@@ -1779,6 +1818,7 @@ const Bee.Definition.SystemActions.ExecFuncLocal = "ExecFuncLocal" -> string!
 const Bee.Definition.SystemActions.GetCommonConfiguration = "GetCommonConfiguration" -> string!
 const Bee.Definition.SystemActions.GetCustomizeFormLayout = "GetCustomizeFormLayout" -> string!
 const Bee.Definition.SystemActions.GetCustomizeLanguage = "GetCustomizeLanguage" -> string!
+const Bee.Definition.SystemActions.GetCustomizePluginSettings = "GetCustomizePluginSettings" -> string!
 const Bee.Definition.SystemActions.GetDefine = "GetDefine" -> string!
 const Bee.Definition.SystemActions.GetDepartmentTree = "GetDepartmentTree" -> string!
 const Bee.Definition.SystemActions.GetFormLayout = "GetFormLayout" -> string!
@@ -1789,6 +1829,7 @@ const Bee.Definition.SystemActions.ListApiKeys = "ListApiKeys" -> string!
 const Bee.Definition.SystemActions.Login = "Login" -> string!
 const Bee.Definition.SystemActions.Logout = "Logout" -> string!
 const Bee.Definition.SystemActions.Ping = "Ping" -> string!
+const Bee.Definition.SystemActions.SaveCustomizePluginSettings = "SaveCustomizePluginSettings" -> string!
 const Bee.Definition.SystemActions.SaveDefine = "SaveDefine" -> string!
 const Bee.Definition.SystemActions.SetApiKeyEnabled = "SetApiKeyEnabled" -> string!
 const Bee.Definition.SystemActions.SetApiKeyExpiry = "SetApiKeyExpiry" -> string!
@@ -1804,6 +1845,7 @@ override Bee.Definition.Collections.Property.ToString() -> string!
 override Bee.Definition.CustomizeOnlyPathOptions.GetFormLayoutFilePath(string! layoutId) -> string!
 override Bee.Definition.CustomizeOnlyPathOptions.GetLanguageFilePath(string! lang, string! ns) -> string!
 override Bee.Definition.CustomizeOnlyPathOptions.GetMenuSettingsFilePath() -> string!
+override Bee.Definition.CustomizeOnlyPathOptions.GetPluginSettingsFilePath() -> string!
 override Bee.Definition.CustomizeOnlyPathOptions.GetProgramSettingsFilePath() -> string!
 override Bee.Definition.Database.DbField.ToString() -> string!
 override Bee.Definition.Database.DbTableIndex.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
@@ -1882,7 +1924,10 @@ override Bee.Definition.Settings.MenuFolder.ToString() -> string!
 override Bee.Definition.Settings.PermissionModel.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
 override Bee.Definition.Settings.PermissionModel.ToString() -> string!
 override Bee.Definition.Settings.PermissionRule.ToString() -> string!
+override Bee.Definition.Settings.PluginItem.ToString() -> string!
 override Bee.Definition.Settings.ProgramItem.ToString() -> string!
+override Bee.Definition.Settings.ProgramPluginItem.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+override Bee.Definition.Settings.ProgramPluginItem.ToString() -> string!
 override Bee.Definition.Settings.SecurityKeySettings.ToString() -> string!
 override Bee.Definition.Settings.SessionCleanupOptions.ToString() -> string!
 override Bee.Definition.Settings.SystemSettings.ToString() -> string!
@@ -1894,6 +1939,7 @@ static Bee.Definition.Collections.ParameterCollectionExtensions.Add(this Bee.Def
 static Bee.Definition.Collections.PropertyCollectionExtensions.Add(this Bee.Definition.Collections.PropertyCollection? collection, string! name, string! value) -> void
 static Bee.Definition.Customization.CustomizeOverlay.FindProgramItem(Bee.Definition.Settings.ProgramSettings? customize, Bee.Definition.Settings.ProgramSettings? base, string! progId) -> Bee.Definition.Settings.ProgramItem?
 static Bee.Definition.Customization.CustomizeOverlay.GetLangEnum(Bee.Definition.Language.LanguageResource? customize, Bee.Definition.Language.LanguageResource? base, string! enumName) -> Bee.Definition.Language.LanguageEnum?
+static Bee.Definition.Customization.CustomizeOverlay.GetPluginTypes(Bee.Definition.Settings.PluginSettings? customize, Bee.Definition.Settings.PluginSettings? base, string! progId) -> System.Collections.Generic.IReadOnlyList<string!>!
 static Bee.Definition.Customization.CustomizeOverlay.PickFormLayout(Bee.Definition.Layouts.FormLayout? customize, Bee.Definition.Layouts.FormLayout? base) -> Bee.Definition.Layouts.FormLayout?
 static Bee.Definition.Customization.CustomizeOverlay.PickMenuSettings(Bee.Definition.Settings.MenuSettings? customize, Bee.Definition.Settings.MenuSettings? base) -> Bee.Definition.Settings.MenuSettings?
 static Bee.Definition.Customization.CustomizeOverlay.TryGetLangText(Bee.Definition.Language.LanguageResource? customize, Bee.Definition.Language.LanguageResource? base, string! subKey, out string! text) -> bool
@@ -1978,7 +2024,9 @@ static Bee.Definition.Settings.MenuNodeCollectionExtensions.AddFolder(this Bee.D
 static Bee.Definition.Settings.PermissionBindingValidator.Validate(System.Collections.Generic.IEnumerable<Bee.Definition.Forms.FormSchema!>! schemas, Bee.Definition.Settings.PermissionModels! models) -> System.Collections.Generic.IReadOnlyList<string!>!
 static Bee.Definition.Settings.PermissionModelCollectionExtensions.Add(this Bee.Definition.Settings.PermissionModelCollection? collection, string! modelId, string! displayName) -> Bee.Definition.Settings.PermissionModel!
 static Bee.Definition.Settings.PermissionRuleCollectionExtensions.Add(this Bee.Definition.Settings.PermissionRuleCollection? collection, Bee.Definition.Settings.PermissionAction action, Bee.Definition.Settings.ScopeStrategy scope = Bee.Definition.Settings.ScopeStrategy.Inherit) -> Bee.Definition.Settings.PermissionRule!
+static Bee.Definition.Settings.PluginItemCollectionExtensions.Add(this Bee.Definition.Settings.PluginItemCollection? collection, string! type) -> Bee.Definition.Settings.PluginItem!
 static Bee.Definition.Settings.ProgramItemCollectionExtensions.Add(this Bee.Definition.Settings.ProgramItemCollection? collection, string! progId, string! displayName) -> Bee.Definition.Settings.ProgramItem!
+static Bee.Definition.Settings.ProgramPluginItemCollectionExtensions.Add(this Bee.Definition.Settings.ProgramPluginItemCollection? collection, string! progId) -> Bee.Definition.Settings.ProgramPluginItem!
 static Bee.Definition.Settings.ProgramSettingsFormat.EnsureCurrentFormat(string! xml, string! source) -> void
 static Bee.Definition.Settings.ProgramSettingsFormat.IsLegacyFormat(string! xml) -> bool
 static Bee.Definition.Storage.DefineChangeSource.None.get -> Bee.Definition.Storage.DefineChangeSource
@@ -1998,6 +2046,7 @@ virtual Bee.Definition.Logging.AuditEntry.AddCommonColumns(System.Collections.Ge
 virtual Bee.Definition.PathOptions.GetFormLayoutFilePath(string! layoutId) -> string!
 virtual Bee.Definition.PathOptions.GetLanguageFilePath(string! lang, string! ns) -> string!
 virtual Bee.Definition.PathOptions.GetMenuSettingsFilePath() -> string!
+virtual Bee.Definition.PathOptions.GetPluginSettingsFilePath() -> string!
 virtual Bee.Definition.PathOptions.GetProgramSettingsFilePath() -> string!
 ~override Bee.Definition.Logging.AuditColumn.Equals(object obj) -> bool
 ~override Bee.Definition.Logging.AuditColumn.ToString() -> string

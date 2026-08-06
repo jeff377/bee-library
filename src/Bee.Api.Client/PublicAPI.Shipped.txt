@@ -56,12 +56,14 @@ Bee.Api.Client.Connectors.SystemApiConnector.ExecFuncAnonymousAsync(Bee.Api.Core
 Bee.Api.Client.Connectors.SystemApiConnector.ExecFuncAsync(Bee.Api.Core.Messages.ExecFuncRequest! args) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.ExecFuncResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.ExecFuncLocalAsync(Bee.Api.Core.Messages.ExecFuncRequest! args) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.ExecFuncResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.ExecuteAsync<T>(string! action, object! value, Bee.Api.Core.Messages.PayloadFormat format = Bee.Api.Core.Messages.PayloadFormat.Encrypted) -> System.Threading.Tasks.Task<T>!
+Bee.Api.Client.Connectors.SystemApiConnector.GetCustomizePluginSettingsAsync(string! customizeId) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.GetCustomizePluginSettingsResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.InitializeAsync() -> System.Threading.Tasks.Task!
 Bee.Api.Client.Connectors.SystemApiConnector.LeaveCompanyAsync() -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.LeaveCompanyResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.ListApiKeysAsync() -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.ListApiKeysResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.LoginAsync(string! userID, string! password) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.LoginResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.LogoutAsync() -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.LogoutResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.PingAsync() -> System.Threading.Tasks.Task!
+Bee.Api.Client.Connectors.SystemApiConnector.SaveCustomizePluginSettingsAsync(string! customizeId, string! xml) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.SaveDefineAsync(Bee.Definition.DefineType defineType, object! defineObject, string![]? keys = null) -> System.Threading.Tasks.Task!
 Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyEnabledAsync(string! sysId, bool enabled) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetApiKeyEnabledResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyExpiryAsync(string! sysId, System.DateTime? expiredAt) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse!>!

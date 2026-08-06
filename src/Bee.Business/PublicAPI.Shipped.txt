@@ -156,6 +156,7 @@ Bee.Business.BusinessObject.ApiKeyValidation.get -> Bee.Definition.Security.ApiK
 Bee.Business.BusinessObject.ApiKeyValidation.set -> void
 Bee.Business.BusinessObject.BoFactory.get -> Bee.Definition.IBusinessObjectFactory!
 Bee.Business.BusinessObject.BusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = true) -> void
+Bee.Business.BusinessObject.Context.get -> Bee.Definition.IBeeContext!
 Bee.Business.BusinessObject.CreateDataFormRepository(string! progId) -> Bee.Repository.Abstractions.Form.IDataFormRepository!
 Bee.Business.BusinessObject.CreateFormRepository<T>() -> T!
 Bee.Business.BusinessObject.CreateFormRepository<T>(string! progId) -> T!
@@ -213,6 +214,28 @@ Bee.Business.Form.DeleteResult.RowsAffected.get -> int
 Bee.Business.Form.DeleteResult.RowsAffected.set -> void
 Bee.Business.Form.FormBusinessObject
 Bee.Business.Form.FormBusinessObject.FormBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = true) -> void
+Bee.Business.Form.FormBusinessPlugin
+Bee.Business.Form.FormBusinessPlugin.AccessToken.get -> System.Guid
+Bee.Business.Form.FormBusinessPlugin.Context.get -> Bee.Definition.IBeeContext!
+Bee.Business.Form.FormBusinessPlugin.FormBusinessPlugin(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId) -> void
+Bee.Business.Form.FormBusinessPlugin.ProgId.get -> string!
+Bee.Business.Form.FormPluginChain
+Bee.Business.Form.FormPluginChain.CreateRunner(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId) -> Bee.Business.Form.FormPluginRunner!
+Bee.Business.Form.FormPluginChain.HasStage(Bee.Business.Form.FormPluginStage stage) -> bool
+Bee.Business.Form.FormPluginChain.IsEmpty.get -> bool
+Bee.Business.Form.FormPluginChain.Types.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Bee.Business.Form.FormPluginChain.TypesForStage(Bee.Business.Form.FormPluginStage stage) -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Bee.Business.Form.FormPluginRunner
+Bee.Business.Form.FormPluginRunner.Chain.get -> Bee.Business.Form.FormPluginChain!
+Bee.Business.Form.FormPluginRunner.RunAfterDelete(Bee.Business.Form.DeleteContext! context) -> void
+Bee.Business.Form.FormPluginRunner.RunAfterSave(Bee.Business.Form.SaveContext! context) -> void
+Bee.Business.Form.FormPluginRunner.RunBeforeDelete(Bee.Business.Form.DeleteContext! context) -> void
+Bee.Business.Form.FormPluginRunner.RunBeforeSave(Bee.Business.Form.SaveContext! context) -> void
+Bee.Business.Form.FormPluginStage
+Bee.Business.Form.FormPluginStage.AfterDelete = 3 -> Bee.Business.Form.FormPluginStage
+Bee.Business.Form.FormPluginStage.AfterSave = 1 -> Bee.Business.Form.FormPluginStage
+Bee.Business.Form.FormPluginStage.BeforeDelete = 2 -> Bee.Business.Form.FormPluginStage
+Bee.Business.Form.FormPluginStage.BeforeSave = 0 -> Bee.Business.Form.FormPluginStage
 Bee.Business.Form.FormRuleProcessor
 Bee.Business.Form.FormRuleProcessor.ApplyBeforeDelete(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! snapshot, string! timeZoneId = "") -> void
 Bee.Business.Form.FormRuleProcessor.ApplyBeforeSave(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! dataSet, Bee.Definition.RoundingContext! roundingContext, string! timeZoneId = "") -> void
@@ -266,9 +289,15 @@ Bee.Business.Form.IFormBusinessObject.GetList(Bee.Business.Form.GetListArgs! arg
 Bee.Business.Form.IFormBusinessObject.GetLookup(Bee.Business.Form.GetLookupArgs! args) -> Bee.Business.Form.GetLookupResult!
 Bee.Business.Form.IFormBusinessObject.GetNewData(Bee.Business.Form.GetNewDataArgs! args) -> Bee.Business.Form.GetNewDataResult!
 Bee.Business.Form.IFormBusinessObject.Save(Bee.Business.Form.SaveArgs! args) -> Bee.Business.Form.SaveResult!
+Bee.Business.Form.IFormPluginResolver
+Bee.Business.Form.IFormPluginResolver.Resolve(string! customizeId, string! progId) -> Bee.Business.Form.FormPluginChain!
 Bee.Business.Form.IFormRuleProcessor
 Bee.Business.Form.IFormRuleProcessor.ApplyBeforeDelete(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! snapshot, string! timeZoneId = "") -> void
 Bee.Business.Form.IFormRuleProcessor.ApplyBeforeSave(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! dataSet, Bee.Definition.RoundingContext! roundingContext, string! timeZoneId = "") -> void
+Bee.Business.Form.PluginSettingsResolver
+Bee.Business.Form.PluginSettingsResolver.PluginSettingsResolver(Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
+Bee.Business.Form.PluginSettingsResolver.PluginSettingsResolver(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Definition.Storage.ICustomizeDefineReader? customizeReader) -> void
+Bee.Business.Form.PluginSettingsResolver.Resolve(string! customizeId, string! progId) -> Bee.Business.Form.FormPluginChain!
 Bee.Business.Form.SaveArgs
 Bee.Business.Form.SaveArgs.DataSet.get -> System.Data.DataSet?
 Bee.Business.Form.SaveArgs.DataSet.set -> void
@@ -302,6 +331,7 @@ Bee.Business.Permission.ScopeResolver.ScopeResolver(Bee.Definition.Identity.ISes
 Bee.Business.ProgramSettingsBoTypeResolver
 Bee.Business.ProgramSettingsBoTypeResolver.ProgramSettingsBoTypeResolver(Bee.Definition.Storage.IDefineAccess! defineAccess) -> void
 Bee.Business.ProgramSettingsBoTypeResolver.ProgramSettingsBoTypeResolver(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Definition.Storage.ICustomizeDefineReader? customizeReader) -> void
+Bee.Business.ProgramSettingsBoTypeResolver.ProgramSettingsBoTypeResolver(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Definition.Storage.ICustomizeDefineReader? customizeReader, Microsoft.Extensions.Logging.ILogger<Bee.Business.ProgramSettingsBoTypeResolver!>? logger) -> void
 Bee.Business.ProgramSettingsBoTypeResolver.Resolve(string! customizeId, string! progId) -> System.Type!
 Bee.Business.ProgramSettingsBoTypeResolver.Resolve(string! progId) -> System.Type!
 Bee.Business.Providers.CacheDataSourceProvider
@@ -417,6 +447,14 @@ Bee.Business.System.GetCommonConfigurationResult
 Bee.Business.System.GetCommonConfigurationResult.CommonConfiguration.get -> string!
 Bee.Business.System.GetCommonConfigurationResult.CommonConfiguration.set -> void
 Bee.Business.System.GetCommonConfigurationResult.GetCommonConfigurationResult() -> void
+Bee.Business.System.GetCustomizePluginSettingsArgs
+Bee.Business.System.GetCustomizePluginSettingsArgs.CustomizeId.get -> string!
+Bee.Business.System.GetCustomizePluginSettingsArgs.CustomizeId.set -> void
+Bee.Business.System.GetCustomizePluginSettingsArgs.GetCustomizePluginSettingsArgs() -> void
+Bee.Business.System.GetCustomizePluginSettingsResult
+Bee.Business.System.GetCustomizePluginSettingsResult.GetCustomizePluginSettingsResult() -> void
+Bee.Business.System.GetCustomizePluginSettingsResult.Xml.get -> string!
+Bee.Business.System.GetCustomizePluginSettingsResult.Xml.set -> void
 Bee.Business.System.GetDefineArgs
 Bee.Business.System.GetDefineArgs.DefineType.get -> Bee.Definition.DefineType
 Bee.Business.System.GetDefineArgs.DefineType.set -> void
@@ -549,6 +587,16 @@ Bee.Business.System.PingResult.TraceId.get -> string?
 Bee.Business.System.PingResult.TraceId.set -> void
 Bee.Business.System.PingResult.Version.get -> string?
 Bee.Business.System.PingResult.Version.set -> void
+Bee.Business.System.SaveCustomizePluginSettingsArgs
+Bee.Business.System.SaveCustomizePluginSettingsArgs.CustomizeId.get -> string!
+Bee.Business.System.SaveCustomizePluginSettingsArgs.CustomizeId.set -> void
+Bee.Business.System.SaveCustomizePluginSettingsArgs.SaveCustomizePluginSettingsArgs() -> void
+Bee.Business.System.SaveCustomizePluginSettingsArgs.Xml.get -> string!
+Bee.Business.System.SaveCustomizePluginSettingsArgs.Xml.set -> void
+Bee.Business.System.SaveCustomizePluginSettingsResult
+Bee.Business.System.SaveCustomizePluginSettingsResult.PluginCount.get -> int
+Bee.Business.System.SaveCustomizePluginSettingsResult.PluginCount.set -> void
+Bee.Business.System.SaveCustomizePluginSettingsResult.SaveCustomizePluginSettingsResult() -> void
 Bee.Business.System.SaveDefineArgs
 Bee.Business.System.SaveDefineArgs.DefineType.get -> Bee.Definition.DefineType
 Bee.Business.System.SaveDefineArgs.DefineType.set -> void
@@ -616,6 +664,8 @@ static Bee.Business.BusinessObjectFactoryExtensions.CreateFormBO(this Bee.Defini
 static Bee.Business.BusinessObjectFactoryExtensions.CreateLogBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.AuditLog.ILogBusinessObject!
 static Bee.Business.BusinessObjectFactoryExtensions.CreateSystemBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.System.ISystemBusinessObject!
 static Bee.Business.ExecFuncHandlerExtensions.InvokeExecFunc(this Bee.Business.IExecFuncHandler! handler, Bee.Definition.Security.ApiAccessRequirement currentRequirement, Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
+static Bee.Business.Form.FormPluginChain.Create(System.Collections.Generic.IReadOnlyList<System.Type!>! types) -> Bee.Business.Form.FormPluginChain!
+static Bee.Business.Form.FormPluginChain.Empty.get -> Bee.Business.Form.FormPluginChain!
 static Bee.Business.Providers.DerivedApiEncryptionKeyProvider.FromMasterKey(byte[]! masterKey) -> Bee.Business.Providers.DerivedApiEncryptionKeyProvider!
 static Bee.Business.ReservedProgIdBinding.operator !=(Bee.Business.ReservedProgIdBinding? left, Bee.Business.ReservedProgIdBinding? right) -> bool
 static Bee.Business.ReservedProgIdBinding.operator ==(Bee.Business.ReservedProgIdBinding? left, Bee.Business.ReservedProgIdBinding? right) -> bool
@@ -647,6 +697,10 @@ virtual Bee.Business.Form.FormBusinessObject.GetLookup(Bee.Business.Form.GetLook
 virtual Bee.Business.Form.FormBusinessObject.GetLookupFilter() -> Bee.Definition.Filters.FilterNode?
 virtual Bee.Business.Form.FormBusinessObject.GetNewData(Bee.Business.Form.GetNewDataArgs! args) -> Bee.Business.Form.GetNewDataResult!
 virtual Bee.Business.Form.FormBusinessObject.Save(Bee.Business.Form.SaveArgs! args) -> Bee.Business.Form.SaveResult!
+virtual Bee.Business.Form.FormBusinessPlugin.AfterDelete(Bee.Business.Form.DeleteContext! context) -> void
+virtual Bee.Business.Form.FormBusinessPlugin.AfterSave(Bee.Business.Form.SaveContext! context) -> void
+virtual Bee.Business.Form.FormBusinessPlugin.BeforeDelete(Bee.Business.Form.DeleteContext! context) -> void
+virtual Bee.Business.Form.FormBusinessPlugin.BeforeSave(Bee.Business.Form.SaveContext! context) -> void
 virtual Bee.Business.System.SystemBusinessObject.ApplyUserLocale(Bee.Definition.Identity.SessionInfo! sessionInfo) -> void
 virtual Bee.Business.System.SystemBusinessObject.AuthenticateUser(Bee.Business.System.LoginArgs! args, out string! userName) -> bool
 virtual Bee.Business.System.SystemBusinessObject.CheckPackageUpdate(Bee.Business.System.CheckPackageUpdateArgs! args) -> Bee.Business.System.CheckPackageUpdateResult!
@@ -656,6 +710,7 @@ virtual Bee.Business.System.SystemBusinessObject.EnterCompany(Bee.Business.Syste
 virtual Bee.Business.System.SystemBusinessObject.GetCommonConfiguration(Bee.Business.System.GetCommonConfigurationArgs! args) -> Bee.Business.System.GetCommonConfigurationResult!
 virtual Bee.Business.System.SystemBusinessObject.GetCustomizeFormLayout(Bee.Business.System.GetFormLayoutArgs! args) -> Bee.Business.System.GetFormLayoutResult!
 virtual Bee.Business.System.SystemBusinessObject.GetCustomizeLanguage(Bee.Business.System.GetLanguageArgs! args) -> Bee.Business.System.GetLanguageResult!
+virtual Bee.Business.System.SystemBusinessObject.GetCustomizePluginSettings(Bee.Business.System.GetCustomizePluginSettingsArgs! args) -> Bee.Business.System.GetCustomizePluginSettingsResult!
 virtual Bee.Business.System.SystemBusinessObject.GetDefine(Bee.Business.System.GetDefineArgs! args) -> Bee.Business.System.GetDefineResult!
 virtual Bee.Business.System.SystemBusinessObject.GetDepartmentTree(Bee.Business.System.GetDepartmentTreeArgs! args) -> Bee.Business.System.GetDepartmentTreeResult!
 virtual Bee.Business.System.SystemBusinessObject.GetFormLayout(Bee.Business.System.GetFormLayoutArgs! args) -> Bee.Business.System.GetFormLayoutResult!
@@ -667,6 +722,7 @@ virtual Bee.Business.System.SystemBusinessObject.ListApiKeys(Bee.Business.System
 virtual Bee.Business.System.SystemBusinessObject.Login(Bee.Business.System.LoginArgs! args) -> Bee.Business.System.LoginResult!
 virtual Bee.Business.System.SystemBusinessObject.Logout(Bee.Business.System.LogoutArgs! args) -> Bee.Business.System.LogoutResult!
 virtual Bee.Business.System.SystemBusinessObject.Ping(Bee.Business.System.PingArgs! args) -> Bee.Business.System.PingResult!
+virtual Bee.Business.System.SystemBusinessObject.SaveCustomizePluginSettings(Bee.Business.System.SaveCustomizePluginSettingsArgs! args) -> Bee.Business.System.SaveCustomizePluginSettingsResult!
 virtual Bee.Business.System.SystemBusinessObject.SaveDefine(Bee.Business.System.SaveDefineArgs! args) -> Bee.Business.System.SaveDefineResult!
 virtual Bee.Business.System.SystemBusinessObject.SetApiKeyEnabled(Bee.Business.System.SetApiKeyEnabledArgs! args) -> Bee.Business.System.SetApiKeyEnabledResult!
 virtual Bee.Business.System.SystemBusinessObject.SetApiKeyExpiry(Bee.Business.System.SetApiKeyExpiryArgs! args) -> Bee.Business.System.SetApiKeyExpiryResult!

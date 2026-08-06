@@ -4,6 +4,32 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.17.0]
+
+> 本版主線是**業務邏輯 plugin**——在套裝 BO 的既有流程上掛載客製程式碼，不換掉整個 BO 類別，只在特定時點追加一段。這是客製化的第五種機制，補上「輕量擴充」這一格；同時帶來客製層的**第一條寫入路徑**（`PluginSettings` 是唯一有維護 API 的客製定義）。另有兩項客製化行為修正：`ProgramItem` 覆寫由「整筆取代」改為**屬性級繼承**、BO 型別解析失敗改為**降級並記錄**——兩者都是 `ProgramItem` 於 4.16.0 新增 `Repository` 綁定後才浮現的問題。
+
+📄 完整說明與設計脈絡：[docs/changelogs/4.17.0.zh-TW.md](docs/changelogs/4.17.0.zh-TW.md)
+
+### 新增
+
+- `Bee.Definition`：新增 `PluginSettings` 定義型別（`DefineType` 第 13 個成員，加在列舉尾端）與完整讀取管線——路徑、三個 storage、快取、reader、overlay。
+- `Bee.Business`：新增 `FormBusinessPlugin` 基底與四個掛載點（`BeforeSave` / `AfterSave` / `BeforeDelete` / `AfterDelete`），在各 `Do*` 子方法的最終實作之後執行，**與繼承可疊著用**。[ADR-035](docs/adr/adr-035-business-logic-plugin.md)
+- `Bee.Business`：新增 `FormPluginChain` / `FormPluginRunner` / `IFormPluginResolver` / `PluginSettingsResolver`——**兩層相加**（套裝在前、客製在後）、**per-operation 實例**、解析失敗一律拋。
+- `Bee.Business`：新增 `SystemBO.GetCustomizePluginSettings` / `SaveCustomizePluginSettings`（`LocalOnly`），**寫入前逐一驗證**型別可載入、繼承 `FormBusinessPlugin`、且至少 override 一個時點。
+- `Bee.Definition`：新增 `ICustomizeDefineWriter` 與 `CustomizeDefineWriter`——客製層的第一條寫入路徑，寫完即 evict 該租戶 cache slot。
+- `Bee.Business`：`BusinessObject` 新增 `protected IBeeContext Context`。
+- 新增[租戶客製化指引](docs/customization.zh-TW.md)（雙語）：五種客製的決策表、語系與 Layout 的 how-to、以及不能客製什麼與為什麼。
+
+### 變更
+
+- `Bee.Definition`：`ProgramItem` 的客製覆寫由**整筆取代**改為**屬性級繼承**——客製只寫要改的屬性，未寫的沿用套裝。修正「只換 BO 卻無聲打掉套裝專屬 Repository」。[ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md)
+- `Bee.Business`：一般 progId 的 BO 型別解析失敗維持降級到 `FormBusinessObject`，但改為**記錄 error**（訊息帶 progId、型別名與宣告層）。
+- `Bee.Business`：`DeleteContext.Snapshot` 的載入條件加入「該 progId 有 delete 時點的 plugin」，避免其有無取決於變更稽核開關。
+- `Bee.Definition`：`IDefineAccess` / `IDefineStorage` / `ICustomizeDefineReader` **新增 `PluginSettings` 相關成員**——自行實作這些介面者需補上。
+- `Bee.Db`：`DbDefineStorage.Write` 新增 `customizeId` 參數；租戶列與 base 列僅差 `customize_id`，無需 schema 變更。
+- `FormBusinessObject`：六個 `Do*` 子方法補 `<remarks>` 標明**是否在交易中**，並寫明 `DoBefore*` 的 TOCTOU 空窗與 `DoAfter*` 的「拋例外時資料已提交」。純文件、零行為變更。
+- `api-bo-contract-design`：命名表補 `XxxContext` 一列——跨層傳輸用 `Args`/`Result`，流程內共享狀態用 `Context`。
+
 ## [4.16.0]
 
 > Bee.NET 仍處 pre-stable 演進階段。本版是 CHANGELOG 開始記錄以來最大的一版：227 個 commit、四條主線。**ProgId 成為框架唯一的定址模型**——`ProgramSettings` 收斂為純型別註冊表，把每個 progId 綁定到它的商業物件**與** Repository，導覽選單分離為獨立定義 [ADR-034](docs/adr/adr-034-progid-type-registry.md)。**多租戶客製化延伸到語系與版面**，前後端共用同一套疊加演算法 [ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md)。**應用程式身分有了生命週期**——API 金鑰可儲存、驗證，並由部署層權限軸把關其管理。以及**框架慣例移到建置期**，成為 22 條 analyzer 規則。數項變更屬破壞性，依 pre-stable 政策以 minor 發佈，因目前尚無外部消費者。本條目並含 `v4.15.0` 之後未在 subject 標 `!` 的破壞性變更。

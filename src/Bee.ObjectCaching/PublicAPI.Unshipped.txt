@@ -1,13 +1,1 @@
 #nullable enable
-Bee.ObjectCaching.CacheContainerService.PluginSettings.get -> Bee.ObjectCaching.Define.PluginSettingsCache!
-Bee.ObjectCaching.CacheDefineAccess.GetPluginSettings() -> Bee.Definition.Settings.PluginSettings!
-Bee.ObjectCaching.CacheDefineAccess.SavePluginSettings(Bee.Definition.Settings.PluginSettings! settings) -> void
-Bee.ObjectCaching.CustomizeDefineReader.GetCustomizePluginSettings(string! customizeId) -> Bee.Definition.Settings.PluginSettings?
-Bee.ObjectCaching.CustomizeDefineWriter
-Bee.ObjectCaching.CustomizeDefineWriter.CustomizeDefineWriter(Bee.ObjectCaching.ICacheContainerProvider! provider, Bee.Definition.PathOptions! paths) -> void
-Bee.ObjectCaching.CustomizeDefineWriter.SaveCustomizePluginSettings(string! customizeId, Bee.Definition.Settings.PluginSettings! settings) -> void
-Bee.ObjectCaching.Define.PluginSettingsCache
-Bee.ObjectCaching.Define.PluginSettingsCache.PluginSettingsCache(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix = "") -> void
-Bee.ObjectCaching.ICacheContainer.PluginSettings.get -> Bee.ObjectCaching.Define.PluginSettingsCache!
-override Bee.ObjectCaching.Define.PluginSettingsCache.CreateInstance() -> Bee.Definition.Settings.PluginSettings?
-override Bee.ObjectCaching.Define.PluginSettingsCache.GetPolicy() -> Bee.ObjectCaching.CacheItemPolicy!

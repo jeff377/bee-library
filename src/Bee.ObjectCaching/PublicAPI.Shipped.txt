@@ -20,6 +20,7 @@ Bee.ObjectCaching.CacheContainerService.FormSchema.get -> Bee.ObjectCaching.Defi
 Bee.ObjectCaching.CacheContainerService.LanguageResource.get -> Bee.ObjectCaching.Define.LanguageResourceCache!
 Bee.ObjectCaching.CacheContainerService.MenuSettings.get -> Bee.ObjectCaching.Define.MenuSettingsCache!
 Bee.ObjectCaching.CacheContainerService.PermissionModels.get -> Bee.ObjectCaching.Define.PermissionModelsCache!
+Bee.ObjectCaching.CacheContainerService.PluginSettings.get -> Bee.ObjectCaching.Define.PluginSettingsCache!
 Bee.ObjectCaching.CacheContainerService.ProgramSettings.get -> Bee.ObjectCaching.Define.ProgramSettingsCache!
 Bee.ObjectCaching.CacheContainerService.SessionInfo.get -> Bee.ObjectCaching.Database.SessionInfoCache!
 Bee.ObjectCaching.CacheContainerService.SystemSettings.get -> Bee.ObjectCaching.Define.SystemSettingsCache!
@@ -41,6 +42,7 @@ Bee.ObjectCaching.CacheDefineAccess.GetLanguage(string! lang, string! ns) -> Bee
 Bee.ObjectCaching.CacheDefineAccess.GetMenuSettings() -> Bee.Definition.Settings.MenuSettings!
 Bee.ObjectCaching.CacheDefineAccess.GetMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings!
 Bee.ObjectCaching.CacheDefineAccess.GetPermissionModels() -> Bee.Definition.Settings.PermissionModels!
+Bee.ObjectCaching.CacheDefineAccess.GetPluginSettings() -> Bee.Definition.Settings.PluginSettings!
 Bee.ObjectCaching.CacheDefineAccess.GetProgramSettings() -> Bee.Definition.Settings.ProgramSettings!
 Bee.ObjectCaching.CacheDefineAccess.GetSystemSettings() -> Bee.Definition.Settings.SystemSettings!
 Bee.ObjectCaching.CacheDefineAccess.GetTableSchema(string! categoryId, string! tableName) -> Bee.Definition.Database.TableSchema!
@@ -54,6 +56,7 @@ Bee.ObjectCaching.CacheDefineAccess.SaveFormSchema(Bee.Definition.Forms.FormSche
 Bee.ObjectCaching.CacheDefineAccess.SaveLanguage(Bee.Definition.Language.LanguageResource! resource) -> void
 Bee.ObjectCaching.CacheDefineAccess.SaveMenuSettings(Bee.Definition.Settings.MenuSettings! settings) -> void
 Bee.ObjectCaching.CacheDefineAccess.SavePermissionModels(Bee.Definition.Settings.PermissionModels! models) -> void
+Bee.ObjectCaching.CacheDefineAccess.SavePluginSettings(Bee.Definition.Settings.PluginSettings! settings) -> void
 Bee.ObjectCaching.CacheDefineAccess.SaveProgramSettings(Bee.Definition.Settings.ProgramSettings! settings) -> void
 Bee.ObjectCaching.CacheDefineAccess.SaveSystemSettings(Bee.Definition.Settings.SystemSettings! settings) -> void
 Bee.ObjectCaching.CacheDefineAccess.SaveTableSchema(string! categoryId, Bee.Definition.Database.TableSchema! tableSchema) -> void
@@ -82,7 +85,11 @@ Bee.ObjectCaching.CustomizeDefineReader.CustomizeDefineReader(Bee.ObjectCaching.
 Bee.ObjectCaching.CustomizeDefineReader.GetCustomizeFormLayout(string! customizeId, string! layoutId) -> Bee.Definition.Layouts.FormLayout?
 Bee.ObjectCaching.CustomizeDefineReader.GetCustomizeLanguage(string! customizeId, string! lang, string! ns) -> Bee.Definition.Language.LanguageResource?
 Bee.ObjectCaching.CustomizeDefineReader.GetCustomizeMenuSettings(string! customizeId) -> Bee.Definition.Settings.MenuSettings?
+Bee.ObjectCaching.CustomizeDefineReader.GetCustomizePluginSettings(string! customizeId) -> Bee.Definition.Settings.PluginSettings?
 Bee.ObjectCaching.CustomizeDefineReader.GetCustomizeProgramSettings(string! customizeId) -> Bee.Definition.Settings.ProgramSettings?
+Bee.ObjectCaching.CustomizeDefineWriter
+Bee.ObjectCaching.CustomizeDefineWriter.CustomizeDefineWriter(Bee.ObjectCaching.ICacheContainerProvider! provider, Bee.Definition.PathOptions! paths) -> void
+Bee.ObjectCaching.CustomizeDefineWriter.SaveCustomizePluginSettings(string! customizeId, Bee.Definition.Settings.PluginSettings! settings) -> void
 Bee.ObjectCaching.Database.ApiKeyCache
 Bee.ObjectCaching.Database.ApiKeyCache.ApiKeyCache(string! cachePrefix = "") -> void
 Bee.ObjectCaching.Database.ApiKeyGateCache
@@ -117,6 +124,8 @@ Bee.ObjectCaching.Define.MenuSettingsCache
 Bee.ObjectCaching.Define.MenuSettingsCache.MenuSettingsCache(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix = "") -> void
 Bee.ObjectCaching.Define.PermissionModelsCache
 Bee.ObjectCaching.Define.PermissionModelsCache.PermissionModelsCache(Bee.Definition.PathOptions! paths, string! cachePrefix = "") -> void
+Bee.ObjectCaching.Define.PluginSettingsCache
+Bee.ObjectCaching.Define.PluginSettingsCache.PluginSettingsCache(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix = "") -> void
 Bee.ObjectCaching.Define.ProgramSettingsCache
 Bee.ObjectCaching.Define.ProgramSettingsCache.ProgramSettingsCache(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix = "") -> void
 Bee.ObjectCaching.Define.SystemSettingsCache
@@ -141,6 +150,7 @@ Bee.ObjectCaching.ICacheContainer.FormSchema.get -> Bee.ObjectCaching.Define.For
 Bee.ObjectCaching.ICacheContainer.LanguageResource.get -> Bee.ObjectCaching.Define.LanguageResourceCache!
 Bee.ObjectCaching.ICacheContainer.MenuSettings.get -> Bee.ObjectCaching.Define.MenuSettingsCache!
 Bee.ObjectCaching.ICacheContainer.PermissionModels.get -> Bee.ObjectCaching.Define.PermissionModelsCache!
+Bee.ObjectCaching.ICacheContainer.PluginSettings.get -> Bee.ObjectCaching.Define.PluginSettingsCache!
 Bee.ObjectCaching.ICacheContainer.ProgramSettings.get -> Bee.ObjectCaching.Define.ProgramSettingsCache!
 Bee.ObjectCaching.ICacheContainer.SessionInfo.get -> Bee.ObjectCaching.Database.SessionInfoCache!
 Bee.ObjectCaching.ICacheContainer.SystemSettings.get -> Bee.ObjectCaching.Define.SystemSettingsCache!
@@ -227,6 +237,8 @@ override Bee.ObjectCaching.Define.MenuSettingsCache.CreateInstance() -> Bee.Defi
 override Bee.ObjectCaching.Define.MenuSettingsCache.GetPolicy() -> Bee.ObjectCaching.CacheItemPolicy!
 override Bee.ObjectCaching.Define.PermissionModelsCache.CreateInstance() -> Bee.Definition.Settings.PermissionModels?
 override Bee.ObjectCaching.Define.PermissionModelsCache.GetPolicy() -> Bee.ObjectCaching.CacheItemPolicy!
+override Bee.ObjectCaching.Define.PluginSettingsCache.CreateInstance() -> Bee.Definition.Settings.PluginSettings?
+override Bee.ObjectCaching.Define.PluginSettingsCache.GetPolicy() -> Bee.ObjectCaching.CacheItemPolicy!
 override Bee.ObjectCaching.Define.ProgramSettingsCache.CreateInstance() -> Bee.Definition.Settings.ProgramSettings?
 override Bee.ObjectCaching.Define.ProgramSettingsCache.GetPolicy() -> Bee.ObjectCaching.CacheItemPolicy!
 override Bee.ObjectCaching.Define.SystemSettingsCache.CreateInstance() -> Bee.Definition.Settings.SystemSettings?

@@ -139,6 +139,10 @@ Bee.Api.Contracts.System.IEnterCompanyResponse.Company.get -> Bee.Definition.Ide
 Bee.Api.Contracts.System.IGetCommonConfigurationRequest
 Bee.Api.Contracts.System.IGetCommonConfigurationResponse
 Bee.Api.Contracts.System.IGetCommonConfigurationResponse.CommonConfiguration.get -> string!
+Bee.Api.Contracts.System.IGetCustomizePluginSettingsRequest
+Bee.Api.Contracts.System.IGetCustomizePluginSettingsRequest.CustomizeId.get -> string!
+Bee.Api.Contracts.System.IGetCustomizePluginSettingsResponse
+Bee.Api.Contracts.System.IGetCustomizePluginSettingsResponse.Xml.get -> string!
 Bee.Api.Contracts.System.IGetDefineRequest
 Bee.Api.Contracts.System.IGetDefineRequest.DefineType.get -> Bee.Definition.DefineType
 Bee.Api.Contracts.System.IGetDefineRequest.Keys.get -> string![]?
@@ -201,6 +205,11 @@ Bee.Api.Contracts.System.IPingResponse.ServerTime.get -> System.DateTime
 Bee.Api.Contracts.System.IPingResponse.Status.get -> string!
 Bee.Api.Contracts.System.IPingResponse.TraceId.get -> string?
 Bee.Api.Contracts.System.IPingResponse.Version.get -> string?
+Bee.Api.Contracts.System.ISaveCustomizePluginSettingsRequest
+Bee.Api.Contracts.System.ISaveCustomizePluginSettingsRequest.CustomizeId.get -> string!
+Bee.Api.Contracts.System.ISaveCustomizePluginSettingsRequest.Xml.get -> string!
+Bee.Api.Contracts.System.ISaveCustomizePluginSettingsResponse
+Bee.Api.Contracts.System.ISaveCustomizePluginSettingsResponse.PluginCount.get -> int
 Bee.Api.Contracts.System.ISaveDefineRequest
 Bee.Api.Contracts.System.ISaveDefineRequest.DefineType.get -> Bee.Definition.DefineType
 Bee.Api.Contracts.System.ISaveDefineRequest.Keys.get -> string![]?

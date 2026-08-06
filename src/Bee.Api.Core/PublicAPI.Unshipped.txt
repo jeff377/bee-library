@@ -1,19 +1,1 @@
 #nullable enable
-Bee.Api.Core.Messages.System.GetCustomizePluginSettingsRequest
-Bee.Api.Core.Messages.System.GetCustomizePluginSettingsRequest.CustomizeId.get -> string!
-Bee.Api.Core.Messages.System.GetCustomizePluginSettingsRequest.CustomizeId.set -> void
-Bee.Api.Core.Messages.System.GetCustomizePluginSettingsRequest.GetCustomizePluginSettingsRequest() -> void
-Bee.Api.Core.Messages.System.GetCustomizePluginSettingsResponse
-Bee.Api.Core.Messages.System.GetCustomizePluginSettingsResponse.GetCustomizePluginSettingsResponse() -> void
-Bee.Api.Core.Messages.System.GetCustomizePluginSettingsResponse.Xml.get -> string!
-Bee.Api.Core.Messages.System.GetCustomizePluginSettingsResponse.Xml.set -> void
-Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsRequest
-Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsRequest.CustomizeId.get -> string!
-Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsRequest.CustomizeId.set -> void
-Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsRequest.SaveCustomizePluginSettingsRequest() -> void
-Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsRequest.Xml.get -> string!
-Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsRequest.Xml.set -> void
-Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsResponse
-Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsResponse.PluginCount.get -> int
-Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsResponse.PluginCount.set -> void
-Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsResponse.SaveCustomizePluginSettingsResponse() -> void
