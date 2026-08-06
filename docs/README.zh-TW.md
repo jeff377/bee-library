@@ -45,6 +45,7 @@
 |------|------|------|------|
 | [端到端開發指引](development-cookbook.zh-TW.md) | 指引 | 長 | 從定義到 API 的核心開發流程：初始化順序、請求管線、ExecFunc 模式、快取失效 |
 | [運算式與規則](expression-rules.zh-TW.md) | 指引 | 短 | 在 FormSchema 以宣告式運算式做欄位運算與存檔/刪除前驗證，取代手寫 BO 程式碼 |
+| [租戶客製化](customization.zh-TW.md) | 指引 | 中 | 讓某一家公司得到不同的標題、版面或行為，而不分岔套裝定義：該用哪一種機制、各自怎麼寫、以及什麼不能客製 |
 | [權限與授權指南](permission-authorization.zh-TW.md) | 指引 | 中 | 兩層授權（動作 gate + record scope）的設定與運作：PermissionModels、`FormField.ScopeRole`、roles/grants 三表、讀取過濾與寫入端權威 re-query；另含部署層授權（管的是整個部署的資產，與公司權限互不授予） |
 | [API 金鑰管理](api-key-management.zh-TW.md) | 指引 | 短 | API 金鑰識別的是「呼叫的應用程式」而非使用者：閘門如何自行啟用、誰能管理金鑰、以及輪替流程 |
 | [JSON-RPC 前端整合指引](jsonrpc-frontend-integration.zh-TW.md) | 指引 | 長 | 從 JavaScript / TypeScript 前端呼叫 JSON-RPC API（前端無 .NET）：wire format、認證流程、TypeScript wrapper |
@@ -84,6 +85,7 @@
 |------|------|
 | **資料庫** | [命名規範](database-naming-conventions.zh-TW.md) · [保留命名](framework-reserved-names.zh-TW.md) · [設定指引](database-settings-guide.zh-TW.md) · [Schema 升級](database-schema-upgrade.zh-TW.md) · [方言差異](database-dialect-differences.zh-TW.md) · [FormMap](formmap.zh-TW.md) |
 | **定義層** | [定義檔全景](definition-files-overview.zh-TW.md) · [架構總覽](architecture-overview.zh-TW.md) · [運算式與規則](expression-rules.zh-TW.md) · [保留命名](framework-reserved-names.zh-TW.md) |
+| **多租戶** | [租戶客製化](customization.zh-TW.md) · [定義檔全景](definition-files-overview.zh-TW.md) · [開發指引](development-cookbook.zh-TW.md) |
 | **API 與前端** | [契約設計](api-bo-contract-design.zh-TW.md) · [API 方法參考](api-method-reference.zh-TW.md) · [JSON-RPC 前端整合](jsonrpc-frontend-integration.zh-TW.md) · [權限與授權](permission-authorization.zh-TW.md) · [API 金鑰管理](api-key-management.zh-TW.md) |
 | **型別與時間** | [時間型別總覽](temporal-types.zh-TW.md) · [時區處理](datetime-timezone.zh-TW.md) |
 | **品質與規範** | [Analyzer 規則](analyzer-rules.zh-TW.md) · [開發限制與反模式](development-constraints.zh-TW.md) · [命名規範](database-naming-conventions.zh-TW.md) |

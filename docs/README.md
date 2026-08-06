@@ -45,6 +45,7 @@ How to actually do a thing.
 |----------|------|--------|-------------|
 | [End-to-End Development Cookbook](development-cookbook.md) | Guide | Long | The core development flow from definition to API: initialization order, request pipeline, ExecFunc pattern, cache invalidation |
 | [Expressions and Rules](expression-rules.md) | Guide | Short | Declarative field computation and pre-save / pre-delete validation in FormSchema, instead of hand-written BO code |
+| [Tenant Customization](customization.md) | Guide | Medium | Giving one company different labels, a different form arrangement or extra behaviour, without forking the base definitions: which mechanism to reach for, how each one is written, and what cannot be customized |
 | [Permission & Authorization](permission-authorization.md) | Guide | Medium | The two-layer authorization model (action gate + record scope): PermissionModels, `FormField.ScopeRole`, the role/grant tables, read filtering and authoritative write-side re-query — plus the separate deployment-level axis for installation-wide assets |
 | [API Key Management](api-key-management.md) | Guide | Short | What an API key identifies (the calling application, not the user), how the gate turns itself on, who may manage keys, and the rotation procedure |
 | [JSON-RPC Frontend Integration](jsonrpc-frontend-integration.md) | Guide | Long | Calling the JSON-RPC API from a JavaScript / TypeScript frontend with no .NET on the client: wire format, auth flow, TypeScript wrapper |
@@ -84,6 +85,7 @@ The same documents, grouped by subject. A document appearing under several topic
 |-------|-----------|
 | **Database** | [Naming Conventions](database-naming-conventions.md) · [Reserved Names](framework-reserved-names.md) · [Settings Guide](database-settings-guide.md) · [Schema Upgrade](database-schema-upgrade.md) · [Dialect Differences](database-dialect-differences.md) · [FormMap](formmap.md) |
 | **Definition layer** | [Definition Files Overview](definition-files-overview.md) · [Architecture Overview](architecture-overview.md) · [Expressions and Rules](expression-rules.md) · [Reserved Names](framework-reserved-names.md) |
+| **Multi-tenancy** | [Tenant Customization](customization.md) · [Definition Files Overview](definition-files-overview.md) · [Development Cookbook](development-cookbook.md) |
 | **API & frontend** | [Contract Design](api-bo-contract-design.md) · [API Method Reference](api-method-reference.md) · [JSON-RPC Frontend Integration](jsonrpc-frontend-integration.md) · [Permission & Authorization](permission-authorization.md) · [API Key Management](api-key-management.md) |
 | **Types & time** | [Temporal Types](temporal-types.md) · [Time Zones](datetime-timezone.md) |
 | **Quality & conventions** | [Analyzer Rules](analyzer-rules.md) · [Development Constraints](development-constraints.md) · [Naming Conventions](database-naming-conventions.md) |
