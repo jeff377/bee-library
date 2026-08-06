@@ -153,24 +153,23 @@ public class EchoBusinessObject : FormBusinessObject
 
 `[ApiAccessControl]` 決定該方法是否對外可達、以及其保護等級。`Public` + `Anonymous` 不需 access token 也不需加密握手 —— 適合當第一次呼叫，**不適合**用在真實資料上。
 
-以 `IFormBoTypeResolver` 把 progId 對應到型別，其餘 progId 一律回退給框架原本的解析：
+progId 與型別的綁定寫在 `ProgramSettings.xml` —— 它是全框架的型別註冊表，不需要寫任何解析程式碼：
 
-```csharp
-public sealed class MyFormBoTypeResolver : IFormBoTypeResolver
-{
-    public Type Resolve(string progId) => progId switch
-    {
-        "Echo" => typeof(EchoBusinessObject),
-        _ => typeof(FormBusinessObject),
-    };
-}
+```xml
+<ProgramSettings>
+  <Items>
+    <ProgramItem ProgId="Echo" DisplayName="Echo"
+                 BusinessObject="MyApp.EchoBusinessObject, MyApp" />
+  </Items>
+</ProgramSettings>
 ```
 
-註冊時機必須在 `AddBeeFramework` **之後** —— 最後註冊者勝出：
+`BusinessObject` 是組件限定型別名。未列出的 progId 一律解析為框架預設的 `FormBusinessObject`，
+因此**只有需要自訂邏輯的 progId 才要寫進來**。同一筆還可用 `Repository` 屬性綁定專屬的
+Repository，兩個屬性彼此獨立。
 
-```csharp
-builder.Services.AddSingleton<IFormBoTypeResolver, MyFormBoTypeResolver>();
-```
+框架啟動時會自行補寫缺少的保留字 progId，所以這個檔案不存在時會被自動建立。
+詳見 [ADR-034](adr/adr-034-progid-type-registry.md)。
 
 → `Args` / `Result` 的命名規則與契約三層分離：[API ↔ BO 契約設計](api-bo-contract-design.zh-TW.md)。哪些方法該放介面：[開發限制與反模式](development-constraints.zh-TW.md)。
 

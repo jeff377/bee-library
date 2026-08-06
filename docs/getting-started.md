@@ -153,24 +153,24 @@ public class EchoBusinessObject : FormBusinessObject
 
 `[ApiAccessControl]` is what makes the method reachable and decides its protection level. `Public` + `Anonymous` needs neither an access token nor the encryption handshake — appropriate for a first call, and **not** for real data.
 
-Map the progId to the type with an `IFormBoTypeResolver`, falling back to the framework's own resolution for every other progId:
+The progId-to-type binding lives in `ProgramSettings.xml` — the framework-wide type registry. No resolution code is required:
 
-```csharp
-public sealed class MyFormBoTypeResolver : IFormBoTypeResolver
-{
-    public Type Resolve(string progId) => progId switch
-    {
-        "Echo" => typeof(EchoBusinessObject),
-        _ => typeof(FormBusinessObject),
-    };
-}
+```xml
+<ProgramSettings>
+  <Items>
+    <ProgramItem ProgId="Echo" DisplayName="Echo"
+                 BusinessObject="MyApp.EchoBusinessObject, MyApp" />
+  </Items>
+</ProgramSettings>
 ```
 
-Register it **after** `AddBeeFramework` — the last registration wins:
+`BusinessObject` is an assembly-qualified type name. Any progId not listed resolves to the
+framework's default `FormBusinessObject`, so **only progIds that need custom logic belong here**.
+The same entry can also bind a dedicated repository through the `Repository` attribute; the two
+attributes are independent.
 
-```csharp
-builder.Services.AddSingleton<IFormBoTypeResolver, MyFormBoTypeResolver>();
-```
+The framework self-registers missing reserved progIds at startup, so this file is created
+automatically when absent. See [ADR-034](adr/adr-034-progid-type-registry.md).
 
 → Naming rules for `Args` / `Result` and the three-tier contract separation: [API ↔ BO Contract Design](api-bo-contract-design.md). Which methods belong on an interface: [Development Constraints](development-constraints.md).
 

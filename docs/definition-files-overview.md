@@ -10,7 +10,7 @@ Bee.NET is definition-driven: the XML under your `DefinePath` is not configurati
 
 ## 1. The Full Set
 
-Eleven definition types, enumerated as `DefineType` and all reached through `IDefineAccess`. Seven are single files at the root of `DefinePath`; four are keyed and live in subfolders.
+Thirteen definition types, enumerated as `DefineType` and all reached through `IDefineAccess`. Nine are single files at the root of `DefinePath`; four are keyed and live in subfolders.
 
 | Definition | File path under `DefinePath` | Owns | Read in depth |
 |------------|------------------------------|------|---------------|
@@ -26,6 +26,7 @@ Eleven definition types, enumerated as `DefineType` and all reached through `IDe
 | **PermissionModels** | `PermissionModels.xml` | Permission model registry: models, actions and record-scope strategies | [Permission & Authorization](permission-authorization.md) |
 | **CurrencySettings** | `CurrencySettings.xml` | Currency master: per-currency decimals and natural minor units | [Development Cookbook](development-cookbook.md) |
 | **UnitSettings** | `UnitSettings.xml` | Unit-of-measure master: display decimals per unit | [Development Cookbook](development-cookbook.md) |
+| **PluginSettings** | `PluginSettings.xml` | Business plugin bindings: which plugins each progId mounts, run in declaration order | [Tenant Customization](customization.md) |
 
 ## 2. FormSchema Is the Hub
 

@@ -10,7 +10,7 @@ Bee.NET 是定義驅動的：`DefinePath` 下的 XML 不是外掛在應用上的
 
 ## 1. 全部定義類型
 
-共 11 種定義類型，以 `DefineType` 列舉，全部透過 `IDefineAccess` 取得。其中 7 種是 `DefinePath` 根目錄下的單一檔案，4 種帶 key、放在子資料夾。
+共 13 種定義類型，以 `DefineType` 列舉，全部透過 `IDefineAccess` 取得。其中 9 種是 `DefinePath` 根目錄下的單一檔案，4 種帶 key、放在子資料夾。
 
 | 定義 | `DefinePath` 下的路徑 | 管什麼 | 深入閱讀 |
 |------|---------------------|--------|---------|
@@ -26,6 +26,7 @@ Bee.NET 是定義驅動的：`DefinePath` 下的 XML 不是外掛在應用上的
 | **PermissionModels** | `PermissionModels.xml` | 權限模型 registry：模型、動作與 record scope 策略 | [權限與授權](permission-authorization.zh-TW.md) |
 | **CurrencySettings** | `CurrencySettings.xml` | 幣別主檔：各幣別小數位與自然最小單位 | [端到端開發指引](development-cookbook.zh-TW.md) |
 | **UnitSettings** | `UnitSettings.xml` | 計量單位主檔：各單位顯示小數位 | [端到端開發指引](development-cookbook.zh-TW.md) |
+| **PluginSettings** | `PluginSettings.xml` | 業務 plugin 綁定：每個 progId 掛哪些 plugin、依宣告順序執行 | [租戶客製化](customization.zh-TW.md) |
 
 ## 2. FormSchema 是中樞
 

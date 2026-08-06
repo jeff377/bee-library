@@ -23,7 +23,7 @@
 |------|------|------|------|
 | [快速上手](getting-started.zh-TW.md) | 教學 | 中 | 從零建出第一個 Bee.NET 後端：套件、`DefinePath`、DI 接線、第一張表單與商業物件，再由用戶端呼叫 |
 | [架構總覽](architecture-overview.zh-TW.md) | 概念 | 長 | 定義導向架構（Definition-Driven Architecture）的設計理念與實踐模式 |
-| [定義檔全景](definition-files-overview.zh-TW.md) | 概念 | 中 | 全部 11 種定義檔的全景圖：各自管什麼、彼此怎麼串、改了哪個會影響哪一層 |
+| [定義檔全景](definition-files-overview.zh-TW.md) | 概念 | 中 | 全部 13 種定義檔的全景圖：各自管什麼、彼此怎麼串、改了哪個會影響哪一層 |
 
 > 遇到不熟的術語？另開一頁擺著[術語對照表](terminology.zh-TW.md)。
 
