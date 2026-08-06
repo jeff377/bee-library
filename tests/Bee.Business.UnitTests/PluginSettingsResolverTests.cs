@@ -66,6 +66,42 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
+        [DisplayName("兩層都沒有定義檔時回空 chain，不是 null——這是絕大多數部署的狀態")]
+        public void Resolve_NeitherLayerHasSettings_ReturnsEmptyChainNotNull()
+        {
+            // base 缺檔（storage 丟 FileNotFoundException）+ 客製缺檔（reader 回 null）。
+            var access = new StubDefineAccess(null);
+            var reader = new StubCustomizeReader { Settings = null };
+            var resolver = new PluginSettingsResolver(access, reader);
+
+            var chain = resolver.Resolve("acme", "Order");
+
+            Assert.NotNull(chain);
+            Assert.True(chain.IsEmpty);
+            Assert.Empty(chain.Types);
+            Assert.False(chain.HasStage(FormPluginStage.BeforeSave));
+        }
+
+        [Fact]
+        [DisplayName("兩層都沒有定義檔時 runner 仍可建立，四個時點皆為 no-op")]
+        public void Resolve_NeitherLayerHasSettings_RunnerIsUsableNoOp()
+        {
+            var resolver = new PluginSettingsResolver(new StubDefineAccess(null), new StubCustomizeReader());
+
+            var runner = resolver.Resolve("acme", "Order").CreateRunner(new StubBeeContext(), Guid.NewGuid(), "Order");
+
+            // 不丟例外、不建構任何東西——FormBusinessObject 因此可以無條件呼叫。
+            var exception = Record.Exception(() =>
+            {
+                runner.RunBeforeSave(null!);
+                runner.RunAfterSave(null!);
+                runner.RunBeforeDelete(null!);
+                runner.RunAfterDelete(null!);
+            });
+            Assert.Null(exception);
+        }
+
+        [Fact]
         [DisplayName("套裝定義缺檔時不算錯誤，客製仍解析得到")]
         public void Resolve_BaseMissing_StillResolvesCustomize()
         {
@@ -147,6 +183,16 @@ namespace Bee.Business.UnitTests
 
         /// <summary>不繼承 <see cref="FormBusinessPlugin"/>，用於驗證型別檢查。</summary>
         public sealed class NotAPlugin { }
+
+        /// <summary>空 chain 的 runner 不會碰到 context，所以每個成員都不需要實作。</summary>
+        private sealed class StubBeeContext : IBeeContext
+        {
+            public IDefineAccess DefineAccess => throw new NotImplementedException();
+            public Bee.Definition.Identity.ISessionInfoService SessionInfoService => throw new NotImplementedException();
+            public ILanguageService LanguageService => throw new NotImplementedException();
+            public IBusinessObjectFactory BoFactory => throw new NotImplementedException();
+            public IServiceProvider Services => throw new NotImplementedException();
+        }
 
         private sealed class StubCustomizeReader : ICustomizeDefineReader
         {
