@@ -105,6 +105,14 @@ namespace Bee.Hosting
                 ?? new CustomizeDefineReader(
                     sp.GetRequiredService<ICacheContainerProvider>(),
                     sp.GetRequiredService<PathOptions>()));
+            //     The writer follows the storage for the same reason. It exists for exactly one
+            //     artifact — the plugin bindings a deployment maintains through the framework's own
+            //     local-only API — so the rest of the customization layer stays read-only.
+            services.AddSingleton<ICustomizeDefineWriter>(sp =>
+                sp.GetRequiredService<IDefineStorage>() as ICustomizeDefineWriter
+                ?? new CustomizeDefineWriter(
+                    sp.GetRequiredService<ICacheContainerProvider>(),
+                    sp.GetRequiredService<PathOptions>()));
 
             services.AddSingleton<IDefineAccess>(sp =>
                 ResolveDefineAccess(

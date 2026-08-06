@@ -75,6 +75,7 @@ namespace Bee.Business.UnitTests
             new ApiSurfaceEntry("SystemBusinessObject", "GetCommonConfiguration", ApiProtectionLevel.Public,  ApiAccessRequirement.Anonymous),
             new ApiSurfaceEntry("SystemBusinessObject", "GetCustomizeFormLayout", ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetCustomizeLanguage",   ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("SystemBusinessObject", "GetCustomizePluginSettings", ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetDefine",              ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetDepartmentTree",      ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetFormLayout",          ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
@@ -90,6 +91,7 @@ namespace Bee.Business.UnitTests
             new ApiSurfaceEntry("SystemBusinessObject", "Ping",                   ApiProtectionLevel.Public,  ApiAccessRequirement.Anonymous),
             // LocalOnly：寫入定義是部署期作業。先前僅擋 SystemSettings / DatabaseSettings，
             // 其餘定義型別（含 PermissionModels、DbCategorySettings、FormSchema）任何已驗證帳號皆可覆寫。
+            new ApiSurfaceEntry("SystemBusinessObject", "SaveCustomizePluginSettings", ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "SaveDefine",             ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "SetApiKeyEnabled",      ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "SetApiKeyExpiry",       ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),

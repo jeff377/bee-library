@@ -370,6 +370,39 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
+        /// Asynchronously reads one tenant's business plugin bindings.
+        /// </summary>
+        /// <param name="customizeId">The tenant customization code.</param>
+        /// <remarks>
+        /// The server restricts this to local calls, so it reaches the server through an in-process
+        /// connector only — the maintenance tool runs on the host.
+        /// </remarks>
+        public async Task<GetCustomizePluginSettingsResponse> GetCustomizePluginSettingsAsync(string customizeId)
+        {
+            var request = new GetCustomizePluginSettingsRequest() { CustomizeId = customizeId };
+            return await ExecuteAsync<GetCustomizePluginSettingsResponse>(
+                SystemActions.GetCustomizePluginSettings, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously stores one tenant's business plugin bindings, replacing whatever the
+        /// tenant had.
+        /// </summary>
+        /// <param name="customizeId">The tenant customization code.</param>
+        /// <param name="xml">The bindings as XML; an empty string clears them.</param>
+        /// <remarks>
+        /// WARNING: these bindings decide which code runs inside the save and delete pipelines. The
+        /// server restricts this to local calls for that reason, and validates every bound type
+        /// before storing anything — one bad entry rejects the whole definition.
+        /// </remarks>
+        public async Task<SaveCustomizePluginSettingsResponse> SaveCustomizePluginSettingsAsync(string customizeId, string xml)
+        {
+            var request = new SaveCustomizePluginSettingsRequest() { CustomizeId = customizeId, Xml = xml };
+            return await ExecuteAsync<SaveCustomizePluginSettingsResponse>(
+                SystemActions.SaveCustomizePluginSettings, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Asynchronously enters the specified company for the current session.
         /// Also used to switch between companies — the previous company binding is overwritten.
         /// </summary>

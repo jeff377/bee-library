@@ -1,1 +1,10 @@
 #nullable enable
+Bee.Api.Contracts.System.IGetCustomizePluginSettingsRequest
+Bee.Api.Contracts.System.IGetCustomizePluginSettingsRequest.CustomizeId.get -> string!
+Bee.Api.Contracts.System.IGetCustomizePluginSettingsResponse
+Bee.Api.Contracts.System.IGetCustomizePluginSettingsResponse.Xml.get -> string!
+Bee.Api.Contracts.System.ISaveCustomizePluginSettingsRequest
+Bee.Api.Contracts.System.ISaveCustomizePluginSettingsRequest.CustomizeId.get -> string!
+Bee.Api.Contracts.System.ISaveCustomizePluginSettingsRequest.Xml.get -> string!
+Bee.Api.Contracts.System.ISaveCustomizePluginSettingsResponse
+Bee.Api.Contracts.System.ISaveCustomizePluginSettingsResponse.PluginCount.get -> int

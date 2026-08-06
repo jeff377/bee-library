@@ -97,6 +97,12 @@ namespace Bee.Definition
         /// Grants or revokes a user's deployment administrator flag.
         /// </summary>
         public const string SetDeploymentAdmin = "SetDeploymentAdmin";
+
+        /// <summary>Reads one tenant's business plugin bindings.</summary>
+        public const string GetCustomizePluginSettings = "GetCustomizePluginSettings";
+
+        /// <summary>Stores one tenant's business plugin bindings.</summary>
+        public const string SaveCustomizePluginSettings = "SaveCustomizePluginSettings";
         /// <summary>
         /// Executes a custom function.
         /// </summary>

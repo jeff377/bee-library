@@ -33,7 +33,7 @@ namespace Bee.Db.Storage
     /// because Oracle treats <c>''</c> as <c>NULL</c> and primary-key columns cannot be NULL).
     /// </para>
     /// </remarks>
-    public sealed class DbDefineStorage : IDefineStorage, ICustomizeDefineReader
+    public sealed class DbDefineStorage : IDefineStorage, ICustomizeDefineReader, ICustomizeDefineWriter
     {
         /// <summary>The database identifier hosting <c>st_define</c> (and <c>st_cache_notify</c>).</summary>
         public const string DefineDatabaseId = "common";
@@ -275,6 +275,18 @@ namespace Bee.Db.Storage
             => ReadOptional<PluginSettings>(customizeId, SingletonKey);
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// The tenant's row and the base row differ only by <c>customize_id</c>, so the same upsert
+        /// serves both layers and neither can overwrite the other.
+        /// </remarks>
+        public void SaveCustomizePluginSettings(string customizeId, PluginSettings settings)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(customizeId);
+            ArgumentNullException.ThrowIfNull(settings);
+            Write(settings, SingletonKey, customizeId);
+        }
+
+        /// <inheritdoc/>
         public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId)
             => ReadOptional<FormLayout>(customizeId, layoutId);
 
@@ -332,6 +344,15 @@ namespace Bee.Db.Storage
         /// notification and the data change commit together.
         /// </summary>
         private void Write<T>(T value, string defineKey) where T : class
+            => Write(value, defineKey, BaseCustomizeId);
+
+        /// <summary>
+        /// Upserts one definition row and bumps its cache-notify version in the same transaction.
+        /// </summary>
+        /// <param name="value">The definition object.</param>
+        /// <param name="defineKey">The definition key.</param>
+        /// <param name="customizeId">The owning layer: the base sentinel, or a tenant code.</param>
+        private void Write<T>(T value, string defineKey, string customizeId) where T : class
         {
             string defineType = typeof(T).Name;
             string xml = XmlCodec.Serialize(value);
@@ -344,7 +365,7 @@ namespace Bee.Db.Storage
             using var transaction = connection.BeginTransaction();
 
             var dbAccess = new DbAccess(connection, databaseType);
-            dbAccess.Execute(BuildUpsertSpec(databaseType, defineType, defineKey, xml), transaction);
+            dbAccess.Execute(BuildUpsertSpec(databaseType, defineType, customizeId, defineKey, xml), transaction);
 
             CacheNotify.Touch(BuildNotifyKey(defineType, defineKey), transaction, databaseType);
 
@@ -353,9 +374,9 @@ namespace Bee.Db.Storage
 
         /// <summary>
         /// Builds the dialect-specific UPSERT for <c>st_define</c>. Params: {0}=define_type,
-        /// {1}=customize_id (base sentinel), {2}=define_key, {3}=content (XML).
+        /// {1}=customize_id, {2}=define_key, {3}=content (XML).
         /// </summary>
-        private static DbCommandSpec BuildUpsertSpec(DatabaseType databaseType, string defineType, string defineKey, string content)
+        private static DbCommandSpec BuildUpsertSpec(DatabaseType databaseType, string defineType, string customizeId, string defineKey, string content)
         {
             string now = DbDialectRegistry.Get(databaseType).GetDefaultValueExpression(FieldDbType.DateTime);
 
@@ -395,7 +416,7 @@ namespace Bee.Db.Storage
                 _ => throw new NotSupportedException($"Define-storage upsert is not defined for {databaseType}.")
             };
 
-            return new DbCommandSpec(DbCommandKind.NonQuery, commandText, defineType, BaseCustomizeId, defineKey, content);
+            return new DbCommandSpec(DbCommandKind.NonQuery, commandText, defineType, customizeId, defineKey, content);
         }
 
         /// <summary>

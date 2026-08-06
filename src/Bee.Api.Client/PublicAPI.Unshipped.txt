@@ -1,1 +1,3 @@
 #nullable enable
+Bee.Api.Client.Connectors.SystemApiConnector.GetCustomizePluginSettingsAsync(string! customizeId) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.GetCustomizePluginSettingsResponse!>!
+Bee.Api.Client.Connectors.SystemApiConnector.SaveCustomizePluginSettingsAsync(string! customizeId, string! xml) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SaveCustomizePluginSettingsResponse!>!

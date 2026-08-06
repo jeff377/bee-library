@@ -6,7 +6,7 @@
 |------|------|------|
 | G1 | `PluginSettings` 定義型別與讀取管線（path / storage / cache / reader / overlay） | ✅ 已完成（2026-08-06） |
 | G2 | `FormBusinessPlugin` 基底與掛載點的執行接線 | ✅ 已完成（2026-08-06） |
-| G3 | 客製 plugin 設定的 API 維護（讀 / 存 / 儲存時驗證 / 快取失效） | 📝 待做 |
+| G3 | 客製 plugin 設定的 API 維護（讀 / 存 / 儲存時驗證 / 快取失效） | ✅ 已完成（2026-08-06） |
 | G4 | 端到端測試與雙語文件 | 📝 待做 |
 
 > 範圍：**在套裝 BO 的既有流程上掛載客製程式碼**——不換掉整個 BO 類別，只在特定時點追加一段。
@@ -416,6 +416,23 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
   的快取不會因為本節點寫入而自動更新）。
 - 稽核：設定變更寫入稽核記錄（誰、哪個 customizeId、改成什麼）。`LocalOnly` 擋掉了遠端濫用，
   但擋不掉「哪一次維護改壞了」的追查需求。
+
+> **G3 落地紀錄（2026-08-06）**：四層共 17 檔——contract 介面 ×4、wire DTO ×4、
+> `SystemActions` ×2、BO args/result ×4、`SystemBusinessObject.Plugin.cs`、
+> `SystemApiConnector` ×2 方法。新增 `ICustomizeDefineWriter`（僅一個寫入方法）與兩個實作：
+> `CustomizeDefineWriter`（檔案，寫完即 evict 該租戶 cache）與 `DbDefineStorage`
+> （`Write` 加 customizeId 參數，租戶列與 base 列只差 `customize_id`）。
+>
+> 三點與 plan 撰寫時的預期不同：
+> - **wire 兩個方向都走 XML 字串，不送 `PluginSettings` 物件**。`Items` / `Plugins` 是 get-only
+>   巢狀集合，正是 layout 客製決策 L7 踩到「送到 .NET 用戶端靜默收不回來」的同一形狀。
+> - **`CustomizeOnlyStorage` 維持全面唯讀**，寫入改由 `CustomizeDefineWriter` 直接經
+>   `CustomizeOnlyPathOptions` + `XmlCodec` 落檔。兩者共用同一份路徑來源，而那個類別的
+>   「這一層是唯讀的」承諾不必為單一例外破功。
+> - **兩個方法不放 `ISystemBusinessObject`**：沒有跨 BO 消費者，比照 `SetDeploymentAdmin`
+>   （`rules/definition.md` 的 BO 介面定位）。
+> - `SystemApiConnector` **沒有同步多載**——該類別現況全部只有 async，`bee-add-bo-method`
+>   skill 說「一定有 async + 同步兩個 overload」那條已過期。
 
 ### G4 — 端到端測試與文件
 

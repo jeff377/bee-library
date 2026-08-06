@@ -32,10 +32,14 @@ Bee.Definition.Storage.CustomizeOnlyStorage.SavePluginSettings(Bee.Definition.Se
 Bee.Definition.Storage.FileDefineStorage.GetPluginSettings() -> Bee.Definition.Settings.PluginSettings?
 Bee.Definition.Storage.FileDefineStorage.SavePluginSettings(Bee.Definition.Settings.PluginSettings! settings) -> void
 Bee.Definition.Storage.ICustomizeDefineReader.GetCustomizePluginSettings(string! customizeId) -> Bee.Definition.Settings.PluginSettings?
+Bee.Definition.Storage.ICustomizeDefineWriter
+Bee.Definition.Storage.ICustomizeDefineWriter.SaveCustomizePluginSettings(string! customizeId, Bee.Definition.Settings.PluginSettings! settings) -> void
 Bee.Definition.Storage.IDefineAccess.GetPluginSettings() -> Bee.Definition.Settings.PluginSettings!
 Bee.Definition.Storage.IDefineAccess.SavePluginSettings(Bee.Definition.Settings.PluginSettings! settings) -> void
 Bee.Definition.Storage.IDefineStorage.GetPluginSettings() -> Bee.Definition.Settings.PluginSettings?
 Bee.Definition.Storage.IDefineStorage.SavePluginSettings(Bee.Definition.Settings.PluginSettings! settings) -> void
+const Bee.Definition.SystemActions.GetCustomizePluginSettings = "GetCustomizePluginSettings" -> string!
+const Bee.Definition.SystemActions.SaveCustomizePluginSettings = "SaveCustomizePluginSettings" -> string!
 override Bee.Definition.CustomizeOnlyPathOptions.GetPluginSettingsFilePath() -> string!
 override Bee.Definition.Settings.PluginItem.ToString() -> string!
 override Bee.Definition.Settings.ProgramPluginItem.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void

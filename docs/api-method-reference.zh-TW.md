@@ -57,6 +57,8 @@ BO 層 Args / Result 型別、`[ApiAccessControl]` 設定，與一行用途說�
 | `Logout` | Public | Authenticated | 銷毀目前 session（同時清除 company context）。 |
 | `GetDefine` | Public | Authenticated | XML envelope 取定義資料（通用 — .NET client FormSchema / FormLayout / LanguageResource 都走此方法）。 |
 | `SaveDefine` | LocalOnly | Authenticated | XML envelope 持久化定義資料；同時失效對應 cache slot。寫入定義屬部署期作業，遠端呼叫一律拒絕 —— 讀取請用 `GetDefine`。 |
+| `GetCustomizePluginSettings` | LocalOnly | Authenticated | 以 XML 讀回單一租戶的業務 plugin 綁定；該租戶沒有客製時回空字串。LocalOnly 的理由同 `SaveCustomizePluginSettings`。 |
+| `SaveCustomizePluginSettings` | LocalOnly | Authenticated | 儲存單一租戶的業務 plugin 綁定，整份取代。寫入前逐一驗證每個綁定型別——必須可載入、繼承 `FormBusinessPlugin`、且至少 override 一個時點——一筆不合格就整份拒存。這些綁定決定「哪些程式碼會在存檔與刪除流程裡執行」，因此遠端呼叫一律拒絕。 |
 | `CreateApiKey` | Encrypted | Authenticated | 發放 API 金鑰，完整明文金鑰**只回傳一次** —— 伺服端只存雜湊，無法再次顯示。金鑰屬於整個部署、不屬於任何公司，因此遠端呼叫者必須是部署層管理員（`st_user.deployment_admin`），僅「已登入」不足。本機呼叫免管理員，尚無管理員的部署才鑄得出第一把金鑰。 |
 | `ListApiKeys` | Encrypted | Authenticated | 列出已發放的金鑰（含已停用），回傳的摘要**不帶任何憑證素材** —— 儲存的雜湊絕不離開伺服端。把關同 `CreateApiKey`。 |
 | `SetApiKeyEnabled` | Encrypted | Authenticated | 啟用或停用金鑰。停用即撤銷路徑，**立即**在所有伺服器行程生效，不等快取過期。把關同 `CreateApiKey`。 |
