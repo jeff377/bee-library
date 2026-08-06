@@ -65,8 +65,8 @@ IFormCommandBuilder → DbAccess」是**邏輯層次**的描述（BO 觸發、Re
 
 | # | 層 | 檔案 | 慣例 |
 |---|----|------|------|
-| 1 | Contract | `src/Bee.Api.Contracts/I<Action>Request.cs` | 純介面，無 attribute |
-| 2 | Contract | `src/Bee.Api.Contracts/I<Action>Response.cs` | 純介面，無 attribute |
+| 1 | Contract | `src/Bee.Api.Contracts/<Axis>/I<Action>Request.cs` | 純介面，無 attribute；namespace 為 `Bee.Api.Contracts.<Axis>` |
+| 2 | Contract | `src/Bee.Api.Contracts/<Axis>/I<Action>Response.cs` | 純介面，無 attribute |
 | 3 | Wire DTO | `src/Bee.Api.Core/Messages/<Axis>/<Action>Request.cs` | `[MessagePackObject]` + `[Key(n)]`，繼承 `ApiRequest` |
 | 4 | Wire DTO | `src/Bee.Api.Core/Messages/<Axis>/<Action>Response.cs` | `[MessagePackObject]` + `[Key(n)]`，繼承 `ApiResponse` |
 | 5 | Action 常數 | `src/Bee.Definition/<Axis>Actions.cs` | `public const string <Action> = "<Action>"` |
@@ -74,7 +74,7 @@ IFormCommandBuilder → DbAccess」是**邏輯層次**的描述（BO 觸發、Re
 | 7 | BO Result | `src/Bee.Business/<Axis>/<Action>Result.cs` | POCO，繼承 `BusinessResult`，實作 `I<Action>Response` |
 | 8 | BO method | `src/Bee.Business/<Axis>/<Axis>BusinessObject.cs` 新增方法 | `[ApiAccessControl(...)]`，回傳 `<Action>Result` |
 | 8b | BO 介面宣告 | `src/Bee.Business/<Axis>/I<Axis>BusinessObject.cs` 加方法簽名 | 給其他 BO 經 `IBusinessObjectFactory` 取用 |
-| (9) | Repository（FormSchema-driven CRUD 才需要） | `IDataFormRepository.cs` + `DataFormRepository.cs` + `FormRepositoryFactory.cs` | 走規則 1 |
+| (9) | Repository（FormSchema-driven CRUD 才需要） | `IDataFormRepository.cs` + `DataFormRepository.cs` + `RepositoryFactory.cs` | 走規則 1 |
 | (10) | Client | `src/Bee.Api.Client/Connectors/<Axis>ApiConnector.cs` | `<Action>Async` + 同步 wrapper |
 
 `<Axis>` = `System` 或 `Form`（也可未來新軸）。
@@ -86,7 +86,7 @@ IFormCommandBuilder → DbAccess」是**邏輯層次**的描述（BO 觸發、Re
 1. **BO 需要哪些服務**（DefineAccess / Repository / 其他）
    - `BusinessObject._ctx` 已暴露：`DefineAccess`、`SessionInfoService`、
      `BoFactory`、`Services`（IServiceProvider escape hatch）
-   - 其他服務（如 `IFormRepositoryFactory`）走 `Services.GetRequiredService<T>()`；
+   - 其他服務（如 `IRepositoryFactory`）走 `Services.GetRequiredService<T>()`；
      不要為單一方法擴 `IBeeContext` 公開簽章
    - 違反規則 1 的「直接呼 `IFormCommandBuilder` / `DbAccess`」**不要**做
 
@@ -132,17 +132,18 @@ namespace Bee.Api.Contracts
 ### Layer 2: Wire DTO（`Bee.Api.Core/Messages/<Axis>/`）
 
 ```csharp
-[MessagePackObject]
+[MessagePackObject(keyAsPropertyName: true)]
 public class <Action>Request : ApiRequest, I<Action>Request
 {
-    [Key(100)] public string Foo { get; set; } = string.Empty;
-    [Key(101)] public Bar? Bar { get; set; }
+    public string Foo { get; set; } = string.Empty;
+    public Bar? Bar { get; set; }
 }
 ```
 
-- `Key` 從 **100** 起。0–99 留給 `ApiRequest`/`ApiResponse` base 欄位
+- **不編 `[Key(n)]`**：adr-030 起一般型別一律 `keyAsPropertyName: true`，鍵就是屬性名，
+  新增 / 移除欄位不必維護編號。**唯一例外是 `[Union]` 多型階層**（如 `FilterNode`），
+  它與 `keyAsPropertyName` 不相容、永久維持整數 `[Key]`（見 `rules/serialization.md`）
 - 命名與 contract 介面對齊：`<Action>Request` ↔ `<Action>Response`
-- **預留未來欄位的 Key 編號要在 XML doc 註明**
 - 屬性必須是 `{ get; set; }`（MessagePack 需要 setter）；介面是 read-only
 - 資料夾與命名空間必須一致：`Messages/Form/` ↔ `namespace Bee.Api.Core.Messages.Form`
   （IDE0130，違反 strict build 失敗）
@@ -192,8 +193,10 @@ public virtual <Action>Result <Action>(<Action>Args args)
 {
     ArgumentNullException.ThrowIfNull(args);
 
-    var factory = Services.GetRequiredService<IFormRepositoryFactory>();
-    var repository = factory.CreateDataFormRepository(ProgId);
+    // BusinessObject 已有便利方法，會自動帶入當前 AccessToken 與 ProgId：
+    //   CreateDataFormRepository(ProgId)        → 通用 IDataFormRepository
+    //   CreateFormRepository<IOrderRepository>() → 註冊表綁定的專屬介面
+    var repository = CreateDataFormRepository(ProgId);
     var result = repository.<DoWork>(args.X, args.Y, ...);
 
     return new <Action>Result { /* 從 repository 結果組裝 */ };
@@ -271,11 +274,12 @@ var rawBo = factory.CreateBusinessObject(token, progId);
      .CreateFormCommandBuilder(_schema, _defineAccess)`
    - tableName 直接傳 `_schema.ProgId`（規則 2）
    - 執行：`_dbAccessFactory.Create(_databaseId).Execute(spec)`
-3. **`Bee.Repository/Factories/FormRepositoryFactory.cs`** 已注入所需服務
-   - `CreateDataFormRepository(progId)` 解析 schema、決定
-     `databaseId = schema.CategoryId`（多租戶 host 端覆寫）
+3. **`Bee.Repository/Factories/RepositoryFactory.cs`** 已注入所需服務
+   - `CreateFormRepository<T>(accessToken, progId)` 依註冊表的 `ProgramItem.Repository`
+     解析型別（未指定則用 `DataFormRepository`），schema 的 `CategoryId` 決定 databaseId
+   - **型別載不到一律 throw**，與 BO 軸的靜默降級相反：資料存取沒有無害的降級模式
 4. **`Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs`** 的
-   `IFormRepositoryFactory` 註冊**必須**用 `CreateConfigurableService`
+   `IRepositoryFactory` 註冊**必須**用 `CreateConfigurableService`
    （DI-aware），不是 `CreateOrDefault`（parameterless）。Factory ctor 改簽
    名時若忘記同步換 → runtime InvalidOperationException
 
@@ -289,15 +293,11 @@ public async Task<<Action>Response> <Action>Async(
     return await ExecuteAsync<<Action>Response>(<Axis>Actions.<Action>, request)
         .ConfigureAwait(false);
 }
-
-public <Action>Response <Action>(
-    <param1> p1 = default!, ..., <paramN>? pN = null)
-{
-    return SyncExecutor.Run(() => <Action>Async(p1, ..., pN));
-}
 ```
 
-- 一定有 async + 同步兩個 overload
+- **只有 async，沒有同步多載**。connector 全部是 `Task`-returning；需要同步呼叫的
+  呼叫端自行處理。（2026-08-06 覆核：`SystemApiConnector` / `FormApiConnector`
+  兩個檔案裡的同步多載數量皆為 0）
 - `ExecuteAsync<TResponse>` 預設 `PayloadFormat.Encrypted`；除非 BO method 標
   `ApiProtectionLevel.Encoded` 才在這層 override
 - 例外傳遞：JsonRpcExecutor 把 BO 拋的 `ArgumentException /
@@ -344,15 +344,16 @@ public class <Action>JsonRpcRoundTripTests : IClassFixture<BeeTestFixture>
     public void <Action>_ThroughJsonRpc_DispatchesAndReturnsTable()
     {
         var stubRepo = new StubDataFormRepository(/* fixed DataTable */);
-        var stubFactory = new StubFormRepositoryFactory(stubRepo);
+        var stubFactory = new StubRepositoryFactory(stubRepo);
         var overrideServices = new TestOverrideServiceProvider(
             _fx.Provider,
-            (typeof(IFormRepositoryFactory), stubFactory));
+            (typeof(IRepositoryFactory), stubFactory));
 
         var boFactory = new BusinessObjectFactory(
             overrideServices,
             _fx.GetRequiredService<IDefineAccess>(),
             _fx.GetRequiredService<ISessionInfoService>(),
+            _fx.GetRequiredService<ILanguageService>(),
             _fx.GetRequiredService<IBoTypeResolver>());
 
         var executor = new JsonRpcExecutor(
@@ -424,7 +425,7 @@ public class <Axis>BusinessObject<Action>Tests : IClassFixture<SharedDbFixture>
 8. **`SysInfo.AllowedTypeNamespaces` 白名單外的型別**：跨 wire 反序列化會被
    `SafeTypelessFormatter` 擋下；用 `Bee.Api.Core` / `Bee.Business` /
    `Bee.Definition` 內的型別最安全
-9. **`FormRepositoryFactory` ctor 簽名改 → DI 註冊要同步換**：
+9. **`RepositoryFactory` ctor 簽名改 → DI 註冊要同步換**：
    `CreateOrDefault` (parameterless) → `CreateConfigurableService` (DI-aware)
 10. **既有 trivial POCO 屬性測試在 ctor 簽名變寬時直接刪**：當測試只是
     `new T(progId).ProgId == progId` 這種 setter 檢查，重構後改維護成本高、
@@ -453,8 +454,8 @@ public class <Axis>BusinessObject<Action>Tests : IClassFixture<SharedDbFixture>
 - [ ] `ApiContractRegistry` 不需顯式註冊（除非 BO Result 命名違反 `XxxResult` 慣例）
 
 **P1 合約層**（單 PR / 單 commit）：
-- [ ] `src/Bee.Api.Contracts/I<Action>Request.cs`
-- [ ] `src/Bee.Api.Contracts/I<Action>Response.cs`
+- [ ] `src/Bee.Api.Contracts/<Axis>/I<Action>Request.cs`
+- [ ] `src/Bee.Api.Contracts/<Axis>/I<Action>Response.cs`
 - [ ] `src/Bee.Api.Core/Messages/<Axis>/<Action>Request.cs`
 - [ ] `src/Bee.Api.Core/Messages/<Axis>/<Action>Response.cs`
 - [ ] `src/Bee.Definition/<Axis>Actions.cs` 加 `public const string <Action>`
@@ -467,13 +468,13 @@ public class <Axis>BusinessObject<Action>Tests : IClassFixture<SharedDbFixture>
 - [ ] `src/Bee.Business/<Axis>/I<Axis>BusinessObject.cs` 加方法簽名（除非該 method 是純 API 用、不適合給其他 BO 直接呼叫）
 - [ ] `src/Bee.Repository.Abstractions/Form/IDataFormRepository.cs` 加抽象方法
 - [ ] `src/Bee.Repository/Form/DataFormRepository.cs` 實作
-- [ ] `src/Bee.Repository/Factories/FormRepositoryFactory.cs` 注入新依賴（如有）
+- [ ] `src/Bee.Repository/Factories/RepositoryFactory.cs` 注入新依賴（如有）
 - [ ] `src/Bee.Hosting/...` DI 註冊若 ctor 簽名變更 → 改為 `CreateConfigurableService`
 - [ ] BO 整合測試：`tests/Bee.Business.UnitTests/<Axis>/<Axis>BusinessObject<Action>Tests.cs`
 - [ ] Release build 0w/0e + SQLite 測試通過
 
 **P3 Client + wire 測試**（單 PR / 單 commit）：
-- [ ] `src/Bee.Api.Client/Connectors/<Axis>ApiConnector.cs` 加 `<Action>Async` + 同步包裝
+- [ ] `src/Bee.Api.Client/Connectors/<Axis>ApiConnector.cs` 加 `<Action>Async`（只有 async）
 - [ ] Wire-level round-trip 測試
 - [ ] Executor dispatch round-trip 測試
 - [ ] Release build 0w/0e + 測試通過
@@ -491,13 +492,13 @@ public class <Axis>BusinessObject<Action>Tests : IClassFixture<SharedDbFixture>
 
 | 用途 | 檔案 |
 |------|------|
-| Contract 介面樣板 | `src/Bee.Api.Contracts/IGetDefineRequest.cs` / `IGetDefineResponse.cs` |
+| Contract 介面樣板 | `src/Bee.Api.Contracts/System/IGetDefineRequest.cs` / `IGetDefineResponse.cs`（依 axis 分資料夾：`System/` `Form/` `AuditLog/`）|
 | Wire DTO 樣板 | `src/Bee.Api.Core/Messages/System/GetDefineRequest.cs` / `GetDefineResponse.cs` |
 | Action 常數樣板 | `src/Bee.Definition/SystemActions.cs` / `FormActions.cs` |
 | BO Args/Result 樣板 | `src/Bee.Business/System/GetDefineArgs.cs` / `GetDefineResult.cs` |
 | BO 方法樣板 | `src/Bee.Business/System/SystemBusinessObject.cs`（`GetDefine`） / `src/Bee.Business/Form/FormBusinessObject.cs`（`GetList`） |
 | Repository 抽象 / 實作 | `src/Bee.Repository.Abstractions/Form/IDataFormRepository.cs` / `src/Bee.Repository/Form/DataFormRepository.cs` |
-| Repository Factory | `src/Bee.Repository/Factories/FormRepositoryFactory.cs` |
+| Repository Factory | `src/Bee.Repository/Factories/RepositoryFactory.cs` |
 | Client connector | `src/Bee.Api.Client/Connectors/SystemApiConnector.cs` / `FormApiConnector.cs` |
 | JSON-RPC dispatch | `src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs` |
 | 命名慣例反射 | `src/Bee.Api.Core/Conversion/ApiOutputConverter.cs` |
