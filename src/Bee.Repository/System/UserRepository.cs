@@ -12,6 +12,9 @@ namespace Bee.Repository.System
     /// </summary>
     public class UserRepository : RepositoryBase, IUserRepository
     {
+        private const string TableName = "st_user";
+        private const string SysIdColumn = "sys_id";
+
         /// <summary>
         /// Initializes a new <see cref="UserRepository"/>.
         /// </summary>
@@ -29,9 +32,9 @@ namespace Bee.Repository.System
             if (string.IsNullOrWhiteSpace(userId)) { return Guid.Empty; }
 
             var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
-            string tbl = dbType.QuoteIdentifier("st_user");
+            string tbl = dbType.QuoteIdentifier(TableName);
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
-            string colId = dbType.QuoteIdentifier("sys_id");
+            string colId = dbType.QuoteIdentifier(SysIdColumn);
 
             string sql = $"SELECT {colRowId} FROM {tbl} WHERE {colId} = {{0}}";
             var dbAccess = CreateDbAccess();
@@ -46,10 +49,10 @@ namespace Bee.Repository.System
             if (string.IsNullOrWhiteSpace(userId)) { return UserLocale.Empty; }
 
             var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
-            string tbl = dbType.QuoteIdentifier("st_user");
+            string tbl = dbType.QuoteIdentifier(TableName);
             string colTimeZone = dbType.QuoteIdentifier("time_zone");
             string colCulture = dbType.QuoteIdentifier("culture");
-            string colId = dbType.QuoteIdentifier("sys_id");
+            string colId = dbType.QuoteIdentifier(SysIdColumn);
 
             string sql = $"SELECT {colTimeZone}, {colCulture} FROM {tbl} WHERE {colId} = {{0}}";
             var dbAccess = CreateDbAccess();
@@ -72,9 +75,9 @@ namespace Bee.Repository.System
             if (string.IsNullOrWhiteSpace(userId)) { return null; }
 
             var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
-            string tbl = dbType.QuoteIdentifier("st_user");
+            string tbl = dbType.QuoteIdentifier(TableName);
             string colName = dbType.QuoteIdentifier("sys_name");
-            string colId = dbType.QuoteIdentifier("sys_id");
+            string colId = dbType.QuoteIdentifier(SysIdColumn);
 
             string sql = $"SELECT {colName} FROM {tbl} WHERE {colId} = {{0}}";
             var dbAccess = CreateDbAccess();
@@ -94,9 +97,9 @@ namespace Bee.Repository.System
             if (string.IsNullOrWhiteSpace(userId)) { return false; }
 
             var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
-            string tbl = dbType.QuoteIdentifier("st_user");
+            string tbl = dbType.QuoteIdentifier(TableName);
             string colFlag = dbType.QuoteIdentifier("deployment_admin");
-            string colId = dbType.QuoteIdentifier("sys_id");
+            string colId = dbType.QuoteIdentifier(SysIdColumn);
 
             string sql = $"SELECT {colFlag} FROM {tbl} WHERE {colId} = {{0}}";
             var dbAccess = CreateDbAccess();
@@ -111,9 +114,9 @@ namespace Bee.Repository.System
             if (string.IsNullOrWhiteSpace(userId)) { return false; }
 
             var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
-            string tbl = dbType.QuoteIdentifier("st_user");
+            string tbl = dbType.QuoteIdentifier(TableName);
             string colFlag = dbType.QuoteIdentifier("deployment_admin");
-            string colId = dbType.QuoteIdentifier("sys_id");
+            string colId = dbType.QuoteIdentifier(SysIdColumn);
 
             string sql = $"UPDATE {tbl} SET {colFlag} = {{0}} WHERE {colId} = {{1}}";
             var dbAccess = CreateDbAccess();

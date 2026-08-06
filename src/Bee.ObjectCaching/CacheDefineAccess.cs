@@ -452,6 +452,18 @@ namespace Bee.ObjectCaching
         }
 
         /// <summary>
+        /// Gets the form layout for the specified layout identifier, applying the tenant
+        /// customization overlay (whole-file selection) for the supplied customization code.
+        /// </summary>
+        /// <param name="customizeId">The tenant customization code; empty resolves against the base layer only.</param>
+        /// <param name="layoutId">The layout identifier.</param>
+        public FormLayout GetFormLayout(string customizeId, string layoutId)
+        {
+            return FindFormLayout(customizeId, layoutId)
+                ?? throw new InvalidOperationException($"FormLayout '{layoutId}' not found.");
+        }
+
+        /// <summary>
         /// Looks up the form layout definition for the supplied customization code and layout
         /// identifier, returning <c>null</c> when neither layer stores one.
         /// </summary>
@@ -472,18 +484,6 @@ namespace Bee.ObjectCaching
             // Which layer wins is decided by CustomizeOverlay — the same class a client runs over
             // the two copies it fetched, so both ends select identically.
             return CustomizeOverlay.PickFormLayout(custom, _cache.FormLayout.Get(layoutId));
-        }
-
-        /// <summary>
-        /// Gets the form layout for the specified layout identifier, applying the tenant
-        /// customization overlay (whole-file selection) for the supplied customization code.
-        /// </summary>
-        /// <param name="customizeId">The tenant customization code; empty resolves against the base layer only.</param>
-        /// <param name="layoutId">The layout identifier.</param>
-        public FormLayout GetFormLayout(string customizeId, string layoutId)
-        {
-            return FindFormLayout(customizeId, layoutId)
-                ?? throw new InvalidOperationException($"FormLayout '{layoutId}' not found.");
         }
 
         /// <summary>

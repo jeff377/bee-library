@@ -36,13 +36,15 @@ cd_arg=$(printf '%s' "$payload" \
     | grep -oE '(^|[;&|"[:space:]])cd[[:space:]]+[^[:space:];&|"]+' \
     | tail -1 \
     | sed -E 's/^(.*[^[:alnum:]_])?cd[[:space:]]+//' 2>/dev/null)
-if [ -n "$cd_arg" ]; then
+if [[ -n "$cd_arg" ]]; then
     # The payload carries the command text verbatim, so a leading ~ is still literal.
     case "$cd_arg" in
         "~") cd_arg=$HOME ;;
         "~/"*) cd_arg="$HOME/${cd_arg#\~/}" ;;
+        # Any other form is already a usable path, absolute or relative to the hook cwd.
+        *) ;;
     esac
-    [ -d "$cd_arg" ] && target_dir=$cd_arg
+    [[ -d "$cd_arg" ]] && target_dir=$cd_arg
 fi
 
 repo_root=$(git -C "$target_dir" rev-parse --show-toplevel 2>/dev/null) || exit 0
@@ -50,7 +52,7 @@ cd "$repo_root" 2>/dev/null || exit 0
 
 # Guards the case where the agent is committing in some other repository — the plugin
 # repo, a sample clone — where this solution does not exist and this hook has no say.
-[ -f "$SOLUTION" ] || exit 0
+[[ -f "$SOLUTION" ]] || exit 0
 
 command -v dotnet >/dev/null 2>&1 || exit 0
 
@@ -78,7 +80,7 @@ fi
 # Check 2 — public API surface changes. Advisory only.
 # ---------------------------------------------------------------------------
 api_files=$(git diff HEAD --name-only -- '*PublicAPI.Unshipped.txt' 2>/dev/null)
-[ -n "$api_files" ] || exit 0
+[[ -n "$api_files" ]] || exit 0
 
 api_diff=$(git diff HEAD -- '*PublicAPI.Unshipped.txt' 2>/dev/null \
            | grep -E '^[+-][^+-]' | head -40)

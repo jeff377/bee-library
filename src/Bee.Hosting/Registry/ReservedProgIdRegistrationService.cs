@@ -121,9 +121,12 @@ namespace Bee.Hosting.Registry
             try
             {
                 _defineAccess.SaveProgramSettings(updated);
-                _logger.LogInformation(
-                    "Registered reserved progId(s) {ProgIds} in ProgramSettings.",
-                    string.Join(", ", missing.Select(b => b.ProgId)));
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation(
+                        "Registered reserved progId(s) {ProgIds} in ProgramSettings.",
+                        string.Join(", ", missing.Select(b => b.ProgId)));
+                }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
             {

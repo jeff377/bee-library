@@ -96,7 +96,7 @@ namespace Bee.Definition.Language
             // CustomizeOverlay, the same class a client runs over the two copies it fetched.
             // Storage / cache returns LanguageResource (non-nullable signature) but the underlying
             // file may legitimately not exist, so the base value can be null.
-            TryGetCustomizeResource(customizeId, lang, @namespace, out var custResource);
+            var custResource = GetCustomizeResource(customizeId, lang, @namespace);
             var resource = _defineAccess.GetLanguage(lang, @namespace);
             return CustomizeOverlay.TryGetLangText(custResource, resource, subKey, out text);
         }
@@ -160,23 +160,21 @@ namespace Bee.Definition.Language
         /// </remarks>
         private LanguageEnum? LookupEnum(string customizeId, string lang, string @namespace, string enumName)
         {
-            TryGetCustomizeResource(customizeId, lang, @namespace, out var custResource);
+            var custResource = GetCustomizeResource(customizeId, lang, @namespace);
             var resource = _defineAccess.GetLanguage(lang, @namespace);
             return CustomizeOverlay.GetLangEnum(custResource, resource, enumName);
         }
 
         /// <summary>
         /// Resolves the customization-override language resource for the given code. Short-circuits
-        /// (returns <c>false</c>) when there is no customization code or no reader — the common,
+        /// (returns <c>null</c>) when there is no customization code or no reader — the common,
         /// non-customized path never touches the override layer.
         /// </summary>
-        private bool TryGetCustomizeResource(string customizeId, string lang, string @namespace, out LanguageResource? resource)
+        private LanguageResource? GetCustomizeResource(string customizeId, string lang, string @namespace)
         {
-            resource = null;
             if (string.IsNullOrEmpty(customizeId) || _customizeReader is null)
-                return false;
-            resource = _customizeReader.GetCustomizeLanguage(customizeId, lang, @namespace);
-            return resource is not null;
+                return null;
+            return _customizeReader.GetCustomizeLanguage(customizeId, lang, @namespace);
         }
 
         /// <summary>

@@ -49,13 +49,6 @@ namespace Bee.Business
         /// </summary>
         /// <param name="progId">The program identifier.</param>
         public static ReservedProgIdBinding? Find(string progId)
-        {
-            foreach (var binding in All)
-            {
-                if (StringUtilities.IsEquals(binding.ProgId, progId))
-                    return binding;
-            }
-            return null;
-        }
+            => All.FirstOrDefault(binding => StringUtilities.IsEquals(binding.ProgId, progId));
     }
 }

@@ -26,7 +26,7 @@ namespace Bee.Repository.Factories
     /// </summary>
     public class RepositoryFactory : IRepositoryFactory
     {
-        private readonly IRepositoryContext _ctx;
+        private readonly RepositoryContext _ctx;
         private readonly IServiceProvider _services;
         private readonly ICustomizeDefineReader? _customizeReader;
         private readonly ISessionInfoService? _sessionInfoService;

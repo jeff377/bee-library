@@ -167,7 +167,7 @@ namespace Bee.Business.UnitTests.Form
             try { ctx.Repository.Delete(rowId); } catch (InvalidOperationException) { /* best effort */ }
         }
 
-        private static IFormPluginResolver Resolver<T>() where T : FormBusinessPlugin
+        private static FixedChainResolver Resolver<T>() where T : FormBusinessPlugin
             => new FixedChainResolver(FormPluginChain.Create([typeof(T)]));
 
         private sealed class FixedChainResolver : IFormPluginResolver

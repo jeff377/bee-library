@@ -134,17 +134,16 @@ namespace Bee.Api.Client.Definitions
             if (schema.Tables == null)
                 return namespaces;
 
-            foreach (var table in schema.Tables)
+            var enumNames = schema.Tables
+                .Where(table => table.Fields != null)
+                .SelectMany(table => table.Fields!)
+                .Select(field => field.LangEnumName)
+                .Where(name => !string.IsNullOrWhiteSpace(name));
+            foreach (string name in enumNames)
             {
-                if (table.Fields == null) continue;
-                foreach (var field in table.Fields)
-                {
-                    string name = field.LangEnumName;
-                    if (string.IsNullOrWhiteSpace(name)) continue;
-                    int dot = name.IndexOf('.');
-                    // A bare name resolves against the schema's own namespace, already added above.
-                    if (dot > 0) namespaces.Add(name.Substring(0, dot));
-                }
+                int dot = name.IndexOf('.');
+                // A bare name resolves against the schema's own namespace, already added above.
+                if (dot > 0) namespaces.Add(name.Substring(0, dot));
             }
             return namespaces;
         }

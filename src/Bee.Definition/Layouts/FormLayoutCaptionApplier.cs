@@ -68,10 +68,10 @@ namespace Bee.Definition.Layouts
         {
             if (section.Fields == null || table.Fields == null)
                 return;
-            foreach (var field in section.Fields)
+            foreach (var field in section.Fields.Where(
+                f => !string.IsNullOrWhiteSpace(f.FieldName) && table.Fields.Contains(f.FieldName)))
             {
-                if (!string.IsNullOrWhiteSpace(field.FieldName) && table.Fields.Contains(field.FieldName))
-                    field.Caption = table.Fields[field.FieldName].Caption;
+                field.Caption = table.Fields[field.FieldName].Caption;
             }
         }
 
@@ -79,10 +79,10 @@ namespace Bee.Definition.Layouts
         {
             if (grid.Columns == null || table.Fields == null)
                 return;
-            foreach (var column in grid.Columns)
+            foreach (var column in grid.Columns.Where(
+                c => !string.IsNullOrWhiteSpace(c.FieldName) && table.Fields.Contains(c.FieldName)))
             {
-                if (!string.IsNullOrWhiteSpace(column.FieldName) && table.Fields.Contains(column.FieldName))
-                    column.Caption = table.Fields[column.FieldName].Caption;
+                column.Caption = table.Fields[column.FieldName].Caption;
             }
         }
     }

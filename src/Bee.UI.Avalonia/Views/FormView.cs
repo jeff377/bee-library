@@ -434,10 +434,11 @@ namespace Bee.UI.Avalonia.Views
             // Without a loader the layout is generated from the schema, exactly as before. With one,
             // it comes from the tenant's layout definition when it has one, else the base
             // definition, else generation — with captions from the localized schema either way.
+            string layoutProgId = string.IsNullOrEmpty(ProgId) ? Schema.ProgId : ProgId;
             _formLayout = DefinitionLoader is null
                 ? Schema.GetFormLayout()
                 : await DefinitionLoader
-                    .GetRuntimeLayoutAsync(string.IsNullOrEmpty(ProgId) ? Schema.ProgId : ProgId, Schema)
+                    .GetRuntimeLayoutAsync(layoutProgId, Schema)
                     .ConfigureAwait(true);
             // Degrade the layout against the cached capability snapshot before it
             // renders: hide sensitive fields without Read and mark them read-only without Update

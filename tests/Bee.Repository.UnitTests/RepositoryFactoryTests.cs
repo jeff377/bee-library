@@ -68,7 +68,7 @@ namespace Bee.Repository.UnitTests
             var repository = method.Invoke(factory, [Guid.Empty]);
 
             Assert.NotNull(repository);
-            Assert.IsAssignableFrom(contract, repository);
+            Assert.IsType(contract, repository, exactMatch: false);
         }
 
         [Fact]

@@ -20,6 +20,11 @@ namespace Bee.Repository.System
     {
         private const string TableName = "st_api_key";
         private const string SysIdColumn = "sys_id";
+        private const string SysNameColumn = "sys_name";
+        private const string KeyTypeColumn = "key_type";
+        private const string ContactColumn = "contact";
+        private const string ExpiredAtColumn = "expired_at";
+        private const string EnabledColumn = "enabled";
 
         /// <summary>
         /// Initializes a new <see cref="ApiKeyRepository"/>.
@@ -44,12 +49,12 @@ namespace Bee.Repository.System
             var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colId = dbType.QuoteIdentifier(SysIdColumn);
-            string colName = dbType.QuoteIdentifier("sys_name");
+            string colName = dbType.QuoteIdentifier(SysNameColumn);
             string colHashed = dbType.QuoteIdentifier("hashed_key");
-            string colKeyType = dbType.QuoteIdentifier("key_type");
-            string colContact = dbType.QuoteIdentifier("contact");
-            string colExpired = dbType.QuoteIdentifier("expired_at");
-            string colEnabled = dbType.QuoteIdentifier("enabled");
+            string colKeyType = dbType.QuoteIdentifier(KeyTypeColumn);
+            string colContact = dbType.QuoteIdentifier(ContactColumn);
+            string colExpired = dbType.QuoteIdentifier(ExpiredAtColumn);
+            string colEnabled = dbType.QuoteIdentifier(EnabledColumn);
 
             string sql = $"SELECT {colId}, {colName}, {colHashed}, {colKeyType}, {colContact}, {colExpired} \n" +
                          $"FROM {tbl} \n" +
@@ -61,14 +66,14 @@ namespace Bee.Repository.System
             if (table.IsEmpty()) { return null; }
 
             var row = table.Rows[0];
-            object expiredAt = row["expired_at"];
+            object expiredAt = row[ExpiredAtColumn];
             return new ApiKeyInfo
             {
                 SysId = ValueUtilities.CStr(row[SysIdColumn]),
-                SysName = ValueUtilities.CStr(row["sys_name"]),
+                SysName = ValueUtilities.CStr(row[SysNameColumn]),
                 HashedKey = ValueUtilities.CStr(row["hashed_key"]),
-                KeyType = (ApiKeyType)ValueUtilities.CInt(row["key_type"], (int)ApiKeyType.Internal),
-                Contact = ValueUtilities.CStr(row["contact"]),
+                KeyType = (ApiKeyType)ValueUtilities.CInt(row[KeyTypeColumn], (int)ApiKeyType.Internal),
+                Contact = ValueUtilities.CStr(row[ContactColumn]),
                 // `expired_at` is a naive column holding UTC (ADR-032 D1), matching the
                 // `DateTime.UtcNow` the validator compares it against.
                 ExpiredAt = expiredAt is DateTime dt ? dt : null,
@@ -127,12 +132,12 @@ namespace Bee.Repository.System
             string tbl = dbType.QuoteIdentifier(TableName);
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
             string colId = dbType.QuoteIdentifier(SysIdColumn);
-            string colName = dbType.QuoteIdentifier("sys_name");
+            string colName = dbType.QuoteIdentifier(SysNameColumn);
             string colHashed = dbType.QuoteIdentifier("hashed_key");
-            string colKeyType = dbType.QuoteIdentifier("key_type");
-            string colContact = dbType.QuoteIdentifier("contact");
-            string colEnabled = dbType.QuoteIdentifier("enabled");
-            string colExpired = dbType.QuoteIdentifier("expired_at");
+            string colKeyType = dbType.QuoteIdentifier(KeyTypeColumn);
+            string colContact = dbType.QuoteIdentifier(ContactColumn);
+            string colEnabled = dbType.QuoteIdentifier(EnabledColumn);
+            string colExpired = dbType.QuoteIdentifier(ExpiredAtColumn);
             string colInsert = dbType.QuoteIdentifier("sys_insert_time");
 
             string sql = $"INSERT INTO {tbl} \n" +
@@ -166,11 +171,11 @@ namespace Bee.Repository.System
             var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colId = dbType.QuoteIdentifier(SysIdColumn);
-            string colName = dbType.QuoteIdentifier("sys_name");
-            string colKeyType = dbType.QuoteIdentifier("key_type");
-            string colContact = dbType.QuoteIdentifier("contact");
-            string colEnabled = dbType.QuoteIdentifier("enabled");
-            string colExpired = dbType.QuoteIdentifier("expired_at");
+            string colName = dbType.QuoteIdentifier(SysNameColumn);
+            string colKeyType = dbType.QuoteIdentifier(KeyTypeColumn);
+            string colContact = dbType.QuoteIdentifier(ContactColumn);
+            string colEnabled = dbType.QuoteIdentifier(EnabledColumn);
+            string colExpired = dbType.QuoteIdentifier(ExpiredAtColumn);
             string colInsert = dbType.QuoteIdentifier("sys_insert_time");
 
             // `hashed_key` is deliberately absent from the projection, not merely unmapped: the
@@ -184,15 +189,15 @@ namespace Bee.Repository.System
             var list = new List<ApiKeySummary>();
             foreach (global::System.Data.DataRow row in result.Table!.Rows)
             {
-                object expiredAt = row["expired_at"];
+                object expiredAt = row[ExpiredAtColumn];
                 object issuedAt = row["sys_insert_time"];
                 list.Add(new ApiKeySummary
                 {
                     SysId = ValueUtilities.CStr(row[SysIdColumn]),
-                    SysName = ValueUtilities.CStr(row["sys_name"]),
-                    KeyType = (ApiKeyType)ValueUtilities.CInt(row["key_type"], (int)ApiKeyType.Internal),
-                    Contact = ValueUtilities.CStr(row["contact"]),
-                    Enabled = ValueUtilities.CBool(row["enabled"]),
+                    SysName = ValueUtilities.CStr(row[SysNameColumn]),
+                    KeyType = (ApiKeyType)ValueUtilities.CInt(row[KeyTypeColumn], (int)ApiKeyType.Internal),
+                    Contact = ValueUtilities.CStr(row[ContactColumn]),
+                    Enabled = ValueUtilities.CBool(row[EnabledColumn]),
                     ExpiredAt = expiredAt is DateTime expiry ? expiry : null,
                     IssuedAt = issuedAt is DateTime issued ? issued : null,
                 });
@@ -203,13 +208,13 @@ namespace Bee.Repository.System
         /// <inheritdoc/>
         public bool SetEnabled(string sysId, bool enabled)
         {
-            return UpdateColumn(sysId, "enabled", enabled);
+            return UpdateColumn(sysId, EnabledColumn, enabled);
         }
 
         /// <inheritdoc/>
         public bool SetExpiry(string sysId, DateTime? expiredAt)
         {
-            return UpdateColumn(sysId, "expired_at", expiredAt.HasValue ? expiredAt.Value : DBNull.Value);
+            return UpdateColumn(sysId, ExpiredAtColumn, expiredAt.HasValue ? expiredAt.Value : DBNull.Value);
         }
 
         /// <summary>
@@ -280,7 +285,7 @@ namespace Bee.Repository.System
         {
             var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
-            string colEnabled = dbType.QuoteIdentifier("enabled");
+            string colEnabled = dbType.QuoteIdentifier(EnabledColumn);
 
             string sql = $"SELECT COUNT(*) FROM {tbl} WHERE {colEnabled} = {{0}}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, true);
