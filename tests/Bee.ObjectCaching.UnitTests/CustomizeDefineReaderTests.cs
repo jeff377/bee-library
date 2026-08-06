@@ -53,6 +53,14 @@ namespace Bee.ObjectCaching.UnitTests
             XmlCodec.SerializeToFile(new ProgramSettings(), paths.GetProgramSettingsFilePath());
         }
 
+        private void WriteCustomizePluginSettings(string customizeId, string progId, string pluginType)
+        {
+            var paths = new CustomizeOnlyPathOptions(_root, customizeId);
+            var settings = new PluginSettings();
+            settings.Items!.Add(progId).Plugins!.Add(pluginType);
+            XmlCodec.SerializeToFile(settings, paths.GetPluginSettingsFilePath());
+        }
+
         [Fact]
         [DisplayName("GetCustomizeFormLayout 客製檔存在時應回傳客製物件")]
         public void GetCustomizeFormLayout_FileExists_ReturnsCustomize()
@@ -148,6 +156,57 @@ namespace Bee.ObjectCaching.UnitTests
             Assert.NotNull(reader.GetCustomizeFormLayout(custA, "EmployeeDefault"));
             // B 沒有任何客製檔，必須回 null —— A 的客製不得外溢到 B。
             Assert.Null(reader.GetCustomizeFormLayout(custB, "EmployeeDefault"));
+        }
+
+        [Fact]
+        [DisplayName("GetCustomizePluginSettings 讀的是客製化路徑下的檔案，內容為該租戶的鏈")]
+        public void GetCustomizePluginSettings_FileExists_ReturnsCustomizeChain()
+        {
+            WriteCustomizePluginSettings(_customizeId, "Order", "Cust.CreditLimit, Cust");
+            var reader = CreateReader();
+
+            var settings = reader.GetCustomizePluginSettings(_customizeId);
+
+            Assert.NotNull(settings);
+            Assert.Equal("Cust.CreditLimit, Cust", Assert.Single(settings!.GetPluginTypes("Order")));
+        }
+
+        [Fact]
+        [DisplayName("GetCustomizePluginSettings 客製檔不存在時回 null，不會被空實例遮蔽")]
+        public void GetCustomizePluginSettings_FileMissing_ReturnsNull()
+        {
+            // PluginSettingsCache 在缺檔時會給出空實例（base 層要的行為），所以 reader 必須先探
+            // 檔案存在性再進 cache——否則「租戶沒有客製」與「租戶客製成空鏈」就分不出來。
+            Assert.Null(CreateReader().GetCustomizePluginSettings(_customizeId));
+        }
+
+        [Fact]
+        [DisplayName("跨租戶隔離：A 的 plugin 客製不外溢到 B")]
+        public void CrossTenant_PluginSettings_Isolated()
+        {
+            string custA = "a" + Guid.NewGuid().ToString("N");
+            string custB = "b" + Guid.NewGuid().ToString("N");
+            WriteCustomizePluginSettings(custA, "Order", "A.OnlyForA, A");
+            WriteCustomizePluginSettings(custB, "Order", "B.OnlyForB, B");
+            var reader = CreateReader();
+
+            Assert.Equal("A.OnlyForA, A",
+                Assert.Single(reader.GetCustomizePluginSettings(custA)!.GetPluginTypes("Order")));
+            Assert.Equal("B.OnlyForB, B",
+                Assert.Single(reader.GetCustomizePluginSettings(custB)!.GetPluginTypes("Order")));
+        }
+
+        [Fact]
+        [DisplayName("客製檔落在 {CustomizePath}/{customizeId}/PluginSettings.xml，與套裝路徑分離")]
+        public void CustomizePluginSettings_LivesUnderTheCustomizeRoot()
+        {
+            WriteCustomizePluginSettings(_customizeId, "Order", "Cust.CreditLimit, Cust");
+
+            string expected = Path.Combine(_root, _customizeId, "PluginSettings.xml");
+            Assert.True(File.Exists(expected));
+
+            // 套裝路徑不因客製而生成任何東西。
+            Assert.False(File.Exists(new PathOptions { DefinePath = _root }.GetPluginSettingsFilePath()));
         }
 
         [Fact]

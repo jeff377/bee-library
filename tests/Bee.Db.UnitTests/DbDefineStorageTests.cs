@@ -99,6 +99,14 @@ namespace Bee.Db.UnitTests
             storage.SaveProgramSettings(new ProgramSettings());
             Assert.NotNull(storage.GetProgramSettings());
             Assert.True(CacheVersion(databaseType, "ProgramSettings:*") >= 1);
+
+            // --- PluginSettings (optional singleton: missing returns null; then round-trips) ---
+            var plugins = new PluginSettings();
+            plugins.Items!.Add("Order").Plugins!.Add("Pkg.Audit, Pkg");
+            storage.SavePluginSettings(plugins);
+            Assert.Equal("Pkg.Audit, Pkg",
+                Assert.Single(storage.GetPluginSettings()!.GetPluginTypes("Order")));
+            Assert.True(CacheVersion(databaseType, "PluginSettings:*") >= 1);
         }
 
         [DbFact(DatabaseType.SQLServer)]
@@ -192,6 +200,27 @@ namespace Bee.Db.UnitTests
             SeedCustomizeRow(databaseType, "ProgramSettings", customizeId, "*",
                 XmlCodec.Serialize(new ProgramSettings()));
             Assert.NotNull(storage.GetCustomizeProgramSettings(customizeId));
+
+            // PluginSettings override (singleton key "*"). The base row written above carries a
+            // different chain, so this also proves the two layers stay separate rows rather than
+            // one overwriting the other.
+            Assert.Null(storage.GetCustomizePluginSettings(customizeId));
+
+            var basePlugins = new PluginSettings();
+            basePlugins.Items!.Add("Order").Plugins!.Add("Pkg.Audit, Pkg");
+            storage.SavePluginSettings(basePlugins);
+
+            var tenantPlugins = new PluginSettings();
+            tenantPlugins.Items!.Add("Order").Plugins!.Add("Cust.CreditLimit, Cust");
+            SeedCustomizeRow(databaseType, "PluginSettings", customizeId, "*",
+                XmlCodec.Serialize(tenantPlugins));
+
+            Assert.Equal("Cust.CreditLimit, Cust",
+                Assert.Single(storage.GetCustomizePluginSettings(customizeId)!.GetPluginTypes("Order")));
+            Assert.Equal("Pkg.Audit, Pkg",
+                Assert.Single(storage.GetPluginSettings()!.GetPluginTypes("Order")));
+            // A different tenant has no override.
+            Assert.Null(storage.GetCustomizePluginSettings("other_" + Guid.NewGuid().ToString("N")));
         }
 
         [DbFact(DatabaseType.SQLServer)]
