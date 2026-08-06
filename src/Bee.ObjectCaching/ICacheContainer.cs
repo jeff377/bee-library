@@ -23,6 +23,9 @@ namespace Bee.ObjectCaching
         /// <summary>The menu definition cache.</summary>
         MenuSettingsCache MenuSettings { get; }
 
+        /// <summary>The business plugin binding cache.</summary>
+        PluginSettingsCache PluginSettings { get; }
+
         /// <summary>The permission model registry cache.</summary>
         PermissionModelsCache PermissionModels { get; }
 

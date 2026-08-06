@@ -57,6 +57,15 @@ namespace Bee.Definition
         /// the values travel on the wire, so renumbering the existing members would be a change
         /// with no upside.
         /// </remarks>
-        MenuSettings
+        MenuSettings,
+        /// <summary>
+        /// Business plugin bindings (per progId, an ordered chain of types run by the save and
+        /// delete pipelines).
+        /// </summary>
+        /// <remarks>
+        /// Appended for the same reason as <see cref="MenuSettings"/>: the values travel on the
+        /// wire, so renumbering the existing members would be a change with no upside.
+        /// </remarks>
+        PluginSettings
     }
 }

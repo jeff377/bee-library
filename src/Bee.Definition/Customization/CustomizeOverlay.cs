@@ -24,6 +24,7 @@ namespace Bee.Definition.Customization
     ///   <item><description><b>Language text — per key.</b> A customization resource holds only the keys it changes; every other key comes from base, so a base translation added later propagates on its own.</description></item>
     ///   <item><description><b>Language enum — whole enum.</b> An option set only means something as an ordered whole; merging entry by entry would leave both the ordering and the meaning of an omitted entry ambiguous.</description></item>
     ///   <item><description><b>ProgramSettings — per progId, then per property.</b> Each program's bindings are independent of the others, and within one program each binding is independent of its siblings: a customization that names only a business object keeps the base repository.</description></item>
+    ///   <item><description><b>PluginSettings — per progId, concatenated.</b> The only granularity that adds instead of choosing: the base chain runs, then the customization chain. A plugin is an extra step rather than a replacement, so two layers' plugins do not conflict.</description></item>
     ///   <item><description><b>MenuSettings — whole file.</b> A menu is one arrangement; merging node by node would produce groupings and orderings no author chose.</description></item>
     ///   <item><description><b>FormLayout — whole file.</b> A layout is one visual arrangement; a partial merge has no intuitive answer ("this section moved — do the fields under it follow?").</description></item>
     /// </list>
@@ -129,6 +130,44 @@ namespace Bee.Definition.Customization
         /// <param name="base">The base layer's value.</param>
         private static string Prefer(string customize, string @base)
             => StringUtilities.IsEmpty(customize) ? @base : customize;
+
+        /// <summary>
+        /// Returns the plugin type names bound to a progId: the base chain first, then the
+        /// customization chain. This is the one granularity here that <b>adds</b> rather than
+        /// chooses.
+        /// </summary>
+        /// <param name="customize">The customization settings, or <c>null</c> when the tenant provides none.</param>
+        /// <param name="base">The base settings, or <c>null</c> when the deployment defines none.</param>
+        /// <param name="progId">The program identifier.</param>
+        /// <returns>The concatenated chain in execution order; empty when neither layer declares any.</returns>
+        /// <remarks>
+        /// <para>
+        /// Concatenation follows from what a plugin is. A binding names the one type that <i>is</i>
+        /// the program's business object, so a customization naming another has to displace it; a
+        /// plugin only adds a step, and two additions do not conflict. It also means a plugin the
+        /// package adds later takes effect for tenants that customized this program, which the
+        /// override granularities cannot offer.
+        /// </para>
+        /// <para>
+        /// The corollary is that a tenant <b>cannot suppress</b> a base plugin — there is no
+        /// tombstone syntax, deliberately. Removing packaged behaviour is what subclassing the
+        /// business object and overriding the step is for.
+        /// </para>
+        /// <para>
+        /// Duplicates across the two layers are left as they are: the same type named by both is
+        /// run twice, which is what the definition says. Within one layer the collection key
+        /// already rejects a repeat.
+        /// </para>
+        /// </remarks>
+        public static IReadOnlyList<string> GetPluginTypes(PluginSettings? customize, PluginSettings? @base, string progId)
+        {
+            var baseTypes = @base?.GetPluginTypes(progId) ?? [];
+            var customizeTypes = customize?.GetPluginTypes(progId) ?? [];
+
+            if (customizeTypes.Count == 0) { return baseTypes; }
+            if (baseTypes.Count == 0) { return customizeTypes; }
+            return [.. baseTypes, .. customizeTypes];
+        }
 
         /// <summary>
         /// Selects the menu definition: a customization menu replaces the base menu outright.

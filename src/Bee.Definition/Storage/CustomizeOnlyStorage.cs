@@ -11,10 +11,11 @@ namespace Bee.Definition.Storage
     /// <summary>
     /// Read-only define storage for the tenant customization-override layer. Resolves files
     /// strictly under <c>{CustomizePath}/{customizeId}/</c> (via <see cref="CustomizeOnlyPathOptions"/>)
-    /// and serves only the four customizable types: Language, FormLayout, ProgramSettings, MenuSettings.
+    /// and serves only the five customizable types: Language, FormLayout, ProgramSettings,
+    /// MenuSettings, PluginSettings.
     /// </summary>
     /// <remarks>
-    /// A missing customization file is a normal scenario, so the four supported getters return
+    /// A missing customization file is a normal scenario, so the five supported getters return
     /// <c>null</c> rather than throwing or falling back to the base layer. Every other member
     /// throws <see cref="NotSupportedException"/> — the override layer never owns FormSchema,
     /// TableSchema, DbCategorySettings, nor any write operation.
@@ -127,6 +128,22 @@ namespace Bee.Definition.Storage
         public void SaveMenuSettings(MenuSettings settings)
             => throw new NotSupportedException(ReadOnlyMessage);
 
+        /// <summary>
+        /// Gets the customization override of the business plugin bindings, or <c>null</c> when the
+        /// tenant provides none.
+        /// </summary>
+        public PluginSettings? GetPluginSettings()
+        {
+            string filePath = _paths.GetPluginSettingsFilePath();
+            if (!File.Exists(filePath))
+                return null;
+            return XmlCodec.DeserializeFromFile<PluginSettings>(filePath);
+        }
+
+        /// <summary>Not supported — the override layer is strictly read-only.</summary>
+        public void SavePluginSettings(PluginSettings settings)
+            => throw new NotSupportedException(ReadOnlyMessage);
+
         /// <summary>Not supported — the override layer is strictly read-only.</summary>
         public void SaveDbCategorySettings(DbCategorySettings settings)
             => throw new NotSupportedException(ReadOnlyMessage);
@@ -168,6 +185,7 @@ namespace Bee.Definition.Storage
             {
                 DefineType.ProgramSettings => [_paths.GetProgramSettingsFilePath()],
                 DefineType.MenuSettings => [_paths.GetMenuSettingsFilePath()],
+                DefineType.PluginSettings => [_paths.GetPluginSettingsFilePath()],
                 DefineType.FormLayout when keys.Length >= 1 => [_paths.GetFormLayoutFilePath(keys[0])],
                 DefineType.Language when keys.Length >= 2 => [_paths.GetLanguageFilePath(keys[0], keys[1])],
                 _ => null

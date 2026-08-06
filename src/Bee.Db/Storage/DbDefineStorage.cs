@@ -178,6 +178,20 @@ namespace Bee.Db.Storage
         }
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// Optional like the menu: a deployment that binds no plugins simply has no row.
+        /// </remarks>
+        public PluginSettings? GetPluginSettings()
+            => ReadOptional<PluginSettings>(BaseCustomizeId, SingletonKey);
+
+        /// <inheritdoc/>
+        public void SavePluginSettings(PluginSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+            Write(settings, SingletonKey);
+        }
+
+        /// <inheritdoc/>
         public TableSchema? GetTableSchema(string categoryId, string tableName)
             => ReadRequired<TableSchema>(BaseCustomizeId, TableSchemaKey(categoryId, tableName));
 
@@ -255,6 +269,10 @@ namespace Bee.Db.Storage
             settings?.EnsureValid();
             return settings;
         }
+
+        /// <inheritdoc/>
+        public PluginSettings? GetCustomizePluginSettings(string customizeId)
+            => ReadOptional<PluginSettings>(customizeId, SingletonKey);
 
         /// <inheritdoc/>
         public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId)

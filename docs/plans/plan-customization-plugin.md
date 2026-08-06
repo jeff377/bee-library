@@ -4,7 +4,7 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| G1 | `PluginSettings` 定義型別與讀取管線（path / storage / cache / reader / overlay） | 📝 待做 |
+| G1 | `PluginSettings` 定義型別與讀取管線（path / storage / cache / reader / overlay） | ✅ 已完成（2026-08-06） |
 | G2 | `FormBusinessPlugin` 基底與掛載點的執行接線 | 📝 待做 |
 | G3 | 客製 plugin 設定的 API 維護（讀 / 存 / 儲存時驗證 / 快取失效） | 📝 待做 |
 | G4 | 端到端測試與雙語文件 | 📝 待做 |
@@ -329,9 +329,28 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
 - `IDefineAccess.GetPluginSettings()` 與 `ICustomizeDefineReader.GetCustomizePluginSettings()`。
   後者比照 `GetCustomizeProgramSettings` 先探檔案存在性再進 cache。
 - `CustomizeOverlay` 加疊加方法（D4：套裝在前、客製在後，回傳合併後的有序清單）。
-- **可寫的客製層**（G3 的前置）：客製 slot 的寫入介面與快取失效鏈。`CustomizeOnlyStorage` 目前
-  全面唯讀，此處要開第一個例外；`DbDefineStorage` 的 `customize_id` 欄已可承載，主要是把寫入
-  路徑與 cache-notify 接上。
+- ~~**可寫的客製層**（G3 的前置）~~ **→ 移到 G3**。base 層的 `SavePluginSettings` 已隨管線落地，
+  但**客製層仍然唯讀**（`CustomizeOnlyStorage.SavePluginSettings` 照舊丟 `NotSupportedException`）。
+  在沒有呼叫端的階段先開寫入路徑與失效鏈，等於寫一段無法驗證的程式碼；G3 是它唯一的消費者，
+  在那裡連同 API、儲存時驗證、cache-notify 一起做才測得出來。
+
+> **G1 落地紀錄（2026-08-06）**：五個定義型別（`PluginSettings` / `ProgramPluginItem` /
+> `ProgramPluginItemCollection` / `PluginItem` / `PluginItemCollection`）、`DefineType` 新成員、
+> 三個 storage（File / CustomizeOnly / Db）、`PluginSettingsCache`、`ICacheContainer` 與
+> `CacheContainerService`、`CacheDefineAccess`、`CustomizeDefineReader`、
+> `CustomizeOverlay.GetPluginTypes`。
+>
+> 兩點與本 plan 撰寫時的預期不同：
+> - **`IDefineAccess` 不加 `GetPluginSettings(customizeId)` 多載**。`ProgramSettings` 就沒有——
+>   疊加由消費端自己做（讀 base、經 `ICustomizeDefineReader` 讀客製、呼叫 `CustomizeOverlay`）。
+>   加一個「看起來會疊加、實際只回 base」的多載反而誤導。
+> - **`bee-add-cache-object` skill 描述的「三處同步」實際只有兩處**：`CacheContainerService` 的
+>   eviction 陣列與 `TryEvict` 在現行程式碼已不存在（poller 改為發布版本號、由 cache entry 依
+>   `ChangeNotifyKey` 自行失效），兩個 CacheNotify 測試 stub 也不再實作 `ICacheContainer`。
+>   skill 該段已過期。
+>
+> **公開文件暫不更新**：`definition-files-overview` 列的是使用者可用的客製型別，而 plugin 在
+> G2 之前不會被執行。提前寫進去等於宣告一個還不存在的功能，留到 G4 隨執行接線一起出。
 
 ### G2 — `FormBusinessPlugin` 基底與執行接線
 
@@ -366,6 +385,11 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
 ### G3 — 客製 plugin 設定的 API 維護
 
 依 D6 落地，走 `bee-add-bo-method` 的跨層流程（contract / wire / BO / Repository / Client）。
+
+- **開通客製層寫入**（原列於 G1，移來此處）：`CustomizeOnlyStorage.SavePluginSettings` 目前丟
+  `NotSupportedException`，這裡開第一個例外；`DbDefineStorage` 的 `customize_id` 欄已可承載，
+  主要是把寫入路徑與 cache-notify 接上。放在這裡是因為 G3 是它唯一的消費者，先寫沒有呼叫端的
+  寫入路徑無從驗證。
 
 - 兩個 BO 方法：讀回某 customizeId 的 plugin 設定、整份儲存。掛在 `System` 軸（與
   `SaveDefine` / `GetFormSchema` 同源），不另立 reserved progId。

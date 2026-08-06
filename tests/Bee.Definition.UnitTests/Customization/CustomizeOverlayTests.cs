@@ -13,6 +13,13 @@ namespace Bee.Definition.UnitTests.Customization
     /// </summary>
     public class CustomizeOverlayTests
     {
+        private static readonly string[] s_pkgChain = ["Pkg.Audit, Pkg", "Pkg.Numbering, Pkg"];
+        private static readonly string[] s_custChain = ["Cust.CreditLimit, Cust"];
+        private static readonly string[] s_concatenated =
+            ["Pkg.Audit, Pkg", "Pkg.Numbering, Pkg", "Cust.CreditLimit, Cust"];
+        private static readonly string[] s_pkgAuditOnly = ["Pkg.Audit, Pkg"];
+        private static readonly string[] s_custDedupeOnly = ["Cust.Dedupe, Cust"];
+
         // ---- 語系文字：per key ----
 
         [Fact]
@@ -260,6 +267,48 @@ namespace Bee.Definition.UnitTests.Customization
                 .Where(p => p.Name is not (nameof(ProgramItem.ProgId) or nameof(ProgramItem.Key)))
                 .ToArray();
 
+        // ---- PluginSettings：per progId 相加 ----
+
+        [Fact]
+        [DisplayName("plugin：兩層皆有時相加，套裝在前、客製在後")]
+        public void GetPluginTypes_BothLayers_ConcatenatesBaseThenCustomize()
+        {
+            var @base = Plugins(("Order", s_pkgChain));
+            var cust = Plugins(("Order", s_custChain));
+
+            Assert.Equal(s_concatenated, CustomizeOverlay.GetPluginTypes(cust, @base, "Order"));
+        }
+
+        [Fact]
+        [DisplayName("plugin：只有一層宣告時回該層的鏈")]
+        public void GetPluginTypes_SingleLayer_ReturnsThatChain()
+        {
+            var @base = Plugins(("Order", s_pkgAuditOnly));
+            var cust = Plugins(("Customer", s_custDedupeOnly));
+
+            Assert.Equal(s_pkgAuditOnly, CustomizeOverlay.GetPluginTypes(cust, @base, "Order"));
+            Assert.Equal(s_custDedupeOnly, CustomizeOverlay.GetPluginTypes(cust, @base, "Customer"));
+        }
+
+        [Fact]
+        [DisplayName("plugin：兩層皆無該 progId 或皆為 null 時回空集合")]
+        public void GetPluginTypes_BothMiss_ReturnsEmpty()
+        {
+            Assert.Empty(CustomizeOverlay.GetPluginTypes(Plugins(), Plugins(), "Nope"));
+            Assert.Empty(CustomizeOverlay.GetPluginTypes(null, null, "Order"));
+        }
+
+        [Fact]
+        [DisplayName("plugin：客製無法停用套裝的 plugin——沒有 tombstone，相加是唯一語意")]
+        public void GetPluginTypes_CustomizeCannotSuppressBase()
+        {
+            var @base = Plugins(("Order", s_pkgAuditOnly));
+            var cust = Plugins(("Order", []));
+
+            // 客製宣告了該 progId 但鏈為空，套裝的 plugin 仍然在。
+            Assert.Equal(s_pkgAuditOnly, CustomizeOverlay.GetPluginTypes(cust, @base, "Order"));
+        }
+
         // ---- FormLayout：整檔取代 ----
 
         [Fact]
@@ -336,6 +385,18 @@ namespace Bee.Definition.UnitTests.Customization
                 langEnum.Entries.Add(code, text);
             resource.Enums.Add(langEnum);
             return resource;
+        }
+
+        private static PluginSettings Plugins(params (string ProgId, string[] Types)[] items)
+        {
+            var settings = new PluginSettings();
+            foreach (var (progId, types) in items)
+            {
+                var program = settings.Items!.Add(progId);
+                foreach (var type in types)
+                    program.Plugins!.Add(type);
+            }
+            return settings;
         }
 
         private static ProgramSettings Settings(params (string ProgId, string BusinessObject)[] items)

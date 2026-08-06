@@ -234,6 +234,7 @@ namespace Bee.Business.UnitTests
             public LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns) => null;
             public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId) => null;
             public MenuSettings? GetCustomizeMenuSettings(string customizeId) => null;
+            public PluginSettings? GetCustomizePluginSettings(string customizeId) => null;
         }
 
         private sealed class ProgramSettingsDefineAccess : IDefineAccess

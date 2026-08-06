@@ -70,6 +70,22 @@ namespace Bee.ObjectCaching
         }
 
         /// <inheritdoc/>
+        public PluginSettings? GetCustomizePluginSettings(string customizeId)
+        {
+            if (!IsCustomizeEnabled(customizeId))
+                return null;
+
+            // PluginSettingsCache substitutes an empty instance when the file is absent, which is
+            // the right answer for the base layer but not here: "the tenant adds no plugins" and
+            // "the tenant adds an empty chain" have to stay distinguishable, so probe for the file
+            // and skip the cache entirely when there is no override.
+            var custPaths = new CustomizeOnlyPathOptions(_paths.CustomizePath, customizeId);
+            if (!File.Exists(custPaths.GetPluginSettingsFilePath()))
+                return null;
+            return _provider.For(customizeId).PluginSettings.Get();
+        }
+
+        /// <inheritdoc/>
         public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId)
         {
             if (!IsCustomizeEnabled(customizeId))

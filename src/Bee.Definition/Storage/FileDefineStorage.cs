@@ -162,6 +162,28 @@ namespace Bee.Definition.Storage
         }
 
         /// <summary>
+        /// Gets the business plugin bindings, or <c>null</c> when the file is absent — a deployment
+        /// with no plugins is the normal case, not a misconfiguration.
+        /// </summary>
+        public PluginSettings? GetPluginSettings()
+        {
+            string filePath = _paths.GetPluginSettingsFilePath();
+            if (!File.Exists(filePath))
+                return null;
+            return XmlCodec.DeserializeFromFile<PluginSettings>(filePath);
+        }
+
+        /// <summary>
+        /// Saves the business plugin bindings.
+        /// </summary>
+        /// <param name="settings">The plugin bindings.</param>
+        public void SavePluginSettings(PluginSettings settings)
+        {
+            string filePath = _paths.GetPluginSettingsFilePath();
+            XmlCodec.SerializeToFile(settings, filePath);
+        }
+
+        /// <summary>
         /// Gets the table schema for the specified category and table.
         /// </summary>
         /// <param name="categoryId">The database category id.</param>
@@ -285,6 +307,7 @@ namespace Bee.Definition.Storage
                 DefineType.UnitSettings => [_paths.GetUnitSettingsFilePath()],
                 DefineType.ProgramSettings => [_paths.GetProgramSettingsFilePath()],
                 DefineType.MenuSettings => [_paths.GetMenuSettingsFilePath()],
+                DefineType.PluginSettings => [_paths.GetPluginSettingsFilePath()],
                 DefineType.FormSchema when keys.Length >= 1 => [_paths.GetFormSchemaFilePath(keys[0])],
                 DefineType.FormLayout when keys.Length >= 1 => [_paths.GetFormLayoutFilePath(keys[0])],
                 DefineType.TableSchema when keys.Length >= 2 => [_paths.GetTableSchemaFilePath(keys[0], keys[1])],

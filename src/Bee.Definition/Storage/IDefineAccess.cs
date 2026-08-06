@@ -87,6 +87,29 @@ namespace Bee.Definition.Storage
         void SaveMenuSettings(MenuSettings settings) => SaveDefine(DefineType.MenuSettings, settings);
 
         /// <summary>
+        /// Gets the base-layer business plugin bindings.
+        /// </summary>
+        /// <remarks>
+        /// Default implementation delegates to <see cref="GetDefine"/>; <c>CacheDefineAccess</c>
+        /// overrides it with its cache path.
+        /// </remarks>
+        /// <remarks>
+        /// No customization-aware overload, matching <see cref="GetProgramSettings"/>: the two
+        /// layers add up per progId, and a consumer needs the chain of the one program it is
+        /// running, not a merge of every program. It reads this base copy, asks
+        /// <c>ICustomizeDefineReader</c> for the tenant copy, and combines them for its progId with
+        /// <c>CustomizeOverlay.GetPluginTypes</c> — the same routine a client would run, so both
+        /// ends agree.
+        /// </remarks>
+        PluginSettings GetPluginSettings() => (PluginSettings)GetDefine(DefineType.PluginSettings);
+
+        /// <summary>
+        /// Saves the business plugin bindings.
+        /// </summary>
+        /// <param name="settings">The plugin bindings.</param>
+        void SavePluginSettings(PluginSettings settings) => SaveDefine(DefineType.PluginSettings, settings);
+
+        /// <summary>
         /// Gets the permission model registry.
         /// </summary>
         /// <remarks>

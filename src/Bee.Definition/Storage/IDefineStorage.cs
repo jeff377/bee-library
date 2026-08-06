@@ -66,6 +66,17 @@ namespace Bee.Definition.Storage
         void SaveMenuSettings(MenuSettings settings);
 
         /// <summary>
+        /// Gets the business plugin bindings; <c>null</c> when the deployment defines none.
+        /// </summary>
+        PluginSettings? GetPluginSettings();
+
+        /// <summary>
+        /// Saves the business plugin bindings.
+        /// </summary>
+        /// <param name="settings">The plugin bindings.</param>
+        void SavePluginSettings(PluginSettings settings);
+
+        /// <summary>
         /// Gets the table schema for the specified category and table.
         /// </summary>
         /// <param name="categoryId">The database category id.</param>

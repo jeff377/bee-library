@@ -5,16 +5,17 @@ using Bee.Definition.Settings;
 namespace Bee.Definition.Storage
 {
     /// <summary>
-    /// Reads the tenant customization-override layer for the four customizable definition
-    /// types (Language, ProgramSettings, MenuSettings, FormLayout). Each accessor returns the pure
+    /// Reads the tenant customization-override layer for the five customizable definition
+    /// types (Language, ProgramSettings, MenuSettings, FormLayout, PluginSettings). Each accessor returns the pure
     /// customization content for the given customization code, or <c>null</c> when the tenant
     /// provides no override (no file) — it never falls back to nor merges with the base layer.
     /// </summary>
     /// <remarks>
     /// This interface is intentionally separate from <see cref="IDefineAccess"/>: base reads are
     /// unchanged and continue to flow through <see cref="IDefineAccess"/>. Consumers overlay the
-    /// two layers at lookup granularity (per key / per progId / whole-file), never producing a
-    /// merged object and never mutating the base cache.
+    /// two layers at lookup granularity (per key / per progId / per property / concatenated /
+    /// whole-file), never mutating the base cache. Where a granularity does produce a combined
+    /// value it is a fresh object built at lookup time, never a write-back into either layer.
     /// </remarks>
     public interface ICustomizeDefineReader
     {
@@ -40,6 +41,13 @@ namespace Bee.Definition.Storage
         /// </summary>
         /// <param name="customizeId">The tenant customization code.</param>
         MenuSettings? GetCustomizeMenuSettings(string customizeId);
+
+        /// <summary>
+        /// Gets the customization override of the business plugin bindings for the given
+        /// customization code; <c>null</c> when no override exists.
+        /// </summary>
+        /// <param name="customizeId">The tenant customization code.</param>
+        PluginSettings? GetCustomizePluginSettings(string customizeId);
 
         /// <summary>
         /// Gets the customization override of the form layout for the given customization code

@@ -1,1 +1,4 @@
 #nullable enable
+Bee.Db.Storage.DbDefineStorage.GetCustomizePluginSettings(string! customizeId) -> Bee.Definition.Settings.PluginSettings?
+Bee.Db.Storage.DbDefineStorage.GetPluginSettings() -> Bee.Definition.Settings.PluginSettings?
+Bee.Db.Storage.DbDefineStorage.SavePluginSettings(Bee.Definition.Settings.PluginSettings! settings) -> void

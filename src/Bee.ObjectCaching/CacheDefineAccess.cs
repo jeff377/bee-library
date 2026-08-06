@@ -96,6 +96,8 @@ namespace Bee.ObjectCaching
                     return  this.GetProgramSettings();
                 case DefineType.MenuSettings:
                     return this.GetMenuSettings();
+                case DefineType.PluginSettings:
+                    return this.GetPluginSettings();
                 case DefineType.PermissionModels:
                     return this.GetPermissionModels();
                 case DefineType.DbCategorySettings:
@@ -154,6 +156,9 @@ namespace Bee.ObjectCaching
                     break;
                 case DefineType.MenuSettings:
                     this.SaveMenuSettings((defineObject as MenuSettings)!);
+                    break;
+                case DefineType.PluginSettings:
+                    this.SavePluginSettings((defineObject as PluginSettings)!);
                     break;
                 case DefineType.PermissionModels:
                     this.SavePermissionModels((defineObject as PermissionModels)!);
@@ -282,6 +287,25 @@ namespace Bee.ObjectCaching
             // Save the menu through the active storage, then invalidate the cache.
             _storage.SaveMenuSettings(settings);
             _cache.MenuSettings.Remove();
+        }
+
+        /// <summary>
+        /// Gets the base-layer business plugin bindings.
+        /// </summary>
+        public PluginSettings GetPluginSettings()
+        {
+            return _cache.PluginSettings.Get()!;
+        }
+
+        /// <summary>
+        /// Saves the business plugin bindings.
+        /// </summary>
+        /// <param name="settings">The plugin bindings.</param>
+        public void SavePluginSettings(PluginSettings settings)
+        {
+            // Save through the active storage, then invalidate the cache.
+            _storage.SavePluginSettings(settings);
+            _cache.PluginSettings.Remove();
         }
 
         /// <summary>

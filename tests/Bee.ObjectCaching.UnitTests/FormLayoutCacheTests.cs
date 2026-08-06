@@ -29,6 +29,8 @@ namespace Bee.ObjectCaching.UnitTests
             public void SaveProgramSettings(ProgramSettings settings) => throw new NotImplementedException();
             public MenuSettings? GetMenuSettings() => throw new NotImplementedException();
             public void SaveMenuSettings(MenuSettings settings) => throw new NotImplementedException();
+            public PluginSettings? GetPluginSettings() => throw new NotImplementedException();
+            public void SavePluginSettings(PluginSettings settings) => throw new NotImplementedException();
             public TableSchema? GetTableSchema(string categoryId, string tableName) => throw new NotImplementedException();
             public void SaveTableSchema(string categoryId, TableSchema tableSchema) => throw new NotImplementedException();
             public FormSchema? GetFormSchema(string progId) => throw new NotImplementedException();
