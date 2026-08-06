@@ -56,6 +56,26 @@ Bee.NET 的租戶概念原本只到**資料庫層**（[ADR-012](adr-012-session-
    > 型別則顯式指名該型別。此修訂**不影響**「不 merge 成單一物件」的核心決策（見下方「為何否決
    > merge」）——合成結果是查找當下產生的新實例，兩層的快取物件都不被異動。
 
+   > **修訂（2026-08-06）：客製範圍由三類擴為五類。** 本 ADR 定案時只有 Language / ProgramSettings /
+   > FormLayout 三類。其後 `ProgramItem` 加入 `Repository` 綁定（[ADR-034](adr-034-progid-type-registry.md)），
+   > 使「客製 BO」與「客製 Repository」成為兩個獨立的軸；`PluginSettings` 則新增為第五類
+   > （[ADR-035](adr-035-business-logic-plugin.md)）。**現行五類與各自粒度**：
+   >
+   > | 類型 | 疊加粒度 | 備註 |
+   > |------|---------|------|
+   > | **Language** | key 級 | enum 為整組取代 |
+   > | **FormLayout** | 整檔擇一 | |
+   > | **客製 BO** | progId 級 → 屬性級 | `ProgramItem.BusinessObject` |
+   > | **客製 Repository** | progId 級 → 屬性級 | `ProgramItem.Repository`，與 BO 獨立 |
+   > | **業務 plugin** | progId 級 **相加** | 唯一的相加粒度；套裝鏈在前、客製鏈在後，且**客製無法停用套裝的 plugin** |
+   >
+   > `PluginSettings` 同時是**第一個可寫的客製定義**（`LocalOnly` 維護 API），客製層其餘維持唯讀
+   > ——這使下方「客製定義只讀不寫」一節的敘述僅對其餘四類成立。
+   >
+   > 疊加演算法其後集中於 `CustomizeOverlay`（`Bee.Definition.Customization`），
+   > 為 server 與 client 共用的純決策元件（無 storage / session / DI 相依），
+   > 不再由兩端各自推導。使用面的完整說明見[租戶客製化](../customization.zh-TW.md)。
+
 3. **`CustomizeId` 為獨立代碼，非等同 `CompanyId`**
 
    - 多個 Company 可共用同一套客製（集團共用、標準 / 客製版分離）；Company → `CustomizeId` 多對一。
@@ -63,8 +83,8 @@ Bee.NET 的租戶概念原本只到**資料庫層**（[ADR-012](adr-012-session-
 
 4. **`CustomizeId` 顯式傳參（非 ambient）**
 
-   - 消費端（`LanguageService` / `ProgramSettingsFormBoTypeResolver` / `LocalDefineAccess`）為 stateless 單例，由持有 `AccessToken` 的呼叫端自 `SessionInfo.CustomizeId` 解析後**顯式傳入**。
-   - 新疊加方法以 **default interface method** 加在 `ILanguageService` / `IFormBoTypeResolver` / `IDefineAccess`，預設委派 base、零漣漪到既有實作。
+   - 消費端（`LanguageService` / `ProgramSettingsBoTypeResolver` / `CacheDefineAccess`）為 stateless 單例，由持有 `AccessToken` 的呼叫端自 `SessionInfo.CustomizeId` 解析後**顯式傳入**。
+   - 新疊加方法以 **default interface method** 加在 `ILanguageService` / `IBoTypeResolver` / `IDefineAccess`，預設委派 base、零漣漪到既有實作。
 
 5. **短路即向後相容**
 
@@ -120,7 +140,7 @@ Bee.NET 的租戶概念原本只到**資料庫層**（[ADR-012](adr-012-session-
 消費端（持 AccessToken）
    │ 自 SessionInfo.CustomizeId 解析 customizeId，顯式傳入
    ↓
-LanguageService / ProgramSettingsFormBoTypeResolver / LocalDefineAccess
+LanguageService / ProgramSettingsBoTypeResolver / CacheDefineAccess
    │ customizeId 空 → 短路純 base
    │ 非空 ↓
 ICustomizeDefineReader.GetCustomizeXxx(customizeId, ...)
@@ -150,16 +170,16 @@ CustomizeOnlyStorage（嚴格只讀 {CustomizePath}/{customizeId}/...，無檔�
 | `CustomizeOnlyPathOptions` / `CustomizeOnlyStorage` | **新增**（`Bee.Definition`）：只服務三類、無檔回 null、含 path traversal 防護 |
 | `ICustomizeDefineReader` | **新增**（`Bee.Definition.Storage`）：三個 `GetCustomizeXxx(customizeId, ...)` |
 | `ICacheContainerProvider` / `CacheContainerProvider` / `CustomizeDefineReader` | **新增**（`Bee.ObjectCaching`） |
-| `ILanguageService` / `IFormBoTypeResolver` / `IDefineAccess` | 加 `customizeId`-aware default interface method |
+| `ILanguageService` / `IBoTypeResolver` / `IDefineAccess` | 加 `customizeId`-aware default interface method |
 | `CompanyInfo` / `SessionInfo` | 加 `CustomizeId` 欄位 |
-| `RemoteDefineAccess` / `ClientInfo` | 加 `ClearCache()` / `ResetDefineCache()`（切換租戶清 client 快取） |
+| `ClientDefineAccess` / `ClientInfo` | 加 `ClearCache()` / `ResetDefineCache()`（切換租戶清 client 快取） |
 | `st_company` | 加 `customize_id` 欄 |
 
 ## 取捨
 
 ### Client 端快取需在切換租戶時 flush
 
-客製疊加在 server 端（依 session `CustomizeId`）完成，client 取得的已是疊加後結果。但 `RemoteDefineAccess` 本地快取以 progId / layoutId / namespace 為鍵，同一連線經 `EnterCompany` 切換公司（`CustomizeId` 變動）時會回前一租戶的疊加結果。對策：`RemoteDefineAccess.ClearCache()` + `ClientInfo.ResetDefineCache()`，切換公司後呼叫。
+客製疊加在 server 端（依 session `CustomizeId`）完成，client 取得的已是疊加後結果。但 `ClientDefineAccess` 本地快取以 progId / layoutId / namespace 為鍵，同一連線經 `EnterCompany` 切換公司（`CustomizeId` 變動）時會回前一租戶的疊加結果。對策：`ClientDefineAccess.ClearCache()` + `ClientInfo.ResetDefineCache()`，切換公司後呼叫。
 
 ### Oracle `''=NULL` 與 `customize_id` 的 nullability
 
@@ -173,16 +193,22 @@ progId 級查找只解「給定 progId 取其一」，不直接給 base ∪ cust
 
 框架只負責**讀**客製檔；客製檔由外部工具 / 部署流程產生。`SaveXxx` 不走客製寫入路徑。寫入留待後續計畫（需考量寫入路徑、cache 失效、與唯讀不變式的互動）。
 
+> **修訂（2026-08-06）：本節現僅適用於 Language / FormLayout / 客製 BO / 客製 Repository 四類。**
+> `PluginSettings` 已開放寫入（`ICustomizeDefineWriter` + `LocalOnly` 維護 API，寫入前逐一驗證型別、
+> 寫完即 evict 該租戶 cache slot）。`CustomizeOnlyStorage` 本身仍維持全面唯讀——寫入改由 writer
+> 直接經 `CustomizeOnlyPathOptions` 落檔，兩者共用同一份路徑來源，該類別的唯讀承諾不必為單一例外
+> 破功。詳見 [ADR-035](adr-035-business-logic-plugin.md)。
+
 ## 影響範圍
 
 | 範圍 | 影響 |
 |------|------|
 | `src/Bee.Definition` | 新增 `CustomizeOnlyPathOptions` / `CustomizeOnlyStorage` / `ICustomizeDefineReader`；`PathOptions` 加 `CustomizePath`；`ILanguageService` / `IDefineAccess` 加多載；`CompanyInfo` / `SessionInfo` 加 `CustomizeId` |
-| `src/Bee.ObjectCaching` | 新增 `ICacheContainerProvider` / `CacheContainerProvider` / `CustomizeDefineReader`；`LocalDefineAccess` 加 overlay 多載 |
-| `src/Bee.Business` | `ProgramSettingsFormBoTypeResolver` overlay（type cache 改 `(customizeId, progId)` 複合鍵）；`IFormBoTypeResolver` 加多載；`SystemBusinessObject` EnterCompany / LeaveCompany / Logout 設 / 清 `CustomizeId` |
+| `src/Bee.ObjectCaching` | 新增 `ICacheContainerProvider` / `CacheContainerProvider` / `CustomizeDefineReader`；`CacheDefineAccess` 加 overlay 多載 |
+| `src/Bee.Business` | `ProgramSettingsBoTypeResolver` overlay（type cache 改 `(customizeId, progId)` 複合鍵）；`IBoTypeResolver` 加多載；`SystemBusinessObject` EnterCompany / LeaveCompany / Logout 設 / 清 `CustomizeId` |
 | `src/Bee.Repository` | `CompanyRepository.GetById` 載入 `customize_id` |
 | `src/Bee.Hosting` | DI 註冊 provider / reader、三消費端注入 reader |
-| `src/Bee.Api.Client` / `src/Bee.UI.Core` | `RemoteDefineAccess.ClearCache()` / `ClientInfo.ResetDefineCache()` |
+| `src/Bee.Api.Client` / `src/Bee.UI.Core` | `ClientDefineAccess.ClearCache()` / `ClientInfo.ResetDefineCache()` |
 | 測試 | Override 層、消費端疊加、跨租戶隔離、短路、向後相容、EnterCompany→CustomizeId、client 切換清快取 |
 
 ## 相關文件
