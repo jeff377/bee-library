@@ -257,6 +257,13 @@ namespace Bee.Hosting
             //    object before, and it was process-wide.
             services.AddSingleton<IBusinessObjectFactory, BusinessObjectFactory>();
 
+            //    Business plugin chain resolver. Reads PluginSettings, base plus the tenant
+            //    customization, and caches the resolved chain per (customizationCode, progId).
+            services.AddSingleton<IFormPluginResolver>(sp =>
+                new PluginSettingsResolver(
+                    sp.GetRequiredService<IDefineAccess>(),
+                    sp.GetRequiredService<ICustomizeDefineReader>()));
+
             // 9. Repository factory — one registration for every repository, on both axes.
             services.AddSingleton<IRepositoryDatabaseRouter, RepositoryDatabaseRouter>();
             services.AddSingleton<IRepositoryFactory>(sp =>

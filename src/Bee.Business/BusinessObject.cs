@@ -91,6 +91,16 @@ namespace Bee.Business
         /// </summary>
         protected string? ApiKeyName => StringUtilities.IsEmpty(ApiKeyValidation.SysName) ? null : ApiKeyValidation.SysName;
 
+        /// <summary>
+        /// Gets the per-call context itself, for handing on to collaborators constructed with the
+        /// same shape — a business plugin, for instance.
+        /// </summary>
+        /// <remarks>
+        /// Prefer the typed members below for the business object's own use; this exists to pass
+        /// the context along, not as a second route to the same services.
+        /// </remarks>
+        protected IBeeContext Context => _ctx;
+
         /// <summary>Gets the definition data access service from the per-call context.</summary>
         protected IDefineAccess DefineAccess => _ctx.DefineAccess;
 

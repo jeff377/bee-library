@@ -246,8 +246,15 @@ namespace Bee.Business.Form
             var schema = DefineAccess.GetFormSchema(ProgId);
             var context = new SaveContext(args, args.DataSet, repository, schema);
 
+            // One runner for the whole call: BeforeSave and AfterSave must see the same plugin
+            // instances, so state computed in the first is still there in the second.
+            var plugins = CreatePluginRunner();
+
             // Business extension point before persistence (field defaults / computation / validation).
             DoBeforeSave(context);
+            // Plugins run after the step's final implementation — which may be an override in a
+            // custom business object — so both extension routes can be used together.
+            plugins.RunBeforeSave(context);
 
             // Capture the change set (before/after) and the master key/kind before persistence,
             // because the ADO.NET adapter calls AcceptChanges on success and discards RowState /
@@ -266,6 +273,7 @@ namespace Bee.Business.Form
                 WriteChangeAudit(changeKind, rowKey, AuditDiffGram.Serialize(changes), masterTableName, ProgId + ".Save");
 
             DoAfterSave(context);
+            plugins.RunAfterSave(context);
 
             return new SaveResult
             {
@@ -376,15 +384,25 @@ namespace Bee.Business.Form
             var schema = DefineAccess.GetFormSchema(ProgId);
             var context = new DeleteContext(args, repository, scopeFilter, schema);
 
+            var plugins = CreatePluginRunner();
+
             // Snapshot the record (master + details) before deleting so the audit captures its full
             // before-image and BeforeDelete rules can evaluate against it. Load once, only when the
             // audit or a BeforeDelete rule needs it — the direct-delete path stays read-free otherwise.
+            //
+            // A delete-stage plugin counts too, and must: it is the only remaining view of what was
+            // deleted, which a plugin propagating the deletion to another system needs. Leaving it
+            // out would make the snapshot's presence depend on the change-audit switch, so the same
+            // plugin would work in one deployment and see null in another.
             bool auditChange = ChangeAuditEnabled();
-            if (auditChange || HasBeforeDeleteRules(schema))
+            bool pluginNeedsSnapshot = plugins.Chain.HasStage(FormPluginStage.BeforeDelete)
+                || plugins.Chain.HasStage(FormPluginStage.AfterDelete);
+            if (auditChange || pluginNeedsSnapshot || HasBeforeDeleteRules(schema))
                 context.Snapshot = repository.GetData(args.RowId, scopeFilter);
 
             // Business extension point before deletion (BeforeDelete guard rules).
             DoBeforeDelete(context);
+            plugins.RunBeforeDelete(context);
 
             DoDelete(context);
 
@@ -392,6 +410,7 @@ namespace Bee.Business.Form
                 WriteDeleteAudit(context.Snapshot, args.RowId);
 
             DoAfterDelete(context);
+            plugins.RunAfterDelete(context);
 
             return new DeleteResult { RowsAffected = context.RowsAffected };
         }
@@ -451,6 +470,25 @@ namespace Bee.Business.Form
         /// </summary>
         private IFormRuleProcessor RuleProcessor
             => _ruleProcessor ??= Services.GetRequiredService<IFormRuleProcessor>();
+
+        private IFormPluginResolver? _pluginResolver;
+
+        /// <summary>
+        /// Gets the resolver that maps this program to its business plugin chain.
+        /// </summary>
+        private IFormPluginResolver PluginResolver
+            => _pluginResolver ??= Services.GetRequiredService<IFormPluginResolver>();
+
+        /// <summary>
+        /// Builds the plugin runner for one <c>Save</c> or <c>Delete</c> call.
+        /// </summary>
+        /// <remarks>
+        /// One runner per call, which is what makes the plugin instances per operation: every stage
+        /// of this call goes through the same runner and therefore the same objects.
+        /// </remarks>
+        private FormPluginRunner CreatePluginRunner()
+            => PluginResolver.Resolve(GetCurrentCustomizeId(), ProgId)
+                .CreateRunner(Context, AccessToken, ProgId);
 
         /// <summary>
         /// Returns true when the schema declares any enabled <c>BeforeDelete</c> rule.

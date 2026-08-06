@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | G1 | `PluginSettings` 定義型別與讀取管線（path / storage / cache / reader / overlay） | ✅ 已完成（2026-08-06） |
-| G2 | `FormBusinessPlugin` 基底與掛載點的執行接線 | 📝 待做 |
+| G2 | `FormBusinessPlugin` 基底與掛載點的執行接線 | ✅ 已完成（2026-08-06） |
 | G3 | 客製 plugin 設定的 API 維護（讀 / 存 / 儲存時驗證 / 快取失效） | 📝 待做 |
 | G4 | 端到端測試與雙語文件 | 📝 待做 |
 
@@ -381,6 +381,22 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
 - 解析與快取：plugin 型別清單依 `(customizeId, progId)` 快取，比照 BO resolver 的 reload 偵測。
   這份清單同時是上一點的判斷依據（清單非空 → 載入 Snapshot）。
 - 失敗語意依 D3。
+
+> **G2 落地紀錄（2026-08-06）**：`FormBusinessPlugin`（四個虛擬空實作）、`FormPluginStage`、
+> `FormPluginChain`（反射判定各時點 + `TypesForStage` 供維護工具）、`FormPluginRunner`
+> （per-operation 實例、延遲建構）、`IFormPluginResolver` / `PluginSettingsResolver`
+> （兩層相加、失敗一律拋、依 `(customizeId, progId)` 快取並偵測重載）。
+> `FormBusinessObject` 四個位置接上，`DeleteContext.Snapshot` 的載入條件加入「有 delete 時點的
+> plugin」。DI 註冊於 `AddBeeFramework`。
+>
+> 三點實作決定：
+> - **resolver 經 `Services.GetRequiredService<T>()` 延遲解析**，不加進 `IBeeContext`——比照
+>   同檔的 `RuleProcessor`，避免動到公開契約。
+> - **`BusinessObject` 新增 `protected IBeeContext Context`**：plugin 的建構子收 `IBeeContext`，
+>   而 BO 原本只暴露拆開的個別服務，沒有整個 context 的出口。
+> - **runner 延遲建構、但一建就建整條鏈**：per-operation 的保證是「後面的時點找到同一個物件」，
+>   只有把建構綁在操作而非時點上才成立。16 個測試釘住，其中「同次操作跨時點共用實例」是關鍵
+>   ——改壞了不會有編譯錯誤。
 
 ### G3 — 客製 plugin 設定的 API 維護
 
