@@ -391,6 +391,116 @@ constraint。`DoBeforeSave` 的讀取只適合擋明顯錯誤的輸入,不能當
 寫進 repository,不要寫在 BO。繼承 `DataFormRepository` 並延伸它的 `Save`,讓額外的
 statement 加入同一個批次——見下一節。
 
+### 業務 plugin
+
+繼承是把 BO 換掉;**plugin** 是在既有的那個 BO 上加一段。客製屬於「追加」時用 plugin
+——存檔前多一道檢查、存檔後發個通知;需要攔截或取代框架既有行為時才繼承。
+
+| 需求 | 手段 | 能力 |
+|------|------|------|
+| 攔截或取代既有邏輯 | 繼承 BO 覆寫 `Do*` 子方法 | 可包夾 `base.DoXxx()` 前後,也可完全不呼叫 |
+| 在既有邏輯之後追加 | plugin | 只有後置一個控點 |
+
+兩者可疊著用:plugin 跑在該段**最終實作之後**,不論那是框架的還是客製子類的。
+
+#### 怎麼寫
+
+繼承 `FormBusinessPlugin`,只 override 需要的時點。
+
+```csharp
+public class CreditLimitPlugin : FormBusinessPlugin
+{
+    public CreditLimitPlugin(IBeeContext ctx, Guid accessToken, string progId)
+        : base(ctx, accessToken, progId) { }
+
+    public override void BeforeSave(SaveContext context)
+    {
+        if (/* 超出額度 */)
+            throw new UserMessageException("此客戶已超出信用額度。");
+    }
+}
+```
+
+建構子的三個參數與客製 repository 相同,其後可再宣告自己的相依——會由容器注入。
+
+#### 四個時點
+
+| 時點 | 執行位置 | 拿得到什麼 |
+|------|---------|-----------|
+| `BeforeSave` | 規則引擎之後、**稽核快照之前** | `SaveContext`,資料集仍可修改 |
+| `AfterSave` | 持久化與變更稽核之後 | `SaveContext`,含 `RefreshedDataSet` 與 `AffectedRows` |
+| `BeforeDelete` | guard 規則之後、刪除之前 | `DeleteContext`,含 `Snapshot` |
+| `AfterDelete` | 刪除與刪除稽核之後 | `DeleteContext`,含 `Snapshot` 與 `RowsAffected` |
+
+**`BeforeSave` 是 plugin 唯一能安全改資料的位置**:它在稽核快照與持久化之前,所以改動會被寫入
+**也會**被稽核記到。到了 `AfterSave` 資料已存檔——改 `DataSet` 沒有作用,改 `RefreshedDataSet`
+才會影響呼叫端收到的內容。
+
+**四個時點全部在資料庫交易之外**,交易只涵蓋 `DoSave` / `DoDelete`。後果見上方
+「BO 擴充點與交易邊界」。
+
+#### 每次操作一個實例
+
+一次 `Save`(或 `Delete`)只建構每個 plugin 一次,該次呼叫的所有時點共用它,因此
+`BeforeSave` 算出的東西可以放 instance field 給 `AfterSave` 用——這正是「一個需求橫跨兩個時點
+仍是一個類別」的原因。實例不會跨呼叫共用,所以不需要考慮鎖。
+
+#### 怎麼綁
+
+plugin 依 progId、依租戶綁在 `{CustomizePath}/{customizeId}/PluginSettings.xml`。
+**宣告順序即執行順序**,沒有 priority 數字。
+
+```xml
+<PluginSettings>
+  <Items>
+    <ProgramPluginItem ProgId="Order">
+      <Plugins>
+        <PluginItem Type="MyErp.Plugins.CreditLimitPlugin, MyErp.Plugins" />
+        <PluginItem Type="MyErp.Plugins.OrderSyncPlugin, MyErp.Plugins" />
+      </Plugins>
+    </ProgramPluginItem>
+  </Items>
+</PluginSettings>
+```
+
+設定檔只列型別、不列時點,所以光看檔案不知道哪個 plugin 在哪個時點跑;
+`FormPluginChain.TypesForStage` 回答這件事,供維護工具顯示。
+
+套裝層的 `{DefinePath}/PluginSettings.xml` 同樣會被讀取,兩層**相加**:套裝鏈先跑、租戶鏈後跑。
+因此租戶**無法停用**套裝的 plugin——要拿掉套裝行為,請繼承 BO 覆寫該子方法。
+
+租戶檔透過 `SystemBO.GetCustomizePluginSettings` / `SaveCustomizePluginSettings` 維護。兩者皆為
+`LocalOnly`:這些綁定決定「哪些程式碼會在存檔與刪除流程裡執行」,所以維護工具跑在主機上、
+in-process。儲存時會逐一驗證每個綁定型別——必須可載入、繼承 `FormBusinessPlugin`、且至少
+override 一個時點——一筆不合格就整份拒存。
+
+#### 失敗,以及送往其他系統的副作用
+
+丟例外會中止整個操作,與從 `Do*` 覆寫丟出完全一樣;要給使用者看的訊息用
+`UserMessageException`。
+
+在 `After` 時點資料已經提交,所以丟例外等於「對已存檔的資料回報失敗」。這對最常見的
+「把異動同步到其他系統」影響最大:
+
+| 可靠性要求 | 正確位置 |
+|---|---|
+| 不能漏(財務、庫存、對外承諾) | 在客製 repository 的交易內登記 outbox 列,由背景 worker 送出 |
+| 盡力而為,或有對帳作業兜底 | `AfterSave` / `AfterDelete` plugin 直接送 |
+
+與其他系統往來的 plugin 也應自行判斷失敗是否值得中止使用者的作業。框架預設「丟出即中斷」是因為
+驗證類 plugin 需要它——但別讓外部系統的可用性決定一筆資料能不能存檔。
+
+#### plugin 與 schema 規則的分界
+
+兩者都在擴充表單行為,分界值得寫明:
+
+| | schema 規則(`FormSchema`) | plugin |
+|---|---|---|
+| 存放於 | 表單定義內——**不可客製** | `PluginSettings.xml`——依租戶 |
+| 寫法 | 宣告式運算式 | 編譯後的型別 |
+| 適用 | 欄位預設值、計算欄、驗證 | 跨表、跨系統的副作用 |
+| 部署方式 | 改定義檔 | 交付組件 |
+
 ### 為 ProgId 客製 Repository
 
 資料存取以同樣方式綁在同一筆註冊表項目上。繼承 `DataFormRepository`,把 BO 需要的成員宣告在擴充自 `IDataFormRepository` 的介面上,再於 `ProgramItem.Repository` 指名該型別:

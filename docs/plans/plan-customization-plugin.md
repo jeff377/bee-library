@@ -1,13 +1,13 @@
 # 計畫：業務邏輯 plugin
 
-**狀態：📝 擬定中（決策已定案，待實作）· 2026-08-05**
+**狀態：✅ 已完成（G1–G4 全數落地）· 2026-08-06**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | G1 | `PluginSettings` 定義型別與讀取管線（path / storage / cache / reader / overlay） | ✅ 已完成（2026-08-06） |
 | G2 | `FormBusinessPlugin` 基底與掛載點的執行接線 | ✅ 已完成（2026-08-06） |
 | G3 | 客製 plugin 設定的 API 維護（讀 / 存 / 儲存時驗證 / 快取失效） | ✅ 已完成（2026-08-06） |
-| G4 | 端到端測試與雙語文件 | 📝 待做 |
+| G4 | 端到端測試與雙語文件 | ✅ 已完成（2026-08-06） |
 
 > 範圍：**在套裝 BO 的既有流程上掛載客製程式碼**——不換掉整個 BO 類別，只在特定時點追加一段。
 > 掛載點：`BeforeSave` / `AfterSave` / `BeforeDelete` / `AfterDelete` 四個（D2）。
@@ -446,6 +446,22 @@ API 流量，`IsLocalCall` 擋其餘所有進入方式。
   存檔後新 plugin 立即生效。
 - 雙語文件：客製化指南補 plugin 章節（D2 的選用準則、掛載點表與外部同步分工表、D3 的 After
   失敗處理指引、D7 的分界表、D6 的 `LocalOnly` 定位與多節點限制）。
+
+> **G4 落地紀錄（2026-08-06）**：`development-cookbook` 雙語新增「業務 plugin」一節，
+> 置於「BO 擴充點與交易邊界」與「為 ProgId 客製 Repository」之間。
+>
+> 端到端測試（`FormBusinessObjectPluginIntegrationTests`，SQLite `[DbFact]`，5 個）驗的是
+> **`FormBusinessObject` 把 runner 接在對的地方**——單元層已釘住 runner 自身的順序與生命週期，
+> 這裡補的是那之外的部分：
+> - `BeforeSave` 改的欄位真的寫進資料庫（證明它在持久化之前）。
+> - `BeforeSave` 拋例外時整筆中止且資料未落地。
+> - 一次 `Save` 內 `BeforeSave` → `AfterSave` 依序執行且共用同一實例（instance field 讀得到）。
+> - `AfterSave` 看得到 `RefreshedDataSet`。
+> - **★稽核關閉時 `AfterDelete` 仍拿得到 `Snapshot`**——G2 修正載入條件的回歸測試，且測試本身
+>   先斷言「變更稽核確實關閉」，否則這個回歸會在稽核預設開啟後靜默失效。
+>
+> `CrudTestContext.CreateBo` 加了選用的 `IFormPluginResolver` 參數，讓測試不必寫客製定義檔就能
+> 綁定 plugin 鏈。
 
 ---
 

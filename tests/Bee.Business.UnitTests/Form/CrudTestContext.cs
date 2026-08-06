@@ -45,10 +45,22 @@ namespace Bee.Business.UnitTests.Form
         public FormSchema EmployeeSchema { get; }
         public IDataFormRepository Repository => _repository;
 
-        public FormBusinessObject CreateBo()
+        /// <summary>
+        /// Builds a business object bound to the test repository.
+        /// </summary>
+        /// <param name="pluginResolver">
+        /// Optional plugin chain resolver. Supplied by the plugin integration tests to bind a
+        /// chain without writing a customization definition file; omitted elsewhere, in which case
+        /// the fixture's own resolver applies and no plugin is bound.
+        /// </param>
+        public FormBusinessObject CreateBo(IFormPluginResolver? pluginResolver = null)
         {
             var factory = new StubFactory(_repository);
-            var ctx = TestBeeContext.CreateWithOverrides(_fx, (typeof(IRepositoryFactory), factory));
+            var ctx = pluginResolver == null
+                ? TestBeeContext.CreateWithOverrides(_fx, (typeof(IRepositoryFactory), factory))
+                : TestBeeContext.CreateWithOverrides(_fx,
+                    (typeof(IRepositoryFactory), factory),
+                    (typeof(IFormPluginResolver), pluginResolver));
             return new FormBusinessObject(ctx, Guid.NewGuid(), ProgId);
         }
 

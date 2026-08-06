@@ -404,6 +404,125 @@ synchronously and then failing leaves nothing to retry from.
 Put it in the repository, not the business object. Subclass `DataFormRepository` and extend its
 `Save` so the extra statements join the same batch — see the next section.
 
+### Business Plugins
+
+Subclassing replaces the business object; a **plugin** adds a step to the one that is already
+there. Use it when the customization is an addition — a check before saving, a notification after
+— and subclassing when you need to intercept or replace what the framework does.
+
+| Need | Mechanism | What it can do |
+|------|-----------|----------------|
+| Intercept or replace existing logic | Subclass the BO, override a `Do*` step | Wrap `base.DoXxx()` on both sides, or skip it entirely |
+| Append to existing logic | Plugin | One control point, after the step |
+
+Both can be used together: a plugin runs after the step's final implementation, whether that is the
+framework's or a custom subclass's.
+
+#### Writing one
+
+Derive from `FormBusinessPlugin` and override only the stages you need.
+
+```csharp
+public class CreditLimitPlugin : FormBusinessPlugin
+{
+    public CreditLimitPlugin(IBeeContext ctx, Guid accessToken, string progId)
+        : base(ctx, accessToken, progId) { }
+
+    public override void BeforeSave(SaveContext context)
+    {
+        if (/* over the limit */)
+            throw new UserMessageException("The credit limit for this customer has been exceeded.");
+    }
+}
+```
+
+The constructor takes the same three arguments a custom repository does, and may declare further
+dependencies after them — they are injected from the container.
+
+#### The four stages
+
+| Stage | Runs | Sees |
+|-------|------|------|
+| `BeforeSave` | After the rule engine, **before the audit snapshot** | `SaveContext`; the data set may still be changed |
+| `AfterSave` | After persistence and the change audit | `SaveContext` with `RefreshedDataSet` and `AffectedRows` |
+| `BeforeDelete` | After the guard rules, before deletion | `DeleteContext` with `Snapshot` |
+| `AfterDelete` | After deletion and the delete audit | `DeleteContext` with `Snapshot` and `RowsAffected` |
+
+`BeforeSave` is the only stage at which a plugin can safely change data: it precedes both the audit
+snapshot and persistence, so a change made there is written **and** audited. In `AfterSave` the
+record is already saved — changing `DataSet` does nothing, while changing `RefreshedDataSet` alters
+what the caller receives.
+
+**Every stage runs outside the database transaction**, which covers `DoSave` / `DoDelete` alone.
+See "BO Extension Points and the Transaction Boundary" above for what follows from that.
+
+#### One instance per operation
+
+A single `Save` (or `Delete`) constructs each plugin once and reuses it for every stage of that
+call, so state computed in `BeforeSave` can be read in `AfterSave` through an instance field. That
+is why one requirement spanning two stages stays one class. Instances are never shared between
+calls, so no locking is needed.
+
+#### Binding them
+
+Plugins are bound per progId, per tenant, in `{CustomizePath}/{customizeId}/PluginSettings.xml`.
+**Declaration order is execution order** — there is no priority number.
+
+```xml
+<PluginSettings>
+  <Items>
+    <ProgramPluginItem ProgId="Order">
+      <Plugins>
+        <PluginItem Type="MyErp.Plugins.CreditLimitPlugin, MyErp.Plugins" />
+        <PluginItem Type="MyErp.Plugins.OrderSyncPlugin, MyErp.Plugins" />
+      </Plugins>
+    </ProgramPluginItem>
+  </Items>
+</PluginSettings>
+```
+
+The file names types and not stages, so a definition alone does not show which plugin runs where.
+`FormPluginChain.TypesForStage` answers that, for maintenance tooling to display.
+
+A base-layer file at `{DefinePath}/PluginSettings.xml` is also read, and the two **add up**: the
+base chain runs first, then the tenant's. A tenant therefore cannot suppress a packaged plugin —
+to remove packaged behaviour, subclass the business object and override the step.
+
+Maintain the tenant file through `SystemBO.GetCustomizePluginSettings` /
+`SaveCustomizePluginSettings`. Both are `LocalOnly`: these bindings decide which code runs inside
+the save and delete pipelines, so the maintenance tool runs on the host, in-process. Saving
+validates every bound type — it must load, derive from `FormBusinessPlugin`, and override at least
+one stage — and one bad entry rejects the whole definition.
+
+#### Failure, and side effects that reach other systems
+
+Throwing aborts the operation, exactly as it does from a `Do*` override; use
+`UserMessageException` for a message meant for the end user.
+
+At an `After` stage the data is already committed, so throwing fails the call against saved data.
+That matters most for the common case of propagating a change to another system:
+
+| Reliability required | Where it belongs |
+|---|---|
+| Must not be lost (finance, stock, external commitments) | Register an outbox row inside the transaction, in a custom repository, and send from a background worker |
+| Best effort, or a reconciliation job catches misses | An `AfterSave` / `AfterDelete` plugin sending directly |
+
+A plugin talking to another system should also decide for itself whether a failure warrants
+aborting the user's operation. The framework's default is "throwing aborts", because validation
+plugins need it — but do not let a remote system's availability determine whether a record can be
+saved.
+
+#### Plugins versus schema rules
+
+Both extend a form's behaviour, so the dividing line is worth stating:
+
+| | Schema rules (`FormSchema`) | Plugins |
+|---|---|---|
+| Stored in | The form schema — **not customizable** | `PluginSettings.xml` — per tenant |
+| Written as | Declarative expressions | Compiled types |
+| Suited to | Field defaults, computed fields, validation | Cross-table and cross-system side effects |
+| Deployed by | Editing a definition | Shipping an assembly |
+
 ### Customising the Repository for a ProgId
 
 Data access is bound the same way, on the same registry entry. Subclass `DataFormRepository`, declare the members the business object needs on an interface extending `IDataFormRepository`, and name the type in `ProgramItem.Repository`:
