@@ -29,11 +29,20 @@ namespace Bee.Business.UnitTests.Fakes
         }
 
         /// <summary>
-        /// 未標記 attribute，預設需 Authenticated。
+        /// 未標記 attribute。dispatch 為 fail-closed，故無論呼叫端是否已驗證皆應被拒絕。
         /// </summary>
         public static void NoAttribute(ExecFuncArgs args, ExecFuncResult result)
         {
             result.Parameters.Add("Called", "NoAttribute");
+        }
+
+        /// <summary>
+        /// 標記為 LocalOnly，僅本機（行程內）呼叫可觸達。
+        /// </summary>
+        [ExecFuncAccessControl(ApiAccessRequirement.Authenticated, LocalOnly = true)]
+        public static void LocalOnly(ExecFuncArgs args, ExecFuncResult result)
+        {
+            result.Parameters.Add("Called", "LocalOnly");
         }
 
         /// <summary>

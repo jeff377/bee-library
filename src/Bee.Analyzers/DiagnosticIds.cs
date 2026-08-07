@@ -96,6 +96,11 @@ namespace Bee.Analyzers
         public const string NonFrameworkCollectionProperty = "BEE3002";
 
         /// <summary>
+        /// A public method on an ExecFunc handler declares no ExecFunc access control.
+        /// </summary>
+        public const string MissingExecFuncAccessControl = "BEE3003";
+
+        /// <summary>
         /// A collection deriving from a framework collection base is not registered with a formatter.
         /// </summary>
         public const string CollectionFormatterNotRegistered = "BEE4001";

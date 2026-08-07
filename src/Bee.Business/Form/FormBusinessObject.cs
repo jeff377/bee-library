@@ -40,7 +40,7 @@ namespace Bee.Business.Form
         protected override void DoExecFunc(ExecFuncArgs args, ExecFuncResult result)
         {
             var handler = new FormExecFuncHandler(AccessToken);
-            handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, args, result);
+            handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, IsLocalCall, args, result);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Bee.Business.Form
         protected override void DoExecFuncAnonymous(ExecFuncArgs args, ExecFuncResult result)
         {
             var handler = new FormExecFuncHandler(AccessToken);
-            handler.InvokeExecFunc(ApiAccessRequirement.Anonymous, args, result);
+            handler.InvokeExecFunc(ApiAccessRequirement.Anonymous, IsLocalCall, args, result);
         }
 
         /// <summary>

@@ -41,6 +41,7 @@ wire 合約的建構子參數順序不對、BO 方法沒有宣告存取控制—
 |----|--------|------|
 | BEE3001 | Warning | BO 的 public 方法必須被 `[ApiAccessControl]` 涵蓋 |
 | BEE3002 | Warning | 定義層集合屬性必須使用框架集合型別——**框架內部規則**，不套用於消費端專案 |
+| BEE3003 | Warning | `IExecFuncHandler` 實作的 public 方法必須被 `[ExecFuncAccessControl]` 涵蓋 |
 
 ### 序列化與 wire 合約（BEE4xxx）
 

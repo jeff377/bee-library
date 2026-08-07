@@ -37,11 +37,10 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("ExecFuncAnonymous 呼叫未標 attribute 的方法應拋 UnauthorizedAccessException")]
-        public void ExecFuncAnonymous_HelloIsDefaultAuthenticated_ThrowsUnauthorized()
+        [DisplayName("ExecFuncAnonymous 呼叫需驗證的方法應拋 UnauthorizedAccessException")]
+        public void ExecFuncAnonymous_HelloRequiresAuthentication_ThrowsUnauthorized()
         {
-            // FormExecFuncHandler.Hello 未標 ExecFuncAccessControl，預設視為 Authenticated，
-            // 因此匿名呼叫時應被 InvokeExecFunc 阻擋。
+            // FormExecFuncHandler.Hello 標記為 Authenticated，因此匿名呼叫時應被 InvokeExecFunc 阻擋。
             var bo = new FormBusinessObject(TestBeeContext.Create(_fx), Guid.NewGuid(), "prog01");
 
             Assert.Throws<UnauthorizedAccessException>(() =>

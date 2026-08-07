@@ -92,7 +92,7 @@ namespace Bee.Business.System
         protected override void DoExecFunc(ExecFuncArgs args, ExecFuncResult result)
         {
             var handler = new SystemExecFuncHandler(AccessToken, Services.GetRequiredService<IRepositoryFactory>());
-            handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, args, result);
+            handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, IsLocalCall, args, result);
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Bee.Business.System
         protected override void DoExecFuncAnonymous(ExecFuncArgs args, ExecFuncResult result)
         {
             var handler = new SystemExecFuncHandler(AccessToken, Services.GetRequiredService<IRepositoryFactory>());
-            handler.InvokeExecFunc(ApiAccessRequirement.Anonymous, args, result);
+            handler.InvokeExecFunc(ApiAccessRequirement.Anonymous, IsLocalCall, args, result);
         }
     }
 }

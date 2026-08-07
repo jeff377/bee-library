@@ -5,7 +5,7 @@ using Bee.Definition.Security;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
-    /// <see cref="ExecFuncHandlerExtensions.InvokeExecFunc"/> 測試。
+    /// <see cref="ExecFuncHandlerExtensions"/> 的 InvokeExecFunc 多載測試。
     /// </summary>
     public class ExecFuncHandlerExtensionsTests
     {
@@ -74,8 +74,8 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("InvokeExecFunc 未標記 attribute 的方法預設為 Authenticated")]
-        public void InvokeExecFunc_NoAttribute_DefaultsToAuthenticated()
+        [DisplayName("InvokeExecFunc 未標記 attribute 的方法匿名呼叫應拒絕")]
+        public void InvokeExecFunc_NoAttributeAnonymous_ThrowsUnauthorized()
         {
             var handler = new FakeExecFuncHandler();
             var args = new ExecFuncArgs(nameof(FakeExecFuncHandler.NoAttribute));
@@ -86,16 +86,54 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("InvokeExecFunc 未標記 attribute 時 Authenticated 呼叫應成功")]
-        public void InvokeExecFunc_NoAttributeAuthenticated_Succeeds()
+        [DisplayName("InvokeExecFunc 未標記 attribute 的方法即使已驗證也應拒絕（fail-closed）")]
+        public void InvokeExecFunc_NoAttributeAuthenticated_ThrowsUnauthorized()
         {
             var handler = new FakeExecFuncHandler();
             var args = new ExecFuncArgs(nameof(FakeExecFuncHandler.NoAttribute));
             var result = new ExecFuncResult();
 
-            handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, args, result);
+            var ex = Assert.Throws<UnauthorizedAccessException>(() =>
+                handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, args, result));
+            Assert.Contains("does not declare", ex.Message, StringComparison.Ordinal);
+        }
 
-            Assert.Equal("NoAttribute", result.Parameters.GetValue<string>("Called"));
+        [Fact]
+        [DisplayName("InvokeExecFunc LocalOnly 方法遠端呼叫應拒絕")]
+        public void InvokeExecFunc_LocalOnlyRemoteCall_ThrowsUnauthorized()
+        {
+            var handler = new FakeExecFuncHandler();
+            var args = new ExecFuncArgs(nameof(FakeExecFuncHandler.LocalOnly));
+            var result = new ExecFuncResult();
+
+            var ex = Assert.Throws<UnauthorizedAccessException>(() =>
+                handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, isLocalCall: false, args, result));
+            Assert.Contains("local calls only", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        [DisplayName("InvokeExecFunc LocalOnly 方法本機呼叫應成功")]
+        public void InvokeExecFunc_LocalOnlyLocalCall_Succeeds()
+        {
+            var handler = new FakeExecFuncHandler();
+            var args = new ExecFuncArgs(nameof(FakeExecFuncHandler.LocalOnly));
+            var result = new ExecFuncResult();
+
+            handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, isLocalCall: true, args, result);
+
+            Assert.Equal("LocalOnly", result.Parameters.GetValue<string>("Called"));
+        }
+
+        [Fact]
+        [DisplayName("InvokeExecFunc 舊多載視同遠端呼叫，LocalOnly 方法應拒絕")]
+        public void InvokeExecFunc_LegacyOverload_TreatsCallAsRemote()
+        {
+            var handler = new FakeExecFuncHandler();
+            var args = new ExecFuncArgs(nameof(FakeExecFuncHandler.LocalOnly));
+            var result = new ExecFuncResult();
+
+            Assert.Throws<UnauthorizedAccessException>(() =>
+                handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, args, result));
         }
 
         [Fact]

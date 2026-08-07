@@ -50,6 +50,13 @@ namespace Bee.Business.System
         /// </summary>
         /// <param name="args">The input arguments.</param>
         /// <param name="result">The output result.</param>
+        /// <remarks>
+        /// WARNING: local calls only. The caller names the target `DatabaseId`, and an upgrade that
+        /// cannot be expressed as an ALTER falls back to rebuilding the table — create a temporary
+        /// copy, drop the original, rename. Authentication alone is not an adequate gate for a
+        /// destructive operation against a caller-chosen database.
+        /// </remarks>
+        [ExecFuncAccessControl(ApiAccessRequirement.Authenticated, LocalOnly = true)]
         public void UpgradeTableSchema(ExecFuncArgs args, ExecFuncResult result)
         {
             string databaseId = args.Parameters.GetValue<string>("DatabaseId");
@@ -64,6 +71,15 @@ namespace Bee.Business.System
         /// <summary>
         /// Tests the database connection.
         /// </summary>
+        /// <param name="args">The input arguments.</param>
+        /// <param name="result">The output result.</param>
+        /// <remarks>
+        /// WARNING: local calls only. The supplied `DatabaseItem` can carry a complete connection
+        /// string, so a remote caller would be able to make the server open an outbound connection to
+        /// any host and port it names, and to substitute values into the server's own connection
+        /// string. Both are server-side reach that authentication does not constrain.
+        /// </remarks>
+        [ExecFuncAccessControl(ApiAccessRequirement.Authenticated, LocalOnly = true)]
         public void TestConnection(ExecFuncArgs args, ExecFuncResult result)
         {
             var item = args.Parameters.GetValue<DatabaseItem>("DatabaseItem");

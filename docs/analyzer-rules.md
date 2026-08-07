@@ -44,6 +44,7 @@ that discovery to build time, where the message can name both the cause and the 
 |----|----------|------|
 | BEE3001 | Warning | A public method on a business object must be covered by `[ApiAccessControl]` |
 | BEE3002 | Warning | Definition-layer collection properties must use a framework collection type — framework-internal, does not apply to consumer projects |
+| BEE3003 | Warning | A public method on an `IExecFuncHandler` implementation must be covered by `[ExecFuncAccessControl]` |
 
 ### Serialisation and wire contracts (BEE4xxx)
 

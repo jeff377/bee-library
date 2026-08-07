@@ -1,4 +1,6 @@
-﻿using Bee.Definition.Collections;
+﻿using Bee.Business.Attributes;
+using Bee.Definition.Collections;
+using Bee.Definition.Security;
 
 namespace Bee.Business.Form
 {
@@ -30,6 +32,12 @@ namespace Bee.Business.Form
         /// </summary>
         /// <param name="args">The input arguments.</param>
         /// <param name="result">The output result.</param>
+        /// <remarks>
+        /// Declared explicitly as `Authenticated` to preserve the behaviour this method had while it
+        /// carried no attribute at all. Its system-level counterpart is `Anonymous`; the two have
+        /// always differed, so this is deliberately not aligned with it.
+        /// </remarks>
+        [ExecFuncAccessControl(ApiAccessRequirement.Authenticated)]
         public static void Hello(ExecFuncArgs args, ExecFuncResult result)
         {
             result.Parameters.Add("Hello", "Hello form-level BusinessObject");
