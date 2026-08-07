@@ -84,17 +84,6 @@ namespace Bee.ObjectCaching
         /// </summary>
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys used to locate the definition data.</param>
-        /// <remarks>
-        /// This entry point serves a definition <b>as stored</b>, which is why
-        /// <see cref="DefineType.DatabaseSettings"/> is read straight from its file rather than
-        /// taken from the cache. Two things follow from that, and both are the point:
-        /// the returned passwords stay in their <c>enc:</c> form, and the caller gets a fresh
-        /// instance rather than the process-wide cached one.
-        /// <para>
-        /// Use <see cref="GetDatabaseSettings"/> instead when the caller needs usable credentials —
-        /// building a connection string, testing a connection. That path caches and decrypts.
-        /// </para>
-        /// </remarks>
         public object GetDefine(DefineType defineType, string[]? keys = null)
         {
             switch (defineType)
@@ -102,7 +91,7 @@ namespace Bee.ObjectCaching
                 case DefineType.SystemSettings:
                     return this.GetSystemSettings();
                 case DefineType.DatabaseSettings:
-                    return this.GetDatabaseSettingsAsStored();
+                    return this.GetDatabaseSettings();
                 case DefineType.ProgramSettings:
                     return  this.GetProgramSettings();
                 case DefineType.MenuSettings:
@@ -230,26 +219,6 @@ namespace Bee.ObjectCaching
             var settings = _cache.DatabaseSettings.Get()!;
             DatabaseSettingsCryptor.DecryptInPlace(settings, _configEncryptionKey);
             return settings;
-        }
-
-        /// <summary>
-        /// Reads the database settings straight from file, leaving passwords in their
-        /// <c>enc:</c> form.
-        /// </summary>
-        /// <remarks>
-        /// Serves <see cref="GetDefine"/>, whose contract is to hand back a definition as stored.
-        /// Going to the file rather than the cache keeps two properties that the cached instance
-        /// cannot offer: the passwords are still encrypted (the cached instance holds plain text
-        /// once <c>DecryptInPlace</c> has run on first read), and the result is a fresh object, so
-        /// serializing it cannot disturb what every other caller is holding.
-        /// </remarks>
-        private DatabaseSettings GetDatabaseSettingsAsStored()
-        {
-            string filePath = _paths.GetDatabaseSettingsFilePath();
-            if (!File.Exists(filePath))
-                throw new FileNotFoundException($"The file {filePath} does not exist.");
-
-            return XmlCodec.DeserializeFromFile<DatabaseSettings>(filePath)!;
         }
 
         /// <summary>

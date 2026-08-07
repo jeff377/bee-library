@@ -6,6 +6,7 @@ using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Organization;
 using Bee.Definition.Security;
+using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 
 namespace Bee.Business.System
@@ -23,13 +24,16 @@ namespace Bee.Business.System
         private GetDefineResult GetDefineCore(GetDefineArgs args)
         {
             var result = new GetDefineResult();
-            // The menu is the one definition served here that carries a tenant overlay, and the
-            // overlay is whole-file, so the resolved menu is returned rather than the two layers.
-            // The customization code comes from the session, never from the arguments — accepting
-            // it from the caller would let anyone read any tenant's menu.
-            object value = args.DefineType == DefineType.MenuSettings
-                ? DefineAccess.GetMenuSettings(GetCurrentCustomizeId())
-                : DefineAccess.GetDefine(args.DefineType, args.Keys);
+            object value = args.DefineType switch
+            {
+                // The menu is the one definition served here that carries a tenant overlay, and the
+                // overlay is whole-file, so the resolved menu is returned rather than the two layers.
+                // The customization code comes from the session, never from the arguments — accepting
+                // it from the caller would let anyone read any tenant's menu.
+                DefineType.MenuSettings => DefineAccess.GetMenuSettings(GetCurrentCustomizeId()),
+                DefineType.DatabaseSettings => ReadDatabaseSettingsAsStored(),
+                _ => DefineAccess.GetDefine(args.DefineType, args.Keys),
+            };
 
             if (value != null)
             {
@@ -38,6 +42,40 @@ namespace Bee.Business.System
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Reads <c>DatabaseSettings.xml</c> from disk, leaving passwords in their <c>enc:</c> form.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This API hands back a definition <b>as stored</b>, and for this one type the cached
+        /// instance cannot honour that: <c>CacheDefineAccess.GetDatabaseSettings</c> decrypts in
+        /// place on first read, so the cache holds plain-text passwords from then on. Serving that
+        /// instance would put credentials in the response.
+        /// </para>
+        /// <para>
+        /// WARNING: the bypass belongs here, at the API boundary, and not in
+        /// <c>CacheDefineAccess</c>. Its <c>GetDefine</c> is the framework's general definition
+        /// accessor — several <c>IDefineAccess</c> members route through it — so special-casing a
+        /// type there would change what every internal caller receives. Worse, a class named for
+        /// caching that quietly skips the cache for one type is a trap for whoever reads it next.
+        /// </para>
+        /// <para>
+        /// Callers needing usable credentials — building a connection string, testing a
+        /// connection — go through <c>IDefineAccess.GetDatabaseSettings</c>, which is cached and
+        /// decrypted and is untouched by this. Reading the file here is affordable because this
+        /// path is local-only tooling asking for the definition, not a per-request lookup.
+        /// </para>
+        /// </remarks>
+        private DatabaseSettings ReadDatabaseSettingsAsStored()
+        {
+            var paths = Services.GetRequiredService<PathOptions>();
+            string filePath = paths.GetDatabaseSettingsFilePath();
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException($"The file {filePath} does not exist.");
+
+            return XmlCodec.DeserializeFromFile<DatabaseSettings>(filePath)!;
         }
 
         /// <summary>

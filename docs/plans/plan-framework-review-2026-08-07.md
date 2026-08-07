@@ -205,7 +205,8 @@ XmlCodec.Serialize(obj)
   改為走 `SerializeDefine`。純一致性修正。
 - ✅ **`ISerializableClone` 整條移除**（介面 + `DatabaseSettings` 實作 + 兩處分支 + 3 筆 Shipped API）。
 
-移除的關鍵在於**換掉 `GetDefine(DatabaseSettings)` 的資料來源**：改為直接讀原始檔而非取快取。
+移除的關鍵在於**換掉 API 回應的資料來源**：`SystemBusinessObject.GetDefineCore` 對
+`DatabaseSettings` 改為直接讀原始檔而非取快取。
 `DatabaseSettingsCache.CreateInstance` 讀檔時密碼仍是 `enc:` 密文，是 `GetDatabaseSettings()` 的
 `DecryptInPlace` 讓快取實例變明文。直接讀檔因此一次解決兩件事：
 
@@ -213,10 +214,19 @@ XmlCodec.Serialize(obj)
    這也讓 `GetDefine` 真正符合它自己宣告的契約「serve the definition **as stored**」。
 2. **回傳的是新實例** —— 沒有共用物件可被污染，clone 的唯一實質作用自然消失。
 
-驗證過無消費端需要明文：兩個 `GetDatabaseSettings()` 的呼叫端
-（`DefineAccessDatabaseSettingsProvider` → 連線管理、`DatabaseRepository.TestConnection`）
-都在 server 端自用、走的是 `GetDatabaseSettings()` 而非 `GetDefine`，行為不變；
-`DefineEditor` 直接讀檔不走 API。
+**改在 BO 層而非 `CacheDefineAccess`**，兩個理由（後者由使用者指出，比前者更根本）：
+
+- `CacheDefineAccess.GetDefine` 是框架通用的定義存取入口，`IDefineAccess` 有 5 個 default
+  interface method（`GetMenuSettings` / `GetPluginSettings` / `GetPermissionModels` /
+  `GetCurrencySettings` / `GetUnitSettings`）繞道它，在那裡特例化會改變所有內部消費者拿到的東西。
+- **一個以「快取」為名的類別若對某型別靜默繞過快取，是名實不符的陷阱**——日後直接使用
+  `CacheDefineAccess` 的人會誤以為 `DatabaseSettings` 有快取。
+
+驗證過無消費端需要明文，且 SQL 路徑不受影響：`IDefineAccess.GetDatabaseSettings()` 是抽象成員
+（非繞道 `GetDefine` 的 default method），連線解析走
+`DbConnectionManagerService → IDatabaseSettingsProvider → DefineAccessDatabaseSettingsProvider
+→ GetDatabaseSettings()`，仍是快取 + 解密且外層另有 `ConcurrentDictionary` 快取；
+`DatabaseRepository.TestConnection` 同理。`DefineEditor` 直接讀檔不走 API。
 
 順帶清掉一個錯誤敘事的來源：原測試
 `CreateSerializableCopy_ThenEncrypt_DoesNotMutateOriginalCache` 的註解宣稱

@@ -1,6 +1,8 @@
 using System.ComponentModel;
+using Bee.Base.Serialization;
 using Bee.Business.System;
 using Bee.Definition;
+using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 using Bee.ObjectCaching;
 using Bee.Tests.Shared;
@@ -37,6 +39,31 @@ namespace Bee.Business.UnitTests
 
             Assert.NotNull(result);
             Assert.False(string.IsNullOrWhiteSpace(result.Xml));
+        }
+
+        [Fact]
+        [DisplayName("GetDefine(DatabaseSettings) 應回傳原始檔，不得回傳快取的解密實例")]
+        public void GetDefine_DatabaseSettings_ServesAsStoredNotTheDecryptedCache()
+        {
+            // 快取實例在 GetDatabaseSettings() 的 DecryptInPlace 之後持有明文密碼；
+            // GetDefine 的契約是「定義如其所存」，故必須讀原始檔而非取快取，
+            // 否則回應會夾帶明文憑證。
+            var access = _fx.GetRequiredService<IDefineAccess>();
+            var cached = access.GetDatabaseSettings();          // 觸發解密，快取轉為明文
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System, isLocalCall: true);
+
+            var xml = bo.GetDefine(new GetDefineArgs { DefineType = DefineType.DatabaseSettings }).Xml;
+            var served = XmlCodec.Deserialize<DatabaseSettings>(xml!);
+
+            Assert.NotNull(served);
+            Assert.NotSame(cached, served);
+            // 回傳的每個密碼要嘛為空、要嘛維持 enc: 密文，絕不可是解密後的明文。
+            foreach (var password in (served.Servers ?? []).Select(s => s.Password)
+                         .Concat((served.Items ?? []).Select(i => i.Password)))
+            {
+                Assert.True(string.IsNullOrEmpty(password) || password.StartsWith("enc:", StringComparison.Ordinal),
+                    $"密碼未維持 enc: 形式：{password}");
+            }
         }
 
         [Fact]
