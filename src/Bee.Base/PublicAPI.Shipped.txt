@@ -172,8 +172,6 @@ Bee.Base.Serialization.IObjectSerializeProcess
 Bee.Base.Serialization.IObjectSerializeProcess.AfterDeserialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
 Bee.Base.Serialization.IObjectSerializeProcess.AfterSerialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
 Bee.Base.Serialization.IObjectSerializeProcess.BeforeSerialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
-Bee.Base.Serialization.ISerializableClone
-Bee.Base.Serialization.ISerializableClone.CreateSerializableCopy() -> object!
 Bee.Base.Serialization.JsonCodec
 Bee.Base.Serialization.SerializationExtensions
 Bee.Base.Serialization.SerializationUtilities

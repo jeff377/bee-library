@@ -12,7 +12,7 @@ namespace Bee.Definition.Settings
     /// </summary>
     [Description("Database settings.")]
     [TreeNode("Database Settings")]
-    public class DatabaseSettings : IObjectSerializeFile, ISerializableClone
+    public class DatabaseSettings : IObjectSerializeFile
     {
         private DatabaseServerCollection? _servers = null;
         private DatabaseItemCollection? _items = null;
@@ -64,18 +64,6 @@ namespace Bee.Definition.Settings
         public void SetObjectFilePath(string filePath)
         {
             ObjectFilePath = filePath;
-        }
-
-        #endregion
-
-        #region ISerializableClone Interface
-
-        /// <summary>
-        /// Creates a serializable deep copy of this object.
-        /// </summary>
-        public object CreateSerializableCopy()
-        {
-            return Clone();
         }
 
         #endregion

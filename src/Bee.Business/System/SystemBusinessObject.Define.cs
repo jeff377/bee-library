@@ -33,14 +33,8 @@ namespace Bee.Business.System
 
             if (value != null)
             {
-                // If the definition implements ISerializableClone, create a copy first
-                // to avoid polluting the cache during serialization
-                if (value is ISerializableClone cloneable)
-                {
-                    value = cloneable.CreateSerializableCopy();
-                }
                 // Serialize the object to XML
-                result.Xml = XmlCodec.Serialize(value);
+                result.Xml = SerializeDefine(value);
             }
 
             return result;
@@ -263,14 +257,24 @@ namespace Bee.Business.System
         }
 
         /// <summary>
-        /// Serializes a definition for the wire, copying first when the type asks for it so the
-        /// serialization lifecycle never touches the process-shared cache instance.
+        /// Serializes a definition for the wire.
         /// </summary>
-        /// <param name="define">The definition object taken from the Define cache.</param>
+        /// <param name="define">The definition object.</param>
+        /// <remarks>
+        /// NOTE: most definitions handed here come from the process-wide cache, and
+        /// <see cref="XmlCodec.Serialize"/> toggles the serialization state on the object it is
+        /// given. Concurrent readers of that same instance therefore see empty collection getters
+        /// return <c>null</c> for the duration of the call. The effect is transient and the
+        /// deserialized result is unaffected, so it is accepted rather than worked around by
+        /// copying every definition on every fetch.
+        /// <para>
+        /// <see cref="DefineType.DatabaseSettings"/> is the one that must not be served from the
+        /// cache at all — see <c>CacheDefineAccess.GetDefine</c>, which reads it from file so the
+        /// passwords stay encrypted.
+        /// </para>
+        /// </remarks>
         private static string SerializeDefine(object define)
         {
-            if (define is ISerializableClone cloneable)
-                define = cloneable.CreateSerializableCopy();
             return XmlCodec.Serialize(define);
         }
 

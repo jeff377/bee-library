@@ -42,6 +42,21 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
+        [DisplayName("GetDefine(DatabaseSettings) 應回傳原始檔而非共用快取實例")]
+        public void GetDefine_DatabaseSettings_IsNotTheCachedInstance()
+        {
+            // GetDefine 的契約是「定義如其所存」，故 DatabaseSettings 直接讀檔：
+            // 一來密碼維持 enc: 形式（快取實例在首次讀取後持有明文），
+            // 二來呼叫端拿到的是新實例，序列化它不會擾動其他持有者。
+            var cached = _access.GetDatabaseSettings();
+
+            var asStored = Assert.IsType<DatabaseSettings>(_access.GetDefine(DefineType.DatabaseSettings));
+
+            Assert.NotSame(cached, asStored);
+            Assert.NotSame(cached, _access.GetDefine(DefineType.DatabaseSettings));
+        }
+
+        [Fact]
         [DisplayName("GetDefine(DbCategorySettings) 應回傳 DbCategorySettings 實例")]
         public void GetDefine_DbCategorySettings_ReturnsDbCategorySettings()
         {

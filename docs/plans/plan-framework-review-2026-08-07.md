@@ -199,14 +199,35 @@ XmlCodec.Serialize(obj)
 
 > 兩個代理對嚴重度評 P1 vs P3。查證後採**接近 P3** 的判斷。
 
-#### 本輪已處理的兩項（無爭議部分）
+#### 本輪已處理
 
-- ✅ `ISerializableClone` 的 XML doc 改寫為實情：說明它實際守的是序列化 lifecycle，
-  並加 WARNING 標明**它不保護機密**（明文密碼會被原樣複製），避免再次誤導 review。
 - ✅ `SystemBusinessObject.Plugin.cs:58` 直接 `XmlCodec.Serialize(cached)`、連現有守門都沒走，
   改為走 `SerializeDefine`。純一致性修正。
+- ✅ **`ISerializableClone` 整條移除**（介面 + `DatabaseSettings` 實作 + 兩處分支 + 3 筆 Shipped API）。
 
-#### 待日後決定
+移除的關鍵在於**換掉 `GetDefine(DatabaseSettings)` 的資料來源**：改為直接讀原始檔而非取快取。
+`DatabaseSettingsCache.CreateInstance` 讀檔時密碼仍是 `enc:` 密文，是 `GetDatabaseSettings()` 的
+`DecryptInPlace` 讓快取實例變明文。直接讀檔因此一次解決兩件事：
+
+1. **回傳的密碼維持密文** —— 修掉「定義類 API 回應含明文密碼」（本體檢先前未列此項）。
+   這也讓 `GetDefine` 真正符合它自己宣告的契約「serve the definition **as stored**」。
+2. **回傳的是新實例** —— 沒有共用物件可被污染，clone 的唯一實質作用自然消失。
+
+驗證過無消費端需要明文：兩個 `GetDatabaseSettings()` 的呼叫端
+（`DefineAccessDatabaseSettingsProvider` → 連線管理、`DatabaseRepository.TestConnection`）
+都在 server 端自用、走的是 `GetDatabaseSettings()` 而非 `GetDefine`，行為不變；
+`DefineEditor` 直接讀檔不走 API。
+
+順帶清掉一個錯誤敘事的來源：原測試
+`CreateSerializableCopy_ThenEncrypt_DoesNotMutateOriginalCache` 的註解宣稱
+「GetDefineCore must serialize a deep copy so that **the encrypt step's** in-place mutation…」，
+但 `GetDefineCore` 從來沒有加密步驟——該測試在模擬一個不存在的情境。已改寫為驗證真正的保證。
+
+#### 剩餘部分（P2）
+
+`ISerializableClone` 移除後，所有定義型別一律不 clone——狀態變得**一致且誠實**，
+不再有「守門只覆蓋一個型別」的誤導。剩下的就是本節開頭描述的機制本身：
+序列化共用快取實例時，視窗內空集合 getter 會回 `null`。
 
 若要真正處理，建議先釐清一個前提：**`SerializeState` 當初設計時，是否本就假設「快取實例不會被並行序列化」？**
 若是刻意前提，則本項應改為「在 `IObjectSerialize` 的 doc 明示此限制」而非改機制。

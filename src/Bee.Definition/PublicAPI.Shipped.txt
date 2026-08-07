@@ -1382,7 +1382,6 @@ Bee.Definition.Settings.DatabaseServerCollection
 Bee.Definition.Settings.DatabaseServerCollection.DatabaseServerCollection() -> void
 Bee.Definition.Settings.DatabaseSettings
 Bee.Definition.Settings.DatabaseSettings.Clone() -> Bee.Definition.Settings.DatabaseSettings!
-Bee.Definition.Settings.DatabaseSettings.CreateSerializableCopy() -> object!
 Bee.Definition.Settings.DatabaseSettings.CreateTime.get -> System.DateTime
 Bee.Definition.Settings.DatabaseSettings.DatabaseSettings() -> void
 Bee.Definition.Settings.DatabaseSettings.Items.get -> Bee.Definition.Settings.DatabaseItemCollection?

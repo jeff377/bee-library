@@ -106,20 +106,6 @@ namespace Bee.Definition.UnitTests.Settings
         }
 
         [Fact]
-        [DisplayName("CreateSerializableCopy 應回傳 DatabaseSettings 的 Clone")]
-        public void CreateSerializableCopy_ReturnsClone()
-        {
-            var settings = new DatabaseSettings();
-            settings.Items!.Add(new DatabaseItem { Id = "X" });
-
-            var copy = settings.CreateSerializableCopy();
-
-            Assert.IsType<DatabaseSettings>(copy);
-            Assert.NotSame(settings, copy);
-            Assert.Single(((DatabaseSettings)copy).Items!);
-        }
-
-        [Fact]
         [DisplayName("Cryptor.EncryptInPlace 於 key 為空時不應修改 Password")]
         public void Cryptor_EncryptInPlace_NoKey_IsNoOp()
         {
@@ -212,27 +198,24 @@ namespace Bee.Definition.UnitTests.Settings
         }
 
         [Fact]
-        [DisplayName("CreateSerializableCopy + Cryptor 加密不應污染原始 cache 物件的 Password")]
-        public void CreateSerializableCopy_ThenEncrypt_DoesNotMutateOriginalCache()
+        [DisplayName("Cryptor.EncryptInPlace 作用於 Clone 不應影響來源物件的 Password")]
+        public void Clone_ThenEncrypt_DoesNotMutateSource()
         {
-            // Regression: GetDefineCore must serialize a deep copy so that the encrypt step's
-            // in-place mutation does not write ciphertext back to the cached instance.
             var key = AesCbcHmacKeyGenerator.GenerateCombinedKey();
-            var cached = new DatabaseSettings();
-            cached.Servers!.Add(new DatabaseServer { Id = "S1", Password = "plain-server" });
-            cached.Items!.Add(new DatabaseItem { Id = "D1", Password = "plain-item" });
+            var source = new DatabaseSettings();
+            source.Servers!.Add(new DatabaseServer { Id = "S1", Password = "plain-server" });
+            source.Items!.Add(new DatabaseItem { Id = "D1", Password = "plain-item" });
 
-            // Simulates SystemBusinessObject.GetDefineCore: deep-copy then encrypt the copy.
-            var copy = (DatabaseSettings)((ISerializableClone)cached).CreateSerializableCopy();
+            var copy = source.Clone();
             DatabaseSettingsCryptor.EncryptInPlace(copy, key);
 
             Assert.StartsWith("enc:", copy.Servers![0].Password);
             Assert.StartsWith("enc:", copy.Items![0].Password);
 
-            Assert.Equal("plain-server", cached.Servers![0].Password);
-            Assert.Equal("plain-item", cached.Items![0].Password);
-            Assert.NotSame(cached.Servers[0], copy.Servers[0]);
-            Assert.NotSame(cached.Items[0], copy.Items[0]);
+            Assert.Equal("plain-server", source.Servers![0].Password);
+            Assert.Equal("plain-item", source.Items![0].Password);
+            Assert.NotSame(source.Servers[0], copy.Servers[0]);
+            Assert.NotSame(source.Items[0], copy.Items[0]);
         }
 
         [Fact]
