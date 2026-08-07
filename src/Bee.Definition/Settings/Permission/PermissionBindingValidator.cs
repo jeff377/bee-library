@@ -3,9 +3,15 @@ using Bee.Definition.Forms;
 namespace Bee.Definition.Settings
 {
     /// <summary>
-    /// Validates the line-A binding between forms and the permission registry. Intended to
-    /// run as a load-time / startup full-scan so a broken binding never reaches production.
+    /// Validates the line-A binding between forms and the permission registry.
     /// </summary>
+    /// <remarks>
+    /// The framework never invokes this itself — there is no automatic load-time scan. Call it from
+    /// the host where a failure is cheap to act on: at startup, in a deployment smoke test, or in a
+    /// CI step over the definitions in the configured define path. An invalid binding does not fail
+    /// loudly on its own: an empty or unresolvable <see cref="FormSchema.PermissionModelId"/> means
+    /// the form is unscoped, so a typo degrades to "no enforcement" rather than to an error.
+    /// </remarks>
     public static class PermissionBindingValidator
     {
         /// <summary>

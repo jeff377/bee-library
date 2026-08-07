@@ -63,7 +63,7 @@ Bee.NET 的權限分為**三個維度**，套用於**兩個把關點**——**�
 
 規則：
 
-- `ScopeRole` **僅限主表**。明細表標 `ScopeRole` 會在載入期被 `PermissionBindingValidator` 報錯——record scope 由主檔決定、明細隨之。
+- `ScopeRole` **僅限主表**。明細表標 `ScopeRole` 會被 `PermissionBindingValidator` 檢出（見[定義驗證](#定義驗證由宿主呼叫)）——record scope 由主檔決定、明細隨之。
 - **可標記多個 `Owner` / `Dept` 欄**——每個標記欄各貢獻一個 OR 分支。例如調職單同時標**調出部門**（`from_dept`）與**調入部門**（`to_dept`），讓*兩邊*部門主管都看得到這筆。
 - 空的 `PermissionModelId` → 表單**不套權限**，後端兩層皆跳過（漸進導入／向後相容）。
 
@@ -153,11 +153,11 @@ st_user.sys_rowid  ──(st_employee.user_rowid)──▶  st_employee  ──(
 <FormField FieldName="unit_cost" Caption="單價" SensitiveCategory="Cost" />
 ```
 
-`SensitiveCategory`（預設 `None` = 不控管）是**具名、有限的分類**——`Amount`、`Cost`、`PersonalData`——平行於 `ScopeRole`。設計者挑分類而非自創 id，因此分類集合可在載入期驗證。它適用於**任何欄位**，主表或明細 Grid 欄皆可。
+`SensitiveCategory`（預設 `None` = 不控管）是**具名、有限的分類**——`Amount`、`Cost`、`PersonalData`——平行於 `ScopeRole`。設計者挑分類而非自創 id，因此分類集合封閉、可被檢查。它適用於**任何欄位**，主表或明細 Grid 欄皆可。
 
 ## 7. Well-known 分類 model
 
-每個非 `None` 分類**依慣例**對應一個 permission model，其 id 等於分類名（`Cost` → `"Cost"` model）。這些就是同一份 `PermissionModels` registry 裡的一般 model——像其他 model 一樣宣告與授權。若標了分類卻無對應 model，`PermissionBindingValidator` 於載入期報錯。
+每個非 `None` 分類**依慣例**對應一個 permission model，其 id 等於分類名（`Cost` → `"Cost"` model）。這些就是同一份 `PermissionModels` registry 裡的一般 model——像其他 model 一樣宣告與授權。若標了分類卻無對應 model，`PermissionBindingValidator` 會回報錯誤（見[定義驗證](#定義驗證由宿主呼叫)）。
 
 ```sql
 -- Viewer 看得到成本但不能改（只授 Read）；Editor 可改（授 Read + Update）。
@@ -268,6 +268,23 @@ API 金鑰的稽核列記錄金鑰的 id、名稱、類型、聯絡人與到期�
 3. **在主機上指派第一位管理員**，以行程內呼叫 `SetDeploymentAdmin`。在那之前沒有任何遠端呼叫者鑄得出 API 金鑰，而本機呼叫的行為與升級前完全相同。
 
 ---
+
+## 定義驗證（由宿主呼叫）
+
+`PermissionBindingValidator.Validate(schemas, models)` 驗證表單與權限 registry 之間的綁定：
+每個 `FormSchema.PermissionModelId` 都指向存在的 model、`ScopeRole` 只標在主表、每個非 `None`
+的 `SensitiveCategory` 都有對應的 well-known model。每個違規回傳一則訊息，定義正確時回傳空清單。
+
+**框架不會替你呼叫它。** 沒有自動的載入期掃描——無效的綁定不會讓應用啟動失敗，而是延後成
+「權限判定靜默不作用」（空的 `PermissionModelId` 代表*不套權限*，所以 model id 打錯會退化成
+「無 enforcement」而非錯誤）。請自行在「失敗成本低」的位置呼叫：宿主啟動時、部署冒煙測試、
+或在 CI 對 `DefinePath` 下的定義跑一次。
+
+```csharp
+var errors = PermissionBindingValidator.Validate(allFormSchemas, permissionModels);
+if (errors.Count > 0)
+    throw new InvalidOperationException(string.Join(Environment.NewLine, errors));
+```
 
 ## 快取與失效
 

@@ -63,7 +63,7 @@ A `FormSchema` declares which model it consumes, and marks which **master-table*
 
 Rules:
 
-- `ScopeRole` is **master-table only**. Marking it on a detail table is a load-time validation error (`PermissionBindingValidator`) — record scope is decided on the master record; details follow it.
+- `ScopeRole` is **master-table only**. Marking it on a detail table is reported by `PermissionBindingValidator` (see [Definition validation](#definition-validation-host-invoked)) — record scope is decided on the master record; details follow it.
 - **A master table may mark multiple `Owner` / `Dept` columns** — each contributes an OR branch. For example a transfer form marks both a from-department (`from_dept`) and a to-department (`to_dept`), so *both* departments' managers can see the record.
 - An empty `PermissionModelId` makes the form **unscoped** — both back-end layers are skipped (gradual adoption / backward compatible).
 
@@ -153,11 +153,11 @@ The Field dimension is **opt-in**: mark only the fields that need controlling. M
 <FormField FieldName="unit_cost" Caption="Unit Cost" SensitiveCategory="Cost" />
 ```
 
-`SensitiveCategory` (default `None` = not controlled) is a **named, finite classification** — `Amount`, `Cost`, `PersonalData` — parallel to `ScopeRole`. The designer picks a category rather than inventing an id, so the set is validated at load time. It applies to **any field**, master or detail grid column.
+`SensitiveCategory` (default `None` = not controlled) is a **named, finite classification** — `Amount`, `Cost`, `PersonalData` — parallel to `ScopeRole`. The designer picks a category rather than inventing an id, so the set is closed and checkable. It applies to **any field**, master or detail grid column.
 
 ## 7. Well-known category models
 
-Each non-`None` category maps **by convention** to a permission model whose id equals the category name (`Cost` → the `"Cost"` model). These are ordinary entries in the same `PermissionModels` registry — declare and grant them like any other model. `PermissionBindingValidator` fails at load time if a marked category has no matching model.
+Each non-`None` category maps **by convention** to a permission model whose id equals the category name (`Cost` → the `"Cost"` model). These are ordinary entries in the same `PermissionModels` registry — declare and grant them like any other model. `PermissionBindingValidator` reports an error when a marked category has no matching model (see [Definition validation](#definition-validation-host-invoked)).
 
 ```sql
 -- A viewer may see cost but not change it (Read only); an editor may change it (Read + Update).
@@ -268,6 +268,26 @@ An API key audit entry records the key's id, name, type, contact and expiry. It 
 3. **Appoint the first administrator on the host**, through an in-process call to `SetDeploymentAdmin`. Until then no remote caller can mint an API key, while local calls continue to work exactly as before the upgrade.
 
 ---
+
+## Definition validation (host-invoked)
+
+`PermissionBindingValidator.Validate(schemas, models)` checks the binding between forms and the
+permission registry: every `FormSchema.PermissionModelId` references an existing model, `ScopeRole`
+is marked on master tables only, and every non-`None` `SensitiveCategory` has a matching well-known
+model. It returns one message per violation and an empty list when the definitions are valid.
+
+**The framework does not call it for you.** There is no automatic load-time scan — an invalid
+binding will not stop the application from starting; it surfaces later as a permission check that
+silently does nothing (an empty `PermissionModelId` means *unscoped*, so a typo in a model id
+degrades to "no enforcement" rather than to an error). Invoke the validator yourself where a
+failure is cheap to act on: at host startup, in a deployment smoke test, or in a CI step over the
+definitions in your `DefinePath`.
+
+```csharp
+var errors = PermissionBindingValidator.Validate(allFormSchemas, permissionModels);
+if (errors.Count > 0)
+    throw new InvalidOperationException(string.Join(Environment.NewLine, errors));
+```
 
 ## Caching & invalidation
 

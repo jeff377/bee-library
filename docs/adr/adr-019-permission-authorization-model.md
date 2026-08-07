@@ -17,7 +17,7 @@ Bee.NET 原本只有**身分驗證**（[ADR-012](adr-012-session-company-context
 2. **判權限零 DB**：每個 API 請求都要判權限，不能每次查 DB——必須走記憶體快取 + session 快照。
 3. **與 form 解耦**（對齊 Odoo `ir.model.access` / `ir.rule`）：權限綁「業務實體（model）」不綁表單（progId）也不綁資料表／欄；一個 model 可被多個 progId 消費，授一次三功能生效。
 4. **安全邊界在後端**：前端送來的 payload 不可信，授權判定不能依賴 client 提供的值。
-5. **可宣告、可載入期驗證**：scope 用業務語意選單（具名策略），不手寫 predicate，能在載入期驗證。
+5. **可宣告、可驗證**：scope 用業務語意選單（具名策略），不手寫 predicate，因此綁定的正確性可用一支純函式全量檢查（`PermissionBindingValidator`，由宿主呼叫）。
 
 ## 決策
 
@@ -34,7 +34,7 @@ Bee.NET 原本只有**身分驗證**（[ADR-012](adr-012-session-company-context
 - **`PermissionModels`**（單檔 registry，`DefineType.PermissionModels`）：每個 `PermissionModel`（`ModelId` = 業務實體 PascalCase，如 `PurchaseOrder`）宣告其 `PermissionRule` 集合——每個 rule = `(PermissionAction, ScopeStrategy)`。`ModelId` 刻意與表單 progId 區別，**綁 model 不綁 form**。
 - **`FormSchema.PermissionModelId`**：表單宣告它消費哪個主 model（BO 方法層手邊即有 FormSchema → enforce 最直接）。
 - **`FormField.ScopeRole`**（`None` / `Owner` / `Dept`）：標記「哪個欄是擁有者 / 部門」。**scope 策略保持純語意**（`Own`→`Owner` 欄、`Dept`/`DeptAndSub`→`Dept` 欄），欄名留在 FormSchema、model 與表／欄脫鉤。
-- **scope 僅限主表**：`ScopeRole` 只在主表；明細表標 `ScopeRole` 由 `PermissionBindingValidator` 於載入期報錯。
+- **scope 僅限主表**：`ScopeRole` 只在主表；明細表標 `ScopeRole` 由 `PermissionBindingValidator` 檢出。**該 validator 是宿主自行呼叫的驗證 API，框架不自動執行**（線 A 的定位本就是「可宣告、可驗證、零 enforcement」）。
 
 ### 線 B 層一 — 動作 gate（zero-DB）
 
@@ -65,7 +65,7 @@ Bee.NET 原本只有**身分驗證**（[ADR-012](adr-012-session-company-context
 - ✅ **讀寫對稱、安全邊界在後端**：寫入端用權威 re-query，不信任 payload。
 - ✅ **與 form/table 解耦**：一個 model 多個 progId 共用一次授權。
 - ⚠️ **快照語意**：`Roles` / employee / dept 在已進公司的 session 是快照，配置中途變動不即時反映（可接受；需即時可加重進公司刷新或 cache-notify）。
-- ⚠️ **fail-closed 邊界**：scope 需要的欄缺失或身分為空 → 不匹配任何列（安全預設）+ 載入期驗證緩解。
+- ⚠️ **fail-closed 邊界**：scope 需要的欄缺失或身分為空 → 不匹配任何列（安全預設）。`PermissionBindingValidator` 可提前檢出這類定義缺失，但**框架不自動執行**，需宿主自行接（見[使用者指南](../permission-authorization.zh-TW.md#定義驗證由宿主呼叫)）。
 - ✅ **前端 capability（element 細粒度降級）已實作（2026-07-03）**：層一／層二仍在後端方法層權威 enforce、不靠前端。權限可視為**三維度 × 兩把關點**——**動作**維度在後端權威 gate、同時投影到前端決定工具列命令／按鈕狀態；**列**維度僅後端；新增**欄**維度（`FormField.SensitiveCategory` → well-known 分類 model，依 Read/Update 隱藏／唯讀）僅前端。capability 快照搭 `EnterCompany` 回傳（`EnterCompanyResponse.Capabilities`）、快取於 `ClientInfo.Capabilities`、由 `Bee.UI.Core.Permissions.ElementCapabilityResolver` 解析。前端**純 UX、非資料邊界**（後端未遮罩敏感欄值）。詳見[使用者指南](../permission-authorization.zh-TW.md)第二部分。
 
 ## 參考
