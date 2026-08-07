@@ -357,7 +357,7 @@ flowchart LR
 ```
 ┌──────────────────────────────────────────────────────┐
 │  View                                                │
-│  Avalonia / WinForms / Web (Blazor/React) / App (MAUI) │  MVVM: View
+│  Avalonia / Blazor Server / 自行撰寫的 WinForms、WPF 或 JS host │  MVVM: View
 ├──────────────────────────────────────────────────────┤
 │  ViewModel                                          │  MVVM: ViewModel
 │  （由 FormSchema 推導 binding 結構）                 │

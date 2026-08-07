@@ -338,14 +338,13 @@ The BeeNET framework automatically maintains the following system fields in all 
 
 ### Web Frontend (`Bee.Web.Blazor.Server`)
 
-Both packages are Razor Class Libraries (RCLs) that expose the same Blazor component surface — `DynamicForm` and `FormDataObject` — but each one is implemented independently for its own hosting model (Blazor Server uses DI-scoped connectors per SignalR circuit; Blazor WASM is forced to `RemoteApiProvider` over HTTP).
+`Bee.Web.Blazor.Server` is a Razor Class Library (RCL) exposing `DynamicForm`, `DynamicGrid` and `FormDataObject`, with DI-scoped connectors so each SignalR circuit carries its own AccessToken. A Blazor WASM package once existed alongside it and was removed in v4.16.0; a WASM app of your own reaches the backend through `Bee.Api.Client` (`RemoteApiProvider`) directly.
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `DynamicForm` (Razor component) | 動態表單元件 | Blazor component that renders a FormSchema-driven form; the Server and Wasm packages each ship their own implementation |
-| `FormDataObject` | 表單資料物件 | Data-binding object bound by the Blazor `DynamicForm`; each package has its own version tailored to its hosting model |
+| `DynamicForm` (Razor component) | 動態表單元件 | Blazor component that renders a FormSchema-driven form |
+| `FormDataObject` | 表單資料物件 | Data-binding object bound by the Blazor `DynamicForm`. Deliberately separate from the Avalonia type of the same name — see `rules/avalonia.md` for why the duplication is kept |
 | `AddBeeBlazor` | Blazor Server 註冊擴充方法 | `IServiceCollection` extension that registers the Blazor Server RCL services (DI-scoped connectors) |
-| `AddBeeBlazor` | Blazor WASM 註冊擴充方法 | `IServiceCollection` extension that registers the Blazor WASM RCL services (forces `RemoteApiProvider`) |
 
 ### Api Client Providers (`Bee.Api.Client`)
 

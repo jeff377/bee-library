@@ -694,17 +694,18 @@ Bee.NET supports three categories of frontend hosts, each consuming the API in a
 ```
 What kind of frontend are you building?
 │
-├── Desktop / native UI (MAUI / WinForms / WPF / Avalonia)
+├── Desktop / native UI (Avalonia, or your own WinForms / WPF host)
 │   → Use the Bee.UI.* family via the ClientInfo static singleton
 │   → See "Desktop" section below
 │
-├── Blazor Server (ASP.NET Core server-rendered)
-│   → Use Bee.Web.Blazor.Server with DI-scoped connectors
-│   → See "Blazor Server" section below
-│
-└── Blazor WASM (Browser WebAssembly)
-    → See "Blazor WASM" section below
+└── Blazor Server (ASP.NET Core server-rendered)
+    → Use Bee.Web.Blazor.Server with DI-scoped connectors
+    → See "Blazor Server" section below
 ```
+
+> The framework ships two UI heads: `Bee.UI.Avalonia` and `Bee.Web.Blazor.Server`.
+> Any other .NET frontend — WinForms, WPF, a Blazor WASM app of your own — talks to the
+> backend through `Bee.Api.Client` directly; there is no framework package for it.
 
 ### Desktop (Bee.UI.* family)
 
@@ -722,7 +723,7 @@ public class MyUIViewService : IUIViewService
     public async Task<bool> ShowApiConnectAsync()
     {
         // Show a dialog asking the user for the endpoint; return true if confirmed.
-        // Concrete implementation depends on the UI framework (MAUI ContentPage / WinForms Form, etc.).
+        // Concrete implementation depends on the UI framework (Avalonia Window / WinForms Form, etc.).
     }
 }
 
@@ -841,7 +842,7 @@ public static void Main(string[] args)
 }
 ```
 
-`FormView` resolves `Schema` / `FormConnector` / `AccessToken` from `ClientInfo` when the host only sets `ProgId`, mirroring the MAUI `FormPage` fallback. `GridControl` (a `ContentControl` composite exposing an inner `DataGrid` as `InnerGrid`) renders cells through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch (not `Binding "[FieldName]"`) — see [ADR-020](adr/adr-020-avalonia-datagrid-binding-strategy.md) for why — and offers two editing models through `GridEditMode` (`InCell` cell editing / `EditForm` popup row editing); see [ADR-021](adr/adr-021-avalonia-datagrid-editing-strategy.md). Field editors bind ambiently: set `FormScope.DataObject` once on a container and every descendant editor with a `FieldName` wires itself.
+`FormView` resolves `Schema` / `FormConnector` / `AccessToken` from `ClientInfo` when the host only sets `ProgId`. `GridControl` (a `ContentControl` composite exposing an inner `DataGrid` as `InnerGrid`) renders cells through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch (not `Binding "[FieldName]"`) — see [ADR-020](adr/adr-020-avalonia-datagrid-binding-strategy.md) for why — and offers two editing models through `GridEditMode` (`InCell` cell editing / `EditForm` popup row editing); see [ADR-021](adr/adr-021-avalonia-datagrid-editing-strategy.md). Field editors bind ambiently: set `FormScope.DataObject` once on a container and every descendant editor with a `FieldName` wires itself.
 
 Worked examples: [`samples/Avalonia.Demo`](../samples/Avalonia.Demo/README.md) (full CRUD flow) and [`samples/Avalonia.DemoCenter`](../samples/Avalonia.DemoCenter/README.md) (control demo center).
 
@@ -849,8 +850,7 @@ Worked examples: [`samples/Avalonia.Demo`](../samples/Avalonia.Demo/README.md) (
 
 | Frontend | Connection abstraction | Token tenancy | Endpoint persistence | Mode | Registration |
 |---------|-----------------------|---------------|--------------------|------|-------------|
-| Desktop (Avalonia / MAUI / WinForms) | `ClientInfo` static | **1 user / process** (`ClientInfo._accessToken` static) | Local file + `IEndpointStorage` | Local or Remote | `ClientInfo.InitializeAsync` at startup |
+| Desktop (Avalonia, or your own WinForms / WPF host) | `ClientInfo` static | **1 user / process** (`ClientInfo._accessToken` static) | Local file + `IEndpointStorage` | Local or Remote | `ClientInfo.InitializeAsync` at startup |
 | Blazor Server | DI scope | **N users / process** (per SignalR circuit) | appsettings / startup injection | Local or Remote | `AddBeeFramework` + `AddBeeBlazor` |
-| Blazor WASM | DI scope | 1 user / WASM heap | localStorage / JS interop | **Remote only** | `AddBeeBlazor` + `HttpClient` |
 
 > ⚠️ **Do not use `Bee.UI.Core.ClientInfo` in Blazor environments.** Its `_accessToken` is a `private static Guid` — only **one** AccessToken per process. In Blazor Server, where one process serves N concurrent user circuits, a later login overwrites the prior user's token, causing cross-user data leakage. See [ADR-013](adr/adr-013-frontend-api-connection-strategy.md).

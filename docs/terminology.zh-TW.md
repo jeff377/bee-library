@@ -336,14 +336,13 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 
 ### Web 前端（`Bee.Web.Blazor.Server`）
 
-兩個套件皆為 Razor Class Library（RCL），對外暴露相同的 Blazor 元件介面（`DynamicForm`、`FormDataObject`），但各自針對所屬宿主模型獨立實作（Blazor Server 以 DI scope 連接器搭配 SignalR circuit；Blazor WASM 強制使用 `RemoteApiProvider` 走 HTTP）。
+`Bee.Web.Blazor.Server` 為 Razor Class Library（RCL），對外暴露 `DynamicForm`、`DynamicGrid` 與 `FormDataObject`，並以 DI scope 連接器讓每個 SignalR circuit 各自持有 AccessToken。曾另有 Blazor WASM 套件，已於 v4.16.0 移除；自行撰寫的 WASM app 直接透過 `Bee.Api.Client`（`RemoteApiProvider`）連後端。
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `DynamicForm`（Razor 元件） | 動態表單元件 | Blazor 元件，依 FormSchema 動態渲染表單；Server 與 Wasm 套件各自提供一份實作 |
-| `FormDataObject` | 表單資料物件 | Blazor `DynamicForm` 綁定的資料物件；各套件依宿主模型分別有獨立版本 |
+| `DynamicForm`（Razor 元件） | 動態表單元件 | Blazor 元件，依 FormSchema 動態渲染表單 |
+| `FormDataObject` | 表單資料物件 | Blazor `DynamicForm` 綁定的資料物件。與 Avalonia 端同名型別刻意各自獨立——保留重複的理由見 `rules/avalonia.md` |
 | `AddBeeBlazor` | Blazor Server 註冊擴充方法 | `IServiceCollection` 擴充方法，註冊 Blazor Server RCL 所需服務（DI scope 連接器） |
-| `AddBeeBlazor` | Blazor WASM 註冊擴充方法 | `IServiceCollection` 擴充方法，註冊 Blazor WASM RCL 所需服務（強制 `RemoteApiProvider`） |
 
 ### API 連線提供者（`Bee.Api.Client`）
 

@@ -20,7 +20,7 @@
 per-process client connection state (`ClientInfo`), abstracts where the service endpoint is
 persisted (`IEndpointStorage`), and turns a server-issued permission snapshot into per-element UI
 capability decisions (`ElementCapabilityResolver`). It carries no UI-framework types, so Avalonia,
-MAUI, and Blazor can each share the same connection and permission logic while rendering their own
+and Blazor can each share the same connection and permission logic while rendering their own
 way.
 
 ## Key Types

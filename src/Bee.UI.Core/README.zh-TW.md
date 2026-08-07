@@ -19,7 +19,7 @@
 `Bee.UI.Core` 是所有 `Bee.UI.*` 前端共用、與 UI 框架無關的基礎層。它持有 per-process 的用戶端連線
 狀態（`ClientInfo`）、抽象化服務 endpoint 的持久化位置（`IEndpointStorage`），並將 server 下發的
 權限快照轉換為每個 UI 元素的能力決策（`ElementCapabilityResolver`）。它不含任何 UI 框架型別，因此
-Avalonia、MAUI、Blazor 可共用同一套連線與權限邏輯，各自以自己的方式渲染。
+Avalonia 與 Blazor 可共用同一套連線與權限邏輯，各自以自己的方式渲染。
 
 ## 主要型別
 
