@@ -5,29 +5,56 @@ namespace Bee.Base.Serialization
 {
     /// <summary>
     /// JSON serialization codec. Round-trips objects via <see cref="JsonSerializer"/>
-    /// with framework defaults (camelCase, indented) and dispatches lifecycle hooks for
+    /// with framework defaults (camelCase) and dispatches lifecycle hooks for
     /// objects implementing <see cref="IObjectSerialize"/> / <see cref="IObjectSerializeProcess"/>.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// WARNING: the option instances below are shared and must stay shared.
+    /// <see cref="JsonSerializerOptions"/> is where System.Text.Json caches the contract it builds
+    /// for each type it meets — property list, converter resolution, naming policy. Handing the
+    /// serializer a fresh instance per call throws that cache away every time, so every call pays
+    /// full reflection again. Building them once is the whole point of this shape; do not move the
+    /// construction back inside the methods.
+    /// </para>
+    /// <para>
+    /// NOTE: wire output is compact and file output is indented. Indentation is for a human reading
+    /// a definition file on disk, and costs both bytes and time on a request path that no one reads.
+    /// </para>
+    /// </remarks>
     public static class JsonCodec
     {
+        private static readonly JsonSerializerOptions CompactIgnoreDefault =
+            CreateOptions(JsonIgnoreCondition.WhenWritingDefault, writeIndented: false);
+
+        private static readonly JsonSerializerOptions CompactIgnoreNull =
+            CreateOptions(JsonIgnoreCondition.WhenWritingNull, writeIndented: false);
+
+        private static readonly JsonSerializerOptions CompactKeepAll =
+            CreateOptions(JsonIgnoreCondition.Never, writeIndented: false);
+
+        private static readonly JsonSerializerOptions IndentedIgnoreDefault =
+            CreateOptions(JsonIgnoreCondition.WhenWritingDefault, writeIndented: true);
+
+        private static readonly JsonSerializerOptions IndentedIgnoreNull =
+            CreateOptions(JsonIgnoreCondition.WhenWritingNull, writeIndented: true);
+
+        private static readonly JsonSerializerOptions IndentedKeepAll =
+            CreateOptions(JsonIgnoreCondition.Never, writeIndented: true);
+
         /// <summary>
-        /// Gets the JSON serializer options.
+        /// Builds one of the shared option instances.
         /// </summary>
-        /// <param name="ignoreDefaultValue">Whether to ignore default values.</param>
-        /// <param name="ignoreNullValue">Whether to ignore null values.</param>
-        private static JsonSerializerOptions GetJsonSerializerOptions(bool ignoreDefaultValue, bool ignoreNullValue)
+        /// <param name="ignoreCondition">The condition under which a property is omitted.</param>
+        /// <param name="writeIndented">Whether the output is indented for human reading.</param>
+        private static JsonSerializerOptions CreateOptions(JsonIgnoreCondition ignoreCondition, bool writeIndented)
         {
             var options = new JsonSerializerOptions
             {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                WriteIndented = writeIndented,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = ignoreCondition
             };
-
-            // Ignore default/null values
-            if (ignoreDefaultValue && ignoreNullValue)
-                options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
-            else if (ignoreNullValue)
-                options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 
             // Custom converters for DataSet/DataTable with full metadata preservation
             options.Converters.Add(new DataTableJsonConverter());
@@ -39,7 +66,25 @@ namespace Bee.Base.Serialization
         }
 
         /// <summary>
-        /// Serializes an object to a JSON string.
+        /// Selects the shared option instance matching the requested behaviour.
+        /// </summary>
+        /// <param name="ignoreDefaultValue">Whether to ignore default values.</param>
+        /// <param name="ignoreNullValue">Whether to ignore null values.</param>
+        /// <param name="writeIndented">Whether the output is indented for human reading.</param>
+        private static JsonSerializerOptions GetJsonSerializerOptions(
+            bool ignoreDefaultValue, bool ignoreNullValue, bool writeIndented)
+        {
+            if (ignoreDefaultValue && ignoreNullValue)
+                return writeIndented ? IndentedIgnoreDefault : CompactIgnoreDefault;
+
+            if (ignoreNullValue)
+                return writeIndented ? IndentedIgnoreNull : CompactIgnoreNull;
+
+            return writeIndented ? IndentedKeepAll : CompactKeepAll;
+        }
+
+        /// <summary>
+        /// Serializes an object to a compact JSON string.
         /// </summary>
         /// <param name="value">The object to serialize.</param>
         /// <param name="ignoreDefaultValue">Whether to ignore default values.</param>
@@ -47,11 +92,23 @@ namespace Bee.Base.Serialization
         /// <param name="includeTypeName">This parameter is no longer used and will be removed in a future version.</param>
         public static string Serialize(object value, bool ignoreDefaultValue = true, bool ignoreNullValue = true, bool includeTypeName = true)
         {
+            return SerializeCore(value, ignoreDefaultValue, ignoreNullValue, writeIndented: false);
+        }
+
+        /// <summary>
+        /// Serializes an object to a JSON string with the requested indentation.
+        /// </summary>
+        /// <param name="value">The object to serialize.</param>
+        /// <param name="ignoreDefaultValue">Whether to ignore default values.</param>
+        /// <param name="ignoreNullValue">Whether to ignore null values.</param>
+        /// <param name="writeIndented">Whether the output is indented for human reading.</param>
+        private static string SerializeCore(object value, bool ignoreDefaultValue, bool ignoreNullValue, bool writeIndented)
+        {
             // Pre-serialization operations
             SerializationLifecycle.NotifyBefore(SerializeFormat.Json, value);
 
             // Serialize to JSON string
-            var options = GetJsonSerializerOptions(ignoreDefaultValue, ignoreNullValue);
+            var options = GetJsonSerializerOptions(ignoreDefaultValue, ignoreNullValue, writeIndented);
             string json = JsonSerializer.Serialize(value, value?.GetType() ?? typeof(object), options);
 
             // Post-serialization operations
@@ -68,7 +125,7 @@ namespace Bee.Base.Serialization
         public static T? Deserialize<T>(string json, bool includeTypeName = true)
         {
             // Deserialize the JSON string
-            var options = GetJsonSerializerOptions(true, false);
+            var options = GetJsonSerializerOptions(true, false, writeIndented: false);
             var value = JsonSerializer.Deserialize<T>(json, options);
             // Post-deserialization operations
             SerializationLifecycle.NotifyAfterDeserialize(SerializeFormat.Json, value);
@@ -80,9 +137,10 @@ namespace Bee.Base.Serialization
         /// </summary>
         /// <param name="value">The object to serialize.</param>
         /// <param name="filePath">The JSON file path.</param>
+        /// <remarks>File output is indented, unlike <see cref="Serialize"/>, because a person reads it.</remarks>
         public static void SerializeToFile(object value, string filePath)
         {
-            string json = Serialize(value, true);
+            string json = SerializeCore(value, ignoreDefaultValue: true, ignoreNullValue: true, writeIndented: true);
             FileUtilities.FileWriteText(filePath, json);
             // Set the serialization-bound file
             if (value is IObjectSerializeFile objectSerializeFile) { objectSerializeFile.SetObjectFilePath(filePath); }

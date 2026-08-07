@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text.Json;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Definition.Database;
@@ -68,7 +69,15 @@ namespace Bee.Definition.UnitTests.Forms
             // The JSON wire is one-way for JS frontends: getter-only collections such as
             // `Tables` do not repopulate on deserialize, so field-level values are asserted
             // on the serialized payload and only top-level properties on the restored object.
-            Assert.Contains("\"displayFields\": \"ref_customer_name\"", json);
+            // The payload is inspected through JsonDocument rather than by substring so the
+            // assertion tests the value rather than the writer's whitespace.
+            using var document = JsonDocument.Parse(json);
+            var field = document.RootElement
+                .GetProperty("tables")[0]
+                .GetProperty("fields")
+                .EnumerateArray()
+                .Single(f => f.GetProperty("fieldName").GetString() == "customer_rowid");
+            Assert.Equal("ref_customer_name", field.GetProperty("displayFields").GetString());
             Assert.NotNull(restored);
             Assert.Equal("sys_id,sys_name,customer_grade", restored.LookupFields);
         }
