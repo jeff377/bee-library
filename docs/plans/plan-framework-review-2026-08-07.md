@@ -253,7 +253,20 @@ XmlCodec.Serialize(obj)
 |---|------|------|------|
 | **✅ S-3** | ~~`ILoginAttemptTracker` 有完整實作但**從未註冊**~~ **已完成 2026-08-07** | `src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs:246-249`（只有註解） | `Login` 是唯一可匿名觸達的憑證驗證面。預設容器不註冊 → `tracker` 恆 null → 三處 lockout 邏輯全部短路。**開箱即用的部署完全無帳號鎖定**。實作躺在 repo 裡且無相依。修法：`TryAddSingleton<ILoginAttemptTracker, LoginAttemptTracker>()` 一行。**已完成**：`AddBeeFramework` 預設註冊（5 次 / 15 分鐘），採 `TryAdd` 故 host 自訂實作仍勝出；補 2 個註冊測試。**行為變更**：既有部署升上來後密碼連錯 5 次會開始鎖定，發版時需於 CHANGELOG 標示 |
 | **S-4** | API key gate 預設 presence-only，且撤銷最後一把金鑰會使防護倒退 | `src/Bee.Api.Core/Authorization/ApiAuthorizationValidator.cs:147-157` | 無 enabled 金鑰時任何非空 `X-Api-Key` 皆通過。輪替時先停舊金鑰 → gate 退回 presence-only，是**由正常維運動作觸發**的降級。上輪已提、未修。修法：非 Development 環境 `InForce==false` 由 warning 升為啟動失敗 |
-| **S-5** | `GetLookup` 同時繞過 layer-1 權限與 layer-2 record scope | `src/Bee.Business/Form/FormBusinessObject.cs:100-122` | 註解只論證了 layer-1 豁免（挑參照值不需瀏覽權），**沒論證 layer-2**。`:109-111` 的 `CombineWithScope` 兩引數是搜尋條件與 `GetLookupFilter()`，record scope 完全沒進來。後果：任一 progId 可用 `SearchText` 做 `LIKE %…%` 逐字元枚舉 + `PageSize` 上限 1000 翻完整表。修法：併入 `ResolveScopeFilter(PermissionAction.Read)` |
+| **⬇️ S-5** | ~~`GetLookup` 同時繞過 layer-1 權限與 layer-2 record scope~~ **2026-08-07 維護者裁決：不套 record scope，降為 P4 觀察** | `src/Bee.Business/Form/FormBusinessObject.cs:100-122` | 註解只論證了 layer-1 豁免（挑參照值不需瀏覽權），**沒論證 layer-2**。`:109-111` 的 `CombineWithScope` 兩引數是搜尋條件與 `GetLookupFilter()`，record scope 完全沒進來。後果：任一 progId 可用 `SearchText` 做 `LIKE %…%` 逐字元枚舉 + `PageSize` 上限 1000 翻完整表。**裁決（2026-08-07）**：lookup 選資料通常只顯示編號與名稱、不含機敏資料，故不套 record scope。
+此與 `GetLookup` 既有 remarks 的推理一致（「Exposure is bounded by the `FormSchema.LookupFields` declaration」），
+確認豁免為刻意設計而非疏漏。
+
+**但此裁決使 `FormSchema.LookupFields` 成為安全介面**：`GetLookup` 是
+`[ApiAccessControl(Public, Authenticated)]`，progId 由呼叫端指定，且**不驗證目標 form 是否真為 lookup 對象**，
+每頁上限 1000（`DataFormRepository.cs:106`），`SearchText` 對所有 String 型 lookup 欄位做 `Contains`。
+也就是任一已認證使用者可對任意 progId 翻頁列舉 `sys_rowid` + LookupFields。
+
+安全性因此完全依賴「作者不把機敏欄位放進 `LookupFields`」，而框架不強制此事——
+日後若有人把薪資、身分證號等欄位加進某張表的 `LookupFields`，會靜默對全體已認證使用者可讀。
+
+**下輪應評估**：(a) 加 analyzer 或文件規範，把「LookupFields 不得含機敏欄位」寫成硬性要求；
+(b) `GetLookup` 是否該驗證目標 form 確實被某個 relation 參照（需要反向索引，成本較高）。 |
 | **N-2** | `ApiClientInfo` 把 per-user 狀態放 process-wide static | `src/Bee.Api.Client/ApiClientInfo.cs:23,43,49`；寫入 `SystemApiConnector.cs:167` | `LoginAsync` 把 **session 專屬**加密金鑰寫進 static。`Bee.Web.Blazor.Server` 是多使用者 process → B 登入覆蓋 A 的金鑰 → A 後續 Encrypted 請求解密失敗（fail-closed，非外洩，但互相踢下線）。`BeeApiConnectorFactory` 已對 `accessToken` 做對了，剩三個 static 沒跟上 |
 | **✅ N-3** | ~~`DbProviderRegistry` / `DbDialectRegistry` 用裸 `Dictionary`~~ **已完成 2026-08-07** | `src/Bee.Db/Manager/DbProviderRegistry.cs:16-17`、`DbDialectRegistry.cs:16` | production 啟動後唯讀，但**測試中不是**：`DbProviderRegistryTests` 平行呼叫 `Register`（含 `Remove`），其他測試同時 `Get`。resize 期間並行讀 → `IndexOutOfRangeException` / 無限迴圈。典型「本機綠、CI 紅」根因。修法：改 `ConcurrentDictionary`，零行為變更。**已完成**：兩個 registry 改 `ConcurrentDictionary`，`Remove` 改 `TryRemove`，並在型別上加 WARNING 說明為何必須維持 concurrent（測試層會並行讀寫） |
 | **✅ N-4** | ~~`ClientDefineAccess` 快取是裸 `Dictionary`，從 thread-pool 並行進入~~ **已完成 2026-08-07** | `src/Bee.Api.Client/ClientDefineAccess.cs:29,88-107` | XML doc 宣稱「Concurrent reads of the same key share a single in-flight request」，但 `TryGetValue` + 索引賦值非原子。觸發源：`ListView.cs:291,371` 的 fire-and-forget + `ConfigureAwait(false)` 續行落 thread pool。修法：`ConcurrentDictionary` + `GetOrAdd`。**已完成**：改 `ConcurrentDictionary<string, Lazy<Task<object>>>`——`Lazy` 是關鍵，`GetOrAdd` 的 value factory 在競爭下可能被呼叫多次，對「啟動請求」的 factory 而言就是這個快取要防的重複往返；失效改用 compare-and-remove 的 `TryRemove(KeyValuePair)` 多載，消除 TryGetValue/Remove 之間的空隙。兩處使用點（`GetDefineAsync` / `GetCustomizeAsync`）皆已轉換 |
