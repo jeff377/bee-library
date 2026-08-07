@@ -38,8 +38,12 @@ namespace Bee.Api.Core.MessagePack
                 },
                 // IMPORTANT: every MessagePackCollectionBase<> collection must be registered above.
                 // FormatterResolver below looks like an automatic fallback for them but is unreachable
-                // (ContractlessStandardResolver precedes it) — see its remarks. An unregistered
-                // collection serializes as empty with no error.
+                // (ContractlessStandardResolver precedes it) — see its remarks. Verified against
+                // MessagePack 3.1.7: an unregistered collection still serializes its elements
+                // correctly, and it is deserialization that throws MessagePackSerializationException,
+                // so the failure surfaces only when a payload is read back — possibly in a different
+                // process from the one that wrote it. Rule BEE3003's sibling BEE4001 catches the
+                // omission at build time.
                 new IFormatterResolver[]
                 {
                     ContractlessStandardResolver.Instance, // Contractless resolver (without unsafe Typeless support)

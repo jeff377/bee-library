@@ -70,6 +70,8 @@ Singleton system-level BO, accessed as `System.<action>` over the wire.
 | `GetFormLayout` | Public | Authenticated | **JS-only.** Returns a `FormLayout` (generated from auto-localized FormSchema). |
 | `GetDepartmentTree` | Public | Authenticated | Returns the current company's department tree (per-company org hierarchy) as a typed object (JSON / MessagePack); `null` when no company is entered. |
 | `GetLanguage` | Public | Authenticated | **JS-only.** Returns a `LanguageResource` for one `(Lang, Namespace)` pair. |
+| `GetCustomizeFormLayout` | Public | Authenticated | Returns the session tenant's `FormLayout` override as XML, or an empty string when the tenant declares none. The customize code comes from the session, never from the caller. |
+| `GetCustomizeLanguage` | Public | Authenticated | Returns the session tenant's `LanguageResource` override as XML, or an empty string when the tenant declares none. |
 | `CheckPackageUpdate` | Encoded | Anonymous | Reports whether a client package upgrade is available. |
 | `GetPackage` | Encoded | Anonymous | Streams a client upgrade package binary. |
 

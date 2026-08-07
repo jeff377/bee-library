@@ -1,6 +1,6 @@
 ---
 name: bee-serialization
-description: bee-library 物件「三棲序列化」(XML / JSON / MessagePack)的設計指引。核心兩軸用途——XML 用於持久化(存檔 / 定義檔 / 快照 / 落 DB)、JSON + MessagePack 用於 API 傳遞資料(wire payload，由 PayloadFormat 決定上線哪個，JSON 給 JS 友善、MessagePack 高效)。涵蓋物件三棲 recipe(無參數 ctor + 三標籤共存 + 衍生欄位 ignore)、集合三棲(MessagePackCollectionBase + 必顯式註冊 CollectionBaseFormatter，否則沉默出空集合)、wire 傳遞模式(物件本身 vs XML string)、踩雷與三棲 round-trip 測試樣板。當使用者要「物件要支援 XML/JSON/MessagePack」、「序列化」、「傳前端又要存檔」、「跨 wire 傳物件」、「KeyCollectionBase / MessagePack 集合序列化」、「可序列化物件設計」之類需求時使用。
+description: bee-library 物件「三棲序列化」(XML / JSON / MessagePack)的設計指引。核心兩軸用途——XML 用於持久化(存檔 / 定義檔 / 快照 / 落 DB)、JSON + MessagePack 用於 API 傳遞資料(wire payload，由 PayloadFormat 決定上線哪個，JSON 給 JS 友善、MessagePack 高效)。涵蓋物件三棲 recipe(無參數 ctor + 三標籤共存 + 衍生欄位 ignore)、集合三棲(MessagePackCollectionBase + 必顯式註冊 CollectionBaseFormatter，否則反序列化擲例外)、wire 傳遞模式(物件本身 vs XML string)、踩雷與三棲 round-trip 測試樣板。當使用者要「物件要支援 XML/JSON/MessagePack」、「序列化」、「傳前端又要存檔」、「跨 wire 傳物件」、「KeyCollectionBase / MessagePack 集合序列化」、「可序列化物件設計」之類需求時使用。
 ---
 
 # bee-library 三棲序列化（XML / JSON / MessagePack）
@@ -67,7 +67,7 @@ public class FooNodeCollection : MessagePackCollectionBase<FooNode> { }
 new CollectionBaseFormatter<FooNodeCollection, FooNode>(),
 ```
 
-**為什麼一定要顯式註冊**：`MessagePackCodec` 的 resolver 鏈中 `ContractlessStandardResolver` 排在 `FormatterResolver`(動態偵測 `MessagePackCollectionBase<>`)**之前**，會搶先用錯誤方式序列化集合 → **反序列化得到空 items、不拋任何錯**（沉默失敗，最難察覺）。`FilterNodeCollection` / `SortFieldCollection` 都靠這行顯式註冊才正確。
+**為什麼一定要顯式註冊**：`MessagePackCodec` 的 resolver 鏈中 `ContractlessStandardResolver` 排在 `FormatterResolver`(動態偵測 `MessagePackCollectionBase<>`)**之前**，會搶先用錯誤方式序列化集合。**實測（MessagePack 3.1.7）的失敗模式是：序列化正確寫出元素，反序列化才擲 `MessagePackSerializationException`** —— 也就是問題只在讀回時現形，且可能發生在另一個行程。`FilterNodeCollection` / `SortFieldCollection` 都靠這行顯式註冊才正確。**BEE4001 已於建置期把關**，但仍應理解失敗模式，因為它決定了排查方向（查讀端而非寫端）。
 
 ### 集合 base 選型
 
@@ -90,7 +90,7 @@ new CollectionBaseFormatter<FooNodeCollection, FooNode>(),
 
 ## 踩雷清單
 
-1. **MessagePackCollectionBase 沒顯式註冊 formatter → 沉默出空集合**：最隱蔽，跨 MessagePack 後 `Count == 0`、不拋錯。一律在 `MessagePackCodec` 加 `CollectionBaseFormatter<TColl, TElem>`，並補 MessagePack round-trip 測試把關。
+1. **MessagePackCollectionBase 沒顯式註冊 formatter → 反序列化擲例外**：實測（MessagePack 3.1.7）序列化正確、**反序列化**擲 `MessagePackSerializationException`，故只在讀回時現形。一律在 `MessagePackCodec` 加 `CollectionBaseFormatter<TColl, TElem>`，並補 MessagePack round-trip 測試把關；BEE4001 會在建置期報這條。
 2. **衍生/index/owner 欄位少標一個軸 → 外洩或循環**：`[IgnoreMember, XmlIgnore, JsonIgnore]` 三個一組。
 3. **`[Key]` 與 base 衝突**：從 100 起算（0–99 base 保留）。
 4. **`SafeTypelessFormatter` 白名單**：跨 wire 的型別 namespace 必須在 `SysInfo.AllowedTypeNamespaces`（`Bee.Base` / `Bee.Definition` / `Bee.Api.Core` / `Bee.Business` 等）內，否則反序列化被擋。

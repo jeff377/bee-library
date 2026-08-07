@@ -30,7 +30,10 @@ namespace Bee.Api.Core.MessagePack
     /// this a real safety net would require the fallback to return null and let the composite resolver
     /// continue, plus a recursive base-type check (the test below only matches a direct base type).
     /// Until then: a new <c>MessagePackCollectionBase&lt;&gt;</c> collection MUST be registered explicitly
-    /// in <c>MessagePackCodec</c>, or it will serialize as an empty collection with no error.
+    /// in <c>MessagePackCodec</c>. Verified against MessagePack 3.1.7, the failure from omitting it is
+    /// <b>not</b> a silently empty collection — serialization writes the elements correctly and
+    /// <b>deserialization</b> throws <c>MessagePackSerializationException</c>, so it surfaces only when
+    /// the payload is read back. Rule BEE4001 reports the omission at build time.
     /// </remarks>
     internal class FormatterResolver : IFormatterResolver
     {

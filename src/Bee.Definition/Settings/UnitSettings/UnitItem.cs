@@ -21,10 +21,13 @@ namespace Bee.Definition.Settings
         { }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="UnitItem"/>. The parameter order matches the
-        /// <c>[Key]</c> order (<c>Code</c>, <c>Decimals</c>, <c>Dimension</c>, <c>Name</c>) so
-        /// MessagePack's constructor-based deserialization maps values to the right members.
+        /// Initializes a new instance of <see cref="UnitItem"/>.
         /// </summary>
+        /// <remarks>
+        /// NOTE: the type is <c>keyAsPropertyName</c>, so MessagePack matches constructor parameters
+        /// to members <b>by name</b>. Parameter order is therefore free here — the ordering rule that
+        /// applies to integer-<c>[Key]</c> types (and that BEE4004 enforces) does not reach this one.
+        /// </remarks>
         /// <param name="code">The unit code (the key), for example <c>KG</c> or <c>PCS</c>.</param>
         /// <param name="decimals">The display decimal places for this unit.</param>
         /// <param name="dimension">The dimension grouping (optional), for example <c>weight</c>.</param>

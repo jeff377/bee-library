@@ -25,7 +25,7 @@ All notable changes to this project will be documented in this file.
 - `Bee.Definition`: `ProgramItem` customization override moves from **whole-item replacement** to **property-level inheritance** — a customization writes only what it changes; unwritten properties inherit the packaged value. Fixes "swapping only the BO silently drops the packaged Repository". [ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md)
 - `Bee.Business`: BO type resolution failure for a regular progId still falls back to `FormBusinessObject`, but now **logs an error** (with progId, type name, and declaring layer).
 - `Bee.Business`: `DeleteContext.Snapshot` loading now also considers whether the progId has a delete-point plugin, so its presence no longer depends on the change-audit toggle.
-- `Bee.Definition`: `IDefineAccess` / `IDefineStorage` / `ICustomizeDefineReader` **gain `PluginSettings` members** — implementers of these interfaces must add them.
+- `Bee.Definition` / `Bee.ObjectCaching`: `IDefineAccess` / `IDefineStorage` / `ICustomizeDefineReader` / `ICacheContainer` **gain `PluginSettings` members** — implementers of these interfaces must add them.
 - `Bee.Db`: `DbDefineStorage.Write` gains a `customizeId` parameter; tenant and base rows differ only by `customize_id`, so no schema change is required.
 - `FormBusinessObject`: the six `Do*` sub-methods gain `<remarks>` stating **whether they run inside the transaction**, documenting the TOCTOU window in `DoBefore*` and "throwing here leaves data committed" in `DoAfter*`. Documentation only, zero behaviour change.
 - `api-bo-contract-design`: naming table gains an `XxxContext` row — `Args`/`Result` for cross-layer transport, `Context` for state shared within a flow.

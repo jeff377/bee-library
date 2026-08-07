@@ -111,7 +111,7 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 - MessagePack item 參數化 ctor 參數順序須對齊 `[Key]` 順序(有無參數 ctor 走 setter 則不觸發)。
 - `[Union]` 多型 ⊥ keyAsPropertyName:多型型別維持整數 `[Key]`;非多型型別用 name-based(adr-030)。
 - 三棲標籤完整:衍生/計算/暫態欄位須三套都 ignore(`[XmlIgnore, JsonIgnore, IgnoreMember]`);別靠私有 setter 隱性避免上 wire(contractless 下改 public setter 就靜默洩漏)。
-- 集合:`MessagePackCollectionBase<>` 子型別須在 `MessagePackCodec` 顯式註冊 formatter,否則沉默出空集合;Definition 集合禁裸 `List<T>`/`Collection<T>`。
+- 集合:`MessagePackCollectionBase<>` 子型別須在 `MessagePackCodec` 顯式註冊 formatter,否則**反序列化**擲 `MessagePackSerializationException`(序列化端正確,故只在讀回時現形);已由 BEE4001 於建置期把關。Definition 集合禁裸 `List<T>`/`Collection<T>`。
 - Newtonsoft.Json 殘留(應為 0)。
 
 ### 7. 公開 API 表面

@@ -25,7 +25,7 @@
 - `Bee.Definition`：`ProgramItem` 的客製覆寫由**整筆取代**改為**屬性級繼承**——客製只寫要改的屬性，未寫的沿用套裝。修正「只換 BO 卻無聲打掉套裝專屬 Repository」。[ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md)
 - `Bee.Business`：一般 progId 的 BO 型別解析失敗維持降級到 `FormBusinessObject`，但改為**記錄 error**（訊息帶 progId、型別名與宣告層）。
 - `Bee.Business`：`DeleteContext.Snapshot` 的載入條件加入「該 progId 有 delete 時點的 plugin」，避免其有無取決於變更稽核開關。
-- `Bee.Definition`：`IDefineAccess` / `IDefineStorage` / `ICustomizeDefineReader` **新增 `PluginSettings` 相關成員**——自行實作這些介面者需補上。
+- `Bee.Definition` / `Bee.ObjectCaching`：`IDefineAccess` / `IDefineStorage` / `ICustomizeDefineReader` / `ICacheContainer` **新增 `PluginSettings` 相關成員**——自行實作這些介面者需補上。
 - `Bee.Db`：`DbDefineStorage.Write` 新增 `customizeId` 參數；租戶列與 base 列僅差 `customize_id`，無需 schema 變更。
 - `FormBusinessObject`：六個 `Do*` 子方法補 `<remarks>` 標明**是否在交易中**，並寫明 `DoBefore*` 的 TOCTOU 空窗與 `DoAfter*` 的「拋例外時資料已提交」。純文件、零行為變更。
 - `api-bo-contract-design`：命名表補 `XxxContext` 一列——跨層傳輸用 `Args`/`Result`，流程內共享狀態用 `Context`。

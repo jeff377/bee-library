@@ -30,6 +30,12 @@
 → 同型別欄位被**靜默對調**，而 **XML / JSON round-trip 抓不到**（它們走屬性名，永遠對）。
 **務必為每個此類 item 加 MessagePack wire round-trip 測試**（範本見 `UnitSettingsMessagePackTests`）。
 
+> **限整數 `[Key]` 型別（即 `[Union]` 家族）。** `keyAsPropertyName: true` 的型別以**名稱**比對，
+> 建構子參數順序顛倒仍能正確 round-trip，不受此限——BEE4004 也刻意把它們排除在外
+> （見 `MessagePackConstructorOrderAnalyzer` 的 remarks）。
+> 誤把此規則套到 name-based 型別，會導出「必須調換參數順序」的錯誤結論；
+> `CurrencyItem` 的 ctor 順序與屬性宣告序不同即為正常，**不是缺陷**。
+
 ## AOT：MessagePack 與 DynamicExpresso 皆無需特殊處理
 
 兩者都曾被懷疑在 iOS/WASM AOT（reflection-only、禁 `Reflection.Emit`）不可用，**實測皆推翻**：
