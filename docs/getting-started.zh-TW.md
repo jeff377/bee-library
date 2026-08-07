@@ -52,13 +52,36 @@ dotnet bee defines materialize --path ./Define
 using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Db.Providers.Sqlite;
+using Bee.Definition.Database;
 using Microsoft.Data.Sqlite;
 
 DbProviderRegistry.Register(DatabaseType.SQLite, new SqliteProviderFactory(SqliteFactory.Instance));
 DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory());
 ```
 
-依需要把 `Sqlite` 換成 `SqlServer`、`PostgreSql`、`MySql` 或 `Oracle`。
+只有 SQLite 需要框架自己的 `SqliteProviderFactory` 包裝，其餘四家直接使用廠商的 factory。
+各資料庫的實際型別：
+
+| `DatabaseType` | ADO.NET provider factory | Dialect factory | NuGet 套件 |
+|----------------|--------------------------|-----------------|-----------|
+| `SQLServer` | `SqlClientFactory.Instance` | `SqlDialectFactory` | `Microsoft.Data.SqlClient` |
+| `PostgreSQL` | `NpgsqlFactory.Instance` | `PgDialectFactory` | `Npgsql` |
+| `MySQL` | `MySqlConnectorFactory.Instance` | `MySqlDialectFactory` | `MySqlConnector` |
+| `Oracle` | `OracleClientFactory.Instance` | `OracleDialectFactory` | `Oracle.ManagedDataAccess.Core` |
+| `SQLite` | `new SqliteProviderFactory(SqliteFactory.Instance)` | `SqliteDialectFactory` | `Microsoft.Data.Sqlite` |
+
+各 dialect factory 位於 `Bee.Db.Providers.<Vendor>`，`using` 要跟著換。以 SQL Server 為例：
+
+```csharp
+using Bee.Db;
+using Bee.Db.Manager;
+using Bee.Db.Providers.SqlServer;
+using Bee.Definition.Database;
+using Microsoft.Data.SqlClient;
+
+DbProviderRegistry.Register(DatabaseType.SQLServer, SqlClientFactory.Instance);
+DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory());
+```
 
 ## 4. 接線 DI 容器
 
@@ -159,7 +182,7 @@ progId 與型別的綁定寫在 `ProgramSettings.xml` —— 它是全框架的�
 <ProgramSettings>
   <Items>
     <ProgramItem ProgId="Echo" DisplayName="Echo"
-                 BusinessObject="MyApp.EchoBusinessObject, MyApp" />
+                 BusinessObject="MyApp.Server.BusinessObjects.EchoBusinessObject, MyApp.Server" />
   </Items>
 </ProgramSettings>
 ```

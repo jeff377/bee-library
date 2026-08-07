@@ -52,13 +52,37 @@ The framework does not force every host to pull in every ADO.NET driver, so the 
 using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Db.Providers.Sqlite;
+using Bee.Definition.Database;
 using Microsoft.Data.Sqlite;
 
 DbProviderRegistry.Register(DatabaseType.SQLite, new SqliteProviderFactory(SqliteFactory.Instance));
 DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory());
 ```
 
-Swap `Sqlite` for `SqlServer`, `PostgreSql`, `MySql` or `Oracle` as needed.
+Only SQLite needs the framework's own `SqliteProviderFactory` wrapper; the other four take the
+vendor factory directly. The exact types per database:
+
+| `DatabaseType` | ADO.NET provider factory | Dialect factory | NuGet package |
+|----------------|--------------------------|-----------------|---------------|
+| `SQLServer` | `SqlClientFactory.Instance` | `SqlDialectFactory` | `Microsoft.Data.SqlClient` |
+| `PostgreSQL` | `NpgsqlFactory.Instance` | `PgDialectFactory` | `Npgsql` |
+| `MySQL` | `MySqlConnectorFactory.Instance` | `MySqlDialectFactory` | `MySqlConnector` |
+| `Oracle` | `OracleClientFactory.Instance` | `OracleDialectFactory` | `Oracle.ManagedDataAccess.Core` |
+| `SQLite` | `new SqliteProviderFactory(SqliteFactory.Instance)` | `SqliteDialectFactory` | `Microsoft.Data.Sqlite` |
+
+Each dialect factory lives in `Bee.Db.Providers.<Vendor>`, so swap the `using` to match. For SQL
+Server the pair becomes:
+
+```csharp
+using Bee.Db;
+using Bee.Db.Manager;
+using Bee.Db.Providers.SqlServer;
+using Bee.Definition.Database;
+using Microsoft.Data.SqlClient;
+
+DbProviderRegistry.Register(DatabaseType.SQLServer, SqlClientFactory.Instance);
+DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory());
+```
 
 ## 4. Wire the DI container
 
@@ -159,7 +183,7 @@ The progId-to-type binding lives in `ProgramSettings.xml` — the framework-wide
 <ProgramSettings>
   <Items>
     <ProgramItem ProgId="Echo" DisplayName="Echo"
-                 BusinessObject="MyApp.EchoBusinessObject, MyApp" />
+                 BusinessObject="MyApp.Server.BusinessObjects.EchoBusinessObject, MyApp.Server" />
   </Items>
 </ProgramSettings>
 ```
