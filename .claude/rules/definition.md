@@ -49,8 +49,8 @@ DatabaseSettings、ProgramSettings、DbCategorySettings、LanguageResource）都
 `src/Bee.Definition/Defaults/` 由 embedded resource 載入，是**「開新專案」的 scaffold 來源**
 （把 `st_employee` / `st_department` 等框架系統表的 FormSchema/TableSchema 鋪成初始定義檔）。
 
-**runtime 的定義載入只讀 `PathOptions.DefinePath`**（後端 `LocalDefineAccess`；前端走
-`RemoteDefineAccess`）。**不存在「DefinePath 缺漏就 fallback 到 Defaults」的載入優先序機制。**
+**runtime 的定義載入只讀 `PathOptions.DefinePath`**（後端 `CacheDefineAccess` +
+`FileDefineStorage`；前端走 `ClientDefineAccess`，經 API 取得而不碰檔案系統）。**不存在「DefinePath 缺漏就 fallback 到 Defaults」的載入優先序機制。**
 要在專案用某框架系統表，把定義從 `Defaults/` **複製進專案的 `DefinePath`** 為起點，再視需要擴充
 （保留框架標準欄位，權限/組織等功能依賴之）。
 

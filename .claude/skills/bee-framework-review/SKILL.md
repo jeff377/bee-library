@@ -186,7 +186,8 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
   `SetSerializeState` 並遞迴傳播。查「守門機制只覆蓋部分型別」的情況:2026-08-07 查出
   `SerializeDefine` 的 `ISerializableClone` 守門唯一實作者恰好是唯一**不需要**它的型別
   (server-only),所有實際上 wire 的定義型別全部繞過 —— 而 XML doc 宣稱已防住,
-  **比沒有防護更危險**。
+  **比沒有防護更危險**。(該介面已於同日移除;此處保留是為了記住這個**查法**,
+  不是要下輪去找那個型別。)
 - **process-wide 可變 static**:全量 grep 非 `readonly` 非 `const` 的 static 欄位與有 setter 的
   靜態屬性,逐一判定是否在請求路徑被寫入。特別查「client 端函式庫的 per-user 狀態放 static」——
   桌面 head 成立,但同一組程式碼被 Blazor Server 這種**多使用者 process** 消費時假設就破了,
@@ -302,16 +303,29 @@ MD5 0、裸手動 `Dispose` 0、`throw ex;` 0、S2699 0、fixture 污染 0、牆
 公開文件零 `docs/plans/` 引用、DI captive dependency 0、`async void` 0、`Task.Run` 包同步碼 0、
 **per-row LINQ 線性欄位查找 0**、N+1 查詢 0。
 
-**已知不乾淨(具體清單,下輪應確認是否已清理而非重新「發現」)**:
-`TreeNodeIgnoreAttribute`(連同 `TreeNodeAttribute`/`IDisplayName`,71 處標註 —— **已改判為
-「未接線的設計」,移交 `plan-definition-editor.md`,不應再列為死碼**)、`IDefineField`、
-`IElementCapabilityResolver`、`CheckPackageUpdate`/`GetPackage` 全棧(12 檔)、
-`IUIViewService` 縫、`PermissionBindingValidator`(看似防護、零呼叫)、`ApiErrorInfo`、
-`GetFormSchemaRequest`/`Response`、`ExecFuncLocal` 公開表面(呼叫必炸)。
+**⚠️ 讀這份清單前先讀這段。** 2026-08-07 的體檢在這裡踩了一次:它看到上一輪 plan 裡
+被刪除線劃掉的死碼清單,就把「不在已刪清單裡的項目」當成「漏清」重新列為待辦(D-1),
+但那些項目在上一輪其實是**經裁決刻意保留**的 —— 裁決寫在刪除線清單**下方**的另一張表,
+掃描沒讀到。**「未被刪除」不等於「還沒處理」。** 下輪務必把下面兩類分開看待。
 
-上輪清單已清理 10/14:`IEnterpriseObjectService`、`EnterpriseObjectService`、`InitializeOptions`、
+**(a) 刻意保留 —— 已裁決,不是死碼,不要再列為待辦**:
+
+| 項目 | 保留理由 |
+|------|---------|
+| `TreeNodeIgnoreAttribute`(連同 `TreeNodeAttribute`/`IDisplayName`,71 處標註) | 改判為「未接線的設計」,移交 `plan-definition-editor.md` |
+| `IDefineField` | `DbField` 實作它;屬未被消費的抽象而非死碼 |
+| `IElementCapabilityResolver` | 實作 `ElementCapabilityResolver.Default` 有 5 處生產呼叫(`LayoutCapabilityApplier` / `ListView.Commands` / `FormView` / DemoCenter ×3) |
+| `CheckPackageUpdate` / `GetPackage` 全棧(12 檔) | base 擲 `NotSupportedException` 的刻意擴充點,已列入 `docs/api-method-reference` 與 `jsonrpc-frontend-integration` |
+| `IUIViewService` 縫 | 2026-08-07 裁決保留:雖然四個 head 全走 `InitializeAsync(string)`、production 零實作,但它是有文件的宿主擴充點(cookbook 教學步驟 / terminology 詞條 / adr-013 論據 / dependency-map 的 family 判別準則) |
+| `PermissionBindingValidator` | 2026-08-07 裁決:程式碼保留,改為修正文件 —— 三處公開文件原本宣稱它在載入期生效,已改為「宿主自行呼叫的驗證 API」 |
+| `DateTimeExtensions.GetYearMonth` | 零生產呼叫端,但 BCL 無「當月一日」等價方法、非純 wrapper,依 code-style「0-caller 框架公開 API 保留」 |
+
+**(b) 已清除**:`ExecFuncLocal` 公開表面(2026-08-07,3 筆 Shipped API);
+更早一輪清掉 `IEnterpriseObjectService`、`EnterpriseObjectService`、`InitializeOptions`、
 `ApplicationType`、`SysFuncIDs`、`VersionFiles`、`DefaultBoolean`、`NotSetBoolean`、
-`SystemActions.GetLocalDefine`/`SaveLocalDefine`。
+`SystemActions.GetLocalDefine`/`SaveLocalDefine`、`DateTimeExtensions.IsEmpty`。
+
+**(c) 尚未複驗,下輪可查**:`ApiErrorInfo`、`GetFormSchemaRequest`/`Response`。
 
 **已建立的守門機制**(下次體檢應確認仍存在且有效):
 `BoApiSurfaceTests`、`ApiContractPairingTests`(含 `WireMessageTypes_IsNotEmpty` 防假綠燈)、

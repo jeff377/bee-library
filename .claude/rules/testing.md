@@ -265,8 +265,10 @@ public class DbAccessFactoryTests { ... }
 
 1. **fixture-level**（推薦）：`new BeeTestFixture(b => b.UseTempDefinePath())` 或自定 fixture subclass —
    `PathOptions.DefinePath` 指向 `%TEMP%/bee-fixture-<guid>`，dispose 時清理。
-2. **method-level**：純測試 `LocalDefineAccess` / `FileDefineStorage` 等 ctor 接 `PathOptions` 的類別時，
-   可直接建立 inline temp dir + `PathOptions { DefinePath = tempDir }`，傳入 ctor。
+2. **method-level**：純測試 `CacheDefineAccess` / `FileDefineStorage` 等 ctor 接 `PathOptions` 的類別時，
+   可直接建立 inline temp dir + `PathOptions { DefinePath = tempDir }`，傳入 ctor
+   （`CacheDefineAccess(IDefineStorage, PathOptions)` 這個雙參數多載就是為此提供的，
+   內部自建 `CacheContainerService`）。
 
 若測試需要先 `GetDefine` 讀取既有 fixture 再 `SaveDefine`：**先用 fixture 預設路徑 Get（從 `tests/Define`）→ 構造 temp `IDefineAccess` → Save**，避免 Get 在空 temp 內讀不到資料。
 
@@ -306,7 +308,7 @@ public void SaveSystemSettings_WritesFile()
     try
     {
         var paths = new PathOptions { DefinePath = tempDir };
-        var access = new LocalDefineAccess(new FileDefineStorage(paths), paths);
+        var access = new CacheDefineAccess(new FileDefineStorage(paths), paths);
         access.SaveSystemSettings(new SystemSettings());
         Assert.True(File.Exists(paths.GetSystemSettingsFilePath()));
     }

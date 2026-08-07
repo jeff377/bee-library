@@ -94,7 +94,7 @@ new CollectionBaseFormatter<FooNodeCollection, FooNode>(),
 2. **衍生/index/owner 欄位少標一個軸 → 外洩或循環**：`[IgnoreMember, XmlIgnore, JsonIgnore]` 三個一組。
 3. **`[Key]` 與 base 衝突**：從 100 起算（0–99 base 保留）。
 4. **`SafeTypelessFormatter` 白名單**：跨 wire 的型別 namespace 必須在 `SysInfo.AllowedTypeNamespaces`（`Bee.Base` / `Bee.Definition` / `Bee.Api.Core` / `Bee.Business` 等）內，否則反序列化被擋。
-5. **`ISerializableClone`**：若序列化管線會**就地改值**（如加密 password 欄位），快取物件必須先 `CreateSerializableCopy()` 深複製再序列化，避免污染快取副本（`GetDefine` 對 define 物件即如此）。無敏感欄位的純資料物件不需要。
+5. **序列化 process-wide 快取實例會污染來源**：`XmlCodec.Serialize(obj)` 透過 `IObjectSerialize.SetSerializeState` 在**來源物件**上翻旗標並遞迴到子集合（讓空集合 getter 在序列化期間回 `null`，磁碟上的定義檔才不會有 `<Tables />` 這種多餘元素）。因此**它不能當免費 deep clone**，要 mutate 快取取出的物件一律先 `Clone()`（見 `rules/definition.md`）。〔2026-08-07 更正：原本這條寫的是 `ISerializableClone` / `CreateSerializableCopy()`「序列化管線會就地加密 password 欄位」——**那個機制從來不存在**，加解密是 `CacheDefineAccess` 顯式呼叫 `DatabaseSettingsCryptor` 完成的；該介面已整條移除，`GetDefine(DatabaseSettings)` 改為直接讀原始檔。〕
 6. **lazy index 反序列化後要能重建**：序列化只帶扁平狀態，查詢 index 在還原後第一次查詢時 lazy 建（thread-safe）；index 本身不序列化。
 7. **Oracle Guid 讀回是 `byte[]`(RAW 16)**：持久化讀回端，`ValueUtilities.CGuid` 已支援 `byte[]` coerce；自寫 raw DataTable 讀 Guid 欄時別用會落空的轉換。
 8. **JSON 自訂 converter 僅多型才需**：單一型別集合（如 `DepartmentNodeCollection`）`System.Text.Json` 直接列舉即可；多型 union（如 `FilterNode`）才需 `JsonConverter`（見 `FilterNodeCollectionJsonConverter`）。
@@ -129,7 +129,7 @@ var fromMp = MessagePackCodec.Deserialize<Foo>(bytes)!;
 - [ ] 集合：元素 `: MessagePackCollectionItem`、集合 `: MessagePackCollectionBase<T>`
 - [ ] **`MessagePackCodec` 顯式註冊 `CollectionBaseFormatter<TColl, TElem>`**
 - [ ] 型別 namespace 在 `SysInfo.AllowedTypeNamespaces` 白名單內
-- [ ] 敏感欄位 → `ISerializableClone`；lazy index → 反序列化後可重建
+- [ ] 不對 `IDefineAccess.GetX(...)` 取得的快取實例做 mutate 或 `XmlCodec.Serialize`（要動先 `Clone()`）；lazy index → 反序列化後可重建
 - [ ] wire 傳遞走「物件本身」(新物件)，不走 XML string
 - [ ] 三棲 round-trip 測試(XML+JSON 在定義層、MessagePack 在 Api.Core)，含空集合邊界
 - [ ] `dotnet build Bee.Library.slnx -c Release` 0w/0e
@@ -144,6 +144,6 @@ var fromMp = MessagePackCodec.Deserialize<Foo>(bytes)!;
 | MessagePack 設定 + formatter 註冊 | `src/Bee.Api.Core/MessagePack/MessagePackCodec.cs` / `CollectionBaseFormatter.cs` |
 | XML 持久化 codec | `src/Bee.Base/Serialization/XmlCodec.cs` |
 | 型別白名單 | `src/Bee.Base/SysInfo.cs`（`AllowedTypeNamespaces`） / `src/Bee.Definition/Serialization/SafeTypelessFormatter.cs` |
-| 序列化保護 | `src/Bee.Base/Serialization/ISerializableClone.cs` |
+| 序列化生命週期（SerializeState 傳播） | `src/Bee.Base/Serialization/IObjectSerialize.cs` |
 | wire 物件本身樣板 | `src/Bee.Api.Core/Messages/System/GetFormSchemaResponse.cs`（物件） vs `GetDefineResponse.cs`（XML string，歷史） |
 | 三棲 round-trip 測試樣板 | `tests/Bee.Definition.UnitTests/Organization/DepartmentTreeTests.cs`（XML/JSON） / `tests/Bee.Api.Core.UnitTests/Organization/DepartmentTreeMessagePackTests.cs`（MessagePack） |
