@@ -52,3 +52,12 @@
 - **取捨**：異動記錄以「簡潔 + 可還原顯示」換取「欄位級 SQL 查詢力」（有需要再開選配 EAV）；best-effort 有極小漏失窗口（有需要再升 transactional outbox，entry / schema 不變）。
 - **相關**：系統表登記見 [framework-reserved-names §1.3](../framework-reserved-names.md)；`DbScope.Log` 路由見 [ADR-010](adr-010-logical-database-category.md)；DataForm Save 管線見 [ADR-024](adr-024-dataform-save-dataadapter.md)。
 - **待辦**：per-form 稽核規則（Odoo `auditlog.rule` 式的 admin 執行期選單，涵蓋異動 + 檢視；目前全記所有表單）；`ExecuteBatch` / `UpdateDataTables` 的 DB 異常偵測（目前僅 `Execute` 主路徑）；`st_cache_notify` 既有 SQL Server 升級 idempotency bug（另案）。
+
+## 後記（2026-08-07）：診斷日誌的型別已變
+
+上方〈背景〉表與選項 4 提到的 `ILogWriter` / `LogEntry` **已於 Phase 5 隨 `BackendInfo` 的
+Logging 死碼一併移除**（`5037c128` / `32f84941`），本 ADR 的決策不受影響——那兩個型別在
+決策當下就已被歸類為「未持久化、屬 observability 非業務稽核」，移除只是把死碼清掉。
+
+現行的診斷 / 追蹤面是 `Tracer` / `TraceContext` / `ITraceWriter`（`src/Bee.Base/Tracing/`）
+加上宿主自己的 `ILogger`。上文保留原文字是為了保存決策當下的盤點，不是現況描述。

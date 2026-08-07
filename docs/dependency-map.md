@@ -130,4 +130,4 @@ Also under `tools/` but not on NuGet:
 - **`Bee.UI.*` family criterion**: whether the package consumes the `Bee.UI.Core` abstractions (`ClientInfo` / `IEndpointStorage` / `IUIViewService`, etc.).
   - Consumes → `Bee.UI.*` (current: `Bee.UI.Core`, `Bee.UI.Avalonia`; future: `Bee.UI.WinForms`, `Bee.UI.Wpf`, etc.)
   - Does not consume, has its own state management → independent family prefix (e.g. `Bee.Web.Blazor.*`: a Blazor circuit has no file IO and no dialog service concept, so an independent path is appropriate).
-- The **Web frontend layer** (`Bee.Web.Blazor.Server`) is a Razor Class Library (RCL). It depends only on `Bee.Api.Client`; the host application decides the `IApiProvider` implementation (`LocalApiProvider` / `RemoteApiProvider`) and whether to call `AddBeeFramework`.
+- The **Web frontend layer** (`Bee.Web.Blazor.Server`) is a Razor Class Library (RCL). It depends only on `Bee.Api.Client`; the host application decides the `IJsonRpcProvider` implementation (`LocalApiProvider` / `RemoteApiProvider`) and whether to call `AddBeeFramework`.

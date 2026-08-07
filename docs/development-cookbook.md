@@ -822,7 +822,7 @@ app.Run();
 - **Local mode (in-process)**: `Bee.Web.Blazor.Server` and the backend share the same ASP.NET Core process, so `LocalApiProvider` can call directly without HTTP overhead.
 - **Remote mode (HTTP)**: Blazor Server and the backend run in different processes / servers and communicate via `RemoteApiProvider` over HTTP.
 
-The host application registers an `IApiProvider` implementation at startup to choose the mode (`LocalApiProvider` / `RemoteApiProvider`).
+The host application registers an `IJsonRpcProvider` implementation at startup to choose the mode (`LocalApiProvider` / `RemoteApiProvider`).
 
 ### Avalonia desktop (Bee.UI.Avalonia)
 

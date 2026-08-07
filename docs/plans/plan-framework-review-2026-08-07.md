@@ -82,6 +82,43 @@ P2 / P4 的項目**多數只經代理掃描、未經人工複驗**。本輪實�
 
 ---
 
+## 修正後複驗（2026-08-07，v4.18.0 發版後）
+
+對本輪標記 ✅ 的每一項獨立回驗——**看現況，不看 commit message，也不採信 plan 的標記**
+（方法論教訓 1）。
+
+### 通過（鏈路完整）
+
+| 項目 | 複驗方式與結果 |
+|------|--------------|
+| S-1 / S-2 | 走完整鏈路而非只看 attribute：`UpgradeTableSchema` / `TestConnection` 皆 `LocalOnly = true` → `InvokeExecFunc` 對 `attr == null` 擲 `UnauthorizedAccessException`（fail-closed）→ 四個呼叫端全傳 `IsLocalCall` → `JsonRpcExecutor.IsLocalCall` **預設 `false`**、ASP.NET Core controller 顯式設 `false`、只有 `LocalApiProvider` 設 `true`。**遠端無路徑可讓 `isLocalCall` 為真** |
+| BEE3003 | **實證而非讀碼**：暫時放一個未標註的 handler 進 `Bee.Business`，build 確實以 `error BEE3003` 失敗，訊息含正確修法。probe 已移除 |
+| P-1 | 6 個 `static readonly` options；檔內僅存的 `new JsonSerializerOptions` 位於只被靜態初始化呼叫的 `CreateOptions`，`GetJsonSerializerOptions` 只做挑選 |
+| S-3 / N-3 / N-4 / X-1 / Z-1 / N-6 / C-5 | 逐項現況確認：`TryAddSingleton<ILoginAttemptTracker>` 在位；兩個 registry 與 client 快取皆 `ConcurrentDictionary`（後者含 `Lazy<Task<object>>` 與 compare-and-remove）；`ExecFuncLocal` 全 repo 零殘留（含 `PublicAPI.*.txt`）；analyzer 掛在 5 個專案、`DbParameterSpecCollection` 類別本體為空（單一 public `Add`）；三個 `AssemblyInfo.cs` 皆有 `DisableTestParallelization`；版號三欄 4.18.0 |
+| D-2 / X-3 / Z-2 / C-7 | 雙語〈定義驗證（由宿主呼叫）〉節在位、XML doc `<remarks>` 在位；`api-method-reference` 雙語各含兩個補上的方法；失敗模式敘述已是「**not** a silently empty collection」；`.claude/` 無過期型別殘留 |
+| 基準回歸 | Newtonsoft 0、`[Obsolete]` 0、`CurrentCultureIgnoreCase` 0、`*Func` 靜態類 0、`*Helper` 型別 0、`async void` 0；**static `Dictionary` 欄位無一在 runtime 被 `Add`/`Remove`/`Clear`**（19 筆初掃有 12 筆是方法回傳型別的誤判） |
+
+### ❌ 複驗抓到 3 處「標了 ✅ 但沒清乾淨」
+
+以「公開文件的反引號識別符 vs `src/` 全部宣告識別符」全量比對（215 個 unknown，逐一
+判讀後扣掉 BCL / Avalonia 型別、`XxxArgs` 這類佔位名、列舉成員、ADR 刻意保留的歷史名）：
+
+| 殘留 | 位置 | 原屬項目 | 事實 |
+|------|------|---------|------|
+| `IApiProvider` ×4 | `development-cookbook` 雙語、`dependency-map` 雙語 | C-2 | **該型別從未存在**（`git log -S "interface IApiProvider"` 零結果），實為 `IJsonRpcProvider`。C-2 條目本身就點名了這一項 |
+| `ILogWriter` / `LogEntry` | `adr-027:14,29` | C-2 / C-6 | 兩者已於 Phase 5 隨 Logging 死碼移除（`5037c128` / `32f84941`）。:29 更是把它寫成診斷日誌的**現行歸屬** |
+| `Bee.UI.Maui` ×4 | `adr-020:9,64,71,97` | C-3 | `FormatCell` 行為對稱、抽共用構想都以 MAUI 為對象，而該套件 2026-07-28 已移除 |
+
+**已全部修正**：`IApiProvider` → `IJsonRpcProvider`（4 處）；`adr-027` / `adr-020` 各補一段
+〈後記（2026-08-07）〉，比照 ADR-017 的處理——**保留原文字以存決策脈絡，另加一段說明現況**，
+不改寫歷史表格。
+
+> **這是方法論教訓 1 第三次被驗證**（上輪 P3-8 的表、本輪 X-2 的 CHANGELOG、這次的三處）。
+> 三次的共同形狀都是：**做了大部分、宣告完成、剩下的沒人再看**。
+> 下輪應把「複驗」寫成與「修正」對等的獨立步驟，而不是修正流程的尾巴。
+
+---
+
 ## 待列入 CHANGELOG 的破壞性變更（累計）
 
 本輪修正累積的破壞性變更。**✅ 已於 2026-08-07 隨 4.18.0 全數列入 CHANGELOG**

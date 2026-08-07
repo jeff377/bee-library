@@ -130,4 +130,4 @@ graph BT
 - **`Bee.UI.*` family 判別準則**：是否消費 `Bee.UI.Core` 抽象（`ClientInfo` / `IEndpointStorage` / `IUIViewService` 等）。
   - 消費 → 歸 `Bee.UI.*`（目前：`Bee.UI.Core`、`Bee.UI.Avalonia`；未來：`Bee.UI.WinForms`、`Bee.UI.Wpf` 等同理）
   - 不消費，自有狀態管理 → 走獨立 family prefix（如 `Bee.Web.Blazor.*`：Blazor circuit 無檔案 IO 與 dialog service 概念，獨立路線合理）
-- **Web 前端層**（`Bee.Web.Blazor.Server`）為 RCL（Razor Class Library）元件庫，只相依 `Bee.Api.Client`，由宿主決定 `IApiProvider` 實作（`LocalApiProvider` / `RemoteApiProvider`）與是否呼叫 `AddBeeFramework`。
+- **Web 前端層**（`Bee.Web.Blazor.Server`）為 RCL（Razor Class Library）元件庫，只相依 `Bee.Api.Client`，由宿主決定 `IJsonRpcProvider` 實作（`LocalApiProvider` / `RemoteApiProvider`）與是否呼叫 `AddBeeFramework`。

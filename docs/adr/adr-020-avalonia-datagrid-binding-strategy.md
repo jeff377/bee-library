@@ -103,3 +103,12 @@ private static DataGridTemplateColumn BuildColumn(LayoutColumn column)
 ## 後記（2026-06-14）：清單 cell 的 `supportsRecycling` 修正
 
 上方「決策」範例對唯讀清單純文字 cell 用了 `supportsRecycling: true` —— 這與「`Text` 算死、非 binding」相沖：DataGrid 跨列回收 presenter 時不重跑建立委派，導致顯示文字與底層列脫鉤（lookup picker 上表現為「看到某列、帶回別列」）。已改為 `supportsRecycling: false`，詳見 [ADR-022](adr-022-avalonia-datagrid-cell-recycling.md)。
+
+## 後記（2026-08-07）：`Bee.UI.Maui` 已移除
+
+本 ADR 多處以 `Bee.UI.Maui.Controls.DynamicGrid` 為對照或共用對象（背景、`FormatCell` 行為
+對稱、〈不在範圍〉的抽共用構想）。**`Bee.UI.Maui` 已於 2026-07-28 移除**，UI 家族收斂為
+Avalonia（涵蓋桌面 / iOS / Android / WASM）與 Blazor.Server 雙軌。
+
+因此那些「與 MAUI 對齊 / 抽共用」的項目已無對象，不再是待辦；`FormatCell` 的行為要求本身仍
+成立，只是不再有第二個載體需要對齊。背景段落保留原文字以保存決策脈絡。

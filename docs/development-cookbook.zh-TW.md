@@ -800,7 +800,7 @@ app.Run();
 - **Local mode（in-process）**：`Bee.Web.Blazor.Server` 與後端跑在同一個 ASP.NET Core process,可走 `LocalApiProvider` 直接呼叫,無 HTTP 開銷
 - **Remote mode（HTTP）**：Blazor Server 與後端分屬不同 process / server,走 `RemoteApiProvider` 經 HTTP
 
-宿主在 startup 註冊 `IApiProvider` 實作決定模式（`LocalApiProvider` / `RemoteApiProvider`）。
+宿主在 startup 註冊 `IJsonRpcProvider` 實作決定模式（`LocalApiProvider` / `RemoteApiProvider`）。
 
 ### Avalonia 桌面（Bee.UI.Avalonia）
 
