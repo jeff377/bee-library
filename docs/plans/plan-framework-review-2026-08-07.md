@@ -41,9 +41,9 @@
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
 | P0 | 正確性／可利用安全風險 | 4 | ✅ 已完成（2026-08-07，S-1 / S-2 / P-1 / C-1） |
-| P1 | 一致性缺口與潛伏 landmine | 9 | 📝 擬定中 |
+| P1 | 一致性缺口與潛伏 landmine | 9 | 🚧 進行中（S-3 / N-3 / N-4 ✅ 已完成，S-5 ⬇️ 降 P4，剩 S-4 / N-2 / N-5 / X-1 / Z-1） |
 | P2 | 結構重構與死碼清理 | 12 | 📝 擬定中（含由 P0 降級的 N-1） |
-| P3 | 文件漂移 | 8 | 📝 擬定中 |
+| P3 | 文件漂移 | 8 | 🚧 進行中（C-2 / C-3 / C-4 / X-3 / C-6 / Z-2 ✅ 已完成 2026-08-07，剩 C-5 / X-2 待裁決） |
 | P4 | 觀察／待裁決 | 6 | 📝 擬定中 |
 
 ---
@@ -299,15 +299,28 @@ XmlCodec.Serialize(obj)
 
 | # | 項目 | 說明 |
 |---|------|------|
-| **C-2** | 套件 README 型別名整批落後 3–9 個月 | 34 個位置、約 60 個編譯錯誤點。`AccessTokenValidationProvider`（3.5 月）、`LayoutGroup`/`LayoutItem`/`ColumnControlType`（3 月）、`ILogWriter` 群（3 月）、`CompareBytes`（改的當天有人碰同一份 README 卻漏這行）、`IApiProvider`→`IJsonRpcProvider`、`ISessionRepository.CreateSession`（不存在）、`Bee.Api.Client` 9 個方法全部漏 `Async` 後綴、`GridControl` 基底型別寫錯。**完整清單見掃描報告的「照抄會編譯不過」表** |
-| **C-3** | 已移除套件（`Bee.UI.Maui` / `Bee.Web.Blazor.Wasm`）殘留敘述 | `development-cookbook` / `terminology` / `architecture-overview` 三份最大文件仍以現在式描述。cookbook 的前端決策樹指向一個**整份文件不存在的章節**（Blazor WASM）。諷刺的是 `35504636`（2026-07-31）標題就是「清除已移除 UI 套件的殘留參照」，卻沒碰這三份 |
-| **C-4** | `ClientInfo.Initialize` → `InitializeAsync` 未跟（6 處） | v4.11.0 破壞性變更（`d9400c5a`, 2026-06-24），CHANGELOG 已載明，文件漂 6 週。cookbook `:731` 的 `if (!ClientInfo.InitializeAsync(...))` 為 **CS0023** |
+| **✅ C-2** | 套件 README 型別名整批落後 3–9 個月 | 34 個位置、約 60 個編譯錯誤點。`AccessTokenValidationProvider`（3.5 月）、`LayoutGroup`/`LayoutItem`/`ColumnControlType`（3 月）、`ILogWriter` 群（3 月）、`CompareBytes`（改的當天有人碰同一份 README 卻漏這行）、`IApiProvider`→`IJsonRpcProvider`、`ISessionRepository.CreateSession`（不存在）、`Bee.Api.Client` 9 個方法全部漏 `Async` 後綴、`GridControl` 基底型別寫錯。**完整清單見掃描報告的「照抄會編譯不過」表** |
+| **✅ C-3** | 已移除套件（`Bee.UI.Maui` / `Bee.Web.Blazor.Wasm`）殘留敘述 | `development-cookbook` / `terminology` / `architecture-overview` 三份最大文件仍以現在式描述。cookbook 的前端決策樹指向一個**整份文件不存在的章節**（Blazor WASM）。諷刺的是 `35504636`（2026-07-31）標題就是「清除已移除 UI 套件的殘留參照」，卻沒碰這三份 |
+| **✅ C-4** | `ClientInfo.Initialize` → `InitializeAsync` 未跟（6 處） | v4.11.0 破壞性變更（`d9400c5a`, 2026-06-24），CHANGELOG 已載明，文件漂 6 週。cookbook `:731` 的 `if (!ClientInfo.InitializeAsync(...))` 為 **CS0023** |
 | **C-5** | `AssemblyVersion` / `FileVersion` 未隨 4.17.0 升版 | `src/Directory.Build.props:5-6` 為 `4.16.0.0`。4.8.0→4.16.0 每版都三個一起升，`a0cd9de6` 只改了 `<Version>`。**已發布的 NuGet 4.17.0 套件內組件 identity 是 4.16.0.0**。建議 4.18.0 修正並於 CHANGELOG 說明，不重發 4.17.0 |
 | **X-2** | `IExcelHelper` 破壞性移除從未進任何 CHANGELOG | 移除於 `206d29ff`（v4.16.0），該 commit message 自己寫「須列入 CHANGELOG breaking change」卻沒執行。而 `docs/repo-ops/public-api-baseline.md:19` 與 `gotchas/test-ci-release.md:137` 都把它寫成「已關閉的流程缺口」——**文件與事實不符比漏標本身更危險** |
-| **X-3** | `api-method-reference.md` 雙語各漏 2 個 System 方法；`ICacheContainer` 新增成員漏標 | 缺 `GetCustomizeFormLayout` / `GetCustomizeLanguage`（`bbd2fd2a`, 2026-08-01）。v4.17.0 CHANGELOG 列了三個介面新增 `PluginSettings` 成員，漏第四個 `Bee.ObjectCaching.ICacheContainer`（同為 source-breaking） |
-| **C-6** | 13 項 ADR 漂移 | 最需處理：ADR-008:70,72（`Bee.Db.Logging` 整個 namespace + 3 型別不存在）、ADR-013:55,69（`SyncExecutor` 已移除、`IApiProvider` 應為 `IJsonRpcProvider`）、ADR-010:155,180,181（`DefinePathInfo` / `LocalDefineAccess` 已刪）、ADR-021/022:9（`GridControl` 基底寫成 `DataGrid`，實為 `ContentControl`——寫的當天就錯）。**需標 Superseded 者 0**；缺的是 ADR-008/009/010/013/021/022 各補一段〈實作演進〉，比照 ADR-017 的範例 |
-| **Z-2** | 三處 shipped doc + skill 對「formatter 漏註冊」的失敗模式描述與實測相反 | `MessagePackCodec.cs:39-42`、`FormatterResolver.cs:32-33`、`bee-serialization/SKILL.md:70,93` 說「沉默出空集合」；`CollectionFormatterRegistrationAnalyzer.cs:18-24` 的 MessagePack 3.1.7 **實測**結論是「序列化正確，**反序列化**擲 `MessagePackSerializationException`」。失敗模式決定修法優先序，描述反了會讓後續判斷失準。另 `rules/serialization.md:24-31` 的 ctor 順序規則缺 `keyAsPropertyName` 例外，已誤導出一處錯誤 XML doc（`UnitItem.cs:25-32`） |
+| **✅ X-3** | `api-method-reference.md` 雙語各漏 2 個 System 方法；`ICacheContainer` 新增成員漏標 | 缺 `GetCustomizeFormLayout` / `GetCustomizeLanguage`（`bbd2fd2a`, 2026-08-01）。v4.17.0 CHANGELOG 列了三個介面新增 `PluginSettings` 成員，漏第四個 `Bee.ObjectCaching.ICacheContainer`（同為 source-breaking） |
+| **✅ C-6** | 13 項 ADR 漂移 | 最需處理：ADR-008:70,72（`Bee.Db.Logging` 整個 namespace + 3 型別不存在）、ADR-013:55,69（`SyncExecutor` 已移除、`IApiProvider` 應為 `IJsonRpcProvider`）、ADR-010:155,180,181（`DefinePathInfo` / `LocalDefineAccess` 已刪）、ADR-021/022:9（`GridControl` 基底寫成 `DataGrid`，實為 `ContentControl`——寫的當天就錯）。**需標 Superseded 者 0**；缺的是 ADR-008/009/010/013/021/022 各補一段〈實作演進〉，比照 ADR-017 的範例 |
+| **✅ Z-2** | 三處 shipped doc + skill 對「formatter 漏註冊」的失敗模式描述與實測相反 | `MessagePackCodec.cs:39-42`、`FormatterResolver.cs:32-33`、`bee-serialization/SKILL.md:70,93` 說「沉默出空集合」；`CollectionFormatterRegistrationAnalyzer.cs:18-24` 的 MessagePack 3.1.7 **實測**結論是「序列化正確，**反序列化**擲 `MessagePackSerializationException`」。失敗模式決定修法優先序，描述反了會讓後續判斷失準。另 `rules/serialization.md:24-31` 的 ctor 順序規則缺 `keyAsPropertyName` 例外，已誤導出一處錯誤 XML doc（`UnitItem.cs:25-32`） |
 
+
+**✅ 2026-08-07 已完成 6 項**（commit `b7e929ee` / `95646b36` / `d2bdab2b` / `0da02e93`）：
+
+以「文件反引號識別符 vs repo 全部宣告識別符」全量比對取代照抄清單，逐一驗證後修正，雙語同步。
+過程中駁回四項體檢誤報：`samples/Web.Js.Demo` 的 `RpcError` 是 JavaScript 類別（初掃只比對 `.cs`）；
+ADR-031 的 `ValueUtilities.CDate` 位於「破壞性變更」段落屬正確歷史紀錄；ADR-020 已有〈實作演進〉
+補記；ADR-011 表列的 `DefinePathInfo` 在「被 DI 取代的 static locator」清單中。
+
+同時找到體檢未列的項目：`Bee.Definition/README` 的 Layouts 資料夾清單不只名字錯，是**整份過期**
+（漏 `LayoutGrid` / `LayoutColumn` / `FormEditModes`）；`docs/database-settings-guide` 的
+`RemoteDefineAccess` 是**憑空捏造**的設定選項；Z-2 的錯誤敘述實際有**六處**而非三處，
+其中兩處是 **skill 的 frontmatter description**——也就是這輪體檢的序列化代理很可能就是被自己的
+skill 誤導，修掉後該回路才斷。
 ---
 
 ## P4 — 觀察／待裁決
