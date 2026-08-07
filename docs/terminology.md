@@ -318,9 +318,9 @@ The BeeNET framework automatically maintains the following system fields in all 
 |---------|------|-------------|
 | `ClientInfo` | 用戶端資訊 | Static singleton that manages connection state (endpoint, AccessToken, UserInfo) and exposes `SystemApiConnector` / `CreateFormApiConnector` / `DefineAccess`. Designed for the "one process = one user" model (Avalonia desktop / MAUI / native UI). **Must not be used in Blazor environments**, where multiple user circuits share a process |
 | `IEndpointStorage` | 端點儲存介面 | Abstraction for persisting the API endpoint (URL / settings) on the client side; default implementation stores in `{ExeName}.Settings.xml` (a `FileEndpointStorage` ships with `Bee.UI.Avalonia` for the per-user `LocalApplicationData` path) |
-| `IUIViewService` | UI 視圖服務介面 | Host-supplied dialog service called when `ClientInfo.Initialize` needs to ask the user for the endpoint (`ShowApiConnect`); concrete implementation depends on the UI framework (Avalonia Window / MAUI ContentPage / WinForms Form, etc.) |
+| `IUIViewService` | UI 視圖服務介面 | Host-supplied dialog service called when `ClientInfo.InitializeAsync` needs to ask the user for the endpoint (`ShowApiConnectAsync`); concrete implementation depends on the UI framework (Avalonia Window / MAUI ContentPage / WinForms Form, etc.) |
 | `VersionInfo` | 版本資訊 | Version metadata reported by the client to the backend during handshake |
-| `SupportedConnectTypes` | 支援連線類型 | Flags controlling which connection modes (`Local` / `Remote` / `Both`) the host allows during `ClientInfo.Initialize` |
+| `SupportedConnectTypes` | 支援連線類型 | Flags controlling which connection modes (`Local` / `Remote` / `Both`) the host allows during `ClientInfo.InitializeAsync` |
 
 ### Avalonia Control Library (`Bee.UI.Avalonia`)
 

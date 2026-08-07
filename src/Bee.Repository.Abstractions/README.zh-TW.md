@@ -39,7 +39,7 @@
 
 | 介面 / 類別 | 用途 |
 |-------------|------|
-| `ISessionRepository` | Session 建立（`CreateSession`）與取得（`GetSession`） |
+| `ISessionRepository` | Session 持久化：`GetSession` / `InsertSession` / `UpdateSession` / `DeleteSession` / `DeleteExpiredSessions` |
 | `IDatabaseRepository` | 連線測試（`TestConnection`）與結構遷移（`UpgradeTableSchema`） |
 | `IRepositoryFactory` | 所有 Repository 的唯一入口，涵蓋兩軸 |
 | `IDataFormRepository` | 資料表單資料存取契約 |

@@ -34,7 +34,7 @@
 ### 身分驗證與安全
 
 - `LoginAttemptTracker` -- 記憶體內帳戶鎖定機制（預設：連續 5 次失敗觸發 15 分鐘鎖定）
-- `AccessTokenValidationProvider` -- 驗證已認證 API 呼叫的存取權杖
+- `AccessTokenValidator` -- 驗證已認證 API 呼叫的存取權杖
 - `StaticApiEncryptionKeyProvider` / `DynamicApiEncryptionKeyProvider` -- 可插拔的加密金鑰策略，用於 API Payload 保護
 
 ### 資料與快取
@@ -51,7 +51,7 @@
 | `IFormBusinessObject` | 表單層級商業邏輯介面 |
 | `BusinessObjectFactory` | 建立 BO 實例的工廠 |
 | `LoginAttemptTracker` | 連續失敗後的帳戶鎖定 |
-| `AccessTokenValidationProvider` | 存取權杖驗證 |
+| `AccessTokenValidator` | 存取權杖驗證 |
 | `StaticApiEncryptionKeyProvider` | 固定加密金鑰策略 |
 | `DynamicApiEncryptionKeyProvider` | 每次 Session 動態加密金鑰策略 |
 | `ExecFuncArgs` / `ExecFuncResult` | 自訂函式分派契約 |
@@ -82,7 +82,7 @@ Bee.Business/
   Providers/        # StaticApiEncryptionKeyProvider、DynamicApiEncryptionKeyProvider、
                     # CacheDataSourceProvider
   Security/         # LoginAttemptTracker（記憶體內帳戶鎖定追蹤器）
-  Validator/        # AccessTokenValidationProvider
+  Validator/        # AccessTokenValidator
   *.cs（根目錄）     # BusinessObject、BusinessObjectFactory、IBusinessObject、
                     # IExecFuncHandler、ExecFuncArgs、ExecFuncResult、
                     # BusinessArgs、BusinessResult

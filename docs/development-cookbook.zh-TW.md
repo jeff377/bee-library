@@ -705,9 +705,9 @@ public class MyUIViewService : IUIViewService
     }
 }
 
-// 2. 啟動時 Initialize
+// 2. 啟動時初始化——存取器全程非同步，需 await
 var supportedConnectTypes = SupportedConnectTypes.Both; // Local + Remote 都支援
-if (!ClientInfo.InitializeAsync(new MyUIViewService(), supportedConnectTypes))
+if (!await ClientInfo.InitializeAsync(new MyUIViewService(), supportedConnectTypes))
 {
     // 使用者取消連線設定，App 結束
     return;
@@ -827,7 +827,7 @@ public static void Main(string[] args)
 
 | 前端 | 連線抽象 | Token 承載 | Endpoint 持久化 | 模式 | 註冊方式 |
 |------|---------|-----------|---------------|------|---------|
-| 桌面端（Avalonia / MAUI / WinForms） | `ClientInfo` static | **1 個使用者 / process**（`ClientInfo._accessToken` static） | 本機檔案 + `IEndpointStorage` | Local 或 Remote | 啟動時 `ClientInfo.Initialize` |
+| 桌面端（Avalonia / MAUI / WinForms） | `ClientInfo` static | **1 個使用者 / process**（`ClientInfo._accessToken` static） | 本機檔案 + `IEndpointStorage` | Local 或 Remote | 啟動時 `ClientInfo.InitializeAsync` |
 | Blazor Server | DI scope | **N 個使用者 / process**（per SignalR circuit） | appsettings / 啟動注入 | Local 或 Remote | `AddBeeFramework` + `AddBeeBlazor` |
 | Blazor WASM | DI scope | 1 個使用者 / WASM heap | localStorage / JS interop | **強制 Remote** | `AddBeeBlazor` + HttpClient |
 

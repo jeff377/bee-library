@@ -45,7 +45,10 @@
 
 - `CreateErrorResponse` 產生一致的 `JsonRpcResponse`，包含錯誤碼、訊息及選用的資料酬載，對應至適當的 HTTP 狀態碼。
 
-## 主要公開 API
+## 擴充點
+
+只有 `PostAsync` 是 public，其餘皆為 `protected virtual`，供衍生控制器覆寫；
+從型別外部呼叫不會通過編譯。
 
 | 類別 / 成員 | 用途 |
 |-------------|------|

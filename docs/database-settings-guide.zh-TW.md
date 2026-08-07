@@ -290,7 +290,7 @@ public class MyService(IDefineAccess defineAccess)
 }
 ```
 
-`IDefineAccess` 由 `AddBeeFramework` 註冊為 singleton，預設 `CacheDefineAccess`（檔案系統）；專案可透過 XML `Components` 設定改為 `RemoteDefineAccess`（透過 API 取得）。
+`IDefineAccess` 由 `AddBeeFramework` 註冊為 singleton，預設 `CacheDefineAccess`，其讀取經由 `IDefineStorage`。兩者皆可透過 XML `Components` 設定替換——把定義移出檔案系統的支援做法是改用資料庫版的 `IDefineStorage`。client 端不實作 `IDefineAccess`，而是透過 `ClientDefineAccess` 經 API 取得定義。
 
 ### 4.2 快取機制
 

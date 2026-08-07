@@ -316,9 +316,9 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 |----------|----------|------|
 | `ClientInfo` | 用戶端資訊 | Static singleton，管理連線狀態（endpoint、AccessToken、UserInfo），提供 `SystemApiConnector` / `CreateFormApiConnector` / `DefineAccess`。設計給「一個 process = 一個使用者」模型（Avalonia 桌面 / MAUI / native UI）。**禁止用於 Blazor 環境**，後者一個 process 服務多個 user circuit |
 | `IEndpointStorage` | 端點儲存介面 | 抽象 API endpoint（URL / 設定）的用戶端持久化機制；預設實作存於 `{ExeName}.Settings.xml`（`Bee.UI.Avalonia` 內附 `FileEndpointStorage`，存於 per-user `LocalApplicationData` 路徑） |
-| `IUIViewService` | UI 視圖服務介面 | 由宿主提供的 dialog service，當 `ClientInfo.Initialize` 需要詢問使用者 endpoint 時呼叫（`ShowApiConnect`）；具體實作依 UI 框架而定（Avalonia Window / MAUI ContentPage / WinForms Form 等） |
+| `IUIViewService` | UI 視圖服務介面 | 由宿主提供的 dialog service，當 `ClientInfo.InitializeAsync` 需要詢問使用者 endpoint 時呼叫（`ShowApiConnectAsync`）；具體實作依 UI 框架而定（Avalonia Window / MAUI ContentPage / WinForms Form 等） |
 | `VersionInfo` | 版本資訊 | 用戶端在與後端建立連線時回報的版本 metadata |
-| `SupportedConnectTypes` | 支援連線類型 | 控制 `ClientInfo.Initialize` 允許哪些連線模式（`Local` / `Remote` / `Both`）的 Flags |
+| `SupportedConnectTypes` | 支援連線類型 | 控制 `ClientInfo.InitializeAsync` 允許哪些連線模式（`Local` / `Remote` / `Both`）的 Flags |
 
 ### Avalonia 控制項套件（`Bee.UI.Avalonia`）
 

@@ -173,8 +173,8 @@ Bee.Db/
                    # ITableRebuildCommandBuilder
   Dml/             # DML string-generation contracts and builders:
                    # IFormCommandBuilder,
-                   # SelectCommandBuilder / InsertCommandBuilder /
-                   # UpdateCommandBuilder / DeleteCommandBuilder,
+                   # SelectCommandBuilder / DeleteCommandBuilder,
+                   # (insert / update go through DataAdapter, see ADR-024)
                    # ISelectBuilder/SelectBuilder, IFromBuilder/FromBuilder,
                    # IWhereBuilder/WhereBuilder/InternalWhereBuilder/WhereBuildResult,
                    # ISortBuilder/SortBuilder,

@@ -38,7 +38,7 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 |------|------|
 | `FormSchema` | Central definition hub — describes a form's tables, fields, and metadata |
 | `TableSchema` / `DbField` | Database projection — column types, indices, constraints |
-| `FormLayout` / `LayoutGroup` / `LayoutItem` | UI projection — field arrangement and grouping |
+| `FormLayout` / `LayoutSection` / `LayoutField` | UI projection — field arrangement and grouping |
 | `FilterCondition` / `FilterGroup` | Composable query filter tree |
 | `SortField` / `SortFieldCollection` | Query sort descriptors |
 | `SystemSettings` / `DatabaseSettings` / `ProgramSettings` | Configuration definition types |
@@ -73,10 +73,11 @@ Bee.Definition/
                     ComparisonOperator, LogicalOperator
   Forms/            FormSchema, FormField, FormFieldCollection, FormTable
   Identity/         SessionInfo, SessionUser, UserInfo, IUserInfo, ISessionInfoService
-  Layouts/          FormLayout, LayoutGroup, LayoutItem,
-                    ControlType, ColumnControlType, GridControlAllowActions, SingleFormMode,
+  Layouts/          FormLayout, LayoutSection, LayoutField, LayoutGrid, LayoutColumn,
+                    ControlType, GridControlAllowActions, SingleFormMode, FormEditModes,
                     IUIControl, IBindFieldControl, IBindTableControl
-  Logging/          ILogWriter, LogEntry, LogEntryType, LogOptions
+  Logging/          IAuditLogWriter, AuditEntry, LoginAuditEntry, AccessAuditEntry,
+                    ChangeAuditEntry, ApiAnomalyEntry, DbAnomalyEntry, LogOptions
   Security/         IAccessTokenValidator, IApiEncryptionKeyProvider,
                     MasterKeyProvider, MasterKeySourceType,
                     ApiAccessRequirement, ApiProtectionLevel

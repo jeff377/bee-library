@@ -35,10 +35,10 @@ dotnet run --configuration Debug
 
 ## 預期畫面
 
-1. **Connection 頁**：endpoint 預設 `http://localhost:5050/api`。按 **Connect** 會呼叫 `ClientInfo.Initialize(endpoint)`，由 `ApiConnectValidator` 做 HTTP reachability + `system.ping`。成功後主視窗切到 Login。
+1. **Connection 頁**：endpoint 預設 `http://localhost:5050/api`。按 **Connect** 會呼叫 `ClientInfo.InitializeAsync(endpoint)`，由 `ApiConnectValidator` 做 HTTP reachability + `system.ping`。成功後主視窗切到 Login。
 2. **Login 頁**：兩格 textbox，預設帶入 `demo` / `demo`（對應 QuickStart seed）。按 **Sign in** 呼叫 `SystemApiConnector.LoginAsync`，token 透過 `ClientInfo.ApplyLoginResult` 存起來，視窗前進到 Forms 頁。
 3. **Forms 頁**：tab 列，每個 tab 各放一個 `<bee:FormView ProgId="..." />`。各表單不傳 `Schema` / `FormConnector`，由 fallback 從 `ClientInfo` 取得（`GetDefineAsync<FormSchema>` / `CreateFormApiConnector` / `AccessToken`）：
-   - **Employee** — 原本的 master-detail 表單；三筆種子資料（Alice / Bob / Carol）列在上方，點任一列驅動下方 `DynamicForm`，**New** / **Save** / **Delete** 走 BO 回 server。
+   - **Employee** — 原本的 master-detail 表單；三筆種子資料（Alice / Bob / Carol）列在上方，點任一列驅動下方 `FormView`，**New** / **Save** / **Delete** 走 BO 回 server。
    - **Department** — 純主檔表單，同時是 **lookup 來源**；schema 顯式宣告 `LookupFields="sys_id,sys_name"`（與 server 預設集相同，宣告是為了示範語法）。
    - **Project** — **lookup 展示**：主表「Owner Department」欄位呈現為 `ButtonEdit`，按 icon 開部門選取窗（搜尋走 server 端 `GetLookup`）；Project Members 明細的「Member」欄點 cell 即開員工選取窗（InCell lookup）。選取後 rowid + 映射的 `ref_*` 顯示欄位經 `FormDataObject` 寫回；主表 lookup 欄按 Delete/Backspace 可清空。
 
@@ -56,7 +56,7 @@ dotnet run --configuration Debug
 | Connect → endpoint 驗證 | [src/Bee.UI.Core/ClientInfo.cs](../../src/Bee.UI.Core/ClientInfo.cs) + [src/Bee.Api.Client/ApiConnectValidator.cs](../../src/Bee.Api.Client/ApiConnectValidator.cs) |
 | Endpoint 持久化 | [src/Bee.UI.Avalonia/Storage/FileEndpointStorage.cs](../../src/Bee.UI.Avalonia/Storage/FileEndpointStorage.cs) |
 | Login → token | [src/Bee.Api.Client/Connectors/SystemApiConnector.cs](../../src/Bee.Api.Client/Connectors/SystemApiConnector.cs)（LoginAsync） |
-| Employee 表單渲染 | [src/Bee.UI.Avalonia/Controls/FormView.cs](../../src/Bee.UI.Avalonia/Views/FormView.cs) → DynamicForm / DynamicGrid |
+| Employee 表單渲染 | [src/Bee.UI.Avalonia/Views/FormView.cs](../../src/Bee.UI.Avalonia/Views/FormView.cs) → `FormView` 直接渲染 layout；明細用 `GridControl` |
 | FormSchema fallback | `FormView` 的 ResolveSystemConnector / ResolveFormConnector / ResolveAccessToken |
 | CRUD wire path | FormApiConnector → RemoteApiProvider → QuickStart.Server `ApiController` → BusinessObjectFactory → FormBusinessObject |
 
@@ -87,4 +87,4 @@ Sample 用 `CommunityToolkit.Mvvm` 的 source generator（與 `tools/DefineEdito
 - 真正的部署（codesign、MSIX、AppImage）— 第一版只跑本機
 - 自動化 sample CI 驗證 — 純手動跑
 - `PublishTrimmed` / AOT publish — 需要先在 `Bee.Definition` 補 `Microsoft.XmlSerializer.Generator` 或 `DynamicallyAccessedMembers`
-- `DynamicGrid` 內 cell-level 編輯 — 編輯走 `DynamicForm`，grid 純呈現
+- 明細 `GridControl` 內 cell-level 編輯 — 編輯走 `FormView`，grid 純呈現

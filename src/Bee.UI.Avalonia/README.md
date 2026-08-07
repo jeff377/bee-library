@@ -19,7 +19,7 @@ Single `net10.0` TFM. Lower-bound pins: `Avalonia 12.0.0` + `Avalonia.Controls.D
 | Component | Description |
 |---|---|
 | `FormView` | Top-level container: list (`GridControl`) + master/detail form + New / Save / Delete toolbar. Renders the master sections of a `FormLayout` (one field editor per `LayoutField`) followed by the detail grids (`FormLayout.Details`) directly — there is no separate `DynamicForm` control; `DetailEditMode` picks the detail editing model. Resolves `Schema` / `FormConnector` / `AccessToken` from `ClientInfo` when the host sets only `ProgId`. |
-| `GridControl` | `DataGrid` subclass driven by a `LayoutGrid`; implements `IBindTableControl` / `IUIControl`. Cell rendering goes through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` (see ADR-020). |
+| `GridControl` | `ContentControl` hosting a `DataGrid` (exposed as `InnerGrid`), driven by a `LayoutGrid`; implements `IBindTableControl` / `IUIControl`. Cell rendering goes through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` (see ADR-020). |
 | Field editors (`TextEdit` / `MemoEdit` / `ButtonEdit` / `DateEdit` / `YearMonthEdit` / `DropDownEdit` / `CheckEdit`) | One per `ControlType`; native-control subclasses implementing `IBindFieldControl` / `IUIControl`, auto-applying `FormField` metadata (MaxLength, ListItems). |
 | `FormScope` | Attached inherited properties (`DataObject` / `FormMode`): set once on a container and every descendant editor with a `FieldName` binds itself. |
 | `GridEditMode` | UI-layer editing model for grids: `InCell` (cell editing, ADR-021 hybrid strategy) or `EditForm` (read-only grid + popup row editing). |

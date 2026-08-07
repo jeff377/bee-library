@@ -23,11 +23,11 @@
 
 ### System-Level Connector
 
-- `SystemApiConnector` exposes system operations: `Login` (RSA key-exchange authentication), `Ping` (health check), `CreateSession` (one-time or time-limited tokens), `Initialize` (environment bootstrap), `GetDefine` / `SaveDefine` (definition CRUD), and `ExecFunc` (custom function execution).
+- `SystemApiConnector` exposes system operations: `LoginAsync` (RSA key-exchange authentication), `PingAsync` (health check), `CreateSessionAsync` (time-limited tokens), `InitializeAsync` (environment bootstrap), `GetDefineAsync` / `SaveDefineAsync` (definition CRUD), and `ExecFuncAsync` (custom function execution). Every operation is asynchronous and carries the `Async` suffix.
 
 ### Form-Level Connector
 
-- `FormApiConnector` binds to a specific `ProgId` and exposes form-level business object calls (`ExecFunc`, `ExecFuncAnonymous`, `ExecFuncLocal`).
+- `FormApiConnector` binds to a specific `ProgId` and exposes form-level business object calls (`ExecFuncAsync`, `ExecFuncAnonymousAsync`).
 - Inherits the full payload pipeline (encoding, compression, encryption) from `ApiConnector`.
 
 ### Connection Validation
@@ -49,7 +49,7 @@
 |-------------------|---------|
 | `ApiClientInfo` | Static runtime configuration (connection type, endpoint, keys) |
 | `ApiConnector` | Abstract base connector with payload pipeline and tracing |
-| `SystemApiConnector` | System-level operations (Login, Ping, CreateSession, Initialize, Define CRUD, ExecFunc) |
+| `SystemApiConnector` | System-level operations (LoginAsync, PingAsync, CreateSessionAsync, InitializeAsync, Define CRUD, ExecFuncAsync) |
 | `FormApiConnector` | Form-level business object calls bound to a specific ProgId |
 | `IJsonRpcProvider` | Strategy interface for JSON-RPC transport |
 | `LocalApiProvider` | In-process provider via `JsonRpcExecutor` |
@@ -63,7 +63,7 @@
 
 - **Strategy Pattern** -- `IJsonRpcProvider` with `LocalApiProvider` and `RemoteApiProvider` implementations; the connector selects the strategy at construction time.
 - **Template Method** -- `ApiConnector` defines `ExecuteAsync<T>` with fixed steps (create request, transform payload, invoke provider, restore response); subclasses supply domain-specific methods.
-- **Dual constructor pattern** -- each connector offers two constructors: `(Guid accessToken)` for local and `(string endpoint, Guid accessToken)` for remote, mirroring the two provider types.
+- **Dual constructor pattern** -- each connector offers a local and a remote constructor, mirroring the two provider types: `SystemApiConnector(Guid accessToken)` / `(string endpoint, Guid accessToken)`. `FormApiConnector` takes the bound `progId` as well: `(Guid accessToken, string progId)` / `(string endpoint, Guid accessToken, string progId)`.
 - **Payload format negotiation** -- requests default to `PayloadFormat.Encrypted`; the pipeline automatically downgrades to `Encoded` when no encryption key is set, or to `Plain` for local providers in non-debug mode.
 
 ## Directory Structure

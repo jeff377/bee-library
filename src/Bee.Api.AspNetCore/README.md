@@ -45,7 +45,10 @@
 
 - `CreateErrorResponse` produces a consistent `JsonRpcResponse` with error code, message, and optional data payload, mapped to the appropriate HTTP status code.
 
-## Key Public APIs
+## Extension Points
+
+Only `PostAsync` is public; the rest are `protected virtual` members you override
+in your derived controller — calling them from outside the type will not compile.
 
 | Class / Member | Purpose |
 |----------------|---------|

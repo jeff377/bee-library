@@ -40,7 +40,7 @@
 
 | Interface / Class | Purpose |
 |-------------------|---------|
-| `ISessionRepository` | Session create (`CreateSession`) and retrieve (`GetSession`) |
+| `ISessionRepository` | Session persistence: `GetSession` / `InsertSession` / `UpdateSession` / `DeleteSession` / `DeleteExpiredSessions` |
 | `IDatabaseRepository` | Connection testing (`TestConnection`) and schema migration (`UpgradeTableSchema`) |
 | `IRepositoryFactory` | The single entry point for every repository, on both axes |
 | `IDataFormRepository` | Contract for data form data access |

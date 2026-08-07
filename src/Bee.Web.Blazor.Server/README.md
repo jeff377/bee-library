@@ -27,7 +27,7 @@ CRUD UI shipped:
 
 ## Dependency Constraints
 
-Depends only on `Bee.Api.Client`. The host application is responsible for registering backend services via `AddBeeFramework` and choosing the `IApiProvider` implementation.
+Depends only on `Bee.Api.Client`. The host application is responsible for registering backend services via `AddBeeFramework` and choosing the `IJsonRpcProvider` implementation.
 
 ## License
 

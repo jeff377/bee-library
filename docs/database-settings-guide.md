@@ -290,7 +290,7 @@ public class MyService(IDefineAccess defineAccess)
 }
 ```
 
-`IDefineAccess` is registered as a singleton during `AddBeeFramework`, defaulting to `CacheDefineAccess` (file system); projects can configure `RemoteDefineAccess` (via API) through the XML `Components` registry.
+`IDefineAccess` is registered as a singleton during `AddBeeFramework`, defaulting to `CacheDefineAccess`, which reads through `IDefineStorage`. Swap either one through the XML `Components` registry — a database-backed `IDefineStorage` is the supported way to move definitions off the file system. Clients do not implement `IDefineAccess`; they fetch definitions over the API through `ClientDefineAccess`.
 
 ### 4.2 Caching
 

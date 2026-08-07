@@ -34,11 +34,11 @@ On first run:
 |---------------|-------------------|
 | Login form | `BeeLoginPanel` (Phase 1d) |
 | AccessToken cascading | `BeeAccessTokenProvider` (Phase 1d) |
-| Employee grid rendering | `DynamicGrid` + `FormSchema.ListLayout` |
-| Employee edit form | `DynamicForm` + `FormSchema.FormLayout` |
+| Employee grid rendering | `DynamicGrid` + `FormSchema.GetListLayout()` |
+| Employee edit form | `DynamicForm` + `FormSchema.GetFormLayout(layoutId)` |
 | Grid + form integration | `FormPage` |
 | CRUD through Bee | `FormDataObject.LoadAsync / SaveAsync / NewAsync / DeleteAsync` |
-| Local in-process dispatch | `BeeApiConnectorFactory.UseLocalProvider` |
+| Local in-process dispatch | `BeeBlazorOptions.UseLocalProvider()` |
 | In-process JSON-RPC | `LocalApiProvider` → `JsonRpcExecutor` → `FormBusinessObject` |
 
 ## Simplifications vs production

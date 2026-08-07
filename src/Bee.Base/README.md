@@ -75,7 +75,7 @@
 ## Design Conventions
 
 - **Static utility classes** -- `ValueUtilities`, `StringUtilities`, `DateTimeExtensions` expose functionality as static methods; no instance state.
-- **Constant-time comparison** -- `CompareBytes` is used for HMAC / hash validation to prevent timing attacks.
+- **Constant-time comparison** -- `CryptographicOperations.FixedTimeEquals` is used for HMAC / hash validation to prevent timing attacks.
 - **Interface-based extensibility** -- serialization is abstracted via `IObjectSerialize` and `IObjectSerializeProcess`.
 - **Nullable reference types** enabled (`<Nullable>enable</Nullable>`).
 

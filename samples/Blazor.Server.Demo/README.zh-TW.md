@@ -34,11 +34,11 @@ dotnet run
 |----------|--------------|
 | Login 表單 | `BeeLoginPanel`（Phase 1d） |
 | AccessToken cascading | `BeeAccessTokenProvider`（Phase 1d） |
-| 員工列表渲染 | `DynamicGrid` + `FormSchema.ListLayout` |
-| 員工編輯表單 | `DynamicForm` + `FormSchema.FormLayout` |
+| 員工列表渲染 | `DynamicGrid` + `FormSchema.GetListLayout()` |
+| 員工編輯表單 | `DynamicForm` + `FormSchema.GetFormLayout(layoutId)` |
 | 列表 + 表單整合 | `FormPage` |
 | CRUD 走 Bee | `FormDataObject.LoadAsync / SaveAsync / NewAsync / DeleteAsync` |
-| Local 模式 in-process 派遣 | `BeeApiConnectorFactory.UseLocalProvider` |
+| Local 模式 in-process 派遣 | `BeeBlazorOptions.UseLocalProvider()` |
 | In-process JSON-RPC | `LocalApiProvider` → `JsonRpcExecutor` → `FormBusinessObject` |
 
 ## 簡化措施（與 production 不同）

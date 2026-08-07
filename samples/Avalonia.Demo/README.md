@@ -35,10 +35,10 @@ dotnet run --configuration Debug
 
 ## What you'll see
 
-1. **Connection view**: endpoint defaults to `http://localhost:5050/api`. Clicking **Connect** calls `ClientInfo.Initialize(endpoint)`, which runs an HTTP reachability check plus `system.ping` via `ApiConnectValidator`. On success the main window swaps to Login.
+1. **Connection view**: endpoint defaults to `http://localhost:5050/api`. Clicking **Connect** calls `ClientInfo.InitializeAsync(endpoint)`, which runs an HTTP reachability check plus `system.ping` via `ApiConnectValidator`. On success the main window swaps to Login.
 2. **Login view**: two text fields pre-filled with `demo` / `demo` (matches the QuickStart seed). Clicking **Sign in** calls `SystemApiConnector.LoginAsync`; the token is stored through `ClientInfo.ApplyLoginResult` and the window advances to the Forms view.
 3. **Forms view**: a tab strip hosting one `<bee:FormView ProgId="..." />` per demo form. Each view passes neither `Schema` nor `FormConnector`; the fallback pulls them from `ClientInfo` (`GetDefineAsync<FormSchema>` / `CreateFormApiConnector` / `AccessToken`):
-   - **Employee** — the original master-detail form; the seeded rows (Alice / Bob / Carol) list at the top, selecting a row drives the `DynamicForm`, and **New** / **Save** / **Delete** round-trip through the BO.
+   - **Employee** — the original master-detail form; the seeded rows (Alice / Bob / Carol) list at the top, selecting a row drives the `FormView`, and **New** / **Save** / **Delete** round-trip through the BO.
    - **Department** — a plain master form that doubles as the **lookup source**; its schema declares `LookupFields="sys_id,sys_name"` (the same set the server would default to).
    - **Project** — the **lookup demo**: the master *Owner Department* field renders as a `ButtonEdit` whose icon opens the Department picker (server-side search via `GetLookup`), and the *Member* column of the Project Members detail grid opens the Employee picker on cell click (in-cell lookup). Selections write the row id plus the mapped `ref_*` display fields back through `FormDataObject`; Delete/Backspace on the master lookup field clears it.
 
@@ -56,7 +56,7 @@ dotnet run --configuration Debug
 | Connect → endpoint validation | [src/Bee.UI.Core/ClientInfo.cs](../../src/Bee.UI.Core/ClientInfo.cs) + [src/Bee.Api.Client/ApiConnectValidator.cs](../../src/Bee.Api.Client/ApiConnectValidator.cs) |
 | Endpoint persistence | [src/Bee.UI.Avalonia/Storage/FileEndpointStorage.cs](../../src/Bee.UI.Avalonia/Storage/FileEndpointStorage.cs) |
 | Login → token | [src/Bee.Api.Client/Connectors/SystemApiConnector.cs](../../src/Bee.Api.Client/Connectors/SystemApiConnector.cs) (LoginAsync) |
-| Employee form rendering | [src/Bee.UI.Avalonia/Controls/FormView.cs](../../src/Bee.UI.Avalonia/Views/FormView.cs) → DynamicForm / DynamicGrid |
+| Employee form rendering | [src/Bee.UI.Avalonia/Views/FormView.cs](../../src/Bee.UI.Avalonia/Views/FormView.cs) → `FormView` renders the layout directly; `GridControl` for details |
 | FormSchema fallback | `FormView` ResolveSystemConnector / ResolveFormConnector / ResolveAccessToken |
 | CRUD wire path | FormApiConnector → RemoteApiProvider → QuickStart.Server `ApiController` → BusinessObjectFactory → FormBusinessObject |
 
@@ -87,4 +87,4 @@ The sample uses `CommunityToolkit.Mvvm` source generators (matches the conventio
 - Real deployment (codesign, MSIX, AppImage) — local-only for the first cut
 - Automated sample CI validation — purely manual runs
 - `PublishTrimmed` / AOT publish — would need `Microsoft.XmlSerializer.Generator` or `DynamicallyAccessedMembers` work on `Bee.Definition` types
-- Cell-level edits inside `DynamicGrid` — edits happen through `DynamicForm`, the grid is read-only
+- Cell-level edits inside the detail `GridControl` — edits happen through `FormView`, the grid is read-only

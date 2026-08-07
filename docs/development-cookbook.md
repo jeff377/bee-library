@@ -726,9 +726,9 @@ public class MyUIViewService : IUIViewService
     }
 }
 
-// 2. Initialize at startup
+// 2. Initialize at startup — the accessors are asynchronous end-to-end, so await it.
 var supportedConnectTypes = SupportedConnectTypes.Both; // both Local and Remote allowed
-if (!ClientInfo.InitializeAsync(new MyUIViewService(), supportedConnectTypes))
+if (!await ClientInfo.InitializeAsync(new MyUIViewService(), supportedConnectTypes))
 {
     // The user cancelled connection setup; exit the app.
     return;
@@ -849,7 +849,7 @@ Worked examples: [`samples/Avalonia.Demo`](../samples/Avalonia.Demo/README.md) (
 
 | Frontend | Connection abstraction | Token tenancy | Endpoint persistence | Mode | Registration |
 |---------|-----------------------|---------------|--------------------|------|-------------|
-| Desktop (Avalonia / MAUI / WinForms) | `ClientInfo` static | **1 user / process** (`ClientInfo._accessToken` static) | Local file + `IEndpointStorage` | Local or Remote | `ClientInfo.Initialize` at startup |
+| Desktop (Avalonia / MAUI / WinForms) | `ClientInfo` static | **1 user / process** (`ClientInfo._accessToken` static) | Local file + `IEndpointStorage` | Local or Remote | `ClientInfo.InitializeAsync` at startup |
 | Blazor Server | DI scope | **N users / process** (per SignalR circuit) | appsettings / startup injection | Local or Remote | `AddBeeFramework` + `AddBeeBlazor` |
 | Blazor WASM | DI scope | 1 user / WASM heap | localStorage / JS interop | **Remote only** | `AddBeeBlazor` + `HttpClient` |
 

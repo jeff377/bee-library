@@ -34,7 +34,7 @@
 ### Authentication & Security
 
 - `LoginAttemptTracker` -- in-memory account lockout enforcement (default: 5 consecutive failures triggers 15-minute lockout)
-- `AccessTokenValidationProvider` -- validates access tokens for authenticated API calls
+- `AccessTokenValidator` -- validates access tokens for authenticated API calls
 - `StaticApiEncryptionKeyProvider` / `DynamicApiEncryptionKeyProvider` -- pluggable encryption key strategies for API payload protection
 
 ### Data & Caching
@@ -51,7 +51,7 @@
 | `IFormBusinessObject` | Form-level business logic interface |
 | `BusinessObjectFactory` | Factory for creating BO instances |
 | `LoginAttemptTracker` | Account lockout after consecutive failures |
-| `AccessTokenValidationProvider` | Access token validation |
+| `AccessTokenValidator` | Access token validation |
 | `StaticApiEncryptionKeyProvider` | Fixed encryption key strategy |
 | `DynamicApiEncryptionKeyProvider` | Per-session encryption key strategy |
 | `ExecFuncArgs` / `ExecFuncResult` | Custom function dispatch contracts |
@@ -82,7 +82,7 @@ Bee.Business/
   Providers/        # StaticApiEncryptionKeyProvider, DynamicApiEncryptionKeyProvider,
                     # CacheDataSourceProvider
   Security/         # LoginAttemptTracker (in-memory account-lockout tracker)
-  Validator/        # AccessTokenValidationProvider
+  Validator/        # AccessTokenValidator
   *.cs (root)       # BusinessObject, BusinessObjectFactory, IBusinessObject,
                     # IExecFuncHandler, ExecFuncArgs, ExecFuncResult,
                     # BusinessArgs, BusinessResult

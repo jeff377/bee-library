@@ -38,7 +38,7 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 |------|------|
 | `FormSchema` | 定義中樞——描述表單的資料表、欄位與中繼資料 |
 | `TableSchema` / `DbField` | 資料庫投影——欄位型別、索引、約束條件 |
-| `FormLayout` / `LayoutGroup` / `LayoutItem` | UI 投影——欄位排列與分組 |
+| `FormLayout` / `LayoutSection` / `LayoutField` | UI 投影——欄位排列與分組 |
 | `FilterCondition` / `FilterGroup` | 可組合的查詢篩選樹 |
 | `SortField` / `SortFieldCollection` | 查詢排序描述 |
 | `SystemSettings` / `DatabaseSettings` / `ProgramSettings` | 組態定義型別 |
@@ -73,10 +73,11 @@ Bee.Definition/
                     ComparisonOperator、LogicalOperator
   Forms/            FormSchema、FormField、FormFieldCollection、FormTable
   Identity/         SessionInfo、SessionUser、UserInfo、IUserInfo、ISessionInfoService
-  Layouts/          FormLayout、LayoutGroup、LayoutItem、
-                    ControlType、ColumnControlType、GridControlAllowActions、SingleFormMode、
+  Layouts/          FormLayout、LayoutSection、LayoutField、LayoutGrid、LayoutColumn、
+                    ControlType、GridControlAllowActions、SingleFormMode、FormEditModes、
                     IUIControl、IBindFieldControl、IBindTableControl
-  Logging/          ILogWriter、LogEntry、LogEntryType、LogOptions
+  Logging/          IAuditLogWriter、AuditEntry、LoginAuditEntry、AccessAuditEntry、
+                    ChangeAuditEntry、ApiAnomalyEntry、DbAnomalyEntry、LogOptions
   Security/         IAccessTokenValidator、IApiEncryptionKeyProvider、
                     MasterKeyProvider、MasterKeySourceType、
                     ApiAccessRequirement、ApiProtectionLevel

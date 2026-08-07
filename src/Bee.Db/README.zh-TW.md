@@ -171,8 +171,8 @@ Bee.Db/
                    # ITableRebuildCommandBuilder
   Dml/             # DML 字串產生契約與構件：
                    # IFormCommandBuilder，
-                   # SelectCommandBuilder / InsertCommandBuilder /
-                   # UpdateCommandBuilder / DeleteCommandBuilder，
+                   # SelectCommandBuilder / DeleteCommandBuilder，
+                   # （insert / update 改走 DataAdapter，見 ADR-024）
                    # ISelectBuilder/SelectBuilder、IFromBuilder/FromBuilder、
                    # IWhereBuilder/WhereBuilder/InternalWhereBuilder/WhereBuildResult、
                    # ISortBuilder/SortBuilder、

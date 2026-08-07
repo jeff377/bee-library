@@ -45,7 +45,7 @@ commented at its source:
 |---------|-----|-------|
 | Endpoint persistence via `localStorage` | the browser sandbox cannot write files (`FileEndpointStorage` is desktop-only) | `Storage/BrowserLocalStorageEndpointStorage.cs` |
 | `JsonSerializerIsReflectionEnabledByDefault=true` | browser-wasm disables System.Text.Json reflection by default; Bee's `JsonCodec` is reflection-based | `Bee.Northwind.Browser.csproj` |
-| Async connect / define load | sync-over-async (`SyncExecutor`) throws *"Cannot wait on monitors"* on the single thread — use `ClientInfo.InitializeAsync` / `connector.GetDefineAsync` | `ClientInfo`, `FormsViewModel` |
+| Async connect / define load | sync-over-async throws *"Cannot wait on monitors"* on the single thread — use `ClientInfo.InitializeAsync` / `connector.GetDefineAsync` | `ClientInfo`, `FormsViewModel` |
 | Overlay dialogs instead of `Window` | there are no native windows — lookup / row-edit dialogs render on the `OverlayLayer` | `Bee.UI.Avalonia` `OverlayDialogHost` |
 
 ## Release / publish

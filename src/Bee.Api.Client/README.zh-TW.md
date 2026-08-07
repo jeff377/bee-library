@@ -23,11 +23,11 @@
 
 ### 系統層級連接器
 
-- `SystemApiConnector` 公開系統操作：`Login`（RSA 金鑰交換驗證）、`Ping`（健康檢查）、`CreateSession`（一次性或限時權杖）、`Initialize`（環境初始化）、`GetDefine` / `SaveDefine`（定義 CRUD）以及 `ExecFunc`（自訂函式執行）。
+- `SystemApiConnector` 公開系統操作：`LoginAsync`（RSA 金鑰交換驗證）、`PingAsync`（健康檢查）、`CreateSessionAsync`（限時權杖）、`InitializeAsync`（環境初始化）、`GetDefineAsync` / `SaveDefineAsync`（定義 CRUD）以及 `ExecFuncAsync`（自訂函式執行）。所有操作皆為非同步，一律帶 `Async` 後綴。
 
 ### 表單層級連接器
 
-- `FormApiConnector` 綁定至特定 `ProgId`，公開表單層級的商業物件呼叫（`ExecFunc`、`ExecFuncAnonymous`、`ExecFuncLocal`）。
+- `FormApiConnector` 綁定至特定 `ProgId`，公開表單層級的商業物件呼叫（`ExecFuncAsync`、`ExecFuncAnonymousAsync`）。
 - 繼承 `ApiConnector` 的完整酬載管線（編碼、壓縮、加密）。
 
 ### 連線驗證
@@ -49,7 +49,7 @@
 |-------------|------|
 | `ApiClientInfo` | 靜態執行階段組態（連線類型、端點、金鑰） |
 | `ApiConnector` | 抽象基底連接器，含酬載管線與追蹤 |
-| `SystemApiConnector` | 系統層級操作（Login、Ping、CreateSession、Initialize、Define CRUD、ExecFunc） |
+| `SystemApiConnector` | 系統層級操作（LoginAsync、PingAsync、CreateSessionAsync、InitializeAsync、Define CRUD、ExecFuncAsync） |
 | `FormApiConnector` | 表單層級商業物件呼叫，綁定至特定 ProgId |
 | `IJsonRpcProvider` | JSON-RPC 傳輸策略介面 |
 | `LocalApiProvider` | 行程內提供者，透過 `JsonRpcExecutor` |
@@ -63,7 +63,7 @@
 
 - **策略模式** -- `IJsonRpcProvider` 搭配 `LocalApiProvider` 與 `RemoteApiProvider` 實作；連接器在建構時選擇策略。
 - **樣板方法** -- `ApiConnector` 定義 `ExecuteAsync<T>` 的固定步驟（建立請求、轉換酬載、呼叫提供者、還原回應）；子類別提供領域專屬方法。
-- **雙建構函式模式** -- 每個連接器提供兩個建構函式：`(Guid accessToken)` 用於本機、`(string endpoint, Guid accessToken)` 用於遠端，對應兩種提供者類型。
+- **雙建構函式模式** -- 每個連接器提供本機與遠端兩種建構函式，對應兩種提供者類型：`SystemApiConnector(Guid accessToken)` / `(string endpoint, Guid accessToken)`。`FormApiConnector` 另需綁定的 `progId`：`(Guid accessToken, string progId)` / `(string endpoint, Guid accessToken, string progId)`。
 - **酬載格式協商** -- 請求預設為 `PayloadFormat.Encrypted`；管線在未設定加密金鑰時自動降級為 `Encoded`，本機提供者於非偵錯模式下降級為 `Plain`。
 
 ## 目錄結構

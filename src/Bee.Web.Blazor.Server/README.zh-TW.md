@@ -27,7 +27,7 @@ CRUD UI 已上線：
 
 ## 相依約束
 
-僅相依 `Bee.Api.Client`。宿主應用程式負責透過 `AddBeeFramework` 註冊後端服務，並選擇 `IApiProvider` 實作。
+僅相依 `Bee.Api.Client`。宿主應用程式負責透過 `AddBeeFramework` 註冊後端服務，並選擇 `IJsonRpcProvider` 實作。
 
 ## 授權
 
