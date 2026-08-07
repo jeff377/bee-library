@@ -128,8 +128,6 @@ Bee.Db.DbParameterSpec.SourceVersion.set -> void
 Bee.Db.DbParameterSpec.Value.get -> object?
 Bee.Db.DbParameterSpec.Value.set -> void
 Bee.Db.DbParameterSpecCollection
-Bee.Db.DbParameterSpecCollection.Add(Bee.Definition.Database.DbField! field, System.Data.DataRowVersion sourceVersion = System.Data.DataRowVersion.Current) -> Bee.Db.DbParameterSpec!
-Bee.Db.DbParameterSpecCollection.Add(string! name, object! value) -> Bee.Db.DbParameterSpec!
 Bee.Db.DbParameterSpecCollection.DbParameterSpecCollection() -> void
 Bee.Db.DbTypeMapper
 Bee.Db.Ddl.ICreateTableCommandBuilder

@@ -7,6 +7,19 @@
     <PackageTags>bee.net;database;dbccess;orm;sql;connection;query</PackageTags>
   </PropertyGroup>
 
+  <!--
+    Framework convention analyzers applied to this project itself: BEE4002-4006 check the shape of
+    collection types that go over the wire or through XmlSerializer's reflection-only path, and the
+    framework collections here are exactly that. Without this reference the rules stay silent for
+    this assembly (BEE4001 is the only one that reaches across assemblies).
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Analyzers\Bee.Analyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />
   </ItemGroup>
