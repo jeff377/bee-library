@@ -1,11 +1,11 @@
 ---
 name: bee-framework-review
-description: 對 bee-library 框架做「全面體檢」的可重複方法論 —— 九面向(架構分層、相依分層與循環相依、安全性、維護性、散落/不必要類別、序列化一致性、公開 API 表面、測試品質與覆蓋、文件漂移)唯讀審查,以平行子代理分面向掃描(非抽樣),交叉去重後彙整成分級(P0~P4)重構計畫 + 每項 10 分制評分。內建各面向的具體檢查清單、已知雷區、與「應為乾淨」的基準項(供回歸偵測)。當使用者要「全面體檢」、「架構體檢」、「健康檢查/健康度」、「framework review」、「全面 review」、「架構審查」、「幫框架打分/評分」、「有沒有散落或不必要的類別」、「提重構計畫」之類需求時使用,即使沒明講「體檢」也要在這類全框架審查請求時主動觸發。**只負責唯讀審查、評分與產出重構計畫,不直接改 code**(修正另循一般流程)。
+description: 對 bee-library 框架做「全面體檢」的可重複方法論 —— 十一面向(架構分層、相依分層與循環相依、安全性、維護性、散落/不必要類別、序列化一致性、公開 API 表面、測試品質與覆蓋、文件漂移、效能/熱路徑、並行與全域狀態)唯讀審查,以平行子代理分面向掃描(非抽樣),交叉去重後彙整成分級(P0~P4)重構計畫 + 每項 10 分制評分。內建各面向的具體檢查清單、已知雷區、與「應為乾淨」的基準項(供回歸偵測)。當使用者要「全面體檢」、「架構體檢」、「健康檢查/健康度」、「framework review」、「全面 review」、「架構審查」、「幫框架打分/評分」、「有沒有散落或不必要的類別」、「提重構計畫」之類需求時使用,即使沒明講「體檢」也要在這類全框架審查請求時主動觸發。**只負責唯讀審查、評分與產出重構計畫,不直接改 code**(修正另循一般流程)。
 ---
 
 # bee-library 框架全面體檢
 
-對整個框架(18 個 `src/` 專案)做結構化健康檢查,產出**分級重構計畫**與**每項 10 分制評分**。核心方法是**平行子代理分面向唯讀掃描**,再交叉去重彙整。
+對整個框架(17 個 `src/` 專案)做結構化健康檢查,產出**分級重構計畫**與**每項 10 分制評分**。核心方法是**平行子代理分面向唯讀掃描**,再交叉去重彙整。
 
 ## 何時用 / 產出什麼
 
@@ -17,11 +17,11 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 
 依 `~/.claude/CLAUDE.md` 提問風格,每題附選項 + 標建議:
 
-1. **追加面向**(multi-select):預設九面向已涵蓋;問是否要再加(如效能/熱路徑、並行全域狀態、跨平台 AOT)。
-2. **範圍**(single):全部 18 專案(建議) / 只核心後端(排除 UI heads Avalonia/Maui/Blazor,重構訊號密度最高) / 使用者指定。
+1. **追加面向**(multi-select):預設十一面向已涵蓋;問是否要再加(如跨平台 trim/AOT、i18n 覆蓋)。
+2. **範圍**(single):全部 17 專案(建議) / 只核心後端(排除 UI heads Avalonia/Blazor.Server,重構訊號密度最高) / 含 apps+samples+tools。
 3. **執行方式**(single):唯讀 review + 計畫文件(建議) / 只口頭回報 / 多代理 workflow 深掃(需使用者明確同意大規模編排)。
 
-## 九個檢查面向
+## 十一個檢查面向
 
 | # | 面向 | 核心問題 |
 |---|------|---------|
@@ -34,8 +34,14 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 | 7 | 公開 API 表面 | 契約軸命名空間一致性、BO 介面純度、breaking-change 面、四層對齊 |
 | 8 | 測試品質與覆蓋 | 無效斷言(S2699)、覆蓋缺口、fixture 污染、flaky、`[Collection]` 序列化 |
 | 9 | 文件漂移 | 公開文件宣稱 vs 程式碼實際、死連結、雙語落差、CHANGELOG 未記 breaking |
+| 10 | 效能/熱路徑 | 每請求反射未快取、序列化 options 重建、wire 形狀成本、集合查找複雜度 |
+| 11 | 並行與全域狀態 | 共用 cache 實例被 mutate、process-wide static、裸集合、DI 生命週期 |
 
 > 面向 1 與 2 高度重疊,可合派一個代理但分開評分。
+>
+> **面向 10、11 為 2026-08-07 起的常設項**。首次測量即為十一面向最低兩名(效能 6.0、並行 7.0),
+> 但那是**首次有基準,不是退步** —— 下一輪才有回歸意義。兩者的共同性質是「build 綠、測試綠、
+> 掃描器不報,只有 profiler 或壓力下才現形」,與文件漂移同屬「無自動化機制會發現」那一類。
 >
 > **面向 9 為 2026-07-28 起的常設項**,原本散在各面向的 P3。首次獨立評分即為九面向最低(4.5/10)
 > —— 被結構面的高分稀釋掉正是它該獨立計分的理由:文件漂移不會讓 build 紅、不會讓測試失敗,
@@ -43,7 +49,7 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 
 ## 方法:平行子代理分面向掃描
 
-派 **7 個 `general-purpose` 子代理**(背景平行),各掃一面向(架構+相依合派、其餘各一)。每個代理:
+派 **10 個 `general-purpose` 子代理**(背景平行),各掃一面向(架構+相依合派、其餘各一)。每個代理:
 - **嚴格唯讀**,prompt 明示「絕對不可修改/寫入任何檔案,只回報發現」。
 - 收到**該面向的完整檢查清單 + 已知雷區**(見下)+ 相關規範摘要(從 `~/.claude/rules/` 與 `.claude/rules/` 提煉,別叫代理自己去讀整包)。
 - 回報格式統一:分三級 + 每項附 `專案/檔案:行號`、問題(WHY)、建議。
@@ -142,6 +148,60 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
   是否有 Unreleased 區段;既有敘述是否已被後續 commit 推翻。
 - **量化基準**:文件宣稱的專案數 / 相依邊 / 套件清單 vs 實際 csproj。
 
+### 10. 效能/熱路徑
+
+**先識別熱路徑再開始找問題**,並要求每個發現說明「這段在什麼頻率下被執行」且追到呼叫端證明。
+證不出在熱路徑上的降為 P4 —— 一個 O(n²) 在啟動時跑一次無所謂,每請求跑就是問題。
+**不報無實測支撐的臆測性微優化**(「這裡可以用 span」)。
+
+主要熱路徑:API 請求管線(解密→反序列化→驗證→派發→回應序列化)、session/token 驗證(**每請求 2–5 次**)、
+定義查找(**每請求 6–10 次**)、權限 layer-1/layer-2、FormSchema 驅動 CRUD、MessagePack wire(**每列×每欄**)、
+運算式求值(**每列×每計算欄**)、Grid 儲存格實體化(每可見儲存格)。
+
+- **每請求反射未快取**:`GetType().GetMethod` / `GetProperties` / `GetCustomAttributes` /
+  `Activator.CreateInstance` 在請求路徑上且無 `ConcurrentDictionary` 快取。JSON-RPC 反射派發框架的典型病灶。
+- **序列化 options 每次重建**(2026-08-07 的 P0):`JsonSerializerOptions` 是 STJ 的型別 contract
+  快取容器,per-call `new` 讓快取 100% miss。**對照組**:同 repo 的 `MessagePackCodec.Options` 是
+  `static readonly` —— 一邊做對一邊沒有,通常是遷移時的機械式轉譯遺留。
+- **wire 形狀成本**:DTO 形狀是所有傳輸成本的乘數。查「同一份資料送兩次」(如 Unchanged 列同時送
+  Current + Original)、「欄名逐列重複」(`Dictionary<string,object?>` 而非與 columns 同序的陣列)、
+  「逐格 typeless 派發」(`Guid`/`decimal` 會寫完整型別名 ext header)。
+- **集合查找複雜度**:`FirstOrDefault(f => f.FieldName == x)` 在 per-row 迴圈內即 O(n·m)。
+  **務必實際讀框架最核心集合基底的實作**(`KeyCollectionBase<T>` 是否真 O(1)、有無
+  `dictionaryCreationThreshold` 陷阱),它錯了全框架都受影響。
+- **每請求物件配置**:`new XmlSerializer(type)` 未快取(經典嚴重洩漏)、`HttpClient` 每次 new、
+  `Regex` 非 static/compiled、加密器每次新建。
+- **快取設計**:查找是否 O(1)、鎖範圍、**無界成長**(`MemoryCache` 未設 `SizeLimit` + 負向快取
+  = 未認證請求可推高記憶體)。
+- 同步阻塞非同步(`.Result` / `.Wait()` / `GetAwaiter().GetResult()`)、N+1 查詢、
+  小 payload 無條件壓縮(gzip 固定開銷 18 bytes,可能比原文大)。
+
+### 11. 並行與全域狀態(規範源:`.claude/rules/definition.md` 的 cache 不可異動章節)
+
+**每個發現都要證明並行可達性** —— 啟動時設定一次、之後唯讀的 static 是安全的,必須追到所有寫入點。
+
+- **共用 cache 實例被 mutate**(最高價值,框架明文硬約束):全量追 `IDefineAccess.GetX(...)` 的
+  呼叫點,逐一確認取得的物件後續是否被寫入(屬性賦值、集合 Add/Remove、對子物件 mutation)。
+  有 `Clone()` 才安全。**注意 `XmlCodec.Serialize(cached)` 也算 mutate** —— 它在來源上翻
+  `SetSerializeState` 並遞迴傳播。查「守門機制只覆蓋部分型別」的情況:2026-08-07 查出
+  `SerializeDefine` 的 `ISerializableClone` 守門唯一實作者恰好是唯一**不需要**它的型別
+  (server-only),所有實際上 wire 的定義型別全部繞過 —— 而 XML doc 宣稱已防住,
+  **比沒有防護更危險**。
+- **process-wide 可變 static**:全量 grep 非 `readonly` 非 `const` 的 static 欄位與有 setter 的
+  靜態屬性,逐一判定是否在請求路徑被寫入。特別查「client 端函式庫的 per-user 狀態放 static」——
+  桌面 head 成立,但同一組程式碼被 Blazor Server 這種**多使用者 process** 消費時假設就破了,
+  且**沒有任何東西會標記出這個邊界**。
+- **非執行緒安全集合作為共享狀態**:裸 `Dictionary`/`List`/`HashSet` 當 static 或 singleton 成員。
+  **測試層也算** —— production 啟動後唯讀不代表測試不會並行讀寫(registry 型別最常見),
+  這是「本機綠、CI 紅」的典型根因。
+- **鎖設計**:鎖內做 IO/DB、巢狀 lock 順序、`lock(this)`/`lock(typeof(X))`、
+  double-checked locking 缺 `volatile`。
+- **async 正確性**:`async void`、sync-over-async、函式庫缺 `ConfigureAwait(false)`(判定消費端
+  有無 SynchronizationContext)、fire-and-forget 吞例外。
+- **DI 生命週期不匹配**(captive dependency):Singleton 注入 Scoped/Transient。
+- `[ThreadStatic]` 在 async 流程下失效、`event` 訂閱洩漏(static event + 不解訂閱 = 跨容器污染)、
+  static ctor throw(S3877)、ADO.NET 物件被存在 singleton 上。
+
 ## 彙整與產出
 
 ### 分級(P0~P4)
@@ -165,7 +225,32 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 ## 計畫文件格式
 遵循 CLAUDE.md 的 plan 規範:頂部單行狀態列 `**狀態:📝 擬定中(YYYY-MM-DD)**` + 多階段(P0~P4)階段表格。回覆中附 `[plan-framework-review.md](docs/plans/plan-framework-review.md)` 連結。
 
-## 方法論教訓(2026-07-28 該輪學到,下次直接沿用)
+## 方法論教訓(累積,下次直接沿用)
+
+### 2026-08-07 該輪學到
+
+**A. 「標記完成」需要獨立回驗環節。**
+上輪把 `dependency-map` 外部套件表標 ✅,但該 commit 的 diff 只動了 mermaid 圖與散文,**該表一行未改**。
+同理 `IExcelHelper` 的 CHANGELOG 缺口被三份 repo 文件寫成「已關閉」而實際未補。
+**下輪固定第一步:把上輪宣稱已修的項目逐條回驗**,不要相信狀態標記。
+
+**B. 掃描目標的形狀決定盲區。** 本輪散落類別代理找到 `TreeNodeAttribute` 那 71 處標註,卻漏掉
+規模大 7 倍的 `[Category]`/`[Description]`/`[Browsable]` 共 579 處 —— 因為它掃的是「**型別**有無
+caller」,而那些是 BCL attribute,不在掃描目標內。**每輪問一次:這個面向的掃描單位是什麼?
+什麼形狀的問題會因此看不見?**
+
+**C. 分數上升不等於問題變少,要求代理拆分歸因。** 本輪序列化 +1.5 的主因是失敗模式從沉默轉為
+編譯期擋下(新增 analyzer),文件 +1.5 中約 1.0 是真實改善、0.5 是「掃描更深仍上升」所反映的
+結構性進步。不拆分就無法區分「修好了」與「這次沒看到」。
+
+**D. 守門機制有固有盲區,建立不等於覆蓋。** public API 快照(上輪的最高槓桿建議)已建立並運作,
+但它在建立當下把一個破了 10 個月的壞 API(`ExecFuncLocal`)原樣追認為「已發布」。
+**快照守得住「不要變」,守不到「本來就是錯的」** —— 建立基準時要另做一次正確性檢查。
+
+**E. 同一問題被兩個代理指出時,嚴重度判斷可能差兩級。** 本輪 `SerializeDefine` 被並行代理評 P1、
+序列化代理評 P3。**交叉命中提高的是「存在」的信心,不是「多嚴重」的信心** —— 嚴重度必須自己讀原始碼定案。
+
+### 2026-07-28 該輪學到
 
 **1. 基準要寫具體清單,不要寫「死碼 0」這種無從驗證的斷言。**
 上輪基準宣稱「空 class 0、死碼 0」,本輪查出至少 15 個零使用型別且**全部早於上次體檢**
@@ -189,26 +274,51 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 
 ## 已知基準(上次體檢結果,供對照回歸)
 
-上次 **2026-07-28**:八面向平均 **8.19**、含文件漂移九面向 **7.78**。
-各面向:架構 8.8、相依 9.2、安全 7.8、維護 8.5、散落 7.5、序列化 7.0、公開 API 8.5、測試 8.2、文件 4.5。
+上次 **2026-08-07**(v4.17.0,17 個 `src/` 專案):
+九面向平均 **7.96**、八面向(不含文件)**8.20**、十一面向 **7.69**。
+
+| 面向 | 2026-07-28 | 2026-08-07 |
+|------|-----------|-----------|
+| 架構分層 | 8.8 | 8.6 |
+| 相依分層 | 9.2 | 9.0 |
+| 安全性 | 7.8 | 7.0 |
+| 維護性 | 8.5 | 8.5 |
+| 散落/不必要類別 | 7.5 | 7.0 |
+| 序列化一致性 | 7.0 | 8.5 |
+| 公開 API 表面 | 8.5 | 8.5 |
+| 測試品質與覆蓋 | 8.2 | 8.5 |
+| 文件漂移 | 4.5 | 6.0 |
+| 效能/熱路徑 | — | 6.0(新) |
+| 並行與全域狀態 | — | 7.0(新) |
 
 **應維持為乾淨**(由乾淨變不乾淨即為回歸,標紅優先):
-無循環/反向依賴、BO 無 Db 參照、Server 無 Client 參照、`*Func` 殘留 0、Newtonsoft 0、
-契約軸 100% 對齊(已有 `ApiContractPairingTests` 守門)、BO 介面純度無違反、
-MessagePack ctor 順序 landmine 未觸發、`[Union]`⊥keyAsPropertyName 遵守、
-`MessagePackCollectionBase<>` 子型別 formatter 註冊無遺漏、
-`new DateTime(` 未指定 `Kind` 0 處、`Regex` 未傳 timeout 0 處、
-`CurrentCultureIgnoreCase` 0 處、public 可變欄位 0、公開文件零 `docs/plans/` 引用。
+30 條相依邊無循環、BO 無 Db 參照、後端無 Client 參照、Repository 抽象未被繞過、Contracts 零實作污染、
+mermaid 相依圖與 csproj 逐條吻合、`*Func` 殘留 0、`*Helper` 型別 0、Newtonsoft 0、`[Obsolete]` 0、
+空 class 0、`CurrentCultureIgnoreCase` 0、`new DateTime(` 未指定 Kind 0、`Regex` 未傳 timeout 0、
+public 可變欄位 0、契約軸 100% 對齊、`[Union]`⊥keyAsPropertyName、`MessagePackCollectionBase<>`
+formatter 註冊 8/8、SQL 注入 0(值全參數化 + 識別符全逃逸)、XXE 0、`new Random(` 0、硬編碼機密 0、
+MD5 0、裸手動 `Dispose` 0、`throw ex;` 0、S2699 0、fixture 污染 0、牆鐘 flaky 0、
+`[DisplayName]` 100%、死連結 0(1291 連結 + 108 anchor)、XML doc 零中文與零 `<param>` 不符、
+公開文件零 `docs/plans/` 引用、DI captive dependency 0、`async void` 0、`Task.Run` 包同步碼 0、
+**per-row LINQ 線性欄位查找 0**、N+1 查詢 0。
 
-**已知不乾淨(具體清單,取代「死碼 0」)**:`IEnterpriseObjectService`、`EnterpriseObjectService`、
-`InitializeOptions`、`ApplicationType`、`SysFuncIDs`、`VersionFiles`、`TreeNodeIgnoreAttribute`、
-`DefaultBoolean`、`NotSetBoolean`、`SystemActions.GetLocalDefine`/`SaveLocalDefine`、
-`IDefineField`、`IElementCapabilityResolver`、`CheckPackageUpdate`/`GetPackage` 全棧。
-下次體檢應確認這些是否已清理,而非重新「發現」一次。
+**已知不乾淨(具體清單,下輪應確認是否已清理而非重新「發現」)**:
+`TreeNodeIgnoreAttribute`(連同 `TreeNodeAttribute`/`IDisplayName`,71 處標註 —— **已改判為
+「未接線的設計」,移交 `plan-definition-editor.md`,不應再列為死碼**)、`IDefineField`、
+`IElementCapabilityResolver`、`CheckPackageUpdate`/`GetPackage` 全棧(12 檔)、
+`IUIViewService` 縫、`PermissionBindingValidator`(看似防護、零呼叫)、`ApiErrorInfo`、
+`GetFormSchemaRequest`/`Response`、`ExecFuncLocal` 公開表面(呼叫必炸)。
+
+上輪清單已清理 10/14:`IEnterpriseObjectService`、`EnterpriseObjectService`、`InitializeOptions`、
+`ApplicationType`、`SysFuncIDs`、`VersionFiles`、`DefaultBoolean`、`NotSetBoolean`、
+`SystemActions.GetLocalDefine`/`SaveLocalDefine`。
 
 **已建立的守門機制**(下次體檢應確認仍存在且有效):
-`BoApiSurfaceTests`(鎖定所有 `[ApiAccessControl]` 存取等級的 baseline)、
-`ApiContractPairingTests`(wire DTO ↔ 契約配對)、
-`TestFunc` 的 `comparedCount > 0` 斷言(防 helper 靜默退化)。
-**尚未建立**:public API surface 快照(`PublicAPI.Shipped.txt`)—— breaking change 漏標 `!`
-已連續兩輪發生(`IExcelHelper`、`IEvictableCache`),這是目前最高槓桿的單一改善。
+`BoApiSurfaceTests`、`ApiContractPairingTests`(含 `WireMessageTypes_IsNotEmpty` 防假綠燈)、
+`TestFunc` 的 `comparedCount > 0`、**public API 快照**(`PublicApiAnalyzers` + 16 對基準檔 +
+`docs/repo-ops/public-api-baseline.md` + `tools/scripts/gen-public-api.py`,上輪的最高槓桿缺口已關閉)、
+`Bee.Analyzers` 的 BEE4001–4006 序列化規則、**BEE3003**(ExecFunc 存取控制,2026-08-07 新增)。
+
+**下輪最高槓桿的單一改善**:`BoApiSurfaceTests` 擴成「baseline 每項都能在
+`docs/api-method-reference.md` 找到,且每個 action 常數都解析得到 BO 方法」——
+一個測試同時關閉「壞掉的公開 API」「文件漏列」「四層半成品」三類問題。
