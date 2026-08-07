@@ -58,8 +58,10 @@ IFormCommandBuilder → DbAccess」是**邏輯層次**的描述（BO 觸發、Re
 - 為了「省一個檔案」把單一 action 塞進其他軸的類別 → 設計錯誤
 - Client connector 引用對應軸的常數類別（`FormApiConnector` 用 `FormActions`，
   不用 `SystemActions`）
-- **唯一例外**：`ExecFunc` / `ExecFuncAnonymous` / `ExecFuncLocal` 是 base `BusinessObject`
-  的方法、不分軸，引用 `SystemActions.ExecFunc` 是歷史合理寫法
+- **唯一例外**：`ExecFunc` / `ExecFuncAnonymous` 是 base `BusinessObject` 的方法、不分軸，
+  引用 `SystemActions.ExecFunc` 是歷史合理寫法。（原本還有 `ExecFuncLocal`，BO 端方法已於
+  2025-10-03 改為 `[ExecFuncAccessControl(LocalOnly = true)]` 機制，常數與 connector
+  方法於 2026-08-07 移除）
 
 ## 整體流程（4 層、7~8 檔）
 

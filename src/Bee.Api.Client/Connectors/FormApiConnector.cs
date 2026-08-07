@@ -73,15 +73,6 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Asynchronously executes a custom method; local calls only.
-        /// </summary>
-        /// <param name="args">The input arguments.</param>
-        public async Task<ExecFuncResponse> ExecFuncLocalAsync(ExecFuncRequest args)
-        {
-            return await ExecuteAsync<ExecFuncResponse>(SystemActions.ExecFuncLocal, args).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Asynchronously retrieves list-view rows from the master table of <see cref="ProgId"/>.
         /// </summary>
         /// <param name="selectFields">

@@ -67,15 +67,6 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Asynchronously executes a custom method; local calls only.
-        /// </summary>
-        /// <param name="args">The input arguments.</param>
-        public async Task<ExecFuncResponse> ExecFuncLocalAsync(ExecFuncRequest args)
-        {
-            return await ExecuteAsync<ExecFuncResponse>(SystemActions.ExecFuncLocal, args).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Asynchronously executes the Ping method to test the server connection status.
         /// </summary>
         public async Task PingAsync()

@@ -39,7 +39,6 @@ Bee.Api.Client.Connectors.ApiConnector.Provider.get -> Bee.Api.Client.Providers.
 Bee.Api.Client.Connectors.FormApiConnector
 Bee.Api.Client.Connectors.FormApiConnector.ExecFuncAnonymousAsync(Bee.Api.Core.Messages.ExecFuncRequest! args) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.ExecFuncResponse!>!
 Bee.Api.Client.Connectors.FormApiConnector.ExecFuncAsync(Bee.Api.Core.Messages.ExecFuncRequest! args) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.ExecFuncResponse!>!
-Bee.Api.Client.Connectors.FormApiConnector.ExecFuncLocalAsync(Bee.Api.Core.Messages.ExecFuncRequest! args) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.ExecFuncResponse!>!
 Bee.Api.Client.Connectors.FormApiConnector.ExecuteAsync<T>(string! action, object! value, Bee.Api.Core.Messages.PayloadFormat format = Bee.Api.Core.Messages.PayloadFormat.Encrypted) -> System.Threading.Tasks.Task<T>!
 Bee.Api.Client.Connectors.FormApiConnector.FormApiConnector(System.Guid accessToken, string! progId) -> void
 Bee.Api.Client.Connectors.FormApiConnector.FormApiConnector(string! endpoint, System.Guid accessToken, string! progId) -> void
@@ -54,7 +53,6 @@ Bee.Api.Client.Connectors.SystemApiConnector.CreateSessionAsync(string! userID, 
 Bee.Api.Client.Connectors.SystemApiConnector.EnterCompanyAsync(string! companyId) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.EnterCompanyResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.ExecFuncAnonymousAsync(Bee.Api.Core.Messages.ExecFuncRequest! args) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.ExecFuncResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.ExecFuncAsync(Bee.Api.Core.Messages.ExecFuncRequest! args) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.ExecFuncResponse!>!
-Bee.Api.Client.Connectors.SystemApiConnector.ExecFuncLocalAsync(Bee.Api.Core.Messages.ExecFuncRequest! args) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.ExecFuncResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.ExecuteAsync<T>(string! action, object! value, Bee.Api.Core.Messages.PayloadFormat format = Bee.Api.Core.Messages.PayloadFormat.Encrypted) -> System.Threading.Tasks.Task<T>!
 Bee.Api.Client.Connectors.SystemApiConnector.GetCustomizePluginSettingsAsync(string! customizeId) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.GetCustomizePluginSettingsResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.InitializeAsync() -> System.Threading.Tasks.Task!

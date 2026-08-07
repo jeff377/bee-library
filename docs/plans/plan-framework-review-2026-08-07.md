@@ -41,10 +41,26 @@
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
 | P0 | 正確性／可利用安全風險 | 4 | ✅ 已完成（2026-08-07，S-1 / S-2 / P-1 / C-1） |
-| P1 | 一致性缺口與潛伏 landmine | 9 | 🚧 進行中（S-3 / N-3 / N-4 / Z-1 ✅ 已完成，S-5 ⬇️ 降 P4，剩 S-4 / N-2 / N-5 / X-1 待裁決） |
-| P2 | 結構重構與死碼清理 | 12 | 📝 擬定中（含由 P0 降級的 N-1） |
+| P1 | 一致性缺口與潛伏 landmine | 9 | 🚧 進行中（S-3 / N-3 / N-4 / Z-1 / X-1 ✅ 已完成，S-5 ⬇️ 降 P4，剩 S-4 / N-2 / N-5 待裁決） |
+| P2 | 結構重構與死碼清理 | 12 | 📝 擬定中（D-1 ❌ 駁回、D-3 / D-5 另立 plan、D-4 維持不動，含由 P0 降級的 N-1） |
 | P3 | 文件漂移 | 8 | 🚧 進行中（C-2 / C-3 / C-4 / X-3 / C-6 / Z-2 ✅ 已完成 2026-08-07，剩 C-5 / X-2 待裁決） |
 | P4 | 觀察／待裁決 | 6 | 📝 擬定中 |
+
+---
+
+## 待列入 CHANGELOG 的破壞性變更（累計）
+
+本輪修正累積的破壞性變更，**尚未寫進 CHANGELOG**，發版時必須逐條列入。
+此表存在的理由就是 X-2 的教訓——`IExcelHelper` 的移除當時也只寫在 commit message 裡，
+於是整整一版沒有人補上。
+
+| # | 變更 | 來源 | 型別 |
+|---|------|------|------|
+| 1 | `InvokeExecFunc` 未標 `[ExecFuncAccessControl]` 時改為拒絕（fail-closed） | S-1 | 行為變更 |
+| 2 | 移除 `ISerializableClone` 與 `DatabaseSettings.CreateSerializableCopy()`（3 筆 Shipped API） | N-1 附帶 | source-breaking |
+| 3 | 帳號鎖定預設啟用（`ILoginAttemptTracker` 由 `AddBeeFramework` 預設註冊，5 次 / 15 分鐘） | S-3 | 行為變更 |
+| 4 | `DbParameterSpecCollection` 的兩個便利 `Add` 多載移為擴充方法（2 筆 Shipped 移除 + 3 筆新增） | Z-1 | 原始碼相容、binary-breaking |
+| 5 | 移除 `SystemActions.ExecFuncLocal` 與兩個 `ExecFuncLocalAsync`（3 筆 Shipped API） | X-1 | source-breaking（原本呼叫必炸） |
 
 ---
 
@@ -271,7 +287,7 @@ XmlCodec.Serialize(obj)
 | **✅ N-3** | ~~`DbProviderRegistry` / `DbDialectRegistry` 用裸 `Dictionary`~~ **已完成 2026-08-07** | `src/Bee.Db/Manager/DbProviderRegistry.cs:16-17`、`DbDialectRegistry.cs:16` | production 啟動後唯讀，但**測試中不是**：`DbProviderRegistryTests` 平行呼叫 `Register`（含 `Remove`），其他測試同時 `Get`。resize 期間並行讀 → `IndexOutOfRangeException` / 無限迴圈。典型「本機綠、CI 紅」根因。修法：改 `ConcurrentDictionary`，零行為變更。**已完成**：兩個 registry 改 `ConcurrentDictionary`，`Remove` 改 `TryRemove`，並在型別上加 WARNING 說明為何必須維持 concurrent（測試層會並行讀寫） |
 | **✅ N-4** | ~~`ClientDefineAccess` 快取是裸 `Dictionary`，從 thread-pool 並行進入~~ **已完成 2026-08-07** | `src/Bee.Api.Client/ClientDefineAccess.cs:29,88-107` | XML doc 宣稱「Concurrent reads of the same key share a single in-flight request」，但 `TryGetValue` + 索引賦值非原子。觸發源：`ListView.cs:291,371` 的 fire-and-forget + `ConfigureAwait(false)` 續行落 thread pool。修法：`ConcurrentDictionary` + `GetOrAdd`。**已完成**：改 `ConcurrentDictionary<string, Lazy<Task<object>>>`——`Lazy` 是關鍵，`GetOrAdd` 的 value factory 在競爭下可能被呼叫多次，對「啟動請求」的 factory 而言就是這個快取要防的重複往返；失效改用 compare-and-remove 的 `TryRemove(KeyValuePair)` 多載，消除 TryGetValue/Remove 之間的空隙。兩處使用點（`GetDefineAsync` / `GetCustomizeAsync`）皆已轉換 |
 | **N-5** | `SessionInfo` 多欄位更新不具原子性 | `src/Bee.Business/Session/SessionCompanyBinder.cs:66-79`、`SystemBusinessObject.Session.cs:184-192` | 同 token 的並行請求共用同一 reference。連寫 6 個欄位期間，另一請求可讀到「新公司 + 舊角色」→ **授權決策讀到不一致狀態**。修法：收斂成 immutable value object 一次替換，或 write-replace 而非 in-place mutate |
-| **X-1** | `ExecFuncLocal` 是永久壞掉的公開 API | `src/Bee.Definition/SystemActions.cs:117`、`SystemApiConnector.cs:73`、`FormApiConnector.cs:79` | BO 端方法於 v3.5.1（2025-10-03）移除，常數與兩個 connector 方法留著。`JsonRpcExecutor.GetMethod` 找不到即 `MissingMethodException` → **任何外部呼叫必炸**。破了 10 個月、零測試覆蓋。v4.16.0 建立快照時**原樣追認為「已發布 API」**——這是快照機制的固有盲點：守得住「不要變」，守不到「本來就是錯的」。建議移除 3 處表面並在 CHANGELOG 標破壞性移除 |
+| **✅ X-1** | ~~`ExecFuncLocal` 是永久壞掉的公開 API~~ **已完成 2026-08-07** | `src/Bee.Definition/SystemActions.cs:117`、`SystemApiConnector.cs:73`、`FormApiConnector.cs:79` | BO 端方法於 v3.5.1（2025-10-03）移除，常數與兩個 connector 方法留著。`JsonRpcExecutor.GetMethod` 找不到即 `MissingMethodException` → **任何外部呼叫必炸**。破了 10 個月、零測試覆蓋。v4.16.0 建立快照時**原樣追認為「已發布 API」**——這是快照機制的固有盲點：守得住「不要變」，守不到「本來就是錯的」。**已完成**：3 處表面全數移除、3 筆 Shipped API 刪除。查證確認移除者為 `6706bab4`（2025-10-03），該 commit 同時引入 `ExecFuncAccessControlAttribute`——也就是 local-only 語意當時就已改由 attribute 承載，`ExecFuncLocal` 這個 wire action 自那時起即無對應 BO 方法。S-1 加上 `LocalOnly` 屬性後，該語意的唯一入口更明確就是 `ExecFunc` + attribute。連帶更正 `bee-add-bo-method` skill 中把它列為「歷史合理寫法」的敘述 |
 | **✅ Z-1** | ~~序列化 analyzer 只掛 3 個專案，gate 沒接滿~~ **已完成 2026-08-07** | 掛載：`Bee.Business` / `Bee.Api.Core` / `Bee.Definition`；未掛：`Bee.Api.Contracts`（3 個 wire DTO）、`Bee.Db`（5 個框架集合） | BEE4002–4006 對這兩個專案靜默（僅 BEE4001 跨 assembly）。`Bee.Db/DbParameterSpecCollection.cs:18,33` 是全 repo 唯一的多重 public `Add` 違規，正因未掛 analyzer 而未被擋。**已完成**：兩專案各補 `ProjectReference`（`OutputItemType="Analyzer"` + `ReferenceOutputAssembly="false"`），未提到 `Directory.Build.props`——那會連 `Bee.Analyzers` 自己與 UI 專案都掛上，而掃描確認除這兩個外無其他專案含集合子類或 MessagePack 型別。補掛後 `Bee.Api.Contracts` 乾淨、`Bee.Db` 如預期紅在 BEE4005，兩個便利 `Add` 多載位移為 `DbParameterSpecCollectionExtensions`（同檔，比照 `Bee.Definition` 20 個集合）。`DataRowVersion` 的 optional 參數拆成兩個明確多載——位移後兩個 `Add` 參數個數相同，RS0027 要求帶 optional 者須為參數最多的多載。**公開 API**：2 筆 Shipped 移除 + 3 筆新增，原始碼相容、二進位破壞性 |
 
 ---

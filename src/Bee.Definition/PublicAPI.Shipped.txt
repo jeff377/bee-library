@@ -1813,7 +1813,6 @@ const Bee.Definition.SystemActions.CreateSession = "CreateSession" -> string!
 const Bee.Definition.SystemActions.EnterCompany = "EnterCompany" -> string!
 const Bee.Definition.SystemActions.ExecFunc = "ExecFunc" -> string!
 const Bee.Definition.SystemActions.ExecFuncAnonymous = "ExecFuncAnonymous" -> string!
-const Bee.Definition.SystemActions.ExecFuncLocal = "ExecFuncLocal" -> string!
 const Bee.Definition.SystemActions.GetCommonConfiguration = "GetCommonConfiguration" -> string!
 const Bee.Definition.SystemActions.GetCustomizeFormLayout = "GetCustomizeFormLayout" -> string!
 const Bee.Definition.SystemActions.GetCustomizeLanguage = "GetCustomizeLanguage" -> string!

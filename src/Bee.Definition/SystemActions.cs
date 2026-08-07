@@ -111,9 +111,5 @@ namespace Bee.Definition
         /// Executes a custom function with anonymous access.
         /// </summary>
         public const string ExecFuncAnonymous = "ExecFuncAnonymous";
-        /// <summary>
-        /// Executes a custom function — local calls only.
-        /// </summary>
-        public const string ExecFuncLocal = "ExecFuncLocal";
     }
 }
