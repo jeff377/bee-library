@@ -411,7 +411,7 @@ skill 誤導，修掉後該回路才斷。
 
 ---
 
-## 附註：`rules/public-docs.md` 落地檢查的涵蓋缺口
+## ✅ 附註：`rules/public-docs.md` 落地檢查的涵蓋缺口（已完成 2026-08-07）
 
 兩個代理獨立撞到同一件事：檢查 (4)(5) 只 grep `*.cs` `*.axaml` `*.razor`，**`.xml` / `.csproj` / `.props` 不在內**。因此下列 3 處長期漏網，且 `ILLink.Descriptors.xml` 是以 `<EmbeddedResource>` 打進 NuGet 套件的**實際發佈物**：
 
@@ -420,3 +420,11 @@ skill 誤導，修掉後該回路才斷。
 - `src/Directory.Build.props:56`
 
 建議把 `--include="*.xml" --include="*.csproj" --include="*.props" --include="*.targets"` 加入檢查 (4)。
+
+**已完成**：三處 plan 指標移除（實質說明本來就寫在註解裡；`Directory.Build.props` 那處改指維運文件
+`docs/repo-ops/public-api-baseline.md`），檢查 (4)(5) 的副檔名依建議擴充。
+
+**順帶修一項未列的**：三個 markdown 檢查未排除 `docs/repo-ops/`，但依規範自身的表格它是**維運文件、
+不是公開文件**，引用 plan 完全合法（`future-work.md` 指向「日後要寫的 plan」、`gotchas/` 記錄體檢方法）。
+未排除的結果是每次跑檢查都有兩筆固定誤報，而「固定誤報」正是讓人開始略過檢查輸出的原因。
+已加入排除並更新〈預期輸出〉。擴充後五項檢查全部乾淨。

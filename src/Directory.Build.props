@@ -53,8 +53,8 @@
     <!-- Public API surface tracking. RS0016/RS0017 turn "a published type or member was added,
          removed or changed" into a build failure unless the baseline below is updated in the same
          commit, so a breaking change can no longer reach a release without someone noticing.
-         See docs/plans (framework review P3-5) for why: the commit-subject `!` convention was the
-         only gate and it missed real breaks twice. -->
+         Adopted because the commit-subject `!` convention was previously the only gate and it
+         missed real breaks twice. Baseline maintenance: docs/repo-ops/public-api-baseline.md. -->
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="4.14.0" PrivateAssets="All" />
   </ItemGroup>
 

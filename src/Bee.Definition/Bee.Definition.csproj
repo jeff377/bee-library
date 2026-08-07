@@ -59,8 +59,7 @@
     Trimmer / AOT preservation roots for the definition layer, shipped with the package.
     The logical name "ILLink.Descriptors.xml" is the convention the .NET trimmer scans for,
     so this is auto-applied for every downstream trimmed / AOT consumer (e.g. the Avalonia
-    iOS / Android heads). See ILLink.Descriptors.xml and
-    docs/plans/plan-mobile-release-trim-safe.md.
+    iOS / Android heads). See ILLink.Descriptors.xml for what is preserved and why.
   -->
   <ItemGroup>
     <EmbeddedResource Include="ILLink.Descriptors.xml">

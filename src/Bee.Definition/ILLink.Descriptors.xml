@@ -20,7 +20,6 @@
   This is the broad "bottom layer" root (the definition type hierarchy is polymorphic and
   subtype-dense, so a per-type DynamicallyAccessedMembers pass is error-prone here). It can
   be narrowed later once the exact reflected surface is pinned down on a physical device.
-  See docs/plans/plan-mobile-release-trim-safe.md.
 -->
 <linker>
   <assembly fullname="Bee.Definition">
