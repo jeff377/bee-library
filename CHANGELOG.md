@@ -4,6 +4,58 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.18.0]
+
+> This release is the output of a full framework review rather than a feature cycle. The headline is the **`System.ExecFunc` dispatch surface**: `UpgradeTableSchema` (which drops and rebuilds a table in whichever database the caller names) and `TestConnection` (which opens an outbound connection to whichever host the caller supplies) were reachable by any authenticated caller. Both are now local-only, the dispatcher's default for an unannotated handler flips from *allow authenticated* to **refuse**, and a new build-time analyzer makes the omission impossible to repeat. Account lockout — implemented but never registered — is on by default, and a version-numbering defect in 4.17.0 is corrected.
+
+📄 Full notes and design context: [docs/changelogs/4.18.0.md](docs/changelogs/4.18.0.md)
+
+### Breaking Changes
+
+- `Bee.Business`: an `IExecFuncHandler` method with no `[ExecFuncAccessControl]` is now **refused** at dispatch instead of treated as `Authenticated`.
+- `Bee.Definition` / `Bee.Api.Client`: `SystemActions.ExecFuncLocal`, `SystemApiConnector.ExecFuncLocalAsync` and `FormApiConnector.ExecFuncLocalAsync` are removed — every call has thrown `MissingMethodException` since 2025-10-03.
+- `Bee.Base` / `Bee.Definition`: `ISerializableClone` and `DatabaseSettings.CreateSerializableCopy()` are removed; the in-place-encryption pipeline they guarded against never existed.
+- `Bee.Db`: `DbParameterSpecCollection`'s two convenience `Add` overloads move to `DbParameterSpecCollectionExtensions` — source-compatible, binary-breaking.
+
+### Security
+
+- `Bee.Business`: `UpgradeTableSchema` and `TestConnection` are `LocalOnly`. Previously any valid access token could trigger destructive DDL against a caller-named database, or use the server as an outbound port scanner with connection-string injection.
+- `Bee.Hosting`: account lockout is enabled by default — `AddBeeFramework` registers `LoginAttemptTracker` (5 attempts / 15 minutes) via `TryAdd`.
+- `Bee.Business`: `GetDefine(DefineType.DatabaseSettings)` reads the definition file directly, so passwords stay `enc:` ciphertext instead of being served decrypted from the cache instance.
+
+### Added
+
+- `Bee.Business`: `ExecFuncAccessControlAttribute.LocalOnly`, plus an `InvokeExecFunc` overload taking `isLocalCall` (the original overload is kept and treated as remote).
+- `Bee.Analyzers`: **BEE3003** — a public method on an `IExecFuncHandler` implementation must declare `[ExecFuncAccessControl]`. [Analyzer rules](docs/analyzer-rules.md)
+- `Bee.Db`: `DbParameterSpecCollectionExtensions`.
+- `Bee.Api.Contracts` / `Bee.Db`: the serialization analyzers (BEE4002–4006) now run on these projects; they were silent there before.
+
+### Changed
+
+- `Bee.Base`: `JsonCodec` shares `static readonly JsonSerializerOptions` instead of building one per call, and the wire path emits compact JSON (`SerializeToFile` stays indented).
+- Build: `AssemblyVersion` / `FileVersion` are back in step with `Version` — see the upgrade note below.
+
+### Fixed
+
+- `Bee.Db` / `Bee.Api.Client`: `DbProviderRegistry`, `DbDialectRegistry` and the `ClientDefineAccess` cache use concurrent collections; all three were read concurrently through non-atomic paths.
+- `Bee.Business`: `SystemBusinessObject` no longer serializes the shared cache instance directly when serving `PluginSettings`.
+
+### Upgrade
+
+```diff
+  public class MyExecFuncHandler : IExecFuncHandler
+  {
++     [ExecFuncAccessControl(ApiAccessRequirement.Authenticated)]
+      public void DoSomething(ExecFuncArgs args, ExecFuncResult result) { ... }
+  }
+```
+
+- **ExecFunc handlers**: annotate every public method; BEE3003 fails the build otherwise. Use `LocalOnly = true` for in-process-only operations.
+- **`DbParameterSpecCollection.Add`**: no source change needed; recompile assemblies built against 4.17.0 or earlier.
+- **Account lockout**: to keep the previous behaviour, register a no-op `ILoginAttemptTracker` before `AddBeeFramework`.
+- **Assembly identity**: the published 4.17.0 package contains assemblies stamped `4.16.0.0`. 4.18.0 jumps straight to `4.18.0.0`; `4.17.0.0` never existed and 4.17.0 is not being re-released.
+- **Retroactive**: `IExcelHelper` was removed in 4.16.0 and never recorded. The entry has been added to the [4.16.0 notes](docs/changelogs/4.16.0.md).
+
 ## [4.17.0]
 
 > The headline of this release is **business logic plugins** — attaching customer code to the existing flow of a packaged BO without replacing the whole BO class, adding only a step at a specific point. This is the fifth customization mechanism and fills the "lightweight extension" gap; it also brings the customization layer's **first write path** (`PluginSettings` is the only customization definition with a maintenance API). Two customization behaviour fixes ship alongside: `ProgramItem` override semantics move from whole-item replacement to **property-level inheritance**, and BO type resolution failure now **falls back and logs** — both surfaced only after `ProgramItem` gained its `Repository` binding in 4.16.0.
@@ -56,6 +108,7 @@ All notable changes to this project will be documented in this file.
 - `Bee.Repository.Abstractions`: `ISystemRepositoryFactory` / `IFormRepositoryFactory` / `IAuditLogRepositoryFactory` and `IReportFormRepository` are removed; repositories take a uniform `(ctx, accessToken, progId)` constructor via `RepositoryBase`.
 - `Bee.Api.Core` / `Bee.Api.Client` (**wire**): definition APIs serve raw definitions in an XML envelope; `SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync` are removed. [ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md)
 - `Bee.UI.Maui` and `Bee.Web.Blazor.Wasm` are removed; the UI surface consolidates onto Avalonia + Blazor.Server.
+- `Bee.Definition`: `Bee.Definition.Documents.IExcelHelper` is removed (89 lines, no implementation and no caller anywhere in the repository). *Recorded retroactively on 2026-08-07.*
 - `Bee.ObjectCaching`: `IEvictableCache` and `ICacheContainer.TryEvict(string)` are removed.
 - `Bee.Repository.Abstractions`: `IDataFormRepository.GetNewData()` takes `timeZoneId`; `ISessionRepository.CreateSession(...)` splits into `Insert` / `Update` / `Delete` / `DeleteExpiredSessions`; `IUserRepository.GetTimeZone` becomes `GetLocale` and gains `GetName`.
 - `Bee.Business` / `Bee.Expressions`: `IFormRuleProcessor` and `IExpressionEvaluator.Evaluate` take `timeZoneId`.

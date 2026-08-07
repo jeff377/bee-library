@@ -4,6 +4,58 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.18.0]
+
+> 本版是一次框架全面體檢的產出，不是功能週期。主線是 **`System.ExecFunc` 的派發面**：`UpgradeTableSchema`（在呼叫端指定的任一資料庫裡把表刪掉重建）與 `TestConnection`（對呼叫端指定的任一 host 發出站連線）原本任何已認證呼叫端都能觸達。兩者現已限本機呼叫，派發器對未標註 handler 的預設由*放行已認證*改為**拒絕**，並新增建置期 analyzer 讓這種漏標不可能再發生。帳號鎖定——有實作卻從未註冊——改為預設啟用，並修正 4.17.0 的一項版號缺陷。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.18.0.zh-TW.md](docs/changelogs/4.18.0.zh-TW.md)
+
+### 破壞性變更
+
+- `Bee.Business`：`IExecFuncHandler` 的方法未標 `[ExecFuncAccessControl]` 時，派發改為**拒絕**，不再視同 `Authenticated`。
+- `Bee.Definition` / `Bee.Api.Client`：移除 `SystemActions.ExecFuncLocal`、`SystemApiConnector.ExecFuncLocalAsync` 與 `FormApiConnector.ExecFuncLocalAsync`——自 2025-10-03 起每次呼叫都擲 `MissingMethodException`。
+- `Bee.Base` / `Bee.Definition`：移除 `ISerializableClone` 與 `DatabaseSettings.CreateSerializableCopy()`；它們防的那條「就地加密」管線從未存在。
+- `Bee.Db`：`DbParameterSpecCollection` 的兩個便利 `Add` 多載移為 `DbParameterSpecCollectionExtensions`——原始碼相容、二進位破壞性。
+
+### 安全性
+
+- `Bee.Business`：`UpgradeTableSchema` 與 `TestConnection` 改為 `LocalOnly`。原本只要一個有效 access token 就能對呼叫端指定的資料庫觸發破壞性 DDL，或把伺服器當成對外埠掃描器並注入連線字串。
+- `Bee.Hosting`：帳號鎖定改為預設啟用——`AddBeeFramework` 以 `TryAdd` 註冊 `LoginAttemptTracker`（5 次 / 15 分鐘）。
+- `Bee.Business`：`GetDefine(DefineType.DatabaseSettings)` 改為直接讀定義檔，密碼維持 `enc:` 密文，不再從快取實例送出已解密的值。
+
+### 新增
+
+- `Bee.Business`：`ExecFuncAccessControlAttribute.LocalOnly`，以及帶 `isLocalCall` 的 `InvokeExecFunc` 多載（舊多載保留，視同遠端呼叫）。
+- `Bee.Analyzers`：**BEE3003**——`IExecFuncHandler` 實作上的 public 方法必須宣告 `[ExecFuncAccessControl]`。[analyzer 規則](docs/analyzer-rules.zh-TW.md)
+- `Bee.Db`：`DbParameterSpecCollectionExtensions`。
+- `Bee.Api.Contracts` / `Bee.Db`：序列化 analyzer（BEE4002–4006）現在會跑這兩個專案，先前對它們完全靜默。
+
+### 變更
+
+- `Bee.Base`：`JsonCodec` 改為共用 `static readonly JsonSerializerOptions`，不再每次呼叫新建；wire 路徑輸出改 compact（`SerializeToFile` 維持縮排）。
+- 建置：`AssemblyVersion` / `FileVersion` 恢復與 `Version` 同步——見下方升級指引。
+
+### 修正
+
+- `Bee.Db` / `Bee.Api.Client`：`DbProviderRegistry`、`DbDialectRegistry` 與 `ClientDefineAccess` 快取改用並行安全集合；三者都會被並行讀取，而原本的路徑非原子。
+- `Bee.Business`：`SystemBusinessObject` 供應 `PluginSettings` 時不再直接序列化共用快取實例。
+
+### 升級指引
+
+```diff
+  public class MyExecFuncHandler : IExecFuncHandler
+  {
++     [ExecFuncAccessControl(ApiAccessRequirement.Authenticated)]
+      public void DoSomething(ExecFuncArgs args, ExecFuncResult result) { ... }
+  }
+```
+
+- **ExecFunc handler**：每個 public 方法都要標註，否則 BEE3003 會讓建置失敗。只在行程內執行的操作用 `LocalOnly = true`。
+- **`DbParameterSpecCollection.Add`**：原始碼不需改；對 4.17.0 或更早版本編譯的組件需重新編譯。
+- **帳號鎖定**：要維持原行為，在 `AddBeeFramework` 之前先註冊 no-op 的 `ILoginAttemptTracker`。
+- **組件 identity**：已發布的 4.17.0 套件內組件標的是 `4.16.0.0`。4.18.0 直接跳到 `4.18.0.0`；`4.17.0.0` 從未存在，且 4.17.0 不重新發布。
+- **回溯補記**：`IExcelHelper` 移除於 4.16.0 卻從未記錄，該條目已補進 [4.16.0 說明](docs/changelogs/4.16.0.zh-TW.md)。
+
 ## [4.17.0]
 
 > 本版主線是**業務邏輯 plugin**——在套裝 BO 的既有流程上掛載客製程式碼，不換掉整個 BO 類別，只在特定時點追加一段。這是客製化的第五種機制，補上「輕量擴充」這一格；同時帶來客製層的**第一條寫入路徑**（`PluginSettings` 是唯一有維護 API 的客製定義）。另有兩項客製化行為修正：`ProgramItem` 覆寫由「整筆取代」改為**屬性級繼承**、BO 型別解析失敗改為**降級並記錄**——兩者都是 `ProgramItem` 於 4.16.0 新增 `Repository` 綁定後才浮現的問題。
@@ -56,6 +108,7 @@
 - `Bee.Repository.Abstractions`：移除 `ISystemRepositoryFactory` / `IFormRepositoryFactory` / `IAuditLogRepositoryFactory` 與 `IReportFormRepository`；Repository 經 `RepositoryBase` 統一為 `(ctx, accessToken, progId)` 建構子。
 - `Bee.Api.Core` / `Bee.Api.Client`（**wire**）：定義類 API 一律供應原始定義 + XML 信封；移除 `SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync`。[ADR-016](docs/adr/adr-016-multitenant-customization-overlay.md)
 - 移除 `Bee.UI.Maui` 與 `Bee.Web.Blazor.Wasm`；UI 收斂為 Avalonia + Blazor.Server 雙軌。
+- `Bee.Definition`：移除 `Bee.Definition.Documents.IExcelHelper`（89 行，全 repo 零實作零呼叫）。*2026-08-07 回溯補記。*
 - `Bee.ObjectCaching`：移除 `IEvictableCache` 與 `ICacheContainer.TryEvict(string)`。
 - `Bee.Repository.Abstractions`：`IDataFormRepository.GetNewData()` 增加 `timeZoneId`；`ISessionRepository.CreateSession(...)` 拆為 `Insert` / `Update` / `Delete` / `DeleteExpiredSessions`；`IUserRepository.GetTimeZone` 換為 `GetLocale` 並新增 `GetName`。
 - `Bee.Business` / `Bee.Expressions`：`IFormRuleProcessor` 與 `IExpressionEvaluator.Evaluate` 增加 `timeZoneId`。

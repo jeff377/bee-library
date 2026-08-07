@@ -1,4 +1,1 @@
 #nullable enable
-Bee.Business.Attributes.ExecFuncAccessControlAttribute.LocalOnly.get -> bool
-Bee.Business.Attributes.ExecFuncAccessControlAttribute.LocalOnly.set -> void
-static Bee.Business.ExecFuncHandlerExtensions.InvokeExecFunc(this Bee.Business.IExecFuncHandler! handler, Bee.Definition.Security.ApiAccessRequirement currentRequirement, bool isLocalCall, Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void

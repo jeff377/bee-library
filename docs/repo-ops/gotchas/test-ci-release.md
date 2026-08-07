@@ -139,3 +139,8 @@ commit 觸發 publish，`--skip-duplicate` 讓已發佈的跳過、只補推新�
 > 已引入 `PublicApiAnalyzers` 的 `PublicAPI.Shipped.txt` / `Unshipped.txt`（見
 > `docs/repo-ops/public-api-baseline.md`），漏標即 build 失敗；分析器看不到的「已申報但二進位
 > 不相容」由 pre-commit hook 攤開提示。
+>
+> **但「gate 關閉」不等於「舊帳清完」**（2026-08-07 補）：那兩個案例的下場不同——
+> `IEvictableCache` 的 CHANGELOG **有**記到，`IExcelHelper` 則連 CHANGELOG 都沒有，
+> 直到 2026-08-07 的體檢查出才回溯補進 4.16.0 明細檔。導入機制擋的是「以後」，
+> 先前漏出去的要人工回補。**下次引入任何 gate 時，同時列一份「gate 之前已經漏掉什麼」的清單。**

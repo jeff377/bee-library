@@ -16,8 +16,13 @@
 | Razor 產生碼的 nullable-oblivious 簽名 | `RS0041` | 已於 `Bee.Web.Blazor.Server.csproj` 以 `NoWarn` 關閉，見該處註解 |
 
 > **為什麼要有這個機制**：在此之前，「公開表面有刪改」的唯一把關是 commit subject 要帶 `!`，
-> 而這道人工關卡已經連續兩次漏掉真實的 breaking（`IExcelHelper`、`IEvictableCache`）。
-> 基準檔把它變成 build 失敗，以及 review 時看得見的一行 diff。
+> 而這道人工關卡已經連續兩次漏掉真實的 breaking（`IExcelHelper`、`IEvictableCache`，
+> 兩個 commit 的 subject 都沒有 `!`）。基準檔把它變成 build 失敗，以及 review 時看得見的一行 diff。
+>
+> **注意「gate 關閉」不等於「舊帳清完」**（2026-08-07 補）：上面兩個案例的下場不同——
+> `IEvictableCache` 雖然 commit 沒標 `!`，CHANGELOG **有**記到（4.16.0 根檔雙語 + 明細檔雙語）；
+> `IExcelHelper` 則是**連 CHANGELOG 都沒有**，直到 2026-08-07 的框架體檢查出才回溯補記。
+> 導入基準檔擋住的是「以後」，先前已經漏出去的仍需人工回補，不會自己消失。
 
 ## 日常：改了公開 API 怎麼辦
 

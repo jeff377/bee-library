@@ -1,5 +1,1 @@
 #nullable enable
-Bee.Db.DbParameterSpecCollectionExtensions
-static Bee.Db.DbParameterSpecCollectionExtensions.Add(this Bee.Db.DbParameterSpecCollection? collection, Bee.Definition.Database.DbField! field) -> Bee.Db.DbParameterSpec!
-static Bee.Db.DbParameterSpecCollectionExtensions.Add(this Bee.Db.DbParameterSpecCollection? collection, Bee.Definition.Database.DbField! field, System.Data.DataRowVersion sourceVersion) -> Bee.Db.DbParameterSpec!
-static Bee.Db.DbParameterSpecCollectionExtensions.Add(this Bee.Db.DbParameterSpecCollection? collection, string! name, object! value) -> Bee.Db.DbParameterSpec!

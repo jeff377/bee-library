@@ -2,6 +2,8 @@
 Bee.Business.Attributes.ExecFuncAccessControlAttribute
 Bee.Business.Attributes.ExecFuncAccessControlAttribute.AccessRequirement.get -> Bee.Definition.Security.ApiAccessRequirement
 Bee.Business.Attributes.ExecFuncAccessControlAttribute.ExecFuncAccessControlAttribute(Bee.Definition.Security.ApiAccessRequirement accessRequirement = Bee.Definition.Security.ApiAccessRequirement.Authenticated) -> void
+Bee.Business.Attributes.ExecFuncAccessControlAttribute.LocalOnly.get -> bool
+Bee.Business.Attributes.ExecFuncAccessControlAttribute.LocalOnly.set -> void
 Bee.Business.AuditLog.GetAccessLogArgs
 Bee.Business.AuditLog.GetAccessLogArgs.FromUtc.get -> System.DateTime?
 Bee.Business.AuditLog.GetAccessLogArgs.FromUtc.set -> void
@@ -664,6 +666,7 @@ static Bee.Business.BusinessObjectFactoryExtensions.CreateFormBO(this Bee.Defini
 static Bee.Business.BusinessObjectFactoryExtensions.CreateLogBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.AuditLog.ILogBusinessObject!
 static Bee.Business.BusinessObjectFactoryExtensions.CreateSystemBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.System.ISystemBusinessObject!
 static Bee.Business.ExecFuncHandlerExtensions.InvokeExecFunc(this Bee.Business.IExecFuncHandler! handler, Bee.Definition.Security.ApiAccessRequirement currentRequirement, Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
+static Bee.Business.ExecFuncHandlerExtensions.InvokeExecFunc(this Bee.Business.IExecFuncHandler! handler, Bee.Definition.Security.ApiAccessRequirement currentRequirement, bool isLocalCall, Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 static Bee.Business.Form.FormPluginChain.Create(System.Collections.Generic.IReadOnlyList<System.Type!>! types) -> Bee.Business.Form.FormPluginChain!
 static Bee.Business.Form.FormPluginChain.Empty.get -> Bee.Business.Form.FormPluginChain!
 static Bee.Business.Providers.DerivedApiEncryptionKeyProvider.FromMasterKey(byte[]! masterKey) -> Bee.Business.Providers.DerivedApiEncryptionKeyProvider!

@@ -43,14 +43,49 @@
 | P0 | 正確性／可利用安全風險 | 4 | ✅ 已完成（2026-08-07，S-1 / S-2 / P-1 / C-1） |
 | P1 | 一致性缺口與潛伏 landmine | 9 | 🚧 進行中（S-3 / N-3 / N-4 / Z-1 / X-1 ✅ 已完成，S-5 ⬇️ 降 P4，剩 S-4 / N-2 / N-5 待裁決） |
 | P2 | 結構重構與死碼清理 | 12 | 🚧 進行中（D-2 文件面 ✅ 已完成；D-1 ❌ 駁回、D-3 / D-5 另立 plan、D-4 維持不動；剩 A-1～A-4 / P-2～P-4 與由 P0 降級的 N-1） |
-| P3 | 文件漂移 | 9 | 🚧 進行中（C-2 / C-3 / C-4 / X-3 / C-6 / C-7 / Z-2 + 附註的 `public-docs` 檢查缺口 ✅ 已完成 2026-08-07，剩 C-5 / X-2 兩項待裁決） |
+| P3 | 文件漂移 | 9 | ✅ 已完成（2026-08-07，C-2 / C-3 / C-4 / C-5 / C-6 / C-7 / X-2 / X-3 / Z-2 + 附註的 `public-docs` 檢查缺口全數處理） |
 | P4 | 觀察／待裁決 | 6 | 📝 擬定中 |
+
+---
+
+## 發版前對帳（2026-08-07，42 項逐條）
+
+發版前把全部 42 項走一遍，確認每項都落在「已修 / 已裁決 / 有方向」三類之一。
+
+| 類別 | 數量 | 項目 |
+|------|------|------|
+| ✅ 已修完成 | 17 | S-1、S-2、P-1、C-1、S-3、N-3、N-4、X-1、Z-1、C-2、C-3、C-4、X-3、C-6、C-7、Z-2、N-6 |
+| ❌ 查證後駁回（誤報） | 1 | D-1 |
+| ⬇️ 已裁決降級 | 2 | N-1（→P2，附四條修法與各自阻礙）、S-5（→P4，維護者裁決不套 record scope） |
+| 🔀 已裁決、部分完成或移交 | 4 | D-2（文件面已修，程式面裁決不接載入期）、D-4（裁決保留）、D-3 / D-5（移交 [plan-definition-editor.md](plan-definition-editor.md)） |
+| ✅ 隨 4.18.0 發版完成 | 2 | C-5、X-2 |
+| ⏸️ **有方向、未裁決是否執行** | 3 | **S-4、N-2、N-5**（全為 P1） |
+| 📝 有修法、未排程（P2） | 7 | A-1、A-2、A-3、A-4、P-2、P-3、P-4 |
+| 📝 有修法、未排程（P4 觀察） | 6 | M-1、M-2、T-1、T-2、Z-3、A-5 |
+
+**⏸️ 三項的現況**（三者 plan 內都寫了修法，缺的是「要不要現在做」的裁決）：
+
+- **S-4** — 非 Development 環境 `InForce==false` 由 warning 升為啟動失敗。**上輪已提、未修**，本輪再提。
+- **N-2** — `ApiClientInfo` 三個 per-user static 比照 `accessToken` 的做法收斂。
+- **N-5** — `SessionInfo` 多欄位更新改 immutable value object 一次替換。
+
+> **本次發版不受這三項阻擋**：發版內容只含已 ✅ 的改動，三者皆未動 `src/`。
+
+### ⚠️ 「有方向」的可信度警告
+
+P2 / P4 的項目**多數只經代理掃描、未經人工複驗**。本輪實際複驗過的 P2 項目共 3 個，
+**3 個全部需要修正**：D-1 整項駁回（誤報）、D-2 性質升級（不只死碼，是公開文件宣稱的保證
+不存在）、D-4 改判（是有文件的擴充點而非死碼）。
+
+也就是說「有解決方向」對未複驗項目而言，**方向可能建立在錯的前提上**。下輪動任何 P2 / P4
+項目前，第一步一律是複驗現象是否成立，不要直接照 plan 的修法動手。
 
 ---
 
 ## 待列入 CHANGELOG 的破壞性變更（累計）
 
-本輪修正累積的破壞性變更，**尚未寫進 CHANGELOG**，發版時必須逐條列入。
+本輪修正累積的破壞性變更。**✅ 已於 2026-08-07 隨 4.18.0 全數列入 CHANGELOG**
+（雙語主檔〈破壞性變更〉節 + `docs/changelogs/4.18.0` 雙語明細檔）。
 此表存在的理由就是 X-2 的教訓——`IExcelHelper` 的移除當時也只寫在 commit message 裡，
 於是整整一版沒有人補上。
 
@@ -318,8 +353,8 @@ XmlCodec.Serialize(obj)
 | **✅ C-2** | 套件 README 型別名整批落後 3–9 個月 | 34 個位置、約 60 個編譯錯誤點。`AccessTokenValidationProvider`（3.5 月）、`LayoutGroup`/`LayoutItem`/`ColumnControlType`（3 月）、`ILogWriter` 群（3 月）、`CompareBytes`（改的當天有人碰同一份 README 卻漏這行）、`IApiProvider`→`IJsonRpcProvider`、`ISessionRepository.CreateSession`（不存在）、`Bee.Api.Client` 9 個方法全部漏 `Async` 後綴、`GridControl` 基底型別寫錯。**完整清單見掃描報告的「照抄會編譯不過」表** |
 | **✅ C-3** | 已移除套件（`Bee.UI.Maui` / `Bee.Web.Blazor.Wasm`）殘留敘述 | `development-cookbook` / `terminology` / `architecture-overview` 三份最大文件仍以現在式描述。cookbook 的前端決策樹指向一個**整份文件不存在的章節**（Blazor WASM）。諷刺的是 `35504636`（2026-07-31）標題就是「清除已移除 UI 套件的殘留參照」，卻沒碰這三份 |
 | **✅ C-4** | `ClientInfo.Initialize` → `InitializeAsync` 未跟（6 處） | v4.11.0 破壞性變更（`d9400c5a`, 2026-06-24），CHANGELOG 已載明，文件漂 6 週。cookbook `:731` 的 `if (!ClientInfo.InitializeAsync(...))` 為 **CS0023** |
-| **C-5** | `AssemblyVersion` / `FileVersion` 未隨 4.17.0 升版 | `src/Directory.Build.props:5-6` 為 `4.16.0.0`。4.8.0→4.16.0 每版都三個一起升，`a0cd9de6` 只改了 `<Version>`。**已發布的 NuGet 4.17.0 套件內組件 identity 是 4.16.0.0**。建議 4.18.0 修正並於 CHANGELOG 說明，不重發 4.17.0 |
-| **X-2** | `IExcelHelper` 破壞性移除從未進任何 CHANGELOG | 移除於 `206d29ff`（v4.16.0），該 commit message 自己寫「須列入 CHANGELOG breaking change」卻沒執行。而 `docs/repo-ops/public-api-baseline.md:19` 與 `gotchas/test-ci-release.md:137` 都把它寫成「已關閉的流程缺口」——**文件與事實不符比漏標本身更危險**。**2026-08-07 查證**：事實成立且範圍可收窄——那兩處把 `IExcelHelper` 與 `IEvictableCache` 並列為漏標，但 `IEvictableCache` **有進 CHANGELOG**（根檔雙語 :59 + `docs/changelogs/4.16.0` 雙語 :35，附 commit `c45ff350`）。真正缺的只有 `IExcelHelper` 一筆。**待裁決**：回溯補進 `4.16.0` 明細檔，或列入下一版 |
+| **✅ C-5** | ~~`AssemblyVersion` / `FileVersion` 未隨 4.17.0 升版~~ **已完成 2026-08-07（隨 4.18.0 發版）** | `src/Directory.Build.props:5-6` 為 `4.16.0.0`。4.8.0→4.16.0 每版都三個一起升，`a0cd9de6` 只改了 `<Version>`。**已發布的 NuGet 4.17.0 套件內組件 identity 是 4.16.0.0**。建議 4.18.0 修正並於 CHANGELOG 說明，不重發 4.17.0。**已完成**：三欄一起設 4.18.0 / 4.18.0.0，`4.17.0.0` 從未存在也不補發；4.18.0 的〈升級指引〉明說「已發布的 4.17.0 套件內組件標的是 4.16.0.0，兩版在組件 identity 上無從區分」，讓依組件版本判斷的消費端有依據 |
+| **X-2** | `IExcelHelper` 破壞性移除從未進任何 CHANGELOG | 移除於 `206d29ff`（v4.16.0），該 commit message 自己寫「須列入 CHANGELOG breaking change」卻沒執行。而 `docs/repo-ops/public-api-baseline.md:19` 與 `gotchas/test-ci-release.md:137` 都把它寫成「已關閉的流程缺口」——**文件與事實不符比漏標本身更危險**。**2026-08-07 查證**：事實成立且範圍可收窄——那兩處把 `IExcelHelper` 與 `IEvictableCache` 並列為漏標，但 `IEvictableCache` **有進 CHANGELOG**（根檔雙語 :59 + `docs/changelogs/4.16.0` 雙語 :35，附 commit `c45ff350`）。真正缺的只有 `IExcelHelper` 一筆。**維護者裁決（2026-08-07）：補進 4.16.0 明細檔，4.18.0 註明回溯**。**✅ 已完成**：`CHANGELOG` 雙語 4.16.0 段落 + `docs/changelogs/4.16.0` 雙語各補一條（標明為回溯補記），4.18.0 明細檔另立〈回溯補記〉一節——手上已是 4.16.0 的讀者不會回頭重看那版說明。**同時更正體檢對那兩份維運文件的判定**：它們宣稱「已關閉」的是**把關機制**（`PublicApiAnalyzers` 基準檔），那部分屬實，兩個 commit 的 subject 也的確都沒有 `!`；不實的是讓人以為舊帳一併清了。兩份文件改為明說「gate 關閉不等於舊帳清完」，並區分兩案下場不同 —— `IEvictableCache` **有**進 CHANGELOG、`IExcelHelper` 沒有。`gotchas` 那份另加一條通則：**下次引入任何 gate 時，同時列一份「gate 之前已經漏掉什麼」的清單** |
 | **✅ X-3** | `api-method-reference.md` 雙語各漏 2 個 System 方法；`ICacheContainer` 新增成員漏標 | 缺 `GetCustomizeFormLayout` / `GetCustomizeLanguage`（`bbd2fd2a`, 2026-08-01）。v4.17.0 CHANGELOG 列了三個介面新增 `PluginSettings` 成員，漏第四個 `Bee.ObjectCaching.ICacheContainer`（同為 source-breaking） |
 | **✅ C-7** | **（2026-08-07 新發現）`.claude/` 內指向已刪除型別的過期敘述** | 體檢的文件漂移面向掃 `docs/` 與 README，**沒掃 `.claude/`**——但 `rules/` 每個 session 常駐、skills 按需載入，過期內容不是被動漂移，而是**主動誤導後續每一次工作**。四處：`rules/definition.md` 把 runtime 定義載入寫成 `LocalDefineAccess` / `RemoteDefineAccess`（兩者皆已不存在，實為 `CacheDefineAccess` + `FileDefineStorage` / `ClientDefineAccess`）；`rules/testing.md` 的 method-level temp dir **範例程式碼**用 `new LocalDefineAccess(...)`，照抄是 CS0246；`skills/bee-serialization` 踩雷清單第 5 條教 `ISerializableClone`（本輪已移除，且它描述的「序列化管線就地加密 password」機制**從來不存在**）；`skills/bee-framework-review` 的「已知不乾淨」清單把「刻意保留」與「待處理」混在一起——**D-1 誤報的直接來源**。**已全部修正**，並把該清單改為三段式（刻意保留附逐項理由／已清除／尚未複驗）。**下輪應把 `.claude/` 納入文件漂移掃描範圍** |
 | **✅ C-6** | 13 項 ADR 漂移 | 最需處理：ADR-008:70,72（`Bee.Db.Logging` 整個 namespace + 3 型別不存在）、ADR-013:55,69（`SyncExecutor` 已移除、`IApiProvider` 應為 `IJsonRpcProvider`）、ADR-010:155,180,181（`DefinePathInfo` / `LocalDefineAccess` 已刪）、ADR-021/022:9（`GridControl` 基底寫成 `DataGrid`，實為 `ContentControl`——寫的當天就錯）。**需標 Superseded 者 0**；缺的是 ADR-008/009/010/013/021/022 各補一段〈實作演進〉，比照 ADR-017 的範例 |

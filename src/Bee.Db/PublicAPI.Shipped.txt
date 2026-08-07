@@ -129,6 +129,7 @@ Bee.Db.DbParameterSpec.Value.get -> object?
 Bee.Db.DbParameterSpec.Value.set -> void
 Bee.Db.DbParameterSpecCollection
 Bee.Db.DbParameterSpecCollection.DbParameterSpecCollection() -> void
+Bee.Db.DbParameterSpecCollectionExtensions
 Bee.Db.DbTypeMapper
 Bee.Db.Ddl.ICreateTableCommandBuilder
 Bee.Db.Ddl.ICreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
@@ -561,6 +562,9 @@ static Bee.Db.DbCommandResult.ForScalar(object? value) -> Bee.Db.DbCommandResult
 static Bee.Db.DbCommandResult.ForTable(System.Data.DataTable! table) -> Bee.Db.DbCommandResult!
 static Bee.Db.DbConnectionScope.Create(System.Data.Common.DbConnection? externalConnection, System.Data.Common.DbProviderFactory! factory, string! connectionString, System.Action<System.Data.Common.DbConnection!>? onConnectionOpened = null) -> Bee.Db.DbConnectionScope!
 static Bee.Db.DbConnectionScope.CreateAsync(System.Data.Common.DbConnection? externalConnection, System.Data.Common.DbProviderFactory! factory, string! connectionString, System.Action<System.Data.Common.DbConnection!>? onConnectionOpened = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Bee.Db.DbConnectionScope!>!
+static Bee.Db.DbParameterSpecCollectionExtensions.Add(this Bee.Db.DbParameterSpecCollection? collection, Bee.Definition.Database.DbField! field) -> Bee.Db.DbParameterSpec!
+static Bee.Db.DbParameterSpecCollectionExtensions.Add(this Bee.Db.DbParameterSpecCollection? collection, Bee.Definition.Database.DbField! field, System.Data.DataRowVersion sourceVersion) -> Bee.Db.DbParameterSpec!
+static Bee.Db.DbParameterSpecCollectionExtensions.Add(this Bee.Db.DbParameterSpecCollection? collection, string! name, object! value) -> Bee.Db.DbParameterSpec!
 static Bee.Db.DbTypeMapper.Infer(object! value) -> System.Data.DbType?
 static Bee.Db.ILMapper<T>.CacheCount.get -> int
 static Bee.Db.ILMapper<T>.ClearCache() -> void
