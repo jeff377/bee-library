@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Data.Common;
 using Bee.Definition.Database;
 
@@ -10,10 +11,18 @@ namespace Bee.Db.Manager
     /// Registration is explicit and performed by the host application or test fixture; the
     /// framework never auto-registers any provider.
     /// </summary>
+    /// <remarks>
+    /// WARNING: the backing stores must stay concurrent. A host registers everything at startup and
+    /// only reads afterwards, but tests do not: they register and re-register while other test
+    /// classes run <c>Get</c> on the same static registry in parallel, and a plain
+    /// <see cref="Dictionary{TKey, TValue}"/> read during another thread's resize fails in ways that
+    /// look nothing like the cause — an index out of range, a spin that never returns, or a value
+    /// belonging to a different key.
+    /// </remarks>
     public static class DbProviderRegistry
     {
-        private static readonly Dictionary<DatabaseType, DbProviderFactory> _factories = [];
-        private static readonly Dictionary<DatabaseType, Action<DbConnection>> _initializers = [];
+        private static readonly ConcurrentDictionary<DatabaseType, DbProviderFactory> _factories = new();
+        private static readonly ConcurrentDictionary<DatabaseType, Action<DbConnection>> _initializers = new();
 
         /// <summary>
         /// Registers an ADO.NET provider factory for the specified database type.
@@ -48,7 +57,7 @@ namespace Bee.Db.Manager
             if (connectionInitializer != null)
                 _initializers[type] = connectionInitializer;
             else
-                _initializers.Remove(type);
+                _initializers.TryRemove(type, out _);
         }
 
         /// <summary>

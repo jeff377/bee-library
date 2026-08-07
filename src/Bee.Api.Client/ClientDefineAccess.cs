@@ -1,6 +1,6 @@
+using System.Collections.Concurrent;
 using System.Text;
 using Bee.Api.Client.Connectors;
-using Bee.Base.Collections;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
@@ -26,7 +26,7 @@ namespace Bee.Api.Client
     public class ClientDefineAccess
     {
         private readonly SystemApiConnector _connector;
-        private readonly Dictionary<Task<object>> _list;
+        private readonly ConcurrentDictionary<string, Lazy<Task<object>>> _list;
 
         #region 建構函式
 
@@ -37,7 +37,7 @@ namespace Bee.Api.Client
         public ClientDefineAccess(SystemApiConnector connector)
         {
             _connector = connector;
-            _list = [];
+            _list = new(StringComparer.OrdinalIgnoreCase);
         }
 
         #endregion
@@ -54,11 +54,22 @@ namespace Bee.Api.Client
         /// Gets the cache of in-flight or completed definition fetches, keyed by define type and keys.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Caching the <see cref="Task{TResult}"/> rather than the result deduplicates concurrent
         /// misses on the same key: the second caller awaits the same in-flight fetch instead of
         /// issuing a second round-trip.
+        /// </para>
+        /// <para>
+        /// WARNING: both halves of the type matter. The store is concurrent because callers arrive
+        /// from the thread pool — the UI views kick their loads off without awaiting and continue on
+        /// <c>ConfigureAwait(false)</c> continuations — so a plain dictionary would be read while
+        /// another thread resizes it. The <see cref="Lazy{T}"/> is what actually delivers the
+        /// single-in-flight guarantee: <c>GetOrAdd</c> may run its value factory more than once
+        /// under contention and discard the losers, which for a factory that starts a request would
+        /// mean the extra round-trips this cache exists to prevent.
+        /// </para>
         /// </remarks>
-        private Dictionary<Task<object>> List
+        private ConcurrentDictionary<string, Lazy<Task<object>>> List
         {
             get { return _list; }
         }
@@ -88,21 +99,20 @@ namespace Bee.Api.Client
         private async Task<T> GetDefineAsync<T>(DefineType defineType, string[]? keys = null)
         {
             string cacheKey = GetCacheKey(defineType, keys);
-            if (!this.List.TryGetValue(cacheKey, out Task<object>? task))
-            {
-                task = FetchAsync<T>(defineType, keys);
-                this.List[cacheKey] = task;
-            }
+            var entry = this.List.GetOrAdd(
+                cacheKey,
+                _ => new Lazy<Task<object>>(() => FetchAsync<T>(defineType, keys)));
             try
             {
-                return (T)await task.ConfigureAwait(false);
+                return (T)await entry.Value.ConfigureAwait(false);
             }
             catch
             {
-                // A failed fetch must not poison the cache. Evict only when the faulted task is
-                // still the cached one, so a concurrent retry that already replaced it survives.
-                if (this.List.TryGetValue(cacheKey, out Task<object>? cached) && ReferenceEquals(cached, task))
-                    this.List.Remove(cacheKey);
+                // A failed fetch must not poison the cache. The compare-and-remove overload evicts
+                // only when the faulted entry is still the cached one, so a concurrent retry that
+                // already replaced it survives — and unlike a TryGetValue/TryRemove pair, nothing
+                // can slip in between the check and the removal.
+                this.List.TryRemove(new KeyValuePair<string, Lazy<Task<object>>>(cacheKey, entry));
                 throw;
             }
         }
@@ -277,19 +287,16 @@ namespace Bee.Api.Client
         /// </summary>
         private async Task<T?> GetCustomizeAsync<T>(string cacheKey, Func<Task<T?>> fetch) where T : class
         {
-            if (!this.List.TryGetValue(cacheKey, out Task<object>? task))
-            {
-                task = FetchCustomizeAsync(fetch);
-                this.List[cacheKey] = task;
-            }
+            var entry = this.List.GetOrAdd(
+                cacheKey,
+                _ => new Lazy<Task<object>>(() => FetchCustomizeAsync(fetch)));
             try
             {
-                return await task.ConfigureAwait(false) as T;
+                return await entry.Value.ConfigureAwait(false) as T;
             }
             catch
             {
-                if (this.List.TryGetValue(cacheKey, out Task<object>? cached) && ReferenceEquals(cached, task))
-                    this.List.Remove(cacheKey);
+                this.List.TryRemove(new KeyValuePair<string, Lazy<Task<object>>>(cacheKey, entry));
                 throw;
             }
         }

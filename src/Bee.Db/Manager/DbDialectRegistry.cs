@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Bee.Db.Providers;
 using Bee.Definition.Database;
 
@@ -10,9 +11,14 @@ namespace Bee.Db.Manager
     /// Registration is explicit and performed by the host application or test fixture; the framework
     /// never auto-registers any dialect.
     /// </summary>
+    /// <remarks>
+    /// WARNING: the backing store must stay concurrent, for the same reason as
+    /// <see cref="DbProviderRegistry"/> — registration is startup-only in a host but not in the
+    /// test suite, where registering and reading race across parallel test classes.
+    /// </remarks>
     public static class DbDialectRegistry
     {
-        private static readonly Dictionary<DatabaseType, IDialectFactory> _factories = [];
+        private static readonly ConcurrentDictionary<DatabaseType, IDialectFactory> _factories = new();
 
         /// <summary>
         /// Registers a dialect factory for the specified database type.
