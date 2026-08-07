@@ -67,10 +67,11 @@
 ### 採納後的命名空間分配
 
 ```
-Bee.Db                       # 跨切面基礎設施：DbAccess、DbCommandSpec、DbBatchSpec、DbConnectionScope、
-                             # DbFunc、ILMapper、DbCommandKind、DbBatchResult 等執行核心
+Bee.Db                       # 跨切面基礎設施：DbAccess、DbAccessFactory、DbCommandSpec、DbBatchSpec、
+                             # DbConnectionScope、ILMapper、DbCommandKind、DbBatchResult 等執行核心
 Bee.Db.Manager               # IDbConnectionManager、DbProviderRegistry、DbDialectRegistry
-Bee.Db.Logging               # DbAccessLogger、DbLogContext
+Bee.Db.CacheNotify           # 跨行程快取失效通知
+Bee.Db.Storage               # DbDefineStorage（定義落 DB 的儲存實作）
 Bee.Db.Ddl                   # DDL 字串產生契約（3 個 I*CommandBuilder）
 Bee.Db.Dml                   # DML 字串產生 + 構件（含 IFormCommandBuilder、TableSchemaCommandBuilder、JoinType）
 Bee.Db.Schema                # TableSchema 模型 / 比對 / 升級流程 + ITableSchemaProvider

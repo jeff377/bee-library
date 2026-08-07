@@ -69,7 +69,7 @@ ADR-003（採用靜態 Service Locator）的前提已不再適用：
 3. SysInfo.Initialize(settings.CommonConfiguration)
 4. services.AddBeeFramework(settings.BackendConfiguration, paths)
 5. provider = services.BuildServiceProvider()
-6. app.UseBeeFramework()   // ASP.NET only — 目前為 no-op，保留作未來 middleware 註冊點
+6. app.UseBeeFramework()   // ASP.NET only — 啟動期檢查（API key gate 未生效時發警告）
 ```
 
 完整參考見 [docs/development-cookbook.md § Framework Initialization Order](../development-cookbook.md#framework-initialization-order)。

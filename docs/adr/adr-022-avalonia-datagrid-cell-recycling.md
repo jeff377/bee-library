@@ -6,7 +6,7 @@
 
 ## 背景
 
-[ADR-020](adr-020-avalonia-datagrid-binding-strategy.md) 確立 `GridControl`（繼承 `Avalonia.Controls.DataGrid`）的儲存格策略：用 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>`，在 template 內以 code 顯式取值（`row.Row[fieldName]`）而非 Avalonia binding，因為 Avalonia binding engine 不會 dispatch 到 `DataRowView` 的 `ICustomTypeDescriptor` string indexer。
+[ADR-020](adr-020-avalonia-datagrid-binding-strategy.md) 確立 `GridControl`（當時直接繼承 `Avalonia.Controls.DataGrid`，現已重構為 `ContentControl` 組合式、內部 `DataGrid` 以 `InnerGrid` 公開）的儲存格策略：用 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>`，在 template 內以 code 顯式取值（`row.Row[fieldName]`）而非 Avalonia binding，因為 Avalonia binding engine 不會 dispatch 到 `DataRowView` 的 `ICustomTypeDescriptor` string indexer。
 
 ADR-020 當時的範例（含實作）對**唯讀清單純文字 cell**使用 `supportsRecycling: true`：
 

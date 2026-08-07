@@ -23,7 +23,7 @@ Bee.NET 為純 .NET 10 新框架、未發佈、無相容包袱，適合一次完
 
 1. **公開層保留 Bee.NET 自家抽象**
 
-   - `CacheItemPolicy`：保留為 Bee.NET 自家定義，仍只暴露 `AbsoluteExpiration` / `SlidingExpiration` / `ChangeMonitorFilePaths` 三個欄位
+   - `CacheItemPolicy`：保留為 Bee.NET 自家定義，暴露 `AbsoluteExpiration` / `SlidingExpiration` / `ChangeMonitorFilePaths` 三個欄位（ADR-017 的 DB 快取失效後增設 `ChangeNotifyKey`，現為四個）
    - `ICacheProvider`：保留作為儲存抽象，未來仍可換成 Redis、`IDistributedCache` 等實作
    - 不直接暴露 `Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions` 或 `IMemoryCache` 給呼叫端
 

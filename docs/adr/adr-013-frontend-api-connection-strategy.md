@@ -52,7 +52,7 @@ v4.4 加入 Blazor RCL 時若強行讓 Blazor 走 `Bee.UI.Core`,就會踩到上�
 - **適用前端**:桌面端 / native UI(MAUI、WinForms、WPF、Avalonia 等)
 - **連線模型**:
   - `ClientInfo.InitializeAsync(uiService, supportedConnectTypes)` 在 App 啟動時呼叫
-  - `ClientInfo.SetEndpointAsync(endpoint)` 設定 endpoint(Local 路徑或 Remote URL),內部走 `SyncExecutor.Run(() => SystemApiConnector.InitializeAsync())`
+  - `ClientInfo.SetEndpointAsync(endpoint)` 設定 endpoint(Local 路徑或 Remote URL),內部呼叫 `SystemApiConnector.InitializeAsync()`
   - `ClientInfo.ApplyLoginResult(loginResponse)` 套用登入結果
   - 透過 `ClientInfo.SystemApiConnector` / `ClientInfo.CreateFormApiConnector(progId)` 取得 connector
   - 持久化由 `IEndpointStorage`(預設實作:檔案);UI 對話流程由 `IUIViewService` 提供
@@ -66,7 +66,7 @@ v4.4 加入 Blazor RCL 時若強行讓 Blazor 走 `Bee.UI.Core`,就會踩到上�
 - **不消費 `Bee.UI.Core`**:Blazor 環境無檔案 IO / dialog service 概念,共通抽象無對應
 - **適用前端**:Blazor Server、Blazor WASM,以及未來其他 Web framework(`Bee.Web.React.*` 等)
 - **連線模型**:
-  - 透過宿主 `IServiceCollection.AddBeeFramework(...)` 或自訂 DI 設定 `IApiProvider`
+  - 透過宿主 `IServiceCollection.AddBeeFramework(...)` 或自訂 DI 設定 `IJsonRpcProvider`
   - `LocalApiProvider`(in-process,Blazor Server 可選)或 `RemoteApiProvider`(HTTP,WASM 強制)
   - `SystemApiConnector` / `FormApiConnector` 由 DI scope 注入到 Razor component
   - 狀態管理由 component / `CascadingValue` / Razor scoped service 處理

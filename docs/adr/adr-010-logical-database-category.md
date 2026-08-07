@@ -152,7 +152,7 @@ DatabaseItem.Id          ──►  業務程式取連線的入口（執行時�
 
 字串對應無法在編譯期偵測 typo（如 `commen` 而非 `common`）。目前的補救：
 
-- `LocalDefineAccess.SaveFormSchema` 檢查 `FormSchema.CategoryId` **非空**（透過 `TableSchemaGenerator.GetCategoryId`）
+- `CacheDefineAccess.SaveFormSchema` 檢查 `FormSchema.CategoryId` **非空**（透過 `TableSchemaGenerator.GetCategoryId`）
 - **但目前不檢查 CategoryId 是否實際存在於 `DbCategorySettings`**
 
 存在性驗證為已知 trade-off，未來可加入 `DbCategoryValidator` 在落檔前統一驗證，避免錯誤分類 Id 寫入定義檔，導致部署 / 建表階段找不到對應分類。
@@ -177,8 +177,8 @@ DatabaseItem.Id          ──►  業務程式取連線的入口（執行時�
 | `Bee.Definition.Settings.DbCategorySettings` | 集中定義所有邏輯分類；`DbCategorySettings.xml` 為單一真相來源 |
 | `Bee.Definition.Settings.DatabaseItem` | 新增 `CategoryId` 欄位（commit `f4cc1bd7`） |
 | `Bee.Definition.Forms.FormSchema` | 附帶須宣告 `CategoryId`，否則 SaveFormSchema 拒絕 |
-| `Bee.Definition.DefinePathInfo.GetTableSchemaFilePath` | 路徑加入 `categoryId` 區段 |
-| `Bee.ObjectCaching.LocalDefineAccess.SaveFormSchema` | 落檔前檢查 CategoryId 非空 |
+| `Bee.Definition.PathOptions.GetTableSchemaFilePath` | 路徑加入 `categoryId` 區段 |
+| `Bee.ObjectCaching.CacheDefineAccess.SaveFormSchema` | 落檔前檢查 CategoryId 非空 |
 
 ## 後續延伸：執行時路由（DbScope + IRepositoryDatabaseRouter，2026-05-15）
 

@@ -37,6 +37,6 @@
 - `Bee.Definition/Database/TableSchema.cs`：資料庫維度的投影，由 FormSchema 衍生
 - `Bee.Definition/Layouts/FormLayout.cs`：UI 維度的投影
 - `Bee.Db/Providers/SqlServer/SqlFormCommandBuilder.cs`：依據 FormSchema 自動產生 SQL
-- `Bee.Db/Query/SelectCommandBuilder.cs`：組合 SELECT / FROM / WHERE / ORDER BY
+- `Bee.Db/Dml/SelectCommandBuilder.cs`：組合 SELECT / FROM / WHERE / ORDER BY
 - 架構詳細說明於 `docs/architecture-overview.md`
 - 資料存取層的具體模式（FormMap）說明於 `docs/formmap.zh-TW.md`

@@ -6,7 +6,7 @@
 
 ## 背景
 
-[ADR-020](adr-020-avalonia-datagrid-binding-strategy.md) 確立 `GridControl`（繼承 `Avalonia.Controls.DataGrid`）以 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` 呈現 `DataTable` 列。其後為明細表加上 in-cell 編輯：`CellEditingTemplate` 依 `LayoutColumn.ControlType` 提供對應編輯控件（`TextBox` / `CheckBox` / `DatePicker` / `ComboBox`），寫回直接落 `DataRow`。
+[ADR-020](adr-020-avalonia-datagrid-binding-strategy.md) 確立 `GridControl`（當時直接繼承 `Avalonia.Controls.DataGrid`，現已重構為 `ContentControl` 組合式、內部 `DataGrid` 以 `InnerGrid` 公開）以 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` 呈現 `DataTable` 列。其後為明細表加上 in-cell 編輯：`CellEditingTemplate` 依 `LayoutColumn.ControlType` 提供對應編輯控件（`TextBox` / `CheckBox` / `DatePicker` / `ComboBox`），寫回直接落 `DataRow`。
 
 Gallery 實測結果：**文字欄（`TextEdit`）編輯正常，popup 型編輯器全數行為異常**。根因是 Avalonia `DataGrid` 編輯管線的固有設計——
 
