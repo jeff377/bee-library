@@ -4,6 +4,7 @@ using Bee.Business;
 using Bee.Business.Form;
 using Bee.Business.Permission;
 using Bee.Business.Providers;
+using Bee.Business.Security;
 using Bee.Business.Session;
 using Bee.Expressions;
 using Bee.Db;
@@ -27,6 +28,7 @@ using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Bee.Hosting
@@ -242,10 +244,15 @@ namespace Bee.Hosting
             services.AddSingleton<IApiEncryptionKeyProvider>(sp =>
                 CreateApiEncryptionKeyProvider(sp, components.ApiEncryptionKeyProvider, keys));
 
-            // 7. Login attempt tracker — optional service with no default impl. Apps wanting
-            //    brute-force protection register their own impl via
-            //    services.AddSingleton<ILoginAttemptTracker, MyTracker>() after AddBeeFramework.
-            //    Tests inject per-call via TestOverrideServiceProvider.
+            // 7. Login attempt tracker — registered by default.
+            //    WARNING: Login is the one credential-checking method reachable anonymously, so
+            //    leaving this unregistered meant a stock deployment had no account lockout at all
+            //    while a complete implementation sat unused in the box. Defaults are 5 consecutive
+            //    failures and a 15-minute lockout (LoginAttemptTracker.Default* constants).
+            //    Registration is TryAdd, so an app that wants a different policy — or none —
+            //    registers its own ILoginAttemptTracker and that one wins. Tests inject per-call
+            //    via TestOverrideServiceProvider.
+            services.TryAddSingleton<ILoginAttemptTracker, LoginAttemptTracker>();
 
             // 8. Business-object factory + progId → BO type resolver.
             //    ProgramSettingsBoTypeResolver looks up ProgramItem.BusinessObject in

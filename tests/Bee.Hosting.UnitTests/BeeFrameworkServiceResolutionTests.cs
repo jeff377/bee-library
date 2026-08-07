@@ -27,6 +27,73 @@ namespace Bee.Hosting.UnitTests
     public class BeeFrameworkServiceResolutionTests
     {
         [Fact]
+        [DisplayName("AddBeeFramework 應預設註冊 ILoginAttemptTracker")]
+        public void AddBeeFramework_RegistersLoginAttemptTrackerByDefault()
+        {
+            // Login 是唯一可匿名觸達的憑證驗證面；先前此服務無預設實作，
+            // 導致開箱即用的部署完全沒有帳號鎖定。
+            using var sp = BuildProvider(out string tempDir);
+            try
+            {
+                var tracker = sp.GetService<ILoginAttemptTracker>();
+
+                Assert.NotNull(tracker);
+                Assert.IsType<Bee.Business.Security.LoginAttemptTracker>(tracker);
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { /* best effort */ }
+            }
+        }
+
+        [Fact]
+        [DisplayName("host 自訂的 ILoginAttemptTracker 應覆蓋框架預設")]
+        public void AddBeeFramework_HostRegisteredTracker_Wins()
+        {
+            // 註冊採 TryAdd，故 host 於 AddBeeFramework 之前註冊自己的實作時應勝出。
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-fw-tracker-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var services = new ServiceCollection();
+                services.AddSingleton<ILoginAttemptTracker, FakeLoginAttemptTracker>();
+                services.AddBeeFramework(
+                    new BackendConfiguration(),
+                    new PathOptions { DefinePath = tempDir },
+                    autoCreateMasterKey: true);
+
+                using var sp = services.BuildServiceProvider();
+
+                Assert.IsType<FakeLoginAttemptTracker>(sp.GetRequiredService<ILoginAttemptTracker>());
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { /* best effort */ }
+            }
+        }
+
+        private static ServiceProvider BuildProvider(out string tempDir)
+        {
+            tempDir = Path.Combine(Path.GetTempPath(), $"bee-fw-tracker-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            var services = new ServiceCollection();
+            services.AddBeeFramework(
+                new BackendConfiguration(),
+                new PathOptions { DefinePath = tempDir },
+                autoCreateMasterKey: true);
+            return services.BuildServiceProvider();
+        }
+
+        private sealed class FakeLoginAttemptTracker : ILoginAttemptTracker
+        {
+            public bool IsLockedOut(string userId) => false;
+
+            public void RecordFailure(string userId) { }
+
+            public void Reset(string userId) { }
+        }
+
+        [Fact]
         [DisplayName("啟用稽核記錄時 IAuditLogWriteRepository 應可解析")]
         public void AddBeeFramework_AuditLogEnabled_ResolvesWriteRepository()
         {
