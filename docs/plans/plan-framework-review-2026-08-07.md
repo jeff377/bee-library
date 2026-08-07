@@ -346,6 +346,7 @@ skill 誤導，修掉後該回路才斷。
 | **M-1** | 消費端撞名的公開型別（趁 pre-stable 決定） | `Bee.Definition.Identity.IAuthorizationService` 撞 `Microsoft.AspNetCore.Authorization.IAuthorizationService`（對一個以 ASP.NET Core 為主 host 的框架是實質風險，Blazor `_Imports.razor` 常預設帶）；`Bee.Base.Tracing.TraceListener` 撞 `System.Diagnostics.TraceListener`。皆 CS0104。改名日後是破壞性變更，**現在最便宜** |
 | **M-2** | 註解紀律：27 處中文 `#region` + 16 行中文註解 + ~190 處 WHAT-only 註解 | 公開 NuGet repo 應全英文。`#region` 是機械替換（30 分鐘）。XML doc（唯一進消費端 IntelliSense 的層）**100% 英文且零 `<param>` 名稱不符**，故不急 |
 | **T-1** | 新元件未跟上測試慣例（同一模式重複三次） | 2026-07-30 後新增：11 個 ApiKey/DeploymentAdmin wire 型別無 round-trip、`ExpiredSessionCleanupService`（唯一會**刪資料**的背景服務）零覆蓋、`LogApiConnector`（9 個稽核 API 的 client 端）零覆蓋。代表補測試靠自律而非 gate。建議加反射式 guard 對所有 `ApiRequest`/`ApiResponse` 子型別做泛型 round-trip smoke |
+| **✅ N-6** | **（2026-08-07 由 CI 失敗新發現）`[Collection]` 序列化只涵蓋寫入端，讀取端漏網** | 體檢的並行面向把「20 處 `[Collection]` 序列化」列為已處理，但那個計數只看**誰改 static**。實際上**誰讀 static** 一樣會踩——讀取端落在寫入端 try/finally 的還原視窗裡，行為就錯。CI build #31169045420 因此紅在 `JsonRpcSerializationTests`：`ApiServiceOptionsTests` 把 `PayloadCompressor` 換成 `NoCompressionCompressor` 的瞬間，另一類別的 Decode 沒解壓就把 gzip bytes 餵給 MessagePack →`Unexpected msgpack code 31`（0x1F 是 gzip magic 第一個 byte），錯誤訊息完全指向序列化。**已完成**：`Bee.Api.Core.UnitTests`（約 19 個讀取端）與 `Bee.Api.Client.UnitTests`（`SystemApiConnectorTests` / `ClientDefineAccessTests` 兩個讀取端漏網，尚未紅過）改以 `AssemblyInfo.cs` 的 `DisableTestParallelization` 整組序列化——比照 `Bee.ObjectCaching.UnitTests` 既有做法。代價各約 0.25 秒。**未做**：根治仍是把 `ApiServiceOptions` 三元件與 `ApiClientInfo` 的 per-session 狀態 DI 化（後者即 N-2）。**下輪注意**：`rules/testing.md` 那條規則的措辭是「會**碰**同一個 static」，本來就涵蓋讀取；漏掉是套用時只想到寫入 |
 | **T-2** | 4 處名實不符的空洞 round-trip | `DtoSerializationTests.cs:288,304`、`FileDefineStorageTests.cs:126,159`：用**零資料**物件序列化再反序列化，唯一斷言 `Assert.NotNull`，而 `[DisplayName]` 寫「應正確還原」。同檔既有正確寫法並存 |
 | **Z-3** | `ScopeResolver` 繞過 `FilterCondition.In()` 的 `object[]` 具現化不變式 | `src/Bee.Business/Permission/ScopeResolver.cs:142,163` 直接塞 `List<object>`。`In()` 的 `ToArray()` 是刻意的（白名單允許 `object[]` 不允許 `List<object>`）。**現況不上 wire 故不會失敗**，屬潛伏 landmine：一旦有人序列化 scope filter（稽核留痕、快取、AnyCode 轉送）即擲例外 |
 | **A-5** | Domain Core 夾帶約 1,119 行檔案 IO，且被 ILLink descriptor 強制 preserve 到行動端 | `Storage/` + `Defaults.cs` + `PathOptions` + `MasterKeyProvider`。descriptor 對整個組件下 `preserve="all"` → 行動端帶著結構上不可能使用（`.app` bundle 唯讀）的檔案 IO。**不建議本輪拆套件**（破壞性）；性價比最高的第一步是把 descriptor 從 `<type fullname="*">` 收窄為只 root 定義型別階層——無破壞性 |
@@ -405,6 +406,8 @@ skill 誤導，修掉後該回路才斷。
 3. **兩個代理獨立指出同一問題 = 提高信心 + 提高優先序。** 本輪交叉命中：`SerializeDefine`、`GlobalEvents`、`CheckPackageUpdate` 全棧、ApiKey wire 型別零測試、`LogApiConnector` 零覆蓋、`ILLink.Descriptors.xml` 的 plan 引用。
 4. **分數上升不等於問題變少。** 序列化 +1.5 的主因是失敗模式從沉默轉為編譯期擋下；文件 +1.5 中約 1.0 是真實改善、約 0.5 是掃描深度增加後**仍**上升所反映的結構性進步。要求代理明確拆分歸因，否則無法區分。
 5. **新面向首次測量的低分不是退步。** 效能 6.0 / 並行 7.0 是首次有基準，下輪才有回歸意義。
+6. **「已用 `[Collection]` 序列化」不能只清點寫入端。** 並行面向把 20 處 `[Collection]` 列為已處理，但那是「誰改 static」的計數；**讀取端漏網同樣會紅**（N-6，CI build #31169045420 實際踩到）。下輪掃並行時，對每一個被序列化的 static 都要問第二個問題：**除了寫它的類別，還有誰在讀它？**——包含**間接讀取**（本次是 `ApiPayloadTransformer` / `ApiConnector` 在請求路徑上讀，測試類本身完全沒提到那個 static 的名字，靜態 grep 抓不到）。
+7. **測試污染的錯誤訊息會偽裝成 production bug。** 本次是 `MessagePackSerializationException`（看似序列化壞掉），上次記載的是 `NoEncryptionEncryptor is only permitted in debug/development mode`（看似安全設定錯）。判別捷徑：**錯誤指向的元件是否為 process-wide static 可替換的**？是就先查測試污染，不要往該元件本身查。
 
 ---
 
