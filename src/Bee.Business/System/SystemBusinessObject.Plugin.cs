@@ -55,7 +55,7 @@ namespace Bee.Business.System
 
             return new GetCustomizePluginSettingsResult
             {
-                Xml = settings == null ? string.Empty : XmlCodec.Serialize(settings),
+                Xml = settings == null ? string.Empty : SerializeDefine(settings),
             };
         }
 

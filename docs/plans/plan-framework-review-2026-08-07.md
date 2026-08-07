@@ -40,9 +40,9 @@
 
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
-| P0 | 正確性／可利用安全風險 | 5 | 🚧 進行中（S-1 / S-2 / P-1 / C-1 ✅ 已完成 2026-08-07，剩 N-1） |
+| P0 | 正確性／可利用安全風險 | 4 | ✅ 已完成（2026-08-07，S-1 / S-2 / P-1 / C-1） |
 | P1 | 一致性缺口與潛伏 landmine | 9 | 📝 擬定中 |
-| P2 | 結構重構與死碼清理 | 11 | 📝 擬定中 |
+| P2 | 結構重構與死碼清理 | 12 | 📝 擬定中（含由 P0 降級的 N-1） |
 | P3 | 文件漂移 | 8 | 📝 擬定中 |
 | P4 | 觀察／待裁決 | 6 | 📝 擬定中 |
 
@@ -147,33 +147,74 @@
 
 ---
 
-### N-1 `SerializeDefine` 的 clone 守門對所有可遠端取得的定義型別失效
+### ⬇️ N-1 `SerializeDefine` 序列化共用快取實例（**2026-08-07 由 P0 降級為 P2**）
 
-**已人工複驗確認。兩個代理（並行、序列化）獨立指出，信心高。**
+**降級理由**：深入查證後，體檢的原始描述有兩處失準，且三條修法各有實質代價，而實際危害很窄。
+本輪只修其中無爭議的兩項（見文末），本體留待日後處理。
 
-**位置**：`src/Bee.Business/System/SystemBusinessObject.Define.cs:269-275`、`:38-43`
+#### 機制實情（查證後）
 
 ```
-SerializeDefine → 只在 define is ISerializableClone 時 clone
-ISerializableClone 全 repo 唯一實作者 → DatabaseSettings
-DatabaseSettings ∈ IsServerOnlyDefine（:73-76）→ 遠端呼叫直接被拒
-∴ 實際走 wire 的 FormSchema / FormLayout / LanguageResource / TableSchema 全部落在 else 分支
+XmlCodec.Serialize(obj)
+  → SetSerializeState(Serialize)   在「來源物件」上翻旗標，遞迴到所有子集合
+  → getter：if (IsSerializeEmpty(SerializeState, _tables)) return null;
+       空集合在序列化期間回 null → XmlSerializer 省略該元素
+  → SetSerializeState(None)
 ```
 
-`XmlCodec.Serialize`（`src/Bee.Base/Serialization/XmlCodec.cs:22,34`）在**來源物件**上呼叫 `SerializationLifecycle.NotifyBefore/After` → `SetSerializeState`，並經 `KeyCollectionBase.SetSerializeState` 遞迴傳播到所有子集合與 item。
+這套機制的目的是**讓磁碟上的定義檔乾淨**——定義檔會被人工閱讀且需持久化，不該輸出
+`<Tables />` 這類多餘元素。**機制本身是對的，不應移除。**
 
-方法的 XML doc 寫著「so the serialization lifecycle never touches the process-shared cache instance」——**對每一個實際被遠端取用的型別都不成立**。這比沒有防護更危險：review 會被註解說服而跳過。正是 `docs/development-constraints.md` 列為 forbidden、且 `aa843f71` 修過一次的同一 pattern。
+問題只在於 `SerializeDefine` 序列化的是 process-wide 快取實例，序列化視窗內共用物件的旗標被翻起。
 
-**兩代理對嚴重度分歧**（此處採較保守判斷）：
-- 並行代理評 P1：serialize 視窗內空集合 getter 回 `null`，`SelectContextBuilder.cs:198` 與 `FormTable.cs:161,168` 有裸 `!` 解參考，只靠「該集合實務上不會空」擋著；且兩請求同時 serialize 時輸出非決定性。
-- 序列化代理評 P3：認為失敗模式僅為「XML 多出空元素」，反序列化結果等價。
+#### 體檢原始描述的兩處失準
 
-**修法**：`SerializeDefine` 改為**無條件 clone**。前置：`MenuSettings` / `ProgramSettings` / `PluginSettings` / `PermissionModels` / `LanguageResource` / `SystemSettings` / `DbCategorySettings` / `CurrencySettings` / `UnitSettings` 目前無 `Clone()`，需補齊。
-替代路線：把 `IsSerializeEmpty` 的 state 依賴改為 `ShouldSerializeXxx()`（XmlSerializer 原生支援，無需 process 級狀態）——一次消除整類問題。
+1. **「`ISerializableClone` 守門只覆蓋 1/10 型別」的推論方向對，但理由錯。**
+   該介面的 XML doc 宣稱用途是「`BeforeSerialize` 加密敏感欄位」——**那個機制不存在**：
+   `DatabaseSettings` 未實作 `IObjectSerializeProcess`，加解密是
+   `CacheDefineAccess.SaveDatabaseSettings` / `GetDatabaseSettings` 顯式呼叫
+   `DatabaseSettingsCryptor` 完成的。且 `DatabaseItem.Clone()` **原樣複製 `Password`**，
+   而快取實例在 `DecryptInPlace` 後持有**明文**——所以那個 clone 對密碼保護毫無作用，
+   它實際達成的就只有「不翻共用實例的旗標」。
+2. **這套狀態機制不只服務定義檔。** `JsonRpcRequest` / `JsonRpcResponse` / `ApiPayload` /
+   `ApiMessageBase` 都實作 `SetSerializeState` 並向下傳播（`JsonRpcRequest → Params → Value`），
+   信封型別自己也靠它省略空元素。比體檢假設的更承重。
 
-順帶：`src/Bee.Business/System/SystemBusinessObject.Plugin.cs:58` 連守門都沒走，直接 `XmlCodec.Serialize(settings)`。
+#### 三條修法與各自的阻礙
 
----
+| 路線 | 做法 | 阻礙 |
+|------|------|------|
+| A. 無條件 clone | `SerializeDefine` 一律複製 | 需為 10 個型別新寫 `Clone()`（300–400 行）；為保護一個暫態旗標深拷貝整棵樹，比例失衡；且不治根因——其他地方序列化快取實例仍會污染 |
+| B. 改 `ShouldSerializeXxx()` | 移除 state 依賴 | **不可行**：只有 XmlSerializer 認得，而這 24 個 getter 三種格式都在用，改掉是 JSON/MessagePack 的 wire 行為變更 |
+| C. wire 路徑不觸發 lifecycle | 加一個不設 state 的序列化進入點 | wire XML 會多出空元素。定義檔要給人看，此路線只在「wire 絕不落檔」的前提下成立——client 端確實是純記憶體快取，但這仍是行為變更 |
+| D. 改執行緒範圍狀態 | `[ThreadStatic]` 取代物件狀態 | 序列化全同步故技術可行，但信封型別也在用這套傳播，牽動面比預期大；且 `IObjectSerialize.SetSerializeState` 是公開 API |
+
+#### 實際危害（重新評估：接近 P3）
+
+- 序列化視窗（微秒級）內，另一執行緒讀到**空集合** getter 會拿到 `null`。
+  `IsSerializeEmpty` 只在集合為空時才回 null，而 request path 的讀取端實測都有 null guard；
+  唯 `src/Bee.Db/Dml/SelectContextBuilder.cs:198` 與 `src/Bee.Definition/Forms/FormTable.cs:161,168`
+  是裸 `!` 解參考，靠「該集合實務上不會空」擋著。
+- 兩請求同時序列化同一實例 → 輸出中空元素是否省略變成非決定性。**反序列化結果等價**，不影響正確性。
+
+> 兩個代理對嚴重度評 P1 vs P3。查證後採**接近 P3** 的判斷。
+
+#### 本輪已處理的兩項（無爭議部分）
+
+- ✅ `ISerializableClone` 的 XML doc 改寫為實情：說明它實際守的是序列化 lifecycle，
+  並加 WARNING 標明**它不保護機密**（明文密碼會被原樣複製），避免再次誤導 review。
+- ✅ `SystemBusinessObject.Plugin.cs:58` 直接 `XmlCodec.Serialize(cached)`、連現有守門都沒走，
+  改為走 `SerializeDefine`。純一致性修正。
+
+#### 待日後決定
+
+若要真正處理，建議先釐清一個前提：**`SerializeState` 當初設計時，是否本就假設「快取實例不會被並行序列化」？**
+若是刻意前提，則本項應改為「在 `IObjectSerialize` 的 doc 明示此限制」而非改機制。
+
+**相關**：定義檔機密的儲存策略（現況為 master key 加密至檔案 vs 改用 `${ENV_VAR}` 參照）
+是另一個獨立議題，已確認機密數量隨 `DatabaseServer` 而非 `DatabaseItem` 擴張（多公司部署下
+仍只有 1–3 組），環境變數參照可行性高。應另立 ADR，不在本體檢範圍。
+
 
 ## P1 — 一致性缺口與潛伏 landmine
 
