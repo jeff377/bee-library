@@ -168,16 +168,9 @@ Bee.Base.Serialization.IObjectSerializeEmpty.IsSerializeEmpty.get -> bool
 Bee.Base.Serialization.IObjectSerializeFile
 Bee.Base.Serialization.IObjectSerializeFile.ObjectFilePath.get -> string!
 Bee.Base.Serialization.IObjectSerializeFile.SetObjectFilePath(string! filePath) -> void
-Bee.Base.Serialization.IObjectSerializeProcess
-Bee.Base.Serialization.IObjectSerializeProcess.AfterDeserialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
-Bee.Base.Serialization.IObjectSerializeProcess.AfterSerialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
-Bee.Base.Serialization.IObjectSerializeProcess.BeforeSerialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
 Bee.Base.Serialization.JsonCodec
 Bee.Base.Serialization.SerializationExtensions
 Bee.Base.Serialization.SerializationUtilities
-Bee.Base.Serialization.SerializeFormat
-Bee.Base.Serialization.SerializeFormat.Json = 1 -> Bee.Base.Serialization.SerializeFormat
-Bee.Base.Serialization.SerializeFormat.Xml = 0 -> Bee.Base.Serialization.SerializeFormat
 Bee.Base.Serialization.SerializeState
 Bee.Base.Serialization.SerializeState.None = 0 -> Bee.Base.Serialization.SerializeState
 Bee.Base.Serialization.SerializeState.Serialize = 1 -> Bee.Base.Serialization.SerializeState

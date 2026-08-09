@@ -6,7 +6,7 @@ namespace Bee.Base.Serialization
     /// <summary>
     /// JSON serialization codec. Round-trips objects via <see cref="JsonSerializer"/>
     /// with framework defaults (camelCase) and dispatches lifecycle hooks for
-    /// objects implementing <see cref="IObjectSerialize"/> / <see cref="IObjectSerializeProcess"/>.
+    /// objects implementing <see cref="IObjectSerialize"/>.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -105,14 +105,14 @@ namespace Bee.Base.Serialization
         private static string SerializeCore(object value, bool ignoreDefaultValue, bool ignoreNullValue, bool writeIndented)
         {
             // Pre-serialization operations
-            SerializationLifecycle.NotifyBefore(SerializeFormat.Json, value);
+            SerializationLifecycle.NotifyBefore(value);
 
             // Serialize to JSON string
             var options = GetJsonSerializerOptions(ignoreDefaultValue, ignoreNullValue, writeIndented);
             string json = JsonSerializer.Serialize(value, value?.GetType() ?? typeof(object), options);
 
             // Post-serialization operations
-            SerializationLifecycle.NotifyAfter(SerializeFormat.Json, value);
+            SerializationLifecycle.NotifyAfter(value);
             return json;
         }
 
@@ -126,10 +126,7 @@ namespace Bee.Base.Serialization
         {
             // Deserialize the JSON string
             var options = GetJsonSerializerOptions(true, false, writeIndented: false);
-            var value = JsonSerializer.Deserialize<T>(json, options);
-            // Post-deserialization operations
-            SerializationLifecycle.NotifyAfterDeserialize(SerializeFormat.Json, value);
-            return value;
+            return JsonSerializer.Deserialize<T>(json, options);
         }
 
         /// <summary>

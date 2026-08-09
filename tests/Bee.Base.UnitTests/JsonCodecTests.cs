@@ -5,22 +5,25 @@ namespace Bee.Base.UnitTests
 {
     public class JsonCodecTests : SerializationTestBase
     {
-        private static readonly string[] s_jsonSerializeEvents = { "Before:Json", "After:Json" };
-        private static readonly string[] s_jsonDeserializeEvents = { "AfterDeser:Json" };
+        private static readonly SerializeState[] s_expectedStateChanges =
+            { SerializeState.Serialize, SerializeState.None };
 
         [Fact]
-        [DisplayName("JSON 序列化應依序觸發 Before/After Serialize 與 AfterDeserialize 回呼")]
-        public void Json_InvokesProcessCallbacksInOrder()
+        [DisplayName("JSON 序列化期間應翻起 SerializeState,結束後歸零")]
+        public void Json_Serialize_RaisesAndClearsSerializeState()
         {
             var source = new SerializationTestPayload { Name = "Carol", Age = 40 };
 
             string json = JsonCodec.Serialize(source);
-            Assert.Equal(s_jsonSerializeEvents, source.Events);
 
+            Assert.Equal(s_expectedStateChanges, source.StateChanges);
+            Assert.Equal(SerializeState.None, source.SerializeState);
+
+            // Deserialization must not touch the state, so `IsSerializeEmpty` keeps every value.
             var restored = JsonCodec.Deserialize<SerializationTestPayload>(json)!;
             Assert.Equal("Carol", restored.Name);
             Assert.Equal(40, restored.Age);
-            Assert.Equal(s_jsonDeserializeEvents, restored.Events);
+            Assert.Empty(restored.StateChanges);
         }
 
         [Fact]

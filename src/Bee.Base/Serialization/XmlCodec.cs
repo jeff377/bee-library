@@ -4,8 +4,7 @@ namespace Bee.Base.Serialization
 {
     /// <summary>
     /// XML serialization codec. Round-trips objects via <see cref="System.Xml.Serialization.XmlSerializer"/>
-    /// and dispatches lifecycle hooks for objects implementing <see cref="IObjectSerialize"/> /
-    /// <see cref="IObjectSerializeProcess"/>.
+    /// and dispatches lifecycle hooks for objects implementing <see cref="IObjectSerialize"/>.
     /// </summary>
     public static class XmlCodec
     {
@@ -19,7 +18,7 @@ namespace Bee.Base.Serialization
                 return string.Empty;
 
             // Pre-serialization operations
-            SerializationLifecycle.NotifyBefore(SerializeFormat.Xml, value);
+            SerializationLifecycle.NotifyBefore(value);
 
             // Serialize and write to string
             string xml = string.Empty;
@@ -31,7 +30,7 @@ namespace Bee.Base.Serialization
             }
 
             // Post-serialization operations
-            SerializationLifecycle.NotifyAfter(SerializeFormat.Xml, value);
+            SerializationLifecycle.NotifyAfter(value);
             return xml;
         }
 
@@ -64,18 +63,13 @@ namespace Bee.Base.Serialization
             if (StringUtilities.IsEmpty(xml))
                 return default;
 
-            object? value;
             var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null };
             using (StringReader stringReader = new StringReader(xml))
             using (XmlReader reader = XmlReader.Create(stringReader, settings))
             {
                 var serializer = XmlSerializerCache.Get(type);
-                value = serializer.Deserialize(reader);
+                return serializer.Deserialize(reader);
             }
-
-            // Post-deserialization operations
-            SerializationLifecycle.NotifyAfterDeserialize(SerializeFormat.Xml, value);
-            return value;
         }
 
         /// <summary>

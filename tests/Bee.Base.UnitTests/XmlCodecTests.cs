@@ -5,8 +5,8 @@ namespace Bee.Base.UnitTests
 {
     public class XmlCodecTests : SerializationTestBase
     {
-        private static readonly string[] s_xmlSerializeEvents = { "Before:Xml", "After:Xml" };
-        private static readonly string[] s_xmlDeserializeEvents = { "AfterDeser:Xml" };
+        private static readonly SerializeState[] s_expectedStateChanges =
+            { SerializeState.Serialize, SerializeState.None };
 
         [Fact]
         [DisplayName("Serialize 與 Deserialize 應可完整 round-trip")]
@@ -38,17 +38,20 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("XML 序列化應依序觸發 Before/After Serialize 與 AfterDeserialize 回呼")]
-        public void Xml_InvokesProcessCallbacksInOrder()
+        [DisplayName("XML 序列化期間應翻起 SerializeState,結束後歸零")]
+        public void Xml_Serialize_RaisesAndClearsSerializeState()
         {
             var source = new SerializationTestPayload { Name = "Bob", Age = 20 };
 
             string xml = XmlCodec.Serialize(source);
-            Assert.Equal(s_xmlSerializeEvents, source.Events);
+
+            Assert.Equal(s_expectedStateChanges, source.StateChanges);
             Assert.Equal(SerializeState.None, source.SerializeState);
 
+            // Deserialization must not touch the state, so `IsSerializeEmpty` keeps every value.
             var restored = XmlCodec.Deserialize<SerializationTestPayload>(xml)!;
-            Assert.Equal(s_xmlDeserializeEvents, restored.Events);
+            Assert.Empty(restored.StateChanges);
+            Assert.Equal(SerializeState.None, restored.SerializeState);
         }
 
         [Fact]

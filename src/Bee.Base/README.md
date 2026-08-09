@@ -76,7 +76,7 @@
 
 - **Static utility classes** -- `ValueUtilities`, `StringUtilities`, `DateTimeExtensions` expose functionality as static methods; no instance state.
 - **Constant-time comparison** -- `CryptographicOperations.FixedTimeEquals` is used for HMAC / hash validation to prevent timing attacks.
-- **Interface-based extensibility** -- serialization is abstracted via `IObjectSerialize` and `IObjectSerializeProcess`.
+- **Interface-based extensibility** -- serialization is abstracted via `IObjectSerialize`.
 - **Nullable reference types** enabled (`<Nullable>enable</Nullable>`).
 
 ## Directory Structure

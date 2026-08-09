@@ -2,36 +2,24 @@ namespace Bee.Base.Serialization
 {
     /// <summary>
     /// Shared lifecycle hooks invoked by <see cref="XmlCodec"/> and <see cref="JsonCodec"/>
-    /// when a value implements <see cref="IObjectSerialize"/> or <see cref="IObjectSerializeProcess"/>.
+    /// when a value implements <see cref="IObjectSerialize"/>.
     /// </summary>
     internal static class SerializationLifecycle
     {
         /// <summary>
-        /// Notifies pre-serialization: invokes <see cref="IObjectSerializeProcess.BeforeSerialize"/>
-        /// and marks state as <see cref="SerializeState.Serialize"/>.
+        /// Marks the value's state as <see cref="SerializeState.Serialize"/> before serialization.
         /// </summary>
-        public static void NotifyBefore(SerializeFormat format, object? value)
+        public static void NotifyBefore(object? value)
         {
-            if (value is IObjectSerializeProcess sp) { sp.BeforeSerialize(format); }
             if (value is IObjectSerialize os) { os.SetSerializeState(SerializeState.Serialize); }
         }
 
         /// <summary>
-        /// Notifies post-serialization: clears the serialize state and invokes
-        /// <see cref="IObjectSerializeProcess.AfterSerialize"/>.
+        /// Clears the value's serialize state after serialization.
         /// </summary>
-        public static void NotifyAfter(SerializeFormat format, object? value)
+        public static void NotifyAfter(object? value)
         {
             if (value is IObjectSerialize os) { os.SetSerializeState(SerializeState.None); }
-            if (value is IObjectSerializeProcess sp) { sp.AfterSerialize(format); }
-        }
-
-        /// <summary>
-        /// Notifies post-deserialization: invokes <see cref="IObjectSerializeProcess.AfterDeserialize"/>.
-        /// </summary>
-        public static void NotifyAfterDeserialize(SerializeFormat format, object? value)
-        {
-            if (value is IObjectSerializeProcess sp) { sp.AfterDeserialize(format); }
         }
     }
 }

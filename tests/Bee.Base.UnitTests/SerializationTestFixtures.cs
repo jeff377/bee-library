@@ -39,9 +39,9 @@ namespace Bee.Base.UnitTests
     }
 
     /// <summary>
-    /// Test payload used to verify serialization round-trips and lifecycle callbacks.
+    /// Test payload used to verify serialization round-trips and the serialize-state lifecycle.
     /// </summary>
-    public class SerializationTestPayload : IObjectSerializeBase, IObjectSerialize, IObjectSerializeFile, IObjectSerializeProcess
+    public class SerializationTestPayload : IObjectSerializeBase, IObjectSerialize, IObjectSerializeFile
     {
         public string Name { get; set; } = string.Empty;
         public int Age { get; set; }
@@ -49,18 +49,23 @@ namespace Bee.Base.UnitTests
         private SerializeState _state = SerializeState.None;
         [XmlIgnore, JsonIgnore]
         public SerializeState SerializeState => _state;
-        public void SetSerializeState(SerializeState serializeState) => _state = serializeState;
+
+        public void SetSerializeState(SerializeState serializeState)
+        {
+            _state = serializeState;
+            StateChanges.Add(serializeState);
+        }
 
         private string _objectFilePath = string.Empty;
         [XmlIgnore, JsonIgnore]
         public string ObjectFilePath => _objectFilePath;
         public void SetObjectFilePath(string filePath) => _objectFilePath = filePath;
 
+        /// <summary>
+        /// Every state transition in order, so tests can assert the codec raised the flag
+        /// during serialization and cleared it afterwards.
+        /// </summary>
         [XmlIgnore, JsonIgnore]
-        public List<string> Events { get; } = [];
-
-        public void BeforeSerialize(SerializeFormat serializeFormat) => Events.Add($"Before:{serializeFormat}");
-        public void AfterSerialize(SerializeFormat serializeFormat) => Events.Add($"After:{serializeFormat}");
-        public void AfterDeserialize(SerializeFormat serializeFormat) => Events.Add($"AfterDeser:{serializeFormat}");
+        public List<SerializeState> StateChanges { get; } = [];
     }
 }
