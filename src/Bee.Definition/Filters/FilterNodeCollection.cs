@@ -1,11 +1,12 @@
-﻿using Bee.Definition.Collections;
+using Bee.Base.Collections;
+
 
 namespace Bee.Definition.Filters
 {
     /// <summary>
     /// A collection of filter nodes.
     /// </summary>
-    public class FilterNodeCollection : MessagePackCollectionBase<FilterNode>
+    public class FilterNodeCollection : CollectionBase<FilterNode>
     {
         /// <summary>
         /// Initializes a new instance of <see cref="FilterNodeCollection"/>.

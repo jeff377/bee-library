@@ -1,5 +1,5 @@
+using Bee.Base.Collections;
 using System.ComponentModel;
-using Bee.Definition.Collections;
 using Bee.Definition.Settings;
 
 namespace Bee.Definition
@@ -11,12 +11,12 @@ namespace Bee.Definition
     /// <c>CompanyInfo</c> over the MessagePack wire.
     /// </summary>
     /// <remarks>
-    /// Uses <see cref="MessagePackCollectionBase{T}"/> so the whitelist serializes cleanly as part of
+    /// Uses <see cref="CollectionBase{T}"/> so the whitelist serializes cleanly as part of
     /// <c>CompanyInfo</c>; <c>MessagePackCodec</c> registers
     /// <c>CollectionBaseFormatter&lt;CompanyAllowedCurrencies, AllowedCurrencyItem&gt;</c>.
     /// </remarks>
     [Description("Company allowed-currency whitelist.")]
-    public class CompanyAllowedCurrencies : MessagePackCollectionBase<AllowedCurrencyItem>
+    public class CompanyAllowedCurrencies : CollectionBase<AllowedCurrencyItem>
     {
         /// <summary>
         /// Initializes a new instance of <see cref="CompanyAllowedCurrencies"/>.

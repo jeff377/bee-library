@@ -1,4 +1,4 @@
-﻿using Bee.Definition.Collections;
+using Bee.Base.Collections;
 using System.Collections.Concurrent;
 using System.Data;
 using MessagePack;
@@ -19,7 +19,7 @@ namespace Bee.Api.Core.MessagePack
     ///     <c>ContractlessStandardResolver</c>, which already claims virtually every class type.
     ///   </description></item>
     ///   <item><description>
-    ///     Every <c>MessagePackCollectionBase&lt;&gt;</c> collection in use is explicitly registered as a
+    ///     Every <c>CollectionBase&lt;&gt;</c> collection in use is explicitly registered as a
     ///     <c>CollectionBaseFormatter</c> in that same options object, and explicit formatters win over
     ///     resolvers regardless.
     ///   </description></item>
@@ -29,7 +29,7 @@ namespace Bee.Api.Core.MessagePack
     /// every contractless type (<c>FormSchema</c>, <c>FormLayout</c>, and friends) would fail. Making
     /// this a real safety net would require the fallback to return null and let the composite resolver
     /// continue, plus a recursive base-type check (the test below only matches a direct base type).
-    /// Until then: a new <c>MessagePackCollectionBase&lt;&gt;</c> collection MUST be registered explicitly
+    /// Until then: a new <c>CollectionBase&lt;&gt;</c> collection MUST be registered explicitly
     /// in <c>MessagePackCodec</c>. Verified against MessagePack 3.1.7, the failure from omitting it is
     /// <b>not</b> a silently empty collection — serialization writes the elements correctly and
     /// <b>deserialization</b> throws <c>MessagePackSerializationException</c>, so it surfaces only when
@@ -67,7 +67,7 @@ namespace Bee.Api.Core.MessagePack
                 // Check whether the type inherits from TCollectionBase<T>
                 if (type.IsClass && !type.IsAbstract && type.BaseType != null &&
                     type.BaseType.IsGenericType &&
-                    type.BaseType.GetGenericTypeDefinition() == typeof(MessagePackCollectionBase<>))
+                    type.BaseType.GetGenericTypeDefinition() == typeof(CollectionBase<>))
                 {
                     var elementType = type.BaseType.GetGenericArguments()[0];
 

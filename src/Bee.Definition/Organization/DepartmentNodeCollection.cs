@@ -1,12 +1,12 @@
-using Bee.Definition.Collections;
+using Bee.Base.Collections;
 
 namespace Bee.Definition.Organization
 {
     /// <summary>
     /// A collection of <see cref="DepartmentNode"/>. Tri-modal serialisable (XML / JSON /
-    /// MessagePack) via <see cref="MessagePackCollectionBase{T}"/>.
+    /// MessagePack) via <see cref="CollectionBase{T}"/>.
     /// </summary>
-    public class DepartmentNodeCollection : MessagePackCollectionBase<DepartmentNode>
+    public class DepartmentNodeCollection : CollectionBase<DepartmentNode>
     {
         /// <summary>
         /// Initializes a new empty <see cref="DepartmentNodeCollection"/>.

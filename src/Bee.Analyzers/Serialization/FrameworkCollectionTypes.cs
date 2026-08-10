@@ -10,8 +10,8 @@ namespace Bee.Analyzers.Serialization
     {
         private static readonly string[] s_metadataNames =
         {
-            SerializationAttributeNames.MessagePackCollectionBase,
-            SerializationAttributeNames.MessagePackKeyCollectionBase,
+            SerializationAttributeNames.CollectionBase,
+            SerializationAttributeNames.KeyCollectionBase,
             SerializationAttributeNames.KeyCollectionBase,
             SerializationAttributeNames.CollectionBase,
         };

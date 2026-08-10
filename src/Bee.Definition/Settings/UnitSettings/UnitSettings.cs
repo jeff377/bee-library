@@ -1,6 +1,6 @@
+using Bee.Base.Collections;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Definition.Collections;
 
 namespace Bee.Definition.Settings
 {
@@ -12,14 +12,14 @@ namespace Bee.Definition.Settings
     /// client so the UI can resolve quantity/weight decimals at runtime.
     /// </summary>
     /// <remarks>
-    /// Parallels <see cref="CurrencySettings"/>. Uses <see cref="MessagePackCollectionBase{T}"/> so the
+    /// Parallels <see cref="CurrencySettings"/>. Uses <see cref="CollectionBase{T}"/> so the
     /// table travels over the MessagePack wire cleanly; <c>MessagePackCodec</c> registers
     /// <c>CollectionBaseFormatter&lt;UnitSettings, UnitItem&gt;</c>. Keyed-lookup semantics are provided
     /// by <see cref="Find"/>.
     /// </remarks>
     [Description("System-level unit-of-measure master.")]
     [XmlRoot("UnitSettings")]
-    public class UnitSettings : MessagePackCollectionBase<UnitItem>
+    public class UnitSettings : CollectionBase<UnitItem>
     {
         /// <summary>The fallback decimals used when a unit code is not found.</summary>
         public const int FallbackDecimals = 0;

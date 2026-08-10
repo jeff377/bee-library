@@ -40,42 +40,6 @@ Bee.Definition.Collections.ListItemCollection
 Bee.Definition.Collections.ListItemCollection.FromTable(System.Data.DataTable! table, string! valueField, string! textField) -> void
 Bee.Definition.Collections.ListItemCollection.ListItemCollection() -> void
 Bee.Definition.Collections.ListItemCollectionExtensions
-Bee.Definition.Collections.MessagePackCollectionBase<T>
-Bee.Definition.Collections.MessagePackCollectionBase<T>.Insert(int index, Bee.Base.Collections.ICollectionItem! value) -> void
-Bee.Definition.Collections.MessagePackCollectionBase<T>.MessagePackCollectionBase() -> void
-Bee.Definition.Collections.MessagePackCollectionBase<T>.MessagePackCollectionBase(object! owner) -> void
-Bee.Definition.Collections.MessagePackCollectionBase<T>.Owner.get -> object?
-Bee.Definition.Collections.MessagePackCollectionBase<T>.Remove(Bee.Base.Collections.ICollectionItem! value) -> void
-Bee.Definition.Collections.MessagePackCollectionBase<T>.SerializeState.get -> Bee.Base.Serialization.SerializeState
-Bee.Definition.Collections.MessagePackCollectionBase<T>.SetOwner(object! owner) -> void
-Bee.Definition.Collections.MessagePackCollectionBase<T>.Tag.get -> object?
-Bee.Definition.Collections.MessagePackCollectionBase<T>.Tag.set -> void
-Bee.Definition.Collections.MessagePackCollectionItem
-Bee.Definition.Collections.MessagePackCollectionItem.Collection.get -> Bee.Base.Collections.ICollectionBase?
-Bee.Definition.Collections.MessagePackCollectionItem.MessagePackCollectionItem() -> void
-Bee.Definition.Collections.MessagePackCollectionItem.Remove() -> void
-Bee.Definition.Collections.MessagePackCollectionItem.SerializeState.get -> Bee.Base.Serialization.SerializeState
-Bee.Definition.Collections.MessagePackCollectionItem.SetCollection(Bee.Base.Collections.ICollectionBase? collection) -> void
-Bee.Definition.Collections.MessagePackCollectionItem.Tag.get -> object?
-Bee.Definition.Collections.MessagePackCollectionItem.Tag.set -> void
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.ChangeItemKey(string! key, Bee.Base.Collections.IKeyCollectionItem! value) -> void
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Insert(int index, Bee.Base.Collections.IKeyCollectionItem! value) -> void
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.MessagePackKeyCollectionBase() -> void
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.MessagePackKeyCollectionBase(object! owner) -> void
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Owner.get -> object?
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Remove(Bee.Base.Collections.IKeyCollectionItem! value) -> void
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.SerializeState.get -> Bee.Base.Serialization.SerializeState
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Tag.get -> object?
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Tag.set -> void
-Bee.Definition.Collections.MessagePackKeyCollectionItem
-Bee.Definition.Collections.MessagePackKeyCollectionItem.Collection.get -> Bee.Base.Collections.IKeyCollectionBase?
-Bee.Definition.Collections.MessagePackKeyCollectionItem.MessagePackKeyCollectionItem() -> void
-Bee.Definition.Collections.MessagePackKeyCollectionItem.Remove() -> void
-Bee.Definition.Collections.MessagePackKeyCollectionItem.SerializeState.get -> Bee.Base.Serialization.SerializeState
-Bee.Definition.Collections.MessagePackKeyCollectionItem.SetCollection(Bee.Base.Collections.IKeyCollectionBase? collection) -> void
-Bee.Definition.Collections.MessagePackKeyCollectionItem.Tag.get -> object?
-Bee.Definition.Collections.MessagePackKeyCollectionItem.Tag.set -> void
 Bee.Definition.Collections.Parameter
 Bee.Definition.Collections.Parameter.Name.get -> string!
 Bee.Definition.Collections.Parameter.Name.set -> void
@@ -1827,11 +1791,6 @@ const Bee.Definition.SystemActions.SetApiKeyEnabled = "SetApiKeyEnabled" -> stri
 const Bee.Definition.SystemActions.SetApiKeyExpiry = "SetApiKeyExpiry" -> string!
 const Bee.Definition.SystemActions.SetDeploymentAdmin = "SetDeploymentAdmin" -> string!
 override Bee.Definition.Collections.ListItem.ToString() -> string!
-override Bee.Definition.Collections.MessagePackCollectionBase<T>.InsertItem(int index, T! item) -> void
-override Bee.Definition.Collections.MessagePackCollectionBase<T>.RemoveItem(int index) -> void
-override Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.GetKeyForItem(T! item) -> string!
-override Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.InsertItem(int index, T! item) -> void
-override Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.RemoveItem(int index) -> void
 override Bee.Definition.Collections.Parameter.ToString() -> string!
 override Bee.Definition.Collections.Property.ToString() -> string!
 override Bee.Definition.CustomizeOnlyPathOptions.GetFormLayoutFilePath(string! layoutId) -> string!
@@ -2025,12 +1984,6 @@ static Bee.Definition.Storage.DefineChangeSource.operator ==(Bee.Definition.Stor
 static Bee.Definition.SystemSettingsLoader.Load(Bee.Definition.PathOptions! paths) -> Bee.Definition.Settings.SystemSettings!
 static Bee.Definition.SystemSettingsLoader.Load(string! filePath) -> Bee.Definition.Settings.SystemSettings!
 static readonly Bee.Definition.Security.ApiKeyValidationResult.NotChecked -> Bee.Definition.Security.ApiKeyValidationResult!
-virtual Bee.Definition.Collections.MessagePackCollectionBase<T>.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
-virtual Bee.Definition.Collections.MessagePackCollectionItem.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
-virtual Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
-virtual Bee.Definition.Collections.MessagePackKeyCollectionItem.Key.get -> string!
-virtual Bee.Definition.Collections.MessagePackKeyCollectionItem.Key.set -> void
-virtual Bee.Definition.Collections.MessagePackKeyCollectionItem.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
 virtual Bee.Definition.Logging.AuditEntry.AddCommonColumns(System.Collections.Generic.IList<Bee.Definition.Logging.AuditColumn>! columns) -> void
 virtual Bee.Definition.PathOptions.GetFormLayoutFilePath(string! layoutId) -> string!
 virtual Bee.Definition.PathOptions.GetLanguageFilePath(string! lang, string! ns) -> string!

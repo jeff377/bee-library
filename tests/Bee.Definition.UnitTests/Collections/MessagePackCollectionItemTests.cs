@@ -6,14 +6,14 @@ using Bee.Definition.Sorting;
 namespace Bee.Definition.UnitTests.Collections
 {
     /// <summary>
-    /// MessagePackCollectionItem / MessagePackKeyCollectionItem 基底行為測試。
+    /// CollectionItem / KeyCollectionItem 基底行為測試。
     /// 使用 <see cref="SortField"/>/<see cref="SortFieldCollection"/>（非 keyed）
     /// 與 <see cref="Parameter"/>/<see cref="ParameterCollection"/>（keyed）作為受測樣本。
     /// </summary>
     public class MessagePackCollectionItemTests
     {
         [Fact]
-        [DisplayName("預設建構之 MessagePackCollectionItem，SerializeState 為 None、Tag 為 null、Collection 為 null")]
+        [DisplayName("預設建構之 CollectionItem，SerializeState 為 None、Tag 為 null、Collection 為 null")]
         public void DefaultState_IsExpected()
         {
             var item = new SortField("Id", SortDirection.Asc);
@@ -85,7 +85,7 @@ namespace Bee.Definition.UnitTests.Collections
     }
 
     /// <summary>
-    /// MessagePackKeyCollectionItem 專屬行為測試（Key 設定、Remove、SerializeState）。
+    /// KeyCollectionItem 專屬行為測試（Key 設定、Remove、SerializeState）。
     /// </summary>
     public class MessagePackKeyCollectionItemTests
     {

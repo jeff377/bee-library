@@ -1,6 +1,6 @@
+using Bee.Base.Collections;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Definition.Collections;
 
 namespace Bee.Definition
 {
@@ -9,7 +9,7 @@ namespace Bee.Definition
     /// Held in <see cref="CompanyNumberFormats"/>.
     /// </summary>
     [Description("Company number-format override item.")]
-    public sealed class NumberFormatItem : MessagePackCollectionItem
+    public sealed class NumberFormatItem : CollectionItem
     {
         /// <summary>
         /// Initializes a new instance of <see cref="NumberFormatItem"/>.

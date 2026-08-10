@@ -8,7 +8,7 @@ namespace Bee.Api.Core.UnitTests.MessagePack
 {
     /// <summary>
     /// FormatterResolver.GetFormatter 直接測試：
-    /// 驗證 DataSet/DataTable 專屬 formatter、MessagePackCollectionBase 子類別的
+    /// 驗證 DataSet/DataTable 專屬 formatter、CollectionBase 子類別的
     /// 動態 formatter 建立、非泛型型別的 StandardResolver fallback，
     /// 並確認同一型別重複取得為同一 cached instance。
     /// </summary>
@@ -35,10 +35,10 @@ namespace Bee.Api.Core.UnitTests.MessagePack
         }
 
         [Fact]
-        [DisplayName("GetFormatter<MessagePackCollectionBase 子類> 應回傳 CollectionBaseFormatter")]
+        [DisplayName("GetFormatter<CollectionBase 子類> 應回傳 CollectionBaseFormatter")]
         public void GetFormatter_CollectionBaseSubclass_ReturnsCollectionBaseFormatter()
         {
-            // FilterNodeCollection : MessagePackCollectionBase<FilterNode>
+            // FilterNodeCollection : CollectionBase<FilterNode>
             var formatter = FormatterResolver.Instance.GetFormatter<FilterNodeCollection>();
 
             Assert.NotNull(formatter);
@@ -68,7 +68,7 @@ namespace Bee.Api.Core.UnitTests.MessagePack
         }
 
         /// <summary>
-        /// 泛型但非 MessagePackCollectionBase 子類（例如 Nullable&lt;int&gt;）
+        /// 泛型但非 CollectionBase 子類（例如 Nullable&lt;int&gt;）
         /// 應走 StandardResolver fallback。
         /// </summary>
         [Fact]

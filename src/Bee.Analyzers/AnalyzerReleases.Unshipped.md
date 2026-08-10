@@ -22,9 +22,7 @@ BEE2007 | Bee.Definition | Info | LanguageCoverageAnalyzer — cultures should c
 BEE3001 | Bee.Business | Warning | BusinessObjectAccessControlAnalyzer — a business object API method must declare access control
 BEE3002 | Bee.Definition | Warning | DefinitionCollectionPropertyAnalyzer — a framework collection property must use a framework collection type
 BEE3003 | Bee.Business | Warning | ExecFuncAccessControlAnalyzer — an ExecFunc handler method must declare access control
-BEE4001 | Bee.Serialization | Error | CollectionFormatterRegistrationAnalyzer — a MessagePack collection must be registered with a formatter
 BEE4002 | Bee.Serialization | Error | WireFieldNameAnalyzer — a JSON rename must not conflict with name-based MessagePack keys
-BEE4003 | Bee.Serialization | Error | UnionKeyStrategyAnalyzer — a union hierarchy must use integer MessagePack keys
 BEE4004 | Bee.Serialization | Error | MessagePackConstructorOrderAnalyzer — constructor parameters must follow integer key order
 BEE4005 | Bee.Serialization | Warning | CollectionAddOverloadAnalyzer — a framework collection should expose a single public Add
 BEE4006 | Bee.Serialization | Error | ParameterlessConstructorAnalyzer — a serialized type must have a public parameterless constructor

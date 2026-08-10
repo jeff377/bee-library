@@ -47,16 +47,6 @@ namespace Bee.Analyzers.Serialization
         public const string XmlIgnoreAttribute = "System.Xml.Serialization.XmlIgnoreAttribute";
 
         /// <summary>
-        /// The framework base type for MessagePack-serializable collections.
-        /// </summary>
-        public const string MessagePackCollectionBase = "Bee.Definition.Collections.MessagePackCollectionBase`1";
-
-        /// <summary>
-        /// The framework base type for MessagePack-serializable keyed collections.
-        /// </summary>
-        public const string MessagePackKeyCollectionBase = "Bee.Definition.Collections.MessagePackKeyCollectionBase`1";
-
-        /// <summary>
         /// The framework base type for keyed collections.
         /// </summary>
         public const string KeyCollectionBase = "Bee.Base.Collections.KeyCollectionBase`1";

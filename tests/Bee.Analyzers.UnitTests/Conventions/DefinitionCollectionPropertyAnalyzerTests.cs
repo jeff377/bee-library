@@ -1,7 +1,7 @@
+using Bee.Base.Collections;
 using System.ComponentModel;
 using System.Globalization;
 using Bee.Analyzers.Conventions;
-using Bee.Definition.Collections;
 using Microsoft.CodeAnalysis;
 
 namespace Bee.Analyzers.UnitTests.Conventions
@@ -19,8 +19,8 @@ namespace Bee.Analyzers.UnitTests.Conventions
 
         private static readonly Type[] s_anchors =
         {
-            typeof(MessagePackCollectionBase<>),
-            typeof(MessagePackCollectionItem),
+            typeof(CollectionBase<>),
+            typeof(CollectionItem),
         };
 
         [Theory]
@@ -64,12 +64,12 @@ namespace Bee.Analyzers.UnitTests.Conventions
                 using MessagePack;
 
                 [MessagePackObject(keyAsPropertyName: true)]
-                public sealed class SampleItem : MessagePackCollectionItem
+                public sealed class SampleItem : CollectionItem
                 {
                     public string Name { get; set; } = string.Empty;
                 }
 
-                public sealed class SampleItems : MessagePackCollectionBase<SampleItem>
+                public sealed class SampleItems : CollectionBase<SampleItem>
                 {
                 }
 

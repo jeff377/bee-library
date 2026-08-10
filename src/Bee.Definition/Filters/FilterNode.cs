@@ -1,4 +1,4 @@
-﻿using Bee.Definition.Collections;
+using Bee.Base.Collections;
 using System.Xml.Serialization;
 
 namespace Bee.Definition.Filters
@@ -8,7 +8,7 @@ namespace Bee.Definition.Filters
     /// </summary>
     [XmlInclude(typeof(FilterCondition))]
     [XmlInclude(typeof(FilterGroup))]
-    public abstract class FilterNode : MessagePackCollectionItem
+    public abstract class FilterNode : CollectionItem
     {
         /// <summary>
         /// Gets the node kind.

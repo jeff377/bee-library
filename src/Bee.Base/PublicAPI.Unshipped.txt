@@ -6,5 +6,3 @@
 *REMOVED*Bee.Base.Serialization.SerializeFormat
 *REMOVED*Bee.Base.Serialization.SerializeFormat.Json = 1 -> Bee.Base.Serialization.SerializeFormat
 *REMOVED*Bee.Base.Serialization.SerializeFormat.Xml = 0 -> Bee.Base.Serialization.SerializeFormat
-Bee.Base.Attributes.WireIgnoreAttribute
-Bee.Base.Attributes.WireIgnoreAttribute.WireIgnoreAttribute() -> void

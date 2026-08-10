@@ -1,11 +1,11 @@
-using Bee.Definition.Collections;
+using Bee.Base.Collections;
 
 namespace Bee.Definition.Sorting
 {
     /// <summary>
     /// A collection of sort fields.
     /// </summary>
-    public class SortFieldCollection : MessagePackCollectionBase<SortField>
+    public class SortFieldCollection : CollectionBase<SortField>
     {
         /// <summary>
         /// Initializes a new instance of <see cref="SortFieldCollection"/>.

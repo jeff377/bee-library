@@ -1,4 +1,3 @@
-﻿using Bee.Definition.Collections;
 using Bee.Base.Collections;
 using MessagePack;
 using MessagePack.Formatters;
@@ -6,12 +5,12 @@ using MessagePack.Formatters;
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
-    /// MessagePack formatter for serializing and deserializing strongly-typed collections that inherit from <see cref="MessagePackCollectionBase{T}"/>.
+    /// MessagePack formatter for serializing and deserializing strongly-typed collections that inherit from <see cref="CollectionBase{T}"/>.
     /// </summary>
-    /// <typeparam name="TCollection">The concrete collection type, which must inherit from <see cref="MessagePackCollectionBase{TElement}"/> and have a parameterless constructor.</typeparam>
+    /// <typeparam name="TCollection">The concrete collection type, which must inherit from <see cref="CollectionBase{TElement}"/> and have a parameterless constructor.</typeparam>
     /// <typeparam name="TElement">The type of items in the collection.</typeparam>
     internal class CollectionBaseFormatter<TCollection, TElement> : IMessagePackFormatter<TCollection>
-        where TCollection : MessagePackCollectionBase<TElement>, new()
+        where TCollection : CollectionBase<TElement>, new()
         where TElement : class, ICollectionItem
     {
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Bee.Base.Collections;
 using Bee.Base;
 
 namespace Bee.Definition.Collections
@@ -7,7 +8,7 @@ namespace Bee.Definition.Collections
     /// A parameter item.
     /// </summary>
     [DefaultProperty("Value")]
-    public class Parameter : MessagePackKeyCollectionItem
+    public class Parameter : KeyCollectionItem
     {
         #region Constructors
 

@@ -1,7 +1,7 @@
+using Bee.Base.Collections;
 using System.ComponentModel;
 using System.Globalization;
 using Bee.Analyzers.Serialization;
-using Bee.Definition.Collections;
 using Microsoft.CodeAnalysis;
 
 namespace Bee.Analyzers.UnitTests.Serialization
@@ -14,16 +14,14 @@ namespace Bee.Analyzers.UnitTests.Serialization
         private static readonly Type[] s_anchors =
         {
             typeof(MessagePack.KeyAttribute),
-            typeof(MessagePackCollectionBase<>),
-            typeof(MessagePackCollectionItem),
+            typeof(CollectionBase<>),
+            typeof(CollectionItem),
         };
 
         private const string ItemDeclaration = """
-            using Bee.Definition.Collections;
-            using MessagePack;
+            using Bee.Base.Collections;
 
-            [MessagePackObject(keyAsPropertyName: true)]
-            public sealed class SampleItem : MessagePackCollectionItem
+            public sealed class SampleItem : CollectionItem
             {
                 public string Name { get; set; } = string.Empty;
             }
@@ -35,7 +33,7 @@ namespace Bee.Analyzers.UnitTests.Serialization
         {
             var source = ItemDeclaration + """
 
-                public sealed class SampleItems : MessagePackCollectionBase<SampleItem>
+                public sealed class SampleItems : CollectionBase<SampleItem>
                 {
                     public void Add(string name) => Add(new SampleItem { Name = name });
                 }
@@ -57,7 +55,7 @@ namespace Bee.Analyzers.UnitTests.Serialization
         {
             var source = ItemDeclaration + """
 
-                public sealed class SampleItems : MessagePackCollectionBase<SampleItem>
+                public sealed class SampleItems : CollectionBase<SampleItem>
                 {
                 }
                 """;
@@ -95,7 +93,7 @@ namespace Bee.Analyzers.UnitTests.Serialization
         {
             var source = ItemDeclaration + """
 
-                public sealed class SampleItems : MessagePackCollectionBase<SampleItem>
+                public sealed class SampleItems : CollectionBase<SampleItem>
                 {
                     public SampleItems(string label) => Label = label;
 

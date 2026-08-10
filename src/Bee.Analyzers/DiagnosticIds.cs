@@ -100,10 +100,6 @@ namespace Bee.Analyzers
         /// </summary>
         public const string MissingExecFuncAccessControl = "BEE3003";
 
-        /// <summary>
-        /// A collection deriving from a framework collection base is not registered with a formatter.
-        /// </summary>
-        public const string CollectionFormatterNotRegistered = "BEE4001";
 
         /// <summary>
         /// A name-based MessagePack type renames a property for JSON only, so the two wire formats
@@ -111,10 +107,6 @@ namespace Bee.Analyzers
         /// </summary>
         public const string WireFieldNameMismatch = "BEE4002";
 
-        /// <summary>
-        /// A type in a polymorphic union hierarchy opts into name-based keys instead of integer keys.
-        /// </summary>
-        public const string UnionMustUseIntegerKeys = "BEE4003";
 
         /// <summary>
         /// A collection item constructor takes its parameters in an order that does not match

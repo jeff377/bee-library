@@ -1,5 +1,4 @@
 using Bee.Base.Collections;
-using Bee.Definition.Collections;
 using MessagePack;
 using MessagePack.Formatters;
 
@@ -30,7 +29,7 @@ namespace Bee.Api.Core.MessagePack
     /// <typeparam name="TCollection">The keyed collection type.</typeparam>
     /// <typeparam name="TElement">The item type.</typeparam>
     internal sealed class KeyCollectionBaseFormatter<TCollection, TElement> : IMessagePackFormatter<TCollection?>
-        where TCollection : MessagePackKeyCollectionBase<TElement>, new()
+        where TCollection : KeyCollectionBase<TElement>, new()
         where TElement : class, IKeyCollectionItem
     {
         /// <summary>

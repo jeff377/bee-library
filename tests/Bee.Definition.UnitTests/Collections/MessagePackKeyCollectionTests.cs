@@ -6,7 +6,7 @@ using Bee.Definition.Collections;
 namespace Bee.Definition.UnitTests.Collections
 {
     /// <summary>
-    /// MessagePackKeyCollectionBase / MessagePackKeyCollectionItem 行為測試。
+    /// KeyCollectionBase / KeyCollectionItem 行為測試。
     /// 使用既有 <see cref="Parameter"/> / <see cref="ParameterCollection"/> 作為受測樣本。
     /// </summary>
     public class MessagePackKeyCollectionTests
@@ -14,7 +14,7 @@ namespace Bee.Definition.UnitTests.Collections
         /// <summary>
         /// 用於測試 protected 成員（owner 建構子）的子類別。
         /// </summary>
-        private sealed class OwnerAwareKeyCollection : MessagePackKeyCollectionBase<Parameter>
+        private sealed class OwnerAwareKeyCollection : KeyCollectionBase<Parameter>
         {
             public OwnerAwareKeyCollection() : base() { }
             public OwnerAwareKeyCollection(object owner) : base(owner) { }

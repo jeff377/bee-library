@@ -1,6 +1,6 @@
+using Bee.Base.Collections;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Definition.Collections;
 
 namespace Bee.Definition.Settings
 {
@@ -12,14 +12,14 @@ namespace Bee.Definition.Settings
     /// (file or DB) and shipped to the client so the UI can resolve amount decimals at runtime.
     /// </summary>
     /// <remarks>
-    /// Uses <see cref="MessagePackCollectionBase{T}"/> (not a keyed collection) so the table travels
+    /// Uses <see cref="CollectionBase{T}"/> (not a keyed collection) so the table travels
     /// over the MessagePack wire cleanly; the custom MessagePack resolver only recognises this base,
     /// and <c>MessagePackCodec</c> registers <c>CollectionBaseFormatter&lt;CurrencySettings, CurrencyItem&gt;</c>.
     /// Keyed-lookup semantics are provided by the <see cref="Find"/> family.
     /// </remarks>
     [Description("System-level currency master.")]
     [XmlRoot("CurrencySettings")]
-    public class CurrencySettings : MessagePackCollectionBase<CurrencyItem>
+    public class CurrencySettings : CollectionBase<CurrencyItem>
     {
         /// <summary>The fallback rounding factor used when a currency code is not found (two decimals).</summary>
         public const decimal FallbackRounding = 0.01m;

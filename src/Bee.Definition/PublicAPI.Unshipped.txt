@@ -1,10 +1,57 @@
 #nullable enable
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionBase<T>
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionBase<T>.Insert(int index, Bee.Base.Collections.ICollectionItem! value) -> void
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionBase<T>.MessagePackCollectionBase() -> void
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionBase<T>.MessagePackCollectionBase(object! owner) -> void
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionBase<T>.Owner.get -> object?
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionBase<T>.Remove(Bee.Base.Collections.ICollectionItem! value) -> void
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionBase<T>.SerializeState.get -> Bee.Base.Serialization.SerializeState
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionBase<T>.SetOwner(object! owner) -> void
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionBase<T>.Tag.get -> object?
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionBase<T>.Tag.set -> void
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionItem
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionItem.Collection.get -> Bee.Base.Collections.ICollectionBase?
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionItem.MessagePackCollectionItem() -> void
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionItem.Remove() -> void
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionItem.SerializeState.get -> Bee.Base.Serialization.SerializeState
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionItem.SetCollection(Bee.Base.Collections.ICollectionBase? collection) -> void
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionItem.Tag.get -> object?
+*REMOVED*Bee.Definition.Collections.MessagePackCollectionItem.Tag.set -> void
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.ChangeItemKey(string! key, Bee.Base.Collections.IKeyCollectionItem! value) -> void
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Insert(int index, Bee.Base.Collections.IKeyCollectionItem! value) -> void
 *REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.ItemsForSerialization.get -> System.Collections.Generic.List<T!>?
 *REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.ItemsForSerialization.set -> void
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.MessagePackKeyCollectionBase() -> void
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.MessagePackKeyCollectionBase(object! owner) -> void
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Owner.get -> object?
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Remove(Bee.Base.Collections.IKeyCollectionItem! value) -> void
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.SerializeState.get -> Bee.Base.Serialization.SerializeState
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Tag.get -> object?
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Tag.set -> void
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionItem
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionItem.Collection.get -> Bee.Base.Collections.IKeyCollectionBase?
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionItem.MessagePackKeyCollectionItem() -> void
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionItem.Remove() -> void
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionItem.SerializeState.get -> Bee.Base.Serialization.SerializeState
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionItem.SetCollection(Bee.Base.Collections.IKeyCollectionBase? collection) -> void
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionItem.Tag.get -> object?
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionItem.Tag.set -> void
 *REMOVED*Bee.Definition.Serialization.SafeTypelessFormatter
 *REMOVED*Bee.Definition.Serialization.SafeTypelessFormatter.Deserialize(ref MessagePack.MessagePackReader reader, MessagePack.MessagePackSerializerOptions! options) -> object?
 *REMOVED*Bee.Definition.Serialization.SafeTypelessFormatter.SafeTypelessFormatter() -> void
 *REMOVED*Bee.Definition.Serialization.SafeTypelessFormatter.Serialize(ref MessagePack.MessagePackWriter writer, object? value, MessagePack.MessagePackSerializerOptions! options) -> void
+*REMOVED*override Bee.Definition.Collections.MessagePackCollectionBase<T>.InsertItem(int index, T! item) -> void
+*REMOVED*override Bee.Definition.Collections.MessagePackCollectionBase<T>.RemoveItem(int index) -> void
+*REMOVED*override Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.GetKeyForItem(T! item) -> string!
+*REMOVED*override Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.InsertItem(int index, T! item) -> void
+*REMOVED*override Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.RemoveItem(int index) -> void
 *REMOVED*static Bee.Definition.Serialization.SafeTypelessFormatter.IsExplicitlyTrustedType(string! fullName) -> bool
 *REMOVED*static Bee.Definition.Serialization.SafeTypelessFormatter.IsTypeAllowed(string! fullName) -> bool
 *REMOVED*static readonly Bee.Definition.Serialization.SafeTypelessFormatter.Instance -> Bee.Definition.Serialization.SafeTypelessFormatter!
+*REMOVED*virtual Bee.Definition.Collections.MessagePackCollectionBase<T>.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+*REMOVED*virtual Bee.Definition.Collections.MessagePackCollectionItem.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+*REMOVED*virtual Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+*REMOVED*virtual Bee.Definition.Collections.MessagePackKeyCollectionItem.Key.get -> string!
+*REMOVED*virtual Bee.Definition.Collections.MessagePackKeyCollectionItem.Key.set -> void
+*REMOVED*virtual Bee.Definition.Collections.MessagePackKeyCollectionItem.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void

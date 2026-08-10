@@ -1,5 +1,5 @@
+using Bee.Base.Collections;
 using System.ComponentModel;
-using Bee.Definition.Collections;
 using Bee.Definition.Settings;
 
 namespace Bee.Definition
@@ -10,13 +10,13 @@ namespace Bee.Definition
     /// minor unit. Carried by <c>CompanyInfo</c> over the MessagePack wire.
     /// </summary>
     /// <remarks>
-    /// Uses <see cref="MessagePackCollectionBase{T}"/> so the table serializes cleanly as part of
+    /// Uses <see cref="CollectionBase{T}"/> so the table serializes cleanly as part of
     /// <c>CompanyInfo</c>; <c>MessagePackCodec</c> registers
     /// <c>CollectionBaseFormatter&lt;CompanyCashRounding, CashRoundingItem&gt;</c>. Keyed lookup is
     /// provided by <see cref="FindUnit"/>.
     /// </remarks>
     [Description("Company cash-rounding override table.")]
-    public class CompanyCashRounding : MessagePackCollectionBase<CashRoundingItem>
+    public class CompanyCashRounding : CollectionBase<CashRoundingItem>
     {
         /// <summary>
         /// Initializes a new instance of <see cref="CompanyCashRounding"/>.

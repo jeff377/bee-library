@@ -10,7 +10,7 @@ namespace Bee.Base.Collections
     /// Base class for strongly-typed collections.
     /// </summary>
     /// <remarks>
-    /// <c>Bee.Definition.Collections.MessagePackCollectionBase&lt;T&gt;</c> is a near-identical
+    /// <c>Bee.Definition.Collections.CollectionBase&lt;T&gt;</c> is a near-identical
     /// parallel of this type, carrying the MessagePack attributes that cannot live here because
     /// <c>Bee.Base</c> deliberately takes no external package references.
     /// <para>

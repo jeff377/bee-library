@@ -1,13 +1,12 @@
 using System.ComponentModel;
 using Bee.Base.Collections;
 using Bee.Base.Serialization;
-using Bee.Definition.Collections;
 using Bee.Definition.Sorting;
 
 namespace Bee.Definition.UnitTests.Collections
 {
     /// <summary>
-    /// MessagePackCollectionBase 基底行為測試。
+    /// CollectionBase 基底行為測試。
     /// 以 SortFieldCollection/SortField 為具體子類型驗證。
     /// </summary>
     public class MessagePackCollectionBaseTests
@@ -15,7 +14,7 @@ namespace Bee.Definition.UnitTests.Collections
         /// <summary>
         /// 用於測試 protected 成員（owner 建構子、SetOwner）的子類別。
         /// </summary>
-        private sealed class OwnerAwareCollection : MessagePackCollectionBase<SortField>
+        private sealed class OwnerAwareCollection : CollectionBase<SortField>
         {
             public OwnerAwareCollection() : base() { }
             public OwnerAwareCollection(object owner) : base(owner) { }

@@ -1,10 +1,12 @@
+using Bee.Base.Collections;
+
 
 namespace Bee.Definition.Collections
 {
     /// <summary>
     /// A parameter item collection with serialization support.
     /// </summary>
-    public class ParameterCollection : MessagePackKeyCollectionBase<Parameter>
+    public class ParameterCollection : KeyCollectionBase<Parameter>
     {
         /// <summary>
         /// Gets the value of a parameter.
