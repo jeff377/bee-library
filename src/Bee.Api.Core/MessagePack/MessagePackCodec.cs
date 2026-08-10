@@ -34,7 +34,15 @@ namespace Bee.Api.Core.MessagePack
                     new CollectionBaseFormatter<CompanyCashRounding, CashRoundingItem>(), // CompanyCashRounding as array
                     new CollectionBaseFormatter<CompanyAllowedCurrencies, AllowedCurrencyItem>(), // CompanyAllowedCurrencies as array
                     new CollectionBaseFormatter<UnitSettings, UnitItem>(), // UnitSettings as array
-                    new SortFieldFormatter(),           // SPIKE: 手寫、全泛型、AOT-safe
+                    // Hand-written per-type formatters: they honour [WireIgnore] by naming the
+                    // wire members explicitly, and stay generic all the way down so the mobile
+                    // heads (reflection-only AOT) take the same path as the desktop.
+                    new SortFieldFormatter(),
+                    new DepartmentNodeFormatter(),
+                    new NumberFormatItemFormatter(),
+                    new CashRoundingItemFormatter(),
+                    new AllowedCurrencyItemFormatter(),
+                    new ParameterFormatter(),
                     SafeTypelessFormatter.Instance      // Type-validated polymorphic formatter
                 },
                 // IMPORTANT: every MessagePackCollectionBase<> collection must be registered above.

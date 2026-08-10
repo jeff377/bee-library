@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 0 | 可行性驗證（spike）：五項前提實測 | ✅ 已完成（2026-08-09）——原設計否決，改採手寫 formatter（發現 7–9） |
-| 1 | `[WireIgnore]` 標註 + 6 支手寫 formatter（或改以型別形貌處理 `Tag`／`Key`） | 📝 待做 |
+| 1 | `[WireIgnore]` 標註 + 6 支手寫 formatter | ✅ 已完成（2026-08-09） |
 | 2 | `FilterNode` 家族外置為 `FilterNodeFormatter`，移除 `[Union]` / `[Key]` | 📝 待做 |
 | 3 | `SafeTypelessFormatter` 遷入 Api.Core，移除 `Parameter` 的 formatter attribute | 📝 待做 |
 | 4 | 刪除四個 `MessagePack*` 集合型別；註冊清單與 BEE4001 退役（發現 6 後大幅簡化） | 📝 待做 |
@@ -230,7 +230,10 @@ map header 與之相符——`SortField` 新增屬性而未同步 formatter 時�
 > 值得獨立追查。兩點保留：
 > 1. 此為 JIT runtime 上的**模擬**（`RuntimeHostConfigurationOption`），
 >    雖是 [apple-mobile-trim.md](../../.claude/rules/apple-mobile-trim.md) 認可的免實機驗證法，
->    真實裝置 AOT 行為未必相同。
+>    真實裝置 AOT 行為未必相同。**且 `Parameter.Value` 那條路徑擲的是
+>    `InvalidProgramException`（"CLR detected an invalid program"）而非乾淨的
+>    `NotSupportedException`**——那是「Emit 仍然執行、但產出無效 IL」的徵狀，
+>    高度懷疑是模擬本身的假象，不代表實機行為。判讀時務必分開看待這兩種例外。
 > 2. 失敗是否會在實際 wire 流程中顯現，取決於這些型別在行動端是否真的走 MessagePack。
 >
 > **本計畫不處理**——範圍是「解除相依」，不是「修復行動端 AOT」。
@@ -539,11 +542,38 @@ proxy 屬性存在的唯一理由就是「attribute 只能標在屬性上」，�
 > 的 WARNING 以「`FormSchema`、`FormLayout` and friends」當作 contractless 型別的例子，
 > 依上述其實**舉錯了例**——它們不走這條路。該註解在階段 4 重寫 resolver 時一併更正。
 
-### 階段 1：`[WireIgnore]` + `BeeObjectFormatter` 落地
+### 階段 1：`[WireIgnore]` + 手寫 formatter ✅ 已完成（2026-08-09）
 
-新增 attribute 與 6 支手寫 formatter，於 `MessagePackCodec` 顯式註冊，
-把生效中的 `[IgnoreMember]` 換掉，移除不生效的。
-**不動 resolver 鏈**。此階段結束時 `Bee.Definition` 仍引用 MessagePack。
+**已落地**：
+
+- `Bee.Base/Attributes/WireIgnoreAttribute.cs`——格式中立的「不上 wire」標註
+- item 兩個基底的 7 個成員加上 `[WireIgnore]`（與既有 `[IgnoreMember]` 並存，
+  依發現 5 尚不能移除後者）
+- `Bee.Api.Core/MessagePack/` 新增 6 支手寫 formatter：`SortFieldFormatter`、
+  `DepartmentNodeFormatter`、`NumberFormatItemFormatter`、`CashRoundingItemFormatter`、
+  `AllowedCurrencyItemFormatter`、`ParameterFormatter`，並於 `MessagePackCodec` 顯式註冊
+- 7 個定義型別移除 17 個不生效的 `[IgnoreMember]` 與 `using MessagePack;`
+- `Parameter` 移除 `[MessagePackFormatter]`（待決 A 已證非必要）
+- 新增 `WireFormatterTests`（10 個測試），每支 formatter 一條 `WireMemberCount` 斷言
+
+**驗證**：clean Release build 0 error 0 warning；一般模式 `Bee.Definition` 1071 +
+`Bee.Api.Core` 692 全綠。
+
+**AOT 模擬**：完整套件失敗數由 main 的 **51 降至 40**。
+殘留失敗全屬發現 9 的既有問題（`TypelessFormatter` / `DataTable` / `DataSet`），
+非本階段引入——`WireFormatterTests` 10 項中僅 2 項失敗，且皆卡在
+`Parameter.Value` 的 `System.Object` typeless 路徑（MessagePack 內建
+`TypelessFormatter` 自身需要 Emit），不是手寫 formatter 能解決的層次。
+
+**未採用的替代方案**：以型別形貌（顯式介面實作）取代 `[WireIgnore]`，可省下 6 支
+formatter。否決理由：`ITagProperty.Tag` / `IKeyCollectionItem.Key` 是公開介面成員，
+改動會破壞外部消費者；且手寫 formatter 讓 wire 合約成為程式碼中**看得見、可 review**
+的東西，而「讓 contractless 自行決定納入什麼」正是先前踩到 analyzer（發現 5）
+與 AOT（發現 7）兩個坑的根源。
+
+> 盤點佐證：`.Tag` 全 repo 26 處使用中，**production 對集合項目的呼叫點為零**
+> （其餘為 `TraceContext.Tag`、Avalonia `TabItem.Tag` 等同名不同物，以及測試）。
+> 即便如此仍不動公開介面——外部 NuGet 消費者的使用情形不可見。
 
 ### 階段 2：`FilterNode` 家族外置
 
