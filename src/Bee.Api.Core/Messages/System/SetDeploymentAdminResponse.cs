@@ -1,12 +1,10 @@
 using Bee.Api.Contracts.System;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
 {
     /// <summary>
     /// API response for the set deployment administrator operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class SetDeploymentAdminResponse : ApiResponse, ISetDeploymentAdminResponse
     {
         /// <summary>

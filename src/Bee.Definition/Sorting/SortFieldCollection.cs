@@ -1,12 +1,10 @@
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition.Sorting
 {
     /// <summary>
     /// A collection of sort fields.
     /// </summary>
-    [MessagePackObject]
     public class SortFieldCollection : MessagePackCollectionBase<SortField>
     {
         /// <summary>

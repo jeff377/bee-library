@@ -1,14 +1,12 @@
 using Bee.Api.Contracts.AuditLog;
 using Bee.Definition.Logging;
 using Bee.Definition.Paging;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.AuditLog
 {
     /// <summary>
     /// API request for the DB-anomaly list operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class GetDbAnomalyLogRequest : ApiRequest, IGetDbAnomalyLogRequest
     {
         /// <summary>Gets or sets the inclusive lower bound on the event time (UTC).</summary>

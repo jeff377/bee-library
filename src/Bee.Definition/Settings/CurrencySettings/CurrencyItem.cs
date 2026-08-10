@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition.Settings
 {
@@ -11,7 +10,6 @@ namespace Bee.Definition.Settings
     /// independent of company); the company layer may only override the final cash-rounding unit.
     /// </summary>
     [Description("System-level currency definition item.")]
-    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class CurrencyItem : MessagePackCollectionItem
     {
         /// <summary>

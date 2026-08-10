@@ -24,21 +24,6 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("ConvertForSerialization 對已有 MessagePackObject 的型別不做轉換")]
-        public void ConvertForSerialization_TypeWithMessagePackObject_ReturnsSameInstance()
-        {
-            var original = new LoginResponse
-            {
-                AccessToken = Guid.NewGuid(),
-                UserId = "testUser"
-            };
-
-            var result = ApiContractRegistry.ConvertForSerialization(original);
-
-            Assert.Same(original, result);
-        }
-
-        [Fact]
         [DisplayName("ConvertForSerialization 對 null 回傳 null")]
         public void ConvertForSerialization_NullValue_ReturnsNull()
         {

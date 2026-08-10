@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition
 {
@@ -11,7 +10,6 @@ namespace Bee.Definition
     /// final payable amount of a document, distinct from the currency's natural minor unit.
     /// </summary>
     [Description("Company cash-rounding override item.")]
-    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class CashRoundingItem : MessagePackCollectionItem
     {
         /// <summary>

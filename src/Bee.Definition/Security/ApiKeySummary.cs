@@ -1,4 +1,3 @@
-using MessagePack;
 
 namespace Bee.Definition.Security
 {
@@ -17,7 +16,6 @@ namespace Bee.Definition.Security
     /// the case where the disabled ones matter.
     /// </para>
     /// </remarks>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class ApiKeySummary
     {
         /// <summary>

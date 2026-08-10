@@ -1,12 +1,10 @@
 using Bee.Api.Contracts.System;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
 {
     /// <summary>
     /// API response for the create API key operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class CreateApiKeyResponse : ApiResponse, ICreateApiKeyResponse
     {
         /// <summary>

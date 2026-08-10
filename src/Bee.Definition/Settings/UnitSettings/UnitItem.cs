@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition.Settings
 {
@@ -11,7 +10,6 @@ namespace Bee.Definition.Settings
     /// independent of company; quantities and weights resolve their decimals from the bound unit.
     /// </summary>
     [Description("System-level unit-of-measure definition item.")]
-    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class UnitItem : MessagePackCollectionItem
     {
         /// <summary>

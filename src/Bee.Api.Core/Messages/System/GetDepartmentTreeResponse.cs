@@ -1,6 +1,5 @@
 using Bee.Api.Contracts.System;
 using Bee.Definition.Organization;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
 {
@@ -8,7 +7,6 @@ namespace Bee.Api.Core.Messages.System
     /// API response for the get department tree operation. The tree is a typed object,
     /// serialised as JSON on the Plain wire format and MessagePack otherwise.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class GetDepartmentTreeResponse : ApiResponse, IGetDepartmentTreeResponse
     {
         /// <summary>

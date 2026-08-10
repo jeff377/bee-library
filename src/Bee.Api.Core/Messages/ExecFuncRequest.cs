@@ -1,12 +1,10 @@
 using Bee.Api.Contracts;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages
 {
     /// <summary>
     /// API request type for executing a custom method.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class ExecFuncRequest : ApiRequest, IExecFuncRequest
     {
         /// <summary>

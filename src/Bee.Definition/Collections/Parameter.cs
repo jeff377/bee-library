@@ -1,13 +1,11 @@
 ﻿using System.ComponentModel;
 using Bee.Base;
-using MessagePack;
 
 namespace Bee.Definition.Collections
 {
     /// <summary>
     /// A parameter item.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     [DefaultProperty("Value")]
     public class Parameter : MessagePackKeyCollectionItem
     {

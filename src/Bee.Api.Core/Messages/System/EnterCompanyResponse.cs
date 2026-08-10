@@ -1,14 +1,12 @@
 using Bee.Api.Contracts.System;
 using Bee.Definition.Identity;
 using Bee.Definition.Settings;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
 {
     /// <summary>
     /// API response for the EnterCompany operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class EnterCompanyResponse : ApiResponse, IEnterCompanyResponse
     {
         /// <summary>

@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition.Settings
 {
@@ -19,7 +18,6 @@ namespace Bee.Definition.Settings
     /// Keyed-lookup semantics are provided by the <see cref="Find"/> family.
     /// </remarks>
     [Description("System-level currency master.")]
-    [MessagePackObject]
     [XmlRoot("CurrencySettings")]
     public class CurrencySettings : MessagePackCollectionBase<CurrencyItem>
     {

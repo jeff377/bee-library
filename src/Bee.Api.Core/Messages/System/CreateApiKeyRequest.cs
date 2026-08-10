@@ -1,13 +1,11 @@
 using Bee.Api.Contracts.System;
 using Bee.Definition.Security;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
 {
     /// <summary>
     /// API request for the create API key operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class CreateApiKeyRequest : ApiRequest, ICreateApiKeyRequest
     {
         /// <summary>

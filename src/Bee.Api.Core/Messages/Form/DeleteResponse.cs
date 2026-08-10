@@ -1,12 +1,10 @@
 using Bee.Api.Contracts.Form;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.Form
 {
     /// <summary>
     /// API response for the form Delete operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class DeleteResponse : ApiResponse, IDeleteResponse
     {
         /// <summary>

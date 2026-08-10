@@ -8,8 +8,8 @@
 | 1 | `[WireIgnore]` 標註 + 6 支手寫 formatter | ✅ 已完成（2026-08-09） |
 | 2 | `FilterNode` 家族外置為 `FilterNodeFormatter` | ✅ 已完成（2026-08-09）——標註待階段 5 連同連通分量一起移除 |
 | 3 | `SafeTypelessFormatter` 遷入 Api.Core | ✅ 已完成（2026-08-09） |
-| 4 | 刪除四個 `MessagePack*` 集合型別；註冊清單與 BEE4001 退役（發現 6 後大幅簡化） | 📝 待做 |
-| 5 | 移除 `Bee.Definition` 的 `PackageReference`，修訂 adr-030 與規則文件 | 📝 待做 |
+| 4 | 移除全部 MessagePack 標註與 `PackageReference`；集合註冊清單退場 | ✅ 已完成（2026-08-09） |
+| 5 | 四對雙胞胎型別合併、BEE4001/4003 退役、adr-030 與規則文件修訂 | 📝 待做 |
 
 ## 目標與理由
 
@@ -132,7 +132,7 @@ MessagePack 自帶的 analyzer 會擋：
 
 | 測試 | 結果 |
 |------|------|
-| 未註冊的 `KeyCollectionBase<T>` 子型別（`FormFieldCollection`）經 typeless 通道 | ✅ 內容完整還原（非僅「不擲例外」） |
+| 未註冊的 `KeyCollectionBase<T>` 子型別（`FormFieldCollection`）經 **typeless 通道** | ✅ 內容完整還原（非僅「不擲例外」） |
 | 未註冊、**且無 `[MessagePackObject]`** 的 `MessagePackCollectionBase<T>` 子型別 | ✅ 內容完整還原 |
 | 有標註且已註冊（`SortFieldCollection`）vs 無標註未註冊，wire 首位元組 | ✅ **皆為 `0x91`（fixarray）——格式完全一致** |
 
@@ -140,9 +140,16 @@ MessagePack 自帶的 analyzer 會擋：
 拿掉標註後 contractless 認得 `Collection<T>` / `KeyedCollection<,>` 是集合，
 原生序列化為 array，**與 `CollectionBaseFormatter` 產出的格式相同**。
 
-→ **階段 4 大幅簡化**：移除標註後不需要 `KeyCollectionBaseFormatter`、
-不需要 resolver 前移、不需要遞迴 base-type 檢查。顯式註冊清單與 `BEE4001` 直接退場，
-因為它們把關的問題本來就是 `[MessagePackObject]` 自己造成的。
+→ **階段 4 大幅簡化**：移除標註後不需要 resolver 前移、不需要遞迴 base-type 檢查，
+8 筆 `CollectionBaseFormatter` 顯式註冊直接退場（階段 4 實測移除後全綠）。
+
+> ⚠️ **本結論只對 `Collection<T>` 成立，對 `KeyedCollection<TKey,TItem>` 不成立**
+> （階段 4 實測修正）。contractless 把 keyed collection 綁成 dictionary，
+> 元素還原為 `Dictionary<object,object>` 而非 item 型別，直接
+> `Deserialize<ParameterCollection>` 會擲 `ArgumentException`。
+> spike 當時之所以沒抓到，是因為測的是 **typeless 通道**——payload 自帶具體型別名，
+> 走的是另一條還原路徑。
+> **`KeyCollectionBaseFormatter` 因此仍是必要元件**，已於階段 4 實作。
 
 → 連帶修正：本計畫先前所稱「25 個 `KeyCollectionBase` 子型別經 typeless 通道會擲例外
 的長期隱患」**不存在**，該敘述已移除。

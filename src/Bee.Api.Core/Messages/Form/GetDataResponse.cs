@@ -1,13 +1,11 @@
 using System.Data;
 using Bee.Api.Contracts.Form;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.Form
 {
     /// <summary>
     /// API response for the form GetData operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class GetDataResponse : ApiResponse, IGetDataResponse
     {
         /// <summary>

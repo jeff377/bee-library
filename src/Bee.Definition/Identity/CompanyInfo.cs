@@ -1,6 +1,5 @@
 using Bee.Base;
 using Bee.Definition.Settings;
-using MessagePack;
 
 namespace Bee.Definition.Identity
 {
@@ -16,7 +15,6 @@ namespace Bee.Definition.Identity
     /// <c>"log"</c> databaseId (see <c>DbScope.Log</c>), so there is no per-company
     /// log database id property.
     /// </remarks>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class CompanyInfo : IKeyObject
     {
         #region IKeyObject Interface

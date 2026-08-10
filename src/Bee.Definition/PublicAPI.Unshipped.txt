@@ -1,4 +1,6 @@
 #nullable enable
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.ItemsForSerialization.get -> System.Collections.Generic.List<T!>?
+*REMOVED*Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.ItemsForSerialization.set -> void
 *REMOVED*Bee.Definition.Serialization.SafeTypelessFormatter
 *REMOVED*Bee.Definition.Serialization.SafeTypelessFormatter.Deserialize(ref MessagePack.MessagePackReader reader, MessagePack.MessagePackSerializerOptions! options) -> object?
 *REMOVED*Bee.Definition.Serialization.SafeTypelessFormatter.SafeTypelessFormatter() -> void

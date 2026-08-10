@@ -1,13 +1,11 @@
 using Bee.Api.Contracts.AuditLog;
 using Bee.Definition.Paging;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.AuditLog
 {
     /// <summary>
     /// API request for the access-log list operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class GetAccessLogRequest : ApiRequest, IGetAccessLogRequest
     {
         /// <summary>Gets or sets the inclusive lower bound on the event time (UTC).</summary>

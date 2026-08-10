@@ -2,7 +2,6 @@ using System.ComponentModel;
 using Bee.Base.Collections;
 using Bee.Base.Serialization;
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition.UnitTests.Collections
 {
@@ -130,25 +129,6 @@ namespace Bee.Definition.UnitTests.Collections
         }
 
         [Fact]
-        [DisplayName("ItemsForSerialization 取值應回傳目前項目的拷貝")]
-        public void ItemsForSerialization_Get_ReturnsCurrentItems()
-        {
-            // Arrange
-            var collection = new ParameterCollection
-            {
-                new Parameter("P1", 1),
-                new Parameter("P2", 2)
-            };
-
-            // Act
-            var items = collection.ItemsForSerialization;
-
-            // Assert
-            Assert.NotNull(items);
-            Assert.Equal(2, items!.Count);
-        }
-
-        [Fact]
         [DisplayName("以 owner 為參數的建構子應設定 Owner")]
         public void Constructor_WithOwner_SetsOwner()
         {
@@ -252,25 +232,5 @@ namespace Bee.Definition.UnitTests.Collections
             Assert.Equal("meta", col.Tag);
         }
 
-        [Fact]
-        [DisplayName("MessagePack 序列化應保留項目")]
-        public void MessagePack_RoundTrip_PreservesItems()
-        {
-            // ItemsForSerialization setter + OnBeforeSerialize/OnAfterDeserialize 會在序列化流程被觸發
-            var original = new ParameterCollection
-            {
-                new Parameter("A", 10),
-                new Parameter("B", "x")
-            };
-            var options = MessagePackSerializerOptions.Standard
-                .WithResolver(MessagePack.Resolvers.ContractlessStandardResolver.Instance);
-
-            byte[] bytes = MessagePackSerializer.Serialize(original, options);
-            var restored = MessagePackSerializer.Deserialize<ParameterCollection>(bytes, options);
-
-            Assert.Equal(2, restored.Count);
-            Assert.Equal("A", restored[0].Name);
-            Assert.Equal("B", restored[1].Name);
-        }
     }
 }

@@ -1,4 +1,3 @@
-using MessagePack;
 
 namespace Bee.Definition.Paging
 {
@@ -15,7 +14,6 @@ namespace Bee.Definition.Paging
     /// <c>PageSize + 1</c> probe to compute <c>HasMore</c> without an extra COUNT query.</item>
     /// </list>
     /// </remarks>
-    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class PagingOptions
     {
         /// <summary>

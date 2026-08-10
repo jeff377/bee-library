@@ -1,13 +1,11 @@
 using Bee.Api.Contracts.Form;
 using Bee.Definition.Paging;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.Form
 {
     /// <summary>
     /// API request for the form GetLookup operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class GetLookupRequest : ApiRequest, IGetLookupRequest
     {
         /// <summary>

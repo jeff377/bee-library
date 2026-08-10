@@ -1,12 +1,10 @@
 using Bee.Api.Contracts.System;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
 {
     /// <summary>
     /// API response for the set API key expiry operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class SetApiKeyExpiryResponse : ApiResponse, ISetApiKeyExpiryResponse
     {
         /// <summary>

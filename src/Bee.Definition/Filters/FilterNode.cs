@@ -1,5 +1,4 @@
 ﻿using Bee.Definition.Collections;
-using MessagePack;
 using System.Xml.Serialization;
 
 namespace Bee.Definition.Filters
@@ -7,9 +6,6 @@ namespace Bee.Definition.Filters
     /// <summary>
     /// Abstract base class for filter nodes.
     /// </summary>
-    [MessagePackObject]
-    [Union(0, typeof(FilterCondition))]
-    [Union(1, typeof(FilterGroup))]
     [XmlInclude(typeof(FilterCondition))]
     [XmlInclude(typeof(FilterGroup))]
     public abstract class FilterNode : MessagePackCollectionItem
@@ -18,18 +14,15 @@ namespace Bee.Definition.Filters
         /// Gets the node kind.
         /// </summary>
         /// <remarks>
-        /// Not carried over the MessagePack wire: the concrete node type is already resolved by the
-        /// <c>[Union]</c> tag, and this property is a get-only discriminator that each subclass
-        /// computes, so serializing it would only add redundant bytes that cannot be restored.
+        /// This is the polymorphic discriminator on both wire formats, and both read it from
+        /// outside the type: <c>FilterNodeCollectionJsonConverter</c> for JSON, and the API layer's
+        /// filter node formatter for MessagePack. Being get-only, it is never bound back on the way
+        /// in — each subclass computes it.
         /// <para>
-        /// WARNING: Do NOT add <c>[JsonIgnore]</c> here for "tri-format consistency". On the JSON
-        /// wire this property IS the polymorphic discriminator — <c>FilterNodeCollectionJsonConverter</c>
-        /// reads the <c>kind</c> property to choose <see cref="FilterCondition"/> vs
-        /// <see cref="FilterGroup"/>. Ignoring it in JSON would silently deserialize every group as a
-        /// condition. The asymmetry (ignored for MessagePack, kept for JSON) is intentional.
+        /// WARNING: Do NOT add <c>[JsonIgnore]</c> here for "tri-format consistency". Ignoring it in
+        /// JSON would silently deserialize every group as a condition.
         /// </para>
         /// </remarks>
-        [IgnoreMember]
         public abstract FilterNodeKind Kind { get; }
     }
 }

@@ -1,11 +1,9 @@
-using MessagePack;
 
 namespace Bee.Definition.Paging
 {
     /// <summary>
     /// Paging metadata accompanying a paged list-style API result.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class PagingInfo
     {
         /// <summary>

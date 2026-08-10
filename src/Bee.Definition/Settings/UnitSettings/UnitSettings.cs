@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition.Settings
 {
@@ -19,7 +18,6 @@ namespace Bee.Definition.Settings
     /// by <see cref="Find"/>.
     /// </remarks>
     [Description("System-level unit-of-measure master.")]
-    [MessagePackObject]
     [XmlRoot("UnitSettings")]
     public class UnitSettings : MessagePackCollectionBase<UnitItem>
     {

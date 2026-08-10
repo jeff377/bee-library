@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Bee.Definition.Collections;
 using Bee.Definition.Settings;
-using MessagePack;
 
 namespace Bee.Definition
 {
@@ -17,7 +16,6 @@ namespace Bee.Definition
     /// <c>CollectionBaseFormatter&lt;CompanyAllowedCurrencies, AllowedCurrencyItem&gt;</c>.
     /// </remarks>
     [Description("Company allowed-currency whitelist.")]
-    [MessagePackObject]
     public class CompanyAllowedCurrencies : MessagePackCollectionBase<AllowedCurrencyItem>
     {
         /// <summary>

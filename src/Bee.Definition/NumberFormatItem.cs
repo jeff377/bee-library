@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition
 {
@@ -10,7 +9,6 @@ namespace Bee.Definition
     /// Held in <see cref="CompanyNumberFormats"/>.
     /// </summary>
     [Description("Company number-format override item.")]
-    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class NumberFormatItem : MessagePackCollectionItem
     {
         /// <summary>

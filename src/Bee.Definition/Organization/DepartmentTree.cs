@@ -1,6 +1,5 @@
 using System.Xml.Serialization;
 using Bee.Base;
-using MessagePack;
 
 namespace Bee.Definition.Organization
 {
@@ -17,7 +16,6 @@ namespace Bee.Definition.Organization
     /// The nested forest is immutable after construction; the index is a read-only derivation (built
     /// once under a lock), so a cached instance is never mutated by queries.
     /// </remarks>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class DepartmentTree : IKeyObject
     {
         /// <summary>

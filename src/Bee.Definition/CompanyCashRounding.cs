@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Bee.Definition.Collections;
 using Bee.Definition.Settings;
-using MessagePack;
 
 namespace Bee.Definition
 {
@@ -17,7 +16,6 @@ namespace Bee.Definition
     /// provided by <see cref="FindUnit"/>.
     /// </remarks>
     [Description("Company cash-rounding override table.")]
-    [MessagePackObject]
     public class CompanyCashRounding : MessagePackCollectionBase<CashRoundingItem>
     {
         /// <summary>

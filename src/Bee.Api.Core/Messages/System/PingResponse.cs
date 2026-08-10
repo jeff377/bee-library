@@ -1,13 +1,11 @@
 using Bee.Api.Contracts.System;
 using Bee.Definition.Security;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
 {
     /// <summary>
     /// API response for the ping operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class PingResponse : ApiResponse, IPingResponse
     {
         /// <summary>

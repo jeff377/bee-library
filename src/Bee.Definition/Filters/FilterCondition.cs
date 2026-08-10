@@ -1,11 +1,8 @@
-﻿using MessagePack;
-
-namespace Bee.Definition.Filters
+﻿namespace Bee.Definition.Filters
 {
     /// <summary>
     /// A single-field filter condition (e.g., Name LIKE '%Lee%', Age &gt; 18).
     /// </summary>
-    [MessagePackObject]
     public sealed class FilterCondition : FilterNode
     {
         /// <summary>
@@ -36,31 +33,26 @@ namespace Bee.Definition.Filters
         /// <summary>
         /// Gets or sets the field name.
         /// </summary>
-        [Key(100)]
         public string FieldName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the comparison operator.
         /// </summary>
-        [Key(101)]
         public ComparisonOperator Operator { get; set; }
 
         /// <summary>
         /// Gets or sets the primary value (used for Equal, Like, &gt;, etc.).
         /// </summary>
-        [Key(102)]
         public object? Value { get; set; }
 
         /// <summary>
         /// Gets or sets the second value (used for Between conditions).
         /// </summary>
-        [Key(103)]
         public object? SecondValue { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to ignore this condition when the value is null.
         /// </summary>
-        [Key(104)]
         public bool IgnoreIfNull { get; set; }
 
         /// <summary>

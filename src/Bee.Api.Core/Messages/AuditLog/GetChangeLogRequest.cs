@@ -1,14 +1,12 @@
 using Bee.Api.Contracts.AuditLog;
 using Bee.Definition.Logging;
 using Bee.Definition.Paging;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.AuditLog
 {
     /// <summary>
     /// API request for the change-log list operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class GetChangeLogRequest : ApiRequest, IGetChangeLogRequest
     {
         /// <summary>Gets or sets the inclusive lower bound on the event time (UTC).</summary>

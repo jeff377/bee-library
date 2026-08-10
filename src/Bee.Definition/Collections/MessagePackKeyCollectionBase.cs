@@ -1,11 +1,10 @@
 ﻿using Bee.Base;
+using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using Bee.Base.Collections;
-using MessagePack;
 using System.Text.Json.Serialization;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace Bee.Definition.Collections
@@ -14,7 +13,7 @@ namespace Bee.Definition.Collections
     /// Strongly typed keyed collection with MessagePack support.
     /// </summary>
     /// <typeparam name="T">The collection item type.</typeparam>
-    public class MessagePackKeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty, IMessagePackSerializationCallbackReceiver
+    public class MessagePackKeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty
         where T : class, IKeyCollectionItem  // Item type must implement IKeyCollectionItem interface
     {
         #region Constructors
@@ -42,7 +41,7 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets the owner object.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore, WireIgnore]
         [Browsable(false)]
         public object? Owner { get; } = null;
 
@@ -96,7 +95,7 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets the serialization state.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore, WireIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
@@ -120,60 +119,12 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets or sets the tag for storing additional information.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore, WireIgnore]
         [Browsable(false)]
         public object? Tag { get; set; } = null;
 
         #endregion
 
-        #region IMessagePackSerializationCallbackReceiver Interface
-
-        private System.Collections.Generic.List<T>? _itemsBuffer;
-
-        /// <summary>
-        /// Proxy property used by MessagePack to serialize the Items content.
-        /// </summary>
-        /// <remarks>
-        /// The base class KeyedCollection does not support MessagePack serialization; data must be
-        /// serialized via the ItemsForSerialization property. The getter returns a fresh copy of
-        /// the internal items so MessagePack observes a stable list. S2365 (property copy) is
-        /// unavoidable here because MessagePack's [Key] serialization requires a property, not a
-        /// method, and the base KeyedCollection exposes its items only via Items.
-        /// </remarks>
-        [Key(0)]
-        [SuppressMessage("Major Code Smell", "S2365:Properties should not make collection or array copies",
-            Justification = "MessagePack serialization requires a property (not a method) for [Key]. " +
-                            "KeyedCollection exposes its items only via Items, so returning a copy is unavoidable.")]
-        public System.Collections.Generic.List<T>? ItemsForSerialization
-        {
-            get => Items.ToList();
-            set => _itemsBuffer = value;
-        }
-
-        /// <summary>
-        /// Called by MessagePack before serialization.
-        /// </summary>
-        void IMessagePackSerializationCallbackReceiver.OnBeforeSerialize()
-        {
-            _itemsBuffer = null;
-        }
-
-        /// <summary>
-        /// Called by MessagePack after deserialization.
-        /// </summary>
-        void IMessagePackSerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            if (_itemsBuffer != null)
-            {
-                foreach (var item in _itemsBuffer)
-                {
-                    Add(item);
-                }
-                _itemsBuffer = null;
-            }
-        }
-
-        #endregion
 
         /// <summary>
         /// Gets the key for the specified item.

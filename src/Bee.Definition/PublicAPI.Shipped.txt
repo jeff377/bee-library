@@ -61,8 +61,6 @@ Bee.Definition.Collections.MessagePackCollectionItem.Tag.set -> void
 Bee.Definition.Collections.MessagePackKeyCollectionBase<T>
 Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.ChangeItemKey(string! key, Bee.Base.Collections.IKeyCollectionItem! value) -> void
 Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Insert(int index, Bee.Base.Collections.IKeyCollectionItem! value) -> void
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.ItemsForSerialization.get -> System.Collections.Generic.List<T!>?
-Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.ItemsForSerialization.set -> void
 Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.MessagePackKeyCollectionBase() -> void
 Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.MessagePackKeyCollectionBase(object! owner) -> void
 Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.Owner.get -> object?

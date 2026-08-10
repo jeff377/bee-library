@@ -1,12 +1,10 @@
 using Bee.Api.Contracts.AuditLog;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.AuditLog
 {
     /// <summary>
     /// API request for the get-change-detail operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class GetChangeDetailRequest : ApiRequest, IGetChangeDetailRequest
     {
         /// <summary>

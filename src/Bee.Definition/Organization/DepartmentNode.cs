@@ -1,6 +1,5 @@
 using System.Xml.Serialization;
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition.Organization
 {
@@ -10,7 +9,6 @@ namespace Bee.Definition.Organization
     /// rows are assembled into this nested shape by <see cref="DepartmentTree"/>; the load-time
     /// parent pointer lives on <see cref="DepartmentRow"/>, not here.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class DepartmentNode : MessagePackCollectionItem
     {
         /// <summary>

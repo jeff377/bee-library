@@ -1,12 +1,10 @@
 using Bee.Api.Contracts.System;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
 {
     /// <summary>
     /// API request for the ping operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class PingRequest : ApiRequest, IPingRequest
     {
         /// <summary>

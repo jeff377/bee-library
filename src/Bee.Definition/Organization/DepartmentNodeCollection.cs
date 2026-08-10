@@ -1,5 +1,4 @@
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition.Organization
 {
@@ -7,7 +6,6 @@ namespace Bee.Definition.Organization
     /// A collection of <see cref="DepartmentNode"/>. Tri-modal serialisable (XML / JSON /
     /// MessagePack) via <see cref="MessagePackCollectionBase{T}"/>.
     /// </summary>
-    [MessagePackObject]
     public class DepartmentNodeCollection : MessagePackCollectionBase<DepartmentNode>
     {
         /// <summary>

@@ -1,6 +1,5 @@
 using Bee.Definition.Collections;
 using Bee.Base.Serialization;
-using MessagePack;
 using System.Text.Json.Serialization;
 
 namespace Bee.Api.Core.Messages
@@ -17,7 +16,7 @@ namespace Bee.Api.Core.Messages
         /// <summary>
         /// Gets the serialization state.
         /// </summary>
-        [JsonIgnore, IgnoreMember]
+        [JsonIgnore]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>

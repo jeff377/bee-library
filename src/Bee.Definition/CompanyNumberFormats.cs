@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition
 {
@@ -16,7 +15,6 @@ namespace Bee.Definition
     /// recognises this base. The keyed-lookup semantics are provided by <see cref="FindDecimals"/>.
     /// </remarks>
     [Description("Company number-format override table.")]
-    [MessagePackObject]
     public class CompanyNumberFormats : MessagePackCollectionBase<NumberFormatItem>
     {
         /// <summary>

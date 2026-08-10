@@ -2,14 +2,12 @@ using Bee.Api.Contracts.Form;
 using Bee.Definition.Filters;
 using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.Form
 {
     /// <summary>
     /// API request for the form GetList operation.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class GetListRequest : ApiRequest, IGetListRequest
     {
         /// <summary>

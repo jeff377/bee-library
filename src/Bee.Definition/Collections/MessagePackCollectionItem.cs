@@ -4,7 +4,6 @@ using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using Bee.Base.Collections;
-using MessagePack;
 using System.Text.Json.Serialization;
 
 namespace Bee.Definition.Collections
@@ -43,7 +42,7 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets or sets the tag for storing additional information.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember, WireIgnore]
+        [XmlIgnore, JsonIgnore, WireIgnore]
         [Browsable(false)]
         public object? Tag { get; set; } = null;
 
@@ -54,7 +53,7 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets the serialization state.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember, WireIgnore]
+        [XmlIgnore, JsonIgnore, WireIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
@@ -72,7 +71,7 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets the owning collection.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember, WireIgnore]
+        [XmlIgnore, JsonIgnore, WireIgnore]
         [Browsable(false)]
         [TreeNodeIgnore]
         public ICollectionBase? Collection

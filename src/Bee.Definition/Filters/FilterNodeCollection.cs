@@ -1,12 +1,10 @@
 ﻿using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition.Filters
 {
     /// <summary>
     /// A collection of filter nodes.
     /// </summary>
-    [MessagePackObject]
     public class FilterNodeCollection : MessagePackCollectionBase<FilterNode>
     {
         /// <summary>

@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Reflection;
-using MessagePack;
 
 namespace Bee.Api.Core.Registry
 {
@@ -10,11 +9,15 @@ namespace Bee.Api.Core.Registry
     /// this registry maps it to the corresponding API type (with MessagePack attributes) for serialization.
     /// </summary>
     /// <remarks>
-    /// NOTE: No production code calls <see cref="Register{TContract,TApi}"/> today — every real wire type
-    /// already carries <c>[MessagePackObject]</c> and short-circuits before the mapping is consulted, so
-    /// the map is always empty and the conversion path is inert. This type is kept as reserved API
-    /// surface for the "BO returns a pure POCO" scenario; treat it as not-yet-active infrastructure
-    /// rather than a mechanism already in effect.
+    /// NOTE: No production code calls <see cref="Register{TContract,TApi}"/> today, so the map is
+    /// always empty and the conversion path is inert. This type is kept as reserved API surface for
+    /// the "BO returns a pure POCO" scenario; treat it as not-yet-active infrastructure rather than
+    /// a mechanism already in effect.
+    /// <para>
+    /// It used to short-circuit on <c>[MessagePackObject]</c> before consulting the map. That check
+    /// went away with the attributes themselves — wire types are now bound by the API layer's own
+    /// formatters, so there is no attribute left to test for.
+    /// </para>
     /// </remarks>
     public static class ApiContractRegistry
     {
@@ -36,7 +39,7 @@ namespace Bee.Api.Core.Registry
 
         /// <summary>
         /// Attempts to convert a value to its registered API type for serialization.
-        /// Returns the original value if no mapping is needed (type already has MessagePackObject attribute).
+        /// Returns the original value when no mapping is registered for its contract interface.
         /// </summary>
         /// <param name="value">The value to potentially convert.</param>
         /// <returns>The converted API object, or the original value if no conversion is needed.</returns>
@@ -45,10 +48,6 @@ namespace Bee.Api.Core.Registry
             if (value == null) return null;
 
             var valueType = value.GetType();
-
-            // If the type already has MessagePackObject attribute, no conversion needed
-            if (valueType.GetCustomAttribute<MessagePackObjectAttribute>() != null)
-                return value;
 
             // Search for a registered contract interface on the value's type
             foreach (var iface in valueType.GetInterfaces())

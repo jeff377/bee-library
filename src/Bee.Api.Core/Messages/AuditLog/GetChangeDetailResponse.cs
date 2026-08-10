@@ -1,6 +1,5 @@
 using Bee.Api.Contracts.AuditLog;
 using Bee.Definition.Logging;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.AuditLog
 {
@@ -8,7 +7,6 @@ namespace Bee.Api.Core.Messages.AuditLog
     /// API response for the get-change-detail operation: one change event's header plus its restored
     /// field-level before/after values.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class GetChangeDetailResponse : ApiResponse, IGetChangeDetailResponse
     {
         /// <summary>Gets or sets the log row's unique id (<c>st_log_change.sys_rowid</c>).</summary>

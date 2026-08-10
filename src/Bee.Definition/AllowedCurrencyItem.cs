@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Definition.Collections;
-using MessagePack;
 
 namespace Bee.Definition
 {
@@ -10,7 +9,6 @@ namespace Bee.Definition
     /// <see cref="CompanyAllowedCurrencies"/>. Holds one ISO 4217 alpha-3 currency code.
     /// </summary>
     [Description("Company allowed-currency whitelist item.")]
-    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class AllowedCurrencyItem : MessagePackCollectionItem
     {
         /// <summary>

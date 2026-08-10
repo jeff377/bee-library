@@ -1,12 +1,10 @@
 using Bee.Api.Contracts.System;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.System
 {
     /// <summary>
     /// API response carrying one tenant's business plugin bindings.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class GetCustomizePluginSettingsResponse : ApiResponse, IGetCustomizePluginSettingsResponse
     {
         /// <summary>

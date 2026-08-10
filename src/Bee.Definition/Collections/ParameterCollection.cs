@@ -1,11 +1,9 @@
-using MessagePack;
 
 namespace Bee.Definition.Collections
 {
     /// <summary>
     /// A parameter item collection with serialization support.
     /// </summary>
-    [MessagePackObject]
     public class ParameterCollection : MessagePackKeyCollectionBase<Parameter>
     {
         /// <summary>

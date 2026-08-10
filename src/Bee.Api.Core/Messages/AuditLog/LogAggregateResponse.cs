@@ -1,6 +1,5 @@
 using System.Data;
 using Bee.Api.Contracts.AuditLog;
-using MessagePack;
 
 namespace Bee.Api.Core.Messages.AuditLog
 {
@@ -9,7 +8,6 @@ namespace Bee.Api.Core.Messages.AuditLog
     /// unpaged summary result set. The <see cref="Table"/> carries whichever dimension / metric columns
     /// the aggregate projects.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class LogAggregateResponse : ApiResponse, ILogAggregateResponse
     {
         /// <summary>Gets or sets the aggregate result rows.</summary>

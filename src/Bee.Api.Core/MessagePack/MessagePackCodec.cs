@@ -1,11 +1,7 @@
-using Bee.Definition;
-using Bee.Definition.Settings;
-using Bee.Definition.Filters;
-using Bee.Definition.Organization;
+using Bee.Definition.Collections;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
-using Bee.Definition.Sorting;
 
 namespace Bee.Api.Core.MessagePack
 {
@@ -25,14 +21,6 @@ namespace Bee.Api.Core.MessagePack
                 {
                     new DataTableFormatter(),          // Custom DataTable formatter
                     new DataSetFormatter(),             // Custom DataSet formatter
-                    new CollectionBaseFormatter<FilterNodeCollection, FilterNode>(),   // FilterNodeCollection as array
-                    new CollectionBaseFormatter<SortFieldCollection, SortField>(),     // SortFieldCollection as array
-                    new CollectionBaseFormatter<DepartmentNodeCollection, DepartmentNode>(), // DepartmentNodeCollection as array
-                    new CollectionBaseFormatter<CompanyNumberFormats, NumberFormatItem>(), // CompanyNumberFormats as array
-                    new CollectionBaseFormatter<CurrencySettings, CurrencyItem>(), // CurrencySettings as array
-                    new CollectionBaseFormatter<CompanyCashRounding, CashRoundingItem>(), // CompanyCashRounding as array
-                    new CollectionBaseFormatter<CompanyAllowedCurrencies, AllowedCurrencyItem>(), // CompanyAllowedCurrencies as array
-                    new CollectionBaseFormatter<UnitSettings, UnitItem>(), // UnitSettings as array
                     // Hand-written per-type formatters: they honour [WireIgnore] by naming the
                     // wire members explicitly, and stay generic all the way down so the mobile
                     // heads (reflection-only AOT) take the same path as the desktop.
@@ -43,16 +31,21 @@ namespace Bee.Api.Core.MessagePack
                     new AllowedCurrencyItemFormatter(),
                     new ParameterFormatter(),
                     new FilterNodeFormatter(),
+                    // Keyed collections are not optional the way the plain ones are: contractless
+                    // binds a KeyedCollection as a dictionary and loses the item type.
+                    new KeyCollectionBaseFormatter<ParameterCollection, Parameter>(),
                     SafeTypelessFormatter.Instance      // Type-validated polymorphic formatter
                 },
-                // IMPORTANT: every MessagePackCollectionBase<> collection must be registered above.
-                // FormatterResolver below looks like an automatic fallback for them but is unreachable
-                // (ContractlessStandardResolver precedes it) — see its remarks. Verified against
-                // MessagePack 3.1.7: an unregistered collection still serializes its elements
-                // correctly, and it is deserialization that throws MessagePackSerializationException,
-                // so the failure surfaces only when a payload is read back — possibly in a different
-                // process from the one that wrote it. Rule BEE3003's sibling BEE4001 catches the
-                // omission at build time.
+                // Plain collections need no entry above. The contractless resolver recognises a
+                // `Collection<T>` and writes it as an array — byte-for-byte what the old
+                // CollectionBaseFormatter registrations produced. Those registrations were only
+                // ever needed because the collections carried `[MessagePackObject]`, whose opt-in
+                // membership left them with zero members and so an empty map; with the attribute
+                // gone the need went with it.
+                //
+                // Keyed collections are the exception, and they are registered above: contractless
+                // binds a `KeyedCollection<TKey, TItem>` as a dictionary and hands back
+                // `Dictionary<object, object>` in place of the item type.
                 new IFormatterResolver[]
                 {
                     ContractlessStandardResolver.Instance, // Contractless resolver (without unsafe Typeless support)

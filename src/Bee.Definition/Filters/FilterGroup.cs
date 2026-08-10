@@ -1,5 +1,4 @@
 ﻿using System.Xml.Serialization;
-using MessagePack;
 using System.Text.Json.Serialization;
 
 namespace Bee.Definition.Filters
@@ -7,7 +6,6 @@ namespace Bee.Definition.Filters
     /// <summary>
     /// A filter condition group that combines multiple nodes with AND/OR logic.
     /// </summary>
-    [MessagePackObject]
     public sealed class FilterGroup : FilterNode
     {
         /// <summary>
@@ -36,13 +34,11 @@ namespace Bee.Definition.Filters
         /// <summary>
         /// Gets or sets the logical operator for this group.
         /// </summary>
-        [Key(100)]
         public LogicalOperator Operator { get; set; }
 
         /// <summary>
         /// Gets or sets the child node collection.
         /// </summary>
-        [Key(101)]
         [XmlArrayItem(typeof(FilterCondition))]
         [XmlArrayItem(typeof(FilterGroup))]
         [JsonConverter(typeof(FilterNodeCollectionJsonConverter))]
