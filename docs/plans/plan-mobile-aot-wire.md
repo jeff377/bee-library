@@ -1,6 +1,6 @@
 # 計畫：修復行動端（iOS）AOT 下的 MessagePack wire 路徑
 
-**狀態：🚧 進行中（2026-08-10）—— 階段 0–3 已完成，階段 4 待真 Apple runtime 驗證**
+**狀態：✅ 已完成（2026-08-10）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -8,15 +8,32 @@
 | 1 | typeless 通道改為封閉型別集的手寫 formatter（修既有缺陷） | ✅ 已完成（2026-08-10） |
 | 2 | `DataTable` / `DataSet` 的內部 DTO 補手寫 formatter | ✅ 已完成（2026-08-10） |
 | 3 | wire 合約型別全面脫離 contractless（修 adr-036 引入的放大） | ✅ 已完成（2026-08-10） |
-| 4 | 真 Mono-iOS 端到端驗證，收尾並更新結論 | 📝 待辦 |
+| 4 | 真 Mono-iOS 端到端驗證，收尾並更新結論 | ✅ 已完成（2026-08-10） |
 
 ## 執行結果（2026-08-10）
 
 | 量測 | 修復前 | 修復後 |
 |------|-------|-------|
 | `-p:DynamicCodeSupport=false` 下 `Bee.Api.Core.UnitTests` | 186 失敗 | **0 失敗**（1 略過，見下） |
-| NativeAOT probe（真無動態碼）17 條 round-trip | 11 失敗 | **全數通過** |
+| NativeAOT probe（真無動態碼） | 11 失敗 | **全數通過** |
 | 一般（JIT）全套測試 16 個專案 | 綠 | 綠 |
+
+### 階段 4：五個環境的實測矩陣
+
+| 環境 | 性質 | 結果 |
+|------|------|------|
+| CoreCLR + `DynamicCodeSupport=false` | 桌面閘門（受管層面同 iOS） | 0 失敗 / 718 |
+| NativeAOT（osx-arm64） | 真無動態碼，泛型具現最嚴格 | 18 條全過 |
+| **Mac Catalyst Release** | **Mono + Apple SDK** | **18 條全過** |
+| **iOS 模擬器 Release** | **真 iOS runtime** | **18 條全過** |
+| iOS 裝置 `ios-arm64` full-AOT build | 全閉包的 AOT 編譯 | 建置成功、0 錯誤 |
+
+兩個 Apple runtime 都回報 `IsDynamicCodeSupported = False`；對照組（未註冊 POCO 走
+contractless）在兩者上皆如預期失敗，證明閘門在 Mono 上同樣有辨識力。
+`LanguageEnum.Entries` 的 XML 修正也在真 iOS runtime 上驗證通過。
+
+**唯一未驗證的是 iOS 實機的執行期**（需 Apple Developer 簽章與實機）。實機相對模擬器的
+差異只在「Mono 完全沒有 JIT」，而該面向已由 NativeAOT 涵蓋，故列為低風險的形式缺口。
 
 略過的那一條是 `[DynamicCodeFact]`：`Parameter.Value` 帶**未註冊型別**時走具名型別分支，
 需非泛型多載，在無動態碼的 runtime 上本來就不可用——那是
@@ -40,9 +57,9 @@
 > [../../.claude/rules/apple-mobile-trim.md](../../.claude/rules/apple-mobile-trim.md)。
 > 本檔只處理「怎麼修」。
 
-## 一句話
+## 一句話（動工當下的問題陳述）
 
-**iOS head 目前的 MessagePack wire 是壞的**——幾乎每個 payload 型別都擲
+**iOS head 的 MessagePack wire 是壞的**——幾乎每個 payload 型別都擲
 `FormatterNotRegisteredException`。這不是模擬假象，且 adr-036 把它放大了約 5 倍。
 
 ## 調查結論（本計畫的前提）
@@ -198,12 +215,19 @@ formatter 一起加，否則型別新增屬性時不會有任何東西擋下。
 （實測有 `MakeGenericMethod` 相關的失敗只在 NativeAOT 出現）。
 故需一次真 Apple runtime 的端到端確認。
 
-依成本排序：
+**執行結果**：Mac Catalyst Release 與 iOS 模擬器 Release 皆 18 條全過，
+iOS 裝置 `ios-arm64` full-AOT build 成功。矩陣見本檔開頭。
 
-1. **iOS 模擬器**——SDK 一樣設 `DynamicCodeSupport=false`，可驗到本案的主要缺陷類別，
-   不需 Apple Developer 帳號與實機。
-2. **Mac Catalyst**——同一條 SDK 規則，可在本機直接跑。
-3. **iOS 實機**——形式收尾。
+作法（探針專案不入版控，重跑時照此重建）：把 round-trip 探針編成
+`net10.0-maccatalyst` / `net10.0-ios` 的最小 app，前者直接執行 bundle 內的可執行檔，
+後者以 `dotnet build -t:Run -p:_DeviceName=:v2:udid=<sim udid>` 送上模擬器讀 os_log。
+兩者都需要 `-p:ValidateXcodeVersion=false`（workload 鎖的 Xcode 版本與本機不符），
+裝置 target 另加 `-p:EnableCodeSigning=false` 以在無簽章下完成 AOT 編譯。
+
+> **踩到的雷**：改動組件閉包後對同一輸出樹增量重建，app bundle 內的 AOT container
+> 會與受管組件對不上，啟動即 `load_aot_module` → `abort()`，**且 `Main` 從未執行、
+> 一行輸出都沒有**，看起來像程式碼炸掉。`rm -rf bin obj` 重建即正常。
+> 已收進 `rules/apple-mobile-trim.md`。
 
 ## 驗收判準
 

@@ -65,8 +65,8 @@ Error: XmlSerializeErrorDetails, 2, 2
 > wire 路徑另有一套要求（型別一律顯式註冊 formatter），見 `rules/serialization.md`。
 
 - **行動端 Release trim/AOT `XmlSerializer` 已驗證可過**：Android emulator full-trim round-trip PASS；
-  iOS device-target AOT build 0 錯誤；iOS 模擬器以 `IsDynamicCodeSupported=false` 強制
-  reflection-only path（＝device AOT 同路徑）round-trip PASS。唯 iOS **實機** AOT 執行期
+  iOS device-target AOT build 0 錯誤；iOS 模擬器與 Mac Catalyst Release（皆為真 Mono、
+  皆 `IsDynamicCodeSupported=False`）round-trip PASS。唯 iOS **實機** AOT 執行期
   為低風險形式收尾（需 Apple Developer 簽章 + 實機）。
 - **半 B 免實機驗證法**：進入點第一行
   `AppContext.SetSwitch("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", false)`
@@ -114,12 +114,42 @@ dotnet test <測試專案> -c Release --settings .runsettings -p:DynamicCodeSupp
 |---------|------|
 | CoreCLR + 開關關掉（桌面重現） | `InvalidProgramException`（有 JIT 卻被告知不可用，反射 invoke 走 interpreted thunk，而 `MessagePackWriter` 是 `ref struct`） |
 | NativeAOT（真無動態碼） | `InvalidOperationException` / `NotSupportedException` / `MissingMethodException` |
-| Mono full-AOT（iOS 實機） | 另一組（未實測） |
+| Mono（Mac Catalyst / iOS 模擬器） | `FormatterNotRegisteredException` 這類純受管的判斷與桌面一致；泛型具現類未取得樣本 |
 
 `InvalidProgramException` **確實**是桌面重現特有的症狀——但那只表示**症狀**失真，
 **不表示失敗是假的**。判別法：拿掉開關會不會過？會過而開著不過，就是真的踩到無動態碼路徑。
 
-### 3. 需要「真的沒有 Emit」時：用 NativeAOT，不必排實機
+### 3. 要真 Apple runtime 時：Mac Catalyst 最便宜，其次 iOS 模擬器
+
+兩者的 `DynamicCodeSupport` 都被 SDK 設為 `false`，跑的是 Mono——正是桌面重現與
+NativeAOT 都涵蓋不到的那一格。把待測邏輯編成最小 app 即可：
+
+```bash
+# Mac Catalyst：直接執行 bundle 內的可執行檔，stdout 走 os_log
+dotnet build -c Release -p:ValidateXcodeVersion=false
+./bin/Release/net10.0-maccatalyst/maccatalyst-arm64/<App>.app/Contents/MacOS/<App>
+
+# iOS 模擬器：先 build 再 -t:Run（切勿 simctl install 手動 build 的 .app）
+dotnet build -c Release -f net10.0-ios -r iossimulator-arm64 -p:ValidateXcodeVersion=false
+dotnet build -t:Run -c Release -f net10.0-ios -r iossimulator-arm64 \
+  -p:ValidateXcodeVersion=false -p:_DeviceName=:v2:udid=<sim udid>
+
+# iOS 裝置 target：無簽章也能完成 AOT 編譯，驗「整個閉包編得出來」
+dotnet build -c Release -f net10.0-ios -r ios-arm64 \
+  -p:ValidateXcodeVersion=false -p:EnableCodeSigning=false
+```
+
+專案需要 `ApplicationId`（否則 `A bundle identifier is required`）。
+
+> **雷：Apple app bundle 不吃增量重建。** 改動組件閉包後對同一輸出樹再 build，
+> bundle 內的 AOT container 會與受管組件對不上，啟動即
+> `load_aot_module` → `abort()`（SIGABRT）。徵狀最惡劣的地方在於
+> **`Main` 從未執行、一行輸出都沒有**，看起來像自己的程式碼在初始化時炸掉。
+> crash report 認得出來：堆疊是 `mono_jit_init` → `mini_init` → `mono_aot_get_method`
+> → `load_container_amodule` → `load_aot_module` → `abort`，全在受管碼之前。
+> **正解是 `rm -rf bin obj` 重建**，不要往自己的程式碼查。
+
+### 4. 需要「真的沒有 Emit」時：用 NativeAOT，不必排實機
 
 桌面重現的 runtime 底下仍是 JIT。要一個**真正**沒有 `Reflection.Emit` 的環境，
 最便宜的是本機 NativeAOT console：

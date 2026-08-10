@@ -82,8 +82,10 @@ wire 成員的定義與 JSON 相同：public 可讀可寫、未標 `[JsonIgnore]
 
 ### 正面
 
-- iOS 端的 wire 由「幾乎全不可用」變為可用；驗證於 NativeAOT（真無動態碼）與
-  `DynamicCodeSupport=false` 閘門，兩者皆零失敗。
+- iOS 端的 wire 由「幾乎全不可用」變為可用。驗證於五個環境：`DynamicCodeSupport=false`
+  閘門（0 失敗 / 718）、NativeAOT、**Mac Catalyst Release**、**iOS 模擬器 Release**
+  （後兩者為真 Mono、皆回報 `IsDynamicCodeSupported = False`），
+  以及 iOS 裝置 target 的 full-AOT 編譯。
 - `object` 通道不再以完整組件限定名描述每個值，payload 變小，也不再於 wire 上點名 CLR 組件。
 - 反序列化攻擊面縮小：框架自有值走封閉判別集合，不經型別名解析。
 - 漂移守衛由人工維護的常數變成自動比對，新增屬性忘記註冊會被測試擋下。
@@ -106,9 +108,10 @@ ADR-036「放棄 source generator 退路」那條代價的依據（reflection fa
 
 ## 未納入
 
-- **Mono full-AOT（iOS 實機 / 模擬器）尚未實測**。已驗證的兩個環境是 CoreCLR
-  搭配關閉的開關，以及 NativeAOT。純受管邏輯（resolver 依開關拒絕產生 formatter）
-  在 Mono 上必然相同；執行期泛型具現則 NativeAOT 比 Mono 嚴格，故 NativeAOT 通過
-  不等於 Mono 必通過——形式收尾仍需一次真 Apple runtime。
+- **iOS 實機的執行期尚未實測**（需 Apple Developer 簽章與實機）。已驗證的環境有五個：
+  CoreCLR 搭配關閉的開關、NativeAOT、Mac Catalyst Release、iOS 模擬器 Release，
+  以及 iOS 裝置 target 的 full-AOT 編譯。後兩者是真 Mono、皆回報
+  `IsDynamicCodeSupported = False`。實機相對模擬器的唯一差異是「Mono 完全沒有 JIT」，
+  而該面向已由 NativeAOT 涵蓋，故列為低風險的形式缺口。
 - **具名型別逃生門在行動端仍不可用**。要讓 host 自訂型別也能上行動端的 wire，
   需要另一套「host 註冊自己的 formatter」機制，本 ADR 不處理。

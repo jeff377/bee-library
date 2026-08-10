@@ -115,12 +115,12 @@ BO 程式碼處理複雜的，兩者各安其位。**租戶層只有「程式碼
 **已追查完畢並修復（2026-08-10）：是真實缺陷，不是模擬假象。**
 修復記於 [ADR-037](../adr/adr-037-wire-explicit-registration.md)，
 執行過程見 [plan-mobile-aot-wire.md](../plans/plan-mobile-aot-wire.md)。
-**剩餘工作只有一項：真 Apple runtime（iOS 模擬器 / Mac Catalyst）的形式驗證**
-——已驗證的兩個環境是 CoreCLR 關開關與 NativeAOT，都不是 Mono full-AOT。
+已在五個環境驗證通過（閘門、NativeAOT、Mac Catalyst Release、iOS 模擬器 Release、
+iOS 裝置 full-AOT 編譯）；**僅餘 iOS 實機執行期未測**，屬低風險形式缺口。
 
 以下留結論摘要供索引。
 
-- **iOS head 的 wire 目前不通**：adr-036 移除全部 `[MessagePackObject]` 標註後，
+- **iOS head 的 wire 曾整條不通**：adr-036 移除全部 `[MessagePackObject]` 標註後，
   wire 型別改由 contractless 承載，而 **contractless 沒有 reflection fallback**
   （MessagePack 的 fallback 只涵蓋有標註的合約型別，NativeAOT 對照實驗證實）。
 - **「模擬」就是 iOS SDK 自己設的開關**：`Microsoft.iOS.Sdk` 對 iOS / tvOS / MacCatalyst
