@@ -141,13 +141,26 @@ dotnet build -c Release -f net10.0-ios -r ios-arm64 \
 
 專案需要 `ApplicationId`（否則 `A bundle identifier is required`）。
 
-> **雷：Apple app bundle 不吃增量重建。** 改動組件閉包後對同一輸出樹再 build，
-> bundle 內的 AOT container 會與受管組件對不上，啟動即
-> `load_aot_module` → `abort()`（SIGABRT）。徵狀最惡劣的地方在於
-> **`Main` 從未執行、一行輸出都沒有**，看起來像自己的程式碼在初始化時炸掉。
-> crash report 認得出來：堆疊是 `mono_jit_init` → `mini_init` → `mono_aot_get_method`
-> → `load_container_amodule` → `load_aot_module` → `abort`，全在受管碼之前。
-> **正解是 `rm -rf bin obj` 重建**，不要往自己的程式碼查。
+> **雷：Apple app bundle 不吃增量重建。** 改動框架組件後對同一輸出樹再 build，
+> bundle 內可能留著**舊的受管組件**——`dotnet build` 會回報成功，什麼警告都沒有。
+> 兩種徵狀，都不會指向真因：
+>
+> 1. **啟動即 SIGABRT，`Main` 從未執行、一行輸出都沒有**（AOT container 與受管組件對不上）。
+>    crash report 認得出來：`mono_jit_init` → `mini_init` → `mono_aot_get_method`
+>    → `load_container_amodule` → `load_aot_module` → `abort`，全在受管碼之前。
+> 2. **app 跑得起來，但行為是舊版的**——例如 client 仍用舊 wire 格式對新 server 說話，
+>    錯誤訊息還會被框架的邊界包成含糊的「An error occurred during the data decoding process.」，
+>    看起來像後端壞了。2026-08-10 實際踩到：bundle 內的 `Bee.Api.Core.dll` 是六天前的。
+>
+> **先驗證再查程式碼**——比對 bundle 內的組件時間戳，一秒定案：
+>
+> ```bash
+> ls -la <sim device>/.../<App>.app/Bee.Api.Core.dll   # iOS 模擬器
+> ```
+>
+> **正解是 `rm -rf bin obj` 重建。** 注意順序：clean 之後必須先 `dotnet build` 再
+> `-t:Run`，直接 `-t:Run` 會擋在
+> `The app must be built before the arguments to launch the app using mlaunch can be computed`。
 
 ### 4. 需要「真的沒有 Emit」時：用 NativeAOT，不必排實機
 
