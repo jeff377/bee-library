@@ -4,8 +4,8 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 0 | 可行性驗證（spike）：五項前提實測 | ⚠️ **閘門未通過**（4 項過，AOT 項失敗，見發現 7） |
-| 1 | `[WireIgnore]` 標註 + `BeeObjectFormatter`（6 個型別顯式註冊）落地 | 📝 待做 |
+| 0 | 可行性驗證（spike）：五項前提實測 | ✅ 已完成（2026-08-09）——原設計否決，改採手寫 formatter（發現 7–9） |
+| 1 | `[WireIgnore]` 標註 + 6 支手寫 formatter（或改以型別形貌處理 `Tag`／`Key`） | 📝 待做 |
 | 2 | `FilterNode` 家族外置為 `FilterNodeFormatter`，移除 `[Union]` / `[Key]` | 📝 待做 |
 | 3 | `SafeTypelessFormatter` 遷入 Api.Core，移除 `Parameter` 的 formatter attribute | 📝 待做 |
 | 4 | 刪除四個 `MessagePack*` 集合型別；註冊清單與 BEE4001 退役（發現 6 後大幅簡化） | 📝 待做 |
@@ -91,10 +91,11 @@ MessagePack 不同——它是一個明確的技術選擇，且會沿相依鏈�
 通道 round-trip，內容完整還原，且 wire 格式與 `CollectionBaseFormatter` 完全一致。
 移除標註**同時**解決了「必須記得註冊」的問題——因為需要註冊的原因正是標註本身。
 
-## 七個關鍵發現
+## 九個關鍵發現
 
-發現 1–4 來自盤點；**發現 5–7 來自階段 0 spike 實測**——5 收緊了執行順序，
-6 大幅簡化了階段 4，**7 讓閘門未通過、設計需重新評估**。
+發現 1–4 來自盤點；**發現 5–9 來自階段 0 spike 實測**——5 收緊執行順序、
+6 簡化階段 4、7 否決了 `BeeObjectFormatter` 原設計、8 給出替代解、
+9 是超出範圍但值得另案追查的既有問題。
 
 ### 發現 5：標註移除有編譯期順序相依（2026-08-09 實測）
 
@@ -193,6 +194,47 @@ System.NotSupportedException:
 
 → **B 最便宜且需先做的實驗**：移除 item 基底的 `[IgnoreMember]`，觀察 contractless
 納入哪些成員。若原生就排除多數，範圍會急遽縮小。
+
+### 發現 8：手寫 formatter 是 AOT 下唯一可行的路（2026-08-09 實測）
+
+發現 7 的根因是「對**任意**屬性型別遞迴」只能走非泛型 API。但本計畫只需為
+**6 個具體型別**做這件事，而它們的屬性型別**編譯期已知**——
+手寫 formatter 即可全程使用泛型多載 `Serialize<T>(ref writer, ...)`，零反射。
+
+以 `SortFieldFormatter` 驗證（[SortFieldFormatter.cs](../../src/Bee.Api.Core/MessagePack/SortFieldFormatter.cs)）：
+reflection-only 模式下 4 個測試**全過**，取代了原本失敗的泛型反射版本。
+
+→ **`BeeObjectFormatter<T>`（泛型反射版）否決**，改為每個型別一支手寫 formatter，
+與既有的 `DataSetFormatter` / `DataTableFormatter` / `CollectionBaseFormatter`
+以及規劃中的 `FilterNodeFormatter` 風格一致。
+
+**維護性防護**：每支 formatter 公開 `WireMemberCount` 常數，wire 測試斷言
+map header 與之相符——`SortField` 新增屬性而未同步 formatter 時測試立刻紅。
+
+### 發現 9：現行 wire 路徑在 reflection-only 下大量失敗（2026-08-09 實測，**超出本計畫範圍**）
+
+以 `IsDynamicCodeSupported=false` 跑 `Bee.Api.Core.UnitTests`：
+
+| 分支 | 失敗數 |
+|------|-------|
+| **乾淨 `main`（無任何本計畫改動）** | **51 / 694** |
+| spike 分支（含手寫 `SortFieldFormatter`） | 45 / 693 |
+
+失敗集中於既有 production formatter：`ParameterCollection`（12）、
+`System.Data.DataTable`（11）、`DataSet`（3）、`FilterNode` / `FilterGroup`（2）。
+
+**這些失敗是既有的，不是本計畫造成的**——本計畫的手寫 formatter 反而修好 6 個。
+
+> ⚠️ **此發現與 [rules/serialization.md](../../.claude/rules/serialization.md) 記載的
+> 「MessagePack 3.x 有 reflection-based fallback，行動端 AOT 可用」不一致**，
+> 值得獨立追查。兩點保留：
+> 1. 此為 JIT runtime 上的**模擬**（`RuntimeHostConfigurationOption`），
+>    雖是 [apple-mobile-trim.md](../../.claude/rules/apple-mobile-trim.md) 認可的免實機驗證法，
+>    真實裝置 AOT 行為未必相同。
+> 2. 失敗是否會在實際 wire 流程中顯現，取決於這些型別在行動端是否真的走 MessagePack。
+>
+> **本計畫不處理**——範圍是「解除相依」，不是「修復行動端 AOT」。
+> 建議另立 plan 追查，或先在 `docs/repo-ops/future-work.md` 記一筆。
 
 ## 前四個發現（來自盤點）
 
@@ -357,38 +399,31 @@ public sealed class WireIgnoreAttribute : Attribute { }
 - *以「排除 `ITagProperty` / `IObjectSerialize` / `ICollectionItem` 介面成員」的隱含規則取代標註。*
   對未來新增的排除需求沒有出口，且規則不可見於程式碼閱讀處。
 
-### 元件二：`BeeObjectFormatter<T>`（`Bee.Api.Core/MessagePack/`）
+### 元件二：每型別手寫 formatter（`Bee.Api.Core/MessagePack/`）
 
-以屬性名為鍵序列化（行為對齊 contractless），額外遵守 `[WireIgnore]`。
-
-**作用面只有 6 個型別**，不是全域機制。需要 `[WireIgnore]` 生效的是繼承 item 基底、
-且在合約面上的型別：
+**作用面 6 個型別**，每個一支手寫 formatter，全程使用泛型多載、零反射
+（理由見發現 7、8——泛型反射版在 AOT 下不可行）：
 
 | 型別 | 入口 |
 |------|------|
-| `SortField` | `IGetListRequest.SortFields` |
+| `SortField` | `IGetListRequest.SortFields`（原型已完成並驗證） |
 | `DepartmentNode` | `IGetDepartmentTreeResponse.Tree` |
 | `NumberFormatItem` / `CashRoundingItem` / `AllowedCurrencyItem` | `CompanyInfo` 遞移 |
 | `Parameter` | `ApiMessageBase.Parameters` |
 
-（`FilterCondition` / `FilterGroup` 同為 item 子型別，但走元件三的 `FilterNodeFormatter`，
-不需要本元件；`CurrencyItem` / `UnitItem` 不在合約面上，無需處理。）
+（`FilterCondition` / `FilterGroup` 走元件三；`CurrencyItem` / `UnitItem` 不在合約面上。）
 
-**註冊方式：`MessagePackCodec.Options` 的 formatter 陣列顯式列出這 6 個**——
-沿用既有 `CollectionBaseFormatter` 的註冊模式，formatter 陣列優先於 resolver 鏈，
-因此**完全不需要改動 `ContractlessStandardResolver` 的位置**，其餘所有型別行為不變。
+**範圍可能再縮小**：實測顯示 contractless **原生**只納入「public get + public set」的成員——
+`SerializeState`（private setter）與 `Collection`（唯讀）本就被排除
+（payload `82-A4-4E-61-6D-65-A1-61-A3-54-61-67-C0` = 僅 `Name` 與 `Tag` 兩個成員）。
+**真正需要排除的只有 `Tag`，以及 `MessagePackKeyCollectionItem.Key`**（與子類代理屬性重複）。
 
-實作要點：
+→ 若改以型別形貌處理這兩個成員（例如顯式介面實作），手寫 formatter 可能連帶不需要。
+`.Tag` 全 repo 僅 26 處使用（多數在測試），`Key` 在 wire 型別中僅 `Parameter` 代理。
+**此選項待階段 1 開工前定案。**
 
-- reflection 取得 public 可讀寫實例屬性，過濾 `[WireIgnore]`
-- `PropertyInfo[]` 需 cache（`ConcurrentDictionary<Type, ...>`）
-- **不得用 `Reflection.Emit`**——行動端 AOT 為 reflection-only 路徑
-  （見 [apple-mobile-trim.md](../../.claude/rules/apple-mobile-trim.md)）
-- 巢狀型別遞迴時 delegate 回 `options.Resolver`
-
-> **這是刻意收窄的結果。** 前一版設計是「寫一個 `BeeContractlessResolver` 取代
-> `ContractlessStandardResolver`」——那會改變**所有**型別的解析路徑，風險遠大於需求。
-> 依「MessagePack 只要管 API 合約能正常序列化」的判準，6 個顯式註冊即足夠。
+**維護性防護**：每支 formatter 公開 `WireMemberCount` 常數，wire 測試斷言 map header
+與之相符——型別新增屬性而未同步 formatter 時測試立刻紅。
 
 ### 元件三：`FilterNodeFormatter`（`Bee.Api.Core/MessagePack/`）
 
@@ -506,7 +541,7 @@ proxy 屬性存在的唯一理由就是「attribute 只能標在屬性上」，�
 
 ### 階段 1：`[WireIgnore]` + `BeeObjectFormatter` 落地
 
-新增 attribute 與 formatter，於 `MessagePackCodec` 顯式註冊 6 個型別，
+新增 attribute 與 6 支手寫 formatter，於 `MessagePackCodec` 顯式註冊，
 把生效中的 `[IgnoreMember]` 換掉，移除不生效的。
 **不動 resolver 鏈**。此階段結束時 `Bee.Definition` 仍引用 MessagePack。
 

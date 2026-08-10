@@ -45,8 +45,8 @@ namespace Bee.Api.Core.UnitTests
         {
             var bytes = MessagePackCodec.Serialize(new SortField("a", SortDirection.Asc));
 
-            // fixmap 首位元組為 0x80|n。排除 Tag / SerializeState / Collection 後應剩 2 個成員。
-            Assert.Equal(0x82, bytes[0]);
+            // fixmap 首位元組為 0x80|n；成員數須與 formatter 宣告的一致。
+            Assert.Equal(0x80 | SortFieldFormatter.WireMemberCount, bytes[0]);
         }
 
         [Fact]
