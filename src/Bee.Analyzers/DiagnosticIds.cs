@@ -101,11 +101,6 @@ namespace Bee.Analyzers
         public const string MissingExecFuncAccessControl = "BEE3003";
 
 
-        /// <summary>
-        /// A name-based MessagePack type renames a property for JSON only, so the two wire formats
-        /// disagree on the field name.
-        /// </summary>
-        public const string WireFieldNameMismatch = "BEE4002";
 
 
         /// <summary>

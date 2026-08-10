@@ -1,11 +1,9 @@
-﻿using MessagePack;
 
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
     /// Serializable data relation used to describe parent-child relationships between tables.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class SerializableDataRelation
     {
         /// <summary>

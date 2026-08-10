@@ -47,10 +47,6 @@ wire 合約的建構子參數順序不對、BO 方法沒有宣告存取控制—
 
 | ID | 嚴重度 | 規則 |
 |----|--------|------|
-| BEE4001 | Error | 繼承 `MessagePackCollectionBase` 的集合必須註冊 formatter——**框架內部規則** |
-| BEE4002 | Error | JSON 屬性改名不得與 name-based MessagePack 鍵衝突 |
-| BEE4003 | Error | 多型 union 階層必須維持整數 `[Key]` |
-| BEE4004 | Error | 使用整數鍵時，建構子參數順序必須跟隨鍵的順序 |
 | BEE4005 | Warning | 框架集合應只公開一個 public `Add` |
 | BEE4006 | Error | 參與序列化的型別必須有 public 無參數建構子 |
 

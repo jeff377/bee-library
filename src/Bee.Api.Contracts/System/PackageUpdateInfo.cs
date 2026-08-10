@@ -1,11 +1,9 @@
-using MessagePack;
 
 namespace Bee.Api.Contracts.System
 {
     /// <summary>
     /// Update information for a single query item.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class PackageUpdateInfo
     {
         /// <summary>

@@ -1,13 +1,11 @@
 ﻿using System.Data;
 using Bee.Base.Data;
-using MessagePack;
 
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
     /// Serializable DataTable object used to transport DataTable structure and data.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class SerializableDataTable
     {
         /// <summary>

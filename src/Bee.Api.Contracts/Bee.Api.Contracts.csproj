@@ -7,16 +7,10 @@
     <PackageTags>bee.net;api;contracts;interface;dto;shared</PackageTags>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- Explicit rather than transitive via Bee.Definition: the concrete DTOs here carry
-         MessagePack attributes, so it is part of this package's contract. -->
-    <PackageReference Include="MessagePack" Version="3.1.7" />
-  </ItemGroup>
-
   <!--
-    Framework convention analyzers applied to this project itself: BEE4002-4006 check the shape of
-    MessagePack-serialized types, and the wire DTOs here are exactly that. Without this reference the
-    rules stay silent for this assembly (BEE4001 is the only one that reaches across assemblies).
+    Framework convention analyzers applied to this project itself: the shape rules (single public
+    Add, parameterless constructor) apply to the wire DTOs declared here, and without this
+    reference they stay silent for this assembly.
   -->
   <ItemGroup>
     <ProjectReference Include="..\Bee.Analyzers\Bee.Analyzers.csproj"

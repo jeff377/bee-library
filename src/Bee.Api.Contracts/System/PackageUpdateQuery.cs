@@ -1,11 +1,9 @@
-using MessagePack;
 
 namespace Bee.Api.Contracts.System
 {
     /// <summary>
     /// Package query item specifying which update to check (App/Component + current version + platform/channel).
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class PackageUpdateQuery
     {
         /// <summary>

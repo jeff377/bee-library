@@ -1,5 +1,4 @@
 using Bee.Definition.Logging;
-using MessagePack;
 
 namespace Bee.Api.Contracts.AuditLog
 {
@@ -13,7 +12,6 @@ namespace Bee.Api.Contracts.AuditLog
     /// carries the before-image. For an update, only fields whose value actually changed are emitted,
     /// each carrying both the old and the new value.
     /// </remarks>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class RecordFieldChange
     {
         /// <summary>

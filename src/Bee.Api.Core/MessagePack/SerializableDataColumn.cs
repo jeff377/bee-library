@@ -1,12 +1,10 @@
 ﻿using Bee.Base.Data;
-using MessagePack;
 
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
     /// Serializable column definition used to describe DataColumn properties.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class SerializableDataColumn
     {
         /// <summary>

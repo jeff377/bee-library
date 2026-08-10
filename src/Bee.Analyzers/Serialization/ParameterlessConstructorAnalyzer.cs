@@ -44,22 +44,17 @@ namespace Bee.Analyzers.Serialization
 
             context.RegisterCompilationStartAction(startContext =>
             {
-                var objectAttribute = startContext.Compilation.GetTypeByMetadataName(
-                    SerializationAttributeNames.MessagePackObjectAttribute);
                 var collections = FrameworkCollectionTypes.TryResolve(startContext.Compilation);
-                if (objectAttribute is null && collections is null)
+                if (collections is null)
                     return;
 
                 startContext.RegisterSymbolAction(
-                    symbolContext => AnalyzeType(symbolContext, objectAttribute, collections),
+                    symbolContext => AnalyzeType(symbolContext, collections),
                     SymbolKind.NamedType);
             });
         }
 
-        private static void AnalyzeType(
-            SymbolAnalysisContext context,
-            INamedTypeSymbol? objectAttribute,
-            FrameworkCollectionTypes? collections)
+        private static void AnalyzeType(SymbolAnalysisContext context, FrameworkCollectionTypes collections)
         {
             var type = (INamedTypeSymbol)context.Symbol;
 
@@ -68,7 +63,7 @@ namespace Bee.Analyzers.Serialization
             if (type.TypeKind != TypeKind.Class || type.IsAbstract || type.IsStatic)
                 return;
 
-            if (!ParticipatesInSerialization(type, objectAttribute, collections))
+            if (!collections.IsFrameworkCollection(type) && !collections.IsFrameworkCollectionItem(type))
                 return;
 
             foreach (var constructor in type.InstanceConstructors)
@@ -83,26 +78,5 @@ namespace Bee.Analyzers.Serialization
                 type.Name));
         }
 
-        /// <summary>
-        /// Determines whether the type is one a deserializer will need to construct.
-        /// </summary>
-        /// <param name="type">The type to test.</param>
-        /// <param name="objectAttribute">The resolved <c>MessagePackObject</c> attribute, if available.</param>
-        /// <param name="collections">The resolved framework collection bases, if available.</param>
-        /// <returns><c>true</c> when the type carries a serialization contract or is a collection.</returns>
-        private static bool ParticipatesInSerialization(
-            INamedTypeSymbol type,
-            INamedTypeSymbol? objectAttribute,
-            FrameworkCollectionTypes? collections)
-        {
-            if (collections is not null && collections.IsFrameworkCollection(type))
-                return true;
-
-            if (objectAttribute is null)
-                return false;
-
-            return type.GetAttributes()
-                .Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, objectAttribute));
-        }
     }
 }

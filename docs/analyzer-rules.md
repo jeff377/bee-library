@@ -50,10 +50,6 @@ that discovery to build time, where the message can name both the cause and the 
 
 | ID | Severity | Rule |
 |----|----------|------|
-| BEE4001 | Error | A collection deriving from `MessagePackCollectionBase` must be registered with a formatter — framework-internal |
-| BEE4002 | Error | A JSON property rename must not conflict with name-based MessagePack keys |
-| BEE4003 | Error | A polymorphic union hierarchy must keep integer `[Key]` numbering |
-| BEE4004 | Error | With integer keys, constructor parameters must follow the key order |
 | BEE4005 | Warning | A framework collection should expose a single public `Add` |
 | BEE4006 | Error | A serialised type must have a public parameterless constructor |
 

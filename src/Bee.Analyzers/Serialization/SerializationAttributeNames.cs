@@ -5,37 +5,11 @@ namespace Bee.Analyzers.Serialization
     /// </summary>
     /// <remarks>
     /// Resolved by metadata name rather than referenced directly: the analyzer targets netstandard2.0
-    /// and cannot reference the net10.0 framework assemblies, and a consumer that uses neither
-    /// MessagePack nor the framework collections should see no diagnostics at all rather than have the
-    /// rules guess.
+    /// and cannot reference the net10.0 framework assemblies, and a consumer that uses none of these
+    /// types should see no diagnostics at all rather than have the rules guess.
     /// </remarks>
     internal static class SerializationAttributeNames
     {
-        /// <summary>
-        /// The MessagePack contract attribute applied to serializable types.
-        /// </summary>
-        public const string MessagePackObjectAttribute = "MessagePack.MessagePackObjectAttribute";
-
-        /// <summary>
-        /// The MessagePack attribute assigning an integer or name-based key to a member.
-        /// </summary>
-        public const string KeyAttribute = "MessagePack.KeyAttribute";
-
-        /// <summary>
-        /// The MessagePack attribute excluding a member from serialization.
-        /// </summary>
-        public const string IgnoreMemberAttribute = "MessagePack.IgnoreMemberAttribute";
-
-        /// <summary>
-        /// The MessagePack attribute declaring a polymorphic subtype on a union base.
-        /// </summary>
-        public const string UnionAttribute = "MessagePack.UnionAttribute";
-
-        /// <summary>
-        /// The System.Text.Json attribute renaming a property on the JSON wire.
-        /// </summary>
-        public const string JsonPropertyNameAttribute = "System.Text.Json.Serialization.JsonPropertyNameAttribute";
-
         /// <summary>
         /// The System.Text.Json attribute excluding a property from serialization.
         /// </summary>
@@ -55,5 +29,15 @@ namespace Bee.Analyzers.Serialization
         /// The framework base type for collections.
         /// </summary>
         public const string CollectionBase = "Bee.Base.Collections.CollectionBase`1";
+
+        /// <summary>
+        /// The framework base type for keyed collection items.
+        /// </summary>
+        public const string KeyCollectionItem = "Bee.Base.Collections.KeyCollectionItem";
+
+        /// <summary>
+        /// The framework base type for collection items.
+        /// </summary>
+        public const string CollectionItem = "Bee.Base.Collections.CollectionItem";
     }
 }

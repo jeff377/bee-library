@@ -1,12 +1,10 @@
 ﻿using System.Data;
-using MessagePack;
 
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
     /// Serializable DataSet object used to support cross-platform transmission and storage.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class SerializableDataSet
     {
         /// <summary>

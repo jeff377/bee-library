@@ -1,12 +1,10 @@
 ﻿using System.Data;
-using MessagePack;
 
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
     /// Serializable data row containing current and original values, used to support data state and change tracking.
     /// </summary>
-    [MessagePackObject(keyAsPropertyName: true)]
     public class SerializableDataRow
     {
         /// <summary>

@@ -13,7 +13,6 @@ namespace Bee.Analyzers.UnitTests.Serialization
     {
         private static readonly Type[] s_anchors =
         {
-            typeof(MessagePack.KeyAttribute),
             typeof(CollectionBase<>),
             typeof(CollectionItem),
         };
@@ -111,14 +110,13 @@ namespace Bee.Analyzers.UnitTests.Serialization
         }
 
         [Fact]
-        [DisplayName("MessagePackObject 型別只有參數化建構子應報 BEE4006")]
+        [DisplayName("集合項目只有參數化建構子應報 BEE4006")]
         public void ContractTypeWithoutParameterlessCtor_ReportsDiagnostic()
         {
             const string source = """
-                using MessagePack;
+                using Bee.Base.Collections;
 
-                [MessagePackObject(keyAsPropertyName: true)]
-                public sealed class Sample
+                public sealed class Sample : CollectionItem
                 {
                     public Sample(string name) => Name = name;
 
@@ -138,10 +136,9 @@ namespace Bee.Analyzers.UnitTests.Serialization
         public void BothConstructors_ReportNothing()
         {
             const string source = """
-                using MessagePack;
+                using Bee.Base.Collections;
 
-                [MessagePackObject(keyAsPropertyName: true)]
-                public sealed class Sample
+                public sealed class Sample : CollectionItem
                 {
                     public Sample() { }
 
@@ -163,10 +160,9 @@ namespace Bee.Analyzers.UnitTests.Serialization
         public void ImplicitConstructor_ReportsNothing()
         {
             const string source = """
-                using MessagePack;
+                using Bee.Base.Collections;
 
-                [MessagePackObject(keyAsPropertyName: true)]
-                public sealed class Sample
+                public sealed class Sample : CollectionItem
                 {
                     public string Name { get; set; } = string.Empty;
                 }
@@ -184,10 +180,9 @@ namespace Bee.Analyzers.UnitTests.Serialization
         public void AbstractType_ReportsNothing()
         {
             const string source = """
-                using MessagePack;
+                using Bee.Base.Collections;
 
-                [MessagePackObject(keyAsPropertyName: true)]
-                public abstract class SampleBase
+                public abstract class Sample : CollectionItem
                 {
                     protected SampleBase(string name) => Name = name;
 

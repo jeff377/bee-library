@@ -16,11 +16,20 @@ namespace Bee.Analyzers.Serialization
             SerializationAttributeNames.CollectionBase,
         };
 
-        private readonly ImmutableArray<INamedTypeSymbol> _baseTypes;
+        private static readonly string[] s_itemMetadataNames =
+        {
+            SerializationAttributeNames.CollectionItem,
+            SerializationAttributeNames.KeyCollectionItem,
+        };
 
-        private FrameworkCollectionTypes(ImmutableArray<INamedTypeSymbol> baseTypes)
+        private readonly ImmutableArray<INamedTypeSymbol> _baseTypes;
+        private readonly ImmutableArray<INamedTypeSymbol> _itemBaseTypes;
+
+        private FrameworkCollectionTypes(
+            ImmutableArray<INamedTypeSymbol> baseTypes, ImmutableArray<INamedTypeSymbol> itemBaseTypes)
         {
             _baseTypes = baseTypes;
+            _itemBaseTypes = itemBaseTypes;
         }
 
         /// <summary>
@@ -42,7 +51,17 @@ namespace Bee.Analyzers.Serialization
                     builder.Add(symbol);
             }
 
-            return builder.Count > 0 ? new FrameworkCollectionTypes(builder.ToImmutable()) : null;
+            var itemBuilder = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
+            foreach (var name in s_itemMetadataNames)
+            {
+                var symbol = compilation.GetTypeByMetadataName(name);
+                if (symbol is not null)
+                    itemBuilder.Add(symbol);
+            }
+
+            return builder.Count > 0 || itemBuilder.Count > 0
+                ? new FrameworkCollectionTypes(builder.ToImmutable(), itemBuilder.ToImmutable())
+                : null;
         }
 
         /// <summary>
@@ -75,6 +94,29 @@ namespace Bee.Analyzers.Serialization
 
                 var definition = current.OriginalDefinition;
                 if (_baseTypes.Any(baseType => SymbolEqualityComparer.Default.Equals(definition, baseType)))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the specified type derives from one of the framework collection item
+        /// bases.
+        /// </summary>
+        /// <param name="type">The type to test.</param>
+        /// <returns><c>true</c> when any base type is a framework collection item.</returns>
+        /// <remarks>
+        /// Items are constructed by the deserializer just as their collections are, so the shape
+        /// rules that apply to one apply to the other. Before the wire attributes were removed this
+        /// was covered incidentally — items carried <c>[MessagePackObject]</c> and the rules keyed
+        /// off that; the check has to be explicit now.
+        /// </remarks>
+        public bool IsFrameworkCollectionItem(INamedTypeSymbol type)
+        {
+            for (var current = type.BaseType; current is not null; current = current.BaseType)
+            {
+                if (_itemBaseTypes.Any(b => SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, b)))
                     return true;
             }
 
