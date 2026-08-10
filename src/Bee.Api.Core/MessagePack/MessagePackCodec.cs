@@ -43,6 +43,7 @@ namespace Bee.Api.Core.MessagePack
                     new CashRoundingItemFormatter(),
                     new AllowedCurrencyItemFormatter(),
                     new ParameterFormatter(),
+                    new FilterNodeFormatter(),
                     SafeTypelessFormatter.Instance      // Type-validated polymorphic formatter
                 },
                 // IMPORTANT: every MessagePackCollectionBase<> collection must be registered above.

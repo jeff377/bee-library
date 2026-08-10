@@ -6,7 +6,7 @@
 |------|------|------|
 | 0 | 可行性驗證（spike）：五項前提實測 | ✅ 已完成（2026-08-09）——原設計否決，改採手寫 formatter（發現 7–9） |
 | 1 | `[WireIgnore]` 標註 + 6 支手寫 formatter | ✅ 已完成（2026-08-09） |
-| 2 | `FilterNode` 家族外置為 `FilterNodeFormatter`，移除 `[Union]` / `[Key]` | 📝 待做 |
+| 2 | `FilterNode` 家族外置為 `FilterNodeFormatter` | ✅ 已完成（2026-08-09）——標註待階段 5 連同連通分量一起移除 |
 | 3 | `SafeTypelessFormatter` 遷入 Api.Core，移除 `Parameter` 的 formatter attribute | 📝 待做 |
 | 4 | 刪除四個 `MessagePack*` 集合型別；註冊清單與 BEE4001 退役（發現 6 後大幅簡化） | 📝 待做 |
 | 5 | 移除 `Bee.Definition` 的 `PackageReference`，修訂 adr-030 與規則文件 | 📝 待做 |
@@ -575,13 +575,39 @@ formatter。否決理由：`ITagProperty.Tag` / `IKeyCollectionItem.Key` 是公�
 > （其餘為 `TraceContext.Tag`、Avalonia `TabItem.Tag` 等同名不同物，以及測試）。
 > 即便如此仍不動公開介面——外部 NuGet 消費者的使用情形不可見。
 
-### 階段 2：`FilterNode` 家族外置
+### 階段 2：`FilterNode` 家族外置 ✅ 已完成（2026-08-09）
 
-新增 `FilterNodeFormatter`，移除家族的所有 MessagePack attribute。
+**已落地**：`Bee.Api.Core/MessagePack/FilterNodeFormatter.cs`，
+以 `Kind` 為判別碼的 map 格式處理 `FilterCondition` / `FilterGroup` 多型，
+並於 `MessagePackCodec` 註冊。與 JSON 端的 `FilterNodeCollectionJsonConverter`
+採同一套心智模型（皆讀 `Kind` 判型）。
 
-`BEE4003`（`UnionKeyStrategyAnalyzer`）退役涉及四處：analyzer 實作、
-`src/Bee.Analyzers/DiagnosticIds.cs:117`、`src/Bee.Analyzers/AnalyzerReleases.Unshipped.md:27`、
-`tests/Bee.Analyzers.UnitTests/Serialization/UnionKeyStrategyAnalyzerTests.cs`。
+設計要點：
+
+- **判別碼寫成具名成員而非陣列首元素**——payload 自我描述，
+  log 出來看得到 `Kind`，不是一個意義寫在別的檔案裡的裸整數
+- **反序列化先緩衝再綁定**：判別碼不保證最先到達，故以
+  `ReadOnlySequence<byte>` 暫存各成員，待 kind 確定後再綁。
+  過濾樹是 request-scoped 的謂詞而非資料集，多一趟的成本可忽略
+- 未知子型別擲 `MessagePackSerializationException` 並指名要更新 formatter
+
+**測試**：`FilterNodeWireTests` 10 項——多型還原、三層巢狀樹、
+`Value` 各型別（`string` / `int` / `bool` / `Guid` / `DateTime` / `decimal`）、
+`Between` 的 `SecondValue`、集合元素子型別保留、null 節點。
+含 `ConditionWireMemberCount` / `GroupWireMemberCount` 兩條漂移守衛。
+
+**驗證**：clean Release build 0 error 0 warning；一般模式 1071 + 702 全綠。
+
+> **標註尚未移除**：依發現 5，`[Union]` / `[Key(100..104)]` 必須與整個連通分量
+> （含 Api.Core 的 57 個訊息型別）一起拆，故留到階段 5。
+> formatter 已在 formatter 陣列中優先於 attribute 路徑，**行為上已走新路**。
+> `BEE4003` 亦同——待標註實際移除後才退役。
+
+**AOT 模擬**：10 項中 2 項失敗，皆卡在 `FilterCondition.Value` 的
+`System.Object` typeless 路徑（發現 9 的既有問題）。
+細節值得記錄：`string` / `int` / `bool` 經 typeless **可以**通過，
+`Guid` / `DateTime` / `decimal` 才踩到 Emit——顯示問題出在
+`TypelessFormatter` 對非基本型別的處理，而非 typeless 機制本身。
 
 ### 階段 3：`SafeTypelessFormatter` 遷移
 
