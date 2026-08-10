@@ -33,13 +33,39 @@ namespace Bee.Definition.Language
         }
 
         /// <summary>
-        /// Gets the ordered list of code/text entries.
+        /// Gets or sets the ordered list of code/text entries.
         /// </summary>
+        /// <remarks>
+        /// WARNING: The setter exists for the mobile heads and must not be removed. A collection
+        /// mapped as a repeated <c>[XmlElement]</c> is <b>assigned</b> by the reflection-only
+        /// <c>XmlSerializer</c> that iOS uses, not filled through <c>Add</c> — without a setter it
+        /// throws <c>ArgumentException: Property set method not found</c> mid-document, which
+        /// surfaces as the misleading "error in XML document (line, col)". The desktop's
+        /// Emit-based path fills get-only collections happily, so this only ever fails on device.
+        /// <c>[XmlArray]</c> collections (<c>LanguageResource.Items</c>, <c>.Enums</c>) are not
+        /// affected and stay get-only.
+        /// <para>
+        /// It copies rather than replaces so the owner wiring set up by the constructor survives.
+        /// </para>
+        /// </remarks>
         [XmlElement("Entry")]
         [Description("Ordered list of code/text entries.")]
         public LanguageEnumEntryCollection Entries
         {
             get => _entries ??= new LanguageEnumEntryCollection(this);
+            set
+            {
+                var target = Entries;
+                if (ReferenceEquals(target, value))
+                    return;
+
+                target.Clear();
+                if (value == null)
+                    return;
+
+                foreach (var entry in value)
+                    target.Add(entry);
+            }
         }
 
         /// <summary>

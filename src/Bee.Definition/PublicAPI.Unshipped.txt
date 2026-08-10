@@ -1,1 +1,2 @@
 #nullable enable
+Bee.Definition.Language.LanguageEnum.Entries.set -> void
