@@ -61,7 +61,10 @@ Error: XmlSerializeErrorDetails, 2, 2
 
 ### 當前狀態
 
-- **行動端 Release trim/AOT 序列化已驗證可過**：Android emulator full-trim round-trip PASS；
+> ⚠️ 本節講的是 **`XmlSerializer`（定義檔）那一半**，涵蓋範圍不含 **MessagePack wire**。
+> wire 路徑另有一套要求（型別一律顯式註冊 formatter），見 `rules/serialization.md`。
+
+- **行動端 Release trim/AOT `XmlSerializer` 已驗證可過**：Android emulator full-trim round-trip PASS；
   iOS device-target AOT build 0 錯誤；iOS 模擬器以 `IsDynamicCodeSupported=false` 強制
   reflection-only path（＝device AOT 同路徑）round-trip PASS。唯 iOS **實機** AOT 執行期
   為低風險形式收尾（需 Apple Developer 簽章 + 實機）。
@@ -70,6 +73,69 @@ Error: XmlSerializeErrorDetails, 2, 2
   （趕在任何 serializer 前），即可在桌面 / 模擬器重現 iOS AOT 的 reflection-only 序列化路徑。
 - **iOS 編譯前置雷**：workload 鎖 Xcode 版本不符時，build 加 `-p:ValidateXcodeVersion=false`；
   device-target build 止於簽章可加 `-p:EnableCodeSigning=false` 完成 AOT build（驗證用）。
+
+## reflection-only 重現法的保真度與例外判讀（2026-08-10 實測）
+
+上一節的「半 B 免實機驗證法」有效，但**判讀時有兩件事非知道不可**，否則會把真缺陷判成假象
+（2026-08-09 就這樣判過一次，見 `rules/serialization.md`）。
+
+### 1. 這個開關就是 iOS SDK 自己設的，不是人造情境
+
+`Microsoft.iOS.Sdk` 的 `Xamarin.Shared.Sdk.targets`：
+
+```xml
+<DynamicCodeSupport Condition="'$(DynamicCodeSupport)' == ''
+    And ('$(MtouchInterpreter)' == '' And '$(UseInterpreter)' != 'true')
+    And ('$(_PlatformName)' == 'iOS' Or '$(_PlatformName)' == 'tvOS'
+         Or '$(_PlatformName)' == 'MacCatalyst')">false</DynamicCodeSupport>
+```
+
+`Microsoft.NET.Sdk.targets` 再把 `DynamicCodeSupport` 映射成
+`RuntimeFeature.IsDynamicCodeSupported` 的 `RuntimeHostConfigurationOption`。
+
+推論：
+
+- **iOS / tvOS / MacCatalyst 的每一種組態**（Debug 與 Release、裝置與模擬器）預設都關掉動態碼，
+  除非顯式啟用直譯器。「只有 Release 才要擔心」是錯的。
+- **Android 沒有這一條**——保有 JIT，`IsDynamicCodeSupported` 維持 `true`。
+  **凡與 `Reflection.Emit` / 動態碼有關的疑慮，Android emulator 驗不到**，
+  它只能驗 trim（半 A）。別再用 Android 當這半的證據。
+- 桌面重現不必改 csproj，一個命令列屬性即可，且用的是 SDK 的同一條路徑：
+
+```bash
+dotnet test <測試專案> -c Release --settings .runsettings -p:DynamicCodeSupport=false
+```
+
+### 2. 例外「種類」不可當診斷依據，pass / fail 邊界才可以
+
+同一個失敗案例在三種 runtime 擲不同例外：
+
+| runtime | 例外 |
+|---------|------|
+| CoreCLR + 開關關掉（桌面重現） | `InvalidProgramException`（有 JIT 卻被告知不可用，反射 invoke 走 interpreted thunk，而 `MessagePackWriter` 是 `ref struct`） |
+| NativeAOT（真無動態碼） | `InvalidOperationException` / `NotSupportedException` / `MissingMethodException` |
+| Mono full-AOT（iOS 實機） | 另一組（未實測） |
+
+`InvalidProgramException` **確實**是桌面重現特有的症狀——但那只表示**症狀**失真，
+**不表示失敗是假的**。判別法：拿掉開關會不會過？會過而開著不過，就是真的踩到無動態碼路徑。
+
+### 3. 需要「真的沒有 Emit」時：用 NativeAOT，不必排實機
+
+桌面重現的 runtime 底下仍是 JIT。要一個**真正**沒有 `Reflection.Emit` 的環境，
+最便宜的是本機 NativeAOT console：
+
+```bash
+dotnet publish -c Release -r osx-arm64 -p:Aot=true -o ./aotout   # csproj 內以 $(Aot) 條件開 PublishAot
+```
+
+> `PublishAot` 要寫在 csproj 內以自訂屬性開關，**不要直接下 `-p:PublishAot=true`**——
+> 命令列屬性會流進所有 `ProjectReference`，`Bee.Analyzers`（netstandard2.0）會以
+> `NETSDK1207` 退件。
+
+**但 NativeAOT ≠ Mono full-AOT**：NativeAOT 對執行期泛型具現更嚴格
+（`MakeGenericMethod` / `MakeGenericType` 直接沒有原生碼），Mono 對參考型別有共享具現。
+故 NativeAOT 上的失敗要分兩類看：純受管邏輯（如 resolver 依開關拒絕產生 formatter）在
+Mono 上必然相同；泛型具現類的失敗則未必。
 
 ## AOT 與 Interpreter 的組合
 
@@ -86,8 +152,19 @@ reflection-only 的 `XmlSerializer`（iOS AOT 路徑）對型別形狀比桌面�
 - 集合型別**只能公開一個** public instance `Add`——多個多載會擲 `AmbiguousMatchException`。
   便利多載必須位移為擴充方法（見 `code-style.md` 的一型別一檔例外條款）。
 - 集合型別**必須有無參數建構子**，否則擲 `MissingMethodException`。
+- **對映為重複 `[XmlElement]` 的集合屬性必須有 public setter**（2026-08-10 新增）。
+  reflection-only 路徑對這種成員是**指派**而非 `Add`，get-only 會擲
+  `ArgumentException: Property set method not found`，外顯為誤導的
+  「There is an error in XML document (行, 列)」。**`[XmlArray]` 的 get-only 集合不受影響**
+  ——差別只在對映方式，不在集合本身。
+  setter 寫成「清空後逐一 `Add` 進既有實例」而非直接換掉欄位，才不會斷開 owner 連結
+  （實例：`LanguageEnum.Entries`）。
 
-這兩點在桌面完全不會顯現，只在行動端 reflection-only 路徑爆炸。
+這幾點在桌面完全不會顯現，只在行動端 reflection-only 路徑爆炸。
+
+盤點全定義層有無同型問題的做法（一次掃完，不要逐檔看）：反射列出所有
+`CollectionBase<>` / `KeyCollectionBase<>` 屬性，篩出「帶 `[XmlElement]`、無 public setter、
+未標 `[XmlIgnore]`」者。2026-08-10 掃描結果：全 repo 僅 `LanguageEnum.Entries` 一處，已修。
 
 ## 診斷雜訊（省得再走一次冤枉路）
 

@@ -67,6 +67,10 @@ wire 綁定改由 `src/Bee.Api.Core/MessagePack/` 的手寫 formatter 承擔，
 
 > 這與「MessagePack 3.x 有 reflection-based fallback」的既有結論不衝突：該結論針對 MessagePack **自產**的 formatter，
 > 不涵蓋「自訂 formatter 內呼叫非泛型 API」這條路徑。
+>
+> **2026-08-10 補正**：該既有結論本身也需限縮——MessagePack 的 fallback 只涵蓋
+> **帶 `[MessagePackObject]` 標註**的合約型別，`ContractlessStandardResolver`
+> 沒有 fallback。詳見下方「未決事項」的補正。
 
 手寫 formatter 的屬性型別編譯期已知，全程可用泛型多載、零反射，
 桌面與裝置走同一條路。
@@ -115,6 +119,8 @@ ADR-030 的核心決策（wire 鍵以屬性名為準）**維持不變**——只
 - **放棄 MessagePack source generator 退路**：source-gen 需要 `[MessagePackObject]` 標記。
   ADR-030 保留標記的理由正是這道「免費保險」，本 ADR 有意識地放棄它。
   依據是 MessagePack 3.x 的 reflection fallback 在行動端經實測可用。
+  > **2026-08-10 補正：此依據不成立。** 該 fallback 只涵蓋帶標註的型別，
+  > 移除標註等於同時失去 fallback 與 source-gen 兩條路。實際後果見下方「未決事項」。
 - **新增 wire 型別時須手寫 formatter**（若該型別有需排除的框架管理成員）。
   無此需求者由 contractless 自動處理，不需任何動作。
 - **破壞性變更**：`Bee.Definition` 移除 `SafeTypelessFormatter`、
@@ -133,13 +139,70 @@ ADR-030 的核心決策（wire 鍵以屬性名為準）**維持不變**——只
 
 ## 未決事項
 
-以 `IsDynamicCodeSupported=false` 模擬行動端 AOT 時，`Bee.Api.Core.UnitTests`
-在本決策**之前**即有 51 / 694 項失敗，集中於 `TypelessFormatter`、
-`DataTable`、`DataSet`。本決策的手寫 formatter 將其降至更低，但未清零。
+> 本節原記為「值得獨立追查」。追查已於 **2026-08-10** 完成，結論如下，
+> 原文的兩點保留有一點成立、一點不成立。
 
-該現象與「MessagePack 在行動端 AOT 可用」的既有結論不一致，值得獨立追查。
-兩點保留：此為 JIT runtime 上的模擬，真實裝置行為未必相同；
-且部分失敗擲 `InvalidProgramException` 而非 `NotSupportedException`，
-那是「Emit 仍執行但產出無效 IL」的徵狀，高度懷疑是模擬本身的假象。
+### 結論：本決策使 iOS 端的 wire 不可用
 
-**本決策不處理此問題** —— 範圍是解除相依，不是修復行動端 AOT。
+移除全部 `[MessagePackObject]` 標註後，wire 型別改由 `ContractlessStandardResolver`
+承載。而 **contractless 沒有 reflection fallback**：在 `IsDynamicCodeSupported=false`
+的 runtime 上，它無法產生 formatter，幾乎每個 payload 型別都擲
+`FormatterNotRegisteredException`。
+
+NativeAOT（真無動態碼）下的對照實驗，只用 MessagePack 自己的 resolver：
+
+| 案例 | 結果 |
+|------|------|
+| `[MessagePackObject(keyAsPropertyName: true)]` 型別 + `StandardResolver` | ✅ round-trip 正常 |
+| 無標註 POCO + `ContractlessStandardResolver` | ❌ `FormatterNotRegisteredException` |
+
+ADR-030 階段 0 的原始實測（整數 key 與 `keyAsPropertyName` 皆可 round-trip）**沒有錯**
+——那兩者都是有標註的型別。錯在被一般化成「MessagePack 在 AOT 可用」，
+而本 ADR 正是踩在該一般化上。
+
+### 兩點保留的結算
+
+1. **「JIT runtime 上的模擬，真實裝置未必相同」——不成立。**
+   該開關（`RuntimeFeature.IsDynamicCodeSupported`）正是 .NET for iOS SDK 對
+   iOS / tvOS / MacCatalyst 的**每一種組態**（Debug 與 Release、裝置與模擬器）
+   預設設定的值，除非顯式啟用直譯器。模擬用的就是 iOS 建置的預設值。
+   Android 沒有這一條設定，保有 JIT，**不受影響**。
+2. **「`InvalidProgramException` 是模擬假象」——症狀對，結論錯。**
+   該例外確實只出現在「有 JIT 卻被告知不可用」的桌面重現；真無動態碼的 runtime
+   改擲 `InvalidOperationException` / `NotSupportedException` / `MissingMethodException`。
+   但**同一批案例在 NativeAOT 上照樣失敗**——失真的是例外種類，不是失敗本身。
+
+### 量化
+
+同一測試專案、同一開關，以「失敗訊息含 `MessagePack`」為計數口徑：
+
+| 版本 | MessagePack 相關失敗 |
+|------|--------------------|
+| 本決策之前（v4.18.0） | 37 |
+| 本決策之後（v4.19.0） | 185 |
+
+原文「本決策的手寫 formatter 將其降至更低」與實測相反：**放大約 5 倍**。
+先前記載的 51 / 694 未能重現，口徑不明。
+
+剩餘的 37 筆是早於本決策的既有缺陷，集中於 typeless 通道
+（`Parameter.Value` / `FilterCondition.Value` 這類 `object` 成員）對
+`Decimal` / `Guid` / `DateTime` / `DateOnly` / `Byte[]` 不可用，以及
+`DataTable` / `DataSet`。
+
+### 修復
+
+已於 [ADR-037](adr-037-wire-explicit-registration.md) 處理：wire 型別一律顯式註冊
+formatter，`object` 成員改用判別式封套。
+
+### 本 ADR 的決策不因此撤回
+
+定義層與傳輸格式解耦的判斷（「不讓定義層長出外部套件相依」）不受影響——
+contractless 沒有 fallback 這件事，改變的是**該決策的實作代價**，
+不是決策本身：手寫 formatter 的覆蓋範圍必須從「有需排除成員的型別」
+擴大到「全部 wire 型別」。修復另案處理。
+
+重現方式（不需修改任何 csproj）：
+
+```bash
+dotnet test tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj -c Release --settings .runsettings -p:DynamicCodeSupport=false
+```

@@ -202,11 +202,19 @@ catch (Exception ex)
 
 ### MessagePack 型別白名單
 
-`SafeTypelessFormatter` 和 `SafeMessagePackSerializerOptions` 實施型別白名單機制：
+`WireTypeWhitelist` 和 `SafeMessagePackSerializerOptions` 實施型別白名單機制：
 
-- 僅已註冊的型別可被反序列化
-- 未註冊的型別會拋出 `MessagePackSerializationException`
-- 新增 API 型別時必須同步註冊到 `ApiContractRegistry`
+- 僅白名單內的型別可被反序列化
+- 白名單外的型別在型別被解析之前即遭拒絕
+- 白名單涵蓋常見基礎型別，以及 `SysInfo.AllowedTypeNamespaces` 所列的命名空間
+
+### wire 型別必須註冊 formatter
+
+凡走 MessagePack wire 的型別一律顯式註冊——contractless resolver 只是桌面端的便利退路，
+不是承載機制：.NET for iOS 關閉動態碼，未註冊的型別在那裡直接失敗。新增訊息合約、
+新增其可達的定義層型別、或引入新的封閉泛型具現（`List<T>`、`Dictionary<K,V>`、`T?`、列舉）
+時都必須補上註冊。漂移測試會走同一條型別閉包，漏補即建置失敗。
+詳見 [ADR-037](adr/adr-037-wire-explicit-registration.md)。
 
 ### API 契約命名慣例（強制）
 

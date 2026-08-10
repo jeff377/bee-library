@@ -206,11 +206,22 @@ The long-term goal is to make `UserMessageException` the **only** channel for us
 
 ### MessagePack Type Whitelist
 
-`SafeTypelessFormatter` and `SafeMessagePackSerializerOptions` enforce a type whitelist:
+`WireTypeWhitelist` and `SafeMessagePackSerializerOptions` enforce a type whitelist:
 
-- Only registered types can be deserialized
-- Unregistered types throw `MessagePackSerializationException`
-- New API types must be registered in `ApiContractRegistry`
+- Only whitelisted types can be deserialized
+- Types outside the whitelist are rejected before the type is even resolved
+- The whitelist covers the well-known primitives plus the namespaces listed in
+  `SysInfo.AllowedTypeNamespaces`
+
+### Wire Types Must Register a Formatter
+
+Every type that travels on the MessagePack wire is registered explicitly — the contractless
+resolver is a desktop-only convenience, not the carrying mechanism, because .NET for iOS turns
+dynamic code off and an unregistered type fails there outright. Adding a message contract, a
+definition type reachable from one, or a new closed generic instantiation (`List<T>`,
+`Dictionary<K,V>`, `T?`, an enum) means adding a registration. The drift tests walk the same type
+closure and fail the build when one is missing. See
+[ADR-037](adr/adr-037-wire-explicit-registration.md).
 
 ### API Contract Naming Convention (Mandatory)
 

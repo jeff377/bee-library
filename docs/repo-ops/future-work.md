@@ -110,27 +110,33 @@ BO 程式碼處理複雜的，兩者各安其位。**租戶層只有「程式碼
 **啟動時第一步**：先蒐集實際的租戶客製案例，按「若有宣告式規則能否解決」分類——
 用真實分布決定第 1 題的線畫在哪，而不是憑想像設計語法。
 
-## 行動端 AOT：MessagePack wire 路徑的 reflection-only 失敗（2026-08-09 發現）
+## 行動端 AOT：MessagePack wire 路徑的 reflection-only 失敗
 
-以 `IsDynamicCodeSupported=false`（`RuntimeHostConfigurationOption`）模擬行動端
-AOT 時，`Bee.Api.Core.UnitTests` 有數十項失敗，集中於 `TypelessFormatter`、
-`System.Data.DataTable`、`DataSet`。這在 adr-036 的改動**之前**即已存在
-（當時 51 / 694），非該次改動引入。
+**已追查完畢並修復（2026-08-10）：是真實缺陷，不是模擬假象。**
+修復記於 [ADR-037](../adr/adr-037-wire-explicit-registration.md)，
+執行過程見 [plan-mobile-aot-wire.md](../plans/plan-mobile-aot-wire.md)。
+**剩餘工作只有一項：真 Apple runtime（iOS 模擬器 / Mac Catalyst）的形式驗證**
+——已驗證的兩個環境是 CoreCLR 關開關與 NativeAOT，都不是 Mono full-AOT。
 
-與 `rules/serialization.md` 記載的「MessagePack 3.x 有 reflection fallback、
-行動端 AOT 可用」不一致，值得獨立追查。
+以下留結論摘要供索引。
 
-判讀時的兩個保留：
+- **iOS head 的 wire 目前不通**：adr-036 移除全部 `[MessagePackObject]` 標註後，
+  wire 型別改由 contractless 承載，而 **contractless 沒有 reflection fallback**
+  （MessagePack 的 fallback 只涵蓋有標註的合約型別，NativeAOT 對照實驗證實）。
+- **「模擬」就是 iOS SDK 自己設的開關**：`Microsoft.iOS.Sdk` 對 iOS / tvOS / MacCatalyst
+  的每一種組態預設 `DynamicCodeSupport=false`，SDK 再映射成同一個
+  `RuntimeHostConfigurationOption`。**Android 沒有這一條，驗不到這半。**
+- **`InvalidProgramException` 確實是模擬特有的症狀**，但那只表示症狀失真——
+  同一批案例在 NativeAOT（真無動態碼）上照樣失敗。例外種類不可當診斷依據。
+- **adr-036 放大了缺陷而非縮小**：同一口徑下 37（v4.18.0）→ 185（v4.19.0）。
+- 既有缺陷另有一處早於 adr-036：typeless 通道對
+  `Decimal` / `Guid` / `DateTime` / `DateOnly` / `Byte[]` 不可用。
 
-1. 這是 JIT runtime 上的**模擬**，真實裝置行為未必相同。
-2. 部分失敗擲 `InvalidProgramException`（"CLR detected an invalid program"）
-   而非乾淨的 `NotSupportedException`——那是「Emit 仍執行、但產出無效 IL」的徵狀，
-   高度懷疑是模擬本身的假象。**兩種例外要分開看待。**
+重現只需一個命令列屬性，不需改 csproj：
 
-重現方式：在測試專案 csproj 加
-
-```xml
-<RuntimeHostConfigurationOption
-    Include="System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported"
-    Value="false" />
+```bash
+dotnet test tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj -c Release --settings .runsettings -p:DynamicCodeSupport=false
 ```
+
+判讀與重現法的完整規範已收進 `.claude/rules/apple-mobile-trim.md`
+與 `.claude/rules/serialization.md`。

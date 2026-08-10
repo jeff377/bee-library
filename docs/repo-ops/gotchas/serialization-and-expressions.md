@@ -58,7 +58,25 @@ MessagePack 的 AOT 正解是 source generator（需 `[MessagePackObject]` 標�
 
 **實測結果（Phase 0）**：以 runtimeconfig `IsDynamicCodeSupported=false` 重現無-Emit 路徑，
 對整數 key、整數 key+集合、`keyAsPropertyName` 三型別**皆正常 round-trip、未丟例外**。
-→ **MessagePack 3.x 有 reflection-based fallback，source-gen 非硬前置。**
+→ 當時的結論：**MessagePack 3.x 有 reflection-based fallback，source-gen 非硬前置。**
+
+**這則的真正教訓是「樣本涵蓋範圍」（2026-08-10 補正）**：上面三個型別**全都帶
+`[MessagePackObject]` 標註**。實測沒錯，錯在把結論一般化成「MessagePack 在 AOT 可用」。
+NativeAOT 對照實驗顯示：
+
+| 案例 | 結果 |
+|------|------|
+| `[MessagePackObject(keyAsPropertyName: true)]` + `StandardResolver` | ✅ round-trip 正常 |
+| 無標註 POCO + `ContractlessStandardResolver` | ❌ `FormatterNotRegisteredException` |
+
+**contractless 沒有 fallback。** 原推測（contractless 是 Emit-based、無 reflection-only fallback）
+其實是對的——只是那次實測沒有測到 contractless，於是被誤以為推翻。
+adr-036 後全 repo 改走 contractless，iOS 端的 wire 因而不通；結算見
+[adr-036](../../adr/adr-036-wire-serialization-externalized.md) 的「未決事項」，
+修復見 [adr-037](../../adr/adr-037-wire-explicit-registration.md)。
+
+**心法**：實測推翻推測時，先問「我的樣本涵蓋了推測所指的那條路徑嗎？」
+這裡的推測指名 contractless，樣本卻全是標註型別。
 
 ### DynamicExpresso
 
@@ -86,6 +104,17 @@ console 專案 csproj 加：
 或在進入點第一行（趕在任何 serializer 之前）`AppContext.SetSwitch(...)`。桌面 CLR 即走
 iOS device AOT 鎖定的同一條 reflection-only BCL 路徑。**懷疑任何序列化／運算引擎的 AOT 相容性，
 先用這招，別排實機。**
+
+**更新（2026-08-10）**：不需改 csproj，一個命令列屬性即可，且走的是 .NET SDK 的同一條路徑
+（`DynamicCodeSupport` 會被映射成上面那個 `RuntimeHostConfigurationOption`，
+iOS SDK 就是這樣設的）：
+
+```bash
+dotnet test <測試專案> -c Release --settings .runsettings -p:DynamicCodeSupport=false
+```
+
+判讀時的兩條硬性要求（例外種類不可當診斷依據、Android 驗不到這半、要真無 Emit 就用
+NativeAOT）已收進 `.claude/rules/apple-mobile-trim.md`，屬常駐規則不在此重複。
 
 ## 運算式引擎雷一：變數 key 大小寫（最先炸、最難查）
 

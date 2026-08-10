@@ -45,3 +45,4 @@ ADR 記錄**決策當下的脈絡與理由**，是理解「為何這樣設計」
 | [034](adr-034-progid-type-registry.md) | ProgramSettings 作為全框架型別註冊表（選單分離、Repository 以 progId 綁定） | ✅ 已採納 |
 | [035](adr-035-business-logic-plugin.md) | 業務邏輯 plugin（在既有流程上掛載、兩層相加、與規則引擎分界） | ✅ 已採納 |
 | [036](adr-036-wire-serialization-externalized.md) | 傳輸序列化外置至 API 層，定義層不再承載 MessagePack | ✅ 已採納 |
+| [037](adr-037-wire-explicit-registration.md) | wire 型別一律顯式註冊 formatter，`object` 值改用判別式封套 | ✅ 已採納 |

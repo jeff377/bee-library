@@ -39,6 +39,10 @@
 - **可讀性差**：二進位格式無法直接閱讀，除錯時需要工具解碼。
 - **學習成本**：開發者需要了解 `[MessagePackObject]`、`[Key]` 等屬性的用法。
 - **型別白名單**：為防止反序列化攻擊，框架實作了 `SafeTypelessFormatter` 和 `SafeMessagePackSerializerOptions`，新增 API 型別時必須同步註冊。
+  > **後續（2026-08-10）**：`[MessagePackObject]` / `[Key]` 已於
+  > [ADR-036](adr-036-wire-serialization-externalized.md) 全數退場，白名單改由
+  > `WireTypeWhitelist` 承載；wire 型別的註冊要求則由
+  > [ADR-037](adr-037-wire-explicit-registration.md) 擴大為「一律顯式註冊 formatter」。
 
 ## 影響
 
