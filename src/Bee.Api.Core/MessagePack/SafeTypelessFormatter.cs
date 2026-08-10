@@ -2,7 +2,7 @@ using Bee.Base;
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace Bee.Definition.Serialization
+namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
     /// A type-safe wrapper around <see cref="TypelessFormatter"/> that validates deserialized types
@@ -10,6 +10,10 @@ namespace Bee.Definition.Serialization
     /// Prevents deserialization of arbitrary types to mitigate remote code execution risks.
     /// </summary>
     /// <remarks>
+    /// Lives in the API layer, not the definition layer: this is a transport-side security
+    /// boundary, and keeping it here is what lets `Bee.Definition` stay free of any MessagePack
+    /// reference. It is `internal` because nothing outside the transport plumbing should reach it.
+    /// <para>
     /// This formatter applies two layers of defense:
     /// <list type="number">
     ///   <item>
@@ -26,8 +30,9 @@ namespace Bee.Definition.Serialization
     ///     </description>
     ///   </item>
     /// </list>
+    /// </para>
     /// </remarks>
-    public sealed class SafeTypelessFormatter : IMessagePackFormatter<object?>
+    internal sealed class SafeTypelessFormatter : IMessagePackFormatter<object?>
     {
         /// <summary>
         /// The singleton instance.

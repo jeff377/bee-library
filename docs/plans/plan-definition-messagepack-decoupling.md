@@ -7,7 +7,7 @@
 | 0 | 可行性驗證（spike）：五項前提實測 | ✅ 已完成（2026-08-09）——原設計否決，改採手寫 formatter（發現 7–9） |
 | 1 | `[WireIgnore]` 標註 + 6 支手寫 formatter | ✅ 已完成（2026-08-09） |
 | 2 | `FilterNode` 家族外置為 `FilterNodeFormatter` | ✅ 已完成（2026-08-09）——標註待階段 5 連同連通分量一起移除 |
-| 3 | `SafeTypelessFormatter` 遷入 Api.Core，移除 `Parameter` 的 formatter attribute | 📝 待做 |
+| 3 | `SafeTypelessFormatter` 遷入 Api.Core | ✅ 已完成（2026-08-09） |
 | 4 | 刪除四個 `MessagePack*` 集合型別；註冊清單與 BEE4001 退役（發現 6 後大幅簡化） | 📝 待做 |
 | 5 | 移除 `Bee.Definition` 的 `PackageReference`，修訂 adr-030 與規則文件 | 📝 待做 |
 
@@ -609,9 +609,30 @@ formatter。否決理由：`ITagProperty.Tag` / `IKeyCollectionItem.Key` 是公�
 `Guid` / `DateTime` / `decimal` 才踩到 Emit——顯示問題出在
 `TypelessFormatter` 對非基本型別的處理，而非 typeless 機制本身。
 
-### 階段 3：`SafeTypelessFormatter` 遷移
+### 階段 3：`SafeTypelessFormatter` 遷移 ✅ 已完成（2026-08-09）
 
-搬檔、移除 `Parameter` 的 attribute、合併重複測試。
+`src/Bee.Definition/Serialization/SafeTypelessFormatter.cs`
+→ `src/Bee.Api.Core/MessagePack/SafeTypelessFormatter.cs`，
+並由 `public` 改為 **`internal`**——它是傳輸層的安全邊界，
+不該出現在框架的公開 API 表面。`Bee.Definition/Serialization/` 資料夾隨之消失。
+
+`Parameter` 的 `[MessagePackFormatter]` 已於階段 1 移除（待決 A 證實非必要），
+故本階段無反向相依殘留。
+
+**public API 變更**：`Bee.Definition` 的 7 個 `SafeTypelessFormatter` 條目
+自 `PublicAPI.Shipped.txt` 移出並於 `Unshipped.txt` 標記 `*REMOVED*`。
+屬**破壞性變更**——依 [releasing.md](../../.claude/rules/releasing.md)，
+pre-stable 允許但須在 CHANGELOG 明列。
+
+**測試合併**：原本一分為二的兩份重複測試
+（`Bee.Definition.UnitTests` 測白名單、`Bee.Api.Core.UnitTests` 測 round-trip）
+合併為單一 `tests/Bee.Api.Core.UnitTests/SafeTypelessFormatterTests.cs`，
+白名單條目取兩者聯集（15 個允許、7 個拒絕），並保留 Definition 版獨有的
+`Instance` 單例、nil payload、post-check 例外三項。
+
+**驗證**：clean Release build 0 error 0 warning；
+`Bee.Definition` 1052 + `Bee.Api.Core` 710 全綠。
+本階段為純搬遷，無序列化行為變更，故未重跑 AOT 模擬。
 
 ### 階段 4：刪除四個 `MessagePack*` 集合型別
 

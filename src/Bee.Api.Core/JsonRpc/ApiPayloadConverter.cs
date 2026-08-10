@@ -1,5 +1,5 @@
 using Bee.Base;
-using Bee.Definition.Serialization;
+using Bee.Api.Core.MessagePack;
 using Bee.Api.Core.Messages;
 using Bee.Api.Core.Registry;
 

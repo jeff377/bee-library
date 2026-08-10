@@ -1,1 +1,8 @@
 #nullable enable
+*REMOVED*Bee.Definition.Serialization.SafeTypelessFormatter
+*REMOVED*Bee.Definition.Serialization.SafeTypelessFormatter.Deserialize(ref MessagePack.MessagePackReader reader, MessagePack.MessagePackSerializerOptions! options) -> object?
+*REMOVED*Bee.Definition.Serialization.SafeTypelessFormatter.SafeTypelessFormatter() -> void
+*REMOVED*Bee.Definition.Serialization.SafeTypelessFormatter.Serialize(ref MessagePack.MessagePackWriter writer, object? value, MessagePack.MessagePackSerializerOptions! options) -> void
+*REMOVED*static Bee.Definition.Serialization.SafeTypelessFormatter.IsExplicitlyTrustedType(string! fullName) -> bool
+*REMOVED*static Bee.Definition.Serialization.SafeTypelessFormatter.IsTypeAllowed(string! fullName) -> bool
+*REMOVED*static readonly Bee.Definition.Serialization.SafeTypelessFormatter.Instance -> Bee.Definition.Serialization.SafeTypelessFormatter!

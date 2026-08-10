@@ -1212,10 +1212,6 @@ Bee.Definition.Security.MasterKeyProvider
 Bee.Definition.Security.MasterKeySourceType
 Bee.Definition.Security.MasterKeySourceType.Environment = 1 -> Bee.Definition.Security.MasterKeySourceType
 Bee.Definition.Security.MasterKeySourceType.File = 0 -> Bee.Definition.Security.MasterKeySourceType
-Bee.Definition.Serialization.SafeTypelessFormatter
-Bee.Definition.Serialization.SafeTypelessFormatter.Deserialize(ref MessagePack.MessagePackReader reader, MessagePack.MessagePackSerializerOptions! options) -> object?
-Bee.Definition.Serialization.SafeTypelessFormatter.SafeTypelessFormatter() -> void
-Bee.Definition.Serialization.SafeTypelessFormatter.Serialize(ref MessagePack.MessagePackWriter writer, object? value, MessagePack.MessagePackSerializerOptions! options) -> void
 Bee.Definition.Settings.ApiPayloadOptions
 Bee.Definition.Settings.ApiPayloadOptions.ApiPayloadOptions() -> void
 Bee.Definition.Settings.ApiPayloadOptions.Compressor.get -> string!
@@ -2011,8 +2007,6 @@ static Bee.Definition.RoundingContext.ForCompany(Bee.Definition.Identity.Company
 static Bee.Definition.Security.EncryptionKeyProtector.DecryptEncryptedKey(byte[]! masterKey, string! base64CipherText) -> byte[]!
 static Bee.Definition.Security.EncryptionKeyProtector.GenerateEncryptedKey(byte[]! masterKey) -> string!
 static Bee.Definition.Security.MasterKeyProvider.GetMasterKey(Bee.Definition.Settings.MasterKeySource! source, string! definePath, bool autoCreate = false) -> byte[]!
-static Bee.Definition.Serialization.SafeTypelessFormatter.IsExplicitlyTrustedType(string! fullName) -> bool
-static Bee.Definition.Serialization.SafeTypelessFormatter.IsTypeAllowed(string! fullName) -> bool
 static Bee.Definition.Settings.CurrencySettings.DecimalsFromRounding(decimal rounding) -> int
 static Bee.Definition.Settings.DatabaseSettingsCryptor.DecryptInPlace(Bee.Definition.Settings.DatabaseSettings! settings, byte[]? combinedKey) -> void
 static Bee.Definition.Settings.DatabaseSettingsCryptor.EncryptInPlace(Bee.Definition.Settings.DatabaseSettings! settings, byte[]? combinedKey) -> void
@@ -2033,7 +2027,6 @@ static Bee.Definition.Storage.DefineChangeSource.operator ==(Bee.Definition.Stor
 static Bee.Definition.SystemSettingsLoader.Load(Bee.Definition.PathOptions! paths) -> Bee.Definition.Settings.SystemSettings!
 static Bee.Definition.SystemSettingsLoader.Load(string! filePath) -> Bee.Definition.Settings.SystemSettings!
 static readonly Bee.Definition.Security.ApiKeyValidationResult.NotChecked -> Bee.Definition.Security.ApiKeyValidationResult!
-static readonly Bee.Definition.Serialization.SafeTypelessFormatter.Instance -> Bee.Definition.Serialization.SafeTypelessFormatter!
 virtual Bee.Definition.Collections.MessagePackCollectionBase<T>.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
 virtual Bee.Definition.Collections.MessagePackCollectionItem.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
 virtual Bee.Definition.Collections.MessagePackKeyCollectionBase<T>.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void

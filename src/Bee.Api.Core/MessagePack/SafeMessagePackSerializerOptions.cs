@@ -1,4 +1,3 @@
-using Bee.Definition.Serialization;
 using MessagePack;
 
 namespace Bee.Api.Core.MessagePack

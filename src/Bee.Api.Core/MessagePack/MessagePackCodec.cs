@@ -2,7 +2,6 @@ using Bee.Definition;
 using Bee.Definition.Settings;
 using Bee.Definition.Filters;
 using Bee.Definition.Organization;
-using Bee.Definition.Serialization;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
