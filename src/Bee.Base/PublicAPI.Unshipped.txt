@@ -1,8 +1,1 @@
 #nullable enable
-*REMOVED*Bee.Base.Serialization.IObjectSerializeProcess
-*REMOVED*Bee.Base.Serialization.IObjectSerializeProcess.AfterDeserialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
-*REMOVED*Bee.Base.Serialization.IObjectSerializeProcess.AfterSerialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
-*REMOVED*Bee.Base.Serialization.IObjectSerializeProcess.BeforeSerialize(Bee.Base.Serialization.SerializeFormat serializeFormat) -> void
-*REMOVED*Bee.Base.Serialization.SerializeFormat
-*REMOVED*Bee.Base.Serialization.SerializeFormat.Json = 1 -> Bee.Base.Serialization.SerializeFormat
-*REMOVED*Bee.Base.Serialization.SerializeFormat.Xml = 0 -> Bee.Base.Serialization.SerializeFormat

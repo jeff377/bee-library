@@ -4,6 +4,41 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.19.0]
+
+> 本版把定義層與傳輸格式解耦。`Bee.Definition` 不再引用 MessagePack：wire 綁定的一切知識移入 `Bee.Api.Core`，由手寫 formatter 承擔。分界線是「這個格式會不會讓定義層長出外部套件相依」—— XML 與 JSON 是 BCL 詞彙，留下；MessagePack 是明確的技術選擇，外置。六個從不需要 MessagePack 的下游套件不再被迫繼承它，四對刻意重複的集合型別也合併回單一實作。**`FilterNode` 與 `ParameterCollection` 的 wire 格式有變，client 與 server 必須同版升級。** 依嚴格 SemVer 這屬 major；v4.x 的 pre-stable 政策下仍以 minor 發佈，破壞性變更逐條列於下方。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.19.0.zh-TW.md](docs/changelogs/4.19.0.zh-TW.md)
+
+### 破壞性變更
+
+- **Wire**：`FilterNode` / `FilterCondition` / `FilterGroup` 由 `[Union]` 陣列形式改為以 `Kind` 為判別碼的 map；`ParameterCollection` 由單鍵 map 改為純陣列。`ParameterCollection` 掛在每一個 request 與 response 上，因此 4.18 的 client 無法與 4.19 的 server 溝通，反之亦然。
+- `Bee.Definition`：移除 `Collections.MessagePackCollectionBase<T>`、`MessagePackCollectionItem`、`MessagePackKeyCollectionBase<T>`、`MessagePackKeyCollectionItem` —— 改用 `Bee.Base.Collections` 的對應型別，兩者除標註外完全相同。
+- `Bee.Definition`：移除 `Serialization.SafeTypelessFormatter`；typeless 白名單遷入 `Bee.Api.Core` 並改為 internal。
+- `Bee.Base`：移除 `IObjectSerializeProcess`、`SerializeFormat` 與 `SerializationLifecycle.NotifyAfterDeserialize` —— 該介面 production 無實作者，兩個歷史用途皆已被刻意遷走。
+- `Bee.Analyzers`：**BEE4001**–**BEE4004** 退役，它們把關的標註機制已不存在。[Analyzer 規則](docs/analyzer-rules.zh-TW.md)
+
+### 變更
+
+- `Bee.Definition` / `Bee.Api.Contracts`：移除 `MessagePack` 套件參考，全 repo 僅存於 `Bee.Api.Core`。見 [ADR-036](docs/adr/adr-036-wire-serialization-externalized.md)
+- `Bee.Api.Core`：wire 綁定改為 contractless 加九支手寫 formatter。沒有框架管理成員需排除的型別完全不需要 formatter。
+- `Bee.Analyzers`：**BEE4006** 的判定改以框架集合與集合項目的基底型別為準，不再依賴 `[MessagePackObject]`，藉此保住對 item 型別的覆蓋。
+
+### 升級指引
+
+```diff
+- using Bee.Definition.Collections;
++ using Bee.Base.Collections;
+
+- public class MyItems : MessagePackCollectionBase<MyItem> { }
++ public class MyItems : CollectionBase<MyItem> { }
+
+- public class MyItem : MessagePackCollectionItem { }
++ public class MyItem : CollectionItem { }
+```
+
+Server 與 client 需一併部署 —— 見上方 wire 說明。
+
 ## [4.18.0]
 
 > 本版是一次框架全面體檢的產出，不是功能週期。主線是 **`System.ExecFunc` 的派發面**：`UpgradeTableSchema`（在呼叫端指定的任一資料庫裡把表刪掉重建）與 `TestConnection`（對呼叫端指定的任一 host 發出站連線）原本任何已認證呼叫端都能觸達。兩者現已限本機呼叫，派發器對未標註 handler 的預設由*放行已認證*改為**拒絕**，並新增建置期 analyzer 讓這種漏標不可能再發生。帳號鎖定——有實作卻從未註冊——改為預設啟用，並修正 4.17.0 的一項版號缺陷。

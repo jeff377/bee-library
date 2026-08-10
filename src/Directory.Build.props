@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <!-- 版本資訊 -->
-    <Version>4.18.0</Version>
+    <Version>4.19.0</Version>
     <AssemblyVersion>4.18.0.0</AssemblyVersion>
     <FileVersion>4.18.0.0</FileVersion>
 <!---->

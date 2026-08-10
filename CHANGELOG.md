@@ -4,6 +4,41 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.19.0]
+
+> This release decouples the definition layer from the transport format. `Bee.Definition` no longer references MessagePack: every wire-binding concern now lives in `Bee.Api.Core`, behind hand-written formatters. The dividing line is whether a format costs the definition layer an external package — XML and JSON are BCL vocabulary and stay, MessagePack is a technology choice and moves out. Six downstream packages that never needed MessagePack stop inheriting it, and four pairs of deliberately duplicated collection types collapse back into one. **The wire format changes for `FilterNode` and `ParameterCollection`, so client and server must be upgraded together.** Strict SemVer would call this a major; the pre-stable policy for v4.x keeps it a minor, with every break listed below.
+
+📄 Full notes and design context: [docs/changelogs/4.19.0.md](docs/changelogs/4.19.0.md)
+
+### Breaking Changes
+
+- **Wire**: `FilterNode` / `FilterCondition` / `FilterGroup` move from the `[Union]` array form to a `Kind`-discriminated map, and `ParameterCollection` from a single-key map to a plain array. `ParameterCollection` rides on every request and response, so a 4.18 client cannot talk to a 4.19 server or the reverse.
+- `Bee.Definition`: `Collections.MessagePackCollectionBase<T>`, `MessagePackCollectionItem`, `MessagePackKeyCollectionBase<T>` and `MessagePackKeyCollectionItem` are removed — use the `Bee.Base.Collections` equivalents, which are the same types minus the attributes.
+- `Bee.Definition`: `Serialization.SafeTypelessFormatter` is removed; the typeless allow-list moves to `Bee.Api.Core` as an internal formatter.
+- `Bee.Base`: `IObjectSerializeProcess`, `SerializeFormat` and `SerializationLifecycle.NotifyAfterDeserialize` are removed — the interface had no production implementer and both of its historical uses were deliberately migrated away.
+- `Bee.Analyzers`: **BEE4001**–**BEE4004** are retired; the attribute mechanisms they policed no longer exist. [Analyzer rules](docs/analyzer-rules.md)
+
+### Changed
+
+- `Bee.Definition` / `Bee.Api.Contracts`: the `MessagePack` package reference is gone. It remains only in `Bee.Api.Core`. See [ADR-036](docs/adr/adr-036-wire-serialization-externalized.md)
+- `Bee.Api.Core`: wire binding is contractless plus nine hand-written formatters. Types with no framework-managed members to exclude need no formatter at all.
+- `Bee.Analyzers`: **BEE4006** now keys off the framework collection and collection-item base types rather than `[MessagePackObject]`, keeping its coverage of item types.
+
+### Upgrade
+
+```diff
+- using Bee.Definition.Collections;
++ using Bee.Base.Collections;
+
+- public class MyItems : MessagePackCollectionBase<MyItem> { }
++ public class MyItems : CollectionBase<MyItem> { }
+
+- public class MyItem : MessagePackCollectionItem { }
++ public class MyItem : CollectionItem { }
+```
+
+Deploy server and clients together — see the wire note above.
+
 ## [4.18.0]
 
 > This release is the output of a full framework review rather than a feature cycle. The headline is the **`System.ExecFunc` dispatch surface**: `UpgradeTableSchema` (which drops and rebuilds a table in whichever database the caller names) and `TestConnection` (which opens an outbound connection to whichever host the caller supplies) were reachable by any authenticated caller. Both are now local-only, the dispatcher's default for an unannotated handler flips from *allow authenticated* to **refuse**, and a new build-time analyzer makes the omission impossible to repeat. Account lockout — implemented but never registered — is on by default, and a version-numbering defect in 4.17.0 is corrected.
