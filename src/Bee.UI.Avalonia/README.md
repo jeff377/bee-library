@@ -59,5 +59,5 @@ ClientInfo.ApplyApiKey("my-app");
 
 ## Samples
 
-- [`samples/Avalonia.Demo`](../../samples/Avalonia.Demo/README.md) — full Connection → Login → CRUD flow over `FormView`.
+- [`apps/Bee.Northwind`](../../apps/Bee.Northwind/README.md) — full Connection → Login → CRUD flow over `FormView`, on four heads (Desktop / Browser / iOS / Android).
 - [`samples/Avalonia.DemoCenter`](../../samples/Avalonia.DemoCenter/README.md) — theme-oriented control demo center (theme → case nav, Demo/Source tabs, theme/FormMode toolbar): data binding, read-only/required, FormMode, layout, grid, and native-vs-inherited parity.

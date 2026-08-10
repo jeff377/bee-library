@@ -37,7 +37,7 @@ dotnet run                          # → http://localhost:5055
 | 如何起一個 Bee 後端、註冊自訂 BO、暴露 JSON-RPC API | [`QuickStart.Server`](QuickStart.Server/README.zh-TW.md) |
 | 如何用 `Bee.Api.Client` 從第三方端連 Bee(Remote 模式) | [`QuickStart.Console`](QuickStart.Console/README.zh-TW.md) |
 | 如何在 Blazor 內用 `Bee.Web.Blazor.Server` 元件(Local 派遣,效能最佳) | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.zh-TW.md) |
-| 同一份 `FormSchema` 在桌面 Avalonia 上如何渲染（Windows / macOS / Linux） | [`Avalonia.Demo`](Avalonia.Demo/README.zh-TW.md) |
+| 同一份 `FormSchema` 在桌面／瀏覽器／行動端 Avalonia 上如何渲染 | [`apps/Bee.Northwind`](../apps/Bee.Northwind/README.zh-TW.md) |
 | 主題導向控件 demo center（導覽樹 主題→案例、Demo/Source 分頁、主題/FormMode 工具列）：資料繫結、唯讀必填、FormMode、Layout、Grid、原生 vs 繼承比對 | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) |
 | 如何用純 JavaScript 從瀏覽器呼叫 Bee（前端無 .NET，走 Plain wire format） | [`Web.Js.Demo`](Web.Js.Demo/README.zh-TW.md) |
 
@@ -48,7 +48,6 @@ dotnet run                          # → http://localhost:5055
 | [`QuickStart.Server`](QuickStart.Server/README.zh-TW.md) | API host | `5050` | `dotnet run` | Bee.Api.AspNetCore + Bee.Hosting + Bee.Business + Bee.Db |
 | [`QuickStart.Console`](QuickStart.Console/README.zh-TW.md) | API client | — | `dotnet run` | Bee.Api.Client |
 | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.zh-TW.md) | 全端 Blazor Server | `5055` | `dotnet run` | Bee.Web.Blazor.Server + Bee.Samples.Shared |
-| [`Avalonia.Demo`](Avalonia.Demo/README.zh-TW.md) | 桌面 Avalonia 客戶端 | —(連 5050) | `dotnet run -c Debug` | Bee.UI.Avalonia + Bee.Api.Client |
 | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) | 桌面 Avalonia 控件 demo center | —(無後端) | `dotnet run -c Debug` | Bee.UI.Avalonia |
 | [`Web.Js.Demo`](Web.Js.Demo/README.zh-TW.md) | 純 JS 瀏覽器客戶端 | —(連 5050) | `open index.html` | (無 .NET — vanilla HTML/JS) |
 | [`Bee.Samples.Shared`](Bee.Samples.Shared/) | 共用後端 wiring | — | (被引用) | Bee.Business + Bee.Db + Bee.Hosting + Bee.Api.Client |
@@ -57,7 +56,6 @@ dotnet run                          # → http://localhost:5055
 
 ```
 QuickStart.Console ──HTTP──▶ QuickStart.Server
-Avalonia.Demo      ──HTTP──▶ QuickStart.Server  ← 需先啟動
 Web.Js.Demo        ──HTTP──▶ QuickStart.Server  ← 需先啟動（已開 CORS）
 
 Blazor.Server.Demo                ← 不需另起 server,前後端同 process
@@ -65,7 +63,7 @@ Blazor.Server.Demo                ← 不需另起 server,前後端同 process
 
 ## 共用帳號
 
-Blazor 與桌面 demo 的 Login 一律走 `demo / demo`:
+Blazor demo 的 Login 走 `demo / demo`:
 
 | 欄位 | 值 |
 |------|-----|
@@ -119,6 +117,7 @@ Bee 的 `Bee.Api.Client` 對呼叫端有**一致的 API 表面**,差異只在底
 | 模式 | 路徑 | 用於 | 範例 demo |
 |------|------|------|-----------|
 | **Local** | client → `LocalApiProvider` → `JsonRpcExecutor` → BO(同 process) | Blazor Server、in-process 工具、跨 BO 直接呼叫 | `Blazor.Server.Demo` |
+| **Remote** | client → `RemoteApiProvider` → HTTP POST → `ApiServiceController` → `JsonRpcExecutor` → BO | Console、桌面、行動端、跨機器 | `QuickStart.Console` |
 
 切換只是 `AddBeeBlazor` / `ApiClientInfo` 一行設定:
 
@@ -141,6 +140,7 @@ dotnet build samples/Bee.Samples.slnx
 ## 常見問題
 
 **Q: Port 5050/5055/5070 被佔用怎麼辦?**
+編輯 `samples/<Host>/Properties/launchSettings.json` 的 `applicationUrl`。別忘了同步更新指向該 host 的設定 —— 例如 `QuickStart.Console` 的 `--endpoint` 旗標。
 
 **Q: 出現 `Could not locate 'Define/SystemSettings.xml' walking up from ...`?**
 請從 bee-library checkout 目錄內執行 `dotnet run`,不要把 binary 拷貝到 repo 外。`DemoBackend` 是用「從 `AppContext.BaseDirectory` 向上找」的策略,跳出 repo 後找不到 `Define/`。

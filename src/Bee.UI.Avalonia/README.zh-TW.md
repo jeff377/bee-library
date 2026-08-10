@@ -59,5 +59,5 @@ ClientInfo.ApplyApiKey("my-app");
 
 ## 範例
 
-- [`samples/Avalonia.Demo`](../../samples/Avalonia.Demo/README.zh-TW.md) —— `FormView` 的完整 Connection → Login → CRUD 流程。
+- [`apps/Bee.Northwind`](../../apps/Bee.Northwind/README.zh-TW.md) —— `FormView` 的完整 Connection → Login → CRUD 流程，跑在四個 head（Desktop / Browser / iOS / Android）。
 - [`samples/Avalonia.DemoCenter`](../../samples/Avalonia.DemoCenter/README.md) —— 主題導向控件 demo center（導覽樹 主題→案例、Demo/Source 分頁、主題/FormMode 工具列）：資料繫結、唯讀必填、FormMode、Layout、Grid、原生 vs 繼承比對。

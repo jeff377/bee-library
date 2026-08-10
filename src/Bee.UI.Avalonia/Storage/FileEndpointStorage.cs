@@ -9,7 +9,7 @@ namespace Bee.UI.Avalonia.Storage
     /// </summary>
     /// <remarks>
     /// Hosts opt in by assigning
-    /// <c>ClientInfo.EndpointStorage = new FileEndpointStorage("Bee.Avalonia.Demo");</c>
+    /// <c>ClientInfo.EndpointStorage = new FileEndpointStorage("Bee.Northwind");</c>
     /// inside the application's bootstrap (before <see cref="ClientInfo.InitializeAsync(string)"/>
     /// or <see cref="ClientInfo.SetEndpointAsync(string)"/>).
     /// <para>

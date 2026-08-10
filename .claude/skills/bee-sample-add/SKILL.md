@@ -110,7 +110,7 @@ ls samples/
 grep -r "ProgId.*=.*\"<NewSample>\"" samples/ 2>/dev/null
 ```
 
-若同類已存在（例 sample 想做「Avalonia 連 QuickStart.Server」但已有 `Avalonia.Demo`） → 停下來，問使用者是要新增還是擴充既有。
+若同類已存在（例 sample 想做「Avalonia 控件展示」但已有 `Avalonia.DemoCenter`；或想做「Avalonia 連遠端 server 的完整應用」但已有 `apps/Bee.Northwind`） → 停下來，問使用者是要新增還是擴充既有。
 
 ### Step 3：起骨架
 

@@ -37,7 +37,7 @@ Sign in with **`demo / demo`** to render the `Employee` FormSchema.
 | How to spin up a Bee backend, register a custom BO, and expose the JSON-RPC API | [`QuickStart.Server`](QuickStart.Server/README.md) |
 | How to call Bee from a third-party client with `Bee.Api.Client` (Remote mode) | [`QuickStart.Console`](QuickStart.Console/README.md) |
 | How to use `Bee.Web.Blazor.Server` components (Local dispatch — best perf) | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.md) |
-| How the same `FormSchema` renders inside a desktop Avalonia app (Windows / macOS / Linux) | [`Avalonia.Demo`](Avalonia.Demo/README.md) |
+| How the same `FormSchema` renders inside a desktop / browser / mobile Avalonia app | [`apps/Bee.Northwind`](../apps/Bee.Northwind/README.md) |
 | Theme-oriented control demo center (theme → case nav, Demo/Source tabs, theme/FormMode toolbar): data binding, read-only/required, FormMode, layout, grid, native-vs-inherited parity | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) |
 | How to call Bee from pure JavaScript (no .NET on the client, Plain wire format) | [`Web.Js.Demo`](Web.Js.Demo/README.md) |
 
@@ -48,7 +48,6 @@ Sign in with **`demo / demo`** to render the `Employee` FormSchema.
 | [`QuickStart.Server`](QuickStart.Server/README.md) | API host | `5050` | `dotnet run` | Bee.Api.AspNetCore + Bee.Hosting + Bee.Business + Bee.Db |
 | [`QuickStart.Console`](QuickStart.Console/README.md) | API client | — | `dotnet run` | Bee.Api.Client |
 | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.md) | Full-stack Blazor Server | `5055` | `dotnet run` | Bee.Web.Blazor.Server + Bee.Samples.Shared |
-| [`Avalonia.Demo`](Avalonia.Demo/README.md) | Desktop Avalonia client | — (talks to 5050) | `dotnet run -c Debug` | Bee.UI.Avalonia + Bee.Api.Client |
 | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) | Desktop Avalonia control demo center | — (no backend) | `dotnet run -c Debug` | Bee.UI.Avalonia |
 | [`Web.Js.Demo`](Web.Js.Demo/README.md) | Pure-JS browser client | — (talks to 5050) | `open index.html` | (no .NET — vanilla HTML/JS) |
 | [`Bee.Samples.Shared`](Bee.Samples.Shared/) | Shared backend wiring | — | (consumed by other demos) | Bee.Business + Bee.Db + Bee.Hosting + Bee.Api.Client |
@@ -57,7 +56,6 @@ Sign in with **`demo / demo`** to render the `Employee` FormSchema.
 
 ```
 QuickStart.Console ──HTTP──▶ QuickStart.Server
-Avalonia.Demo      ──HTTP──▶ QuickStart.Server  ← must be started first
 Web.Js.Demo        ──HTTP──▶ QuickStart.Server  ← must be started first (CORS enabled)
 
 Blazor.Server.Demo                ← no separate server; front-end and back-end share the process
@@ -65,7 +63,7 @@ Blazor.Server.Demo                ← no separate server; front-end and back-end
 
 ## Shared credentials
 
-The Blazor and desktop demos sign in with `demo / demo`:
+The Blazor demo signs in with `demo / demo`:
 
 | Field | Value |
 |-------|-------|
@@ -119,7 +117,7 @@ To reset demo data: delete `samples/<Host>/quickstart.db` and re-run. To rotate 
 | Mode | Path | Used by | Sample demo |
 |------|------|---------|-------------|
 | **Local** | client → `LocalApiProvider` → `JsonRpcExecutor` → BO (same process) | Blazor Server, in-process tooling, BO-to-BO calls | `Blazor.Server.Demo` |
-| **Remote** | client → `RemoteApiProvider` → HTTP POST → `ApiServiceController` → `JsonRpcExecutor` → BO | Console, desktop, mobile, cross-machine | `QuickStart.Console`, `Avalonia.Demo` |
+| **Remote** | client → `RemoteApiProvider` → HTTP POST → `ApiServiceController` → `JsonRpcExecutor` → BO | Console, desktop, mobile, cross-machine | `QuickStart.Console` |
 
 Switching modes is a one-liner in `AddBeeBlazor` / `ApiClientInfo`:
 
@@ -142,7 +140,7 @@ dotnet build samples/Bee.Samples.slnx
 ## FAQ
 
 **Q: Port 5050 / 5055 / 5070 is already in use — what now?**
-Edit `samples/<Host>/Properties/launchSettings.json` and change `applicationUrl`. Don't forget to update anything that points at that host: the `--endpoint` flag for `QuickStart.Console`, and the endpoint configured in `Avalonia.Demo`.
+Edit `samples/<Host>/Properties/launchSettings.json` and change `applicationUrl`. Don't forget to update anything that points at that host — for example the `--endpoint` flag for `QuickStart.Console`.
 
 **Q: I'm getting `Could not locate 'Define/SystemSettings.xml' walking up from ...`**
 Run `dotnet run` from inside the bee-library checkout. Don't copy the built binaries outside the repo — `DemoBackend` walks upward from `AppContext.BaseDirectory` looking for `Define/`, and that walk fails outside the repo.

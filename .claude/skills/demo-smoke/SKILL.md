@@ -1,11 +1,11 @@
 ---
 name: demo-smoke
-description: 對 `samples/<Sample.Name>/` 的 demo 跑一輪端到端冒煙測試（透過 computer-use 點擊 UI 元素、驗證關鍵畫面），以宣告 demo 在本機跑得通。讀取 `samples/<Sample.Name>/.smoke.yaml` 設定檔。當使用者要「跑 demo」、「驗證 sample」、「demo 跑得通嗎」、「smoke test sample」之類需求時使用。
+description: 對 demo 專案（`samples/<Name>/` 或 `apps/<Name>/`）跑一輪端到端冒煙測試（透過 computer-use 點擊 UI 元素、驗證關鍵畫面），以宣告 demo 在本機跑得通。讀取該專案根目錄的 `.smoke.yaml` 設定檔。當使用者要「跑 demo」、「驗證 sample」、「demo 跑得通嗎」、「smoke test sample」之類需求時使用。
 ---
 
 # Sample Demo 端到端冒煙
 
-對 `samples/<Sample.Name>/` 跑一輪可重現的 UI 流程驗證。整個流程**從外部觀察**：先起依賴（QuickStart.Server 等）、開 app、模擬點擊、截圖核對、清乾淨。各 sample 的「成功畫面長什麼樣」寫成 `.smoke.yaml`，本 skill 是 runner。
+對 demo 專案（`samples/<Name>/` 或 `apps/<Name>/`）跑一輪可重現的 UI 流程驗證。整個流程**從外部觀察**：先起依賴（後端 server 等）、開 app、模擬點擊、截圖核對、清乾淨。各 demo 的「成功畫面長什麼樣」寫成 `.smoke.yaml`，本 skill 是 runner。
 
 ## 適用場景
 
@@ -25,38 +25,38 @@ description: 對 `samples/<Sample.Name>/` 的 demo 跑一輪端到端冒煙測�
 - `claude` desktop 有 computer-use MCP 權限
 - 對應 sample 已 build 過（本 skill 不負責 build）
 
-## 設定檔：`samples/<Sample.Name>/.smoke.yaml`
+## 設定檔：`<專案根>/.smoke.yaml`
 
-每個有 GUI 的 sample 自帶一份 `.smoke.yaml`。範例：
+每個有 GUI 的 demo 自帶一份 `.smoke.yaml`。範例（實際檔案：`apps/Bee.Northwind/.smoke.yaml`）：
 
 ```yaml
-# samples/Avalonia.Demo/.smoke.yaml
-name: Avalonia.Demo
-display_name: Bee Avalonia Demo
+# apps/Bee.Northwind/.smoke.yaml
+name: Bee.Northwind
+display_name: Bee.Northwind
 
 # 起 demo 之前要跑的依賴 process
 prerequisites:
   - id: server
-    cwd: samples/QuickStart.Server
-    cmd: dotnet run --configuration Release --no-build
+    cwd: apps/Bee.Northwind/Bee.Northwind.Server
+    cmd: dotnet run --configuration Debug --no-build
     ready_when: "Now listening on"   # 等 stdout 出現這串才算 ready
     timeout_seconds: 30
 
 # demo app 自身啟動方式
 launch:
-  app_name: Bee Avalonia Demo
+  app_name: Bee.Northwind
   # Avalonia 桌面端產出的是一般 .NET 可執行檔（macOS 無 .app bundle、Windows 無 MSIX），
-  # 因此以 dotnet 直接啟動已發布的 host DLL；跑 smoke 時不依賴 dotnet run 的 file-watch 迴圈。
-  launch_cmd: dotnet samples/Avalonia.Demo/bin/Debug/net10.0/Avalonia.Demo.dll
-  # 若 sample 產出的是 .app bundle，改用：
-  # bundle_path: samples/<Name>/bin/.../<App>.app   # 預設以 macOS `open` 啟動
+  # 因此以 dotnet 直接啟動已建置的 host DLL；跑 smoke 時不依賴 dotnet run 的 file-watch 迴圈。
+  launch_cmd: dotnet apps/Bee.Northwind/Bee.Northwind.Desktop/bin/Debug/net10.0/Bee.Northwind.Desktop.dll
+  # 若專案產出的是 .app bundle，改用：
+  # bundle_path: <專案>/bin/.../<App>.app   # 預設以 macOS `open` 啟動
 
 # 點擊與驗證流程
 flow:
   - step: take initial screenshot
     action: screenshot
     expect_text:                          # 至少要看到的字串（用 OCR / 截圖比對）
-      - "Bee Avalonia demo"
+      - "Bee.Northwind"
       - "Endpoint"
       - "Connect"
 
@@ -66,27 +66,26 @@ flow:
     target: { label: "Connect" }
     wait_after_seconds: 4                 # 等 reachability check + ping
     expect_text:
-      - "Login"
       - "Sign in"
+      - "User ID"
 
   - step: click Sign in
     action: click
     target: { label: "Sign in" }
     wait_after_seconds: 6                 # 等 RSA 握手 + Login
     expect_text:
-      - "Employee"
-      - "Alice Chen"                      # 種子第一筆
-      - "Bob Liu"                         # 第二筆
-      - "Carol Wang"                      # 第三筆
+      - "Master Data"                     # 選單群組
+      - "Transactions"
+      - "Beverages"                       # 種子分類第一筆
 
   - step: final screenshot
     action: screenshot
-    save_as: maui-demo-employee-page.png  # 給人工確認用
+    save_as: northwind-category-list.png  # 給人工確認用
 
 # 清乾淨
 teardown:
-  - kill_app: true                        # 結束時 kill app process
-  - kill_prerequisites: true              # 結束時 kill server
+  kill_app: true                          # 結束時 kill app process
+  kill_prerequisites: true                # 結束時 kill server
 ```
 
 ## 執行流程
@@ -94,12 +93,13 @@ teardown:
 ### Step 1：讀 `.smoke.yaml`
 
 ```bash
-test -f samples/<Sample.Name>/.smoke.yaml || {
-  echo "Sample 沒有 .smoke.yaml，請先為它寫一份"
+test -f <專案根>/.smoke.yaml || {
+  echo "此 demo 沒有 .smoke.yaml，請先為它寫一份"
   exit 1
 }
 ```
 
+`<專案根>` 是 `samples/<Name>` 或 `apps/<Name>`；不確定時先 `ls samples apps` 對名稱。
 不存在 → 停下，問使用者要不要從樣板生成一份（不自動生）。
 
 ### Step 2：起 prerequisites
@@ -116,7 +116,7 @@ test -f samples/<Sample.Name>/.smoke.yaml || {
 ```
 mcp__computer-use__request_access(
   apps=[launch.app_name],
-  reason="Run smoke test for samples/<Sample.Name>"
+  reason="Run smoke test for <專案根>"
 )
 ```
 
@@ -153,7 +153,7 @@ for step in flow:
 
 ```bash
 # kill app
-pgrep -fl "<Sample.Name>" | awk '{print $1}' | xargs -r kill
+pgrep -fl "<Name>" | awk '{print $1}' | xargs -r kill
 
 # kill prerequisites
 for pid in "${prerequisite_pids[@]}"; do
@@ -167,14 +167,14 @@ lsof -i :5050 -sTCP:LISTEN 2>/dev/null  # 應為空
 ### Step 6：輸出結論
 
 ```
-✅ samples/<Sample.Name> smoke passed.
+✅ <專案根> smoke passed.
    - prerequisites: 1/1 ready
    - flow steps:    4/4 passed
    - last screenshot: maui-demo-employee-page.png
 
 ------ or ------
 
-❌ samples/<Sample.Name> smoke failed at step "click Sign in".
+❌ <專案根> smoke failed at step "click Sign in".
    - prerequisites: 1/1 ready
    - flow steps:    1/3 passed (step #2 timed out waiting for "Employee")
    - failure screenshot: smoke-failure-2026-05-23.png

@@ -103,7 +103,6 @@ Console 會列出 `System.Ping` 狀態與自訂 BO 回應的訊息。完整 demo
 |------|------|------|
 | QuickStart | [`QuickStart.Server`](samples/QuickStart.Server/README.zh-TW.md) + [`QuickStart.Console`](samples/QuickStart.Console/README.zh-TW.md) | 最小 JSON-RPC 端到端，含一個 anonymous 自訂 BO |
 | Blazor Server | [`Blazor.Server.Demo`](samples/Blazor.Server.Demo/README.zh-TW.md) | `BeeLoginPanel` + `FormPage` + Employee CRUD,走 `LocalApiProvider` in-process 派遣 |
-| Avalonia | [`Avalonia.Demo`](samples/Avalonia.Demo/README.zh-TW.md) | 桌面 Avalonia 客戶端（Windows / macOS / Linux）渲染同一份 `FormSchema` |
 | Avalonia | [`Avalonia.DemoCenter`](samples/Avalonia.DemoCenter/README.md) | 主題導向控件 demo center（DevExpress 風格）：導覽樹（主題 → 案例）+ Demo/Source 分頁 + 主題/FormMode 工具列；涵蓋資料繫結、唯讀必填、FormMode、Layout、Grid、原生 vs 繼承比對（Semi.Avalonia，無後端） |
 | 純 JS | [`Web.Js.Demo`](samples/Web.Js.Demo/README.zh-TW.md) | 用瀏覽器原生 JavaScript 呼叫 JSON-RPC API — 前端無 .NET、無 npm |
 

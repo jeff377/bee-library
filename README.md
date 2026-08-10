@@ -104,7 +104,6 @@ All demos live in-repo under [`samples/`](samples/README.md). They're minimal, f
 |----------|------|-------|
 | QuickStart | [`QuickStart.Server`](samples/QuickStart.Server/README.md) + [`QuickStart.Console`](samples/QuickStart.Console/README.md) | Minimal JSON-RPC end-to-end with a custom anonymous BO |
 | Blazor Server | [`Blazor.Server.Demo`](samples/Blazor.Server.Demo/README.md) | `BeeLoginPanel` + `FormPage` + Employee CRUD, dispatched in-process via `LocalApiProvider` |
-| Avalonia | [`Avalonia.Demo`](samples/Avalonia.Demo/README.md) | Desktop Avalonia client (Windows / macOS / Linux) rendering the same `FormSchema` |
 | Avalonia | [`Avalonia.DemoCenter`](samples/Avalonia.DemoCenter/README.md) | Theme-oriented control demo center (DevExpress-style): nav tree (theme → case) + Demo/Source tabs + theme/FormMode toolbar; covers data binding, read-only/required, FormMode, layout, grid, native-vs-inherited parity (Semi.Avalonia, no backend) |
 | Pure JS | [`Web.Js.Demo`](samples/Web.Js.Demo/README.md) | Calling the JSON-RPC API from vanilla JavaScript in a browser — no .NET on the client, no npm |
 
