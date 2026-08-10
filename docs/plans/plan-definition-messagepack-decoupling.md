@@ -1,14 +1,14 @@
 # 計畫：解除 Bee.Definition 對 MessagePack 的相依
 
-**狀態：📝 擬定中（2026-08-09）**
+**狀態：🚧 進行中（2026-08-09）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 0 | 可行性驗證（spike）：`BeeObjectFormatter` 原型 + 五項不可推理的前提實測 | 📝 待做 |
+| 0 | 可行性驗證（spike）：五項前提實測 | 🚧 進行中（4/5 完成，見「發現 5／6」） |
 | 1 | `[WireIgnore]` 標註 + `BeeObjectFormatter`（6 個型別顯式註冊）落地 | 📝 待做 |
 | 2 | `FilterNode` 家族外置為 `FilterNodeFormatter`，移除 `[Union]` / `[Key]` | 📝 待做 |
 | 3 | `SafeTypelessFormatter` 遷入 Api.Core，移除 `Parameter` 的 formatter attribute | 📝 待做 |
-| 4 | 刪除四個 `MessagePack*` 集合型別，改由 resolver 自動解析 formatter；BEE4001 退役 | 📝 待做 |
+| 4 | 刪除四個 `MessagePack*` 集合型別；註冊清單與 BEE4001 退役（發現 6 後大幅簡化） | 📝 待做 |
 | 5 | 移除 `Bee.Definition` 的 `PackageReference`，修訂 adr-030 與規則文件 | 📝 待做 |
 
 ## 目標與理由
@@ -81,31 +81,72 @@ MessagePack 不同——它是一個明確的技術選擇，且會沿相依鏈�
 
 → 這 11 個型別的 MessagePack 標註**可直接刪除，無需任何替代機制**。
 
-### ⚠️ 但 formatter 註冊不可一併刪：typeless 逃生口
+### typeless 逃生口：實測結論
 
-`Parameter.Value` 是 `object?`（見元件四），`ExecFunc` 可經此通道傳遞**任意** Definition 型別。
-`SafeTypelessFormatter.IsTypeAllowed` 委派給 `SysInfo.IsTypeNameAllowed`，Bee 命名空間放行。
+`Parameter.Value` 是 `object?`（見元件四），`ExecFunc` 可經此通道傳遞**任意** Definition 型別，
+`SafeTypelessFormatter.IsTypeAllowed` 委派給 `SysInfo.IsTypeNameAllowed`（`Bee.*` 命名空間放行）。
+因此「不在宣告合約面」不等於「runtime 不會經過 MessagePack」。
 
-因此「不在宣告合約面」**不等於**「runtime 不會經過 MessagePack」。兩者的容錯度不同：
+**但實測顯示這不構成隱患**（見發現 6）：未標註 `[MessagePackObject]` 的集合型別經 typeless
+通道 round-trip，內容完整還原，且 wire 格式與 `CollectionBaseFormatter` 完全一致。
+移除標註**同時**解決了「必須記得註冊」的問題——因為需要註冊的原因正是標註本身。
 
-- **屬性標註**：移除安全——contractless 路徑對未標註型別照樣以屬性名序列化
-- **集合的 formatter 解析**：**必須涵蓋**——集合型別若解析不到 `CollectionBaseFormatter`，
-  序列化正常但**反序列化擲 `MessagePackSerializationException`**（見
-  [FormatterResolver.cs:32-36](../../src/Bee.Api.Core/MessagePack/FormatterResolver.cs) 的 WARNING）
+## 六個關鍵發現
 
-`CurrencySettings` / `UnitSettings` 本身即集合型別，即使不在宣告合約面上，
-仍必須解析得到 formatter。
+發現 1–4 來自盤點，把本計畫的難度從「幾乎不可行」降到「有明確路徑」；
+**發現 5、6 來自階段 0 spike 實測**——5 收緊了執行順序，6 大幅簡化了階段 4。
 
-**階段 4 的 resolver 自動解析正是為此**（見「附帶收益」）：改為依 base type 遞迴解析後，
-涵蓋面從「8 筆手動註冊」擴大到「所有集合子型別」，這個 typeless 隱患被一併消除，
-而不是靠人記得維護註冊清單。
+### 發現 5：標註移除有編譯期順序相依（2026-08-09 實測）
 
-> **階段 0 加驗**：以 `ExecFunc` 經 `Parameter.Value` 傳遞一個**未在註冊清單上**的集合型別，
-> 確認自動解析後 round-trip 成立。
+發現 2、3 說「這些標註不生效，移除是零行為變更」——**runtime 成立，compile time 不成立**。
+MessagePack 自帶的 analyzer 會擋：
 
-## 四個關鍵發現（推翻既有假設）
+| 診斷 | 規則 | 實測觸發 |
+|------|------|---------|
+| **MsgPack003** | 被 `[MessagePackObject]` 型別**引用**的型別，自己也必須有 `[MessagePackObject]` | 移除 8 個集合容器的裸標記 → 8 個 error（它們被 `GetListRequest` 等 attributed 型別引用） |
+| **MsgPack004** | `[MessagePackObject]` 型別的**基底**成員必須帶 `[Key]` 或 `[IgnoreMember]` | 移除 `MessagePackKeyCollectionBase` 的 3 個 `[IgnoreMember]` → `ParameterCollection` 報 3 個 error |
 
-盤點過程中證實四件事，把本計畫的難度從「幾乎不可行」降到「有明確路徑」。
+→ **標註不能逐型別漸進移除**，必須沿引用圖由外而內、以連通分量為單位一次處理。
+而所有 Definition wire 型別都被 `Bee.Api.Core/Messages/` 的 57 個 `[MessagePackObject]`
+型別引用——**連通分量涵蓋 Api.Core 的訊息型別**。
+
+**因應**：Api.Core 訊息型別的 `[MessagePackObject(keyAsPropertyName: true)]` 需**一併移除**。
+這在 wire 格式上等價（`keyAsPropertyName` 與 contractless 皆以屬性名為鍵，見 adr-030），
+且 Api.Core 屬傳輸層、本就允許保留 MessagePack 相依——改的只是「如何宣告」，不是「能否使用」。
+
+代價是放棄 source generator 退路（原本就是本計畫已接受的成本，見風險表）。
+
+**已驗證可獨立移除者**：7 個定義型別（`FormSchema` / `TableSchema` / `FormLayout` /
+`SystemSettings` / `ClientSettings` / `DatabaseSettings` / `DbCategorySettings`）的 17 個
+`[IgnoreMember]` 與 `using MessagePack;`——它們不被任何 attributed 型別引用，
+移除後 clean Release build 0 error 0 warning，`Bee.Definition.UnitTests` 1071 +
+`Bee.Api.Core.UnitTests` 682 全數通過。
+
+### 發現 6：`[MessagePackObject]` 才是集合需要顯式註冊的原因（2026-08-09 實測）
+
+`FormatterResolver` 的 WARNING 稱「未註冊的集合反序列化會擲
+`MessagePackSerializationException`」。實測**不成立**——前提是該集合帶 `[MessagePackObject]`。
+
+以 `SpikeParameterValueTests` 六個測試驗證（皆通過）：
+
+| 測試 | 結果 |
+|------|------|
+| 未註冊的 `KeyCollectionBase<T>` 子型別（`FormFieldCollection`）經 typeless 通道 | ✅ 內容完整還原（非僅「不擲例外」） |
+| 未註冊、**且無 `[MessagePackObject]`** 的 `MessagePackCollectionBase<T>` 子型別 | ✅ 內容完整還原 |
+| 有標註且已註冊（`SortFieldCollection`）vs 無標註未註冊，wire 首位元組 | ✅ **皆為 `0x91`（fixarray）——格式完全一致** |
+
+原因：`[MessagePackObject]` 是 **opt-in**，集合上只有零個 `[Key]` 成員 → 空 map；
+拿掉標註後 contractless 認得 `Collection<T>` / `KeyedCollection<,>` 是集合，
+原生序列化為 array，**與 `CollectionBaseFormatter` 產出的格式相同**。
+
+→ **階段 4 大幅簡化**：移除標註後不需要 `KeyCollectionBaseFormatter`、
+不需要 resolver 前移、不需要遞迴 base-type 檢查。顯式註冊清單與 `BEE4001` 直接退場，
+因為它們把關的問題本來就是 `[MessagePackObject]` 自己造成的。
+
+→ 連帶修正：本計畫先前所稱「25 個 `KeyCollectionBase` 子型別經 typeless 通道會擲例外
+的長期隱患」**不存在**，該敘述已移除。
+
+## 前四個發現（來自盤點）
 
 ### 發現 1：`ApiContractRegistry` 的 attribute 偵測是惰性的
 
@@ -234,10 +275,6 @@ MessagePack attribute——這是四對雙胞胎型別存在的唯一理由。
 `MessagePackKeyCollectionBase` 的 `[Key(0)] ItemsForSerialization` proxy 與
 `IMessagePackSerializationCallbackReceiver` **一併消失**——`KeyCollectionBaseFormatter`
 直接把 items 寫成 array、讀取時重建，不需要 proxy 屬性繞道。
-
-> **副作用（正向）**：`Bee.Base.KeyCollectionBase<T>` 的 25 個子型別（`FormFieldCollection`、
-> `DbFieldCollection` 等定義集合）原本不在註冊清單上，若經 typeless 逃生口上 wire 會擲例外；
-> 自動解析後它們**恰好也被涵蓋**，這個長期隱患順帶消失。
 
 > **不受影響**：BEE4005 / BEE4006（單一 `Add` 多載、無參數建構子）走
 > `FrameworkCollectionTypes`，其清單已含 `Bee.Base.Collections.CollectionBase\`1` 與
@@ -505,4 +542,4 @@ proxy 屬性存在的唯一理由就是「attribute 只能標在屬性上」，�
 
 | # | 問題 | 處置 |
 |---|------|------|
-| A | `Parameter.Value` 的 formatter attribute 是否為必要保險 | 階段 0 實測決定 |
+| A | `Parameter.Value` 的 formatter attribute 是否為必要保險 | ✅ **已結案（2026-08-09 實測）：非必要**。移除 `[MessagePackFormatter]` 後，帶 `System.Version`（白名單外）的 `Parameter` 經 codec 反序列化仍被擋下；`Bee.Definition` 1071 + `Bee.Api.Core` 684 全綠。codec 的 formatter 陣列註冊已足夠 |

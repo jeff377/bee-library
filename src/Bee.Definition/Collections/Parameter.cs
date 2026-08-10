@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using Bee.Base;
-using Bee.Definition.Serialization;
 using MessagePack;
 
 namespace Bee.Definition.Collections
@@ -45,7 +44,6 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets or sets the parameter value.
         /// </summary>
-        [MessagePackFormatter(typeof(SafeTypelessFormatter))]
         public object? Value { get; set; } = null;
 
         /// <summary>

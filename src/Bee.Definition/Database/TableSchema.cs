@@ -1,6 +1,5 @@
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
-using MessagePack;
 using System.Text.Json.Serialization;
 using System.ComponentModel;
 using System.Xml.Serialization;
@@ -33,7 +32,7 @@ namespace Bee.Definition.Database
         /// <summary>
         /// Gets the serialization state.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
@@ -51,7 +50,7 @@ namespace Bee.Definition.Database
         /// <summary>
         /// Gets the serialization-bound file path.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public string ObjectFilePath { get; private set; } = string.Empty;
 
@@ -69,7 +68,7 @@ namespace Bee.Definition.Database
         /// <summary>
         /// Gets the object creation time.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public DateTime CreateTime { get; } = DateTime.UtcNow;
 
@@ -141,7 +140,7 @@ namespace Bee.Definition.Database
         /// <summary>
         /// Gets or sets the table schema upgrade action.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         [DefaultValue(DbUpgradeAction.None)]
         public DbUpgradeAction UpgradeAction { get; set; } = DbUpgradeAction.None;

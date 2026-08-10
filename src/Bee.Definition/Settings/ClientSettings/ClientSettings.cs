@@ -1,6 +1,5 @@
 using Bee.Base.Serialization;
 using System.Text.Json.Serialization;
-using MessagePack;
 using System.ComponentModel;
 using System.Xml.Serialization;
 
@@ -31,7 +30,7 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Gets the serialization state.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
@@ -47,7 +46,7 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Gets the file path bound to serialization.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public string ObjectFilePath { get; private set; } = string.Empty;
 
@@ -65,7 +64,7 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Gets the time at which this object was created.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public DateTime CreateTime { get; private set; }
 
