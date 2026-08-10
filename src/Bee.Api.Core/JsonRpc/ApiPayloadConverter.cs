@@ -114,7 +114,7 @@ namespace Bee.Api.Core.JsonRpc
             if (commaIndex > 0)
                 fullName = typeName.Substring(0, commaIndex).Trim();
 
-            if (!SafeTypelessFormatter.IsTypeAllowed(fullName))
+            if (!WireTypeWhitelist.IsTypeAllowed(fullName))
             {
                 throw new InvalidOperationException(
                     $"Payload type '{fullName}' is not in the allowed type whitelist.");

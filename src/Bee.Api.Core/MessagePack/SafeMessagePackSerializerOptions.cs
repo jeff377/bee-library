@@ -10,7 +10,7 @@ namespace Bee.Api.Core.MessagePack
     /// <c>TypelessFormatter</c> calls
     /// <see cref="MessagePackSerializerOptions.ThrowIfDeserializingTypeIsDisallowed"/>
     /// <b>before</b> instantiating the deserialized object. This override applies
-    /// <see cref="SafeTypelessFormatter.IsTypeAllowed"/> at that point, preventing
+    /// <see cref="WireTypeWhitelist.IsTypeAllowed"/> at that point, preventing
     /// untrusted types from being constructed.
     /// </remarks>
     internal sealed class SafeMessagePackSerializerOptions : MessagePackSerializerOptions
@@ -54,15 +54,15 @@ namespace Bee.Api.Core.MessagePack
             // MessagePack 3.1.5+ rejects `System.Data.DataTable` as a
             // BinaryFormatter gadget, but this wire rebuilds tables through the
             // framework's own formatter, so the type stays deliberately trusted.
-            // See `SafeTypelessFormatter.IsExplicitlyTrustedType` remarks.
-            if (SafeTypelessFormatter.IsExplicitlyTrustedType(fullName))
+            // See `WireTypeWhitelist.IsExplicitlyTrustedType` remarks.
+            if (WireTypeWhitelist.IsExplicitlyTrustedType(fullName))
                 return;
 
             // Apply the built-in blocklist (known-dangerous types) before the
             // application-level namespace whitelist.
             base.ThrowIfDeserializingTypeIsDisallowed(type);
 
-            if (!SafeTypelessFormatter.IsTypeAllowed(fullName))
+            if (!WireTypeWhitelist.IsTypeAllowed(fullName))
             {
                 throw new InvalidOperationException(
                     $"MessagePack deserialization blocked: type '{fullName}' is not in the allowed type whitelist.");

@@ -11,47 +11,69 @@ namespace Bee.Api.Core.MessagePack
     internal static class MessagePackCodec
     {
         /// <summary>
+        /// The explicit formatter list, exposed so <c>WireContractDriftTests</c> can check it
+        /// against the wire type closure.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: Every wire type is registered explicitly, and that is not belt-and-braces.
+        /// The contractless resolver still trails the list, but it can only build formatters where
+        /// dynamic code is available — .NET for iOS sets `DynamicCodeSupport=false` for every
+        /// build, and there an unregistered type raises `FormatterNotRegisteredException` instead
+        /// of falling back to anything. See <see cref="WireContracts"/>.
+        /// <para>
+        /// NOTE: Declared before <c>Options</c> on purpose — static field initialisers run in
+        /// declaration order, and <c>Options</c> reads this one.
+        /// </para>
+        /// </remarks>
+        internal static IReadOnlyList<IMessagePackFormatter> RegisteredFormatters { get; } = BuildFormatters();
+
+        /// <summary>
         /// Statically initialized MessagePack serialization options, including custom formatters and resolvers.
         /// SafeMessagePackSerializerOptions overrides ThrowIfDeserializingTypeIsDisallowed
-        /// to block disallowed types BEFORE object instantiation inside TypelessFormatter.
+        /// to block disallowed types before object instantiation.
         /// </summary>
         private static readonly MessagePackSerializerOptions Options = new SafeMessagePackSerializerOptions(
             CompositeResolver.Create(
-                new IMessagePackFormatter[]
-                {
-                    new DataTableFormatter(),          // Custom DataTable formatter
-                    new DataSetFormatter(),             // Custom DataSet formatter
-                    // Hand-written per-type formatters: they honour [WireIgnore] by naming the
-                    // wire members explicitly, and stay generic all the way down so the mobile
-                    // heads (reflection-only AOT) take the same path as the desktop.
-                    new SortFieldFormatter(),
-                    new DepartmentNodeFormatter(),
-                    new NumberFormatItemFormatter(),
-                    new CashRoundingItemFormatter(),
-                    new AllowedCurrencyItemFormatter(),
-                    new ParameterFormatter(),
-                    new FilterNodeFormatter(),
-                    // Keyed collections are not optional the way the plain ones are: contractless
-                    // binds a KeyedCollection as a dictionary and loses the item type.
-                    new KeyCollectionBaseFormatter<ParameterCollection, Parameter>(),
-                    SafeTypelessFormatter.Instance      // Type-validated polymorphic formatter
-                },
-                // Plain collections need no entry above. The contractless resolver recognises a
-                // `Collection<T>` and writes it as an array — byte-for-byte what the old
-                // CollectionBaseFormatter registrations produced. Those registrations were only
-                // ever needed because the collections carried `[MessagePackObject]`, whose opt-in
-                // membership left them with zero members and so an empty map; with the attribute
-                // gone the need went with it.
-                //
-                // Keyed collections are the exception, and they are registered above: contractless
-                // binds a `KeyedCollection<TKey, TItem>` as a dictionary and hands back
-                // `Dictionary<object, object>` in place of the item type.
+                RegisteredFormatters,
+                // The contractless resolver stays last as a desktop-only convenience for types the
+                // registrations have not reached (a host's own `Parameter.Value` payload, say).
+                // It is not a safety net on the mobile heads.
                 new IFormatterResolver[]
                 {
                     ContractlessStandardResolver.Instance, // Contractless resolver (without unsafe Typeless support)
-                    FormatterResolver.Instance,            // Custom resolver
                     StandardResolver.Instance              // Standard resolver
                 }));
+
+        /// <summary>
+        /// Assembles the explicit formatter list: the hand-written ones first, then the generated
+        /// wire contracts.
+        /// </summary>
+        private static IReadOnlyList<IMessagePackFormatter> BuildFormatters()
+        {
+            var formatters = new List<IMessagePackFormatter>
+            {
+                new DataTableFormatter(),           // Custom DataTable formatter
+                new DataSetFormatter(),             // Custom DataSet formatter
+                // Hand-written per-type formatters: they exclude the framework-managed members by
+                // naming the wire members explicitly, and stay generic all the way down so the
+                // mobile heads (reflection-only AOT) take the same path as the desktop.
+                new SortFieldFormatter(),
+                new DepartmentNodeFormatter(),
+                new NumberFormatItemFormatter(),
+                new CashRoundingItemFormatter(),
+                new AllowedCurrencyItemFormatter(),
+                new ParameterFormatter(),
+                new FilterNodeFormatter(),
+                new FilterConditionFormatter(),
+                new FilterGroupFormatter(),
+                // Keyed collections are bound as a dictionary by contractless, losing the item type.
+                new KeyCollectionBaseFormatter<ParameterCollection, Parameter>(),
+                WireValueFormatter.Instance         // Discriminated `object` values, AOT-safe
+            };
+
+            formatters.AddRange(WireContracts.Create());
+            return formatters;
+        }
 
         /// <summary>
         /// Serializes an object to a byte array.

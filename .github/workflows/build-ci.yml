@@ -215,3 +215,21 @@ jobs:
         dotnet pack src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj --configuration Release --output ./nupkgs --no-build
+
+    # Mobile AOT gate：`DynamicCodeSupport=false` 正是 .NET for iOS SDK 對每個
+    # iOS / tvOS / MacCatalyst 建置設定的值，映射為
+    # `RuntimeFeature.IsDynamicCodeSupported` 的 RuntimeHostConfigurationOption。
+    # 少了這一關，「wire 型別忘了註冊 formatter」在桌面上完全無感（contractless 會接手），
+    # 到行動端才會以 FormatterNotRegisteredException 現形。
+    # 需重新建置（runtimeconfig 不同），故不加 --no-build，並放在 job 最後一步，
+    # 避免污染前面 --no-build 步驟的輸出。
+    - name: Mobile AOT gate (Bee.Api.Core wire)
+      env:
+        BEE_TEST_CONNSTR_SQLSERVER: "Server=localhost,1433;Database={@DbName};User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
+        BEE_TEST_CONNSTR_POSTGRESQL: "Host=localhost;Port=5432;Database={@DbName};Username=testuser;Password=testpass"
+        BEE_TEST_CONNSTR_MYSQL: "Server=localhost;Port=3306;Database={@DbName};User=testuser;Password=testpass;"
+        BEE_TEST_CONNSTR_ORACLE: "Data Source=localhost:1521/FREEPDB1;User Id=testuser;Password=testpass;"
+        BEE_TEST_CONNSTR_SQLITE: "Data Source=file:bee_test_{@DbName}?mode=memory&cache=shared"
+      run: |
+        dotnet test tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj \
+          --configuration Release --verbosity normal -p:DynamicCodeSupport=false

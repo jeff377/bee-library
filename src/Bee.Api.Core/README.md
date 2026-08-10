@@ -54,7 +54,12 @@
 
 - `SafeMessagePackSerializerOptions` -- type whitelist for deserialization to prevent untrusted-type attacks.
 - `MessagePackCodec` -- encoder/decoder for MessagePack serialization.
-- `FormatterResolver` -- custom resolver with formatters for ADO.NET types (`DataTable`, `DataSet`, etc.).
+- `WireContracts` -- the explicit formatter registrations for every wire type. The contractless
+  resolver is a desktop-only convenience, not the carrying mechanism: .NET for iOS turns dynamic
+  code off, and an unregistered type fails there outright (see
+  [ADR-037](../../docs/adr/adr-037-wire-explicit-registration.md)).
+- `WireValueFormatter` -- discriminated envelope for `object`-typed members (filter values,
+  parameter values, table cells).
 
 ### Built-in System Operations
 
@@ -101,7 +106,8 @@ Bee.Api.Core/
                     (Login, Ping, CreateSession, GetDefine, SaveDefine,
                     GetPackage, CheckPackageUpdate, GetCommonConfiguration)
   MessagePack/      SafeMessagePackSerializerOptions, MessagePackCodec,
-                    FormatterResolver, custom formatters for ADO.NET types
+                    WireContracts (explicit registrations), WireValueFormatter,
+                    custom formatters for ADO.NET types
   Registry/         ApiContractRegistry (contract -> API type registry)
   Transformers/     IApiPayloadTransformer, ApiPayloadTransformer,
                     IApiPayloadSerializer, MessagePackPayloadSerializer,

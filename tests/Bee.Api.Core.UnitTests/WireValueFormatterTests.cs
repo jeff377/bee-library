@@ -3,18 +3,19 @@ using System.ComponentModel;
 using Bee.Api.Core.MessagePack;
 using Bee.Definition.Collections;
 using Bee.Definition.Filters;
+using Bee.Tests.Shared;
 using MessagePack;
 
 namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
-    /// <c>SafeTypelessFormatter</c> 的白名單與 round-trip 測試。
+    /// <c>WireValueFormatter</c> 的白名單與 round-trip 測試。
     /// </summary>
     /// <remarks>
-    /// 此測試原本一分為二（`Bee.Definition.UnitTests` 測白名單、`Bee.Api.Core.UnitTests`
-    /// 測 round-trip），因 formatter 遷入 `Bee.Api.Core` 而合併於此。
+    /// 前身為 <c>SafeTypelessFormatterTests</c>。formatter 由 <c>TypelessFormatter</c> 包裝改為
+    /// 判別式封閉集合後，白名單語意不變，改變的是「未知型別」那條路徑的框架格式。
     /// </remarks>
-    public class SafeTypelessFormatterTests
+    public class WireValueFormatterTests
     {
         [Fact(DisplayName = "ParameterCollection 允許安全的基礎型別序列化")]
         public void ParameterCollection_AllowedPrimitiveTypes_RoundTrip()
@@ -41,9 +42,59 @@ namespace Bee.Api.Core.UnitTests
             Assert.Null(restored["NullValue"].Value);
         }
 
-        [Fact(DisplayName = "ParameterCollection 允許 Bee 命名空間型別序列化")]
+        [Theory]
+        [InlineData((sbyte)-8)]
+        [InlineData((byte)8)]
+        [InlineData((short)-16)]
+        [InlineData((ushort)16)]
+        [InlineData(-32)]
+        [InlineData(32u)]
+        [InlineData(-64L)]
+        [InlineData(64UL)]
+        [InlineData(1.5f)]
+        [InlineData(2.5d)]
+        [DisplayName("整數與浮點各寬度皆應 round-trip 回原型別")]
+        public void ParameterValue_NumericWidths_RoundTrip(object value)
+        {
+            var restored = RoundTripValue(value);
+
+            Assert.Equal(value.GetType(), restored!.GetType());
+            Assert.Equal(value, restored);
+        }
+
+        [Fact]
+        [DisplayName("非數值的已知型別皆應 round-trip 回原型別")]
+        public void ParameterValue_KnownReferenceAndStructTypes_RoundTrip()
+        {
+            var guid = Guid.NewGuid();
+            var bytes = new byte[] { 1, 2, 3 };
+
+            Assert.Equal(guid, RoundTripValue(guid));
+            Assert.Equal(new DateOnly(2026, 7, 25), RoundTripValue(new DateOnly(2026, 7, 25)));
+            Assert.Equal(TimeSpan.FromMinutes(90), RoundTripValue(TimeSpan.FromMinutes(90)));
+            Assert.Equal(bytes, (byte[])RoundTripValue(bytes)!);
+            Assert.Equal(DBNull.Value, RoundTripValue(DBNull.Value));
+        }
+
+        [Fact]
+        [DisplayName("object[] 條件值（IN 子句）應遞迴 round-trip")]
+        public void ParameterValue_ObjectArray_RoundTrip()
+        {
+            var guid = Guid.NewGuid();
+            var restored = (object?[])RoundTripValue(new object[] { 1, "two", guid })!;
+
+            Assert.Equal(3, restored.Length);
+            Assert.Equal(1, restored[0]);
+            Assert.Equal("two", restored[1]);
+            Assert.Equal(guid, restored[2]);
+        }
+
+        [DynamicCodeFact(DisplayName = "ParameterCollection 允許 Bee 命名空間型別序列化（具名型別通道，需動態碼）")]
         public void ParameterCollection_AllowedBeeTypes_RoundTrip()
         {
+            // 這條走的是 `WireValueFormatter` 的「具名型別」分支：型別不在封閉判別集合內，
+            // 只能經非泛型多載遞迴，因此在無動態碼的 runtime（iOS）上不可用——
+            // 那是 `SysInfo.AllowedTypeNamespaces` 這個可設定擴充點的固有限制，非缺陷。
             var inner = new ParameterCollection
             {
                 { "Nested", "value" }
@@ -109,7 +160,7 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("IsTypeAllowed 應允許原始型別與白名單命名空間")]
         public void IsTypeAllowed_AllowedTypes_ReturnsTrue(string fullName)
         {
-            Assert.True(SafeTypelessFormatter.IsTypeAllowed(fullName));
+            Assert.True(WireTypeWhitelist.IsTypeAllowed(fullName));
         }
 
         [Theory]
@@ -123,39 +174,70 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("IsTypeAllowed 應拒絕不在白名單的型別")]
         public void IsTypeAllowed_DisallowedTypes_ReturnsFalse(string fullName)
         {
-            Assert.False(SafeTypelessFormatter.IsTypeAllowed(fullName));
+            Assert.False(WireTypeWhitelist.IsTypeAllowed(fullName));
         }
 
         [Fact]
-        [DisplayName("SafeTypelessFormatter.Instance 應提供單例")]
+        [DisplayName("WireValueFormatter.Instance 應提供單例")]
         public void Instance_IsNotNull()
         {
-            Assert.NotNull(SafeTypelessFormatter.Instance);
+            Assert.NotNull(WireValueFormatter.Instance);
         }
 
         [Fact]
         [DisplayName("Deserialize 於 nil payload 應回傳 null")]
         public void Deserialize_NilPayload_ReturnsNull()
         {
-            // 直接對 nil 位元組序列呼叫，覆蓋 TryReadNil 分支。
-            var bytes = MessagePackSerializer.Typeless.Serialize((object?)null);
+            var bytes = MessagePackCodec.Serialize<object?>(null);
 
             Assert.Null(DeserializeViaFormatter(bytes));
         }
 
         [Fact]
-        [DisplayName("Deserialize 非白名單型別經 post-check 應拋 InvalidOperationException")]
+        [DisplayName("Deserialize 非白名單型別應在解析型別前擋下")]
         public void Deserialize_DisallowedType_ThrowsInvalidOperation()
         {
-            // 傳入 MessagePackSerializerOptions.Standard 會略過自訂的 pre-check，
-            // 讓 TypelessFormatter 順利建出物件，改由 ValidateType 的 post-check 擋下 ——
-            // 這條路徑驗證的正是「防禦兩層」的第二層。
-            var bytes = MessagePackSerializer.Typeless.Serialize(new Version(1, 2, 3, 4));
+            // 手工組出「具名型別」那條路徑的封套，型別名為白名單外的型別。
+            // 攔截點在 `Type.GetType` 之前，故此型別自始不會被載入。
+            var bytes = BuildNamedEnvelope(typeof(global::System.Diagnostics.Process).AssemblyQualifiedName!);
 
             var exception = Assert.Throws<InvalidOperationException>(
                 () => DeserializeViaFormatter(bytes));
 
             Assert.Contains("blocked", exception.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        [DisplayName("Deserialize 未知判別碼應拋 MessagePackSerializationException")]
+        public void Deserialize_UnknownCode_Throws()
+        {
+            var buffer = new ArrayBufferWriter<byte>();
+            var writer = new MessagePackWriter(buffer);
+            writer.WriteArrayHeader(2);
+            writer.Write(9999);
+            writer.WriteNil();
+            writer.Flush();
+
+            Assert.Throws<MessagePackSerializationException>(
+                () => DeserializeViaFormatter(buffer.WrittenSpan.ToArray()));
+        }
+
+        private static byte[] BuildNamedEnvelope(string assemblyQualifiedName)
+        {
+            var buffer = new ArrayBufferWriter<byte>();
+            var writer = new MessagePackWriter(buffer);
+            writer.WriteArrayHeader(2);
+            writer.Write(assemblyQualifiedName);
+            writer.WriteNil();
+            writer.Flush();
+            return buffer.WrittenSpan.ToArray();
+        }
+
+        private static object? RoundTripValue(object value)
+        {
+            var source = new ParameterCollection { { "v", value } };
+            var restored = MessagePackCodec.Deserialize<ParameterCollection>(MessagePackCodec.Serialize(source));
+            return restored!["v"].Value;
         }
 
         /// <summary>
@@ -164,7 +246,7 @@ namespace Bee.Api.Core.UnitTests
         private static object? DeserializeViaFormatter(byte[] bytes)
         {
             var reader = new MessagePackReader(new ReadOnlySequence<byte>(bytes));
-            return SafeTypelessFormatter.Instance.Deserialize(ref reader, MessagePackSerializerOptions.Standard);
+            return WireValueFormatter.Instance.Deserialize(ref reader, MessagePackSerializerOptions.Standard);
         }
     }
 }

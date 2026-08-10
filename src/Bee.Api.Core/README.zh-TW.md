@@ -53,7 +53,10 @@
 
 - `SafeMessagePackSerializerOptions` -- 反序列化型別白名單，防止不受信任型別攻擊。
 - `MessagePackCodec` -- MessagePack 序列化的編解碼器。
-- `FormatterResolver` -- 自訂解析器，包含 ADO.NET 型別（`DataTable`、`DataSet` 等）的格式器。
+- `WireContracts` -- 全部 wire 型別的顯式 formatter 註冊。contractless resolver 只是桌面端的
+  便利退路、不是承載機制：.NET for iOS 關閉動態碼，未註冊的型別在那裡直接失敗
+  （見 [ADR-037](../../docs/adr/adr-037-wire-explicit-registration.md)）。
+- `WireValueFormatter` -- `object` 型別成員（條件值、參數值、資料表儲存格）的判別式封套。
 
 ### 內建系統操作
 
@@ -100,7 +103,8 @@ Bee.Api.Core/
                     （Login、Ping、CreateSession、GetDefine、SaveDefine、
                     GetPackage、CheckPackageUpdate、GetCommonConfiguration）
   MessagePack/      SafeMessagePackSerializerOptions、MessagePackCodec、
-                    FormatterResolver、ADO.NET 型別自訂格式器
+                    WireContracts（顯式註冊）、WireValueFormatter、
+                    ADO.NET 型別自訂格式器
   Registry/         ApiContractRegistry（Contract → API 型別註冊中心）
   Transformers/     IApiPayloadTransformer、ApiPayloadTransformer、
                     IApiPayloadSerializer、MessagePackPayloadSerializer、

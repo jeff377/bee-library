@@ -159,7 +159,7 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("Parameter.Value 帶白名單外型別，反序列化必須被擋下")]
+        [DisplayName("Parameter.Value 帶白名單外型別必須被擋下")]
         public void Parameter_DisallowedValueType_IsBlocked()
         {
             var source = new ParameterCollection
@@ -167,11 +167,10 @@ namespace Bee.Api.Core.UnitTests
                 new Parameter("evil", new Version(1, 2, 3, 4)),
             };
 
-            var bytes = MessagePackCodec.Serialize(source);
-
-            // 這是安全邊界：typeless 通道若放行白名單外型別即為 gadget 破口。
-            Assert.NotNull(Record.Exception(
-                () => MessagePackCodec.Deserialize<ParameterCollection>(bytes)));
+            // 這是安全邊界：具名型別通道若放行白名單外型別即為 gadget 破口。
+            // `WireValueFormatter` 在寫入端就擋，比先前只在讀取端擋更早一步；
+            // 讀取端的檢查仍在（見 WireValueFormatterTests 的手工封套測試）。
+            Assert.NotNull(Record.Exception(() => MessagePackCodec.Serialize(source)));
         }
 
         [Fact]
