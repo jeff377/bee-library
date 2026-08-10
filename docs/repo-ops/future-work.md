@@ -109,3 +109,28 @@ BO 程式碼處理複雜的，兩者各安其位。**租戶層只有「程式碼
 
 **啟動時第一步**：先蒐集實際的租戶客製案例，按「若有宣告式規則能否解決」分類——
 用真實分布決定第 1 題的線畫在哪，而不是憑想像設計語法。
+
+## 行動端 AOT：MessagePack wire 路徑的 reflection-only 失敗（2026-08-09 發現）
+
+以 `IsDynamicCodeSupported=false`（`RuntimeHostConfigurationOption`）模擬行動端
+AOT 時，`Bee.Api.Core.UnitTests` 有數十項失敗，集中於 `TypelessFormatter`、
+`System.Data.DataTable`、`DataSet`。這在 adr-036 的改動**之前**即已存在
+（當時 51 / 694），非該次改動引入。
+
+與 `rules/serialization.md` 記載的「MessagePack 3.x 有 reflection fallback、
+行動端 AOT 可用」不一致，值得獨立追查。
+
+判讀時的兩個保留：
+
+1. 這是 JIT runtime 上的**模擬**，真實裝置行為未必相同。
+2. 部分失敗擲 `InvalidProgramException`（"CLR detected an invalid program"）
+   而非乾淨的 `NotSupportedException`——那是「Emit 仍執行、但產出無效 IL」的徵狀，
+   高度懷疑是模擬本身的假象。**兩種例外要分開看待。**
+
+重現方式：在測試專案 csproj 加
+
+```xml
+<RuntimeHostConfigurationOption
+    Include="System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported"
+    Value="false" />
+```

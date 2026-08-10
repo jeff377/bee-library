@@ -12,29 +12,40 @@
 因此 **client（含 iOS / Android / WASM head）與 server 兩端都跑 MessagePack**。
 「行動端走 JSON、MessagePack 只在桌面/伺服器間」的假設不成立。
 
-## `[Union]` 多型永久維持整數 `[Key]`
+## 定義層不得引入傳輸格式套件（adr-036）
 
-一般型別已於 adr-030 全面轉為 `[MessagePackObject(keyAsPropertyName:true)]`（72 型別）。
-**但 `[Union]` 多型用整數鍵陣列＋判別碼，與 `keyAsPropertyName` 不相容。**
+`src/Bee.Definition` **不得**有 `MessagePack`（或任何傳輸格式套件）的 `PackageReference`。
+判準是「會不會讓定義層長出外部套件相依」：`[XmlIgnore]` / `[JsonIgnore]` 是 BCL 詞彙、
+可用；MessagePack 標註不可。全 repo 的 MessagePack 相依只在 **`Bee.Api.Core`** 一處。
 
-- `FilterNode`（+`FilterCondition` / `FilterGroup`）**永久維持整數 `[Key]`**。
-- **新增任何多型 MessagePack 階層一律整數 `[Key]` + `[Union]`。**
-- 集合容器（自訂 formatter / proxy）與 `SerializableData*`（DataSet plumbing）亦維持整數。
+wire 綁定由 `src/Bee.Api.Core/MessagePack/` 的**手寫 formatter** 承擔，定義型別不帶標註：
 
-## 集合 item 的 ctor 參數順序必須＝`[Key]` 順序
+- 需排除框架管理成員（`Tag` / `Collection` 等）的合約型別 → 一支專屬 formatter
+- 多型（`FilterNode` 家族）→ `FilterNodeFormatter`，以 `Kind` 為判別碼
+- `KeyedCollection` 子型別 → `KeyCollectionBaseFormatter`（**不可省**，見下）
+- 其餘 → `ContractlessStandardResolver` 以屬性名為鍵，無需任何動作
 
-`MessagePackCollectionItem` 子型別（走 `CollectionBaseFormatter<TColl,TItem>` 上 wire 的集合 item）
-若有參數化建構子，**參數順序必須與 `[Key(n)]` 宣告順序一致**。
+**新增 wire 型別時**：若沒有需排除的成員，什麼都不用做；若有，寫一支 formatter 並在
+`MessagePackCodec` 註冊，同時公開 `WireMemberCount` 常數並在測試斷言——
+編譯器不會把型別與 formatter 綁在一起，該斷言是唯一的漂移守衛。
 
-反序列化挑「參數最多的建構子」並**依 Key 排序位置**塞值（position-based，非 by-name）。順序不符
-→ 同型別欄位被**靜默對調**，而 **XML / JSON round-trip 抓不到**（它們走屬性名，永遠對）。
-**務必為每個此類 item 加 MessagePack wire round-trip 測試**（範本見 `UnitSettingsMessagePackTests`）。
+### 兩個容易誤判的點
 
-> **限整數 `[Key]` 型別（即 `[Union]` 家族）。** `keyAsPropertyName: true` 的型別以**名稱**比對，
-> 建構子參數順序顛倒仍能正確 round-trip，不受此限——BEE4004 也刻意把它們排除在外
-> （見 `MessagePackConstructorOrderAnalyzer` 的 remarks）。
-> 誤把此規則套到 name-based 型別，會導出「必須調換參數順序」的錯誤結論；
-> `CurrencyItem` 的 ctor 順序與屬性宣告序不同即為正常，**不是缺陷**。
+1. **`Collection<T>` 不需 formatter，`KeyedCollection<TKey,TItem>` 需要。**
+   contractless 認得前者並序列化為 array；後者會被綁成 dictionary，
+   元素還原成 `Dictionary<object,object>` 而非 item 型別。
+2. **自訂 formatter 內不得使用非泛型 `MessagePackSerializer.Serialize(Type, ref writer, ...)`。**
+   `MessagePackWriter` 是 `ref struct`，該多載需 `Reflection.Emit`，行動端 AOT 直接擲例外。
+   逐一具名成員、全程走泛型多載。
+
+## 集合 item 的 ctor 參數順序（已不再是雷，2026-08-09）
+
+歷史上 `[Key(n)]` 整數鍵以**位置**對號，集合 item 的參數化建構子若參數順序 ≠ `[Key]`
+宣告順序，wire round-trip 會**靜默對調同型別欄位**，而 XML / JSON 抓不到。
+
+**adr-036 後全 repo 已無整數 `[Key]`**，wire 綁定一律以屬性名為準（contractless）
+或由 formatter 逐一具名，**此雷不復存在**，把關的 `BEE4004` 亦已退役。
+建構子參數順序與屬性宣告順序不同（如 `CurrencyItem`）是正常的。
 
 ## AOT：MessagePack 與 DynamicExpresso 皆無需特殊處理
 

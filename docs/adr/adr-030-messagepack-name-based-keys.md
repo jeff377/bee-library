@@ -2,6 +2,17 @@
 
 ## 狀態
 
+> **部分經 [ADR-036](adr-036-wire-serialization-externalized.md) 修訂（2026-08-09）。**
+> 核心決策（wire 鍵以屬性名為準）維持不變，但實現方式已改為 contractless 加顯式
+> formatter，兩者 wire 格式相同。下列兩項結論**不再成立**：
+> 1. 「`[Union]` 型別不得改 `keyAsPropertyName`，新增多型階層沿用整數 `[Key]` + `[Union]`」
+>    —— 多型改由 `FilterNodeFormatter` 以 `Kind` 判別碼處理，`BEE4003` 已退役。
+> 2. 「集合型別的裸 `[MessagePackObject]` 為 `ApiContractRegistry` 的判斷依據，不可移除」
+>    —— 該判定有誤：映射表恆為空、轉換路徑惰性，移除後行為完全相同。
+>
+> 詳見 ADR-036「對 ADR-030 的修訂」。
+
+
 **已採納（Accepted，2026-07-22；範圍於 2026-07-27 擴大）** —— 決策已執行。合約與多數 DTO / 集合 item 型別改為 name-based（`keyAsPropertyName`），`SerializableData*` 於 2026-07-27 補做收斂；`[Union]` 多型階層等為記錄在案的例外（見「執行結果與最終範圍」）。
 
 > **go/no-go 決議（2026-07-22，定案）**：**立即執行**。關鍵事實 —— **目前無外部實際消費者**，故 breaking wire change 無相容性成本；先前「綁下一個 major」的暫緩理由（相容性衝擊）消失。以極低代價拿下「消滅 ctor-order footgun + 消滅跨繼承 key 編號協調 + 統一 JSON/MessagePack 心智」。
