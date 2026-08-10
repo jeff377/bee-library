@@ -118,6 +118,22 @@ namespace Bee.Api.Core.UnitTests
             Assert.Equal(0x91, regBytes[0]);
             Assert.Equal(0x91, unregBytes[0]);
         }
+
+        [Fact]
+        [DisplayName("SPIKE: 無標註的 item 型別，contractless 會納入哪些成員？")]
+        public void UnattributedItem_ContractlessMemberSet()
+        {
+            var bytes = MessagePackCodec.Serialize(new SpikeItem { Name = "a" });
+
+            // fixmap 首位元組 0x80|n。SpikeItem 自有 Name，基底另有
+            // Tag(get/set) / SerializeState(private set) / Collection(get only)。
+            var memberCount = bytes[0] & 0x0F;
+            Assert.True(bytes[0] >= 0x80 && bytes[0] <= 0x8F,
+                $"預期 fixmap，實得 0x{bytes[0]:X2}");
+            Assert.True(memberCount == 1,
+                $"contractless 納入 {memberCount} 個成員（期望只有 Name）。"
+                + $"payload={BitConverter.ToString(bytes)}");
+        }
     }
 
     /// <summary>SPIKE 用：刻意不在 MessagePackCodec 註冊的集合型別。</summary>

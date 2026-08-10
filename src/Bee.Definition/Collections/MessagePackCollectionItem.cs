@@ -43,7 +43,7 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets or sets the tag for storing additional information.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore, IgnoreMember, WireIgnore]
         [Browsable(false)]
         public object? Tag { get; set; } = null;
 
@@ -54,7 +54,7 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets the serialization state.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore, IgnoreMember, WireIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
@@ -72,7 +72,7 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Gets the owning collection.
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore, IgnoreMember, WireIgnore]
         [Browsable(false)]
         [TreeNodeIgnore]
         public ICollectionBase? Collection

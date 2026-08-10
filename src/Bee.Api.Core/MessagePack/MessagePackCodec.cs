@@ -34,6 +34,7 @@ namespace Bee.Api.Core.MessagePack
                     new CollectionBaseFormatter<CompanyCashRounding, CashRoundingItem>(), // CompanyCashRounding as array
                     new CollectionBaseFormatter<CompanyAllowedCurrencies, AllowedCurrencyItem>(), // CompanyAllowedCurrencies as array
                     new CollectionBaseFormatter<UnitSettings, UnitItem>(), // UnitSettings as array
+                    new BeeObjectFormatter<SortField>(),  // SPIKE: [WireIgnore]-aware object formatter
                     SafeTypelessFormatter.Instance      // Type-validated polymorphic formatter
                 },
                 // IMPORTANT: every MessagePackCollectionBase<> collection must be registered above.

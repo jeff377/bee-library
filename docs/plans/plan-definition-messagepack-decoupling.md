@@ -4,7 +4,7 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 0 | 可行性驗證（spike）：五項前提實測 | 🚧 進行中（4/5 完成，見「發現 5／6」） |
+| 0 | 可行性驗證（spike）：五項前提實測 | ⚠️ **閘門未通過**（4 項過，AOT 項失敗，見發現 7） |
 | 1 | `[WireIgnore]` 標註 + `BeeObjectFormatter`（6 個型別顯式註冊）落地 | 📝 待做 |
 | 2 | `FilterNode` 家族外置為 `FilterNodeFormatter`，移除 `[Union]` / `[Key]` | 📝 待做 |
 | 3 | `SafeTypelessFormatter` 遷入 Api.Core，移除 `Parameter` 的 formatter attribute | 📝 待做 |
@@ -91,10 +91,10 @@ MessagePack 不同——它是一個明確的技術選擇，且會沿相依鏈�
 通道 round-trip，內容完整還原，且 wire 格式與 `CollectionBaseFormatter` 完全一致。
 移除標註**同時**解決了「必須記得註冊」的問題——因為需要註冊的原因正是標註本身。
 
-## 六個關鍵發現
+## 七個關鍵發現
 
-發現 1–4 來自盤點，把本計畫的難度從「幾乎不可行」降到「有明確路徑」；
-**發現 5、6 來自階段 0 spike 實測**——5 收緊了執行順序，6 大幅簡化了階段 4。
+發現 1–4 來自盤點；**發現 5–7 來自階段 0 spike 實測**——5 收緊了執行順序，
+6 大幅簡化了階段 4，**7 讓閘門未通過、設計需重新評估**。
 
 ### 發現 5：標註移除有編譯期順序相依（2026-08-09 實測）
 
@@ -145,6 +145,54 @@ MessagePack 自帶的 analyzer 會擋：
 
 → 連帶修正：本計畫先前所稱「25 個 `KeyCollectionBase` 子型別經 typeless 通道會擲例外
 的長期隱患」**不存在**，該敘述已移除。
+
+### 發現 7：`BeeObjectFormatter` 原設計在 AOT 下不可行（2026-08-09 實測，**閘門失敗**）
+
+原型已實作（`BeeObjectFormatter<T>`，純反射、無 `Reflection.Emit`），
+一般模式下 4 個測試全過，含 wire 形狀斷言（`0x82` = 2 成員 map，
+證明 `Tag` / `SerializeState` / `Collection` 確實排除）。
+
+**但在 reflection-only 模式下 13 個 spike 測試失敗 12 個**：
+
+```
+System.NotSupportedException:
+  MessagePackWriter/Reader overload is not supported in MessagePackSerializer.NonGenerics
+    at MessagePack.MessagePackSerializer.CompiledMethods.ThrowRefStructNotSupported()
+```
+
+根因：formatter 內對「任意屬性型別」遞迴時，只能用**非泛型**多載
+`MessagePackSerializer.Serialize(Type, ref MessagePackWriter, object, options)`。
+而 `MessagePackWriter` 是 **`ref struct`**——非泛型路徑需要 `Reflection.Emit`
+產生能傳遞 ref struct 的委派，`IsDynamicCodeSupported=false` 時直接擲例外。
+
+> 這與 [rules/serialization.md](../../.claude/rules/serialization.md) 記載的
+> 「MessagePack 3.x 有 reflection-based fallback，AOT 可用」**不衝突**：
+> 該結論針對 MessagePack **自己產生**的 formatter，不涵蓋
+> 「自訂 formatter 內呼叫非泛型 API」這條路徑。
+
+**重現方式**（供後續驗證沿用）：在測試專案 csproj 加
+
+```xml
+<RuntimeHostConfigurationOption
+    Include="System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported"
+    Value="false" />
+```
+
+**尚待釐清**：contractless resolver 原生的成員納入規則。目前的測試因 item 基底仍保留
+`[IgnoreMember]`（`[WireIgnore]` 是**加上去**而非取代）而測不到原生行為——
+需移除 `[IgnoreMember]` 後重測，才能判定 `Tag` / `SerializeState` / `Collection`
+是否本來就被 contractless 排除。這決定後續走哪條路（見下）。
+
+**三條可能出路**（尚未評估）：
+
+| 出路 | 作法 | 風險 |
+|------|------|------|
+| A. 泛型成員分派 | 抽象 `Member` 基底 + `Member<TProp>` 泛型子類，改呼叫泛型多載 `Serialize<T>(ref writer, ...)` | 需 `MakeGenericType` + `Activator.CreateInstance`；**值型別（如 `SortDirection` enum）的實例化在 AOT 下可能不存在** |
+| B. 以型別形貌取代標註 | 若 contractless 原生已排除唯讀 / 非公開 setter 成員，則只剩 `Tag` 與 `Key` 需處理，改以顯式介面實作使其不可見 | 破壞公開 API 表面（`item.Tag` 需轉型） |
+| C. 保留 `[IgnoreMember]` | 放棄本計畫主目標 | `Bee.Definition` 續留 MessagePack 相依 |
+
+→ **B 最便宜且需先做的實驗**：移除 item 基底的 `[IgnoreMember]`，觀察 contractless
+納入哪些成員。若原生就排除多數，範圍會急遽縮小。
 
 ## 前四個發現（來自盤點）
 
