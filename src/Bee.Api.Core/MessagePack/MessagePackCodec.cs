@@ -45,6 +45,14 @@ namespace Bee.Api.Core.MessagePack
                 }));
 
         /// <summary>
+        /// The options every serialization on this codec uses, exposed so
+        /// <c>WireValueCodePinTests</c> can drive a single formatter through the same resolver the
+        /// real path uses. Reading it from the test is the point: options assembled in the test
+        /// would pin an encoding nobody ships.
+        /// </summary>
+        internal static MessagePackSerializerOptions SerializerOptions => s_options;
+
+        /// <summary>
         /// Assembles the explicit formatter list: the hand-written ones first, then the generated
         /// wire contracts.
         /// </summary>

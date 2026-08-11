@@ -104,6 +104,30 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
+        [DisplayName("每個註冊的 wire 合約都必須是閉包到得了的型別（反方向）")]
+        public void RegisteredContracts_AreReachableFromTheClosure()
+        {
+            var closure = WireTypeClosure();
+
+            var unreachable = MessagePackCodec.RegisteredFormatters
+                .OfType<IWireContract>()
+                .Select(c => c.WireType)
+                .Where(t => !closure.Contains(t))
+                .Select(t => t.FullName!)
+                .OrderBy(n => n, StringComparer.Ordinal)
+                .ToList();
+
+            // WireTypeClosure_IsFullyRegistered 驗的是「閉包 ⊆ 註冊」，抓不到反方向的
+            // 「註冊了但誰也到不了」。ApiErrorInfo 正是這樣的實例：它早已被 JsonRpcError
+            // 取代、零消費者，卻仍掛在 WireContracts 裡，兩輪體檢都沒有任何機制指出來。
+            // 這條是那道缺口的把關——多出來的註冊不是無害的冗餘，它讓死型別看起來還活著。
+            Assert.True(
+                unreachable.Count == 0,
+                $"下列型別註冊了 wire 合約，卻不在 wire 型別閉包內——不是死碼，就是閉包漏走了一條路徑：" +
+                $"{Environment.NewLine}{string.Join(Environment.NewLine, unreachable)}");
+        }
+
+        [Fact]
         [DisplayName("每個 WireContract 的成員清單必須與型別當下的形狀一致")]
         public void WireContracts_MatchTypeShape()
         {
