@@ -207,6 +207,18 @@ namespace Bee.Api.Core.UnitTests
         [InlineData("System.IO.FileInfo, System.IO.FileSystem")]
         [InlineData("Evil.Namespace.Exploit, Evil.Assembly")]
         [InlineData("System.Runtime.Serialization.Formatters.Binary.BinaryFormatter, mscorlib")]
+        // A disallowed type smuggled in as a generic argument of an allowed outer type. The
+        // argument's own comma comes before the assembly separator, so splitting on the first
+        // comma yields a fragment that still starts with `Bee.Base.` and the argument goes
+        // unscreened.
+        [InlineData("Bee.Base.Collections.Dictionary`1[[System.Diagnostics.Process, System.Diagnostics.Process]], Bee.Base")]
+        [InlineData("Bee.Definition.Something`1[[Evil.Namespace.Exploit, Evil.Assembly]], Bee.Definition")]
+        // Nested one level deeper: the outer two types are allowed, the innermost is not.
+        [InlineData("Bee.Base.A`1[[Bee.Base.B`1[[Evil.Namespace.Exploit, Evil.Assembly]], Bee.Base]], Bee.Base")]
+        // An array of a disallowed element type.
+        [InlineData("Evil.Namespace.Exploit[], Evil.Assembly")]
+        // Malformed names must fail closed rather than fall through to `Type.GetType`.
+        [InlineData("Bee.Base.Broken`1[[Evil.Namespace.Exploit, Evil.Assembly], Bee.Base")]
         [DisplayName("RestoreFrom 應拒絕不在白名單內的 TypeName")]
         public void RestoreFrom_DisallowedTypeName_ThrowsInvalidOperationException(string typeName)
         {

@@ -108,16 +108,14 @@ namespace Bee.Api.Core.JsonRpc
         /// <exception cref="InvalidOperationException">Thrown when the type is not in the allowed whitelist.</exception>
         private static void ValidateTypeName(string typeName)
         {
-            // Extract the full type name (before the comma) from the assembly-qualified name.
-            var fullName = typeName;
-            int commaIndex = typeName.IndexOf(',');
-            if (commaIndex > 0)
-                fullName = typeName.Substring(0, commaIndex).Trim();
-
-            if (!WireTypeWhitelist.IsTypeAllowed(fullName))
+            // WARNING: Screen the whole assembly-qualified name, generic arguments included. Do not
+            // reduce this to "take everything before the first comma" — for a generic type that
+            // comma sits inside `[[...]]`, so the fragment still starts with an allowed namespace
+            // and the argument reaches `Type.GetType` unscreened.
+            if (!WireTypeWhitelist.IsAssemblyQualifiedNameAllowed(typeName))
             {
                 throw new InvalidOperationException(
-                    $"Payload type '{fullName}' is not in the allowed type whitelist.");
+                    $"Payload type '{typeName}' is not in the allowed type whitelist.");
             }
         }
     }

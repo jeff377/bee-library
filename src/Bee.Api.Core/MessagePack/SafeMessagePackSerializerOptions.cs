@@ -62,7 +62,10 @@ namespace Bee.Api.Core.MessagePack
             // application-level namespace whitelist.
             base.ThrowIfDeserializingTypeIsDisallowed(type);
 
-            if (!WireTypeWhitelist.IsTypeAllowed(fullName))
+            // WARNING: Screen the type's shape, not its `FullName`. A constructed generic embeds
+            // its arguments in that one string, so testing it against the namespace whitelist
+            // checks the outer type and lets every argument through.
+            if (!WireTypeWhitelist.IsRuntimeTypeAllowed(type))
             {
                 throw new InvalidOperationException(
                     $"MessagePack deserialization blocked: type '{fullName}' is not in the allowed type whitelist.");

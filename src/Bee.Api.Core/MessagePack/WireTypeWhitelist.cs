@@ -77,6 +77,14 @@ namespace Bee.Api.Core.MessagePack
         /// <summary>
         /// Validates whether the specified type full name is in the allowed whitelist.
         /// </summary>
+        /// <remarks>
+        /// WARNING: This takes a <b>single</b> type name, not an assembly-qualified name that may
+        /// carry generic arguments. Callers holding a name that came off the wire must use
+        /// <see cref="IsAssemblyQualifiedNameAllowed"/> instead — a generic argument's own comma
+        /// sits <i>before</i> the assembly separator, so naive splitting hands this method a
+        /// fragment such as <c>Bee.Base.Collections.Dictionary`1[[Evil.Type</c>, which passes the
+        /// namespace prefix test while the argument goes unchecked.
+        /// </remarks>
         /// <param name="fullName">The full name of the type to validate.</param>
         /// <returns><c>true</c> if the type is allowed; otherwise, <c>false</c>.</returns>
         public static bool IsTypeAllowed(string fullName)
@@ -87,6 +95,270 @@ namespace Bee.Api.Core.MessagePack
 
             // Delegate to the application-level namespace whitelist
             return SysInfo.IsTypeNameAllowed(fullName);
+        }
+
+        /// <summary>
+        /// Maximum nesting depth accepted while parsing an assembly-qualified name. Generic
+        /// arguments may nest, and a crafted name could otherwise drive unbounded recursion.
+        /// </summary>
+        private const int MaxNestingDepth = 8;
+
+        /// <summary>
+        /// Maximum accepted length of an assembly-qualified name. No legitimate wire type comes
+        /// close; the cap bounds the work a single payload can ask the parser to do.
+        /// </summary>
+        private const int MaxNameLength = 1024;
+
+        /// <summary>
+        /// Validates every type named by an assembly-qualified name, including each generic
+        /// argument and array element type.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: This is a security boundary and it fails closed. A name that cannot be parsed
+        /// is rejected rather than passed through — the previous implementation split on the first
+        /// comma, which for a generic type lands inside <c>[[...]]</c> and yields a fragment that
+        /// still carries an allowed namespace prefix. The generic argument was therefore never
+        /// screened, and <c>Type.GetType</c> went on to resolve it.
+        /// </remarks>
+        /// <param name="assemblyQualifiedName">The name as it arrived on the wire.</param>
+        /// <returns><c>true</c> when every named type is allowed; otherwise, <c>false</c>.</returns>
+        public static bool IsAssemblyQualifiedNameAllowed(string? assemblyQualifiedName)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyQualifiedName))
+                return false;
+            if (assemblyQualifiedName.Length > MaxNameLength)
+                return false;
+
+            var names = new List<string>();
+            var position = 0;
+            if (!TryParseTypeSpec(assemblyQualifiedName, ref position, names, depth: 0))
+                return false;
+
+            // Anything left at the top level must be the assembly name, introduced by a comma.
+            SkipWhitespace(assemblyQualifiedName, ref position);
+            if (position < assemblyQualifiedName.Length && assemblyQualifiedName[position] != ',')
+                return false;
+
+            if (names.Count == 0)
+                return false;
+
+            foreach (var name in names)
+            {
+                if (!IsTypeAllowed(name))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validates an already-resolved <see cref="Type"/>, recursing through generic arguments
+        /// and array element types.
+        /// </summary>
+        /// <remarks>
+        /// A constructed generic type's <see cref="Type.FullName"/> embeds its arguments, so
+        /// testing that single string against the namespace whitelist screens the outer type only.
+        /// This walks the shape instead.
+        /// </remarks>
+        /// <param name="type">The type about to be instantiated.</param>
+        /// <returns><c>true</c> when the type and everything it is built from are allowed.</returns>
+        public static bool IsRuntimeTypeAllowed(Type type) => IsRuntimeTypeAllowed(type, depth: 0);
+
+        private static bool IsRuntimeTypeAllowed(Type type, int depth)
+        {
+            if (depth > MaxNestingDepth)
+                return false;
+            if (type.IsPointer || type.IsByRef || type.IsGenericParameter)
+                return false;
+
+            var fullName = type.FullName;
+            if (fullName == null)
+                return false;
+
+            // Whole-name matches win first: `System.Byte[]` and `System.Object[]` are whitelisted
+            // as arrays, not as an element type plus a rank.
+            if (AllowedPrimitiveTypes.Contains(fullName))
+                return true;
+
+            if (type.IsArray)
+            {
+                var elementType = type.GetElementType();
+                return elementType != null && IsRuntimeTypeAllowed(elementType, depth + 1);
+            }
+
+            if (type.IsConstructedGenericType)
+            {
+                var definitionName = type.GetGenericTypeDefinition().FullName;
+                if (definitionName == null || !IsTypeAllowed(definitionName))
+                    return false;
+
+                foreach (var argument in type.GetGenericArguments())
+                {
+                    if (!IsRuntimeTypeAllowed(argument, depth + 1))
+                        return false;
+                }
+
+                return true;
+            }
+
+            return IsTypeAllowed(fullName);
+        }
+
+        /// <summary>
+        /// Parses one type specification, appending the plain type names it contains to
+        /// <paramref name="names"/>. Advances <paramref name="position"/> past what it consumed.
+        /// </summary>
+        private static bool TryParseTypeSpec(string text, ref int position, List<string> names, int depth)
+        {
+            if (depth > MaxNestingDepth)
+                return false;
+
+            SkipWhitespace(text, ref position);
+
+            var start = position;
+            while (position < text.Length && !IsTypeSpecTerminator(text[position]))
+            {
+                position++;
+            }
+
+            var name = text[start..position].Trim();
+            if (name.Length == 0)
+                return false;
+
+            // Pointers and by-ref types never appear on this wire; reject rather than strip.
+            if (position < text.Length && (text[position] == '*' || text[position] == '&'))
+                return false;
+
+            var sawGenericArguments = false;
+            while (position < text.Length && text[position] == '[')
+            {
+                var close = FindMatchingBracket(text, position);
+                if (close < 0)
+                    return false;
+
+                var inner = text[(position + 1)..close];
+                if (IsArrayRank(inner))
+                {
+                    // An array rank binds to the name: `System.Byte` + `[]` is the whitelisted
+                    // `System.Byte[]`, which is a different entry from `System.Byte`.
+                    name += "[" + inner + "]";
+                }
+                else
+                {
+                    // Only one generic-argument list may follow a name; a second non-rank bracket
+                    // group is malformed.
+                    if (sawGenericArguments)
+                        return false;
+                    if (!TryParseGenericArguments(text, position + 1, close, names, depth + 1))
+                        return false;
+                    sawGenericArguments = true;
+                }
+
+                position = close + 1;
+            }
+
+            names.Add(name);
+            return true;
+        }
+
+        /// <summary>
+        /// Parses the comma-separated argument list between a generic type's brackets. Each
+        /// argument is either bracketed (assembly-qualified) or bare.
+        /// </summary>
+        private static bool TryParseGenericArguments(string text, int start, int end, List<string> names, int depth)
+        {
+            if (depth > MaxNestingDepth)
+                return false;
+
+            var position = start;
+            while (position < end)
+            {
+                SkipWhitespace(text, ref position);
+                if (position >= end)
+                    return false;
+
+                if (text[position] == '[')
+                {
+                    var close = FindMatchingBracket(text, position);
+                    if (close < 0 || close > end)
+                        return false;
+
+                    var inner = position + 1;
+                    if (!TryParseTypeSpec(text, ref inner, names, depth))
+                        return false;
+
+                    // Whatever remains inside the brackets is the argument's assembly name.
+                    SkipWhitespace(text, ref inner);
+                    if (inner < close && text[inner] != ',')
+                        return false;
+
+                    position = close + 1;
+                }
+                else
+                {
+                    if (!TryParseTypeSpec(text, ref position, names, depth))
+                        return false;
+                }
+
+                SkipWhitespace(text, ref position);
+                if (position < end)
+                {
+                    if (text[position] != ',')
+                        return false;
+                    position++;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines whether a bracket group is an array rank (empty, or commas only) rather than
+        /// a generic-argument list.
+        /// </summary>
+        private static bool IsArrayRank(string inner)
+        {
+            foreach (var c in inner)
+            {
+                if (c != ',' && !char.IsWhiteSpace(c))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns the index of the bracket closing the one at <paramref name="open"/>, or -1.
+        /// </summary>
+        private static int FindMatchingBracket(string text, int open)
+        {
+            var depth = 0;
+            for (var i = open; i < text.Length; i++)
+            {
+                if (text[i] == '[')
+                {
+                    depth++;
+                }
+                else if (text[i] == ']')
+                {
+                    depth--;
+                    if (depth == 0)
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private static bool IsTypeSpecTerminator(char c)
+            => c is '[' or ']' or ',' or '*' or '&';
+
+        private static void SkipWhitespace(string text, ref int position)
+        {
+            while (position < text.Length && char.IsWhiteSpace(text[position]))
+            {
+                position++;
+            }
         }
     }
 }

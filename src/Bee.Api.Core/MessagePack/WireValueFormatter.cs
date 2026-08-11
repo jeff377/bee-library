@@ -192,9 +192,12 @@ namespace Bee.Api.Core.MessagePack
                 return;
             }
 
+            // NOTE: Both ends of this escape hatch must screen the same shape. The writer holds a
+            // `Type`, the reader holds a name, so they call different overloads — but both walk
+            // generic arguments and array element types rather than testing one flat string.
             var fullName = type.FullName
                 ?? throw new InvalidOperationException("Cannot serialize a type with no FullName.");
-            if (!WireTypeWhitelist.IsTypeAllowed(fullName))
+            if (!WireTypeWhitelist.IsRuntimeTypeAllowed(type))
             {
                 throw new InvalidOperationException(
                     $"MessagePack serialization blocked: type '{fullName}' is not in the allowed type whitelist.");
@@ -234,15 +237,17 @@ namespace Bee.Api.Core.MessagePack
                 // WARNING: The name is screened before `Type.GetType` resolves it, so a disallowed
                 // type is never even loaded. Do not reorder these two — the whole point of the
                 // whitelist is that it runs ahead of anything the payload can influence.
-                var simpleName = SimpleTypeName(typeName);
-                if (!WireTypeWhitelist.IsTypeAllowed(simpleName))
+                // The screen covers generic arguments as well; screening only the text before the
+                // first comma leaves them unchecked, because a generic argument's own comma comes
+                // first (see `WireTypeWhitelist.IsAssemblyQualifiedNameAllowed`).
+                if (!WireTypeWhitelist.IsAssemblyQualifiedNameAllowed(typeName))
                 {
                     throw new InvalidOperationException(
-                        $"MessagePack deserialization blocked: type '{simpleName}' is not in the allowed type whitelist.");
+                        $"MessagePack deserialization blocked: type '{typeName}' is not in the allowed type whitelist.");
                 }
 
                 var type = Type.GetType(typeName)
-                    ?? throw new InvalidOperationException($"MessagePack deserialization blocked: unknown type '{simpleName}'.");
+                    ?? throw new InvalidOperationException($"MessagePack deserialization blocked: unknown type '{typeName}'.");
                 options.ThrowIfDeserializingTypeIsDisallowed(type);
                 return MessagePackSerializer.Deserialize(type, ref reader, options);
             }
@@ -252,14 +257,5 @@ namespace Bee.Api.Core.MessagePack
             }
         }
 
-        /// <summary>
-        /// Strips the assembly part off an assembly-qualified name, leaving the namespace-qualified
-        /// type name the whitelist is expressed in.
-        /// </summary>
-        private static string SimpleTypeName(string assemblyQualifiedName)
-        {
-            var comma = assemblyQualifiedName.IndexOf(',', StringComparison.Ordinal);
-            return comma < 0 ? assemblyQualifiedName : assemblyQualifiedName[..comma].Trim();
-        }
     }
 }
