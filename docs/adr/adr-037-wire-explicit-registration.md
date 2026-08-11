@@ -85,7 +85,8 @@ wire 成員的定義與 JSON 相同：public 可讀可寫、未標 `[JsonIgnore]
 - iOS 端的 wire 由「幾乎全不可用」變為可用。驗證於五個環境：`DynamicCodeSupport=false`
   閘門（0 失敗 / 718）、NativeAOT、**Mac Catalyst Release**、**iOS 模擬器 Release**
   （後兩者為真 Mono、皆回報 `IsDynamicCodeSupported = False`），
-  以及 iOS 裝置 target 的 full-AOT 編譯。
+  以及 iOS 裝置 target 的 full-AOT 編譯。此外 `apps/Bee.Northwind` 的四個 head
+  （Desktop / Browser / iOS / Android）已對同一台 server 端到端實測通過。
 - `object` 通道不再以完整組件限定名描述每個值，payload 變小，也不再於 wire 上點名 CLR 組件。
 - 反序列化攻擊面縮小：框架自有值走封閉判別集合，不經型別名解析。
 - 漂移守衛由人工維護的常數變成自動比對，新增屬性忘記註冊會被測試擋下。

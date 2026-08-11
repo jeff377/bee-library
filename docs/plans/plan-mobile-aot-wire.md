@@ -32,6 +32,15 @@
 contractless）在兩者上皆如預期失敗，證明閘門在 Mono 上同樣有辨識力。
 `LanguageEnum.Entries` 的 XML 修正也在真 iOS runtime 上驗證通過。
 
+**端到端**：`apps/Bee.Northwind` 的四個 head（Desktop / Browser(WASM) / iOS 模擬器 /
+Android 模擬器）對同一台 server 實測通過——登入、清單、含 master-detail 與多重 lookup
+的訂單表單皆正常。上表驗的是 codec，這一條驗的是整條 JSON-RPC 管線。
+
+> 過程中踩到一次「Apple app bundle 留著舊受管組件」：iOS head 以六天前的
+> `Bee.Api.Core.dll` 對新 server 說話，錯誤被 `ApiPayloadTransformer.Decode` 的邊界
+> 包成含糊的「An error occurred during the data decoding process.」，看起來像後端故障。
+> 徵狀與驗證動作已收進 `rules/apple-mobile-trim.md`。
+
 **唯一未驗證的是 iOS 實機的執行期**（需 Apple Developer 簽章與實機）。實機相對模擬器的
 差異只在「Mono 完全沒有 JIT」，而該面向已由 NativeAOT 涵蓋，故列為低風險的形式缺口。
 
