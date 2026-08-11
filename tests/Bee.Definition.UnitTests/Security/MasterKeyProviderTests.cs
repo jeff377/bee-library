@@ -3,11 +3,13 @@ using Bee.Base.Security;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
 
+
 namespace Bee.Definition.UnitTests.Security
 {
     /// <summary>
     /// MasterKeyProvider 來源載入與錯誤路徑測試。
     /// </summary>
+    [Collection(Bee.Definition.UnitTests.ProcessWideStateCollection.Name)]
     public class MasterKeyProviderTests
     {
         [Fact]

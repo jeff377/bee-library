@@ -105,7 +105,9 @@ namespace Bee.Definition.UnitTests.Forms
         [DisplayName("DefaultForDbType：Date 回傳今天、DateTime 回傳 DateTime 值")]
         public void DefaultForDbType_DateTypes_ReturnTodayAndNow()
         {
-            Assert.Equal(DateTime.Today, FormRowDefaults.DefaultForDbType(FieldDbType.Date));
+            // UTC，不是 DateTime.Today：框架的日期預設值是 UtcNow.Date（ADR-032 D12）。
+            // 用本地日斷言會讓本機在 UTC+8 的 00:00–08:00 必定失敗，而 CI 跑 UTC 永遠看不到。
+            Assert.Equal(DateTime.UtcNow.Date, FormRowDefaults.DefaultForDbType(FieldDbType.Date));
             Assert.IsType<DateTime>(FormRowDefaults.DefaultForDbType(FieldDbType.DateTime));
         }
 

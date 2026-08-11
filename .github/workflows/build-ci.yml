@@ -223,7 +223,14 @@ jobs:
     # 到行動端才會以 FormatterNotRegisteredException 現形。
     # 需重新建置（runtimeconfig 不同），故不加 --no-build，並放在 job 最後一步，
     # 避免污染前面 --no-build 步驟的輸出。
-    - name: Mobile AOT gate (Bee.Api.Core wire)
+    # 涵蓋兩半：MessagePack wire（Bee.Api.Core）與 XmlSerializer 的 reflection-only 路徑
+    # （Bee.Definition / Bee.Base）。後者先前不在閘門內，而它正是已實際踩過的那一類 ——
+    # LanguageEnum.Entries 的 get-only setter 缺陷（5e748b08）就是靠人工掃描發現，不是靠 CI。
+    #
+    # 已知盲區：本關卡跑在 CoreCLR，而 MakeGenericType / MakeGenericMethod 不受該開關影響。
+    # ADR-037 要求註冊封閉泛型具現的理由正是 MakeGenericType，所以那一類失敗由
+    # WireContractDriftTests 的靜態閉包負責，兩道各管一半、缺一不可。
+    - name: Mobile AOT gate (wire + XmlSerializer reflection-only path)
       env:
         BEE_TEST_CONNSTR_SQLSERVER: "Server=localhost,1433;Database={@DbName};User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
         BEE_TEST_CONNSTR_POSTGRESQL: "Host=localhost;Port=5432;Database={@DbName};Username=testuser;Password=testpass"
@@ -231,5 +238,10 @@ jobs:
         BEE_TEST_CONNSTR_ORACLE: "Data Source=localhost:1521/FREEPDB1;User Id=testuser;Password=testpass;"
         BEE_TEST_CONNSTR_SQLITE: "Data Source=file:bee_test_{@DbName}?mode=memory&cache=shared"
       run: |
-        dotnet test tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj \
-          --configuration Release --verbosity normal -p:DynamicCodeSupport=false
+        for proj in \
+          tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj \
+          tests/Bee.Definition.UnitTests/Bee.Definition.UnitTests.csproj \
+          tests/Bee.Base.UnitTests/Bee.Base.UnitTests.csproj
+        do
+          dotnet test "$proj" --configuration Release --verbosity normal -p:DynamicCodeSupport=false
+        done

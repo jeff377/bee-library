@@ -5,6 +5,7 @@ namespace Bee.Definition.UnitTests
     /// <summary>
     /// GlobalEvents 測試。
     /// </summary>
+    [Collection(ProcessWideStateCollection.Name)]
     public class GlobalEventsTests
     {
         [Fact]

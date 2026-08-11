@@ -698,7 +698,9 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
 
             await view.NewAsync();
 
-            Assert.Equal(DateTime.Today, view.DataObject!.MasterRow!["order_date"]);
+            // UTC，不是 DateTime.Today：框架的日期預設值是 UtcNow.Date（ADR-032 D12）。
+            // 用本地日斷言會讓本機在 UTC+8 的 00:00–08:00 必定失敗，而 CI 跑 UTC 永遠看不到。
+            Assert.Equal(DateTime.UtcNow.Date, view.DataObject!.MasterRow!["order_date"]);
         }
 
         [Fact]

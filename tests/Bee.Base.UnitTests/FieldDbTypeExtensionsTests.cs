@@ -22,7 +22,9 @@ namespace Bee.Base.UnitTests
         [DisplayName("GetDefaultValue 對 Date/DateTime/Guid 應回傳合理預設")]
         public void GetDefaultValue_ReturnsExpectedForDateAndGuidTypes()
         {
-            Assert.Equal(DateTime.Today, FieldDbType.Date.GetDefaultValue());
+            // UTC，不是 DateTime.Today：框架的日期預設值是 UtcNow.Date（ADR-032 D12）。
+            // 用本地日斷言會讓本機在 UTC+8 的 00:00–08:00 必定失敗，而 CI 跑 UTC 永遠看不到。
+            Assert.Equal(DateTime.UtcNow.Date, FieldDbType.Date.GetDefaultValue());
 
             var now = FieldDbType.DateTime.GetDefaultValue();
             Assert.IsType<DateTime>(now);

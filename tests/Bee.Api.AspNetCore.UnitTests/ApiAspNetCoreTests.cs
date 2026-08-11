@@ -13,12 +13,25 @@ using Bee.Api.Core.Messages;
 
 namespace Bee.Api.AspNetCore.UnitTests
 {
-    public class ApiAspNetCoreTests : IClassFixture<BeeTestFixture>
+        /// <remarks>
+    /// 用 <c>SharedDbFixture</c> 而非 <c>BeeTestFixture</c>：走 controller 的每個請求都會經過
+    /// <c>ValidateApiKey</c> → <c>ApiKeyValidator.Validate</c> → <c>ApiKeyGate.GetState()</c>，
+    /// 那條 read-through 會開 common 連線讀 <c>st_api_key</c>。<c>AddBeeFramework</c> 一律註冊
+    /// 真的 <c>ApiKeyValidator</c>，所以這與 access token 無關 —— 這是 <c>rules/testing.md</c>
+    /// 未列出的第三條觸發路徑。
+    /// <para>
+    /// 症狀完全不指向真因：失敗會被 controller 吃掉轉成 <c>ApiKeyStatus.Invalid</c> → 401，
+    /// 看起來像「預期 200 拿到 401」。先前之所以是綠的，靠的是 CI 的建 DB 步驟或本機持久容器
+    /// 先把 DB 建好，加上 <c>st_api_key</c> 不存在時剛好被 <c>GetTableSchema(...) == null</c> 擋掉
+    /// —— 三個都不是這兩個測試自己的保證。
+    /// </para>
+    /// </remarks>
+    public class ApiAspNetCoreTests : IClassFixture<SharedDbFixture>
     {
-        private readonly BeeTestFixture _fx;
+        private readonly SharedDbFixture _fx;
         private Guid _accessToken;
 
-        public ApiAspNetCoreTests(BeeTestFixture fx)
+        public ApiAspNetCoreTests(SharedDbFixture fx)
         {
             _fx = fx;
         }

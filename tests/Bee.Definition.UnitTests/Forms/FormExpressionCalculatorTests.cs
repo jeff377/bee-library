@@ -127,7 +127,9 @@ namespace Bee.Definition.UnitTests.Forms
 
             var changed = _calculator.ApplyDefaultRow(schema.MasterTable!, table.Rows[0]);
 
-            Assert.Equal(DateTime.Today, table.Rows[0]["order_date"]);
+            // UTC，不是 DateTime.Today：框架的日期預設值是 UtcNow.Date（ADR-032 D12）。
+            // 用本地日斷言會讓本機在 UTC+8 的 00:00–08:00 必定失敗，而 CI 跑 UTC 永遠看不到。
+            Assert.Equal(DateTime.UtcNow.Date, table.Rows[0]["order_date"]);
             Assert.Contains("order_date", changed);
 
             // 第二次呼叫：order_date 已有值 → 不覆寫、不回報

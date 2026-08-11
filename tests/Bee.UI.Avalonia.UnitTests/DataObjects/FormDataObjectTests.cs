@@ -755,7 +755,9 @@ namespace Bee.UI.Avalonia.UnitTests.DataObjects
             Assert.Equal(string.Empty, line["note"]);
             Assert.Equal(0, line["qty"]);
             Assert.Equal(0m, line["price"]);
-            Assert.Equal(DateTime.Today, line["order_date"]);
+            // UTC，不是 DateTime.Today：框架的日期預設值是 UtcNow.Date（ADR-032 D12）。
+            // 用本地日斷言會讓本機在 UTC+8 的 00:00–08:00 必定失敗，而 CI 跑 UTC 永遠看不到。
+            Assert.Equal(DateTime.UtcNow.Date, line["order_date"]);
             Assert.Equal(Guid.Empty, (Guid)line["product_rowid"]);        // non-key Guid → empty
             Assert.NotEqual(DBNull.Value, line["seq"]);                   // seeded (no column default)
             Assert.Equal((short)0, line["seq"]);

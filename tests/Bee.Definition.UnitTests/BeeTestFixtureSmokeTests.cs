@@ -11,6 +11,7 @@ namespace Bee.Definition.UnitTests
     /// its own <see cref="IServiceProvider"/>, resolves framework services, and (for
     /// <c>UseTempDefinePath</c>) provides a writable per-fixture <see cref="PathOptions"/>.
     /// </summary>
+    [Collection(ProcessWideStateCollection.Name)]
     public class BeeTestFixtureSmokeTests : IClassFixture<BeeTestFixture>
     {
         private readonly BeeTestFixture _fx;
