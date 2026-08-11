@@ -48,7 +48,7 @@
 |------|------|--------|------|
 | P0 | 發版阻擋項（安全 / 發版正確性） | 3 | ✅ 已完成（2026-08-11，SEC-1 / REL-1 / REL-2 全數落地並驗證） |
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
-| P2 | 結構、效能、一致性 | 14 | 🚧 進行中（**P-2(a)** / **CON-2** / **CON-4** ✅ 已完成；剩 11 項） |
+| P2 | 結構、效能、一致性 | 14 | 🚧 進行中（P-2(a) / CON-2 / CON-4 / **A-4** / **N-5** ✅ 已完成；剩 9 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
 | P4 | 觀察／待裁決 | 9 | 📝 擬定中（D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
 
@@ -66,6 +66,8 @@
 | **SEC-3** | API key gate 失效改為可見：停用最後一把金鑰記 error、啟動檢查在非 Development 升為 error | 待 commit | **刻意未做啟動硬失敗**（見下） |
 | **REL-3** | 版號抽為 repo 根 `Version.props`，`src/` 與 `tools/` 共用；`Bee.Cli` 從 4.8.0 併回 4.20.0 | `4575889e` | 雙向實證：兩個方案 clean build 0 警告，`-p:Version=9.9.9` 於 `tools/` 如預期紅在 BEE9002 |
 | **GATE-1** | `WireContractDriftTests` 補防空轉斷言（閉包／註冊數下限 + 四個不同可達路徑的 canary） | 待 commit | 見下方「canary 第一版就抓到我自己的錯誤假設」 |
+| **A-4** | `GlobalEvents` 只在**重新載入**時發事件；`DbConnectionManagerService` 實作 `IDisposable` 退訂 | 待 commit | **原訂修法會打斷檔案變更傳播，已更正**，見下 |
+| **N-5** | `SessionCompanyBinder.Bind` 改為查詢全部完成後才寫入 `SessionInfo` | 待 commit | 窗口由「跨 3 次可能觸 DB 的呼叫」縮為「一串連續賦值」；`ClearCompanyContext` 本來就已是後者，未動 |
 | **P3 其餘 9 項** | DOC-2 / DOC-4 / DOC-5 / DOC-6 / DOC-7 / DOC-11 / DOC-12 / DOC-13 / DOC-14 + Z-4～Z-7 | 待 commit | 公開文件死連結複驗 **0**；`dependency-map` 外部套件表雙語 13 列逐列一致；ADR 狀態行格式 **38/38** 統一 |
 | **P-2(a)** | Unchanged 列不再攜帶兩份相同的值 | `72c5cbc6` | **比計畫記載多一處**：JSON 路徑有同樣缺陷，計畫只點名 MessagePack。連帶反轉一條把缺陷寫成規格的測試 |
 | **CON-2** | `FormTable.RelationFieldReferences` 改 `Lazy<T>`（`ExecutionAndPublication`） | 待 commit | 測試以 32 執行緒並行首次讀取，斷言**拿到同一個實例**（非「都非 null」） |
@@ -98,6 +100,19 @@
 > 把該方法改成 `virtual` 只為了讓測試能替身，是**為測試而改公開表面**（且 non-virtual → virtual
 > 屬二進位破壞性）。改動本身是一行、語意自明（回傳 clone 而非共用實例），故以 code review 為準。
 > 若日後 `ClientDefineAccess` 因其他理由抽介面，再補測試。
+
+> **A-4 的原訂修法（「事件改由 `SaveDatabaseSettings` 發」）是錯的。** `DatabaseSettingsCache.GetPolicy`
+> 掛了 `ChangeMonitorFilePaths`，因此「載入時發事件」其實在做兩件事：第一次載入是**多餘**的
+> （而且會在 `DbConnectionManagerService` 自己的 `GetOrAdd` valueFactory 內清空整個連線快取），
+> 但**檔案被外部編輯後的重新載入，那是唯一把變更傳播到連線快取的路徑**——搬到 `Save` 會靜默打斷它
+> （外部編輯根本不經過 Save）。已改為「只在重新載入時發」，兩個目的同時滿足。
+
+> **新增的已知 flaky（非本輪引入的缺陷，但由 TEST-2 引入的參與者）**：
+> `ApiAspNetCoreTests.ExecFunc_Hello_ReturnsNotNull` 在 full suite 下偶爾以
+> `ObjectResult`（錯誤）而非 `ContentResult` 失敗，隔離跑必過。**已用決定性實驗排除是本輪改動所致**——
+> 暫存 A-4 / N-5 的改動後跑兩次，同樣 1/2 失敗、同一症狀。屬 `rules/testing.md` 記載的並行 DB 爭用，
+> 但它是 TEST-2 把該類別改用 `SharedDbFixture` 之後才開始參與 process-wide 建 schema / seed 競爭的。
+> **下輪應查根因**（嫌疑：`SharedDatabaseState` 的 seed 在多行程下的爭用），不要只當 flaky 記著。
 
 **發版步驟進度**（依 `releasing.md`）：① CHANGELOG ✅ ② 版號 ✅ ③ `PublicAPI.Unshipped` → `Shipped` ✅（7 檔、15 筆 `*REMOVED*`，併後行數 7/7 命中預期，clean build 0 警告）④ commit ✅ / **tag ❌ 未打** ⑤ **push ❌ 未推**。
 

@@ -15,7 +15,7 @@ namespace Bee.Db.Manager
     /// <remarks>
     /// Registered as a Singleton by <c>AddBeeFramework</c>; resolved via ctor injection.
     /// </remarks>
-    public sealed class DbConnectionManagerService : IDbConnectionManager
+    public sealed class DbConnectionManagerService : IDbConnectionManager, IDisposable
     {
         private readonly IDatabaseSettingsProvider _provider;
         private readonly ConcurrentDictionary<string, DbConnectionInfo> _cache = new();
@@ -32,6 +32,21 @@ namespace Bee.Db.Manager
         }
 
         private void OnDatabaseSettingsChanged(object? sender, EventArgs e) => Clear();
+
+        /// <summary>
+        /// Unsubscribes from <see cref="GlobalEvents.DatabaseSettingsChanged"/>.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: A static event holds its subscribers for the life of the process, so an instance
+        /// that never unsubscribes is never collected — and, worse, keeps reacting. In production
+        /// there is one instance per container and containers outlive the process, so the leak was
+        /// invisible; in tests every fixture builds a container, and each one left another live
+        /// subscriber that cleared *its own* cache whenever any other fixture loaded settings.
+        /// </remarks>
+        public void Dispose()
+        {
+            GlobalEvents.DatabaseSettingsChanged -= OnDatabaseSettingsChanged;
+        }
 
         /// <inheritdoc/>
         public DbConnectionInfo GetConnectionInfo(string databaseId)

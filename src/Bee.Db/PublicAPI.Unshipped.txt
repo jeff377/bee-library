@@ -1,1 +1,2 @@
 #nullable enable
+Bee.Db.Manager.DbConnectionManagerService.Dispose() -> void
