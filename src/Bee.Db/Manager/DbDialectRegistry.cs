@@ -18,7 +18,7 @@ namespace Bee.Db.Manager
     /// </remarks>
     public static class DbDialectRegistry
     {
-        private static readonly ConcurrentDictionary<DatabaseType, IDialectFactory> _factories = new();
+        private static readonly ConcurrentDictionary<DatabaseType, IDialectFactory> s_factories = new();
 
         /// <summary>
         /// Registers a dialect factory for the specified database type.
@@ -31,7 +31,7 @@ namespace Bee.Db.Manager
         {
             if (factory == null)
                 throw new ArgumentNullException(nameof(factory), "IDialectFactory cannot be null.");
-            _factories[type] = factory;
+            s_factories[type] = factory;
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Bee.Db.Manager
         /// <exception cref="KeyNotFoundException">Thrown when no factory is registered for <paramref name="type"/>.</exception>
         public static IDialectFactory Get(DatabaseType type)
         {
-            if (_factories.TryGetValue(type, out var factory))
+            if (s_factories.TryGetValue(type, out var factory))
                 return factory;
             throw new KeyNotFoundException($"Dialect factory not registered: {type}");
         }
@@ -51,6 +51,6 @@ namespace Bee.Db.Manager
         /// Indicates whether a factory is registered for the specified database type.
         /// </summary>
         /// <param name="type">The database type.</param>
-        public static bool IsRegistered(DatabaseType type) => _factories.ContainsKey(type);
+        public static bool IsRegistered(DatabaseType type) => s_factories.ContainsKey(type);
     }
 }

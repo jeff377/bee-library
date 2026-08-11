@@ -1,11 +1,11 @@
-﻿namespace Bee.ObjectCaching
+namespace Bee.ObjectCaching
 {
     /// <summary>
     /// Cache item expiration policy.
     /// </summary>
     public class CacheItemPolicy
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CacheItemPolicy"/> class.

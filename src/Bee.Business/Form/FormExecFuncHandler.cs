@@ -1,4 +1,4 @@
-﻿using Bee.Business.Attributes;
+using Bee.Business.Attributes;
 using Bee.Definition.Collections;
 using Bee.Definition.Security;
 
@@ -9,7 +9,7 @@ namespace Bee.Business.Form
     /// </summary>
     internal class FormExecFuncHandler : IExecFuncHandler
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FormExecFuncHandler"/> class.

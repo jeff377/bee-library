@@ -14,7 +14,7 @@ namespace Bee.Definition.Layouts
         /// System fields that must be added to detail grids regardless of <see cref="FormField.Visible"/>.
         /// Grid controls require these for row binding and master association.
         /// </summary>
-        private static readonly string[] _gridIdentityFields =
+        private static readonly string[] s_gridIdentityFields =
             { SysFields.RowId, SysFields.MasterRowId };
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Bee.Definition.Layouts
                     grid.Columns!.Add(LayoutColumnFactory.ToColumn(field));
 
                 // 2. System fields required for grid binding (whitelist), hidden in layout
-                foreach (var sysName in _gridIdentityFields.Where(s =>
+                foreach (var sysName in s_gridIdentityFields.Where(s =>
                     table.Fields.Contains(s) &&
                     !grid.Columns!.Any(c => StringUtilities.IsEquals(c.FieldName, s))))
                 {

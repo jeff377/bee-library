@@ -12,7 +12,7 @@ namespace Bee.Business.Form
     /// </summary>
     public partial class FormBusinessObject
     {
-        #region 異動記錄（audit trail）
+        #region Audit trail
 
         /// <summary>
         /// Whether data-change auditing is enabled (global + change category). Resolved through the

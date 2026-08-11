@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.Loader;
 
@@ -12,7 +12,7 @@ namespace Bee.Base
         // Cache loaded assemblies to avoid reloading. `ConcurrentDictionary` is required because
         // xUnit collection-per-class parallel runs construct fixtures concurrently, and the
         // resulting concurrent reads/writes would corrupt a plain `Dictionary`.
-        private static readonly ConcurrentDictionary<string, Assembly> _loadedAssemblies = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, Assembly> s_loadedAssemblies = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Finds the specified assembly.
@@ -21,7 +21,7 @@ namespace Bee.Base
         public static Assembly? FindAssembly(string assemblyName)
         {
             // Check the cache first
-            if (_loadedAssemblies.TryGetValue(assemblyName, out var cached))
+            if (s_loadedAssemblies.TryGetValue(assemblyName, out var cached))
                 return cached;
 
             // Search in the current AppDomain. Compare against `GetName().Name` (the simple
@@ -33,7 +33,7 @@ namespace Bee.Base
                 .FirstOrDefault(a => StringUtilities.IsEquals(a.GetName().Name, simpleName));
             if (match != null)
             {
-                _loadedAssemblies[assemblyName] = match;
+                s_loadedAssemblies[assemblyName] = match;
                 return match;
             }
 
@@ -82,7 +82,7 @@ namespace Bee.Base
                     : assemblyName;
                 assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyFile);
             }
-            _loadedAssemblies[assemblyName] = assembly;
+            s_loadedAssemblies[assemblyName] = assembly;
 
             return assembly;
         }

@@ -11,7 +11,7 @@ namespace Bee.Db
         /// <summary>
         /// Dictionary mapping database types to their parameter name prefix characters.
         /// </summary>
-        private static readonly Dictionary<DatabaseType, string> DbParameterPrefixes = new Dictionary<DatabaseType, string>
+        private static readonly Dictionary<DatabaseType, string> s_dbParameterPrefixes = new Dictionary<DatabaseType, string>
         {
             { DatabaseType.SQLServer, "@" },
             { DatabaseType.PostgreSQL, "@" },
@@ -23,7 +23,7 @@ namespace Bee.Db
         /// <summary>
         /// Dictionary mapping database types to their identifier quoting functions.
         /// </summary>
-        private static readonly Dictionary<DatabaseType, Func<string, string>> QuoteIdentifiers = new Dictionary<DatabaseType, Func<string, string>>
+        private static readonly Dictionary<DatabaseType, Func<string, string>> s_quoteIdentifiers = new Dictionary<DatabaseType, Func<string, string>>
         {
             { DatabaseType.SQLServer, s => $"[{s.Replace("]", "]]")}]" },
             { DatabaseType.PostgreSQL, s => $"\"{s.Replace("\"", "\"\"")}\"" },
@@ -40,7 +40,7 @@ namespace Bee.Db
         /// <exception cref="NotSupportedException">Thrown when the database type is not supported.</exception>
         public static string GetParameterPrefix(this DatabaseType databaseType)
         {
-            return DbParameterPrefixes.TryGetValue(databaseType, out var prefix)
+            return s_dbParameterPrefixes.TryGetValue(databaseType, out var prefix)
                 ? prefix
                 : throw new NotSupportedException($"Unsupported database type: {databaseType}.");
         }
@@ -65,7 +65,7 @@ namespace Bee.Db
         /// <exception cref="NotSupportedException">Thrown when the database type is not supported.</exception>
         public static string QuoteIdentifier(this DatabaseType databaseType, string identifier)
         {
-            if (QuoteIdentifiers.TryGetValue(databaseType, out var func))
+            if (s_quoteIdentifiers.TryGetValue(databaseType, out var func))
                 return func(identifier);
             throw new NotSupportedException($"Unsupported database type: {databaseType}.");
         }

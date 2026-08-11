@@ -24,22 +24,22 @@ namespace Bee.Base.Serialization
     /// </remarks>
     public static class JsonCodec
     {
-        private static readonly JsonSerializerOptions CompactIgnoreDefault =
+        private static readonly JsonSerializerOptions s_compactIgnoreDefault =
             CreateOptions(JsonIgnoreCondition.WhenWritingDefault, writeIndented: false);
 
-        private static readonly JsonSerializerOptions CompactIgnoreNull =
+        private static readonly JsonSerializerOptions s_compactIgnoreNull =
             CreateOptions(JsonIgnoreCondition.WhenWritingNull, writeIndented: false);
 
-        private static readonly JsonSerializerOptions CompactKeepAll =
+        private static readonly JsonSerializerOptions s_compactKeepAll =
             CreateOptions(JsonIgnoreCondition.Never, writeIndented: false);
 
-        private static readonly JsonSerializerOptions IndentedIgnoreDefault =
+        private static readonly JsonSerializerOptions s_indentedIgnoreDefault =
             CreateOptions(JsonIgnoreCondition.WhenWritingDefault, writeIndented: true);
 
-        private static readonly JsonSerializerOptions IndentedIgnoreNull =
+        private static readonly JsonSerializerOptions s_indentedIgnoreNull =
             CreateOptions(JsonIgnoreCondition.WhenWritingNull, writeIndented: true);
 
-        private static readonly JsonSerializerOptions IndentedKeepAll =
+        private static readonly JsonSerializerOptions s_indentedKeepAll =
             CreateOptions(JsonIgnoreCondition.Never, writeIndented: true);
 
         /// <summary>
@@ -75,12 +75,12 @@ namespace Bee.Base.Serialization
             bool ignoreDefaultValue, bool ignoreNullValue, bool writeIndented)
         {
             if (ignoreDefaultValue && ignoreNullValue)
-                return writeIndented ? IndentedIgnoreDefault : CompactIgnoreDefault;
+                return writeIndented ? s_indentedIgnoreDefault : s_compactIgnoreDefault;
 
             if (ignoreNullValue)
-                return writeIndented ? IndentedIgnoreNull : CompactIgnoreNull;
+                return writeIndented ? s_indentedIgnoreNull : s_compactIgnoreNull;
 
-            return writeIndented ? IndentedKeepAll : CompactKeepAll;
+            return writeIndented ? s_indentedKeepAll : s_compactKeepAll;
         }
 
         /// <summary>

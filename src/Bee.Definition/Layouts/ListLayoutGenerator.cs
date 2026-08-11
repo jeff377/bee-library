@@ -14,7 +14,7 @@ namespace Bee.Definition.Layouts
         /// System fields that must be added to a list grid regardless of <see cref="FormField.Visible"/>.
         /// List view does not need <see cref="SysFields.MasterRowId"/>.
         /// </summary>
-        private static readonly string[] _gridIdentityFields = { SysFields.RowId };
+        private static readonly string[] s_gridIdentityFields = { SysFields.RowId };
 
         /// <summary>
         /// Generates a list layout grid from a form schema definition.
@@ -43,7 +43,7 @@ namespace Bee.Definition.Layouts
             }
 
             // 2. System fields required for list grid binding (whitelist), hidden in layout
-            foreach (var sysName in _gridIdentityFields.Where(s =>
+            foreach (var sysName in s_gridIdentityFields.Where(s =>
                 master.Fields.Contains(s) &&
                 !grid.Columns!.Any(c => StringUtilities.IsEquals(c.FieldName, s))))
             {

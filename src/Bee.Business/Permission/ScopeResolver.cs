@@ -139,7 +139,7 @@ namespace Bee.Business.Permission
         private static void AddOwn(List<FilterNode> parts, IReadOnlyList<string> ownerFields, IReadOnlyList<object> ownerIds)
         {
             foreach (var ownerField in ownerFields)
-                parts.Add(new FilterCondition { FieldName = ownerField, Operator = ComparisonOperator.In, Value = ownerIds });
+                parts.Add(FilterCondition.In(ownerField, ownerIds));
         }
 
         // Each dept column: deptField = DeptRowId.
@@ -160,7 +160,7 @@ namespace Bee.Business.Permission
             var values = new List<object>(subtree.Count);
             foreach (var id in subtree) { values.Add(id); }
             foreach (var deptField in deptFields)
-                parts.Add(new FilterCondition { FieldName = deptField, Operator = ComparisonOperator.In, Value = values });
+                parts.Add(FilterCondition.In(deptField, values));
         }
 
         private static FilterNode? AnyOf(List<FilterNode> parts)
@@ -184,7 +184,7 @@ namespace Bee.Business.Permission
         // table's select context so field remapping does not choke.
         private static FilterCondition DenyAll(FormSchema? formSchema)
         {
-            return new FilterCondition { FieldName = AnyMasterFieldName(formSchema), Operator = ComparisonOperator.In, Value = new List<object>() };
+            return FilterCondition.In(AnyMasterFieldName(formSchema), []);
         }
 
         private static string AnyMasterFieldName(FormSchema? formSchema)

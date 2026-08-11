@@ -24,7 +24,7 @@ namespace Bee.Api.Core.MessagePack
         /// Wire member names, in write order. The single source for both the map header and the
         /// drift check — they cannot disagree because they read the same array.
         /// </summary>
-        private static readonly string[] WireMembers =
+        private static readonly string[] s_wireMembers =
         [
             nameof(NumberFormatItem.Kind),
             nameof(NumberFormatItem.Decimals),
@@ -34,7 +34,7 @@ namespace Bee.Api.Core.MessagePack
         public Type WireType => typeof(NumberFormatItem);
 
         /// <inheritdoc />
-        public IReadOnlyList<string> WireMemberNames => WireMembers;
+        public IReadOnlyList<string> WireMemberNames => s_wireMembers;
 
         /// <summary>
         /// Serializes the value.
@@ -47,7 +47,7 @@ namespace Bee.Api.Core.MessagePack
                 return;
             }
 
-            writer.WriteMapHeader(WireMembers.Length);
+            writer.WriteMapHeader(s_wireMembers.Length);
 
             writer.Write(nameof(NumberFormatItem.Kind));
             MessagePackSerializer.Serialize<NumberKind>(ref writer, value.Kind, options);

@@ -19,7 +19,7 @@ namespace Bee.Api.Core.JsonRpc
     /// </summary>
     public class JsonRpcExecutor
     {
-        private static readonly char[] MethodSeparators = new[] { '.' };
+        private static readonly char[] s_methodSeparators = new[] { '.' };
 
         private readonly IBusinessObjectFactory _boFactory;
         private readonly IAccessTokenValidator _tokenValidator;
@@ -155,7 +155,7 @@ namespace Bee.Api.Core.JsonRpc
             return response;
         }
 
-        #region 異常記錄（anomaly detection）
+        #region Anomaly detection
 
         private bool AnomalyEnabled =>
             _anomalyWriter != null && _sessionService != null
@@ -244,7 +244,7 @@ namespace Bee.Api.Core.JsonRpc
         {
             if (!string.IsNullOrEmpty(method))
             {
-                var parts = method.Split(MethodSeparators, 2);
+                var parts = method.Split(s_methodSeparators, 2);
                 if (parts.Length == 2)
                 {
                     return (parts[0], parts[1]);

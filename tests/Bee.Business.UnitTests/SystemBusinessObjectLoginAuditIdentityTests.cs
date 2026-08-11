@@ -25,7 +25,7 @@ namespace Bee.Business.UnitTests
             public void Write(AuditEntry entry) => Entries.Add(entry);
         }
 
-        private static readonly AuditLogOptions LoginAuditEnabled = new()
+        private static readonly AuditLogOptions s_loginAuditEnabled = new()
         {
             Enabled = true,
             LoginEnabled = true,
@@ -38,7 +38,7 @@ namespace Bee.Business.UnitTests
         {
             var ctx = TestBeeContext.CreateWithOverrides(_fx,
                 (typeof(IAuditLogWriter), writer),
-                (typeof(AuditLogOptions), LoginAuditEnabled));
+                (typeof(AuditLogOptions), s_loginAuditEnabled));
             var bo = new TestableSystemBusinessObject(ctx, Guid.Empty, _ => (false, string.Empty))
             {
                 ApiKeyValidation = validation,

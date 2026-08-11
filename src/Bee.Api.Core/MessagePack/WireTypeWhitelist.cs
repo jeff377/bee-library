@@ -22,7 +22,7 @@ namespace Bee.Api.Core.MessagePack
         /// <summary>
         /// Well-known system primitive types that are always allowed for deserialization.
         /// </summary>
-        private static readonly HashSet<string> AllowedPrimitiveTypes = new HashSet<string>(StringComparer.Ordinal)
+        private static readonly HashSet<string> s_allowedPrimitiveTypes = new HashSet<string>(StringComparer.Ordinal)
         {
             "System.Boolean",
             "System.Byte",
@@ -72,7 +72,7 @@ namespace Bee.Api.Core.MessagePack
         /// <param name="fullName">The full name of the type to validate.</param>
         /// <returns><c>true</c> if the type is in the fixed whitelist.</returns>
         public static bool IsExplicitlyTrustedType(string fullName)
-            => AllowedPrimitiveTypes.Contains(fullName);
+            => s_allowedPrimitiveTypes.Contains(fullName);
 
         /// <summary>
         /// Validates whether the specified type full name is in the allowed whitelist.
@@ -90,7 +90,7 @@ namespace Bee.Api.Core.MessagePack
         public static bool IsTypeAllowed(string fullName)
         {
             // Allow well-known primitive types
-            if (AllowedPrimitiveTypes.Contains(fullName))
+            if (s_allowedPrimitiveTypes.Contains(fullName))
                 return true;
 
             // Delegate to the application-level namespace whitelist
@@ -177,7 +177,7 @@ namespace Bee.Api.Core.MessagePack
 
             // Whole-name matches win first: `System.Byte[]` and `System.Object[]` are whitelisted
             // as arrays, not as an element type plus a rank.
-            if (AllowedPrimitiveTypes.Contains(fullName))
+            if (s_allowedPrimitiveTypes.Contains(fullName))
                 return true;
 
             if (type.IsArray)

@@ -12,14 +12,14 @@ namespace Bee.Api.Core.UnitTests
     /// </summary>
     public class DateTimeWireGuardTests
     {
-        private static readonly DateTime Sample = new DateTime(2026, 1, 1, 9, 0, 0, DateTimeKind.Unspecified);
+        private static readonly DateTime s_sample = new DateTime(2026, 1, 1, 9, 0, 0, DateTimeKind.Unspecified);
 
         private static DataTable AdoNetShapedTable()
         {
             // What DbDataAdapter.Fill / DataTable.Load leave behind: DateTimeMode is the .NET default.
             var table = new DataTable("orders");
             table.Columns.Add(new DataColumn("created_at", typeof(DateTime)));
-            table.Rows.Add(Sample);
+            table.Rows.Add(s_sample);
             return table;
         }
 
@@ -84,7 +84,7 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("FilterCondition 值為 Unspecified 或 Utc 時應通過 guard")]
         public void Validate_FilterConditionWithNonLocalKind_Passes(DateTimeKind kind)
         {
-            var filter = FilterCondition.Equal("created_at", DateTime.SpecifyKind(Sample, kind));
+            var filter = FilterCondition.Equal("created_at", DateTime.SpecifyKind(s_sample, kind));
 
             Assert.Null(Record.Exception(() => DateTimeWireGuard.Validate(Request(filter))));
         }
@@ -93,7 +93,7 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("FilterCondition 值為 Kind=Local 時 guard 應擲例外")]
         public void Validate_FilterConditionWithLocalKind_Throws()
         {
-            var filter = FilterCondition.Equal("created_at", DateTime.SpecifyKind(Sample, DateTimeKind.Local));
+            var filter = FilterCondition.Equal("created_at", DateTime.SpecifyKind(s_sample, DateTimeKind.Local));
 
             var exception = Assert.Throws<InvalidOperationException>(
                 () => DateTimeWireGuard.Validate(Request(filter)));
@@ -108,7 +108,7 @@ namespace Bee.Api.Core.UnitTests
             var nested = FilterGroup.All(
                 FilterCondition.Equal("status", "open"),
                 FilterGroup.All(
-                    FilterCondition.Equal("created_at", DateTime.SpecifyKind(Sample, DateTimeKind.Local))));
+                    FilterCondition.Equal("created_at", DateTime.SpecifyKind(s_sample, DateTimeKind.Local))));
 
             Assert.Throws<InvalidOperationException>(
                 () => DateTimeWireGuard.Validate(Request(nested)));
@@ -121,8 +121,8 @@ namespace Bee.Api.Core.UnitTests
             var filter = new FilterCondition(
                 "created_at",
                 ComparisonOperator.Between,
-                DateTime.SpecifyKind(Sample, DateTimeKind.Utc),
-                DateTime.SpecifyKind(Sample, DateTimeKind.Local));
+                DateTime.SpecifyKind(s_sample, DateTimeKind.Utc),
+                DateTime.SpecifyKind(s_sample, DateTimeKind.Local));
 
             Assert.Throws<InvalidOperationException>(
                 () => DateTimeWireGuard.Validate(Request(filter)));

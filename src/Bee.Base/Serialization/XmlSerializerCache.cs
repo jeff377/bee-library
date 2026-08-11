@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Xml.Serialization;
 
 namespace Bee.Base.Serialization
@@ -11,7 +11,7 @@ namespace Bee.Base.Serialization
         /// <summary>
         /// Cache of previously created <see cref="XmlSerializer"/> instances.
         /// </summary>
-        private static readonly ConcurrentDictionary<Type, XmlSerializer> _cache = new ConcurrentDictionary<Type, XmlSerializer>();
+        private static readonly ConcurrentDictionary<Type, XmlSerializer> s_cache = new ConcurrentDictionary<Type, XmlSerializer>();
 
         /// <summary>
         /// Gets the <see cref="XmlSerializer"/> instance for the specified type, creating and caching it if not already present.
@@ -20,7 +20,7 @@ namespace Bee.Base.Serialization
         /// <returns>The <see cref="XmlSerializer"/> instance for the specified type.</returns>
         public static XmlSerializer Get(Type type)
         {
-            return _cache.GetOrAdd(type, t => new XmlSerializer(t));
+            return s_cache.GetOrAdd(type, t => new XmlSerializer(t));
         }
     }
 

@@ -18,7 +18,7 @@ namespace Bee.Web.Blazor.Server.Components
     /// </remarks>
     public partial class DynamicForm : ComponentBase
     {
-        private static readonly ListItem[] _emptyOptions = Array.Empty<ListItem>();
+        private static readonly ListItem[] s_emptyOptions = Array.Empty<ListItem>();
 
         /// <summary>
         /// Gets or sets the form layout that drives the rendering loop.
@@ -49,7 +49,7 @@ namespace Bee.Web.Blazor.Server.Components
         private IEnumerable<ListItem> EnumerateOptions(LayoutField field)
         {
             var formField = DataObject?.GetFormField(field.FieldName);
-            return formField?.ListItems ?? (IEnumerable<ListItem>)_emptyOptions;
+            return formField?.ListItems ?? (IEnumerable<ListItem>)s_emptyOptions;
         }
 
         private string FieldInputId(LayoutField field)

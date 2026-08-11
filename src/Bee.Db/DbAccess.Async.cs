@@ -10,7 +10,7 @@ namespace Bee.Db
     /// </summary>
     public partial class DbAccess
     {
-        #region 非同步方法
+        #region Async methods
 
         /// <summary>
         /// Asynchronously executes a database command.
@@ -245,7 +245,7 @@ namespace Bee.Db
 
         #endregion
 
-        #region 非同步版本的簡易方法
+        #region Async convenience overloads
 
         /// <summary>
         /// Asynchronously executes a SQL statement and returns the number of rows affected.

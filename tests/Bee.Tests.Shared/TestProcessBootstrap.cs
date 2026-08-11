@@ -18,7 +18,7 @@ namespace Bee.Tests.Shared
     /// </remarks>
     public static class TestProcessBootstrap
     {
-        private static readonly object _initLock = new();
+        private static readonly object s_initLock = new();
         private static bool _initialized;
         private static string? _sharedDefinePath;
         private static string? _sharedCustomizePath;
@@ -87,7 +87,7 @@ namespace Bee.Tests.Shared
         public static void EnsureInitialized()
         {
             if (_initialized) return;
-            lock (_initLock)
+            lock (s_initLock)
             {
                 if (_initialized) return;
                 InitializeOnce();

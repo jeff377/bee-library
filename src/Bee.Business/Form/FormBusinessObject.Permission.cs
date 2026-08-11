@@ -14,7 +14,7 @@ namespace Bee.Business.Form
     /// </summary>
     public partial class FormBusinessObject
     {
-        #region 權限驗證（層一 model+action gate）
+        #region Authorization (layer-1 model + action gate)
 
         // 寫入動作的判定順序；層一不涉 record scope，故每個 action 只需判一次（逐列等價）。
         private static readonly PermissionAction[] s_writeActions =

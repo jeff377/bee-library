@@ -19,7 +19,7 @@ namespace Bee.Business.UnitTests
         private const string SeedCompanyId = "C001";
         // BO 測試綁 SQL Server；company 的 permission 表（st_role_grant / st_user_role）位於
         // company-category DB，故 company_database_id 須指向該庫，EnterCompany 才載得到角色快照。
-        private static readonly string CompanyDbId = TestDbConventions.GetDatabaseId(DatabaseType.SQLServer, "company");
+        private static readonly string s_companyDbId = TestDbConventions.GetDatabaseId(DatabaseType.SQLServer, "company");
         private readonly SharedDbFixture _fx;
 
         public SystemBusinessObjectEnterCompanyTests(SharedDbFixture fx) { _fx = fx; }
@@ -35,7 +35,7 @@ namespace Bee.Business.UnitTests
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
                 "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, number_formats_xml, default_currency, cash_rounding_xml, allowed_currencies_xml, enabled, sys_insert_time) " +
                 $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {{5}}, {{6}}, {{7}}, {enabledLiteral}, GETDATE())",
-                rowId, companyId, "BO 測試公司", CompanyDbId, string.Empty, string.Empty, string.Empty, string.Empty);
+                rowId, companyId, "BO 測試公司", s_companyDbId, string.Empty, string.Empty, string.Empty, string.Empty);
             Common().Execute(insert);
             return rowId;
         }
@@ -46,7 +46,7 @@ namespace Bee.Business.UnitTests
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
                 "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, customize_id, number_formats_xml, default_currency, cash_rounding_xml, allowed_currencies_xml, enabled, sys_insert_time) " +
                 "VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, 1, GETDATE())",
-                rowId, companyId, "BO 客製測試公司", CompanyDbId, customizeId, string.Empty, string.Empty, string.Empty, string.Empty);
+                rowId, companyId, "BO 客製測試公司", s_companyDbId, customizeId, string.Empty, string.Empty, string.Empty, string.Empty);
             Common().Execute(insert);
             return rowId;
         }
@@ -88,8 +88,8 @@ namespace Bee.Business.UnitTests
             throw new InvalidOperationException($"Cannot resolve user rowid for '{userId}'.");
         }
 
-        // st_employee lives in the company database (CompanyDbId), not common.
-        private DbAccess CompanyDb() => _fx.NewDbAccess(CompanyDbId);
+        // st_employee lives in the company database (s_companyDbId), not common.
+        private DbAccess CompanyDb() => _fx.NewDbAccess(s_companyDbId);
 
         private void InsertEmployee(Guid empRowId, string empId, Guid deptRowId, Guid userRowId)
         {

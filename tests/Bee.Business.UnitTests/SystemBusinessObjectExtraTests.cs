@@ -20,7 +20,7 @@ namespace Bee.Business.UnitTests
         private readonly SharedDbFixture _fx;
 
         public SystemBusinessObjectExtraTests(SharedDbFixture fx) { _fx = fx; }
-        private static readonly string[] DepartmentKeys = { "Department" };
+        private static readonly string[] s_departmentKeys = { "Department" };
 
         [Fact]
         [DisplayName("Ping 應回傳包含 TraceId 與 OK 狀態的 PingResult")]
@@ -72,7 +72,7 @@ namespace Bee.Business.UnitTests
             var result = bo.GetDefine(new GetDefineArgs
             {
                 DefineType = DefineType.FormSchema,
-                Keys = DepartmentKeys
+                Keys = s_departmentKeys
             });
 
             Assert.NotNull(result);

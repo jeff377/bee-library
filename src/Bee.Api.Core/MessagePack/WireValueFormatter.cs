@@ -83,9 +83,9 @@ namespace Bee.Api.Core.MessagePack
         /// </summary>
         public static readonly WireValueFormatter Instance = new WireValueFormatter();
 
-        private static readonly Dictionary<Type, int> Codes = [];
-        private static readonly WireValueWriter?[] Writers = new WireValueWriter?[WireValueCode.Count];
-        private static readonly WireValueReader?[] Readers = new WireValueReader?[WireValueCode.Count];
+        private static readonly Dictionary<Type, int> s_codes = [];
+        private static readonly WireValueWriter?[] s_writers = new WireValueWriter?[WireValueCode.Count];
+        private static readonly WireValueReader?[] s_readers = new WireValueReader?[WireValueCode.Count];
 
         private WireValueFormatter() { }
 
@@ -166,9 +166,9 @@ namespace Bee.Api.Core.MessagePack
         /// </summary>
         private static void AddCustom(int code, Type type, WireValueWriter writer, WireValueReader reader)
         {
-            Codes.Add(type, code);
-            Writers[code] = writer;
-            Readers[code] = reader;
+            s_codes.Add(type, code);
+            s_writers[code] = writer;
+            s_readers[code] = reader;
         }
 
         /// <summary>
@@ -185,10 +185,10 @@ namespace Bee.Api.Core.MessagePack
             writer.WriteArrayHeader(2);
 
             var type = value.GetType();
-            if (Codes.TryGetValue(type, out var code))
+            if (s_codes.TryGetValue(type, out var code))
             {
                 writer.Write(code);
-                Writers[code]!(value, ref writer, options);
+                s_writers[code]!(value, ref writer, options);
                 return;
             }
 
@@ -225,7 +225,7 @@ namespace Bee.Api.Core.MessagePack
                 if (reader.NextMessagePackType == MessagePackType.Integer)
                 {
                     var code = reader.ReadInt32();
-                    var read = code >= 0 && code < Readers.Length ? Readers[code] : null;
+                    var read = code >= 0 && code < s_readers.Length ? s_readers[code] : null;
                     if (read == null)
                         throw new MessagePackSerializationException($"Unknown wire value code {code}.");
                     return read(ref reader, options);

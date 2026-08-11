@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Text;
 
@@ -9,7 +9,7 @@ namespace Bee.Base
     /// </summary>
     public static class HttpUtilities
     {
-        private static readonly ConcurrentDictionary<string, HttpClient> _clientMap = new ConcurrentDictionary<string, HttpClient>();
+        private static readonly ConcurrentDictionary<string, HttpClient> s_clientMap = new ConcurrentDictionary<string, HttpClient>();
 
         /// <summary>
         /// Creates or retrieves a <see cref="HttpClient"/> instance for the given host.
@@ -25,7 +25,7 @@ namespace Bee.Base
             var baseUri = new Uri(fullUrl);
             string cacheKey = $"{baseUri.Scheme}://{baseUri.Host}:{baseUri.Port}";
 
-            return _clientMap.GetOrAdd(cacheKey, _ =>
+            return s_clientMap.GetOrAdd(cacheKey, _ =>
             {
                 if (OperatingSystem.IsBrowser())
                 {

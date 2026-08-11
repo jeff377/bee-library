@@ -23,7 +23,7 @@ namespace Bee.Db
         private readonly IAuditLogWriter? _anomalyWriter;
         private readonly DbAccessAnomalyLogOptions? _anomalyOptions;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of <see cref="DbAccess"/> for the specified database identifier.
@@ -134,7 +134,7 @@ namespace Bee.Db
             try { tran.Rollback(); } catch { /* ignore */ }
         }
 
-        #region 同步方法
+        #region Sync methods
 
         /// <summary>
         /// Executes a database command.
@@ -605,7 +605,7 @@ namespace Bee.Db
 
         #endregion
 
-        #region 同步版本的簡易方法
+        #region Sync convenience overloads
 
         /// <summary>
         /// Executes a SQL statement and returns the number of rows affected.

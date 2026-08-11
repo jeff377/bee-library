@@ -50,7 +50,7 @@
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
 | P2 | 結構、效能、一致性 | 14 | 🚧 進行中（11 項已結：P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**DEP-1** / **P-3** / **PERF-2** ❌ 評估後不修；剩 3 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
-| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2**(4/7) / **SEC-4~10**(部分) / **CON-5** ✅ 已落地；其餘未動） |
+| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2**(4/7) / **SEC-4~10**(部分) / **CON-5** / **X-7** / **D-9** / **Z-3**+**Z-5** / **M-2** / **M-3** ✅ 已落地；其餘未動） |
 
 ### 已完成項目逐條（供對帳，勿只看階段狀態）
 
@@ -85,6 +85,11 @@
 | **TEST-2** | `ApiAspNetCoreTests` / `ApiKeyGateControllerTests` 改用 `SharedDbFixture` | 待 commit | 並在類別 doc 記下第三條觸發路徑（API key gate read-through）與「為何先前是綠的」 |
 | **TEST-3** | `Bee.Definition.UnitTests` 新增 `ProcessWideStateCollection`，序列化三個衝突類別 | 待 commit | 該組件先前既無 `[Collection]` 也無 `DisableTestParallelization` |
 | **GATE-2** | 8 個手寫 formatter 改實作 `IWireContract`，移除套套邏輯的 `WireMemberCount` | 待 commit | **實證**：在 `SortField` 加一個屬性 → drift 測試立刻紅（`型別上有但未註冊 → Probe`）。同一個 probe 在修正前不會被抓到 |
+| **X-7** | `Bee.Api.Contracts` 納入 BEE9001 | 待 commit | **實測翻出一個先前沒人知道的行為**：閘門一啟用就以 `Bee.Base` 報錯，而該 csproj 只寫了 `Bee.Definition` —— SDK 的 `IncludeTransitiveProjectReferences` 會在 Build 前把**傳遞專案參考**併進 `@(ProjectReference)`。故 allowlist 要列整個專案參考閉包。`rules/dependency-boundary.md` 的敘述已更正 |
+| **D-9** | `StringUtilities.IsEmpty(object?)` → `IsEmptyText`，兩邊 XML doc 互指 | 待 commit | **全 repo 只有 1 個呼叫點**（`ValueUtilities.CDateTime`），改名幾乎免費。新增一個測試直接斷言兩者對 `Guid.Empty` / `DateTime.MinValue` 結論相反 |
+| **Z-3 / Z-5** | `ScopeResolver` 三處改走 `FilterCondition.In()` | 待 commit | **Z-5 已在本輪前批修掉**：`src/` 對 `typeless` 的提及為 0，`In()` 的註解現在講的是封閉值碼集合，敘述正確 |
+| **M-2** | 31 處中文 `#region` 全數改英文（24 檔） | 待 commit | 公開 repo 的 in-body 註解一律英文 |
+| **M-3** | `.editorconfig` 加入欄位命名規則，並修正全部違規 | 待 commit | **實際遠多於計畫寫的 27 處，見下** |
 | **CON-5** | 5 處補 `ConfigureAwait(false)`，並於 `JsonRpcExecutor.Execute` 註明阻塞語意 | 待 commit | **先做了多行感知的全量複查**：逐行 grep 會報 40+ 筆，但多行 `await` 的 `.ConfigureAwait(false)` 在續行上。真正缺的就是計畫點名的 5 處。`Bee.UI.Avalonia` / `Bee.Web.Blazor.Server` **刻意不加**（UI 需要回到 UI 執行緒），ASP.NET Core controller 4 處亦不加（無 SynchronizationContext） |
 | **SEC-4~10** | `EXEC('...')` 內嵌 identifier 補上 literal escaping；三處空 catch 收窄；工廠面移除 `isLocalCall = true` 預設 | 待 commit | **兩處與計畫不同，見下** |
 | **D-7** | 移除 `AuditLogOptions.ExecEnabled`，並更正架構總覽的軸數（雙語） | 待 commit | 五個兄弟旗標**逐一驗過各有消費點**，只有它零讀取。連帶清掉 `apps/Bee.Northwind/Define/SystemSettings.xml` 內那一行 |
@@ -100,6 +105,24 @@
 > 不是以物件形式，因此不在閉包內。這也說明下限斷言為何不能只寫一個數字：數字擋得住「掉到只剩
 > `ExtraRoots`」，擋不住「某一條可達路徑斷掉」。現行四個 canary 刻意取自不同路徑（訊息命名空間
 > 的根、契約命名空間的根、掛在 `ApiMessageBase` 上每個訊息都會經過的集合、多型子型別）。
+
+> **M-3 的實際規模遠大於計畫估的 27 處，且 `.editorconfig` 表達不了其中一條。**
+>
+> 計畫估「27 處無理由的 PascalCase」，那是只掃 `src/` 且只算 `private static readonly` 的結果。
+> 把規則實際打開後，編譯器一輪一輪吐出違規，最終涵蓋 **`src/` 與 `tests/` 合計 60+ 個欄位**——
+> 多出來的是 `_camelCase` 的靜態欄位（該用 `s_`）與測試專案裡的 PascalCase 靜態欄位。
+> **這正是「規則要交給編譯器、不要交給紀律」的又一例**：人工掃描三輪都只會看到自己想得到的樣態。
+>
+> 兩個範圍決定：
+>
+> - **`src/Bee.Analyzers/` 以巢狀 `.editorconfig` 豁免**。Roslyn 的 `DiagnosticDescriptor` 一律是
+>   PascalCase 的 `private static readonly`（官方樣板與 Roslyn 自身原始碼皆然），19 處改成 `s_rule`
+>   反而背離該領域的共同認知。
+> - **`internal` 欄位不納入**。`code-style.md` 只規範「私有欄位」，`internal` 是組件層可見的另一類。
+>
+> **`[ThreadStatic]` 的 `t_` 前綴無法以 `.editorconfig` 表達** —— 命名規則看不到 attribute，
+> `required_modifiers = static` 會連一般 static 欄位一起要求 `t_`（實測時 `SysInfo` 就中招）。
+> 全 repo 只有一個這種欄位，改以就地 `#pragma warning disable IDE1006` 加說明處理。
 
 > **SEC-4~10 有兩處與計畫不同，都是實作時才看清的。**
 >

@@ -20,8 +20,8 @@ namespace Bee.Api.Core.Conversion
         // Cache: BO Result Type → API Response Type.
         // A value of typeof(void) is used as a sentinel to indicate "no matching type found",
         // since ConcurrentDictionary does not accept null values.
-        private static readonly ConcurrentDictionary<Type, Type> _cache = new();
-        private static readonly Type _noMatch = typeof(void);
+        private static readonly ConcurrentDictionary<Type, Type> s_cache = new();
+        private static readonly Type s_noMatch = typeof(void);
         /// <summary>
         /// Read options for JSON responses.
         /// </summary>
@@ -31,7 +31,7 @@ namespace Bee.Api.Core.Conversion
         /// converter throws on the first response property that happens to be an enum. The converter
         /// still accepts numeric values, so it only widens what can be read.
         /// </remarks>
-        private static readonly JsonSerializerOptions CaseInsensitiveOptions = new()
+        private static readonly JsonSerializerOptions s_caseInsensitiveOptions = new()
         {
             PropertyNameCaseInsensitive = true,
             Converters = { new JsonStringEnumConverter() },
@@ -54,9 +54,9 @@ namespace Bee.Api.Core.Conversion
             if (boResult == null) return null;
 
             var boType = boResult.GetType();
-            var responseType = _cache.GetOrAdd(boType, ResolveResponseType);
+            var responseType = s_cache.GetOrAdd(boType, ResolveResponseType);
 
-            if (responseType == _noMatch) return boResult;
+            if (responseType == s_noMatch) return boResult;
 
             return ApiInputConverter.Convert(boResult, responseType);
         }
@@ -74,7 +74,7 @@ namespace Bee.Api.Core.Conversion
             if (value is T typed) return typed;
             if (value is JsonElement element)
             {
-                return JsonSerializer.Deserialize<T>(element.GetRawText(), CaseInsensitiveOptions);
+                return JsonSerializer.Deserialize<T>(element.GetRawText(), s_caseInsensitiveOptions);
             }
             return (T)value;
         }
@@ -88,7 +88,7 @@ namespace Bee.Api.Core.Conversion
         private static Type ResolveResponseType(Type boType)
         {
             if (!boType.Name.EndsWith(ResultSuffix, StringComparison.Ordinal))
-                return _noMatch;
+                return s_noMatch;
 
             var responseName = boType.Name[..^ResultSuffix.Length] + ResponseSuffix;
 
@@ -96,7 +96,7 @@ namespace Bee.Api.Core.Conversion
             var apiCoreAssembly = typeof(ApiOutputConverter).Assembly;
             return apiCoreAssembly.GetTypes()
                 .FirstOrDefault(t => t.Name == responseName && !t.IsAbstract)
-                ?? _noMatch;
+                ?? s_noMatch;
         }
     }
 }

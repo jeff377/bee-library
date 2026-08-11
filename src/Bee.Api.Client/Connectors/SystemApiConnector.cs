@@ -18,7 +18,7 @@ namespace Bee.Api.Client.Connectors
     /// </summary>
     public class SystemApiConnector : ApiConnector
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemApiConnector"/> class using a local connection.

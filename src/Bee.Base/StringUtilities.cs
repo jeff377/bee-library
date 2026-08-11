@@ -26,11 +26,18 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// Casts the value to a string, then determines whether it is empty;
+        /// Casts the value to a string, then determines whether that text is empty;
         /// null and DBNull are both treated as empty.
         /// </summary>
+        /// <remarks>
+        /// This asks whether the value's <b>text form</b> is empty, which is not the same question
+        /// as <see cref="ValueUtilities.IsEmpty(object)"/>, and for some types the two disagree:
+        /// <c>Guid.Empty</c> and <c>DateTime.MinValue</c> render as non-empty text, so this returns
+        /// <c>false</c> where <c>ValueUtilities.IsEmpty</c> returns <c>true</c>. Use this one only
+        /// when the text is what matters.
+        /// </remarks>
         /// <param name="value">The value to check.</param>
-        public static bool IsEmpty(object? value)
+        public static bool IsEmptyText(object? value)
         {
             return IsEmpty(ValueUtilities.CStr(value!));
         }
@@ -43,10 +50,12 @@ namespace Bee.Base
         public static bool IsNotEmpty(string? s, bool isTrim = true) => !IsEmpty(s, isTrim);
 
         /// <summary>
-        /// Casts the value to a string, then determines whether it is not empty.
+        /// Casts the value to a string, then determines whether that text is not empty.
         /// </summary>
+        /// <remarks>See <see cref="IsEmptyText(object?)"/> for how this differs from
+        /// <see cref="ValueUtilities.IsEmpty(object)"/>.</remarks>
         /// <param name="value">The value to check.</param>
-        public static bool IsNotEmpty(object? value) => !IsEmpty(value);
+        public static bool IsNotEmptyText(object? value) => !IsEmptyText(value);
 
         #endregion
 

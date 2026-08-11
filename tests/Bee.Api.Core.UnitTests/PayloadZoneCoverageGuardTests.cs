@@ -21,7 +21,7 @@ namespace Bee.Api.Core.UnitTests
     public class PayloadZoneCoverageGuardTests
     {
         private const string Taipei = "Asia/Taipei";
-        private static readonly DateTime Utc9Am = new(2026, 1, 1, 9, 0, 0, DateTimeKind.Unspecified);
+        private static readonly DateTime s_utc9Am = new(2026, 1, 1, 9, 0, 0, DateTimeKind.Unspecified);
 
         /// <summary>掃出所有承載時間資料的 message 型別，連同其承載屬性。</summary>
         public static TheoryData<string> CarrierTypeNames()
@@ -84,12 +84,12 @@ namespace Bee.Api.Core.UnitTests
         {
             if (typeof(FilterNode).IsAssignableFrom(carrierType))
             {
-                return new FilterCondition("created_at", ComparisonOperator.Equal, Utc9Am);
+                return new FilterCondition("created_at", ComparisonOperator.Equal, s_utc9Am);
             }
 
             var table = new DataTable("t");
             table.AddColumn("created_at", FieldDbType.DateTime);
-            table.Rows.Add(Utc9Am);
+            table.Rows.Add(s_utc9Am);
             table.AcceptChanges();
 
             if (carrierType == typeof(DataTable)) { return table; }
@@ -119,8 +119,8 @@ namespace Bee.Api.Core.UnitTests
         {
             var zone = TimeZoneInfo.FindSystemTimeZoneById(Taipei);
             var shifted = toUtc
-                ? TimeZoneInfo.ConvertTimeToUtc(Utc9Am, zone)
-                : TimeZoneInfo.ConvertTimeFromUtc(Utc9Am, zone);
+                ? TimeZoneInfo.ConvertTimeToUtc(s_utc9Am, zone)
+                : TimeZoneInfo.ConvertTimeFromUtc(s_utc9Am, zone);
             return DateTime.SpecifyKind(shifted, DateTimeKind.Unspecified);
         }
     }

@@ -8,7 +8,7 @@ namespace Bee.Api.Core.JsonRpc
     /// </summary>
     public class JsonRpcRequest : IObjectSerialize
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonRpcRequest"/> class.
@@ -18,7 +18,7 @@ namespace Bee.Api.Core.JsonRpc
 
         #endregion
 
-        #region IObjectSerialize 介面
+        #region IObjectSerialize
 
         /// <summary>
         /// Gets the serialization state.

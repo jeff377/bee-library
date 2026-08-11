@@ -17,7 +17,7 @@ namespace Bee.Api.Core.Conversion
         // (e.g. RowState) silently deserialize to defaults and the call appears to
         // succeed with empty data. Keep this list in sync with
         // Bee.Base.Serialization.JsonCodec.GetJsonSerializerOptions.
-        private static readonly JsonSerializerOptions CaseInsensitiveOptions = CreateReadOptions();
+        private static readonly JsonSerializerOptions s_caseInsensitiveOptions = CreateReadOptions();
 
         private static JsonSerializerOptions CreateReadOptions()
         {
@@ -48,7 +48,7 @@ namespace Bee.Api.Core.Conversion
             // with camelCase naming policy (see JsonCodec internal options).
             if (source is JsonElement element)
             {
-                return JsonSerializer.Deserialize(element.GetRawText(), targetType, CaseInsensitiveOptions);
+                return JsonSerializer.Deserialize(element.GetRawText(), targetType, s_caseInsensitiveOptions);
             }
 
             // If the target is an interface, we cannot create an instance directly

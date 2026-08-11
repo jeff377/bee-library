@@ -24,19 +24,19 @@ namespace Bee.Api.Core.UnitTests.Contracts
     /// </remarks>
     public class ApiContractSerializationTests
     {
-        private static readonly Guid SampleGuid = new("11111111-2222-3333-4444-555555555555");
-        private static readonly DateTime SampleUtc = new(2026, 7, 22, 10, 0, 0, DateTimeKind.Utc);
-        private static readonly DateTimeOffset SampleOffset = new(2026, 7, 22, 10, 0, 0, TimeSpan.Zero);
+        private static readonly Guid s_sampleGuid = new("11111111-2222-3333-4444-555555555555");
+        private static readonly DateTime s_sampleUtc = new(2026, 7, 22, 10, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTimeOffset s_sampleOffset = new(2026, 7, 22, 10, 0, 0, TimeSpan.Zero);
 
         // JsonCodec 只有泛型 Deserialize<T>(string, bool),反射掃型別時以 MakeGenericMethod 呼叫。
-        private static readonly MethodInfo JsonDeserializeGeneric = typeof(JsonCodec)
+        private static readonly MethodInfo s_jsonDeserializeGeneric = typeof(JsonCodec)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Single(m => m.Name == nameof(JsonCodec.Deserialize)
                 && m.IsGenericMethodDefinition
                 && m.GetParameters() is [{ ParameterType.FullName: "System.String" }, ..]);
 
         // 兩種 wire 序列化策略:合約異動須在兩者皆能保真傳遞。統一以 byte[] 為比對單位。
-        private static readonly IReadOnlyDictionary<string, SerializerStrategy> Strategies =
+        private static readonly IReadOnlyDictionary<string, SerializerStrategy> s_strategies =
             new Dictionary<string, SerializerStrategy>(StringComparer.Ordinal)
             {
                 ["msgpack"] = new SerializerStrategy(
@@ -44,7 +44,7 @@ namespace Bee.Api.Core.UnitTests.Contracts
                     (bytes, type) => MessagePackCodec.Deserialize(bytes, type)),
                 ["json"] = new SerializerStrategy(
                     (obj, _) => Encoding.UTF8.GetBytes(JsonCodec.Serialize(obj)),
-                    (bytes, type) => JsonDeserializeGeneric
+                    (bytes, type) => s_jsonDeserializeGeneric
                         .MakeGenericMethod(type)
                         .Invoke(null, [Encoding.UTF8.GetString(bytes), true])),
             };
@@ -59,7 +59,7 @@ namespace Bee.Api.Core.UnitTests.Contracts
 
             foreach (var type in contracts)
             {
-                foreach (var strategy in Strategies.Keys)
+                foreach (var strategy in s_strategies.Keys)
                 {
                     data.Add(strategy, type);
                 }
@@ -73,7 +73,7 @@ namespace Bee.Api.Core.UnitTests.Contracts
         [DisplayName("API 合約型別經 MessagePack/JSON 序列化應保真往返")]
         public void Contract_SerializesAndRoundTrips(string serializerName, Type type)
         {
-            var strategy = Strategies[serializerName];
+            var strategy = s_strategies[serializerName];
             var instance = Activator.CreateInstance(type)!;
             Populate(instance, depth: 0);
 
@@ -114,15 +114,15 @@ namespace Bee.Api.Core.UnitTests.Contracts
             var target = Nullable.GetUnderlyingType(type) ?? type;
 
             if (target == typeof(string)) { return "sample"; }
-            if (target == typeof(Guid)) { return SampleGuid; }
+            if (target == typeof(Guid)) { return s_sampleGuid; }
             if (target == typeof(bool)) { return true; }
             if (target == typeof(int)) { return 7; }
             if (target == typeof(long)) { return 7L; }
             if (target == typeof(short)) { return (short)7; }
             if (target == typeof(decimal)) { return 7.5m; }
             if (target == typeof(double)) { return 7.5d; }
-            if (target == typeof(DateTime)) { return SampleUtc; }
-            if (target == typeof(DateTimeOffset)) { return SampleOffset; }
+            if (target == typeof(DateTime)) { return s_sampleUtc; }
+            if (target == typeof(DateTimeOffset)) { return s_sampleOffset; }
             if (target == typeof(byte[])) { return new byte[] { 1, 2, 3, 4 }; }
 
             if (target.IsEnum)

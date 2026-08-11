@@ -17,7 +17,7 @@ namespace Bee.Api.Core.MessagePack
     /// </remarks>
     internal sealed class FilterConditionFormatter : IMessagePackFormatter<FilterCondition?>, IWireContract
     {
-        private static readonly FilterNodeFormatter Inner = new FilterNodeFormatter();
+        private static readonly FilterNodeFormatter s_inner = new FilterNodeFormatter();
 
         /// <inheritdoc />
         public Type WireType => typeof(FilterCondition);
@@ -34,13 +34,13 @@ namespace Bee.Api.Core.MessagePack
         /// Serializes the value.
         /// </summary>
         public void Serialize(ref MessagePackWriter writer, FilterCondition? value, MessagePackSerializerOptions options)
-            => Inner.Serialize(ref writer, value, options);
+            => s_inner.Serialize(ref writer, value, options);
 
         /// <summary>
         /// Deserializes the value.
         /// </summary>
         public FilterCondition? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
-            => (FilterCondition?)Inner.Deserialize(ref reader, options);
+            => (FilterCondition?)s_inner.Deserialize(ref reader, options);
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ namespace Bee.Api.Core.MessagePack
     /// </remarks>
     internal sealed class FilterGroupFormatter : IMessagePackFormatter<FilterGroup?>, IWireContract
     {
-        private static readonly FilterNodeFormatter Inner = new FilterNodeFormatter();
+        private static readonly FilterNodeFormatter s_inner = new FilterNodeFormatter();
 
         /// <inheritdoc />
         public Type WireType => typeof(FilterGroup);
@@ -69,12 +69,12 @@ namespace Bee.Api.Core.MessagePack
         /// Serializes the value.
         /// </summary>
         public void Serialize(ref MessagePackWriter writer, FilterGroup? value, MessagePackSerializerOptions options)
-            => Inner.Serialize(ref writer, value, options);
+            => s_inner.Serialize(ref writer, value, options);
 
         /// <summary>
         /// Deserializes the value.
         /// </summary>
         public FilterGroup? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
-            => (FilterGroup?)Inner.Deserialize(ref reader, options);
+            => (FilterGroup?)s_inner.Deserialize(ref reader, options);
     }
 }

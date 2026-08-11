@@ -9,8 +9,8 @@ namespace Bee.Api.Core.UnitTests
     /// </summary>
     public class SerializableDataSetTests
     {
-        private static readonly string[] ExpectedParentColumns = ["Id"];
-        private static readonly string[] ExpectedChildColumns = ["CustomerId"];
+        private static readonly string[] s_expectedParentColumns = ["Id"];
+        private static readonly string[] s_expectedChildColumns = ["CustomerId"];
 
         private static DataSet BuildMasterDetailDataSet()
         {
@@ -55,8 +55,8 @@ namespace Bee.Api.Core.UnitTests
             Assert.Equal("FK_Customer_Order", rel.RelationName);
             Assert.Equal("Customer", rel.ParentTable);
             Assert.Equal("Order", rel.ChildTable);
-            Assert.Equal(ExpectedParentColumns, rel.ParentColumns);
-            Assert.Equal(ExpectedChildColumns, rel.ChildColumns);
+            Assert.Equal(s_expectedParentColumns, rel.ParentColumns);
+            Assert.Equal(s_expectedChildColumns, rel.ChildColumns);
         }
 
         [Fact]

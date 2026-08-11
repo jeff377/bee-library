@@ -20,7 +20,7 @@ namespace Bee.Business.UnitTests
     /// <item><description>Decide whether the change is intentional. Renames /
     ///   removals / access tightening or loosening must all be reviewed at the
     ///   security level.</description></item>
-    /// <item><description>Update the <see cref="ExpectedSurface"/> baseline
+    /// <item><description>Update the <see cref="s_expectedSurface"/> baseline
     ///   below to match the new API surface.</description></item>
     /// <item><description>Update <c>docs/api-method-reference.md</c>
     ///   (and the zh-TW counterpart) so the human-facing reference does not
@@ -38,7 +38,7 @@ namespace Bee.Business.UnitTests
         /// <c>Bee.Business</c>, identified by <c>{DeclaringType.Name}.{MethodName}</c>.
         /// Sorted alphabetically for stable diffs.
         /// </summary>
-        private static readonly IReadOnlyList<ApiSurfaceEntry> ExpectedSurface = new[]
+        private static readonly IReadOnlyList<ApiSurfaceEntry> s_expectedSurface = new[]
         {
             // Base axis — defined on BusinessObject, inherited by every BO.
             new ApiSurfaceEntry("BusinessObject", "ExecFunc",          ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated),
@@ -106,7 +106,7 @@ namespace Bee.Business.UnitTests
         {
             var actual = ScanBusinessAssembly();
 
-            string expectedDump = FormatSurface(ExpectedSurface);
+            string expectedDump = FormatSurface(s_expectedSurface);
             string actualDump = FormatSurface(actual);
 
             // Equality on the formatted dumps gives a clear diff in the xUnit

@@ -16,7 +16,7 @@ namespace Bee.Api.Core.UnitTests
     public class DateTimeZoneConverterTests
     {
         private const string Taipei = "Asia/Taipei";
-        private static readonly DateTime Utc9Am = new DateTime(2026, 1, 1, 9, 0, 0, DateTimeKind.Unspecified);
+        private static readonly DateTime s_utc9Am = new DateTime(2026, 1, 1, 9, 0, 0, DateTimeKind.Unspecified);
 
         private static DateTime ExpectedInTaipei(DateTime utcValue)
             => DateTime.SpecifyKind(
@@ -37,7 +37,7 @@ namespace Bee.Api.Core.UnitTests
         private static DataTable BuildTableWithRow()
         {
             var table = BuildTable();
-            table.Rows.Add(Utc9Am, new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Unspecified), "a");
+            table.Rows.Add(s_utc9Am, new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Unspecified), "a");
             table.AcceptChanges();
             return table;
         }
@@ -49,7 +49,7 @@ namespace Bee.Api.Core.UnitTests
             var converted = DateTimeZoneConverter.UtcToUser(BuildTableWithRow(), Taipei);
 
             Assert.NotNull(converted);
-            Assert.Equal(ExpectedInTaipei(Utc9Am), (DateTime)converted.Rows[0]["created_at"]);
+            Assert.Equal(ExpectedInTaipei(s_utc9Am), (DateTime)converted.Rows[0]["created_at"]);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Bee.Api.Core.UnitTests
             var backToUtc = DateTimeZoneConverter.UserToUtc(toUser, Taipei);
 
             Assert.NotNull(backToUtc);
-            Assert.Equal(Utc9Am, (DateTime)backToUtc.Rows[0]["created_at"]);
+            Assert.Equal(s_utc9Am, (DateTime)backToUtc.Rows[0]["created_at"]);
         }
 
         [Fact]
@@ -92,7 +92,7 @@ namespace Bee.Api.Core.UnitTests
 
             DateTimeZoneConverter.UtcToUser(source, Taipei);
 
-            Assert.Equal(Utc9Am, (DateTime)source.Rows[0]["created_at"]);
+            Assert.Equal(s_utc9Am, (DateTime)source.Rows[0]["created_at"]);
         }
 
         [Fact]
@@ -111,7 +111,7 @@ namespace Bee.Api.Core.UnitTests
             var row = converted.Rows[0];
             Assert.Equal(DataRowState.Modified, row.RowState);
             Assert.Equal(ExpectedInTaipei(newUtc), (DateTime)row["created_at", DataRowVersion.Current]);
-            Assert.Equal(ExpectedInTaipei(Utc9Am), (DateTime)row["created_at", DataRowVersion.Original]);
+            Assert.Equal(ExpectedInTaipei(s_utc9Am), (DateTime)row["created_at", DataRowVersion.Original]);
         }
 
         [Fact]
@@ -119,14 +119,14 @@ namespace Bee.Api.Core.UnitTests
         public void Convert_AddedRow_KeepsState()
         {
             var table = BuildTable();
-            table.Rows.Add(Utc9Am, new DateTime(2026, 1, 1), "a");
+            table.Rows.Add(s_utc9Am, new DateTime(2026, 1, 1), "a");
             Assert.Equal(DataRowState.Added, table.Rows[0].RowState);
 
             var converted = DateTimeZoneConverter.UtcToUser(table, Taipei);
 
             Assert.NotNull(converted);
             Assert.Equal(DataRowState.Added, converted.Rows[0].RowState);
-            Assert.Equal(ExpectedInTaipei(Utc9Am), (DateTime)converted.Rows[0]["created_at"]);
+            Assert.Equal(ExpectedInTaipei(s_utc9Am), (DateTime)converted.Rows[0]["created_at"]);
         }
 
         [Fact]
@@ -141,7 +141,7 @@ namespace Bee.Api.Core.UnitTests
             Assert.NotNull(converted);
             var row = converted.Rows[0];
             Assert.Equal(DataRowState.Deleted, row.RowState);
-            Assert.Equal(ExpectedInTaipei(Utc9Am), (DateTime)row["created_at", DataRowVersion.Original]);
+            Assert.Equal(ExpectedInTaipei(s_utc9Am), (DateTime)row["created_at", DataRowVersion.Original]);
         }
 
         [Fact]
@@ -167,8 +167,8 @@ namespace Bee.Api.Core.UnitTests
             var converted = DateTimeZoneConverter.UtcToUser(dataSet, Taipei);
 
             Assert.NotNull(converted);
-            Assert.Equal(ExpectedInTaipei(Utc9Am), (DateTime)converted.Tables["orders"]!.Rows[0]["created_at"]);
-            Assert.Equal(ExpectedInTaipei(Utc9Am), (DateTime)converted.Tables["order_items"]!.Rows[0]["created_at"]);
+            Assert.Equal(ExpectedInTaipei(s_utc9Am), (DateTime)converted.Tables["orders"]!.Rows[0]["created_at"]);
+            Assert.Equal(ExpectedInTaipei(s_utc9Am), (DateTime)converted.Tables["order_items"]!.Rows[0]["created_at"]);
         }
 
         [Fact]
@@ -194,10 +194,10 @@ namespace Bee.Api.Core.UnitTests
         {
             var day = new DateOnly(2026, 1, 1);
 
-            var shifted = DateTimeZoneConverter.ConvertFilterValue(Utc9Am, Taipei, toUtc);
+            var shifted = DateTimeZoneConverter.ConvertFilterValue(s_utc9Am, Taipei, toUtc);
             var untouched = DateTimeZoneConverter.ConvertFilterValue(day, Taipei, toUtc);
 
-            Assert.NotEqual(Utc9Am, shifted);
+            Assert.NotEqual(s_utc9Am, shifted);
             Assert.Equal(day, untouched);
         }
 
@@ -220,8 +220,8 @@ namespace Bee.Api.Core.UnitTests
 
             Assert.NotNull(converted);
             Assert.NotNull(back);
-            Assert.Equal(Utc9Am.Ticks, ((DateTime)converted.Rows[0]["created_at"]).Ticks);
-            Assert.Equal(Utc9Am.Ticks, ((DateTime)back.Rows[0]["created_at"]).Ticks);
+            Assert.Equal(s_utc9Am.Ticks, ((DateTime)converted.Rows[0]["created_at"]).Ticks);
+            Assert.Equal(s_utc9Am.Ticks, ((DateTime)back.Rows[0]["created_at"]).Ticks);
         }
 
         [Fact]

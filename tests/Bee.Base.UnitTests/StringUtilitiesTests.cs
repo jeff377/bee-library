@@ -25,13 +25,26 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("IsEmpty(object) 應處理 null/DBNull/字串")]
-        public void IsEmpty_Object_HandlesNullAndDbNull()
+        [DisplayName("IsEmptyText(object) 應處理 null/DBNull/字串")]
+        public void IsEmptyText_Object_HandlesNullAndDbNull()
         {
-            Assert.True(StringUtilities.IsEmpty((object?)null));
-            Assert.True(StringUtilities.IsEmpty(DBNull.Value));
-            Assert.True(StringUtilities.IsEmpty((object)"  "));
-            Assert.False(StringUtilities.IsEmpty((object)"x"));
+            Assert.True(StringUtilities.IsEmptyText((object?)null));
+            Assert.True(StringUtilities.IsEmptyText(DBNull.Value));
+            Assert.True(StringUtilities.IsEmptyText((object)"  "));
+            Assert.False(StringUtilities.IsEmptyText((object)"x"));
+        }
+
+        [Fact]
+        [DisplayName("IsEmptyText 與 ValueUtilities.IsEmpty 對 Guid.Empty / DateTime.MinValue 結論相反")]
+        public void IsEmptyText_DivergesFromValueUtilities_OnGuidAndDateTime()
+        {
+            // 這正是兩者同名時最容易誤用的一格：改名為 IsEmptyText 之後，呼叫端從名字就
+            // 看得出自己問的是「文字形式是不是空的」，而不是「這個值是不是空值」。
+            Assert.False(StringUtilities.IsEmptyText(Guid.Empty));
+            Assert.True(ValueUtilities.IsEmpty(Guid.Empty));
+
+            Assert.False(StringUtilities.IsEmptyText(DateTime.MinValue));
+            Assert.True(ValueUtilities.IsEmpty(DateTime.MinValue));
         }
 
         [Fact]
@@ -41,8 +54,8 @@ namespace Bee.Base.UnitTests
             Assert.False(StringUtilities.IsNotEmpty((string?)null));
             Assert.False(StringUtilities.IsNotEmpty(""));
             Assert.True(StringUtilities.IsNotEmpty("x"));
-            Assert.True(StringUtilities.IsNotEmpty((object)"x"));
-            Assert.False(StringUtilities.IsNotEmpty((object?)null));
+            Assert.True(StringUtilities.IsNotEmptyText((object)"x"));
+            Assert.False(StringUtilities.IsNotEmptyText((object?)null));
         }
 
         // ---- Format ----

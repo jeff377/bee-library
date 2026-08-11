@@ -1,4 +1,4 @@
-﻿using Bee.Definition.Collections;
+using Bee.Definition.Collections;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using System.Text.Json.Serialization;
@@ -14,7 +14,7 @@ namespace Bee.Definition.Settings
     [TreeNode("System Settings")]
     public class SystemSettings : IObjectSerializeFile
     {
-        private PropertyCollection? _ExtendedProperties = null;
+        private PropertyCollection? _extendedProperties = null;
 
         #region Constructor
 
@@ -115,9 +115,9 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _ExtendedProperties!)) { return null; }
-                if (_ExtendedProperties == null) { _ExtendedProperties = []; }
-                return _ExtendedProperties;
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _extendedProperties!)) { return null; }
+                if (_extendedProperties == null) { _extendedProperties = []; }
+                return _extendedProperties;
             }
         }
 

@@ -137,7 +137,7 @@ namespace Bee.Db.Dml
         /// <summary>
         /// A set of reserved SQL keywords used to avoid alias collisions.
         /// </summary>
-        private static readonly HashSet<string> SqlKeywords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> s_sqlKeywords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "AS", "BY", "IF", "IN", "IS", "OF", "OR", "TO", "ON",
             "GO", "NO", "DO", "AT", "IT"
@@ -153,7 +153,7 @@ namespace Bee.Db.Dml
             string baseValues = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             string nextAlias = StringUtilities.GetNextId(tableAlias, baseValues);
             // If the generated alias is a reserved SQL keyword, advance to the next one
-            while (SqlKeywords.Contains(nextAlias))
+            while (s_sqlKeywords.Contains(nextAlias))
             {
                 nextAlias = StringUtilities.GetNextId(nextAlias, baseValues);
             }

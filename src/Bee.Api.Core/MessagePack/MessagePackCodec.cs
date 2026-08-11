@@ -21,8 +21,8 @@ namespace Bee.Api.Core.MessagePack
         /// build, and there an unregistered type raises `FormatterNotRegisteredException` instead
         /// of falling back to anything. See <see cref="WireContracts"/>.
         /// <para>
-        /// NOTE: Declared before <c>Options</c> on purpose — static field initialisers run in
-        /// declaration order, and <c>Options</c> reads this one.
+        /// NOTE: Declared before <c>s_options</c> on purpose — static field initialisers run in
+        /// declaration order, and <c>s_options</c> reads this one.
         /// </para>
         /// </remarks>
         internal static IReadOnlyList<IMessagePackFormatter> RegisteredFormatters { get; } = BuildFormatters();
@@ -32,7 +32,7 @@ namespace Bee.Api.Core.MessagePack
         /// SafeMessagePackSerializerOptions overrides ThrowIfDeserializingTypeIsDisallowed
         /// to block disallowed types before object instantiation.
         /// </summary>
-        private static readonly MessagePackSerializerOptions Options = new SafeMessagePackSerializerOptions(
+        private static readonly MessagePackSerializerOptions s_options = new SafeMessagePackSerializerOptions(
             CompositeResolver.Create(
                 RegisteredFormatters,
                 // The contractless resolver stays last as a desktop-only convenience for types the
@@ -83,7 +83,7 @@ namespace Bee.Api.Core.MessagePack
         /// <returns>The serialized byte array.</returns>
         public static byte[] Serialize<T>(T value)
         {
-            return MessagePackSerializer.Serialize(value, Options);
+            return MessagePackSerializer.Serialize(value, s_options);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Bee.Api.Core.MessagePack
         /// <returns>The serialized byte array.</returns>
         public static byte[] Serialize(object value, Type type)
         {
-            return MessagePackSerializer.Serialize(type, value, Options);
+            return MessagePackSerializer.Serialize(type, value, s_options);
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Bee.Api.Core.MessagePack
         /// <returns>The deserialized object.</returns>
         public static T Deserialize<T>(byte[] data)
         {
-            return MessagePackSerializer.Deserialize<T>(data, Options);
+            return MessagePackSerializer.Deserialize<T>(data, s_options);
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Bee.Api.Core.MessagePack
         /// <returns>The deserialized object.</returns>
         public static object? Deserialize(byte[] data, Type type)
         {
-            return MessagePackSerializer.Deserialize(type, data, Options);
+            return MessagePackSerializer.Deserialize(type, data, s_options);
         }
     }
 

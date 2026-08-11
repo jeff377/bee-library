@@ -23,7 +23,7 @@ namespace Bee.Db.UnitTests
         public DateTimeUtcStorageRoundTripTests(SharedDbFixture fx) { _fx = fx; }
 
         /// <summary>UTC 的 23:30；台北為隔日 07:30、紐約為同日 18:30——任一換算都會跨日或跨時。</summary>
-        private static readonly DateTime UtcValue =
+        private static readonly DateTime s_utcValue =
             new DateTime(2026, 3, 15, 23, 30, 45, DateTimeKind.Unspecified);
 
         private const string TableName = "dt_utc_storage_test";
@@ -34,7 +34,7 @@ namespace Bee.Db.UnitTests
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, dropSql));
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, createSql));
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
-                $"INSERT INTO {TableName} (dt) VALUES ({{0}})", UtcValue));
+                $"INSERT INTO {TableName} (dt) VALUES ({{0}})", s_utcValue));
             var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable,
                 $"SELECT dt FROM {TableName}"));
             return result.Table!.Rows[0].GetFieldValue<DateTime>("dt");
@@ -46,7 +46,7 @@ namespace Bee.Db.UnitTests
             {
                 var readBack = WriteThenRead(databaseId, createSql, dropSql);
 
-                Assert.Equal(UtcValue.Ticks, readBack.Ticks);
+                Assert.Equal(s_utcValue.Ticks, readBack.Ticks);
             }
             finally
             {

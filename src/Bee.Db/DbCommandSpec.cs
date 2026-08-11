@@ -16,7 +16,7 @@ namespace Bee.Db
     {
         private const int DefaultTimeout = 30;  // Default timeout in seconds
         // Pre-compiled placeholder regex: {key}; supports {{key}} as an escape (outputs {key})
-        private static readonly Regex PlaceholderRegex =
+        private static readonly Regex s_placeholderRegex =
             new Regex(@"\{(?<key>[^\}]+)\}|\{\{(?<escaped>[^\}]+)\}\}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
         /// <summary>
@@ -252,7 +252,7 @@ namespace Bee.Db
 
             string commandText = ExpandParametersVariable(CommandText);
 
-            return PlaceholderRegex.Replace(commandText, match =>
+            return s_placeholderRegex.Replace(commandText, match =>
             {
                 var escaped = match.Groups["escaped"];
                 if (escaped.Success)

@@ -12,7 +12,7 @@ namespace Bee.Business.System
     /// </summary>
     public partial class SystemBusinessObject : BusinessObject, ISystemBusinessObject
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemBusinessObject"/> class.

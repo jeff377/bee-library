@@ -22,8 +22,8 @@ namespace Bee.Api.Core.UnitTests
         private static TimeZoneInfo Zone => TimeZoneInfo.FindSystemTimeZoneById(NewYork);
 
         // 2026 美國 DST：3/8 02:00 前進（02:00–02:59 不存在）、11/1 02:00 後退（01:00–01:59 出現兩次）。
-        private static readonly DateTime SpringForwardGap = new(2026, 3, 8, 2, 30, 0, DateTimeKind.Unspecified);
-        private static readonly DateTime FallBackAmbiguous = new(2026, 11, 1, 1, 30, 0, DateTimeKind.Unspecified);
+        private static readonly DateTime s_springForwardGap = new(2026, 3, 8, 2, 30, 0, DateTimeKind.Unspecified);
+        private static readonly DateTime s_fallBackAmbiguous = new(2026, 11, 1, 1, 30, 0, DateTimeKind.Unspecified);
 
         private static DataTable BuildTableWithInstant(DateTime value)
         {
@@ -38,24 +38,24 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("前提：2026-03-08 02:30 在 America/New_York 確實是不存在的時刻")]
         public void Precondition_SpringForwardGapIsInvalid()
         {
-            Assert.True(Zone.IsInvalidTime(SpringForwardGap));
+            Assert.True(Zone.IsInvalidTime(s_springForwardGap));
         }
 
         [Fact]
         [DisplayName("前提：2026-11-01 01:30 在 America/New_York 確實是重複出現的時刻")]
         public void Precondition_FallBackIsAmbiguous()
         {
-            Assert.True(Zone.IsAmbiguousTime(FallBackAmbiguous));
+            Assert.True(Zone.IsAmbiguousTime(s_fallBackAmbiguous));
         }
 
         [Fact]
         [DisplayName("UserToUtc 對 fall-back 重疊時刻應解析為標準時間，不擲例外")]
         public void UserToUtc_AmbiguousLocalTime_ResolvesToStandardOffset()
         {
-            var converted = DateTimeZoneConverter.UserToUtc(BuildTableWithInstant(FallBackAmbiguous), NewYork);
+            var converted = DateTimeZoneConverter.UserToUtc(BuildTableWithInstant(s_fallBackAmbiguous), NewYork);
 
             Assert.NotNull(converted);
-            var expected = TimeZoneInfo.ConvertTimeToUtc(FallBackAmbiguous, Zone);
+            var expected = TimeZoneInfo.ConvertTimeToUtc(s_fallBackAmbiguous, Zone);
             Assert.Equal(DateTime.SpecifyKind(expected, DateTimeKind.Unspecified),
                 (DateTime)converted.Rows[0]["occurred_at"]);
         }
@@ -87,15 +87,15 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("UserToUtc 對 spring-forward 缺口內的時刻應前推一個 DST 差，不擲例外")]
         public void UserToUtc_InvalidLocalTime_SkipsGapForward()
         {
-            var converted = DateTimeZoneConverter.UserToUtc(BuildTableWithInstant(SpringForwardGap), NewYork);
+            var converted = DateTimeZoneConverter.UserToUtc(BuildTableWithInstant(s_springForwardGap), NewYork);
 
             Assert.NotNull(converted);
 
             // 02:30 不存在 → 前推該次轉換的 delta（此區為 1 小時）後的 03:30 才是真實時刻。
-            var gap = Zone.GetUtcOffset(SpringForwardGap.Date.AddDays(1))
-                      - Zone.GetUtcOffset(SpringForwardGap.Date.AddDays(-1));
+            var gap = Zone.GetUtcOffset(s_springForwardGap.Date.AddDays(1))
+                      - Zone.GetUtcOffset(s_springForwardGap.Date.AddDays(-1));
             var expected = DateTime.SpecifyKind(
-                TimeZoneInfo.ConvertTimeToUtc(SpringForwardGap.Add(gap), Zone), DateTimeKind.Unspecified);
+                TimeZoneInfo.ConvertTimeToUtc(s_springForwardGap.Add(gap), Zone), DateTimeKind.Unspecified);
 
             Assert.Equal(expected, (DateTime)converted.Rows[0]["occurred_at"]);
         }
@@ -104,7 +104,7 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("前推後的時刻轉回使用者時區應落在缺口之後，且是存在的時刻")]
         public void UserToUtc_InvalidLocalTime_ResultRoundTripsToARealTime()
         {
-            var converted = DateTimeZoneConverter.UserToUtc(BuildTableWithInstant(SpringForwardGap), NewYork);
+            var converted = DateTimeZoneConverter.UserToUtc(BuildTableWithInstant(s_springForwardGap), NewYork);
             Assert.NotNull(converted);
 
             var utc = (DateTime)converted.Rows[0]["occurred_at"];
@@ -112,7 +112,7 @@ namespace Bee.Api.Core.UnitTests
                 DateTime.SpecifyKind(utc, DateTimeKind.Unspecified), Zone);
 
             Assert.False(Zone.IsInvalidTime(backInZone));
-            Assert.True(backInZone > SpringForwardGap);
+            Assert.True(backInZone > s_springForwardGap);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Bee.Definition.UnitTests.Filters
     public class FilterNodeCollectionJsonConverterTests
     {
         // 實務上 ApiPayload 外層以 camelCase 命名策略序列化，讓 converter Read 路徑能對上 "kind" 小寫屬性
-        private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions s_options = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters = { new FilterNodeCollectionJsonConverter() }
@@ -22,7 +22,7 @@ namespace Bee.Definition.UnitTests.Filters
         public void Write_NullCollection_WritesNull()
         {
             FilterNodeCollection? collection = null;
-            var json = JsonSerializer.Serialize(collection, Options);
+            var json = JsonSerializer.Serialize(collection, s_options);
             Assert.Equal("null", json);
         }
 
@@ -31,7 +31,7 @@ namespace Bee.Definition.UnitTests.Filters
         public void Write_EmptyCollection_WritesEmptyArray()
         {
             var collection = new FilterNodeCollection();
-            var json = JsonSerializer.Serialize(collection, Options);
+            var json = JsonSerializer.Serialize(collection, s_options);
             Assert.Equal("[]", json);
         }
 
@@ -44,8 +44,8 @@ namespace Bee.Definition.UnitTests.Filters
                 new FilterCondition("Name", ComparisonOperator.Equal, "Alice")
             };
 
-            var json = JsonSerializer.Serialize(collection, Options);
-            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, Options);
+            var json = JsonSerializer.Serialize(collection, s_options);
+            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, s_options);
 
             Assert.NotNull(restored);
             Assert.Single(restored!);
@@ -66,8 +66,8 @@ namespace Bee.Definition.UnitTests.Filters
                 group
             };
 
-            var json = JsonSerializer.Serialize(collection, Options);
-            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, Options);
+            var json = JsonSerializer.Serialize(collection, s_options);
+            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, s_options);
 
             Assert.NotNull(restored);
             Assert.Single(restored!);
@@ -80,7 +80,7 @@ namespace Bee.Definition.UnitTests.Filters
         [DisplayName("Read null token 應回傳 null")]
         public void Read_NullToken_ReturnsNull()
         {
-            var result = JsonSerializer.Deserialize<FilterNodeCollection>("null", Options);
+            var result = JsonSerializer.Deserialize<FilterNodeCollection>("null", s_options);
             Assert.Null(result);
         }
 
@@ -89,7 +89,7 @@ namespace Bee.Definition.UnitTests.Filters
         public void Read_NonStartArray_ThrowsJsonException()
         {
             Assert.Throws<JsonException>(() =>
-                JsonSerializer.Deserialize<FilterNodeCollection>("123", Options));
+                JsonSerializer.Deserialize<FilterNodeCollection>("123", s_options));
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace Bee.Definition.UnitTests.Filters
         public void Read_StringKindCondition_ParsesAsFilterCondition()
         {
             var json = """[{"kind":"Condition","fieldName":"X","operator":0,"value":"a"}]""";
-            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, Options);
+            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, s_options);
 
             Assert.NotNull(restored);
             Assert.Single(restored!);
@@ -109,7 +109,7 @@ namespace Bee.Definition.UnitTests.Filters
         public void Read_StringKindGroup_ParsesAsFilterGroup()
         {
             var json = """[{"kind":"Group","operator":0,"nodes":[]}]""";
-            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, Options);
+            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, s_options);
 
             Assert.NotNull(restored);
             Assert.Single(restored!);
@@ -121,7 +121,7 @@ namespace Bee.Definition.UnitTests.Filters
         public void Read_IntKindCondition_ParsesAsFilterCondition()
         {
             var json = """[{"kind":0,"fieldName":"X","operator":0,"value":"a"}]""";
-            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, Options);
+            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, s_options);
 
             Assert.NotNull(restored);
             Assert.IsType<FilterCondition>(restored![0]);
@@ -132,7 +132,7 @@ namespace Bee.Definition.UnitTests.Filters
         public void Read_IntKindGroup_ParsesAsFilterGroup()
         {
             var json = """[{"kind":1,"operator":0,"nodes":[]}]""";
-            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, Options);
+            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, s_options);
 
             Assert.NotNull(restored);
             Assert.IsType<FilterGroup>(restored![0]);
@@ -143,7 +143,7 @@ namespace Bee.Definition.UnitTests.Filters
         public void Read_ElementWithoutKind_DefaultsToFilterCondition()
         {
             var json = """[{"fieldName":"X","operator":0,"value":"a"}]""";
-            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, Options);
+            var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, s_options);
 
             Assert.NotNull(restored);
             Assert.Single(restored!);
@@ -156,7 +156,7 @@ namespace Bee.Definition.UnitTests.Filters
         {
             var json = """[{"kind":99}]""";
             Assert.Throws<JsonException>(() =>
-                JsonSerializer.Deserialize<FilterNodeCollection>(json, Options));
+                JsonSerializer.Deserialize<FilterNodeCollection>(json, s_options));
         }
 
         [Fact]

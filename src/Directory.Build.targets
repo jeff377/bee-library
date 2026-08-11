@@ -1,11 +1,12 @@
 <Project>
 
   <!--
-    Dependency boundary for the two lowest-level assemblies (ADR-038).
+    Dependency boundary for the assemblies every consumer inherits (ADR-038).
 
     Bee.Base is a dependency of every project in the framework and Bee.Definition has six direct
     dependents, so anything added here is inherited by every consumer of the framework — including
-    consumers that only want to read definitions. This target locks both projects to an explicit
+    consumers that only want to read definitions. Bee.Api.Contracts is locked for the same reason:
+    it sits in the transitive closure of every UI head. This target locks each of them to an explicit
     allowlist: adding a reference fails the build rather than silently widening the public
     dependency surface. Widening it is allowed, but it has to be a decision someone made on
     purpose — edit the allowlist below and record the reasoning in ADR-038.
@@ -23,7 +24,7 @@
   -->
 
   <PropertyGroup>
-    <BeeEnforceDependencyBoundary Condition="'$(MSBuildProjectName)' == 'Bee.Base' Or '$(MSBuildProjectName)' == 'Bee.Definition'">true</BeeEnforceDependencyBoundary>
+    <BeeEnforceDependencyBoundary Condition="'$(MSBuildProjectName)' == 'Bee.Base' Or '$(MSBuildProjectName)' == 'Bee.Definition' Or '$(MSBuildProjectName)' == 'Bee.Api.Contracts'">true</BeeEnforceDependencyBoundary>
   </PropertyGroup>
 
   <!-- Bee.Base: no consumer-facing dependency of any kind. The allowlist is deliberately empty. -->
@@ -32,6 +33,19 @@
     <!-- Microsoft first-party, abstraction-only, versioned with .NET itself: it makes no technology
          choice on the consumer's behalf. Used by Language/BeeStringLocalizer.cs. -->
     <BeeAllowedDependency Include="Microsoft.Extensions.Localization.Abstractions" />
+    <BeeAllowedDependency Include="Bee.Base" />
+  </ItemGroup>
+
+  <!--
+    Bee.Api.Contracts sits in the transitive closure of every UI head, so ADR-038's argument
+    ("anything added here is inherited by every consumer") applies to it almost verbatim. It has
+    no external package today; the lock is what keeps it that way.
+  -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Bee.Api.Contracts'">
+    <BeeAllowedDependency Include="Bee.Definition" />
+    <!-- Arrives transitively through Bee.Definition. The SDK folds transitive project references
+         into @(ProjectReference) before Build, so the allowlist has to name the whole
+         project-reference closure, not just what the csproj writes down. -->
     <BeeAllowedDependency Include="Bee.Base" />
   </ItemGroup>
 
@@ -52,7 +66,7 @@
 
     <Error Condition="'@(_BeeBoundaryViolation)' != ''"
            Code="BEE9001"
-           Text="$(MSBuildProjectName) is one of the two lowest-level assemblies and is locked to an explicit dependency allowlist (ADR-038). Unexpected consumer-facing reference(s): @(_BeeBoundaryViolation, ', '). Anything added here is inherited by every consumer of the framework. Prefer keeping the abstraction here and the implementation in a separate assembly that only a composition root references. If the dependency really belongs here, add it to BeeAllowedDependency in src/Directory.Build.targets, add it to the whitelist in tests/Bee.Definition.UnitTests/DefinitionDependencyGateTests.cs, and record why in docs/adr/adr-038-definition-dependency-boundary.md." />
+           Text="$(MSBuildProjectName) is inherited by every consumer of the framework and is locked to an explicit dependency allowlist (ADR-038). Unexpected consumer-facing reference(s): @(_BeeBoundaryViolation, ', '). Anything added here is inherited by every consumer of the framework. Prefer keeping the abstraction here and the implementation in a separate assembly that only a composition root references. If the dependency really belongs here, add it to BeeAllowedDependency in src/Directory.Build.targets, add it to the whitelist in tests/Bee.Definition.UnitTests/DefinitionDependencyGateTests.cs, and record why in docs/adr/adr-038-definition-dependency-boundary.md." />
   </Target>
 
 </Project>

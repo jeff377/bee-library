@@ -5,7 +5,7 @@ namespace Bee.Definition
     /// </summary>
     public static class DefineTypeExtensions
     {
-        private static readonly Dictionary<DefineType, string> DefineTypeNames = new()
+        private static readonly Dictionary<DefineType, string> s_defineTypeNames = new()
         {
             { DefineType.SystemSettings,   "Bee.Definition.Settings.SystemSettings" },
             { DefineType.DatabaseSettings, "Bee.Definition.Settings.DatabaseSettings" },
@@ -28,7 +28,7 @@ namespace Bee.Definition
         /// <exception cref="NotSupportedException">Thrown when the define type is not registered.</exception>
         public static Type ToClrType(this DefineType defineType)
         {
-            if (!DefineTypeNames.TryGetValue(defineType, out string? typeName))
+            if (!s_defineTypeNames.TryGetValue(defineType, out string? typeName))
                 throw new NotSupportedException($"Type not found: {defineType}");
             var assembly = typeof(DefineTypeExtensions).Assembly;
             var type = assembly.GetType(typeName);

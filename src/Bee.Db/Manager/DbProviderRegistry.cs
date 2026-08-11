@@ -21,8 +21,8 @@ namespace Bee.Db.Manager
     /// </remarks>
     public static class DbProviderRegistry
     {
-        private static readonly ConcurrentDictionary<DatabaseType, DbProviderFactory> _factories = new();
-        private static readonly ConcurrentDictionary<DatabaseType, Action<DbConnection>> _initializers = new();
+        private static readonly ConcurrentDictionary<DatabaseType, DbProviderFactory> s_factories = new();
+        private static readonly ConcurrentDictionary<DatabaseType, Action<DbConnection>> s_initializers = new();
 
         /// <summary>
         /// Registers an ADO.NET provider factory for the specified database type.
@@ -53,11 +53,11 @@ namespace Bee.Db.Manager
             if (factory == null)
                 throw new ArgumentNullException(nameof(factory), "DbProviderFactory cannot be null.");
 
-            _factories[type] = factory;
+            s_factories[type] = factory;
             if (connectionInitializer != null)
-                _initializers[type] = connectionInitializer;
+                s_initializers[type] = connectionInitializer;
             else
-                _initializers.TryRemove(type, out _);
+                s_initializers.TryRemove(type, out _);
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Bee.Db.Manager
         /// <exception cref="KeyNotFoundException">Thrown when no factory is registered for <paramref name="type"/>.</exception>
         public static DbProviderFactory Get(DatabaseType type)
         {
-            if (_factories.TryGetValue(type, out var factory))
+            if (s_factories.TryGetValue(type, out var factory))
                 return factory;
             throw new KeyNotFoundException($"Database provider not registered: {type}");
         }
@@ -79,12 +79,12 @@ namespace Bee.Db.Manager
         /// </summary>
         /// <param name="type">The database type.</param>
         public static Action<DbConnection>? GetConnectionInitializer(DatabaseType type)
-            => _initializers.TryGetValue(type, out var initializer) ? initializer : null;
+            => s_initializers.TryGetValue(type, out var initializer) ? initializer : null;
 
         /// <summary>
         /// Determines whether a provider factory is registered for the specified database type.
         /// </summary>
         /// <param name="type">The database type.</param>
-        public static bool IsRegistered(DatabaseType type) => _factories.ContainsKey(type);
+        public static bool IsRegistered(DatabaseType type) => s_factories.ContainsKey(type);
     }
 }

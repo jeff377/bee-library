@@ -11,7 +11,7 @@ namespace Bee.Api.Core.JsonRpc
     [JsonConverter(typeof(ApiPayloadJsonConverterFactory))]
     public abstract class ApiPayload : IObjectSerialize
     {
-        #region IObjectSerialize 介面
+        #region IObjectSerialize
 
         /// <summary>
         /// Gets the serialization state.

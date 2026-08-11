@@ -24,10 +24,10 @@ namespace Bee.Api.Core.UnitTests
     /// </remarks>
     public class DateTimeSerializationOffsetTests
     {
-        private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
+        private static readonly CultureInfo s_inv = CultureInfo.InvariantCulture;
 
         /// <summary>The wall-clock value every case starts from.</summary>
-        private static readonly DateTime Sample = new DateTime(2026, 1, 1, 9, 0, 0, DateTimeKind.Unspecified);
+        private static readonly DateTime s_sample = new DateTime(2026, 1, 1, 9, 0, 0, DateTimeKind.Unspecified);
 
         /// <summary>
         /// A DataSet XML document whose single DateTime column carries an explicit
@@ -54,7 +54,7 @@ namespace Bee.Api.Core.UnitTests
         {
             using var dataSet = new DataSet("s");
             dataSet.Tables.Add(table);
-            using var writer = new StringWriter(Inv);
+            using var writer = new StringWriter(s_inv);
             dataSet.WriteXml(writer, XmlWriteMode.WriteSchema);
             return writer.ToString();
         }
@@ -69,7 +69,7 @@ namespace Bee.Api.Core.UnitTests
         private static DateTime ReadXmlValue(string mode, string wireValue)
         {
             using var dataSet = new DataSet();
-            dataSet.ReadXml(new StringReader(string.Format(Inv, XmlTemplate, mode, wireValue)), XmlReadMode.ReadSchema);
+            dataSet.ReadXml(new StringReader(string.Format(s_inv, XmlTemplate, mode, wireValue)), XmlReadMode.ReadSchema);
             return (DateTime)dataSet.Tables[0].Rows[0]["d"];
         }
 
@@ -82,13 +82,13 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("DataColumn 於 DateTimeMode=Unspecified 下將任何 Kind 正規化為 Unspecified 且不改數值")]
         public void DataColumn_UnspecifiedMode_NormalizesAnyKindWithoutShifting(DateTimeKind kind)
         {
-            var table = BuildTable(DataSetDateTime.Unspecified, DateTime.SpecifyKind(Sample, kind));
+            var table = BuildTable(DataSetDateTime.Unspecified, DateTime.SpecifyKind(s_sample, kind));
 
             var stored = (DateTime)table.Rows[0]["d"];
 
             Assert.Equal(DateTimeKind.Unspecified, stored.Kind);
-            Assert.Equal(Sample.TimeOfDay, stored.TimeOfDay);
-            Assert.Equal(Sample.Date, stored.Date);
+            Assert.Equal(s_sample.TimeOfDay, stored.TimeOfDay);
+            Assert.Equal(s_sample.Date, stored.Date);
         }
 
         [Fact]
@@ -113,7 +113,7 @@ namespace Bee.Api.Core.UnitTests
         {
             var table = new DataTable("orders");
             table.AddColumn("created_at", FieldDbType.DateTime);
-            table.Rows.Add(Sample);
+            table.Rows.Add(s_sample);
 
             var restored = MessagePackCodec.Deserialize<DataTable>(MessagePackCodec.Serialize(table));
 
@@ -127,7 +127,7 @@ namespace Bee.Api.Core.UnitTests
         {
             var table = new DataTable("orders");
             table.AddColumn("created_at", FieldDbType.DateTime);
-            table.Rows.Add(Sample);
+            table.Rows.Add(s_sample);
 
             var restored = JsonCodec.Deserialize<DataTable>(JsonCodec.Serialize(table));
 
@@ -142,13 +142,13 @@ namespace Bee.Api.Core.UnitTests
             // A table shaped the way DbDataAdapter.Fill / DataTable.Load leave it.
             var table = new DataTable("t");
             table.Columns.Add(new DataColumn("d", typeof(DateTime)));
-            table.Rows.Add(Sample);
+            table.Rows.Add(s_sample);
             Assert.Equal(DataSetDateTime.UnspecifiedLocal, table.Columns["d"]!.DateTimeMode);
 
             table.NormalizeDateTimeMode();
 
             Assert.Equal(DataSetDateTime.Unspecified, table.Columns["d"]!.DateTimeMode);
-            Assert.Equal(Sample, (DateTime)table.Rows[0]["d"]);
+            Assert.Equal(s_sample, (DateTime)table.Rows[0]["d"]);
             Assert.Equal("2026-01-01T09:00:00", ExtractXmlValue(WriteXml(table)));
         }
 
@@ -160,13 +160,13 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("MessagePack round-trip 不改動 DataTable 儲存格的時間數值")]
         public void MessagePack_DataTableRoundTrip_PreservesWallClock(DateTimeKind kind)
         {
-            var table = BuildTable(DataSetDateTime.Unspecified, DateTime.SpecifyKind(Sample, kind));
+            var table = BuildTable(DataSetDateTime.Unspecified, DateTime.SpecifyKind(s_sample, kind));
 
             var restored = MessagePackCodec.Deserialize<DataTable>(MessagePackCodec.Serialize(table));
 
             Assert.NotNull(restored);
             var value = (DateTime)restored.Rows[0]["d"];
-            Assert.Equal(Sample, value);
+            Assert.Equal(s_sample, value);
             Assert.Equal(DateTimeKind.Unspecified, value.Kind);
         }
 
@@ -177,13 +177,13 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("JSON round-trip 不改動 DataTable 儲存格的時間數值")]
         public void Json_DataTableRoundTrip_PreservesWallClock(DateTimeKind kind)
         {
-            var table = BuildTable(DataSetDateTime.Unspecified, DateTime.SpecifyKind(Sample, kind));
+            var table = BuildTable(DataSetDateTime.Unspecified, DateTime.SpecifyKind(s_sample, kind));
 
             var restored = JsonCodec.Deserialize<DataTable>(JsonCodec.Serialize(table));
 
             Assert.NotNull(restored);
             var value = (DateTime)restored.Rows[0]["d"];
-            Assert.Equal(Sample, value);
+            Assert.Equal(s_sample, value);
             Assert.Equal(DateTimeKind.Unspecified, value.Kind);
         }
 
@@ -194,13 +194,13 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("XML round-trip 於 DateTimeMode=Unspecified 下不改動時間數值")]
         public void Xml_DataTableRoundTrip_PreservesWallClock(DateTimeKind kind)
         {
-            var xml = WriteXml(BuildTable(DataSetDateTime.Unspecified, DateTime.SpecifyKind(Sample, kind)));
+            var xml = WriteXml(BuildTable(DataSetDateTime.Unspecified, DateTime.SpecifyKind(s_sample, kind)));
 
             using var restored = new DataSet();
             restored.ReadXml(new StringReader(xml), XmlReadMode.ReadSchema);
 
             var value = (DateTime)restored.Tables[0].Rows[0]["d"];
-            Assert.Equal(Sample, value);
+            Assert.Equal(s_sample, value);
             Assert.Equal(DateTimeKind.Unspecified, value.Kind);
         }
 
@@ -211,7 +211,7 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("MessagePack 與 JSON 兩條 wire 對同一儲存格得出相同結果")]
         public void MessagePackAndJson_AgreeOnCellValue(DateTimeKind kind)
         {
-            var value = DateTime.SpecifyKind(Sample, kind);
+            var value = DateTime.SpecifyKind(s_sample, kind);
 
             var viaMessagePack = MessagePackCodec.Deserialize<DataTable>(
                 MessagePackCodec.Serialize(BuildTable(DataSetDateTime.Unspecified, value)));
@@ -231,7 +231,7 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("XML 於 DateTimeMode=Unspecified 下寫出的值不得帶時區偏移")]
         public void Xml_UnspecifiedMode_WritesNoOffset()
         {
-            var wire = ExtractXmlValue(WriteXml(BuildTable(DataSetDateTime.Unspecified, Sample)));
+            var wire = ExtractXmlValue(WriteXml(BuildTable(DataSetDateTime.Unspecified, s_sample)));
 
             Assert.Equal("2026-01-01T09:00:00", wire);
         }
@@ -240,10 +240,10 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("XML 於 .NET 預設的 UnspecifiedLocal 下會寫出時區偏移（此為必須改設 Unspecified 的理由）")]
         public void Xml_UnspecifiedLocalMode_WritesOffset()
         {
-            var wire = ExtractXmlValue(WriteXml(BuildTable(DataSetDateTime.UnspecifiedLocal, Sample)));
+            var wire = ExtractXmlValue(WriteXml(BuildTable(DataSetDateTime.UnspecifiedLocal, s_sample)));
 
-            var expectedOffset = TimeZoneInfo.Local.GetUtcOffset(Sample);
-            var expected = new DateTimeOffset(Sample, expectedOffset).ToString("yyyy-MM-ddTHH:mm:sszzz", Inv);
+            var expectedOffset = TimeZoneInfo.Local.GetUtcOffset(s_sample);
+            var expected = new DateTimeOffset(s_sample, expectedOffset).ToString("yyyy-MM-ddTHH:mm:sszzz", s_inv);
             Assert.Equal(expected, wire);
             Assert.NotEqual("2026-01-01T09:00:00", wire);
         }
@@ -276,7 +276,7 @@ namespace Bee.Api.Core.UnitTests
         {
             var value = ReadXmlValue(mode, "2026-01-01T09:00:00");
 
-            Assert.Equal(Sample, value);
+            Assert.Equal(s_sample, value);
             Assert.Equal(DateTimeKind.Unspecified, value.Kind);
         }
 
@@ -290,14 +290,14 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("MessagePack typeless 對非 Local 的 DateTime 保留數值並一律標為 Utc")]
         public void MessagePack_TypelessNonLocalKind_PreservesWallClockAsUtc(DateTimeKind kind)
         {
-            var original = new ParameterCollection { { "d", DateTime.SpecifyKind(Sample, kind) } };
+            var original = new ParameterCollection { { "d", DateTime.SpecifyKind(s_sample, kind) } };
 
             var restored = MessagePackCodec.Deserialize<ParameterCollection>(MessagePackCodec.Serialize(original));
 
             Assert.NotNull(restored);
             var value = Assert.IsType<DateTime>(restored["d"].Value);
-            Assert.Equal(Sample.TimeOfDay, value.TimeOfDay);
-            Assert.Equal(Sample.Date, value.Date);
+            Assert.Equal(s_sample.TimeOfDay, value.TimeOfDay);
+            Assert.Equal(s_sample.Date, value.Date);
             Assert.Equal(DateTimeKind.Utc, value.Kind);
         }
 
@@ -310,13 +310,13 @@ namespace Bee.Api.Core.UnitTests
             // a receiver that treats the cell as a wall-clock value silently reads a different time.
             // This is the DTO-side counterpart to the JSON offset hazard, and the second reason D6
             // forbids `Local` on the wire.
-            var original = new ParameterCollection { { "d", DateTime.SpecifyKind(Sample, DateTimeKind.Local) } };
+            var original = new ParameterCollection { { "d", DateTime.SpecifyKind(s_sample, DateTimeKind.Local) } };
 
             var restored = MessagePackCodec.Deserialize<ParameterCollection>(MessagePackCodec.Serialize(original));
 
             Assert.NotNull(restored);
             var value = Assert.IsType<DateTime>(restored["d"].Value);
-            Assert.Equal(DateTime.SpecifyKind(Sample, DateTimeKind.Local).ToUniversalTime(), value);
+            Assert.Equal(DateTime.SpecifyKind(s_sample, DateTimeKind.Local).ToUniversalTime(), value);
             Assert.Equal(DateTimeKind.Utc, value.Kind);
         }
 
@@ -327,7 +327,7 @@ namespace Bee.Api.Core.UnitTests
             // Not a bug to fix but an asymmetry to remember: `DataColumn` normalises the kind away
             // before the formatter ever sees it, so the DataSet path cannot shift. A bare DTO
             // property has no such buffer. Guarding only one of the two paths leaves the other open.
-            var local = DateTime.SpecifyKind(Sample, DateTimeKind.Local);
+            var local = DateTime.SpecifyKind(s_sample, DateTimeKind.Local);
 
             var viaTable = MessagePackCodec.Deserialize<DataTable>(
                 MessagePackCodec.Serialize(BuildTable(DataSetDateTime.Unspecified, local)));
@@ -336,7 +336,7 @@ namespace Bee.Api.Core.UnitTests
 
             Assert.NotNull(viaTable);
             Assert.NotNull(viaTypeless);
-            Assert.Equal(Sample, (DateTime)viaTable.Rows[0]["d"]);
+            Assert.Equal(s_sample, (DateTime)viaTable.Rows[0]["d"]);
             Assert.Equal(local.ToUniversalTime(), (DateTime)viaTypeless["d"].Value!);
         }
 
@@ -344,10 +344,10 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("JSON 對 Kind=Local 的 DateTime 會寫出時區偏移（D6 禁止 Local 進 wire 的依據）")]
         public void Json_LocalKind_WritesOffsetOnWire()
         {
-            var json = JsonCodec.Serialize(DateTime.SpecifyKind(Sample, DateTimeKind.Local));
+            var json = JsonCodec.Serialize(DateTime.SpecifyKind(s_sample, DateTimeKind.Local));
 
-            var expectedOffset = TimeZoneInfo.Local.GetUtcOffset(Sample);
-            Assert.Contains(new DateTimeOffset(Sample, expectedOffset).ToString("zzz", Inv), json, StringComparison.Ordinal);
+            var expectedOffset = TimeZoneInfo.Local.GetUtcOffset(s_sample);
+            Assert.Contains(new DateTimeOffset(s_sample, expectedOffset).ToString("zzz", s_inv), json, StringComparison.Ordinal);
         }
 
         [Theory]
@@ -356,12 +356,12 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("JSON 對 Unspecified 與 Utc 的 DateTime 皆保留原數值")]
         public void Json_NonLocalKinds_PreserveWallClock(DateTimeKind kind)
         {
-            var original = DateTime.SpecifyKind(Sample, kind);
+            var original = DateTime.SpecifyKind(s_sample, kind);
 
             var restored = JsonCodec.Deserialize<DateTime>(JsonCodec.Serialize(original));
 
-            Assert.Equal(Sample.TimeOfDay, restored.TimeOfDay);
-            Assert.Equal(Sample.Date, restored.Date);
+            Assert.Equal(s_sample.TimeOfDay, restored.TimeOfDay);
+            Assert.Equal(s_sample.Date, restored.Date);
         }
 
         #endregion

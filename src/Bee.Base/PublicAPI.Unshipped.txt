@@ -4,8 +4,12 @@
 *REMOVED*Bee.Base.Tracing.TraceListener.TraceListener(Bee.Base.Tracing.ITraceWriter! writer) -> void
 *REMOVED*Bee.Base.Tracing.TraceListener.TraceStart(Bee.Base.Tracing.TraceLayers layer, string! detail = "", string! category = "", object? tag = null, string! name = "") -> Bee.Base.Tracing.TraceContext!
 *REMOVED*Bee.Base.Tracing.TraceListener.TraceWrite(Bee.Base.Tracing.TraceLayers layer, string! detail = "", Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string! category = "", object? tag = null, string! name = "") -> void
+*REMOVED*static Bee.Base.StringUtilities.IsEmpty(object? value) -> bool
+*REMOVED*static Bee.Base.StringUtilities.IsNotEmpty(object? value) -> bool
 Bee.Base.Tracing.TraceDispatcher
 Bee.Base.Tracing.TraceDispatcher.TraceDispatcher(Bee.Base.Tracing.ITraceWriter! writer) -> void
 Bee.Base.Tracing.TraceDispatcher.TraceEnd(Bee.Base.Tracing.TraceContext! ctx, Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string? detail = null) -> void
 Bee.Base.Tracing.TraceDispatcher.TraceStart(Bee.Base.Tracing.TraceLayers layer, string! detail = "", string! category = "", object? tag = null, string! name = "") -> Bee.Base.Tracing.TraceContext!
 Bee.Base.Tracing.TraceDispatcher.TraceWrite(Bee.Base.Tracing.TraceLayers layer, string! detail = "", Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string! category = "", object? tag = null, string! name = "") -> void
+static Bee.Base.StringUtilities.IsEmptyText(object? value) -> bool
+static Bee.Base.StringUtilities.IsNotEmptyText(object? value) -> bool

@@ -28,7 +28,7 @@ namespace Bee.Api.Client
         private readonly SystemApiConnector _connector;
         private readonly ConcurrentDictionary<string, Lazy<Task<object>>> _list;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientDefineAccess"/> class.
@@ -162,7 +162,7 @@ namespace Bee.Api.Client
             this.List.Clear();
         }
 
-        #region 讀取（Get）
+        #region Get
 
         /// <summary>
         /// Asynchronously gets the system settings.
@@ -302,10 +302,10 @@ namespace Bee.Api.Client
         }
 
         private static async Task<object> FetchCustomizeAsync<T>(Func<Task<T?>> fetch) where T : class
-            => (object?)await fetch().ConfigureAwait(false) ?? NoCustomize;
+            => (object?)await fetch().ConfigureAwait(false) ?? s_noCustomize;
 
         /// <summary>Marks "this tenant has no override" in the task cache, which cannot hold nulls.</summary>
-        private static readonly object NoCustomize = new();
+        private static readonly object s_noCustomize = new();
 
         /// <summary>
         /// Asynchronously gets the language resource for the specified language and namespace.
@@ -339,7 +339,7 @@ namespace Bee.Api.Client
 
         #endregion
 
-        #region 儲存（Save）
+        #region Save
 
         /// <summary>
         /// Asynchronously saves the system settings.

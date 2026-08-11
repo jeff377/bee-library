@@ -20,7 +20,7 @@ namespace Bee.ObjectCaching.UnitTests
     /// </remarks>
     public class CacheDefineAccessSaveTests
     {
-        private static readonly string[] DbViaDefineKeys = { "db_via_define" };
+        private static readonly string[] s_dbViaDefineKeys = { "db_via_define" };
 
         private static CacheDefineAccess CreateAccess(PathOptions paths)
             => new CacheDefineAccess(new FileDefineStorage(paths), paths);
@@ -184,7 +184,7 @@ namespace Bee.ObjectCaching.UnitTests
             using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var schema = new TableSchema { TableName = "t_via_define" };
-            access.SaveDefine(DefineType.TableSchema, schema, DbViaDefineKeys);
+            access.SaveDefine(DefineType.TableSchema, schema, s_dbViaDefineKeys);
             Assert.True(File.Exists(temp.Options.GetTableSchemaFilePath("db_via_define", "t_via_define")));
         }
 

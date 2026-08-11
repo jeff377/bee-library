@@ -18,7 +18,7 @@ namespace Bee.Business
     {
         private readonly IBeeContext _ctx;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BusinessObject"/> class.

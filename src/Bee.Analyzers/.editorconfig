@@ -1,0 +1,6 @@
+# Roslyn analyzer 慣例：`DiagnosticDescriptor` 一律以 PascalCase 的 `private static readonly`
+# 宣告（`Rule`、`UnknownProgId` 等），Roslyn 自己的原始碼與所有官方樣板皆如此。
+# 這 19 處與框架其餘部分的 `s_` 慣例衝突，但改成 `s_rule` 反而背離該領域的共同認知，
+# 故在此資料夾關掉該條規則，而非在每個檔案加 pragma。
+[*.cs]
+dotnet_naming_rule.private_static_readonly_fields_s_prefix.severity = none

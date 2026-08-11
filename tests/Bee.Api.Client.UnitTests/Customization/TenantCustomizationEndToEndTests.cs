@@ -46,10 +46,10 @@ namespace Bee.Api.Client.UnitTests.Customization
 
         // BO / session state resolves through the "common" databaseId, which the test rig binds to
         // SQL Server; the company-scoped permission tables live in the matching company database.
-        private static readonly string CompanyDbId =
+        private static readonly string s_companyDbId =
             TestDbConventions.GetDatabaseId(DatabaseType.SQLServer, "company");
 
-        private static readonly string[] CustomerSchemaKeys = [TenantCustomizationFixture.ProgId];
+        private static readonly string[] s_customerSchemaKeys = [TenantCustomizationFixture.ProgId];
 
         private readonly TenantCustomizationFixture _fx;
 
@@ -231,7 +231,7 @@ namespace Bee.Api.Client.UnitTests.Customization
         private string BaseLineXml()
         {
             var schema = ((FormSchema)_fx.GetRequiredService<IDefineAccess>()
-                .GetDefine(DefineType.FormSchema, CustomerSchemaKeys)!).Clone();
+                .GetDefine(DefineType.FormSchema, s_customerSchemaKeys)!).Clone();
             new FormSchemaLocalizer(_fx.GetRequiredService<ILanguageService>())
                 .Localize(schema, TenantCustomizationFixture.Lang);
             return XmlCodec.Serialize(schema);
@@ -258,7 +258,7 @@ namespace Bee.Api.Client.UnitTests.Customization
                 "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, customize_id, " +
                 "number_formats_xml, default_currency, cash_rounding_xml, allowed_currencies_xml, enabled, sys_insert_time) " +
                 "VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, 1, GETUTCDATE())",
-                rowId, companyId, "客製化端到端測試公司", CompanyDbId, customizeId,
+                rowId, companyId, "客製化端到端測試公司", s_companyDbId, customizeId,
                 string.Empty, string.Empty, string.Empty, string.Empty);
             Common().Execute(insert);
             return rowId;

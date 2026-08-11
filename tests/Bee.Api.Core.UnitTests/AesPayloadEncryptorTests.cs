@@ -9,7 +9,7 @@ namespace Bee.Api.Core.UnitTests
     /// </summary>
     public class AesPayloadEncryptorTests
     {
-        private readonly AesPayloadEncryptor encryptor = new AesPayloadEncryptor();
+        private readonly AesPayloadEncryptor _encryptor = new AesPayloadEncryptor();
 
         [Fact(DisplayName = "Encrypt 使用 null Key 應拋出 CryptographicException")]
         public void Encrypt_NullKey_ThrowsCryptographicException()
@@ -17,7 +17,7 @@ namespace Bee.Api.Core.UnitTests
             var data = new byte[] { 1, 2, 3 };
 
             Assert.Throws<CryptographicException>(() =>
-                encryptor.Encrypt(data, null!));
+                _encryptor.Encrypt(data, null!));
         }
 
         [Fact(DisplayName = "Encrypt 使用空 Key 應拋出 CryptographicException")]
@@ -26,7 +26,7 @@ namespace Bee.Api.Core.UnitTests
             var data = new byte[] { 1, 2, 3 };
 
             Assert.Throws<CryptographicException>(() =>
-                encryptor.Encrypt(data, Array.Empty<byte>()));
+                _encryptor.Encrypt(data, Array.Empty<byte>()));
         }
 
         [Fact(DisplayName = "Decrypt 使用 null Key 應拋出 CryptographicException")]
@@ -35,7 +35,7 @@ namespace Bee.Api.Core.UnitTests
             var data = new byte[] { 1, 2, 3 };
 
             Assert.Throws<CryptographicException>(() =>
-                encryptor.Decrypt(data, null!));
+                _encryptor.Decrypt(data, null!));
         }
 
         [Fact(DisplayName = "Decrypt 使用空 Key 應拋出 CryptographicException")]
@@ -44,7 +44,7 @@ namespace Bee.Api.Core.UnitTests
             var data = new byte[] { 1, 2, 3 };
 
             Assert.Throws<CryptographicException>(() =>
-                encryptor.Decrypt(data, Array.Empty<byte>()));
+                _encryptor.Decrypt(data, Array.Empty<byte>()));
         }
 
         [Fact(DisplayName = "Encrypt/Decrypt 使用有效 Key 應正確加解密")]
@@ -53,8 +53,8 @@ namespace Bee.Api.Core.UnitTests
             var originalData = new byte[] { 10, 20, 30, 40, 50 };
             var key = AesCbcHmacKeyGenerator.GenerateCombinedKey();
 
-            var encrypted = encryptor.Encrypt(originalData, key);
-            var decrypted = encryptor.Decrypt(encrypted, key);
+            var encrypted = _encryptor.Encrypt(originalData, key);
+            var decrypted = _encryptor.Decrypt(encrypted, key);
 
             Assert.Equal(originalData, decrypted);
         }

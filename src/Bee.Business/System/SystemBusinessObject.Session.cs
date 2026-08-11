@@ -49,7 +49,7 @@ namespace Bee.Business.System
             tracker?.Reset(args.UserId);
 
             // 2. Build the session: derive the key, persist the seed, then fill the cache.
-            var sessionInfo = CreateSessionInfo(args.UserId, userName, DefaultSessionLifetime);
+            var sessionInfo = CreateSessionInfo(args.UserId, userName, s_defaultSessionLifetime);
             byte[] encryptionKey = sessionInfo.ApiEncryptionKey;
             WriteLoginAudit(LoginEvent.LoginSucceeded, sessionInfo.UserId, sessionInfo.UserName, sessionInfo.AccessToken, null, LoginSource);
 
@@ -198,7 +198,7 @@ namespace Bee.Business.System
         /// <summary>
         /// How long a session issued by <see cref="Login"/> stays valid.
         /// </summary>
-        private static readonly TimeSpan DefaultSessionLifetime = TimeSpan.FromHours(1);
+        private static readonly TimeSpan s_defaultSessionLifetime = TimeSpan.FromHours(1);
 
         /// <summary>
         /// Builds a session for an already-identified user, persists its seed, and puts it in the

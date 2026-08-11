@@ -1,4 +1,4 @@
-﻿using Bee.Api.Core.JsonRpc;
+using Bee.Api.Core.JsonRpc;
 using Bee.Definition.Security;
 
 namespace Bee.Api.Core.Authorization
@@ -33,7 +33,7 @@ namespace Bee.Api.Core.Authorization
         /// <summary>
         /// The set of methods that do not require authorization (case-sensitive).
         /// </summary>
-        private static readonly HashSet<string> NoAuthMethods =
+        private static readonly HashSet<string> s_noAuthMethods =
         [
             "System.Ping",
             "System.GetApiPayloadOptions",
@@ -44,7 +44,7 @@ namespace Bee.Api.Core.Authorization
         /// The set of methods that do not require an API key (case-sensitive).
         /// </summary>
         /// <remarks>
-        /// WARNING: two separate axes — do not merge this with <see cref="NoAuthMethods"/>. That one
+        /// WARNING: two separate axes — do not merge this with <see cref="s_noAuthMethods"/>. That one
         /// exempts methods from the Bearer token; this one exempts them from application identity.
         /// Merging would give away two methods that must keep requiring a key: <c>System.Login</c>
         /// is exactly where "which application attempted a sign-in" needs recording, and
@@ -56,7 +56,7 @@ namespace Bee.Api.Core.Authorization
         /// closed in that state.
         /// </para>
         /// </remarks>
-        private static readonly HashSet<string> NoApiKeyMethods =
+        private static readonly HashSet<string> s_noApiKeyMethods =
         [
             "System.Ping"
         ];
@@ -68,7 +68,7 @@ namespace Bee.Api.Core.Authorization
         /// <returns><c>true</c> if authorization is required; otherwise, <c>false</c>.</returns>
         protected virtual bool IsAuthorizationRequired(string method)
         {
-            return !NoAuthMethods.Contains(method);
+            return !s_noAuthMethods.Contains(method);
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Bee.Api.Core.Authorization
         /// </remarks>
         protected virtual bool IsApiKeyRequired(string method)
         {
-            return !NoApiKeyMethods.Contains(method);
+            return !s_noApiKeyMethods.Contains(method);
         }
 
         /// <summary>

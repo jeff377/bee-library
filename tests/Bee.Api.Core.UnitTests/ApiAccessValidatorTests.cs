@@ -16,7 +16,7 @@ namespace Bee.Api.Core.UnitTests
 
         // Tests that don't exercise the token-validator branch pass a "deny-all" stub by default;
         // never reached for paths that short-circuit before the token check.
-        private static readonly FakeTokenProvider _denyAll = new() { Result = false };
+        private static readonly FakeTokenProvider s_denyAll = new() { Result = false };
 
         [Fact]
         [DisplayName("ValidateAccess 於方法未標記 ApiAccessControl 時應拋 UnauthorizedAccessException")]
@@ -31,7 +31,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.Throws<UnauthorizedAccessException>(() =>
-                ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
+                ApiAccessValidator.ValidateAccess(method!, context, s_denyAll));
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.Throws<UnauthorizedAccessException>(() =>
-                ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
+                ApiAccessValidator.ValidateAccess(method!, context, s_denyAll));
         }
 
         [Fact]
@@ -137,13 +137,13 @@ namespace Bee.Api.Core.UnitTests
             // Act & Assert
             if (expectedSuccess)
             {
-                var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
+                var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context, s_denyAll));
                 Assert.Null(ex);
             }
             else
             {
                 Assert.Throws<UnauthorizedAccessException>(() =>
-                    ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
+                    ApiAccessValidator.ValidateAccess(method!, context, s_denyAll));
             }
         }
 
@@ -159,7 +159,7 @@ namespace Bee.Api.Core.UnitTests
                 AccessToken = Guid.Empty
             };
 
-            var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
+            var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context, s_denyAll));
             Assert.Null(ex);
         }
 
@@ -175,7 +175,7 @@ namespace Bee.Api.Core.UnitTests
                 AccessToken = Guid.Empty
             };
 
-            var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
+            var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context, s_denyAll));
             Assert.Null(ex);
         }
 
@@ -193,7 +193,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.Throws<UnauthorizedAccessException>(() =>
-                ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
+                ApiAccessValidator.ValidateAccess(method!, context, s_denyAll));
         }
 
         [Fact]
@@ -209,7 +209,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.Throws<UnauthorizedAccessException>(() =>
-                ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
+                ApiAccessValidator.ValidateAccess(method!, context, s_denyAll));
         }
 
         private class DummyApi

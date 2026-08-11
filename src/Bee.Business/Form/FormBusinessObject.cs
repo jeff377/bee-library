@@ -19,7 +19,7 @@ namespace Bee.Business.Form
     /// </summary>
     public partial class FormBusinessObject : BusinessObject, IFormBusinessObject
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FormBusinessObject"/> class.

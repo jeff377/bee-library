@@ -257,7 +257,7 @@ namespace Bee.Definition.Forms
 
             var builder = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             if (formTable.Fields == null)
-                return EmptyDependencyMap;
+                return s_emptyDependencyMap;
 
             foreach (var field in formTable.Fields)
             {
@@ -280,7 +280,7 @@ namespace Bee.Definition.Forms
             return map;
         }
 
-        private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> EmptyDependencyMap =
+        private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> s_emptyDependencyMap =
             new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>

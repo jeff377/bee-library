@@ -25,7 +25,7 @@ namespace Bee.Api.Core.UnitTests
         /// <summary>
         /// 不經任何訊息屬性抵達、但確實會上 wire 的型別（藏在 `object` 成員內，或以定義資料取得）。
         /// </summary>
-        private static readonly Type[] ExtraRoots =
+        private static readonly Type[] s_extraRoots =
         [
             typeof(Bee.Definition.Collections.ListItemCollection),
             typeof(Bee.Definition.Collections.PropertyCollection),
@@ -40,7 +40,7 @@ namespace Bee.Api.Core.UnitTests
         /// </summary>
         /// <remarks>
         /// 閉包的起點是命名空間**字串**比對。命名空間改名或訊息型別搬家，閉包不會變空、
-        /// 而是**部分萎縮**成只剩 <c>ExtraRoots</c>——此時 <c>missing.Count == 0</c> 依然成立，
+        /// 而是**部分萎縮**成只剩 <c>s_extraRoots</c>——此時 <c>missing.Count == 0</c> 依然成立，
         /// 兩條檢查一起變成恆真。單純的 <c>NotEmpty</c> 擋不到這種萎縮，所以這裡釘住具體型別。
         /// </remarks>
         /// <remarks>
@@ -53,7 +53,7 @@ namespace Bee.Api.Core.UnitTests
         /// 下限斷言為何不能只寫一個數字。
         /// </para>
         /// </remarks>
-        private static readonly Type[] ClosureCanaries =
+        private static readonly Type[] s_closureCanaries =
         [
             typeof(Bee.Api.Core.Messages.Form.GetListRequest),
             typeof(Bee.Api.Core.Messages.System.LoginRequest),
@@ -68,7 +68,7 @@ namespace Bee.Api.Core.UnitTests
             var closure = WireTypeClosure();
             var contracts = MessagePackCodec.RegisteredFormatters.OfType<IWireContract>().ToList();
 
-            // 下限刻意寫得比現況寬鬆：它要擋的是「掉到只剩 ExtraRoots」這種數量級的萎縮，
+            // 下限刻意寫得比現況寬鬆：它要擋的是「掉到只剩 s_extraRoots」這種數量級的萎縮，
             // 不是要在每次新增型別時被迫改數字。
             Assert.True(closure.Count > 80,
                 $"wire 型別閉包只有 {closure.Count} 個型別，遠低於預期。閉包的根是命名空間字串比對，" +
@@ -77,7 +77,7 @@ namespace Bee.Api.Core.UnitTests
                 $"只有 {contracts.Count} 個 IWireContract 註冊，遠低於預期。" +
                 "WireContracts_MatchTypeShape 會因此變成空迴圈而恆真。");
 
-            var missingCanaries = ClosureCanaries
+            var missingCanaries = s_closureCanaries
                 .Where(t => !closure.Contains(t))
                 .Select(t => t.FullName!)
                 .ToList();
@@ -183,7 +183,7 @@ namespace Bee.Api.Core.UnitTests
                     }
                 }
             }
-            foreach (var t in ExtraRoots) Visit(t);
+            foreach (var t in s_extraRoots) Visit(t);
 
             return needs;
 

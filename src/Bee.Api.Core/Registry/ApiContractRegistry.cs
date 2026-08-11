@@ -21,7 +21,7 @@ namespace Bee.Api.Core.Registry
     /// </remarks>
     public static class ApiContractRegistry
     {
-        private static readonly ConcurrentDictionary<Type, ContractMapping> _mappings = new ConcurrentDictionary<Type, ContractMapping>();
+        private static readonly ConcurrentDictionary<Type, ContractMapping> s_mappings = new ConcurrentDictionary<Type, ContractMapping>();
 
         /// <summary>
         /// Registers a mapping from a contract interface to its API response type.
@@ -34,7 +34,7 @@ namespace Bee.Api.Core.Registry
             var contractType = typeof(TContract);
             var apiType = typeof(TApi);
             var properties = contractType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            _mappings[contractType] = new ContractMapping(apiType, properties);
+            s_mappings[contractType] = new ContractMapping(apiType, properties);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Bee.Api.Core.Registry
             // Search for a registered contract interface on the value's type
             foreach (var iface in valueType.GetInterfaces())
             {
-                if (_mappings.TryGetValue(iface, out var mapping))
+                if (s_mappings.TryGetValue(iface, out var mapping))
                 {
                     return mapping.Convert(value);
                 }

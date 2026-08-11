@@ -65,8 +65,13 @@ namespace Bee.Expressions
         /// call. Keeping the zone out of the cache key is the point: one compiled lambda serves every
         /// user regardless of zone.
         /// </remarks>
+        // IDE1006 抑制：`.editorconfig` 的命名規則看不到 attribute，無法表達「[ThreadStatic]
+        // 欄位用 t_ 前綴」。這裡沿用 .NET runtime 自身的慣例，讓讀者一眼看出它是 per-thread
+        // 而非 process-wide —— 改成 _ 前綴會讓它看起來像執行個體欄位。
+#pragma warning disable IDE1006
         [ThreadStatic]
         private static string? t_timeZoneId;
+#pragma warning restore IDE1006
 
         /// <summary>
         /// Registers the curated helper functions available to every expression.

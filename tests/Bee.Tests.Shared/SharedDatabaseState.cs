@@ -34,15 +34,15 @@ namespace Bee.Tests.Shared
     /// </remarks>
     public static class SharedDatabaseState
     {
-        private static readonly Lock _registerLock = new();
+        private static readonly Lock s_registerLock = new();
         private static bool _registered;
 
-        private static readonly Lock _schemaLock = new();
+        private static readonly Lock s_schemaLock = new();
         private static bool _schemaInitialised;
 
         // SQLite in-memory shared-cache databases live only as long as at least one
         // connection is open; hold one open per category for the lifetime of the process.
-        private static readonly List<SqliteConnection> _sqliteKeepAlive = [];
+        private static readonly List<SqliteConnection> s_sqliteKeepAlive = [];
 
         /// <summary>
         /// Registers DB providers / dialect factories and seeds <see cref="DatabaseServer"/>
@@ -56,7 +56,7 @@ namespace Bee.Tests.Shared
         public static void EnsureRegistered(IDefineAccess bootstrapAccess)
         {
             ArgumentNullException.ThrowIfNull(bootstrapAccess);
-            lock (_registerLock)
+            lock (s_registerLock)
             {
                 if (_registered) return;
 
@@ -85,7 +85,7 @@ namespace Bee.Tests.Shared
         {
             ArgumentNullException.ThrowIfNull(access);
             ArgumentNullException.ThrowIfNull(connectionManager);
-            lock (_schemaLock)
+            lock (s_schemaLock)
             {
                 if (_schemaInitialised) return;
 
@@ -175,14 +175,14 @@ namespace Bee.Tests.Shared
             // Keep one open connection per category — each {@DbName} substitution maps
             // to an independent in-memory DB, and the underlying shared-cache store is
             // reclaimed once the last open connection closes.
-            if (_sqliteKeepAlive.Count == 0)
+            if (s_sqliteKeepAlive.Count == 0)
             {
                 foreach (var categoryId in categoryIds)
                 {
                     var resolvedConnStr = StringUtilities.Replace(connStr, "{@DbName}", categoryId);
                     var conn = new SqliteConnection(resolvedConnStr);
                     conn.Open();
-                    _sqliteKeepAlive.Add(conn);
+                    s_sqliteKeepAlive.Add(conn);
                 }
             }
         }

@@ -14,7 +14,7 @@ namespace Bee.Api.Core.UnitTests
     public class PayloadZoneConverterTests
     {
         private const string Taipei = "Asia/Taipei";
-        private static readonly DateTime Utc9Am = new DateTime(2026, 1, 1, 9, 0, 0, DateTimeKind.Unspecified);
+        private static readonly DateTime s_utc9Am = new DateTime(2026, 1, 1, 9, 0, 0, DateTimeKind.Unspecified);
 
         private static DateTime ExpectedInTaipei(DateTime utcValue)
             => DateTime.SpecifyKind(
@@ -27,7 +27,7 @@ namespace Bee.Api.Core.UnitTests
         {
             var table = new DataTable("orders");
             table.AddColumn("created_at", FieldDbType.DateTime);
-            table.Rows.Add(Utc9Am);
+            table.Rows.Add(s_utc9Am);
             table.AcceptChanges();
             return table;
         }
@@ -47,7 +47,7 @@ namespace Bee.Api.Core.UnitTests
 
             PayloadZoneConverter.ToUserZone(response, Taipei);
 
-            Assert.Equal(ExpectedInTaipei(Utc9Am), (DateTime)response.Table!.Rows[0]["created_at"]);
+            Assert.Equal(ExpectedInTaipei(s_utc9Am), (DateTime)response.Table!.Rows[0]["created_at"]);
         }
 
         [Fact]
@@ -58,7 +58,7 @@ namespace Bee.Api.Core.UnitTests
 
             PayloadZoneConverter.ToUserZone(response, Taipei);
 
-            Assert.Equal(ExpectedInTaipei(Utc9Am),
+            Assert.Equal(ExpectedInTaipei(s_utc9Am),
                 (DateTime)response.DataSet!.Tables["orders"]!.Rows[0]["created_at"]);
         }
 
@@ -68,7 +68,7 @@ namespace Bee.Api.Core.UnitTests
         {
             var original = BuildDataSet();
             // 呼叫端手上的值以使用者時區呈現（Connector 收到回應時已轉過）。
-            var userLocal = ExpectedInTaipei(Utc9Am);
+            var userLocal = ExpectedInTaipei(s_utc9Am);
             original.Tables["orders"]!.Rows[0]["created_at"] = userLocal;
             original.AcceptChanges();
             var request = new SaveRequest { DataSet = original };
@@ -76,7 +76,7 @@ namespace Bee.Api.Core.UnitTests
             using (PayloadZoneConverter.ToUtc(request, Taipei))
             {
                 Assert.NotSame(original, request.DataSet);
-                Assert.Equal(Utc9Am, (DateTime)request.DataSet!.Tables["orders"]!.Rows[0]["created_at"]);
+                Assert.Equal(s_utc9Am, (DateTime)request.DataSet!.Tables["orders"]!.Rows[0]["created_at"]);
             }
 
             Assert.Same(original, request.DataSet);
@@ -87,7 +87,7 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("請求方向：filter 的 DateTime 值轉為 UTC，DateOnly 不動，且原樹不被修改")]
         public void ToUtc_GetListRequest_ConvertsFilterWithoutMutatingSource()
         {
-            var userLocal = ExpectedInTaipei(Utc9Am);
+            var userLocal = ExpectedInTaipei(s_utc9Am);
             var day = new DateOnly(2026, 1, 1);
             var filter = FilterGroup.All(
                 FilterCondition.Equal("created_at", userLocal),
@@ -97,7 +97,7 @@ namespace Bee.Api.Core.UnitTests
             using (PayloadZoneConverter.ToUtc(request, Taipei))
             {
                 var converted = (FilterGroup)request.Filter!;
-                Assert.Equal(Utc9Am, ((FilterCondition)converted.Nodes[0]).Value);
+                Assert.Equal(s_utc9Am, ((FilterCondition)converted.Nodes[0]).Value);
                 Assert.Equal(day, ((FilterCondition)converted.Nodes[1]).Value);
             }
 
@@ -119,7 +119,7 @@ namespace Bee.Api.Core.UnitTests
 
             var response = new GetListResponse { Table = BuildTable() };
             PayloadZoneConverter.ToUserZone(response, string.Empty);
-            Assert.Equal(Utc9Am, (DateTime)response.Table!.Rows[0]["created_at"]);
+            Assert.Equal(s_utc9Am, (DateTime)response.Table!.Rows[0]["created_at"]);
         }
 
         [Fact]

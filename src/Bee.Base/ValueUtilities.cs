@@ -27,6 +27,12 @@ namespace Bee.Base
         /// <summary>
         /// Determines whether the specified value is empty; null and DBNull are both treated as empty.
         /// </summary>
+        /// <remarks>
+        /// Emptiness is judged per type: <c>Guid.Empty</c>, a date before the SQL minimum, an empty
+        /// or whitespace string, and an empty list all count as empty. That is a different question
+        /// from <see cref="StringUtilities.IsEmptyText(object?)"/>, which asks whether the value's
+        /// text form is empty — the two disagree for <c>Guid.Empty</c> and <c>DateTime.MinValue</c>.
+        /// </remarks>
         /// <param name="value">The value to check.</param>
         public static bool IsEmpty(object value)
         {
@@ -388,7 +394,7 @@ namespace Bee.Base
         public static DateTime? CDateTime(object? value)
         {
             if (value is null || value is DBNull) { return null; }
-            if (StringUtilities.IsEmpty(value)) { return null; }
+            if (StringUtilities.IsEmptyText(value)) { return null; }
             if (value is DateTime dt) { return dt; }
             // Handled before the string path: `DateOnly.ToString()` is culture-dependent, so parsing it
             // back with `InvariantCulture` succeeds only where the two formats happen to agree.

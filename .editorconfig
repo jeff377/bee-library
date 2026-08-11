@@ -54,6 +54,38 @@ dotnet_diagnostic.CA5351.severity = warning
 # 禁用 System.Random 於安全場景
 dotnet_diagnostic.CA5394.severity = warning
 
+# ───── 欄位命名（對應 code-style.md；先前只存在於 prompt 層） ─────
+#
+# 規則依宣告順序比對，第一個吻合者勝出，故三條的順序不可調換：
+# const → static readonly → 其餘 private/protected 欄位。
+dotnet_diagnostic.IDE1006.severity = warning
+
+dotnet_naming_rule.private_const_fields_pascal.symbols = private_const_fields
+dotnet_naming_rule.private_const_fields_pascal.style = pascal_case_style
+dotnet_naming_rule.private_const_fields_pascal.severity = warning
+dotnet_naming_symbols.private_const_fields.applicable_kinds = field
+dotnet_naming_symbols.private_const_fields.applicable_accessibilities = private, protected, protected_internal, private_protected
+dotnet_naming_symbols.private_const_fields.required_modifiers = const
+
+dotnet_naming_rule.private_static_readonly_fields_s_prefix.symbols = private_static_readonly_fields
+dotnet_naming_rule.private_static_readonly_fields_s_prefix.style = s_camel_case_style
+dotnet_naming_rule.private_static_readonly_fields_s_prefix.severity = warning
+dotnet_naming_symbols.private_static_readonly_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_readonly_fields.applicable_accessibilities = private, protected, protected_internal, private_protected
+dotnet_naming_symbols.private_static_readonly_fields.required_modifiers = static, readonly
+
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel_case_style
+dotnet_naming_rule.private_fields_underscore.severity = warning
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, protected, protected_internal, private_protected
+
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+dotnet_naming_style.s_camel_case_style.required_prefix = s_
+dotnet_naming_style.s_camel_case_style.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case_style.required_prefix = _
+dotnet_naming_style.underscore_camel_case_style.capitalization = camel_case
+
 # PermissionAction 刻意維持單數：呼叫端一律傳單一動作（Can(token, modelId, PermissionAction.Read)），
 # [Flags] 只用於 allowed_actions 的 mask 儲存。此決定已在 SonarCloud 標為 False Positive，
 # 此處一併關掉編譯期告警，避免 CI 每次都出現同一則 annotation。
