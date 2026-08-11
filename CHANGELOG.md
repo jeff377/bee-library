@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - `Bee.Api.Client` / `Bee.Web.Blazor.Server`: a host serving several users from one process no longer has them overwrite each other's transmission key. `ApiClientInfo.ApiEncryptionKey` and `UserTimeZoneId` were process-wide statics, so in `BeeBlazorProviderMode.Remote` the most recent login won and earlier users' encrypted requests failed to decrypt until they signed in again. `BeeApiConnectorFactory` is now registered scoped and hands each circuit its own context. `Local` mode was never affected. `ApiClientInfo.ApiKey` stays static deliberately — it identifies the application, not the user.
+- `Bee.Api.Core` / `Bee.Base`: an unchanged data row no longer carries its values twice on the wire. Both the MessagePack and the JSON writer sent Current *and* Original for `Unchanged` rows, while both readers restore that state from Current alone — and `DataFormRepository.GetData` calls `AcceptChanges()` before returning, so every row read from the database is Unchanged. Payload and serialisation cost for a read halve.
+- `Bee.Definition`: expression evaluation is roughly 4.7× faster. Each evaluation handed the engine every column in the row rather than the ones the expression references, so its cost tracked the column count instead of the expression. Measured over 30 columns / 5 computed fields / 1000 rows: 57.2 ms to 12.2 ms.
 - `Bee.Db`: `WhereBuilder` no longer loses `SecondValue` and `IgnoreIfNull` when it rewrites a condition's field name for a query with a `selectContext`. A `BETWEEN` lost its upper bound, and an `IgnoreIfNull` condition became `= NULL` — which is never true, so the query silently returned nothing instead of ignoring the condition.
 
 ## [4.20.0]

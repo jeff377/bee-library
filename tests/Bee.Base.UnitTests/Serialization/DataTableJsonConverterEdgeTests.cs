@@ -358,9 +358,14 @@ namespace Bee.Base.UnitTests.Serialization
         }
 
         [Fact]
-        [DisplayName("Write 應為 Unchanged 列同時輸出 current 與 original")]
-        public void Write_UnchangedRow_WritesBothCurrentAndOriginal()
+        [DisplayName("Write 應為 Unchanged 列只輸出 current，不重複輸出 original")]
+        public void Write_UnchangedRow_WritesCurrentOnly()
         {
+            // 這條先前斷言的是「兩份都要輸出」。那不是需求，是把缺陷寫成規格：Unchanged 列的
+            // 兩個版本依定義相等，而還原端的 Unchanged 分支只讀 current 並呼叫 AcceptChanges
+            // （由 ReadWrite_UnchangedRow_RoundTrip 涵蓋）。多送的那一份沒有任何讀取端。
+            // 且 DataFormRepository.GetData 回傳前呼叫 AcceptChanges()，所以每一筆從資料庫
+            // 讀出的列都走這條 —— payload 與序列化成本原本都是兩倍。
             var dt = BuildSampleTable();
             dt.Rows.Add(1, "Alice");
             dt.AcceptChanges();
@@ -369,7 +374,7 @@ namespace Bee.Base.UnitTests.Serialization
             var json = JsonSerializer.Serialize(dt, Options());
             Assert.Contains("\"state\":\"Unchanged\"", json);
             Assert.Contains("\"current\":", json);
-            Assert.Contains("\"original\":", json);
+            Assert.DoesNotContain("\"original\":", json);
         }
 
         [Fact]
@@ -400,7 +405,7 @@ namespace Bee.Base.UnitTests.Serialization
         [DisplayName("Read 應還原 Unchanged 列並呼叫 AcceptChanges")]
         public void ReadWrite_UnchangedRow_RoundTrip()
         {
-            // Write_UnchangedRow_WritesBothCurrentAndOriginal 只驗寫;這裡走完整 round-trip,
+            // Write_UnchangedRow_WritesCurrentOnly 只驗寫;這裡走完整 round-trip,
             // 讓還原邏輯進入 DataRowState.Unchanged case (line 418-422) 並執行 AcceptChanges。
             var dt = BuildSampleTable();
             dt.Rows.Add(1, "Alice");

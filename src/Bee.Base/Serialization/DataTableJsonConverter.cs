@@ -72,17 +72,18 @@ namespace Bee.Base.Serialization
 
                 switch (state)
                 {
+                    // WARNING: An unchanged row carries Current only. Its two versions are equal by
+                    // definition, and the reader restores this state from `current` alone — it calls
+                    // `AcceptChanges()`, which makes Original equal Current again. Writing both used
+                    // to be justified as letting the reader "reconstruct the row state correctly",
+                    // but the reader never looked at it.
+                    //
+                    // This is not a rare case: `DataFormRepository.GetData` calls `AcceptChanges()`
+                    // before returning, so every row read from the database is Unchanged.
                     case DataRowState.Added:
                     case DataRowState.Unchanged:
                         writer.WritePropertyName("current");
                         WriteRowValues(writer, row, value.Columns, DataRowVersion.Current, options);
-                        if (state == DataRowState.Unchanged)
-                        {
-                            // For Unchanged rows, original == current; write original explicitly
-                            // so the reader can reconstruct the row state correctly.
-                            writer.WritePropertyName(OriginalKey);
-                            WriteRowValues(writer, row, value.Columns, DataRowVersion.Original, options);
-                        }
                         break;
 
                     case DataRowState.Modified:

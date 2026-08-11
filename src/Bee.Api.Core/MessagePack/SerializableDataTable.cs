@@ -93,9 +93,17 @@ namespace Bee.Api.Core.MessagePack
                     original = CopyRowValues(row, columns, DataRowVersion.Original);
                     break;
                 case DataRowState.Modified:
-                case DataRowState.Unchanged:
                     current = CopyRowValues(row, columns, DataRowVersion.Current);
                     original = CopyRowValues(row, columns, DataRowVersion.Original);
+                    break;
+                // WARNING: An unchanged row carries Current only. Its two versions are equal by
+                // definition, and `RestoreRow` reads `CurrentValues` for this state and discards
+                // whatever Original held — so sending both doubled the payload and the serialisation
+                // work for no reader. This is not a rare case: `DataFormRepository.GetData` calls
+                // `AcceptChanges()` before returning, which the response contract states, so *every*
+                // row read from the database arrives here Unchanged.
+                case DataRowState.Unchanged:
+                    current = CopyRowValues(row, columns, DataRowVersion.Current);
                     break;
                 default:
                     // Skip Detached or other states

@@ -13,6 +13,8 @@
 ### 修正
 
 - `Bee.Api.Client` / `Bee.Web.Blazor.Server`：單一 process 服務多個使用者時，不再互相覆蓋傳輸金鑰。`ApiClientInfo.ApiEncryptionKey` 與 `UserTimeZoneId` 原本是 process-wide static，因此在 `BeeBlazorProviderMode.Remote` 下最後登入者勝出，先前使用者的加密請求會解不開、直到重新登入。`BeeApiConnectorFactory` 改註冊為 scoped，每個 circuit 拿到自己的 context。`Local` 模式從未受影響。`ApiClientInfo.ApiKey` 刻意維持 static —— 它識別的是應用程式，不是使用者。
+- `Bee.Api.Core` / `Bee.Base`：未變更的資料列不再在 wire 上攜帶兩份相同的值。MessagePack 與 JSON 兩個寫入端都對 `Unchanged` 列同時送出 Current 與 Original，而兩個讀取端都只由 Current 還原 —— 且 `DataFormRepository.GetData` 回傳前呼叫 `AcceptChanges()`，因此每一筆從資料庫讀出的列都是 Unchanged。讀取的 payload 與序列化成本因此減半。
+- `Bee.Definition`：運算式求值約快 4.7 倍。先前每次求值都把整列的所有欄位交給引擎，而非運算式實際引用的那幾個，成本因此與**欄數**成正比、與運算式無關。實測 30 欄 / 5 計算欄 / 1000 列：57.2 ms → 12.2 ms。
 - `Bee.Db`：`WhereBuilder` 在有 `selectContext` 而需改寫條件欄名時，不再遺失 `SecondValue` 與 `IgnoreIfNull`。先前 `BETWEEN` 會失去上界，`IgnoreIfNull` 條件則變成 `= NULL` —— 在 SQL 裡永不成立，於是查詢靜默回傳零筆，而不是忽略該條件。
 
 ## [4.20.0]
