@@ -155,6 +155,9 @@ public void ExecuteDataTable_PostgreSQL_ReturnsDataTable()
 ### 需要本機基礎設施的測試：`[LocalOnlyFact]` / `[LocalOnlyTheory]`
 
 需要本機特定基礎設施（例如本機跑著的 API server、專屬資料、或無法在 CI 自動備妥的環境）的測試，使用 `[LocalOnlyFact]` / `[LocalOnlyTheory]`。
+
+> **兩者目前皆零使用**（2026-08-11 實測）。留著是因為「需要本機服務的整合測試」這個情境仍成立，
+> 但下面的範例是示意、不是現存程式碼——別去 grep 它。`[DbTheory]` 同樣只有 1 處使用。
 定義在 `tests/Bee.Tests.Shared/`，會檢查環境變數 `CI`；**當 `CI=true`（GitHub Actions 預設）時自動跳過**。
 
 ```csharp
@@ -251,9 +254,24 @@ public class DbAccessFactoryTests { ... }
 
 ### 目前仍存在的窄序列化
 
-多數測試已改以 fixture-scoped DI instance 取代 process-wide static，race 風險自然消除。實測（2026-07）全 repo 仍有 **20 處** `[Collection("...")]` 序列化，全部用於保護尚未 DI 化的 process-wide static：`ClientInfoState`（`ClientInfo.*`，12 處）、`SysInfoStatic`（`SysInfo.*`，3 處）、`ClientInfo`（MAUI 端 `ClientInfo.*`，3 處）、`ApiClientInfoState`（`ApiClientInfo.*`，2 處）。這些 static 重構為可注入後即可移除。
+多數測試已改以 fixture-scoped DI instance 取代 process-wide static，race 風險自然消除。實測（2026-08-11）全 repo 有 **28 處** `[Collection]` 序列化，全部用於保護尚未 DI 化的 process-wide static：
 
-> 注意：`SysInfoStatic` 與 `ClientInfo` 目前**無對應 `CollectionDefinition`**（xUnit 隱式分組仍運作，但建議補上定義或改用已定義名稱，避免打錯字時不會有編譯錯）。
+| Collection | 處數 | 保護對象 |
+|---|---|---|
+| `ClientInfoState` | 14 | `ClientInfo.*` |
+| `SysInfoStatic` | 5 | `SysInfo.*`（`Bee.Base` 與 `Bee.Api.Core` 各自定義，跨組件必須如此） |
+| `ApiClientInfoState` | 4 | `ApiClientInfo.*` |
+| `ProcessWideStateCollection.Name` | 3 | `BEE_MASTER_KEY` 環境變數、`GlobalEvents`、測試 body 內建立的 DI 容器 |
+| `ApiServiceOptionsState` | 2 | `ApiServiceOptions.*` |
+
+**五個名稱都有對應的 `CollectionDefinition`，零孤兒。** 另有五個組件改以
+`DisableTestParallelization` 整組序列化（`Bee.Api.Client` / `Bee.Api.Core` /
+`Bee.ObjectCaching` / `Bee.UI.Avalonia`），那比逐類別掛 `[Collection]` 可靠——
+讀取端會隨新測試增加，逐一補必然遺漏。
+
+> **新增 collection 時用 `const` 而非字串字面值**（如 `ProcessWideStateCollection.Name`）：
+> 打錯字的字面值會讓 xUnit 建一個沒人共用的隱式分組，**看起來有序列化、實際沒有**，
+> 且不會有編譯錯。
 
 ## 共享 fixture 檔案隔離
 

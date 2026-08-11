@@ -108,9 +108,10 @@
         /// </summary>
         public static FilterCondition In(string field, IEnumerable<object> values)
         {
-            // Materialize to object[] so the value round-trips through the MessagePack typeless
-            // formatter: its whitelist allows System.Object[] but not arbitrary IEnumerable
-            // implementations (e.g. List<object>), which would otherwise fail deserialization.
+            // Materialised to object[] because that is the shape the wire carries: the MessagePack
+            // side has a closed set of value codes and `object[]` is one of them, while an arbitrary
+            // IEnumerable (a List<object>, say) is not and is refused as it is written. The array
+            // also lets each element be validated in turn against the same closed set.
             return new FilterCondition { FieldName = field, Operator = ComparisonOperator.In, Value = values.ToArray() };
         }
 

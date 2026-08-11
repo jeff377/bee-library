@@ -262,7 +262,7 @@
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `DefineType` | 定義資料類別 | `SystemSettings`、`DatabaseSettings`、`DbCategorySettings`、`ProgramSettings`、`MenuSettings`、`TableSchema`、`FormSchema`、`FormLayout`、`Language`、`PermissionModels`、`CurrencySettings`、`UnitSettings` 共 12 個值 |
+| `DefineType` | 定義資料類別 | `SystemSettings`、`DatabaseSettings`、`DbCategorySettings`、`ProgramSettings`、`MenuSettings`、`TableSchema`、`FormSchema`、`FormLayout`、`Language`、`PermissionModels`、`CurrencySettings`、`UnitSettings`、`PluginSettings` 共 13 個值 |
 
 ### 資料庫
 

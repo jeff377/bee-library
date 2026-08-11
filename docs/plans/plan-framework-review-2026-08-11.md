@@ -49,7 +49,7 @@
 | P0 | 發版阻擋項（安全 / 發版正確性） | 3 | ✅ 已完成（2026-08-11，SEC-1 / REL-1 / REL-2 全數落地並驗證） |
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
 | P2 | 結構、效能、一致性 | 14 | 🚧 進行中（**P-2(a)** / **CON-2** / **CON-4** ✅ 已完成；剩 11 項） |
-| P3 | 文件漂移與低風險清理 | 13 | 🚧 進行中（DOC-8 / DOC-9 / DOC-10 / **REL-3** ✅ 已完成；剩 9 項） |
+| P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
 | P4 | 觀察／待裁決 | 9 | 📝 擬定中（D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
 
 ### 已完成項目逐條（供對帳，勿只看階段狀態）
@@ -66,6 +66,7 @@
 | **SEC-3** | API key gate 失效改為可見：停用最後一把金鑰記 error、啟動檢查在非 Development 升為 error | 待 commit | **刻意未做啟動硬失敗**（見下） |
 | **REL-3** | 版號抽為 repo 根 `Version.props`，`src/` 與 `tools/` 共用；`Bee.Cli` 從 4.8.0 併回 4.20.0 | `4575889e` | 雙向實證：兩個方案 clean build 0 警告，`-p:Version=9.9.9` 於 `tools/` 如預期紅在 BEE9002 |
 | **GATE-1** | `WireContractDriftTests` 補防空轉斷言（閉包／註冊數下限 + 四個不同可達路徑的 canary） | 待 commit | 見下方「canary 第一版就抓到我自己的錯誤假設」 |
+| **P3 其餘 9 項** | DOC-2 / DOC-4 / DOC-5 / DOC-6 / DOC-7 / DOC-11 / DOC-12 / DOC-13 / DOC-14 + Z-4～Z-7 | 待 commit | 公開文件死連結複驗 **0**；`dependency-map` 外部套件表雙語 13 列逐列一致；ADR 狀態行格式 **38/38** 統一 |
 | **P-2(a)** | Unchanged 列不再攜帶兩份相同的值 | `72c5cbc6` | **比計畫記載多一處**：JSON 路徑有同樣缺陷，計畫只點名 MessagePack。連帶反轉一條把缺陷寫成規格的測試 |
 | **CON-2** | `FormTable.RelationFieldReferences` 改 `Lazy<T>`（`ExecutionAndPublication`） | 待 commit | 測試以 32 執行緒並行首次讀取，斷言**拿到同一個實例**（非「都非 null」） |
 | **CON-4** | `FormDefinitionLoader.GetLocalizedSchemaAsync` 空 lang 分支也 `Clone()` | 待 commit | **未加單元測試**，理由見下 |

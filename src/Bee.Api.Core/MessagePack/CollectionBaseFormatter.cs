@@ -21,9 +21,8 @@ namespace Bee.Api.Core.MessagePack
         /// <param name="options">The serialization options.</param>
         public void Serialize(ref MessagePackWriter writer, TCollection value, MessagePackSerializerOptions options)
         {
-            // Nullable collection fields on `[MessagePackObject]` types (e.g.
-            // `SortFieldCollection? SortFields`) reach this formatter as null when
-            // unset; emit nil so the wire format remains valid.
+            // A nullable collection member (e.g. `SortFieldCollection? SortFields`) reaches this
+            // formatter as null when unset; emit nil so the wire format remains valid.
             if (value == null)
             {
                 writer.WriteNil();

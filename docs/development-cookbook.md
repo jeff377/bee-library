@@ -844,7 +844,7 @@ public static void Main(string[] args)
 
 `FormView` resolves `Schema` / `FormConnector` / `AccessToken` from `ClientInfo` when the host only sets `ProgId`. `GridControl` (a `ContentControl` composite exposing an inner `DataGrid` as `InnerGrid`) renders cells through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch (not `Binding "[FieldName]"`) — see [ADR-020](adr/adr-020-avalonia-datagrid-binding-strategy.md) for why — and offers two editing models through `GridEditMode` (`InCell` cell editing / `EditForm` popup row editing); see [ADR-021](adr/adr-021-avalonia-datagrid-editing-strategy.md). Field editors bind ambiently: set `FormScope.DataObject` once on a container and every descendant editor with a `FieldName` wires itself.
 
-Worked examples: [`samples/Avalonia.Demo`](../samples/Avalonia.Demo/README.md) (full CRUD flow) and [`samples/Avalonia.DemoCenter`](../samples/Avalonia.DemoCenter/README.md) (control demo center).
+Worked examples: [`apps/Bee.Northwind`](../apps/Bee.Northwind/README.md) (full CRUD flow, four heads) and [`samples/Avalonia.DemoCenter`](../samples/Avalonia.DemoCenter/README.md) (control demo center).
 
 ### Quick Reference
 

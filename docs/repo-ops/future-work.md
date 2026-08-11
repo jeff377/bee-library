@@ -60,7 +60,7 @@
 
 | 落點 | 取捨 |
 |------|------|
-| `dotnet bee apikey ...` / `dotnet bee admin ...` | CLI 天然是部署期工具、可進腳本。但 `tools/Bee.Cli` 目前只引用 `Bee.Base` / `Bee.Definition` / `Bee.Expressions`，要接 DB 得把 `Bee.Business` 與 repository 一起拉進來——**這是本項最主要的決策**，會讓 CLI 從「定義檔工具」變成「需要連得上資料庫的維運工具」 |
+| `dotnet bee apikey ...` / `dotnet bee admin ...` | CLI 天然是部署期工具、可進腳本。但 `tools/Bee.Cli` 目前只宣告 `Bee.Definition`（傳遞閉包為 `Bee.Definition` + `Bee.Base`；ADR-038 後已不含 `Bee.Expressions`），要接 DB 得把 `Bee.Business` 與 repository 一起拉進來——**這是本項最主要的決策**，會讓 CLI 從「定義檔工具」變成「需要連得上資料庫的維運工具」 |
 | DefineEditor 加一個分頁 | 已是本機 Avalonia 工具、已有 DI 宿主。但它的定位是編輯定義檔，而金鑰與管理員旗標都在 DB 不在定義檔 |
 
 **第二個消費者如何改變權衡**：CLI 那一格的成本（把 `Bee.Business` 與 repository 拉進

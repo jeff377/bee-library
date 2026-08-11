@@ -91,12 +91,20 @@ graph BT
 | Bee.Expressions | DynamicExpresso.Core 2.x |
 | Bee.Definition | Microsoft.Extensions.Localization.Abstractions 10.x |
 | Bee.Db | *(none)* |
-| Bee.ObjectCaching | Microsoft.Extensions.Caching.Memory 10.x, Microsoft.Extensions.FileProviders.Physical 10.x |
+| Bee.ObjectCaching | Microsoft.Extensions.Caching.Memory 10.x |
+| Bee.Api.Core | MessagePack 3.x |
+| Bee.Business | Microsoft.Extensions.Logging.Abstractions 10.x |
+| Bee.Repository | Microsoft.Extensions.DependencyInjection.Abstractions 10.x |
 | Bee.Hosting | Microsoft.Extensions.DependencyInjection 10.x, Microsoft.Extensions.Hosting.Abstractions 10.x |
 | Bee.Api.AspNetCore | `FrameworkReference: Microsoft.AspNetCore.App` |
 | Bee.Web.Blazor.Server | `Microsoft.AspNetCore.Components.Web` and related Blazor Server packages |
 | Bee.UI.Avalonia | Avalonia 12.0.x, Avalonia.Controls.DataGrid 12.0.x |
-| Bee.Api.Contracts / Bee.Api.Core / Bee.Api.Client / Bee.Business / Bee.Repository / Bee.Repository.Abstractions / Bee.UI.Core | *(none)* |
+| Bee.Api.Contracts / Bee.Api.Client / Bee.Repository.Abstractions / Bee.UI.Core | *(none)* |
+
+> `Bee.Api.Core`'s MessagePack reference is the only transport-format package in the framework, and
+> keeping it the only one is the point of [ADR-036](adr/adr-036-wire-serialization-externalized.md).
+> Build-time-only references (`PrivateAssets="all"`: SourceLink, the public API analyzers, the
+> repository's own analyzers) are omitted — they reach no consumer.
 
 ## Target Framework Summary
 
@@ -118,7 +126,7 @@ Also under `tools/` but not on NuGet:
 
 - **Bee.Base** is the lowest-level foundation package with no internal dependencies.
 - **Bee.Expressions** holds `DynamicExpressoEvaluator`, the DynamicExpresso-backed implementation of the expression engine. The *abstraction* — `IExpressionEvaluator`, `ExpressionPolicy`, `ExpressionEvaluationException` — lives in `Bee.Base.Expressions`, so `Bee.Definition` (the `FormExpressionCalculator`) and `Bee.Business` (the rule processor) consume the engine without taking a dependency on DynamicExpresso; only the composition roots that pick an implementation (`Bee.Hosting` for DI registration, `Bee.UI.Avalonia` for client-side live preview) reference this package. That split keeps the definition layer free of third-party packages while a field computed on the client still matches what the server writes on save. See [adr-028](adr/adr-028-expression-rule-engine.md) and [adr-038](adr/adr-038-definition-dependency-boundary.md).
-- **Bee.Definition** is the most depended-on project, with 6 direct dependents (Contracts, Db, RepoAbs, Caching, Business, Core).
+- **Bee.Definition** is the most depended-on project, with 7 direct dependents (Contracts, Db, RepoAbs, Caching, Business, Api.Core, UI.Avalonia).
 - **Bee.Api.Contracts** is a shared contract/abstraction layer, not an application-level API project. Despite the "API" name, both `Bee.Business` and `Bee.Api.Core` depend on it (`Business → Contracts`, `Core → Contracts`), so it sits *below* them — the diagram groups it under **Shared Contracts** rather than the API application layer.
 - **Bee.Hosting** is the composition root: it consolidates the backend services (`Bee.Api.Core`, `Bee.Business`, `Bee.Db`, `Bee.Repository`, `Bee.ObjectCaching`) behind a single `AddBeeFramework` extension on `IServiceCollection`, with no ASP.NET Core dependency. Non-web hosts (WinForms, Console, Worker Service) reference it directly. It is shown in its own **Composition Root** group rather than under API: reaching across every layer is what a composition root does, so the "API layer must not reference the Repository layer" constraint does not apply to it. What *does* apply is that it holds no data access of its own — statements live in `Bee.Db` / `Bee.Repository`, and Hosting keeps only the hosted-service shells and DI wiring.
 - **Bee.Api.AspNetCore** is the ASP.NET Core integration layer (`UseBeeFramework` middleware + `ApiServiceController`); it pulls in `Bee.Hosting` transitively, so web hosts get DI registration plus middleware in one package reference.

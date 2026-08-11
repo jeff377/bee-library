@@ -15,9 +15,10 @@ namespace Bee.Api.Core.MessagePack
     /// <c>Dictionary&lt;K,V&gt;</c>, <c>T?</c> and enums are all resolved through
     /// <c>MakeGenericType</c> unless they are registered.
     /// <para>
-    /// Most of this file family is generated from the wire type closure rather than written by
-    /// hand; <c>WireContractDriftTests</c> is what keeps it honest, by walking the same closure at
-    /// test time and failing when a type or a member is missing from the registrations.
+    /// This file family was bootstrapped from the wire type closure and is now maintained by hand —
+    /// there is no generator to re-run. <c>WireContractDriftTests</c> is what keeps it honest: it
+    /// walks the same closure at test time and fails when a type or a member is missing from the
+    /// registrations.
     /// </para>
     /// </remarks>
     internal static partial class WireContracts

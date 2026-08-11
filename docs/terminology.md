@@ -264,7 +264,7 @@ See [Temporal Types](temporal-types.md) for the cross-layer reference, and
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `DefineType` | 定義資料類別 | `SystemSettings`, `DatabaseSettings`, `DbCategorySettings`, `ProgramSettings`, `MenuSettings`, `TableSchema`, `FormSchema`, `FormLayout`, `Language`, `PermissionModels`, `CurrencySettings`, `UnitSettings` — 12 values total |
+| `DefineType` | 定義資料類別 | `SystemSettings`, `DatabaseSettings`, `DbCategorySettings`, `ProgramSettings`, `MenuSettings`, `TableSchema`, `FormSchema`, `FormLayout`, `Language`, `PermissionModels`, `CurrencySettings`, `UnitSettings`, `PluginSettings` — 13 values total |
 
 ### Database
 

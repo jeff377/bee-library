@@ -4,14 +4,18 @@ namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
     /// Custom <see cref="MessagePackSerializerOptions"/> that enforces the allowed type whitelist
-    /// during <c>TypelessFormatter</c> deserialization.
+    /// when a payload names its own type.
     /// </summary>
     /// <remarks>
-    /// <c>TypelessFormatter</c> calls
-    /// <see cref="MessagePackSerializerOptions.ThrowIfDeserializingTypeIsDisallowed"/>
-    /// <b>before</b> instantiating the deserialized object. This override applies
-    /// <see cref="WireTypeWhitelist.IsTypeAllowed"/> at that point, preventing
-    /// untrusted types from being constructed.
+    /// The caller is <see cref="WireValueFormatter"/>'s named-type escape hatch — the only path left
+    /// that resolves a type from the wire. It used to be MessagePack's <c>TypelessFormatter</c>,
+    /// which ADR-037 removed.
+    /// <para>
+    /// That caller invokes
+    /// <see cref="MessagePackSerializerOptions.ThrowIfDeserializingTypeIsDisallowed"/> <b>before</b>
+    /// instantiating the deserialized object, and this override screens the type there — so a
+    /// disallowed type is refused rather than constructed.
+    /// </para>
     /// </remarks>
     internal sealed class SafeMessagePackSerializerOptions : MessagePackSerializerOptions
     {
@@ -38,7 +42,7 @@ namespace Bee.Api.Core.MessagePack
 
         /// <summary>
         /// Validates that the type is allowed for deserialization before object instantiation.
-        /// Called by <c>TypelessFormatter</c> during deserialization.
+        /// Called by <see cref="WireValueFormatter"/> when a payload names its own type.
         /// </summary>
         /// <param name="type">The type about to be instantiated.</param>
         /// <exception cref="InvalidOperationException">

@@ -162,4 +162,4 @@ https://sonarcloud.io/summary/new_code?id={ProjectKey}&branch=main
 
 - [SonarScanner for .NET 官方文件](https://docs.sonarsource.com/sonarqube-cloud/advanced-setup/ci-based-analysis/sonarscanner-for-net/)
 - [coverlet `--collect` 參數說明](https://github.com/coverlet-coverage/coverlet/blob/master/Documentation/VSTestIntegration.md)
-- 本專案實作：[build-ci.yml](../.github/workflows/build-ci.yml)
+- 本專案實作：[build-ci.yml](../../.github/workflows/build-ci.yml)

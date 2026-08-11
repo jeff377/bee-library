@@ -1,8 +1,10 @@
 # ADR-037：wire 型別一律顯式註冊 formatter，`object` 值改用判別式封套
 
-- **狀態**：已接受
-- **日期**：2026-08-10
-- **相關**：[ADR-030](adr-030-messagepack-name-based-keys.md)、[ADR-036](adr-036-wire-serialization-externalized.md)
+## 狀態
+
+**已採納（Accepted，2026-08-10）** —— 決策已執行。
+
+相關：[ADR-030](adr-030-messagepack-name-based-keys.md)、[ADR-036](adr-036-wire-serialization-externalized.md)
 
 ## 背景
 
