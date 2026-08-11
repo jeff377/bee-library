@@ -16,7 +16,19 @@ namespace Bee.Definition.Forms
     public class FormTable : KeyCollectionItem
     {
         private FormFieldCollection? _fields = null;
-        private RelationFieldReferenceCollection? _relationFieldReferences = null;
+        /// <summary>
+        /// Lazily-built reverse index of relation field mappings.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: <see cref="Lazy{T}"/> rather than a null check, and
+        /// <see cref="LazyThreadSafetyMode.ExecutionAndPublication"/> rather than the cheaper modes.
+        /// A <see cref="FormSchema"/> comes from a process-wide cache, so two requests that first
+        /// touch the same schema race here: an unguarded check builds the collection twice, hands
+        /// each caller a different instance, and — because the builder throws on a malformed mapping
+        /// — can surface that exception from what reads like a plain property getter, at a moment
+        /// that depends on timing. Building it once and publishing it once removes both.
+        /// </remarks>
+        private readonly Lazy<RelationFieldReferenceCollection> _relationFieldReferences;
 
         #region Constructors
 
@@ -24,7 +36,12 @@ namespace Bee.Definition.Forms
         /// Initializes a new instance of <see cref="FormTable"/>.
         /// </summary>
         public FormTable()
-        { }
+        {
+            // 在建構子指派而非欄位初始設定式：Lazy 的 factory 捕捉 this，而 C# 不允許
+            // 欄位初始設定式取用 this（CS0027）。
+            _relationFieldReferences = new Lazy<RelationFieldReferenceCollection>(
+                CreateRelationFieldReferences, LazyThreadSafetyMode.ExecutionAndPublication);
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="FormTable"/>.
@@ -32,6 +49,7 @@ namespace Bee.Definition.Forms
         /// <param name="tableName">The table name.</param>
         /// <param name="displayName">The display name.</param>
         public FormTable(string tableName, string displayName)
+            : this()
         {
             TableName = tableName;
             DisplayName = displayName;
@@ -142,12 +160,7 @@ namespace Bee.Definition.Forms
         [XmlIgnore]
         public RelationFieldReferenceCollection RelationFieldReferences
         {
-            get
-            {
-                if (_relationFieldReferences == null)
-                    _relationFieldReferences = CreateRelationFieldReferences();
-                return _relationFieldReferences;
-            }
+            get => _relationFieldReferences.Value;
         }
 
         /// <summary>
