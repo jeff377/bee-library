@@ -241,7 +241,7 @@ Bee.Business.Form.FormPluginStage.BeforeSave = 0 -> Bee.Business.Form.FormPlugin
 Bee.Business.Form.FormRuleProcessor
 Bee.Business.Form.FormRuleProcessor.ApplyBeforeDelete(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! snapshot, string! timeZoneId = "") -> void
 Bee.Business.Form.FormRuleProcessor.ApplyBeforeSave(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! dataSet, Bee.Definition.RoundingContext! roundingContext, string! timeZoneId = "") -> void
-Bee.Business.Form.FormRuleProcessor.FormRuleProcessor(Bee.Expressions.IExpressionEvaluator! evaluator) -> void
+Bee.Business.Form.FormRuleProcessor.FormRuleProcessor(Bee.Base.Expressions.IExpressionEvaluator! evaluator) -> void
 Bee.Business.Form.GetDataArgs
 Bee.Business.Form.GetDataArgs.GetDataArgs() -> void
 Bee.Business.Form.GetDataArgs.RowId.get -> System.Guid

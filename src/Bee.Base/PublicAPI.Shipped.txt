@@ -123,6 +123,16 @@ Bee.Base.Exceptions.ForbiddenException.ForbiddenException(string! message, Syste
 Bee.Base.Exceptions.UserMessageException
 Bee.Base.Exceptions.UserMessageException.UserMessageException(string! message) -> void
 Bee.Base.Exceptions.UserMessageException.UserMessageException(string! message, System.Exception! innerException) -> void
+Bee.Base.Expressions.ExpressionEvaluationException
+Bee.Base.Expressions.ExpressionEvaluationException.Expression.get -> string?
+Bee.Base.Expressions.ExpressionEvaluationException.Expression.init -> void
+Bee.Base.Expressions.ExpressionEvaluationException.ExpressionEvaluationException(string! message) -> void
+Bee.Base.Expressions.ExpressionEvaluationException.ExpressionEvaluationException(string! message, System.Exception! innerException) -> void
+Bee.Base.Expressions.ExpressionPolicy
+Bee.Base.Expressions.IExpressionEvaluator
+Bee.Base.Expressions.IExpressionEvaluator.Evaluate(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, System.Type! returnType, string! timeZoneId = "") -> object?
+Bee.Base.Expressions.IExpressionEvaluator.Evaluate<T>(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, string! timeZoneId = "") -> T
+Bee.Base.Expressions.IExpressionEvaluator.GetReferencedVariables(string! expression) -> System.Collections.Generic.IReadOnlyList<string!>!
 Bee.Base.FileUtilities
 Bee.Base.FrameworkClock
 Bee.Base.HttpUtilities
@@ -298,6 +308,8 @@ static Bee.Base.Data.FieldDbTypeExtensions.ToDbFieldValue(this Bee.Base.Data.Fie
 static Bee.Base.Data.FieldDbTypeExtensions.ToFieldValue(this Bee.Base.Data.FieldDbType dbType, object! value) -> object!
 static Bee.Base.DateTimeExtensions.GetYearMonth(this System.DateTime dateValue) -> System.DateTime
 static Bee.Base.Exceptions.ExceptionExtensions.Unwrap(this System.Exception! ex) -> System.Exception!
+static Bee.Base.Expressions.ExpressionPolicy.CoerceValue(object? value, Bee.Base.Data.FieldDbType dbType) -> object!
+static Bee.Base.Expressions.ExpressionPolicy.ToClrType(Bee.Base.Data.FieldDbType dbType) -> System.Type!
 static Bee.Base.FileUtilities.FileReadText(string! filePath) -> string!
 static Bee.Base.FileUtilities.FileWriteText(string! filePath, string! contents) -> void
 static Bee.Base.FileUtilities.FileWriteText(string! filePath, string! contents, System.Text.Encoding! encoding) -> void

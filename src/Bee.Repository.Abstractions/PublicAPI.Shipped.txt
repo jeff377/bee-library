@@ -135,6 +135,7 @@ Bee.Repository.Abstractions.System.IUserRepository.GetName(string! userId) -> st
 Bee.Repository.Abstractions.System.IUserRepository.GetRowIdBySysId(string! userId) -> System.Guid
 Bee.Repository.Abstractions.System.IUserRepository.IsDeploymentAdmin(string! userId) -> bool
 Bee.Repository.Abstractions.System.IUserRepository.SetDeploymentAdmin(string! userId, bool isDeploymentAdmin) -> bool
+Bee.Repository.Abstractions.System.IUserRepository.VerifyPassword(string! userId, string! password) -> bool
 Bee.Repository.Abstractions.System.UserLocale
 Bee.Repository.Abstractions.System.UserLocale.Culture.get -> string!
 Bee.Repository.Abstractions.System.UserLocale.Culture.init -> void

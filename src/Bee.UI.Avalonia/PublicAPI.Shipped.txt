@@ -171,7 +171,7 @@ Bee.UI.Avalonia.DataObjects.FormDataObject.SetField(System.Data.DataRow! row, st
 Bee.UI.Avalonia.DataObjects.FormDataObject.SetField(string! fieldName, string? value) -> void
 Bee.UI.Avalonia.DataObjects.FormLiveComputation
 Bee.UI.Avalonia.DataObjects.FormLiveComputation.ApplyDefaults(string! tableName, System.Data.DataRow! row) -> System.Collections.Generic.IReadOnlyList<string!>!
-Bee.UI.Avalonia.DataObjects.FormLiveComputation.FormLiveComputation(Bee.Definition.Forms.FormSchema! schema, Bee.Definition.RoundingContext? roundingContext = null, Bee.Expressions.IExpressionEvaluator? evaluator = null) -> void
+Bee.UI.Avalonia.DataObjects.FormLiveComputation.FormLiveComputation(Bee.Definition.Forms.FormSchema! schema, Bee.Definition.RoundingContext? roundingContext = null, Bee.Base.Expressions.IExpressionEvaluator? evaluator = null) -> void
 Bee.UI.Avalonia.DataObjects.FormLiveComputation.InitializeNewRow(string! tableName, System.Data.DataRow! row) -> System.Collections.Generic.IReadOnlyList<string!>!
 Bee.UI.Avalonia.DataObjects.FormLiveComputation.IsDegraded.get -> bool
 Bee.UI.Avalonia.DataObjects.FormLiveComputation.IsRecomputing.get -> bool

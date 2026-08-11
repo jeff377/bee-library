@@ -102,5 +102,6 @@ Bee.Repository.System.UserRepository.GetRowIdBySysId(string! userId) -> System.G
 Bee.Repository.System.UserRepository.IsDeploymentAdmin(string! userId) -> bool
 Bee.Repository.System.UserRepository.SetDeploymentAdmin(string! userId, bool isDeploymentAdmin) -> bool
 Bee.Repository.System.UserRepository.UserRepository(Bee.Repository.IRepositoryContext! ctx, System.Guid accessToken, string! progId) -> void
+Bee.Repository.System.UserRepository.VerifyPassword(string! userId, string! password) -> bool
 static Bee.Repository.AuditLog.AuditLogWriteRepository.BuildInsert(Bee.Definition.Logging.AuditEntry! entry) -> Bee.Db.DbCommandSpec!
 virtual Bee.Repository.Factories.RepositoryFactory.CreateFormRepositoryCore(System.Guid accessToken, string! progId) -> Bee.Repository.Abstractions.Form.IDataFormRepository!

@@ -4,15 +4,3 @@ Bee.Expressions.DynamicExpressoEvaluator.DynamicExpressoEvaluator() -> void
 Bee.Expressions.DynamicExpressoEvaluator.Evaluate(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, System.Type! returnType, string! timeZoneId = "") -> object?
 Bee.Expressions.DynamicExpressoEvaluator.Evaluate<T>(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, string! timeZoneId = "") -> T
 Bee.Expressions.DynamicExpressoEvaluator.GetReferencedVariables(string! expression) -> System.Collections.Generic.IReadOnlyList<string!>!
-Bee.Expressions.ExpressionEvaluationException
-Bee.Expressions.ExpressionEvaluationException.Expression.get -> string?
-Bee.Expressions.ExpressionEvaluationException.Expression.init -> void
-Bee.Expressions.ExpressionEvaluationException.ExpressionEvaluationException(string! message) -> void
-Bee.Expressions.ExpressionEvaluationException.ExpressionEvaluationException(string! message, System.Exception! innerException) -> void
-Bee.Expressions.ExpressionPolicy
-Bee.Expressions.IExpressionEvaluator
-Bee.Expressions.IExpressionEvaluator.Evaluate(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, System.Type! returnType, string! timeZoneId = "") -> object?
-Bee.Expressions.IExpressionEvaluator.Evaluate<T>(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, string! timeZoneId = "") -> T
-Bee.Expressions.IExpressionEvaluator.GetReferencedVariables(string! expression) -> System.Collections.Generic.IReadOnlyList<string!>!
-static Bee.Expressions.ExpressionPolicy.CoerceValue(object? value, Bee.Base.Data.FieldDbType dbType) -> object!
-static Bee.Expressions.ExpressionPolicy.ToClrType(Bee.Base.Data.FieldDbType dbType) -> System.Type!

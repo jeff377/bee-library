@@ -275,7 +275,7 @@ Bee.Definition.Forms.FormExpressionCalculator.ApplyComputedRow(Bee.Definition.Fo
 Bee.Definition.Forms.FormExpressionCalculator.ApplyDefaultRow(Bee.Definition.Forms.FormTable! formTable, System.Data.DataRow! row, string! timeZoneId = "") -> System.Collections.Generic.IReadOnlyList<string!>!
 Bee.Definition.Forms.FormExpressionCalculator.ApplyFieldExpressions(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! dataSet, Bee.Definition.RoundingContext! roundingContext, string! timeZoneId = "") -> void
 Bee.Definition.Forms.FormExpressionCalculator.BuildDependencyMap(Bee.Definition.Forms.FormTable! formTable) -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<string!>!>!
-Bee.Definition.Forms.FormExpressionCalculator.FormExpressionCalculator(Bee.Expressions.IExpressionEvaluator! evaluator) -> void
+Bee.Definition.Forms.FormExpressionCalculator.FormExpressionCalculator(Bee.Base.Expressions.IExpressionEvaluator! evaluator) -> void
 Bee.Definition.Forms.FormExpressionCalculator.ValidateRules(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! dataSet, Bee.Definition.Forms.FormRuleTrigger trigger, string! timeZoneId = "") -> void
 Bee.Definition.Forms.FormField
 Bee.Definition.Forms.FormField.Caption.get -> string!
@@ -635,6 +635,7 @@ Bee.Definition.Language.ILanguageService.TryGetLangText(string! lang, string! fu
 Bee.Definition.Language.ILanguageService.TryGetLangText(string! lang, string! namespace, string! subKey, out string! text) -> bool
 Bee.Definition.Language.LanguageEnum
 Bee.Definition.Language.LanguageEnum.Entries.get -> Bee.Definition.Language.LanguageEnumEntryCollection!
+Bee.Definition.Language.LanguageEnum.Entries.set -> void
 Bee.Definition.Language.LanguageEnum.GetText(string! code) -> string?
 Bee.Definition.Language.LanguageEnum.LanguageEnum() -> void
 Bee.Definition.Language.LanguageEnum.Name.get -> string!
