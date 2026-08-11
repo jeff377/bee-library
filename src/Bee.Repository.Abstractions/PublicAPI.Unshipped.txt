@@ -1,1 +1,2 @@
 #nullable enable
+Bee.Repository.Abstractions.System.IUserRepository.VerifyPassword(string! userId, string! password) -> bool

@@ -98,6 +98,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
             private readonly bool _throws;
             public FakeUserRepository(bool isAdmin, bool throws) { _isAdmin = isAdmin; _throws = throws; }
             public Guid GetRowIdBySysId(string userId) => throw new NotSupportedException();
+            public bool VerifyPassword(string userId, string password) => throw new NotSupportedException();
             public UserLocale GetLocale(string userId) => throw new NotSupportedException();
             public string? GetName(string userId) => throw new NotSupportedException();
             public bool IsDeploymentAdmin(string userId)

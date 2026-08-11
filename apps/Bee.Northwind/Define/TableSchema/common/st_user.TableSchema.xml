@@ -5,7 +5,7 @@
 		<DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
 		<DbField FieldName="sys_id" Caption="用戶帳號" DbType="String" Length="20" />
 		<DbField FieldName="sys_name" Caption="用戶名稱" DbType="String" Length="20" />
-		<DbField FieldName="password" Caption="登入密碼" DbType="String" Length="40" />
+		<DbField FieldName="password" Caption="登入密碼" DbType="String" Length="200" />
 		<DbField FieldName="email" Caption="電子郵件" DbType="String" Length="100" />
 		<DbField FieldName="note" Caption="備註" DbType="String" Length="200" />
 		<DbField FieldName="time_zone" Caption="時區" DbType="String" Length="50" />

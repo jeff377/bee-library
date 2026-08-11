@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableSchema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DbName="log" TableName="st_log_anomaly_db" DisplayName="DB 異常記錄">
+	<Fields>
+		<DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
+		<DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
+		<DbField FieldName="log_time" Caption="事件時刻" DbType="DateTime" />
+		<DbField FieldName="database_id" Caption="資料庫代碼" DbType="String" Length="50" />
+		<DbField FieldName="command" Caption="指令模板" DbType="Text" />
+		<DbField FieldName="anomaly_kind" Caption="異常類型" DbType="Integer" />
+		<DbField FieldName="elapsed_ms" Caption="耗時毫秒" DbType="Integer" />
+		<DbField FieldName="threshold_ms" Caption="警界毫秒" DbType="Integer" AllowNull="true" />
+		<DbField FieldName="affected_rows" Caption="影響列數" DbType="Integer" AllowNull="true" />
+		<DbField FieldName="result_rows" Caption="回傳列數" DbType="Integer" AllowNull="true" />
+		<DbField FieldName="error_type" Caption="例外型別" DbType="String" Length="200" AllowNull="true" />
+		<DbField FieldName="error_message" Caption="錯誤訊息" DbType="Text" AllowNull="true" />
+	</Fields>
+	<Indexes>
+		<DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+			<IndexFields>
+				<IndexField FieldName="sys_no" />
+			</IndexFields>
+		</DbTableIndex>
+		<DbTableIndex Name="rx_{0}" Unique="true">
+			<IndexFields>
+				<IndexField FieldName="sys_rowid" />
+			</IndexFields>
+		</DbTableIndex>
+		<DbTableIndex Name="ix_st_log_anomaly_db_kind">
+			<IndexFields>
+				<IndexField FieldName="anomaly_kind" />
+			</IndexFields>
+		</DbTableIndex>
+	</Indexes>
+</TableSchema>

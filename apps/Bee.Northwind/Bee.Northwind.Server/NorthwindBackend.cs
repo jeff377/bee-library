@@ -46,19 +46,17 @@ public static class NorthwindBackend
 
         var paths = new PathOptions { DefinePath = ResolveDefinePath() };
 
-        // The framework reaches for several tables in the common database that no
-        // DbCategorySettings entry declares — the cache-notify poller AddBeeFramework registers
-        // reads st_cache_notify, every sign-in writes a seed to st_session and reads the session
-        // locale from st_user. Their TableSchema ships as embedded framework defaults in
-        // Bee.Definition, so materialize the whole common set into the demo DefinePath
-        // (skip-if-exists) for IDefineAccess to resolve; NorthwindSchemaSeeder derives the same
-        // set from the same source and creates the tables. Taking the folder wholesale rather
-        // than naming files is deliberate: see GetFrameworkCommonTables for why, and for what
-        // the demo pays in return.
+        // The framework owns two whole categories of table the demo does not define itself: the
+        // cross-company tables in common (st_user, st_session, st_cache_notify, ...) and the audit
+        // trail in log. Their TableSchema ships as embedded defaults in Bee.Definition, so
+        // materialize both folders into the demo DefinePath (skip-if-exists) for IDefineAccess to
+        // resolve. DbCategorySettings then registers them like any other table, and the ordinary
+        // category loop builds them. Taking the folders wholesale rather than naming files is
+        // deliberate: see GetFrameworkCommonTables for why, and for what the demo pays in return.
         Defaults.MaterializeTo(paths.DefinePath, new MaterializeOptions
         {
-            Filter = rel => rel.StartsWith(
-                NorthwindSchemaSeeder.CommonTableSchemaPrefix, StringComparison.Ordinal)
+            Filter = rel => NorthwindSchemaSeeder.FrameworkTableSchemaPrefixes
+                .Any(prefix => rel.StartsWith(prefix, StringComparison.Ordinal))
         });
 
         // SQLite providers — keep dialect registration explicit so the framework does
@@ -78,7 +76,7 @@ public static class NorthwindBackend
             autoCreateMasterKey: true);
 
         // Nothing to register for the custom login: Define/ProgramSettings.xml binds the reserved
-        // progId "System" to NorthwindAuthenticatingSystemBusinessObject, and the framework
+        // progId "System" to NorthwindSystemBusinessObject, and the framework
         // resolves it from there like any other progId.
 
         // Replace the default ICompanyInfoService (which reads st_company) with a hard-coded

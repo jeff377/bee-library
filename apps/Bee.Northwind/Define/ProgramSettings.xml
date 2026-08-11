@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ProgramSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Items>
-    <ProgramItem ProgId="System" DisplayName="System" BusinessObject="Bee.Northwind.Server.NorthwindAuthenticatingSystemBusinessObject, Bee.Northwind.Server" />
+    <ProgramItem ProgId="System" DisplayName="System" BusinessObject="Bee.Northwind.Server.NorthwindSystemBusinessObject, Bee.Northwind.Server" />
     <ProgramItem ProgId="Category" DisplayName="Categories" />
     <ProgramItem ProgId="Supplier" DisplayName="Suppliers" />
     <ProgramItem ProgId="Customer" DisplayName="Customers" />

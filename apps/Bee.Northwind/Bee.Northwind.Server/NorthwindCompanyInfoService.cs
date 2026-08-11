@@ -5,7 +5,7 @@ namespace Bee.Northwind.Server;
 /// <summary>
 /// <see cref="ICompanyInfoService"/> that returns a single hard-coded demo company without
 /// touching the <c>st_company</c> table — the company-context analogue of
-/// <see cref="NorthwindAuthenticatingSystemBusinessObject"/>'s hard-coded login.
+/// <see cref="NorthwindSystemBusinessObject"/>'s auto-entered company.
 /// </summary>
 /// <remarks>
 /// It exists so company-scoped forms (<c>CategoryId="company"</c>) resolve their database:

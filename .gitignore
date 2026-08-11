@@ -66,6 +66,8 @@ bld/
 !src/Bee.Definition/Defaults/TableSchema/log/**
 !tests/Define/TableSchema/log/
 !tests/Define/TableSchema/log/**
+!apps/Bee.Northwind/Define/TableSchema/log/
+!apps/Bee.Northwind/Define/TableSchema/log/**
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

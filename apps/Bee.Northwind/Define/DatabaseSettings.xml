@@ -17,5 +17,15 @@
         DisplayName="Northwind Company Database (SQLite)"
         DatabaseType="SQLite"
         ConnectionString="Data Source=northwind.db;Cache=Shared" />
+    <!-- log: the audit trail. A production deployment usually gives this its own database, because
+         it grows on a different curve from business data and is read by different people. The
+         category is what the framework routes on, so moving it later is a change to this file
+         alone. -->
+    <DatabaseItem
+        Id="log"
+        CategoryId="log"
+        DisplayName="Northwind Audit Log Database (SQLite)"
+        DatabaseType="SQLite"
+        ConnectionString="Data Source=northwind.db;Cache=Shared" />
   </Items>
 </DatabaseSettings>

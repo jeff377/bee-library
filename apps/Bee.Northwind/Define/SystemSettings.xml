@@ -28,6 +28,19 @@
     <Components>
       <BusinessObjectProvider></BusinessObjectProvider>
     </Components>
+    <!-- Audit trail. Login records are the demo's visible slice: every sign-in, failure and lockout
+         lands in st_log_login without a line of application code. UseBackgroundWriter is false so a
+         record is visible the moment the sign-in returns, which is what makes it demonstrable; a
+         production host leaves it true and lets the batch writer absorb the volume. -->
+    <AuditLogOptions>
+      <Enabled>true</Enabled>
+      <UseBackgroundWriter>false</UseBackgroundWriter>
+      <LoginEnabled>true</LoginEnabled>
+      <ChangeEnabled>true</ChangeEnabled>
+      <ExecEnabled>false</ExecEnabled>
+      <AccessEnabled>false</AccessEnabled>
+      <AnomalyEnabled>false</AnomalyEnabled>
+    </AuditLogOptions>
   </BackendConfiguration>
   <FrontendConfiguration />
   <WebsiteConfiguration />

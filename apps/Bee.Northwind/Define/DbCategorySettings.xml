@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <DbCategorySettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Categories>
+    <!-- common: framework tables shared across companies. Registered here rather than reached for
+         implicitly, so building them goes through the same "read the categories, build each table"
+         loop as everything else. -->
+    <DbCategory Id="common" DisplayName="Northwind Shared Database">
+      <Tables>
+        <TableItem TableName="st_user" DisplayName="User" />
+        <TableItem TableName="st_session" DisplayName="Session" />
+        <TableItem TableName="st_cache_notify" DisplayName="Cache Notification" />
+        <TableItem TableName="st_define" DisplayName="Definition Storage" />
+        <TableItem TableName="st_company" DisplayName="Company" />
+        <TableItem TableName="st_user_company" DisplayName="User Company Access" />
+        <TableItem TableName="st_api_key" DisplayName="API Key" />
+      </Tables>
+    </DbCategory>
     <DbCategory Id="company" DisplayName="Northwind Company Database">
       <Tables>
         <TableItem TableName="ft_category" DisplayName="Category" />
@@ -12,6 +26,17 @@
         <TableItem TableName="ft_order_detail" DisplayName="Order Details" />
         <TableItem TableName="st_department" DisplayName="Department" />
         <TableItem TableName="st_employee" DisplayName="Employee" />
+      </Tables>
+    </DbCategory>
+    <!-- log: audit trail. Separate category, so a deployment can move the trail to its own
+         database without touching a single form definition. -->
+    <DbCategory Id="log" DisplayName="Northwind Audit Log Database">
+      <Tables>
+        <TableItem TableName="st_log_login" DisplayName="Login Log" />
+        <TableItem TableName="st_log_change" DisplayName="Change Log" />
+        <TableItem TableName="st_log_access" DisplayName="Access Log" />
+        <TableItem TableName="st_log_anomaly_api" DisplayName="API Anomaly Log" />
+        <TableItem TableName="st_log_anomaly_db" DisplayName="Database Anomaly Log" />
       </Tables>
     </DbCategory>
   </Categories>

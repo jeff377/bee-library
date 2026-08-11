@@ -1,9 +1,15 @@
 namespace Bee.Northwind.Server;
 
 /// <summary>
-/// Hard-coded credentials accepted by <see cref="NorthwindAuthenticatingSystemBusinessObject"/>.
-/// The desktop head surfaces these on its login screen so a fresh visitor knows what to type.
+/// The demo account the seeder writes into <c>st_user</c>, and the single company the session
+/// enters at login. The desktop head surfaces the credentials on its login screen so a fresh
+/// visitor knows what to type.
 /// </summary>
+/// <remarks>
+/// These are seed values, not a credential check: sign-in runs the framework's own <c>st_user</c>
+/// authentication, so the password below is only ever hashed on the way in and compared against
+/// the stored hash on the way back.
+/// </remarks>
 public static class NorthwindCredentials
 {
     /// <summary>The demo user id.</summary>
@@ -14,6 +20,15 @@ public static class NorthwindCredentials
 
     /// <summary>The display name surfaced through <c>SessionInfo.UserName</c>.</summary>
     public const string DisplayName = "Demo User";
+
+    /// <summary>
+    /// The demo user's IANA time zone, seeded into <c>st_user.time_zone</c>. The session takes its
+    /// zone from the user's row, which is what every user-facing date is then resolved against.
+    /// </summary>
+    public const string TimeZone = "Asia/Taipei";
+
+    /// <summary>The demo user's culture, seeded into <c>st_user.culture</c>.</summary>
+    public const string Culture = "en-US";
 
     /// <summary>
     /// The single demo company the session auto-enters at login. Company-scoped forms

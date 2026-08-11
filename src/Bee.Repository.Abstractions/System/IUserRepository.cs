@@ -14,6 +14,23 @@ namespace Bee.Repository.Abstractions.System
         Guid GetRowIdBySysId(string userId);
 
         /// <summary>
+        /// Verifies a password against the hash stored in <c>st_user.password</c>.
+        /// </summary>
+        /// <param name="userId">The user business id (<c>st_user.sys_id</c>).</param>
+        /// <param name="password">The plain-text password supplied by the caller.</param>
+        /// <returns><c>true</c> when the user exists and the password matches; otherwise <c>false</c>.</returns>
+        /// <remarks>
+        /// WARNING: the stored hash never leaves this method. Returning it so the caller can compare
+        /// would put a credential into a caller-side variable, which is one more place it can reach a
+        /// log or an exception message.
+        /// <para>
+        /// An unknown user and a wrong password both return <c>false</c>, and deliberately so: a
+        /// caller that could tell them apart would be an account enumeration oracle.
+        /// </para>
+        /// </remarks>
+        bool VerifyPassword(string userId, string password);
+
+        /// <summary>
         /// Reads a user's localization preferences (<c>st_user.time_zone</c> and
         /// <c>st_user.culture</c>) in one query, returning <see cref="UserLocale.Empty"/> when the
         /// user does not exist.

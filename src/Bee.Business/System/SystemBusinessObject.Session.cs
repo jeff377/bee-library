@@ -298,13 +298,35 @@ namespace Bee.Business.System
         /// <param name="userName">The user name on successful authentication.</param>
         /// <returns>True if authentication succeeded; otherwise, false.</returns>
         /// <remarks>
-        /// The default implementation always returns <c>false</c> to prevent unauthorized access
-        /// if a subclass forgets to override this method. Override in subclasses to implement real validation.
+        /// The default implementation authenticates against the framework's own <c>st_user</c> table:
+        /// the password is verified against the stored hash by <c>IUserRepository.VerifyPassword</c>
+        /// and the display name is read from <c>st_user.sys_name</c>. Override in subclasses that
+        /// authenticate against something else (a directory service, an identity provider, a
+        /// deployment's own user table).
+        /// <para>
+        /// Comparing an account and a password is the same operation in every deployment, so it
+        /// belongs to the framework rather than to each application: the table, the column and the
+        /// hasher are all the framework's already.
+        /// </para>
+        /// <para>
+        /// WARNING: an unknown user and a wrong password are indistinguishable to the caller by
+        /// design. <c>Login</c> reports both as the same message so the endpoint cannot be used to
+        /// enumerate accounts.
+        /// </para>
         /// </remarks>
         protected virtual bool AuthenticateUser(LoginArgs args, out string userName)
         {
             userName = string.Empty;
-            return false;
+            if (args == null || StringUtilities.IsEmpty(args.UserId)) { return false; }
+
+            var repo = Services.GetRequiredService<IRepositoryFactory>().Create<IUserRepository>();
+            if (!repo.VerifyPassword(args.UserId, args.Password ?? string.Empty)) { return false; }
+
+            // A user with a blank name is a legitimate row, so the display name falls back to the
+            // account id rather than leaving the session's UserName empty.
+            var name = repo.GetName(args.UserId);
+            userName = StringUtilities.IsNotEmpty(name) ? name! : args.UserId;
+            return true;
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Bee.Base.Security;
 using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Db.Providers;
@@ -25,9 +26,10 @@ namespace Bee.Northwind.Server;
 /// </remarks>
 public static class NorthwindSchemaSeeder
 {
-    // Business data (ft_* + the app's org tables) lives in the company database; framework
-    // cross-company tables (st_cache_notify) live in common. Both ids resolve to the same
-    // SQLite file in this single-company demo (see DatabaseSettings.xml).
+    // Three categories, three database ids: framework cross-company tables in common, business
+    // data (ft_* + the app's org tables) in company, the audit trail in log. All three resolve to
+    // the same SQLite file in this single-company demo (see DatabaseSettings.xml) — the category
+    // is what the framework routes on, so splitting them later is a change to that file alone.
     private const string CommonDatabaseId = "common";
     private const string CompanyDatabaseId = "company";
 
@@ -38,11 +40,17 @@ public static class NorthwindSchemaSeeder
         Dictionary<string, string>? Deferred = null);
 
     /// <summary>
-    /// Resource-path prefix of the framework's common-database table definitions inside
-    /// <see cref="Defaults"/>. Shared with <see cref="NorthwindBackend"/>, which materialises
-    /// the same set into the demo's <c>Define</c> directory.
+    /// Resource-path prefixes of the framework-owned table definitions inside
+    /// <see cref="Defaults"/>. Shared with <see cref="NorthwindBackend"/>, which materialises the
+    /// same sets into the demo's <c>Define</c> directory.
     /// </summary>
-    public const string CommonTableSchemaPrefix = "TableSchema/common/";
+    public static readonly string[] FrameworkTableSchemaPrefixes =
+    {
+        "TableSchema/common/",
+        "TableSchema/log/",
+    };
+
+    private const string CommonTableSchemaPrefix = "TableSchema/common/";
 
     private const string TableSchemaSuffix = ".TableSchema.xml";
 
@@ -51,19 +59,21 @@ public static class NorthwindSchemaSeeder
     /// <see cref="Defaults.ListEmbedded"/> rather than a hand-written list.
     /// </summary>
     /// <remarks>
-    /// These tables are not registered in <c>DbCategorySettings</c> — the framework reaches for
-    /// them directly (the cache-notify poller reads <c>st_cache_notify</c>, every sign-in writes a
-    /// seed to <c>st_session</c> and reads the session locale from <c>st_user</c>).
+    /// These tables <em>are</em> registered in <c>DbCategorySettings</c> under the <c>common</c>
+    /// category, so building them goes through the same category loop as every other table.
+    /// This list is no longer what creates them; it is what checks the registration is complete.
     ///
-    /// Deriving the list keeps this demo in step with the framework by construction. A
-    /// hand-maintained list is exactly what broke sign-in once already: two framework changes each
-    /// added a common-table dependency to `Login`, the list here was not updated, and the failure
-    /// surfaced only as a generic API error at sign-in time.
+    /// IMPORTANT: the check exists because a hand-maintained list is exactly what broke sign-in
+    /// once already — two framework changes each added a common-table dependency to `Login`, the
+    /// list was not updated, and the failure surfaced only as a generic API error at sign-in time.
+    /// Moving the list into XML makes "add a table" pure configuration, but it does not make the
+    /// list self-maintaining, so <see cref="VerifyCommonRegistration"/> compares the registered
+    /// set against what the framework actually ships and fails startup on a gap.
     ///
     /// The trade-off is that tables this demo never uses — <c>st_company</c>,
     /// <c>st_user_company</c>, <c>st_define</c>, <c>st_api_key</c> — are created empty, because it
-    /// substitutes its own <c>ICompanyInfoService</c> and authenticates against hard-coded
-    /// credentials. A few unused empty tables in the demo SQLite file are a cheaper price than
+    /// substitutes its own <c>ICompanyInfoService</c> and does not store definitions in the
+    /// database. A few unused empty tables in the demo SQLite file are a cheaper price than
     /// silently breaking every head the next time the framework reaches for a new table.
     /// </remarks>
     public static IReadOnlyList<string> GetFrameworkCommonTables()
@@ -113,9 +123,11 @@ public static class NorthwindSchemaSeeder
         ArgumentNullException.ThrowIfNull(connectionManager);
         ArgumentNullException.ThrowIfNull(dbAccessFactory);
 
+        VerifyCommonRegistration(defineAccess);
         EnsureSchema(defineAccess, connectionManager);
+        SeedDemoUser(dbAccessFactory.Create(CommonDatabaseId));
 
-        // All seed data is business data, so it lands in the company database.
+        // The rest of the seed data is business data, so it lands in the company database.
         var dbAccess = dbAccessFactory.Create(CompanyDatabaseId);
         var seedDir = Path.Combine(AppContext.BaseDirectory, "SeedData");
 
@@ -126,6 +138,77 @@ public static class NorthwindSchemaSeeder
             ApplyDeferredRelations(dbAccess, seed, seedDir);
 
         VerifyTablesExist(defineAccess, connectionManager);
+    }
+
+    /// <summary>
+    /// Fails startup when the <c>common</c> category does not register every common table the
+    /// framework ships a definition for, naming the ones that are missing.
+    /// </summary>
+    /// <remarks>
+    /// Registering tables in <c>DbCategorySettings</c> is what makes "add a table" pure
+    /// configuration, but a hand-written list does not notice when the framework grows a new
+    /// dependency. This check is the part that does notice: it compares the registered set against
+    /// <see cref="GetFrameworkCommonTables"/>, which is derived from the embedded defaults rather
+    /// than typed out. The failure it prevents is specific and has happened — a framework change
+    /// added a common-table dependency to sign-in, nothing here was updated, and the only symptom
+    /// was a generic API error at login.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">The common category is missing or incomplete.</exception>
+    private static void VerifyCommonRegistration(IDefineAccess defineAccess)
+    {
+        var settings = defineAccess.GetDbCategorySettings();
+        var registered = settings.Categories?
+            .Where(c => string.Equals(c.Id, CommonDatabaseId, StringComparison.Ordinal))
+            .SelectMany(c => c.Tables?.Select(t => t.TableName) ?? Enumerable.Empty<string>())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase)
+            ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var missing = GetFrameworkCommonTables()
+            .Where(table => !registered.Contains(table))
+            .ToList();
+
+        if (missing.Count > 0)
+        {
+            throw new InvalidOperationException(
+                "Northwind startup aborted: DbCategorySettings.xml does not register these framework " +
+                "common tables under the \"common\" category — " + string.Join(", ", missing) +
+                ". Add a TableItem for each; the framework reaches for them directly and the failure " +
+                "would otherwise surface only as a generic API error at sign-in.");
+        }
+    }
+
+    /// <summary>
+    /// Seeds the single demo account into <c>st_user</c> so sign-in runs the framework's own
+    /// <c>st_user</c> authentication rather than an application-supplied credential check.
+    /// </summary>
+    /// <remarks>
+    /// The hash is computed here rather than stored as a literal: a literal would silently stop
+    /// matching the first time the hashing parameters change, and the symptom would be a correct
+    /// password that no longer signs in.
+    /// <para>
+    /// The row also carries <c>time_zone</c> and <c>culture</c>, which is what makes the session
+    /// take its locale from the user rather than from the deployment defaults.
+    /// </para>
+    /// </remarks>
+    private static void SeedDemoUser(DbAccess dbAccess)
+    {
+        var countSpec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT COUNT(*) FROM st_user");
+        if (Convert.ToInt32(dbAccess.Execute(countSpec).Scalar, CultureInfo.InvariantCulture) > 0) { return; }
+
+        const string sql =
+            "INSERT INTO st_user (sys_rowid, sys_id, sys_name, password, email, note, time_zone, culture, deployment_admin) " +
+            "VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8})";
+
+        dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql,
+            Guid.NewGuid(),
+            NorthwindCredentials.UserId,
+            NorthwindCredentials.DisplayName,
+            PasswordHasher.HashPassword(NorthwindCredentials.Password),
+            string.Empty,
+            string.Empty,
+            NorthwindCredentials.TimeZone,
+            NorthwindCredentials.Culture,
+            false));
     }
 
     /// <summary>
@@ -141,10 +224,7 @@ public static class NorthwindSchemaSeeder
     /// <exception cref="InvalidOperationException">One or more expected tables are missing.</exception>
     private static void VerifyTablesExist(IDefineAccess defineAccess, IDbConnectionManager connectionManager)
     {
-        var expected = new Dictionary<string, List<string>>(StringComparer.Ordinal)
-        {
-            [CommonDatabaseId] = GetFrameworkCommonTables().ToList(),
-        };
+        var expected = new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
         var settings = defineAccess.GetDbCategorySettings();
         if (settings.Categories != null)
@@ -202,10 +282,6 @@ public static class NorthwindSchemaSeeder
             }
         }
 
-        // Framework tables live in the common database and the TableSchema/common/ folder.
-        var commonBuilder = new TableSchemaBuilder(CommonDatabaseId, defineAccess, connectionManager);
-        foreach (var table in GetFrameworkCommonTables())
-            commonBuilder.Execute(CommonDatabaseId, table);
     }
 
     private static void InsertRows(DbAccess dbAccess, SeedTable seed, string seedDir)

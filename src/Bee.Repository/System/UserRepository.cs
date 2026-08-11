@@ -1,4 +1,5 @@
 using Bee.Base;
+using Bee.Base.Security;
 using Bee.Db;
 using Bee.Definition;
 using Bee.Definition.Database;
@@ -41,6 +42,30 @@ namespace Bee.Repository.System
             var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar, sql, userId));
             // Scalar is null when the user id matches no row → no user, empty row id.
             return result.Scalar == null ? Guid.Empty : ValueUtilities.CGuid(result.Scalar);
+        }
+
+        /// <inheritdoc/>
+        public bool VerifyPassword(string userId, string password)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) { return false; }
+
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            string tbl = dbType.QuoteIdentifier(TableName);
+            string colPassword = dbType.QuoteIdentifier("password");
+            string colId = dbType.QuoteIdentifier(SysIdColumn);
+
+            string sql = $"SELECT {colPassword} FROM {tbl} WHERE {colId} = {{0}}";
+            var dbAccess = CreateDbAccess();
+            var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar, sql, userId));
+            if (result.Scalar == null || result.Scalar == DBNull.Value) { return false; }
+
+            var hash = ValueUtilities.CStr(result.Scalar);
+            // A blank stored hash is an account with no password set, not an account that accepts
+            // any password. `VerifyPassword` would return false for it anyway; short-circuiting
+            // keeps that intent explicit rather than incidental.
+            if (string.IsNullOrEmpty(hash)) { return false; }
+
+            return PasswordHasher.VerifyPassword(password, hash);
         }
 
         /// <inheritdoc/>
