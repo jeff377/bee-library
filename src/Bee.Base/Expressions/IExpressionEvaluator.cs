@@ -1,4 +1,6 @@
-namespace Bee.Expressions
+using System.Diagnostics.CodeAnalysis;
+
+namespace Bee.Base.Expressions
 {
     /// <summary>
     /// Evaluates expressions (a C# expression subset) against a set of named variables. The engine
@@ -32,6 +34,8 @@ namespace Bee.Expressions
         /// registered as a singleton and serves every user, so a zone fixed at construction could
         /// only ever be one user's (ADR-032 D13).
         /// </remarks>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters",
+            Justification = "The overload pair is not new API: both members shipped together from Bee.Expressions and only changed namespace here (ADR-038). RS0026 guards against a caller silently rebinding when an optional-parameter overload is added alongside an existing one, which cannot happen when neither overload has ever existed without the other.")]
         object? Evaluate(string expression, IReadOnlyDictionary<string, object?> variables, Type returnType,
             string timeZoneId = "");
 
@@ -44,6 +48,8 @@ namespace Bee.Expressions
         /// <param name="timeZoneId">The user's IANA time zone id; blank means UTC.</param>
         /// <exception cref="ExpressionEvaluationException">The expression cannot be parsed or references
         /// an identifier outside the evaluation sandbox.</exception>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters",
+            Justification = "See the justification on the non-generic overload above.")]
         T Evaluate<T>(string expression, IReadOnlyDictionary<string, object?> variables, string timeZoneId = "");
 
         /// <summary>

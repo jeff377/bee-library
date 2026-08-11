@@ -1,4 +1,4 @@
-namespace Bee.Expressions
+namespace Bee.Base.Expressions
 {
     /// <summary>
     /// Thrown when an expression cannot be parsed or compiled — for example a syntax error or a

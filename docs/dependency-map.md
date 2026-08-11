@@ -55,8 +55,6 @@ graph BT
 
   Definition --> Base
   Expressions --> Base
-  Definition --> Expressions
-  Business --> Expressions
   Hosting --> Expressions
   UIAvalonia --> Expressions
   Contracts --> Definition
@@ -91,7 +89,7 @@ graph BT
 |---------|-------------------|
 | Bee.Base | *(none)* |
 | Bee.Expressions | DynamicExpresso.Core 2.x |
-| Bee.Definition | MessagePack 3.x, Microsoft.Extensions.Localization.Abstractions 10.x |
+| Bee.Definition | Microsoft.Extensions.Localization.Abstractions 10.x |
 | Bee.Db | *(none)* |
 | Bee.ObjectCaching | Microsoft.Extensions.Caching.Memory 10.x, Microsoft.Extensions.FileProviders.Physical 10.x |
 | Bee.Hosting | Microsoft.Extensions.DependencyInjection 10.x, Microsoft.Extensions.Hosting.Abstractions 10.x |
@@ -119,7 +117,7 @@ Also under `tools/` but not on NuGet:
 ## Architectural Notes
 
 - **Bee.Base** is the lowest-level foundation package with no internal dependencies.
-- **Bee.Expressions** is a portable, sandboxed expression evaluator (DynamicExpresso-backed) that depends only on `Bee.Base`. It is shared by `Bee.Definition` (the `FormExpressionCalculator`), `Bee.Business` (the rule processor), `Bee.Hosting` (DI registration), and `Bee.UI.Avalonia` (client-side live preview), so a field computed on the client matches what the server writes on save. See [adr-028](adr/adr-028-expression-rule-engine.md).
+- **Bee.Expressions** holds `DynamicExpressoEvaluator`, the DynamicExpresso-backed implementation of the expression engine. The *abstraction* — `IExpressionEvaluator`, `ExpressionPolicy`, `ExpressionEvaluationException` — lives in `Bee.Base.Expressions`, so `Bee.Definition` (the `FormExpressionCalculator`) and `Bee.Business` (the rule processor) consume the engine without taking a dependency on DynamicExpresso; only the composition roots that pick an implementation (`Bee.Hosting` for DI registration, `Bee.UI.Avalonia` for client-side live preview) reference this package. That split keeps the definition layer free of third-party packages while a field computed on the client still matches what the server writes on save. See [adr-028](adr/adr-028-expression-rule-engine.md) and [adr-038](adr/adr-038-definition-dependency-boundary.md).
 - **Bee.Definition** is the most depended-on project, with 6 direct dependents (Contracts, Db, RepoAbs, Caching, Business, Core).
 - **Bee.Api.Contracts** is a shared contract/abstraction layer, not an application-level API project. Despite the "API" name, both `Bee.Business` and `Bee.Api.Core` depend on it (`Business → Contracts`, `Core → Contracts`), so it sits *below* them — the diagram groups it under **Shared Contracts** rather than the API application layer.
 - **Bee.Hosting** is the composition root: it consolidates the backend services (`Bee.Api.Core`, `Bee.Business`, `Bee.Db`, `Bee.Repository`, `Bee.ObjectCaching`) behind a single `AddBeeFramework` extension on `IServiceCollection`, with no ASP.NET Core dependency. Non-web hosts (WinForms, Console, Worker Service) reference it directly. It is shown in its own **Composition Root** group rather than under API: reaching across every layer is what a composition root does, so the "API layer must not reference the Repository layer" constraint does not apply to it. What *does* apply is that it holds no data access of its own — statements live in `Bee.Db` / `Bee.Repository`, and Hosting keeps only the hosted-service shells and DI wiring.

@@ -3,6 +3,7 @@ using System.Text;
 using DynamicExpresso;
 using DynamicExpresso.Exceptions;
 using Bee.Base;
+using Bee.Base.Expressions;
 
 namespace Bee.Expressions
 {

@@ -2,7 +2,7 @@ using System.Data;
 using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Exceptions;
-using Bee.Expressions;
+using Bee.Base.Expressions;
 
 namespace Bee.Definition.Forms
 {
@@ -299,11 +299,13 @@ namespace Bee.Definition.Forms
         /// <summary>
         /// Builds the expression variable map for a row, coercing each column to a non-null value of its
         /// field's CLR type. Variables are keyed by the schema field's declared name (its casing), not by
-        /// the <see cref="DataColumn"/> name: the framework's <c>DataTableExtensions.AddColumn</c> stores
-        /// column names uppercased, but expressions reference fields by their declared (typically
-        /// lower-case) name and the engine's identifiers are case-sensitive — so keying by the column name
-        /// would leave <c>quantity</c> unresolved against a <c>QUANTITY</c> column. Columns with no schema
-        /// field fall back to their column name (nothing references them).
+        /// the <see cref="DataColumn"/> name: expressions reference fields by their declared name and the
+        /// engine's identifiers are case-sensitive, so keying by the column name would bind the expression
+        /// to whatever casing the in-memory DataSet happens to store. That casing has changed once
+        /// already — <c>DataTableExtensions.AddColumn</c> stored column names uppercased before ADR-029
+        /// and lowercases them now — and keying by the column name left <c>quantity</c> unresolved against
+        /// a <c>QUANTITY</c> column. Columns with no schema field fall back to their column name (nothing
+        /// references them).
         /// </summary>
         private static Dictionary<string, object?> BuildVariables(DataRow row, FormTable formTable)
         {

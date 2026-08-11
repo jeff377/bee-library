@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Base.Expressions;
 
 namespace Bee.Expressions.UnitTests
 {

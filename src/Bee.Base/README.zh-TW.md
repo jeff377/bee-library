@@ -56,6 +56,15 @@
 - `Tracer` / `TraceContext` -- 結構化診斷追蹤
 - `TraceListener` / `ITraceWriter` -- 可插拔的追蹤輸出目標
 
+### 運算式抽象
+
+- `IExpressionEvaluator` -- 對一組具名變數求值運算式。以 DynamicExpresso 為底的實作位於
+  `Bee.Expressions`；抽象放在這裡，讓定義層與商業邏輯層消費引擎時不必相依第三方套件
+  （[ADR-038](../../docs/adr/adr-038-definition-dependency-boundary.md)）
+- `ExpressionPolicy` -- 欄位值餵進引擎前套用的共用型別／null 政策，使計算欄在伺服端與
+  UI 用戶端得到相同結果
+- `ExpressionEvaluationException` -- 運算式無法解析或編譯時擲出
+
 ## 主要公開 API
 
 | 類別 / 介面 | 用途 |
@@ -69,6 +78,8 @@
 | `IObjectSerialize` | 序列化提供者介面 |
 | `IKeyObject` | 跨層鍵值實體介面 |
 | `Tracer` | 診斷追蹤進入點 |
+| `IExpressionEvaluator` | 運算式求值抽象（實作位於 `Bee.Expressions`） |
+| `ExpressionPolicy` | 運算式變數的共用型別／null 政策 |
 
 ## 設計慣例
 
@@ -84,6 +95,7 @@ Bee.Base/
   Attributes/          # TreeNodeAttribute、TreeNodeIgnoreAttribute
   Collections/         # KeyCollectionBase<T>、StringHashSet、CollectionExtensions
   Data/                # DataTable/DataSet 擴充、FieldDbType、DbTypeConverter
+  Expressions/         # IExpressionEvaluator、ExpressionPolicy、ExpressionEvaluationException
   Security/            # AES、RSA、PBKDF2、檔案雜湊工具
   Serialization/       # JSON/XML 序列化、GZip 壓縮
   Tracing/             # Tracer、TraceContext、TraceListener、ITraceWriter

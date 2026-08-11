@@ -26,6 +26,15 @@
     <ProjectReference Include="..\..\src\Bee.Base\Bee.Base.csproj" />
     <ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
     <ProjectReference Include="..\..\src\Bee.Definition\Bee.Definition.csproj" />
+    <!--
+      Bee.Definition no longer references Bee.Expressions (the abstraction now lives in Bee.Base;
+      see adr-038). The FormExpressionCalculator tests still exercise the real DynamicExpresso
+      implementation on purpose — the point of those tests is that client and server agree on the
+      computed value — so the test project takes the same explicit reference a composition root
+      would. This does not weaken DefinitionDependencyGateTests, which walks Bee.Definition's own
+      dependency edges rather than this project's.
+    -->
+    <ProjectReference Include="..\..\src\Bee.Expressions\Bee.Expressions.csproj" />
     <ProjectReference Include="..\Bee.Tests.Shared\Bee.Tests.Shared.csproj" />
   </ItemGroup>
 

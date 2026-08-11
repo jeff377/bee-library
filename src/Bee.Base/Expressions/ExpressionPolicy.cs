@@ -1,8 +1,7 @@
 using System.Globalization;
-using Bee.Base;
 using Bee.Base.Data;
 
-namespace Bee.Expressions
+namespace Bee.Base.Expressions
 {
     /// <summary>
     /// The shared type/null policy applied when feeding field values into the expression engine.

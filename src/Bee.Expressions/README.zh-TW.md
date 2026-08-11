@@ -2,17 +2,23 @@
 
 [English](README.md)
 
-可攜的運算式求值引擎，底層為 DynamicExpresso。由商業邏輯層（存檔前的欄位計算與規則驗證）與
+框架運算式引擎以 DynamicExpresso 為底的實作。由商業邏輯層（存檔前的欄位計算與規則驗證）與
 UI 用戶端（輸入時的即時預覽）共用，因此同一個計算欄位在兩邊得到相同結果。
 
 ## 主要公開 API
 
 | 型別 | 用途 |
 |------|------|
-| `IExpressionEvaluator` | 對一組變數求值運算式。`Evaluate` 回傳具型別結果；`GetReferencedVariables` 回報運算式讀取了哪些欄位 |
-| `DynamicExpressoEvaluator` | 預設實作。解析與編譯一次，以「運算式文字 + 參數簽章」快取，之後逐列呼叫 |
-| `ExpressionPolicy` | 欄位值餵進引擎前套用的共用型別／null 政策。伺服端與用戶端都走這條，結果才會一致 |
-| `ExpressionEvaluationException` | 運算式解析或求值失敗時擲出，帶有出問題的原文 |
+| `DynamicExpressoEvaluator` | 預設的 `IExpressionEvaluator`。解析與編譯一次，以「運算式文字 + 參數簽章」快取，之後逐列呼叫 |
+
+## 抽象位於 `Bee.Base`
+
+`IExpressionEvaluator`、`ExpressionPolicy`、`ExpressionEvaluationException` 在
+`Bee.Base.Expressions`，不在本套件。這個分界讓 `Bee.Definition` 與 `Bee.Business` 完全不相依
+DynamicExpresso——它們透過抽象消費引擎，只有組裝層（`Bee.Hosting`，或自建 evaluator 的
+UI head）才引用本套件。見 [ADR-038](../../docs/adr/adr-038-definition-dependency-boundary.md)。
+
+**需要「挑一個實作」時引用本套件；只需要「接受一個實作」時引用 `Bee.Base` 即可。**
 
 ## 時區
 
@@ -37,4 +43,4 @@ UI 用戶端（輸入時的即時預覽）共用，因此同一個計算欄位�
 
 ## 相依
 
-`Bee.Base` · DynamicExpresso
+`Bee.Base`（本套件實作其中的 `IExpressionEvaluator` 抽象）· DynamicExpresso

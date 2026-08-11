@@ -39,6 +39,12 @@
 也不構成對特定第三方格式的綁定。MessagePack 不同：它是明確的技術選擇，
 且會沿相依鏈傳染。
 
+> **本判準的界線由 [ADR-038](adr-038-definition-dependency-boundary.md) 補明確（2026-08-11）**：
+> 「外部套件」指第三方套件與第一方**實作**套件；Microsoft 第一方的**純抽象**套件不算。
+> 該 ADR 同時處理了本判準當初漏掉的一條相依鏈（`Bee.Definition → Bee.Expressions →
+> DynamicExpresso.Core`）——當時是以人眼 grep「傳輸格式」關鍵字落實，掃不到它，
+> 因此判準現已改由建置期鎖與傳遞閉包測試兩道閘門執行。
+
 ### 機制：每型別手寫 formatter
 
 wire 綁定改由 `src/Bee.Api.Core/MessagePack/` 的手寫 formatter 承擔，

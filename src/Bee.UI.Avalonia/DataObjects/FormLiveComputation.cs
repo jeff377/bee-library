@@ -1,5 +1,6 @@
 using System.Data;
 using Bee.Base;
+using Bee.Base.Expressions;
 using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Expressions;

@@ -1,0 +1,55 @@
+<Project>
+
+  <!--
+    Dependency boundary for the two lowest-level assemblies (ADR-038).
+
+    Bee.Base is a dependency of every project in the framework and Bee.Definition has six direct
+    dependents, so anything added here is inherited by every consumer of the framework — including
+    consumers that only want to read definitions. This target locks both projects to an explicit
+    allowlist: adding a reference fails the build rather than silently widening the public
+    dependency surface. Widening it is allowed, but it has to be a decision someone made on
+    purpose — edit the allowlist below and record the reasoning in ADR-038.
+
+    Only consumer-facing references are checked, because those are the ones that reach the nuspec:
+    a PackageReference marked PrivateAssets="all" (SourceLink, analyzers) is build-time only, and a
+    ProjectReference with ReferenceOutputAssembly="false" (the Bee.Analyzers build ordering
+    reference) contributes no assembly.
+
+    The same boundary is asserted from the other end by
+    tests/Bee.Definition.UnitTests/DefinitionDependencyGateTests.cs, which walks the full
+    transitive closure. The two are complements, not duplicates: this target catches the direct
+    edge at the moment it is written, the test catches a package that arrives indirectly through a
+    project reference — which is exactly how DynamicExpresso.Core got in.
+  -->
+
+  <PropertyGroup>
+    <BeeEnforceDependencyBoundary Condition="'$(MSBuildProjectName)' == 'Bee.Base' Or '$(MSBuildProjectName)' == 'Bee.Definition'">true</BeeEnforceDependencyBoundary>
+  </PropertyGroup>
+
+  <!-- Bee.Base: no consumer-facing dependency of any kind. The allowlist is deliberately empty. -->
+
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Bee.Definition'">
+    <!-- Microsoft first-party, abstraction-only, versioned with .NET itself: it makes no technology
+         choice on the consumer's behalf. Used by Language/BeeStringLocalizer.cs. -->
+    <BeeAllowedDependency Include="Microsoft.Extensions.Localization.Abstractions" />
+    <BeeAllowedDependency Include="Bee.Base" />
+  </ItemGroup>
+
+  <Target Name="BeeVerifyDependencyBoundary"
+          BeforeTargets="Build"
+          Condition="'$(BeeEnforceDependencyBoundary)' == 'true'">
+    <ItemGroup>
+      <_BeeConsumerFacingDependency Include="@(PackageReference)"
+                                    Exclude="@(PackageReference->WithMetadataValue('PrivateAssets', 'all'))" />
+      <_BeeConsumerFacingDependency Include="@(ProjectReference->'%(Filename)')"
+                                    Exclude="@(ProjectReference->WithMetadataValue('ReferenceOutputAssembly', 'false')->'%(Filename)')" />
+      <_BeeBoundaryViolation Include="@(_BeeConsumerFacingDependency)"
+                             Exclude="@(BeeAllowedDependency)" />
+    </ItemGroup>
+
+    <Error Condition="'@(_BeeBoundaryViolation)' != ''"
+           Code="BEE9001"
+           Text="$(MSBuildProjectName) is one of the two lowest-level assemblies and is locked to an explicit dependency allowlist (ADR-038). Unexpected consumer-facing reference(s): @(_BeeBoundaryViolation, ', '). Anything added here is inherited by every consumer of the framework. Prefer keeping the abstraction here and the implementation in a separate assembly that only a composition root references. If the dependency really belongs here, add it to BeeAllowedDependency in src/Directory.Build.targets, add it to the whitelist in tests/Bee.Definition.UnitTests/DefinitionDependencyGateTests.cs, and record why in docs/adr/adr-038-definition-dependency-boundary.md." />
+  </Target>
+
+</Project>

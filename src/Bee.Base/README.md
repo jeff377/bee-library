@@ -58,6 +58,16 @@
 - `Tracer` / `TraceContext` -- structured diagnostic tracing
 - `TraceListener` / `ITraceWriter` -- pluggable trace output targets
 
+### Expression Abstraction
+
+- `IExpressionEvaluator` -- evaluates an expression against a named variable set. The
+  DynamicExpresso-backed implementation lives in `Bee.Expressions`; the abstraction sits here so
+  the definition and business layers can consume the engine without a third-party dependency
+  ([ADR-038](../../docs/adr/adr-038-definition-dependency-boundary.md))
+- `ExpressionPolicy` -- the shared type / null policy applied when feeding field values in, so a
+  computed field yields the same result on the server and on a UI client
+- `ExpressionEvaluationException` -- thrown when an expression cannot be parsed or compiled
+
 ## Key Public APIs
 
 | Class / Interface | Purpose |
@@ -71,6 +81,8 @@
 | `IObjectSerialize` | Serialization provider interface |
 | `IKeyObject` | Keyed entity interface used across layers |
 | `Tracer` | Diagnostic trace entry point |
+| `IExpressionEvaluator` | Expression evaluation abstraction (implementation in `Bee.Expressions`) |
+| `ExpressionPolicy` | Shared type / null policy for expression variables |
 
 ## Design Conventions
 
@@ -86,6 +98,7 @@ Bee.Base/
   Attributes/          # TreeNodeAttribute, TreeNodeIgnoreAttribute
   Collections/         # KeyCollectionBase<T>, StringHashSet, CollectionExtensions
   Data/                # DataTable/DataSet extensions, FieldDbType, DbTypeConverter
+  Expressions/         # IExpressionEvaluator, ExpressionPolicy, ExpressionEvaluationException
   Security/            # AES, RSA, PBKDF2, file hash utilities
   Serialization/       # JSON/XML serialization, GZip compression
   Tracing/             # Tracer, TraceContext, TraceListener, ITraceWriter

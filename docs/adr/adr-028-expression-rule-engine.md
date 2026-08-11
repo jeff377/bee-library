@@ -4,6 +4,12 @@
 
 已採納（2026-07-09）
 
+> **組件配置已由 [ADR-038](adr-038-definition-dependency-boundary.md) 修訂（2026-08-11）**：
+> `IExpressionEvaluator` / `ExpressionPolicy` / `ExpressionEvaluationException` 三個抽象型別
+> 移至 `Bee.Base.Expressions`，`Bee.Expressions` 只留 `DynamicExpressoEvaluator`。
+> 本 ADR 的求值語意、`FormExpressionCalculator` 留在定義層、以及 client/server 共用
+> 單一實作的結論**均不變**——變的只是抽象與實作分居兩個組件。
+
 ## 背景
 
 業務邏輯中大量「欄位運算」與「存檔/刪除前檢查」原本必須在自訂 BO 以 C# 手寫：連「金額 = 單價 × 數量」這種一行公式也要開一個 BO 覆寫 `Save`。痛點有二——樣板碼多、且**客戶無法自訂**（改一條驗證條件就要改程式、重編、重佈）。

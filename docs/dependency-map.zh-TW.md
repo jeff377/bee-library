@@ -55,8 +55,6 @@ graph BT
 
   Definition --> Base
   Expressions --> Base
-  Definition --> Expressions
-  Business --> Expressions
   Hosting --> Expressions
   UIAvalonia --> Expressions
   Contracts --> Definition
@@ -91,7 +89,7 @@ graph BT
 |------|----------|
 | Bee.Base | *(none)* |
 | Bee.Expressions | DynamicExpresso.Core 2.x |
-| Bee.Definition | MessagePack 3.x、Microsoft.Extensions.Localization.Abstractions 10.x |
+| Bee.Definition | Microsoft.Extensions.Localization.Abstractions 10.x |
 | Bee.Db | *(none)* |
 | Bee.ObjectCaching | Microsoft.Extensions.Caching.Memory 10.x、Microsoft.Extensions.FileProviders.Physical 10.x |
 | Bee.Hosting | Microsoft.Extensions.DependencyInjection 10.x、Microsoft.Extensions.Hosting.Abstractions 10.x |
@@ -119,7 +117,7 @@ graph BT
 ## 架構要點
 
 - **Bee.Base** 為最底層基礎套件，無任何內部相依性。
-- **Bee.Expressions** 為可攜、沙箱化的運算式求值引擎（DynamicExpresso 封裝），只依賴 `Bee.Base`。由 `Bee.Definition`（`FormExpressionCalculator`）、`Bee.Business`（規則處理器）、`Bee.Hosting`（DI 註冊）與 `Bee.UI.Avalonia`（前端即時預覽）共用，使前端算值與後端存檔一致。見 [adr-028](adr/adr-028-expression-rule-engine.md)。
+- **Bee.Expressions** 只承載 `DynamicExpressoEvaluator`——運算式引擎以 DynamicExpresso 為底的實作。**抽象**（`IExpressionEvaluator`、`ExpressionPolicy`、`ExpressionEvaluationException`）位於 `Bee.Base.Expressions`，因此 `Bee.Definition`（`FormExpressionCalculator`）與 `Bee.Business`（規則處理器）消費引擎時不會相依 DynamicExpresso；只有決定用哪個實作的組裝層（`Bee.Hosting` 的 DI 註冊、`Bee.UI.Avalonia` 的前端即時預覽）才引用本套件。這個分界讓定義層不帶第三方套件，同時維持前端算值與後端存檔一致。見 [adr-028](adr/adr-028-expression-rule-engine.md) 與 [adr-038](adr/adr-038-definition-dependency-boundary.md)。
 - **Bee.Definition** 為被依賴次數最多的專案，共有 6 個直接相依者（Contracts、Db、RepoAbs、Caching、Business、Core）。
 - **Bee.Api.Contracts** 是共用契約／抽象層，並非應用層級的 API 專案。雖名為「API」，但 `Bee.Business` 與 `Bee.Api.Core` 都相依於它（`Business → Contracts`、`Core → Contracts`），故其位置在兩者**之下** —— 圖上歸入 **共用契約層**，而非 API 應用層。
 - **Bee.Hosting** 為 composition root：將後端服務（`Bee.Api.Core`、`Bee.Business`、`Bee.Db`、`Bee.Repository`、`Bee.ObjectCaching`）整合於一個 `IServiceCollection.AddBeeFramework` 擴充入口，不依賴 ASP.NET Core。非 web 宿主（WinForms、Console、Worker Service）直接引用此套件。圖上獨立列為 **組合根** 而非歸入 API 層：橫跨各層本就是組合根的職責，故「API 層不得直接引用 Repository 層」的限制不適用於它。真正適用的限制是**它不得自帶資料存取** —— SQL 語句歸 `Bee.Db` / `Bee.Repository`，Hosting 只留 hosted service 外殼與 DI 接線。

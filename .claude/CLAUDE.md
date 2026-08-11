@@ -50,6 +50,11 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 | 資料存取層 | Bee.Repository, Bee.Repository.Abstractions, Bee.Db |
 | 基礎設施 | Bee.Base, Bee.Definition, Bee.ObjectCaching |
 
+> ⚠️ **`Bee.Base` 與 `Bee.Definition` 是最底層的兩個組件**：`Bee.Base` 是所有專案的相依、
+> `Bee.Definition` 有 6 個直接下游。**除非必要，不得再為這兩個專案加入套件參考**——
+> 加在這裡的任何相依會沿相依鏈傳染給每一個消費者。判準、正解與閘門見
+> `rules/dependency-boundary.md`。
+
 ## 工作流程
 
 ### 執行前先擬計畫
@@ -99,6 +104,7 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 跨專案共用規則（`code-style`、`scanning`、`pull-request`、`releasing`）由使用者層 `~/.claude/CLAUDE.md` 統一載入，本檔僅引用本專案特化規則：
 
 @rules/public-docs.md
+@rules/dependency-boundary.md
 @rules/database.md
 @rules/definition.md
 @rules/serialization.md

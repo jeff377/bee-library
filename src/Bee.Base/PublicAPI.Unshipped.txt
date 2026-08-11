@@ -1,1 +1,13 @@
 #nullable enable
+Bee.Base.Expressions.ExpressionEvaluationException
+Bee.Base.Expressions.ExpressionEvaluationException.Expression.get -> string?
+Bee.Base.Expressions.ExpressionEvaluationException.Expression.init -> void
+Bee.Base.Expressions.ExpressionEvaluationException.ExpressionEvaluationException(string! message) -> void
+Bee.Base.Expressions.ExpressionEvaluationException.ExpressionEvaluationException(string! message, System.Exception! innerException) -> void
+Bee.Base.Expressions.ExpressionPolicy
+Bee.Base.Expressions.IExpressionEvaluator
+Bee.Base.Expressions.IExpressionEvaluator.Evaluate(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, System.Type! returnType, string! timeZoneId = "") -> object?
+Bee.Base.Expressions.IExpressionEvaluator.Evaluate<T>(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, string! timeZoneId = "") -> T
+Bee.Base.Expressions.IExpressionEvaluator.GetReferencedVariables(string! expression) -> System.Collections.Generic.IReadOnlyList<string!>!
+static Bee.Base.Expressions.ExpressionPolicy.CoerceValue(object? value, Bee.Base.Data.FieldDbType dbType) -> object!
+static Bee.Base.Expressions.ExpressionPolicy.ToClrType(Bee.Base.Data.FieldDbType dbType) -> System.Type!

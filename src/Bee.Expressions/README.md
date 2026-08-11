@@ -2,18 +2,26 @@
 
 [繁體中文](README.zh-TW.md)
 
-Portable expression evaluation engine, backed by DynamicExpresso. Shared by the business layer
-(field computation and rule validation before save) and by UI clients (live preview while typing),
-so a computed field yields the same result on both sides.
+The DynamicExpresso-backed implementation of the framework's expression engine. Shared by the
+business layer (field computation and rule validation before save) and by UI clients (live preview
+while typing), so a computed field yields the same result on both sides.
 
 ## Key Public APIs
 
 | Type | Purpose |
 |------|---------|
-| `IExpressionEvaluator` | Evaluates an expression against a variable set. `Evaluate` returns a typed result; `GetReferencedVariables` reports which fields an expression reads |
-| `DynamicExpressoEvaluator` | The default implementation. Parses and compiles once, caches by expression text plus parameter signature, then invokes per row |
-| `ExpressionPolicy` | The shared type / null policy applied when feeding field values in. Both server and client route values through it so results match |
-| `ExpressionEvaluationException` | Thrown when an expression fails to parse or evaluate, carrying the offending text |
+| `DynamicExpressoEvaluator` | The default `IExpressionEvaluator`. Parses and compiles once, caches by expression text plus parameter signature, then invokes per row |
+
+## The abstraction lives in `Bee.Base`
+
+`IExpressionEvaluator`, `ExpressionPolicy` and `ExpressionEvaluationException` are in
+`Bee.Base.Expressions`, not here. That split keeps `Bee.Definition` and `Bee.Business` free of any
+DynamicExpresso dependency — they consume the engine through the abstraction, and only a
+composition root (`Bee.Hosting`, or a UI head building its own evaluator) references this package.
+See [ADR-038](../../docs/adr/adr-038-definition-dependency-boundary.md).
+
+**Reference this package when you need to pick an implementation. Reference `Bee.Base` when you
+only need to accept one.**
 
 ## Time zone
 
@@ -41,4 +49,4 @@ engine works on iOS, Android and WASM without disabling anything.
 
 ## Dependencies
 
-`Bee.Base` · DynamicExpresso
+`Bee.Base` (for the `IExpressionEvaluator` abstraction it implements) · DynamicExpresso

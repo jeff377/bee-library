@@ -1,7 +1,8 @@
 using System.ComponentModel;
 using Bee.Base.Data;
+using Bee.Base.Expressions;
 
-namespace Bee.Expressions.UnitTests
+namespace Bee.Base.UnitTests.Expressions
 {
     /// <summary>
     /// <see cref="ExpressionPolicy"/> 測試：FieldDbType → CLR 型別對映，以及

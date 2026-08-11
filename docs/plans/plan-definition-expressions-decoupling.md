@@ -1,12 +1,36 @@
 # 計畫：解除 Bee.Definition 對第三方套件的傳遞相依（DynamicExpresso）
 
-**狀態：🚧 進行中（2026-08-10）—— 已採 B 案，交付實作 session**
+**狀態：✅ 已完成（2026-08-11）—— 採 B 案，結論見 [adr-038](../adr/adr-038-definition-dependency-boundary.md)**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 0 | 相依閘門：把「定義層不得長出外部套件相依」由人眼掃描變成可執行檢查 | 🚧 進行中 |
-| 1 | 抽象三型別移入 `Bee.Base`，`Bee.Definition` 拿掉對 `Bee.Expressions` 的 ProjectReference | 📝 擬定中 |
-| 2 | 消費端、`PublicAPI` 收尾、ADR 與規則文件 | 📝 擬定中 |
+| 0 | 相依閘門：把「定義層不得長出外部套件相依」由人眼掃描變成可執行檢查 | ✅ 已完成 |
+| 1 | 抽象三型別移入 `Bee.Base`，`Bee.Definition` 拿掉對 `Bee.Expressions` 的 ProjectReference | ✅ 已完成 |
+| 2 | 消費端、`PublicAPI` 收尾、ADR 與規則文件 | ✅ 已完成 |
+
+## 執行結果與實際範圍
+
+實作時與本文預期的四點差異（結論均已寫進 adr-038，此處只記差異本身）：
+
+1. **閘門做成兩道，不是一道。** 除計畫中的傳遞閉包測試外，另加**建置期鎖**
+   （`src/Directory.Build.targets`，診斷碼 `BEE9001`），把 `Bee.Base` 與 `Bee.Definition`
+   直接宣告的 `PackageReference` / `ProjectReference` 鎖到允許清單。兩者互補：
+   建置期鎖看不到間接帶進來的套件（DynamicExpresso 正是如此），閉包測試要跑測試才知道。
+2. **`PublicAPI` 動到 5 個專案，不是 2 個。** 除 `Bee.Expressions` / `Bee.Base` 外，
+   `FormExpressionCalculator` / `FormRuleProcessor` / `FormLiveComputation` 的公開建構子
+   簽章帶 `IExpressionEvaluator`，換 namespace 等於改簽章，故
+   `Bee.Definition` / `Bee.Business` / `Bee.UI.Avalonia` 的基準檔也要動。
+   **source-breaking 面比本文預估的大**。
+3. **搬移確實觸發新 analyzer 告警**（本文列為待驗證項）：`RS0026`
+   （多個帶選擇性參數的多載），因兩個 `Evaluate` 多載在 `Bee.Base` 屬「新增 API」。
+   以 `[SuppressMessage]` 加理由處理。
+4. **`ExpressionPolicyTests.cs` 一併搬到 `tests/Bee.Base.UnitTests/Expressions/`**
+   （本文只說補 `using`），以符合「`src/<Module>` 對應 `tests/<Module>.UnitTests`」的測試規範。
+
+`Bee.Business` 可移除對 `Bee.Expressions` 的 ProjectReference —— 本文的推測正確，已實測確認。
+
+`Microsoft.Extensions.Localization.Abstractions` 依本文建議留下並列入白名單（使用者 2026-08-11 拍板），
+「外部套件」的界線定義已寫入 adr-038 並回指 adr-036。
 
 ## 一句話
 
