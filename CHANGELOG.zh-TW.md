@@ -17,6 +17,7 @@
 ### 修正
 
 - `Bee.Api.Client` / `Bee.Web.Blazor.Server`：單一 process 服務多個使用者時，不再互相覆蓋傳輸金鑰。`ApiClientInfo.ApiEncryptionKey` 與 `UserTimeZoneId` 原本是 process-wide static，因此在 `BeeBlazorProviderMode.Remote` 下最後登入者勝出，先前使用者的加密請求會解不開、直到重新登入。`BeeApiConnectorFactory` 改註冊為 scoped，每個 circuit 拿到自己的 context。`Local` 模式從未受影響。`ApiClientInfo.ApiKey` 刻意維持 static —— 它識別的是應用程式，不是使用者。
+- `Bee.ObjectCaching`：同一個快取 key 的並行 miss 現在只會產生一個物件，而不是每個呼叫端各一個。`ObjectCache<T>.Get` 與 `KeyObjectCache<T>.Get` 原本是 read-create-write，而底層 provider 並未提供原子的 get-or-create，因此被多個請求同時觸達的冷 key 會被建立多次——每次各自反序列化同一份定義檔、或各發一次相同查詢。更嚴重的是重複實例：`SessionInfo` 正是這樣快取的，經其中一份做的 `EnterCompany` 對持有另一份的請求完全不可見；而以參考相等判斷「是否重新載入」的解析器，也會把重複實例讀成一次從未發生的變更。去重以 key 為粒度、且只在建立進行中存在，因此以 access token 為 key 的快取不會累積任何東西。
 - `Bee.Api.Core` / `Bee.Base`：未變更的資料列不再在 wire 上攜帶兩份相同的值。MessagePack 與 JSON 兩個寫入端都對 `Unchanged` 列同時送出 Current 與 Original，而兩個讀取端都只由 Current 還原 —— 且 `DataFormRepository.GetData` 回傳前呼叫 `AcceptChanges()`，因此每一筆從資料庫讀出的列都是 Unchanged。讀取的 payload 與序列化成本因此減半。
 - `Bee.Definition`：運算式求值約快 4.7 倍。先前每次求值都把整列的所有欄位交給引擎，而非運算式實際引用的那幾個，成本因此與**欄數**成正比、與運算式無關。實測 30 欄 / 5 計算欄 / 1000 列：57.2 ms → 12.2 ms。
 - `Bee.Definition` / `Bee.Api.Client`：兩處在並行下會交出或重建 process-wide 快取定義狀態的問題已修正。`FormTable.RelationFieldReferences` 的反向索引建立在無保護的 null 檢查後，兩個觸碰同一份快取 schema 的請求可能各建一份、拿到不同實例，且建立過程的驗證例外會從一個看起來只是讀取的 property getter 冒出來。`FormDefinitionLoader.GetLocalizedSchemaAsync` 在未指定語言時直接回傳共用的快取 schema，儘管它的文件寫著「絕不交出快取實例」——而 `CultureInfo.InvariantCulture.Name` 是空字串，那正是最常走到的路徑。

@@ -73,6 +73,11 @@ namespace Bee.ObjectCaching
         /// <summary>
         /// Gets the cached object.
         /// </summary>
+        /// <remarks>
+        /// Concurrent misses on the same key produce one instance, not one per caller.
+        /// Callers rely on that: several compare cached values by reference to detect a reload,
+        /// and a duplicate instance would read as a change that never happened.
+        /// </remarks>
         public virtual T? Get()
         {
             // Get the cache key
@@ -81,13 +86,20 @@ namespace Bee.ObjectCaching
             if (CacheInfo.Provider.Get(key) is T cached)
                 return cached;
 
-            // Create and insert the object into the cache, then return it
-            var value = CreateInstance();
-            if (value != null)
+            return CacheSingleFlight<T>.GetOrCreate(key, () =>
             {
-                CacheInfo.Provider.Set(key, value, BuildPolicy());
-            }
-            return value;
+                // Another flight may have completed between the read above and this one.
+                if (CacheInfo.Provider.Get(key) is T fresh)
+                    return fresh;
+
+                // Create and insert the object into the cache, then return it
+                var value = CreateInstance();
+                if (value != null)
+                {
+                    CacheInfo.Provider.Set(key, value, BuildPolicy());
+                }
+                return value;
+            });
         }
 
         /// <summary>

@@ -94,6 +94,12 @@ namespace Bee.ObjectCaching
         /// <summary>
         /// Gets the object associated with the specified member key.
         /// </summary>
+        /// <remarks>
+        /// Concurrent misses on the same key produce one instance, not one per caller. That matters
+        /// beyond the wasted work: <c>SessionInfo</c> is cached here, and two callers holding
+        /// different instances of the same session means a write through one — <c>EnterCompany</c>,
+        /// for example — is invisible to the other.
+        /// </remarks>
         /// <param name="key">The member key.</param>
         public virtual T? Get(string key)
         {
@@ -107,16 +113,26 @@ namespace Bee.ObjectCaching
             if (cached is T t)
                 return t;
 
-            var value = CreateInstance(key);
-            if (value != null)
+            return CacheSingleFlight<T>.GetOrCreate(cacheKey, () =>
             {
-                CacheInfo.Provider.Set(cacheKey, value, BuildPolicy(key));
-            }
-            else if (BuildNegativePolicy(key) is { } negPolicy)
-            {
-                CacheInfo.Provider.Set(cacheKey, KeyObjectCacheSentinel.MissMarker, negPolicy);
-            }
-            return value;
+                // Another flight may have completed between the read above and this one.
+                var current = CacheInfo.Provider.Get(cacheKey);
+                if (ReferenceEquals(current, KeyObjectCacheSentinel.MissMarker))
+                    return null;
+                if (current is T fresh)
+                    return fresh;
+
+                var value = CreateInstance(key);
+                if (value != null)
+                {
+                    CacheInfo.Provider.Set(cacheKey, value, BuildPolicy(key));
+                }
+                else if (BuildNegativePolicy(key) is { } negPolicy)
+                {
+                    CacheInfo.Provider.Set(cacheKey, KeyObjectCacheSentinel.MissMarker, negPolicy);
+                }
+                return value;
+            });
         }
 
         /// <summary>
