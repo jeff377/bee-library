@@ -7,10 +7,10 @@ registered automatically by `Bee.Definition`: adding that package is all it take
 install step and no project configuration.
 
 The rules exist because most framework conventions fail late. A form schema pointing at the wrong
-database scope, a wire contract whose constructor arguments are in the wrong order, a business object
-method with no access-control declaration — none of these break the build, and all of them surface
-only when the application runs, often far from the definition that caused them. A diagnostic moves
-that discovery to build time, where the message can name both the cause and the fix.
+database scope, a serialised type with no parameterless constructor, a business object method with no
+access-control declaration — none of these break the build, and all of them surface only when the
+application runs, often far from the definition that caused them. A diagnostic moves that discovery to
+build time, where the message can name both the cause and the fix.
 
 ## Rules
 
@@ -53,8 +53,10 @@ that discovery to build time, where the message can name both the cause and the 
 | BEE4005 | Warning | A framework collection should expose a single public `Add` |
 | BEE4006 | Error | A serialised type must have a public parameterless constructor |
 
-Two rules are marked framework-internal: they only run inside the framework's own assemblies and are
-listed here for completeness rather than because a consumer project can trigger them.
+One rule is marked framework-internal — BEE3002 runs only inside the framework's own `Bee.Definition`
+assembly, and is listed here for completeness rather than because a consumer project can trigger it.
+Every other rule applies to consumer projects, including BEE4005: a collection you derive from
+`CollectionBase` or `KeyCollectionBase` yourself is checked exactly as the framework's own are.
 
 ## Where the definition file rules read from
 

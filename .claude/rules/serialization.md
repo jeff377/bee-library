@@ -124,10 +124,18 @@ DynamicExpresso 的 `Expression.Compile()` 在 `IsDynamicCodeSupported=false` �
 ## 運算式變數表兩條硬性要求
 
 1. **變數 key 一律用 `FormField.FieldName`（schema 宣告的大小寫）**，不要用
-   `DataColumn.ColumnName` —— `DataTableExtensions.AddColumn` 把欄名存**大寫**，而
-   **DynamicExpresso 識別字區分大小寫**，用大寫當 key 會 `UnknownIdentifierException`。
+   `DataColumn.ColumnName` —— **DynamicExpresso 識別字區分大小寫**，而運算式寫的是宣告欄名；
+   拿 `DataColumn.ColumnName` 當 key 等於把運算式綁死在「記憶體 DataSet 當下用哪種大小寫存欄名」上。
    `DataRow` 索引與 `Fields.Contains` 本就大小寫無關，寫回不受影響。
-   **回歸測試務必用大寫欄名建 DataTable**（用小寫測等於沒測）。
+
+   > **`AddColumn` 現在存小寫，不是大寫**（`fieldName.ToLowerInvariant()`，
+   > `src/Bee.Base/Data/DataTableExtensions.cs`）。歷史上它存大寫，用大寫當 key 會直接
+   > `UnknownIdentifierException`；ADR-029（欄名一律小寫，定義／資料／UI 三層一致）已把儲存
+   > 大小寫遷移為小寫，**與宣告欄名恰好一致**。這**不代表本條失效**——結論本來就是「與儲存
+   > 大小寫解耦」，而不是「避開大寫」；恰好一致只是讓違反此條的寫法暫時看不出症狀。
+
+   **回歸測試務必用「與宣告欄名大小寫不同」的欄名建 DataTable**（現行實作下即大寫）。
+   用跟宣告欄名一模一樣的小寫測，兩種寫法都會過，等於沒測到解耦。
 2. **`ExpressionPolicy.CoerceValue` 不能只靠 `Convert.ChangeType`** —— `Guid` / `byte[]` 非
    `IConvertible`。client 端從 SQLite 讀回的 GUID 欄是 **String 型**，且可能是**空字串**。
    規則：`Guid` → 空/空白回 `Guid.Empty`、否則 `Guid.Parse`；`byte[]` → 空字串回空陣列、

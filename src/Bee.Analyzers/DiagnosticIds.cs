@@ -100,15 +100,6 @@ namespace Bee.Analyzers
         /// </summary>
         public const string MissingExecFuncAccessControl = "BEE3003";
 
-
-
-
-        /// <summary>
-        /// A collection item constructor takes its parameters in an order that does not match
-        /// the MessagePack key order.
-        /// </summary>
-        public const string ConstructorParameterOrderMismatch = "BEE4004";
-
         /// <summary>
         /// A collection declares an additional public Add overload, which reflection-only
         /// serialization cannot resolve unambiguously.

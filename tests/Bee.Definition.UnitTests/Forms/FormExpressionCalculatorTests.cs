@@ -136,13 +136,15 @@ namespace Bee.Definition.UnitTests.Forms
         }
 
         [Fact]
-        [DisplayName("大寫欄名（AddColumn 存大寫）下運算式仍解析：變數以宣告欄名為 key，非 DataColumn 名")]
+        [DisplayName("欄名大小寫與宣告不同時運算式仍解析：變數以宣告欄名為 key，非 DataColumn 名")]
         public void ApplyComputedRow_UppercaseColumnNames_StillResolvesIdentifiers()
         {
+            // Columns are deliberately cased differently from the declared (lower-case) field names.
+            // DynamicExpresso identifiers are case-sensitive, so this proves the variable map is keyed by
+            // the schema field rather than the column. `AddColumn` lowercases column names since ADR-029,
+            // which makes the two casings agree — testing with lower-case columns would therefore pass
+            // either way and prove nothing.
             var schema = BuildOrderSchema();
-            // The framework's AddColumn stores column names uppercased; expressions use the declared
-            // (lower-case) field names. DynamicExpresso identifiers are case-sensitive, so this shape
-            // (the real wire/DataSet shape) must still resolve.
             var table = new DataTable("Order");
             table.Columns.Add("PRICE", typeof(decimal));
             table.Columns.Add("QTY", typeof(decimal));
@@ -164,7 +166,7 @@ namespace Bee.Definition.UnitTests.Forms
         }
 
         [Fact]
-        [DisplayName("大寫欄名下 ValidateRules 仍解析規則識別字（customer_rowid != Guid.Empty 型）")]
+        [DisplayName("欄名大小寫與宣告不同時 ValidateRules 仍解析規則識別字（customer_rowid != Guid.Empty 型）")]
         public void ValidateRules_UppercaseColumnNames_StillResolvesIdentifiers()
         {
             var schema = BuildOrderSchema();

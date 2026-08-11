@@ -194,7 +194,7 @@ BeeNET 使用 ADO.NET `DataSet` 作為跨層的資料傳輸物件（DTO），而
 
 | 特性 | 說明 |
 |------|------|
-| **原生支援 Master-Detail** | `DataRelation` 天然表達主明細結構，ERP 表單幾乎都是這種形態 |
+| **天然貼合 Master-Detail 形態** | 表單的主表與明細表以並列的 `DataTable` 裝在同一個 DataSet，ERP 表單幾乎都是這種形態。框架**不建立 `DataRelation`** 來串接兩者：明細列以 `sys_master_rowid` 指向主檔列的 `sys_rowid`，由 FormSchema 宣告哪一張是主檔（見 `src/Bee.Repository/Form/DataFormRepository.cs` 與 `src/Bee.Definition/Forms/FormRowDefaults.cs`） |
 | **自描述結構** | DataSet 本身含 schema，傳輸時不需額外型別定義 |
 | **多表同時攜帶** | 一個 DataSet 可帶主表 + 多個明細表，一次傳遞整筆作業資料 |
 | **跨層一致** | UI 層、BO 層、Repository 層共用同一物件，不需 mapping |

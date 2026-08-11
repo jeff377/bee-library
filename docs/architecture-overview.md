@@ -195,7 +195,7 @@ BeeNET uses ADO.NET `DataSet` as the cross-layer Data Transfer Object (DTO), rat
 
 | Characteristic | Description |
 |----------------|-------------|
-| **Native Master-Detail support** | `DataRelation` naturally expresses master-detail structure; nearly all ERP forms follow this pattern |
+| **Natural Master-Detail shape** | A form's master and detail tables travel as sibling `DataTable`s in one DataSet, which is the shape nearly all ERP forms take. The framework does not build `DataRelation`s to link them: a detail row carries `sys_master_rowid` pointing at the master row's `sys_rowid`, and the FormSchema declares which table is the master (see `src/Bee.Repository/Form/DataFormRepository.cs` and `src/Bee.Definition/Forms/FormRowDefaults.cs`) |
 | **Self-describing structure** | DataSet carries its own schema; no additional type definitions needed during transfer |
 | **Multi-table transport** | A single DataSet can carry a master table plus multiple detail tables, transferring an entire transaction's data at once |
 | **Cross-layer consistency** | UI layer, BO layer, and Repository layer share the same object; no mapping required |
