@@ -22,9 +22,11 @@ namespace Bee.Definition.Settings
         /// Initializes a new instance of <see cref="UnitItem"/>.
         /// </summary>
         /// <remarks>
-        /// NOTE: the type is <c>keyAsPropertyName</c>, so MessagePack matches constructor parameters
-        /// to members <b>by name</b>. Parameter order is therefore free here — the ordering rule that
-        /// applies to integer-<c>[Key]</c> types (and that BEE4004 enforces) does not reach this one.
+        /// NOTE: parameter order here is free and carries no wire meaning. The definition layer holds
+        /// no serialization attributes at all, and the wire binding names every member explicitly in
+        /// a hand-written formatter, so nothing pairs a constructor parameter with a member by
+        /// position. The ordering rule this note used to disclaim — and the analyzer that enforced
+        /// it — both went away with the attributes.
         /// </remarks>
         /// <param name="code">The unit code (the key), for example <c>KG</c> or <c>PCS</c>.</param>
         /// <param name="decimals">The display decimal places for this unit.</param>

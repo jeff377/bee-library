@@ -47,7 +47,7 @@
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
 | P0 | 發版阻擋項（安全 / 發版正確性） | 3 | ✅ 已完成（2026-08-11，SEC-1 / REL-1 / REL-2 全數落地並驗證） |
-| P1 | 閘門可靠性與已證實的功能缺陷 | 11 | 🚧 進行中（GATE-1 / GATE-2 / GATE-3 / SEC-2 / SEC-3 / TEST-1 / TEST-2 / TEST-3 ✅ 已完成；剩 3 項：CON-1、PERF-1、DOC-1） |
+| P1 | 閘門可靠性與已證實的功能缺陷 | 11 | 🚧 進行中（GATE-1/2/3、SEC-2/3、TEST-1/2/3、**DOC-1** ✅ 已完成；剩 2 項：CON-1、PERF-1） |
 | P2 | 結構、效能、一致性 | 14 | 📝 擬定中（14 項全未動） |
 | P3 | 文件漂移與低風險清理 | 13 | 🚧 進行中（DOC-8 / DOC-9 / DOC-10 / **REL-3** ✅ 已完成；剩 9 項） |
 | P4 | 觀察／待裁決 | 9 | 📝 擬定中（D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
@@ -66,6 +66,8 @@
 | **SEC-3** | API key gate 失效改為可見：停用最後一把金鑰記 error、啟動檢查在非 Development 升為 error | 待 commit | **刻意未做啟動硬失敗**（見下） |
 | **REL-3** | 版號抽為 repo 根 `Version.props`，`src/` 與 `tools/` 共用；`Bee.Cli` 從 4.8.0 併回 4.20.0 | `4575889e` | 雙向實證：兩個方案 clean build 0 警告，`-p:Version=9.9.9` 於 `tools/` 如預期紅在 BEE9002 |
 | **GATE-1** | `WireContractDriftTests` 補防空轉斷言（閉包／註冊數下限 + 四個不同可達路徑的 canary） | 待 commit | 見下方「canary 第一版就抓到我自己的錯誤假設」 |
+| **DOC-1** | `bee-serialization` skill 整份重寫（含 frontmatter description） | 待 commit | 舊版教的 `MessagePackCollectionBase` 等四個型別在 `src/` 宣告數為 **0**；改寫後逐項核對，所有引用的檔案與型別皆存在 |
+| **DOC-3** | `UnitItem` XML doc 移除已退役的 BEE4004 敘述 | 待 commit | 該 doc 會進消費端 IntelliSense |
 | **GATE-3** | CI AOT 閘門由 1 個專案擴到 3 個（補上 `XmlSerializer` reflection-only 那一半） | 待 commit | 本機預跑三專案：759 / 1052 / 580 全通過 0 失敗 |
 | **TEST-1** | 七處以本地日斷言 UTC 產出改為 `DateTime.UtcNow.Date`，並就地註明原因 | 待 commit | 消除「本機 UTC+8 每天 00:00–08:00 必定失敗、CI 跑 UTC 永遠看不到」的失敗帶 |
 | **TEST-2** | `ApiAspNetCoreTests` / `ApiKeyGateControllerTests` 改用 `SharedDbFixture` | 待 commit | 並在類別 doc 記下第三條觸發路徑（API key gate read-through）與「為何先前是綠的」 |
