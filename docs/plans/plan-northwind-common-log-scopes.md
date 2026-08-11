@@ -1,6 +1,6 @@
 # 計畫：Northwind 案例補齊 common / log 兩個資料庫分類，登入改走 `st_user`
 
-**狀態：🚧 進行中（2026-08-11）**
+**狀態：✅ 已完成（2026-08-11）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -8,7 +8,7 @@
 | 1 | `common` 分類正式登錄，seeder 的旁路建表退役 | ✅ 已完成（2026-08-11） |
 | 2 | `log` 分類接線 + 開啟稽核，登入事件落地 | ✅ 已完成（2026-08-11） |
 | 3 | 框架補 `st_user` 預設認證（A 案），案例登入改走它 | ✅ 已完成（2026-08-11） |
-| 4 | 連帶更新：README、鐵人賽已定稿篇章的案例數字 | 📝 待做 |
+| 4 | 連帶更新：README、鐵人賽已定稿篇章的案例數字 | ✅ 已完成（2026-08-11） |
 
 > ✅ **三個決策已於 2026-08-11 由使用者裁定，全部照建議**：
 > A 案（框架補預設認證）／公司脈絡這次不做／`log` 與另兩個分類共用同一個 SQLite 檔。
@@ -248,12 +248,23 @@ log、稽核是關著的、登入是硬編碼的」這個現況：
 - **測試全綠**：`Bee.Api.Core` 759、`Bee.Business` 421、`Bee.Repository` 181、
   `Bee.ObjectCaching` 188，皆 0 失敗
 
-### 尚未驗證
+### 登入往返與稽核落列（已於 2026-08-11 補驗）
 
-**登入的端到端往返與 `st_log_login` 實際落列。** 以 `curl` 送純 JSON 打不進去：
-wire body 是 MessagePack + 壓縮 + 加密的封套，手工組的 JSON 不合形狀
-（`System.Ping` 也同樣失敗，可證與認證改動無關）。要驗證得走桌面端或
-`Bee.Api.Client`，留待階段 4 一併做。
+初次嘗試以 `curl` 送純 JSON 打不進去，原因是 wire body 是 MessagePack + 壓縮 + 加密的封套，
+手工組的 JSON 不合形狀（`System.Ping` 同樣失敗，可證與認證改動無關）。
+改以 `Bee.Api.Client` 的 `SystemApiConnector` 走真正的 client 路徑，寫一次性測試驗證後刪除。
+
+結果全數通過：
+
+| 驗的事 | 結果 |
+|---|---|
+| `demo` / `demo` 登入 | 成功，回傳有效 `AccessToken` |
+| `UserName` | `Demo User`，來自 `st_user.sys_name`（不是應用寫死的常數） |
+| `TimeZone` | `Asia/Taipei`，來自 `st_user.time_zone` ——**證明 session 的時區取自使用者那一列** |
+| 密碼錯誤 | 被拒絕 |
+| `st_log_login` | **兩列，零行應用程式碼**：`event=1`（`LoginFailed`）帶 `fail_reason`；`event=0`（`LoginSucceeded`）帶 `user_name`。兩列的 `source` 都是 `System.Login` |
+
+⚠️ **`st_log_login` 的欄位名是 `event` 不是 `login_event`**，寫文件或查詢時容易寫錯。
 
 ### 過程中踩到、值得記下的兩個雷
 
@@ -274,3 +285,17 @@ wire body 是 MessagePack + 壓縮 + 加密的封套，手工組的 JSON 不合�
   但依決策二仍要覆寫 `Login` 把 `SessionInfo.CompanyId` 蓋上去，所以類別本身留著。
   類別名不再帶 `Authenticating`，因為它已經不做認證。
 - `NorthwindCredentials` 新增 `TimeZone` / `Culture` 兩個常數供 seed 使用。
+
+### 階段 4 執行結果
+
+- **`apps/Bee.Northwind/README.md` / `.zh-TW.md` 雙語同步**：`common` vs `company` 那一節
+  改寫為三個分類，補上「兩個維度正交」的說明（`st_department` / `st_employee` 是框架的表卻在
+  company）、「分類是路由依據，拆資料庫只改一個檔」，並新增一節
+  「登入與稽核，兩者都是零應用程式碼」。目錄樹的兩處描述一併更正。
+- **鐵人賽 day-notes**（另一個 repo，commit `06389cc`）：Day 3 的稽核限制解除、
+  新增 Day 10 的素材筆記、Day 5 的「九列」限定為 company 分類、檔名更新。
+- ⚠️ **已定稿九篇逐句查證過，沒有一處變成假的，未動任何已定稿文字。**
+  Day 6「案例的啟動流程就是照資料庫分類裡登錄的順序把表跑過一遍」**反而變得更精確**
+  ——改版前 `common` 走的是 seeder 的旁路，不在那個迴圈裡。
+- **未做（刻意）**：Day 1 結尾清單當初拿掉的「稽核」二字沒有加回去。少講不是錯，
+  而動已定稿文字須使用者裁定。

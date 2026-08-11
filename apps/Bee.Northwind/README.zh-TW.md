@@ -114,14 +114,29 @@ manifest 已開 dev 明文 HTTP。在 **iOS 模擬器**則用 `http://localhost:
 
 `Order → Employee` 是有趣的跨層連線：業務表（`ft_order`）指向框架系統表（`st_employee`）—— 訂單上的業務員就是框架的員工。
 
-### 落在哪個資料庫（`common` vs `company`）
+### 落在哪個資料庫（`common` / `company` / `log`）
 
-前綴表示誰**擁有**一張表；另一個獨立的維度表示它落在哪個**資料庫**。`FormSchema` 的 `CategoryId` 選擇資料庫 scope：
+前綴表示誰**擁有**一張表；另一個獨立的維度表示它落在哪個**資料庫**。`FormSchema` 的 `CategoryId` 選擇資料庫 scope，只有三個值：
 
-- **`company`** —— 各公司獨立的業務資料。**本 demo 的資料全是公司資料**：`ft_` 表，以及組織表 `st_department` / `st_employee`（一家應用的員工屬於該公司）。router 透過 session 的公司解析到公司資料庫。
-- **`common`** —— 跨公司共用的框架表（工作階段、cache-notify 訊號）。非應用資料。
+- **`company`** —— 各公司獨立的業務資料：`ft_` 表，以及組織表 `st_department` / `st_employee`（一家應用的員工屬於該公司）。router 透過 session 的公司解析到公司資料庫。
+- **`common`** —— 跨公司共用的框架表：使用者（`st_user`）、工作階段、cache-notify 訊號、定義儲存、公司與 API 金鑰。非應用資料。
+- **`log`** —— 稽核軌跡：登入、資料異動、檢視、API 與資料庫異常各一張表。它在正式部署通常獨立一個資料庫，因為成長曲線與業務資料不同、讀它的人也不同。
 
-本 demo 是單公司，所以登入時自動進入一個固定公司（`NorthwindCompanyInfoService` + 在 session 蓋上 `CompanyId` —— hardcoded 登入的公司情境對應版），並讓 `common` 與 `company` 兩個資料庫指向同一個 `northwind.db` 檔。真實的多公司部署會給每家公司各自的資料庫,並走完整的 `EnterCompany` 流程進入。
+**兩個維度是正交的**：`st_department` / `st_employee` 是框架擁有的表（`st_` 前綴），卻落在 **company** 資料庫，因為一家公司的員工就是那家公司的資料。把「誰擁有」和「放哪裡」綁成同一件事，在多公司部署上會撞牆。
+
+三個分類都登錄在 `Define/DbCategorySettings.xml`，seeder 照著它逐張建表 —— 加一張表因此是純 XML。
+
+本 demo 是單公司，所以三個資料庫都指向同一個 `northwind.db` 檔。**分類是框架路由的依據，所以日後要把稽核或某家公司拆到獨立資料庫，改的只有 `DatabaseSettings.xml` 一個檔，一份表單定義都不必動。**
+
+登入時自動進入一個固定公司（`NorthwindCompanyInfoService` + 在 session 蓋上 `CompanyId`）。真實的多公司部署會給每家公司各自的資料庫，並走完整的 `EnterCompany` 流程進入 —— 那條流程會驗 `st_company` 與 `st_user_company`，所以本 demo 那兩張表是建了不用的空表。
+
+### 登入與稽核，兩者都是零應用程式碼
+
+登入走**框架自己的 `st_user` 認證**：seeder 在首次啟動時把 `demo` 帳號寫進 `st_user`，密碼以 `PasswordHasher` 現算雜湊存入（不是寫死的雜湊值，否則換一次雜湊參數就對不上）。應用沒有任何一行認證程式 —— 比對帳號密碼在每個部署都一樣，所以那件事屬於框架。
+
+那一列同時帶著 `time_zone` 與 `culture`，於是 session 的時區取自**使用者**而不是伺服器或部署預設值。
+
+稽核在 `SystemSettings.xml` 開啟之後，**每一次登入成功、失敗與鎖定都會自動落進 `st_log_login`**，同樣零應用程式碼：框架的 `Login` 本身就在三個分支各寫一次。demo 把 `UseBackgroundWriter` 設為 `false`，記錄在登入回傳的當下就看得到；正式部署維持預設的批次寫入。
 
 ## Northwind → bee 模型對應
 
@@ -241,8 +256,8 @@ Region 是業務資料,所以放在 **company** 分類(`TableSchema/company/`),�
 apps/Bee.Northwind/
 ├── Define/                       定義 —— 真實來源（非專案，由 server 讀取）
 │   ├── FormSchema/               每張表單一個檔
-│   ├── TableSchema/company/      業務表（company/ + common/ 放框架表）
-│   ├── DatabaseSettings.xml      common + company 兩個資料庫
+│   ├── TableSchema/{common,company,log}/  一個分類一個資料夾
+│   ├── DatabaseSettings.xml      common + company + log 三個資料庫
 │   ├── DbCategorySettings.xml    各分類有哪些表（驅動建表）
 │   ├── ProgramSettings.xml       型別註冊表（progId 對業務物件 + Repository）
 │   └── MenuSettings.xml          導航選單（資料夾、排序、標題）

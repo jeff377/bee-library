@@ -117,14 +117,29 @@ The table prefix records **who owns the table, not which database it lives in**:
 
 `Order → Employee` is the interesting cross-layer edge: a business table (`ft_order`) points at a framework system table (`st_employee`) — the salesperson on an order is a framework employee.
 
-### Which database (`common` vs `company`)
+### Which database (`common` / `company` / `log`)
 
-The prefix says who *owns* a table; a separate axis says which *database* it lives in. A `FormSchema`'s `CategoryId` selects the database scope:
+The prefix says who *owns* a table; a separate axis says which *database* it lives in. A `FormSchema`'s `CategoryId` selects the database scope, and it has exactly three values:
 
-- **`company`** — per-company business data. **All of this demo's data is company data**: the `ft_` tables *and* the org tables `st_department` / `st_employee` (an application's employees belong to that company). The router resolves company scope through the session's company to the company database.
-- **`common`** — cross-company shared framework tables (sessions, the cache-notify signal). Not application data.
+- **`company`** — per-company business data: the `ft_` tables *and* the org tables `st_department` / `st_employee` (an application's employees belong to that company). The router resolves company scope through the session's company to the company database.
+- **`common`** — cross-company shared framework tables: users (`st_user`), sessions, the cache-notify signal, definition storage, companies and API keys. Not application data.
+- **`log`** — the audit trail: one table each for logins, data changes, reads, and API / database anomalies. Production deployments usually give this its own database, because it grows on a different curve from business data and is read by different people.
 
-This demo is single-company, so it auto-enters one fixed company at login (`NorthwindCompanyInfoService` + a `CompanyId` stamped on the session — the company-context analogue of the hard-coded login) and points both the `common` and `company` databases at the same `northwind.db` file. A real multi-company deployment would give each company its own database and enter it through the full `EnterCompany` flow.
+**The two axes are orthogonal**: `st_department` / `st_employee` are framework-owned tables (`st_` prefix) that live in the **company** database, because a company's employees are that company's data. Tying "who owns it" to "where it lives" is what breaks on a multi-company deployment.
+
+All three categories are registered in `Define/DbCategorySettings.xml`, and the seeder builds every table listed there — which is what makes adding a table pure XML.
+
+This demo is single-company, so all three databases point at the same `northwind.db` file. **The category is what the framework routes on, so moving the audit trail (or one company) to its own database later is a change to `DatabaseSettings.xml` alone — not one form definition has to move.**
+
+It auto-enters one fixed company at login (`NorthwindCompanyInfoService` + a `CompanyId` stamped on the session). A real multi-company deployment would give each company its own database and enter it through the full `EnterCompany` flow — which validates `st_company` and `st_user_company`, so those two tables are created but unused here.
+
+### Sign-in and the audit trail, both with zero application code
+
+Sign-in uses the **framework's own `st_user` authentication**: the seeder writes a `demo` account into `st_user` on first start, with the password hashed through `PasswordHasher` at seed time (not a literal hash, which would silently stop matching the first time the hashing parameters change). The application contains no authentication code at all — comparing an account and a password is the same operation in every deployment, so it belongs to the framework.
+
+That row also carries `time_zone` and `culture`, so the session takes its zone from the **user** rather than from the server or a deployment default.
+
+With auditing enabled in `SystemSettings.xml`, **every successful, failed and locked-out sign-in lands in `st_log_login` automatically**, again with no application code: the framework's own `Login` writes one record on each of those three paths. The demo sets `UseBackgroundWriter` to `false` so a record is visible the moment sign-in returns; a production host keeps the default batch writer.
 
 ## Northwind → bee model mapping
 
@@ -244,8 +259,8 @@ Restart the server (it creates `ft_region`) and the desktop client. **Regions** 
 apps/Bee.Northwind/
 ├── Define/                       definitions — the source of truth (no project, read by the server)
 │   ├── FormSchema/               one form per file
-│   ├── TableSchema/company/      business tables (company/ + common/ for framework)
-│   ├── DatabaseSettings.xml      the common + company databases
+│   ├── TableSchema/{common,company,log}/  one folder per category
+│   ├── DatabaseSettings.xml      the common + company + log databases
 │   ├── DbCategorySettings.xml    which tables exist, per category (drives schema build)
 │   ├── ProgramSettings.xml       the type registry (progId to business object + repository)
 │   └── MenuSettings.xml          the navigation menu (folders, order, captions)
