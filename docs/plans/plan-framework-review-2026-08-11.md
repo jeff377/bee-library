@@ -18,7 +18,7 @@
 | # | 面向 | 上輪 | **本輪** | 變化 | 主要扣分 |
 |---|------|------|---------|------|---------|
 | 1 | 架構分層 | 8.6 | **8.7** | ▲0.1 | A-5、A-2/A-4、A-3 |
-| 2 | 相依分層 | 9.0 | **9.2** | ▲0.2 | N-1（22 處未宣告相依）、N-2 |
+| 2 | 相依分層 | 9.0 | **9.2** | ▲0.2 | DEP-1（22 組未宣告相依，**已裁決不修**）、N-1、N-2 |
 | 3 | 安全性 | 8.6 | **7.0** | ▼1.6 | **SEC-1（P0）**、SEC-2、SEC-3 |
 | 4 | 維護性 | 8.5 | **8.5** | — | M-1、M-2（皆零進展） |
 | 5 | 散落／不必要類別 | 7.5 | **7.5** | — | D-6、D-7 |
@@ -48,7 +48,7 @@
 |------|------|--------|------|
 | P0 | 發版阻擋項（安全 / 發版正確性） | 3 | ✅ 已完成（2026-08-11，SEC-1 / REL-1 / REL-2 全數落地並驗證） |
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
-| P2 | 結構、效能、一致性 | 14 | 🚧 進行中（10 項已結：P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**P-3** / **PERF-2** ❌ 實測後不修；剩 4 項） |
+| P2 | 結構、效能、一致性 | 14 | 🚧 進行中（11 項已結：P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**DEP-1** / **P-3** / **PERF-2** ❌ 評估後不修；剩 3 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
 | P4 | 觀察／待裁決 | 9 | 📝 擬定中（**M-1** ✅ 已落地；D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
 
@@ -86,7 +86,7 @@
 | **TEST-3** | `Bee.Definition.UnitTests` 新增 `ProcessWideStateCollection`，序列化三個衝突類別 | 待 commit | 該組件先前既無 `[Collection]` 也無 `DisableTestParallelization` |
 | **GATE-2** | 8 個手寫 formatter 改實作 `IWireContract`，移除套套邏輯的 `WireMemberCount` | 待 commit | **實證**：在 `SortField` 加一個屬性 → drift 測試立刻紅（`型別上有但未註冊 → Probe`）。同一個 probe 在修正前不會被抓到 |
 | **M-1** | 三個撞名公開型別改名（`ICompanyAuthorizationService` / `CompanyAuthorizationService` / `TraceDispatcher`） | `12e96696` | **新名與計畫建議的不同，見下**。`PublicAPI.Unshipped` 計 10 筆 `*REMOVED*` + 10 筆新增；clean Release build 0 警告；16 專案 5,436 通過 / 0 失敗 |
-| **CON-3** | 兩個快取基底的 `Get` 改為 per-key 單飛（`CacheSingleFlight<T>`），`ICacheProvider` 契約不動 | 待 commit | **反向驗證**：抽掉修正後 5 筆新測試中 3 筆立刻紅（另 2 筆是既有行為的回歸護欄，本來就該綠）。斷言用 `Assert.Same` 而非「都非 null」——後者在修正前也會過 |
+| **CON-3** | 兩個快取基底的 `Get` 改為 per-key 單飛（`CacheSingleFlight<T>`），`ICacheProvider` 契約不動 | `5d202870` | **反向驗證**：抽掉修正後 5 筆新測試中 3 筆立刻紅（另 2 筆是既有行為的回歸護欄，本來就該綠）。斷言用 `Assert.Same` 而非「都非 null」——後者在修正前也會過 |
 
 > **GATE-1 的 canary 第一版是錯的，而那正好證明了它有用。** 我原本把 `FormSchema` 列為
 > 「必定在 wire 閉包內」的 canary，測試當場擋下——`FormSchema` 以 **XML 字串**夾在 wire 上傳輸，
@@ -562,6 +562,24 @@ ApiServiceController.PostAsync → ValidateAuthorization (:129) → ValidateApiK
 | # | 項目 | 位置 | 說明 |
 |---|------|------|------|
 | **DEP-1** | **22 處「使用未宣告的組件」**（上輪 A-1 的完整版） | 11 個專案 / 340+ 條 `using` | 上輪只抓到 1 處。以「`using` 指示詞 vs csproj 宣告」全量比對後：`Bee.Api.AspNetCore`→{Api.Core, Base, Definition, **ObjectCaching**}、`Bee.Api.Client`→{Base, Definition}、`Bee.Db`→Base(94 條)、`Bee.Repository`→{Base, Definition(47)}、`Bee.Hosting`→{Base, Definition(27), RepoAbs(9)}、`Bee.UI.Core`→{**Api.Core**, Base, Definition}、`Bee.Web.Blazor.Server`→{**Api.Core**, Base, Definition} 等。**csproj 不再是相依關係的可信來源**：畫相依圖的人看到的邊，跟編譯器實際允許的邊不同。ADR-038 刪掉兩條邊沒炸是運氣（`Bee.Business` 剛好有顯式宣告），不是機制。全部引入於 2026-08-07 之前。修法：(a) 補顯式 `ProjectReference`；(b) 加測試比對每專案的 `using Bee.*` 前綴集合與其**直接** `ProjectReference` 集合 |
+
+> **DEP-1 已評估，決定不修（2026-08-11，使用者裁決）。下輪不要再提。**
+>
+> 判定的關鍵是：**這不是正確性問題。** `ProjectReference` 預設傳遞編譯期可見性，
+> 程式編得過；NuGet 在消費端一樣會沿相依鏈把組件帶進去，執行期行為完全相同。
+> 22 條補下去只換到兩件事——「中介邊被拿掉時不會靜默斷」與「nuspec 與實情一致」——
+> 代價是 22 行 csproj 與 nuspec 多列本來就間接存在的相依。權衡後不划算。
+>
+> **實作過又撤回，過程留下兩筆證據：**
+>
+> 1. **原計畫的修法 (b)（比對 `using Bee.*` 與 `ProjectReference`）本身有盲區。**
+>    以 `DisableTransitiveProjectReferences=true` 讓編譯器執行同一條規則後，
+>    22 條全補上仍冒出 `Bee.UI.Avalonia → Bee.Api.Core`（`FormDataObject.Crud.cs` 的
+>    `GetDataResponse` / `SaveResponse` / `DeleteResponse`）—— 那些型別**經由方法簽章**
+>    進來，檔內沒有任何 `using Bee.Api.Core`，以 using 為輸入的掃描永遠看不到。
+> 2. **真要落實這條規則，正解是 `DisableTransitiveProjectReferences=true` 而非自訂測試。**
+>    編譯器當場失敗、涵蓋面嚴格較大，也不必維護一份掃描程式。日後若改變主意要做，
+>    直接走這條，不要重寫測試。
 | **A-2** | `BackendDefaultTypes` 反射字串反指 8 個外層具象型別 | `src/Bee.Definition/BackendDefaultTypes.cs:15-53` | **仍存在，逐字未變**。Domain Core（L2）指名 `Bee.Business` ×3、`Bee.ObjectCaching` ×4、`Bee.Repository` ×1（L4），編譯期與相依圖都看不見 |
 | **A-3** | `Bee.UI.Core/Permissions/` 位置錯誤 | 三檔 + `Bee.Web.Blazor.Server` 缺口 | **仍存在**。Blazor head 全 21 檔 grep `Sensitive|Capabilit|Permission` **零命中**，且其 csproj 只引用 `Bee.Api.Client`（結構上取不到）→ 同一份 FormSchema、同一組權限，Avalonia 有 per-role 降級、Blazor 沒有 |
 | **A-4** | `GlobalEvents` 靜態事件 + 訂閱洩漏 + **re-entrancy 已確認為完整可達鏈路** | `src/Bee.Definition/GlobalEvents.cs:11`、`DbConnectionManagerService.cs:31` | **仍存在**。全 repo 唯一的 `public static event`；訂閱在 ctor、**無 `-=`、不實作 `IDisposable`**。re-entrancy 鏈：`GetConnectionInfo` → `_cache.GetOrAdd(id, CreateConnectionInfo)` → `_provider.Get()` → `CacheDefineAccess.GetDatabaseSettings()` → `DatabaseSettingsCache.CreateInstance` → **`GlobalEvents.RaiseDatabaseSettingsChanged()`** → `OnDatabaseSettingsChanged` → **`_cache.Clear()`，正在自己的 valueFactory 內**。不會死鎖（.NET Core 的 `GetOrAdd` 在鎖外呼叫 factory），但**每次 `DatabaseSettings` cache miss 都會連帶清光所有連線資訊**。正解：`CreateInstance` 不該在「載入」時發變更事件 —— 那不是變更，是首次載入 |
