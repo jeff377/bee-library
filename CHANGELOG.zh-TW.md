@@ -18,6 +18,8 @@
 - `Bee.Definition` / `Bee.Api.Client`：兩處在並行下會交出或重建 process-wide 快取定義狀態的問題已修正。`FormTable.RelationFieldReferences` 的反向索引建立在無保護的 null 檢查後，兩個觸碰同一份快取 schema 的請求可能各建一份、拿到不同實例，且建立過程的驗證例外會從一個看起來只是讀取的 property getter 冒出來。`FormDefinitionLoader.GetLocalizedSchemaAsync` 在未指定語言時直接回傳共用的快取 schema，儘管它的文件寫著「絕不交出快取實例」——而 `CultureInfo.InvariantCulture.Name` 是空字串，那正是最常走到的路徑。
 - `Bee.Db` / `Bee.ObjectCaching`：`DatabaseSettingsChanged` 事件改為在**重新載入**時觸發，而非每次載入。它唯一的發布者是設定快取的載入路徑，而 `DbConnectionManagerService` 收到後會清空連線快取——且是在它自己的 `GetOrAdd` value factory 內被觸達，因此每次設定快取 miss 都會丟棄先前建立的所有連線項目。真正的重新載入（設定檔有監看）仍會觸發，那正是外部編輯得以傳播到連線快取的機制。`DbConnectionManagerService` 另實作 `IDisposable` 並退訂——static 事件會持有訂閱者直到行程結束。
 - `Bee.Business`：`EnterCompany` 改為先解析完公司的角色、能力與記錄範圍身分，才寫入 session。session 物件由同一個 access token 的所有並行請求共用，而 `CompanyId` 與 `Roles` 正是授權判斷的兩個輸入——先前把寫入與查詢交錯，留下一段橫跨三次可能觸及資料庫之呼叫的窗口，期間並行請求可能以「新公司 + 前一家公司的角色」做出授權決定。
+- `Bee.Definition`：權限查詢改為建構時建好索引，不再於每次檢查掃描全部授權。`CompanyRolePermissions` 是存在 process-wide 快取的不可變快照，而其授權筆數為 角色數 × 模型數——在 ERP 是數千到數萬。查詢成本由 O(公司的授權筆數) 變為 O(使用者持有的角色數)：實測 200 角色 × 100 模型下，單次檢查由 23.4 µs 降為 0.08 µs，且不再隨部署規模惡化。
+- `Bee.ObjectCaching`：`ApiKeyCache` 的 miss 快取由五分鐘縮為一分鐘。它的 key 是呼叫端放在 `X-Api-Key` 標頭中的識別碼、而 gate 每個請求都會跑，因此每一筆負向條目都由攻擊者指定——且該快取無容量上限。保留負向快取是因為它確實能省下「設定錯誤的 client 拿著同一把已撤銷金鑰重試」的往返；但它從來就擋不住**隨機**識別碼的探測，因為每個不重複的 id 無論如何都會打一次資料庫。
 - `Bee.Db`：`WhereBuilder` 在有 `selectContext` 而需改寫條件欄名時，不再遺失 `SecondValue` 與 `IgnoreIfNull`。先前 `BETWEEN` 會失去上界，`IgnoreIfNull` 條件則變成 `= NULL` —— 在 SQL 裡永不成立，於是查詢靜默回傳零筆，而不是忽略該條件。
 
 ## [4.20.0]

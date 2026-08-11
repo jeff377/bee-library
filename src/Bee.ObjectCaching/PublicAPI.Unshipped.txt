@@ -1,1 +1,3 @@
 #nullable enable
+const Bee.ObjectCaching.Database.ApiKeyCache.NegativeMinutes = 1 -> int
+override Bee.ObjectCaching.Database.ApiKeyCache.GetNegativePolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy?
