@@ -45,7 +45,11 @@ namespace Bee.Definition.Language
         /// <c>[XmlArray]</c> collections (<c>LanguageResource.Items</c>, <c>.Enums</c>) are not
         /// affected and stay get-only.
         /// <para>
-        /// It copies rather than replaces so the owner wiring set up by the constructor survives.
+        /// NOTE: The setter copies into the existing collection instead of replacing the field.
+        /// <c>KeyCollectionBase.Owner</c> is get-only and can only be set by the constructor, so
+        /// assigning the incoming instance — which <c>XmlSerializer</c> built through the
+        /// parameterless constructor and therefore has no owner — would permanently break the
+        /// back-reference to this enum.
         /// </para>
         /// </remarks>
         [XmlElement("Entry")]
@@ -55,7 +59,7 @@ namespace Bee.Definition.Language
             get => _entries ??= new LanguageEnumEntryCollection(this);
             set
             {
-                var target = Entries;
+                var target = _entries ??= new LanguageEnumEntryCollection(this);
                 if (ReferenceEquals(target, value))
                     return;
 
