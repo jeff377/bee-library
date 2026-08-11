@@ -21,13 +21,23 @@ namespace Bee.Api.Core.MessagePack
     /// round-trip tests, which fails as soon as the shapes drift apart.
     /// </para>
     /// </remarks>
-    internal sealed class SortFieldFormatter : IMessagePackFormatter<SortField?>
+    internal sealed class SortFieldFormatter : IMessagePackFormatter<SortField?>, IWireContract
     {
         /// <summary>
-        /// Number of members written. Asserted by the wire tests so a new property cannot be added
-        /// to <see cref="SortField"/> without this formatter being updated as well.
+        /// Wire member names, in write order. The single source for both the map header and the
+        /// drift check — they cannot disagree because they read the same array.
         /// </summary>
-        public const int WireMemberCount = 2;
+        private static readonly string[] WireMembers =
+        [
+            nameof(SortField.FieldName),
+            nameof(SortField.Direction),
+        ];
+
+        /// <inheritdoc />
+        public Type WireType => typeof(SortField);
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> WireMemberNames => WireMembers;
 
         /// <summary>
         /// Serializes the value.
@@ -40,7 +50,7 @@ namespace Bee.Api.Core.MessagePack
                 return;
             }
 
-            writer.WriteMapHeader(WireMemberCount);
+            writer.WriteMapHeader(WireMembers.Length);
 
             writer.Write(nameof(SortField.FieldName));
             MessagePackSerializer.Serialize(ref writer, value.FieldName, options);

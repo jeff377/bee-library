@@ -12,23 +12,20 @@ namespace Bee.Api.Core.UnitTests
     /// 手寫 wire formatter 的 round-trip 與形狀測試。
     /// </summary>
     /// <remarks>
-    /// 每個 formatter 都有一條 <c>WireMemberCount</c> 斷言。這是型別與 formatter 之間唯一的
-    /// 連結——編譯器不會幫忙，所以在對應型別新增屬性卻忘了更新 formatter 時，
-    /// 由這裡的斷言擋下。
+    /// 這裡驗的是 round-trip 保真度。**型別與 formatter 的成員清單是否一致，不在這裡驗**——
+    /// 那由 <c>WireContractDriftTests</c> 承擔，它比對 <c>IWireContract.WireMemberNames</c>
+    /// 與型別當下的形狀。
+    /// <para>
+    /// 先前這裡有一組 <c>WireMemberCount</c> 斷言，宣稱是「型別與 formatter 之間唯一的連結」。
+    /// 它讀回 formatter 自己寫的 map header、再與 formatter 自己宣告的常數比較，
+    /// 也就是 <c>Assert.Equal(X, X)</c>——在任何情況下都不可能失敗。八個手寫 formatter 的
+    /// 目標型別因此從未有過形狀守衛。已改為讓那些 formatter 實作 <c>IWireContract</c>。
+    /// </para>
     /// </remarks>
     public class WireFormatterTests
     {
-        /// <summary>
-        /// MessagePack fixmap 的首位元組為 <c>0x80 | n</c>，取低 4 位即成員數。
-        /// </summary>
-        private static int ReadMapMemberCount(byte[] payload)
-        {
-            Assert.InRange(payload[0], 0x80, 0x8F);
-            return payload[0] & 0x0F;
-        }
-
         [Fact]
-        [DisplayName("SortField 應 round-trip，且成員數與 formatter 宣告相符")]
+        [DisplayName("SortField 應 round-trip")]
         public void SortField_RoundTripsWithDeclaredMemberCount()
         {
             var source = new SortField("cust_id", SortDirection.Desc);
@@ -36,7 +33,6 @@ namespace Bee.Api.Core.UnitTests
             var bytes = MessagePackCodec.Serialize(source);
             var result = MessagePackCodec.Deserialize<SortField>(bytes);
 
-            Assert.Equal(SortFieldFormatter.WireMemberCount, ReadMapMemberCount(bytes));
             Assert.Equal("cust_id", result.FieldName);
             Assert.Equal(SortDirection.Desc, result.Direction);
         }
@@ -71,7 +67,6 @@ namespace Bee.Api.Core.UnitTests
             var bytes = MessagePackCodec.Serialize(source);
             var result = MessagePackCodec.Deserialize<DepartmentNode>(bytes);
 
-            Assert.Equal(DepartmentNodeFormatter.WireMemberCount, ReadMapMemberCount(bytes));
             Assert.Equal(source.RowId, result.RowId);
             Assert.Equal("業務部", result.DeptName);
             Assert.Equal(source.ManagerRowId, result.ManagerRowId);
@@ -107,7 +102,6 @@ namespace Bee.Api.Core.UnitTests
             var bytes = MessagePackCodec.Serialize(source);
             var result = MessagePackCodec.Deserialize<NumberFormatItem>(bytes);
 
-            Assert.Equal(NumberFormatItemFormatter.WireMemberCount, ReadMapMemberCount(bytes));
             Assert.Equal(NumberKind.Amount, result.Kind);
             Assert.Equal(4, result.Decimals);
         }
@@ -121,7 +115,6 @@ namespace Bee.Api.Core.UnitTests
             var bytes = MessagePackCodec.Serialize(source);
             var result = MessagePackCodec.Deserialize<CashRoundingItem>(bytes);
 
-            Assert.Equal(CashRoundingItemFormatter.WireMemberCount, ReadMapMemberCount(bytes));
             Assert.Equal("TWD", result.CurrencyCode);
             Assert.Equal(0.5m, result.Unit);
         }
@@ -135,7 +128,6 @@ namespace Bee.Api.Core.UnitTests
             var bytes = MessagePackCodec.Serialize(source);
             var result = MessagePackCodec.Deserialize<AllowedCurrencyItem>(bytes);
 
-            Assert.Equal(AllowedCurrencyItemFormatter.WireMemberCount, ReadMapMemberCount(bytes));
             Assert.Equal("USD", result.Code);
         }
 

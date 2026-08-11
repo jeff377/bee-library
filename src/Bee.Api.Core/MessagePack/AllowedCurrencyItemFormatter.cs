@@ -13,17 +13,27 @@ namespace Bee.Api.Core.MessagePack
     /// which needs <c>Reflection.Emit</c> to pass the `ref struct` writer and therefore throws on
     /// the mobile heads. Naming every member at compile time keeps the whole path generic.
     /// <para>
-    /// WARNING: Adding a property to <see cref="AllowedCurrencyItem"/> means adding it here too. The guard is the
-    /// <see cref="WireMemberCount"/> assertion in the wire tests, which fails as soon as the two
-    /// shapes drift apart.
+    /// WARNING: Adding a property to <see cref="AllowedCurrencyItem"/> means adding it here too. The guard is
+    /// <c>WireContractDriftTests</c>, which compares <see cref="WireMemberNames"/> against the
+    /// type's actual shape and fails as soon as the two drift apart.
     /// </para>
     /// </remarks>
-    internal sealed class AllowedCurrencyItemFormatter : IMessagePackFormatter<AllowedCurrencyItem?>
+    internal sealed class AllowedCurrencyItemFormatter : IMessagePackFormatter<AllowedCurrencyItem?>, IWireContract
     {
         /// <summary>
-        /// Number of members written, asserted by the wire tests.
+        /// Wire member names, in write order. The single source for both the map header and the
+        /// drift check — they cannot disagree because they read the same array.
         /// </summary>
-        public const int WireMemberCount = 1;
+        private static readonly string[] WireMembers =
+        [
+            nameof(AllowedCurrencyItem.Code),
+        ];
+
+        /// <inheritdoc />
+        public Type WireType => typeof(AllowedCurrencyItem);
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> WireMemberNames => WireMembers;
 
         /// <summary>
         /// Serializes the value.
@@ -36,7 +46,7 @@ namespace Bee.Api.Core.MessagePack
                 return;
             }
 
-            writer.WriteMapHeader(WireMemberCount);
+            writer.WriteMapHeader(WireMembers.Length);
 
             writer.Write(nameof(AllowedCurrencyItem.Code));
             MessagePackSerializer.Serialize<string>(ref writer, value.Code, options);

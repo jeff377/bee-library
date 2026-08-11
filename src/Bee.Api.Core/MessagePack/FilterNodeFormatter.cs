@@ -22,7 +22,9 @@ namespace Bee.Api.Core.MessagePack
     /// <para>
     /// WARNING: Adding a property to <see cref="FilterCondition"/> or <see cref="FilterGroup"/> —
     /// or adding a third subclass — means updating this formatter. The guard is the
-    /// <c>WireMemberCount</c> assertions in the wire tests.
+    /// <c>WireContractDriftTests</c>, by way of the two subtype formatters in
+    /// <c>FilterNodeSubtypeFormatters.cs</c> — this formatter covers the abstract base, which has no
+    /// wire members of its own to compare.
     /// </para>
     /// </remarks>
     internal sealed class FilterNodeFormatter : IMessagePackFormatter<FilterNode?>
@@ -33,14 +35,31 @@ namespace Bee.Api.Core.MessagePack
         private const string KindKey = nameof(FilterNode.Kind);
 
         /// <summary>
-        /// Members written for a <see cref="FilterCondition"/>, discriminator included.
+        /// Wire member names written for a <see cref="FilterCondition"/>, in write order.
         /// </summary>
-        public const int ConditionWireMemberCount = 6;
+        /// <remarks>
+        /// The discriminator is not listed: <see cref="FilterNode.Kind"/> is get-only and therefore
+        /// not a wire member by the definition the drift check uses. It is written alongside these,
+        /// which is why the map header adds one.
+        /// </remarks>
+        internal static readonly string[] ConditionWireMembers =
+        [
+            nameof(FilterCondition.FieldName),
+            nameof(FilterCondition.Operator),
+            nameof(FilterCondition.Value),
+            nameof(FilterCondition.SecondValue),
+            nameof(FilterCondition.IgnoreIfNull),
+        ];
 
         /// <summary>
-        /// Members written for a <see cref="FilterGroup"/>, discriminator included.
+        /// Wire member names written for a <see cref="FilterGroup"/>, in write order. The
+        /// discriminator is excluded for the reason given on <see cref="ConditionWireMembers"/>.
         /// </summary>
-        public const int GroupWireMemberCount = 3;
+        internal static readonly string[] GroupWireMembers =
+        [
+            nameof(FilterGroup.Operator),
+            nameof(FilterGroup.Nodes),
+        ];
 
         /// <summary>
         /// Serializes the node, dispatching on its concrete type.
@@ -128,7 +147,8 @@ namespace Bee.Api.Core.MessagePack
         private static void WriteCondition(
             ref MessagePackWriter writer, FilterCondition value, MessagePackSerializerOptions options)
         {
-            writer.WriteMapHeader(ConditionWireMemberCount);
+            // +1 for the Kind discriminator, which is written but is not a wire member.
+            writer.WriteMapHeader(ConditionWireMembers.Length + 1);
 
             writer.Write(KindKey);
             writer.Write((int)FilterNodeKind.Condition);
@@ -155,7 +175,8 @@ namespace Bee.Api.Core.MessagePack
         private static void WriteGroup(
             ref MessagePackWriter writer, FilterGroup value, MessagePackSerializerOptions options)
         {
-            writer.WriteMapHeader(GroupWireMemberCount);
+            // +1 for the Kind discriminator, which is written but is not a wire member.
+            writer.WriteMapHeader(GroupWireMembers.Length + 1);
 
             writer.Write(KindKey);
             writer.Write((int)FilterNodeKind.Group);

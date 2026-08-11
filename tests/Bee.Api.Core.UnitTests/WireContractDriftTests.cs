@@ -35,6 +35,57 @@ namespace Bee.Api.Core.UnitTests
             typeof(SerializableDataTable),
         ];
 
+        /// <summary>
+        /// 閉包一定看得到的型別。任一不在，代表閉包本身壞了。
+        /// </summary>
+        /// <remarks>
+        /// 閉包的起點是命名空間**字串**比對。命名空間改名或訊息型別搬家，閉包不會變空、
+        /// 而是**部分萎縮**成只剩 <c>ExtraRoots</c>——此時 <c>missing.Count == 0</c> 依然成立，
+        /// 兩條檢查一起變成恆真。單純的 <c>NotEmpty</c> 擋不到這種萎縮，所以這裡釘住具體型別。
+        /// </remarks>
+        /// <remarks>
+        /// 四個型別刻意取自不同的可達路徑：訊息命名空間的根、契約命名空間的根、
+        /// 掛在 <c>ApiMessageBase</c> 上因而每個訊息都會經過的集合、以及多型子型別。
+        /// 任一條路徑斷掉都會被指名，而不是只看到一個數字變小。
+        /// <para>
+        /// 注意 <c>FormSchema</c> 之類的定義型別**不在**閉包內：它以 XML 字串夾在 wire 上傳輸，
+        /// 不是以物件形式。第一版把它列為 canary，被這條測試當場擋下——這也順帶說明了
+        /// 下限斷言為何不能只寫一個數字。
+        /// </para>
+        /// </remarks>
+        private static readonly Type[] ClosureCanaries =
+        [
+            typeof(Bee.Api.Core.Messages.Form.GetListRequest),
+            typeof(Bee.Api.Core.Messages.System.LoginRequest),
+            typeof(Bee.Definition.Collections.ParameterCollection),
+            typeof(Bee.Definition.Filters.FilterCondition),
+        ];
+
+        [Fact]
+        [DisplayName("型別閉包與註冊清單都不得為空或萎縮（防止兩條漂移檢查變成恆真）")]
+        public void WireTypeClosure_AndRegistrations_AreNotVacuous()
+        {
+            var closure = WireTypeClosure();
+            var contracts = MessagePackCodec.RegisteredFormatters.OfType<IWireContract>().ToList();
+
+            // 下限刻意寫得比現況寬鬆：它要擋的是「掉到只剩 ExtraRoots」這種數量級的萎縮，
+            // 不是要在每次新增型別時被迫改數字。
+            Assert.True(closure.Count > 80,
+                $"wire 型別閉包只有 {closure.Count} 個型別，遠低於預期。閉包的根是命名空間字串比對，" +
+                "若命名空間改名或訊息型別搬家，下面兩條漂移檢查會靜默變成恆真。");
+            Assert.True(contracts.Count > 80,
+                $"只有 {contracts.Count} 個 IWireContract 註冊，遠低於預期。" +
+                "WireContracts_MatchTypeShape 會因此變成空迴圈而恆真。");
+
+            var missingCanaries = ClosureCanaries
+                .Where(t => !closure.Contains(t))
+                .Select(t => t.FullName!)
+                .ToList();
+            Assert.True(missingCanaries.Count == 0,
+                $"下列型別必定在 wire 型別閉包內，卻不在：{Environment.NewLine}" +
+                string.Join(Environment.NewLine, missingCanaries));
+        }
+
         [Fact]
         [DisplayName("wire 型別閉包內每個型別都必須有顯式註冊的 formatter")]
         public void WireTypeClosure_IsFullyRegistered()

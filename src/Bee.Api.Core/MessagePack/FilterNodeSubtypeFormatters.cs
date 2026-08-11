@@ -15,9 +15,20 @@ namespace Bee.Api.Core.MessagePack
     /// The bytes are identical either way; the polymorphic formatter writes the same discriminated
     /// map whichever static type it was reached through.
     /// </remarks>
-    internal sealed class FilterConditionFormatter : IMessagePackFormatter<FilterCondition?>
+    internal sealed class FilterConditionFormatter : IMessagePackFormatter<FilterCondition?>, IWireContract
     {
         private static readonly FilterNodeFormatter Inner = new FilterNodeFormatter();
+
+        /// <inheritdoc />
+        public Type WireType => typeof(FilterCondition);
+
+        /// <summary>
+        /// Reports the member list the shared <see cref="FilterNodeFormatter"/> writes for this
+        /// subtype, so the drift check has something to compare the type against. The base-type
+        /// formatter cannot carry it: <see cref="FilterNode"/> is abstract and has no wire members
+        /// of its own.
+        /// </summary>
+        public IReadOnlyList<string> WireMemberNames => FilterNodeFormatter.ConditionWireMembers;
 
         /// <summary>
         /// Serializes the value.
@@ -39,9 +50,20 @@ namespace Bee.Api.Core.MessagePack
     /// <remarks>
     /// See <see cref="FilterConditionFormatter"/> for why the base-type registration is not enough.
     /// </remarks>
-    internal sealed class FilterGroupFormatter : IMessagePackFormatter<FilterGroup?>
+    internal sealed class FilterGroupFormatter : IMessagePackFormatter<FilterGroup?>, IWireContract
     {
         private static readonly FilterNodeFormatter Inner = new FilterNodeFormatter();
+
+        /// <inheritdoc />
+        public Type WireType => typeof(FilterGroup);
+
+        /// <summary>
+        /// Reports the member list the shared <see cref="FilterNodeFormatter"/> writes for this
+        /// subtype, so the drift check has something to compare the type against. The base-type
+        /// formatter cannot carry it: <see cref="FilterNode"/> is abstract and has no wire members
+        /// of its own.
+        /// </summary>
+        public IReadOnlyList<string> WireMemberNames => FilterNodeFormatter.GroupWireMembers;
 
         /// <summary>
         /// Serializes the value.

@@ -47,7 +47,7 @@
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
 | P0 | 發版阻擋項（安全 / 發版正確性） | 3 | ✅ 已完成（2026-08-11，SEC-1 / REL-1 / REL-2 全數落地並驗證） |
-| P1 | 閘門可靠性與已證實的功能缺陷 | 11 | 🚧 進行中（SEC-2 / SEC-3 ✅ 已完成；剩 9 項） |
+| P1 | 閘門可靠性與已證實的功能缺陷 | 11 | 🚧 進行中（GATE-1 / GATE-2 / SEC-2 / SEC-3 ✅ 已完成；剩 7 項） |
 | P2 | 結構、效能、一致性 | 14 | 📝 擬定中（14 項全未動） |
 | P3 | 文件漂移與低風險清理 | 13 | 🚧 進行中（DOC-8 / DOC-9 / DOC-10 / **REL-3** ✅ 已完成；剩 9 項） |
 | P4 | 觀察／待裁決 | 9 | 📝 擬定中（D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
@@ -64,7 +64,15 @@
 | **D-8（子項）** | `MessagePackContract` 死碼清除 | `8f373bd5` | 另開 session 處理；複驗 `src/` / `tests/` 零殘留參照 |
 | **SEC-2** | `LoginAttemptTracker` 改為有界：條目自帶到期 + 排程清掃、失敗計數視窗化、追蹤帳號數上限 | 待 commit | 新增 5 個測試，含「攻擊者永不重複 user id」這條 lazy cleanup 打不到的路徑；`LoginAttemptTracker` 測試 18 通過 |
 | **SEC-3** | API key gate 失效改為可見：停用最後一把金鑰記 error、啟動檢查在非 Development 升為 error | 待 commit | **刻意未做啟動硬失敗**（見下） |
-| **REL-3** | 版號抽為 repo 根 `Version.props`，`src/` 與 `tools/` 共用；`Bee.Cli` 從 4.8.0 併回 4.20.0 | 待 commit | 雙向實證：兩個方案 clean build 0 警告，`-p:Version=9.9.9` 於 `tools/` 如預期紅在 BEE9002 |
+| **REL-3** | 版號抽為 repo 根 `Version.props`，`src/` 與 `tools/` 共用；`Bee.Cli` 從 4.8.0 併回 4.20.0 | `4575889e` | 雙向實證：兩個方案 clean build 0 警告，`-p:Version=9.9.9` 於 `tools/` 如預期紅在 BEE9002 |
+| **GATE-1** | `WireContractDriftTests` 補防空轉斷言（閉包／註冊數下限 + 四個不同可達路徑的 canary） | 待 commit | 見下方「canary 第一版就抓到我自己的錯誤假設」 |
+| **GATE-2** | 8 個手寫 formatter 改實作 `IWireContract`，移除套套邏輯的 `WireMemberCount` | 待 commit | **實證**：在 `SortField` 加一個屬性 → drift 測試立刻紅（`型別上有但未註冊 → Probe`）。同一個 probe 在修正前不會被抓到 |
+
+> **GATE-1 的 canary 第一版是錯的，而那正好證明了它有用。** 我原本把 `FormSchema` 列為
+> 「必定在 wire 閉包內」的 canary，測試當場擋下——`FormSchema` 以 **XML 字串**夾在 wire 上傳輸，
+> 不是以物件形式，因此不在閉包內。這也說明下限斷言為何不能只寫一個數字：數字擋得住「掉到只剩
+> `ExtraRoots`」，擋不住「某一條可達路徑斷掉」。現行四個 canary 刻意取自不同路徑（訊息命名空間
+> 的根、契約命名空間的根、掛在 `ApiMessageBase` 上每個訊息都會經過的集合、多型子型別）。
 
 > **SEC-3 未完全照原計畫做，這是刻意的。** 計畫寫的是「非 Development 環境 `InForce==false` 由 warning
 > 升為**啟動失敗**」。實作時發現 `IsApiKeyAccepted` 的 XML doc 把 presence-only 明文寫成「讓既有部署

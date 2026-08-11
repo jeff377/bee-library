@@ -8,19 +8,14 @@ namespace Bee.Api.Core.UnitTests
     /// <c>FilterNodeFormatter</c> 的多型 round-trip 測試。
     /// </summary>
     /// <remarks>
-    /// 多型判別由 formatter 手寫，編譯器不會把型別與 formatter 綁在一起，
-    /// 因此成員數斷言是唯一的漂移守衛。
+    /// 多型判別由 formatter 手寫，編譯器不會把型別與 formatter 綁在一起。漂移守衛是
+    /// <c>WireContractDriftTests</c>，經由 <c>FilterConditionFormatter</c> /
+    /// <c>FilterGroupFormatter</c> 上的 <c>IWireContract</c> 實作；這裡驗的是 round-trip 保真度。
     /// </remarks>
     public class FilterNodeWireTests
     {
-        private static int ReadMapMemberCount(byte[] payload)
-        {
-            Assert.InRange(payload[0], 0x80, 0x8F);
-            return payload[0] & 0x0F;
-        }
-
         [Fact]
-        [DisplayName("FilterCondition 應 round-trip 為正確子型別，且成員數相符")]
+        [DisplayName("FilterCondition 應 round-trip 為正確子型別")]
         public void FilterCondition_RoundTripsAsCorrectSubtype()
         {
             FilterNode source = new FilterCondition("cust_id", ComparisonOperator.Equal, "A01")
@@ -31,7 +26,6 @@ namespace Bee.Api.Core.UnitTests
             var bytes = MessagePackCodec.Serialize(source);
             var result = MessagePackCodec.Deserialize<FilterNode>(bytes);
 
-            Assert.Equal(FilterNodeFormatter.ConditionWireMemberCount, ReadMapMemberCount(bytes));
             var condition = Assert.IsType<FilterCondition>(result);
             Assert.Equal(FilterNodeKind.Condition, condition.Kind);
             Assert.Equal("cust_id", condition.FieldName);
@@ -42,7 +36,7 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("FilterGroup 應 round-trip 為正確子型別，且成員數相符")]
+        [DisplayName("FilterGroup 應 round-trip 為正確子型別")]
         public void FilterGroup_RoundTripsAsCorrectSubtype()
         {
             FilterNode source = new FilterGroup(LogicalOperator.Or)
@@ -53,7 +47,6 @@ namespace Bee.Api.Core.UnitTests
             var bytes = MessagePackCodec.Serialize(source);
             var result = MessagePackCodec.Deserialize<FilterNode>(bytes);
 
-            Assert.Equal(FilterNodeFormatter.GroupWireMemberCount, ReadMapMemberCount(bytes));
             var group = Assert.IsType<FilterGroup>(result);
             Assert.Equal(FilterNodeKind.Group, group.Kind);
             Assert.Equal(LogicalOperator.Or, group.Operator);
