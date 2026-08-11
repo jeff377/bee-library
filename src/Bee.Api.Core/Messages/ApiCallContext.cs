@@ -39,10 +39,5 @@ namespace Bee.Api.Core.Messages
         /// Gets or sets the payload format of the call.
         /// </summary>
         public PayloadFormat Format { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether encoding should be validated (only required for remote calls).
-        /// </summary>
-        public bool ShouldValidateEncoding => !IsLocalCall;
     }
 }

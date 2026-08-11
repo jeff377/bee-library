@@ -6,7 +6,7 @@ namespace Bee.Db.Dml
     /// <summary>
     /// Builds the SQL WHERE clause.
     /// </summary>
-    public sealed class WhereBuilder : IWhereBuilder
+    public sealed class WhereBuilder
     {
         private readonly DatabaseType _databaseType;
 

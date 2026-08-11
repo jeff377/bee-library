@@ -7,7 +7,7 @@ namespace Bee.Db.Dml
     /// <summary>
     /// Builds the SQL ORDER BY clause.
     /// </summary>
-    public sealed class SortBuilder : ISortBuilder
+    public sealed class SortBuilder
     {
         private readonly DatabaseType _databaseType;
 

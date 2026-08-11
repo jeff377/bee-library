@@ -1,5 +1,7 @@
 #nullable enable
 *REMOVED*Bee.Definition.Identity.IAuthorizationService
 *REMOVED*Bee.Definition.Identity.IAuthorizationService.Can(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action) -> bool
+*REMOVED*Bee.Definition.Settings.AuditLogOptions.ExecEnabled.get -> bool
+*REMOVED*Bee.Definition.Settings.AuditLogOptions.ExecEnabled.set -> void
 Bee.Definition.Identity.ICompanyAuthorizationService
 Bee.Definition.Identity.ICompanyAuthorizationService.Can(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action) -> bool

@@ -7,7 +7,7 @@ namespace Bee.Db.Dml
     /// <summary>
     /// Builds the SQL FROM clause, including any JOIN statements.
     /// </summary>
-    public class FromBuilder : IFromBuilder
+    public class FromBuilder
     {
         private readonly DatabaseType _databaseType;
 

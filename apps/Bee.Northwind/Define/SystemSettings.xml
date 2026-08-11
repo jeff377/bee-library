@@ -37,7 +37,6 @@
       <UseBackgroundWriter>false</UseBackgroundWriter>
       <LoginEnabled>true</LoginEnabled>
       <ChangeEnabled>true</ChangeEnabled>
-      <ExecEnabled>false</ExecEnabled>
       <AccessEnabled>false</AccessEnabled>
       <AnomalyEnabled>false</AnomalyEnabled>
     </AuditLogOptions>

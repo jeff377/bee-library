@@ -72,12 +72,6 @@ namespace Bee.Definition.Settings
         [DefaultValue(true)]
         public bool ChangeEnabled { get; set; } = true;
 
-        /// <summary>Gets or sets a value indicating whether execution (API call) records are captured.</summary>
-        [Category("AuditLog")]
-        [Description("Whether execution (API call) records are captured.")]
-        [DefaultValue(true)]
-        public bool ExecEnabled { get; set; } = true;
-
         /// <summary>
         /// Gets or sets a value indicating whether read/access records are captured. Opt-in (off
         /// by default) because read volume is high.

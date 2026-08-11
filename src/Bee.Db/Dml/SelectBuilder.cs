@@ -7,7 +7,7 @@ namespace Bee.Db.Dml
     /// <summary>
     /// Builds the SQL SELECT clause.
     /// </summary>
-    public class SelectBuilder : ISelectBuilder
+    public class SelectBuilder
     {
         private readonly DatabaseType _databaseType;
 

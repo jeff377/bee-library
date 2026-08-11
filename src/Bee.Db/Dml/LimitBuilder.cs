@@ -16,7 +16,7 @@ namespace Bee.Db.Dml
     /// identifiers are all inlined the same way). Do not refactor to parameterised
     /// binds without first verifying every dialect accepts placeholders in LIMIT/FETCH.
     /// </summary>
-    public sealed class LimitBuilder : ILimitBuilder
+    public sealed class LimitBuilder
     {
         private readonly DatabaseType _databaseType;
 

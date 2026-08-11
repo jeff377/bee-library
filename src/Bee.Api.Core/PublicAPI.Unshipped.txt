@@ -1,4 +1,5 @@
 #nullable enable
+*REMOVED*Bee.Api.Core.Messages.ApiCallContext.ShouldValidateEncoding.get -> bool
 *REMOVED*Bee.Api.Core.Messages.ApiErrorInfo
 *REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.ApiErrorInfo() -> void
 *REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.ApiErrorInfo(System.Exception! exception, bool includeStackTrace = false) -> void
