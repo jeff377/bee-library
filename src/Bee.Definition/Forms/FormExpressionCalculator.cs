@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Data;
 using Bee.Base;
 using Bee.Base.Data;
@@ -25,6 +26,55 @@ namespace Bee.Definition.Forms
     public sealed class FormExpressionCalculator
     {
         private readonly IExpressionEvaluator _evaluator;
+
+        /// <summary>
+        /// Cached per expression: the variable names it actually references.
+        /// </summary>
+        /// <remarks>
+        /// Cached because <see cref="IExpressionEvaluator.GetReferencedVariables"/> parses the
+        /// expression under a lock — calling it per row would cost more than it saves.
+        /// </remarks>
+        private readonly ConcurrentDictionary<string, string[]> _referencedVariables = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Narrows the row's variable map to the names the expression actually references.
+        /// </summary>
+        /// <remarks>
+        /// The evaluator builds one parameter per entry handed to it and the engine binds every one,
+        /// so the cost of an evaluation tracks the <b>column count</b>, not the complexity of the
+        /// expression. A 30-column table evaluating <c>a + b + c</c> paid for 30 parameters on every
+        /// row. Measured on 30 columns / 5 computed fields / 1000 rows: 44.6 ms with the full map
+        /// versus 7.1 ms with only the referenced names.
+        /// <para>
+        /// Falls back to the full map if the names cannot be determined, so a parse failure surfaces
+        /// from the evaluation itself exactly as it did before rather than from here.
+        /// </para>
+        /// </remarks>
+        /// <param name="expression">The expression about to be evaluated.</param>
+        /// <param name="variables">The row's full variable map.</param>
+        private IReadOnlyDictionary<string, object?> NarrowVariables(
+            string expression, Dictionary<string, object?> variables)
+        {
+            string[] names;
+            try
+            {
+                names = _referencedVariables.GetOrAdd(expression,
+                    e => [.. _evaluator.GetReferencedVariables(e)]);
+            }
+            catch (ExpressionEvaluationException)
+            {
+                return variables;
+            }
+
+            var narrowed = new Dictionary<string, object?>(names.Length, StringComparer.Ordinal);
+            foreach (var name in names)
+            {
+                // An unresolved name is left out rather than defaulted: the evaluator must still
+                // report it as unknown, which is what the degrade path keys off.
+                if (variables.TryGetValue(name, out var value)) { narrowed[name] = value; }
+            }
+            return narrowed;
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="FormExpressionCalculator"/>.
@@ -134,11 +184,11 @@ namespace Bee.Definition.Forms
 
                 var variables = BuildVariables(row, formTable);
                 if (StringUtilities.IsNotEmpty(rule.When) &&
-                    !_evaluator.Evaluate<bool>(rule.When, variables, timeZoneId))
+                    !_evaluator.Evaluate<bool>(rule.When, NarrowVariables(rule.When, variables), timeZoneId))
                 {
                     continue;
                 }
-                if (!_evaluator.Evaluate<bool>(rule.Condition, variables, timeZoneId))
+                if (!_evaluator.Evaluate<bool>(rule.Condition, NarrowVariables(rule.Condition, variables), timeZoneId))
                     throw new UserMessageException(rule.Message);
             }
         }
@@ -250,7 +300,8 @@ namespace Bee.Definition.Forms
                 // DateTime (ADR-032 D12, ADR-031) — and forcing the cell's type at parse time would
                 // make the engine reject its own helper. `CoerceValue` performs every widening the
                 // return type used to, plus that one.
-                var value = _evaluator.Evaluate<object?>(field.DefaultValueExpression, variables, timeZoneId);
+                var value = _evaluator.Evaluate<object?>(field.DefaultValueExpression,
+                    NarrowVariables(field.DefaultValueExpression, variables), timeZoneId);
                 var newValue = value is null ? (object)DBNull.Value : ExpressionPolicy.CoerceValue(value, field.DbType);
                 if (Equals(newValue, row[field.FieldName])) { continue; }
                 row[field.FieldName] = newValue;
@@ -277,7 +328,8 @@ namespace Bee.Definition.Forms
 
                 // Coerced after evaluation rather than forced at parse time — see ApplyDefaults.
                 var result = ExpressionPolicy.CoerceValue(
-                    _evaluator.Evaluate<object?>(field.ValueExpression, variables, timeZoneId), field.DbType);
+                    _evaluator.Evaluate<object?>(field.ValueExpression,
+                        NarrowVariables(field.ValueExpression, variables), timeZoneId), field.DbType);
 
                 if (result is decimal numeric)
                 {

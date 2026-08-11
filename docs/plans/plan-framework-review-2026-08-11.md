@@ -47,7 +47,7 @@
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
 | P0 | 發版阻擋項（安全 / 發版正確性） | 3 | ✅ 已完成（2026-08-11，SEC-1 / REL-1 / REL-2 全數落地並驗證） |
-| P1 | 閘門可靠性與已證實的功能缺陷 | 11 | 🚧 進行中（GATE-1/2/3、SEC-2/3、TEST-1/2/3、DOC-1、**CON-1** ✅ 已完成；剩 1 項：PERF-1） |
+| P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
 | P2 | 結構、效能、一致性 | 14 | 📝 擬定中（14 項全未動） |
 | P3 | 文件漂移與低風險清理 | 13 | 🚧 進行中（DOC-8 / DOC-9 / DOC-10 / **REL-3** ✅ 已完成；剩 9 項） |
 | P4 | 觀察／待裁決 | 9 | 📝 擬定中（D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
@@ -66,6 +66,7 @@
 | **SEC-3** | API key gate 失效改為可見：停用最後一把金鑰記 error、啟動檢查在非 Development 升為 error | 待 commit | **刻意未做啟動硬失敗**（見下） |
 | **REL-3** | 版號抽為 repo 根 `Version.props`，`src/` 與 `tools/` 共用；`Bee.Cli` 從 4.8.0 併回 4.20.0 | `4575889e` | 雙向實證：兩個方案 clean build 0 警告，`-p:Version=9.9.9` 於 `tools/` 如預期紅在 BEE9002 |
 | **GATE-1** | `WireContractDriftTests` 補防空轉斷言（閉包／註冊數下限 + 四個不同可達路徑的 canary） | 待 commit | 見下方「canary 第一版就抓到我自己的錯誤假設」 |
+| **PERF-1** | 運算式變數表瘦身為「只傳實際引用的變數」 | 待 commit | 前後同一 harness：`ApplyFieldExpressions` **57.2 ms → 12.2 ms（4.7×）**。**修法與計畫原本的判斷不同，見下** |
 | **CON-1** | `ApiSessionContext` 承載兩個 per-session 值；`BeeApiConnectorFactory` 改 scoped | 待 commit | 新增 17 筆公開 API、**零 `*REMOVED*`**；6 個新測試驗「兩個 session 彼此不可見」 |
 | **DOC-1** | `bee-serialization` skill 整份重寫（含 frontmatter description） | 待 commit | 舊版教的 `MessagePackCollectionBase` 等四個型別在 `src/` 宣告數為 **0**；改寫後逐項核對，所有引用的檔案與型別皆存在 |
 | **DOC-3** | `UnitItem` XML doc 移除已退役的 BEE4004 敘述 | 待 commit | 該 doc 會進消費端 IntelliSense |
@@ -346,6 +347,34 @@ Assert.Equal(SortFieldFormatter.WireMemberCount, ReadMapMemberCount(bytes));
 
 ---
 
+### ✅ PERF-1 運算式求值每列成本（已完成，但**計畫原本的診斷是錯的**）
+
+> **量測推翻了本節的假設。** 本節（與後續的選項分析）都認定「建鍵字串主導」，實測結果：
+>
+> | 項目 | 佔完整 `Evaluate` 路徑 |
+> |------|------|
+> | 建鍵字串 + 雜湊 | **17.8%**（非主導） |
+> | 排序 | 4.3% |
+> | **只傳實際引用的 3 個變數** | **降到 15.8% ⇒ 快 6.3×** |
+>
+> 鍵字串實測 735 字元，非本節估的約 1.5 KB。
+>
+> **真因**：`Evaluate` 每次把**全部 30 個變數**包成 `Parameter[]` 交給引擎繫結，而運算式只用 3 個
+> —— 成本與**欄數**成正比，與運算式複雜度無關。
+>
+> **採用的修法**：`FormExpressionCalculator.NarrowVariables` 以 `GetReferencedVariables`
+> 把變數表縮到實際引用者（結果per expression 快取，因為該方法每次取 `_parseLock`）；
+> 取不到名單時退回完整表，讓解析失敗照原路徑浮現。**不動 `IExpressionEvaluator` 介面。**
+>
+> 前後同一 harness：`ApplyFieldExpressions`（30 欄 / 5 計算欄 / 1000 列）
+> **57.2 ms → 12.2 ms**。全套件 5,422 通過 / 0 失敗，行為未變。
+>
+> **教訓**：本節原本提出的修法（快取鍵最佳化）就算做到完美也只省 17.8%，
+> 而真正的槓桿在旁邊。體檢方法論寫著「不報無實測支撐的臆測性微優化」——
+> 這一項當初是**推算**而非實測，差點就照著推算去修錯的地方。
+
+<details><summary>原始（未經實測的）診斷，保留供對照</summary>
+
 ### PERF-1 運算式求值每列每計算欄重建快取鍵（新發現）
 
 **位置**：`src/Bee.Expressions/DynamicExpressoEvaluator.cs:98-119, 180-195`
@@ -361,6 +390,8 @@ Assert.Equal(SortFieldFormatter.WireMemberCount, ReadMapMemberCount(bytes));
 **歸因**：ADR-038 的抽象下沉**沒有引入額外間接層**（`FormExpressionCalculator` 直接持有 `IExpressionEvaluator`，一次介面呼叫），問題原本就在（`e2259ea6`）。抽象簽章 `Evaluate(expression, variables, ...)` 本身鼓勵這種寫法 —— 沒有「編譯一次、綁多列」的 API 形狀。
 
 **修法**：把 names/cacheKey 提到列迴圈之外；或給 `IExpressionEvaluator` 加一個 `Compile(expression, signature)` 的形狀。
+
+</details>
 
 ---
 
