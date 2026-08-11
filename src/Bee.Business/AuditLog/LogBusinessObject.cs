@@ -252,7 +252,7 @@ namespace Bee.Business.AuditLog
         /// </summary>
         private void EnsureAuditReadAllowed()
         {
-            var authorization = Services.GetRequiredService<IAuthorizationService>();
+            var authorization = Services.GetRequiredService<ICompanyAuthorizationService>();
             if (!authorization.Can(AccessToken, SysProgIds.AuditLog, PermissionAction.Read))
                 throw new UnauthorizedAccessException("Not authorized to read the audit log.");
         }

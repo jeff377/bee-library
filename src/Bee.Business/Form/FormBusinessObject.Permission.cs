@@ -32,7 +32,7 @@ namespace Bee.Business.Form
             var modelId = DefineAccess.GetFormSchema(ProgId).PermissionModelId;
             if (string.IsNullOrEmpty(modelId)) { return; }
 
-            var authorization = Services.GetRequiredService<IAuthorizationService>();
+            var authorization = Services.GetRequiredService<ICompanyAuthorizationService>();
             if (!authorization.Can(AccessToken, modelId, action))
                 throw new ForbiddenException($"Permission denied: '{action}' on model '{modelId}'.");
         }
@@ -141,7 +141,7 @@ namespace Bee.Business.Form
             var required = CollectRowStateActions(dataSet);
             if (required == PermissionAction.None) { return; }
 
-            var authorization = Services.GetRequiredService<IAuthorizationService>();
+            var authorization = Services.GetRequiredService<ICompanyAuthorizationService>();
 
             // s_writeActions holds only non-zero flags, so None is a safe "no denial" sentinel.
             var denied = s_writeActions.FirstOrDefault(

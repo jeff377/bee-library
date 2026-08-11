@@ -76,7 +76,7 @@ Bee.ObjectCaching/
                # DbCategorySettingsCache
   Database/    # SessionInfoCache
   Providers/   # ICacheProvider, MemoryCacheProvider
-  Services/    # SessionInfoService, CompanyInfoService, AuthorizationService,
+  Services/    # SessionInfoService, CompanyInfoService, CompanyAuthorizationService,
                # RolePermissionService, DepartmentTreeService, EmployeeContextResolver
   *.cs (root)  # ICacheContainer, CacheContainerService, ObjectCache, KeyObjectCache,
                # CacheItemPolicy, CacheTimeKind, CacheInfo,

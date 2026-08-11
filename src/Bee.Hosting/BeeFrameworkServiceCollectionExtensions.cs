@@ -295,8 +295,8 @@ namespace Bee.Hosting
             // Permission services: per-company role-permission snapshot cache + layer-1 Can check.
             services.AddSingleton<IRolePermissionService>(sp =>
                 new RolePermissionService(sp.GetRequiredService<ICacheContainer>()));
-            services.AddSingleton<IAuthorizationService>(sp =>
-                new AuthorizationService(
+            services.AddSingleton<ICompanyAuthorizationService>(sp =>
+                new CompanyAuthorizationService(
                     sp.GetRequiredService<ISessionInfoService>(),
                     sp.GetRequiredService<IRolePermissionService>()));
             // Deployment-level authorization: a separate axis from the company-scoped service above.

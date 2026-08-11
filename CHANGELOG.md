@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Breaking Changes
+
+- `Bee.Definition` / `Bee.ObjectCaching` / `Bee.Base`: three public types are renamed so they stop colliding with types a host already has in scope. `Bee.Definition.Identity.IAuthorizationService` becomes `ICompanyAuthorizationService` and its implementation `Bee.ObjectCaching.Services.AuthorizationService` becomes `CompanyAuthorizationService` — the old name collided with `Microsoft.AspNetCore.Authorization.IAuthorizationService`, which an ASP.NET Core host has in scope by default. `Bee.Base.Tracing.TraceListener` becomes `TraceDispatcher`, which collided with `System.Diagnostics.TraceListener`. Both collisions surfaced as `CS0104` precisely where a consumer registers the framework's services, since that is the one place holding both namespaces at once. There is no type forward. The new names also make the pair with `IDeploymentAuthorizationService` read correctly: one authorizes inside a company, the other against the installation. `SysInfo.TraceListener` and `ITraceListener` keep their names — neither collides with anything.
+
 ### Added
 
 - `Bee.Api.Client`: `ApiSessionContext` carries the per-session client state — the transmission key established at login and the signed-in user's time zone. Connectors gain constructor overloads that take one; omitting it shares `ApiSessionContext.Ambient`, which is the previous behaviour and remains correct for a single-user host.

@@ -27,19 +27,19 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("TraceListener 建構子傳入 null writer 應拋出 ArgumentNullException")]
+        [DisplayName("TraceDispatcher 建構子傳入 null writer 應拋出 ArgumentNullException")]
         public void TraceListener_Ctor_NullWriter_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new TraceListener(null!));
+            Assert.Throws<ArgumentNullException>(() => new TraceDispatcher(null!));
         }
 
         [Fact]
-        [DisplayName("Tracer.Enabled 預設為 false，設定 TraceListener 後為 true")]
+        [DisplayName("Tracer.Enabled 預設為 false，設定 TraceDispatcher 後為 true")]
         public void Enabled_ReflectsTraceListenerPresence()
         {
             Assert.False(Tracer.Enabled);
 
-            SysInfo.TraceListener = new TraceListener(new CapturingWriter());
+            SysInfo.TraceListener = new TraceDispatcher(new CapturingWriter());
 
             Assert.True(Tracer.Enabled);
         }
@@ -50,7 +50,7 @@ namespace Bee.Base.UnitTests
         {
             var writer = new CapturingWriter();
             // Not attaching the listener to SysInfo.
-            _ = new TraceListener(writer);
+            _ = new TraceDispatcher(writer);
 
             var ctx = Tracer.Start(TraceLayers.UI, "detail", name: "op");
 
@@ -63,7 +63,7 @@ namespace Bee.Base.UnitTests
         public void Start_WhenEnabled_CreatesContextAndEmitsStartEvent()
         {
             var writer = new CapturingWriter();
-            SysInfo.TraceListener = new TraceListener(writer);
+            SysInfo.TraceListener = new TraceDispatcher(writer);
 
             var tag = new object();
             var ctx = Tracer.Start(TraceLayers.Business, "sql-detail", "sql", tag, "MyOp");
@@ -90,7 +90,7 @@ namespace Bee.Base.UnitTests
         public void End_WhenEnabled_EmitsEndEventWithDurationAndStatus()
         {
             var writer = new CapturingWriter();
-            SysInfo.TraceListener = new TraceListener(writer);
+            SysInfo.TraceListener = new TraceDispatcher(writer);
 
             var ctx = Tracer.Start(TraceLayers.Data, name: "Query");
             Tracer.End(ctx, TraceStatus.Error, "override-detail");
@@ -111,7 +111,7 @@ namespace Bee.Base.UnitTests
             var writer = new CapturingWriter();
 
             // Null context while enabled → no emit.
-            SysInfo.TraceListener = new TraceListener(writer);
+            SysInfo.TraceListener = new TraceDispatcher(writer);
             Tracer.End(null);
             Assert.Empty(writer.Events);
 
@@ -129,7 +129,7 @@ namespace Bee.Base.UnitTests
         public void Write_WhenEnabled_EmitsPointEvent()
         {
             var writer = new CapturingWriter();
-            SysInfo.TraceListener = new TraceListener(writer);
+            SysInfo.TraceListener = new TraceDispatcher(writer);
 
             var tag = new { Key = "value" };
             Tracer.Write(TraceLayers.ApiServer, "some-detail", TraceStatus.Cancelled, "cat", tag, "PointOp");
@@ -151,7 +151,7 @@ namespace Bee.Base.UnitTests
         {
             var writer = new CapturingWriter();
             // Not attaching to SysInfo.
-            _ = new TraceListener(writer);
+            _ = new TraceDispatcher(writer);
 
             Tracer.Write(TraceLayers.UI, "no-op");
 
@@ -159,11 +159,11 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("TraceListener.TraceStart 應填入預設 Category 與空名稱保護")]
+        [DisplayName("TraceDispatcher.TraceStart 應填入預設 Category 與空名稱保護")]
         public void TraceListener_TraceStart_AppliesDefaults()
         {
             var writer = new CapturingWriter();
-            var listener = new TraceListener(writer);
+            var listener = new TraceDispatcher(writer);
 
             var ctx = listener.TraceStart(TraceLayers.UI, name: "");
 
@@ -173,11 +173,11 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("TraceListener.TraceEnd 當 ctx 為 null 應忽略")]
+        [DisplayName("TraceDispatcher.TraceEnd 當 ctx 為 null 應忽略")]
         public void TraceListener_TraceEnd_NullContext_Ignored()
         {
             var writer = new CapturingWriter();
-            var listener = new TraceListener(writer);
+            var listener = new TraceDispatcher(writer);
 
             listener.TraceEnd(null!, TraceStatus.Ok);
 
@@ -185,11 +185,11 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("TraceListener.TraceEnd 若未指定 detail 應沿用 ctx.Detail")]
+        [DisplayName("TraceDispatcher.TraceEnd 若未指定 detail 應沿用 ctx.Detail")]
         public void TraceListener_TraceEnd_NullDetail_FallsBackToContextDetail()
         {
             var writer = new CapturingWriter();
-            var listener = new TraceListener(writer);
+            var listener = new TraceDispatcher(writer);
 
             var ctx = listener.TraceStart(TraceLayers.UI, "ctx-detail", name: "op");
             listener.TraceEnd(ctx, TraceStatus.Ok);

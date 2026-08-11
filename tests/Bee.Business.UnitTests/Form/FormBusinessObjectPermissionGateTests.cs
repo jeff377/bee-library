@@ -14,7 +14,7 @@ using Bee.Tests.Shared;
 namespace Bee.Business.UnitTests.Form
 {
     /// <summary>
-    /// FormBusinessObject 層一權限 gate 測試：以 fake IAuthorizationService 控制 Can 結果,
+    /// FormBusinessObject 層一權限 gate 測試：以 fake ICompanyAuthorizationService 控制 Can 結果,
     /// 驗證越權 action 被擋（ForbiddenException）、有權放行、Save 逐列 RowState、空
     /// PermissionModelId 跳過。攔截路徑在進 repository 前即擋,故不需真實 DB。
     /// </summary>
@@ -30,7 +30,7 @@ namespace Bee.Business.UnitTests.Form
 
         private FormBusinessObject Bo(PermissionAction allowed, IDataFormRepository? repo = null, string progId = GatedProgId)
         {
-            var overrides = new List<(Type, object?)> { (typeof(IAuthorizationService), new FakeAuth(allowed)) };
+            var overrides = new List<(Type, object?)> { (typeof(ICompanyAuthorizationService), new FakeAuth(allowed)) };
             if (repo != null) { overrides.Add((typeof(IRepositoryFactory), new FakeFactory(repo))); }
             var ctx = TestBeeContext.CreateWithOverrides(_fx, overrides.ToArray());
             return new FormBusinessObject(ctx, Guid.NewGuid(), progId);
@@ -175,7 +175,7 @@ namespace Bee.Business.UnitTests.Form
             Assert.Null(ex);
         }
 
-        private sealed class FakeAuth : IAuthorizationService
+        private sealed class FakeAuth : ICompanyAuthorizationService
         {
             private readonly PermissionAction _allowed;
             public FakeAuth(PermissionAction allowed) { _allowed = allowed; }

@@ -122,7 +122,7 @@ namespace Bee.Api.Client.UnitTests
         {
             var writer = new CapturingTraceWriter();
             var previousListener = SysInfo.TraceListener;
-            SysInfo.TraceListener = new TraceListener(writer);
+            SysInfo.TraceListener = new TraceDispatcher(writer);
             try
             {
                 var provider = new FakeJsonRpcProvider();

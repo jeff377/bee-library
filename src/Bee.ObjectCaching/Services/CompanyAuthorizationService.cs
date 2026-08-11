@@ -8,17 +8,17 @@ namespace Bee.ObjectCaching.Services
     /// role-permission snapshot (both from cache — zero DB on the check path), then OR-merges the
     /// allowed action mask across the user's roles and tests the requested action.
     /// </summary>
-    public class AuthorizationService : IAuthorizationService
+    public class CompanyAuthorizationService : ICompanyAuthorizationService
     {
         private readonly ISessionInfoService _sessionInfoService;
         private readonly IRolePermissionService _rolePermissionService;
 
         /// <summary>
-        /// Initializes a new <see cref="AuthorizationService"/>.
+        /// Initializes a new <see cref="CompanyAuthorizationService"/>.
         /// </summary>
         /// <param name="sessionInfoService">Provides the session (user id, company id, roles).</param>
         /// <param name="rolePermissionService">Provides the company's role-permission snapshot.</param>
-        public AuthorizationService(ISessionInfoService sessionInfoService, IRolePermissionService rolePermissionService)
+        public CompanyAuthorizationService(ISessionInfoService sessionInfoService, IRolePermissionService rolePermissionService)
         {
             _sessionInfoService = sessionInfoService ?? throw new ArgumentNullException(nameof(sessionInfoService));
             _rolePermissionService = rolePermissionService ?? throw new ArgumentNullException(nameof(rolePermissionService));

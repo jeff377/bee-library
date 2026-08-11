@@ -217,13 +217,13 @@ Capability is **inert until wired**, so existing apps are unaffected. To turn it
 
 # Part 3 — Deployment-level administration (outside the company model)
 
-Everything above is scoped to a company: roles, grants and the department tree all live in **each company's own database**, and `IAuthorizationService.Can` returns `false` when the session has entered no company.
+Everything above is scoped to a company: roles, grants and the department tree all live in **each company's own database**, and `ICompanyAuthorizationService.Can` returns `false` when the session has entered no company.
 
 Some assets belong to the **installation** rather than to any company — an API key identifies a calling *application*, not a tenant. Guarding those with company permissions would mean one tenant's administrator could act for all of them. They are therefore governed by a separate, parallel decision.
 
 | | Company authorization | Deployment authorization |
 |---|---|---|
-| Interface | `IAuthorizationService.Can(token, modelId, action)` | `IDeploymentAuthorizationService.Can(token, action)` |
+| Interface | `ICompanyAuthorizationService.Can(token, modelId, action)` | `IDeploymentAuthorizationService.Can(token, action)` |
 | Question | May this user do X **inside company C**? | May this user do X **to the installation**? |
 | Identity source | `st_role` / `st_role_grant` / `st_user_role` in each company database | `st_user.deployment_admin` in the common database |
 | Requires a company | Yes — no company context, no permission | No — by definition there is none |

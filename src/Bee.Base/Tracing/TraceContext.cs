@@ -43,7 +43,7 @@
         public object? Tag { get; }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="TraceContext"/>. Only <see cref="TraceListener"/> may create instances.
+        /// Initializes a new instance of <see cref="TraceContext"/>. Only <see cref="TraceDispatcher"/> may create instances.
         /// </summary>
         internal TraceContext(TraceLayers layer, string name, string detail, string category = "", object? tag = null)
         {

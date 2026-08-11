@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+### 破壞性變更
+
+- `Bee.Definition` / `Bee.ObjectCaching` / `Bee.Base`：三個公開型別改名，避開宿主本來就會 `using` 到的同名型別。`Bee.Definition.Identity.IAuthorizationService` 改為 `ICompanyAuthorizationService`、其實作 `Bee.ObjectCaching.Services.AuthorizationService` 改為 `CompanyAuthorizationService` —— 舊名撞 `Microsoft.AspNetCore.Authorization.IAuthorizationService`，而 ASP.NET Core 宿主預設就有它。`Bee.Base.Tracing.TraceListener` 改為 `TraceDispatcher`，舊名撞 `System.Diagnostics.TraceListener`。兩處撞名都以 `CS0104` 現形在「消費端註冊框架服務」那段程式碼，因為那正是同時 `using` 兩邊命名空間的唯一位置。**沒有 type forward。** 新名也讓它與 `IDeploymentAuthorizationService` 的對照讀得出來：一個在公司內授權，一個對整套安裝授權。`SysInfo.TraceListener` 與 `ITraceListener` 維持原名 —— 它們並不撞名。
+
 ### 新增
 
 - `Bee.Api.Client`：`ApiSessionContext` 承載 per-session 的 client 狀態 —— 登入時建立的傳輸金鑰與登入者的時區。connector 新增接它的建構子多載；不傳則共用 `ApiSessionContext.Ambient`，那是既有行為，對單使用者宿主仍然正確。

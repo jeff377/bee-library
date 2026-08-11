@@ -40,7 +40,7 @@ Bee.NET 原本只有**身分驗證**（[ADR-012](adr-012-session-company-context
 
 - 資料模型（各 company DB，`st_` 框架層表）：`st_role` / `st_role_grant` / `st_user_role`。
 - **per-company 權限快取**（`CompanyRolePermissions`，比照 `CompanyInfoCache`，DB 來源 + cache-notify 失效）：整份載入 user→role / role→grant，**判權限完全走記憶體**。
-- `EnterCompany` 從快取取 user 在此公司的 role 清單，**快照進 `SessionInfo.Roles`**；之後 `AuthorizationService.Can(token, model, action)` 全程零 DB。
+- `EnterCompany` 從快取取 user 在此公司的 role 清單，**快照進 `SessionInfo.Roles`**；之後 `CompanyAuthorizationService.Can(token, model, action)` 全程零 DB。
 - 接入點 = **`FormBusinessObject` 方法層 gate**：`GetList`/`GetData`→Read、`Save`→逐列 RowState（Added→Create / Modified→Update / Deleted→Delete）、`Delete`→Delete。多角色 mask 取 **OR 聯集**（能力累加）。
 
 ### 線 B 層二 — record scope（zero-DB query time）

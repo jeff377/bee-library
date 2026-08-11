@@ -35,7 +35,7 @@ namespace Bee.Business.UnitTests.AuditLog
         private LogBusinessObject Bo(StubAuditLogRepository repo, bool authorized = true)
         {
             var ctx = TestBeeContext.CreateWithOverrides(_fx,
-                (typeof(IAuthorizationService), new FakeAuth(authorized)),
+                (typeof(ICompanyAuthorizationService), new FakeAuth(authorized)),
                 (typeof(IRepositoryFactory), new StubAuditLogRepositoryFactory(repo)));
             return new LogBusinessObject(ctx, Guid.NewGuid(), SysProgIds.AuditLog);
         }
@@ -288,7 +288,7 @@ namespace Bee.Business.UnitTests.AuditLog
             return writer.ToString();
         }
 
-        private sealed class FakeAuth : IAuthorizationService
+        private sealed class FakeAuth : ICompanyAuthorizationService
         {
             private readonly bool _allowed;
             public FakeAuth(bool allowed) { _allowed = allowed; }

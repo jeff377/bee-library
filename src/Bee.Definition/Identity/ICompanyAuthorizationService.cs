@@ -7,7 +7,7 @@ namespace Bee.Definition.Identity
     /// model within their current company. Pure <c>(model, action)</c> gate — record-scope
     /// filtering (layer 2) is a separate concern.
     /// </summary>
-    public interface IAuthorizationService
+    public interface ICompanyAuthorizationService
     {
         /// <summary>
         /// Returns <c>true</c> when the session identified by <paramref name="accessToken"/> is

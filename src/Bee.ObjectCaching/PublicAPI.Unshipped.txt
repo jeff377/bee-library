@@ -1,3 +1,9 @@
 #nullable enable
+*REMOVED*Bee.ObjectCaching.Services.AuthorizationService
+*REMOVED*Bee.ObjectCaching.Services.AuthorizationService.AuthorizationService(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Definition.Identity.IRolePermissionService! rolePermissionService) -> void
+*REMOVED*Bee.ObjectCaching.Services.AuthorizationService.Can(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action) -> bool
+Bee.ObjectCaching.Services.CompanyAuthorizationService
+Bee.ObjectCaching.Services.CompanyAuthorizationService.Can(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action) -> bool
+Bee.ObjectCaching.Services.CompanyAuthorizationService.CompanyAuthorizationService(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Definition.Identity.IRolePermissionService! rolePermissionService) -> void
 const Bee.ObjectCaching.Database.ApiKeyCache.NegativeMinutes = 1 -> int
 override Bee.ObjectCaching.Database.ApiKeyCache.GetNegativePolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy?

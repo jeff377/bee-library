@@ -4,7 +4,7 @@ namespace Bee.Definition.Identity
     /// Decides whether a session may act on a deployment-level asset.
     /// </summary>
     /// <remarks>
-    /// WARNING: this is <b>not</b> a second entry point to <see cref="IAuthorizationService"/> and
+    /// WARNING: this is <b>not</b> a second entry point to <see cref="ICompanyAuthorizationService"/> and
     /// the two must never fall back to one another. Company authorization answers "may this user do
     /// X inside company C" and returns <c>false</c> without a company context; this one answers "may
     /// this user do X to the installation itself", where no company context exists by definition.

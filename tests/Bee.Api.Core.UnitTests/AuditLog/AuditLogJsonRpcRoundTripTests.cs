@@ -21,7 +21,7 @@ namespace Bee.Api.Core.UnitTests.AuditLog
     /// <summary>
     /// 走 <see cref="JsonRpcExecutor"/> 的 end-to-end round-trip：<c>AuditLog.*</c> 三個 action 應經
     /// dispatch 分支派發到 <see cref="Bee.Business.AuditLog.LogBusinessObject"/>，由 stub repository
-    /// 回傳已知資料，驗證 axis 路由 + Input/Output Converter。權限以 fake IAuthorizationService 放行；
+    /// 回傳已知資料，驗證 axis 路由 + Input/Output Converter。權限以 fake ICompanyAuthorizationService 放行；
     /// 不接實體 DB。
     /// </summary>
     public class AuditLogJsonRpcRoundTripTests : IClassFixture<BeeTestFixture>
@@ -34,7 +34,7 @@ namespace Bee.Api.Core.UnitTests.AuditLog
         {
             var overrideServices = new TestOverrideServiceProvider(
                 _fx.Provider,
-                (typeof(IAuthorizationService), new FakeAuth()),
+                (typeof(ICompanyAuthorizationService), new FakeAuth()),
                 (typeof(IRepositoryFactory), new StubAuditLogRepositoryFactory(repo)));
 
             var boFactory = new BusinessObjectFactory(
@@ -178,7 +178,7 @@ namespace Bee.Api.Core.UnitTests.AuditLog
             return t;
         }
 
-        private sealed class FakeAuth : IAuthorizationService
+        private sealed class FakeAuth : ICompanyAuthorizationService
         {
             public bool Can(Guid accessToken, string modelId, PermissionAction action) => true;
         }

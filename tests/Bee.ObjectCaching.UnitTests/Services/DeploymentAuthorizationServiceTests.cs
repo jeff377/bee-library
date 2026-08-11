@@ -9,7 +9,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
 {
     /// <summary>
     /// 驗證 <see cref="DeploymentAuthorizationService"/> 的判定：旗標決定一切，
-    /// 且無公司脈絡也成立——這正是它與公司層 <c>AuthorizationService</c> 的分野。
+    /// 且無公司脈絡也成立——這正是它與公司層 <c>CompanyAuthorizationService</c> 的分野。
     /// </summary>
     public class DeploymentAuthorizationServiceTests
     {

@@ -5,15 +5,15 @@ namespace Bee.Base.Tracing
     /// <summary>
     /// Default execution flow monitor.
     /// </summary>
-    public sealed class TraceListener : ITraceListener
+    public sealed class TraceDispatcher : ITraceListener
     {
         private readonly ITraceWriter _writer;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="TraceListener"/>.
+        /// Initializes a new instance of <see cref="TraceDispatcher"/>.
         /// </summary>
         /// <param name="writer">The trace writer used for output.</param>
-        public TraceListener(ITraceWriter writer)
+        public TraceDispatcher(ITraceWriter writer)
         {
             _writer = writer ?? throw new ArgumentNullException(nameof(writer));
         }

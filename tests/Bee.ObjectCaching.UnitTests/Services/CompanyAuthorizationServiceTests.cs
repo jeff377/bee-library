@@ -6,10 +6,10 @@ using Bee.ObjectCaching.Services;
 namespace Bee.ObjectCaching.UnitTests.Services
 {
     /// <summary>
-    /// AuthorizationService.Can 的層一判定串接測試（以 fake session / role-permission service
+    /// CompanyAuthorizationService.Can 的層一判定串接測試（以 fake session / role-permission service
     /// 隔離,驗證空檢查 + 多角色 OR 合併 + HasFlag）。
     /// </summary>
-    public class AuthorizationServiceTests
+    public class CompanyAuthorizationServiceTests
     {
         private static readonly Guid s_token = Guid.NewGuid();
 
@@ -27,7 +27,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
         private static SessionInfo Session(string? companyId, params string[] roles)
             => new() { AccessToken = s_token, UserId = "001", CompanyId = companyId, Roles = roles.ToList() };
 
-        private static AuthorizationService Create(SessionInfo? session, CompanyRolePermissions? perms)
+        private static CompanyAuthorizationService Create(SessionInfo? session, CompanyRolePermissions? perms)
             => new(new FakeSessionInfoService(session), new FakeRolePermissionService(perms));
 
         [Fact]

@@ -11,7 +11,7 @@ namespace Bee.ObjectCaching.Services
     /// this class alone.
     /// </summary>
     /// <remarks>
-    /// NOTE: unlike <see cref="IAuthorizationService"/>, which resolves both the session and the
+    /// NOTE: unlike <see cref="ICompanyAuthorizationService"/>, which resolves both the session and the
     /// company snapshot from cache and never touches the database, this check queries on every call.
     /// That is deliberate. Deployment-level operations are rare (minting a key, appointing an
     /// administrator), so the saved query does not pay for a cache and its invalidation; and

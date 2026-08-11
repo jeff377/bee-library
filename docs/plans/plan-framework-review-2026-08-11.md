@@ -50,7 +50,7 @@
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
 | P2 | 結構、效能、一致性 | 14 | 🚧 進行中（9 項已結：P-2(a) / CON-2 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**P-3** / **PERF-2** ❌ 實測後不修；剩 5 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
-| P4 | 觀察／待裁決 | 9 | 📝 擬定中（D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
+| P4 | 觀察／待裁決 | 9 | 📝 擬定中（**M-1** ✅ 已落地；D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
 
 ### 已完成項目逐條（供對帳，勿只看階段狀態）
 
@@ -85,12 +85,22 @@
 | **TEST-2** | `ApiAspNetCoreTests` / `ApiKeyGateControllerTests` 改用 `SharedDbFixture` | 待 commit | 並在類別 doc 記下第三條觸發路徑（API key gate read-through）與「為何先前是綠的」 |
 | **TEST-3** | `Bee.Definition.UnitTests` 新增 `ProcessWideStateCollection`，序列化三個衝突類別 | 待 commit | 該組件先前既無 `[Collection]` 也無 `DisableTestParallelization` |
 | **GATE-2** | 8 個手寫 formatter 改實作 `IWireContract`，移除套套邏輯的 `WireMemberCount` | 待 commit | **實證**：在 `SortField` 加一個屬性 → drift 測試立刻紅（`型別上有但未註冊 → Probe`）。同一個 probe 在修正前不會被抓到 |
+| **M-1** | 三個撞名公開型別改名（`ICompanyAuthorizationService` / `CompanyAuthorizationService` / `TraceDispatcher`） | 待 commit | **新名與計畫建議的不同，見下**。`PublicAPI.Unshipped` 計 10 筆 `*REMOVED*` + 10 筆新增；clean Release build 0 警告 |
 
 > **GATE-1 的 canary 第一版是錯的，而那正好證明了它有用。** 我原本把 `FormSchema` 列為
 > 「必定在 wire 閉包內」的 canary，測試當場擋下——`FormSchema` 以 **XML 字串**夾在 wire 上傳輸，
 > 不是以物件形式，因此不在閉包內。這也說明下限斷言為何不能只寫一個數字：數字擋得住「掉到只剩
 > `ExtraRoots`」，擋不住「某一條可達路徑斷掉」。現行四個 canary 刻意取自不同路徑（訊息命名空間
 > 的根、契約命名空間的根、掛在 `ApiMessageBase` 上每個訊息都會經過的集合、多型子型別）。
+
+> **M-1 的新名與計畫建議的不同。** 計畫建議 `IPermissionService`，實作時沒有採用：`Permission*`
+> 在本 repo 已被 `PermissionAction` / `IRolePermissionService` / 權限模型佔用，再加一個
+> `IPermissionService` 是把撞名從**外部**搬到**內部**。真正的線索在既有 XML doc 裡——
+> `IDeploymentAuthorizationService` 的 `<remarks>` 本來就寫著「**Company** authorization answers
+> 『may this user do X inside company C』」。沿用該詞彙即得 `ICompanyAuthorizationService` /
+> `CompanyAuthorizationService`，同時讓這一對介面的分工從名字就讀得出來。
+> `TraceListener → TraceDispatcher` 依計畫。**`SysInfo.TraceListener` 屬性與 `ITraceListener`
+> 介面刻意不改**——它們不撞名（`System.Diagnostics` 沒有 `ITraceListener`），改了只是多一筆破壞性變更。
 
 > **SEC-3 未完全照原計畫做，這是刻意的。** 計畫寫的是「非 Development 環境 `InForce==false` 由 warning
 > 升為**啟動失敗**」。實作時發現 `IsApiKeyAccepted` 的 XML doc 把 presence-only 明文寫成「讓既有部署
