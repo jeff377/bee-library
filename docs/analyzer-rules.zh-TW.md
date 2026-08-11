@@ -50,9 +50,23 @@ Bee.NET 隨套件提供 Roslyn analyzer，把框架慣例變成建置期診斷�
 | BEE4005 | Warning | 框架集合應只公開一個 public `Add` |
 | BEE4006 | Error | 參與序列化的型別必須有 public 無參數建構子 |
 
-其中一條標為框架內部規則——BEE3002 只在框架自身的 `Bee.Definition` 組件內執行，列在此處僅為
-完整性，消費端專案不會觸發它。其餘規則都適用於消費端專案，**BEE4005 也不例外**：你自己繼承
-`CollectionBase` / `KeyCollectionBase` 寫出來的集合，與框架自身的集合受同一條規則檢查。
+### Repository 建置閘門（BEE9xxx）
+
+| ID | 嚴重度 | 規則 |
+|----|--------|------|
+| BEE9001 | Error | `Bee.Base` 與 `Bee.Definition` 只能參考允許清單列出的項目 |
+| BEE9002 | Error | `Version`、`AssemblyVersion`、`FileVersion` 必須同步 |
+
+**這兩條是框架內部規則，消費端專案不會觸發。** 它們不是 Roslyn analyzer，而是
+`src/Directory.Build.targets` 內的 MSBuild target；列在此處是為了讓編號有一個統一的歸屬。
+BEE9001 的存在理由是：加在最底層那兩個組件上的任何東西，都會被框架的每一個消費者繼承
+（[ADR-038](adr/adr-038-definition-dependency-boundary.md)）。BEE9002 的存在理由是：
+只 bump `Version` 的發版會送出「組件仍宣稱前一版」的套件，而已發布的套件無法回收。
+
+上方表格中有兩處標為框架內部規則——BEE3002 只在框架自身的 `Bee.Definition` 組件內執行，
+BEE9xxx 兩條只在本 repository 內執行。列出僅為完整性，消費端專案不會觸發它們。其餘規則都適用於
+消費端專案，**BEE4005 也不例外**：你自己繼承 `CollectionBase` / `KeyCollectionBase` 寫出來的集合，
+與框架自身的集合受同一條規則檢查。
 
 ## 定義檔規則從哪裡讀取
 

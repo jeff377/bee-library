@@ -4,6 +4,50 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.20.0]
+
+> This release closes a deserialization hole and finishes two decouplings. The security item: the wire's type whitelist screened only the text before the first comma of an assembly-qualified name, and for a generic type that comma sits *inside* the argument list — so a disallowed type smuggled in as a generic argument was never screened, and an unauthenticated caller could reach it. Alongside it, `object` values on the wire move from a per-value type name to a discriminated envelope, and the expression abstraction sinks into `Bee.Base` so the definition layer stops handing every consumer a dependency on DynamicExpresso. **Both wire changes require client and server to be deployed together.** Framework login also gains a default implementation, which changes behaviour for deployments that never overrode it.
+
+📄 Full notes and design context: [docs/changelogs/4.20.0.md](docs/changelogs/4.20.0.md)
+
+### Security
+
+- `Bee.Api.Core`: the type whitelist is applied to **every** type named by an assembly-qualified name — the outer type, each generic argument, and array element types — and an unparsable name is now refused instead of passed through. Previously a name such as ``Bee.Base.Collections.Dictionary`1[[Disallowed.Type, Other]], Bee.Base`` passed the check, because splitting on the first comma left a fragment that still carried an allowed namespace prefix. `System.Login` is anonymous and payload type resolution runs before the business object is invoked, so the path was reachable without authentication. Present since 4.0.2.
+
+### Breaking Changes
+
+- **Wire**: `object`-typed members (`Parameter.Value`, `FilterCondition.Value` / `SecondValue`, `SerializableDataColumn.DefaultValue`, and the cell values inside `SerializableDataRow`) move from a per-value assembly-qualified type name to an integer-discriminated envelope. These members ride on every request and response, so a 4.19 client cannot talk to a 4.20 server or the reverse. See [ADR-037](docs/adr/adr-037-wire-explicit-registration.md)
+- `Bee.Expressions` → `Bee.Base`: `IExpressionEvaluator`, `ExpressionPolicy` and `ExpressionEvaluationException` move to `Bee.Base.Expressions`. There is no type forward — the old names do not compile. See [ADR-038](docs/adr/adr-038-definition-dependency-boundary.md)
+- `Bee.Definition` / `Bee.Business` / `Bee.UI.Avalonia`: the constructors of `FormExpressionCalculator`, `FormRuleProcessor` and `FormLiveComputation` take the evaluator from its new namespace. **`FormLiveComputation`'s parameter is optional, so a caller that omits it still compiles — but an already-compiled assembly throws `MissingMethodException` and must be rebuilt.**
+- `Bee.Repository.Abstractions`: `IUserRepository` gains `VerifyPassword(userId, password)` — a new interface member, so any external implementation must add it.
+- `Bee.Business`: `SystemBusinessObject.AuthenticateUser` no longer returns `false` unconditionally; the default implementation verifies against `st_user`. **A deployment that never overrode it had no working login and now accepts accounts present in `st_user`.** Deployments that do override it are unaffected.
+
+### Added
+
+- `Bee.Base`: `Bee.Base.Expressions` — the evaluator abstraction, its policy helpers and its exception type. `Bee.Expressions` keeps only `DynamicExpressoEvaluator`.
+- `Bee.Definition`: `LanguageEnum.Entries` gains a setter (see the mobile fix below).
+- Build-time diagnostics **BEE9001** (dependency boundary for `Bee.Base` / `Bee.Definition`) and **BEE9002** (the three version properties must stay in step). [Analyzer rules](docs/analyzer-rules.md)
+
+### Fixed
+
+- `Bee.Definition`: `LanguageEnum.Entries` was a get-only collection mapped to repeated `[XmlElement]`. The reflection-only `XmlSerializer` path used by iOS assigns rather than adds, so it threw `ArgumentException: Property set method not found`, surfacing as the misleading "There is an error in XML document". The setter clears and refills the existing instance so the owner link survives.
+- `Bee.Definition`: `st_user.password` widens from 40 to 200 characters. `PasswordHasher` produces a 79-character hash; four of the five providers would have truncated it, after which verification could never succeed. The defect had not surfaced because nothing in the framework wrote a hash to `st_user` until this release.
+- `src/Directory.Build.props`: `AssemblyVersion` and `FileVersion` are back in step with `Version`. The 4.19.0 packages carry assemblies stamped `4.18.0.0` and cannot be told apart from 4.18.0 by assembly identity; that release is not being re-published. BEE9002 now fails the build on the mismatch.
+
+### Changed
+
+- `Bee.Definition`: the package no longer carries `Bee.Expressions` — and therefore no longer carries `DynamicExpresso.Core` — through its dependency chain. Definition-only consumers such as `Bee.Cli` and `DefineEditor` stop inheriting an expression engine.
+- `samples`: `Avalonia.Demo` is removed; the Avalonia end-to-end example is now `apps/Bee.Northwind`.
+
+### Upgrade
+
+```diff
+- using Bee.Expressions;
++ using Bee.Base.Expressions;
+```
+
+Deploy server and clients together — see the wire note above. Rebuild any assembly that constructs `FormLiveComputation`, even if it does not pass an evaluator. If you implement `IUserRepository` yourself, add `VerifyPassword`. If you rely on `AuthenticateUser` rejecting every login, override it.
+
 ## [4.19.0]
 
 > This release decouples the definition layer from the transport format. `Bee.Definition` no longer references MessagePack: every wire-binding concern now lives in `Bee.Api.Core`, behind hand-written formatters. The dividing line is whether a format costs the definition layer an external package — XML and JSON are BCL vocabulary and stay, MessagePack is a technology choice and moves out. Six downstream packages that never needed MessagePack stop inheriting it, and four pairs of deliberately duplicated collection types collapse back into one. **The wire format changes for `FilterNode` and `ParameterCollection`, so client and server must be upgraded together.** Strict SemVer would call this a major; the pre-stable policy for v4.x keeps it a minor, with every break listed below.

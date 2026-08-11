@@ -53,9 +53,25 @@ build time, where the message can name both the cause and the fix.
 | BEE4005 | Warning | A framework collection should expose a single public `Add` |
 | BEE4006 | Error | A serialised type must have a public parameterless constructor |
 
-One rule is marked framework-internal — BEE3002 runs only inside the framework's own `Bee.Definition`
-assembly, and is listed here for completeness rather than because a consumer project can trigger it.
-Every other rule applies to consumer projects, including BEE4005: a collection you derive from
+### Repository build gates (BEE9xxx)
+
+| ID | Severity | Rule |
+|----|----------|------|
+| BEE9001 | Error | `Bee.Base` and `Bee.Definition` may only reference what their allowlist names |
+| BEE9002 | Error | `Version`, `AssemblyVersion` and `FileVersion` must stay in step |
+
+**These two are framework-internal and cannot be triggered by a consumer project.** They are not
+Roslyn analyzers but MSBuild targets in `src/Directory.Build.targets`, and they are listed here so
+the numbering has one home. BEE9001 exists because anything added to the two lowest-level
+assemblies is inherited by every consumer of the framework
+([ADR-038](adr/adr-038-definition-dependency-boundary.md)); BEE9002 exists because a release that
+bumps only `Version` ships packages whose assemblies still claim the previous version, and a
+published package cannot be recalled.
+
+Two rules are marked framework-internal in the tables above — BEE3002 runs only inside the
+framework's own `Bee.Definition` assembly, and the BEE9xxx pair only inside this repository. They
+are listed for completeness rather than because a consumer project can trigger them. Every other
+rule applies to consumer projects, including BEE4005: a collection you derive from
 `CollectionBase` or `KeyCollectionBase` yourself is checked exactly as the framework's own are.
 
 ## Where the definition file rules read from

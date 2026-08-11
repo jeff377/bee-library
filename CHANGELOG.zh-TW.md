@@ -4,6 +4,50 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.20.0]
+
+> 本版修掉一個反序列化漏洞，並完成兩項解耦。安全項：wire 的型別白名單只檢查 assembly-qualified name 第一個逗號之前的字串，而泛型型別的那個逗號落在**參數清單裡面** —— 夾帶在泛型參數中的不允許型別因此從未被檢查，且未認證的呼叫端就到得了。同時 wire 上的 `object` 值由逐值攜帶型別名改為判別式封套，運算式抽象下沉至 `Bee.Base`，定義層不再讓每個消費者背上 DynamicExpresso 相依。**兩項 wire 變更都要求 client 與 server 同版部署。** 框架登入另有預設實作，對從未覆寫過的部署是行為變更。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.20.0.zh-TW.md](docs/changelogs/4.20.0.zh-TW.md)
+
+### 安全性
+
+- `Bee.Api.Core`：型別白名單改為驗證 assembly-qualified name 指名的**每一個**型別 —— 外層型別、每個泛型參數、陣列元素 —— 且無法解析的名稱改為拒絕而非放行。先前 ``Bee.Base.Collections.Dictionary`1[[Disallowed.Type, Other]], Bee.Base`` 這樣的名稱會通過檢查，因為切在第一個逗號後留下的片段仍帶著允許的命名空間前綴。`System.Login` 是匿名的，且 payload 型別解析發生在商業物件被呼叫之前，故該路徑未認證即可觸達。自 4.0.2 起存在。
+
+### 破壞性變更
+
+- **Wire**：`object` 型別的成員（`Parameter.Value`、`FilterCondition.Value` / `SecondValue`、`SerializableDataColumn.DefaultValue`，以及 `SerializableDataRow` 內的儲存格值）由逐值攜帶 assembly-qualified 型別名改為整數判別碼封套。這些成員掛在每個 request 與 response 上，因此 4.19 的 client 無法與 4.20 的 server 溝通，反之亦然。見 [ADR-037](docs/adr/adr-037-wire-explicit-registration.md)
+- `Bee.Expressions` → `Bee.Base`：`IExpressionEvaluator`、`ExpressionPolicy` 與 `ExpressionEvaluationException` 移至 `Bee.Base.Expressions`。**沒有 type forward，舊名稱直接編譯不過。** 見 [ADR-038](docs/adr/adr-038-definition-dependency-boundary.md)
+- `Bee.Definition` / `Bee.Business` / `Bee.UI.Avalonia`：`FormExpressionCalculator`、`FormRuleProcessor`、`FormLiveComputation` 的建構子改收新命名空間的 evaluator。**`FormLiveComputation` 的那個參數是選擇性的，因此省略它的呼叫端原始碼照樣編得過 —— 但既有已編譯的組件會擲 `MissingMethodException`，必須重新編譯。**
+- `Bee.Repository.Abstractions`：`IUserRepository` 新增 `VerifyPassword(userId, password)` —— 介面新增成員，外部自行實作者必須補上。
+- `Bee.Business`：`SystemBusinessObject.AuthenticateUser` 的預設實作不再無條件回 `false`，改為比對 `st_user`。**從未覆寫它的部署原本沒有可用的登入，改版後 `st_user` 內的帳號可以登入。** 已覆寫的部署不受影響。
+
+### 新增
+
+- `Bee.Base`：`Bee.Base.Expressions` —— evaluator 抽象、政策輔助方法與例外型別。`Bee.Expressions` 只剩 `DynamicExpressoEvaluator`。
+- `Bee.Definition`：`LanguageEnum.Entries` 補上 setter（見下方行動端修正）。
+- 建置期診斷 **BEE9001**（`Bee.Base` / `Bee.Definition` 的相依邊界）與 **BEE9002**（三個版號屬性必須同步）。[Analyzer 規則](docs/analyzer-rules.zh-TW.md)
+
+### 修正
+
+- `Bee.Definition`：`LanguageEnum.Entries` 原本是對映為重複 `[XmlElement]` 的 get-only 集合。iOS 使用的 reflection-only `XmlSerializer` 路徑對這種成員是**指派**而非 `Add`，因而擲 `ArgumentException: Property set method not found`，外顯為誤導的「There is an error in XML document」。setter 採「清空後逐一填回既有實例」，owner 反向連結不會斷開。
+- `Bee.Definition`：`st_user.password` 由 40 字元放寬為 200。`PasswordHasher` 產出的雜湊為 79 字元，五家 provider 中有四家會截斷，截斷後驗證永遠不會成功。此缺陷先前未浮現，是因為在本版之前框架沒有任何地方真的把雜湊寫進 `st_user`。
+- `src/Directory.Build.props`：`AssemblyVersion` 與 `FileVersion` 重新與 `Version` 同步。已發布的 4.19.0 套件內組件標的是 `4.18.0.0`，以組件 identity 無從與 4.18.0 區分；該版不重新發布。BEE9002 起會在版號不一致時讓建置失敗。
+
+### 變更
+
+- `Bee.Definition`：套件的相依鏈不再帶 `Bee.Expressions`，因此也不再帶 `DynamicExpresso.Core`。`Bee.Cli`、`DefineEditor` 這類只讀定義的消費者不再繼承一個運算式引擎。
+- `samples`：移除 `Avalonia.Demo`；Avalonia 的端到端示範改為 `apps/Bee.Northwind`。
+
+### 升級指引
+
+```diff
+- using Bee.Expressions;
++ using Bee.Base.Expressions;
+```
+
+server 與 client 一起部署 —— 見上方 wire 說明。任何會建構 `FormLiveComputation` 的組件都要重新編譯，即使它沒有傳入 evaluator。若你自行實作 `IUserRepository`，補上 `VerifyPassword`。若你依賴 `AuthenticateUser` 拒絕所有登入，請覆寫它。
+
 ## [4.19.0]
 
 > 本版把定義層與傳輸格式解耦。`Bee.Definition` 不再引用 MessagePack：wire 綁定的一切知識移入 `Bee.Api.Core`，由手寫 formatter 承擔。分界線是「這個格式會不會讓定義層長出外部套件相依」—— XML 與 JSON 是 BCL 詞彙，留下；MessagePack 是明確的技術選擇，外置。六個從不需要 MessagePack 的下游套件不再被迫繼承它，四對刻意重複的集合型別也合併回單一實作。**`FilterNode` 與 `ParameterCollection` 的 wire 格式有變，client 與 server 必須同版升級。** 依嚴格 SemVer 這屬 major；v4.x 的 pre-stable 政策下仍以 minor 發佈，破壞性變更逐條列於下方。
