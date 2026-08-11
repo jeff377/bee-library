@@ -250,5 +250,97 @@ namespace Bee.Db.UnitTests
             var builder = new WhereBuilder(DatabaseType.SQLServer);
             Assert.Throws<InvalidOperationException>(() => builder.Build(root, null));
         }
+
+        /// <summary>
+        /// Builds a context whose field mapping resolves `RefDeptName` to a joined table,
+        /// leaving every other field on the main table.
+        /// </summary>
+        private static SelectContext BuildSelectContext()
+        {
+            var context = new SelectContext();
+            context.FieldMappings.Add(new QueryFieldMapping
+            {
+                FieldName = "RefDeptName",
+                SourceAlias = "B",
+                SourceField = "dept_name",
+            });
+            return context;
+        }
+
+        [Fact]
+        [DisplayName("Build Between 條件經由 selectContext 重寫欄名後仍應保留第二值")]
+        public void Build_BetweenWithSelectContext_PreservesSecondValue()
+        {
+            var root = FilterCondition.Between("HireDate", new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2024, 12, 31, 0, 0, 0, DateTimeKind.Utc));
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+
+            var result = builder.Build(root, BuildSelectContext(), includeWhereKeyword: false);
+
+            Assert.Equal("A.[HireDate] BETWEEN @p0 AND @p1", result.WhereClause);
+            Assert.NotNull(result.Parameters);
+            Assert.Equal(2, result.Parameters.Count);
+            Assert.Equal(new DateTime(2024, 12, 31, 0, 0, 0, DateTimeKind.Utc), result.Parameters["@p1"]);
+        }
+
+        [Fact]
+        [DisplayName("Build Between 條件套用關聯欄位對應後仍應保留第二值")]
+        public void Build_BetweenOnMappedField_PreservesSecondValue()
+        {
+            var root = FilterCondition.Between("RefDeptName", "A", "M");
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+
+            var result = builder.Build(root, BuildSelectContext(), includeWhereKeyword: false);
+
+            Assert.Equal("B.[dept_name] BETWEEN @p0 AND @p1", result.WhereClause);
+            Assert.Equal("M", result.Parameters!["@p1"]);
+        }
+
+        [Fact]
+        [DisplayName("Build IgnoreIfNull 條件經由 selectContext 重寫欄名後仍應被忽略")]
+        public void Build_IgnoreIfNullWithSelectContext_DropsNullCondition()
+        {
+            var root = FilterGroup.All(
+                new FilterCondition { FieldName = "Keyword", Operator = ComparisonOperator.Contains, Value = null, IgnoreIfNull = true },
+                FilterCondition.Equal("DeptId", 1)
+            );
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+
+            var result = builder.Build(root, BuildSelectContext());
+
+            Assert.Equal("WHERE (A.[DeptId] = @p0)", result.WhereClause);
+            Assert.Single(result.Parameters!);
+        }
+
+        [Fact]
+        [DisplayName("Build IgnoreIfNull 的 Equal 條件經由 selectContext 重寫後不應變成 IS NULL")]
+        public void Build_IgnoreIfNullEqualWithSelectContext_DoesNotBecomeIsNull()
+        {
+            var root = new FilterCondition { FieldName = "Memo", Operator = ComparisonOperator.Equal, Value = null, IgnoreIfNull = true };
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+
+            var result = builder.Build(root, BuildSelectContext());
+
+            Assert.Equal(string.Empty, result.WhereClause);
+        }
+
+        [Fact]
+        [DisplayName("Build Between 缺第二值且 IgnoreIfNull=true 經由 selectContext 重寫後應忽略而非擲例外")]
+        public void Build_BetweenMissingSecondValueWithSelectContext_DropsCondition()
+        {
+            var root = new FilterCondition
+            {
+                FieldName = "Age",
+                Operator = ComparisonOperator.Between,
+                Value = 18,
+                SecondValue = null,
+                IgnoreIfNull = true
+            };
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+
+            var result = builder.Build(root, BuildSelectContext(), includeWhereKeyword: false);
+
+            Assert.Equal(string.Empty, result.WhereClause);
+        }
     }
 }

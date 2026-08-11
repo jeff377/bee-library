@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Db.Dml;
+using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Definition.Database;
 using Bee.Definition.Storage;
@@ -75,6 +76,66 @@ namespace Bee.Db.UnitTests
 
             Assert.NotNull(spec);
             Assert.Contains("Id", spec.CommandText);
+        }
+
+        [Fact]
+        [DisplayName("Build Between 篩選應產生 BETWEEN 子句與兩個參數")]
+        public void Build_BetweenFilter_ProducesBetweenClauseWithTwoParameters()
+        {
+            var schema = BuildSimpleSchema();
+            var builder = NewBuilder(schema);
+            var filter = FilterCondition.Between("Id", 10, 20);
+
+            var spec = builder.Build("demo", string.Empty, filter);
+
+            Assert.Contains("A.[Id] BETWEEN @p0 AND @p1", spec.CommandText);
+            Assert.Equal(2, spec.Parameters.Count);
+        }
+
+        [Fact]
+        [DisplayName("BuildCount Between 篩選應產生 BETWEEN 子句與兩個參數")]
+        public void BuildCount_BetweenFilter_ProducesBetweenClauseWithTwoParameters()
+        {
+            var schema = BuildSimpleSchema();
+            var builder = NewBuilder(schema);
+            var filter = FilterCondition.Between("Id", 10, 20);
+
+            var spec = builder.BuildCount("demo", filter);
+
+            Assert.Contains("A.[Id] BETWEEN @p0 AND @p1", spec.CommandText);
+            Assert.Equal(2, spec.Parameters.Count);
+        }
+
+        [Fact]
+        [DisplayName("Build IgnoreIfNull 篩選在值為 null 時應自 WHERE 子句移除")]
+        public void Build_IgnoreIfNullFilter_OmitsConditionFromWhere()
+        {
+            var schema = BuildSimpleSchema();
+            var builder = NewBuilder(schema);
+            var filter = FilterGroup.All(
+                new FilterCondition { FieldName = "Name", Operator = ComparisonOperator.Contains, Value = null, IgnoreIfNull = true },
+                FilterCondition.Equal("Id", 1)
+            );
+
+            var spec = builder.Build("demo", string.Empty, filter);
+
+            Assert.Contains("WHERE (A.[Id] = @p0)", spec.CommandText);
+            Assert.DoesNotContain("Name] LIKE", spec.CommandText);
+            Assert.Single(spec.Parameters);
+        }
+
+        [Fact]
+        [DisplayName("Build IgnoreIfNull 的 Equal 篩選在值為 null 時不應退化成 IS NULL")]
+        public void Build_IgnoreIfNullEqualFilter_DoesNotBecomeIsNull()
+        {
+            var schema = BuildSimpleSchema();
+            var builder = NewBuilder(schema);
+            var filter = FilterCondition.Equal("Name", null!, ignoreIfNull: true);
+
+            var spec = builder.Build("demo", string.Empty, filter);
+
+            Assert.DoesNotContain("WHERE", spec.CommandText, StringComparison.Ordinal);
+            Assert.DoesNotContain("IS NULL", spec.CommandText, StringComparison.Ordinal);
         }
     }
 }

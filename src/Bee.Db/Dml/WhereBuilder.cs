@@ -67,7 +67,14 @@ namespace Bee.Db.Dml
                     // Field belongs to the main table; default alias is A
                     fieldExpr = $"A.{QuoteIdentifier(cond.FieldName)}";
                 }
-                return new FilterCondition(fieldExpr, cond.Operator, cond.Value!);
+                return new FilterCondition
+                {
+                    FieldName = fieldExpr,
+                    Operator = cond.Operator,
+                    Value = cond.Value,
+                    SecondValue = cond.SecondValue,
+                    IgnoreIfNull = cond.IgnoreIfNull,
+                };
             }
             else if (node.Kind == FilterNodeKind.Group)
             {
