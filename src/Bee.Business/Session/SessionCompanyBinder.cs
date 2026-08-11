@@ -63,21 +63,35 @@ namespace Bee.Business.Session
             var userCompanyRepository = _repositoryFactory.Create<IUserCompanyRepository>();
             if (!userCompanyRepository.HasAccess(sessionInfo.UserId, companyId)) { return null; }
 
+            // WARNING: Everything is resolved into locals first, and only then written to
+            // `sessionInfo`. The same `SessionInfo` instance is shared by every concurrent request
+            // carrying this access token, so anything written before the rest is ready is visible to
+            // them — and `CompanyId` and `Roles` are the two inputs `ScopeResolver` authorizes from.
+            // Interleaving the writes with the lookups below left a window spanning three calls that
+            // can each reach the database, during which a parallel request could authorize against
+            // the new company with the previous company's roles.
+            //
+            // The writes are still not atomic; the window is now a run of field assignments rather
+            // than a run of queries. Closing it completely means giving the scope fields a single
+            // immutable holder that can be swapped in one reference write.
+
+            // Snapshot the user's roles for this company so the layer-1 Can check runs from
+            // SessionInfo.Roles (sys_id) without re-hitting the database on every request.
+            var snapshot = _rolePermissionService.Get(companyId);
+            var roles = snapshot?.GetUserRoleIds(sessionInfo.UserId).ToList() ?? [];
+            // Compute the per-model capability snapshot once, here, where the roles and the
+            // permission snapshot are both in hand — the client caches it to degrade UI elements
+            // without any extra round-trip.
+            var capabilities = snapshot?.GetAllowedByModel(roles) ?? [];
+            // Snapshot the user's record-scope identity (user/employee/department row ids) so
+            // layer-2 scope filtering runs from the session without re-hitting the database.
+            var employeeContext = _employeeContextResolver.Resolve(sessionInfo.UserId, companyInfo.CompanyDatabaseId);
+
             sessionInfo.CompanyId = companyId;
             // Derive the session's customization code from the company (empty when the company
             // ships no customization). The session-level overlay reads this value downstream.
             sessionInfo.CustomizeId = companyInfo.CustomizeId;
-            // Snapshot the user's roles for this company so the layer-1 Can check runs from
-            // SessionInfo.Roles (sys_id) without re-hitting the database on every request.
-            var snapshot = _rolePermissionService.Get(companyId);
-            sessionInfo.Roles = snapshot?.GetUserRoleIds(sessionInfo.UserId).ToList() ?? [];
-            // Compute the per-model capability snapshot once, here, where the roles and the
-            // permission snapshot are both in hand — the client caches it to degrade UI elements
-            // without any extra round-trip.
-            var capabilities = snapshot?.GetAllowedByModel(sessionInfo.Roles) ?? [];
-            // Snapshot the user's record-scope identity (user/employee/department row ids) so
-            // layer-2 scope filtering runs from the session without re-hitting the database.
-            var employeeContext = _employeeContextResolver.Resolve(sessionInfo.UserId, companyInfo.CompanyDatabaseId);
+            sessionInfo.Roles = roles;
             sessionInfo.UserRowId = employeeContext.UserRowId;
             sessionInfo.EmployeeRowId = employeeContext.EmployeeRowId;
             sessionInfo.DeptRowId = employeeContext.DeptRowId;

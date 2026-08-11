@@ -16,6 +16,8 @@
 - `Bee.Api.Core` / `Bee.Base`：未變更的資料列不再在 wire 上攜帶兩份相同的值。MessagePack 與 JSON 兩個寫入端都對 `Unchanged` 列同時送出 Current 與 Original，而兩個讀取端都只由 Current 還原 —— 且 `DataFormRepository.GetData` 回傳前呼叫 `AcceptChanges()`，因此每一筆從資料庫讀出的列都是 Unchanged。讀取的 payload 與序列化成本因此減半。
 - `Bee.Definition`：運算式求值約快 4.7 倍。先前每次求值都把整列的所有欄位交給引擎，而非運算式實際引用的那幾個，成本因此與**欄數**成正比、與運算式無關。實測 30 欄 / 5 計算欄 / 1000 列：57.2 ms → 12.2 ms。
 - `Bee.Definition` / `Bee.Api.Client`：兩處在並行下會交出或重建 process-wide 快取定義狀態的問題已修正。`FormTable.RelationFieldReferences` 的反向索引建立在無保護的 null 檢查後，兩個觸碰同一份快取 schema 的請求可能各建一份、拿到不同實例，且建立過程的驗證例外會從一個看起來只是讀取的 property getter 冒出來。`FormDefinitionLoader.GetLocalizedSchemaAsync` 在未指定語言時直接回傳共用的快取 schema，儘管它的文件寫著「絕不交出快取實例」——而 `CultureInfo.InvariantCulture.Name` 是空字串，那正是最常走到的路徑。
+- `Bee.Db` / `Bee.ObjectCaching`：`DatabaseSettingsChanged` 事件改為在**重新載入**時觸發，而非每次載入。它唯一的發布者是設定快取的載入路徑，而 `DbConnectionManagerService` 收到後會清空連線快取——且是在它自己的 `GetOrAdd` value factory 內被觸達，因此每次設定快取 miss 都會丟棄先前建立的所有連線項目。真正的重新載入（設定檔有監看）仍會觸發，那正是外部編輯得以傳播到連線快取的機制。`DbConnectionManagerService` 另實作 `IDisposable` 並退訂——static 事件會持有訂閱者直到行程結束。
+- `Bee.Business`：`EnterCompany` 改為先解析完公司的角色、能力與記錄範圍身分，才寫入 session。session 物件由同一個 access token 的所有並行請求共用，而 `CompanyId` 與 `Roles` 正是授權判斷的兩個輸入——先前把寫入與查詢交錯，留下一段橫跨三次可能觸及資料庫之呼叫的窗口，期間並行請求可能以「新公司 + 前一家公司的角色」做出授權決定。
 - `Bee.Db`：`WhereBuilder` 在有 `selectContext` 而需改寫條件欄名時，不再遺失 `SecondValue` 與 `IgnoreIfNull`。先前 `BETWEEN` 會失去上界，`IgnoreIfNull` 條件則變成 `= NULL` —— 在 SQL 裡永不成立，於是查詢靜默回傳零筆，而不是忽略該條件。
 
 ## [4.20.0]
