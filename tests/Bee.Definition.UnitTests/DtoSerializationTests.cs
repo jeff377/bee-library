@@ -289,8 +289,11 @@ namespace Bee.Definition.UnitTests
         [DisplayName("ProgramSettings XML 序列化應正確還原")]
         public void ProgramSettings_XmlRoundtrip_Succeeds()
         {
-            // Arrange
+            // Arrange —— 必須填入可辨識的資料：序列化空實例後只斷言 NotNull，
+            // 連「序列化把每個欄位都吃掉」都驗不出來。
             var original = new ProgramSettings();
+            original.Items!.Add(new ProgramItem("Employee", "員工資料") { BusinessObject = "Bee.Business.FormBusinessObject", Repository = "Bee.Repository.DataFormRepository" });
+            original.Items.Add(new ProgramItem("Order", "訂單"));
 
             // Act
             var xml = XmlCodec.Serialize(original);
@@ -298,14 +301,23 @@ namespace Bee.Definition.UnitTests
 
             // Assert
             Assert.NotNull(restored);
+            Assert.Equal(2, restored.Items!.Count);
+            var employee = restored.Items["Employee"];
+            Assert.NotNull(employee);
+            Assert.Equal("員工資料", employee.DisplayName);
+            Assert.Equal("Bee.Business.FormBusinessObject", employee.BusinessObject);
+            Assert.Equal("Bee.Repository.DataFormRepository", employee.Repository);
+            Assert.Equal("訂單", restored.Items["Order"]!.DisplayName);
         }
 
         [Fact]
         [DisplayName("DbCategorySettings XML 序列化應正確還原")]
         public void DbCategorySettings_XmlRoundtrip_Succeeds()
         {
-            // Arrange
+            // Arrange —— 理由同上：空實例的 round-trip 不構成證據。
             var original = new DbCategorySettings();
+            original.Categories!.Add(new DbCategory { Id = "common", DisplayName = "共用資料庫" });
+            original.Categories.Add(new DbCategory { Id = "company", DisplayName = "公司資料庫" });
 
             // Act
             var xml = XmlCodec.Serialize(original);
@@ -313,6 +325,9 @@ namespace Bee.Definition.UnitTests
 
             // Assert
             Assert.NotNull(restored);
+            Assert.Equal(2, restored.Categories!.Count);
+            Assert.Equal("共用資料庫", restored.Categories["common"]!.DisplayName);
+            Assert.Equal("公司資料庫", restored.Categories["company"]!.DisplayName);
         }
 
         [Fact]

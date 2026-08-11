@@ -41,11 +41,6 @@ namespace Bee.Api.Core.MessagePack
                 .Member(nameof(Bee.Api.Core.Messages.ApiCallContext.IsLocalCall), static x => x.IsLocalCall, static (x, v) => x.IsLocalCall = v)
                 .Member(nameof(Bee.Api.Core.Messages.ApiCallContext.Format), static x => x.Format, static (x, v) => x.Format = v)
                 .Build());
-            list.Add(WireContract.For<Bee.Api.Core.Messages.ApiErrorInfo>()
-                .Member(nameof(Bee.Api.Core.Messages.ApiErrorInfo.Message), static x => x.Message, static (x, v) => x.Message = v)
-                .Member(nameof(Bee.Api.Core.Messages.ApiErrorInfo.StackTrace), static x => x.StackTrace, static (x, v) => x.StackTrace = v)
-                .Member(nameof(Bee.Api.Core.Messages.ApiErrorInfo.IsHandled), static x => x.IsHandled, static (x, v) => x.IsHandled = v)
-                .Build());
             list.Add(WireContract.For<Bee.Api.Core.Messages.ExecFuncRequest>()
                 .Member(nameof(Bee.Api.Core.Messages.ExecFuncRequest.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)
                 .Member(nameof(Bee.Api.Core.Messages.ExecFuncRequest.FuncId), static x => x.FuncId, static (x, v) => x.FuncId = v)

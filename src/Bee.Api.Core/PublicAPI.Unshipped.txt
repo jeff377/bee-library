@@ -1,1 +1,11 @@
 #nullable enable
+*REMOVED*Bee.Api.Core.Messages.ApiErrorInfo
+*REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.ApiErrorInfo() -> void
+*REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.ApiErrorInfo(System.Exception! exception, bool includeStackTrace = false) -> void
+*REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.IsHandled.get -> bool
+*REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.IsHandled.set -> void
+*REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.Message.get -> string!
+*REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.Message.set -> void
+*REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.StackTrace.get -> string!
+*REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.StackTrace.set -> void
+*REMOVED*override Bee.Api.Core.Messages.ApiErrorInfo.ToString() -> string!

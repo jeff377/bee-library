@@ -6,10 +6,10 @@ namespace Bee.Business.AuditLog
     /// <c>IBusinessObjectFactory</c> and query the audit trail without binding to the concrete class.
     /// </summary>
     /// <remarks>
-    /// NOTE: This axis seam currently has no internal BO-to-BO consumers — it is reserved for future
-    /// cross-BO audit queries. That is also why there is no <c>CreateLogBO</c> factory extension
-    /// alongside <c>CreateFormBO</c> / <c>CreateSystemBO</c>: adding one now would only introduce
-    /// another API with no callers. Add it together with the first real consumer.
+    /// NOTE: This axis seam has no internal BO-to-BO consumers yet — it is reserved for future
+    /// cross-BO audit queries. <c>IBusinessObjectFactory.CreateLogBO</c> is shipped alongside
+    /// <c>CreateFormBO</c> / <c>CreateSystemBO</c> and is the intended entry point, though it too
+    /// has no callers inside the framework so far.
     /// </remarks>
     public interface ILogBusinessObject : IBusinessObject
     {

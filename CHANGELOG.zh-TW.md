@@ -8,6 +8,7 @@
 
 ### 破壞性變更
 
+- `Bee.Api.Core`：移除 `Messages.ApiErrorInfo`（10 筆公開 API）。wire 上的錯誤形狀早已由 `JsonRpcError` 取代；該型別在框架內零呼叫端，僅存的生命跡象是一個「建構它、再把欄位讀回來」的測試——足以讓它在覆蓋率報告上顯示為已測試，但證不到有人在用。它另被註冊為 wire contract，卻從 wire 型別閉包到不了，因此漂移閘門也沒有標記它。
 - `Bee.Definition` / `Bee.ObjectCaching` / `Bee.Base`：三個公開型別改名，避開宿主本來就會 `using` 到的同名型別。`Bee.Definition.Identity.IAuthorizationService` 改為 `ICompanyAuthorizationService`、其實作 `Bee.ObjectCaching.Services.AuthorizationService` 改為 `CompanyAuthorizationService` —— 舊名撞 `Microsoft.AspNetCore.Authorization.IAuthorizationService`，而 ASP.NET Core 宿主預設就有它。`Bee.Base.Tracing.TraceListener` 改為 `TraceDispatcher`，舊名撞 `System.Diagnostics.TraceListener`。兩處撞名都以 `CS0104` 現形在「消費端註冊框架服務」那段程式碼，因為那正是同時 `using` 兩邊命名空間的唯一位置。**沒有 type forward。** 新名也讓它與 `IDeploymentAuthorizationService` 的對照讀得出來：一個在公司內授權，一個對整套安裝授權。`SysInfo.TraceListener` 與 `ITraceListener` 維持原名 —— 它們並不撞名。
 
 ### 新增

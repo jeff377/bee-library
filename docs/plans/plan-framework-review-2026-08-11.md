@@ -50,7 +50,7 @@
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
 | P2 | 結構、效能、一致性 | 14 | 🚧 進行中（11 項已結：P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**DEP-1** / **P-3** / **PERF-2** ❌ 評估後不修；剩 3 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
-| P4 | 觀察／待裁決 | 9 | 📝 擬定中（**M-1** ✅ 已落地；D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
+| P4 | 觀察／待裁決 | 9 | 📝 擬定中（**M-1** / **D-6** / **X-6** / **T-2** ✅ 已落地；D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
 
 ### 已完成項目逐條（供對帳，勿只看階段狀態）
 
@@ -85,6 +85,9 @@
 | **TEST-2** | `ApiAspNetCoreTests` / `ApiKeyGateControllerTests` 改用 `SharedDbFixture` | 待 commit | 並在類別 doc 記下第三條觸發路徑（API key gate read-through）與「為何先前是綠的」 |
 | **TEST-3** | `Bee.Definition.UnitTests` 新增 `ProcessWideStateCollection`，序列化三個衝突類別 | 待 commit | 該組件先前既無 `[Collection]` 也無 `DisableTestParallelization` |
 | **GATE-2** | 8 個手寫 formatter 改實作 `IWireContract`，移除套套邏輯的 `WireMemberCount` | 待 commit | **實證**：在 `SortField` 加一個屬性 → drift 測試立刻紅（`型別上有但未註冊 → Probe`）。同一個 probe 在修正前不會被抓到 |
+| **D-6** | 移除 `ApiErrorInfo` 整型別與其 wire 註冊、佔位測試 | 待 commit | **實際是 10 筆公開 API，不是計畫寫的 11 筆**。移除後 `Bee.Api.Core.UnitTests` 由 764 降為 761（正好是那三個佔位測試）|
+| **X-6** | `ILogBusinessObject` 的 `<remarks>` 改為與現況一致 | 待 commit | 原文寫「there is no `CreateLogBO` factory extension」，但它存在且已 shipped。**「無 BO-to-BO 消費者」那半仍屬實**，保留；錯的只有推論那半 |
+| **T-2** | 4 處空洞 round-trip 補上真正的還原斷言 | 待 commit | 四處原本都是「序列化**空實例**→ 只斷言 `NotNull`」。改為填入可辨識資料後逐欄比對 |
 | **M-1** | 三個撞名公開型別改名（`ICompanyAuthorizationService` / `CompanyAuthorizationService` / `TraceDispatcher`） | `12e96696` | **新名與計畫建議的不同，見下**。`PublicAPI.Unshipped` 計 10 筆 `*REMOVED*` + 10 筆新增；clean Release build 0 警告；16 專案 5,436 通過 / 0 失敗 |
 | **CON-3** | 兩個快取基底的 `Get` 改為 per-key 單飛（`CacheSingleFlight<T>`），`ICacheProvider` 契約不動 | `5d202870` | **反向驗證**：抽掉修正後 5 筆新測試中 3 筆立刻紅（另 2 筆是既有行為的回歸護欄，本來就該綠）。斷言用 `Assert.Same` 而非「都非 null」——後者在修正前也會過 |
 

@@ -129,9 +129,11 @@ namespace Bee.Definition.UnitTests.Storage
         {
             WithTempDefinePath(paths =>
             {
-                // Arrange
+                // Arrange —— 存空實例再讀回只證明「檔案存在且反序列化不擲例外」，
+                // 證不到內容有寫進去，故填入可辨識的資料。
                 var storage = new FileDefineStorage(paths);
                 var settings = new DbCategorySettings();
+                settings.Categories!.Add(new DbCategory { Id = "common", DisplayName = "共用資料庫" });
 
                 // Act
                 storage.SaveDbCategorySettings(settings);
@@ -139,6 +141,8 @@ namespace Bee.Definition.UnitTests.Storage
 
                 // Assert
                 Assert.NotNull(restored);
+                Assert.Single(restored.Categories!);
+                Assert.Equal("共用資料庫", restored.Categories!["common"]!.DisplayName);
             });
         }
 
@@ -162,13 +166,17 @@ namespace Bee.Definition.UnitTests.Storage
         {
             WithTempDefinePath(paths =>
             {
+                // 理由同 SaveAndGetDbCategorySettings_RoundTrips。
                 var storage = new FileDefineStorage(paths);
                 var settings = new ProgramSettings();
+                settings.Items!.Add(new ProgramItem("Employee", "員工資料"));
 
                 storage.SaveProgramSettings(settings);
                 var restored = storage.GetProgramSettings();
 
                 Assert.NotNull(restored);
+                Assert.Single(restored.Items!);
+                Assert.Equal("員工資料", restored.Items!["Employee"]!.DisplayName);
             });
         }
 
