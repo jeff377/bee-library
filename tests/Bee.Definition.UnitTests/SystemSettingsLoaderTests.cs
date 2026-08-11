@@ -17,7 +17,12 @@ namespace Bee.Definition.UnitTests
         {
             using var temp = TempDir.Create();
             var filePath = Path.Combine(temp.Path, "SystemSettings.xml");
+            // 必須填入可辨識的值：寫出一個**預設**實例再讀回來，只斷言 NotNull 的話，
+            // 連「讀檔路徑把每個欄位都吃掉」都驗不出來。
             var original = new SystemSettings();
+            original.CommonConfiguration.Version = "9.9.9";
+            original.CommonConfiguration.DefaultLang = "zh-TW";
+            original.CommonConfiguration.IsDebugMode = true;
             XmlCodec.SerializeToFile(original, filePath);
 
             var loaded = SystemSettingsLoader.Load(filePath);
@@ -25,6 +30,9 @@ namespace Bee.Definition.UnitTests
             Assert.NotNull(loaded);
             Assert.NotNull(loaded.BackendConfiguration);
             Assert.NotNull(loaded.CommonConfiguration);
+            Assert.Equal("9.9.9", loaded.CommonConfiguration.Version);
+            Assert.Equal("zh-TW", loaded.CommonConfiguration.DefaultLang);
+            Assert.True(loaded.CommonConfiguration.IsDebugMode);
         }
 
         [Fact]

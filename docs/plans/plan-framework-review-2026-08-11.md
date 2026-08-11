@@ -50,7 +50,7 @@
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
 | P2 | 結構、效能、一致性 | 14 | 🚧 進行中（11 項已結：P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**DEP-1** / **P-3** / **PERF-2** ❌ 評估後不修；剩 3 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
-| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2**(4/7) / **SEC-4~10**(部分) / **CON-5** / **X-7** / **D-9** / **Z-3**+**Z-5** / **M-2** / **M-3** ✅ 已落地；其餘未動） |
+| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2** / **SEC-4~10**(部分) / **CON-5** / **X-7** / **D-9** / **Z-3**+**Z-5** / **M-2** / **M-3** ✅ 已落地；其餘未動） |
 
 ### 已完成項目逐條（供對帳，勿只看階段狀態）
 
@@ -96,7 +96,7 @@
 | **D-8** | 移除 5 個零消費者介面、`ApiCallContext.ShouldValidateEncoding`、`ClientInfoTestScope` | 待 commit | **`IFormCommandBuilder` / `IParameterCollector` 不在移除之列**——它們確實被當成型別消費（前者是 `IDialectFactory.CreateFormCommandBuilder` 的回傳型別）。**`[LocalOnlyFact]` / `[LocalOnlyTheory]` 亦保留**：`rules/testing.md` 已明文記載「零使用但情境仍成立」的保留決定，計畫把它們列入死碼是與該決定衝突 |
 | **D-6** | 移除 `ApiErrorInfo` 整型別與其 wire 註冊、佔位測試 | 待 commit | **實際是 10 筆公開 API，不是計畫寫的 11 筆**。移除後 `Bee.Api.Core.UnitTests` 由 764 降為 761（正好是那三個佔位測試）|
 | **X-6** | `ILogBusinessObject` 的 `<remarks>` 改為與現況一致 | 待 commit | 原文寫「there is no `CreateLogBO` factory extension」，但它存在且已 shipped。**「無 BO-to-BO 消費者」那半仍屬實**，保留；錯的只有推論那半 |
-| **T-2** | 4 處空洞 round-trip 補上真正的還原斷言 | 待 commit | 四處原本都是「序列化**空實例**→ 只斷言 `NotNull`」。改為填入可辨識資料後逐欄比對 |
+| **T-2** | 7 處空洞 round-trip 補上真正的斷言 | 待 commit | 前 4 處原本是「序列化**空實例** → 只斷言 `NotNull`」，改為填入可辨識資料後逐欄比對。後 3 處中，**兩個 request 型別確實零 wire 成員**（`GetNewDataRequest` / `GetDepartmentTreeRequest`，只繼承 `ApiRequest`），沒有值可比對——改為斷言「產出非空位元組 + 還原的是新實例」，證明 formatter 有註冊且真的跑過，並就地註明為何這裡只能到這個程度 |
 | **M-1** | 三個撞名公開型別改名（`ICompanyAuthorizationService` / `CompanyAuthorizationService` / `TraceDispatcher`） | `12e96696` | **新名與計畫建議的不同，見下**。`PublicAPI.Unshipped` 計 10 筆 `*REMOVED*` + 10 筆新增；clean Release build 0 警告；16 專案 5,436 通過 / 0 失敗 |
 | **CON-3** | 兩個快取基底的 `Get` 改為 per-key 單飛（`CacheSingleFlight<T>`），`ICacheProvider` 契約不動 | `5d202870` | **反向驗證**：抽掉修正後 5 筆新測試中 3 筆立刻紅（另 2 筆是既有行為的回歸護欄，本來就該綠）。斷言用 `Assert.Same` 而非「都非 null」——後者在修正前也會過 |
 

@@ -14,7 +14,7 @@ namespace Bee.Api.Core.UnitTests.Form
     public class GetNewDataMessagePackTests
     {
         [Fact]
-        [DisplayName("GetNewDataRequest 屬性為空,應可正常 round-trip")]
+        [DisplayName("GetNewDataRequest 無 wire 成員，仍應真的走完序列化並產生新實例")]
         public void GetNewDataRequest_Empty_RoundTrips()
         {
             var request = new GetNewDataRequest();
@@ -22,7 +22,12 @@ namespace Bee.Api.Core.UnitTests.Form
             var bytes = MessagePackCodec.Serialize(request);
             var restored = MessagePackCodec.Deserialize<GetNewDataRequest>(bytes);
 
-            Assert.NotNull(restored);
+            // 這個訊息型別確實沒有任何 wire 成員（`SerializeState` 標了 [JsonIgnore]），
+            // 因此沒有值可以比對。能斷言的是「formatter 有註冊、真的跑過」：產出非空位元組，
+            // 且還原的是一個**新**實例而非同一個參考——只寫 Assert.NotNull 連這兩點都證不到。
+            Assert.NotEmpty(bytes);
+            Assert.IsType<GetNewDataRequest>(restored);
+            Assert.NotSame(request, restored);
         }
 
         [Fact]

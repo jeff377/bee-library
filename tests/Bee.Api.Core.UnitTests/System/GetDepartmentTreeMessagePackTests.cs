@@ -46,13 +46,19 @@ namespace Bee.Api.Core.UnitTests.System
         }
 
         [Fact]
-        [DisplayName("GetDepartmentTreeRequest（無參數）round-trip")]
+        [DisplayName("GetDepartmentTreeRequest 無 wire 成員，仍應真的走完序列化並產生新實例")]
         public void Request_RoundTrip()
         {
-            var bytes = MessagePackCodec.Serialize(new GetDepartmentTreeRequest());
+            var request = new GetDepartmentTreeRequest();
+
+            var bytes = MessagePackCodec.Serialize(request);
             var restored = MessagePackCodec.Deserialize<GetDepartmentTreeRequest>(bytes);
 
-            Assert.NotNull(restored);
+            // 理由同 GetNewDataMessagePackTests：無 wire 成員可比對，能證的是 formatter
+            // 有註冊且真的跑過。
+            Assert.NotEmpty(bytes);
+            Assert.IsType<GetDepartmentTreeRequest>(restored);
+            Assert.NotSame(request, restored);
         }
     }
 }
