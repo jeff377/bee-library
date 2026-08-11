@@ -174,5 +174,33 @@ namespace Bee.Api.Client.Connectors
             var request = new DeleteRequest { RowId = rowId };
             return await ExecuteAsync<DeleteResponse>(FormActions.Delete, request).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FormApiConnector"/> class using a local connection and
+        /// the given session state.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="progId">The program identifier.</param>
+        /// <param name="session">The per-session state. Give each user their own in a host that serves several from one
+        /// process; omitting it shares <see cref="ApiSessionContext.Ambient"/>.</param>
+        public FormApiConnector(Guid accessToken, string progId, ApiSessionContext session) : base(accessToken, session)
+        {
+            ProgId = progId;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FormApiConnector"/> class using a remote connection and
+        /// the given session state.
+        /// </summary>
+        /// <param name="endpoint">The API service endpoint.</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="progId">The program identifier.</param>
+        /// <param name="session">The per-session state. This is the overload a multi-user host wants — the remote path is
+        /// the one that encrypts payloads with the session key.</param>
+        public FormApiConnector(string endpoint, Guid accessToken, string progId, ApiSessionContext session) : base(endpoint, accessToken, session)
+        {
+            ProgId = progId;
+        }
+
     }
 }

@@ -20,7 +20,11 @@ namespace Bee.Api.Client
         /// whose zone could apply, and adopting the device's would reintroduce the second source of
         /// truth D4 rejects.
         /// </remarks>
-        public static string UserTimeZoneId { get; set; } = string.Empty;
+        public static string UserTimeZoneId
+        {
+            get => ApiSessionContext.Ambient.UserTimeZoneId;
+            set => ApiSessionContext.Ambient.UserTimeZoneId = value;
+        }
 
         /// <summary>
         /// Gets or sets the connection types supported by the application.
@@ -46,7 +50,11 @@ namespace Bee.Api.Client
         /// Gets or sets the API transmission encryption key, exchanged via RSA public key.
         /// Typically unused in local connection scenarios.
         /// </summary>
-        public static byte[] ApiEncryptionKey { get; set; } = Array.Empty<byte>();
+        public static byte[] ApiEncryptionKey
+        {
+            get => ApiSessionContext.Ambient.ApiEncryptionKey;
+            set => ApiSessionContext.Ambient.ApiEncryptionKey = value;
+        }
 
         /// <summary>
         /// Gets or sets the in-process backend service provider used by <c>LocalApiProvider</c>.

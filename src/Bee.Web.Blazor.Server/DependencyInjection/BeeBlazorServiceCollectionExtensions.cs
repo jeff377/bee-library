@@ -34,7 +34,10 @@ namespace Bee.Web.Blazor.Server.DependencyInjection
             configure?.Invoke(options);
 
             services.AddSingleton(options);
-            services.AddSingleton<BeeApiConnectorFactory>();
+            // Scoped, not singleton: one ApiSessionContext per circuit is what keeps one user's
+            // transmission key out of another's requests. See BeeApiConnectorFactory's remarks.
+            services.AddScoped<Bee.Api.Client.ApiSessionContext>();
+            services.AddScoped<BeeApiConnectorFactory>();
             return services;
         }
     }

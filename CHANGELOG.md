@@ -4,6 +4,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- `Bee.Api.Client`: `ApiSessionContext` carries the per-session client state — the transmission key established at login and the signed-in user's time zone. Connectors gain constructor overloads that take one; omitting it shares `ApiSessionContext.Ambient`, which is the previous behaviour and remains correct for a single-user host.
+
+### Fixed
+
+- `Bee.Api.Client` / `Bee.Web.Blazor.Server`: a host serving several users from one process no longer has them overwrite each other's transmission key. `ApiClientInfo.ApiEncryptionKey` and `UserTimeZoneId` were process-wide statics, so in `BeeBlazorProviderMode.Remote` the most recent login won and earlier users' encrypted requests failed to decrypt until they signed in again. `BeeApiConnectorFactory` is now registered scoped and hands each circuit its own context. `Local` mode was never affected. `ApiClientInfo.ApiKey` stays static deliberately — it identifies the application, not the user.
+- `Bee.Db`: `WhereBuilder` no longer loses `SecondValue` and `IgnoreIfNull` when it rewrites a condition's field name for a query with a `selectContext`. A `BETWEEN` lost its upper bound, and an `IgnoreIfNull` condition became `= NULL` — which is never true, so the query silently returned nothing instead of ignoring the condition.
+
 ## [4.20.0]
 
 > This release closes a deserialization hole and finishes two decouplings. The security item: the wire's type whitelist screened only the text before the first comma of an assembly-qualified name, and for a generic type that comma sits *inside* the argument list — so a disallowed type smuggled in as a generic argument was never screened, and an unauthenticated caller could reach it. Alongside it, `object` values on the wire move from a per-value type name to a discriminated envelope, and the expression abstraction sinks into `Bee.Base` so the definition layer stops handing every consumer a dependency on DynamicExpresso. **Both wire changes require client and server to be deployed together.** Framework login also gains a default implementation, which changes behaviour for deployments that never overrode it.

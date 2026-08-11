@@ -4,6 +4,17 @@
 
 本檔記錄專案的所有重要變更。
 
+## [Unreleased]
+
+### 新增
+
+- `Bee.Api.Client`：`ApiSessionContext` 承載 per-session 的 client 狀態 —— 登入時建立的傳輸金鑰與登入者的時區。connector 新增接它的建構子多載；不傳則共用 `ApiSessionContext.Ambient`，那是既有行為，對單使用者宿主仍然正確。
+
+### 修正
+
+- `Bee.Api.Client` / `Bee.Web.Blazor.Server`：單一 process 服務多個使用者時，不再互相覆蓋傳輸金鑰。`ApiClientInfo.ApiEncryptionKey` 與 `UserTimeZoneId` 原本是 process-wide static，因此在 `BeeBlazorProviderMode.Remote` 下最後登入者勝出，先前使用者的加密請求會解不開、直到重新登入。`BeeApiConnectorFactory` 改註冊為 scoped，每個 circuit 拿到自己的 context。`Local` 模式從未受影響。`ApiClientInfo.ApiKey` 刻意維持 static —— 它識別的是應用程式，不是使用者。
+- `Bee.Db`：`WhereBuilder` 在有 `selectContext` 而需改寫條件欄名時，不再遺失 `SecondValue` 與 `IgnoreIfNull`。先前 `BETWEEN` 會失去上界，`IgnoreIfNull` 條件則變成 `= NULL` —— 在 SQL 裡永不成立，於是查詢靜默回傳零筆，而不是忽略該條件。
+
 ## [4.20.0]
 
 > 本版修掉一個反序列化漏洞，並完成兩項解耦。安全項：wire 的型別白名單只檢查 assembly-qualified name 第一個逗號之前的字串，而泛型型別的那個逗號落在**參數清單裡面** —— 夾帶在泛型參數中的不允許型別因此從未被檢查，且未認證的呼叫端就到得了。同時 wire 上的 `object` 值由逐值攜帶型別名改為判別式封套，運算式抽象下沉至 `Bee.Base`，定義層不再讓每個消費者背上 DynamicExpresso 相依。**兩項 wire 變更都要求 client 與 server 同版部署。** 框架登入另有預設實作，對從未覆寫過的部署是行為變更。

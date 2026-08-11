@@ -125,5 +125,29 @@ namespace Bee.Api.Client.Connectors
         {
             return await ExecuteAsync<LogAggregateResponse>(LogActions.GetTopApiMethods, request).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LogApiConnector"/> class using a local connection and
+        /// the given session state.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="session">The per-session state. Give each user their own in a host that serves several from one
+        /// process; omitting it shares <see cref="ApiSessionContext.Ambient"/>.</param>
+        public LogApiConnector(Guid accessToken, ApiSessionContext session) : base(accessToken, session)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LogApiConnector"/> class using a remote connection and
+        /// the given session state.
+        /// </summary>
+        /// <param name="endpoint">The API service endpoint.</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="session">The per-session state. This is the overload a multi-user host wants — the remote path is
+        /// the one that encrypts payloads with the session key.</param>
+        public LogApiConnector(string endpoint, Guid accessToken, ApiSessionContext session) : base(endpoint, accessToken, session)
+        {
+        }
+
     }
 }

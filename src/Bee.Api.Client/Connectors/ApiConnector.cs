@@ -21,8 +21,24 @@ namespace Bee.Api.Client.Connectors
         /// </summary>
         /// <param name="accessToken">The access token.</param>
         protected ApiConnector(Guid accessToken)
+            : this(accessToken, ApiSessionContext.Ambient)
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiConnector"/> class using a local connection
+        /// and the given session state.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="session">
+        /// The per-session state. A host serving several users from one process must give each session
+        /// its own instance; sharing one makes the last login's transmission key overwrite the rest.
+        /// </param>
+        protected ApiConnector(Guid accessToken, ApiSessionContext session)
+        {
+            ArgumentNullException.ThrowIfNull(session);
             AccessToken = accessToken;
+            Session = session;
             Provider = new LocalApiProvider(accessToken);
         }
 
@@ -32,11 +48,29 @@ namespace Bee.Api.Client.Connectors
         /// <param name="endpoint">The API service endpoint.</param>
         /// <param name="accessToken">The access token.</param>
         protected ApiConnector(string endpoint, Guid accessToken)
+            : this(endpoint, accessToken, ApiSessionContext.Ambient)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiConnector"/> class using a remote connection
+        /// and the given session state.
+        /// </summary>
+        /// <param name="endpoint">The API service endpoint.</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="session">
+        /// The per-session state. This is the overload a multi-user host wants: the remote path is the
+        /// one that encrypts payloads, so a shared context there is what locks users out of each other's
+        /// sessions.
+        /// </param>
+        protected ApiConnector(string endpoint, Guid accessToken, ApiSessionContext session)
         {
             if (StringUtilities.IsEmpty(endpoint))
                 throw new ArgumentException("Endpoint cannot be null or empty.", nameof(endpoint));
+            ArgumentNullException.ThrowIfNull(session);
 
             AccessToken = accessToken;
+            Session = session;
             Provider = new RemoteApiProvider(endpoint, accessToken);
         }
 
@@ -46,6 +80,15 @@ namespace Bee.Api.Client.Connectors
         /// Gets or sets the access token.
         /// </summary>
         public Guid AccessToken { get; private set; }
+
+        /// <summary>
+        /// Gets the per-session state this connector reads and writes.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <see cref="ApiSessionContext.Ambient"/> for connectors created through the
+        /// constructors that do not take one, which is what keeps single-user hosts unchanged.
+        /// </remarks>
+        public ApiSessionContext Session { get; } = ApiSessionContext.Ambient;
 
         /// <summary>
         /// Gets or sets the API service provider.
@@ -100,7 +143,7 @@ namespace Bee.Api.Client.Connectors
         /// Read per call rather than captured: a connector instance outlives a sign-in, and a stale
         /// zone would silently shift another user's data (ADR-032 D13).
         /// </remarks>
-        private static string UserTimeZoneId => ApiClientInfo.UserTimeZoneId;
+        private string UserTimeZoneId => Session.UserTimeZoneId;
 
         /// <summary>
         /// Validates the progId and action arguments.
@@ -140,7 +183,7 @@ namespace Bee.Api.Client.Connectors
         /// <see cref="InvalidOperationException"/> with the legacy
         /// <c>"API error: {code} - {message}"</c> format to preserve existing catch logic.
         /// </remarks>
-        private static T FinalizeResponse<T>(JsonRpcResponse response, PayloadFormat actualFormat)
+        private T FinalizeResponse<T>(JsonRpcResponse response, PayloadFormat actualFormat)
         {
             TraceResponse(response);
             if (response.Error != null)
@@ -199,14 +242,14 @@ namespace Bee.Api.Client.Connectors
             }
 
             // If Encrypted is requested but no encryption key is set, downgrade to Encoded to prevent encryption failure.
-            if (format == PayloadFormat.Encrypted && ValueUtilities.IsEmpty(ApiClientInfo.ApiEncryptionKey))
+            if (format == PayloadFormat.Encrypted && ValueUtilities.IsEmpty(Session.ApiEncryptionKey))
             {
                 format = PayloadFormat.Encoded;
             }
 
             if (format != PayloadFormat.Plain)
             {
-                ApiPayloadConverter.TransformTo(request.Params, format, ApiClientInfo.ApiEncryptionKey);
+                ApiPayloadConverter.TransformTo(request.Params, format, Session.ApiEncryptionKey);
             }
 
             return format;
@@ -223,12 +266,12 @@ namespace Bee.Api.Client.Connectors
         /// <item><description><see cref="PayloadFormat.Encoded"/> or <see cref="PayloadFormat.Encrypted"/>: Decode or decrypt the payload.</description></item>
         /// </list>
         /// </param>
-        private static void RestoreResponsePayload(JsonRpcResponse response, PayloadFormat format)
+        private void RestoreResponsePayload(JsonRpcResponse response, PayloadFormat format)
         {
             if (format == PayloadFormat.Plain)
                 return;
 
-            ApiPayloadConverter.RestoreFrom(response.Result!, format, ApiClientInfo.ApiEncryptionKey);
+            ApiPayloadConverter.RestoreFrom(response.Result!, format, Session.ApiEncryptionKey);
         }
 
         /// <summary>
