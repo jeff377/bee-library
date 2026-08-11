@@ -48,7 +48,7 @@
 |------|------|--------|------|
 | P0 | 發版阻擋項（安全 / 發版正確性） | 3 | ✅ 已完成（2026-08-11，SEC-1 / REL-1 / REL-2 全數落地並驗證） |
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
-| P2 | 結構、效能、一致性 | 14 | 🚧 進行中（P-2(a) / CON-2 / CON-4 / **A-4** / **N-5** ✅ 已完成；剩 9 項） |
+| P2 | 結構、效能、一致性 | 14 | 🚧 進行中（9 項已結：P-2(a) / CON-2 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**P-3** / **PERF-2** ❌ 實測後不修；剩 5 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
 | P4 | 觀察／待裁決 | 9 | 📝 擬定中（D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
 
@@ -66,6 +66,10 @@
 | **SEC-3** | API key gate 失效改為可見：停用最後一把金鑰記 error、啟動檢查在非 Development 升為 error | 待 commit | **刻意未做啟動硬失敗**（見下） |
 | **REL-3** | 版號抽為 repo 根 `Version.props`，`src/` 與 `tools/` 共用；`Bee.Cli` 從 4.8.0 併回 4.20.0 | `4575889e` | 雙向實證：兩個方案 clean build 0 警告，`-p:Version=9.9.9` 於 `tools/` 如預期紅在 BEE9002 |
 | **GATE-1** | `WireContractDriftTests` 補防空轉斷言（閉包／註冊數下限 + 四個不同可達路徑的 canary） | 待 commit | 見下方「canary 第一版就抓到我自己的錯誤假設」 |
+| **P-4** | `CompanyRolePermissions` 建構時預建三個索引 | 待 commit | O(\|Grants\|) → O(\|持有角色\|)：200×100 規模由 **23.35 µs → 0.08 µs**，且**不再隨部署規模惡化** |
+| **PERF-3** | `ApiKeyCache` 負向快取縮為 1 分鐘，並更正其論證 | 待 commit | 原註解的理由本身是錯的，見下 |
+| **❌ P-3** | 檔案時間戳 syscall | **實測後不修** | 1.04 µs/次、單次 Save 約 8 µs ≈ 一次 DB 往返的 1–4%。修它要動快取失效語意，風險大於收益 |
+| **❌ PERF-2** | JSON-RPC 派發的四處反射 | **實測後不修** | 四處合計 **0.50 µs/請求**（87% 來自 `GetCustomAttribute`）。整條管線有解密、解壓、反序列化、DB 往返——這是雜訊 |
 | **A-4** | `GlobalEvents` 只在**重新載入**時發事件；`DbConnectionManagerService` 實作 `IDisposable` 退訂 | 待 commit | **原訂修法會打斷檔案變更傳播，已更正**，見下 |
 | **N-5** | `SessionCompanyBinder.Bind` 改為查詢全部完成後才寫入 `SessionInfo` | 待 commit | 窗口由「跨 3 次可能觸 DB 的呼叫」縮為「一串連續賦值」；`ClearCompanyContext` 本來就已是後者，未動 |
 | **P3 其餘 9 項** | DOC-2 / DOC-4 / DOC-5 / DOC-6 / DOC-7 / DOC-11 / DOC-12 / DOC-13 / DOC-14 + Z-4～Z-7 | 待 commit | 公開文件死連結複驗 **0**；`dependency-map` 外部套件表雙語 13 列逐列一致；ADR 狀態行格式 **38/38** 統一 |
@@ -113,6 +117,26 @@
 > 暫存 A-4 / N-5 的改動後跑兩次，同樣 1/2 失敗、同一症狀。屬 `rules/testing.md` 記載的並行 DB 爭用，
 > 但它是 TEST-2 把該類別改用 `SharedDbFixture` 之後才開始參與 process-wide 建 schema / seed 競爭的。
 > **下輪應查根因**（嫌疑：`SharedDatabaseState` 的 seed 在多行程下的爭用），不要只當 flaky 記著。
+
+> **效能四項的實測結論：計畫的診斷四項中兩項高估、一項需加條件。** 這是 PERF-1 教訓的第二次應驗。
+> 對照基準：一次本機 SQL Server 往返約 200–1000 µs。
+>
+> | 項目 | 計畫的描述 | 實測 | 判定 |
+> |---|---|---|---|
+> | P-3 | 「每請求 6–10 次 **syscall**」 | 8 µs／次 Save | ❌ 不修 |
+> | PERF-2 | 「JSON-RPC 反射派發框架的**典型病灶**」 | 0.50 µs／請求 | ❌ 不修 |
+> | P-4 | 「O(\|Grants\|) 且每次配置 HashSet」 | 小型 17 µs、**大型 93 µs** | ⚠️ 條件成立 → 已修 |
+> | PERF-3 | 記憶體而非延遲 | 量測不到 | ✅ 已修 |
+>
+> **「不修」也要寫下來**，否則下一輪體檢會再提一次同樣的東西。
+
+> **PERF-3 真正的缺陷是論證，不是參數。** `ApiKeyCache` 的註解主張負向快取
+> 「keeps a caller probing **random** identifiers from reaching the database on every attempt」——
+> **那不成立**：不重複的 id 無論有沒有負向快取，都各自打一次 DB。對隨機探測而言負向快取
+> 買不到任何保護、卻每次多留一筆條目。它真正省下的是**重複探測同一個 id**（設定錯誤的
+> client 拿著已撤銷金鑰重試），那是窄得多的情形。故保留但縮到政策型別允許的最短（1 分鐘），
+> 並把殘留風險**寫明而非藏起來**：穩態記憶體上限為 探測速率 × 1 分鐘，底層 cache 無 SizeLimit，
+> 探測流量該在邊緣做 rate limit。
 
 **發版步驟進度**（依 `releasing.md`）：① CHANGELOG ✅ ② 版號 ✅ ③ `PublicAPI.Unshipped` → `Shipped` ✅（7 檔、15 筆 `*REMOVED*`，併後行數 7/7 命中預期，clean build 0 警告）④ commit ✅ / **tag ❌ 未打** ⑤ **push ❌ 未推**。
 

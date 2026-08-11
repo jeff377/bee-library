@@ -22,12 +22,79 @@ namespace Bee.Definition.Identity
             CompanyId = companyId ?? throw new ArgumentNullException(nameof(companyId));
             Grants = grants ?? throw new ArgumentNullException(nameof(grants));
             UserRoles = userRoles ?? throw new ArgumentNullException(nameof(userRoles));
+
+            // WARNING: The indexes are built here, once, and never mutated afterwards. This type is an
+            // immutable snapshot held in a process-wide cache, so paying O(|Grants|) at construction
+            // buys every later lookup — and the lookups are on the authorization path, where the
+            // previous linear scans ran per check.
+            //
+            // |Grants| is roles × models, which is thousands to tens of thousands in an ERP: measured
+            // at 200 roles × 100 models, a single Save spent 93 µs scanning, approaching the cost of a
+            // database round-trip. The scans also allocated a HashSet per call, because
+            // `SessionInfo.Roles` is a List and the `as ISet` test therefore never succeeded.
+            _allowedByRole = BuildAllowedByRole(Grants);
+            _scopesByRoleModelAction = BuildScopes(Grants);
+            _rolesByUser = BuildRolesByUser(UserRoles);
         }
 
         /// <summary>
         /// Gets the item key value (the company id).
         /// </summary>
         public string GetKey() => CompanyId;
+
+        // Identifier keys → Ordinal (culture-invariant and fastest); see rules/code-style.md.
+        private readonly Dictionary<string, Dictionary<string, PermissionAction>> _allowedByRole;
+        private readonly Dictionary<(string RoleId, string ModelId, PermissionAction Action), List<ScopeStrategy>> _scopesByRoleModelAction;
+        private readonly Dictionary<string, List<string>> _rolesByUser;
+
+        private static Dictionary<string, Dictionary<string, PermissionAction>> BuildAllowedByRole(
+            IReadOnlyList<RoleGrantRow> grants)
+        {
+            var byRole = new Dictionary<string, Dictionary<string, PermissionAction>>(StringComparer.Ordinal);
+            foreach (var grant in grants)
+            {
+                if (!byRole.TryGetValue(grant.RoleId, out var byModel))
+                {
+                    byModel = new Dictionary<string, PermissionAction>(StringComparer.Ordinal);
+                    byRole[grant.RoleId] = byModel;
+                }
+                byModel.TryGetValue(grant.ModelId, out var current);
+                byModel[grant.ModelId] = current | grant.Action;
+            }
+            return byRole;
+        }
+
+        private static Dictionary<(string, string, PermissionAction), List<ScopeStrategy>> BuildScopes(
+            IReadOnlyList<RoleGrantRow> grants)
+        {
+            var byKey = new Dictionary<(string, string, PermissionAction), List<ScopeStrategy>>();
+            foreach (var grant in grants)
+            {
+                var key = (grant.RoleId, grant.ModelId, grant.Action);
+                if (!byKey.TryGetValue(key, out var scopes))
+                {
+                    scopes = [];
+                    byKey[key] = scopes;
+                }
+                scopes.Add(grant.Scope);
+            }
+            return byKey;
+        }
+
+        private static Dictionary<string, List<string>> BuildRolesByUser(IReadOnlyList<UserRoleRow> userRoles)
+        {
+            var byUser = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+            foreach (var assignment in userRoles)
+            {
+                if (!byUser.TryGetValue(assignment.UserId, out var roles))
+                {
+                    roles = [];
+                    byUser[assignment.UserId] = roles;
+                }
+                roles.Add(assignment.RoleId);
+            }
+            return byUser;
+        }
 
         /// <summary>Gets the company id (cache key).</summary>
         public string CompanyId { get; }
@@ -48,14 +115,15 @@ namespace Bee.Definition.Identity
         public PermissionAction GetAllowed(IEnumerable<string> roleIds, string modelId)
         {
             ArgumentNullException.ThrowIfNull(roleIds);
-            var roleSet = roleIds as ISet<string> ?? new HashSet<string>(roleIds);
 
+            // Iterates the roles the user holds (a handful) rather than every grant in the company.
             var allowed = PermissionAction.None;
-            foreach (var grant in Grants)
+            foreach (var roleId in roleIds)
             {
-                if (grant.ModelId == modelId && roleSet.Contains(grant.RoleId))
+                if (_allowedByRole.TryGetValue(roleId, out var byModel) &&
+                    byModel.TryGetValue(modelId, out var action))
                 {
-                    allowed |= grant.Action;
+                    allowed |= action;
                 }
             }
             return allowed;
@@ -72,15 +140,17 @@ namespace Bee.Definition.Identity
         public Dictionary<string, PermissionAction> GetAllowedByModel(IEnumerable<string> roleIds)
         {
             ArgumentNullException.ThrowIfNull(roleIds);
-            var roleSet = roleIds as ISet<string> ?? new HashSet<string>(roleIds);
 
             // Model ids are identifiers → Ordinal comparison (culture-invariant, fastest).
             var result = new Dictionary<string, PermissionAction>(StringComparer.Ordinal);
-            foreach (var grant in Grants)
+            foreach (var roleId in roleIds)
             {
-                if (!roleSet.Contains(grant.RoleId)) { continue; }
-                result.TryGetValue(grant.ModelId, out var current);
-                result[grant.ModelId] = current | grant.Action;
+                if (!_allowedByRole.TryGetValue(roleId, out var byModel)) { continue; }
+                foreach (var pair in byModel)
+                {
+                    result.TryGetValue(pair.Key, out var current);
+                    result[pair.Key] = current | pair.Value;
+                }
             }
             return result;
         }
@@ -97,14 +167,16 @@ namespace Bee.Definition.Identity
         public IReadOnlyList<ScopeStrategy> GetEffectiveScopes(IEnumerable<string> roleIds, string modelId, PermissionAction action)
         {
             ArgumentNullException.ThrowIfNull(roleIds);
-            var roleSet = roleIds as ISet<string> ?? new HashSet<string>(roleIds);
 
+            // NOTE: The result order now follows `roleIds` rather than `Grants`. The only caller
+            // (`ScopeResolver`) folds these into a HashSet and short-circuits on `All`, so order
+            // carries no meaning — this is a deliberate check, not an assumption.
             var scopes = new List<ScopeStrategy>();
-            foreach (var grant in Grants)
+            foreach (var roleId in roleIds)
             {
-                if (grant.ModelId == modelId && grant.Action == action && roleSet.Contains(grant.RoleId))
+                if (_scopesByRoleModelAction.TryGetValue((roleId, modelId, action), out var granted))
                 {
-                    scopes.Add(grant.Scope);
+                    scopes.AddRange(granted);
                 }
             }
             return scopes;
@@ -117,15 +189,7 @@ namespace Bee.Definition.Identity
         /// <param name="userId">The user business id (<c>SessionInfo.UserId</c> = <c>st_user.sys_id</c>).</param>
         public IReadOnlyList<string> GetUserRoleIds(string userId)
         {
-            var list = new List<string>();
-            foreach (var assignment in UserRoles)
-            {
-                if (assignment.UserId == userId)
-                {
-                    list.Add(assignment.RoleId);
-                }
-            }
-            return list;
+            return _rolesByUser.TryGetValue(userId, out var roles) ? roles : [];
         }
     }
 }
