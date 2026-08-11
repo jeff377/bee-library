@@ -10,16 +10,14 @@ namespace Bee.Analyzers.Serialization
     {
         private static readonly string[] s_metadataNames =
         {
-            SerializationAttributeNames.CollectionBase,
-            SerializationAttributeNames.KeyCollectionBase,
-            SerializationAttributeNames.KeyCollectionBase,
-            SerializationAttributeNames.CollectionBase,
+            SerializationTypeNames.CollectionBase,
+            SerializationTypeNames.KeyCollectionBase,
         };
 
         private static readonly string[] s_itemMetadataNames =
         {
-            SerializationAttributeNames.CollectionItem,
-            SerializationAttributeNames.KeyCollectionItem,
+            SerializationTypeNames.CollectionItem,
+            SerializationTypeNames.KeyCollectionItem,
         };
 
         private readonly ImmutableArray<INamedTypeSymbol> _baseTypes;

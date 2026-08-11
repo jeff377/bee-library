@@ -1,25 +1,15 @@
 namespace Bee.Analyzers.Serialization
 {
     /// <summary>
-    /// Metadata names of the serialization attributes and base types the wire contract rules resolve.
+    /// Metadata names of the framework base types the wire contract rules resolve.
     /// </summary>
     /// <remarks>
     /// Resolved by metadata name rather than referenced directly: the analyzer targets netstandard2.0
     /// and cannot reference the net10.0 framework assemblies, and a consumer that uses none of these
     /// types should see no diagnostics at all rather than have the rules guess.
     /// </remarks>
-    internal static class SerializationAttributeNames
+    internal static class SerializationTypeNames
     {
-        /// <summary>
-        /// The System.Text.Json attribute excluding a property from serialization.
-        /// </summary>
-        public const string JsonIgnoreAttribute = "System.Text.Json.Serialization.JsonIgnoreAttribute";
-
-        /// <summary>
-        /// The XML attribute excluding a member from serialization.
-        /// </summary>
-        public const string XmlIgnoreAttribute = "System.Xml.Serialization.XmlIgnoreAttribute";
-
         /// <summary>
         /// The framework base type for keyed collections.
         /// </summary>
