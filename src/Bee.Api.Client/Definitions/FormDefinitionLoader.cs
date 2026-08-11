@@ -48,13 +48,20 @@ namespace Bee.Api.Client.Definitions
         /// <param name="progId">The program identifier.</param>
         /// <param name="lang">The BCP-47 language code; empty returns the schema unlocalized.</param>
         /// <returns>A schema safe to mutate — the cached instance is never handed out.</returns>
+        /// <remarks>
+        /// WARNING: The blank-language path clones too, and must keep doing so. It used to return the
+        /// cached instance directly, which made the sentence above false for exactly the case that
+        /// reaches it most often: <c>CultureInfo.InvariantCulture.Name</c> is the empty string, so a
+        /// caller passing the current UI culture lands here whenever no culture is set. Callers were
+        /// told the result was safe to mutate and mutated a process-wide shared schema.
+        /// </remarks>
         public async Task<FormSchema> GetLocalizedSchemaAsync(string progId, string lang)
         {
             var raw = await _defineAccess.GetFormSchemaAsync(progId).ConfigureAwait(false);
+            // The client define cache hands back a shared instance; both paths clone before returning.
             if (string.IsNullOrWhiteSpace(lang))
-                return raw;
+                return raw.Clone();
 
-            // The client define cache hands back a shared instance; localization mutates, so clone.
             var schema = raw.Clone();
             var languageService = await BuildLanguageServiceAsync(schema, lang).ConfigureAwait(false);
             new FormSchemaLocalizer(languageService).Localize(schema, lang);

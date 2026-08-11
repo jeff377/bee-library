@@ -48,7 +48,7 @@
 |------|------|--------|------|
 | P0 | 發版阻擋項（安全 / 發版正確性） | 3 | ✅ 已完成（2026-08-11，SEC-1 / REL-1 / REL-2 全數落地並驗證） |
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
-| P2 | 結構、效能、一致性 | 14 | 📝 擬定中（14 項全未動） |
+| P2 | 結構、效能、一致性 | 14 | 🚧 進行中（**P-2(a)** / **CON-2** / **CON-4** ✅ 已完成；剩 11 項） |
 | P3 | 文件漂移與低風險清理 | 13 | 🚧 進行中（DOC-8 / DOC-9 / DOC-10 / **REL-3** ✅ 已完成；剩 9 項） |
 | P4 | 觀察／待裁決 | 9 | 📝 擬定中（D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
 
@@ -66,6 +66,9 @@
 | **SEC-3** | API key gate 失效改為可見：停用最後一把金鑰記 error、啟動檢查在非 Development 升為 error | 待 commit | **刻意未做啟動硬失敗**（見下） |
 | **REL-3** | 版號抽為 repo 根 `Version.props`，`src/` 與 `tools/` 共用；`Bee.Cli` 從 4.8.0 併回 4.20.0 | `4575889e` | 雙向實證：兩個方案 clean build 0 警告，`-p:Version=9.9.9` 於 `tools/` 如預期紅在 BEE9002 |
 | **GATE-1** | `WireContractDriftTests` 補防空轉斷言（閉包／註冊數下限 + 四個不同可達路徑的 canary） | 待 commit | 見下方「canary 第一版就抓到我自己的錯誤假設」 |
+| **P-2(a)** | Unchanged 列不再攜帶兩份相同的值 | `72c5cbc6` | **比計畫記載多一處**：JSON 路徑有同樣缺陷，計畫只點名 MessagePack。連帶反轉一條把缺陷寫成規格的測試 |
+| **CON-2** | `FormTable.RelationFieldReferences` 改 `Lazy<T>`（`ExecutionAndPublication`） | 待 commit | 測試以 32 執行緒並行首次讀取，斷言**拿到同一個實例**（非「都非 null」） |
+| **CON-4** | `FormDefinitionLoader.GetLocalizedSchemaAsync` 空 lang 分支也 `Clone()` | 待 commit | **未加單元測試**，理由見下 |
 | **PERF-1** | 運算式變數表瘦身為「只傳實際引用的變數」 | 待 commit | 前後同一 harness：`ApplyFieldExpressions` **57.2 ms → 12.2 ms（4.7×）**。**修法與計畫原本的判斷不同，見下** |
 | **CON-1** | `ApiSessionContext` 承載兩個 per-session 值；`BeeApiConnectorFactory` 改 scoped | 待 commit | 新增 17 筆公開 API、**零 `*REMOVED*`**；6 個新測試驗「兩個 session 彼此不可見」 |
 | **DOC-1** | `bee-serialization` skill 整份重寫（含 frontmatter description） | 待 commit | 舊版教的 `MessagePackCollectionBase` 等四個型別在 `src/` 宣告數為 **0**；改寫後逐項核對，所有引用的檔案與型別皆存在 |
@@ -88,6 +91,12 @@
 > 而那正是這個退路要服務的族群。因此本輪做的是「不可能忽略」而非「直接擋死」：
 > **runtime 降級的訊號**（本輪新發現、原本完全靜默的那一半）已補上，啟動檢查升為 error。
 > 硬失敗應放在 major 版並附 opt-out，仍列 P1 未結。
+
+> **CON-4 沒有加單元測試，這是刻意的。** 要替它寫測試需要替換 `ClientDefineAccess`，
+> 而它是具象類別、`GetFormSchemaAsync` 非 `virtual`，建構又需要真的 `SystemApiConnector`。
+> 把該方法改成 `virtual` 只為了讓測試能替身，是**為測試而改公開表面**（且 non-virtual → virtual
+> 屬二進位破壞性）。改動本身是一行、語意自明（回傳 clone 而非共用實例），故以 code review 為準。
+> 若日後 `ClientDefineAccess` 因其他理由抽介面，再補測試。
 
 **發版步驟進度**（依 `releasing.md`）：① CHANGELOG ✅ ② 版號 ✅ ③ `PublicAPI.Unshipped` → `Shipped` ✅（7 檔、15 筆 `*REMOVED*`，併後行數 7/7 命中預期，clean build 0 警告）④ commit ✅ / **tag ❌ 未打** ⑤ **push ❌ 未推**。
 
