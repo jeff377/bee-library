@@ -76,6 +76,13 @@ namespace Bee.Api.Core.JsonRpc
         /// <summary>
         /// Executes an API method.
         /// </summary>
+        /// <remarks>
+        /// This blocks on the asynchronous path. Every <c>await</c> it reaches uses
+        /// <c>ConfigureAwait(false)</c>, so it does not deadlock on a host with a
+        /// <see cref="System.Threading.SynchronizationContext"/> — but a business object that
+        /// resumes on the captured context would reintroduce that. Prefer
+        /// <see cref="ExecuteAsync"/> from any asynchronous caller.
+        /// </remarks>
         /// <param name="request">The JSON-RPC request model.</param>
         public JsonRpcResponse Execute(JsonRpcRequest request)
         {
@@ -125,7 +132,8 @@ namespace Bee.Api.Core.JsonRpc
                 ApiPayloadConverter.RestoreFrom(request.Params, format, apiEncryptionKey);
 
                 // Invoke the method and convert the result.
-                var value = await InvokeMethodAsync(businessObject, method, request.Params.Value);
+                var value = await InvokeMethodAsync(businessObject, method, request.Params.Value)
+                    .ConfigureAwait(false);
                 value = ApiOutputConverter.Convert(value!);
 
                 response.Result = new JsonRpcResult { Value = value };

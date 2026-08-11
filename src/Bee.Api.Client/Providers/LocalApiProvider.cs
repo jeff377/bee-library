@@ -44,7 +44,7 @@ namespace Bee.Api.Client.Providers
                     "JsonRpcExecutor is not registered in ApiClientInfo.LocalServiceProvider.");
             executor.AccessToken = AccessToken;
             executor.IsLocalCall = true;
-            return await executor.ExecuteAsync(request);
+            return await executor.ExecuteAsync(request).ConfigureAwait(false);
         }
     }
 }

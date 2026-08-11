@@ -50,7 +50,7 @@
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
 | P2 | 結構、效能、一致性 | 14 | 🚧 進行中（11 項已結：P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**DEP-1** / **P-3** / **PERF-2** ❌ 評估後不修；剩 3 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
-| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2**(4/7) / **SEC-4~10**(部分) ✅ 已落地；其餘未動） |
+| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2**(4/7) / **SEC-4~10**(部分) / **CON-5** ✅ 已落地；其餘未動） |
 
 ### 已完成項目逐條（供對帳，勿只看階段狀態）
 
@@ -85,6 +85,7 @@
 | **TEST-2** | `ApiAspNetCoreTests` / `ApiKeyGateControllerTests` 改用 `SharedDbFixture` | 待 commit | 並在類別 doc 記下第三條觸發路徑（API key gate read-through）與「為何先前是綠的」 |
 | **TEST-3** | `Bee.Definition.UnitTests` 新增 `ProcessWideStateCollection`，序列化三個衝突類別 | 待 commit | 該組件先前既無 `[Collection]` 也無 `DisableTestParallelization` |
 | **GATE-2** | 8 個手寫 formatter 改實作 `IWireContract`，移除套套邏輯的 `WireMemberCount` | 待 commit | **實證**：在 `SortField` 加一個屬性 → drift 測試立刻紅（`型別上有但未註冊 → Probe`）。同一個 probe 在修正前不會被抓到 |
+| **CON-5** | 5 處補 `ConfigureAwait(false)`，並於 `JsonRpcExecutor.Execute` 註明阻塞語意 | 待 commit | **先做了多行感知的全量複查**：逐行 grep 會報 40+ 筆，但多行 `await` 的 `.ConfigureAwait(false)` 在續行上。真正缺的就是計畫點名的 5 處。`Bee.UI.Avalonia` / `Bee.Web.Blazor.Server` **刻意不加**（UI 需要回到 UI 執行緒），ASP.NET Core controller 4 處亦不加（無 SynchronizationContext） |
 | **SEC-4~10** | `EXEC('...')` 內嵌 identifier 補上 literal escaping；三處空 catch 收窄；工廠面移除 `isLocalCall = true` 預設 | 待 commit | **兩處與計畫不同，見下** |
 | **D-7** | 移除 `AuditLogOptions.ExecEnabled`，並更正架構總覽的軸數（雙語） | 待 commit | 五個兄弟旗標**逐一驗過各有消費點**，只有它零讀取。連帶清掉 `apps/Bee.Northwind/Define/SystemSettings.xml` 內那一行 |
 | **D-8** | 移除 5 個零消費者介面、`ApiCallContext.ShouldValidateEncoding`、`ClientInfoTestScope` | 待 commit | **`IFormCommandBuilder` / `IParameterCollector` 不在移除之列**——它們確實被當成型別消費（前者是 `IDialectFactory.CreateFormCommandBuilder` 的回傳型別）。**`[LocalOnlyFact]` / `[LocalOnlyTheory]` 亦保留**：`rules/testing.md` 已明文記載「零使用但情境仍成立」的保留決定，計畫把它們列入死碼是與該決定衝突 |

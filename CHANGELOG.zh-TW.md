@@ -26,6 +26,7 @@
 ### 修正
 
 - `Bee.Api.Client` / `Bee.Web.Blazor.Server`：單一 process 服務多個使用者時，不再互相覆蓋傳輸金鑰。`ApiClientInfo.ApiEncryptionKey` 與 `UserTimeZoneId` 原本是 process-wide static，因此在 `BeeBlazorProviderMode.Remote` 下最後登入者勝出，先前使用者的加密請求會解不開、直到重新登入。`BeeApiConnectorFactory` 改註冊為 scoped，每個 circuit 拿到自己的 context。`Local` 模式從未受影響。`ApiClientInfo.ApiKey` 刻意維持 static —— 它識別的是應用程式，不是使用者。
+- `Bee.Db` / `Bee.Api.Client` / `Bee.Api.Core`：五處函式庫內的 `await` 補上 `ConfigureAwait(false)`，與周邊程式碼本來就在遵循的慣例一致。它們正位於 UI 宿主經 `JsonRpcExecutor.Execute` 觸達的路徑上，而該方法會阻塞在非同步核心上——在那裡回到被捕捉的 `SynchronizationContext` 就是教科書死鎖。`Execute` 現在於文件註明它會阻塞，並指引非同步呼叫端改用 `ExecuteAsync`。
 - `Bee.UI.Core` / `Bee.ObjectCaching` / `Bee.Base`：三處吞掉所有例外的 `catch` 改為只捕捉它們原本要處理的失敗。client 的端點探測把任何錯誤都當成「伺服器連不上」並把使用者送去連線設定畫面；快取的檔案監看 token 把任何錯誤都當成「無已知寫入時間」；`DataTable` 的 JSON 轉換器把任何錯誤都當成「原值放行」。非預期的錯誤現在會浮現，而不是被報成別的東西。
 - `Bee.ObjectCaching`：同一個快取 key 的並行 miss 現在只會產生一個物件，而不是每個呼叫端各一個。`ObjectCache<T>.Get` 與 `KeyObjectCache<T>.Get` 原本是 read-create-write，而底層 provider 並未提供原子的 get-or-create，因此被多個請求同時觸達的冷 key 會被建立多次——每次各自反序列化同一份定義檔、或各發一次相同查詢。更嚴重的是重複實例：`SessionInfo` 正是這樣快取的，經其中一份做的 `EnterCompany` 對持有另一份的請求完全不可見；而以參考相等判斷「是否重新載入」的解析器，也會把重複實例讀成一次從未發生的變更。去重以 key 為粒度、且只在建立進行中存在，因此以 access token 為 key 的快取不會累積任何東西。
 - `Bee.Api.Core` / `Bee.Base`：未變更的資料列不再在 wire 上攜帶兩份相同的值。MessagePack 與 JSON 兩個寫入端都對 `Unchanged` 列同時送出 Current 與 Original，而兩個讀取端都只由 Current 還原 —— 且 `DataFormRepository.GetData` 回傳前呼叫 `AcceptChanges()`，因此每一筆從資料庫讀出的列都是 Unchanged。讀取的 payload 與序列化成本因此減半。

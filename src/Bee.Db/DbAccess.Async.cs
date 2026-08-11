@@ -256,7 +256,7 @@ namespace Bee.Db
         public async Task<int> ExecuteNonQueryAsync(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.NonQuery, commandText, values);
-            return (await ExecuteAsync(spec)).RowsAffected;
+            return (await ExecuteAsync(spec).ConfigureAwait(false)).RowsAffected;
         }
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace Bee.Db
         public async Task<object?> ExecuteScalarAsync(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.Scalar, commandText, values);
-            return (await ExecuteAsync(spec)).Scalar;
+            return (await ExecuteAsync(spec).ConfigureAwait(false)).Scalar;
         }
 
         /// <summary>
@@ -280,7 +280,7 @@ namespace Bee.Db
         public async Task<DataTable?> ExecuteDataTableAsync(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.DataTable, commandText, values);
-            return (await ExecuteAsync(spec)).Table;
+            return (await ExecuteAsync(spec).ConfigureAwait(false)).Table;
         }
 
         #endregion
