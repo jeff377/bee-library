@@ -23,7 +23,7 @@ namespace Bee.Business.UnitTests
         {
             var token = Guid.NewGuid();
 
-            var obj = Factory.CreateBusinessObject(token, SysProgIds.System);
+            var obj = Factory.CreateBusinessObject(token, SysProgIds.System, isLocalCall: true);
 
             var bo = Assert.IsType<SystemBusinessObject>(obj);
             Assert.Equal(token, bo.AccessToken);
@@ -46,7 +46,7 @@ namespace Bee.Business.UnitTests
         {
             var token = Guid.NewGuid();
 
-            var obj = Factory.CreateBusinessObject(token, "prog01");
+            var obj = Factory.CreateBusinessObject(token, "prog01", isLocalCall: true);
 
             var bo = Assert.IsType<FormBusinessObject>(obj);
             Assert.Equal(token, bo.AccessToken);

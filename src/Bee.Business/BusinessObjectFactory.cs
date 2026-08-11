@@ -57,7 +57,7 @@ namespace Bee.Business
         /// resolved type belongs to — the same property that lets COM+ expose a single
         /// <c>CoCreateInstance</c>.
         /// </remarks>
-        public object CreateBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
+        public object CreateBusinessObject(Guid accessToken, string progId, bool isLocalCall)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(progId);
 

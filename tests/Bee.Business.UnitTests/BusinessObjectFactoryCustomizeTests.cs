@@ -23,7 +23,7 @@ namespace Bee.Business.UnitTests
             sessions.Add(new SessionInfo { AccessToken = token, CustomizeId = "acme" });
             var factory = CreateFactory(resolver, sessions);
 
-            factory.CreateBusinessObject(token, "P001");
+            factory.CreateBusinessObject(token, "P001", isLocalCall: true);
 
             Assert.Equal("acme", resolver.LastCustomizeId);
             Assert.Equal("P001", resolver.LastProgId);
@@ -39,7 +39,7 @@ namespace Bee.Business.UnitTests
             sessions.Add(new SessionInfo { AccessToken = token, CustomizeId = "acme" });
             var factory = CreateFactory(resolver, sessions);
 
-            var bo = factory.CreateBusinessObject(token, "P001");
+            var bo = factory.CreateBusinessObject(token, "P001", isLocalCall: true);
 
             Assert.IsType<TenantFormBo>(bo);
         }
@@ -56,7 +56,7 @@ namespace Bee.Business.UnitTests
             sessions.Add(new SessionInfo { AccessToken = token });
             var factory = CreateFactory(resolver, sessions);
 
-            factory.CreateBusinessObject(token, "P001");
+            factory.CreateBusinessObject(token, "P001", isLocalCall: true);
 
             Assert.Equal(string.Empty, resolver.LastCustomizeId);
         }
@@ -69,7 +69,7 @@ namespace Bee.Business.UnitTests
             var sessions = new StubSessionInfoService();
             var factory = CreateFactory(resolver, sessions);
 
-            factory.CreateBusinessObject(Guid.Empty, "P001");
+            factory.CreateBusinessObject(Guid.Empty, "P001", isLocalCall: true);
 
             Assert.Equal(string.Empty, resolver.LastCustomizeId);
             Assert.Equal(0, sessions.GetCallCount);
@@ -83,7 +83,7 @@ namespace Bee.Business.UnitTests
             var sessions = new StubSessionInfoService(); // 未註冊任何 session
             var factory = CreateFactory(resolver, sessions);
 
-            var exception = Record.Exception(() => factory.CreateBusinessObject(Guid.NewGuid(), "P001"));
+            var exception = Record.Exception(() => factory.CreateBusinessObject(Guid.NewGuid(), "P001", isLocalCall: true));
 
             Assert.Null(exception);
             Assert.Equal(string.Empty, resolver.LastCustomizeId);

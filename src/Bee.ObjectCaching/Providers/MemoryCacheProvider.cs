@@ -155,8 +155,14 @@ namespace Bee.ObjectCaching.Providers
 
             private static DateTime GetWriteTime(string path)
             {
+                // A watched file that cannot be stat'ed is treated as "no known write time", which
+                // makes the token compare equal and the entry stay cached. Only the failures that
+                // mean exactly that are swallowed; anything else is a real fault and propagates.
                 try { return File.GetLastWriteTimeUtc(path); }
-                catch { return DateTime.MinValue; }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+                {
+                    return DateTime.MinValue;
+                }
             }
 
             public bool HasChanged

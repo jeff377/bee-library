@@ -131,7 +131,10 @@ namespace Bee.Db.Providers.SqlServer
         {
             string tableLiteral = SqlSchemaSyntax.EscapeSqlString(tableName);
             string columnLiteral = SqlSchemaSyntax.EscapeSqlString(columnName);
-            string quotedTable = SqlSchemaSyntax.QuoteName(tableName);
+            // WARNING: the quoted identifier is emitted **inside** an EXEC('...') string literal,
+            // so it needs the literal escaping too — bracket-quoting alone does not neutralise a
+            // single quote. The two literals above already do this; this one is the same context.
+            string quotedTableLiteral = SqlSchemaSyntax.EscapeSqlString(SqlSchemaSyntax.QuoteName(tableName));
             var sb = new StringBuilder();
             sb.AppendLine("DECLARE @df_name NVARCHAR(256);");
             sb.AppendLine("SELECT @df_name = dc.name");
@@ -141,7 +144,7 @@ namespace Bee.Db.Providers.SqlServer
                 $"WHERE dc.parent_object_id = OBJECT_ID(N'{tableLiteral}') AND c.name = N'{columnLiteral}';");
             sb.AppendLine("IF @df_name IS NOT NULL");
             sb.Append(CultureInfo.InvariantCulture,
-                $"    EXEC('ALTER TABLE {quotedTable} DROP CONSTRAINT [' + @df_name + ']');");
+                $"    EXEC('ALTER TABLE {quotedTableLiteral} DROP CONSTRAINT [' + @df_name + ']');");
             return sb.ToString();
         }
 

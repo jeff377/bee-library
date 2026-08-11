@@ -6,11 +6,16 @@
 
 ## [Unreleased]
 
+### 安全性
+
+- `Bee.Db`：SQL Server「移除欄位 DEFAULT 條件約束」的批次，現在會對內嵌的資料表識別碼做字串常值跳脫。該語句經 `EXEC('...')` 執行，因此僅用中括號引號並不能中和名稱中的單引號——同一個方法內相鄰的兩個常值本來就有做，漏的是這一處。僅能經由結構升級觸達，而那是 `LocalOnly` 路徑。
+
 ### 破壞性變更
 
 - `Bee.Definition`：移除 `AuditLogOptions.ExecEnabled`。它是已出貨的設定合約，但框架內沒有任何讀取點——它所宣告的執行軸從未實作，部署者讀它的 XML doc 會以為有一個實際上什麼都不做的開關生效。它的五個兄弟旗標各有真正的消費點。架構總覽的「六軸資料軌跡」一併更正為五軸，那本來就是它實際列出的數量。
 - `Bee.Db`：移除 `Dml.IFromBuilder`、`ILimitBuilder`、`ISelectBuilder`、`ISortBuilder`、`IWhereBuilder`。五者各只有一個實作，且沒有任何消費端以介面型別引用它們，因此實作它們達不到任何效果。具象 builder 與其成員維持不變。`IFormCommandBuilder` 與 `IParameterCollector` 保留——那兩個確實被當成型別消費。
 - `Bee.Api.Core`：移除 `Messages.ApiCallContext.ShouldValidateEncoding`——已出貨、零呼叫端的計算屬性。它取反的 `IsLocalCall` 維持不變。
+- `Bee.Definition` / `Bee.Business`：`IBusinessObjectFactory.CreateBusinessObject` 與 `CreateFormBO` / `CreateSystemBO` / `CreateLogBO` 擴充方法不再把 `isLocalCall` 預設為 `true`。本地呼叫會直接跳過 `ApiAccessValidator`，因此兩參數的寫法會靜默產生一個不做任何存取檢查的商業物件——而那正是自行撰寫 dispatcher 的宿主最先會寫出來的形式。呼叫端現在必須言明自己在該邊界的哪一側。商業物件的建構子暫時保留預設值：直接 `new` 比呼叫工廠更像刻意行為，且改動它會波及每一處直接具現化。
 - `Bee.Api.Core`：移除 `Messages.ApiErrorInfo`（10 筆公開 API）。wire 上的錯誤形狀早已由 `JsonRpcError` 取代；該型別在框架內零呼叫端，僅存的生命跡象是一個「建構它、再把欄位讀回來」的測試——足以讓它在覆蓋率報告上顯示為已測試，但證不到有人在用。它另被註冊為 wire contract，卻從 wire 型別閉包到不了，因此漂移閘門也沒有標記它。
 - `Bee.Definition` / `Bee.ObjectCaching` / `Bee.Base`：三個公開型別改名，避開宿主本來就會 `using` 到的同名型別。`Bee.Definition.Identity.IAuthorizationService` 改為 `ICompanyAuthorizationService`、其實作 `Bee.ObjectCaching.Services.AuthorizationService` 改為 `CompanyAuthorizationService` —— 舊名撞 `Microsoft.AspNetCore.Authorization.IAuthorizationService`，而 ASP.NET Core 宿主預設就有它。`Bee.Base.Tracing.TraceListener` 改為 `TraceDispatcher`，舊名撞 `System.Diagnostics.TraceListener`。兩處撞名都以 `CS0104` 現形在「消費端註冊框架服務」那段程式碼，因為那正是同時 `using` 兩邊命名空間的唯一位置。**沒有 type forward。** 新名也讓它與 `IDeploymentAuthorizationService` 的對照讀得出來：一個在公司內授權，一個對整套安裝授權。`SysInfo.TraceListener` 與 `ITraceListener` 維持原名 —— 它們並不撞名。
 
@@ -21,6 +26,7 @@
 ### 修正
 
 - `Bee.Api.Client` / `Bee.Web.Blazor.Server`：單一 process 服務多個使用者時，不再互相覆蓋傳輸金鑰。`ApiClientInfo.ApiEncryptionKey` 與 `UserTimeZoneId` 原本是 process-wide static，因此在 `BeeBlazorProviderMode.Remote` 下最後登入者勝出，先前使用者的加密請求會解不開、直到重新登入。`BeeApiConnectorFactory` 改註冊為 scoped，每個 circuit 拿到自己的 context。`Local` 模式從未受影響。`ApiClientInfo.ApiKey` 刻意維持 static —— 它識別的是應用程式，不是使用者。
+- `Bee.UI.Core` / `Bee.ObjectCaching` / `Bee.Base`：三處吞掉所有例外的 `catch` 改為只捕捉它們原本要處理的失敗。client 的端點探測把任何錯誤都當成「伺服器連不上」並把使用者送去連線設定畫面；快取的檔案監看 token 把任何錯誤都當成「無已知寫入時間」；`DataTable` 的 JSON 轉換器把任何錯誤都當成「原值放行」。非預期的錯誤現在會浮現，而不是被報成別的東西。
 - `Bee.ObjectCaching`：同一個快取 key 的並行 miss 現在只會產生一個物件，而不是每個呼叫端各一個。`ObjectCache<T>.Get` 與 `KeyObjectCache<T>.Get` 原本是 read-create-write，而底層 provider 並未提供原子的 get-or-create，因此被多個請求同時觸達的冷 key 會被建立多次——每次各自反序列化同一份定義檔、或各發一次相同查詢。更嚴重的是重複實例：`SessionInfo` 正是這樣快取的，經其中一份做的 `EnterCompany` 對持有另一份的請求完全不可見；而以參考相等判斷「是否重新載入」的解析器，也會把重複實例讀成一次從未發生的變更。去重以 key 為粒度、且只在建立進行中存在，因此以 access token 為 key 的快取不會累積任何東西。
 - `Bee.Api.Core` / `Bee.Base`：未變更的資料列不再在 wire 上攜帶兩份相同的值。MessagePack 與 JSON 兩個寫入端都對 `Unchanged` 列同時送出 Current 與 Original，而兩個讀取端都只由 Current 還原 —— 且 `DataFormRepository.GetData` 回傳前呼叫 `AcceptChanges()`，因此每一筆從資料庫讀出的列都是 Unchanged。讀取的 payload 與序列化成本因此減半。
 - `Bee.Definition`：運算式求值約快 4.7 倍。先前每次求值都把整列的所有欄位交給引擎，而非運算式實際引用的那幾個，成本因此與**欄數**成正比、與運算式無關。實測 30 欄 / 5 計算欄 / 1000 列：57.2 ms → 12.2 ms。

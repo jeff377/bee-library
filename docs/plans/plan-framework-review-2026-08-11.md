@@ -50,7 +50,7 @@
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
 | P2 | 結構、效能、一致性 | 14 | 🚧 進行中（11 項已結：P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**DEP-1** / **P-3** / **PERF-2** ❌ 評估後不修；剩 3 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
-| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2**(4/7) ✅ 已落地；其餘未動） |
+| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2**(4/7) / **SEC-4~10**(部分) ✅ 已落地；其餘未動） |
 
 ### 已完成項目逐條（供對帳，勿只看階段狀態）
 
@@ -85,6 +85,7 @@
 | **TEST-2** | `ApiAspNetCoreTests` / `ApiKeyGateControllerTests` 改用 `SharedDbFixture` | 待 commit | 並在類別 doc 記下第三條觸發路徑（API key gate read-through）與「為何先前是綠的」 |
 | **TEST-3** | `Bee.Definition.UnitTests` 新增 `ProcessWideStateCollection`，序列化三個衝突類別 | 待 commit | 該組件先前既無 `[Collection]` 也無 `DisableTestParallelization` |
 | **GATE-2** | 8 個手寫 formatter 改實作 `IWireContract`，移除套套邏輯的 `WireMemberCount` | 待 commit | **實證**：在 `SortField` 加一個屬性 → drift 測試立刻紅（`型別上有但未註冊 → Probe`）。同一個 probe 在修正前不會被抓到 |
+| **SEC-4~10** | `EXEC('...')` 內嵌 identifier 補上 literal escaping；三處空 catch 收窄；工廠面移除 `isLocalCall = true` 預設 | 待 commit | **兩處與計畫不同，見下** |
 | **D-7** | 移除 `AuditLogOptions.ExecEnabled`，並更正架構總覽的軸數（雙語） | 待 commit | 五個兄弟旗標**逐一驗過各有消費點**，只有它零讀取。連帶清掉 `apps/Bee.Northwind/Define/SystemSettings.xml` 內那一行 |
 | **D-8** | 移除 5 個零消費者介面、`ApiCallContext.ShouldValidateEncoding`、`ClientInfoTestScope` | 待 commit | **`IFormCommandBuilder` / `IParameterCollector` 不在移除之列**——它們確實被當成型別消費（前者是 `IDialectFactory.CreateFormCommandBuilder` 的回傳型別）。**`[LocalOnlyFact]` / `[LocalOnlyTheory]` 亦保留**：`rules/testing.md` 已明文記載「零使用但情境仍成立」的保留決定，計畫把它們列入死碼是與該決定衝突 |
 | **D-6** | 移除 `ApiErrorInfo` 整型別與其 wire 註冊、佔位測試 | 待 commit | **實際是 10 筆公開 API，不是計畫寫的 11 筆**。移除後 `Bee.Api.Core.UnitTests` 由 764 降為 761（正好是那三個佔位測試）|
@@ -98,6 +99,27 @@
 > 不是以物件形式，因此不在閉包內。這也說明下限斷言為何不能只寫一個數字：數字擋得住「掉到只剩
 > `ExtraRoots`」，擋不住「某一條可達路徑斷掉」。現行四個 canary 刻意取自不同路徑（訊息命名空間
 > 的根、契約命名空間的根、掛在 `ApiMessageBase` 上每個訊息都會經過的集合、多型子型別）。
+
+> **SEC-4~10 有兩處與計畫不同，都是實作時才看清的。**
+>
+> 1. **空 catch 的收窄第一版收得太窄，被測試當場擋下。** 我原本依「網路探測」的直覺，
+>    在 `ClientInfo.InitializeConnectAsync` 只捕 `HttpRequestException` / `SocketException`
+>    這類傳輸例外 —— 但這條路徑實際擲的是**框架自己的詞彙**：`ApiConnectValidator` 把
+>    「端點連不上」報成 `InvalidOperationException`、把「端點是空的」報成 `ArgumentException`，
+>    6 個測試立刻紅。教訓與 GATE-1 的 canary 同型：**收窄 catch 前要先確定該路徑實際擲什麼，
+>    不能照例外的「類別語意」推**。
+> 2. **`isLocalCall = true` 只改工廠面，商業物件建構子維持原樣。** 計畫點名的是
+>    `IBusinessObjectFactory.cs:20`，實作時發現 `BusinessObject` / `FormBusinessObject` /
+>    `SystemBusinessObject` / `LogBusinessObject` 四個建構子有同樣的預設值，但改它們要動
+>    **約 80 個呼叫點**（含 `apps/` 與 `samples/` 的子類 `: base(...)`）。判準：直接 `new` 一個
+>    BO 比呼叫工廠更像刻意行為，而工廠才是宿主自訂 dispatcher 會走的路。**這是刻意的範圍
+>    邊界，不是遺漏**——建構子那半留待獨立決策。
+>
+> **帳號鎖定僅以 userId 為 key（DoS + password spraying）本輪未做。** 它需要把 client IP
+> 送進登入路徑，而目前 IP 只存在於 `ApiServiceController` 的異常稽核那一處
+> （`HttpContext.Connection.RemoteIpAddress`），完全沒有流到 BO 層；再加上
+> `ILoginAttemptTracker` 介面與設定都要改。那是一個功能，不是 hardening 小項，硬塞進本批
+> 只會做出一個擋不住 DoS 的半套。
 
 > **M-1 的新名與計畫建議的不同。** 計畫建議 `IPermissionService`，實作時沒有採用：`Permission*`
 > 在本 repo 已被 `PermissionAction` / `IRolePermissionService` / 權限模型佔用，再加一個

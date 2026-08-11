@@ -5,6 +5,7 @@ using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Definition.Identity;
 using Bee.Definition.Settings;
+using System.Net.Sockets;
 using System.Reflection;
 
 namespace Bee.UI.Core
@@ -339,8 +340,14 @@ namespace Bee.UI.Core
                 await SystemApiConnector.InitializeAsync().ConfigureAwait(false);
                 return true;
             }
-            catch
+            catch (Exception ex) when (ex is InvalidOperationException or ArgumentException
+                or OperationCanceledException or IOException or SocketException or UriFormatException)
             {
+                // Returning false sends the caller to the connection-setup view, so only "the
+                // endpoint is missing, malformed or unreachable" belongs here. The first two entries
+                // are the vocabulary this path actually raises — `ApiConnectValidator` reports an
+                // unreachable endpoint as `InvalidOperationException` and an empty one as
+                // `ArgumentException`; the rest cover the transport failures underneath it.
                 return false;
             }
         }

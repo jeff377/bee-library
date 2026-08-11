@@ -34,7 +34,7 @@ namespace Bee.Business
             this IBusinessObjectFactory factory,
             Guid accessToken,
             string progId,
-            bool isLocalCall = true)
+            bool isLocalCall)
         {
             ArgumentNullException.ThrowIfNull(factory);
             return (IFormBusinessObject)factory.CreateBusinessObject(accessToken, progId, isLocalCall);
@@ -49,7 +49,7 @@ namespace Bee.Business
         public static ISystemBusinessObject CreateSystemBO(
             this IBusinessObjectFactory factory,
             Guid accessToken,
-            bool isLocalCall = true)
+            bool isLocalCall)
         {
             ArgumentNullException.ThrowIfNull(factory);
             return (ISystemBusinessObject)factory.CreateBusinessObject(accessToken, SysProgIds.System, isLocalCall);
@@ -64,7 +64,7 @@ namespace Bee.Business
         public static ILogBusinessObject CreateLogBO(
             this IBusinessObjectFactory factory,
             Guid accessToken,
-            bool isLocalCall = true)
+            bool isLocalCall)
         {
             ArgumentNullException.ThrowIfNull(factory);
             return (ILogBusinessObject)factory.CreateBusinessObject(accessToken, SysProgIds.AuditLog, isLocalCall);

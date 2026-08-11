@@ -16,7 +16,11 @@ namespace Bee.Definition
         /// </summary>
         /// <param name="accessToken">The access token.</param>
         /// <param name="progId">The program ID.</param>
-        /// <param name="isLocalCall">Indicates whether the call originates from a local source.</param>
-        object CreateBusinessObject(Guid accessToken, string progId, bool isLocalCall = true);
+        /// <param name="isLocalCall">
+        /// Indicates whether the call originates from a local source. There is deliberately no
+        /// default: a local call bypasses <c>ApiAccessValidator</c> entirely, so the caller must
+        /// state which side of that boundary it is on rather than inherit the permissive value.
+        /// </param>
+        object CreateBusinessObject(Guid accessToken, string progId, bool isLocalCall);
     }
 }

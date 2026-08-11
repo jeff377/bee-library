@@ -78,7 +78,7 @@ namespace Bee.Api.Client.UnitTests.Customization
             using var scope = await TenantScope.EnterAsync(this, TenantCustomizationFixture.CustomizeId);
 
             var bo = _fx.GetRequiredService<IBusinessObjectFactory>()
-                .CreateBusinessObject(scope.AccessToken, TenantCustomizationFixture.ProgId);
+                .CreateBusinessObject(scope.AccessToken, TenantCustomizationFixture.ProgId, isLocalCall: true);
 
             Assert.IsType<TenantCustomerBusinessObject>(bo);
         }
@@ -139,7 +139,7 @@ namespace Bee.Api.Client.UnitTests.Customization
             using var scope = await TenantScope.EnterAsync(this, TenantCustomizationFixture.UncustomizedId);
 
             var bo = _fx.GetRequiredService<IBusinessObjectFactory>()
-                .CreateBusinessObject(scope.AccessToken, TenantCustomizationFixture.ProgId);
+                .CreateBusinessObject(scope.AccessToken, TenantCustomizationFixture.ProgId, isLocalCall: true);
 
             Assert.IsType<FormBusinessObject>(bo);
         }
@@ -197,7 +197,7 @@ namespace Bee.Api.Client.UnitTests.Customization
             try
             {
                 var bo = _fx.GetRequiredService<IBusinessObjectFactory>()
-                    .CreateBusinessObject(accessToken, TenantCustomizationFixture.ProgId);
+                    .CreateBusinessObject(accessToken, TenantCustomizationFixture.ProgId, isLocalCall: true);
 
                 Assert.IsType<FormBusinessObject>(bo);
             }

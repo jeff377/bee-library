@@ -1,1 +1,9 @@
 #nullable enable
+*REMOVED*Bee.Business.BusinessObjectFactory.CreateBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall = true) -> object!
+*REMOVED*static Bee.Business.BusinessObjectFactoryExtensions.CreateFormBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, string! progId, bool isLocalCall = true) -> Bee.Business.Form.IFormBusinessObject!
+*REMOVED*static Bee.Business.BusinessObjectFactoryExtensions.CreateLogBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.AuditLog.ILogBusinessObject!
+*REMOVED*static Bee.Business.BusinessObjectFactoryExtensions.CreateSystemBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.System.ISystemBusinessObject!
+Bee.Business.BusinessObjectFactory.CreateBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall) -> object!
+static Bee.Business.BusinessObjectFactoryExtensions.CreateFormBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, string! progId, bool isLocalCall) -> Bee.Business.Form.IFormBusinessObject!
+static Bee.Business.BusinessObjectFactoryExtensions.CreateLogBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall) -> Bee.Business.AuditLog.ILogBusinessObject!
+static Bee.Business.BusinessObjectFactoryExtensions.CreateSystemBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall) -> Bee.Business.System.ISystemBusinessObject!

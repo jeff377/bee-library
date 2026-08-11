@@ -24,7 +24,7 @@ namespace Bee.Business.UnitTests
         {
             var token = Guid.NewGuid();
 
-            IFormBusinessObject bo = Factory.CreateFormBO(token, "prog01");
+            IFormBusinessObject bo = Factory.CreateFormBO(token, "prog01", isLocalCall: true);
 
             Assert.NotNull(bo);
             Assert.IsType<FormBusinessObject>(bo);
@@ -45,7 +45,7 @@ namespace Bee.Business.UnitTests
         {
             var token = Guid.NewGuid();
 
-            ISystemBusinessObject bo = Factory.CreateSystemBO(token);
+            ISystemBusinessObject bo = Factory.CreateSystemBO(token, isLocalCall: true);
 
             Assert.NotNull(bo);
             Assert.IsType<SystemBusinessObject>(bo);
@@ -65,7 +65,7 @@ namespace Bee.Business.UnitTests
         public void CreateFormBO_NullFactory_Throws()
         {
             IBusinessObjectFactory? factory = null;
-            Assert.Throws<ArgumentNullException>(() => factory!.CreateFormBO(Guid.NewGuid(), "prog01"));
+            Assert.Throws<ArgumentNullException>(() => factory!.CreateFormBO(Guid.NewGuid(), "prog01", isLocalCall: true));
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace Bee.Business.UnitTests
         public void CreateSystemBO_NullFactory_Throws()
         {
             IBusinessObjectFactory? factory = null;
-            Assert.Throws<ArgumentNullException>(() => factory!.CreateSystemBO(Guid.NewGuid()));
+            Assert.Throws<ArgumentNullException>(() => factory!.CreateSystemBO(Guid.NewGuid(), isLocalCall: true));
         }
     }
 }

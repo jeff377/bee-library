@@ -377,11 +377,13 @@ namespace Bee.Base.Serialization
             }
 
             // Numeric type coercion (JSON long → int/short/decimal etc.)
+            // A value the target type cannot represent is handed back as-is rather than failing the
+            // whole payload — these are the conversion failures that means. Anything else is a bug.
             try
             {
                 return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
             }
-            catch
+            catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException or ArgumentException)
             {
                 return value;
             }
