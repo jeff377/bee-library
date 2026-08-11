@@ -12,6 +12,8 @@
 
 ### 安全性
 
+- `Bee.Business`：`LoginAttemptTracker` 的失敗記錄表改為有界。表內每一把 key 都是攻擊者指定的 user id（`System.Login` 是匿名的），而未達鎖定門檻的條目先前**永不過期、也無人清掃**，一串不重複的 user id 就能讓它無限成長。現在條目會自行過期、失敗計數以視窗計算、追蹤帳號數設有上限。
+- `Bee.Business` / `Bee.Api.AspNetCore`：API key gate 失效現在會被回報。停用最後一把啟用中的金鑰會讓 gate 靜默退回「接受任何非空 `X-Api-Key`」——而那是金鑰輪替的正常步驟——先前唯一的訊號是啟動時的一次性快照。現在停用最後一把金鑰會記 error，啟動檢查在非 Development 環境也改以 error 層級回報。
 - `Bee.Api.Core`：型別白名單改為驗證 assembly-qualified name 指名的**每一個**型別 —— 外層型別、每個泛型參數、陣列元素 —— 且無法解析的名稱改為拒絕而非放行。先前 ``Bee.Base.Collections.Dictionary`1[[Disallowed.Type, Other]], Bee.Base`` 這樣的名稱會通過檢查，因為切在第一個逗號後留下的片段仍帶著允許的命名空間前綴。`System.Login` 是匿名的，且 payload 型別解析發生在商業物件被呼叫之前，故該路徑未認證即可觸達。自 4.0.2 起存在。
 
 ### 破壞性變更
@@ -26,13 +28,14 @@
 
 - `Bee.Base`：`Bee.Base.Expressions` —— evaluator 抽象、政策輔助方法與例外型別。`Bee.Expressions` 只剩 `DynamicExpressoEvaluator`。
 - `Bee.Definition`：`LanguageEnum.Entries` 補上 setter（見下方行動端修正）。
+- `Bee.Business`：`LoginAttemptTracker.MaxTrackedAccounts` 與 `DefaultMaxTrackedAccounts`，供宿主自訂上限。
 - 建置期診斷 **BEE9001**（`Bee.Base` / `Bee.Definition` 的相依邊界）與 **BEE9002**（三個版號屬性必須同步）。[Analyzer 規則](docs/analyzer-rules.zh-TW.md)
 
 ### 修正
 
 - `Bee.Definition`：`LanguageEnum.Entries` 原本是對映為重複 `[XmlElement]` 的 get-only 集合。iOS 使用的 reflection-only `XmlSerializer` 路徑對這種成員是**指派**而非 `Add`，因而擲 `ArgumentException: Property set method not found`，外顯為誤導的「There is an error in XML document」。setter 採「清空後逐一填回既有實例」，owner 反向連結不會斷開。
 - `Bee.Definition`：`st_user.password` 由 40 字元放寬為 200。`PasswordHasher` 產出的雜湊為 79 字元，五家 provider 中有四家會截斷，截斷後驗證永遠不會成功。此缺陷先前未浮現，是因為在本版之前框架沒有任何地方真的把雜湊寫進 `st_user`。
-- `src/Directory.Build.props`：`AssemblyVersion` 與 `FileVersion` 重新與 `Version` 同步。已發布的 4.19.0 套件內組件標的是 `4.18.0.0`，以組件 identity 無從與 4.18.0 區分；該版不重新發布。BEE9002 起會在版號不一致時讓建置失敗。
+- **版號**：三個版號屬性移至 repo 根的 `Version.props`，由 `src/` 與 `tools/` 各自 import。`AssemblyVersion` 與 `FileVersion` 重新與 `Version` 同步——已發布的 4.19.0 套件內組件標的是 `4.18.0.0`，以組件 identity 無從與 4.18.0 區分，該版不重新發布。**`Bee.Cli` 先前自帶一份版號、已落後十二個 minor**，因此自 4.9.0 起每一版發布的 `Bee.Cli` 內組件標的都是 `4.8.0.0`；現在它與其他專案一樣取用框架版號。BEE9002 會在版號不一致時讓建置失敗，而單一來源則消除了「兩個專案各說各話」的可能——那是任何 per-project 檢查都攔不到的。
 
 ### 變更
 

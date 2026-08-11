@@ -1,9 +1,9 @@
 ﻿<Project>
+
+  <!-- 版本資訊的唯一來源；tools/ 也 import 同一份。三者一致由 BEE9002 於建置期把關。 -->
+  <Import Project="$(MSBuildThisFileDirectory)../Version.props" />
+
   <PropertyGroup>
-    <!-- 版本資訊。三者必須同步，由 BEE9002（src/Directory.Build.targets）於建置期把關。 -->
-    <Version>4.20.0</Version>
-    <AssemblyVersion>4.20.0.0</AssemblyVersion>
-    <FileVersion>4.20.0.0</FileVersion>
 <!---->
     <!-- 套件 Metadata -->
     <Company>Bee.NET</Company>

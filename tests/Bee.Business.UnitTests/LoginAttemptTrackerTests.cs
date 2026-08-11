@@ -184,5 +184,105 @@ namespace Bee.Business.UnitTests
 
             Assert.True(tracker.IsLockedOut("user01"));
         }
+        [Fact]
+        [DisplayName("未重複的失敗帳號不應無限累積 —— 過期後應被清掉")]
+        public void RecordFailure_DistinctUsersNeverRepeated_EntriesExpire()
+        {
+            // 攻擊者形狀：每次都用不同的 user id，因此「下次同一把 key 再進來時順便清理」
+            // 這種 lazy cleanup 永遠不會觸發。舊實作在此無上限成長。
+            var clock = new AdvanceableTimeProvider(new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
+            var tracker = new LoginAttemptTracker(5, TimeSpan.FromMinutes(15), clock)
+            {
+                MaxTrackedAccounts = 100
+            };
+
+            for (int i = 0; i < 100; i++)
+                tracker.RecordFailure($"attacker-{i}");
+
+            // 超過視窗後再打一筆，sweep 應把先前 100 筆全部清掉 —— 否則下面這筆會被容量上限擋掉
+            clock.Advance(TimeSpan.FromMinutes(16));
+            tracker.RecordFailure("victim");
+
+            for (int i = 0; i < 5; i++)
+                tracker.RecordFailure("victim");
+
+            Assert.True(tracker.IsLockedOut("victim"));
+        }
+
+        [Fact]
+        [DisplayName("追蹤帳號數應有上限，超過後不再收新帳號")]
+        public void RecordFailure_BeyondCap_StopsTrackingNewAccounts()
+        {
+            var clock = new AdvanceableTimeProvider(new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
+            var tracker = new LoginAttemptTracker(3, TimeSpan.FromMinutes(15), clock)
+            {
+                MaxTrackedAccounts = 10
+            };
+
+            for (int i = 0; i < 10; i++)
+                tracker.RecordFailure($"filler-{i}");
+
+            // 容量已滿，新帳號不再建立條目（因此也不會被鎖定）
+            for (int i = 0; i < 5; i++)
+                tracker.RecordFailure("late-comer");
+
+            Assert.False(tracker.IsLockedOut("late-comer"));
+        }
+
+        [Fact]
+        [DisplayName("已在追蹤的帳號不受容量上限影響，仍應鎖定")]
+        public void RecordFailure_ExistingAccountAtCap_StillLocksOut()
+        {
+            // 上限只擋新帳號。若連既有帳號都擋，灌爆容量就成了「關掉某個帳號的鎖定」的手段。
+            var clock = new AdvanceableTimeProvider(new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
+            var tracker = new LoginAttemptTracker(3, TimeSpan.FromMinutes(15), clock)
+            {
+                MaxTrackedAccounts = 10
+            };
+
+            tracker.RecordFailure("victim");
+            for (int i = 0; i < 9; i++)
+                tracker.RecordFailure($"filler-{i}");
+
+            tracker.RecordFailure("victim");
+            tracker.RecordFailure("victim");
+
+            Assert.True(tracker.IsLockedOut("victim"));
+        }
+
+        [Fact]
+        [DisplayName("失敗計數應以視窗計算，跨視窗的零星失敗不應累積成鎖定")]
+        public void RecordFailure_SpreadAcrossWindows_DoesNotAccumulate()
+        {
+            var clock = new AdvanceableTimeProvider(new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
+            var tracker = new LoginAttemptTracker(3, TimeSpan.FromMinutes(15), clock);
+
+            for (int i = 0; i < 5; i++)
+            {
+                tracker.RecordFailure("typo-user");
+                Assert.False(tracker.IsLockedOut("typo-user"));
+                clock.Advance(TimeSpan.FromMinutes(16));
+            }
+        }
+
+        [Fact]
+        [DisplayName("鎖定期間的持續失敗不應延長鎖定")]
+        public void RecordFailure_WhileLockedOut_DoesNotExtendLockout()
+        {
+            var clock = new AdvanceableTimeProvider(new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
+            var tracker = new LoginAttemptTracker(3, TimeSpan.FromMinutes(15), clock);
+
+            for (int i = 0; i < 3; i++)
+                tracker.RecordFailure("user01");
+            Assert.True(tracker.IsLockedOut("user01"));
+
+            // 鎖定期間再打，若會延長鎖定，攻擊者就能把帳號永久鎖住
+            clock.Advance(TimeSpan.FromMinutes(14));
+            tracker.RecordFailure("user01");
+
+            clock.Advance(TimeSpan.FromMinutes(2));
+            Assert.False(tracker.IsLockedOut("user01"));
+        }
+
     }
 }

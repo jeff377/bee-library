@@ -2,6 +2,7 @@ using System.Data.Common;
 using Bee.ObjectCaching;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Bee.Api.AspNetCore
@@ -55,10 +56,25 @@ namespace Bee.Api.AspNetCore
                 var gate = cache.ApiKeyGate.GetState();
                 if (gate is { InForce: true }) { return; }
 
-                logger.LogWarning(
+                // Error rather than Warning: this is the difference between having an API key gate
+                // and not having one, and a Warning is the level operators filter out. Startup is
+                // deliberately not failed — `IsApiKeyAccepted` documents the presence-only fallback
+                // as the path that keeps existing deployments working across an upgrade, and
+                // turning that into a hard failure in a minor release would stop them booting.
+                var environment = services.GetService<IHostEnvironment>();
+                if (environment?.IsDevelopment() == true)
+                {
+                    logger.LogWarning(
+                        "No enabled API key exists, so the X-Api-Key header is only checked for presence. " +
+                        "That is expected in Development; issue an API key before deploying.");
+                    return;
+                }
+
+                logger.LogError(
                     "No enabled API key exists, so the X-Api-Key header is only checked for presence, " +
-                    "not for its value. Issue an API key to turn this into a real gate — no code " +
-                    "change is required, and existing callers keep working until the first key exists.");
+                    "not for its value — this deployment has no working API key gate. Issue an API key " +
+                    "to turn it into a real one; no code change is required, and existing callers keep " +
+                    "working until the first key exists.");
             }
             catch (DbException ex)
             {

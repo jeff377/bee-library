@@ -379,6 +379,8 @@ Bee.Business.Security.LoginAttemptTracker.LoginAttemptTracker() -> void
 Bee.Business.Security.LoginAttemptTracker.LoginAttemptTracker(int maxFailedAttempts, System.TimeSpan lockoutDuration) -> void
 Bee.Business.Security.LoginAttemptTracker.LoginAttemptTracker(int maxFailedAttempts, System.TimeSpan lockoutDuration, System.TimeProvider! timeProvider) -> void
 Bee.Business.Security.LoginAttemptTracker.MaxFailedAttempts.get -> int
+Bee.Business.Security.LoginAttemptTracker.MaxTrackedAccounts.get -> int
+Bee.Business.Security.LoginAttemptTracker.MaxTrackedAccounts.init -> void
 Bee.Business.Security.LoginAttemptTracker.RecordFailure(string! userId) -> void
 Bee.Business.Security.LoginAttemptTracker.Reset(string! userId) -> void
 Bee.Business.Session.SessionCompanyBinder
@@ -652,6 +654,7 @@ Bee.Business.Validator.AccessTokenValidator.AccessTokenValidator(Bee.Definition.
 Bee.Business.Validator.AccessTokenValidator.Validate(System.Guid accessToken) -> bool
 const Bee.Business.Security.LoginAttemptTracker.DefaultLockoutMinutes = 15 -> int
 const Bee.Business.Security.LoginAttemptTracker.DefaultMaxFailedAttempts = 5 -> int
+const Bee.Business.Security.LoginAttemptTracker.DefaultMaxTrackedAccounts = 10000 -> int
 override Bee.Business.Form.FormBusinessObject.DoExecFunc(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 override Bee.Business.Form.FormBusinessObject.DoExecFuncAnonymous(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 override Bee.Business.ReservedProgIdBinding.Equals(object? obj) -> bool

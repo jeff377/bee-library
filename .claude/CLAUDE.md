@@ -4,7 +4,7 @@
 
 Bee.NET 是一套模組化的 .NET 企業應用程式框架，以 NuGet 套件形式發布。採用 JSON-RPC 2.0 API 模式，強調安全性、可插拔序列化與跨平台相容性。
 
-- **版本**：見 `src/Directory.Build.props` 的 `<Version>`
+- **版本**：見 repo 根的 `Version.props`（`src/` 與 `tools/` 共用）
 - **授權**：MIT
 - **主要目標框架**：`net10.0`（全部專案）
 

@@ -35,31 +35,8 @@
     <BeeAllowedDependency Include="Bee.Base" />
   </ItemGroup>
 
-  <!--
-    Version consistency (BEE9002).
-
-    `Version` stamps the NuGet package; `AssemblyVersion` and `FileVersion` stamp the assembly
-    identity inside it. They are three separate properties and nothing keeps them in step, so a
-    release that edits only `Version` ships packages whose assemblies still claim the previous
-    version. A published package cannot be recalled, only delisted.
-
-    This has now happened twice. 4.17.0 shipped assemblies stamped 4.16.0.0; that was corrected by
-    hand in 4.18.0, and then 4.19.0 shipped assemblies stamped 4.18.0.0. Correcting the number
-    fixed each release without fixing the mechanism, and the second occurrence was found the same
-    way as the first — by a person reading the file. This target is the mechanism: get it wrong and
-    the build fails where the edit was made, not two releases later.
-
-    A prerelease suffix would break the comparison, and `Version` has never carried one. If that
-    changes, teach this target the suffix rather than exempting the project from it.
-  -->
-  <Target Name="BeeVerifyVersionConsistency" BeforeTargets="Build">
-    <Error Condition="'$(AssemblyVersion)' != '$(Version).0'"
-           Code="BEE9002"
-           Text="AssemblyVersion '$(AssemblyVersion)' does not match Version '$(Version)' (expected '$(Version).0'). All three of Version, AssemblyVersion and FileVersion are set in src/Directory.Build.props and must be bumped together; a package whose assembly identity lags its package version cannot be told apart from the previous release, and cannot be recalled once published." />
-    <Error Condition="'$(FileVersion)' != '$(Version).0'"
-           Code="BEE9002"
-           Text="FileVersion '$(FileVersion)' does not match Version '$(Version)' (expected '$(Version).0'). See the AssemblyVersion message above — the three properties in src/Directory.Build.props are bumped together." />
-  </Target>
+  <!-- BEE9002：版號三屬性一致。與 tools/ 共用同一份定義。 -->
+  <Import Project="$(MSBuildThisFileDirectory)../Version.targets" />
 
   <Target Name="BeeVerifyDependencyBoundary"
           BeforeTargets="Build"

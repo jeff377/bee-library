@@ -1,0 +1,30 @@
+<Project>
+
+  <!--
+    The single source of the framework version.
+
+    Imported by src/Directory.Build.props and tools/Directory.Build.props. Nothing else declares
+    these three properties, so bumping a release means editing this file and only this file.
+
+    Why it is not simply left in src/Directory.Build.props: tools/Bee.Cli is published to NuGet
+    (nuget-publish.yml packs it) but does not inherit from src/, so it carried its own copy of the
+    three properties. That copy drifted twelve minor versions behind — its own comment said "bump
+    whenever bumping src/Directory.Build.props", which is exactly the kind of requirement that has
+    no way to notice it has been broken. Every published Bee.Cli since 4.9.0 therefore contains an
+    assembly stamped 4.8.0.0.
+
+    A per-project gate cannot catch that: BEE9002 checks the three properties agree *with each
+    other*, and 4.8.0 / 4.8.0.0 / 4.8.0.0 agrees with itself perfectly. Only a single source removes
+    the possibility of drift, which is why the version does not live in either project's own props.
+
+    Note this file is deliberately NOT named Directory.Build.props: MSBuild auto-discovers that name
+    by walking up from the project directory, and a root-level one would silently attach to apps/
+    and samples/ as well. This one is imported explicitly by the two directories that want it.
+  -->
+  <PropertyGroup>
+    <Version>4.20.0</Version>
+    <AssemblyVersion>4.20.0.0</AssemblyVersion>
+    <FileVersion>4.20.0.0</FileVersion>
+  </PropertyGroup>
+
+</Project>

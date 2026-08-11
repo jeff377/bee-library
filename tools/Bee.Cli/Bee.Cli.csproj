@@ -16,13 +16,12 @@
     <PackageOutputPath>../../nupkgs</PackageOutputPath>
 
     <!--
-      Version lock-stepped with the framework (src/Directory.Build.props). nuget-publish.yml
-      overrides via /p:Version=<tag> at release time, so this hardcoded value is the
-      local-development default only. Bump whenever bumping src/Directory.Build.props.
+      Version comes from Version.props at the repository root, by way of
+      tools/Directory.Build.props. It used to be hardcoded here with a comment saying to bump it
+      alongside the framework; that requirement had no way to notice it had been broken, and it
+      stayed at 4.8.0 for twelve minor versions while every published Bee.Cli carried an assembly
+      stamped 4.8.0.0. Do not reintroduce a local copy.
     -->
-    <Version>4.8.0</Version>
-    <AssemblyVersion>4.8.0.0</AssemblyVersion>
-    <FileVersion>4.8.0.0</FileVersion>
 
     <!-- Package metadata (lock-stepped with src/Directory.Build.props). -->
     <Company>Bee.NET</Company>

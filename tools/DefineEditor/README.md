@@ -123,7 +123,7 @@ osx-arm64 實測：12 MB 主執行檔 + 約 18 MB 三個 native dylib（HarfBuzz
 ```
 Bee.DefineEditor.app/
 └── Contents/
-    ├── Info.plist          ← bundle 描述（版號從 src/Directory.Build.props 抓）
+    ├── Info.plist          ← bundle 描述（版號從 repo 根的 Version.props 抓）
     └── MacOS/
         ├── Bee.DefineEditor   ← 主執行檔
         └── lib*.dylib × 3     ← Avalonia 原生

@@ -4,7 +4,15 @@
     tools/ 為開發期工具，獨立於核心套件的建置基調。
     本檔案刻意「不」import repo 根的 Directory.Build.props，
     讓 tools/ 完全自主：不上 NuGet、不套用 src/ 的嚴格分析設定。
+
+    版號是唯一的例外，而且是刻意的：Bee.Cli 雖然位於 tools/，卻**會**發布到 NuGet
+    （見 .github/workflows/nuget-publish.yml）。它先前自帶一份版號，落後框架十二個 minor，
+    因此每一版發布的 Bee.Cli 內組件標的都是 4.8.0.0。版號改由 Version.props 單一來源提供，
+    這種漂移在結構上就不可能再發生。這是「具名檔案的顯式 import」而非繼承根 props，
+    上一段的自主性不受影響。
   -->
+  <Import Project="$(MSBuildThisFileDirectory)../Version.props" />
+
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>

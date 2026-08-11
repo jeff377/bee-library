@@ -12,7 +12,7 @@ description: 整理 CHANGELOG（自上一版 tag 至 HEAD），產出雙語草�
 - 本框架仍處 pre-stable 演進階段（v4.x），對外公開 API 表面尚無外部消費者；minor 版本允許包含 API 搬遷與命名空間調整
 - CHANGELOG 從 **v4.3.0 開始記錄**，**不回補歷史**（使用者已明確表態）
 - 雙語維護：英文版主檔 `CHANGELOG.md`、繁中版 `CHANGELOG.zh-TW.md`，**必須同步更新**
-- 不自動 commit／push／改 `Directory.Build.props`／打 tag —— 這些屬 `releasing.md` 流程，等使用者 review 完才動手
+- 不自動 commit／push／改 `Version.props`／打 tag —— 這些屬 `releasing.md` 流程，等使用者 review 完才動手
 - 文件分工：`docs/` 是現行框架對齊版（forward-looking）、`docs/adr/` 是設計決策史、`CHANGELOG.md` 是版本差紀錄；三者互補，CHANGELOG 條目對應重大行為改動時應**連結對應 ADR**
 
 ## 執行流程
@@ -143,12 +143,12 @@ ls /Users/jeff/Desktop/repos/bee-library/docs/adr/ | grep -i <關鍵字>
 2. **user-facing 條目數量摘要**（X 新增、Y 變更、Z 修正）
 3. **被 omit 的 commits 清單**（讓使用者判斷有無誤判）
 4. **建議補 ADR 的項目**（若有）
-5. **下一步提示**：「review 完請依 `~/.claude/rules/releasing.md` 走後續流程（更新 `Directory.Build.props`、commit、push tag）」
+5. **下一步提示**：「review 完請依 `~/.claude/rules/releasing.md` 走後續流程（更新 `Version.props`、commit、push tag）」
 
 ## 不做什麼
 
 - ❌ **不自動 commit／push** CHANGELOG 改動
-- ❌ **不改** `src/Directory.Build.props` 的 `<Version>` —— 屬 `releasing.md` 步驟
+- ❌ **不改** `Version.props` 的 `<Version>` —— 屬 `releasing.md` 步驟
 - ❌ **不打 git tag** —— 屬 `releasing.md` 步驟
 - ❌ **不回補 v4.3.0 以前的版本** —— 使用者已表態現階段不需要
 - ❌ **不為 omit 的 commit 編造 user-facing 描述** —— 誠實標 omit，由使用者決定

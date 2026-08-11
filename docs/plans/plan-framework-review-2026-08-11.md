@@ -47,9 +47,9 @@
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
 | P0 | 發版阻擋項（安全 / 發版正確性） | 3 | ✅ 已完成（2026-08-11，SEC-1 / REL-1 / REL-2 全數落地並驗證） |
-| P1 | 閘門可靠性與已證實的功能缺陷 | 11 | 📝 擬定中（11 項全未動） |
+| P1 | 閘門可靠性與已證實的功能缺陷 | 11 | 🚧 進行中（SEC-2 / SEC-3 ✅ 已完成；剩 9 項） |
 | P2 | 結構、效能、一致性 | 14 | 📝 擬定中（14 項全未動） |
-| P3 | 文件漂移與低風險清理 | 12 | 🚧 進行中（DOC-8 / DOC-9 / DOC-10 ✅ 已完成；剩 9 項） |
+| P3 | 文件漂移與低風險清理 | 13 | 🚧 進行中（DOC-8 / DOC-9 / DOC-10 / **REL-3** ✅ 已完成；剩 9 項） |
 | P4 | 觀察／待裁決 | 9 | 📝 擬定中（D-8 的 `MessagePackContract` 子項 ✅ 由另開 session 清除；其餘未動） |
 
 ### 已完成項目逐條（供對帳，勿只看階段狀態）
@@ -62,6 +62,16 @@
 | **DOC-10** | `analyzer-rules` 雙語新增 BEE9xxx 一節 | `780876d8` | BEE9001 先前完全未載，一併補上 |
 | **DOC-8 / DOC-9** | `docs/changelogs/4.19.0{,.zh-TW}.md` 補〈後記〉 | `780876d8` | 更正「行動端 AOT 失敗很可能是模擬假象」與已失效的 `WireMemberCount` 教學；保留原文存脈絡 |
 | **D-8（子項）** | `MessagePackContract` 死碼清除 | `8f373bd5` | 另開 session 處理；複驗 `src/` / `tests/` 零殘留參照 |
+| **SEC-2** | `LoginAttemptTracker` 改為有界：條目自帶到期 + 排程清掃、失敗計數視窗化、追蹤帳號數上限 | 待 commit | 新增 5 個測試，含「攻擊者永不重複 user id」這條 lazy cleanup 打不到的路徑；`LoginAttemptTracker` 測試 18 通過 |
+| **SEC-3** | API key gate 失效改為可見：停用最後一把金鑰記 error、啟動檢查在非 Development 升為 error | 待 commit | **刻意未做啟動硬失敗**（見下） |
+| **REL-3** | 版號抽為 repo 根 `Version.props`，`src/` 與 `tools/` 共用；`Bee.Cli` 從 4.8.0 併回 4.20.0 | 待 commit | 雙向實證：兩個方案 clean build 0 警告，`-p:Version=9.9.9` 於 `tools/` 如預期紅在 BEE9002 |
+
+> **SEC-3 未完全照原計畫做，這是刻意的。** 計畫寫的是「非 Development 環境 `InForce==false` 由 warning
+> 升為**啟動失敗**」。實作時發現 `IsApiKeyAccepted` 的 XML doc 把 presence-only 明文寫成「讓既有部署
+> 跨版本仍能運作」的刻意設計——在 minor 版把它改成硬失敗，會讓每一個尚未發出金鑰的部署一升級就起不來，
+> 而那正是這個退路要服務的族群。因此本輪做的是「不可能忽略」而非「直接擋死」：
+> **runtime 降級的訊號**（本輪新發現、原本完全靜默的那一半）已補上，啟動檢查升為 error。
+> 硬失敗應放在 major 版並附 opt-out，仍列 P1 未結。
 
 **發版步驟進度**（依 `releasing.md`）：① CHANGELOG ✅ ② 版號 ✅ ③ `PublicAPI.Unshipped` → `Shipped` ✅（7 檔、15 筆 `*REMOVED*`，併後行數 7/7 命中預期，clean build 0 警告）④ commit ✅ / **tag ❌ 未打** ⑤ **push ❌ 未推**。
 
@@ -494,6 +504,7 @@ ApiServiceController.PostAsync → ValidateAuthorization (:129) → ValidateApiK
 
 | # | 項目 |
 |---|------|
+| **REL-3** | **（2026-08-11 新發現）`tools/Bee.Cli` 的版號脫節 12 個 minor —— 與 REL-1 同類，且 BEE9002 涵蓋不到**。`tools/Bee.Cli/Bee.Cli.csproj:23-25` 自帶 `<Version>4.8.0</Version>` / `4.8.0.0` / `4.8.0.0`，而框架已到 4.20.0。**它確實會發布**（`nuget-publish.yml:79` 的 `dotnet pack tools/Bee.Cli`）：`/p:Version=$ver` 覆寫套件版號，但**不覆寫 `AssemblyVersion` / `FileVersion`** → 自 4.9.0 起每一版發布的 `Bee.Cli` 內組件標的都是 `4.8.0.0`。<br>**加重情節**：該 csproj 的註解自己就寫著 `Bump whenever bumping src/Directory.Build.props` —— 要求已經寫下來，被違反了 12 個 minor，沒有任何東西會發現。這與 REL-1 是**完全同一個形狀**（宣稱有規則、無機制），只是換一個檔案。<br>**BEE9002 涵蓋不到**：它掛在 `src/Directory.Build.targets`，而 `tools/` 不繼承該檔。<br>**修法**：`tools/` 加一份對等的 `Directory.Build.targets`（或把版號改為由單一來源匯入），讓 `tools/Bee.Cli` 也受同一道閘門管。**發版前可做**——三行改動，且做了這一版的 `Bee.Cli` 才會正確 |
 | **DOC-11** | `docs/repo-ops/ci-sonarcloud-setup.md:165` 死連結（`../` 少一層） |
 | **DOC-12** | `docs/repo-ops/future-work.md:63` 因 ADR-038 失準（`Bee.Cli` 已不引用 `Bee.Expressions` —— 這其實是 ADR-038 的成果證明，只是文件沒跟） |
 | **DOC-13** | `rules/testing.md` 三處過時：「20 處 `[Collection]`」（實際 24 處 / 4 組）、`SysInfoStatic` / `ClientInfo` 缺 `CollectionDefinition`（已補齊）、`[LocalOnlyTheory]` 範例（該 attribute 零使用） |

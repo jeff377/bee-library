@@ -9,6 +9,7 @@ using Bee.Definition.Logging;
 using Bee.Definition.Security;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
+using Microsoft.Extensions.Logging;
 
 namespace Bee.Business.System
 {
@@ -168,7 +169,43 @@ namespace Bee.Business.System
                     SystemActions.SetApiKeyEnabled);
             }
 
+            if (!args.Enabled)
+            {
+                ReportIfApiKeyGateFellOutOfForce(repository, args.SysId);
+            }
+
             return new SetApiKeyEnabledResult { SysId = args.SysId, Enabled = args.Enabled };
+        }
+
+        /// <summary>
+        /// Reports the moment the API key gate stops being in force because the last enabled key
+        /// was disabled.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: With no enabled key the gate falls back to accepting any non-empty
+        /// <c>X-Api-Key</c> value. That fallback exists so a deployment keeps working before it has
+        /// issued its first key — but the same condition is reached by <b>disabling the last one</b>,
+        /// which is an ordinary step in key rotation.
+        /// <para>
+        /// The startup check cannot see this: it is a one-time snapshot taken by
+        /// <c>UseBeeFramework</c>, so a downgrade that happens at run time left no trace at all.
+        /// This is that trace. It is logged rather than refused, because refusing would make the
+        /// last key impossible to retire.
+        /// </para>
+        /// </remarks>
+        /// <param name="repository">The API key repository, read after the write has landed.</param>
+        /// <param name="sysId">The key that was just disabled.</param>
+        private void ReportIfApiKeyGateFellOutOfForce(IApiKeyRepository repository, string sysId)
+        {
+            if (repository.GetGateState().InForce) { return; }
+
+            Services.GetService<ILoggerFactory>()?
+                .CreateLogger<SystemBusinessObject>()
+                .LogError(
+                    "Disabling API key '{SysId}' left no enabled key, so the X-Api-Key header is now " +
+                    "only checked for presence, not for its value — this deployment no longer has a " +
+                    "working API key gate. Enable a replacement key to restore it.",
+                    sysId);
         }
 
         /// <summary>

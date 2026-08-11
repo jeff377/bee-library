@@ -1,0 +1,12 @@
+<Project>
+
+  <!--
+    BEE9002：版號三屬性一致，與 src/ 共用同一份定義。
+
+    tools/ 需要這道閘門的理由與 src/ 相同但更直接：Bee.Cli 會發布到 NuGet，而發布流程以
+    /p:Version=<tag> 覆寫套件版號、卻不覆寫 AssemblyVersion / FileVersion。版號來源統一到
+    Version.props 之後，這個 target 負責攔截「命令列覆寫讓單一專案自我矛盾」的情形。
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)../Version.targets" />
+
+</Project>

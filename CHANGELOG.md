@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 
 ### Security
 
+- `Bee.Business`: `LoginAttemptTracker`'s map of failed attempts is bounded. Every key in it is an attacker-chosen user id — `System.Login` is anonymous — and an entry below the lockout threshold previously never expired and was never swept, so a stream of distinct user ids grew it without limit. Entries now expire on their own, the failure count is windowed, and the number of tracked accounts is capped.
+- `Bee.Business` / `Bee.Api.AspNetCore`: losing the API key gate is now reported. Disabling the last enabled key silently returns the gate to accepting any non-empty `X-Api-Key` — an ordinary step of key rotation — and the only existing signal was a one-time snapshot taken at startup. Disabling the last key now logs an error, and the startup check reports at error level outside Development.
 - `Bee.Api.Core`: the type whitelist is applied to **every** type named by an assembly-qualified name — the outer type, each generic argument, and array element types — and an unparsable name is now refused instead of passed through. Previously a name such as ``Bee.Base.Collections.Dictionary`1[[Disallowed.Type, Other]], Bee.Base`` passed the check, because splitting on the first comma left a fragment that still carried an allowed namespace prefix. `System.Login` is anonymous and payload type resolution runs before the business object is invoked, so the path was reachable without authentication. Present since 4.0.2.
 
 ### Breaking Changes
@@ -26,13 +28,14 @@ All notable changes to this project will be documented in this file.
 
 - `Bee.Base`: `Bee.Base.Expressions` — the evaluator abstraction, its policy helpers and its exception type. `Bee.Expressions` keeps only `DynamicExpressoEvaluator`.
 - `Bee.Definition`: `LanguageEnum.Entries` gains a setter (see the mobile fix below).
+- `Bee.Business`: `LoginAttemptTracker.MaxTrackedAccounts` and `DefaultMaxTrackedAccounts`, for hosts that want a different bound.
 - Build-time diagnostics **BEE9001** (dependency boundary for `Bee.Base` / `Bee.Definition`) and **BEE9002** (the three version properties must stay in step). [Analyzer rules](docs/analyzer-rules.md)
 
 ### Fixed
 
 - `Bee.Definition`: `LanguageEnum.Entries` was a get-only collection mapped to repeated `[XmlElement]`. The reflection-only `XmlSerializer` path used by iOS assigns rather than adds, so it threw `ArgumentException: Property set method not found`, surfacing as the misleading "There is an error in XML document". The setter clears and refills the existing instance so the owner link survives.
 - `Bee.Definition`: `st_user.password` widens from 40 to 200 characters. `PasswordHasher` produces a 79-character hash; four of the five providers would have truncated it, after which verification could never succeed. The defect had not surfaced because nothing in the framework wrote a hash to `st_user` until this release.
-- `src/Directory.Build.props`: `AssemblyVersion` and `FileVersion` are back in step with `Version`. The 4.19.0 packages carry assemblies stamped `4.18.0.0` and cannot be told apart from 4.18.0 by assembly identity; that release is not being re-published. BEE9002 now fails the build on the mismatch.
+- **Versioning**: all three version properties move to `Version.props` at the repository root, imported by both `src/` and `tools/`. `AssemblyVersion` and `FileVersion` are back in step with `Version` — the 4.19.0 packages carry assemblies stamped `4.18.0.0` and cannot be told apart from 4.18.0 by assembly identity; that release is not being re-published. **`Bee.Cli` had its own copy of the three properties and had drifted twelve minor versions**, so every published `Bee.Cli` since 4.9.0 contains an assembly stamped `4.8.0.0`; it now takes the framework version like everything else. BEE9002 fails the build on a mismatch, and the single source removes the possibility of two projects disagreeing — which no per-project check can catch.
 
 ### Changed
 
