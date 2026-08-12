@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Business.AuditLog;
 using Bee.Business.Form;
 using Bee.Business.System;
 using Bee.Definition;
@@ -58,6 +59,45 @@ namespace Bee.Business.UnitTests
             var bo = (SystemBusinessObject)Factory.CreateSystemBO(Guid.NewGuid(), isLocalCall: false);
 
             Assert.False(bo.IsLocalCall);
+        }
+
+        [Fact]
+        [DisplayName("CreateLogBO 應回傳 ILogBusinessObject 介面實例")]
+        public void CreateLogBO_ReturnsLogBusinessObjectInterface()
+        {
+            var token = Guid.NewGuid();
+
+            ILogBusinessObject bo = Factory.CreateLogBO(token, isLocalCall: true);
+
+            Assert.NotNull(bo);
+            Assert.IsType<LogBusinessObject>(bo);
+        }
+
+        [Fact]
+        [DisplayName("CreateLogBO 傳入 isLocalCall=false 應保留設定")]
+        public void CreateLogBO_WithIsLocalCallFalse_PreservesFlag()
+        {
+            var bo = (LogBusinessObject)Factory.CreateLogBO(Guid.NewGuid(), isLocalCall: false);
+
+            Assert.False(bo.IsLocalCall);
+        }
+
+        [Fact]
+        [DisplayName("CreateLogBO 應解析到 AuditLog 這個 progId，而非 System")]
+        public void CreateLogBO_ResolvesTheAuditLogProgId()
+        {
+            // 三個 CreateXxxBO 的差別只在寫死的 progId；抄錯會回傳一個型別轉換剛好也過的 BO。
+            var bo = (LogBusinessObject)Factory.CreateLogBO(Guid.NewGuid(), isLocalCall: true);
+
+            Assert.Equal(SysProgIds.AuditLog, bo.ProgId);
+        }
+
+        [Fact]
+        [DisplayName("CreateLogBO factory 為 null 應拋 ArgumentNullException")]
+        public void CreateLogBO_NullFactory_Throws()
+        {
+            IBusinessObjectFactory? factory = null;
+            Assert.Throws<ArgumentNullException>(() => factory!.CreateLogBO(Guid.NewGuid(), isLocalCall: true));
         }
 
         [Fact]

@@ -50,7 +50,7 @@
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
 | P2 | 結構、效能、一致性 | 14 | 🚧 進行中（11 項已結：P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**DEP-1** / **P-3** / **PERF-2** ❌ 評估後不修；剩 3 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
-| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2** / **SEC-4~10**(部分) / **CON-5** / **X-7** / **D-9** / **Z-3**+**Z-5** / **M-2** / **M-3** / **T-3**(判別碼 pin) ✅ 已落地；其餘未動） |
+| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2** / **SEC-4~10**(部分) / **CON-5** / **X-7** / **D-9** / **Z-3**+**Z-5** / **M-2** / **M-3** / **T-3** ✅ 已落地；其餘未動） |
 
 ### 已完成項目逐條（供對帳，勿只看階段狀態）
 
@@ -85,6 +85,7 @@
 | **TEST-2** | `ApiAspNetCoreTests` / `ApiKeyGateControllerTests` 改用 `SharedDbFixture` | 待 commit | 並在類別 doc 記下第三條觸發路徑（API key gate read-through）與「為何先前是綠的」 |
 | **TEST-3** | `Bee.Definition.UnitTests` 新增 `ProcessWideStateCollection`，序列化三個衝突類別 | 待 commit | 該組件先前既無 `[Collection]` 也無 `DisableTestParallelization` |
 | **GATE-2** | 8 個手寫 formatter 改實作 `IWireContract`，移除套套邏輯的 `WireMemberCount` | 待 commit | **實證**：在 `SortField` 加一個屬性 → drift 測試立刻紅（`型別上有但未註冊 → Probe`）。同一個 probe 在修正前不會被抓到 |
+| **T-3**（覆蓋缺口） | `ExpiredSessionCleanupService` 5 筆、`LogApiConnector` 路由 11 筆、三個集合成員帶值 round-trip 3 筆、`CreateLogBO` 4 筆 | 待 commit | **兩處反向驗證**：移除啟動掃描 → 2 筆紅；`DbException` 改為 rethrow → 「迴圈在 DbException 後停止了；只觀察到 1 次呼叫」。路由測試以「把 `GetDbAnomalySummary` 抄成 `GetApiAnomalySummary`」實證會紅 |
 | **T-3**（判別碼那條） | `WireValueCode` 22 個判別碼釘死，補 `DateTimeOffset` round-trip，並補上 drift 閘門的**反方向**檢查 | 待 commit | **第一版的封套測試是空轉的，反向驗證當場抓到**：它拿 `WireValueCode.X` 常數當期望值，重新編號時期望值跟著變、自我一致因而恆綠。改用字面數字後，對調 Guid/ByteArray 會紅在 5 個測試（常數表 2 + Count 1 + **實際編碼 2**）。反方向檢查亦以「註冊一個閉包外型別」實證會紅 |
 | **X-7** | `Bee.Api.Contracts` 納入 BEE9001 | 待 commit | **實測翻出一個先前沒人知道的行為**：閘門一啟用就以 `Bee.Base` 報錯，而該 csproj 只寫了 `Bee.Definition` —— SDK 的 `IncludeTransitiveProjectReferences` 會在 Build 前把**傳遞專案參考**併進 `@(ProjectReference)`。故 allowlist 要列整個專案參考閉包。`rules/dependency-boundary.md` 的敘述已更正 |
 | **D-9** | `StringUtilities.IsEmpty(object?)` → `IsEmptyText`，兩邊 XML doc 互指 | 待 commit | **全 repo 只有 1 個呼叫點**（`ValueUtilities.CDateTime`），改名幾乎免費。新增一個測試直接斷言兩者對 `Guid.Empty` / `DateTime.MinValue` 結論相反 |
