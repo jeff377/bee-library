@@ -54,7 +54,7 @@ MessagePack 不同——它是一個明確的技術選擇，且會沿相依鏈�
 ## 範圍收窄：只有 API 合約面需要 MessagePack
 
 **判準**：定義檔相關資料一律以 **XML 字串**傳到前端（`GetDefine` / `SaveDefine` 走
-[SystemApiConnector.cs:178-179](../../src/Bee.Api.Client/Connectors/SystemApiConnector.cs) 的
+[SystemApiConnector.cs:178-179](../../../src/Bee.Api.Client/Connectors/SystemApiConnector.cs) 的
 `XmlCodec.Deserialize<T>(result.Xml)` / `XmlCodec.Serialize`），**從不經 MessagePack**。
 只有 API 合約上「以物件形式」傳遞的型別才需要 MessagePack 支援。
 
@@ -76,7 +76,7 @@ MessagePack 不同——它是一個明確的技術選擇，且會沿相依鏈�
 
 | 型別 | 證據 |
 |------|------|
-| `CurrencySettings` / `CurrencyItem`、`UnitSettings` / `UnitItem` | 兩者皆為 `DefineType` 成員（[DefineType.cs:47,51](../../src/Bee.Definition/DefineType.cs)），經 `GetDefineAsync<T>` → XML。**合約面零引用** |
+| `CurrencySettings` / `CurrencyItem`、`UnitSettings` / `UnitItem` | 兩者皆為 `DefineType` 成員（[DefineType.cs:47,51](../../../src/Bee.Definition/DefineType.cs)），經 `GetDefineAsync<T>` → XML。**合約面零引用** |
 | `FormSchema`、`TableSchema`、`FormLayout`、`SystemSettings`、`ClientSettings`、`DatabaseSettings`、`DbCategorySettings` | 同上，且僅帶 `[IgnoreMember]`（發現 3） |
 
 → 這 11 個型別的 MessagePack 標註**可直接刪除，無需任何替代機制**。
@@ -173,7 +173,7 @@ System.NotSupportedException:
 而 `MessagePackWriter` 是 **`ref struct`**——非泛型路徑需要 `Reflection.Emit`
 產生能傳遞 ref struct 的委派，`IsDynamicCodeSupported=false` 時直接擲例外。
 
-> 這與 [rules/serialization.md](../../.claude/rules/serialization.md) 記載的
+> 這與 [rules/serialization.md](../../../.claude/rules/serialization.md) 記載的
 > 「MessagePack 3.x 有 reflection-based fallback，AOT 可用」**不衝突**：
 > 該結論針對 MessagePack **自己產生**的 formatter，不涵蓋
 > 「自訂 formatter 內呼叫非泛型 API」這條路徑。
@@ -208,7 +208,7 @@ System.NotSupportedException:
 **6 個具體型別**做這件事，而它們的屬性型別**編譯期已知**——
 手寫 formatter 即可全程使用泛型多載 `Serialize<T>(ref writer, ...)`，零反射。
 
-以 `SortFieldFormatter` 驗證（[SortFieldFormatter.cs](../../src/Bee.Api.Core/MessagePack/SortFieldFormatter.cs)）：
+以 `SortFieldFormatter` 驗證（[SortFieldFormatter.cs](../../../src/Bee.Api.Core/MessagePack/SortFieldFormatter.cs)）：
 reflection-only 模式下 4 個測試**全過**，取代了原本失敗的泛型反射版本。
 
 → **`BeeObjectFormatter<T>`（泛型反射版）否決**，改為每個型別一支手寫 formatter，
@@ -232,11 +232,11 @@ map header 與之相符——`SortField` 新增屬性而未同步 formatter 時�
 
 **這些失敗是既有的，不是本計畫造成的**——本計畫的手寫 formatter 反而修好 6 個。
 
-> ⚠️ **此發現與 [rules/serialization.md](../../.claude/rules/serialization.md) 記載的
+> ⚠️ **此發現與 [rules/serialization.md](../../../.claude/rules/serialization.md) 記載的
 > 「MessagePack 3.x 有 reflection-based fallback，行動端 AOT 可用」不一致**，
 > 值得獨立追查。兩點保留：
 > 1. 此為 JIT runtime 上的**模擬**（`RuntimeHostConfigurationOption`），
->    雖是 [apple-mobile-trim.md](../../.claude/rules/apple-mobile-trim.md) 認可的免實機驗證法，
+>    雖是 [apple-mobile-trim.md](../../../.claude/rules/apple-mobile-trim.md) 認可的免實機驗證法，
 >    真實裝置 AOT 行為未必相同。**且 `Parameter.Value` 那條路徑擲的是
 >    `InvalidProgramException`（"CLR detected an invalid program"）而非乾淨的
 >    `NotSupportedException`**——那是「Emit 仍然執行、但產出無效 IL」的徵狀，
@@ -250,14 +250,14 @@ map header 與之相符——`SortField` 新增屬性而未同步 formatter 時�
 
 ### 發現 1：`ApiContractRegistry` 的 attribute 偵測是惰性的
 
-[adr-030](../adr/adr-030-messagepack-name-based-keys.md) 寫道，8 個集合型別的裸
+[adr-030](../../adr/adr-030-messagepack-name-based-keys.md) 寫道，8 個集合型別的裸
 `[MessagePackObject]` 標記「仍為 `ApiContractRegistry.ConvertForSerialization` 的判斷依據，
 **不可移除**」。
 
-但 [ApiContractRegistry.cs:13-18](../../src/Bee.Api.Core/Registry/ApiContractRegistry.cs) 自己的
+但 [ApiContractRegistry.cs:13-18](../../../src/Bee.Api.Core/Registry/ApiContractRegistry.cs) 自己的
 remarks 已說明：**沒有任何 production code 呼叫 `Register`，映射表恆為空，轉換路徑完全惰性。**
 
-因此 [ApiContractRegistry.cs:50](../../src/Bee.Api.Core/Registry/ApiContractRegistry.cs) 的
+因此 [ApiContractRegistry.cs:50](../../../src/Bee.Api.Core/Registry/ApiContractRegistry.cs) 的
 `GetCustomAttribute<MessagePackObjectAttribute>()` 只是一個短路；移除 attribute 後，
 流程會落到下方的介面迴圈，因映射表為空而原樣回傳——**行為完全相同**。
 
@@ -266,7 +266,7 @@ remarks 已說明：**沒有任何 production code 呼叫 `Register`，映射表
 ### 發現 2：集合容器的標註對序列化不生效
 
 8 個 `MessagePackCollectionBase<T>` 子型別全部在
-[MessagePackCodec.cs:29-36](../../src/Bee.Api.Core/MessagePack/MessagePackCodec.cs) 顯式註冊了
+[MessagePackCodec.cs:29-36](../../../src/Bee.Api.Core/MessagePack/MessagePackCodec.cs) 顯式註冊了
 `CollectionBaseFormatter`，而該 formatter 把集合序列化為 **array**，只寫 elements、
 完全不讀屬性。
 
@@ -275,7 +275,7 @@ remarks 已說明：**沒有任何 production code 呼叫 `Register`，映射表
 
 > 但**顯式註冊本身不可少**——`FormatterResolver` 的自動 fallback 因排在
 > `ContractlessStandardResolver` 之後而不可達（見
-> [FormatterResolver.cs:13-37](../../src/Bee.Api.Core/MessagePack/FormatterResolver.cs) 的 WARNING）。
+> [FormatterResolver.cs:13-37](../../../src/Bee.Api.Core/MessagePack/FormatterResolver.cs) 的 WARNING）。
 > `BEE4001` 在編譯期把關遺漏。
 
 ### 發現 3：真正生效的 `[IgnoreMember]` 只有 8 個
@@ -286,7 +286,7 @@ remarks 已說明：**沒有任何 production code 呼叫 `Register`，映射表
 |------|------|---------|------|
 | 容器基底 `MessagePackCollectionBase` | 3 | ❌ | 走 `CollectionBaseFormatter`，序列化為 array，屬性從不被讀（發現 2） |
 | 容器基底 `MessagePackKeyCollectionBase` | 3 | ❌ | 唯一子型別 `ParameterCollection` 採 `[MessagePackObject]` **opt-in** + `[Key(0)]` proxy，未標 `[Key]` 的成員預設即排除 |
-| 定義型別（`FormSchema` / `TableSchema` / `FormLayout` / `SystemSettings` / `ClientSettings` / `DatabaseSettings` / `DbCategorySettings`） | 17 | ❌ | 這些型別以 **XML 字串**上 wire（見 [IGetFormSchemaResponse.cs](../../src/Bee.Api.Contracts/System/IGetFormSchemaResponse.cs) 的 remarks），從不經 MessagePack |
+| 定義型別（`FormSchema` / `TableSchema` / `FormLayout` / `SystemSettings` / `ClientSettings` / `DatabaseSettings` / `DbCategorySettings`） | 17 | ❌ | 這些型別以 **XML 字串**上 wire（見 [IGetFormSchemaResponse.cs](../../../src/Bee.Api.Contracts/System/IGetFormSchemaResponse.cs) 的 remarks），從不經 MessagePack |
 | **Item 基底 + `FilterNode.Kind`** | **8** | ✅ | item 走 contractless，屬性逐一序列化 |
 
 生效的 8 個是：
@@ -305,7 +305,7 @@ remarks 已說明：**沒有任何 production code 呼叫 `Register`，映射表
 
 ### 發現 4：`Bee.Base` 的既有原則與本計畫的分界線一致
 
-[MessagePackCollectionBase.cs:16-20](../../src/Bee.Definition/Collections/MessagePackCollectionBase.cs)
+[MessagePackCollectionBase.cs:16-20](../../../src/Bee.Definition/Collections/MessagePackCollectionBase.cs)
 的 remarks 說 `Bee.Base` 「takes no external package references at all」，因此無法承載
 MessagePack attribute——這是四對雙胞胎型別存在的唯一理由。
 
@@ -335,7 +335,7 @@ MessagePack attribute——這是四對雙胞胎型別存在的唯一理由。
 幾乎總是也屬於另一個——分歧應該只有 attribute」。
 
 **這條要求已經被違反**：`Bee.Base.KeyCollectionBase.GetOrDefault(string key)`
-（[KeyCollectionBase.cs:161](../../src/Bee.Base/Collections/KeyCollectionBase.cs)）
+（[KeyCollectionBase.cs:161](../../../src/Bee.Base/Collections/KeyCollectionBase.cs)）
 在 `MessagePackKeyCollectionBase` 中**不存在**。靠註解而非編譯期把關的維護稅，已經在付。
 
 **四對全部合併，四個 `MessagePack*` 型別全數刪除**，序列化細節一律由 Api.Core 的 formatter
@@ -347,7 +347,7 @@ MessagePack attribute——這是四對雙胞胎型別存在的唯一理由。
 漏了就在反序列化時擲 `MessagePackSerializationException`。BEE4001 這條規則存在的唯一理由，
 就是替這個手動步驟把關。
 
-但 [FormatterResolver.cs](../../src/Bee.Api.Core/MessagePack/FormatterResolver.cs) **本來就有**
+但 [FormatterResolver.cs](../../../src/Bee.Api.Core/MessagePack/FormatterResolver.cs) **本來就有**
 自動偵測邏輯（比對 `BaseType` 是否為 `MessagePackCollectionBase<>`，反射建構
 `CollectionBaseFormatter<,>`），只是不可達。該檔 WARNING 已寫明修法：
 
@@ -379,7 +379,7 @@ MessagePack attribute——這是四對雙胞胎型別存在的唯一理由。
 > **不受影響**：BEE4005 / BEE4006（單一 `Add` 多載、無參數建構子）走
 > `FrameworkCollectionTypes`，其清單已含 `Bee.Base.Collections.CollectionBase\`1` 與
 > `KeyCollectionBase\`1`，合併後照常運作——它們把關的是行動端 AOT `XmlSerializer` 的型別形狀
-> （見 [apple-mobile-trim.md](../../.claude/rules/apple-mobile-trim.md)），與傳輸格式無關。
+> （見 [apple-mobile-trim.md](../../../.claude/rules/apple-mobile-trim.md)），與傳輸格式無關。
 
 ## 設計
 
@@ -443,7 +443,7 @@ public sealed class WireIgnoreAttribute : Attribute { }
 **收益**：
 - adr-030 的唯一永久例外消失，`BEE4003`（`UnionMustUseIntegerKeys`）可退役
 - `FilterNode.Kind` 在 MessagePack ignore / JSON 判別碼的語意不對稱消失，
-  [FilterNode.cs:25-30](../../src/Bee.Definition/Filters/FilterNode.cs) 的 WARNING 註解可移除
+  [FilterNode.cs:25-30](../../../src/Bee.Definition/Filters/FilterNode.cs) 的 WARNING 註解可移除
 
 **代價**：新增欄位或第三個子類時必須同步改 formatter，漏改會**靜默丟欄位**。
 以 round-trip 測試 + 屬性數量斷言把關（見「驗證策略」）。
@@ -452,7 +452,7 @@ public sealed class WireIgnoreAttribute : Attribute { }
 `SafeTypelessFormatter`。
 
 > JSON 端的
-> [FilterNodeCollectionJsonConverter](../../src/Bee.Definition/Filters/FilterNodeCollectionJsonConverter.cs)
+> [FilterNodeCollectionJsonConverter](../../../src/Bee.Definition/Filters/FilterNodeCollectionJsonConverter.cs)
 > 已經用 `Kind` 屬性自行判型——同一個多型問題，JSON 早就用 converter 解了。
 > 它**留在原地不動**（`System.Text.Json` 為 BCL，不產生相依），
 > 但它是 `FilterNodeFormatter` 的現成範本。
@@ -467,10 +467,10 @@ public sealed class WireIgnoreAttribute : Attribute { }
 它是貨真價實的 `IMessagePackFormatter<object?>` 實作，卻住在定義層，且被 Api.Core 三處反向引用
 （`MessagePackCodec`、`SafeMessagePackSerializerOptions`、`ApiPayloadConverter`）。
 
-搬遷的卡點是 [Parameter.cs:48](../../src/Bee.Definition/Collections/Parameter.cs) 的
+搬遷的卡點是 [Parameter.cs:48](../../../src/Bee.Definition/Collections/Parameter.cs) 的
 `[MessagePackFormatter(typeof(SafeTypelessFormatter))]`。
 
-但注意它**已被雙重註冊**——[MessagePackCodec.cs:37](../../src/Bee.Api.Core/MessagePack/MessagePackCodec.cs)
+但注意它**已被雙重註冊**——[MessagePackCodec.cs:37](../../../src/Bee.Api.Core/MessagePack/MessagePackCodec.cs)
 的 formatter 陣列也放了 `SafeTypelessFormatter.Instance`，而 `CompositeResolver` 的 formatter 陣列
 優先於 resolver 陣列。走 codec 的路徑上 `object` 成員本就會命中它。
 
@@ -525,7 +525,7 @@ proxy 屬性存在的唯一理由就是「attribute 只能標在屬性上」，�
 
 1. `BeeObjectFormatter` 原型能否在 reflection-only 模式下正確 round-trip
    （用 `AppContext.SetSwitch("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", false)`
-   重現行動端 AOT 路徑，見 [apple-mobile-trim.md](../../.claude/rules/apple-mobile-trim.md)）
+   重現行動端 AOT 路徑，見 [apple-mobile-trim.md](../../../.claude/rules/apple-mobile-trim.md)）
 2. 待決 A：拿掉 `Parameter` 的 formatter attribute 後，走 codec 的 round-trip 是否仍命中
    `SafeTypelessFormatter`
 3. 發現 2 / 3 的實證確認：移除集合容器與定義型別的標註後，全套序列化測試是否仍綠
@@ -545,7 +545,7 @@ proxy 屬性存在的唯一理由就是「attribute 只能標在屬性上」，�
 > 僅限集合子型別**，而那些型別現行也是走 `CollectionBaseFormatter`，結果應完全相同。
 > 現行 fallback 委派給 `StandardResolver`（要求 `[MessagePackObject]`）才是它必須排在後面的原因。
 
-> **順帶修正**：[FormatterResolver.cs:29-30](../../src/Bee.Api.Core/MessagePack/FormatterResolver.cs)
+> **順帶修正**：[FormatterResolver.cs:29-30](../../../src/Bee.Api.Core/MessagePack/FormatterResolver.cs)
 > 的 WARNING 以「`FormSchema`、`FormLayout` and friends」當作 contractless 型別的例子，
 > 依上述其實**舉錯了例**——它們不走這條路。該註解在階段 4 重寫 resolver 時一併更正。
 
@@ -628,7 +628,7 @@ formatter。否決理由：`ITagProperty.Tag` / `IKeyCollectionItem.Key` 是公�
 
 **public API 變更**：`Bee.Definition` 的 7 個 `SafeTypelessFormatter` 條目
 自 `PublicAPI.Shipped.txt` 移出並於 `Unshipped.txt` 標記 `*REMOVED*`。
-屬**破壞性變更**——依 [releasing.md](../../.claude/rules/releasing.md)，
+屬**破壞性變更**——依 [releasing.md](../../../.claude/rules/releasing.md)，
 pre-stable 允許但須在 CHANGELOG 明列。
 
 **測試合併**：原本一分為二的兩份重複測試
@@ -655,23 +655,23 @@ pre-stable 允許但須在 CHANGELOG 明列。
 以及 `SerializationAttributeNames` 中兩個 `MessagePack*` 型別名常數。
 
 > 此階段動到 public API 表面（型別搬遷／移除），需處理 `PublicAPI.Unshipped.txt`，
-> 且屬**破壞性變更**。依 [releasing.md](../../.claude/rules/releasing.md)，
+> 且屬**破壞性變更**。依 [releasing.md](../../../.claude/rules/releasing.md)，
 > pre-stable 允許但必須在 CHANGELOG 明列。
 
 ### 階段 5：移除相依 + 文件修訂
 
 移除 `PackageReference`，並修訂：
 
-- [adr-030](../adr/adr-030-messagepack-name-based-keys.md)——「`[Union]` 永久例外」與
+- [adr-030](../../adr/adr-030-messagepack-name-based-keys.md)——「`[Union]` 永久例外」與
   「裸標記不可移除」兩項結論皆已不成立
-- [rules/serialization.md](../../.claude/rules/serialization.md)——「`[Union]` 多型永久維持整數
+- [rules/serialization.md](../../../.claude/rules/serialization.md)——「`[Union]` 多型永久維持整數
   `[Key]`」整節需重寫
-- [docs/analyzer-rules.md](../analyzer-rules.md) 雙語——`BEE4003` 退役
-- [docs/dependency-map.md](../dependency-map.md)——相依圖更新
+- [docs/analyzer-rules.md](../../analyzer-rules.md) 雙語——`BEE4003` 退役
+- [docs/dependency-map.md](../../dependency-map.md)——相依圖更新
 
 > 需要一份**新 ADR** 記錄決策、分界線（BCL 內建格式留在定義層 / 需外部套件的傳輸格式
 > 外置至 Api.Core）與取捨，並說明未來新增傳輸格式時的落地路徑。
-> 依 [rules/public-docs.md](../../.claude/rules/public-docs.md)，公開文件不得引用本 plan，
+> 依 [rules/public-docs.md](../../../.claude/rules/public-docs.md)，公開文件不得引用本 plan，
 > 理由必須寫進 ADR 本身。
 
 ## 風險
@@ -680,7 +680,7 @@ pre-stable 允許但須在 CHANGELOG 明列。
 |------|------|------|
 | `BeeObjectFormatter` 在 AOT reflection-only 下行為分歧 | 行動端 wire 靜默損壞 | 階段 0 以 `IsDynamicCodeSupported=false` 實測；不使用 `Reflection.Emit` |
 | 手寫 `FilterNodeFormatter` 漏欄位 | 靜默丟資料，XML/JSON 測不出來 | round-trip 測試 + 屬性數量斷言（新增屬性即紅） |
-| 移除 `[MessagePackObject]` 影響 source-gen 退路 | 行動端若被逼上 source generator 需重新標註 | adr-030 保留標記的理由是「免費保險」；本計畫是有意識地放棄它，需在新 ADR 明列。實測已證 MessagePack 3.x 的 reflection fallback 在行動端可用（見 [rules/serialization.md](../../.claude/rules/serialization.md)） |
+| 移除 `[MessagePackObject]` 影響 source-gen 退路 | 行動端若被逼上 source generator 需重新標註 | adr-030 保留標記的理由是「免費保險」；本計畫是有意識地放棄它，需在新 ADR 明列。實測已證 MessagePack 3.x 的 reflection fallback 在行動端可用（見 [rules/serialization.md](../../../.claude/rules/serialization.md)） |
 | 破壞性 wire 變更 | 外部消費者 | adr-030 已載明「目前無外部實際消費者」；需在動工前重新確認此前提仍成立 |
 | 階段 4 的型別合併牽動 public API | 下游編譯錯誤 | 獨立階段、獨立 review；`PublicAPI` analyzer 會擋未申報變更 |
 | 階段 1–3 後 wire 型別由 attributed 轉為 contractless | 序列化行為改變 | 6 個需排除成員的型別走顯式 `BeeObjectFormatter`；其餘由 contractless 以屬性名處理，與 `keyAsPropertyName` 等價。階段 0 第 1、3 項專驗 |

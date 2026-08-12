@@ -11,6 +11,12 @@
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [框架全面體檢（2026-08-11）](plan-framework-review-2026-08-11.md) | 2026-08-12 | 十一面向唯讀體檢（基準 v4.19.0）；修正後十一面向平均 8.09 → 9.13，另記 5 條刻意遞延與 2 筆待查 flaky |
+| [解除 Bee.Definition 對 DynamicExpresso 的傳遞相依](plan-definition-expressions-decoupling.md) | 2026-08-11 | 抽象三型別下沉 `Bee.Base`，拿掉對 `Bee.Expressions` 的 ProjectReference；相依閘門由人眼掃描變成可執行檢查（ADR-038） |
+| [Northwind 補齊 common / log 資料庫分類](plan-northwind-common-log-scopes.md) | 2026-08-11 | 兩個分類正式登錄、seeder 旁路建表退役、開啟稽核；框架補 `st_user` 預設認證，案例登入改走它 |
+| [修復行動端（iOS）AOT 下的 MessagePack wire 路徑](plan-mobile-aot-wire.md) | 2026-08-10 | wire 型別全面脫離 contractless 改顯式註冊、`object` 成員改判別式封套；`DynamicCodeSupport=false` 納入回歸閘門（ADR-037） |
+| [解除 Bee.Definition 對 MessagePack 的相依](plan-definition-messagepack-decoupling.md) | 2026-08-09 | 定義層移除全部標註與 `PackageReference`，wire 綁定改由 `Bee.Api.Core` 的手寫 formatter 承擔（ADR-036） |
+| [盤點 `IObjectSerialize*` 家族並移除孤兒介面](plan-serialization-interface-cleanup.md) | 2026-08-09 | 移除 `IObjectSerializeProcess` 與隨之失效的 `SerializeFormat`；`IObjectSerializeEmpty` 盤點後推翻原訂移除，改補設計意圖 XML doc |
 | [業務邏輯 plugin](plan-customization-plugin.md) | 2026-08-06 | `PluginSettings.xml`：四個掛載點、每次操作一個實例、兩層相加；`LocalOnly` 維護 API 與客製層第一條寫入路徑 |
 | [BO 擴充點的交易邊界契約](plan-bo-transaction-contract.md) | 2026-08-05 | 明訂只有 `Do*` 在交易中；裁決其他 BO 方法不拆三段、交易不上提到 BO 層 |
 | [客製 BO 與 Repository 類別](plan-customization-business.md) | 2026-08-05 | `ProgramItem` 改屬性級繼承（只換 BO 不再打掉套裝 Repository）；解析失敗改為降級 + log |

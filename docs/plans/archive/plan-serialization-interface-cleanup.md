@@ -13,7 +13,7 @@
 
 `IObjectSerializeProcess` 最初的用途是在 XML 持久化的序列化 / 反序列化過程中就地轉換資料，
 實際案例是 `DatabaseSettings.Password` 的加解密。該職責已於 Phase 5（`5037c128`）抽離為
-[DatabaseSettingsCryptor](../../src/Bee.Definition/Settings/DatabaseSettings/DatabaseSettingsCryptor.cs)，
+[DatabaseSettingsCryptor](../../../src/Bee.Definition/Settings/DatabaseSettings/DatabaseSettingsCryptor.cs)，
 由 `CacheDefineAccess` 在讀 / 存時顯式呼叫；更早之前 `SystemSettings` 也已移除該介面（`75cc267c`）。
 
 由此順帶盤點整個 `IObjectSerialize*` 家族，判定哪些是活的抽象、哪些是沒有消費者的空殼。
@@ -79,7 +79,7 @@ Phase 5 抽離加解密的理由寫在 `DatabaseSettingsCryptor` 的 `<remarks>`
 
 ### A2. `SerializationLifecycle` 收斂
 
-[SerializationLifecycle.cs](../../src/Bee.Base/Serialization/SerializationLifecycle.cs) 移除三個
+[SerializationLifecycle.cs](../../../src/Bee.Base/Serialization/SerializationLifecycle.cs) 移除三個
 `IObjectSerializeProcess` 分支。`NotifyAfterDeserialize` 因此變成空方法，**整個刪除**；
 `NotifyBefore` / `NotifyAfter` 只剩翻 `SerializeState`，`format` 參數無用一併移除：
 
@@ -182,7 +182,7 @@ public class SerializationTestPayload : IObjectSerializeBase, IObjectSerialize, 
 
 ### B1. 改寫 XML doc
 
-[IObjectSerializeEmpty.cs](../../src/Bee.Base/Serialization/IObjectSerializeEmpty.cs) 現有的
+[IObjectSerializeEmpty.cs](../../../src/Bee.Base/Serialization/IObjectSerializeEmpty.cs) 現有的
 summary 只寫「determining whether an object has empty data during serialization」，讀不出
 它是為誰設計的——這正是它反覆被誤判為孤兒的原因。改為明確記載目標與現況：
 
@@ -204,7 +204,7 @@ summary 只寫「determining whether an object has empty data during serializati
 /// </remarks>
 ```
 
-註解語言依 [code-style.md](../../.claude/rules/code-style.md) 用英文（公開 repo + 隨 NuGet 發佈
+註解語言依 [code-style.md](../../../.claude/rules/code-style.md) 用英文（公開 repo + 隨 NuGet 發佈
 進消費端 IntelliSense）；避免行尾 `;` 與連續英文識別字，降低 SonarCloud S125 誤判。
 
 ### B2. 不做的事
@@ -228,7 +228,7 @@ summary 只寫「determining whether an object has empty data during serializati
 **只有階段 A** 涉及 shipped public API 的移除（`IObjectSerializeProcess` 與 `SerializeFormat`），
 屬 source-breaking 與 binary-breaking。階段 B 純文件，不影響公開表面。
 
-- 依 [releasing.md](../../.claude/rules/releasing.md) 的 pre-stable 例外，v4.x 且無外部消費者，
+- 依 [releasing.md](../../../.claude/rules/releasing.md) 的 pre-stable 例外，v4.x 且無外部消費者，
   允許在 minor 版內移除，但**必須在 CHANGELOG 明列，不可靜默**。
 - 下一版為 **4.19.0**：更新 `src/Directory.Build.props`、根 `CHANGELOG.md` / `CHANGELOG.zh-TW.md`
   各一行 WHAT，明細寫進 `docs/changelogs/4.19.0.md` / `.zh-TW.md`（雙語條目數一致）。

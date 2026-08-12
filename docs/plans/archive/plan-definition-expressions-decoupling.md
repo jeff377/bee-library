@@ -1,6 +1,6 @@
 # 計畫：解除 Bee.Definition 對第三方套件的傳遞相依（DynamicExpresso）
 
-**狀態：✅ 已完成（2026-08-11）—— 採 B 案，結論見 [adr-038](../adr/adr-038-definition-dependency-boundary.md)**
+**狀態：✅ 已完成（2026-08-11）—— 採 B 案，結論見 [adr-038](../../adr/adr-038-definition-dependency-boundary.md)**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -34,7 +34,7 @@
 
 ## 一句話
 
-`Bee.Definition` 目前**傳遞相依 `DynamicExpresso.Core`** —— 這與 [adr-036](../adr/adr-036-wire-serialization-externalized.md)
+`Bee.Definition` 目前**傳遞相依 `DynamicExpresso.Core`** —— 這與 [adr-036](../../adr/adr-036-wire-serialization-externalized.md)
 趕走 MessagePack 時所用的判準是同一條，只是當時掃的是「傳輸格式」關鍵字，沒掃到它。
 成因不是架構放錯位置，而是**抽象與實作同住一個組件**。
 
@@ -106,7 +106,7 @@ IReadOnlyList<string> GetReferencedVariables(string expression);
 `FormSchema` 宣告 `ValueExpression` 與驗證規則，求值是定義語意的一部分。
 `FormExpressionCalculator` 是 schema-driven 的 `DataRow` 邏輯，**server 存檔前與 client
 即時預覽共用同一份實作**，這正是「client 算出的值等於 server 寫入的值」的保證來源
-（[adr-028](../adr/adr-028-expression-rule-engine.md)）。把它搬離定義層會斷掉這條線。
+（[adr-028](../../adr/adr-028-expression-rule-engine.md)）。把它搬離定義層會斷掉這條線。
 
 **定義層該不該因此帶第三方套件？** ❌ **不該。**
 adr-036 的原文判準：

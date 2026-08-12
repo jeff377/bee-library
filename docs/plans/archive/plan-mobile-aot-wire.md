@@ -48,7 +48,7 @@ Android 模擬器）對同一台 server 實測通過——登入、清單、含 
 需非泛型多載，在無動態碼的 runtime 上本來就不可用——那是
 `SysInfo.AllowedTypeNamespaces` 這個可設定擴充點的固有限制，不是缺陷。
 
-實作決策記於 [../adr/adr-037-wire-explicit-registration.md](../adr/adr-037-wire-explicit-registration.md)。
+實作決策記於 [../adr/adr-037-wire-explicit-registration.md](../../adr/adr-037-wire-explicit-registration.md)。
 **wire 格式有破壞性變更**（`object` 值的封套），發版時須在 CHANGELOG 明列。
 
 ### 順帶修掉的 XML 半邊缺陷
@@ -61,9 +61,9 @@ Android 模擬器）對同一台 server 實測通過——登入、清單、含 
 全定義層掃描確認同型問題**僅此一處**（`[XmlArray]` 的 get-only 集合不受影響）。
 
 > 本計畫源於 2026-08-10 的調查。調查本身已完成，結論已寫入
-> [../adr/adr-036-wire-serialization-externalized.md](../adr/adr-036-wire-serialization-externalized.md)、
-> [../../.claude/rules/serialization.md](../../.claude/rules/serialization.md) 與
-> [../../.claude/rules/apple-mobile-trim.md](../../.claude/rules/apple-mobile-trim.md)。
+> [../adr/adr-036-wire-serialization-externalized.md](../../adr/adr-036-wire-serialization-externalized.md)、
+> [../../.claude/rules/serialization.md](../../../.claude/rules/serialization.md) 與
+> [../../.claude/rules/apple-mobile-trim.md](../../../.claude/rules/apple-mobile-trim.md)。
 > 本檔只處理「怎麼修」。
 
 ## 一句話（動工當下的問題陳述）
