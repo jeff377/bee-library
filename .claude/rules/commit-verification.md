@@ -1,58 +1,29 @@
 # Commit 前驗證 hook
 
 本 repo 以 Claude Code `PreToolUse` hook 在 agent 執行 `git commit` **之前**強制驗證。
-設定於 `.claude/settings.json`（入版控），實作於 `.claude/hooks/pre-commit-verify.sh`。
+宣告於 `.claude/settings.json`，實作於 `.claude/hooks/pre-commit-verify.sh`。
+
+> **兩項檢查為何不對稱、為何 `--no-incremental`、為何必須 fail open、
+> 「其他 repo」的 cwd 如何判定 —— 全部寫在腳本檔頭。** 要細節就讀那支，本檔不複寫。
+
+## agent 要知道的四件事
+
+1. **clean Release build 失敗會擋下 commit**（exit 2）。搭配 `TreatWarningsAsErrors=true`，
+   任何警告即失敗。實測約 5 秒。
+2. **`PublicAPI.Unshipped.txt` 有異動時只提示、不擋**，但**必須在 commit message 或回覆中
+   說明相容性判定** —— analyzer 擋得住「未申報」，擋不住「已申報但二進位不相容」
+   （例如對既有 public 建構子加 optional 參數）。這個提示的作用就是把該判定從靜默轉為必須正視。
+3. **不要為了讓 hook 通過而修改測試或原始碼** —— 那正是本 hook 要防的事情本身。
+4. **`git --no-verify` 對它無效**（那是 git 自身 hook 的旗標）。它掛在 Claude Code 的工具呼叫上，
+   不是 `.git/hooks/`，所以**使用者在自己終端機直接 commit 不受影響**。
 
 ## 為什麼是 hook 而不是規則條文
 
-條文要求 agent **自願遵守**，hook 由 Claude Code 外殼**強制執行**。以下兩種失誤都源於
-「agent 沒有自覺去檢查」，寫成條文無效：以 incremental build 宣稱「build is clean」；
-public API 變更靠補 `PublicAPI.Unshipped.txt` 讓 build 轉綠而未判二進位相容性。
-
-## 兩項檢查
-
-| 檢查 | 行為 | 說明 |
-|------|------|------|
-| Clean Release build | **阻擋**（exit 2） | `dotnet build Bee.Library.slnx -c Release --no-incremental`。`--no-incremental` 是重點——強制全數重新編譯，結果不受既有 `obj/` 快取影響。搭配 `TreatWarningsAsErrors=true`，任何警告即失敗。實測約 5 秒。 |
-| `PublicAPI.Unshipped.txt` 異動 | **提示**（不阻擋） | 列出 diff，要求於 commit message 或回覆中說明相容性判定。 |
-
-第二項為何不阻擋：`Microsoft.CodeAnalysis.PublicApiAnalyzers` 已於 `src/Directory.Build.props`
-全域啟用，「變更未申報」（RS0016 等）**本來就是編譯錯誤**，第一項即可攔下。分析器看不到的是
-「已申報但不相容」——例如對既有 public constructor 增加 optional 參數，語法相容但二進位不相容，
-申報後 build 轉綠即靜默通過。此提示的作用是把該判定從靜默轉為必須正視，故不阻擋、只攤開。
-
-## 失敗開放（fail-open）
-
-腳本在下列情況一律 exit 0 放行，不阻斷工作：
-
-- 無法解析 hook 輸入
-- 不在 git repo 內，或找不到 `Bee.Library.slnx`（例如 agent 正在其他 repo 內 commit）
-- 找不到 `dotnet`
-
-驗證 hook 卡死整個 repo，比偶爾漏檢更糟。
-
-### 「其他 repo」這條如何判定
-
-**hook 行程的 cwd 是 Claude Code 的專案目錄，不是被攔截指令實際執行的目錄。**
-因此判定改為**從指令文字中最後一個 `cd` 推導目標目錄**再解 repo root（支援 `~` 與絕對路徑；
-無 `cd` 則沿用 hook cwd；`cd` 目標不存在則退回本 repo，寧可多建一次；詞界判定避免 `abcd` 誤觸）。
-
-原本從 hook 自己的 cwd 解 repo，**永遠解到本 repo**，於是 `cd <其他 repo> && git commit`
-也會被拿來建置本 repo 並阻擋 —— fail-open 完全沒生效，實際踩到兩次。
-判別法：**這次 commit 的目標 repo 是不是 bee-library？** 不是就該完全放行。
-
-## 涵蓋範圍與限制
-
-**只攔截 agent 透過 Bash 工具發出的 `git commit`。** 使用者在自己的終端機直接 commit
-不受影響——hook 掛在 Claude Code 的工具呼叫上，不是 git 的 `.git/hooks/`。
-
-同理，git 的 `--no-verify` 對本 hook **無效**（那是 git 自身 hook 的旗標）。
+條文要求 agent **自願遵守**，hook 由外殼**強制執行**。以下兩種失誤都源於「agent 沒有自覺去
+檢查」，寫成條文無效：以 incremental build 宣稱「build is clean」；public API 變更靠補
+`PublicAPI.Unshipped.txt` 讓 build 轉綠而未判二進位相容性。
 
 ## 暫時停用
 
-需要繞過時（例如 WIP commit、或建置因環境問題失敗）：
-
-1. 註解或移除 `.claude/settings.json` 的 `hooks` 區塊，重開 session
-2. 或改由使用者在自己的終端機執行該次 commit
-
-不要為了讓 hook 通過而修改測試或原始碼——那是本 hook 要防的事情本身。
+需要繞過時（WIP commit、或建置因環境問題失敗）：註解 `.claude/settings.json` 的 `hooks`
+區塊並重開 session，或改由使用者在自己的終端機執行該次 commit。

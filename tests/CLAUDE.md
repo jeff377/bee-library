@@ -26,31 +26,22 @@
 1. **Docker daemon**：`docker ps`。失敗時**告知使用者啟動 Docker Desktop，不要自行
    `open -a Docker`**（agent 拉 GUI 工具耗時且結果不確定）。
    **例外：走 `./test.sh` 不需做這步** —— 它內建 `ensure_docker_daemon`，macOS 上會自動拉起並輪詢等待。
-2. **容器存在性**：`docker ps -a --format '{{.Names}}\t{{.Status}}'` 比對下表。
-   缺任一個就告知使用者「該 DB 的測試會自動 skip」，**不要自行 `docker run` 創新容器**
-   （image 版本 / port / volume / 初始 schema 都有約束，亂建會撞既有設定）。
-   容器在但 stopped 不需動作，`./test.sh` 會 `docker start`。
-
-   | 容器名 | DB 類型 | 連線字串 env var |
-   |--------|--------|---------|
-   | `sql2025` | SQL Server | `BEE_TEST_CONNSTR_SQLSERVER` |
-   | `pgvector-db` | PostgreSQL | `BEE_TEST_CONNSTR_POSTGRESQL` |
-   | `mysql8` | MySQL | `BEE_TEST_CONNSTR_MYSQL` |
-   | `oracle23ai` | Oracle | `BEE_TEST_CONNSTR_ORACLE` |
-
-   容器名可用 `BEE_TEST_SQL_CONTAINER` / `BEE_TEST_PG_CONTAINER` /
-   `BEE_TEST_MYSQL_CONTAINER` / `BEE_TEST_ORACLE_CONTAINER` override。
+2. **容器存在性**：`docker ps -a --format '{{.Names}}\t{{.Status}}'` 比對
+   **`test.sh` 檔頭列出的四個容器**（預設名與 `BEE_TEST_*_CONTAINER` override 都寫在那，
+   本檔不複寫以免漂移）。缺任一個就告知使用者「該 DB 的測試會自動 skip」，
+   **不要自行 `docker run` 創新容器**（image 版本 / port / volume / 初始 schema 都有約束，
+   亂建會撞既有設定）。容器在但 stopped 不需動作，`./test.sh` 會 `docker start`。
 
 ### 測試失敗的判別順序（本機情境）
 
 跑完 `./test.sh` 後，若看到下列例外類型，**優先懷疑容器狀態，不要直接動測試代碼**：
 
-| 例外類型片段 | 對應容器 |
-|-------------|---------|
-| `SqlException` 含 "TCP" / "network-related" / "server was not found" | `sql2025` |
-| `NpgsqlException` 含 "connection refused" / "Failed to connect" | `pgvector-db` |
-| `MySqlException` 含 "Unable to connect" / "Can't connect to server" | `mysql8` |
-| `OracleException` 含 "ORA-12541" / "ORA-50201" / "TCP transport" | `oracle23ai` |
+| 例外類型片段 | 指向 |
+|-------------|------|
+| `SqlException` 含 "TCP" / "network-related" / "server was not found" | SQL Server 容器 |
+| `NpgsqlException` 含 "connection refused" / "Failed to connect" | PostgreSQL 容器 |
+| `MySqlException` 含 "Unable to connect" / "Can't connect to server" | MySQL 容器 |
+| `OracleException` 含 "ORA-12541" / "ORA-50201" / "TCP transport" | Oracle 容器 |
 
 流程：`docker ps --filter "name=<container>" --format '{{.Status}}'` 確認容器在跑 →
 在跑才考慮 schema / seed / 連線字串問題 → 不在跑就提示使用者啟動，
