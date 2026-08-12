@@ -6,24 +6,33 @@ description: bee-library 從一個 FormSchema XML 反推 / 產出對應的 FormL
 # bee-library FormSchema → Sidecar 定義 scaffold
 
 bee-library 採 **FormSchema-driven** 設計：一個 FormSchema 同時驅動 UI（FormLayout）、
-資料庫（TableSchema）與多語介面（LanguageResource）。每新增一個 form entity，三類 sidecar
-都要產出 — 本 skill 把流程寫死，避免 sub-key 命名 / CategoryId / namespace 等慣例踩雷。
+資料庫（TableSchema）與多語介面（LanguageResource）。本 skill 把三類 sidecar 的產出流程
+寫死，避免 sub-key 命名 / CategoryId / namespace 等慣例踩雷。
 
 > 樣板對照（讀程式碼時對著看）：
 > - `tests/Define/FormSchema/Employee.FormSchema.xml`（input）
 > - `tests/Define/FormLayout/Employee.FormLayout.xml`
-> - `tests/Define/TableSchema/company/ft_employee.TableSchema.xml`
+> - `tests/Define/TableSchema/company/st_employee.TableSchema.xml`
 > - `tests/Define/Language/{zh-TW,en-US}/Employee.Language.xml`
+
+> `st_employee` 不是筆誤 —— `st_` 前綴代表**框架所有**，不代表落在 common 庫；
+> 它與 `st_department` 同屬 company scope（見 `rules/database.md`）。
 
 ## 三類產出與 framework 入口
 
-| 產出 | Framework 入口 | 備註 |
-|------|---------------|------|
-| FormLayout | `schema.GetFormLayout(layoutId)`（`FormSchema.cs`） | `layoutId` 預設用 `ProgId` |
-| TableSchema | `TableSchemaGenerator.Generate(formTable)` 或 `formTable.GenerateDbTable()` | 對 schema 的**每個** FormTable 各產一份 |
-| LanguageResource | 無 generator — 手構造 + `FormSchemaLocalizer` sub-key 常數 | 雙語：zh-TW 抄 schema 中文 caption、en-US 由翻譯字典推 |
+**不是每次加 form 都要產三類。** 先確認哪幾類真的需要落檔：
 
-**Skill 預設產三類**。使用者要排除某類需明說（「只產 layout」、「不要動 tableschema」）。
+| 產出 | 何時需要落檔 | Framework 入口 |
+|------|-------------|---------------|
+| **FormLayout** | **僅在要客製版面時** —— 框架 runtime 由 FormSchema 自動產生（`FormSchema.GetFormLayout` → `FormLayoutGenerator`），不落檔也能跑。另一個情境是補 `tests/Define/` fixture。 | `schema.GetFormLayout(layoutId)`（`FormSchema.cs`），`layoutId` 預設用 `ProgId` |
+| **TableSchema** | **一律需要** —— seeder 靠它建表，且資料夾名必須 = CategoryId | `TableSchemaGenerator.Generate(formTable)` 或 `formTable.GenerateDbTable()`；對 schema 的**每個** FormTable 各產一份 |
+| **LanguageResource** | 要多語介面就需要 | 無 generator — 手構造 + `FormSchemaLocalizer` sub-key 常數。雙語：zh-TW 抄 schema 中文 caption、en-US 由翻譯字典推 |
+
+> **與 `bee-add-form` 的分工**：在既有 app 上加一張表單走 `bee-add-form`（4 處純定義修改，
+> **不含 FormLayout**，因為框架自動產生）。本 skill 處理的是「要客製版面」或
+> 「要補 fixture / i18n」時才需要的落檔動作。
+
+**預設只產真正需要的類別**；使用者明說要三類全產（或只產某一類）時照辦。
 
 ## 流程：throw-away xUnit fact
 

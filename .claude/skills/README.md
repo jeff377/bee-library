@@ -17,7 +17,7 @@
 | **bee-add-form** | 在已接好的 app 上加一張 CRUD 表單（4 處純定義修改，不寫 UI） |
 | **bee-add-bo-method** | 新增對外公開的 BO 方法（跨 contract / wire / BO / Repository / Client） |
 | **bee-add-cache-object** | 新增框架快取物件（Define 定義快取 / DB 相依快取） |
-| **bee-scaffold-from-formschema** | 從 FormSchema 反推 FormLayout / TableSchema / 雙語 LanguageResource |
+| **bee-scaffold-from-formschema** | 從 FormSchema 產 TableSchema / 雙語 LanguageResource；FormLayout 僅在要客製版面時 |
 | **bee-serialization** | 物件三棲序列化（XML 持久化 + JSON/MessagePack wire）設計指引 |
 | **bee-framework-review** | 框架全面體檢方法論（多面向唯讀審查 + 分級重構計畫） |
 | **bee-sample-add** | 為 samples/ 加一個新示範專案 |

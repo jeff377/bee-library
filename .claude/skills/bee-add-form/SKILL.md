@@ -5,7 +5,10 @@ description: 在一個已接好的 Bee.NET app 上「加一張表單」的多檔
 
 # Bee app 加一張表單
 
-在已接好的 Bee 後端（見 `bee-app-scaffold`）上加一張**可用的 CRUD 表單**，是 **4 處純定義修改**，不寫 UI 也不寫 CRUD code。FormLayout 由框架從 FormSchema 自動產生，不必寫。
+在已接好的 Bee 後端（見 `bee-app-scaffold`）上加一張**可用的 CRUD 表單**，是 **4 處純定義修改**，不寫 UI 也不寫 CRUD code。FormLayout 由框架從 FormSchema 自動產生（`FormSchema.GetFormLayout` → `FormLayoutGenerator`），**不必寫**。
+
+> 例外：**要客製版面**時才需要把 FormLayout 落檔 —— 那時走 `bee-scaffold-from-formschema`
+> 產出原貌再改，不要手刻。
 
 > **參考實作**：`apps/Bee.Northwind/Define/`（純主檔、雙 lookup 的 Product、master-detail 的 Order）。對著抄最快。
 
