@@ -1,6 +1,6 @@
 # 設定檔健檢（2026-08-12）
 
-**狀態：✅ 已完成（2026-08-12）**
+**狀態：🚧 進行中（2026-08-12）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -11,7 +11,8 @@
 | 5 | P3：跨層錯置與示意路徑（scope、skill 歸屬、ADR 路徑形狀） | ✅ 已完成（2026-08-12） |
 | 6 | 週邊：soarcloud-libraries plugin scope 補更新、`.gitignore` 補 env 樣式 | ✅ 已完成（2026-08-12） |
 | 7 | 砍不改變行為的散文（追加階段：階段 3/4 只搬位置，文字量沒真的降） | ✅ 已完成（2026-08-12） |
-| 8 | 路徑限定規則下沉 —— 機制驗證 + `testing.md` 下沉（其餘六支另案） | ✅ 已完成（2026-08-12） |
+| 8 | 路徑限定規則下沉 —— 機制驗證 + `testing.md` 下沉 | ✅ 已完成（2026-08-12） |
+| 9 | 其餘路徑限定 rules 下沉（逐支判定「audience 是否真的只有一棵樹」） | 🚧 進行中（2026-08-12） |
 
 ## 背景
 
@@ -472,6 +473,42 @@ bee-library 是 **public repo**，但 `.gitignore` 無 `.env` / `*.local.env` �
 已知的未解問題（處理前必須先有結論，不可自行決定）：**`avalonia.md` 適用四個分散位置**
 （`src/Bee.UI.Avalonia`、`tools/DefineEditor`、`samples/Avalonia.*`、`apps/Bee.Northwind`），
 一個巢狀 `CLAUDE.md` 綁不了四棵樹 —— 複製四份會產生同步負擔，只放一處會漏。
+
+---
+
+## 階段 9 — 其餘路徑限定 rules 下沉
+
+**狀態：🚧 四支已下沉，兩支判定不該下沉。**
+
+階段 8 確認機制可用後逐支處理。**關鍵發現：`tests/` 是特例** —— 一個目錄、一種讀者、
+內容自足。其餘 rules 沒有一支這麼乾淨，必須逐節判 audience，且**有兩支判定為不該下沉**。
+
+### 已下沉
+
+| 來源（常駐） | 前 → 後 | 下沉到 | 搬了什麼 |
+|---|---|---|---|
+| `serialization.md` | 8,960 → **4,216** | `src/Bee.Api.Core/CLAUDE.md`（6,144） | wire formatter 註冊程序、三個誤判點、`object` 判別式封套、AOT 實測與歷史自我更正、回歸閘門、ctor 順序歷史 |
+| `definition.md` | 5,901 → **1,710** | `src/Bee.Definition/CLAUDE.md`（4,308）＋`src/Bee.Business/CLAUDE.md`（2,322） | 集合屬性繼承基底、欄位參照命名、`Defaults/` 定位、集合型別的行動端形狀要件 ／ BO 介面判準 |
+| `avalonia.md` | 4,825 → **2,224** | `src/Bee.UI.Avalonia/CLAUDE.md`（3,147） | Semi 主題、UI 架構定位、控件驗收基準、控件踩雷指路 |
+| `apple-mobile-trim.md` | 6,797 → **6,244** | （併入 `src/Bee.Definition/CLAUDE.md`） | 集合型別形狀三要件的完整條文 |
+
+**順帶修正一處歸屬錯誤**：BO 介面判準（`IBusinessObject` / `ISystemBusinessObject` /
+`IFormBusinessObject`）原本記在 `definition.md`，但那些介面全在 **`src/Bee.Business`**。
+已歸位到 `src/Bee.Business/CLAUDE.md`。
+
+### 判定不該下沉（留常駐，附理由）
+
+| 檔 | 為何不下沉 |
+|---|---|
+| `database.md`（4,505） | 內容是**跨層的**：`CategoryId` 只認三值 → 定義檔作者；NOT NULL 加欄 checklist → TableSchema + 所有 INSERT + seed + 測試；round-then-sum → Repository 寫入層。而「明細加總＝總合」是**財務不變量**，選錯代價是帳目對不上。實測 `decimal.Round` 目前只出現在 `Bee.Definition`，而規則是**規定 Repository 未來要做** —— audience 更散。 |
+| `dependency-boundary.md`（4,265） | 適用面是三個受管 csproj（`Bee.Base` / `Bee.Definition` / `Bee.Api.Contracts`）**分處三個目錄**，一個巢狀檔綁不了。而且 `BEE9001` 建置期鎖已經硬性擋下違反 —— 晚載入無所謂（你會先撞到編譯錯誤再來讀），下沉的效益比風險小。 |
+| `apple-mobile-trim.md` 其餘（6,244） | 剩下的是判準（「Android 驗不到動態碼那半」「例外種類不可當診斷依據」）與診斷雜訊，而 audience 橫跨 `src/Bee.UI.Avalonia`（iOS TFM）與 `apps/Bee.Northwind/*.iOS|.Android` **兩棵樹**。這些雷的症狀是**裝置上靜默失敗**，漏載代價高。 |
+
+### 判準（供下次沿用）
+
+**不是「這個檔講哪個專案」，而是「違反這條規則的人會在哪個目錄工作」。**
+兩者常常不同 —— `definition.md` 的 cache immutability 講的是定義層物件，
+但違反者是 BO / Repository / UI 的作者，所以它留常駐。
 
 ---
 

@@ -72,21 +72,14 @@ NativeAOT console。命令配方見 gotchas。
 
 ## 序列化型別的行動端相容要件
 
-reflection-only 的 `XmlSerializer`（iOS AOT 路徑）對型別形狀比桌面嚴格：
+reflection-only 的 `XmlSerializer`（iOS AOT 路徑）對型別形狀比桌面嚴格：集合型別**只能公開
+一個** public instance `Add`、**必須有無參數建構子**、對映為重複 `[XmlElement]` 的集合屬性
+**必須有 public setter**。三者違反時分別擲 `AmbiguousMatchException` /
+`MissingMethodException` / `ArgumentException: Property set method not found`，
+**桌面完全不會顯現**。
 
-- 集合型別**只能公開一個** public instance `Add`——多個多載會擲 `AmbiguousMatchException`。
-  便利多載必須位移為擴充方法（見 `code-style.md` 的一型別一檔例外條款）。
-- 集合型別**必須有無參數建構子**，否則擲 `MissingMethodException`。
-- **對映為重複 `[XmlElement]` 的集合屬性必須有 public setter**（2026-08-10 新增）。
-  reflection-only 路徑對這種成員是**指派**而非 `Add`，get-only 會擲
-  `ArgumentException: Property set method not found`，外顯為誤導的
-  「There is an error in XML document (行, 列)」。**`[XmlArray]` 的 get-only 集合不受影響**
-  ——差別只在對映方式，不在集合本身。
-  setter 寫成「清空後逐一 `Add` 進既有實例」而非直接換掉欄位，才不會斷開 owner 連結
-  （實例：`LanguageEnum.Entries`）。
-
-這幾點在桌面完全不會顯現，只在行動端 reflection-only 路徑爆炸。
-盤點全定義層有無同型問題的反射掃描手法見 gotchas。
+違反者一律是定義層型別 → 完整條文與 setter 的正確寫法見 `src/Bee.Definition/CLAUDE.md`；
+反射盤點手法見 gotchas。
 
 ## 診斷雜訊（省得再走一次冤枉路）
 
