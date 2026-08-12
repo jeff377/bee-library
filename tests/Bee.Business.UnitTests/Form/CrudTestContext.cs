@@ -64,6 +64,22 @@ namespace Bee.Business.UnitTests.Form
             return new FormBusinessObject(ctx, Guid.NewGuid(), ProgId);
         }
 
+        /// <summary>
+        /// Builds a business object bound to the test repository, with additional service
+        /// overrides layered on top. Used by the audit tests to enable
+        /// <c>AuditLogOptions</c> and capture what <c>IAuditLogWriter</c> receives.
+        /// </summary>
+        public FormBusinessObject CreateBoWithOverrides(params (Type ServiceType, object? Instance)[] overrides)
+        {
+            var all = new List<(Type, object?)>
+            {
+                (typeof(IRepositoryFactory), new StubFactory(_repository))
+            };
+            all.AddRange(overrides);
+            return new FormBusinessObject(
+                TestBeeContext.CreateWithOverrides(_fx, [.. all]), Guid.NewGuid(), ProgId);
+        }
+
         private sealed class StubFactory : IRepositoryFactory
         {
             private readonly IDataFormRepository _repository;
