@@ -56,7 +56,7 @@ namespace Bee.Api.Core.MessagePack
         /// Assembles the explicit formatter list: the hand-written ones first, then the generated
         /// wire contracts.
         /// </summary>
-        private static IReadOnlyList<IMessagePackFormatter> BuildFormatters()
+        private static List<IMessagePackFormatter> BuildFormatters()
         {
             var formatters = new List<IMessagePackFormatter>
             {

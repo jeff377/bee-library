@@ -29,7 +29,7 @@ namespace Bee.Api.Core.JsonRpc
             if (payload.Value == null)
                 throw new InvalidOperationException("Payload.Value cannot be null.");
 
-            var type = payload.Value!.GetType();
+            var type = payload.Value.GetType();
             payload.TypeName = type.FullName + ", " + type.Assembly.GetName().Name;
 
             var transformer = ApiServiceOptions.PayloadTransformer;

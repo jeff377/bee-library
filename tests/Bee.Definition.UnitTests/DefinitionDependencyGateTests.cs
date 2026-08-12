@@ -81,7 +81,7 @@ namespace Bee.Definition.UnitTests
         /// （不含自身）。
         /// </summary>
         /// <param name="rootLibrary">起點 library 名稱（不含版本）。</param>
-        private static IReadOnlyCollection<string> ResolveDependencyClosure(string rootLibrary)
+        private static HashSet<string> ResolveDependencyClosure(string rootLibrary)
         {
             var graph = ReadDependencyGraph();
 

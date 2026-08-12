@@ -18,15 +18,25 @@ namespace Bee.Api.Core.MessagePack
     /// </para>
     /// <para>
     /// NOTE: The framework's enums never declare an underlying type (SonarCloud S2344), so
-    /// <see cref="int"/> is safe. The static constructor asserts it rather than trusting the
-    /// convention, because a wrong guess here would silently truncate values.
+    /// <see cref="int"/> is safe. The constructor asserts it rather than trusting the
+    /// convention, because a wrong guess here would silently truncate values. Every instance is
+    /// created while the formatter list is being assembled, so the assert still fires at
+    /// registration time — a type initializer would have raised the same failure wrapped in a
+    /// <see cref="TypeInitializationException"/> and left the type permanently unusable
+    /// (SonarCloud S3877).
     /// </para>
     /// </remarks>
     /// <typeparam name="TEnum">The enum type.</typeparam>
     internal sealed class WireEnumFormatter<TEnum> : IMessagePackFormatter<TEnum>
         where TEnum : unmanaged, Enum
     {
-        static WireEnumFormatter()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WireEnumFormatter{TEnum}"/> class.
+        /// </summary>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when <typeparamref name="TEnum"/> does not have an <see cref="int"/> underlying type.
+        /// </exception>
+        public WireEnumFormatter()
         {
             if (Enum.GetUnderlyingType(typeof(TEnum)) != typeof(int))
             {

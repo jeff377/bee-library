@@ -13,6 +13,15 @@
   },
   "files": {},
   "humanReview": {
+    "AZ_0uLZNLC6lOXNwWSNe": {
+      "rule": "csharpsquid:S125",
+      "severity": "MAJOR",
+      "component": "src/Bee.Api.Client/Definitions/FormDefinitionLoader.cs",
+      "line": 90,
+      "message": "Remove this commented out code.",
+      "reason": "rule-level blocklist（S125）。該處為英文 WHY 註解（「The server serves definitions exactly as stored, so the company's decimal places are applied here…」），說明為何小數位數在 client 端才套用、以及 Bake 為何略過 currency/unit 綁定的 kind，非被註解掉的程式碼。請於 SonarCloud UI 標 False Positive。",
+      "lastAttempt": "2026-08-12"
+    },
     "AZ_VC6LFjIxvb7pVaS_H": {
       "rule": "csharpsquid:S125",
       "severity": "MAJOR",

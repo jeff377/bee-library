@@ -107,7 +107,9 @@ namespace Bee.Api.Core.UnitTests
         };
 
         [Theory]
-        [MemberData(nameof(SampleValues))]
+        // 樣本值刻意是 object（判別碼本來就是為異質值而設），無法在探索期序列化成個別 data row，
+        // 故關閉探索期列舉（xUnit1045）；測試仍照跑，只是 Test Explorer 顯示為單一項目。
+        [MemberData(nameof(SampleValues), DisableDiscoveryEnumeration = true)]
         [DisplayName("封套實際寫出的第一個元素就是該型別的判別碼")]
         public void Envelope_WritesTheExpectedDiscriminator(object value, int expectedCode)
         {

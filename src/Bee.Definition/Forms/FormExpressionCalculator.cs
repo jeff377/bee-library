@@ -52,7 +52,7 @@ namespace Bee.Definition.Forms
         /// </remarks>
         /// <param name="expression">The expression about to be evaluated.</param>
         /// <param name="variables">The row's full variable map.</param>
-        private IReadOnlyDictionary<string, object?> NarrowVariables(
+        private Dictionary<string, object?> NarrowVariables(
             string expression, Dictionary<string, object?> variables)
         {
             string[] names;

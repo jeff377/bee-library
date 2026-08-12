@@ -1,3 +1,4 @@
+using System.Text;
 using Bee.Base;
 
 namespace Bee.Api.Core.MessagePack
@@ -142,13 +143,7 @@ namespace Bee.Api.Core.MessagePack
             if (names.Count == 0)
                 return false;
 
-            foreach (var name in names)
-            {
-                if (!IsTypeAllowed(name))
-                    return false;
-            }
-
-            return true;
+            return names.TrueForAll(IsTypeAllowed);
         }
 
         /// <summary>
@@ -192,13 +187,8 @@ namespace Bee.Api.Core.MessagePack
                 if (definitionName == null || !IsTypeAllowed(definitionName))
                     return false;
 
-                foreach (var argument in type.GetGenericArguments())
-                {
-                    if (!IsRuntimeTypeAllowed(argument, depth + 1))
-                        return false;
-                }
-
-                return true;
+                return type.GetGenericArguments()
+                    .All(argument => IsRuntimeTypeAllowed(argument, depth + 1));
             }
 
             return IsTypeAllowed(fullName);
@@ -221,7 +211,7 @@ namespace Bee.Api.Core.MessagePack
                 position++;
             }
 
-            var name = text[start..position].Trim();
+            var name = new StringBuilder(text[start..position].Trim());
             if (name.Length == 0)
                 return false;
 
@@ -229,6 +219,21 @@ namespace Bee.Api.Core.MessagePack
             if (position < text.Length && (text[position] == '*' || text[position] == '&'))
                 return false;
 
+            if (!TryParseNameSuffixes(text, ref position, name, names, depth))
+                return false;
+
+            names.Add(name.ToString());
+            return true;
+        }
+
+        /// <summary>
+        /// Consumes the bracket groups that follow a type name. An array rank binds to
+        /// <paramref name="name"/>; a generic-argument list contributes its own names to
+        /// <paramref name="names"/>.
+        /// </summary>
+        private static bool TryParseNameSuffixes(
+            string text, ref int position, StringBuilder name, List<string> names, int depth)
+        {
             var sawGenericArguments = false;
             while (position < text.Length && text[position] == '[')
             {
@@ -241,7 +246,7 @@ namespace Bee.Api.Core.MessagePack
                 {
                     // An array rank binds to the name: `System.Byte` + `[]` is the whitelisted
                     // `System.Byte[]`, which is a different entry from `System.Byte`.
-                    name += "[" + inner + "]";
+                    name.Append('[').Append(inner).Append(']');
                 }
                 else
                 {
@@ -257,7 +262,6 @@ namespace Bee.Api.Core.MessagePack
                 position = close + 1;
             }
 
-            names.Add(name);
             return true;
         }
 
@@ -273,32 +277,8 @@ namespace Bee.Api.Core.MessagePack
             var position = start;
             while (position < end)
             {
-                SkipWhitespace(text, ref position);
-                if (position >= end)
+                if (!TryParseGenericArgument(text, ref position, end, names, depth))
                     return false;
-
-                if (text[position] == '[')
-                {
-                    var close = FindMatchingBracket(text, position);
-                    if (close < 0 || close > end)
-                        return false;
-
-                    var inner = position + 1;
-                    if (!TryParseTypeSpec(text, ref inner, names, depth))
-                        return false;
-
-                    // Whatever remains inside the brackets is the argument's assembly name.
-                    SkipWhitespace(text, ref inner);
-                    if (inner < close && text[inner] != ',')
-                        return false;
-
-                    position = close + 1;
-                }
-                else
-                {
-                    if (!TryParseTypeSpec(text, ref position, names, depth))
-                        return false;
-                }
 
                 SkipWhitespace(text, ref position);
                 if (position < end)
@@ -313,19 +293,42 @@ namespace Bee.Api.Core.MessagePack
         }
 
         /// <summary>
+        /// Parses one generic argument, which is either bracketed (and therefore
+        /// assembly-qualified) or bare.
+        /// </summary>
+        private static bool TryParseGenericArgument(
+            string text, ref int position, int end, List<string> names, int depth)
+        {
+            SkipWhitespace(text, ref position);
+            if (position >= end)
+                return false;
+
+            if (text[position] != '[')
+                return TryParseTypeSpec(text, ref position, names, depth);
+
+            var close = FindMatchingBracket(text, position);
+            if (close < 0 || close > end)
+                return false;
+
+            var inner = position + 1;
+            if (!TryParseTypeSpec(text, ref inner, names, depth))
+                return false;
+
+            // Whatever remains inside the brackets is the argument's assembly name.
+            SkipWhitespace(text, ref inner);
+            if (inner < close && text[inner] != ',')
+                return false;
+
+            position = close + 1;
+            return true;
+        }
+
+        /// <summary>
         /// Determines whether a bracket group is an array rank (empty, or commas only) rather than
         /// a generic-argument list.
         /// </summary>
         private static bool IsArrayRank(string inner)
-        {
-            foreach (var c in inner)
-            {
-                if (c != ',' && !char.IsWhiteSpace(c))
-                    return false;
-            }
-
-            return true;
-        }
+            => inner.All(c => c == ',' || char.IsWhiteSpace(c));
 
         /// <summary>
         /// Returns the index of the bracket closing the one at <paramref name="open"/>, or -1.
