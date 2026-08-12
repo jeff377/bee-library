@@ -105,22 +105,8 @@ jobs:
         tag_name: ${{ github.ref_name }}
         name: Release ${{ github.ref_name }}
         body: |
-          自動發佈 NuGet 套件（版本：${{ steps.version.outputs.VERSION }}）：
-          - Bee.Base
-          - Bee.Definition
-          - Bee.ObjectCaching
-          - Bee.Db
-          - Bee.Business
-          - Bee.Api.Client
-          - Bee.UI.Core
-          - Bee.UI.Avalonia
-          - Bee.Api.Contracts
-          - Bee.Api.Core
-          - Bee.Hosting
-          - Bee.Api.AspNetCore
-          - Bee.Repository.Abstractions
-          - Bee.Repository
-          - Bee.Web.Blazor.Server
-          - Bee.Cli (dotnet tool；安裝 `dotnet tool install -g Bee.Cli`，呼叫 `dotnet bee defines materialize ...`)
+          NuGet 套件已發佈（版本：${{ steps.version.outputs.VERSION }}）。
 
-          如需安裝請至 NuGet.org 查詢對應版本。
+          變更說明：
+          - [English](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/changelogs/${{ steps.version.outputs.VERSION }}.md)
+          - [繁體中文](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/changelogs/${{ steps.version.outputs.VERSION }}.zh-TW.md)
