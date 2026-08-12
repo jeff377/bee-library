@@ -13,7 +13,8 @@
 |------|------|
 | [database.md](database.md) | Oracle `''`=NULL、MySQL TEXT/UUID、SQLite GUID 大小寫、decimal scale、datetime2 參數層 |
 | [serialization-and-expressions.md](serialization-and-expressions.md) | MessagePack ctor 順序與 wire 事實、運算式引擎兩雷、AOT 實測結論 |
-| [avalonia-controls.md](avalonia-controls.md) | Avalonia 控件 18 條實證雷（DataGrid、唯讀外觀、事件、並行） |
+| [avalonia-controls.md](avalonia-controls.md) | Avalonia 控件實證雷（DataGrid、唯讀外觀、事件、並行） |
+| [mobile-trim-aot.md](mobile-trim-aot.md) | 行動端 trim / AOT：決策樹推導、reflection-only 重現法保真度、build 與驗證命令配方 |
 | [test-ci-release.md](test-ci-release.md) | 測試 fixture 缺口、CI path filter 的驗證死角、發佈與體檢流程雷 |
 | [northwind-heads.md](northwind-heads.md) | Northwind 四 head 工具鏈與獨立 repo 同步流程 |
 

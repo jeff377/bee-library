@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | P0：正在誤導 agent 的失效引用（plugin 名、skill 舊名、AOT 結論矛盾） | ✅ 已完成（2026-08-12） |
 | 2 | 清除常駐設定內的清點數字，改定性描述（含已漂與尚未漂者） | ✅ 已完成（2026-08-12） |
-| 3 | `apple-mobile-trim.md` 推導內容搬按需區（需先裁決是否新建 gotchas 檔） | 📝 待做 |
+| 3 | `apple-mobile-trim.md` 推導內容搬按需區（新建 `gotchas/mobile-trim-aot.md`） | ✅ 已完成（2026-08-12） |
 | 4 | `testing.md` 程式碼樣板搬按需區 | 📝 待做 |
 | 5 | P3：跨層錯置與示意路徑（scope、skill 歸屬、ADR 路徑形狀） | 📝 待做 |
 | 6 | 週邊：soarcloud-libraries plugin scope 補更新、`.gitignore` 補 env 樣式 | 📝 待做 |
@@ -168,7 +168,9 @@ DynamicExpresso 自動退回直譯器」。
 
 ## 階段 3 — `apple-mobile-trim.md` 推導內容搬按需區
 
-**此階段需先裁決是否新建目錄檔，未確認前不動。**
+**已完成（2026-08-12）。** 裁決結果：新增 `docs/repo-ops/gotchas/mobile-trim-aot.md`
+——`gotchas/` 目錄已存在且有 README 索引，加一份檔是沿用既有結構、不是新建結構。
+`apple-mobile-trim.md` 13,288 → 6,797 字元（−49%），常駐總量 124,978 → 118,536。
 
 `apple-mobile-trim.md` 是第三大常駐檔，其中約七成是實測數據、操作配方與歷史實驗表：
 
