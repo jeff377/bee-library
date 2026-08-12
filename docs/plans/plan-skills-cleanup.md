@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | `bee-jsonrpc-backend` × `bee-app-scaffold` 的 bootstrap 複寫收斂為單一來源 | ✅ 已完成（2026-08-12） |
-| 2 | `bee-serialization` 的 wire 三段改指路，不複寫 | 📝 待做 |
+| 2 | `bee-serialization` 的 wire 三段改指路，不複寫 | ✅ 已完成（2026-08-12） |
 | 3 | `hackmd-blog` 移出 repo，改置使用者層 | 📝 待做 |
 | 4 | `bee-scaffold-from-formschema` 修檔名錯誤並收斂定位 | 📝 待做 |
 | 5 | `changelog-draft` 中性化後移入 `dev-workflow` plugin | 📝 待做 |

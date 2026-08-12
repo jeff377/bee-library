@@ -57,27 +57,13 @@ public class Foo : IKeyObject          // IKeyObject 僅在要進 KeyObjectCache
 
 ## wire 型別必須顯式註冊（ADR-037，最容易漏）
 
-**`ContractlessStandardResolver` 只是桌面端的便利退路。** 它靠 `Reflection.Emit` 產生 formatter，
-而 .NET for iOS 對**每一種**建置設 `DynamicCodeSupport=false`——那裡未註冊的型別不是變慢，是
-`FormatterNotRegisteredException`。
+**新增 wire 型別**（`Bee.Api.Core.Messages.*`、其遞移可達的定義層型別、集合）
+**一定要到 `src/Bee.Api.Core/MessagePack/WireContracts.*.cs` 註冊**，否則行動端擲
+`FormatterNotRegisteredException`（不是變慢）。漏補會被 `WireContractDriftTests` 擋下。
 
-新增 wire 型別（`Bee.Api.Core.Messages.*`、其遞移可達的定義層型別、集合）時**必做**：
-
-```csharp
-// src/Bee.Api.Core/MessagePack/WireContracts.<Axis>.cs
-list.Add(WireContract.For<Foo>()
-    .Member(nameof(Foo.RowId), static x => x.RowId, static (x, v) => x.RowId = v)
-    .Member(nameof(Foo.Name),  static x => x.Name,  static (x, v) => x.Name  = v)
-    .Build());
-```
-
-- 型別若是框架集合 → 改註冊 `CollectionBaseFormatter<,>` / `KeyCollectionBaseFormatter<,>`。
-- 成員若引入新的**封閉泛型具現**（`List<T>` / `Dictionary<K,V>` / `T?` / 陣列 / **列舉**）→
-  到 `WireContracts.Generics.cs` 補一筆。這些同樣經 `MakeGenericType` 建立，AOT 上沒有原生碼；
-  列舉用 `WireEnumFormatter<T>`。
-- **漏補會被 `WireContractDriftTests` 擋下**——它走同一條型別閉包比對註冊清單，並比對每個
-  contract 的成員名單與型別當下的形狀。**不需要人工維護成員數常數**（先前的 `WireMemberCount`
-  已移除，它是 `Assert.Equal(X, X)`、從來不可能失敗）。
+> **完整註冊程序、三個容易誤判的點、`object` 封套機制 →
+> [`src/Bee.Api.Core/CLAUDE.md`](../../../src/Bee.Api.Core/CLAUDE.md)**（觸及該專案時自動載入）。
+> 那是唯一權威，本檔不複寫。
 
 ## 集合
 
@@ -113,27 +99,22 @@ new CollectionBaseFormatter<FooNodeCollection, FooNode>(),
 
 ### 行動端 AOT 的型別形狀要件（桌面完全看不出來）
 
-reflection-only 的 `XmlSerializer`（iOS 路徑）對型別形狀比桌面嚴格：
+reflection-only 的 `XmlSerializer`（iOS 路徑）對型別形狀比桌面嚴格：**只能有一個 public
+instance `Add`**、**必須有無參數建構子**、**重複 `[XmlElement]` 的集合屬性必須有 public
+setter**。前兩者由 `BEE4005` / `BEE4006` 把關，第三者只有 CI 的 AOT 閘門會抓。
 
-1. **集合只能公開一個 public instance `Add`**——多個多載擲 `AmbiguousMatchException`。
-   便利多載必須位移為擴充方法（與集合同檔，見 `code-style.md` 的一型別一檔例外條款）。
-   `BEE4005` 把關。
-2. **集合必須有無參數建構子**，否則 `MissingMethodException`。`BEE4006` 把關。
-3. **對映為重複 `[XmlElement]` 的集合屬性必須有 public setter**。reflection-only 路徑對這種成員是
-   **指派**而非 `Add`，get-only 會擲 `ArgumentException: Property set method not found`，外顯為
-   誤導的「There is an error in XML document (行, 列)」。**`[XmlArray]` 的 get-only 集合不受影響**。
-   setter 要寫成「清空後逐一 `Add` 進既有實例」而非換掉欄位，才不會斷開 owner 連結
-   （實例：`LanguageEnum.Entries`）。**這一條無 analyzer，只有 CI 的 AOT 閘門會抓。**
+> **三者的完整條文、例外訊息對照與 setter 的正確寫法（清空後逐一 `Add`，不換欄位）→
+> [`rules/apple-mobile-trim.md`](../../rules/apple-mobile-trim.md) § 序列化型別的行動端相容要件
+> 與 [`src/Bee.Definition/CLAUDE.md`](../../../src/Bee.Definition/CLAUDE.md)。**
 
 ## `object` 成員走判別式封套
 
-`Parameter.Value` / `FilterCondition.Value` 這類 `object` 成員由 `WireValueFormatter` 處理：
-框架自有的封閉型別集以 **int 判別碼 + 封閉泛型委派**讀寫（`WireValueCode`）。
+`Parameter.Value` / `FilterCondition.Value` 這類 `object` 成員由 `WireValueFormatter` 處理，
+**不走 `TypelessFormatter`**。要在行動端傳新的值型別 → 加進 `WireValueCode` 封閉集，
+不要指望白名單逃生門（該分支只在有動態碼的 runtime 上可用）。
 
-- 要在行動端傳新的值型別 → 把它加進**封閉集合**（`WireValueCode` + `WireValueFormatter` 註冊）。
-- 白名單內的其他型別走「型別名 + 非泛型多載」的**逃生門**，**該分支只在有動態碼的 runtime 上可用**
-  ——不要指望它。
-- **`WireValueCode` 的數值是 wire 格式的一部分，不可重新編號**（跨版本不相容，且 drift 測試抓不到）。
+**`WireValueCode` 的數值是 wire 格式的一部分，不可重新編號** —— 跨版本不相容，
+且 drift 測試抓不到。機制細節見 `src/Bee.Api.Core/CLAUDE.md`。
 
 ## wire 傳遞模式（API 端）
 
@@ -144,31 +125,25 @@ reflection-only 的 `XmlSerializer`（iOS 路徑）對型別形狀比桌面嚴�
 
 ## 踩雷清單
 
-1. **新 wire 型別忘了到 `WireContracts` 註冊** → 桌面完全無感（contractless 接手），行動端擲
-   `FormatterNotRegisteredException`。`WireContractDriftTests` 會擋，但要記得跑。
-2. **`Collection<T>` 與 `KeyedCollection<TKey,TItem>` 都要註冊**。桌面上 contractless 認得前者、
-   把後者錯綁成 dictionary；iOS 上兩者都不通。**別因為「桌面測起來沒事」就省略。**
-3. **base 型別註冊不涵蓋子型別**。`FilterNodeFormatter` 註冊在 `FilterNode` 上，呼叫端若持有
-   `FilterCondition` 靜態型別，解析的是 `IMessagePackFormatter<FilterCondition>`——所以另有
-   `FilterConditionFormatter` / `FilterGroupFormatter` 兩支轉接。
-4. **自訂 formatter 內不得使用非泛型 `MessagePackSerializer.Serialize(Type, ref writer, …)`**。
-   `MessagePackWriter` 是 `ref struct`，該多載需 `Reflection.Emit`，行動端直接擲例外。
-   逐一具名成員、全程走泛型多載。
-5. **衍生 / index / owner 欄位少標一個軸 → 外洩或循環**：`[XmlIgnore, JsonIgnore]` 兩個一組。
-6. **型別白名單只用於 `object` 逃生門與 `ApiPayload.TypeName`**，且它表列的是**命名空間**
+1. **註冊面的四個雷**（忘了註冊、`Collection<T>` 與 `KeyedCollection<,>` 都要註冊、
+   base 型別註冊不涵蓋子型別、自訂 formatter 不得用非泛型 `Serialize(Type, ref writer, …)`）
+   → 全部見 `src/Bee.Api.Core/CLAUDE.md` § 三個容易誤判的點。**共通症狀：桌面完全無感、
+   行動端才炸**，所以「桌面測起來沒事」不構成任何證據。
+2. **衍生 / index / owner 欄位少標一個軸 → 外洩或循環**：`[XmlIgnore, JsonIgnore]` 兩個一組。
+3. **型別白名單只用於 `object` 逃生門與 `ApiPayload.TypeName`**，且它表列的是**命名空間**
    （`SysInfo.AllowedTypeNamespaces`）。**驗證 assembly-qualified name 一律用
    `WireTypeWhitelist.IsAssemblyQualifiedNameAllowed`**，不要自己切字串——泛型參數的逗號排在
    組件分隔之前，切第一個逗號會讓參數完全不受檢查（2026-08-11 修過一次未認證可達的繞過）。
-7. **序列化 process-wide 快取實例會污染來源**：`XmlCodec.Serialize(obj)` 透過
+4. **序列化 process-wide 快取實例會污染來源**：`XmlCodec.Serialize(obj)` 透過
    `IObjectSerialize.SetSerializeState` 在**來源物件**上翻旗標並遞迴到子集合（讓空集合 getter 在
    序列化期間回 `null`，磁碟上的定義檔才不會有 `<Tables />` 這種多餘元素）。因此
    **它不能當免費 deep clone**，要 mutate 快取取出的物件一律先 `Clone()`（見 `rules/definition.md`）。
-8. **lazy index 反序列化後要能重建**：序列化只帶扁平狀態，查詢 index 在還原後第一次查詢時
+5. **lazy index 反序列化後要能重建**：序列化只帶扁平狀態，查詢 index 在還原後第一次查詢時
    lazy 建（thread-safe）；index 本身不序列化。
-9. **Oracle Guid 讀回是 `byte[]`（RAW 16）**：`ValueUtilities.CGuid` 已支援 `byte[]` coerce；
+6. **Oracle Guid 讀回是 `byte[]`（RAW 16）**：`ValueUtilities.CGuid` 已支援 `byte[]` coerce；
    自寫 raw DataTable 讀 Guid 欄時別用會落空的轉換。
-10. **JSON 自訂 converter 僅多型才需**：單一型別集合 `System.Text.Json` 直接列舉即可；
-    多型（如 `FilterNode`）才需 `JsonConverter`（見 `FilterNodeCollectionJsonConverter`）。
+7. **JSON 自訂 converter 僅多型才需**：單一型別集合 `System.Text.Json` 直接列舉即可；
+   多型（如 `FilterNode`）才需 `JsonConverter`（見 `FilterNodeCollectionJsonConverter`）。
 
 ## 三棲 round-trip 測試樣板
 
@@ -217,18 +192,18 @@ var fromMp = MessagePackCodec.Deserialize<Foo>(bytes)!;
 | 三棲物件 + 集合樣板 | `src/Bee.Definition/Organization/DepartmentTree.cs` / `DepartmentNode.cs` / `DepartmentNodeCollection.cs` |
 | 多型集合（含 JsonConverter） | `src/Bee.Definition/Filters/FilterNodeCollection.cs` / `FilterGroup.cs` |
 | 集合基底 | `src/Bee.Base/Collections/CollectionBase.cs` / `KeyCollectionBase.cs` / `CollectionItem.cs` / `KeyCollectionItem.cs` |
-| wire 註冊清單 | `src/Bee.Api.Core/MessagePack/WireContracts.*.cs`、`WireContract.cs`、`IWireContract.cs` |
-| formatter 註冊與 resolver 鏈 | `src/Bee.Api.Core/MessagePack/MessagePackCodec.cs` |
-| 集合 formatter | `src/Bee.Api.Core/MessagePack/CollectionBaseFormatter.cs` / `KeyCollectionBaseFormatter.cs` |
-| `object` 判別式封套 | `src/Bee.Api.Core/MessagePack/WireValueFormatter.cs` |
-| 型別白名單 | `src/Bee.Api.Core/MessagePack/WireTypeWhitelist.cs`、`src/Bee.Base/SysInfo.cs`（`AllowedTypeNamespaces`） |
+| **wire 側全部**（註冊清單、formatter、resolver 鏈、`object` 封套、白名單、漂移閘門） | `src/Bee.Api.Core/MessagePack/` —— **檔案清單見 `src/Bee.Api.Core/CLAUDE.md`**，本檔不列 |
 | XML 持久化 codec | `src/Bee.Base/Serialization/XmlCodec.cs` |
 | 序列化生命週期（SerializeState 傳播） | `src/Bee.Base/Serialization/IObjectSerialize.cs` |
-| 漂移閘門 | `tests/Bee.Api.Core.UnitTests/WireContractDriftTests.cs` |
 | round-trip 測試樣板 | `tests/Bee.Api.Core.UnitTests/TestFunc.cs`、`tests/Bee.Api.Core.UnitTests/WireFormatterTests.cs` |
 
 ## 相關規範
 
-- `rules/serialization.md` —— wire 綁定的硬性規則（常駐，本 skill 是它的操作面展開）
-- `rules/definition.md` —— 定義層集合基底、cache 不可異動
-- `rules/apple-mobile-trim.md` —— 行動端 trim / AOT 的完整脈絡
+本 skill 是「設計一個三棲物件」的操作面；三個權威來源各管一段，**細節一律回去讀，不在此複寫**：
+
+| 來源 | 管什麼 | 載入方式 |
+|------|--------|---------|
+| `rules/serialization.md` | wire 綁定的硬性規則（MessagePack 是唯一 body 格式、定義層不得引入傳輸套件） | 常駐 |
+| `src/Bee.Api.Core/CLAUDE.md` | **wire 註冊程序、誤判點、`object` 封套、AOT 實測與回歸閘門** | 觸及該專案時 |
+| `rules/apple-mobile-trim.md` | 行動端 trim / AOT 的完整脈絡與型別形狀要件 | 常駐 |
+| `rules/definition.md` + `src/Bee.Definition/CLAUDE.md` | 定義層集合基底、cache 不可異動、setter 寫法 | 常駐 / 觸及時 |
