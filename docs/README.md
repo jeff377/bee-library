@@ -26,6 +26,8 @@ Read these three and you can build your first application.
 | [Definition Files Overview](definition-files-overview.md) | Concept | Medium | The map of all thirteen definition files: what each one owns, how they connect, and what changing one affects |
 
 > Unfamiliar term? Keep [Terminology](terminology.md) open in another tab.
+>
+> Want the bird's-eye list of what the framework already does for you? See [Framework Capabilities](framework-capabilities.md).
 
 ## 2. Concepts
 
@@ -58,6 +60,7 @@ Look things up while you work.
 
 | Document | Kind | Length | Description |
 |----------|------|--------|-------------|
+| [Framework Capabilities](framework-capabilities.md) | Reference | Medium | Single-page catalogue of every mechanism the framework provides, grouped by area, one line each |
 | [Terminology](terminology.md) | Reference | Long | English ↔ Chinese term reference, organised by layer |
 | [API Method Reference](api-method-reference.md) | Reference | Short | Every BO method exposed through JSON-RPC on one page, with its `[ApiAccessControl]` settings and purpose |
 | [Framework-Reserved Names](framework-reserved-names.md) | Reference | Short | Registry of the `st_*` system tables and reserved `progId`s owned by the framework |

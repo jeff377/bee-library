@@ -26,6 +26,8 @@
 | [定義檔全景](definition-files-overview.zh-TW.md) | 概念 | 中 | 全部 13 種定義檔的全景圖：各自管什麼、彼此怎麼串、改了哪個會影響哪一層 |
 
 > 遇到不熟的術語？另開一頁擺著[術語對照表](terminology.zh-TW.md)。
+>
+> 想先看框架已經替你做掉哪些事？見[框架機制清單](framework-capabilities.zh-TW.md)。
 
 ## 2. 核心概念
 
@@ -58,6 +60,7 @@
 
 | 文件 | 類型 | 篇幅 | 說明 |
 |------|------|------|------|
+| [框架機制清單](framework-capabilities.zh-TW.md) | 參考 | 中 | 單頁列出框架提供的所有機制，依領域分組，每項一行 |
 | [術語對照表](terminology.zh-TW.md) | 參考 | 長 | 框架中英文術語對照，依層別編排 |
 | [API 方法參考](api-method-reference.zh-TW.md) | 參考 | 短 | 透過 JSON-RPC 對外公開的所有 BO 方法單頁總覽，含 `[ApiAccessControl]` 設定與用途 |
 | [框架保留命名](framework-reserved-names.zh-TW.md) | 參考 | 短 | 框架擁有的 `st_*` 系統表與保留 `progId` registry |
