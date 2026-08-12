@@ -5,7 +5,7 @@ namespace Bee.Api.Core.MessagePack
     /// <summary>
     /// Serializable column definition used to describe DataColumn properties.
     /// </summary>
-    public class SerializableDataColumn
+    internal class SerializableDataColumn
     {
         /// <summary>
         /// Gets or sets the column name.

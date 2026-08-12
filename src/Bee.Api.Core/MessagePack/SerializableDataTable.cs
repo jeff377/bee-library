@@ -6,7 +6,7 @@ namespace Bee.Api.Core.MessagePack
     /// <summary>
     /// Serializable DataTable object used to transport DataTable structure and data.
     /// </summary>
-    public class SerializableDataTable
+    internal class SerializableDataTable
     {
         /// <summary>
         /// Gets or sets the table name.

@@ -5,7 +5,7 @@ namespace Bee.Api.Core.MessagePack
     /// <summary>
     /// Serializable data row containing current and original values, used to support data state and change tracking.
     /// </summary>
-    public class SerializableDataRow
+    internal class SerializableDataRow
     {
         /// <summary>
         /// Gets or sets the current values of the row (column name to value mapping).

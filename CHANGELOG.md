@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Breaking Changes
 
+- `Bee.Api.Core`: the five `MessagePack.SerializableData*` types become `internal` (58 public API entries). They are the wire's own intermediate shapes for `DataSet` / `DataTable`, reached only by the formatters beside them — ADR-037 already made 24 of the 28 types in that folder internal, and these were the remaining opening. Nothing in the framework outside `Bee.Api.Core/MessagePack/` referenced them.
 - `Bee.Definition`: `AuditLogOptions.ExecEnabled` is removed. It was a shipped configuration contract with no reader anywhere in the framework — the execution axis it advertised was never implemented, so a deployment reading its XML doc would have believed a switch was in effect that did nothing. Its five sibling flags each have a real consumer. The architecture overview's "six-axis data trail" is corrected to five, which is what it actually listed.
 - `Bee.Db`: `Dml.IFromBuilder`, `ILimitBuilder`, `ISelectBuilder`, `ISortBuilder` and `IWhereBuilder` are removed. Each had exactly one implementation and no consumer referenced the interface, so implementing one achieved nothing. The concrete builders and their members are unchanged. `IFormCommandBuilder` and `IParameterCollector` stay — those are consumed as types.
 - `Bee.Api.Core`: `Messages.ApiCallContext.ShouldValidateEncoding` is removed — a shipped computed property with no callers. `IsLocalCall`, which it negated, is unchanged.

@@ -4,7 +4,7 @@ namespace Bee.Api.Core.MessagePack
     /// <summary>
     /// Serializable data relation used to describe parent-child relationships between tables.
     /// </summary>
-    public class SerializableDataRelation
+    internal class SerializableDataRelation
     {
         /// <summary>
         /// Gets or sets the relation name.

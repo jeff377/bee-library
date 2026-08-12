@@ -5,7 +5,7 @@ namespace Bee.Api.Core.MessagePack
     /// <summary>
     /// Serializable DataSet object used to support cross-platform transmission and storage.
     /// </summary>
-    public class SerializableDataSet
+    internal class SerializableDataSet
     {
         /// <summary>
         /// Gets or sets the dataset name.

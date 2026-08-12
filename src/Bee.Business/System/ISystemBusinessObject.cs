@@ -10,12 +10,15 @@ namespace Bee.Business.System
     /// interface, and invokes a method without binding to a concrete class (so
     /// host-side BO customisation does not break callers).
     ///
-    /// **Pure-API methods do not belong here.** Methods that exist only to be
-    /// dispatched through <c>JsonRpcExecutor.Execute</c> from a client — and
-    /// have no internal BO consumers — are declared as <c>public</c> on the
-    /// concrete <see cref="SystemBusinessObject"/> class with
-    /// <c>[ApiAccessControl]</c>, but stay out of this interface (e.g.
-    /// <c>Ping</c>, <c>GetFormSchema</c>, <c>GetFormLayout</c>, <c>GetLanguage</c>).
+    /// This surface and the API surface are independent: <c>[ApiAccessControl]</c> marks what a
+    /// client may call through <c>JsonRpcExecutor</c>, while this interface is what server-side
+    /// code calls. Neither implies the other.
+    ///
+    /// A member belongs here when something inside the process resolves it through
+    /// <c>IBusinessObjectFactory</c> and calls it — another business object, a background job, a
+    /// scheduler. <c>Login</c> qualifies for exactly that reason: a background job signs in as a
+    /// given identity to open a session, then acts as that user, filling in a form or running an
+    /// operation on their behalf.
     /// </remarks>
     public interface ISystemBusinessObject : IBusinessObject
     {

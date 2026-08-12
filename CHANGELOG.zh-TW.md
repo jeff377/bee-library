@@ -12,6 +12,7 @@
 
 ### 破壞性變更
 
+- `Bee.Api.Core`：五個 `MessagePack.SerializableData*` 型別改為 `internal`（58 筆公開 API）。它們是 wire 為 `DataSet` / `DataTable` 準備的中間形狀，只有並排的 formatter 會用到——ADR-037 已把該資料夾 28 個型別中的 24 個收成 internal，這五個是僅存的破口。框架內 `Bee.Api.Core/MessagePack/` 之外沒有任何引用。
 - `Bee.Definition`：移除 `AuditLogOptions.ExecEnabled`。它是已出貨的設定合約，但框架內沒有任何讀取點——它所宣告的執行軸從未實作，部署者讀它的 XML doc 會以為有一個實際上什麼都不做的開關生效。它的五個兄弟旗標各有真正的消費點。架構總覽的「六軸資料軌跡」一併更正為五軸，那本來就是它實際列出的數量。
 - `Bee.Db`：移除 `Dml.IFromBuilder`、`ILimitBuilder`、`ISelectBuilder`、`ISortBuilder`、`IWhereBuilder`。五者各只有一個實作，且沒有任何消費端以介面型別引用它們，因此實作它們達不到任何效果。具象 builder 與其成員維持不變。`IFormCommandBuilder` 與 `IParameterCollector` 保留——那兩個確實被當成型別消費。
 - `Bee.Api.Core`：移除 `Messages.ApiCallContext.ShouldValidateEncoding`——已出貨、零呼叫端的計算屬性。它取反的 `IsLocalCall` 維持不變。
