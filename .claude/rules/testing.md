@@ -85,29 +85,11 @@ src/Bee.Api.Core/       → tests/Bee.Api.Core.UnitTests/
 
 ## 測試撰寫模式
 
-### 單一驗證：`[Fact]`
-```csharp
-[Fact]
-[DisplayName("建立 Session 應回傳有效 Token")]
-public void CreateSession_ReturnsValidToken()
-{
-    var token = _repo.CreateSession(user);
-    Assert.NotNull(token);
-}
-```
+> **可貼用的程式碼樣板見 `docs/repo-ops/testing-patterns.md`**（按需讀，不常駐）。
+> 本節只留「哪種情境用哪個 attribute / fixture」的判準。
 
-### 參數化：`[Theory]` + `[InlineData]`
-```csharp
-[Theory]
-[InlineData(DefineType.SystemSettings, typeof(SystemSettings))]
-[InlineData(DefineType.UserSettings, typeof(UserSettings))]
-[DisplayName("ToClrType 回傳正確型別")]
-public void ToClrType_ValidType(DefineType defineType, Type expectedType)
-{
-    var result = defineType.ToClrType();
-    Assert.Equal(expectedType, result);
-}
-```
+單一驗證用 `[Fact]`、參數化用 `[Theory]` + `[InlineData]`，一律加 `[DisplayName]`
+提供中文描述。
 
 ### 需要資料庫的測試：`[DbFact(DatabaseType)]` / `[DbTheory(DatabaseType)]`
 
@@ -123,26 +105,6 @@ public void ToClrType_ValidType(DefineType defineType, Type expectedType)
 連線 ID 命名規則 `common_{dbtype_lower}`（由 `TestDbConventions.GetDatabaseId` 產生）：
 - `common_sqlserver`、`common_postgresql`、…
 
-```csharp
-[DbFact(DatabaseType.SQLServer)]
-[DisplayName("SQL Server 上 ExecuteDataTable 查詢應回傳有效 DataTable")]
-public void ExecuteDataTable_SqlServer_ReturnsDataTable()
-{
-    var dbAccess = new DbAccess("common_sqlserver");
-    var result = dbAccess.Execute(command);
-    Assert.NotNull(result.Table);
-}
-
-[DbFact(DatabaseType.PostgreSQL)]
-[DisplayName("PostgreSQL 上 ExecuteDataTable 查詢應回傳有效 DataTable")]
-public void ExecuteDataTable_PostgreSQL_ReturnsDataTable()
-{
-    var dbAccess = new DbAccess("common_postgresql");
-    var result = dbAccess.Execute(command);
-    Assert.NotNull(result.Table);
-}
-```
-
 - **本機（`.runsettings` 設好對應 `BEE_TEST_CONNSTR_*`）**：對應 DB 的測試正常執行
 - **CI（`build-ci.yml` 啟動對應 service container 並注入 `BEE_TEST_CONNSTR_*`）**：正常執行
 - **任一 DB 未設環境變數**：該 DB 的測試自動 Skipped，不影響其他 DB
@@ -156,16 +118,11 @@ public void ExecuteDataTable_PostgreSQL_ReturnsDataTable()
 
 需要本機特定基礎設施（例如本機跑著的 API server、專屬資料、或無法在 CI 自動備妥的環境）的測試，使用 `[LocalOnlyFact]` / `[LocalOnlyTheory]`。
 
-> **兩者目前無使用者**（2026-08-11 實測）。留著是因為「需要本機服務的整合測試」這個情境仍成立，
-> 但下面的範例是示意、不是現存程式碼——別去 grep 它。`[DbTheory]` 同樣罕用。
 定義在 `tests/Bee.Tests.Shared/`，會檢查環境變數 `CI`；**當 `CI=true`（GitHub Actions 預設）時自動跳過**。
 
-```csharp
-[LocalOnlyTheory]
-[InlineData("http://localhost/jsonrpc/api")]
-[DisplayName("ApiConnectValidator 驗證 URL 應回傳遠端連線類型")]
-public void Validate_ValidUrl_ReturnsRemoteConnectType(string apiUrl) { ... }
-```
+> **兩者目前無使用者**（2026-08-11 實測），`[DbTheory]` 同樣罕用。留著是因為
+> 「需要本機服務的整合測試」這個情境仍成立。樣板檔裡的範例是**示意、不是現存程式碼**
+> ——別去 grep 它。
 
 **適用場景**：真正需要「本機運行中服務」的整合測試（如需要 API server 回應的 ping 測試）。
 **不適用**：只需要 DB 的測試 — 請使用 `[DbFact]` / `[DbTheory]`。
@@ -173,22 +130,7 @@ public void Validate_ValidUrl_ReturnsRemoteConnectType(string apiUrl) { ... }
 ### Per-class fixture（Phase 5 後預設模式）
 
 需要 DI-resolved 後端服務（`IDefineAccess` / `ISessionInfoService` / `IBusinessObjectFactory` 等）的測試，
-透過 `IClassFixture<BeeTestFixture>` 取得 per-class `IServiceProvider`：
-
-```csharp
-public class MyTests : IClassFixture<BeeTestFixture>
-{
-    private readonly BeeTestFixture _fx;
-    public MyTests(BeeTestFixture fx) { _fx = fx; }
-
-    [Fact]
-    public void Foo()
-    {
-        var access = _fx.GetRequiredService<IDefineAccess>();
-        // ...
-    }
-}
-```
+透過 `IClassFixture<BeeTestFixture>` 取得 per-class `IServiceProvider`。
 
 兩種特殊情境：
 
@@ -236,21 +178,9 @@ xUnit 預設 collection-level parallel：**不同 test class 平行執行**，�
 
 ### 串行化做法（過渡方案）
 
-```csharp
-// 1. 在 test 專案根目錄宣告 collection
-[CollectionDefinition("DbConnectionState")]
-public class DbConnectionStateCollection
-{
-    // 純 marker，無 fixture
-}
-
-// 2. 所有會修改該 static 的 test class 加同一 [Collection]
-[Collection("DbConnectionState")]
-public class DbConnectionManagerTests { ... }
-
-[Collection("DbConnectionState")]
-public class DbAccessFactoryTests { ... }
-```
+在 test 專案根目錄宣告一個純 marker `[CollectionDefinition("<名稱>")]`（無 fixture），
+所有會修改該 static 的 test class 都掛同一個 `[Collection("<名稱>")]`。
+樣板見 `docs/repo-ops/testing-patterns.md`。
 
 ### 目前仍存在的窄序列化
 
@@ -290,52 +220,7 @@ public class DbAccessFactoryTests { ... }
 
 若測試需要先 `GetDefine` 讀取既有 fixture 再 `SaveDefine`：**先用 fixture 預設路徑 Get（從 `tests/Define`）→ 構造 temp `IDefineAccess` → Save**，避免 Get 在空 temp 內讀不到資料。
 
-### Fixture-level 範例
-
-```csharp
-public sealed class WritableDefineFixture : BeeTestFixture
-{
-    public WritableDefineFixture() : base(b => b.UseTempDefinePath()) {}
-}
-
-public class MySaveTests : IClassFixture<WritableDefineFixture>
-{
-    private readonly WritableDefineFixture _fx;
-    public MySaveTests(WritableDefineFixture fx) { _fx = fx; }
-
-    [Fact]
-    public void SaveDbCategorySettings_WritesFile()
-    {
-        var access = _fx.GetRequiredService<IDefineAccess>();
-        access.SaveDbCategorySettings(new DbCategorySettings());
-        Assert.True(File.Exists(_fx.PathOptions.GetDbCategorySettingsFilePath()));
-    }
-}
-```
-
-### Method-level inline temp dir
-
-對純資料寫入測試（不需 DI），inline temp dir 比建立 fixture subclass 更輕：
-
-```csharp
-[Fact]
-public void SaveSystemSettings_WritesFile()
-{
-    var tempDir = Path.Combine(Path.GetTempPath(), $"bee-save-{Guid.NewGuid():N}");
-    Directory.CreateDirectory(tempDir);
-    try
-    {
-        var paths = new PathOptions { DefinePath = tempDir };
-        var access = new CacheDefineAccess(new FileDefineStorage(paths), paths);
-        access.SaveSystemSettings(new SystemSettings());
-        Assert.True(File.Exists(paths.GetSystemSettingsFilePath()));
-    }
-    finally
-    {
-        try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { /* best effort */ }
-    }
-}
-```
+兩種做法的完整樣板見 `docs/repo-ops/testing-patterns.md`。
 
 ## 常見 analyzer 退件規則
 

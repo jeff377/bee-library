@@ -7,7 +7,7 @@
 | 1 | P0：正在誤導 agent 的失效引用（plugin 名、skill 舊名、AOT 結論矛盾） | ✅ 已完成（2026-08-12） |
 | 2 | 清除常駐設定內的清點數字，改定性描述（含已漂與尚未漂者） | ✅ 已完成（2026-08-12） |
 | 3 | `apple-mobile-trim.md` 推導內容搬按需區（新建 `gotchas/mobile-trim-aot.md`） | ✅ 已完成（2026-08-12） |
-| 4 | `testing.md` 程式碼樣板搬按需區 | 📝 待做 |
+| 4 | `testing.md` 程式碼樣板搬按需區（新建 `docs/repo-ops/testing-patterns.md`） | ✅ 已完成（2026-08-12） |
 | 5 | P3：跨層錯置與示意路徑（scope、skill 歸屬、ADR 路徑形狀） | 📝 待做 |
 | 6 | 週邊：soarcloud-libraries plugin scope 補更新、`.gitignore` 補 env 樣式 | 📝 待做 |
 
@@ -211,8 +211,20 @@ DynamicExpresso 自動退回直譯器」。
 - § 測試撰寫模式
 - § 共享 fixture 檔案隔離
 
-已有現成的家：[`gotchas/test-ci-release.md`](../repo-ops/gotchas/test-ci-release.md)
-（`testing.md` 已引用它）。內容若只服務單一工作流程，更好的家是 skill（呼叫時才載）。
+**已完成（2026-08-12），但目的地與原計畫不同。**
+
+原計畫寫「已有現成的家：`gotchas/test-ci-release.md`」，動手時發現**不成立**：
+`gotchas/` 的 README 明文自述「這不是規範文件」，且要求每則能回答
+「症狀長什麼樣 / 根因 / 正解」三件事 —— 程式碼樣板不是踩雷紀錄，放進去會牴觸該目錄
+自己的寫入原則。也查過其他候選：`tests/` 無 README、`docs/development-cookbook.md`
+是**公開文件**（讀者是框架使用者，而這些樣板講的是本 repo 自家測試套件）。
+
+改放 **`docs/repo-ops/testing-patterns.md`** —— `docs/repo-ops/` 依 `public-docs.md`
+的定義就是「本 repo 的維運文件、與框架使用者無關」，扁平無索引檔，加一份即可。
+
+**實際減量小於估計**：`testing.md` 22,151 → 19,125（−3,026，估計約 −5,000）。
+差距是刻意的：只搬了程式碼區塊，決策表、env var 命名規則、fixture 選擇判準全部留在常駐區
+——那些才是 agent 每次都要的。
 
 **動作**：常駐留決策表（哪種測試用哪個 attribute／哪個 fixture、env var 命名規則），
 完整程式碼樣板搬按需。
