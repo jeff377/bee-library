@@ -222,5 +222,8 @@ reflection-only 的 `XmlSerializer`（iOS AOT 路徑）對型別形狀比桌面�
 ## 相關
 
 - `rules/avalonia.md` —— Avalonia 專屬規範（版本相容性、控件雷區）
-- `rules/serialization.md` —— MessagePack / DynamicExpresso 的 AOT 結論（皆有 reflection fallback）
+- `rules/serialization.md` —— MessagePack / DynamicExpresso 的 AOT 結論。**兩者結論相反**：
+  MessagePack 的 contractless **沒有** reflection fallback，wire 型別一律要顯式註冊 formatter；
+  DynamicExpresso 則自動退回直譯器、無需處理。
+  （「MessagePack 也有 fallback」是 2026-08-10 被實測推翻的舊結論，別照它推導。）
 - `src/Bee.Definition/ILLink.Descriptors.xml` —— 採用解法的實際檔案

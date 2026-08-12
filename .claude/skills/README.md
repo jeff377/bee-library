@@ -36,10 +36,14 @@ repo 只保留單一來源，避免本地副本與 plugin 版 drift。
 | Skill（呼叫名） | Plugin @ Marketplace | 一句話用途 |
 |----------------|---------------------|-----------|
 | **`/dev-workflow:plan-write`** | `dev-workflow` @ `jeff377-plugins` | 撰寫 / 更新 `docs/plans/` 計畫文件（狀態列、階段表格、連結慣例、封存流程） |
-| **`/dev-workflow:plan-handoff`** | `dev-workflow` @ `jeff377-plugins` | 把已定案的 plan 交接給新 session 實作（產出可複製的交接 prompt） |
+| **`/dev-workflow:session-handoff`** | `dev-workflow` @ `jeff377-plugins` | 把已定案的工作交接給新 session 接手（先 commit 交接文件，再產出可複製的 prompt）。**不限程式碼實作**，撰寫、遷移、文件改版皆適用 |
 | **`/dev-workflow:plan-execute`** | `dev-workflow` @ `jeff377-plugins` | 依 plan 實作時的驗證閘門（plan 版本確認、範圍對帳、平行路徑檢查） |
+| **`/dev-workflow:config-audit`** | `dev-workflow` @ `jeff377-plugins` | 健檢設定檔語料（常駐成本、失效引用、過期斷言、跨檔衝突、plugin 版本漂移） |
 
-三者涵蓋 plan 的完整生命週期：撰寫 → 交接 → 執行。
+前三支涵蓋 plan 的完整生命週期：撰寫 → 交接 → 執行；`config-audit` 管的是規範本身的健康度。
+
+> **`plan-handoff` 已於 v2.3.0 改名為 `session-handoff`**（定位擴為「交接任何已定案工作」，
+> 不限 plan 實作）；`config-audit` 為 v2.4.0 新增。舊名不再可呼叫。
 
 > **`plan-write` 原本在本目錄**，已移出改由 plugin 提供，故本目錄不再有該資料夾。
 >

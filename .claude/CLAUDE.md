@@ -76,8 +76,9 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 - **指向 plan 以外的檔案**（`src/`、`docs/adr/`、`docs/*.md`）→ 從 `docs/plans/` 起算寫相對路徑
   （`../adr/adr-030-xxx.md`、`../../src/Bee.Db/DbAccess.cs`），封存時**整批加一層 `../`**。
 
-> 狀態列格式、多階段 plan 的階段表格、封存細節 → 見 `/plan-workflow:plan-write` skill
-> （由 `jeff377-plugins` marketplace 的 `plan-workflow` plugin 提供，已於 `.claude/settings.json` 宣告啟用）。
+> 狀態列格式、多階段 plan 的階段表格、封存細節 → 見 `/dev-workflow:plan-write` skill
+> （由 `jeff377-plugins` marketplace 的 `dev-workflow` plugin 提供，已於 `.claude/settings.json` 宣告啟用）。
+> 該 plugin 早期名為 `plan-workflow`，**已改名**；cache 裡殘留的舊目錄不再生效，別照舊名指路。
 
 ## 架構參考
 
