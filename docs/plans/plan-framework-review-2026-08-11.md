@@ -17,7 +17,7 @@
 
 | # | 面向 | 上輪 | **本輪** | 變化 | 主要扣分 |
 |---|------|------|---------|------|---------|
-| 1 | 架構分層 | 8.6 | **8.7** | ▲0.1 | A-5、A-2/A-4、A-3 |
+| 1 | 架構分層 | 8.6 | **8.7** | ▲0.1 | A-5（結構性阻擋，見下）、A-2（已加閘門）、A-3 |
 | 2 | 相依分層 | 9.0 | **9.2** | ▲0.2 | DEP-1（22 組未宣告相依，**已裁決不修**）、N-1、N-2 |
 | 3 | 安全性 | 8.6 | **7.0** | ▼1.6 | **SEC-1（P0）**、SEC-2、SEC-3 |
 | 4 | 維護性 | 8.5 | **8.5** | — | M-1、M-2（皆零進展） |
@@ -48,7 +48,7 @@
 |------|------|--------|------|
 | P0 | 發版阻擋項（安全 / 發版正確性） | 3 | ✅ 已完成（2026-08-11，SEC-1 / REL-1 / REL-2 全數落地並驗證） |
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
-| P2 | 結構、效能、一致性 | 14 | 🚧 進行中（11 項已結：P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**DEP-1** / **P-3** / **PERF-2** ❌ 評估後不修；剩 3 項） |
+| P2 | 結構、效能、一致性 | 14 | 🚧 進行中（12 項已結：**A-2** ✅ 加閘門，P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**DEP-1** / **P-3** / **PERF-2** ❌ 評估後不修；剩 3 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
 | P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2** / **SEC-4~10**(部分) / **CON-5** / **X-7** / **D-9** / **Z-3**+**Z-5** / **M-2** / **M-3** / **T-3** / **N-2/N-3** ✅ 已落地；其餘未動） |
 
@@ -124,6 +124,32 @@
 > 513→412）、`DataTableJsonConverter`（`.Read` / `.Build`，506→129）、
 > `BeeFrameworkServiceCollectionExtensions`（`.Factories`，485→336）。
 > 全部零公開 API 變更。
+
+> **A-2 的結構性修法不存在，改以閘門補。** `BackendDefaultTypes` 的九個 assembly-qualified
+> 字串反指 `Bee.Business` / `Bee.ObjectCaching` / `Bee.Repository` 的具象型別，編譯期看不見。
+> 兩條結構性出路都被擋死：
+>
+> 1. **改成 `typeof(X).AssemblyQualifiedName`** —— 需要 `Bee.Definition` 參考那三個組件，
+>    而它被 `BEE9001` 鎖住（ADR-038）。
+> 2. **把常數搬到組裝層** —— 它們被 `BackendComponents` 當成 `[DefaultValue(...)]` 的**屬性引數**
+>    使用，屬性引數必須是該組件看得到的編譯期常數；搬走就得連 `BackendComponents`（公開設定型別，
+>    其 XML 元素名是持久化的設定合約）一起搬。
+>
+> 故改以 `BackendDefaultTypesGateTests` 把「會靜默腐爛的字串」變成「跑測試就會紅的契約」：
+> 每個常數必須解析得到型別、且可指派給登記的介面；**新增常數未登記契約也會紅**。
+> 兩種失效樣態皆已實證會紅（指向不存在的型別、指向存在但不實作該契約的型別）。
+>
+> **順帶查明一件先前不知道的事**：常數的**值**本身也在 `PublicAPI.Shipped.txt` 內
+> （`const ... = "..." -> string!`），所以**改動常數本身**已經是宣告過的公開 API 變更、
+> 由 `RS0016`/`RS0017` 擋下。閘門補的是**另一個方向**——常數不動，而目標型別被改名或搬家。
+>
+> **A-5（Domain Core 夾帶 1,119 行檔案 IO）本輪未做，因為它不是重構、是資料遷移。**
+> 實測範圍：`FileDefineStorage`(321) / `CustomizeOnlyStorage`(197) / `MasterKeyProvider`(195) /
+> `Defaults`(128) / `PathOptions`(127) / `CustomizeOnlyPathOptions`(82) / `SystemSettingsLoader`(69)。
+> 阻擋點是 `BackendDefaultTypes.DefineStorage = "Bee.Definition.Storage.FileDefineStorage,
+> Bee.Definition"` —— **這個字串已經寫在每個既有部署的 `SystemSettings.xml` 裡**。把
+> `FileDefineStorage` 搬到別的組件會改變 assembly-qualified name，那些 XML 就會指向一個不存在的
+> 型別，宿主在使用者完全沒改設定的情況下起不來。要做必須配套「舊型別名相容對映」，屬獨立議題。
 
 > **`Bee.Definition/` 根目錄的 `Numeric/` 分組決定不做。** 那 12 個檔
 > （`NumberFormatItem` / `NumberKind` / `RoundingPolicy` / `CashRoundingItem` / `AllowedCurrencyItem`…）
