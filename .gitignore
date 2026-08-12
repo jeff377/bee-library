@@ -460,3 +460,15 @@ Master.key
 # macOS
 .DS_Store
 **/.DS_Store
+
+# Local secrets / environment files.
+# This is a public repository — `git add -A` would publish these immediately.
+# Applies to any name shaped like an env file, wherever it sits in the tree.
+.env
+.env.*
+*.local.env
+**/.env
+**/.env.*
+**/*.local.env
+!.env.example
+!**/.env.example

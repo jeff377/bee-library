@@ -8,8 +8,8 @@
 | 2 | 清除常駐設定內的清點數字，改定性描述（含已漂與尚未漂者） | ✅ 已完成（2026-08-12） |
 | 3 | `apple-mobile-trim.md` 推導內容搬按需區（新建 `gotchas/mobile-trim-aot.md`） | ✅ 已完成（2026-08-12） |
 | 4 | `testing.md` 程式碼樣板搬按需區（新建 `docs/repo-ops/testing-patterns.md`） | ✅ 已完成（2026-08-12） |
-| 5 | P3：跨層錯置與示意路徑（scope、skill 歸屬、ADR 路徑形狀） | 📝 待做 |
-| 6 | 週邊：soarcloud-libraries plugin scope 補更新、`.gitignore` 補 env 樣式 | 📝 待做 |
+| 5 | P3：跨層錯置與示意路徑（scope、skill 歸屬、ADR 路徑形狀） | 🚧 進行中（1 項待裁決） |
+| 6 | 週邊：soarcloud-libraries plugin scope 補更新、`.gitignore` 補 env 樣式 | ✅ 已完成（2026-08-12） |
 
 ## 背景
 
@@ -177,11 +177,9 @@ DynamicExpresso 自動退回直譯器」。
 - § reflection-only 重現法的保真度與例外判讀 —— 實測數據 + 命令配方
 - § Apple Release-mode trim 決策樹 —— 歷史實驗表 + 已否決路徑
 
-問題是 **`docs/repo-ops/gotchas/` 目前沒有行動端／AOT 的檔**。`database`／`serialization`／
-`avalonia`／`testing` 都有對應 gotchas 出口，只有這條沒有 —— 它是唯一沒有按需家可搬的規則。
-
-**待裁決**：是否新增 `docs/repo-ops/gotchas/mobile-trim-aot.md`（並補進
-[`gotchas/README.md`](../repo-ops/gotchas/README.md) 索引）。
+動手前的障礙是 **`docs/repo-ops/gotchas/` 沒有行動端／AOT 的檔**：`database`／`serialization`／
+`avalonia`／`testing` 都有對應 gotchas 出口，只有這條沒有。已新增
+`mobile-trim-aot.md` 並補進 [`gotchas/README.md`](../repo-ops/gotchas/README.md) 索引。
 
 搬入內容：
 
@@ -236,6 +234,17 @@ DynamicExpresso 自動退回直譯器」。
 
 ## 階段 5 — P3：跨層錯置與示意路徑
 
+**三項已完成（2026-08-12），一項待你裁決。已完成的三項全在使用者層
+（`~/.claude/`），不入本 repo 版控 —— 換機器就沒有。**
+
+**待裁決：`bee-jsonrpc-backend` skill 要不要搬進本 repo？**
+它現在位於 `~/.claude/skills/`（使用者層 = 每個 repo 都載入其描述），內容完全是
+Bee.NET 專屬，與專案層的 `bee-*` skill 同族。搬進 `.claude/skills/` 可修正這個錯置，
+但 **bee-library 是 public repo，搬進去等於公開發佈該 skill 的全部內容**
+（含 `AddBeeFramework` 接線、Define 設定、demo 登入與 session/API key 的作法敘述）。
+這是不可逆的對外動作，需你明確同意。不搬也是合理選擇 —— 代價只是它在其他 repo
+也會載入描述。
+
 | 項 | 問題 | 處置 |
 |----|------|------|
 | `~/.claude/rules/code-style.md:211,246` | 註解範例引用 `docs/adr/0007-payload-pipeline.md`，本 repo ADR 慣例是 `adr-NNN-*.md`（無 `0007-` 形式） | 示意用途非真引用，但示範了錯誤的路徑形狀 → 改成慣例形式 |
@@ -246,6 +255,10 @@ DynamicExpresso 自動退回直譯器」。
 ---
 
 ## 階段 6 — 週邊
+
+**已完成（2026-08-12）。** 兩項皆已落地：plugin 三個 scope 現皆為 2.4.2；
+`.gitignore` 已補 env 樣式並以 `git check-ignore` 驗證（`.env` / `.env.local` /
+`*.local.env` / 巢狀路徑皆命中，`.env.example` 以 `!` 例外保留，且無既有追蹤檔被誤傷）。
 
 ### 6.1 soarcloud-libraries 的 plugin project scope 落後
 
