@@ -224,6 +224,28 @@
 > 但它是 TEST-2 把該類別改用 `SharedDbFixture` 之後才開始參與 process-wide 建 schema / seed 競爭的。
 > **下輪應查根因**（嫌疑：`SharedDatabaseState` 的 seed 在多行程下的爭用），不要只當 flaky 記著。
 
+> **第二筆待查 flaky：`DbDefineCacheInvalidationTests.CrossNode_PostgreSQL`（2026-08-12，CI run 31555170012）。**
+> 症狀：節點 B 寫入 v2 後，節點 A 第三次 `Poll()` 仍讀到 v1（`Expected: "v2" / Actual: "v1"`）。
+> **這是它第一次紅**——前幾次 CI（含 `4124464a`）皆綠，`docs/` 與 `.claude/` 亦查無前科。
+>
+> **已排除「拆檔掉了東西」**：對本批八個拆檔逐一做程式碼行比對（正規化掉註解、`using`、
+> `#region` 與外殼大括號後計數），唯一差異是 `class` → `partial class` 與外殼括號，
+> **零程式碼行遺失或多出**。本機該測試單獨連跑 3 次、整組 `Bee.Hosting.UnitTests` 連跑 3 次全綠；
+> 同一 commit 重跑 CI 轉綠。
+>
+> **但依 `rules/testing.md`，一次重跑轉綠不足以判定 flaky，故此處不結案。** 判準是「不同 commit
+> 的**首次**執行是否都紅」。目前只有一次首次執行紅，證據不足以兩邊任一方向定案。
+>
+> 兩個待查方向：
+>
+> 1. **`CacheNotifyPollSession(marginSeconds: 5)` 以 DB 時間戳為游標**——CI 的 PostgreSQL service
+>    container 與本機容器在時間戳精度／交易可見性上未必一致，這類測試對此敏感。
+> 2. **本批在同一組件新增了三個會啟動背景服務、以 1 秒間隔輪詢並最長等 5 秒的測試**
+>    （`ExpiredSessionCleanupServiceTests`）。它們不碰 DB，但在 2-core runner 上會改變該組件的
+>    執行緒池與排程樣態。這是本批唯一可能影響該組件時序的東西。
+>
+> **下次見到它紅，先比對這兩點，不要直接重跑了事。**
+
 > **效能四項的實測結論：計畫的診斷四項中兩項高估、一項需加條件。** 這是 PERF-1 教訓的第二次應驗。
 > 對照基準：一次本機 SQL Server 往返約 200–1000 µs。
 >
