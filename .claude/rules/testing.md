@@ -19,30 +19,25 @@ src/Bee.Api.Core/       → tests/Bee.Api.Core.UnitTests/
 
 ## 本機跑測試前的環境檢查（僅本機 + docker 可用時）
 
-> **適用範圍**：僅針對「使用者的本機開發環境（macOS / Windows / Linux 桌面）且本機裝有 docker CLI 並用於跑 DB 容器」的情境。
->
-> **不適用情境**：
-> - **GitHub Actions / 其他 CI**：`build-ci.yml` 透過 service container 機制由 runner 自動啟動 DB，env vars 由 workflow 注入，不走 docker CLI。本檢查不要帶進任何 yml 改動
-> - **本機無 docker** 的環境（Codespaces 預設、純 Linux server 沒裝 docker、Claude 在無 docker 的沙箱裡）：直接跑 `dotnet test`，`[DbFact]` 會依 env var 不設值自動 skip，不需做容器檢查
->
-> **判定本規則是否適用的最快方法**：執行 `command -v docker` —— 沒輸出就跳過整套規則，直接跑測試即可。
+> **適用範圍判定，一行搞定**：`command -v docker` —— 沒輸出就跳過整套規則直接跑測試
+> （`[DbFact]` 會依 env var 未設值自動 skip）。**CI 不適用**：`build-ci.yml` 走 service
+> container、env vars 由 workflow 注入，本節任何內容都不要帶進 yml。
 
-### 為何要先檢查（本機情境）
+### 為何要先檢查
 
-`./test.sh` 對「容器不存在 → env var 不設值 → `[DbFact]` 自動 skip」的路徑**不會回報明顯訊號**。只看 `./test.sh` 的輸出，無法區分：
+`./test.sh` 對「容器不存在 → env var 不設值 → `[DbFact]` 自動 skip」**不會給明顯訊號**，
+於是「按計劃 skip」與「該跑卻沒跑」看起來一樣。先檢查才能明確回報「X 個 DB 已 skip 因為
+容器 Y 不在」，也才不會把 DB 連線失敗誤判成程式 bug。
 
-- 「測試按計劃 skip」（容器不在，預期行為）
-- 「測試該執行卻沒跑」（環境異常，需要排查）
+### 啟動前檢查
 
-前置檢查能讓 Claude 在報告測試結果時明確說「X 個 DB 的測試已 skip 因為容器 Y 不在」而非含糊帶過，也能避免把「DB 連線失敗」誤判為「程式 bug」浪費 debug 時間。
-
-### 啟動前檢查（兩步，僅在 docker 可用時）
-
-1. **Docker daemon**：執行 `docker info` 或 `docker ps`。
-   - 失敗（daemon 未啟動） → 本條指「agent 直接以 Bash 操作 docker（**不經** `./test.sh`）」的情境：**告知使用者**「請啟動 Docker Desktop」，**不要**嘗試自行 `open -a Docker` 等指令（agent 直接拉起桌面 GUI 工具，啟動時間長且結果不確定）。使用者決定不啟動 docker → 比照「本機無 docker」直接跑測試
-     - **例外**：`./test.sh` 已內建 `ensure_docker_daemon` 前置 —— macOS 上 daemon 未啟動時腳本會自動 `open -a Docker` 並輪詢等待就緒（timeout 120s，失敗只警告不中止）。故**走 `./test.sh` 跑測試時 daemon 由腳本自動處理**，agent 不需先手動檢查或提示使用者。
-   - 成功 → 進下一步
-2. **約定容器存在性**：執行 `docker ps -a --format '{{.Names}}\t{{.Status}}'` 比對下列容器名單：
+1. **Docker daemon**：`docker ps`。失敗時**告知使用者啟動 Docker Desktop，不要自行
+   `open -a Docker`**（agent 拉 GUI 工具耗時且結果不確定）。
+   **例外：走 `./test.sh` 不需做這步** —— 它內建 `ensure_docker_daemon`，macOS 上會自動拉起並輪詢等待。
+2. **容器存在性**：`docker ps -a --format '{{.Names}}\t{{.Status}}'` 比對下表。
+   缺任一個就告知使用者「該 DB 的測試會自動 skip」，**不要自行 `docker run` 創新容器**
+   （image 版本 / port / volume / 初始 schema 都有約束，亂建會撞既有設定）。
+   容器在但 stopped 不需動作，`./test.sh` 會 `docker start`。
 
    | 容器名 | DB 類型 | env var |
    |--------|--------|---------|
@@ -50,9 +45,6 @@ src/Bee.Api.Core/       → tests/Bee.Api.Core.UnitTests/
    | `pgvector-db` | PostgreSQL | `BEE_TEST_CONNSTR_POSTGRESQL` |
    | `mysql8` | MySQL | `BEE_TEST_CONNSTR_MYSQL` |
    | `oracle23ai` | Oracle | `BEE_TEST_CONNSTR_ORACLE` |
-
-   - 任一缺失 → 告知使用者「容器 X 不存在，對應 DB 的測試將被自動 skip」，**不要**自行 `docker run` 創新容器（image 版本、port mapping、volume 掛載、初始 schema 都有約束，亂建會與使用者既有設定衝突）
-   - 容器存在但 stopped → 不需動作，`./test.sh` 內部會 `docker start`
 
 ### 測試失敗的判別順序（本機情境）
 
@@ -282,34 +274,18 @@ var result = access.GetDefine(DefineType.FormSchema, s_employeeKey);
 判別捷徑：測試環境 `AuditLogOptions.Enabled` 預設 `false` 且 `tests/Define/SystemSettings.xml`
 未覆寫 → 只動稽核寫入的改動在測試中不會求值，可先排除嫌疑。
 
-**「寫入」不是唯一觸發條件——讀取一樣會炸。** 只要測試以一個**未植入 cache 的 token**
-呼叫需要驗證身分的 API，server 端就會 session cache miss → 走 rebuild 路徑讀 `st_session`。
+**「寫入」不是唯一觸發條件——讀取一樣會炸。** 測試只要拿**未植入 cache 的 token**
+呼叫需驗身分的 API，server 就會 session cache miss → 走 rebuild 路徑讀 `st_session`。
 辨識法：測試直接拿 `Guid.NewGuid()` 當 access token（而非
 `TestSessionFactory.CreateAccessToken(fx)`，後者會把 SessionInfo 寫進 cache 因而永不觸及 DB）。
-2026-08-04 `ClientDefineAccessTests` 即因此在 CI 以 `Invalid object name 'st_session'` 現形，
-本機恆綠是因為容器內的表早被前次執行建好。
 
 **別靠靜態 grep 判定範圍。** 觸發面比想像廣：不只 `IAccessTokenValidator`，任何
-`SessionInfoService.Get(未快取 token)` 都算——包含 BO 內部的 `GetLangText` /
-`GetCurrentCustomizeId` / 查目前公司。用下面的窮盡掃描，不要用推理代替執行。
-
-**窮盡掃描法（確定性，不靠運氣）**：drop 掉 `st_session`，再逐專案跑「排除所有
-`SharedDbFixture` 類別」的子集——建表的類別不參與，依賴該表的測試就必定現形：
-
-```bash
-docker exec sql2025 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '<pw>' -C \
-  -d common -Q "DROP TABLE IF EXISTS st_session;"
-# <SharedList> = 該專案內所有繼承 SharedDbFixture 的類別名
-dotnet test tests/<Proj>/<Proj>.csproj -c Release --settings .runsettings \
-  --filter "FullyQualifiedName!~.ClassA.&FullyQualifiedName!~.ClassB."
-```
-
-`--filter` 的值務必用雙引號包住（含 `&`，否則 shell 會吃掉）。表由下一次
-`SharedDatabaseState.EnsureSchemaAndSeed` 重建，對其他測試無殘留影響。
-
-> 2026-08-04 用此法一次掃出 4 個違規類別（`ClientDefineAccessTests`、
-> `JsonRpcExecutorCoverageTests`、`LogBusinessObjectTests`、`CacheTests`），
-> 而先前僅以 grep 推理只找到第 1 個。
+`SessionInfoService.Get(未快取 token)` 都算——含 BO 內部的 `GetLangText` /
+`GetCurrentCustomizeId` / 查目前公司。**用窮盡掃描，不要用推理代替執行**：
+drop 掉 `st_session`，再逐專案跑「`--filter` 排除所有 `SharedDbFixture` 類別」的子集
+——建表的類別不參與，依賴該表的測試就必定現形（`--filter` 值要雙引號包住，`&` 否則被 shell 吃掉；
+表由下次 `EnsureSchemaAndSeed` 重建，無殘留）。完整命令與 2026-08-04 的實測結果見 gotchas
+——**當時此法一次掃出 4 個違規類別，先前純 grep 推理只找到 1 個。**
 
 ### 2. 一次重跑轉綠**不足以**判定 flaky
 

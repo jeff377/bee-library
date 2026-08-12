@@ -49,6 +49,30 @@ schema**（只有 `SharedDbFixture` 會），所以只有在「別的測試行�
 **心法**：**一次重跑轉綠不足以判定 flaky。** 同一組測試在不同 commit 的**首次**執行都紅，
 就該當真 bug 查。重跑只用來收集證據，不是結案依據。
 
+### 找出全部違規類別的窮盡掃描法
+
+**別用 grep 推理代替執行。** 觸發面比想像廣：不只 `IAccessTokenValidator`，任何
+`SessionInfoService.Get(未快取 token)` 都算 —— 含 BO 內部的 `GetLangText` /
+`GetCurrentCustomizeId` / 查目前公司。
+
+做法：drop 掉 `st_session`，再逐專案跑「排除所有 `SharedDbFixture` 類別」的子集 ——
+建表的類別不參與，依賴該表的測試就必定現形。
+
+```bash
+docker exec sql2025 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '<pw>' -C \
+  -d common -Q "DROP TABLE IF EXISTS st_session;"
+# 排除該專案內所有繼承 SharedDbFixture 的類別
+dotnet test tests/<Proj>/<Proj>.csproj -c Release --settings .runsettings \
+  --filter "FullyQualifiedName!~.ClassA.&FullyQualifiedName!~.ClassB."
+```
+
+`--filter` 的值務必用雙引號包住（含 `&`，否則 shell 會吃掉）。
+表由下一次 `SharedDatabaseState.EnsureSchemaAndSeed` 重建，對其他測試無殘留。
+
+> 2026-08-04 用此法一次掃出 4 個違規類別（`ClientDefineAccessTests`、
+> `JsonRpcExecutorCoverageTests`、`LogBusinessObjectTests`、`CacheTests`），
+> 而先前僅以 grep 推理只找到第 1 個。
+
 ## 快取自載 DB 時假設「該 DB 一定有設定」
 
 **症狀**：本機全綠、CI 紅。
