@@ -11,6 +11,7 @@
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [未使用型別盤點與清理（2026-08-12）](plan-unused-type-cleanup.md) | 2026-08-12 | Roslyn 符號級全掃（47 專案／995 型別／8038 成員）確認無死型別；真正的問題是三處「宣告了但沒接上」——`NumberFormatApplier` 從不執行、兩個公司錯誤碼從未拋出。另移除 `ApiContractRegistry`（被 `ApiOutputConverter` 取代）與 `ILogBusinessObject`，並補上 BO 側契約配對閘門 |
 | [框架全面體檢（2026-08-11）](plan-framework-review-2026-08-11.md) | 2026-08-12 | 十一面向唯讀體檢（基準 v4.19.0）；修正後十一面向平均 8.09 → 9.13，另記 5 條刻意遞延與 2 筆待查 flaky |
 | [解除 Bee.Definition 對 DynamicExpresso 的傳遞相依](plan-definition-expressions-decoupling.md) | 2026-08-11 | 抽象三型別下沉 `Bee.Base`，拿掉對 `Bee.Expressions` 的 ProjectReference；相依閘門由人眼掃描變成可執行檢查（ADR-038） |
 | [Northwind 補齊 common / log 資料庫分類](plan-northwind-common-log-scopes.md) | 2026-08-11 | 兩個分類正式登錄、seeder 旁路建表退役、開啟稽核；框架補 `st_user` 預設認證，案例登入改走它 |

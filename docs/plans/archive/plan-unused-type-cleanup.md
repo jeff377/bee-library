@@ -21,10 +21,10 @@
 逐節點取語意模型的 `GetSymbolInfo`，建立「符號 → 參考檔案集合」索引，涵蓋 `src/` 的
 **995 個型別 / 8038 個成員**。非文字比對。
 
-交叉比對的反射註冊面：[`BackendDefaultTypes`](../../src/Bee.Definition/BackendDefaultTypes.cs)
-的 9 個型別名字串、[`ExecFuncHandlerExtensions`](../../src/Bee.Business/ExecFuncHandlerExtensions.cs)
+交叉比對的反射註冊面：[`BackendDefaultTypes`](../../../src/Bee.Definition/BackendDefaultTypes.cs)
+的 9 個型別名字串、[`ExecFuncHandlerExtensions`](../../../src/Bee.Business/ExecFuncHandlerExtensions.cs)
 的 `handler.GetType().GetMethod(args.FuncId)`、
-[`JsonRpcExecutor`](../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs) 依 action 名反射派送 BO 方法、
+[`JsonRpcExecutor`](../../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs) 依 action 名反射派送 BO 方法、
 `[DiagnosticAnalyzer]` 屬性載入、`DbDialectRegistry.Register` 的 host 端註冊。
 
 ### 四個必須避開的偽陽性陷阱
@@ -52,7 +52,7 @@
 
 ### 與前輪體檢的關係（重要）
 
-`archive/plan-framework-review-2026-07-28.md` 的 **P2-4** 已做過一次死碼清除，
+`plan-framework-review-2026-07-28.md` 的 **P2-4** 已做過一次死碼清除，
 且**範圍經使用者逐項裁決、非全表照刪**。已裁決事項不在本 plan 重議：
 
 | 前輪裁決 | 內容 |
@@ -61,7 +61,7 @@
 | 「刻意擴充點」**保留** | `CheckPackageUpdate` / `GetPackage` 全棧 —— base 擲 `NotSupportedException` 供子類覆寫，已列入公開 API 參考文件 |
 | `DateTimeExtensions` 部分刪除 | `IsEmpty` 已刪；`GetYearMonth` **知情保留**（該輪還拿它當 `PublicApiAnalyzers` 生效的示範案例） |
 
-`archive/plan-framework-review-2026-08-11.md` 的 **D-6 / D-8 / X-6** 也涵蓋同一片地，
+`plan-framework-review-2026-08-11.md` 的 **D-6 / D-8 / X-6** 也涵蓋同一片地，
 其中 `ApiErrorInfo`、`MessagePackContract` 已刪除完畢（本次掃描已確認不存在）。
 **X-6 與本 plan 的 `BusinessObjectFactoryExtensions` 是同一根因**，見階段 4。
 
@@ -77,16 +77,16 @@
 
 ### 盤點結果
 
-[`NumberFormatApplier`](../../src/Bee.Definition/Forms/NumberFormatApplier.cs) 負責把公司層數值
+[`NumberFormatApplier`](../../../src/Bee.Definition/Forms/NumberFormatApplier.cs) 負責把公司層數值
 顯示格式 bake 到 `FormSchema` 的數值欄位。現況是**它從不執行**：
 
 - 呼叫端由 commit `ec94d0aa`（2026-08-01，`feat(api)!: 定義類 API 一律供應原始定義 + XML 信封`）
   移除，`LoadAndLocalizeSchema` 與 `TryGetCompanyInfo` 一併刪除。
 - **移除是刻意的**：該 commit message 明寫「客製與生成則移到**需求端**」，
-  [`SystemBusinessObject.Define.cs`](../../src/Bee.Business/System/SystemBusinessObject.Define.cs)
+  [`SystemBusinessObject.Define.cs`](../../../src/Bee.Business/System/SystemBusinessObject.Define.cs)
   的 `GetFormSchema` `<remarks>` 也改寫成「呼叫端自行套用」。
 - **缺口在需求端沒補上**：client pipeline
-  [`FormDefinitionLoader.GetLocalizedSchemaAsync`](../../src/Bee.Api.Client/Definitions/FormDefinitionLoader.cs)
+  [`FormDefinitionLoader.GetLocalizedSchemaAsync`](../../../src/Bee.Api.Client/Definitions/FormDefinitionLoader.cs)
   已接上 `FormSchemaLocalizer`，`GetRuntimeLayoutAsync` 已接上 `CustomizeOverlay`，
   **唯獨沒有接 `NumberFormatApplier`**。
 - 其 XML doc 仍指向已不存在的 `SystemBusinessObject.LoadAndLocalizeSchema`（全 repo 零命中）。
@@ -94,14 +94,14 @@
 ### 已確認的接線條件
 
 - 資料來源齊備：`CompanyInfo.GetDecimals(NumberKind)` 存在
-  （[CompanyInfo.cs:72](../../src/Bee.Definition/Identity/CompanyInfo.cs)），
+  （[CompanyInfo.cs:72](../../../src/Bee.Definition/Identity/CompanyInfo.cs)），
   `ClientInfo.Company` 在 `EnterCompany` 後持有 `CompanyInfo`
-  （[ClientInfo.cs:202](../../src/Bee.UI.Core/ClientInfo.cs)）。
+  （[ClientInfo.cs:202](../../../src/Bee.UI.Core/ClientInfo.cs)）。
 - **相依方向是單向的**：`Bee.UI.Core` → `Bee.Api.Client`，所以 `FormDefinitionLoader`
   **拿不到** `ClientInfo.Company`。公司資訊必須由參數或 ctor 注入
   （`CompanyInfo?` 參數，或 ctor 收 `Func<CompanyInfo?>`），不能反向相依。
 - **兩條路徑都要 bake**：`GetLocalizedSchemaAsync` 在 `lang` 為空時於
-  [第 62–63 行](../../src/Bee.Api.Client/Definitions/FormDefinitionLoader.cs)
+  [第 62–63 行](../../../src/Bee.Api.Client/Definitions/FormDefinitionLoader.cs)
   早退回 `raw.Clone()`，該路徑同樣需要 bake。
 - `Bake` 就地 mutate，依 `rules/definition.md` 的 cache 不可變規則**必須傳 clone**；
   兩條路徑都已 `Clone()`，可直接沿用。用 `HasNumericField` 先判斷以省下不必要的 clone
@@ -140,23 +140,23 @@
 
 ## 階段 2：已宣告未實作的對外契約
 
-[`JsonRpcErrorCode`](../../src/Bee.Api.Core/JsonRpc/JsonRpcErrorCode.cs) 的
+[`JsonRpcErrorCode`](../../../src/Bee.Api.Core/JsonRpc/JsonRpcErrorCode.cs) 的
 `CompanyNotEntered = -32002` 與 `CompanyAccessDenied = -32003` **從未被拋出**。
 
 這不是「多宣告一個列舉值」而已 —— 兩者的 XML doc 都寫明了 HTTP 對映
 （409 Conflict / 403 Forbidden），`CompanyAccessDenied` 還記載了「兩種失敗合併為單一錯誤碼以防
 匿名列舉公司 id」的安全設計。**這是已發布的對外契約，但實作走的是另一條路**：
 
-- [`EnterCompany`](../../src/Bee.Business/System/SystemBusinessObject.Session.cs) 失敗時擲
+- [`EnterCompany`](../../../src/Bee.Business/System/SystemBusinessObject.Session.cs) 失敗時擲
   `InvalidOperationException("Company access denied.")`。
 - `JsonRpcExecutor.IsUserFacingException`
-  （[:312](../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs)）的 BCL 白名單**含
+  （[:312](../../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs)）的 BCL 白名單**含
   `InvalidOperationException`**。
-- 因此 `MapException`（[:353](../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs)）對映成
+- 因此 `MapException`（[:353](../../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs)）對映成
   `UserMessage = -32099`，而非設計的 `-32003`。
 
 對照組：`PermissionDenied = -32004` 有專屬的
-[`ForbiddenException`](../../src/Bee.Base/Exceptions/ForbiddenException.cs) 與 `MapException`
+[`ForbiddenException`](../../../src/Bee.Base/Exceptions/ForbiddenException.cs) 與 `MapException`
 分支，走得通。**公司層那兩個碼缺的就是這條專屬例外 + 對映分支。**
 
 ### 步驟
@@ -164,7 +164,7 @@
 擇一，不要放著：
 
 - **實作**：比照 `ForbiddenException` 建立對應例外型別，`EnterCompany` 改擲之，
-  `MapException` 加分支；client 端 [`ApiConnector`](../../src/Bee.Api.Client/Connectors/ApiConnector.cs)
+  `MapException` 加分支；client 端 [`ApiConnector`](../../../src/Bee.Api.Client/Connectors/ApiConnector.cs)
   已對 `PermissionDenied` 有處理，同步補上。
 - **刪除**：兩個碼移出列舉（破壞性，需走 `PublicAPI` 流程），並移除 XML doc 內的 HTTP 對映描述。
 
@@ -174,8 +174,8 @@
 ### 執行結果（2026-08-12）：`CompanyAccessDenied` 已實作
 
 **盤點時的判斷需要更正**：原以為實作這兩個碼等於「發明政策」。實際上
-[`adr-012`](../adr/adr-012-session-company-context.md) 的行為矩陣與新增錯誤碼表、以及公開文件
-[`jsonrpc-frontend-integration`](../jsonrpc-frontend-integration.md) 的錯誤碼表，
+[`adr-012`](../../adr/adr-012-session-company-context.md) 的行為矩陣與新增錯誤碼表、以及公開文件
+[`jsonrpc-frontend-integration`](../../jsonrpc-frontend-integration.md) 的錯誤碼表，
 **都早已把這兩個碼寫成對外契約**（-32002 → HTTP 409、-32003 → HTTP 403）。
 政策是既有決策，缺的只是實作。
 
@@ -225,10 +225,10 @@ if (string.IsNullOrEmpty(session.CompanyId))
 
 | 項目 | 位置 | 盤點結果 |
 |------|------|---------|
-| 冗餘多載 `NormalizeDateTimeMode(DataSet)` | [DataTableExtensions.cs:218](../../src/Bee.Base/Data/DataTableExtensions.cs) | 同名 `DataTable` 版本有 11 處使用，`DataSet` 版本零參考 |
-| 冗餘多載 `WireContract.For<T>(Func<T>)` | [WireContract.cs:20](../../src/Bee.Api.Core/MessagePack/WireContract.cs) | 另一多載在用，此多載零參考 |
-| `SecurityKeys` 未消費欄位 | [BeeFrameworkServiceCollectionExtensions.Factories.cs:163](../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.Factories.cs) | private `record struct` 的 `CookieEncryptionKey` / `DatabaseEncryptionKey` 已解密但無消費端。確認是否為預留欄位；否則刪除（純內部，零公開表面變更） |
-| **過期註解** | [SystemApiConnector.cs:220-232](../../src/Bee.Api.Client/Connectors/SystemApiConnector.cs) | 註解寫「`GetFormSchema` / `GetFormLayout` / `GetLanguage` 是 **JS-only（Plain JSON wire format）**，.NET client 不提供」。但 `ec94d0aa` 已把這三個入口改為**一律 XML 信封**，commit message 明寫「改成 XML 後同一組 API 兩端都能用」。**理由已不成立，註解卻還在。** |
+| 冗餘多載 `NormalizeDateTimeMode(DataSet)` | [DataTableExtensions.cs:218](../../../src/Bee.Base/Data/DataTableExtensions.cs) | 同名 `DataTable` 版本有 11 處使用，`DataSet` 版本零參考 |
+| 冗餘多載 `WireContract.For<T>(Func<T>)` | [WireContract.cs:20](../../../src/Bee.Api.Core/MessagePack/WireContract.cs) | 另一多載在用，此多載零參考 |
+| `SecurityKeys` 未消費欄位 | [BeeFrameworkServiceCollectionExtensions.Factories.cs:163](../../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.Factories.cs) | private `record struct` 的 `CookieEncryptionKey` / `DatabaseEncryptionKey` 已解密但無消費端。確認是否為預留欄位；否則刪除（純內部，零公開表面變更） |
+| **過期註解** | [SystemApiConnector.cs:220-232](../../../src/Bee.Api.Client/Connectors/SystemApiConnector.cs) | 註解寫「`GetFormSchema` / `GetFormLayout` / `GetLanguage` 是 **JS-only（Plain JSON wire format）**，.NET client 不提供」。但 `ec94d0aa` 已把這三個入口改為**一律 XML 信封**，commit message 明寫「改成 XML 後同一組 API 兩端都能用」。**理由已不成立，註解卻還在。** |
 
 前兩項為 public，刪除需走 `PublicAPI.Unshipped.txt` 的 `*REMOVED*` 流程（見 `releasing.md` 第 3 節）。
 
@@ -242,7 +242,7 @@ if (string.IsNullOrEmpty(session.CompanyId))
   副作用**：那兩把金鑰不再於啟動時被解密，因此格式損毀不會再 fail fast。這對「沒有任何消費端
   的金鑰」而言不算損失，反而更誠實——但**上游問題仍在**：`SecurityKeySettings.CookieEncryptionKey`
   與 `DatabaseEncryptionKey` 是已出貨的設定合約，全 repo 零消費端，部署者設定了會以為有效。
-  與 `archive/plan-framework-review-2026-08-11.md` 的 **D-7**（`AuditLogOptions.ExecEnabled`）
+  與 `plan-framework-review-2026-08-11.md` 的 **D-7**（`AuditLogOptions.ExecEnabled`）
   同型，應併案處理。
 
 ---
@@ -254,9 +254,9 @@ if (string.IsNullOrEmpty(session.CompanyId))
 
 | 型別 | 位置 | 備註 |
 |------|------|------|
-| `DataTableComparer` | [DataTableComparer.cs](../../src/Bee.Base/Data/DataTableComparer.cs) | |
-| `DataRowViewExtensions` | [DataRowViewExtensions.cs](../../src/Bee.Base/Data/DataRowViewExtensions.cs) | 純委派給 `DataRowExtensions` |
-| `Dictionary<T>` | [Dictionary.cs](../../src/Bee.Base/Collections/Dictionary.cs) | 見下方註記 |
+| `DataTableComparer` | [DataTableComparer.cs](../../../src/Bee.Base/Data/DataTableComparer.cs) | |
+| `DataRowViewExtensions` | [DataRowViewExtensions.cs](../../../src/Bee.Base/Data/DataRowViewExtensions.cs) | 純委派給 `DataRowExtensions` |
+| `Dictionary<T>` | [Dictionary.cs](../../../src/Bee.Base/Collections/Dictionary.cs) | 見下方註記 |
 
 判準用 `code-style.md`「0-caller 框架公開 API 保留、**純 BCL wrapper 且 0 caller 才直接刪**」。
 
@@ -322,7 +322,7 @@ BO 之間會做的事——它是 client / API 面的需求。因此移除 `ILog
 
 ### `Dictionary<T>` 另有一項
 
-[`Dictionary.cs:7`](../../src/Bee.Base/Collections/Dictionary.cs) 的
+[`Dictionary.cs:7`](../../../src/Bee.Base/Collections/Dictionary.cs) 的
 `public class Dictionary<T> : Dictionary<string, T>`（OrdinalIgnoreCase key）**違反 `code-style.md`
 自己的命名規範**：撞 `System.Collections.Generic.Dictionary`，消費端同時 `using` 兩個 namespace
 時需要 alias。
@@ -336,11 +336,11 @@ BO 之間會做的事——它是 client / API 面的需求。因此移除 `ILog
 
 | 型別 | 保留理由 |
 |------|---------|
-| [`FileHashValidator`](../../src/Bee.Base/Security/FileHashValidator.cs) | `security.md` 明文「使用 `FileHashValidator` 驗證檔案完整性，不自行實作雜湊比對邏輯」 |
-| [`PermissionBindingValidator`](../../src/Bee.Definition/Settings/Permission/PermissionBindingValidator.cs) | 自身 `<remarks>` 明寫「框架不自己呼叫，由 host 在啟動 / 部署冒煙測試 / CI 呼叫」 |
-| [`TraceDispatcher`](../../src/Bee.Base/Tracing/TraceDispatcher.cs) | `ITraceListener` 的預設實作，由 host 決定是否啟用 |
-| [`VersionInfo`](../../src/Bee.UI.Core/VersionInfo.cs) | 見於根 `README`、`docs/dependency-map.md`、`adr-013` |
-| [`BeeStringLocalizer`](../../src/Bee.Definition/Language/BeeStringLocalizer.cs) | 見於 `docs/terminology.md`、`adr-038` |
+| [`FileHashValidator`](../../../src/Bee.Base/Security/FileHashValidator.cs) | `security.md` 明文「使用 `FileHashValidator` 驗證檔案完整性，不自行實作雜湊比對邏輯」 |
+| [`PermissionBindingValidator`](../../../src/Bee.Definition/Settings/Permission/PermissionBindingValidator.cs) | 自身 `<remarks>` 明寫「框架不自己呼叫，由 host 在啟動 / 部署冒煙測試 / CI 呼叫」 |
+| [`TraceDispatcher`](../../../src/Bee.Base/Tracing/TraceDispatcher.cs) | `ITraceListener` 的預設實作，由 host 決定是否啟用 |
+| [`VersionInfo`](../../../src/Bee.UI.Core/VersionInfo.cs) | 見於根 `README`、`docs/dependency-map.md`、`adr-013` |
+| [`BeeStringLocalizer`](../../../src/Bee.Definition/Language/BeeStringLocalizer.cs) | 見於 `docs/terminology.md`、`adr-038` |
 | `IPValidator` / `CollectionExtensions` / `DateTimeExtensions` | 均列於 `src/Bee.Base/README.md` 雙語版；`DateTimeExtensions` 另經前輪知情保留 |
 
 ### `BusinessObjectFactoryExtensions`：規範與程式碼漂移
@@ -349,7 +349,7 @@ BO 之間會做的事——它是 client / API 面的需求。因此移除 `ILog
 `IFormBusinessObject` / `ILogBusinessObject` 的 XML doc 也稱其為「intended entry point」——
 但 `src/` 內**沒有任何一處這樣呼叫**，實際都直接走 `IBusinessObjectFactory.CreateBusinessObject`。
 
-這與 `archive/plan-framework-review-2026-08-11.md` 的 **X-6**（`ILogBusinessObject` 的
+這與 `plan-framework-review-2026-08-11.md` 的 **X-6**（`ILogBusinessObject` 的
 `<remarks>` 寫「there is no `CreateLogBO` factory extension」但它存在且已發布）是同一根因：
 **這三個擴充方法的定位從未落實，文件各說各話。**
 
@@ -360,10 +360,10 @@ BO 之間會做的事——它是 client / API 面的需求。因此移除 `ILog
 
 ## 階段 5：`Bee.Api.Contracts` 契約介面的定位
 
-[`ApiContractRegistry`](../../src/Bee.Api.Core/Registry/ApiContractRegistry.cs) 的
+`ApiContractRegistry`（本 plan 執行後已刪除，原位於 `src/Bee.Api.Core/Registry/`）的
 `Register<TContract,TApi>()` **production 零呼叫**（其自身 `<remarks>` 已載明），
 因此 `s_mappings` 恆為空、`ConvertForSerialization`（由
-[`ApiPayloadConverter.cs:34`](../../src/Bee.Api.Core/JsonRpc/ApiPayloadConverter.cs) 呼叫）恆為 no-op。
+[`ApiPayloadConverter.cs:34`](../../../src/Bee.Api.Core/JsonRpc/ApiPayloadConverter.cs) 呼叫）恆為 no-op。
 
 連帶地，`Bee.Api.Contracts` 的 **56 個 `I*Request` / `I*Response` 介面沒有任何執行期消費端**——
 掃描顯示其參考全部落在 base list（`class PingArgs : BusinessArgs, IPingRequest`）。
@@ -377,7 +377,7 @@ BO 之間會做的事——它是 client / API 面的需求。因此移除 `ILog
 1. 決定 `ApiContractRegistry` 去留：真要支援「BO 回傳純 POCO」→ 補上註冊與測試；
    不支援 → 刪除 registry 與 `ApiPayloadConverter` 的呼叫點。
 2. 若刪除 registry，**契約介面本身仍應保留**（形狀閘門有效），但要把這個定位寫進
-   [`Bee.Api.Contracts/README.md`](../../src/Bee.Api.Contracts/README.md) 雙語版，
+   [`Bee.Api.Contracts/README.md`](../../../src/Bee.Api.Contracts/README.md) 雙語版，
    避免後人再次以為它有執行期用途。
 3. 決策若屬長效架構判斷，補一份 ADR。
 
@@ -388,7 +388,7 @@ BO 之間會做的事——它是 client / API 面的需求。因此移除 `ILog
 
 **1. 契約介面承載著一個靜默反射複製的正確性，每次 API 呼叫、雙向都在用。**
 
-API 型別與 BO 型別的互轉由 [`ApiInputConverter.Convert`](../../src/Bee.Api.Core/Conversion/ApiInputConverter.cs)
+API 型別與 BO 型別的互轉由 [`ApiInputConverter.Convert`](../../../src/Bee.Api.Core/Conversion/ApiInputConverter.cs)
 承擔（名字叫 Input，實際雙向都是它）：
 
 | 方向 | 呼叫端 | 轉換 |
