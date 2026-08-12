@@ -1,6 +1,11 @@
-# 計畫：repo 層級 skill 精簡
+# 計畫：skill 與 rule 的分層歸位
 
-**狀態：🚧 進行中（2026-08-12）**
+**狀態：✅ 已完成（2026-08-12）**
+
+> 起於「repo 層級 skill 精簡」的盤點，執行中擴為三層歸位：
+> **repo skill**（綁 bee-library 的慣例）／ **plugin skill**（跨 repo 的開發流程）／
+> **常駐 rule**（不知道要查也會違反的硬規則）。階段 5、6 因此跨到
+> `~/.claude/` 與 `claude-plugins` repo。
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -9,7 +14,7 @@
 | 3 | `hackmd-blog` 移出 repo，改置使用者層 | ✅ 已完成（2026-08-12） |
 | 4 | `bee-scaffold-from-formschema` 修檔名錯誤並收斂定位 | ✅ 已完成（2026-08-12） |
 | 5 | `changelog-draft` 中性化後移入 `dev-workflow` plugin | ✅ 已完成（2026-08-12） |
-| 6 | `releasing.md` 拆分：程序移入 plugin skill，原則與防護欄留常駐 | 📝 待做 |
+| 6 | `releasing.md` 拆分：程序移入 plugin skill，原則與防護欄留常駐 | ✅ 已完成（2026-08-12） |
 
 ## 背景
 
@@ -290,7 +295,17 @@ skill（**若該 repo 有**）」，該括號存在的原因就是兩者分居�
 
 ## 全域驗收
 
-- `.claude/skills/` 由 12 支降為 9 支
-- `.claude/skills/README.md` 索引與實際目錄一致（含分工註記）
-- 各 skill 內引用的 repo 內路徑全數存在（可用同一支掃描確認）
-- 不動任何 `src/` / `tests/` 程式碼；本 plan 為純文件與設定改動
+- ✅ `.claude/skills/` 由 12 支降為 **10 支**（`hackmd-blog` 移使用者層、
+  `changelog-draft` 移 plugin；階段 1 決定不合併，故未再減一）
+- ✅ `.claude/skills/README.md` 索引與實際目錄一致（含分工註記與三分法歸屬指引）
+- ✅ 各 skill 引用的 repo 內路徑全數存在（掃描後僅剩預期產出與 gitignored 檔）
+- ✅ 使用者層常駐 **551 → 461 行**（-16%）：`releasing.md` 154 → 26，
+  新增 `single-source.md` 37
+- ✅ `dev-workflow` plugin 2.5.0 → **2.7.0**（+`changelog-draft`、+`release`）
+- ✅ 不動任何 `src/` / `tests/` 程式碼
+
+### 尚待收尾（需先推送 plugin）
+
+`~/.claude/scripts/merge-public-api-shipped.sh` 目前與 plugin 內的副本**並存** ——
+刻意保留到 plugin 推上 GitHub、消費端 cache 更新並驗證過之後再刪，
+避免出現「兩份都構不到」的空窗。刪除前該檔即是本 plan 自己在講的那種複寫。
