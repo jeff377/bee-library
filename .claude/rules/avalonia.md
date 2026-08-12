@@ -60,7 +60,7 @@ Master-Detail）為驗收基準。控件外觀變更先在此目視驗證再回�
 
 ## 踩過的雷
 
-18 條實證雷（Stretch+MaxWidth 置中、控件語意事件對程式設值不觸發、DataGrid 編輯管線與 popup
+實證雷（Stretch+MaxWidth 置中、控件語意事件對程式設值不觸發、DataGrid 編輯管線與 popup
 編輯器衝突、`StyleKeyOverride` 必修、模板回收造成顯示脫鉤、唯讀外觀 template 的隱藏部件…）
 見 `docs/repo-ops/gotchas/avalonia-controls.md`。**改 `Bee.UI.Avalonia` 控件前先讀。**
 

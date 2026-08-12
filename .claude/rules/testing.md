@@ -156,8 +156,8 @@ public void ExecuteDataTable_PostgreSQL_ReturnsDataTable()
 
 需要本機特定基礎設施（例如本機跑著的 API server、專屬資料、或無法在 CI 自動備妥的環境）的測試，使用 `[LocalOnlyFact]` / `[LocalOnlyTheory]`。
 
-> **兩者目前皆零使用**（2026-08-11 實測）。留著是因為「需要本機服務的整合測試」這個情境仍成立，
-> 但下面的範例是示意、不是現存程式碼——別去 grep 它。`[DbTheory]` 同樣只有 1 處使用。
+> **兩者目前無使用者**（2026-08-11 實測）。留著是因為「需要本機服務的整合測試」這個情境仍成立，
+> 但下面的範例是示意、不是現存程式碼——別去 grep 它。`[DbTheory]` 同樣罕用。
 定義在 `tests/Bee.Tests.Shared/`，會檢查環境變數 `CI`；**當 `CI=true`（GitHub Actions 預設）時自動跳過**。
 
 ```csharp
@@ -254,19 +254,19 @@ public class DbAccessFactoryTests { ... }
 
 ### 目前仍存在的窄序列化
 
-多數測試已改以 fixture-scoped DI instance 取代 process-wide static，race 風險自然消除。實測（2026-08-11）全 repo 有 **28 處** `[Collection]` 序列化，全部用於保護尚未 DI 化的 process-wide static：
+多數測試已改以 fixture-scoped DI instance 取代 process-wide static，race 風險自然消除。現存的 `[Collection]` 序列化全部用於保護尚未 DI 化的 process-wide static：
 
-| Collection | 處數 | 保護對象 |
-|---|---|---|
-| `ClientInfoState` | 14 | `ClientInfo.*` |
-| `SysInfoStatic` | 5 | `SysInfo.*`（`Bee.Base` 與 `Bee.Api.Core` 各自定義，跨組件必須如此） |
-| `ApiClientInfoState` | 4 | `ApiClientInfo.*` |
-| `ProcessWideStateCollection.Name` | 3 | `BEE_MASTER_KEY` 環境變數、`GlobalEvents`、測試 body 內建立的 DI 容器 |
-| `ApiServiceOptionsState` | 2 | `ApiServiceOptions.*` |
+| Collection | 保護對象 |
+|---|---|
+| `ClientInfoState` | `ClientInfo.*` |
+| `SysInfoStatic` | `SysInfo.*`（`Bee.Base` 與 `Bee.Api.Core` 各自定義，跨組件必須如此） |
+| `ApiClientInfoState` | `ApiClientInfo.*` |
+| `ProcessWideStateCollection.Name` | `BEE_MASTER_KEY` 環境變數、`GlobalEvents`、測試 body 內建立的 DI 容器 |
+| `ApiServiceOptionsState` | `ApiServiceOptions.*` |
 
-**五個名稱都有對應的 `CollectionDefinition`，零孤兒。** 另有五個組件改以
+**每個名稱都有對應的 `CollectionDefinition`，零孤兒。** 另有數個組件改以
 `DisableTestParallelization` 整組序列化（`Bee.Api.Client` / `Bee.Api.Core` /
-`Bee.ObjectCaching` / `Bee.UI.Avalonia`），那比逐類別掛 `[Collection]` 可靠——
+`Bee.Definition` / `Bee.ObjectCaching` / `Bee.UI.Avalonia`），那比逐類別掛 `[Collection]` 可靠——
 讀取端會隨新測試增加，逐一補必然遺漏。
 
 > **新增 collection 時用 `const` 而非字串字面值**（如 `ProcessWideStateCollection.Name`）：
@@ -382,10 +382,10 @@ var result = access.GetDefine(DefineType.FormSchema, s_employeeKey);
 
 從別的測試檔 copy header 時容易帶進不相關的 using，補完測試後逐一檢查並移除。
 
-## 「本機綠、CI 紅」的兩個反覆根因
+## 「本機綠、CI 紅」的反覆根因
 
 本機環境比 CI「更完整」（有 `tests/Define` 的 DatabaseSettings、有持久 DB 容器、可能殘留舊 seed），
-以下兩類缺口**本機必定測不出來**。踩雷實例與排查過程見
+以下缺口**本機必定測不出來**。踩雷實例與排查過程見
 `docs/repo-ops/gotchas/test-ci-release.md`。
 
 ### 1. 會碰 DB 的測試必須用 `SharedDbFixture`

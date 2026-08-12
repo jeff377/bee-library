@@ -16,7 +16,7 @@
 
 `src/Bee.Definition` **不得**有 `MessagePack`（或任何傳輸格式套件）的 `PackageReference`。
 判準是「會不會讓定義層長出外部套件相依」：`[XmlIgnore]` / `[JsonIgnore]` 是 BCL 詞彙、
-可用；MessagePack 標註不可。全 repo 的 MessagePack 相依只在 **`Bee.Api.Core`** 一處。
+可用；MessagePack 標註不可。全 repo 的 MessagePack 相依只在 **`Bee.Api.Core`**。
 
 wire 綁定由 `src/Bee.Api.Core/MessagePack/` 的**手寫 formatter** 承擔，定義型別不帶標註。
 

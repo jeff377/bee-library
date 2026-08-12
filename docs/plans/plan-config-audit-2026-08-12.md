@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | P0：正在誤導 agent 的失效引用（plugin 名、skill 舊名、AOT 結論矛盾） | ✅ 已完成（2026-08-12） |
-| 2 | 清除常駐設定內的清點數字，改定性描述（含已漂與尚未漂者） | 📝 待做 |
+| 2 | 清除常駐設定內的清點數字，改定性描述（含已漂與尚未漂者） | ✅ 已完成（2026-08-12） |
 | 3 | `apple-mobile-trim.md` 推導內容搬按需區（需先裁決是否新建 gotchas 檔） | 📝 待做 |
 | 4 | `testing.md` 程式碼樣板搬按需區 | 📝 待做 |
 | 5 | P3：跨層錯置與示意路徑（scope、skill 歸屬、ADR 路徑形狀） | 📝 待做 |
@@ -119,8 +119,8 @@ DynamicExpresso 自動退回直譯器」。
 | `.claude/CLAUDE.md:54` + `dependency-boundary.md:7` | 「`Bee.Definition` 有 **6 個**直接下游（Contracts、Db、RepoAbs、Caching、Business、Api.Core）」 | `src/` 內為 7 個，列舉漏了 `Bee.UI.Avalonia`；含 `tools/` 則 9 | 去掉總數，改「有多個直接下游，且是每個 UI head 傳遞閉包的成員」。**一併消除同一數字複寫兩處** —— 那違反 `releasing.md` 自己立的單一來源原則 |
 | `testing.md:267` | 「另有**五個組件**改以 `DisableTestParallelization`（列出四個）」 | 實為 Api.Client／Api.Core／**Definition**／ObjectCaching／UI.Avalonia | 去掉總數，補齊列舉 |
 | `testing.md:385` | 節標題「『本機綠、CI 紅』的**兩個**反覆根因」 | 下有 3 個子節（第 3 條後補、標題沒跟） | 改「反覆根因」不帶數字 |
-| `~/.claude/rules/code-style.md:131` | 「`FormField`（495 行、**36 個** `[XmlAttribute]` 屬性）」 | 495 行精準；`[XmlAttribute]` 為 24 個 | 兩個數字都拿掉，只留「純屬性袋、沒有自然分群」；拆分閾值（> 500 行）本身留 |
-| `~/.claude/rules/code-style.md:140-145` | `ValueUtilities` `.Temporal` **224 行** | 239 行 | 拿掉行數，保留「日期那半帶著自己的領域包袱」的論證與 2026-08-12 的歷史敘事 |
+| `~/.claude/rules/code-style.md:131` | 「`FormField`（495 行、**36 個** `[XmlAttribute]` 屬性）」 | 495 行精準；`[XmlAttribute]` 為 24 個 | 兩個數字都拿掉（改「近 500 行、通篇 `[XmlAttribute]` 屬性」），只留「純屬性袋、沒有自然分群」；拆分閾值（> 500 行）本身留 |
+| ~~`~/.claude/rules/code-style.md:140-145`~~ | ~~`ValueUtilities` `.Temporal` 224 行~~ | 239 行 | **執行時更正為「不動」** —— 詳下 |
 | `.claude/rules/avalonia.md:63` | gotchas 有「**18 條**實證雷」 | 17 條 | 改「實證雷」不帶條數 —— 條數會隨新雷增加，註定再漂 |
 
 ### 2.2 尚未漂移但同樣該清（健檢時數字仍精準）
@@ -137,6 +137,32 @@ DynamicExpresso 自動退回直譯器」。
 **不清**（同批出現但屬前表左欄）：`serialization.md`「全 repo 已無整數 `[Key]`」是狀態不變量、
 `definition.md`「`CreateFormBO` / `CreateSystemBO` 在 `src/` 零 caller 是預期的、不是死碼」
 存在的目的就是防止誤刪、`releasing.md`「版號只有這一個來源」是不變量。
+
+### 2.3 執行時的一項自我更正：`ValueUtilities` 行數不該清
+
+`code-style.md:140-145` 的 `ValueUtilities` 行數（501 → 637 → 拆出 `.Temporal` → 主檔 413）
+原被 2.1 列為待清，實際動手時判定**不動**。兩個理由：
+
+1. 它是**帶日期署名的歷史敘事**（「（bee-library，2026-08-12）」），講的是當天拆分前後量到
+   什麼，不是宣告現況 —— 正好落在本階段判準的「歷史量測不受此限」。
+2. 那些行數**是論證本身**：整段要說明的是「501 行時判不拆是錯的、長到 637 才動手」，
+   而拆分閾值恰好是 500 行。拿掉數字，這段就不成立。
+
+`.Temporal` 現在是 239 行而非文中的 224，屬「當時量測與事後略有出入」，不需回頭改。
+
+**這一則值得留在 plan 裡**：它示範了機械套用「清掉所有數字」會誤傷什麼 ——
+判別法始終是「這句在講現在是什麼，還是當時發生了什麼」，不是「有沒有數字」。
+
+### 2.4 收尾掃描
+
+清完後重跑同一道 grep，確認剩餘數字**全部**落在「該留」那欄：
+
+- 歷史量測：`serialization.md` 的 37 → 185 筆、`public-docs.md` 三處帶日期的「14 處長期漏網」、
+  `avalonia.md` 的 2026-07-09 升版敘事、`testing.md` 的 2026-08-04 窮盡掃描結果（4 個 vs 第 1 個
+  的對比就是該段論證）
+- 規格：`code-style.md` 的縮排 4 個空格 / XML 2 個空格
+- 不變量：`testing.md` 的「零孤兒」
+- 判別表的示例本身：`releasing.md` 用「37 → 185」示範「歷史量測該保留」，屬元層級示範
 
 ---
 

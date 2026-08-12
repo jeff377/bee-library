@@ -51,7 +51,7 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 | 基礎設施 | Bee.Base, Bee.Definition, Bee.ObjectCaching |
 
 > ⚠️ **`Bee.Base` 與 `Bee.Definition` 是最底層的兩個組件**：`Bee.Base` 是所有專案的相依、
-> `Bee.Definition` 有 6 個直接下游。**除非必要，不得再為這兩個專案加入套件參考**——
+> `Bee.Definition` 的直接下游遍及各層。**除非必要，不得再為這兩個專案加入套件參考**——
 > 加在這裡的任何相依會沿相依鏈傳染給每一個消費者。判準、正解與閘門見
 > `rules/dependency-boundary.md`。
 

@@ -4,8 +4,8 @@
 
 **除非必要，不得再為這兩個專案加入任何套件參考（`PackageReference`）。**
 
-它們是全框架相依圖的底部：`Bee.Definition` 有 6 個直接下游（Contracts、Db、RepoAbs、
-Caching、Business、Api.Core），`Bee.Base` 則是**所有**專案的相依。**加在這兩層的任何套件，
+它們是全框架相依圖的底部：`Bee.Definition` 的直接下游遍及 contracts、資料存取、快取、
+商業邏輯、API 與 UI 各層，`Bee.Base` 則是**所有**專案的相依。**加在這兩層的任何套件，
 會沿相依鏈傳染給每一個消費者**——包含只想讀定義的純 UI head 與定義檔工具。
 
 同理，**下游專案的 `ProjectReference` 也算**：`Bee.Definition` 曾透過
