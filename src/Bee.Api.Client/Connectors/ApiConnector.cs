@@ -192,6 +192,10 @@ namespace Bee.Api.Client.Connectors
                     throw new UserMessageException(response.Error.Message);
                 if (response.Error.Code == (int)JsonRpcErrorCode.PermissionDenied)
                     throw new ForbiddenException(response.Error.Message);
+                if (response.Error.Code == (int)JsonRpcErrorCode.CompanyAccessDenied)
+                    throw new CompanyAccessDeniedException(response.Error.Message);
+                if (response.Error.Code == (int)JsonRpcErrorCode.CompanyNotEntered)
+                    throw new CompanyNotEnteredException(response.Error.Message);
                 throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
             }
             RestoreResponsePayload(response, actualFormat);

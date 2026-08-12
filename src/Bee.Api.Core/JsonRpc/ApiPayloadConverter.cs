@@ -1,7 +1,6 @@
 using Bee.Base;
 using Bee.Api.Core.MessagePack;
 using Bee.Api.Core.Messages;
-using Bee.Api.Core.Registry;
 
 namespace Bee.Api.Core.JsonRpc
 {
@@ -29,9 +28,6 @@ namespace Bee.Api.Core.JsonRpc
 
             if (payload.Value == null)
                 throw new InvalidOperationException("Payload.Value cannot be null.");
-
-            // Convert pure POCO results to API types if a contract mapping is registered
-            payload.Value = ApiContractRegistry.ConvertForSerialization(payload.Value);
 
             var type = payload.Value!.GetType();
             payload.TypeName = type.FullName + ", " + type.Assembly.GetName().Name;

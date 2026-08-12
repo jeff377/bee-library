@@ -1,11 +1,27 @@
 #nullable enable
+*REMOVED*Bee.Base.ConnectionTestResult
+*REMOVED*Bee.Base.ConnectionTestResult.ConnectionTestResult() -> void
+*REMOVED*Bee.Base.ConnectionTestResult.ConnectionTestResult(bool isSuccess, string! message) -> void
+*REMOVED*Bee.Base.ConnectionTestResult.IsSuccess.get -> bool
+*REMOVED*Bee.Base.ConnectionTestResult.IsSuccess.set -> void
+*REMOVED*Bee.Base.ConnectionTestResult.Message.get -> string!
+*REMOVED*Bee.Base.ConnectionTestResult.Message.set -> void
+*REMOVED*Bee.Base.MemberPath
 *REMOVED*Bee.Base.Tracing.TraceListener
 *REMOVED*Bee.Base.Tracing.TraceListener.TraceEnd(Bee.Base.Tracing.TraceContext! ctx, Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string? detail = null) -> void
 *REMOVED*Bee.Base.Tracing.TraceListener.TraceListener(Bee.Base.Tracing.ITraceWriter! writer) -> void
 *REMOVED*Bee.Base.Tracing.TraceListener.TraceStart(Bee.Base.Tracing.TraceLayers layer, string! detail = "", string! category = "", object? tag = null, string! name = "") -> Bee.Base.Tracing.TraceContext!
 *REMOVED*Bee.Base.Tracing.TraceListener.TraceWrite(Bee.Base.Tracing.TraceLayers layer, string! detail = "", Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string! category = "", object? tag = null, string! name = "") -> void
+*REMOVED*static Bee.Base.Data.DataTableExtensions.NormalizeDateTimeMode(this System.Data.DataSet! dataSet) -> void
+*REMOVED*static Bee.Base.MemberPath.Of<T>(System.Linq.Expressions.Expression<System.Func<T>!>! expression) -> string!
 *REMOVED*static Bee.Base.StringUtilities.IsEmpty(object? value) -> bool
 *REMOVED*static Bee.Base.StringUtilities.IsNotEmpty(object? value) -> bool
+Bee.Base.Exceptions.CompanyAccessDeniedException
+Bee.Base.Exceptions.CompanyAccessDeniedException.CompanyAccessDeniedException(string! message) -> void
+Bee.Base.Exceptions.CompanyAccessDeniedException.CompanyAccessDeniedException(string! message, System.Exception! innerException) -> void
+Bee.Base.Exceptions.CompanyNotEnteredException
+Bee.Base.Exceptions.CompanyNotEnteredException.CompanyNotEnteredException(string! message) -> void
+Bee.Base.Exceptions.CompanyNotEnteredException.CompanyNotEnteredException(string! message, System.Exception! innerException) -> void
 Bee.Base.Tracing.TraceDispatcher
 Bee.Base.Tracing.TraceDispatcher.TraceDispatcher(Bee.Base.Tracing.ITraceWriter! writer) -> void
 Bee.Base.Tracing.TraceDispatcher.TraceEnd(Bee.Base.Tracing.TraceContext! ctx, Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string? detail = null) -> void

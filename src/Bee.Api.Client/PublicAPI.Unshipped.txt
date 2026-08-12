@@ -14,4 +14,6 @@ Bee.Api.Client.Connectors.LogApiConnector.LogApiConnector(System.Guid accessToke
 Bee.Api.Client.Connectors.LogApiConnector.LogApiConnector(string! endpoint, System.Guid accessToken, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Api.Client.Connectors.SystemApiConnector.SystemApiConnector(System.Guid accessToken, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Api.Client.Connectors.SystemApiConnector.SystemApiConnector(string! endpoint, System.Guid accessToken, Bee.Api.Client.ApiSessionContext! session) -> void
+Bee.Api.Client.Definitions.FormDefinitionLoader.CompanyAccessor.get -> System.Func<Bee.Definition.Identity.CompanyInfo?>?
+Bee.Api.Client.Definitions.FormDefinitionLoader.CompanyAccessor.init -> void
 static Bee.Api.Client.ApiSessionContext.Ambient.get -> Bee.Api.Client.ApiSessionContext!

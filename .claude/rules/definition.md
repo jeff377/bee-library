@@ -69,6 +69,20 @@ DatabaseSettings、ProgramSettings、DbCategorySettings、LanguageResource）都
 `_ctx.BoFactory.CreateXxxBO(...)` 拿到後呼叫它？」是 → 放介面；否 → 不放。
 介面爆成「所有 public 方法集合」就失去意義，也增加 host 端客製化負擔。
 
+> **`CreateFormBO` / `CreateSystemBO` 的呼叫端是 host 的業務 BO，不是框架自己。**
+> 框架內部沒有 BO-to-BO 場景——`JsonRpcExecutor` 依 progId 派送、不知道是哪條軸，
+> `RepositoryFactory` 同理——所以這兩個擴充方法在 `src/` 內**零 caller 是預期的、不是死碼**。
+> 2026-08-12 的未使用型別盤點一度把它列為清理候選，查證後保留。判準本身不受影響：
+> 上面問的是「會不會有人這樣呼叫」，而 host 就是那個人。
+>
+> **軸介面不是每條軸都要有——只有「會被別的 BO 呼叫」的軸才需要。** 開介面的唯一理由就是
+> BO call BO；**稽核記錄查詢本質上不是 BO 之間會做的事**，它是 client / API 面的需求。
+> 因此 `ILogBusinessObject` 與 `CreateLogBO` 已於 2026-08-12 移除（其 XML doc 原本自承是
+> 「reserved for future cross-BO audit queries」——那是預留，不是需求）。
+> `LogBusinessObject` 的方法照樣經 `JsonRpcExecutor` 對外開放，完全不受影響。
+>
+> 新增一條軸時先問：**這條軸的方法，另一個 BO 會想呼叫嗎？** 不會就別開介面。
+
 > **判斷時務必把 server 端的背景呼叫端算進去，不能只看「client 會不會呼叫」。**
 > `Login` 曾被本規則誤列為「只給 client、不放介面」的例子（2026-08-12 更正）——它有真實的
 > 內部呼叫端：**背景作業會以某身份登入建立連線**，再模擬該使用者登打表單或執行作業。

@@ -50,8 +50,11 @@
 
 ### Data Access Helpers
 
-- `DataTable` / `DataSet` / `DataRow` extension methods for simplified ADO.NET usage
+- `DataTable` / `DataSet` / `DataRow` / `DataRowView` extension methods for simplified ADO.NET usage
+  (`DataRowViewExtensions.GetFieldValue<T>` is the data-binding counterpart of `DataRowExtensions`)
 - `FieldDbType` and `DbTypeConverter` -- database type mapping utilities
+- `DataTableComparer.IsEqual` -- structural + row-state + cell-value comparison of two `DataTable`s,
+  for asserting that a serialization round trip preserved a table exactly
 
 ### Tracing & Diagnostics
 

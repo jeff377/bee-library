@@ -1,4 +1,5 @@
 using Bee.Base;
+using Bee.Base.Exceptions;
 using Bee.Base.Security;
 using Bee.Definition;
 using Bee.Definition.Attributes;
@@ -83,9 +84,10 @@ namespace Bee.Business.System
         /// Permission validation enforces three rules: (1) the target company exists,
         /// (2) it is enabled, (3) the current user is granted access via the
         /// <c>st_user_company</c> table. All three failure modes surface as the same
-        /// <see cref="InvalidOperationException"/> with the message
+        /// <see cref="CompanyAccessDeniedException"/> with the message
         /// <c>"Company access denied."</c> so callers cannot enumerate companies by
-        /// probing the error text.
+        /// probing the error text. Over JSON-RPC it arrives as
+        /// <c>JsonRpcErrorCode.CompanyAccessDenied</c> (HTTP 403 semantics).
         /// </remarks>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual EnterCompanyResult EnterCompany(EnterCompanyArgs args)
@@ -100,7 +102,7 @@ namespace Bee.Business.System
             // The same binder runs on session rebuild, so entering a company and coming back from
             // an evicted cache land on identical session state.
             var binding = Services.GetRequiredService<SessionCompanyBinder>().Bind(sessionInfo, args.CompanyId)
-                ?? throw new InvalidOperationException("Company access denied.");
+                ?? throw new CompanyAccessDeniedException("Company access denied.");
 
             // Seed before cache: the company is the one snapshotted value that cannot be derived,
             // so a rebuild that missed it would silently drop the user back to "no company".

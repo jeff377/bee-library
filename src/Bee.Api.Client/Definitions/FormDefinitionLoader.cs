@@ -1,5 +1,6 @@
 using Bee.Definition.Customization;
 using Bee.Definition.Forms;
+using Bee.Definition.Identity;
 using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 
@@ -18,6 +19,7 @@ namespace Bee.Api.Client.Definitions
     /// <list type="number">
     ///   <item><description>fetch the raw schema;</description></item>
     ///   <item><description>fetch both language layers for every namespace the schema references, and localize the schema through <c>FormSchemaLocalizer</c>;</description></item>
+    ///   <item><description>bake the company's number formats onto the schema through <c>NumberFormatApplier</c>;</description></item>
     ///   <item><description>fetch both layout layers, pick between them with <c>CustomizeOverlay</c>, and generate from the schema when neither exists;</description></item>
     ///   <item><description>take the layout's captions from the localized schema, so a layout file describes structure only.</description></item>
     /// </list>
@@ -43,28 +45,51 @@ namespace Bee.Api.Client.Definitions
         }
 
         /// <summary>
+        /// Gets the accessor supplying the company whose decimal places the number formats are baked
+        /// from. <c>null</c> — the default — bakes the framework defaults.
+        /// </summary>
+        /// <remarks>
+        /// A delegate rather than a <see cref="CompanyInfo"/> value on purpose: the entered company
+        /// changes over a session's life (<c>EnterCompany</c> / <c>LeaveCompany</c>), and a value
+        /// captured at construction would keep baking the previous tenant's decimals. Heads set
+        /// <c>CompanyAccessor = () =&gt; ClientInfo.Company</c>.
+        /// </remarks>
+        public Func<CompanyInfo?>? CompanyAccessor { get; init; }
+
+        /// <summary>
         /// Fetches the raw schema for <paramref name="progId"/> and returns a localized copy.
         /// </summary>
         /// <param name="progId">The program identifier.</param>
         /// <param name="lang">The BCP-47 language code; empty returns the schema unlocalized.</param>
         /// <returns>A schema safe to mutate — the cached instance is never handed out.</returns>
         /// <remarks>
+        /// <para>
         /// WARNING: The blank-language path clones too, and must keep doing so. It used to return the
         /// cached instance directly, which made the sentence above false for exactly the case that
         /// reaches it most often: <c>CultureInfo.InvariantCulture.Name</c> is the empty string, so a
         /// caller passing the current UI culture lands here whenever no culture is set. Callers were
         /// told the result was safe to mutate and mutated a process-wide shared schema.
+        /// </para>
+        /// <para>
+        /// Number formats are baked on both paths, not just the localized one: the format a numeric
+        /// field renders with has nothing to do with which language the captions are in.
+        /// </para>
         /// </remarks>
         public async Task<FormSchema> GetLocalizedSchemaAsync(string progId, string lang)
         {
             var raw = await _defineAccess.GetFormSchemaAsync(progId).ConfigureAwait(false);
-            // The client define cache hands back a shared instance; both paths clone before returning.
-            if (string.IsNullOrWhiteSpace(lang))
-                return raw.Clone();
-
+            // The client define cache hands back a shared instance; every path clones before returning.
             var schema = raw.Clone();
-            var languageService = await BuildLanguageServiceAsync(schema, lang).ConfigureAwait(false);
-            new FormSchemaLocalizer(languageService).Localize(schema, lang);
+            if (!string.IsNullOrWhiteSpace(lang))
+            {
+                var languageService = await BuildLanguageServiceAsync(schema, lang).ConfigureAwait(false);
+                new FormSchemaLocalizer(languageService).Localize(schema, lang);
+            }
+
+            // The server serves definitions exactly as stored, so the company's decimal places are
+            // applied here. Currency- and unit-bound kinds are left for the UI to resolve per row;
+            // `Bake` skips those itself.
+            NumberFormatApplier.Bake(schema, CompanyAccessor?.Invoke());
             return schema;
         }
 

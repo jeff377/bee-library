@@ -48,8 +48,11 @@
 
 ### 資料存取輔助
 
-- `DataTable` / `DataSet` / `DataRow` 擴充方法，簡化 ADO.NET 操作
+- `DataTable` / `DataSet` / `DataRow` / `DataRowView` 擴充方法，簡化 ADO.NET 操作
+  （`DataRowViewExtensions.GetFieldValue<T>` 是 `DataRowExtensions` 在資料繫結場景的對應版本）
 - `FieldDbType` 與 `DbTypeConverter` -- 資料庫型別對應工具
+- `DataTableComparer.IsEqual` —— 比對兩個 `DataTable` 的結構、資料列狀態與儲存格值，
+  用於斷言序列化 round-trip 完整還原
 
 ### 追蹤與診斷
 

@@ -6,8 +6,13 @@ namespace Bee.Definition.Forms
     /// <summary>
     /// Bakes company-aware display formats onto a <see cref="FormSchema"/>'s numeric fields at
     /// delivery time. Mutates the given schema in place, so callers must pass a clone — never the
-    /// shared cached schema (see the immutability note on <c>SystemBusinessObject.LoadAndLocalizeSchema</c>).
+    /// shared cached schema, which every session holds the same reference to.
     /// </summary>
+    /// <remarks>
+    /// The definition APIs serve schemas exactly as stored, so baking is the consuming side's job.
+    /// <c>Bee.Api.Client</c>'s <c>FormDefinitionLoader</c> is where the shipped .NET heads do it,
+    /// on the clone it already makes.
+    /// </remarks>
     public static class NumberFormatApplier
     {
         /// <summary>

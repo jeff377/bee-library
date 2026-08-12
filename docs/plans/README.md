@@ -12,4 +12,5 @@
 |------|------|------|
 | [框架全面體檢（2026-08-07）](plan-framework-review-2026-08-07.md) | 🚧 進行中（2026-08-07） | 十一面向唯讀體檢（基準 v4.17.0）。P0 / P3 已完成，P1 / P2 部分完成；剩 S-4 / N-2 / N-5 待裁決，P2 / P4 多數項目**未經人工複驗**，動手前須先複驗現象是否成立。續輪見封存的 2026-08-11 體檢 |
 | [定義編輯器：把宣告式 metadata 接回來](plan-definition-editor.md) | 📝 擬定中（2026-08-07） | 定義類別上 723 處編輯器 metadata 中有 579 處零消費端；本 plan 把它們接回實際的編輯器。承接 2026-08-07 體檢移交的 D-3 / D-5 |
+| [未使用型別盤點與清理（2026-08-12）](plan-unused-type-cleanup.md) | ✅ 已完成（2026-08-12） | Roslyn 符號級全掃（47 專案／995 型別／8038 成員）：**無任何完全死掉的型別**，private/internal 死碼為 0。六個階段全數完成——接回從不執行的 `NumberFormatApplier`、把兩個「已宣告 HTTP 對映卻從未拋出」的公司錯誤碼接上、刪除被 `ApiOutputConverter` 取代的 `ApiContractRegistry`、補上 BO 側契約配對閘門、移除 `ILogBusinessObject` 與 `ISystemBusinessObject` 的定義類方法。可封存 |
 | [列級租戶隔離（`sys_company_id`）](plan-row-level-tenancy.md) | 📝 擬定中（2026-07-30） | 試用公司共用 company 資料庫，以公司編號在列的層級區隔；與既有的資料庫級隔離正交並存。**D1–D5 全數定案，可動工**；分 4 階段，階段 1（`st_session` 公司欄位化）獨立可先交付 |

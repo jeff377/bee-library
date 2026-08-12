@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Base.Exceptions;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Identity;
@@ -101,9 +102,12 @@ namespace Bee.Repository.UnitTests
             var token = Guid.NewGuid();
             sessions.Set(new SessionInfo { AccessToken = token, UserId = "u", CompanyId = null });
 
-            var ex = Assert.Throws<InvalidOperationException>(
+            // 型別而非訊息字串：訊息會落到 client 的畫面上，錯誤「碼」才是前端據以導向
+            // 公司選擇的依據。先前這裡把錯誤碼名稱當成訊息文字釘住，等於把 CompanyNotEntered
+            // 這個字串顯示給使用者看。
+            var ex = Assert.Throws<CompanyNotEnteredException>(
                 () => router.Resolve(DbScope.Company, token));
-            Assert.Equal("CompanyNotEntered", ex.Message);
+            Assert.DoesNotContain("CompanyNotEntered", ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]

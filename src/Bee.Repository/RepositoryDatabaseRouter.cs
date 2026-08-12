@@ -1,3 +1,4 @@
+using Bee.Base.Exceptions;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Identity;
@@ -47,7 +48,8 @@ namespace Bee.Repository
                 ?? throw new UnauthorizedAccessException("Session not found or has expired.");
 
             if (string.IsNullOrEmpty(session.CompanyId))
-                throw new InvalidOperationException("CompanyNotEntered");
+                throw new CompanyNotEnteredException(
+                    "No company has been entered for this session.");
 
             var company = _companyService.Get(session.CompanyId)
                 ?? throw new InvalidOperationException(

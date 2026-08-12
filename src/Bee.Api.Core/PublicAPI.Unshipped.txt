@@ -63,8 +63,11 @@
 *REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.Message.set -> void
 *REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.StackTrace.get -> string!
 *REMOVED*Bee.Api.Core.Messages.ApiErrorInfo.StackTrace.set -> void
+*REMOVED*Bee.Api.Core.Registry.ApiContractRegistry
 *REMOVED*override Bee.Api.Core.Messages.ApiErrorInfo.ToString() -> string!
 *REMOVED*static Bee.Api.Core.MessagePack.SerializableDataSet.FromDataSet(System.Data.DataSet! ds) -> Bee.Api.Core.MessagePack.SerializableDataSet!
 *REMOVED*static Bee.Api.Core.MessagePack.SerializableDataSet.ToDataSet(Bee.Api.Core.MessagePack.SerializableDataSet! sds) -> System.Data.DataSet!
 *REMOVED*static Bee.Api.Core.MessagePack.SerializableDataTable.FromDataTable(System.Data.DataTable! table) -> Bee.Api.Core.MessagePack.SerializableDataTable!
 *REMOVED*static Bee.Api.Core.MessagePack.SerializableDataTable.ToDataTable(Bee.Api.Core.MessagePack.SerializableDataTable! sdt) -> System.Data.DataTable!
+*REMOVED*static Bee.Api.Core.Registry.ApiContractRegistry.ConvertForSerialization(object! value) -> object?
+*REMOVED*static Bee.Api.Core.Registry.ApiContractRegistry.Register<TContract, TApi>() -> void

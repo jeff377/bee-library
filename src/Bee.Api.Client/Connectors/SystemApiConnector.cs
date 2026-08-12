@@ -217,19 +217,17 @@ namespace Bee.Api.Client.Connectors
             return StringUtilities.IsNotEmpty(result.Xml) ? XmlCodec.Deserialize<LanguageResource>(result.Xml!) : null;
         }
 
-        // Note: GetFormSchema, GetFormLayout and GetLanguage have no .NET client methods. Those BO
-        // methods are JS-only (Plain JSON wire format) — see the SystemBO XML docs for the
-        // rationale. .NET clients use GetDefineAsync with the matching DefineType, which carries
-        // the definition as XML.
+        // Note: GetFormSchema, GetFormLayout and GetLanguage have no .NET client methods. They are
+        // the per-type entry points for ordinary clients and carry the same XML envelope as
+        // GetDefine, so a .NET wrapper would duplicate GetDefineAsync with the matching DefineType
+        // and nothing else. GetDefineAsync stays the single .NET path.
         //
-        // The distinction is not stylistic. Definition types (FormSchema, FormLayout,
-        // LanguageResource, TableSchema) declare XML as their serialisation contract: their nested
-        // collections are get-only, which XmlSerializer handles by populating the existing instance.
-        // JSON and MessagePack instead bind by writability, so they serialise those collections on
-        // the way out but drop them on the way back — a .NET caller would receive a schema carrying
-        // its scalar fields and no tables, with no error raised. Rather than reshape the definition
-        // model to suit a wire format, definitions travel as XML and these entry points stay out of
-        // the .NET client.
+        // Definition types (FormSchema, FormLayout, LanguageResource, TableSchema) travel as XML
+        // rather than a JSON tree because they declare XML as their serialisation contract: their
+        // nested collections are get-only, which XmlSerializer handles by populating the existing
+        // instance. JSON and MessagePack instead bind by writability, so they serialise those
+        // collections on the way out but drop them on the way back — a caller would receive a schema
+        // carrying its scalar fields and no tables, with no error raised.
 
         /// <summary>
         /// Asynchronously gets the current company's department tree (per-company organisation

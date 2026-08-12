@@ -135,10 +135,17 @@ namespace Bee.Hosting
         }
 
         /// <summary>
-        /// Decrypts the four security keys from <paramref name="settings"/> in one pass
-        /// using the master key. Empty entries map to empty byte arrays so downstream
+        /// Decrypts the security keys the framework consumes from <paramref name="settings"/> in one
+        /// pass using the master key. Empty entries map to empty byte arrays so downstream
         /// crypto paths see a consistent "no key configured" sentinel.
         /// </summary>
+        /// <remarks>
+        /// NOTE: <c>SecurityKeySettings.CookieEncryptionKey</c> and
+        /// <c>SecurityKeySettings.DatabaseEncryptionKey</c> are deliberately not decrypted here.
+        /// Nothing in the framework reads either one, so decrypting them produced two byte arrays
+        /// that were dropped on the floor. Add them back when a consumer exists — not before, or
+        /// the bundle grows fields again with nowhere to go.
+        /// </remarks>
         private static SecurityKeys DecryptSecurityKeys(SecurityKeySettings settings, string definePath, bool autoCreateMasterKey)
         {
             byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource, definePath, autoCreateMasterKey);
@@ -146,9 +153,7 @@ namespace Bee.Hosting
             return new SecurityKeys(
                 MasterKey: masterKey,
                 ApiEncryptionKey: Decrypt(masterKey, settings.ApiEncryptionKey),
-                CookieEncryptionKey: Decrypt(masterKey, settings.CookieEncryptionKey),
-                ConfigEncryptionKey: Decrypt(masterKey, settings.ConfigEncryptionKey),
-                DatabaseEncryptionKey: Decrypt(masterKey, settings.DatabaseEncryptionKey));
+                ConfigEncryptionKey: Decrypt(masterKey, settings.ConfigEncryptionKey));
 
             static byte[] Decrypt(byte[] masterKey, string? encryptedKey)
                 => StringUtilities.IsNotEmpty(encryptedKey)
@@ -163,8 +168,6 @@ namespace Bee.Hosting
         private readonly record struct SecurityKeys(
             byte[] MasterKey,
             byte[] ApiEncryptionKey,
-            byte[] CookieEncryptionKey,
-            byte[] ConfigEncryptionKey,
-            byte[] DatabaseEncryptionKey);
+            byte[] ConfigEncryptionKey);
     }
 }

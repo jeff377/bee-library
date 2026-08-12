@@ -12,13 +12,6 @@ namespace Bee.Api.Core.MessagePack
         /// </summary>
         public static WireContractBuilder<T> For<T>() where T : class, new()
             => new WireContractBuilder<T>(static () => new T());
-
-        /// <summary>
-        /// Starts a contract for <typeparamref name="T"/> with an explicit factory, for types with
-        /// no parameterless constructor.
-        /// </summary>
-        public static WireContractBuilder<T> For<T>(Func<T> factory) where T : class
-            => new WireContractBuilder<T>(factory);
     }
 
     /// <summary>

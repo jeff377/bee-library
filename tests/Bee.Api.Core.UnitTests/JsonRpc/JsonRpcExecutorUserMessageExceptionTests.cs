@@ -38,15 +38,43 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         }
 
         [Fact]
+        [DisplayName("MapException 於 CompanyAccessDeniedException 應回傳 CompanyAccessDenied code 與原訊息")]
+        public void MapException_CompanyAccessDeniedException_ReturnsCompanyAccessDeniedCode()
+        {
+            // 這條分支必須排在 BCL 白名單之前：本型別若落到白名單，會被歸成一般業務訊息
+            // (-32099)，前端就無法對「無權進入公司」做 403 的統一處理。
+            var ex = new CompanyAccessDeniedException("Company access denied.");
+
+            var (code, message) = JsonRpcExecutor.MapException(ex);
+
+            Assert.Equal(JsonRpcErrorCode.CompanyAccessDenied, code);
+            Assert.Equal("Company access denied.", message);
+        }
+
+        [Fact]
+        [DisplayName("MapException 於 CompanyNotEnteredException 應回傳 CompanyNotEntered code 與原訊息")]
+        public void MapException_CompanyNotEnteredException_ReturnsCompanyNotEnteredCode()
+        {
+            // 未進公司是可復原的協定狀態，不是要顯示給使用者的業務訊息。落到 -32099 的話，
+            // 前端只能把訊息原文彈出來，無從得知該把使用者導去公司選擇。
+            var ex = new CompanyNotEnteredException("No company has been entered for this session.");
+
+            var (code, message) = JsonRpcExecutor.MapException(ex);
+
+            Assert.Equal(JsonRpcErrorCode.CompanyNotEntered, code);
+            Assert.Equal("No company has been entered for this session.", message);
+        }
+
+        [Fact]
         [DisplayName("MapException 於白名單 BCL 例外應回傳 UserMessage code(過渡期相容)")]
         public void MapException_BclWhitelistException_ReturnsUserMessageCode()
         {
-            var ex = new InvalidOperationException("Company access denied.");
+            var ex = new InvalidOperationException("Session state is not valid.");
 
             var (code, message) = JsonRpcExecutor.MapException(ex);
 
             Assert.Equal(JsonRpcErrorCode.UserMessage, code);
-            Assert.Equal("Company access denied.", message);
+            Assert.Equal("Session state is not valid.", message);
         }
 
         [Fact]

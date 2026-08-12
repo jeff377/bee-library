@@ -1,9 +1,20 @@
 #nullable enable
+*REMOVED*Bee.Business.AuditLog.ILogBusinessObject
+*REMOVED*Bee.Business.AuditLog.ILogBusinessObject.GetAccessLog(Bee.Business.AuditLog.GetAccessLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
+*REMOVED*Bee.Business.AuditLog.ILogBusinessObject.GetApiAnomalyLog(Bee.Business.AuditLog.GetApiAnomalyLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
+*REMOVED*Bee.Business.AuditLog.ILogBusinessObject.GetApiAnomalySummary(Bee.Business.AuditLog.GetApiAnomalySummaryArgs! args) -> Bee.Business.AuditLog.LogAggregateResult!
+*REMOVED*Bee.Business.AuditLog.ILogBusinessObject.GetChangeDetail(Bee.Business.AuditLog.GetChangeDetailArgs! args) -> Bee.Business.AuditLog.GetChangeDetailResult!
+*REMOVED*Bee.Business.AuditLog.ILogBusinessObject.GetChangeLog(Bee.Business.AuditLog.GetChangeLogArgs! args) -> Bee.Business.AuditLog.GetChangeLogResult!
+*REMOVED*Bee.Business.AuditLog.ILogBusinessObject.GetDbAnomalyLog(Bee.Business.AuditLog.GetDbAnomalyLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
+*REMOVED*Bee.Business.AuditLog.ILogBusinessObject.GetDbAnomalySummary(Bee.Business.AuditLog.GetDbAnomalySummaryArgs! args) -> Bee.Business.AuditLog.LogAggregateResult!
+*REMOVED*Bee.Business.AuditLog.ILogBusinessObject.GetLoginLog(Bee.Business.AuditLog.GetLoginLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
+*REMOVED*Bee.Business.AuditLog.ILogBusinessObject.GetTopApiMethods(Bee.Business.AuditLog.GetTopApiMethodsArgs! args) -> Bee.Business.AuditLog.LogAggregateResult!
 *REMOVED*Bee.Business.BusinessObjectFactory.CreateBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall = true) -> object!
+*REMOVED*Bee.Business.System.ISystemBusinessObject.GetDefine(Bee.Business.System.GetDefineArgs! args) -> Bee.Business.System.GetDefineResult!
+*REMOVED*Bee.Business.System.ISystemBusinessObject.SaveDefine(Bee.Business.System.SaveDefineArgs! args) -> Bee.Business.System.SaveDefineResult!
 *REMOVED*static Bee.Business.BusinessObjectFactoryExtensions.CreateFormBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, string! progId, bool isLocalCall = true) -> Bee.Business.Form.IFormBusinessObject!
 *REMOVED*static Bee.Business.BusinessObjectFactoryExtensions.CreateLogBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.AuditLog.ILogBusinessObject!
 *REMOVED*static Bee.Business.BusinessObjectFactoryExtensions.CreateSystemBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.System.ISystemBusinessObject!
 Bee.Business.BusinessObjectFactory.CreateBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall) -> object!
 static Bee.Business.BusinessObjectFactoryExtensions.CreateFormBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, string! progId, bool isLocalCall) -> Bee.Business.Form.IFormBusinessObject!
-static Bee.Business.BusinessObjectFactoryExtensions.CreateLogBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall) -> Bee.Business.AuditLog.ILogBusinessObject!
 static Bee.Business.BusinessObjectFactoryExtensions.CreateSystemBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall) -> Bee.Business.System.ISystemBusinessObject!

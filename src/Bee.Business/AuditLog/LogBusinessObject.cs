@@ -22,7 +22,7 @@ namespace Bee.Business.AuditLog
     /// event headers (no DiffGram), and <see cref="GetChangeDetail"/> restores one event's
     /// <c>changes_xml</c> into structured before/after values on demand.
     /// </remarks>
-    public class LogBusinessObject : BusinessObject, ILogBusinessObject
+    public class LogBusinessObject : BusinessObject
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LogBusinessObject"/> class.

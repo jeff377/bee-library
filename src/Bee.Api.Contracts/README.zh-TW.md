@@ -72,6 +72,29 @@
 - **穩定列舉值** -- `PackageDelivery` 成員具有明確的整數值，不可變更既有值以維護序列化相容性。
 - **啟用可為 Null 參考型別**（`<Nullable>enable</Nullable>`）。
 
+## 這些介面為什麼存在
+
+它們不是裝飾性的標記——有兩個機制在執行期與編譯期依賴它們。
+
+**1. 讓一個靜默的反射複製保證完整。** 每一次 API 呼叫都經 `ApiInputConverter.Convert` 雙向轉換，
+而它是**以屬性名稱比對**來複製的：入站由 `JsonRpcExecutor` 呼叫，把 wire 訊息轉成 BO 參數；
+出站由 `ApiOutputConverter` 呼叫，把 BO 結果轉成 wire 回應。名稱對不上就靜默跳過——不擲例外、
+不警告，呼叫看起來成功但該欄位是空的。正因為 `LoginRequest` 與 `LoginArgs` 都實作
+`ILoginRequest`，編譯器才會逼兩邊帶同一組成員，複製也就不可能只複製一半。
+
+**2. 作為 wire 不變式的判別依據。** `DateTimeWireGuard` 以回應契約
+（`IGetListResponse`、`ISaveResponse`、`ILogListResponse` 等）做 pattern matching，
+辨識出帶有 `DataSet` 或裸 `DateTime` 的 payload，並對其強制 ADR-032 的 wire 不變式。
+
+配對的兩側都由測試把關，而非靠人工 review：`ApiContractPairingTests`（位於
+`Bee.Api.Core.UnitTests`）確認每個 `ApiRequest` / `ApiResponse` 子型別都實作對應契約；
+`BusinessContractPairingTests`（位於 `Bee.Business.UnitTests`）對每個 `BusinessArgs` /
+`BusinessResult` 做同樣的事。兩道閘門都是因為該側曾經漏過而且沒人發現才補上的。
+
+> 這裡沒有「契約 → 實作」的執行期註冊表。曾經有一個（`ApiContractRegistry`），
+> 為的是「BO 回傳純 POCO」這個從未發生的情境；它已被移除，該做的轉換
+> `ApiOutputConverter` 本來就在做。
+
 ## 目錄結構
 
 介面依軸分子資料夾（資料夾＝子命名空間）；跨 BO 的 `IExecFunc*` 配對保留在根層。

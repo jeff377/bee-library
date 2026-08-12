@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Base.Exceptions;
 using Bee.Business.System;
 using Bee.Db;
 using Bee.Definition.Database;
@@ -249,7 +250,7 @@ namespace Bee.Business.UnitTests
 
             try
             {
-                var ex = Assert.Throws<InvalidOperationException>(
+                var ex = Assert.Throws<CompanyAccessDeniedException>(
                     () => bo.EnterCompany(new EnterCompanyArgs { CompanyId = unknown }));
                 Assert.Contains("Company access denied", ex.Message);
 
@@ -277,7 +278,7 @@ namespace Bee.Business.UnitTests
 
                 try
                 {
-                    var ex = Assert.Throws<InvalidOperationException>(
+                    var ex = Assert.Throws<CompanyAccessDeniedException>(
                         () => bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyId }));
                     Assert.Contains("Company access denied", ex.Message);
                 }
@@ -308,7 +309,7 @@ namespace Bee.Business.UnitTests
 
                 try
                 {
-                    var ex = Assert.Throws<InvalidOperationException>(
+                    var ex = Assert.Throws<CompanyAccessDeniedException>(
                         () => bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyId }));
                     Assert.Contains("Company access denied", ex.Message);
                 }

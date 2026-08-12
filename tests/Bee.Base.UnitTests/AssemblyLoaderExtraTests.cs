@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Base.Attributes;
 
 namespace Bee.Base.UnitTests
 {
@@ -8,16 +9,16 @@ namespace Bee.Base.UnitTests
         [DisplayName("GetType 應支援分離的組件名稱與型別名稱參數")]
         public void GetType_WithSeparateAssemblyAndTypeName_ReturnsType()
         {
-            var type = AssemblyLoader.GetType("Bee.Base.dll", "Bee.Base.ConnectionTestResult");
-            Assert.Equal(typeof(ConnectionTestResult), type);
+            var type = AssemblyLoader.GetType("Bee.Base.dll", "Bee.Base.Attributes.TreeNodeAttribute");
+            Assert.Equal(typeof(TreeNodeAttribute), type);
         }
 
         [Fact]
         [DisplayName("CreateInstance 應支援分離的組件名稱與型別名稱參數")]
         public void CreateInstance_SeparateAssemblyAndTypeName_ReturnsInstance()
         {
-            var instance = AssemblyLoader.CreateInstance("Bee.Base.dll", "Bee.Base.ConnectionTestResult");
-            Assert.IsType<ConnectionTestResult>(instance);
+            var instance = AssemblyLoader.CreateInstance("Bee.Base.dll", "Bee.Base.Attributes.TreeNodeAttribute");
+            Assert.IsType<TreeNodeAttribute>(instance);
         }
 
         [Fact]
@@ -25,10 +26,10 @@ namespace Bee.Base.UnitTests
         public void CreateInstance_SeparateParamsWithCtorArgs_UsesMatchingConstructor()
         {
             var instance = AssemblyLoader.CreateInstance(
-                "Bee.Base.dll", "Bee.Base.ConnectionTestResult", true, "msg");
-            var result = Assert.IsType<ConnectionTestResult>(instance);
-            Assert.True(result.IsSuccess);
-            Assert.Equal("msg", result.Message);
+                "Bee.Base.dll", "Bee.Base.Attributes.TreeNodeAttribute", "msg", true);
+            var result = Assert.IsType<TreeNodeAttribute>(instance);
+            Assert.Equal("msg", result.DisplayFormat);
+            Assert.True(result.CollectionFolder);
         }
     }
 }

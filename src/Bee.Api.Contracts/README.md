@@ -72,6 +72,33 @@
 - **Stable enum values** -- `PackageDelivery` members have explicit integer values; existing values must not change to preserve serialization compatibility.
 - **Nullable reference types** enabled (`<Nullable>enable</Nullable>`).
 
+## Why These Interfaces Exist
+
+They are not decorative markers. Two mechanisms depend on them at runtime and at compile time.
+
+**1. They make a silent reflective copy total.** Every API call converts in both directions through
+`ApiInputConverter.Convert`, which copies public properties **by matching name** — inbound from the
+wire message to the BO argument (called by `JsonRpcExecutor`), outbound from the BO result to the
+wire response (called by `ApiOutputConverter`). A name that does not match is skipped silently: no
+exception, no warning, and the call appears to succeed with that field left empty. Because both
+`LoginRequest` and `LoginArgs` implement `ILoginRequest`, the compiler forces the two sides to carry
+the same members, so the copy cannot be partial.
+
+**2. They are the discriminator for wire invariants.** `DateTimeWireGuard` pattern-matches on the
+response contracts (`IGetListResponse`, `ISaveResponse`, `ILogListResponse`, and others) to find the
+payloads that carry a `DataSet` or a loose `DateTime`, and enforces the ADR-032 wire invariants on
+them.
+
+Both sides of the pairing are gated by tests rather than by review: `ApiContractPairingTests`
+(in `Bee.Api.Core.UnitTests`) asserts every `ApiRequest` / `ApiResponse` subtype implements its
+matching contract, and `BusinessContractPairingTests` (in `Bee.Business.UnitTests`) asserts the same
+for every `BusinessArgs` / `BusinessResult`. Each gate exists because that side drifted once and
+nobody noticed.
+
+> There is no runtime registry mapping contracts to implementations. One existed
+> (`ApiContractRegistry`) for a "BO returns a plain POCO" scenario that never materialised; it was
+> removed in favour of the conversion `ApiOutputConverter` already performs.
+
 ## Directory Structure
 
 Interfaces are organized into axis sub-folders (folder = sub-namespace); the cross-BO

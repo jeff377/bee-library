@@ -42,8 +42,10 @@ namespace Bee.UI.Avalonia.Views
         /// tenant customization.
         /// </para>
         /// <para>
-        /// Set it to enable customized layouts and localized captions:
-        /// <c>view.DefinitionLoader = new FormDefinitionLoader(ClientInfo.DefineAccess)</c>.
+        /// Set it to enable customized layouts, localized captions and company number formats:
+        /// <c>view.DefinitionLoader = new FormDefinitionLoader(ClientInfo.DefineAccess) { CompanyAccessor = () =&gt; ClientInfo.Company }</c>.
+        /// Pass the company accessor as a delegate, not a value — the entered company changes over
+        /// the session's life and a captured value would keep baking the previous tenant's decimals.
         /// </para>
         /// </remarks>
         public FormDefinitionLoader? DefinitionLoader { get; set; }

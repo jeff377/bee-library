@@ -19,6 +19,14 @@ namespace Bee.Business.System
     /// scheduler. <c>Login</c> qualifies for exactly that reason: a background job signs in as a
     /// given identity to open a session, then acts as that user, filling in a form or running an
     /// operation on their behalf.
+    ///
+    /// The definition operations are the counter-example. <c>GetDefine</c> / <c>SaveDefine</c> are
+    /// still public on <c>SystemBusinessObject</c> and still reachable by a client through
+    /// <c>JsonRpcExecutor</c>, but they are deliberately not on this interface: server-side code
+    /// reads and writes definitions through <c>IDefineAccess</c> directly, so routing that through
+    /// another business object would buy nothing. The same reasoning covers the rest of the
+    /// definition family (<c>GetFormSchema</c>, <c>GetFormLayout</c>, <c>GetLanguage</c>,
+    /// <c>GetCustomize*</c>), which were never on this interface.
     /// </remarks>
     public interface ISystemBusinessObject : IBusinessObject
     {
@@ -33,18 +41,6 @@ namespace Bee.Business.System
         /// </summary>
         /// <param name="args">The input arguments.</param>
         CreateSessionResult CreateSession(CreateSessionArgs args);
-
-        /// <summary>
-        /// Gets definition data.
-        /// </summary>
-        /// <param name="args">The input arguments.</param>
-        GetDefineResult GetDefine(GetDefineArgs args);
-
-        /// <summary>
-        /// Saves definition data.
-        /// </summary>
-        /// <param name="args">The input arguments.</param>
-        SaveDefineResult SaveDefine(SaveDefineArgs args);
 
         /// <summary>
         /// Enters the specified company for the current session.

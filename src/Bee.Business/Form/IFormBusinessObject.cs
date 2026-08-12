@@ -5,7 +5,7 @@ namespace Bee.Business.Form
     /// </summary>
     /// <remarks>
     /// This is the decoupling layer for <b>BO-to-BO calls</b>, matching
-    /// <c>ISystemBusinessObject</c> / <c>ILogBusinessObject</c>: a caller resolves a form BO by
+    /// <c>ISystemBusinessObject</c>: a caller resolves a form BO by
     /// <c>progId</c> through <c>IBusinessObjectFactory</c> (see <c>CreateFormBO</c>), casts to this
     /// interface, and invokes a method without binding to a concrete class — so host-side BO
     /// customisation cannot break callers.

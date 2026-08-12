@@ -210,19 +210,5 @@ namespace Bee.Base.Data
                 }
             }
         }
-
-        /// <summary>
-        /// Applies <see cref="NormalizeDateTimeMode(DataTable)"/> to every table of the data set.
-        /// </summary>
-        /// <param name="dataSet">The target data set.</param>
-        public static void NormalizeDateTimeMode(this DataSet dataSet)
-        {
-            ArgumentNullException.ThrowIfNull(dataSet);
-
-            foreach (DataTable table in dataSet.Tables)
-            {
-                table.NormalizeDateTimeMode();
-            }
-        }
     }
 }
