@@ -72,13 +72,6 @@ Bee.Base.Collections.KeyCollectionItem.Tag.set -> void
 Bee.Base.Collections.StringHashSet
 Bee.Base.Collections.StringHashSet.Add(string! s, string! delimiter) -> void
 Bee.Base.Collections.StringHashSet.StringHashSet() -> void
-Bee.Base.ConnectionTestResult
-Bee.Base.ConnectionTestResult.ConnectionTestResult() -> void
-Bee.Base.ConnectionTestResult.ConnectionTestResult(bool isSuccess, string! message) -> void
-Bee.Base.ConnectionTestResult.IsSuccess.get -> bool
-Bee.Base.ConnectionTestResult.IsSuccess.set -> void
-Bee.Base.ConnectionTestResult.Message.get -> string!
-Bee.Base.ConnectionTestResult.Message.set -> void
 Bee.Base.Data.DataColumnExtensions
 Bee.Base.Data.DataRowExtensions
 Bee.Base.Data.DataRowViewExtensions
@@ -116,6 +109,12 @@ Bee.Base.DateInterval.WeekOfYear = 5 -> Bee.Base.DateInterval
 Bee.Base.DateInterval.Weekday = 6 -> Bee.Base.DateInterval
 Bee.Base.DateInterval.Year = 0 -> Bee.Base.DateInterval
 Bee.Base.DateTimeExtensions
+Bee.Base.Exceptions.CompanyAccessDeniedException
+Bee.Base.Exceptions.CompanyAccessDeniedException.CompanyAccessDeniedException(string! message) -> void
+Bee.Base.Exceptions.CompanyAccessDeniedException.CompanyAccessDeniedException(string! message, System.Exception! innerException) -> void
+Bee.Base.Exceptions.CompanyNotEnteredException
+Bee.Base.Exceptions.CompanyNotEnteredException.CompanyNotEnteredException(string! message) -> void
+Bee.Base.Exceptions.CompanyNotEnteredException.CompanyNotEnteredException(string! message, System.Exception! innerException) -> void
 Bee.Base.Exceptions.ExceptionExtensions
 Bee.Base.Exceptions.ForbiddenException
 Bee.Base.Exceptions.ForbiddenException.ForbiddenException(string! message) -> void
@@ -156,7 +155,6 @@ Bee.Base.ISysInfoConfiguration.Version.set -> void
 Bee.Base.ITagProperty
 Bee.Base.ITagProperty.Tag.get -> object?
 Bee.Base.ITagProperty.Tag.set -> void
-Bee.Base.MemberPath
 Bee.Base.Security.AesCbcHmacCryptor
 Bee.Base.Security.AesCbcHmacKeyGenerator
 Bee.Base.Security.ApiKeyFormat
@@ -206,6 +204,11 @@ Bee.Base.Tracing.TraceContext.Name.get -> string!
 Bee.Base.Tracing.TraceContext.Start.get -> System.DateTimeOffset
 Bee.Base.Tracing.TraceContext.Stopwatch.get -> System.Diagnostics.Stopwatch!
 Bee.Base.Tracing.TraceContext.Tag.get -> object?
+Bee.Base.Tracing.TraceDispatcher
+Bee.Base.Tracing.TraceDispatcher.TraceDispatcher(Bee.Base.Tracing.ITraceWriter! writer) -> void
+Bee.Base.Tracing.TraceDispatcher.TraceEnd(Bee.Base.Tracing.TraceContext! ctx, Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string? detail = null) -> void
+Bee.Base.Tracing.TraceDispatcher.TraceStart(Bee.Base.Tracing.TraceLayers layer, string! detail = "", string! category = "", object? tag = null, string! name = "") -> Bee.Base.Tracing.TraceContext!
+Bee.Base.Tracing.TraceDispatcher.TraceWrite(Bee.Base.Tracing.TraceLayers layer, string! detail = "", Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string! category = "", object? tag = null, string! name = "") -> void
 Bee.Base.Tracing.TraceEvent
 Bee.Base.Tracing.TraceEvent.Category.get -> string!
 Bee.Base.Tracing.TraceEvent.Category.set -> void
@@ -238,11 +241,6 @@ Bee.Base.Tracing.TraceLayers.Business = 8 -> Bee.Base.Tracing.TraceLayers
 Bee.Base.Tracing.TraceLayers.Data = 16 -> Bee.Base.Tracing.TraceLayers
 Bee.Base.Tracing.TraceLayers.None = 0 -> Bee.Base.Tracing.TraceLayers
 Bee.Base.Tracing.TraceLayers.UI = 1 -> Bee.Base.Tracing.TraceLayers
-Bee.Base.Tracing.TraceListener
-Bee.Base.Tracing.TraceListener.TraceEnd(Bee.Base.Tracing.TraceContext! ctx, Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string? detail = null) -> void
-Bee.Base.Tracing.TraceListener.TraceListener(Bee.Base.Tracing.ITraceWriter! writer) -> void
-Bee.Base.Tracing.TraceListener.TraceStart(Bee.Base.Tracing.TraceLayers layer, string! detail = "", string! category = "", object? tag = null, string! name = "") -> Bee.Base.Tracing.TraceContext!
-Bee.Base.Tracing.TraceListener.TraceWrite(Bee.Base.Tracing.TraceLayers layer, string! detail = "", Bee.Base.Tracing.TraceStatus status = Bee.Base.Tracing.TraceStatus.Ok, string! category = "", object? tag = null, string! name = "") -> void
 Bee.Base.Tracing.TraceStatus
 Bee.Base.Tracing.TraceStatus.Cancelled = 2 -> Bee.Base.Tracing.TraceStatus
 Bee.Base.Tracing.TraceStatus.Error = 1 -> Bee.Base.Tracing.TraceStatus
@@ -292,7 +290,6 @@ static Bee.Base.Data.DataTableExtensions.ApplyFieldDbType(this System.Data.DataT
 static Bee.Base.Data.DataTableExtensions.HasField(this System.Data.DataTable! dataTable, string! fieldName) -> bool
 static Bee.Base.Data.DataTableExtensions.IsEmpty(this System.Data.DataTable! dataTable) -> bool
 static Bee.Base.Data.DataTableExtensions.LowercaseColumnNames(this System.Data.DataTable! dataTable) -> void
-static Bee.Base.Data.DataTableExtensions.NormalizeDateTimeMode(this System.Data.DataSet! dataSet) -> void
 static Bee.Base.Data.DataTableExtensions.NormalizeDateTimeMode(this System.Data.DataTable! table) -> void
 static Bee.Base.Data.DataTableExtensions.SetDateColumns(this System.Data.DataTable! table, params string![]! columnNames) -> void
 static Bee.Base.Data.DataTableExtensions.SetPrimaryKey(this System.Data.DataTable! table, string! fieldNames) -> void
@@ -322,7 +319,6 @@ static Bee.Base.HttpUtilities.GetAsync(string! endpoint, System.Collections.Spec
 static Bee.Base.HttpUtilities.IsEndpointReachableAsync(string! endpoint, System.TimeSpan? timeout = null) -> System.Threading.Tasks.Task<bool>!
 static Bee.Base.HttpUtilities.IsUrl(string! input) -> bool
 static Bee.Base.HttpUtilities.PostAsync(string! endpoint, string! body, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
-static Bee.Base.MemberPath.Of<T>(System.Linq.Expressions.Expression<System.Func<T>!>! expression) -> string!
 static Bee.Base.Security.AesCbcHmacCryptor.Decrypt(byte[]! encryptedData, byte[]! aesKey, byte[]! hmacKey) -> byte[]!
 static Bee.Base.Security.AesCbcHmacCryptor.Encrypt(byte[]! plainBytes, byte[]! aesKey, byte[]! hmacKey) -> byte[]!
 static Bee.Base.Security.AesCbcHmacKeyGenerator.FromBase64CombinedKey(string! base64, out byte[]! aesKey, out byte[]! hmacKey) -> void
@@ -371,12 +367,12 @@ static Bee.Base.StringUtilities.Format(string! format, params object![]! args) -
 static Bee.Base.StringUtilities.GetNextId(string! value, int numberBase) -> string!
 static Bee.Base.StringUtilities.GetNextId(string! value, string! baseValues) -> string!
 static Bee.Base.StringUtilities.IndexOf(string? s, string! value, bool ignoreCase = true) -> int
-static Bee.Base.StringUtilities.IsEmpty(object? value) -> bool
 static Bee.Base.StringUtilities.IsEmpty(string? s, bool isTrim = true) -> bool
+static Bee.Base.StringUtilities.IsEmptyText(object? value) -> bool
 static Bee.Base.StringUtilities.IsEquals(string? s1, string? s2, bool ignoreCase = true) -> bool
 static Bee.Base.StringUtilities.IsEqualsOr(string? s, params string![]! values) -> bool
-static Bee.Base.StringUtilities.IsNotEmpty(object? value) -> bool
 static Bee.Base.StringUtilities.IsNotEmpty(string? s, bool isTrim = true) -> bool
+static Bee.Base.StringUtilities.IsNotEmptyText(object? value) -> bool
 static Bee.Base.StringUtilities.LastIndexOf(string? s, string! value, bool ignoreCase = true) -> int
 static Bee.Base.StringUtilities.Replace(string? s, string! search, string! replacement, bool ignoreCase = true) -> string!
 static Bee.Base.StringUtilities.Split(string? s, string! delimiter) -> string![]!

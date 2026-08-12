@@ -1,6 +1,12 @@
 #nullable enable
 Bee.Api.Client.ApiClientInfo
 Bee.Api.Client.ApiConnectValidator
+Bee.Api.Client.ApiSessionContext
+Bee.Api.Client.ApiSessionContext.ApiEncryptionKey.get -> byte[]!
+Bee.Api.Client.ApiSessionContext.ApiEncryptionKey.set -> void
+Bee.Api.Client.ApiSessionContext.ApiSessionContext() -> void
+Bee.Api.Client.ApiSessionContext.UserTimeZoneId.get -> string!
+Bee.Api.Client.ApiSessionContext.UserTimeZoneId.set -> void
 Bee.Api.Client.ClientDefineAccess
 Bee.Api.Client.ClientDefineAccess.ClearCache() -> void
 Bee.Api.Client.ClientDefineAccess.ClientDefineAccess(Bee.Api.Client.Connectors.SystemApiConnector! connector) -> void
@@ -33,20 +39,27 @@ Bee.Api.Client.ConnectType.Remote = 1 -> Bee.Api.Client.ConnectType
 Bee.Api.Client.Connectors.ApiConnector
 Bee.Api.Client.Connectors.ApiConnector.AccessToken.get -> System.Guid
 Bee.Api.Client.Connectors.ApiConnector.ApiConnector(System.Guid accessToken) -> void
+Bee.Api.Client.Connectors.ApiConnector.ApiConnector(System.Guid accessToken, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Api.Client.Connectors.ApiConnector.ApiConnector(string! endpoint, System.Guid accessToken) -> void
+Bee.Api.Client.Connectors.ApiConnector.ApiConnector(string! endpoint, System.Guid accessToken, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Api.Client.Connectors.ApiConnector.ExecuteAsync<T>(string! progId, string! action, object! value, Bee.Api.Core.Messages.PayloadFormat format) -> System.Threading.Tasks.Task<T>!
 Bee.Api.Client.Connectors.ApiConnector.Provider.get -> Bee.Api.Client.Providers.IJsonRpcProvider!
+Bee.Api.Client.Connectors.ApiConnector.Session.get -> Bee.Api.Client.ApiSessionContext!
 Bee.Api.Client.Connectors.FormApiConnector
 Bee.Api.Client.Connectors.FormApiConnector.ExecFuncAnonymousAsync(Bee.Api.Core.Messages.ExecFuncRequest! args) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.ExecFuncResponse!>!
 Bee.Api.Client.Connectors.FormApiConnector.ExecFuncAsync(Bee.Api.Core.Messages.ExecFuncRequest! args) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.ExecFuncResponse!>!
 Bee.Api.Client.Connectors.FormApiConnector.ExecuteAsync<T>(string! action, object! value, Bee.Api.Core.Messages.PayloadFormat format = Bee.Api.Core.Messages.PayloadFormat.Encrypted) -> System.Threading.Tasks.Task<T>!
 Bee.Api.Client.Connectors.FormApiConnector.FormApiConnector(System.Guid accessToken, string! progId) -> void
+Bee.Api.Client.Connectors.FormApiConnector.FormApiConnector(System.Guid accessToken, string! progId, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Api.Client.Connectors.FormApiConnector.FormApiConnector(string! endpoint, System.Guid accessToken, string! progId) -> void
+Bee.Api.Client.Connectors.FormApiConnector.FormApiConnector(string! endpoint, System.Guid accessToken, string! progId, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Api.Client.Connectors.FormApiConnector.ProgId.get -> string!
 Bee.Api.Client.Connectors.LogApiConnector
 Bee.Api.Client.Connectors.LogApiConnector.ExecuteAsync<T>(string! action, object! value, Bee.Api.Core.Messages.PayloadFormat format = Bee.Api.Core.Messages.PayloadFormat.Encrypted) -> System.Threading.Tasks.Task<T>!
 Bee.Api.Client.Connectors.LogApiConnector.LogApiConnector(System.Guid accessToken) -> void
+Bee.Api.Client.Connectors.LogApiConnector.LogApiConnector(System.Guid accessToken, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Api.Client.Connectors.LogApiConnector.LogApiConnector(string! endpoint, System.Guid accessToken) -> void
+Bee.Api.Client.Connectors.LogApiConnector.LogApiConnector(string! endpoint, System.Guid accessToken, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Api.Client.Connectors.SystemApiConnector
 Bee.Api.Client.Connectors.SystemApiConnector.CreateApiKeyAsync(string! sysId, string! sysName, Bee.Definition.Security.ApiKeyType keyType = Bee.Definition.Security.ApiKeyType.Internal, string? contact = null, System.DateTime? expiredAt = null) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.CreateApiKeyResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.CreateSessionAsync(string! userID, int expiresIn = 3600, bool oneTime = false) -> System.Threading.Tasks.Task<System.Guid>!
@@ -67,8 +80,12 @@ Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyEnabledAsync(string! sysId
 Bee.Api.Client.Connectors.SystemApiConnector.SetApiKeyExpiryAsync(string! sysId, System.DateTime? expiredAt) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetApiKeyExpiryResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.SetDeploymentAdminAsync(string! userId, bool isDeploymentAdmin) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.System.SetDeploymentAdminResponse!>!
 Bee.Api.Client.Connectors.SystemApiConnector.SystemApiConnector(System.Guid accessToken) -> void
+Bee.Api.Client.Connectors.SystemApiConnector.SystemApiConnector(System.Guid accessToken, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Api.Client.Connectors.SystemApiConnector.SystemApiConnector(string! endpoint, System.Guid accessToken) -> void
+Bee.Api.Client.Connectors.SystemApiConnector.SystemApiConnector(string! endpoint, System.Guid accessToken, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Api.Client.Definitions.FormDefinitionLoader
+Bee.Api.Client.Definitions.FormDefinitionLoader.CompanyAccessor.get -> System.Func<Bee.Definition.Identity.CompanyInfo?>?
+Bee.Api.Client.Definitions.FormDefinitionLoader.CompanyAccessor.init -> void
 Bee.Api.Client.Definitions.FormDefinitionLoader.FormDefinitionLoader(Bee.Api.Client.ClientDefineAccess! defineAccess, string! defaultLang = "") -> void
 Bee.Api.Client.Definitions.FormDefinitionLoader.GetLocalizedSchemaAsync(string! progId, string! lang) -> System.Threading.Tasks.Task<Bee.Definition.Forms.FormSchema!>!
 Bee.Api.Client.Definitions.FormDefinitionLoader.GetRuntimeLayoutAsync(string! progId, Bee.Definition.Forms.FormSchema! localizedSchema, string! layoutId = "") -> System.Threading.Tasks.Task<Bee.Definition.Layouts.FormLayout!>!
@@ -121,6 +138,7 @@ static Bee.Api.Client.ApiClientInfo.SupportedConnectTypes.set -> void
 static Bee.Api.Client.ApiClientInfo.UserTimeZoneId.get -> string!
 static Bee.Api.Client.ApiClientInfo.UserTimeZoneId.set -> void
 static Bee.Api.Client.ApiConnectValidator.ValidateAsync(string! endpoint, bool allowGenerateSettings = false) -> System.Threading.Tasks.Task<Bee.Api.Client.ConnectType>!
+static Bee.Api.Client.ApiSessionContext.Ambient.get -> Bee.Api.Client.ApiSessionContext!
 static Bee.Api.Client.Definitions.LanguageLayers.operator !=(Bee.Api.Client.Definitions.LanguageLayers left, Bee.Api.Client.Definitions.LanguageLayers right) -> bool
 static Bee.Api.Client.Definitions.LanguageLayers.operator ==(Bee.Api.Client.Definitions.LanguageLayers left, Bee.Api.Client.Definitions.LanguageLayers right) -> bool
 static Bee.Api.Client.Definitions.SnapshotLanguageService.BuildKey(string! lang, string! ns) -> string!

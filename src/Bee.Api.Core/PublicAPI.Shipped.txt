@@ -112,60 +112,6 @@ Bee.Api.Core.JsonRpc.PayloadSwap.Equals(Bee.Api.Core.JsonRpc.PayloadSwap other) 
 Bee.Api.Core.JsonRpc.PayloadSwap.PayloadSwap() -> void
 Bee.Api.Core.JsonRpc.PayloadSwap.PayloadSwap(System.Action! restore) -> void
 Bee.Api.Core.JsonRpc.PayloadZoneConverter
-Bee.Api.Core.MessagePack.SerializableDataColumn
-Bee.Api.Core.MessagePack.SerializableDataColumn.AllowDBNull.get -> bool
-Bee.Api.Core.MessagePack.SerializableDataColumn.AllowDBNull.set -> void
-Bee.Api.Core.MessagePack.SerializableDataColumn.ColumnName.get -> string!
-Bee.Api.Core.MessagePack.SerializableDataColumn.ColumnName.set -> void
-Bee.Api.Core.MessagePack.SerializableDataColumn.DataType.get -> Bee.Base.Data.FieldDbType
-Bee.Api.Core.MessagePack.SerializableDataColumn.DataType.set -> void
-Bee.Api.Core.MessagePack.SerializableDataColumn.DefaultValue.get -> object?
-Bee.Api.Core.MessagePack.SerializableDataColumn.DefaultValue.set -> void
-Bee.Api.Core.MessagePack.SerializableDataColumn.DisplayName.get -> string!
-Bee.Api.Core.MessagePack.SerializableDataColumn.DisplayName.set -> void
-Bee.Api.Core.MessagePack.SerializableDataColumn.MaxLength.get -> int
-Bee.Api.Core.MessagePack.SerializableDataColumn.MaxLength.set -> void
-Bee.Api.Core.MessagePack.SerializableDataColumn.ReadOnly.get -> bool
-Bee.Api.Core.MessagePack.SerializableDataColumn.ReadOnly.set -> void
-Bee.Api.Core.MessagePack.SerializableDataColumn.SerializableDataColumn() -> void
-Bee.Api.Core.MessagePack.SerializableDataRelation
-Bee.Api.Core.MessagePack.SerializableDataRelation.ChildColumns.get -> System.Collections.Generic.List<string!>!
-Bee.Api.Core.MessagePack.SerializableDataRelation.ChildColumns.set -> void
-Bee.Api.Core.MessagePack.SerializableDataRelation.ChildTable.get -> string!
-Bee.Api.Core.MessagePack.SerializableDataRelation.ChildTable.set -> void
-Bee.Api.Core.MessagePack.SerializableDataRelation.ParentColumns.get -> System.Collections.Generic.List<string!>!
-Bee.Api.Core.MessagePack.SerializableDataRelation.ParentColumns.set -> void
-Bee.Api.Core.MessagePack.SerializableDataRelation.ParentTable.get -> string!
-Bee.Api.Core.MessagePack.SerializableDataRelation.ParentTable.set -> void
-Bee.Api.Core.MessagePack.SerializableDataRelation.RelationName.get -> string!
-Bee.Api.Core.MessagePack.SerializableDataRelation.RelationName.set -> void
-Bee.Api.Core.MessagePack.SerializableDataRelation.SerializableDataRelation() -> void
-Bee.Api.Core.MessagePack.SerializableDataRow
-Bee.Api.Core.MessagePack.SerializableDataRow.CurrentValues.get -> System.Collections.Generic.Dictionary<string!, object?>?
-Bee.Api.Core.MessagePack.SerializableDataRow.CurrentValues.set -> void
-Bee.Api.Core.MessagePack.SerializableDataRow.OriginalValues.get -> System.Collections.Generic.Dictionary<string!, object?>?
-Bee.Api.Core.MessagePack.SerializableDataRow.OriginalValues.set -> void
-Bee.Api.Core.MessagePack.SerializableDataRow.RowState.get -> System.Data.DataRowState
-Bee.Api.Core.MessagePack.SerializableDataRow.RowState.set -> void
-Bee.Api.Core.MessagePack.SerializableDataRow.SerializableDataRow() -> void
-Bee.Api.Core.MessagePack.SerializableDataSet
-Bee.Api.Core.MessagePack.SerializableDataSet.DataSetName.get -> string!
-Bee.Api.Core.MessagePack.SerializableDataSet.DataSetName.set -> void
-Bee.Api.Core.MessagePack.SerializableDataSet.Relations.get -> System.Collections.Generic.List<Bee.Api.Core.MessagePack.SerializableDataRelation!>!
-Bee.Api.Core.MessagePack.SerializableDataSet.Relations.set -> void
-Bee.Api.Core.MessagePack.SerializableDataSet.SerializableDataSet() -> void
-Bee.Api.Core.MessagePack.SerializableDataSet.Tables.get -> System.Collections.Generic.List<Bee.Api.Core.MessagePack.SerializableDataTable!>!
-Bee.Api.Core.MessagePack.SerializableDataSet.Tables.set -> void
-Bee.Api.Core.MessagePack.SerializableDataTable
-Bee.Api.Core.MessagePack.SerializableDataTable.Columns.get -> System.Collections.Generic.List<Bee.Api.Core.MessagePack.SerializableDataColumn!>!
-Bee.Api.Core.MessagePack.SerializableDataTable.Columns.set -> void
-Bee.Api.Core.MessagePack.SerializableDataTable.PrimaryKeys.get -> System.Collections.Generic.List<string!>!
-Bee.Api.Core.MessagePack.SerializableDataTable.PrimaryKeys.set -> void
-Bee.Api.Core.MessagePack.SerializableDataTable.Rows.get -> System.Collections.Generic.List<Bee.Api.Core.MessagePack.SerializableDataRow!>!
-Bee.Api.Core.MessagePack.SerializableDataTable.Rows.set -> void
-Bee.Api.Core.MessagePack.SerializableDataTable.SerializableDataTable() -> void
-Bee.Api.Core.MessagePack.SerializableDataTable.TableName.get -> string!
-Bee.Api.Core.MessagePack.SerializableDataTable.TableName.set -> void
 Bee.Api.Core.Messages.ApiCallContext
 Bee.Api.Core.Messages.ApiCallContext.AccessToken.get -> System.Guid
 Bee.Api.Core.Messages.ApiCallContext.AccessToken.set -> void
@@ -175,16 +121,6 @@ Bee.Api.Core.Messages.ApiCallContext.Format.get -> Bee.Api.Core.Messages.Payload
 Bee.Api.Core.Messages.ApiCallContext.Format.set -> void
 Bee.Api.Core.Messages.ApiCallContext.IsLocalCall.get -> bool
 Bee.Api.Core.Messages.ApiCallContext.IsLocalCall.set -> void
-Bee.Api.Core.Messages.ApiCallContext.ShouldValidateEncoding.get -> bool
-Bee.Api.Core.Messages.ApiErrorInfo
-Bee.Api.Core.Messages.ApiErrorInfo.ApiErrorInfo() -> void
-Bee.Api.Core.Messages.ApiErrorInfo.ApiErrorInfo(System.Exception! exception, bool includeStackTrace = false) -> void
-Bee.Api.Core.Messages.ApiErrorInfo.IsHandled.get -> bool
-Bee.Api.Core.Messages.ApiErrorInfo.IsHandled.set -> void
-Bee.Api.Core.Messages.ApiErrorInfo.Message.get -> string!
-Bee.Api.Core.Messages.ApiErrorInfo.Message.set -> void
-Bee.Api.Core.Messages.ApiErrorInfo.StackTrace.get -> string!
-Bee.Api.Core.Messages.ApiErrorInfo.StackTrace.set -> void
 Bee.Api.Core.Messages.ApiHeaders
 Bee.Api.Core.Messages.ApiMessageBase
 Bee.Api.Core.Messages.ApiMessageBase.ApiMessageBase() -> void
@@ -640,7 +576,6 @@ Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.IsDeploymentAdmin.set ->
 Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.SetDeploymentAdminResponse() -> void
 Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.UserId.get -> string!
 Bee.Api.Core.Messages.System.SetDeploymentAdminResponse.UserId.set -> void
-Bee.Api.Core.Registry.ApiContractRegistry
 Bee.Api.Core.Transformers.AesPayloadEncryptor
 Bee.Api.Core.Transformers.AesPayloadEncryptor.AesPayloadEncryptor() -> void
 Bee.Api.Core.Transformers.AesPayloadEncryptor.Decrypt(byte[]! bytes, byte[]! encryptionKey) -> byte[]!
@@ -700,7 +635,6 @@ override Bee.Api.Core.JsonRpc.ApiPayloadJsonConverterFactory.CanConvert(System.T
 override Bee.Api.Core.JsonRpc.ApiPayloadJsonConverterFactory.CreateConverter(System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Text.Json.Serialization.JsonConverter!
 override Bee.Api.Core.JsonRpc.PayloadSwap.Equals(object? obj) -> bool
 override Bee.Api.Core.JsonRpc.PayloadSwap.GetHashCode() -> int
-override Bee.Api.Core.Messages.ApiErrorInfo.ToString() -> string!
 static Bee.Api.Core.ApiServiceOptions.AuthorizationValidator.get -> Bee.Api.Core.Authorization.IApiAuthorizationValidator!
 static Bee.Api.Core.ApiServiceOptions.AuthorizationValidator.set -> void
 static Bee.Api.Core.ApiServiceOptions.CurrentSettingsSummary.get -> string!
@@ -731,12 +665,6 @@ static Bee.Api.Core.JsonRpc.PayloadSwap.operator !=(Bee.Api.Core.JsonRpc.Payload
 static Bee.Api.Core.JsonRpc.PayloadSwap.operator ==(Bee.Api.Core.JsonRpc.PayloadSwap left, Bee.Api.Core.JsonRpc.PayloadSwap right) -> bool
 static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUserZone(object? payload, string! timeZoneId) -> void
 static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUtc(object? payload, string! timeZoneId) -> Bee.Api.Core.JsonRpc.PayloadSwap
-static Bee.Api.Core.MessagePack.SerializableDataSet.FromDataSet(System.Data.DataSet! ds) -> Bee.Api.Core.MessagePack.SerializableDataSet!
-static Bee.Api.Core.MessagePack.SerializableDataSet.ToDataSet(Bee.Api.Core.MessagePack.SerializableDataSet! sds) -> System.Data.DataSet!
-static Bee.Api.Core.MessagePack.SerializableDataTable.FromDataTable(System.Data.DataTable! table) -> Bee.Api.Core.MessagePack.SerializableDataTable!
-static Bee.Api.Core.MessagePack.SerializableDataTable.ToDataTable(Bee.Api.Core.MessagePack.SerializableDataTable! sdt) -> System.Data.DataTable!
-static Bee.Api.Core.Registry.ApiContractRegistry.ConvertForSerialization(object! value) -> object?
-static Bee.Api.Core.Registry.ApiContractRegistry.Register<TContract, TApi>() -> void
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateCompressor(string! name) -> Bee.Api.Core.Transformers.IApiPayloadCompressor!
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateEncryptor(string! name, bool isDebugMode) -> Bee.Api.Core.Transformers.IApiPayloadEncryptor!
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateSerializer(string! name) -> Bee.Api.Core.Transformers.IApiPayloadSerializer!

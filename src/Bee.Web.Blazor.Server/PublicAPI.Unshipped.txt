@@ -1,2 +1,1 @@
 #nullable enable
-Bee.Web.Blazor.Server.DependencyInjection.BeeApiConnectorFactory.BeeApiConnectorFactory(Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions! options, Bee.Api.Client.ApiSessionContext! session) -> void

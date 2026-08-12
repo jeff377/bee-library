@@ -454,7 +454,7 @@ Bee.Definition.IBeeContext.LanguageService.get -> Bee.Definition.Language.ILangu
 Bee.Definition.IBeeContext.Services.get -> System.IServiceProvider!
 Bee.Definition.IBeeContext.SessionInfoService.get -> Bee.Definition.Identity.ISessionInfoService!
 Bee.Definition.IBusinessObjectFactory
-Bee.Definition.IBusinessObjectFactory.CreateBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall = true) -> object!
+Bee.Definition.IBusinessObjectFactory.CreateBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall) -> object!
 Bee.Definition.ICacheDataSourceProvider
 Bee.Definition.ICacheDataSourceProvider.GetApiKey(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
 Bee.Definition.ICacheDataSourceProvider.GetApiKeyGateState() -> Bee.Definition.Security.ApiKeyGateState!
@@ -511,8 +511,8 @@ Bee.Definition.Identity.EmployeeContext.EmployeeRowId.init -> void
 Bee.Definition.Identity.EmployeeContext.Equals(Bee.Definition.Identity.EmployeeContext? other) -> bool
 Bee.Definition.Identity.EmployeeContext.UserRowId.get -> System.Guid
 Bee.Definition.Identity.EmployeeContext.UserRowId.init -> void
-Bee.Definition.Identity.IAuthorizationService
-Bee.Definition.Identity.IAuthorizationService.Can(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action) -> bool
+Bee.Definition.Identity.ICompanyAuthorizationService
+Bee.Definition.Identity.ICompanyAuthorizationService.Can(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action) -> bool
 Bee.Definition.Identity.ICompanyInfoService
 Bee.Definition.Identity.ICompanyInfoService.Get(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
 Bee.Definition.Identity.ICompanyInfoService.Remove(string! companyId) -> void
@@ -1197,8 +1197,6 @@ Bee.Definition.Settings.AuditLogOptions.ChangeEnabled.get -> bool
 Bee.Definition.Settings.AuditLogOptions.ChangeEnabled.set -> void
 Bee.Definition.Settings.AuditLogOptions.Enabled.get -> bool
 Bee.Definition.Settings.AuditLogOptions.Enabled.set -> void
-Bee.Definition.Settings.AuditLogOptions.ExecEnabled.get -> bool
-Bee.Definition.Settings.AuditLogOptions.ExecEnabled.set -> void
 Bee.Definition.Settings.AuditLogOptions.FileFallbackPath.get -> string!
 Bee.Definition.Settings.AuditLogOptions.FileFallbackPath.set -> void
 Bee.Definition.Settings.AuditLogOptions.LoginEnabled.get -> bool

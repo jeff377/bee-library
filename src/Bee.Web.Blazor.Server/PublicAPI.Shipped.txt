@@ -61,6 +61,7 @@ Bee.Web.Blazor.Server.DataObjects.FormDataObject.SaveAsync() -> System.Threading
 Bee.Web.Blazor.Server.DataObjects.FormDataObject.SetField(string! fieldName, string? value) -> void
 Bee.Web.Blazor.Server.DependencyInjection.BeeApiConnectorFactory
 Bee.Web.Blazor.Server.DependencyInjection.BeeApiConnectorFactory.BeeApiConnectorFactory(Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions! options) -> void
+Bee.Web.Blazor.Server.DependencyInjection.BeeApiConnectorFactory.BeeApiConnectorFactory(Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions! options, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Web.Blazor.Server.DependencyInjection.BeeApiConnectorFactory.Mode.get -> Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorProviderMode
 Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions
 Bee.Web.Blazor.Server.DependencyInjection.BeeBlazorOptions.BeeBlazorOptions() -> void

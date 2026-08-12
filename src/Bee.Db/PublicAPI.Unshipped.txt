@@ -1,12 +1,1 @@
 #nullable enable
-*REMOVED*Bee.Db.Dml.IFromBuilder
-*REMOVED*Bee.Db.Dml.IFromBuilder.Build(string! mainTableName, Bee.Db.Dml.TableJoinCollection! joins) -> string!
-*REMOVED*Bee.Db.Dml.ILimitBuilder
-*REMOVED*Bee.Db.Dml.ILimitBuilder.Build(int? skip, int? take) -> string!
-*REMOVED*Bee.Db.Dml.ISelectBuilder
-*REMOVED*Bee.Db.Dml.ISelectBuilder.Build(Bee.Definition.Forms.FormTable! formTable, string! selectFields, Bee.Db.Dml.SelectContext! selectContext) -> string!
-*REMOVED*Bee.Db.Dml.ISortBuilder
-*REMOVED*Bee.Db.Dml.ISortBuilder.Build(Bee.Definition.Sorting.SortFieldCollection? sortFields, Bee.Db.Dml.SelectContext? selectContext = null) -> string!
-*REMOVED*Bee.Db.Dml.IWhereBuilder
-*REMOVED*Bee.Db.Dml.IWhereBuilder.Build(Bee.Definition.Filters.FilterNode? root, Bee.Db.Dml.SelectContext? selectContext = null, bool includeWhereKeyword = true) -> Bee.Db.Dml.WhereBuildResult!
-Bee.Db.Manager.DbConnectionManagerService.Dispose() -> void

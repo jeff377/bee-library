@@ -183,9 +183,9 @@ Bee.ObjectCaching.Providers.MemoryCacheProvider.Set(string! key, object! value, 
 Bee.ObjectCaching.Services.ApiKeyValidator
 Bee.ObjectCaching.Services.ApiKeyValidator.ApiKeyValidator(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.ApiKeyValidator.Validate(string? apiKey) -> Bee.Definition.Security.ApiKeyValidationResult!
-Bee.ObjectCaching.Services.AuthorizationService
-Bee.ObjectCaching.Services.AuthorizationService.AuthorizationService(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Definition.Identity.IRolePermissionService! rolePermissionService) -> void
-Bee.ObjectCaching.Services.AuthorizationService.Can(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action) -> bool
+Bee.ObjectCaching.Services.CompanyAuthorizationService
+Bee.ObjectCaching.Services.CompanyAuthorizationService.Can(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action) -> bool
+Bee.ObjectCaching.Services.CompanyAuthorizationService.CompanyAuthorizationService(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Definition.Identity.IRolePermissionService! rolePermissionService) -> void
 Bee.ObjectCaching.Services.CompanyInfoService
 Bee.ObjectCaching.Services.CompanyInfoService.CompanyInfoService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.CompanyInfoService.Get(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
@@ -211,7 +211,9 @@ Bee.ObjectCaching.Services.SessionInfoService.Remove(System.Guid accessToken) ->
 Bee.ObjectCaching.Services.SessionInfoService.SessionInfoService(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.SessionInfoService.Set(Bee.Definition.Identity.SessionInfo! sessionInfo) -> void
 const Bee.ObjectCaching.Database.ApiKeyCache.AbsoluteMinutes = 60 -> int
+const Bee.ObjectCaching.Database.ApiKeyCache.NegativeMinutes = 1 -> int
 override Bee.ObjectCaching.Database.ApiKeyCache.CreateInstance(string! key) -> Bee.Definition.Security.ApiKeyInfo?
+override Bee.ObjectCaching.Database.ApiKeyCache.GetNegativePolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy?
 override Bee.ObjectCaching.Database.ApiKeyCache.GetPolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy!
 override Bee.ObjectCaching.Database.ApiKeyGateCache.CacheGroup.get -> string!
 override Bee.ObjectCaching.Database.ApiKeyGateCache.CreateInstance(string! key) -> Bee.Definition.Security.ApiKeyGateState?

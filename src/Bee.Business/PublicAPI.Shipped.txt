@@ -124,16 +124,6 @@ Bee.Business.AuditLog.GetTopApiMethodsArgs.ToUtc.get -> System.DateTime?
 Bee.Business.AuditLog.GetTopApiMethodsArgs.ToUtc.set -> void
 Bee.Business.AuditLog.GetTopApiMethodsArgs.TopN.get -> int
 Bee.Business.AuditLog.GetTopApiMethodsArgs.TopN.set -> void
-Bee.Business.AuditLog.ILogBusinessObject
-Bee.Business.AuditLog.ILogBusinessObject.GetAccessLog(Bee.Business.AuditLog.GetAccessLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
-Bee.Business.AuditLog.ILogBusinessObject.GetApiAnomalyLog(Bee.Business.AuditLog.GetApiAnomalyLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
-Bee.Business.AuditLog.ILogBusinessObject.GetApiAnomalySummary(Bee.Business.AuditLog.GetApiAnomalySummaryArgs! args) -> Bee.Business.AuditLog.LogAggregateResult!
-Bee.Business.AuditLog.ILogBusinessObject.GetChangeDetail(Bee.Business.AuditLog.GetChangeDetailArgs! args) -> Bee.Business.AuditLog.GetChangeDetailResult!
-Bee.Business.AuditLog.ILogBusinessObject.GetChangeLog(Bee.Business.AuditLog.GetChangeLogArgs! args) -> Bee.Business.AuditLog.GetChangeLogResult!
-Bee.Business.AuditLog.ILogBusinessObject.GetDbAnomalyLog(Bee.Business.AuditLog.GetDbAnomalyLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
-Bee.Business.AuditLog.ILogBusinessObject.GetDbAnomalySummary(Bee.Business.AuditLog.GetDbAnomalySummaryArgs! args) -> Bee.Business.AuditLog.LogAggregateResult!
-Bee.Business.AuditLog.ILogBusinessObject.GetLoginLog(Bee.Business.AuditLog.GetLoginLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
-Bee.Business.AuditLog.ILogBusinessObject.GetTopApiMethods(Bee.Business.AuditLog.GetTopApiMethodsArgs! args) -> Bee.Business.AuditLog.LogAggregateResult!
 Bee.Business.AuditLog.LogAggregateResult
 Bee.Business.AuditLog.LogAggregateResult.LogAggregateResult() -> void
 Bee.Business.AuditLog.LogAggregateResult.Table.get -> System.Data.DataTable?
@@ -179,7 +169,7 @@ Bee.Business.BusinessObject.SessionInfo.get -> Bee.Definition.Identity.SessionIn
 Bee.Business.BusinessObject.SessionInfoService.get -> Bee.Definition.Identity.ISessionInfoService!
 Bee.Business.BusinessObjectFactory
 Bee.Business.BusinessObjectFactory.BusinessObjectFactory(System.IServiceProvider! services, Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Definition.Language.ILanguageService! languageService, Bee.Business.IBoTypeResolver! resolver) -> void
-Bee.Business.BusinessObjectFactory.CreateBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall = true) -> object!
+Bee.Business.BusinessObjectFactory.CreateBusinessObject(System.Guid accessToken, string! progId, bool isLocalCall) -> object!
 Bee.Business.BusinessObjectFactoryExtensions
 Bee.Business.BusinessResult
 Bee.Business.BusinessResult.BusinessResult() -> void
@@ -532,11 +522,9 @@ Bee.Business.System.GetPackageResult.Sha256.set -> void
 Bee.Business.System.ISystemBusinessObject
 Bee.Business.System.ISystemBusinessObject.CreateSession(Bee.Business.System.CreateSessionArgs! args) -> Bee.Business.System.CreateSessionResult!
 Bee.Business.System.ISystemBusinessObject.EnterCompany(Bee.Business.System.EnterCompanyArgs! args) -> Bee.Business.System.EnterCompanyResult!
-Bee.Business.System.ISystemBusinessObject.GetDefine(Bee.Business.System.GetDefineArgs! args) -> Bee.Business.System.GetDefineResult!
 Bee.Business.System.ISystemBusinessObject.LeaveCompany(Bee.Business.System.LeaveCompanyArgs! args) -> Bee.Business.System.LeaveCompanyResult!
 Bee.Business.System.ISystemBusinessObject.Login(Bee.Business.System.LoginArgs! args) -> Bee.Business.System.LoginResult!
 Bee.Business.System.ISystemBusinessObject.Logout(Bee.Business.System.LogoutArgs! args) -> Bee.Business.System.LogoutResult!
-Bee.Business.System.ISystemBusinessObject.SaveDefine(Bee.Business.System.SaveDefineArgs! args) -> Bee.Business.System.SaveDefineResult!
 Bee.Business.System.LeaveCompanyArgs
 Bee.Business.System.LeaveCompanyArgs.LeaveCompanyArgs() -> void
 Bee.Business.System.LeaveCompanyResult
@@ -665,9 +653,8 @@ override Bee.Business.Session.SessionCompanyBinding.GetHashCode() -> int
 override Bee.Business.Session.SessionCompanyBinding.ToString() -> string!
 override Bee.Business.System.SystemBusinessObject.DoExecFunc(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 override Bee.Business.System.SystemBusinessObject.DoExecFuncAnonymous(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
-static Bee.Business.BusinessObjectFactoryExtensions.CreateFormBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, string! progId, bool isLocalCall = true) -> Bee.Business.Form.IFormBusinessObject!
-static Bee.Business.BusinessObjectFactoryExtensions.CreateLogBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.AuditLog.ILogBusinessObject!
-static Bee.Business.BusinessObjectFactoryExtensions.CreateSystemBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall = true) -> Bee.Business.System.ISystemBusinessObject!
+static Bee.Business.BusinessObjectFactoryExtensions.CreateFormBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, string! progId, bool isLocalCall) -> Bee.Business.Form.IFormBusinessObject!
+static Bee.Business.BusinessObjectFactoryExtensions.CreateSystemBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall) -> Bee.Business.System.ISystemBusinessObject!
 static Bee.Business.ExecFuncHandlerExtensions.InvokeExecFunc(this Bee.Business.IExecFuncHandler! handler, Bee.Definition.Security.ApiAccessRequirement currentRequirement, Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 static Bee.Business.ExecFuncHandlerExtensions.InvokeExecFunc(this Bee.Business.IExecFuncHandler! handler, Bee.Definition.Security.ApiAccessRequirement currentRequirement, bool isLocalCall, Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 static Bee.Business.Form.FormPluginChain.Create(System.Collections.Generic.IReadOnlyList<System.Type!>! types) -> Bee.Business.Form.FormPluginChain!

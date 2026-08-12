@@ -154,19 +154,9 @@ Bee.Db.Dml.IFormCommandBuilder
 Bee.Db.Dml.IFormCommandBuilder.BuildCount(string! tableName, Bee.Definition.Filters.FilterNode? filter = null) -> Bee.Db.DbCommandSpec!
 Bee.Db.Dml.IFormCommandBuilder.BuildDelete(string! tableName, Bee.Definition.Filters.FilterNode! filter) -> Bee.Db.DbCommandSpec!
 Bee.Db.Dml.IFormCommandBuilder.BuildSelect(string! tableName, string! selectFields, Bee.Definition.Filters.FilterNode? filter = null, Bee.Definition.Sorting.SortFieldCollection? sortFields = null, int? skip = null, int? take = null) -> Bee.Db.DbCommandSpec!
-Bee.Db.Dml.IFromBuilder
-Bee.Db.Dml.IFromBuilder.Build(string! mainTableName, Bee.Db.Dml.TableJoinCollection! joins) -> string!
-Bee.Db.Dml.ILimitBuilder
-Bee.Db.Dml.ILimitBuilder.Build(int? skip, int? take) -> string!
 Bee.Db.Dml.IParameterCollector
 Bee.Db.Dml.IParameterCollector.Add(object! value) -> string!
 Bee.Db.Dml.IParameterCollector.GetAll() -> System.Collections.Generic.IDictionary<string!, object!>!
-Bee.Db.Dml.ISelectBuilder
-Bee.Db.Dml.ISelectBuilder.Build(Bee.Definition.Forms.FormTable! formTable, string! selectFields, Bee.Db.Dml.SelectContext! selectContext) -> string!
-Bee.Db.Dml.ISortBuilder
-Bee.Db.Dml.ISortBuilder.Build(Bee.Definition.Sorting.SortFieldCollection? sortFields, Bee.Db.Dml.SelectContext? selectContext = null) -> string!
-Bee.Db.Dml.IWhereBuilder
-Bee.Db.Dml.IWhereBuilder.Build(Bee.Definition.Filters.FilterNode? root, Bee.Db.Dml.SelectContext? selectContext = null, bool includeWhereKeyword = true) -> Bee.Db.Dml.WhereBuildResult!
 Bee.Db.Dml.JoinType
 Bee.Db.Dml.JoinType.Full = 3 -> Bee.Db.Dml.JoinType
 Bee.Db.Dml.JoinType.Inner = 0 -> Bee.Db.Dml.JoinType
@@ -255,6 +245,7 @@ Bee.Db.Manager.DbConnectionManagerService.Contains(string! databaseId) -> bool
 Bee.Db.Manager.DbConnectionManagerService.Count.get -> int
 Bee.Db.Manager.DbConnectionManagerService.CreateConnection(string! databaseId) -> System.Data.Common.DbConnection!
 Bee.Db.Manager.DbConnectionManagerService.DbConnectionManagerService(Bee.Definition.IDatabaseSettingsProvider! provider) -> void
+Bee.Db.Manager.DbConnectionManagerService.Dispose() -> void
 Bee.Db.Manager.DbConnectionManagerService.GetConnectionInfo(string! databaseId) -> Bee.Db.Manager.DbConnectionInfo!
 Bee.Db.Manager.DbConnectionManagerService.Remove(string! databaseId) -> bool
 Bee.Db.Manager.DbDialectRegistry

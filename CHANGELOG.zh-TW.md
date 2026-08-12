@@ -4,7 +4,11 @@
 
 本檔記錄專案的所有重要變更。
 
-## [Unreleased]
+## [4.21.0]
+
+> 本版是一次全框架體檢的產出，重心在**並行正確性**。單一 process 服務多個使用者時，他們會互相覆蓋傳輸金鑰；兩個快取基底對冷 key 會每個呼叫端各建一份，於是經其中一份 `SessionInfo` 做的 `EnterCompany` 對持有另一份的請求完全不可見；而 `EnterCompany` 自己則在解析完公司角色之前就把公司寫進共用的 session。此外，一批零消費端的公開表面被移除、三個公開型別改名以避開宿主註冊服務時必然撞上的同名型別——**破壞性變更皆為原始碼層級，沒有一項能靠「不動」吸收掉**。兩個「宣告了但沒接上」的機制接回：公司層級的數值格式，以及自 4.4.0 起就是公告契約的 `-32002` / `-32003` 錯誤碼。運算式求值快 4.7 倍、權限查詢不再隨部署規模惡化、讀取的 wire payload 減半。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.21.0.zh-TW.md](docs/changelogs/4.21.0.zh-TW.md)
 
 ### 安全性
 
@@ -20,13 +24,16 @@
 - `Bee.Definition` / `Bee.Business`：`IBusinessObjectFactory.CreateBusinessObject` 與 `CreateFormBO` / `CreateSystemBO` / `CreateLogBO` 擴充方法不再把 `isLocalCall` 預設為 `true`。本地呼叫會直接跳過 `ApiAccessValidator`，因此兩參數的寫法會靜默產生一個不做任何存取檢查的商業物件——而那正是自行撰寫 dispatcher 的宿主最先會寫出來的形式。呼叫端現在必須言明自己在該邊界的哪一側。商業物件的建構子暫時保留預設值：直接 `new` 比呼叫工廠更像刻意行為，且改動它會波及每一處直接具現化。
 - `Bee.Api.Core`：移除 `Messages.ApiErrorInfo`（10 筆公開 API）。wire 上的錯誤形狀早已由 `JsonRpcError` 取代；該型別在框架內零呼叫端，僅存的生命跡象是一個「建構它、再把欄位讀回來」的測試——足以讓它在覆蓋率報告上顯示為已測試，但證不到有人在用。它另被註冊為 wire contract，卻從 wire 型別閉包到不了，因此漂移閘門也沒有標記它。
 - `Bee.Definition` / `Bee.ObjectCaching` / `Bee.Base`：三個公開型別改名，避開宿主本來就會 `using` 到的同名型別。`Bee.Definition.Identity.IAuthorizationService` 改為 `ICompanyAuthorizationService`、其實作 `Bee.ObjectCaching.Services.AuthorizationService` 改為 `CompanyAuthorizationService` —— 舊名撞 `Microsoft.AspNetCore.Authorization.IAuthorizationService`，而 ASP.NET Core 宿主預設就有它。`Bee.Base.Tracing.TraceListener` 改為 `TraceDispatcher`，舊名撞 `System.Diagnostics.TraceListener`。兩處撞名都以 `CS0104` 現形在「消費端註冊框架服務」那段程式碼，因為那正是同時 `using` 兩邊命名空間的唯一位置。**沒有 type forward。** 新名也讓它與 `IDeploymentAuthorizationService` 的對照讀得出來：一個在公司內授權，一個對整套安裝授權。`SysInfo.TraceListener` 與 `ITraceListener` 維持原名 —— 它們並不撞名。
+- `Bee.Base` / `Bee.Api.Core` / `Bee.Business`：另移除六處零消費端的公開表面。`Bee.Base.MemberPath` 與 `Bee.Base.ConnectionTestResult` 全 repo 零參考、亦無文件記載。`DataTableExtensions.NormalizeDateTimeMode(DataSet)` 是冗餘多載，同名的 `DataTable` 多載仍在使用。`Bee.Api.Core.Registry.ApiContractRegistry` 的 `Register<>` 從未被呼叫，map 恆為空，卻讓每個 payload 白跑一次 `GetInterfaces()` 迴圈——它宣稱的用途（把商業物件回傳的純物件轉成 API 型別）`ApiOutputConverter` 已經在做。`Bee.Business.AuditLog.ILogBusinessObject` 與 `CreateLogBO` 擴充方法一併移除，`ISystemBusinessObject` 的 `GetDefine` / `SaveDefine` 亦同：軸介面存在的理由是讓一個商業物件呼叫另一個，而查稽核記錄與取定義本質上都不是商業物件之間會做的事——定義直接經 `IDefineAccess` 存取即可。**對應的 public 方法全部保留在具象商業物件上，因此 `JsonRpcExecutor` 對外開放的表面不變。**
 
 ### 新增
 
+- `Bee.Base`：新增 `CompanyNotEnteredException` 與 `CompanyAccessDeniedException`。JSON-RPC 的 `-32002` / `-32003` 自 [ADR-012](docs/adr/adr-012-session-company-context.md) 起就是已公告的對外契約，但從來沒有任何地方拋出它們——`EnterCompany` 擲的是 `InvalidOperationException`，而 `RepositoryDatabaseRouter` 更是把錯誤碼的**名稱**當成訊息字串寫死。兩者都落在 `IsUserFacingException` 讀的 BCL 白名單內，被對映成 `UserMessage`（`-32099`），於是使用者沒進公司就開表單，看到的是一個寫著 "CompanyNotEntered" 的訊息框，而前端無從據以導向。現在兩者各自擁有專屬例外型別、專屬的 `MapException` 分支與 client 端重建。
 - `Bee.Api.Client`：`ApiSessionContext` 承載 per-session 的 client 狀態 —— 登入時建立的傳輸金鑰與登入者的時區。connector 新增接它的建構子多載；不傳則共用 `ApiSessionContext.Ambient`，那是既有行為，對單使用者宿主仍然正確。
 
 ### 修正
 
+- `Bee.Api.Client`：公司層級的數值格式重新生效。`NumberFormatApplier` 自先前某版把 server 端的 bake 移除、並註明改由需求端處理之後就不再執行——而需求端一直沒有補上，因此公司的數值格式對任何 head 都不生效。`FormDefinitionLoader.GetLocalizedSchemaAsync` 現在於兩條路徑（含空語系的早退）都會套用，公司來源為新增的 `CompanyAccessor` init 屬性。它收的是委派而非值，因為進入的公司會在 session 存續期間變動。Avalonia 與 Blazor 兩個 head 同時受益。
 - `Bee.Api.Client` / `Bee.Web.Blazor.Server`：單一 process 服務多個使用者時，不再互相覆蓋傳輸金鑰。`ApiClientInfo.ApiEncryptionKey` 與 `UserTimeZoneId` 原本是 process-wide static，因此在 `BeeBlazorProviderMode.Remote` 下最後登入者勝出，先前使用者的加密請求會解不開、直到重新登入。`BeeApiConnectorFactory` 改註冊為 scoped，每個 circuit 拿到自己的 context。`Local` 模式從未受影響。`ApiClientInfo.ApiKey` 刻意維持 static —— 它識別的是應用程式，不是使用者。
 - `Bee.Db` / `Bee.Api.Client` / `Bee.Api.Core`：五處函式庫內的 `await` 補上 `ConfigureAwait(false)`，與周邊程式碼本來就在遵循的慣例一致。它們正位於 UI 宿主經 `JsonRpcExecutor.Execute` 觸達的路徑上，而該方法會阻塞在非同步核心上——在那裡回到被捕捉的 `SynchronizationContext` 就是教科書死鎖。`Execute` 現在於文件註明它會阻塞，並指引非同步呼叫端改用 `ExecuteAsync`。
 - `Bee.UI.Core` / `Bee.ObjectCaching` / `Bee.Base`：三處吞掉所有例外的 `catch` 改為只捕捉它們原本要處理的失敗。client 的端點探測把任何錯誤都當成「伺服器連不上」並把使用者送去連線設定畫面；快取的檔案監看 token 把任何錯誤都當成「無已知寫入時間」；`DataTable` 的 JSON 轉換器把任何錯誤都當成「原值放行」。非預期的錯誤現在會浮現，而不是被報成別的東西。
