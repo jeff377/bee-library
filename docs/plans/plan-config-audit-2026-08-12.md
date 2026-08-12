@@ -1,6 +1,6 @@
 # 設定檔健檢（2026-08-12）
 
-**狀態：🚧 進行中（2026-08-12）**
+**狀態：✅ 已完成（2026-08-12）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -8,7 +8,7 @@
 | 2 | 清除常駐設定內的清點數字，改定性描述（含已漂與尚未漂者） | ✅ 已完成（2026-08-12） |
 | 3 | `apple-mobile-trim.md` 推導內容搬按需區（新建 `gotchas/mobile-trim-aot.md`） | ✅ 已完成（2026-08-12） |
 | 4 | `testing.md` 程式碼樣板搬按需區（新建 `docs/repo-ops/testing-patterns.md`） | ✅ 已完成（2026-08-12） |
-| 5 | P3：跨層錯置與示意路徑（scope、skill 歸屬、ADR 路徑形狀） | 🚧 進行中（1 項待裁決） |
+| 5 | P3：跨層錯置與示意路徑（scope、skill 歸屬、ADR 路徑形狀） | ✅ 已完成（2026-08-12） |
 | 6 | 週邊：soarcloud-libraries plugin scope 補更新、`.gitignore` 補 env 樣式 | ✅ 已完成（2026-08-12） |
 
 ## 背景
@@ -234,16 +234,42 @@ DynamicExpresso 自動退回直譯器」。
 
 ## 階段 5 — P3：跨層錯置與示意路徑
 
-**三項已完成（2026-08-12），一項待你裁決。已完成的三項全在使用者層
-（`~/.claude/`），不入本 repo 版控 —— 換機器就沒有。**
+**已完成（2026-08-12）。** 四項全部落地。前三項在使用者層（`~/.claude/`），
+**不入本 repo 版控 —— 換機器就沒有**；第四項已搬進本 repo。
 
-**待裁決：`bee-jsonrpc-backend` skill 要不要搬進本 repo？**
-它現在位於 `~/.claude/skills/`（使用者層 = 每個 repo 都載入其描述），內容完全是
-Bee.NET 專屬，與專案層的 `bee-*` skill 同族。搬進 `.claude/skills/` 可修正這個錯置，
-但 **bee-library 是 public repo，搬進去等於公開發佈該 skill 的全部內容**
-（含 `AddBeeFramework` 接線、Define 設定、demo 登入與 session/API key 的作法敘述）。
-這是不可逆的對外動作，需你明確同意。不搬也是合理選擇 —— 代價只是它在其他 repo
-也會載入描述。
+### `bee-jsonrpc-backend` 已搬入 `.claude/skills/`（使用者裁決）
+
+判準是「拿掉 Bee.NET 這個框架，這份 skill 還剩下什麼？」——它會整份失效
+（通篇 `AddBeeFramework` / `ApiServiceOptions` / `Define/` XML / BO 繼承），
+其餘使用者層 skill 則照樣可用（`avalonia-*` 的 Bee 提及全是「拿 `tools/DefineEditor`
+當參考實作」這類舉例，`macos-pdf-generation` / `maui-app-scaffold` 零提及）。
+
+**真正的好處是取得版控**：`~/.claude` 本身不是 git repo，該 skill 先前完全沒有備份。
+修正常駐錯置只是附帶效果——它的常駐成本只有 description 那段，本文與 `references/`
+都是呼叫時才載。
+
+**發佈前做過的事**（bee-library 是 public repo，搬入即公開）：
+
+1. 讀完全部 5 個檔，確認無真實金鑰、無 email、無外部 host
+   （`"xxx-dev"` 是佔位符；`Password = "demo"` 是該 skill 自己文件化的 demo 登入樣板；
+   `http://www.w3.org` 是 XML 命名空間宣告）。
+2. **中性化 4 處他專案代號**（`SKILL.md` 的 description 一處、三個 `references/` 檔的
+   「驗證來源」各一處），改為「實際專案」。該 skill 本身的佔位符慣例就是 `Xxx`，改法一致。
+
+### 順帶發現：與 `bee-app-scaffold` 觸發面重疊
+
+兩者都吃「建一個 Bee 後端」。已在 `.claude/skills/README.md` 標明分界：要**從零搭出
+能跑的 server + client 往返**選 `bee-jsonrpc-backend`；已有 host、要處理 **DB scope /
+company context / seeder / 定義樹接線**選 `bee-app-scaffold`。
+
+> 這是健檢步驟 5「觸發重疊」該抓到卻沒抓到的一筆 —— 原因是當時兩支 skill 分處
+> 使用者層與專案層，我只在各自層內比對。**下次健檢應把兩層的 description 合併後再比對重疊。**
+
+### 另一筆清點數字（階段 2 的漏網）
+
+`.claude/skills/README.md` 寫 `bee-framework-review` 是「**九面向**唯讀審查」，
+但該 skill 的 description 自述**十一面向**。已改為「多面向」不帶數字。
+漏掉的原因同上：階段 2 只掃常駐區，`skills/README.md` 不在常駐區。
 
 | 項 | 問題 | 處置 |
 |----|------|------|
@@ -299,6 +325,27 @@ bee-library 是 **public repo**，但 `.gitignore` 無 `.env` / `*.local.env` �
 5. **不砍踩雷紀錄與自我更正**（「本節先前寫的是 X，已於 YYYY-MM-DD 推翻」這類）——
    它們是唯一阻止重蹈覆轍的東西。真要精簡時先問能不能搬，再問能不能刪。
 6. **階段 2 只動數字、不動論證** —— 拿掉「36 個」不等於拿掉「純屬性袋沒有接縫所以不拆」。
+
+---
+
+## 下次健檢的三項改進（本次執行暴露的方法缺口）
+
+本次有三筆問題**是健檢該抓到卻沒抓到、動手做別的事時才順手發現的**。缺口都在
+「掃描範圍」而非判準，記下來以免下次重蹈：
+
+1. **把 `.claude/` 下所有 README 納入掃描範圍。** 健檢的失效引用檢查與清點數字檢查
+   都只掃**常駐區**（`CLAUDE.md` + `rules/`），而 `.claude/skills/README.md` 不在常駐區
+   —— 於是它的 `plan-handoff` 舊名（階段 1.3）與「九面向」清點數（階段 5）雙雙漏網。
+   **它不常駐但它是 agent 會讀的權威索引**，同樣會誤導。
+2. **把使用者層與專案層的 skill description 合併後再比對觸發重疊。** 本次是分層各自比對，
+   因此沒看出 `bee-jsonrpc-backend`（當時在使用者層）與 `bee-app-scaffold`（專案層）
+   都吃「建一個 Bee 後端」。**agent 看到的是合併後的單一清單，比對就該在合併後做。**
+3. **「重跑量測比對數字」那一步可以大幅縮減，改驗「有沒有新增清點數字」。**
+   階段 2 已把清點數清掉，該步驟原本的工作量（逐條重跑 grep 對數字）幾乎歸零。
+   新的檢查是反向的：**grep 有沒有人又寫回清點數字**。移除漂移源優於定期偵測漂移。
+
+> 前兩項是本 repo 執行時的範圍設定問題，可自行補；第三項屬 `config-audit` skill 本身的
+> 步驟 2 該調整，要動得回 plugin repo。
 
 ---
 
