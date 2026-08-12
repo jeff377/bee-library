@@ -50,7 +50,7 @@
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
 | P2 | 結構、效能、一致性 | 14 | 🚧 進行中（11 項已結：P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**DEP-1** / **P-3** / **PERF-2** ❌ 評估後不修；剩 3 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
-| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2** / **SEC-4~10**(部分) / **CON-5** / **X-7** / **D-9** / **Z-3**+**Z-5** / **M-2** / **M-3** / **T-3** ✅ 已落地；其餘未動） |
+| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2** / **SEC-4~10**(部分) / **CON-5** / **X-7** / **D-9** / **Z-3**+**Z-5** / **M-2** / **M-3** / **T-3** / **N-2/N-3**(部分) ✅ 已落地；其餘未動） |
 
 ### 已完成項目逐條（供對帳，勿只看階段狀態）
 
@@ -85,6 +85,7 @@
 | **TEST-2** | `ApiAspNetCoreTests` / `ApiKeyGateControllerTests` 改用 `SharedDbFixture` | 待 commit | 並在類別 doc 記下第三條觸發路徑（API key gate read-through）與「為何先前是綠的」 |
 | **TEST-3** | `Bee.Definition.UnitTests` 新增 `ProcessWideStateCollection`，序列化三個衝突類別 | 待 commit | 該組件先前既無 `[Collection]` 也無 `DisableTestParallelization` |
 | **GATE-2** | 8 個手寫 formatter 改實作 `IWireContract`，移除套套邏輯的 `WireMemberCount` | 待 commit | **實證**：在 `SortField` 加一個屬性 → drift 測試立刻紅（`型別上有但未註冊 → Probe`）。同一個 probe 在修正前不會被抓到 |
+| **N-2/N-3** | 3 檔拆為一型別一檔、`CacheDefineAccess` 拆 partial、`ValueUtilities` 複核後拆出 `.Temporal` | 待 commit | **`Bee.Definition/` 根目錄的 `Numeric/` 分組決定不做，理由見下**。三處拆檔與兩處 partial 皆零公開 API 變更（`PublicAPI.*.txt` 無 diff），命名空間未動 |
 | **T-3**（覆蓋缺口） | `ExpiredSessionCleanupService` 5 筆、`LogApiConnector` 路由 11 筆、三個集合成員帶值 round-trip 3 筆、`CreateLogBO` 4 筆 | 待 commit | **兩處反向驗證**：移除啟動掃描 → 2 筆紅；`DbException` 改為 rethrow → 「迴圈在 DbException 後停止了；只觀察到 1 次呼叫」。路由測試以「把 `GetDbAnomalySummary` 抄成 `GetApiAnomalySummary`」實證會紅 |
 | **T-3**（判別碼那條） | `WireValueCode` 22 個判別碼釘死，補 `DateTimeOffset` round-trip，並補上 drift 閘門的**反方向**檢查 | 待 commit | **第一版的封套測試是空轉的，反向驗證當場抓到**：它拿 `WireValueCode.X` 常數當期望值，重新編號時期望值跟著變、自我一致因而恆綠。改用字面數字後，對調 Guid/ByteArray 會紅在 5 個測試（常數表 2 + Count 1 + **實際編碼 2**）。反方向檢查亦以「註冊一個閉包外型別」實證會紅 |
 | **X-7** | `Bee.Api.Contracts` 納入 BEE9001 | 待 commit | **實測翻出一個先前沒人知道的行為**：閘門一啟用就以 `Bee.Base` 報錯，而該 csproj 只寫了 `Bee.Definition` —— SDK 的 `IncludeTransitiveProjectReferences` 會在 Build 前把**傳遞專案參考**併進 `@(ProjectReference)`。故 allowlist 要列整個專案參考閉包。`rules/dependency-boundary.md` 的敘述已更正 |
@@ -107,6 +108,22 @@
 > 不是以物件形式，因此不在閉包內。這也說明下限斷言為何不能只寫一個數字：數字擋得住「掉到只剩
 > `ExtraRoots`」，擋不住「某一條可達路徑斷掉」。現行四個 canary 刻意取自不同路徑（訊息命名空間
 > 的根、契約命名空間的根、掛在 `ApiMessageBase` 上每個訊息都會經過的集合、多型子型別）。
+
+> **`Bee.Definition/` 根目錄的 `Numeric/` 分組決定不做。** 那 12 個檔
+> （`NumberFormatItem` / `NumberKind` / `RoundingPolicy` / `CashRoundingItem` / `AllowedCurrencyItem`…）
+> 確實構成一個家族，但**移進子資料夾就必須改命名空間**（IDE0130 是全域規則，資料夾與命名空間
+> 必須對映；規則的唯一例外是「同一父類別的大量子類別」，這批不是）。那是 12 個公開型別的
+> 命名空間破壞性變更，而換到的只有「檔案總管裡好找一點」——**消費端感受不到任何改善**。
+> 對照 M-1：那是真的在消費端造成 `CS0104`，值得破壞；這個不是。
+>
+> **`ValueUtilities` 複核後翻案，兩次結論不同，過程比結論值得記。** 501 行時判定「高內聚、
+> 不拆」；637 行時改為拆出 `.Temporal`（224 行）。翻案的理由不是行數，而是**「高內聚」要問
+> 是哪一種內聚**——所有成員都是 `Cxxx(object) → T`，**使用面**內聚極高；但日期那半帶著自己的
+> 領域包袱（SQL 最小日期、`DateOnly` 的文化相依剖析、invariant round-trip 格式），與數值剖析
+> 毫無共用，**實作面**內聚很低。而決定「讀者找東西時要不要捲過無關程式碼」的是後者。
+>
+> ⚠️ **`~/.claude/rules/code-style.md` 仍把 `ValueUtilities`（501 行）列為「不拆」的反例，
+> 現已與程式碼相左。** 那份在使用者的全域設定、不在 repo 內，未逕自修改——需由使用者更新。
 
 > **判別碼 pin 的第一版是空轉的，而反向驗證是唯一發現它的方式。**
 > 我原本讓封套測試以 `WireValueCode.X` 當期望值——看起來合理（不重複魔術數字），
