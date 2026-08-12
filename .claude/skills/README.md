@@ -22,10 +22,12 @@
 | **bee-framework-review** | 框架全面體檢方法論（多面向唯讀審查 + 分級重構計畫） |
 | **bee-sample-add** | 為 samples/ 加一個新示範專案 |
 
-> **`bee-jsonrpc-backend` 與 `bee-app-scaffold` 的觸發面重疊**（兩者都吃「建一個 Bee 後端」）。
-> 分界：要**從零搭出能跑的 JSON-RPC server + client 往返**選前者；已有 host、要處理
-> **DB scope / company context / seeder / 定義樹接線**選後者。拿不準時先開兩份 `SKILL.md` 的
-> frontmatter 比對。
+> **`bee-jsonrpc-backend` 是 host bootstrap / 空 controller / 登入三件套 / client 呼叫的
+> 單一權威來源**（樣板在其 `references/`）。`bee-app-scaffold` 建立在它之上，只補
+> **DB scope / company context / seeder**，並指路過去、不複寫。
+>
+> 分界：只要能跑的 **JSON-RPC server + client 往返**選前者；還要 **company 分庫與 seeder**
+> 選後者。BO 軸也不同——前者是最小的 `BusinessObject`，後者是 `FormBusinessObject`。
 
 ## 通用工作流（不綁 Bee 框架）
 

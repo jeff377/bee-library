@@ -17,6 +17,8 @@ description: 在 bee-library（或畢業後的獨立 repo）搭一個「獨立 B
 
 ## 不適用
 
+- 只要「一個能跑的 JSON-RPC server + client 往返」，不需要 company scope / seeder →
+  **`bee-jsonrpc-backend`**（它也是本檔 bootstrap 與 auth 樣板的權威來源）
 - 放 `samples/` 且可用 `Bee.Samples.Shared` 的 demo → 用 **`bee-sample-add`**（它選後端、auth、slnx、共用 Define）
 - 純 MAUI / Avalonia 前端骨架 → **`maui-app-scaffold`** / `avalonia-*`（前端 head，不含後端接線）
 - 只是要「加一張表單」到已接好的 app → **`bee-add-form`**
@@ -26,11 +28,15 @@ description: 在 bee-library（或畢業後的獨立 repo）搭一個「獨立 B
 
 | Skill | 處理 |
 |-------|------|
-| **`bee-app-scaffold`**（本 skill） | 獨立後端 host 接線 + DB scoping + company context + seeder |
+| **`bee-app-scaffold`**（本 skill） | 在下列基礎上加 DB scoping + company context + seeder |
+| `bee-jsonrpc-backend` | **host bootstrap / 空 controller / 登入三件套 / client 呼叫的權威樣板** |
 | `bee-sample-add` | `samples/` 專案（可用 Bee.Samples.Shared）的前端/後端配對 |
 | `bee-add-form` | 在已接好的 app 上加一張表單（FormSchema/TableSchema/註冊） |
 | `bee-scaffold-from-formschema` | 從一份 FormSchema 產 layout/language/tableschema sidecar |
 | `demo-smoke` | 接好後端到端冒煙 |
+
+> 本 skill 的 BO 軸是 **`FormBusinessObject`**（ERP 定義驅動 CRUD）；
+> `bee-jsonrpc-backend` 的是 **`BusinessObject`**（自訂 RPC action）。兩者可並存於同一 host。
 
 ---
 
@@ -58,20 +64,19 @@ description: 在 bee-library（或畢業後的獨立 repo）搭一個「獨立 B
 
 ## Part 2 — Host bootstrap（`AddXxxBackend` / `UseXxxBackend`）
 
-對照 `apps/Bee.Northwind/Bee.Northwind.Server/NorthwindBackend.cs`。順序固定：
+> **完整順序與可貼用樣板見 `bee-jsonrpc-backend` skill 的
+> `references/backend-bootstrap.md`**（master key fallback、`ResolveDefinePath` walk-up、
+> `Defaults.MaterializeTo` 鋪框架表、provider/dialect 註冊、`SystemSettingsLoader` →
+> `SysInfo` → `ApiServiceOptions` → `AddBeeFramework`、空 controller）。
+> 那份是唯一權威，本檔不複寫。
 
-1. `BEE_MASTER_KEY` demo fallback（沒設才塞固定 key，正式由部署注入）。
-2. `PathOptions { DefinePath = ResolveDefinePath() }`：從 `AppContext.BaseDirectory` 往上走找 `Define/SystemSettings.xml`。
-3. `Defaults.MaterializeTo(DefinePath, Filter: 只挑框架表)`：把 `st_cache_notify.TableSchema.xml` 等框架預設鋪進 `Define/`（skip-if-exists），讓 `IDefineAccess` 解析得到。
-4. `DbProviderRegistry.Register` + `DbDialectRegistry.Register`（**顯式**註冊用到的 dialect，例 SQLite，不強迫拉全部 driver）。
-5. `SystemSettingsLoader.Load(paths)` → `SysInfo.Initialize(...)` → `ApiServiceOptions.Initialize(...)`。
-6. `builder.Services.AddBeeFramework(settings.BackendConfiguration, paths, autoCreateMasterKey: true)`。
-7. **覆寫服務**（在 `AddBeeFramework` 之後 `AddSingleton`，後註冊者勝）：
-   - `IBusinessObjectFactory` → 自訂 factory（接自訂 auth）。
-   - `ICompanyInfoService` → 輕量 company（Part 3）。
-8. `UseXxxBackend`：跑 seeder（Part 5）。**不要**設 `ApiClientInfo.LocalServiceProvider`（那是 in-process client bridge；遠端 head 走 HTTP 用不到，設了會逼 Server 依賴 `Bee.Api.Client` —— 見硬性規則）。
+在該樣板之上，**本情境（company scope + seeder）額外要做的只有兩件**：
 
-`ApiController.cs` 只要空殼繼承 `ApiServiceController`（框架已宣告 `[Route("api")]` + POST handler）。
+1. **多覆寫一個 `ICompanyInfoService`** → 輕量 company（Part 3）。與 factory / resolver 一樣，
+   必須在 `AddBeeFramework` **之後** `AddSingleton`（後註冊者勝）。
+2. **`UseXxxBackend` 跑的是完整 seeder**（Part 5），不只建 `st_cache_notify` 一張框架表。
+
+可對照的實作：`apps/Bee.Northwind/Bee.Northwind.Server/NorthwindBackend.cs`。
 
 ## Part 3 — 輕量 company context
 
@@ -85,7 +90,12 @@ description: 在 bee-library（或畢業後的獨立 repo）搭一個「獨立 B
 
 ## Part 4 — 自訂 auth（免 st_user）
 
-`NorthwindAuthenticatingSystemBusinessObject : SystemBusinessObject`，override `AuthenticateUser(args, out userName)` 比對 hardcoded 帳密、回 true/userName，不碰 `st_user`。`Login` 順帶蓋 company（Part 3）。靠 Part 2 的 `IBusinessObjectFactory` 覆寫讓 system 呼叫（Login 等）派送到它。
+> **登入三件套**（Credentials / 認證 System BO / factory）**的完整程式碼見
+> `bee-jsonrpc-backend` skill 的 `references/business-object.md`**。本檔不複寫。
+
+本情境唯一的差異：認證 BO 的 `Login` **順帶蓋 company**（Part 3），
+`AuthenticateUser` 的部分與該樣板相同。可對照
+`NorthwindAuthenticatingSystemBusinessObject`。
 
 ## Part 5 — Seeder（建表 + 種子）
 

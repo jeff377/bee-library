@@ -25,9 +25,17 @@ NuGet 套件裡。host 專案只是薄殼:一個 csproj、`Program.cs`、bootstr
 - `samples/QuickStart.Console/` — 最小 client(`Bee.Api.Client` 直接呼叫)
 - `samples/Bee.Samples.Shared/` — `DemoBackend`(`AddBeeBackend`/`UseBeeBackend`)、`DemoBusinessObjectFactory`、`DemoAuthenticatingSystemBusinessObject`、`DemoCredentials`
 
-次要:`bee-northwind-avalonia`(完整 app,含 seeder / ProgramSettings 宣告式綁定)、`bee-jsonrpc-sample`(三組件 + 合約介面分層)。
+完整 app（含 seeder、company scope、`ProgramSettings` 宣告式綁定）：`apps/Bee.Northwind/`。
 
 > 動工前務必打開 `QuickStart.Server` + `DemoBackend.cs` 對照,版本細節(介面成員、tag 名)會隨版本變。
+
+## 不適用（改走別支）
+
+- 要 **DB scope（common/company/log）、company context、seeder** →
+  **`bee-app-scaffold`**（它建立在本 skill 的樣板之上，只補這三塊）
+- 要 **ERP 定義驅動的表單 CRUD**（`FormBusinessObject` 的 `GetList`/`Save`/`Delete`）→
+  同上；本 skill 的 BO 軸是最小的 `BusinessObject`
+- 在已接好的 app 上**加一張表單** → **`bee-add-form`**
 
 ## 請求流程(先建立心智模型)
 
