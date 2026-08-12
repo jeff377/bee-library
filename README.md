@@ -94,7 +94,19 @@ Ready to build your own? [Getting Started](docs/getting-started.md) walks throug
 
 ## 🐝 Featured demo — Bee.Northwind
 
-[`apps/Bee.Northwind`](apps/Bee.Northwind/README.md) is the flagship demo: the classic Northwind inventory case built almost entirely from definitions (eight forms, master-detail orders with lookups, exactly one hand-written business object — everything else is XML). The same shared `Bee.Northwind.UI` runs on **four Avalonia heads** — Desktop, Browser (WASM), iOS, and Android — against one JSON-RPC server. See [`apps/Bee.Northwind/README.md`](apps/Bee.Northwind/README.md).
+[`apps/Bee.Northwind`](apps/Bee.Northwind/README.md) is the flagship demo: the classic Northwind inventory case built almost entirely from definitions (eight forms, master-detail orders with lookups, exactly one hand-written business object — everything else is XML). The same shared `Bee.Northwind.UI` runs on **four Avalonia heads** — Desktop, Browser (WASM), iOS, and Android — against one JSON-RPC server.
+
+The same Order form rendered by each head — same definitions, same controls, only the platform shell differs:
+
+| Desktop | Browser (WASM) |
+|---|---|
+| <img src="https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-desktop-order-detail.png" alt="Desktop — order detail" width="420"> | <img src="https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-browser-order-detail.png" alt="Browser — order detail" width="420"> |
+
+| iOS | Android |
+|---|---|
+| <img src="https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-ios-order-detail.png" alt="iOS — order detail" width="200"> | <img src="https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-android-order-detail.png" alt="Android — order detail" width="200"> |
+
+More screens, the form catalog, and how to run it: [`apps/Bee.Northwind/README.md`](apps/Bee.Northwind/README.md).
 
 ## 💡 Sample Projects
 

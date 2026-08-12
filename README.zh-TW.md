@@ -93,7 +93,19 @@ Console 會列出 `System.Ping` 狀態與自訂 BO 回應的訊息。完整 demo
 
 ## 🐝 旗艦範例 — Bee.Northwind
 
-[`apps/Bee.Northwind`](apps/Bee.Northwind/README.zh-TW.md) 是旗艦級範例：經典 Northwind 進銷存案例，**幾乎完全由定義組成**（八張表單、含 lookup 的主從訂單、僅一個手寫商業物件，其餘皆 XML）。同一套共用 `Bee.Northwind.UI` 跑在 **四個 Avalonia head** —— Desktop、Browser（WASM）、iOS、Android —— 連同一個 JSON-RPC 後端。詳見 [`apps/Bee.Northwind/README.zh-TW.md`](apps/Bee.Northwind/README.zh-TW.md)。
+[`apps/Bee.Northwind`](apps/Bee.Northwind/README.zh-TW.md) 是旗艦級範例：經典 Northwind 進銷存案例，**幾乎完全由定義組成**（八張表單、含 lookup 的主從訂單、僅一個手寫商業物件，其餘皆 XML）。同一套共用 `Bee.Northwind.UI` 跑在 **四個 Avalonia head** —— Desktop、Browser（WASM）、iOS、Android —— 連同一個 JSON-RPC 後端。
+
+四個 head 渲染同一張訂單表單 —— 同一份定義、同一套控件，差別只在最外層的平台殼：
+
+| 桌面 | Browser（WASM） |
+|---|---|
+| <img src="https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-desktop-order-detail.png" alt="桌面 — 訂單單筆" width="420"> | <img src="https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-browser-order-detail.png" alt="Browser — 訂單單筆" width="420"> |
+
+| iOS | Android |
+|---|---|
+| <img src="https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-ios-order-detail.png" alt="iOS — 訂單單筆" width="200"> | <img src="https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-android-order-detail.png" alt="Android — 訂單單筆" width="200"> |
+
+更多畫面、表單清單與執行方式：[`apps/Bee.Northwind/README.zh-TW.md`](apps/Bee.Northwind/README.zh-TW.md)。
 
 ## 💡 範例程式
 
