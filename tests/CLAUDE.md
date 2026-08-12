@@ -66,13 +66,8 @@
 
 取代 `[Fact]` / `[Theory]`，**並指定該測試針對的資料庫類型**。兩個 attribute 定義在
 `tests/Bee.Tests.Shared/`，依規則 `BEE_TEST_CONNSTR_{DBTYPE}`（uppercase 列舉值）
-檢查環境變數；**未設定則自動跳過**。
-
-| DatabaseType | 環境變數 |
-|--------------|---------|
-| `SQLServer` | `BEE_TEST_CONNSTR_SQLSERVER` |
-| `PostgreSQL` | `BEE_TEST_CONNSTR_POSTGRESQL` |
-| 未來 `MySQL` / `Oracle` | `BEE_TEST_CONNSTR_MYSQL` / `BEE_TEST_CONNSTR_ORACLE`（規則自動推導，不需新類別） |
+檢查環境變數（如 `SQLServer` → `BEE_TEST_CONNSTR_SQLSERVER`）；**未設定則自動跳過**。
+新增 `MySQL` / `Oracle` 等不需新類別，規則自動推導。
 
 連線 ID 命名規則 `common_{dbtype_lower}`（由 `TestDbConventions.GetDatabaseId` 產生）：
 `common_sqlserver`、`common_postgresql`、…

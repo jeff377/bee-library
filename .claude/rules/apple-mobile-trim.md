@@ -19,18 +19,16 @@ iOS / Mac Catalyst 的 `.app` bundle 是唯讀。任何把設定寫回 assembly 
 或 key-value 偏好儲存。框架端的接縫是 `IEndpointStorage`——行動 head 啟動時置換為
 平台對應實作，不要沿用桌面的檔案式預設。
 
-## trim：已解，解法是內嵌 ILLink descriptor
+## trim：已解，別再花時間
 
-`XmlSerializer` 在 Apple Release trim 下的失效**已於 2026-06-27 解決並實測驗證**：
-`ILLink.Descriptors.xml` 以 `<EmbeddedResource LogicalName="ILLink.Descriptors.xml">`
-內嵌於 `Bee.Definition`（`src/Bee.Definition/ILLink.Descriptors.xml`），trimmer 自動掃描該
-logical name，**所有下游 trim/AOT app（含外部框架使用者）自動受益**。
+`XmlSerializer` 在 Apple Release trim 下的失效**已於 2026-06-27 解決並實測驗證** ——
+解法是 `src/Bee.Definition/ILLink.Descriptors.xml`（**該檔檔頭寫明了機制與 preserve 範圍，
+本檔不複寫**）。所有下游 trim/AOT app 含外部框架使用者自動受益。
 
 - **不要再嘗試 `<PublishTrimmed>false</PublishTrimmed>` / `<MtouchLink>None</MtouchLink>` /
   `<MtouchLink>SdkOnly</MtouchLink>` / 單獨開 `UseInterpreter`** —— 四條都試過且不可行
   （Apple SDK 強制 trim、AOT 編譯不全 SIGABRT、SdkOnly 不保護 SDK 自身）。細節見 gotchas。
-- 新增定義型別**不需要**為 trim 做任何事：descriptor 用 wildcard root
-  `Bee.Definition.*` + `Bee.Base.Collections.*`，一次蓋滿。
+- **新增定義型別不需要為 trim 做任何事** —— descriptor 用 wildcard root 一次蓋滿。
 
 > ⚠️ 本節只涵蓋 **`XmlSerializer`（定義檔）那一半**，**不含 MessagePack wire**。
 > wire 路徑另有一套要求（型別一律顯式註冊 formatter），見 `rules/serialization.md`。

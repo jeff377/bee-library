@@ -37,33 +37,24 @@
 
 ## 兩道閘門（互補，不是重複）
 
-| 閘門 | 位置 | 擋什麼 | 何時紅 |
-|------|------|-------|--------|
-| **建置期鎖** | `src/Directory.Build.targets`（`BEE9001`） | 受管專案的 `PackageReference`，以及**整個專案參考閉包**（見下） | 寫下去的當下，`dotnet build` 即失敗 |
-| **傳遞閉包測試** | `tests/Bee.Definition.UnitTests/DefinitionDependencyGateTests.cs` | `Bee.Definition` 的**整個傳遞相依閉包** | 跑測試時 |
+| 閘門 | 位置 | 何時紅 |
+|------|------|--------|
+| **建置期鎖** `BEE9001` | `src/Directory.Build.targets` | 寫下去的當下，`dotnet build` 即失敗 |
+| **傳遞閉包測試** | `tests/Bee.Definition.UnitTests/DefinitionDependencyGateTests.cs` | 跑測試時 |
 
-**受管專案**：`Bee.Base`、`Bee.Definition`、以及 **`Bee.Api.Contracts`**（2026-08-11 納入——
-它位於每一個 UI head 的傳遞閉包內，ADR-038 的論證對它幾乎同等成立）。
+**兩道都需要**，因為建置期鎖看不到「經由某個 `ProjectReference` 間接帶進來的**套件**」
+—— DynamicExpresso 正是這樣進來的；閉包測試則要跑測試才會知道。
 
-**兩道都需要**：建置期鎖看不到「經由某個 `ProjectReference` 間接帶進來的**套件**」——
-DynamicExpresso 正是這樣進來的；閉包測試則要跑測試才會知道。
+受管專案清單與 allowlist 都在 `src/Directory.Build.targets`（`BeeAllowedDependency`），
+本檔不複寫。**要放行時的補救步驟也不必記** —— `BEE9001` 的錯誤訊息本身就列出了
+「加到 `BeeAllowedDependency`、加到測試白名單、記進 adr-038」三處，撞到就看得到。
+**這個麻煩是刻意的**：目的是逼出一次決策，而非默默通過。先問一次上一節的「正解」。
 
 > **修正（2026-08-11 實測）：建置期鎖看得到傳遞的「專案參考」，只是看不到傳遞的「套件」。**
 > .NET SDK 的 `IncludeTransitiveProjectReferences` 會在 Build 之前把傳遞專案參考併進
 > `@(ProjectReference)`。證據：`Bee.Api.Contracts` 的 csproj 只寫了 `Bee.Definition`，
 > 一啟用閘門就以 `Bee.Base` 報 BEE9001。因此**allowlist 要列出整個專案參考閉包**，
-> 不是只列 csproj 寫下的那幾條。`Bee.Definition` 的 allowlist 早就有 `Bee.Base`，
-> 所以這個行為先前一直沒被看見。
+> 不是只列 csproj 寫下的那幾條。
 
 建置期鎖只檢查**會流到消費者**的參考：`PrivateAssets="all"` 的套件（SourceLink、analyzer）
-與 `ReferenceOutputAssembly="false"` 的專案參考（`Bee.Analyzers` 的建置排序）不算，
-因為它們不會出現在 nuspec。
-
-### 要放行時（三處都要改，缺一不可）
-
-1. `src/Directory.Build.targets` 的 `BeeAllowedDependency`
-2. `DefinitionDependencyGateTests.cs` 的 `s_allowedDependencies`
-3. [adr-038](../../docs/adr/adr-038-definition-dependency-boundary.md) 記下理由
-
-**這個麻煩是刻意的**——目的是逼出一次決策，而非默默通過。
-先問一次上一節的「正解」：能不能只把抽象放這裡、實作留在別的組件？
+與 `ReferenceOutputAssembly="false"` 的專案參考不算，因為它們不會出現在 nuspec。

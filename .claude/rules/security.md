@@ -33,25 +33,20 @@ if (hmac == expected) { ... }
 
 ## API 存取控制
 
-### 三層保護等級（`ProtectionLevel`）
-| 等級 | 說明 |
-|------|------|
-| `Public` | 不需驗證，任何人可存取 |
-| `Encoded` | 需要 Token，Payload 為 Base64 編碼 |
-| `Encrypted` | 需要 Token，Payload 完整加密 |
+以 `[ApiAccessControl]` 宣告，**優先宣告在類別上讓方法繼承**，方法層只在需要覆寫時標。
 
-### 認證需求（`AccessRequirement`）
-| 等級 | 說明 |
-|------|------|
-| `None` | 不需登入 |
-| `Authenticated` | 需要有效 AccessToken |
-
-### Attribute 使用
-以 `[ApiAccessControl]` 宣告存取控制，優先繼承自類別：
 ```csharp
-[ApiAccessControl(AccessRequirement.Authenticated, ProtectionLevel.Encrypted)]
-public class OrderController { ... }
+[ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+public class OrderBO : FormBusinessObject { }
 ```
+
+**兩個列舉的完整值與語意見 XML doc**（`src/Bee.Definition/Security/ApiProtectionLevel.cs`、
+`ApiAccessRequirement.cs`）—— 本檔不複寫列舉成員，那會漂。
+
+> **本節的列舉表曾經漂掉且是實質錯誤**（2026-08-12 修正）：原本寫
+> `ProtectionLevel` 只有三級（漏了 `LocalOnly`）、`AccessRequirement` 的值叫 `None`
+> （實際是 `Anonymous`），型別名少了 `Api` 前綴，範例的兩個參數還寫反了
+> —— 照抄會編不過。**這就是為什麼列舉成員不該在規則裡複寫一份。**
 
 ## Session 管理
 
