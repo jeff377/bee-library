@@ -11,7 +11,7 @@
 | 5 | P3：跨層錯置與示意路徑（scope、skill 歸屬、ADR 路徑形狀） | ✅ 已完成（2026-08-12） |
 | 6 | 週邊：soarcloud-libraries plugin scope 補更新、`.gitignore` 補 env 樣式 | ✅ 已完成（2026-08-12） |
 | 7 | 砍不改變行為的散文（追加階段：階段 3/4 只搬位置，文字量沒真的降） | ✅ 已完成（2026-08-12） |
-| 8 | 路徑限定規則下沉（77% 的專案 rules 其實只在特定目錄需要） | 📝 待驗證機制 |
+| 8 | 路徑限定規則下沉（77% 的專案 rules 其實只在特定目錄需要） | 🚧 進行中（`testing.md` 已下沉，待頂層 session 覆核） |
 
 ## 背景
 
@@ -373,7 +373,30 @@ bee-library 是 **public repo**，但 `.gitignore` 無 `.env` / `*.local.env` �
 
 ## 階段 8 — 路徑限定規則下沉（追加，待驗證機制）
 
-**狀態：📝 卡在一個必須先驗的前提，未動任何規則檔。**
+**狀態：🚧 `testing.md` 已下沉（commit `b412f591`），待頂層 session 覆核載入行為。**
+
+### 已驗證：巢狀 `CLAUDE.md` 是 lazy loading
+
+subagent 實測（2026-08-12）：啟動時 `tests/CLAUDE.md` **不在** context
+（claudeMd 區塊列的 17 個來源沒有它），讀取 `tests/` 下任一檔案後才以新的
+system-reminder「`Contents of .../tests/CLAUDE.md`」注入 —— 對應探針判讀表第二列。
+
+**待覆核**：上述來自 subagent，其 claudeMd 清單與頂層 session 一致、是可信代理，
+但畢竟不是頂層 session。已以 `dev-workflow:session-handoff` 交接真 session 覆核。
+若頂層行為不同，`git revert b412f591` 即可完全回復。
+
+**另一項待覆核的假設**：lazy 載入是在 **Read** 該目錄下的檔案時觸發，
+那麼「直接 Write 一個新測試檔、沒先 Read 任何既有檔」會不會觸發？**未驗證。**
+常駐區因此保留一句「動 `tests/` 前先 Read `tests/CLAUDE.md`」作為保險。
+
+### `testing.md` 的切分結果
+
+| | 字元 | 內容 |
+|---|---|---|
+| `.claude/rules/testing.md`（常駐） | 17,087 → **2,564** | 五條「動筆前必須知道」的硬約束 + 命名規則 + 指路 |
+| `tests/CLAUDE.md`（lazy） | **13,903** | 環境檢查、attribute／fixture 完整判準、平行安全細節、fixture 檔案隔離、analyzer 退件、「本機綠 CI 紅」三條 |
+
+常駐總量 105,621 → **91,098**（自基線 124,978 累計 **−27.1%**，約 35k → 26k tokens）。
 
 ### 問題
 
