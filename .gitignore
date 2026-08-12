@@ -23,9 +23,9 @@
 # Blog posts (published on HackMD, not synced to GitHub)
 docs/blogs/
 
-# Claude skills 與 slash commands 預設入版控（repo 工程慣例知識，同 .claude/rules/）
-# 僅具名排除真正 author-specific 的項目
-.claude/skills/hackmd-blog/
+# Claude skills 與 slash commands 一律入版控（repo 工程慣例知識，同 .claude/rules/）。
+# 目前無例外——author-specific 或不綁本 repo 的 skill 一律放使用者層 ~/.claude/skills/，
+# 而不是放在這裡再排除；那樣它只有在本 repo 才叫得到。
 
 # Claude Code agent worktrees (transient, local-only)
 .claude/worktrees/

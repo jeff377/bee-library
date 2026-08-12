@@ -61,9 +61,11 @@ repo 只保留單一來源，避免本地副本與 plugin 版 drift。
 
 ## 新增 skill
 
-1. 建 `.claude/skills/<name>/SKILL.md`，frontmatter 至少含 `name` 與 `description`
-2. `description` 要寫清楚「做什麼 + 使用者說什麼時觸發」（決定模型能否正確自動載入）
-3. 在本 README 對應分類補一行 hook
-4. 預設入版控；純個人用、不宜共享的 skill 才於 `.gitignore` 排除
-
-> 註：另有個人用 skill（如 `hackmd-blog`）已於 `.gitignore` 排除、不入版控，故不列於此。
+1. **先判斷該不該放這裡** —— 本目錄只收**綁定 bee-library 的工程慣例知識**。
+   與本 repo 無關的（寫作、個人流程、其他技術棧）放**使用者層** `~/.claude/skills/`，
+   跨 repo 的開發流程放 **`dev-workflow` plugin**。放這裡再 `.gitignore` 排除是**錯的**：
+   那只會讓它在別的 repo 叫不到。
+2. 建 `.claude/skills/<name>/SKILL.md`，frontmatter 至少含 `name` 與 `description`
+3. `description` 要寫清楚「做什麼 + 使用者說什麼時觸發」（決定模型能否正確自動載入）
+4. 在本 README 對應分類補一行 hook
+5. **一律入版控**，本目錄目前無 `.gitignore` 例外
