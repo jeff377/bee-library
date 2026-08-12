@@ -33,7 +33,6 @@
 
 | Skill | 一句話用途 |
 |-------|-----------|
-| **changelog-draft** | 整理自上一版 tag 至 HEAD 的雙語 CHANGELOG 草稿 |
 | **demo-smoke** | 對 samples/ 的 demo 跑端到端冒煙測試 |
 
 ## Plugin 提供（不在本目錄）
@@ -47,8 +46,16 @@ repo 只保留單一來源，避免本地副本與 plugin 版 drift。
 | **`/dev-workflow:session-handoff`** | `dev-workflow` @ `jeff377-plugins` | 把已定案的工作交接給新 session 接手（先 commit 交接文件，再產出可複製的 prompt）。**不限程式碼實作**，撰寫、遷移、文件改版皆適用 |
 | **`/dev-workflow:plan-execute`** | `dev-workflow` @ `jeff377-plugins` | 依 plan 實作時的驗證閘門（plan 版本確認、範圍對帳、平行路徑檢查） |
 | **`/dev-workflow:config-audit`** | `dev-workflow` @ `jeff377-plugins` | 健檢設定檔語料（常駐成本、失效引用、過期斷言、跨檔衝突、plugin 版本漂移） |
+| **`/dev-workflow:changelog-draft`** | `dev-workflow` @ `jeff377-plugins` | 整理自上一版 tag 至 HEAD 的 CHANGELOG 草稿。**先偵測本 repo 既有慣例再沿用**（雙語兩檔 + `docs/changelogs/` 明細層都讀得出來），故行為與搬移前相同 |
 
-前三支涵蓋 plan 的完整生命週期：撰寫 → 交接 → 執行；`config-audit` 管的是規範本身的健康度。
+前三支涵蓋 plan 的完整生命週期：撰寫 → 交接 → 執行；`config-audit` 管的是規範本身的健康度；
+`changelog-draft` 是發版流程的第一步。
+
+> **`changelog-draft` 原本在本目錄**（v2.6.0 移出）。搬走的理由是
+> `~/.claude/rules/releasing.md` 這條**跨專案**規則本來就在指名它，卻只有本 repo 有；
+> 內容約八成與專案無關。中性化後改為從既有 CHANGELOG 反推慣例，
+> **本 repo 不需要再留一份「CHANGELOG 慣例」文件** —— 那些事實的權威來源就是
+> `CHANGELOG.md` 與 `docs/changelogs/` 本身。
 
 > **`plan-handoff` 已於 v2.3.0 改名為 `session-handoff`**（定位擴為「交接任何已定案工作」，
 > 不限 plan 實作）；`config-audit` 為 v2.4.0 新增。舊名不再可呼叫。

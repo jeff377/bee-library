@@ -8,7 +8,7 @@
 | 2 | `bee-serialization` 的 wire 三段改指路，不複寫 | ✅ 已完成（2026-08-12） |
 | 3 | `hackmd-blog` 移出 repo，改置使用者層 | ✅ 已完成（2026-08-12） |
 | 4 | `bee-scaffold-from-formschema` 修檔名錯誤並收斂定位 | ✅ 已完成（2026-08-12） |
-| 5 | `changelog-draft` 中性化後移入 `dev-workflow` plugin | 📝 待做 |
+| 5 | `changelog-draft` 中性化後移入 `dev-workflow` plugin | ✅ 已完成（2026-08-12） |
 | 6 | `releasing.md` 拆分：程序移入 plugin skill，原則與防護欄留常駐 | 📝 待做 |
 
 ## 背景

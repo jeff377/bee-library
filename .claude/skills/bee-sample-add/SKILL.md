@@ -25,7 +25,7 @@ description: 為 bee-library 加一個新的 samples/ 專案，內含前端類�
 |-------|---------|
 | **`bee-sample-add`**（本 skill） | sample 的 Bee.NET 整合：選哪個後端、auth、slnx、README、相依設定 |
 | **`demo-smoke`**（global） | scaffold 完之後驗證 demo 跑得通 |
-| **`changelog-draft`** | 發版時把 sample 改動列進 CHANGELOG |
+| **`/dev-workflow:changelog-draft`** | 發版時把 sample 改動列進 CHANGELOG |
 
 Avalonia sample 的流程：先建 UI 專案與所需的平台 head → 再呼叫本 skill 把 Bee 後端配進去。行動 head 的 trim / AOT 雷見 `rules/apple-mobile-trim.md`。
 
@@ -220,4 +220,4 @@ feat(samples): 新增 {Sample.Name} —— {一句話描述}
 - 真實 BO 實作（用 `bee-add-bo-method`）
 - 跑 demo 的 UI 驗證（用 `demo-smoke`）
 - 改主 README 加 Quick Start 連結（人工編輯，需 review）
-- 把 sample 改動列進 CHANGELOG（用 `changelog-draft`）
+- 把 sample 改動列進 CHANGELOG（用 `/dev-workflow:changelog-draft`）
