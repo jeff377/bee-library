@@ -31,12 +31,15 @@
    （image 版本 / port / volume / 初始 schema 都有約束，亂建會撞既有設定）。
    容器在但 stopped 不需動作，`./test.sh` 會 `docker start`。
 
-   | 容器名 | DB 類型 | env var |
+   | 容器名 | DB 類型 | 連線字串 env var |
    |--------|--------|---------|
    | `sql2025` | SQL Server | `BEE_TEST_CONNSTR_SQLSERVER` |
    | `pgvector-db` | PostgreSQL | `BEE_TEST_CONNSTR_POSTGRESQL` |
    | `mysql8` | MySQL | `BEE_TEST_CONNSTR_MYSQL` |
    | `oracle23ai` | Oracle | `BEE_TEST_CONNSTR_ORACLE` |
+
+   容器名可用 `BEE_TEST_SQL_CONTAINER` / `BEE_TEST_PG_CONTAINER` /
+   `BEE_TEST_MYSQL_CONTAINER` / `BEE_TEST_ORACLE_CONTAINER` override。
 
 ### 測試失敗的判別順序（本機情境）
 

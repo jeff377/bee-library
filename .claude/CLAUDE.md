@@ -19,27 +19,16 @@ samples/     # 示範專案
 ## 常用命令
 
 ```bash
-# 還原相依套件
 dotnet restore
-
-# 建置（Release）
 dotnet build <project>.csproj --configuration Release --no-restore
-
-# 執行測試（所有）
-# 使用 ./test.sh：偵測本機 SQL Server / PostgreSQL / MySQL / Oracle container
-# （預設 sql2025、pgvector-db、mysql8、oracle23ai），存在則自動啟動再跑 dotnet test。
-# 未啟動的容器對應的 [DbFact(DatabaseType.X)] 測試會依 .runsettings 中各
-# BEE_TEST_CONNSTR_{DBTYPE} 是否可連線自動 skip。
-# 容器名稱可用 BEE_TEST_SQL_CONTAINER / BEE_TEST_PG_CONTAINER /
-# BEE_TEST_MYSQL_CONTAINER / BEE_TEST_ORACLE_CONTAINER 環境變數 override。
-./test.sh
-
-# 執行特定測試專案
+./test.sh                                    # 全部測試（自動啟動本機 DB 容器）
 ./test.sh tests/<Project>.UnitTests/<Project>.UnitTests.csproj
-
-# 封裝 NuGet
+./check-public-docs.sh                       # 公開文件不得引用 docs/plans/
 dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nupkgs
 ```
+
+`./test.sh` 的容器偵測 / 自動 skip / env var override 細節見 `tests/CLAUDE.md`
+（動 `tests/` 時自動載入）。
 
 ## 架構分層
 
@@ -69,15 +58,9 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
    - 例外：含未修安全弱點清單的 review 類 plan 改放 `docs/internal/`（gitignored），避免公開 repo 附上現成攻擊面盤點
    - **公開文件一律不得連結或引用 plan**（含封存 plan）—— plan 是階段性文件、舊版未必正確，詳見 `rules/public-docs.md`
 
-**plan 內連結慣例**：plan **一定會**被整批搬進 `archive/`，寫連結時就要讓它搬完仍有效：
-
-- **指向其他 plan** → 用同層裸相對路徑（`[plan-numeric-core.md](plan-numeric-core.md)`），不加 `../`。
-  相關 plan 通常同批封存，同層寫法在 `docs/plans/` 與 `docs/plans/archive/` 兩處都成立。
-- **指向 plan 以外的檔案**（`src/`、`docs/adr/`、`docs/*.md`）→ 從 `docs/plans/` 起算寫相對路徑
-  （`../adr/adr-030-xxx.md`、`../../src/Bee.Db/DbAccess.cs`），封存時**整批加一層 `../`**。
-
-> 狀態列格式、多階段 plan 的階段表格、封存細節 → 見 `/dev-workflow:plan-write` skill
-> （由 `jeff377-plugins` marketplace 的 `dev-workflow` plugin 提供，已於 `.claude/settings.json` 宣告啟用）。
+> 狀態列格式、多階段 plan 的階段表格、**plan 內的連結慣例**（封存後仍有效的相對路徑寫法）、
+> 封存細節 → 見 `/dev-workflow:plan-write` skill（由 `jeff377-plugins` marketplace 的
+> `dev-workflow` plugin 提供，已於 `.claude/settings.json` 宣告啟用）。
 > 該 plugin 早期名為 `plan-workflow`，**已改名**；cache 裡殘留的舊目錄不再生效，別照舊名指路。
 
 ## 架構參考

@@ -1,6 +1,6 @@
 # 設定檔健檢（2026-08-12）
 
-**狀態：🚧 進行中（2026-08-12）**
+**狀態：✅ 已完成（2026-08-12）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -12,7 +12,8 @@
 | 6 | 週邊：soarcloud-libraries plugin scope 補更新、`.gitignore` 補 env 樣式 | ✅ 已完成（2026-08-12） |
 | 7 | 砍不改變行為的散文（追加階段：階段 3/4 只搬位置，文字量沒真的降） | ✅ 已完成（2026-08-12） |
 | 8 | 路徑限定規則下沉 —— 機制驗證 + `testing.md` 下沉 | ✅ 已完成（2026-08-12） |
-| 9 | 其餘路徑限定 rules 下沉（逐支判定「audience 是否真的只有一棵樹」） | 🚧 進行中（2026-08-12） |
+| 9 | 其餘路徑限定 rules 下沉（逐支判定「audience 是否真的只有一棵樹」） | ✅ 已完成（2026-08-12） |
+| 10 | 使用者層設定進版控 + 最小化（`code-style.md`／`releasing.md`／`CLAUDE.md`） | ✅ 已完成（2026-08-12） |
 
 ## 背景
 
@@ -509,6 +510,59 @@ bee-library 是 **public repo**，但 `.gitignore` 無 `.env` / `*.local.env` �
 **不是「這個檔講哪個專案」，而是「違反這條規則的人會在哪個目錄工作」。**
 兩者常常不同 —— `definition.md` 的 cache immutability 講的是定義層物件，
 但違反者是 BO / Repository / UI 的作者，所以它留常駐。
+
+---
+
+## 階段 10 — 使用者層設定進版控 + 最小化
+
+**已完成（2026-08-12）。**
+
+### 先修一個安全網缺口：`~/.claude` 原本不是 git repo
+
+使用者說「若造成語意偏移，再由 git 回推歷程找回」時，**那個安全網對使用者層並不存在** ——
+專案層 `.claude/rules/`（11 支）在 bee-library 的 git 內，但使用者層的 `CLAUDE.md` 與
+`rules/`（4 支，含最大的 `code-style.md`）在 `~/.claude`，而它**不是任何 repo**。
+`bee-library/.claude/rules/` 裡也沒有 `code-style.md` —— 它是經
+`@~/.claude/rules/code-style.md` 從家目錄 import 的。
+
+已 `git init ~/.claude`，採**白名單式 `.gitignore`**：預設排除所有內容，只放行
+`CLAUDE.md`、`rules/`、`skills/`、`scripts/`。**刻意排除** `projects/`（session 逐字稿）、
+`plugins/`（marketplace 與 cache）、`settings*.json` 與任何憑證；staged 前逐一確認過。
+無 remote，純本機歷程。
+
+**第一個 commit 刻意是「壓縮前」狀態**，所以本階段的每一次精簡都能 diff 與回推
+（已驗證 `git show HEAD~1:rules/code-style.md | wc -c` = 17,210 = 原始大小）。
+順帶把 5 支使用者層 skill（約 90k 字元，同樣先前零備份）一併納入。
+
+### 精簡結果
+
+| 檔 | 前 → 後 | 做法 |
+|---|---|---|
+| `~/.claude/rules/code-style.md` | 17,210 → **12,059**（−30%） | 13 個小節的重複鋪陳改緊湊敘述；**`CA1724`（BCL 撞名）與 UI 框架撞名合併為一節** —— 兩者是同一類問題，差別只在 analyzer 會不會告訴你；XML doc 的兩段範例壓成一句敘述 + 一個 `<remarks>` 實例 |
+| `~/.claude/rules/releasing.md` | 8,153 → **6,483** | `PublicAPI` 合併的 30 行 bash 抽成 `~/.claude/scripts/merge-public-api-shipped.sh`；§2 單一來源的敘事壓縮 |
+| `.claude/CLAUDE.md` | 5,869 → **5,067** | `./test.sh` 的容器偵測細節併入 `tests/CLAUDE.md`（原本兩處重複）；plan 內連結慣例改指 `plan-write` skill（已確認該 skill 確實承接，非空指路） |
+
+**保留的判準**：「比對身分還是呈現給人」、「貼到 UI 專案會不會需要 `using` alias」、
+「這個型別的成員本質上是同一份清單」、「這個版號在講現在是哪一版還是當時量到什麼」、
+Turkish-I 的具體症狀、`ValueUtilities` 帶日期署名的歷史敘事（含行數 —— 那些是論證本身）、
+以及兩個實際踩過的版號漂移教訓（`CLAUDE.md` 落後六個 minor、`tools/Bee.Cli` 停在 4.8.0
+十二個 minor 且 per-project 閘門擋不到）。
+
+> **抽成腳本比抄在規則裡好** —— 抄在文件裡的 bash 只會靜默過期；抽成可執行檔至少跑得起來、
+> 改一處。`merge-public-api-shipped.sh` 的檔頭寫進了兩個容易寫錯的細節
+> （`LC_ALL=C` 排序讓 `~override` 排對位置、`grep -Fxv -f` 對空移除清單會濾掉全部所以要兜底）
+> 與 `RS0024` 的成因。
+
+### 全案最終數字
+
+| | 字元 | tokens |
+|---|---|---|
+| 健檢基線 | 124,978 | ~35k |
+| 最終 | **71,386** | **~20k** |
+| | **−42.9%** | |
+
+零知識損失 —— 每一項都是「移到只在需要時才載入的位置」、「抽成可執行腳本」，
+或「砍掉不改變行為的字」。
 
 ---
 
