@@ -1,6 +1,6 @@
 # 設定檔健檢（2026-08-12）
 
-**狀態：🚧 進行中（2026-08-12）**
+**狀態：✅ 已完成（2026-08-12）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -11,7 +11,7 @@
 | 5 | P3：跨層錯置與示意路徑（scope、skill 歸屬、ADR 路徑形狀） | ✅ 已完成（2026-08-12） |
 | 6 | 週邊：soarcloud-libraries plugin scope 補更新、`.gitignore` 補 env 樣式 | ✅ 已完成（2026-08-12） |
 | 7 | 砍不改變行為的散文（追加階段：階段 3/4 只搬位置，文字量沒真的降） | ✅ 已完成（2026-08-12） |
-| 8 | 路徑限定規則下沉（77% 的專案 rules 其實只在特定目錄需要） | 🚧 進行中（`testing.md` 已下沉，待頂層 session 覆核） |
+| 8 | 路徑限定規則下沉 —— 機制驗證 + `testing.md` 下沉（其餘六支另案） | ✅ 已完成（2026-08-12） |
 
 ## 背景
 
@@ -371,23 +371,37 @@ bee-library 是 **public repo**，但 `.gitignore` 無 `.env` / `*.local.env` �
 
 ---
 
-## 階段 8 — 路徑限定規則下沉（追加，待驗證機制）
+## 階段 8 — 路徑限定規則下沉（追加）
 
-**狀態：🚧 `testing.md` 已下沉（commit `b412f591`），待頂層 session 覆核載入行為。**
+**狀態：✅ 已完成（2026-08-12）。** 巢狀 `CLAUDE.md` 的 lazy loading 已由**頂層 session**
+實測確認，`testing.md` 的下沉（commit `b412f591`）保留。
 
-### 已驗證：巢狀 `CLAUDE.md` 是 lazy loading
+### 已驗證：巢狀 `CLAUDE.md` 是 lazy loading（頂層 session 覆核，2026-08-12）
 
-subagent 實測（2026-08-12）：啟動時 `tests/CLAUDE.md` **不在** context
-（claudeMd 區塊列的 17 個來源沒有它），讀取 `tests/` 下任一檔案後才以新的
-system-reminder「`Contents of .../tests/CLAUDE.md`」注入 —— 對應探針判讀表第二列。
+先由 subagent 實測、再由頂層 session 覆核，兩者結論一致。頂層覆核的原始觀察：
 
-**待覆核**：上述來自 subagent，其 claudeMd 清單與頂層 session 一致、是可信代理，
-但畢竟不是頂層 session。已以 `dev-workflow:session-handoff` 交接真 session 覆核。
-若頂層行為不同，`git revert b412f591` 即可完全回復。
+| 步驟 | 觀察 |
+|---|---|
+| **1. 尚未呼叫任何工具時** | claudeMd 區塊列出 18 個來源（使用者層 `CLAUDE.md` + 4 支使用者層 rules、專案 `CLAUDE.md` + 12 支 `.claude/rules/`、`MEMORY.md`），**`tests/CLAUDE.md` 不在其中**；字串「測試規範（完整）」不在 context 內（常駐區只有下沉後的「測試規範（骨幹）」） |
+| **2. 僅 Read `tests/Bee.Tests.Shared/BeeTestFixture.cs` 之後** | **出現新的 system-reminder**，內容為 `Contents of /Users/jeff/Desktop/repos/bee-library/tests/CLAUDE.md`，全文注入；「測試規範（完整）」自此在 context 內 |
 
-**另一項待覆核的假設**：lazy 載入是在 **Read** 該目錄下的檔案時觸發，
-那麼「直接 Write 一個新測試檔、沒先 Read 任何既有檔」會不會觸發？**未驗證。**
-常駐區因此保留一句「動 `tests/` 前先 Read `tests/CLAUDE.md`」作為保險。
+對應判讀表第二列（步驟 1 沒有 / 步驟 2 有）→ **lazy loading 成立**，下沉有實際效益且規則不會
+靜默消失。**這條結論現在是頂層 session 的直接觀察，不再是 subagent 代理。**
+
+> subagent 的 claudeMd 清單與頂層一致，事後看是可信代理 —— 但當時無從得知，
+> 覆核的成本（一次 Read）遠低於賭錯的代價（17k 規則靜默消失）。
+
+### 未驗證：Write 新檔是否也觸發（本 session 無法乾淨重測）
+
+原假設是「lazy 載入在 **Read** 該目錄下的檔案時觸發」，那麼「只 Write 一個新檔、
+沒 Read 任何既有檔」會不會觸發？**此步在本 session 無法乾淨驗證** —— 步驟 2 已經觸發過載入，
+`tests/CLAUDE.md` 已在 context 內，之後 Write `tests/_probe_write.cs`（已刪除）
+未再出現新的 system-reminder，但**這不構成證據**：已載入的檔本來就不會重複注入，
+「不觸發」與「觸發但不重複注入」在此無法區分。
+
+**因此常駐區那句保險必須留**：`.claude/rules/testing.md` 開頭的
+「要動 `tests/` 下任何檔案前，先 Read `tests/CLAUDE.md`」不可移除。
+要乾淨驗證得在**全新 session 的第一個動作**就 Write，且全程不 Read `tests/` 下任何既有檔。
 
 ### `testing.md` 的切分結果
 
@@ -435,26 +449,29 @@ system-reminder「`Contents of .../tests/CLAUDE.md`」注入 —— 對應探針
 粗估常駐可從 30k tokens 降到 12k–15k。**`testing.md` 一支佔一半效益且時機風險最低**
 （寫測試必定會讀寫 `tests/` 下的檔），建議先只做它。
 
-### 為何本階段停住
+### 為何要先驗再搬（賭錯的代價不對稱）
 
-已建 `tests/CLAUDE.md` 作為探針（含驗證步驟與判讀表）。**本 session 測不出結果** ——
-探針檔是 session 啟動之後才建的，「啟動即載全文」與「巢狀 CLAUDE.md 不生效」兩種情況
-在此的觀測完全相同（都不會注入）。CLI 說明把「CLAUDE.md auto-discovery」列在啟動期活動，
-指向啟動時發現，但**發現 ≠ 立即載入全文**，settle 不了 eager / lazy。
-
-賭錯的代價不對稱：
+驗證前的三種可能後果差距極大，這是「先驗再搬、且不接受 subagent 代理」的理由：
 
 | 若機制是 | 後果 |
 |---|---|
 | 啟動即載全文 | 省 0，無害 |
-| 啟動發現、觸及才載 | 省 17,087 字元 ✅ |
-| **只認 root `CLAUDE.md`** | **17k 測試規則靜默消失**，不報錯，只讓未來每個寫測試的 session 少掉全部規則 |
+| **啟動發現、觸及才載** | **省 17,087 字元 ✅（實測即此）** |
+| 只認 root `CLAUDE.md` | 17k 測試規則靜默消失，不報錯，只讓未來每個寫測試的 session 少掉全部規則 |
 
-**所以先驗再搬。** 驗法寫在 `tests/CLAUDE.md`：開新 session，讀 `tests/` 下的檔前後各問
-一次「context 裡有 `PROBE-TESTS-SCOPE-LOADED-9f3a1c` 嗎」。
+第三種是危險情況：**規則會靜默失效、不報錯**。實測排除了它。若當時結果是第一或第三種，
+處置都是 `git revert b412f591`；第三種另需改走 `PreToolUse` hook（機制在本 repo 已證實可用，
+精準度反而更高 —— 動筆那一刻才注入，而非讀檔時）。
 
-若結果是「不生效」，退路是 `PreToolUse` hook —— 機制在本 repo 已證實可用，精準度反而更高
-（動筆那一刻才注入，而非讀檔時）。
+### 其餘六支路徑限定 rules：另案，不在本階段
+
+`serialization.md`、`apple-mobile-trim.md`、`definition.md`、`avalonia.md`、`database.md`、
+`dependency-boundary.md`（共約 35k 字元）**本階段不動**，待使用者確認 `testing.md` 這支
+下沉後的實際使用感受再逐支處理。
+
+已知的未解問題（處理前必須先有結論，不可自行決定）：**`avalonia.md` 適用四個分散位置**
+（`src/Bee.UI.Avalonia`、`tools/DefineEditor`、`samples/Avalonia.*`、`apps/Bee.Northwind`），
+一個巢狀 `CLAUDE.md` 綁不了四棵樹 —— 複製四份會產生同步負擔，只放一處會漏。
 
 ---
 

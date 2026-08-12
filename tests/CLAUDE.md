@@ -1,7 +1,8 @@
 # 測試規範（完整）
 
-本檔在 agent 觸及 `tests/` 下任何檔案時自動載入（巢狀 `CLAUDE.md` 為 lazy loading，
-2026-08-12 實測確認）。骨幹與「動筆前必須知道」的五條硬約束在
+本檔在 agent 讀取 `tests/` 下任何檔案時自動載入（巢狀 `CLAUDE.md` 為 lazy loading，
+2026-08-12 由頂層 session 實測確認；**「只 Write 新檔不 Read」是否觸發尚未驗證**，
+故常駐區保留「動筆前先 Read 本檔」那句保險）。骨幹與「動筆前必須知道」的五條硬約束在
 `.claude/rules/testing.md`（常駐）；可貼用的程式碼樣板在 `docs/repo-ops/testing-patterns.md`。
 
 兩邊有衝突時以本檔為準 —— 常駐那份是摘要。
