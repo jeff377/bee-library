@@ -1,6 +1,6 @@
 # 設定檔健檢（2026-08-12）
 
-**狀態：✅ 已完成（2026-08-12）**
+**狀態：🚧 進行中（2026-08-12）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -11,6 +11,7 @@
 | 5 | P3：跨層錯置與示意路徑（scope、skill 歸屬、ADR 路徑形狀） | ✅ 已完成（2026-08-12） |
 | 6 | 週邊：soarcloud-libraries plugin scope 補更新、`.gitignore` 補 env 樣式 | ✅ 已完成（2026-08-12） |
 | 7 | 砍不改變行為的散文（追加階段：階段 3/4 只搬位置，文字量沒真的降） | ✅ 已完成（2026-08-12） |
+| 8 | 路徑限定規則下沉（77% 的專案 rules 其實只在特定目錄需要） | 📝 待驗證機制 |
 
 ## 背景
 
@@ -367,6 +368,70 @@ bee-library 是 **public repo**，但 `.gitignore` 無 `.env` / `*.local.env` �
 
 > **搬去腳本比搬去文件好**：`check-public-docs.sh` 是可執行的，跑一次就知道有沒有壞，
 > 而抄在規則裡的 grep 只會靜默過期。**本次已驗證腳本輸出與原本 5 道 grep 完全一致。**
+
+---
+
+## 階段 8 — 路徑限定規則下沉（追加，待驗證機制）
+
+**狀態：📝 卡在一個必須先驗的前提，未動任何規則檔。**
+
+### 問題
+
+專案層 rules 共 67,366 字元，其中 **52,340（77%）是路徑限定**的：
+
+| 路徑限定 | 適用範圍 |
+|---|---|
+| `testing.md` 17,087 | `tests/` |
+| `serialization.md` 8,960 | `Bee.Api.Core`、`Bee.Definition` |
+| `apple-mobile-trim.md` 6,797 | 行動 head |
+| `definition.md` 5,901 | `Bee.Definition` |
+| `avalonia.md` 4,825 | 4 個 Avalonia 頭（`src/`、`tools/`、`samples/`、`apps/`） |
+| `database.md` 4,505 | `Bee.Db`、`Repository*` |
+| `dependency-boundary.md` 4,265 | 三個受管 csproj |
+
+真正跨層的只有 `sonarcloud.md`、`security.md`、`commit-verification.md`、`public-docs.md`。
+一個純改文件的 session 白讀約 15k tokens。
+
+### 三種機制與取捨
+
+| 機制 | 精準度 | 風險 |
+|------|-------|------|
+| 巢狀 `CLAUDE.md` | 高（按路徑） | **載入時機未經驗證**（見下）；一個檔只綁一棵樹，`avalonia.md` 適用四處分散位置 |
+| Skill | 中（語意觸發） | **漏觸發等於沒有規則** —— skill 適合「要做某件事」的流程，不適合「不准這樣做」的約束 |
+| `PreToolUse` hook 比對 glob 注入 | 最高（動筆那一刻） | 要寫腳本，但**機制在本 repo 已證實可用**（`pre-commit-verify.sh`） |
+
+### 關鍵設計：不是整檔搬走，而是「檔內再分一層」
+
+這些檔混了兩種東西，只有後者可以下沉：
+
+- **動筆前必須知道的設計約束**（「集合屬性一律繼承 `KeyCollectionBase`」、「wire 型別一律顯式
+  註冊」、「`CategoryId` 只認三值」、「文字數值欄一律 NOT NULL」）——
+  **晚載入就沒用了**，因為讀到檔案時設計已經選錯。但它們也是最短的部分，每支約 3–8 行。
+- **動到才需要的踩雷細節與操作程序** —— 佔絕大多數，可下沉。
+
+粗估常駐可從 30k tokens 降到 12k–15k。**`testing.md` 一支佔一半效益且時機風險最低**
+（寫測試必定會讀寫 `tests/` 下的檔），建議先只做它。
+
+### 為何本階段停住
+
+已建 `tests/CLAUDE.md` 作為探針（含驗證步驟與判讀表）。**本 session 測不出結果** ——
+探針檔是 session 啟動之後才建的，「啟動即載全文」與「巢狀 CLAUDE.md 不生效」兩種情況
+在此的觀測完全相同（都不會注入）。CLI 說明把「CLAUDE.md auto-discovery」列在啟動期活動，
+指向啟動時發現，但**發現 ≠ 立即載入全文**，settle 不了 eager / lazy。
+
+賭錯的代價不對稱：
+
+| 若機制是 | 後果 |
+|---|---|
+| 啟動即載全文 | 省 0，無害 |
+| 啟動發現、觸及才載 | 省 17,087 字元 ✅ |
+| **只認 root `CLAUDE.md`** | **17k 測試規則靜默消失**，不報錯，只讓未來每個寫測試的 session 少掉全部規則 |
+
+**所以先驗再搬。** 驗法寫在 `tests/CLAUDE.md`：開新 session，讀 `tests/` 下的檔前後各問
+一次「context 裡有 `PROBE-TESTS-SCOPE-LOADED-9f3a1c` 嗎」。
+
+若結果是「不生效」，退路是 `PreToolUse` hook —— 機制在本 repo 已證實可用，精準度反而更高
+（動筆那一刻才注入，而非讀檔時）。
 
 ---
 
