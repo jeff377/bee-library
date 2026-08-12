@@ -304,8 +304,10 @@ skill（**若該 repo 有**）」，該括號存在的原因就是兩者分居�
 - ✅ `dev-workflow` plugin 2.5.0 → **2.7.0**（+`changelog-draft`、+`release`）
 - ✅ 不動任何 `src/` / `tests/` 程式碼
 
-### 尚待收尾（需先推送 plugin）
+### 收尾（已完成）
 
-`~/.claude/scripts/merge-public-api-shipped.sh` 目前與 plugin 內的副本**並存** ——
-刻意保留到 plugin 推上 GitHub、消費端 cache 更新並驗證過之後再刪，
-避免出現「兩份都構不到」的空窗。刪除前該檔即是本 plan 自己在講的那種複寫。
+- ✅ `claude-plugins` 與 `bee-library` 皆已推送，`claude plugin update` 後 cache
+  由 2.5.0 更新至 2.7.0，六支 skill 到位、`release` 的腳本可執行
+- ✅ 使用者層 `~/.claude/scripts/merge-public-api-shipped.sh` 已刪除
+  （與 plugin 內副本僅差檔頭指路那行）。**刻意等到 plugin 驗證過才刪**，
+  避免出現「兩份都構不到」的空窗
