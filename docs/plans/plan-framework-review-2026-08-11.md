@@ -50,7 +50,7 @@
 | P1 | 閘門可靠性與已證實的功能缺陷 | 11 | ✅ **已完成**（2026-08-11，11 項全數落地） |
 | P2 | 結構、效能、一致性 | 14 | 🚧 進行中（11 項已結：P-2(a) / CON-2 / CON-3 / CON-4 / A-4 / N-5 / **P-4** / **PERF-3** ✅ 修正，**DEP-1** / **P-3** / **PERF-2** ❌ 評估後不修；剩 3 項） |
 | P3 | 文件漂移與低風險清理 | 13 | ✅ **已完成**（2026-08-11，13 項全數落地） |
-| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2** / **SEC-4~10**(部分) / **CON-5** / **X-7** / **D-9** / **Z-3**+**Z-5** / **M-2** / **M-3** / **T-3** / **N-2/N-3**(部分) ✅ 已落地；其餘未動） |
+| P4 | 觀察／待裁決 | 9 | 🚧 進行中（**M-1** / **D-6** / **D-7** / **D-8** / **X-6** / **T-2** / **SEC-4~10**(部分) / **CON-5** / **X-7** / **D-9** / **Z-3**+**Z-5** / **M-2** / **M-3** / **T-3** / **N-2/N-3** ✅ 已落地；其餘未動） |
 
 ### 已完成項目逐條（供對帳，勿只看階段狀態）
 
@@ -85,7 +85,7 @@
 | **TEST-2** | `ApiAspNetCoreTests` / `ApiKeyGateControllerTests` 改用 `SharedDbFixture` | 待 commit | 並在類別 doc 記下第三條觸發路徑（API key gate read-through）與「為何先前是綠的」 |
 | **TEST-3** | `Bee.Definition.UnitTests` 新增 `ProcessWideStateCollection`，序列化三個衝突類別 | 待 commit | 該組件先前既無 `[Collection]` 也無 `DisableTestParallelization` |
 | **GATE-2** | 8 個手寫 formatter 改實作 `IWireContract`，移除套套邏輯的 `WireMemberCount` | 待 commit | **實證**：在 `SortField` 加一個屬性 → drift 測試立刻紅（`型別上有但未註冊 → Probe`）。同一個 probe 在修正前不會被抓到 |
-| **N-2/N-3** | 3 檔拆為一型別一檔、`CacheDefineAccess` 拆 partial、`ValueUtilities` 複核後拆出 `.Temporal` | 待 commit | **`Bee.Definition/` 根目錄的 `Numeric/` 分組決定不做，理由見下**。三處拆檔與兩處 partial 皆零公開 API 變更（`PublicAPI.*.txt` 無 diff），命名空間未動 |
+| **N-2/N-3** | 3 檔拆為一型別一檔、7 個大檔拆 partial（含 `CacheDefineAccess`、`ValueUtilities`） | 待 commit | **`Bee.Definition/` 根目錄的 `Numeric/` 分組決定不做，理由見下**。三處拆檔與兩處 partial 皆零公開 API 變更（`PublicAPI.*.txt` 無 diff），命名空間未動 |
 | **T-3**（覆蓋缺口） | `ExpiredSessionCleanupService` 5 筆、`LogApiConnector` 路由 11 筆、三個集合成員帶值 round-trip 3 筆、`CreateLogBO` 4 筆 | 待 commit | **兩處反向驗證**：移除啟動掃描 → 2 筆紅；`DbException` 改為 rethrow → 「迴圈在 DbException 後停止了；只觀察到 1 次呼叫」。路由測試以「把 `GetDbAnomalySummary` 抄成 `GetApiAnomalySummary`」實證會紅 |
 | **T-3**（判別碼那條） | `WireValueCode` 22 個判別碼釘死，補 `DateTimeOffset` round-trip，並補上 drift 閘門的**反方向**檢查 | 待 commit | **第一版的封套測試是空轉的，反向驗證當場抓到**：它拿 `WireValueCode.X` 常數當期望值，重新編號時期望值跟著變、自我一致因而恆綠。改用字面數字後，對調 Guid/ByteArray 會紅在 5 個測試（常數表 2 + Count 1 + **實際編碼 2**）。反方向檢查亦以「註冊一個閉包外型別」實證會紅 |
 | **X-7** | `Bee.Api.Contracts` 納入 BEE9001 | 待 commit | **實測翻出一個先前沒人知道的行為**：閘門一啟用就以 `Bee.Base` 報錯，而該 csproj 只寫了 `Bee.Definition` —— SDK 的 `IncludeTransitiveProjectReferences` 會在 Build 前把**傳遞專案參考**併進 `@(ProjectReference)`。故 allowlist 要列整個專案參考閉包。`rules/dependency-boundary.md` 的敘述已更正 |
@@ -108,6 +108,22 @@
 > 不是以物件形式，因此不在閉包內。這也說明下限斷言為何不能只寫一個數字：數字擋得住「掉到只剩
 > `ExtraRoots`」，擋不住「某一條可達路徑斷掉」。現行四個 canary 刻意取自不同路徑（訊息命名空間
 > 的根、契約命名空間的根、掛在 `ApiMessageBase` 上每個訊息都會經過的集合、多型子型別）。
+
+> **「高內聚型別不拆」這條退路已於 2026-08-12 由使用者裁決移除**，理由是先前的規則只從
+> 人類可讀性論證，漏了一個更硬的成本：**檔案是 AI 讀取程式碼的單位**——650 行的檔案每次進
+> context 都是整份，多出來的部分既花成本又是雜訊。判準因此反轉為「**預設拆，唯一例外是型別
+> 根本沒有接縫**」。
+>
+> 依此重掃 `src/`，8 個 ≥ 480 行的檔全部處理：7 個拆 partial，只有 `FormField`（495 行、
+> 36 個 `[XmlAttribute]` 屬性）維持不拆——它是純屬性袋，硬拆得自己發明一套領域裡不存在的
+> 分類。**結果：`src/` 內 ≥ 500 行的檔案數為 0**，最大檔為 `FormField` 的 496 行。
+>
+> 拆分明細：`DbAccess`（`.Anomaly` / `.Update`，656→423）、`FormView`（`.Resolve` /
+> `.Commands`，567→298）、`GridControl`（`.Binding` / `.Rows`，562→292）、
+> `FormBusinessObject`（`.Read` / `.Write`，531→95）、`DataFormRepository`（`.Skeleton`，
+> 513→412）、`DataTableJsonConverter`（`.Read` / `.Build`，506→129）、
+> `BeeFrameworkServiceCollectionExtensions`（`.Factories`，485→336）。
+> 全部零公開 API 變更。
 
 > **`Bee.Definition/` 根目錄的 `Numeric/` 分組決定不做。** 那 12 個檔
 > （`NumberFormatItem` / `NumberKind` / `RoundingPolicy` / `CashRoundingItem` / `AllowedCurrencyItem`…）
