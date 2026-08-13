@@ -16,7 +16,7 @@ BO 層 Args / Result 型別、`[ApiAccessControl]` 設定，與一行用途說�
 
 | 欄位 | 意義 |
 |------|------|
-| **Method** | JSON-RPC `method` 欄位 — `progId.action`。對應 `SystemActions` / `FormActions` 常數。 |
+| **Method** | JSON-RPC `method` 欄位 — `progId.action`。對應 `SystemActions` / `FormActions` / `LogActions` 常數。 |
 | **Protection** | `[ApiAccessControl]` 第一參數：`Public` / `Encoded` / `Encrypted`。詳見[安全規範](../.claude/rules/security.md)。 |
 | **Auth** | `[ApiAccessControl]` 第二參數：`Anonymous` / `Authenticated`。 |
 | **用途** | 一行摘要；完整說明見對應 BO 方法的 XML doc。 |
@@ -32,6 +32,12 @@ BO 層 Args / Result 型別、`[ApiAccessControl]` 設定，與一行用途說�
 例如 `GetLanguage` → `IGetLanguageRequest` / `IGetLanguageResponse` /
 `GetLanguageArgs` / `GetLanguageResult`。IDE「跳至符號」即可從 action 名
 直達任一型別，無需在表格內重複列出。
+
+**請求側恆依此 pattern，回應側則否。** 多個 action 回應形狀相同時共用同一個回應型別，
+不各自宣告一份一模一樣的。AuditLog 軸全軸如此：五個清單查詢回
+`LogListResponse` / `LogListResult`、三個聚合查詢回
+`LogAggregateResponse` / `LogAggregateResult`，只有 `GetChangeDetail`
+的回應型別與 action 同名。請求型別可由 action 名推導，回應型別請看 BO 方法簽章。
 
 ## 軸：Base（`BusinessObject`）
 

@@ -18,7 +18,7 @@ This is the single-page reference of every public BO method exposed through
 
 | Column | Meaning |
 |--------|---------|
-| **Method** | The JSON-RPC `method` field — `progId.action`. Listed action constants live in `SystemActions` / `FormActions`. |
+| **Method** | The JSON-RPC `method` field — `progId.action`. Listed action constants live in `SystemActions` / `FormActions` / `LogActions`. |
 | **Protection** | `[ApiAccessControl]` first arg: `Public` / `Encoded` / `Encrypted`. See [security rules](../.claude/rules/security.md). |
 | **Auth** | `[ApiAccessControl]` second arg: `Anonymous` / `Authenticated`. |
 | **Purpose** | One-line summary; see XML doc on the BO method for full detail. |
@@ -34,6 +34,15 @@ For any `<Action>` listed below, the contract / BO types follow a fixed pattern:
 E.g. `GetLanguage` → `IGetLanguageRequest` / `IGetLanguageResponse` /
 `GetLanguageArgs` / `GetLanguageResult`. Use IDE "Go to symbol" to jump to
 any of these from the action name; no need to list them in the tables.
+
+**The request side always follows this pattern; the response side does not.**
+Where several actions return the same shape, they share one response type rather
+than each declaring an identical copy. On the audit-log axis every action does:
+the five list queries return `LogListResponse` / `LogListResult` and the three
+aggregates return `LogAggregateResponse` / `LogAggregateResult`, so only
+`GetChangeDetail` has a response type named after its action. Derive request
+types from the action name; look the response type up from the BO method
+signature.
 
 ## Axis: Base (`BusinessObject`)
 
