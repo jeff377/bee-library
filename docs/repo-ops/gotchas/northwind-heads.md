@@ -26,6 +26,51 @@ Web 案例是 **Avalonia Browser (WASM) backend**，**不是另寫 Blazor**（`.
 `FileEndpointStorage` 在 Android 沙箱可寫（`/data/data/<pkg>/files/...`），但 ConnectionView 欄位
 永遠預填 `AppDefaults.Endpoint`、不回讀 storage——共用 UI 的既有行為，三 head 一致。
 
+## iOS head
+
+**.NET for iOS 綁死 Xcode 版本，macOS 更新 Xcode 就會打斷建置。**
+
+```
+error : This version of .NET for iOS (26.5.10284) requires Xcode 26.5.
+The current version of Xcode is 26.6. Either install Xcode 26.5, or use a
+different version of .NET for iOS.
+```
+
+正解是**側裝對應版本的 Xcode 並以 `DEVELOPER_DIR` 指定**，不要動 `xcode-select` ——
+後者是全機設定、需 sudo，且會連帶影響其他需要新版 Xcode 的工作。本機已有
+`/Applications/Xcode-26.5.0.app` 與 `/Applications/Xcode.app`（26.6）並存：
+
+```bash
+export DEVELOPER_DIR=/Applications/Xcode-26.5.0.app/Contents/Developer
+```
+
+錯誤訊息只說「裝 26.5 或換 workload」，沒提 `DEVELOPER_DIR` 這條路，所以很容易被判成
+「環境壞了、只能擱置」——2026-08-13 的 4.21.0 同步就是這樣把 iOS 記成環境問題豁免掉的，
+實際上兩台 Xcode 早就都在機器上。
+
+**乾淨樹上 `-t:Run` 必須分兩段跑。**
+
+```
+error : The app must be built before the arguments to launch the app using
+mlaunch can be computed.
+```
+
+症狀看起來像 mlaunch 參數或模擬器沒選對，實際是同一次 MSBuild 呼叫內 Run target
+取啟動參數時 app bundle 還沒產生。先 build 再 Run：
+
+```bash
+export DEVELOPER_DIR=/Applications/Xcode-26.5.0.app/Contents/Developer
+dotnet build Bee.Northwind.iOS -f net10.0-ios -c Debug
+dotnet build Bee.Northwind.iOS -t:Run -f net10.0-ios -c Debug \
+  -p:_DeviceName=:v2:udid=<模擬器 UDID>
+```
+
+模擬器 UDID 取自 `xcrun simctl list devices available`；省略 `_DeviceName` 時由 SDK 自選，
+開著多台時未必是你要的那台。**iOS 模擬器的 endpoint 用 `http://localhost:5100/api`**
+（與 Android 的 `10.0.2.2` 不同，ATS 於 dev 允許任意連線）。
+
+兩條在 bee-library 內的 `apps/Bee.Northwind/Bee.Northwind.iOS` 同樣適用。
+
 ## Browser (WASM) head
 
 **csproj 必加**：

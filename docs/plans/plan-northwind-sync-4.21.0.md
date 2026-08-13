@@ -7,7 +7,7 @@
 | 1 | 檔案同步（覆蓋 / 新增 / 刪除 / 保留清單） | ✅ 已完成（2026-08-13）：rsync 覆蓋 + 新增 15 檔、刪除 3 檔；`.gitignore` 補 `log/` 負向規則後 5 個稽核 schema 確實入版控 |
 | 2 | ProjectReference → PackageReference 4.21.0（含 analyzer glob） | ✅ 已完成（2026-08-13）：Server / UI 轉套件參考；**計畫對 analyzer 的判斷修正了一半**（見下方「執行中的修正」）；三個 head 補時區屬性、兩處 bee-library 內部路徑註解改寫 |
 | 3 | README 雙語逐段 port（不整份覆蓋） | ✅ 已完成（2026-08-13）：兩邊章節結構相同（截圖段亦同），故以 bee-library 版為基底重貼、再套回 4 處 standalone 差異（intro、指令路徑、layout 根目錄、結尾說明）；`Bee.Northwind.Browser/README.md` 的 3 處路徑一併修 |
-| 4 | 獨立 repo build + 冒煙驗證 | ✅ 已完成（2026-08-13）：Server / UI / Desktop / Browser / Android 對 NuGet 4.21.0 全綠（0 警告 0 錯誤）；端到端冒煙通過。**iOS 卡本機 Xcode 26.6 vs .NET for iOS 26.5**，已比對 bee-library 端同樣失敗 → 環境問題 |
+| 4 | 獨立 repo build + 冒煙驗證 | ✅ 已完成（2026-08-13）：Server / UI / Desktop / Browser / Android 對 NuGet 4.21.0 全綠（0 警告 0 錯誤）；端到端冒煙通過。iOS 當時卡 Xcode 版本不符而豁免，**已於同日補驗通過**（見下方「iOS 補驗」） |
 | 5 | commit + push 至 bee-northwind-avalonia | ✅ 已完成（2026-08-13）：commit `f73ebf4` 推上 main（47 檔、+1135 / -329），遠端已驗 `Define/TableSchema/log/` 5 檔與 4.21.0 版號 |
 
 ## 執行中的修正：analyzer 接線比計畫預期的多一步
@@ -31,6 +31,25 @@ NuGet 只對**直接** PackageReference 匯入套件的 `build/` 資料夾（要
 > 這同時是一個**框架層的發現**：任何只引用 `Bee.Business` / `Bee.Db` 一類上層套件的消費者，
 > 都會拿到 analyzer 卻拿不到定義檔注入 —— 規則靜默不執行，且沒有任何診斷會說。
 > 屬 bee-library 的另案（`build/` → `buildTransitive/`）。
+
+## iOS 補驗（2026-08-13 稍晚）
+
+階段 4 把 iOS 記成「環境問題豁免」是**判斷過早** —— 那個結論建立在「本機 Xcode 只有 26.6」
+這個未經查證的前提上，實際上 `/Applications/Xcode-26.5.0.app` 早就與 26.6 並存於同一台機器。
+錯誤訊息只提「裝 26.5 或換 workload」，沒提可以用 `DEVELOPER_DIR` 指定，於是被讀成無解。
+
+補驗結果：**四個用戶端全數通過**（Desktop / Browser / iOS 模擬器 / Android 模擬器），
+均為 NuGet 4.21.0 套件參考版，各自 Connect → Sign in → 讀到真實資料。
+
+過程另外釐清兩件事，已寫進
+[gotchas/northwind-heads.md](../repo-ops/gotchas/northwind-heads.md) 的「iOS head」節：
+
+- iOS 的 Xcode 版本綁定，正解是 `DEVELOPER_DIR` 而非 `xcode-select`（後者全機生效且需 sudo）
+- 乾淨樹上 `-t:Run` 必須分兩段（先 build 再 Run），否則擲
+  `The app must be built before the arguments to launch the app using mlaunch can be computed`
+
+Android 首次連線失敗**不是 regression** —— endpoint 預填 `localhost`，模擬器需改
+`http://10.0.2.2:5100/api`，改後即通過。此行為 README 已載明。
 
 ## 冒煙驗證細節
 
@@ -285,13 +304,15 @@ dotnet build Bee.Northwind.iOS/Bee.Northwind.iOS.csproj -c Debug           # 需
 - Server / UI / Desktop / Browser 設 `TreatWarningsAsErrors=true` → **任何警告即失敗**。
   這是 4.21.0 相對 4.12.1 的 API 漂移最可能顯現的地方（`[Obsolete]` 標註會直接變 error）。
 - iOS / Android 刻意未設該旗標（trim 分析的 IL2026 / IL2104 為預期）。
-- **iOS 若卡本機 Xcode workload 不匹配，比照上次處理**：先確認 bee-library 端的 iOS head
-  是否同樣失敗；同樣失敗即為環境問題、非同步 regression，記錄後不阻擋。
+- **iOS 若卡本機 Xcode workload 不匹配**：先查機器上是否已有對應版本的 Xcode
+  （`ls -d /Applications/Xcode*.app`），有就用 `DEVELOPER_DIR` 指過去，不要動 `xcode-select`。
+  確認無對應版本才視為環境問題、記錄後不阻擋。**執行時這一步判斷錯了**，見上方「iOS 補驗」。
 
 冒煙（最低）：Server 起得來 + 建表；Desktop 連線 → 登入 → 清單真實資料 → 開一筆訂單。
 可用 `/demo-smoke`（目標 repo 自帶 standalone 版 `.smoke.yaml`）。
 
-**完成準則**：Server + 四 head build 通過（iOS 得以環境問題豁免）；Desktop 端到端冒煙通過。
+**完成準則**：Server + 四 head build 通過；Desktop 端到端冒煙通過。
+（執行時 iOS 一度以環境問題豁免，後已補驗通過 —— 見上方「iOS 補驗」。）
 
 ---
 
