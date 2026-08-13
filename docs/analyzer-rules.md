@@ -53,23 +53,25 @@ build time, where the message can name both the cause and the fix.
 | BEE4005 | Warning | A framework collection should expose a single public `Add` |
 | BEE4006 | Error | A serialised type must have a public parameterless constructor |
 
-### Repository build gates (BEE9xxx)
+### Build gates (BEE9xxx)
 
 | ID | Severity | Rule |
 |----|----------|------|
 | BEE9001 | Error | `Bee.Base` and `Bee.Definition` may only reference what their allowlist names |
 | BEE9002 | Error | `Version`, `AssemblyVersion` and `FileVersion` must stay in step |
+| BEE9003 | Error | `BeeDefinitionFilesGlob` matched no files while `BeeRequireDefinitionFiles` is set |
 
-**These two are framework-internal and cannot be triggered by a consumer project.** They are not
-Roslyn analyzers but MSBuild targets in `src/Directory.Build.targets`, and they are listed here so
-the numbering has one home. BEE9001 exists because anything added to the two lowest-level
-assemblies is inherited by every consumer of the framework
+**None of the BEE9xxx are Roslyn analyzers**; they are MSBuild targets, listed here so the numbering
+has one home. BEE9001 and BEE9002 live in `src/Directory.Build.targets` and are framework-internal —
+a consumer project cannot trigger them. BEE9003 ships in the package and is opt-in; see
+[Checking what the glob matched](#checking-what-the-glob-matched). BEE9001 exists because anything
+added to the two lowest-level assemblies is inherited by every consumer of the framework
 ([ADR-038](adr/adr-038-definition-dependency-boundary.md)); BEE9002 exists because a release that
 bumps only `Version` ships packages whose assemblies still claim the previous version, and a
 published package cannot be recalled.
 
-Two rules are marked framework-internal in the tables above — BEE3002 runs only inside the
-framework's own `Bee.Definition` assembly, and the BEE9xxx pair only inside this repository. They
+Three rules are marked framework-internal in the tables above — BEE3002 runs only inside the
+framework's own `Bee.Definition` assembly, and BEE9001 / BEE9002 only inside this repository. They
 are listed for completeness rather than because a consumer project can trigger them. Every other
 rule applies to consumer projects, including BEE4005: a collection you derive from
 `CollectionBase` or `KeyCollectionBase` yourself is checked exactly as the framework's own are.
@@ -77,10 +79,23 @@ rule applies to consumer projects, including BEE4005: a collection you derive fr
 ## Where the definition file rules read from
 
 BEE1xxx and BEE2xxx analyse XML rather than C#, which MSBuild has to hand to the compiler explicitly.
-The package does that for you: `build/Bee.Definition.targets` adds `Define\**\*.xml` to
-`AdditionalFiles`, rooted at the project directory and excluding build output.
+The package does that for you: `buildTransitive/Bee.Definition.targets` adds `Define\**\*.xml` to
+`AdditionalFiles`, rooted at the project directory and excluding build output. This applies whether
+`Bee.Definition` is referenced directly or arrives through `Bee.Business`, `Bee.Db`,
+`Bee.Api.AspNetCore` or `Bee.Hosting`.
 
-Point it elsewhere if your definitions live outside `Define`:
+**The glob is rooted at the project directory and is not searched for above it.** The usual layout
+keeps the definitions beside the solution file rather than beside the server project, and that needs
+one line — on the single project that owns them, so the same findings are not reported once per
+project in the solution:
+
+```xml
+<PropertyGroup>
+  <BeeDefinitionFilesGlob>..\Define\**\*.xml</BeeDefinitionFilesGlob>
+</PropertyGroup>
+```
+
+Point it anywhere else the same way if your definitions live outside `Define`:
 
 ```xml
 <PropertyGroup>
@@ -91,6 +106,29 @@ Point it elsewhere if your definitions live outside `Define`:
 Definitions stored in the database instead of the file system need no configuration — with no
 definition files to read, the cross-file rules stay silent rather than reporting every table as
 missing.
+
+### Checking what the glob matched
+
+A glob matching nothing looks exactly like a project that has no definitions: the rules simply stay
+quiet. Two ways to tell the difference —
+
+```bash
+dotnet build MyApp.Server.csproj -v n
+```
+
+reports the count at normal verbosity (`Bee.NET: BeeDefinitionFilesGlob '…' matched N definition
+file(s) …`), and a project that knows it owns definition files can turn the empty case into a build
+failure:
+
+```xml
+<PropertyGroup>
+  <BeeRequireDefinitionFiles>true</BeeRequireDefinitionFiles>
+</PropertyGroup>
+```
+
+That raises **BEE9003** when the glob matches nothing. It is opt-in rather than the default because
+most projects in a solution legitimately have no definition files of their own, and warning on all of
+them would be noise — under `TreatWarningsAsErrors`, a build break.
 
 ## Adjusting severity
 

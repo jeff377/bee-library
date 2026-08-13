@@ -14,9 +14,10 @@
     Dogfooding the framework convention analyzers against this application's real definition files.
     Two things have to be done by hand here that a package consumer gets for free: the analyzer has to
     be referenced explicitly (analyzers do not flow through a ProjectReference), and the definition
-    files have to be listed as AdditionalFiles, because build/Bee.Definition.targets ships inside the
-    NuGet package and is not imported by a project reference. The definitions also live one level up,
-    at the solution root rather than beside this project.
+    files have to be listed as AdditionalFiles, because buildTransitive/Bee.Definition.targets ships
+    inside the NuGet package and is not imported by a project reference. The definitions also live one
+    level up, at the solution root rather than beside this project — which for a package consumer is
+    what BeeDefinitionFilesGlob is for.
   -->
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Bee.Analyzers\Bee.Analyzers.csproj"

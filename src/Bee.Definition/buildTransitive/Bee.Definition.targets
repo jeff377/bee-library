@@ -1,0 +1,67 @@
+<Project>
+
+  <!--
+    Feeds the consumer's framework definition files to the Bee.NET analyzers.
+
+    The definition rules (BEE1xxx / BEE2xxx) read XML through AdditionalFiles, which MSBuild has to
+    supply explicitly — analyzers cannot open files on their own. Injecting the glob here is what
+    makes the rules work with no setup on the consumer's side.
+
+    This file lives in buildTransitive/ rather than build/ because NuGet imports build/ only for a
+    *direct* PackageReference. A project referencing Bee.Business or Bee.Api.AspNetCore gets
+    Bee.Definition transitively, and therefore received the analyzer assembly (analyzers do flow
+    transitively) without the glob that feeds it — the definition rules loaded and then silently
+    examined nothing, with no diagnostic to say so. buildTransitive/ is imported for direct and
+    transitive references alike, so one copy here covers both; a second copy under build/ would be
+    dead weight, as NuGet picks buildTransitive/ even for direct consumers when both exist.
+
+    Set BeeAnalyzeDefinitionFiles to false to opt out, or override BeeDefinitionFilesGlob to point at
+    a non-standard layout.
+  -->
+
+  <PropertyGroup>
+    <BeeAnalyzeDefinitionFiles Condition="'$(BeeAnalyzeDefinitionFiles)' == ''">true</BeeAnalyzeDefinitionFiles>
+    <BeeDefinitionFilesGlob Condition="'$(BeeDefinitionFilesGlob)' == ''">Define\**\*.xml</BeeDefinitionFilesGlob>
+    <BeeRequireDefinitionFiles Condition="'$(BeeRequireDefinitionFiles)' == ''">false</BeeRequireDefinitionFiles>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BeeAnalyzeDefinitionFiles)' == 'true'">
+    <!--
+      NOTE: The glob is rooted at the project directory rather than recursive from above it, so a
+      solution with many projects does not re-scan the same tree once per project. Build output is
+      excluded because a definition file copied next to the binaries is a duplicate of the source
+      one, and reporting both would double every diagnostic.
+
+      The same reasoning is why the default is not widened to search parent directories when the
+      project directory has none: definitions kept beside the solution file would then be picked up
+      by every project in that solution that references the framework, and each would report the
+      same findings. Such a layout says so explicitly through BeeDefinitionFilesGlob, on the one
+      project that owns the definitions.
+    -->
+    <_BeeDefinitionFile Include="$(BeeDefinitionFilesGlob)"
+                        Exclude="$(BaseOutputPath)**;$(BaseIntermediateOutputPath)**;bin\**;obj\**" />
+    <AdditionalFiles Include="@(_BeeDefinitionFile)" />
+  </ItemGroup>
+
+  <!--
+    Makes an empty match visible. A glob that resolves to nothing is the one failure mode of this
+    file that produces no symptom at all — the rules stay quiet, which is also what a project with
+    no definitions looks like. Warning unconditionally is not an option, because most projects in a
+    solution legitimately have none; so the count is reported at normal importance (visible under
+    `dotnet build -v n`, silent by default) and a project that knows it owns definition files can
+    turn the empty case into a build failure with BeeRequireDefinitionFiles.
+  -->
+  <Target Name="BeeReportDefinitionFiles"
+          BeforeTargets="CoreCompile"
+          Condition="'$(BeeAnalyzeDefinitionFiles)' == 'true'">
+
+    <Message Importance="normal"
+             Text="Bee.NET: BeeDefinitionFilesGlob '$(BeeDefinitionFilesGlob)' matched @(_BeeDefinitionFile->Count()) definition file(s) under '$(MSBuildProjectDirectory)'." />
+
+    <Error Condition="'$(BeeRequireDefinitionFiles)' == 'true' AND '@(_BeeDefinitionFile)' == ''"
+           Code="BEE9003"
+           Text="BeeRequireDefinitionFiles is set, but BeeDefinitionFilesGlob '$(BeeDefinitionFilesGlob)' matched no files under '$(MSBuildProjectDirectory)'. The glob is rooted at the project directory: definitions kept beside the solution file need a relative path such as '..\Define\**\*.xml'." />
+
+  </Target>
+
+</Project>

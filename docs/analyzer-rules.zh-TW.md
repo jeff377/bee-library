@@ -50,31 +50,44 @@ Bee.NET 隨套件提供 Roslyn analyzer，把框架慣例變成建置期診斷�
 | BEE4005 | Warning | 框架集合應只公開一個 public `Add` |
 | BEE4006 | Error | 參與序列化的型別必須有 public 無參數建構子 |
 
-### Repository 建置閘門（BEE9xxx）
+### 建置閘門（BEE9xxx）
 
 | ID | 嚴重度 | 規則 |
 |----|--------|------|
 | BEE9001 | Error | `Bee.Base` 與 `Bee.Definition` 只能參考允許清單列出的項目 |
 | BEE9002 | Error | `Version`、`AssemblyVersion`、`FileVersion` 必須同步 |
+| BEE9003 | Error | 設了 `BeeRequireDefinitionFiles` 但 `BeeDefinitionFilesGlob` 比對不到任何檔案 |
 
-**這兩條是框架內部規則，消費端專案不會觸發。** 它們不是 Roslyn analyzer，而是
-`src/Directory.Build.targets` 內的 MSBuild target；列在此處是為了讓編號有一個統一的歸屬。
+**BEE9xxx 都不是 Roslyn analyzer**，而是 MSBuild target；列在此處是為了讓編號有一個統一的歸屬。
+BEE9001 與 BEE9002 位於 `src/Directory.Build.targets`，屬框架內部規則，消費端專案不會觸發；
+BEE9003 隨套件發布且為 opt-in，見[確認 glob 實際比對到什麼](#確認-glob-實際比對到什麼)。
 BEE9001 的存在理由是：加在最底層那兩個組件上的任何東西，都會被框架的每一個消費者繼承
 （[ADR-038](adr/adr-038-definition-dependency-boundary.md)）。BEE9002 的存在理由是：
 只 bump `Version` 的發版會送出「組件仍宣稱前一版」的套件，而已發布的套件無法回收。
 
-上方表格中有兩處標為框架內部規則——BEE3002 只在框架自身的 `Bee.Definition` 組件內執行，
-BEE9xxx 兩條只在本 repository 內執行。列出僅為完整性，消費端專案不會觸發它們。其餘規則都適用於
+上方表格中有三處標為框架內部規則——BEE3002 只在框架自身的 `Bee.Definition` 組件內執行，
+BEE9001 / BEE9002 只在本 repository 內執行。列出僅為完整性，消費端專案不會觸發它們。其餘規則都適用於
 消費端專案，**BEE4005 也不例外**：你自己繼承 `CollectionBase` / `KeyCollectionBase` 寫出來的集合，
 與框架自身的集合受同一條規則檢查。
 
 ## 定義檔規則從哪裡讀取
 
 BEE1xxx 與 BEE2xxx 分析的是 XML 而非 C#，這需要 MSBuild 明確地把檔案交給編譯器。套件已代為處理：
-`build/Bee.Definition.targets` 會把 `Define\**\*.xml` 加入 `AdditionalFiles`，以專案目錄為根並排除
-建置輸出。
+`buildTransitive/Bee.Definition.targets` 會把 `Define\**\*.xml` 加入 `AdditionalFiles`，以專案目錄
+為根並排除建置輸出。不論 `Bee.Definition` 是直接引用、或是經由 `Bee.Business`、`Bee.Db`、
+`Bee.Api.AspNetCore`、`Bee.Hosting` 遞移而來，都同樣適用。
 
-若你的定義檔不在 `Define` 底下，改指向其他位置：
+**這個 glob 以專案目錄為根，不會往上層搜尋。** 常見佈局是把定義檔放在方案根目錄而非 server 專案
+目錄下，那需要一行設定——且只加在「擁有這些定義檔」的那一個專案上，同一批問題才不會在方案中
+每個專案各報一次：
+
+```xml
+<PropertyGroup>
+  <BeeDefinitionFilesGlob>..\Define\**\*.xml</BeeDefinitionFilesGlob>
+</PropertyGroup>
+```
+
+定義檔不在 `Define` 底下時，同樣以此指向其他位置：
 
 ```xml
 <PropertyGroup>
@@ -84,6 +97,27 @@ BEE1xxx 與 BEE2xxx 分析的是 XML 而非 C#，這需要 MSBuild 明確地把�
 
 定義存放於資料庫而非檔案系統時不需任何設定——沒有定義檔可讀時，跨檔規則會靜默，而不會把每張表
 都報成缺漏。
+
+### 確認 glob 實際比對到什麼
+
+glob 比對不到任何檔案時，外觀與「這個專案本來就沒有定義檔」完全相同：規則就是靜默。兩種方式可以
+區分——
+
+```bash
+dotnet build MyApp.Server.csproj -v n
+```
+
+會在 normal 詳細度印出筆數（`Bee.NET: BeeDefinitionFilesGlob '…' matched N definition file(s) …`）；
+確知自己擁有定義檔的專案，則可把「零筆」轉成建置失敗：
+
+```xml
+<PropertyGroup>
+  <BeeRequireDefinitionFiles>true</BeeRequireDefinitionFiles>
+</PropertyGroup>
+```
+
+glob 比對不到任何檔案時會擲出 **BEE9003**。之所以採 opt-in 而非預設，是因為方案中多數專案本來就
+沒有自己的定義檔，對它們全部發警告只會製造雜訊——在 `TreatWarningsAsErrors` 下更會直接讓建置失敗。
 
 ## 調整嚴重度
 

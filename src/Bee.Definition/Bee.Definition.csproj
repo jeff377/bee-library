@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="build\Bee.Definition.targets" Pack="true" PackagePath="build\" />
+    <None Include="buildTransitive\Bee.Definition.targets" Pack="true" PackagePath="buildTransitive\" />
   </ItemGroup>
 
   <Target Name="_BeePackAnalyzer" BeforeTargets="_GetPackageFiles">
