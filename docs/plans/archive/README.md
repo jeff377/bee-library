@@ -11,6 +11,8 @@
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [skill 與 rule 的分層歸位](plan-skills-cleanup.md) | 2026-08-12 | 起於 repo 層 skill 精簡，執行中擴為三層歸位：repo skill（綁 bee-library 的慣例）／plugin skill（跨 repo 的開發流程）／常駐 rule（不知道要查也會違反的硬規則）。收斂 bootstrap 複寫為單一來源，並跨到 `~/.claude/` 與 `claude-plugins` repo |
+| [設定檔健檢（2026-08-12）](plan-config-audit-2026-08-12.md) | 2026-08-12 | 常駐設定語料（`CLAUDE.md`／`rules/`／skills／memory）首次基線健檢，六階段全數落地。修掉三處失效的 skill／plugin 指路與一處跨檔矛盾的 AOT 結論；建立「設定檔不寫清點數字」判準並清除既有者；推導內容與程式碼樣板搬入 `docs/repo-ops/`；`bee-jsonrpc-backend` skill 從使用者層搬入版控。常駐 −7.4%。**下次健檢的三項改進已記在文末** |
 | [未使用型別盤點與清理（2026-08-12）](plan-unused-type-cleanup.md) | 2026-08-12 | Roslyn 符號級全掃（47 專案／995 型別／8038 成員）確認無死型別；真正的問題是三處「宣告了但沒接上」——`NumberFormatApplier` 從不執行、兩個公司錯誤碼從未拋出。另移除 `ApiContractRegistry`（被 `ApiOutputConverter` 取代）與 `ILogBusinessObject`，並補上 BO 側契約配對閘門 |
 | [框架全面體檢（2026-08-11）](plan-framework-review-2026-08-11.md) | 2026-08-12 | 十一面向唯讀體檢（基準 v4.19.0）；修正後十一面向平均 8.09 → 9.13，另記 5 條刻意遞延與 2 筆待查 flaky |
 | [解除 Bee.Definition 對 DynamicExpresso 的傳遞相依](plan-definition-expressions-decoupling.md) | 2026-08-11 | 抽象三型別下沉 `Bee.Base`，拿掉對 `Bee.Expressions` 的 ProjectReference；相依閘門由人眼掃描變成可執行檢查（ADR-038） |

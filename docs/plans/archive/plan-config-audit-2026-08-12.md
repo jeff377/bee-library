@@ -65,7 +65,7 @@
 
 > `rules/serialization.md` —— MessagePack / DynamicExpresso 的 AOT 結論（皆有 reflection fallback）
 
-但 [`serialization.md`](../../.claude/rules/serialization.md) 的節標題就是
+但 [`serialization.md`](../../../.claude/rules/serialization.md) 的節標題就是
 「AOT：MessagePack 的 reflection fallback **只涵蓋有標註的型別**（2026-08-10 修正）」，
 內文明載 contractless **沒有** reflection fallback，並記錄該誤判曾讓 iOS 端 wire 整條壞掉。
 
@@ -184,7 +184,7 @@ DynamicExpresso 自動退回直譯器」。
 
 動手前的障礙是 **`docs/repo-ops/gotchas/` 沒有行動端／AOT 的檔**：`database`／`serialization`／
 `avalonia`／`testing` 都有對應 gotchas 出口，只有這條沒有。已新增
-`mobile-trim-aot.md` 並補進 [`gotchas/README.md`](../repo-ops/gotchas/README.md) 索引。
+`mobile-trim-aot.md` 並補進 [`gotchas/README.md`](../../repo-ops/gotchas/README.md) 索引。
 
 搬入內容：
 

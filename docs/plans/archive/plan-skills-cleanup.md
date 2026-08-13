@@ -96,9 +96,9 @@ repo 內可驗證的藍本，repo 外的降為一句不帶路徑的提及或直�
 
 | skill 章節 | 權威來源 |
 |-----------|---------|
-| wire 型別必須顯式註冊（ADR-037） | [../../src/Bee.Api.Core/CLAUDE.md](../../src/Bee.Api.Core/CLAUDE.md) |
+| wire 型別必須顯式註冊（ADR-037） | [`src/Bee.Api.Core/CLAUDE.md`](../../../src/Bee.Api.Core/CLAUDE.md) |
 | `object` 成員走判別式封套 | 同上 |
-| 行動端 AOT 的型別形狀要件 | [../../.claude/rules/apple-mobile-trim.md](../../.claude/rules/apple-mobile-trim.md) § 序列化型別的行動端相容要件 |
+| 行動端 AOT 的型別形狀要件 | [`.claude/rules/apple-mobile-trim.md`](../../../.claude/rules/apple-mobile-trim.md) § 序列化型別的行動端相容要件 |
 
 `.claude/rules/serialization.md`（常駐骨幹）已對前兩者指路 `Bee.Api.Core/CLAUDE.md`，
 skill 卻又抄了一份實質內容。
@@ -154,13 +154,13 @@ tests/Define/TableSchema/company/ft_employee.TableSchema.xml
 ```
 
 實際檔名是 **`st_employee.TableSchema.xml`**。這剛好也是
-[`rules/database.md`](../../.claude/rules/database.md) 講的例證：`st_` 前綴**不代表**在 common，
+[`rules/database.md`](../../../.claude/rules/database.md) 講的例證：`st_` 前綴**不代表**在 common，
 `st_employee` 是框架所有但落在 company scope。
 
 ### 問題 B：FormLayout 那類產出的定位過寬
 
 `FormSchema.GetFormLayout(layoutId)` 是 runtime 產生的
-（[`src/Bee.Definition/Forms/FormSchema.cs:242`](../../src/Bee.Definition/Forms/FormSchema.cs) →
+（[`src/Bee.Definition/Forms/FormSchema.cs:242`](../../../src/Bee.Definition/Forms/FormSchema.cs) →
 `FormLayoutGenerator.Generate`），因此 **FormLayout 落檔是客製化，不是必要步驟**。
 `bee-add-form` 明說「FormLayout 由框架從 FormSchema 自動產生，不必寫」；本 skill 卻把它
 列為三大產出之一，兩支對同一件事給讀者相反印象。
