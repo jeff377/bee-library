@@ -46,7 +46,7 @@ namespace Bee.Business.AuditLog
         /// <see cref="GetChangeDetail"/>.
         /// </remarks>
         [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
-        public virtual GetChangeLogResult GetChangeLog(GetChangeLogArgs args)
+        public virtual LogListResult GetChangeLog(GetChangeLogArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
 
@@ -64,7 +64,7 @@ namespace Bee.Business.AuditLog
             };
             var page = Repository().GetChangeLog(query, args.Paging ?? new PagingOptions());
 
-            return new GetChangeLogResult { Table = page.Table, Paging = page.Paging };
+            return ToResult(page);
         }
 
         /// <summary>

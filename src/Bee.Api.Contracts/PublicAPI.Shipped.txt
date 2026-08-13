@@ -37,9 +37,6 @@ Bee.Api.Contracts.AuditLog.IGetChangeLogRequest.ProgId.get -> string?
 Bee.Api.Contracts.AuditLog.IGetChangeLogRequest.RowKey.get -> string?
 Bee.Api.Contracts.AuditLog.IGetChangeLogRequest.ToUtc.get -> System.DateTime?
 Bee.Api.Contracts.AuditLog.IGetChangeLogRequest.UserId.get -> string?
-Bee.Api.Contracts.AuditLog.IGetChangeLogResponse
-Bee.Api.Contracts.AuditLog.IGetChangeLogResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
-Bee.Api.Contracts.AuditLog.IGetChangeLogResponse.Table.get -> System.Data.DataTable?
 Bee.Api.Contracts.AuditLog.IGetDbAnomalyLogRequest
 Bee.Api.Contracts.AuditLog.IGetDbAnomalyLogRequest.DatabaseId.get -> string?
 Bee.Api.Contracts.AuditLog.IGetDbAnomalyLogRequest.FromUtc.get -> System.DateTime?

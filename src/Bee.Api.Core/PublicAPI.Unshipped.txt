@@ -1,1 +1,7 @@
 #nullable enable
+*REMOVED*Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse
+*REMOVED*Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.GetChangeLogResponse() -> void
+*REMOVED*Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
+*REMOVED*Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Paging.set -> void
+*REMOVED*Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Table.get -> System.Data.DataTable?
+*REMOVED*Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Table.set -> void

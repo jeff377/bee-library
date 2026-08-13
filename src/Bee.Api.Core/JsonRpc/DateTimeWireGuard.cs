@@ -73,9 +73,6 @@ namespace Bee.Api.Core.JsonRpc
                 case IGetLookupResponse response:
                     ValidateDataTable(response.Table);
                     return;
-                case IGetChangeLogResponse response:
-                    ValidateDataTable(response.Table);
-                    return;
                 case ILogListResponse response:
                     ValidateDataTable(response.Table);
                     return;

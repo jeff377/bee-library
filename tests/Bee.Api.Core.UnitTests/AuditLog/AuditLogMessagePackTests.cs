@@ -42,31 +42,6 @@ namespace Bee.Api.Core.UnitTests.AuditLog
         }
 
         [Fact]
-        [DisplayName("GetChangeLogResponse 帶 DataTable + PagingInfo 應 round-trip")]
-        public void GetChangeLogResponse_RoundTrip_PreservesTableAndPaging()
-        {
-            var table = new DataTable("st_log_change");
-            table.Columns.Add("sys_rowid", typeof(Guid));
-            table.Columns.Add("change_kind", typeof(int));
-            var id = Guid.NewGuid();
-            table.Rows.Add(id, (int)ChangeKind.Update);
-
-            var response = new GetChangeLogResponse
-            {
-                Table = table,
-                Paging = new PagingInfo { Page = 1, PageSize = 50, TotalCount = 1, HasMore = false },
-            };
-
-            var restored = MessagePackCodec.Deserialize<GetChangeLogResponse>(MessagePackCodec.Serialize(response));
-
-            Assert.NotNull(restored);
-            Assert.NotNull(restored!.Table);
-            Assert.Single(restored.Table!.Rows);
-            Assert.Equal(id, (Guid)restored.Table.Rows[0]["sys_rowid"]);
-            Assert.Equal(1, restored.Paging!.TotalCount);
-        }
-
-        [Fact]
         [DisplayName("GetChangeDetailResponse 帶巢狀 Fields 應完整 round-trip")]
         public void GetChangeDetailResponse_RoundTrip_PreservesFields()
         {

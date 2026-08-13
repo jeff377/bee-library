@@ -13,7 +13,7 @@ namespace Bee.Api.Client.UnitTests
     /// <see cref="LogApiConnector"/> 九個方法的路由測試。
     /// </summary>
     /// <remarks>
-    /// 這九個方法都是薄包裝，真正的風險是**路由抄錯**：其中四個共用
+    /// 這九個方法都是薄包裝，真正的風險是**路由抄錯**：其中五個共用
     /// <c>LogListResponse</c>、三個共用 <c>LogAggregateResponse</c>，因此把
     /// <c>GetDbAnomalyLog</c> 寫成 <c>GetApiAnomalyLog</c> 會回傳看起來完全合理的資料，
     /// 型別系統與 round-trip 測試都不會出聲。這裡逐一釘住送出的

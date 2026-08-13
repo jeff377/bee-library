@@ -80,12 +80,6 @@ Bee.Business.AuditLog.GetChangeLogArgs.ToUtc.get -> System.DateTime?
 Bee.Business.AuditLog.GetChangeLogArgs.ToUtc.set -> void
 Bee.Business.AuditLog.GetChangeLogArgs.UserId.get -> string?
 Bee.Business.AuditLog.GetChangeLogArgs.UserId.set -> void
-Bee.Business.AuditLog.GetChangeLogResult
-Bee.Business.AuditLog.GetChangeLogResult.GetChangeLogResult() -> void
-Bee.Business.AuditLog.GetChangeLogResult.Paging.get -> Bee.Definition.Paging.PagingInfo?
-Bee.Business.AuditLog.GetChangeLogResult.Paging.set -> void
-Bee.Business.AuditLog.GetChangeLogResult.Table.get -> System.Data.DataTable?
-Bee.Business.AuditLog.GetChangeLogResult.Table.set -> void
 Bee.Business.AuditLog.GetDbAnomalyLogArgs
 Bee.Business.AuditLog.GetDbAnomalyLogArgs.DatabaseId.get -> string?
 Bee.Business.AuditLog.GetDbAnomalyLogArgs.DatabaseId.set -> void
@@ -670,7 +664,6 @@ virtual Bee.Business.AuditLog.LogBusinessObject.GetAccessLog(Bee.Business.AuditL
 virtual Bee.Business.AuditLog.LogBusinessObject.GetApiAnomalyLog(Bee.Business.AuditLog.GetApiAnomalyLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetApiAnomalySummary(Bee.Business.AuditLog.GetApiAnomalySummaryArgs! args) -> Bee.Business.AuditLog.LogAggregateResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetChangeDetail(Bee.Business.AuditLog.GetChangeDetailArgs! args) -> Bee.Business.AuditLog.GetChangeDetailResult!
-virtual Bee.Business.AuditLog.LogBusinessObject.GetChangeLog(Bee.Business.AuditLog.GetChangeLogArgs! args) -> Bee.Business.AuditLog.GetChangeLogResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetDbAnomalyLog(Bee.Business.AuditLog.GetDbAnomalyLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetDbAnomalySummary(Bee.Business.AuditLog.GetDbAnomalySummaryArgs! args) -> Bee.Business.AuditLog.LogAggregateResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetLoginLog(Bee.Business.AuditLog.GetLoginLogArgs! args) -> Bee.Business.AuditLog.LogListResult!

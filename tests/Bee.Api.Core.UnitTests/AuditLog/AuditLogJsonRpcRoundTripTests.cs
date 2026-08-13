@@ -70,7 +70,7 @@ namespace Bee.Api.Core.UnitTests.AuditLog
                 new GetChangeLogRequest { ProgId = "Employee", ChangeKind = ChangeKind.Update });
 
             Assert.Null(response.Error);
-            var result = Assert.IsType<GetChangeLogResponse>(response.Result!.Value);
+            var result = Assert.IsType<LogListResponse>(response.Result!.Value);
             Assert.Equal(2, result.Table!.Rows.Count);
             Assert.NotNull(result.Paging);
         }

@@ -207,12 +207,6 @@ Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.ToUtc.get -> System.DateTime?
 Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.ToUtc.set -> void
 Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.UserId.get -> string?
 Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.UserId.set -> void
-Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse
-Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.GetChangeLogResponse() -> void
-Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
-Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Paging.set -> void
-Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Table.get -> System.Data.DataTable?
-Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Table.set -> void
 Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest
 Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.DatabaseId.get -> string?
 Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.DatabaseId.set -> void

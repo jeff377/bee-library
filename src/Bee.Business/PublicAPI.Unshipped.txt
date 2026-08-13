@@ -1,1 +1,9 @@
 #nullable enable
+*REMOVED*Bee.Business.AuditLog.GetChangeLogResult
+*REMOVED*Bee.Business.AuditLog.GetChangeLogResult.GetChangeLogResult() -> void
+*REMOVED*Bee.Business.AuditLog.GetChangeLogResult.Paging.get -> Bee.Definition.Paging.PagingInfo?
+*REMOVED*Bee.Business.AuditLog.GetChangeLogResult.Paging.set -> void
+*REMOVED*Bee.Business.AuditLog.GetChangeLogResult.Table.get -> System.Data.DataTable?
+*REMOVED*Bee.Business.AuditLog.GetChangeLogResult.Table.set -> void
+*REMOVED*virtual Bee.Business.AuditLog.LogBusinessObject.GetChangeLog(Bee.Business.AuditLog.GetChangeLogArgs! args) -> Bee.Business.AuditLog.GetChangeLogResult!
+virtual Bee.Business.AuditLog.LogBusinessObject.GetChangeLog(Bee.Business.AuditLog.GetChangeLogArgs! args) -> Bee.Business.AuditLog.LogListResult!

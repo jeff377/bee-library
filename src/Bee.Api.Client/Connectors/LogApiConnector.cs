@@ -70,9 +70,9 @@ namespace Bee.Api.Client.Connectors
         /// <see cref="GetChangeDetailAsync"/>.
         /// </summary>
         /// <param name="request">The change-log list request (typed filter + optional paging).</param>
-        public virtual async Task<GetChangeLogResponse> GetChangeLogAsync(GetChangeLogRequest request)
+        public virtual async Task<LogListResponse> GetChangeLogAsync(GetChangeLogRequest request)
         {
-            return await ExecuteAsync<GetChangeLogResponse>(LogActions.GetChangeLog, request).ConfigureAwait(false);
+            return await ExecuteAsync<LogListResponse>(LogActions.GetChangeLog, request).ConfigureAwait(false);
         }
 
         /// <summary>

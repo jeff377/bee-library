@@ -59,11 +59,6 @@ namespace Bee.Api.Core.MessagePack
                 .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.ChangeKind), static x => x.ChangeKind, static (x, v) => x.ChangeKind = v)
                 .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.Paging), static x => x.Paging, static (x, v) => x.Paging = v)
                 .Build());
-            list.Add(WireContract.For<Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse>()
-                .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)
-                .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Table), static x => x.Table, static (x, v) => x.Table = v)
-                .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse.Paging), static x => x.Paging, static (x, v) => x.Paging = v)
-                .Build());
             list.Add(WireContract.For<Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest>()
                 .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)
                 .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetDbAnomalyLogRequest.FromUtc), static x => x.FromUtc, static (x, v) => x.FromUtc = v)

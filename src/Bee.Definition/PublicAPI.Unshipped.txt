@@ -1,1 +1,3 @@
 #nullable enable
+const Bee.Definition.SystemActions.CheckPackageUpdate = "CheckPackageUpdate" -> string!
+const Bee.Definition.SystemActions.GetPackage = "GetPackage" -> string!

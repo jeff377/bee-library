@@ -84,9 +84,6 @@ namespace Bee.Api.Core.JsonRpc
                 case GetLookupResponse response:
                     response.Table = DateTimeZoneConverter.UtcToUser(response.Table, timeZoneId);
                     break;
-                case GetChangeLogResponse response:
-                    response.Table = DateTimeZoneConverter.UtcToUser(response.Table, timeZoneId);
-                    break;
                 case LogListResponse response:
                     response.Table = DateTimeZoneConverter.UtcToUser(response.Table, timeZoneId);
                     break;
