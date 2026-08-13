@@ -72,6 +72,22 @@ Bee.NET 的租戶概念原本只到**資料庫層**（[ADR-012](adr-012-session-
    > `PluginSettings` 同時是**第一個可寫的客製定義**（`LocalOnly` 維護 API），客製層其餘維持唯讀
    > ——這使下方「客製定義只讀不寫」一節的敘述僅對其餘四類成立。
    >
+   > **修訂（2026-08-13）：現況為六類，上表漏列 `MenuSettings`。** 上面那則修訂是以「想改什麼」
+   > 分類的，而選單客製自始就在覆蓋層裡、只是從未被列進來：`ICustomizeDefineReader` 有
+   > `GetCustomizeMenuSettings`，`SystemBusinessObject.GetDefineCore` 對 `DefineType.MenuSettings`
+   > 明確傳入 `GetCurrentCustomizeId()`。
+   >
+   > | 類型 | 疊加粒度 | 備註 |
+   > |------|---------|------|
+   > | **MenuSettings** | 整檔擇一 | 與 `FormLayout` 同一個理由：一份選單是一個整體安排，逐節點合併會產出沒有人選過的分組與排序 |
+   >
+   > ⚠️ **引用本節時請指明是哪一種數法。** 以**定義檔**計是**五份**（`Language` / `FormLayout` /
+   > `ProgramSettings` / `PluginSettings` / `MenuSettings`），這個數字是穩定的；
+   > 以**「想改什麼」**計則取決於切多細（`ProgramItem` 的兩個綁定各自獨立、`Language` 的文字與
+   > 選項集又是兩種粒度），所以上表的「五類」與本則的「六類」數的都是意圖而非檔案。
+   > 權威來源是 `CustomizeOverlay` 的 XML doc 與 `CustomizeOnlyPathOptions`（後者自陳
+   > 覆蓋層只服務那五種型別）。
+   >
    > 疊加演算法其後集中於 `CustomizeOverlay`（`Bee.Definition.Customization`），
    > 為 server 與 client 共用的純決策元件（無 storage / session / DI 相依），
    > 不再由兩端各自推導。使用面的完整說明見[租戶客製化](../customization.zh-TW.md)。

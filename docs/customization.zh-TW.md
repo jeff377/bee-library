@@ -20,11 +20,12 @@
 |---|---|---|
 | 欄位標題、表單名稱、訊息、選項文字 | **語系資源** | `{CustomizePath}/{customizeId}/Language/{lang}/{namespace}.Language.xml` |
 | 哪些欄位出現、畫面怎麼排 | **FormLayout** | `{CustomizePath}/{customizeId}/FormLayout/{layoutId}.FormLayout.xml` |
+| 選單怎麼分組、排序、標題，哪些項目看得到 | **MenuSettings** | `{CustomizePath}/{customizeId}/MenuSettings.xml` |
 | 一個程式的整體行為——驗證、流程、AnyCode SQL | **客製 BO** | `{CustomizePath}/{customizeId}/ProgramSettings.xml` |
 | 一個程式如何讀寫自己的資料 | **客製 Repository** | `{CustomizePath}/{customizeId}/ProgramSettings.xml` |
 | 在既有存檔／刪除流程上多一個步驟 | **業務 plugin** | `{CustomizePath}/{customizeId}/PluginSettings.xml` |
 
-前兩種**只改定義檔**——不寫程式、不部署組件。後三種指名型別，因此需要組件放進主機的 `bin`。
+前三種**只改定義檔**——不寫程式、不部署組件。後三種指名型別，因此需要組件放進主機的 `bin`。
 
 **能用輕的就別用重的。** 改個標題是一筆語系資料，不是一個客製 BO；多一道驗證是一個 plugin，
 不是一個子類。用重的工具當然也能達成，但那是一個你得跟著每次框架升級維護的類別。

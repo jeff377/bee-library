@@ -24,11 +24,12 @@ consumer reads it from there and nowhere else.
 |---|---|---|
 | Field labels, form names, messages, option text | **Language resource** | `{CustomizePath}/{customizeId}/Language/{lang}/{namespace}.Language.xml` |
 | Which fields appear, their arrangement on screen | **FormLayout** | `{CustomizePath}/{customizeId}/FormLayout/{layoutId}.FormLayout.xml` |
+| How the menu is grouped, ordered, labelled, and which entries are visible | **MenuSettings** | `{CustomizePath}/{customizeId}/MenuSettings.xml` |
 | A program's whole behaviour — validation, workflow, AnyCode SQL | **Custom business object** | `{CustomizePath}/{customizeId}/ProgramSettings.xml` |
 | How a program reads and writes its data | **Custom repository** | `{CustomizePath}/{customizeId}/ProgramSettings.xml` |
 | An extra step in the existing save/delete flow | **Business plugin** | `{CustomizePath}/{customizeId}/PluginSettings.xml` |
 
-The first two are definition-only — no code, no deployment of assemblies. The last three name types,
+The first three are definition-only — no code, no deployment of assemblies. The last three name types,
 so they need an assembly in the host's `bin`.
 
 **Prefer the lightest one that does the job.** A label change is a language entry, not a custom
