@@ -17,6 +17,7 @@
 | [mobile-trim-aot.md](mobile-trim-aot.md) | 行動端 trim / AOT：決策樹推導、reflection-only 重現法保真度、build 與驗證命令配方 |
 | [test-ci-release.md](test-ci-release.md) | 測試 fixture 缺口、CI path filter 的驗證死角、發佈與體檢流程雷 |
 | [northwind-heads.md](northwind-heads.md) | Northwind 四 head 工具鏈與獨立 repo 同步流程 |
+| [definition-and-customization.md](definition-and-customization.md) | 客製範圍的兩種數法（同一個漏連踩三次）、覆蓋層粒度、`FormSchema` 中樞圖的兩種衍生 |
 
 ## 寫入原則
 
