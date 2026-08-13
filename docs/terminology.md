@@ -35,7 +35,6 @@ This document provides a standard term reference for technical writing, ensuring
 | AnyCode | 全程式碼 | Fully implemented by the developer, not driven by `FormSchema` |
 | Master-Detail Pattern | 主從資料模式 | A master record (Master) associated with multiple detail records (Detail) |
 | Repository Dual-Track Strategy | Repository 雙軌策略 | CRUD driven by `FormSchema`; reports / batches implemented by BO (AnyCode) |
-| FormMap | 表單映射 | Bee.Db's data access pattern, describing business entities by `FormSchema` and dynamically generating SQL; a parallel design to ORM ([details](formmap.md)) |
 | N-Tier Architecture | N 層式架構 | Presentation → API → Business Logic → Data Access layered architecture |
 | Clean Architecture | 整潔架構 | Dependency direction from outside in; the core layer does not depend on external frameworks |
 | MVVM | MVVM 模式 | Model-View-ViewModel, used at the UI layer for data binding and state management |

@@ -266,7 +266,7 @@ Repository 採用**雙軌並行**設計，依作業性質選擇適合的實作�
 
 | 軌道 | 適用作業 | SQL 來源 | 特性 |
 |------|----------|----------|------|
-| **FormSchema 驅動**（[FormMap](formmap.zh-TW.md)） | CRUD（新增、修改、刪除） | FormSchema 動態產生 | 定義一處，自動同步；無需手寫 SQL |
+| **FormSchema 驅動**（[詳見](formschema-data-access.zh-TW.md)） | CRUD（新增、修改、刪除） | FormSchema 動態產生 | 定義一處，自動同步；無需手寫 SQL |
 | **AnyCode** | 報表、分析查詢、批次作業 | BO 自行撰寫 | 完全自控；複雜 JOIN、彙總、效能調校 |
 
 ### 為什麼這樣劃分

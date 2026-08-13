@@ -46,7 +46,7 @@ One `FormSchema` drives three layers at once. This is the single most important 
        how it looks    where it lives   what's valid
 ```
 
-- **Against the database**: the framework generates SQL per FormSchema at runtime — no ORM, no generated entity classes. See [FormMap](formmap.md).
+- **Against the database**: the framework generates SQL per FormSchema at runtime — no ORM, no generated entity classes. See [FormSchema-Driven Database Access](formschema-data-access.md).
 - **Against the UI**: `FormLayout` arranges the fields a FormSchema declares; controls read the field metadata (max length, list items, read-only, relation → lookup) directly.
 - **Against validation**: computed fields and `FormRule` entries live inside the FormSchema itself. See [Expressions and Rules](expression-rules.md).
 
@@ -269,7 +269,7 @@ Two consequences worth planning around:
 |-------------|------|
 | See how these pieces form an architecture | [Architecture Overview](architecture-overview.md) |
 | Follow the full definition → API flow | [Development Cookbook](development-cookbook.md) |
-| Understand SQL generation from a FormSchema | [FormMap](formmap.md) |
+| Understand SQL generation from a FormSchema | [FormSchema-Driven Database Access](formschema-data-access.md) |
 | Compute and validate fields declaratively | [Expressions and Rules](expression-rules.md) |
 | Know which names the framework owns | [Framework-Reserved Names](framework-reserved-names.md) |
 | Set up databases and categories | [Database Settings Guide](database-settings-guide.md) |

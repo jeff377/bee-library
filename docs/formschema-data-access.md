@@ -1,8 +1,8 @@
-# FormMap: FormSchema-Driven Database Access
+# FormSchema-Driven Database Access
 
-[繁體中文](formmap.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](formschema-data-access.zh-TW.md) · [← Docs Index](README.md)
 
-> Form-Mapping for Definition-Driven Architecture
+> How Bee.Db turns a `FormSchema` into SQL at runtime
 
 ---
 
@@ -21,19 +21,19 @@
 
 ## 1. In One Sentence
 
-**FormMap** is the database access pattern adopted by Bee.Db: it uses `FormSchema` as the unit for describing business entities, links `FormSchema` instances through foreign-key fields (`RelationProgId`) into relation chains, and dynamically composes SELECT / INSERT / UPDATE / DELETE statements at runtime, returning data through `DataSet` — **without depending on strongly-typed entity classes**.
+Bee.Db uses `FormSchema` as the unit for describing business entities, links `FormSchema` instances through foreign-key fields (`RelationProgId`) into relation chains, and dynamically composes SELECT / INSERT / UPDATE / DELETE statements at runtime, returning data through `DataSet` — **without depending on strongly-typed entity classes**.
 
-FormMap **is not a subset or variant of ORM**, but a parallel pattern alongside it.
+This is **not a subset or variant of ORM**, but a parallel approach alongside it.
 
 ---
 
 ## 2. Why It's Not an ORM
 
-ORM (Object-Relational Mapping) addresses the impedance mismatch between **OOP object models** and the relational model. FormMap addresses the mapping between **business form models** and the relational model. Different mapping endpoints lead to different design tradeoffs.
+ORM (Object-Relational Mapping) addresses the impedance mismatch between **OOP object models** and the relational model. Bee.Db addresses the mapping between **business form models** and the relational model. Different mapping endpoints lead to different design tradeoffs.
 
 ### 2.1 Key Differences
 
-| Aspect | ORM | FormMap |
+| Aspect | ORM | FormSchema-driven access |
 |---|---|---|
 | Mapping target | **Objects** (compile-time classes) | **Definitions** (runtime `FormSchema`) |
 | Carrier | typed object graph | `DataSet` / `DataTable` |
@@ -44,7 +44,7 @@ ORM (Object-Relational Mapping) addresses the impedance mismatch between **OOP o
 | Materialization | auto-hydrate to entity instances | no instantiation; rows in `DataRow` |
 | Change tracking | Identity Map / Change Tracking (per entity property) | `DataRow.RowState` + `DataSet.GetChanges()` (per-row state machine built into DataSet) |
 
-### 2.2 Why FormMap
+### 2.2 Why This Approach
 
 The high churn of ERP systems makes compile-time binding (ORM) costly:
 
@@ -53,7 +53,7 @@ The high churn of ERP systems makes compile-time binding (ORM) costly:
 - **Multi-tenancy**: each tenant may have its own field set; compile-time binding cannot scale.
 - **Dynamic relation sources**: the same form may reference different sources in different scenarios (e.g., a quotation form linking different customer sources across workflows).
 
-FormMap pushes these "moving" parts out to reloadable runtime `FormSchema` definitions, removing recompilation as a routine cost.
+Bee.Db pushes these "moving" parts out to reloadable runtime `FormSchema` definitions, removing recompilation as a routine cost.
 
 ---
 
@@ -61,7 +61,7 @@ FormMap pushes these "moving" parts out to reloadable runtime `FormSchema` defin
 
 ### 3.1 Form-Level Relations
 
-In FormMap, a relation is **not** "this table's FK points to that table's PK", but rather "this **form** references another **form**".
+Here a relation is **not** "this table's FK points to that table's PK", but rather "this **form** references another **form**".
 
 The declaration lives in `FormField.RelationProgId`. At runtime `FormSchema` is an **in-memory cached object**; XML is one of its common persistence formats (and in principle it could be loaded from a database, JSON, or other sources). The XML form is shown below for readability:
 
@@ -97,10 +97,10 @@ Definition-Driven Architecture (overall architecture)
     ├── drives UI         → FormLayout
     ├── drives DB         → TableSchema
     ├── drives validation → ValidationRules
-    └── drives data access → FormMap (this document)
+    └── drives data access → SQL generation (this document)
 ```
 
-FormMap is the data-access manifestation of DDA, sitting alongside `FormLayout` and `TableSchema` as the three projection facets of `FormSchema`.
+Runtime SQL generation is the data-access manifestation of DDA, sitting alongside `FormLayout` and `TableSchema` as the three projection facets of `FormSchema`.
 
 ---
 
@@ -127,7 +127,7 @@ SELECT A.[sys_id], A.[sys_name]
 FROM [ft_project] A
 ```
 
-No reference fields are used — FormMap produces no JOIN.
+No reference fields are used — no JOIN is produced.
 
 ### Example 2: WHERE Triggers a JOIN
 
@@ -144,7 +144,7 @@ LEFT JOIN [st_employee] B ON A.[pm_rowid] = B.[sys_rowid]
 WHERE B.[sys_name] LIKE @p0
 ```
 
-The WHERE clause uses `ref_pm_name` (from `Employee`), so FormMap automatically adds the JOIN to `Employee`.
+The WHERE clause uses `ref_pm_name` (from `Employee`), so the JOIN to `Employee` is added automatically.
 
 ### Example 3: ORDER BY Triggers a Multi-level JOIN
 
@@ -165,7 +165,7 @@ LEFT JOIN [st_department] C ON B.[dept_rowid] = C.[sys_rowid]
 ORDER BY C.[sys_name] ASC
 ```
 
-`ref_pm_dept_name` traverses `Project → Employee → Department` (two levels). FormMap walks the `FormSchema` chain recursively.
+`ref_pm_dept_name` traverses `Project → Employee → Department` (two levels); the `FormSchema` chain is walked recursively.
 
 ### Example 4: Multiple Reference Fields
 
@@ -185,7 +185,7 @@ LEFT JOIN [st_employee]   C ON A.[pm_rowid]         = C.[sys_rowid]
 LEFT JOIN [st_department] D ON C.[dept_rowid]       = D.[sys_rowid]
 ```
 
-Two reference fields walk different `FormSchema` chains; FormMap creates branching JOINs automatically.
+Two reference fields walk different `FormSchema` chains; the branching JOINs are created automatically.
 
 ### Example 5: Composite Filter
 
@@ -209,7 +209,7 @@ WHERE (A.[sys_name] LIKE @p0 AND B.[sys_name] = @p1)
 ORDER BY A.[sys_id] ASC
 ```
 
-Only `FormSchema` definitions actually referenced are joined — FormMap never adds unused JOINs.
+Only `FormSchema` definitions actually referenced are joined — unused relations are never joined.
 
 ---
 
@@ -231,21 +231,21 @@ Only `FormSchema` definitions actually referenced are joined — FormMap never a
 
 ## 6. When to Use / Not Use
 
-### 6.1 Use FormMap For
+### 6.1 Use It For
 
 - `FormSchema`-driven CRUD operations (NoCode / LowCode tracks)
 - ERP dynamic fields, customization, multi-tenancy
 - UI list / filter / sort scenarios (directly configured by `FormSchema`)
 - Environments requiring hot updates of field or relation definitions
 
-### 6.2 Do Not Use FormMap For
+### 6.2 Do Not Use It For
 
 - Reporting / aggregation / batch import — go through BO + AnyCode and write SQL directly
 - Composite-key JOINs, non-equi JOINs, subqueries, CTEs
 - Performance-critical hot paths
 - Scenarios where dynamic fields aren't needed and the cost of recompiling for ORM is acceptable
 
-> **Dual-track strategy: `FormSchema`-driven CRUD goes through FormMap; arbitrary SQL goes through BO + AnyCode.**
+> **Dual-track strategy: `FormSchema`-driven CRUD is generated by the framework; arbitrary SQL goes through BO + AnyCode.**
 > See [development-cookbook.md](development-cookbook.md) (Traditional Chinese).
 
 ---
@@ -266,6 +266,6 @@ The following "limitations" are deliberate tradeoffs aligned with the `FormSchem
 ## 8. Further Reading
 
 - [Architecture Overview](architecture-overview.md): the overall BeeNET architecture
-- [ADR-005: FormSchema-Driven Architecture](adr/adr-005-formschema-driven.md) (Traditional Chinese): the upstream design decision behind FormMap
+- [ADR-005: FormSchema-Driven Architecture](adr/adr-005-formschema-driven.md) (Traditional Chinese): the upstream design decision behind this approach
 - [Terminology Reference](terminology.md) (Traditional Chinese): EN/ZH terminology mapping
 - [Bee.Db README](../src/Bee.Db/README.md): Bee.Db package overview

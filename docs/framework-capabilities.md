@@ -29,13 +29,13 @@ Thirteen definition types under `DefinePath` drive the whole application. See [D
 
 ## 2. Data Access
 
-See [FormMap](formmap.md), [Database Settings Guide](database-settings-guide.md) and [Database Dialect Differences](database-dialect-differences.md).
+See [FormSchema-Driven Database Access](formschema-data-access.md), [Database Settings Guide](database-settings-guide.md) and [Database Dialect Differences](database-dialect-differences.md).
 
 | Mechanism | What it provides |
 |-----------|------------------|
 | **DbAccess** | The data access core: sync and async execution, batches, DataTable updates |
 | **DbCommandSpec** | `{0}` placeholder statements parameterised by the framework, so no call site concatenates SQL |
-| **FormMap** | SQL generated at runtime from the FormSchema — no ORM, no generated entity classes |
+| **FormSchema-driven SQL** | SQL generated at runtime from the FormSchema — no ORM, no generated entity classes |
 | **Five dialects** | SQL Server, PostgreSQL, MySQL, Oracle and SQLite providers, each with its own DDL and parameter rules |
 | **Category routing** | `common` / `company` / `log` scopes decide which physical database a table lands in |
 | **Connection string encryption** | Connection strings are stored encrypted in DatabaseSettings and decrypted with the master key |

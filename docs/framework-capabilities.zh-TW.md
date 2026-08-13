@@ -29,13 +29,13 @@
 
 ## 2. 資料存取
 
-見 [FormMap](formmap.zh-TW.md)、[資料庫設定指引](database-settings-guide.zh-TW.md)與[資料庫方言差異](database-dialect-differences.zh-TW.md)。
+見 [FormSchema 驅動的資料庫存取](formschema-data-access.zh-TW.md)、[資料庫設定指引](database-settings-guide.zh-TW.md)與[資料庫方言差異](database-dialect-differences.zh-TW.md)。
 
 | 機制 | 提供什麼 |
 |------|---------|
 | **DbAccess** | 資料存取核心：同步與非同步執行、批次、DataTable 更新 |
 | **DbCommandSpec** | `{0}` 佔位符語句由框架負責參數化，呼叫端不拼接 SQL |
-| **FormMap** | 執行期依 FormSchema 產生 SQL —— 沒有 ORM，也沒有產生的 entity 類別 |
+| **FormSchema 驅動 SQL** | 執行期依 FormSchema 產生 SQL —— 沒有 ORM，也沒有產生的 entity 類別 |
 | **五種方言** | SQL Server、PostgreSQL、MySQL、Oracle、SQLite，各有自己的 DDL 與參數規則 |
 | **分類路由** | `common` / `company` / `log` 三種 scope 決定資料表落在哪個實體資料庫 |
 | **連線字串加密** | 連線字串以加密形式存於 DatabaseSettings，以主金鑰解密 |

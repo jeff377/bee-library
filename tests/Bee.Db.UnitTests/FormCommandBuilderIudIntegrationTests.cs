@@ -12,7 +12,7 @@ using Bee.Definition.Database;
 namespace Bee.Db.UnitTests
 {
     /// <summary>
-    /// Round-trip integration tests for the FormMap IUD command builders against a live database.
+    /// Round-trip integration tests for the FormSchema-driven IUD command builders against a live database.
     /// Targets the seeded <c>st_user</c> table created by <see cref="DbGlobalFixture"/> on each
     /// configured database. Uses an in-memory FormSchema mirroring that table so the test does
     /// not depend on a checked-in FormSchema XML.
@@ -125,21 +125,21 @@ namespace Bee.Db.UnitTests
         }
 
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("FormMap IUD on SQL Server: INSERT → SELECT → UPDATE → SELECT → DELETE 完整 round-trip")]
+        [DisplayName("FormSchema 驅動 IUD on SQL Server: INSERT → SELECT → UPDATE → SELECT → DELETE 完整 round-trip")]
         public void RoundTrip_SqlServer()
         {
             RunRoundTrip(DatabaseType.SQLServer);
         }
 
         [DbFact(DatabaseType.PostgreSQL)]
-        [DisplayName("FormMap IUD on PostgreSQL: INSERT → SELECT → UPDATE → SELECT → DELETE 完整 round-trip")]
+        [DisplayName("FormSchema 驅動 IUD on PostgreSQL: INSERT → SELECT → UPDATE → SELECT → DELETE 完整 round-trip")]
         public void RoundTrip_PostgreSql()
         {
             RunRoundTrip(DatabaseType.PostgreSQL);
         }
 
         [DbFact(DatabaseType.SQLite)]
-        [DisplayName("FormMap IUD on SQLite: INSERT → SELECT → UPDATE → SELECT → DELETE 完整 round-trip")]
+        [DisplayName("FormSchema 驅動 IUD on SQLite: INSERT → SELECT → UPDATE → SELECT → DELETE 完整 round-trip")]
         public void RoundTrip_Sqlite()
         {
             RunRoundTrip(DatabaseType.SQLite);

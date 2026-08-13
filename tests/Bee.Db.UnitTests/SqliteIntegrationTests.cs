@@ -11,7 +11,7 @@ namespace Bee.Db.UnitTests
     /// <summary>
     /// SQLite-specific integration tests that exercise the schema provider, schema upgrade
     /// orchestrator and provider-level constraints against a live SQLite database. The
-    /// FormMap IUD round-trip is covered separately in
+    /// FormSchema-driven IUD round-trip is covered separately in
     /// <see cref="FormCommandBuilderIudIntegrationTests"/>.
     /// </summary>
     public class SqliteIntegrationTests : IClassFixture<SharedDbFixture>

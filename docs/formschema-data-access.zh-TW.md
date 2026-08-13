@@ -1,8 +1,8 @@
-# FormMap：FormSchema 驅動的資料庫存取模式
+# FormSchema 驅動的資料庫存取
 
-[English](formmap.md) · [← 文件索引](README.zh-TW.md)
+[English](formschema-data-access.md) · [← 文件索引](README.zh-TW.md)
 
-> Form-Mapping for Definition-Driven Architecture
+> Bee.Db 如何在執行期把 `FormSchema` 變成 SQL
 
 ---
 
@@ -21,19 +21,19 @@
 
 ## 1. 一句話定義
 
-**FormMap** 是 Bee.Db 採用的資料庫存取模式：以 `FormSchema` 為單位描述業務實體，透過外鍵欄位（`RelationProgId`）將 `FormSchema` 串成關聯鏈，執行階段動態組出 SELECT / INSERT / UPDATE / DELETE 語法，產出資料以 `DataSet` 承載，**不依賴強型別 entity class**。
+Bee.Db 以 `FormSchema` 為單位描述業務實體，透過外鍵欄位（`RelationProgId`）將 `FormSchema` 串成關聯鏈，執行階段動態組出 SELECT / INSERT / UPDATE / DELETE 語法，產出資料以 `DataSet` 承載，**不依賴強型別 entity class**。
 
-FormMap **不是 ORM 的子集或變體**，而是與 ORM 平行的另一種資料存取模式。
+這**不是 ORM 的子集或變體**，而是與 ORM 平行的另一種資料存取做法。
 
 ---
 
 ## 2. 為什麼不是 ORM
 
-ORM（Object-Relational Mapping）解決的是「OOP 物件模型 ↔ 關聯模型」之間的 impedance mismatch；FormMap 解決的是「業務表單模型 ↔ 關聯模型」之間的對映。映射兩端不同，整體取捨自然不同。
+ORM（Object-Relational Mapping）解決的是「OOP 物件模型 ↔ 關聯模型」之間的 impedance mismatch；Bee.Db 解決的是「業務表單模型 ↔ 關聯模型」之間的對映。映射兩端不同，整體取捨自然不同。
 
 ### 2.1 核心差異對照
 
-| 面向 | ORM | FormMap |
+| 面向 | ORM | FormSchema 驅動 |
 |---|---|---|
 | 映射對象 | **物件**（編譯期類別） | **定義**（執行期 `FormSchema`） |
 | 載體 | typed object graph | `DataSet` / `DataTable` |
@@ -44,7 +44,7 @@ ORM（Object-Relational Mapping）解決的是「OOP 物件模型 ↔ 關聯模�
 | 物件實例化 | 自動 hydration 為 entity 實例 | 不實例化，欄位以 `DataRow` 承載 |
 | 變更追蹤 | Identity Map / Change Tracking（追蹤 entity 屬性） | `DataRow.RowState` + `DataSet.GetChanges()`（DataSet 內建逐列狀態機） |
 
-### 2.2 為什麼選 FormMap
+### 2.2 為什麼選這條路
 
 ERP 系統的高頻變動會讓編譯期綁定的 ORM 付出沉重代價：
 
@@ -53,7 +53,7 @@ ERP 系統的高頻變動會讓編譯期綁定的 ORM 付出沉重代價：
 - **多租戶**：每個租戶可能有獨立的欄位集合，編譯期綁定難以承擔
 - **動態關聯來源**：同一張表單在不同情境參照不同來源（例如報價單在不同流程關聯不同客戶來源）
 
-FormMap 把這些「變」的部分外推到執行期可重新載入的 `FormSchema` 定義，重編程式不再是日常操作的代價。
+Bee.Db 把這些「變」的部分外推到執行期可重新載入的 `FormSchema` 定義，重編程式不再是日常操作的代價。
 
 ---
 
@@ -61,7 +61,7 @@ FormMap 把這些「變」的部分外推到執行期可重新載入的 `FormSch
 
 ### 3.1 表單級關聯（Form-Level Relation）
 
-FormMap 中，關聯**不是**「這張表的 FK 指向那張表的 PK」，而是「這張表單參照另一張表單」。
+這裡的關聯**不是**「這張表的 FK 指向那張表的 PK」，而是「這張表單參照另一張表單」。
 
 定義位置在 `FormField.RelationProgId`。`FormSchema` 在執行階段為**快取物件**，XML 是其常見的持久化格式之一（理論上亦可由資料庫、JSON 等其他來源載入）；下面以 XML 形式呈現便於閱讀：
 
@@ -97,10 +97,10 @@ Definition-Driven Architecture（整體架構）
     ├── 驅動 UI    → FormLayout
     ├── 驅動 DB    → TableSchema
     ├── 驅動驗證  → ValidationRules
-    └── 驅動資料存取 → FormMap（本文件）
+    └── 驅動資料存取 → SQL 產生（本文件）
 ```
 
-FormMap 是 DDA 在資料存取層的具體模式，與 `FormLayout` / `TableSchema` 並列為 `FormSchema` 的三大投影面向。
+執行期產生 SQL 是 DDA 在資料存取層的具體做法，與 `FormLayout` / `TableSchema` 並列為 `FormSchema` 的三大投影面向。
 
 ---
 
@@ -127,7 +127,7 @@ SELECT A.[sys_id], A.[sys_name]
 FROM [ft_project] A
 ```
 
-未使用任何參考欄位，FormMap 不產生 JOIN。
+未使用任何參考欄位，不產生 JOIN。
 
 ### 範例 2：條件觸發 JOIN
 
@@ -144,7 +144,7 @@ LEFT JOIN [st_employee] B ON A.[pm_rowid] = B.[sys_rowid]
 WHERE B.[sys_name] LIKE @p0
 ```
 
-WHERE 子句用到 `ref_pm_name`（來自 `Employee`），FormMap 自動加入 `Employee` 的 JOIN。
+WHERE 子句用到 `ref_pm_name`（來自 `Employee`），自動加入 `Employee` 的 JOIN。
 
 ### 範例 3：排序觸發多層 JOIN
 
@@ -165,7 +165,7 @@ LEFT JOIN [st_department] C ON B.[dept_rowid] = C.[sys_rowid]
 ORDER BY C.[sys_name] ASC
 ```
 
-`ref_pm_dept_name` 跨越 `Project → Employee → Department` 兩層，FormMap 沿 `FormSchema` 鏈遞迴展開。
+`ref_pm_dept_name` 跨越 `Project → Employee → Department` 兩層，沿 `FormSchema` 鏈遞迴展開。
 
 ### 範例 4：多參考欄位
 
@@ -185,7 +185,7 @@ LEFT JOIN [st_employee]   C ON A.[pm_rowid]         = C.[sys_rowid]
 LEFT JOIN [st_department] D ON C.[dept_rowid]       = D.[sys_rowid]
 ```
 
-兩個參考欄位走不同的 `FormSchema` 鏈，FormMap 自動建立分支 JOIN。
+兩個參考欄位走不同的 `FormSchema` 鏈，分支 JOIN 自動建立。
 
 ### 範例 5：複合條件
 
@@ -209,7 +209,7 @@ WHERE (A.[sys_name] LIKE @p0 AND B.[sys_name] = @p1)
 ORDER BY A.[sys_id] ASC
 ```
 
-只有實際被引用的 `FormSchema` 會被 JOIN — FormMap 不會多 JOIN 未被使用的關聯。
+只有實際被引用的 `FormSchema` 會被 JOIN — 未被使用的關聯不會多 JOIN。
 
 ---
 
@@ -217,7 +217,7 @@ ORDER BY A.[sys_id] ASC
 
 | 元件 | 角色 |
 |---|---|
-| `Bee.Definition.Forms.FormSchema` / `FormField` | FormMap 的資料來源（業務實體與關聯定義） |
+| `Bee.Definition.Forms.FormSchema` / `FormField` | 資料來源（業務實體與關聯定義） |
 | `Bee.Db.Dml.SelectContextBuilder` | 從 `FormSchema` 鏈遞迴展開 `TableJoin` 集合與 `QueryFieldMapping` |
 | `Bee.Db.Dml.SelectBuilder` | 產生 `SELECT` 子句 |
 | `Bee.Db.Dml.FromBuilder` | 產生 `FROM` 子句（含 JOIN） |
@@ -245,7 +245,7 @@ ORDER BY A.[sys_id] ASC
 - 對效能極致敏感的熱點查詢
 - 已知不需要動態欄位、且能接受 ORM 編譯成本的場景
 
-> **雙軌策略：`FormSchema` 驅動的 CRUD 走 FormMap，任意形狀的 SQL 走 BO + AnyCode。**
+> **雙軌策略：`FormSchema` 驅動的 CRUD 由框架產生語法，任意形狀的 SQL 走 BO + AnyCode。**
 > 詳見 [development-cookbook.md](development-cookbook.md)。
 
 ---
@@ -266,7 +266,7 @@ ORDER BY A.[sys_id] ASC
 ## 8. 延伸閱讀
 
 - [架構總覽](architecture-overview.zh-TW.md)：BeeNET 的整體架構
-- [ADR-005：FormSchema 定義驅動架構](adr/adr-005-formschema-driven.md)：FormMap 上位的設計決策
-- [專有名詞對照表](terminology.md)：FormMap 與相關名詞的中英文對照
+- [ADR-005：FormSchema 定義驅動架構](adr/adr-005-formschema-driven.md)：本文做法上位的設計決策
+- [專有名詞對照表](terminology.zh-TW.md)：相關名詞的中英文對照
 - [Bee.Db README](../src/Bee.Db/README.zh-TW.md)：Bee.Db 套件總覽
 - [開發指引](development-cookbook.md)：FormSchema 驅動開發、雙軌策略

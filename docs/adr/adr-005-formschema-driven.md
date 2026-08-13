@@ -40,3 +40,16 @@
 - `Bee.Db/Dml/SelectCommandBuilder.cs`：組合 SELECT / FROM / WHERE / ORDER BY
 - 架構詳細說明於 `docs/architecture-overview.md`
 - 資料存取層的具體模式（FormMap）說明於 `docs/formmap.zh-TW.md`
+
+## 後記（2026-08-13）：「FormMap」這個名稱已取消
+
+上文提到的 **FormMap** 是當時為「以 `FormSchema` 為單位、在執行期依定義動態產生 SQL」這個做法取的名字。
+該名稱在 `src/` 從未對應任何型別、介面或命名空間——實際做這件事的是 `Bee.Db` 的
+`FormCommandBuilder` 家族——且始終未被程式碼或對外文章沿用。
+
+2026-08-13 決定**取消它的模式名地位**：機制與文件內容不變，只是不再宣稱自己是一個具名模式。
+`terminology` 對照表已移除該詞條，文件現位於
+[`formschema-data-access.zh-TW.md`](../formschema-data-access.zh-TW.md)，
+標題為「FormSchema 驅動的資料庫存取」。
+
+上文維持原用語，以保留當時的決策脈絡。

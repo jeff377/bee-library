@@ -35,7 +35,7 @@ Why the framework is built the way it is.
 
 | Document | Kind | Length | Description |
 |----------|------|--------|-------------|
-| [FormMap](formmap.md) | Concept | Medium | Bee.Db's data access pattern: generating SQL dynamically from a FormSchema, and why it is not an ORM |
+| [FormSchema-Driven Database Access](formschema-data-access.md) | Concept | Medium | How Bee.Db generates SQL dynamically from a FormSchema, and why it is not an ORM |
 | [API ↔ BO Contract Design](api-bo-contract-design.md) | Concept | Medium | Three-tier API contract separation (Contracts / API Type / BO Type) and the naming conventions that drive it |
 | [Project Dependency Map](dependency-map.md) | Concept | Short | How the 16 `src/` projects depend on each other, and the rules that keep the graph acyclic |
 
@@ -86,7 +86,7 @@ The same documents, grouped by subject. A document appearing under several topic
 
 | Topic | Documents |
 |-------|-----------|
-| **Database** | [Naming Conventions](database-naming-conventions.md) · [Reserved Names](framework-reserved-names.md) · [Settings Guide](database-settings-guide.md) · [Schema Upgrade](database-schema-upgrade.md) · [Dialect Differences](database-dialect-differences.md) · [FormMap](formmap.md) |
+| **Database** | [Naming Conventions](database-naming-conventions.md) · [Reserved Names](framework-reserved-names.md) · [Settings Guide](database-settings-guide.md) · [Schema Upgrade](database-schema-upgrade.md) · [Dialect Differences](database-dialect-differences.md) · [FormSchema-Driven Access](formschema-data-access.md) |
 | **Definition layer** | [Definition Files Overview](definition-files-overview.md) · [Architecture Overview](architecture-overview.md) · [Expressions and Rules](expression-rules.md) · [Reserved Names](framework-reserved-names.md) |
 | **Multi-tenancy** | [Tenant Customization](customization.md) · [Definition Files Overview](definition-files-overview.md) · [Development Cookbook](development-cookbook.md) |
 | **API & frontend** | [Contract Design](api-bo-contract-design.md) · [API Method Reference](api-method-reference.md) · [JSON-RPC Frontend Integration](jsonrpc-frontend-integration.md) · [Permission & Authorization](permission-authorization.md) · [API Key Management](api-key-management.md) |

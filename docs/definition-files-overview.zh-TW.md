@@ -46,7 +46,7 @@ Bee.NET 是定義驅動的：`DefinePath` 下的 XML 不是外掛在應用上的
         長什麼樣        存在哪裡         什麼才合法
 ```
 
-- **對資料庫**：框架在執行期依 FormSchema 產生 SQL —— 沒有 ORM、沒有產生的 entity 類別。見 [FormMap](formmap.zh-TW.md)。
+- **對資料庫**：框架在執行期依 FormSchema 產生 SQL —— 沒有 ORM、沒有產生的 entity 類別。見 [FormSchema 驅動的資料庫存取](formschema-data-access.zh-TW.md)。
 - **對 UI**：`FormLayout` 排列 FormSchema 宣告的欄位；控件直接讀欄位的 metadata（最大長度、清單項目、唯讀、關聯 → lookup）。
 - **對驗證**：計算欄與 `FormRule` 就寫在 FormSchema 內。見 [運算式與規則](expression-rules.zh-TW.md)。
 
@@ -258,7 +258,7 @@ repository 就這樣消失，且不會有任何回報。若要**刻意**讓某�
 |------|-----|
 | 看這些拼圖如何組成架構 | [架構總覽](architecture-overview.zh-TW.md) |
 | 走完整條「定義 → API」流程 | [端到端開發指引](development-cookbook.zh-TW.md) |
-| 理解 FormSchema 如何產生 SQL | [FormMap](formmap.zh-TW.md) |
+| 理解 FormSchema 如何產生 SQL | [FormSchema 驅動的資料庫存取](formschema-data-access.zh-TW.md) |
 | 以宣告方式做欄位運算與驗證 | [運算式與規則](expression-rules.zh-TW.md) |
 | 知道哪些命名歸框架所有 | [框架保留命名](framework-reserved-names.zh-TW.md) |
 | 設定資料庫與分類 | [資料庫設定指引](database-settings-guide.zh-TW.md) |
