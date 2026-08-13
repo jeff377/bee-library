@@ -146,17 +146,17 @@ jobs:
         tag_name: ${{ github.ref_name }}
         name: Release ${{ github.ref_name }}
         body: |
-          NuGet 套件已發佈（版本：${{ steps.version.outputs.VERSION }}）。
+          NuGet packages for version ${{ steps.version.outputs.VERSION }} have been published.
 
-          變更說明：
+          Release notes:
           - [English](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/changelogs/${{ steps.version.outputs.VERSION }}.md)
           - [繁體中文](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/changelogs/${{ steps.version.outputs.VERSION }}.zh-TW.md)
 
-          ### 本次發佈的套件
+          ### Packages in this release
 
           ${{ needs.publish.outputs.packages }}
 
-          > `Bee.Cli` 是 dotnet tool，安裝方式與其他套件不同：
+          > `Bee.Cli` is a .NET tool and installs differently from the libraries above:
           > `dotnet tool install -g Bee.Cli --version ${{ steps.version.outputs.VERSION }}`
 
           **Full Changelog**: ${{ steps.compare.outputs.URL }}
