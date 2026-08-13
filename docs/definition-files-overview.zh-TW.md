@@ -39,11 +39,11 @@ Bee.NET 是定義驅動的：`DefinePath` 下的 XML 不是外掛在應用上的
                     └────────┬─────────┘
              ┌───────────────┼───────────────┐
              ▼               ▼               ▼
-      ┌────────────┐  ┌────────────┐  ┌──────────────┐
-      │ FormLayout │  │ TableSchema│  │ 規則 /       │
-      │  （UI）    │  │（資料庫）  │  │ 運算式       │
-      └────────────┘  └────────────┘  └──────────────┘
-        長什麼樣        存在哪裡         什麼才合法
+      ┌────────────┐  ┌──────────────────┐  ┌──────────────┐
+      │ FormLayout │  │ TableSchema      │  │ 規則 /       │
+      │  （UI）    │  │ ＋ 執行期 SQL    │  │ 運算式       │
+      └────────────┘  └──────────────────┘  └──────────────┘
+        長什麼樣          存在哪裡 · 怎麼進出        什麼才合法
 ```
 
 - **對資料庫**：框架在執行期依 FormSchema 產生 SQL —— 沒有 ORM、沒有產生的 entity 類別。見 [FormSchema 驅動的資料庫存取](formschema-data-access.zh-TW.md)。
@@ -202,18 +202,20 @@ builder.Services.AddBeeFramework(settings.BackendConfiguration, paths);
 ```
 {CustomizePath}/{customizeId}/ProgramSettings.xml
 {CustomizePath}/{customizeId}/MenuSettings.xml
+{CustomizePath}/{customizeId}/PluginSettings.xml
 {CustomizePath}/{customizeId}/FormLayout/{layoutId}.FormLayout.xml
 {CustomizePath}/{customizeId}/Language/{lang}/{namespace}.Language.xml
 ```
 
 目錄不必存在。某次查找若該租戶沒有對應檔案，就回退 base 層。
 
-### 四種型別，三種粒度
+### 五種型別，四種粒度
 
 | 型別 | 覆蓋粒度 |
 |------|---------|
 | **LanguageResource** | 文字（`LanguageItem`）是 **key 級**。客製檔只放要改的 key，其餘全部來自 base —— 因此 base 日後新增的翻譯會自動傳播。**`LanguageEnum` 是例外：整組取代。** 客製檔有同名 enum 就整組換掉 base 的，因此客製檔必須列出該選項集要有的**全部** entry |
 | **ProgramSettings** | **progId 級，其下再分屬性級**。同一個 progId 的客製項目勝過 base 項目；而該項目內每個綁定各自獨立——只指名 `BusinessObject` 的客製項，`Repository` 仍沿用 base 的值。**只寫你要改的那個** |
+| **PluginSettings** | **progId 級，相加**。唯一「相加」而非「挑一個」的粒度：base 那條鏈先跑，接著跑客製那條。plugin 本來就是加一段而不是取代一段，所以兩層的 plugin 不互斥 |
 | **MenuSettings** | **整檔級**。客製選單整份取代 base 選單 |
 | **FormLayout** | **整檔級**。客製 layout 整份取代該 `layoutId` 的 base layout |
 
@@ -227,7 +229,7 @@ repository 就這樣消失，且不會有任何回報。若要**刻意**讓某�
 <ProgramItem ProgId="Order" BusinessObject="Bee.Business.Form.FormBusinessObject, Bee.Business" />
 ```
 
-**粒度不同是刻意的**，分界線在於：這份東西是**一袋彼此獨立的值**，還是**一個組合起來才成立的整體**。
+**粒度不同是刻意的**，分界線在於：這份東西是**一袋彼此獨立的值**，還是**一個組合起來才成立的整體**。而 `PluginSettings` 自成一類，因為它兩者都不是：它是**一條依序執行的鏈**，所以兩層相加才是對的語意。
 
 文字 key 彼此獨立——「這個標題我們叫法不同」不影響其餘任何一個 key，所以逐 key 疊加既省成本又直覺。但 layout 是**一整個版面**：區塊、排列順序、欄寬與巢狀只有整體看才有意義，局部疊加會冒出無從直覺回答的問題（「這個區塊搬走了，底下的欄位跟著走嗎？」）。**enum 屬於後者而非前者**：它是一組**有順序的選項集**，逐 entry 合併會讓順序、以及「客製檔沒列到的 entry 是什麼意思」兩件事都變得曖昧。
 

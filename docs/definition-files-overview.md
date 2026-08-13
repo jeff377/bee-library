@@ -39,11 +39,12 @@ One `FormSchema` drives three layers at once. This is the single most important 
                     └────────┬─────────┘
              ┌───────────────┼───────────────┐
              ▼               ▼               ▼
-      ┌────────────┐  ┌────────────┐  ┌──────────────┐
-      │ FormLayout │  │ TableSchema│  │ Rules /      │
-      │  (UI)      │  │ (database) │  │ Expressions  │
-      └────────────┘  └────────────┘  └──────────────┘
-       how it looks    where it lives   what's valid
+      ┌────────────┐  ┌──────────────────┐  ┌──────────────┐
+      │ FormLayout │  │ TableSchema      │  │ Rules /      │
+      │  (UI)      │  │ + runtime SQL    │  │ Expressions  │
+      └────────────┘  └──────────────────┘  └──────────────┘
+       how it looks    where it lives ·        what's valid
+                       how it is reached
 ```
 
 - **Against the database**: the framework generates SQL per FormSchema at runtime — no ORM, no generated entity classes. See [FormSchema-Driven Database Access](formschema-data-access.md).
@@ -212,18 +213,20 @@ builder.Services.AddBeeFramework(settings.BackendConfiguration, paths);
 ```
 {CustomizePath}/{customizeId}/ProgramSettings.xml
 {CustomizePath}/{customizeId}/MenuSettings.xml
+{CustomizePath}/{customizeId}/PluginSettings.xml
 {CustomizePath}/{customizeId}/FormLayout/{layoutId}.FormLayout.xml
 {CustomizePath}/{customizeId}/Language/{lang}/{namespace}.Language.xml
 ```
 
 The directory need not exist. A tenant that supplies no file for a given lookup falls back to the base layer.
 
-### Four types, at three granularities
+### Five types, at four granularities
 
 | Type | Overlay granularity |
 |------|--------------------|
 | **LanguageResource** | **Per key** for text (`LanguageItem`). The customization file holds only the keys it changes; every other key comes from base — so a base translation added later propagates automatically. **A `LanguageEnum` is the exception: whole-enum.** A customization enum of the same name replaces the base one outright, so it must list every entry the option set should have |
 | **ProgramSettings** | **Per progId, then per property.** A customization entry wins over the base entry of the same progId, and within that entry each binding is independent: a customization that names only `BusinessObject` keeps the base `Repository`. Write only what you are changing |
+| **PluginSettings** | **Per progId, concatenated.** The only granularity that adds instead of choosing: the base chain runs, then the customization chain. A plugin is an extra step rather than a replacement, so two layers' plugins do not conflict |
 | **MenuSettings** | **Whole file.** A customization menu replaces the base menu outright |
 | **FormLayout** | **Whole file.** A customization layout replaces the base layout for that `layoutId` |
 
@@ -238,7 +241,7 @@ type explicitly rather than clearing the attribute:
 <ProgramItem ProgId="Order" BusinessObject="Bee.Business.Form.FormBusinessObject, Bee.Business" />
 ```
 
-The granularities differ on purpose, and the dividing line is whether the artifact is a bag of independent values or a single composed whole.
+The granularities differ on purpose, and the dividing line is whether the artifact is a bag of independent values or a single composed whole. `PluginSettings` forms a category of its own because it is neither: it is an ordered chain, so concatenating the two layers is the correct semantics.
 
 Text keys are independent: "this label reads differently here" leaves every other key alone, so merging key by key is both cheap and obvious. A layout is one visual arrangement — sections, ordering, column spans and nesting only make sense together, and a partial merge would raise questions ("this section moved — do the fields under it follow?") with no intuitive answer. An enum sits on the layout side of that line rather than the text side: it is an ordered option set, where merging entry by entry would leave both the ordering and the meaning of an omitted entry ambiguous.
 
