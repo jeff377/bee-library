@@ -3,6 +3,46 @@
 尚未啟動、也還沒寫成 plan 的方向。**這裡只記「為什麼要做、要等什麼、啟動時第一步是什麼」**；
 真正啟動時依 `plan-workflow:plan-write` 寫 `docs/plans/plan-<主題>.md` 交使用者 review 後才執行。
 
+## `sys_date` 系統欄位：替「單據日期」這個角色命名
+
+**構想（2026-08-13 使用者於鐵人賽 Day 3 校稿時提出）**：新增 `sys_date` 系統欄位表示單據日期，
+`FormBusinessObject.GetNewData` 認得它，預設填入使用者時區的今天。
+
+⚠️ **動手前先知道：「填今天」現在就已經在做，而且範圍更寬。**
+`FormRowDefaults.DefaultForDbType` 對 **每一個** `FieldDbType.Date` 欄位都回
+`FrameworkClock.Today(timeZoneId)`（`DataFormRepository.GetNewData` → `FormRowDefaults.Apply`）。
+所以「有 `sys_date` 就填今天」在效果上不新增任何行為。
+
+**真正的價值不在預設值，在替一個角色命名** —— 與 `sys_id`（業務代碼）、`sys_name`（顯示欄）
+同一個家族。一旦框架認得哪一欄是單據日期，能用它的就不只預設值：期間查詢的預設區間、
+報表區間、關帳檢查、稽核歸屬哪一天。
+
+**它同時暴露一個真問題**：`FormRowDefaults` 的 XML doc 自陳目的是 NOT NULL 填充
+（"never reaches the database with a NULL"），而「單據日期預設今天」是**語意**預設。
+兩件事現在共用同一條規則，症狀在 `apps/Bee.Northwind` 上看得到：`order_date` 填今天是對的，
+**`hire_date` 填今天只是不讓它是 NULL**。
+
+**要先答的四個問題**：
+
+1. `sys_*` 是框架保留名（`docs/framework-reserved-names.zh-TW.md`），新增一個等於擴充保留字表，
+   既有應用可能已用此欄名。
+2. **要真正分開語意，就得讓沒標 `sys_date` 的 `Date` 欄位不再自動填今天 —— 那是破壞性行為變更**，
+   要走版號與 CHANGELOG。不改的話 `sys_date` 只是別名，什麼都沒解決。
+3. 一張單只有一個日期嗎？預計出貨日、到期日承載不了，還是得回到逐欄宣告那條路。
+4. `FormField.DefaultValueExpression` 已出貨且白名單含 `Today()`，**同一件事宣告也表達得出來**，
+   而且表達得了 `sys_date` 表達不了的（哪一欄要今天、哪一欄要月底）。
+
+**分岔判準**（用專案自己那條「制式化的收斂、不一樣的留給應用」）：
+「新增單據時日期預設今天」是制式的 → 該收斂；「哪一欄是那個日期」逐家不同 → 該宣告。
+**兩條路各對一半，真正要決定的是「框架需不需要認得單據日期這個角色」。**
+
+**要等什麼**：**等 2026 iThome 鐵人賽發文結束**。若框架加了 `sys_date` 且案例跟著改
+（`order_date` → `sys_date`），連載至少四篇要重驗：Day 3 §2 的系統欄位表（現列五個，
+且該節寫「這幾個名字不能改」）、Day 3 §5、Day 27 的案例段（兩個 `Date` 欄位正是它的素材）、
+Day 29 的對帳表。**而鐵人賽發文後只有當日可改。**
+
+**啟動時第一步**：先答上面第 2 題（破壞性變更的範圍），再決定要不要寫 plan。
+
 ## 對外開發者 skill 包（Claude Code plugin）
 
 **目標**：做一組給**使用 Bee.NET 框架的外部開發者**的 skill 包，讓他們快速上手。
