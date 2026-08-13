@@ -9,6 +9,11 @@ jobs:
   publish:
     runs-on: windows-latest
 
+    outputs:
+      # The package list for the release body. Derived from what was actually pushed rather
+      # than hand-written, so it cannot drift from the pack step the way a third copy would.
+      packages: ${{ steps.pkgs.outputs.PACKAGES }}
+
     steps:
     - name: Checkout code
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -88,16 +93,52 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Failed to push $($_.Name)" }
         }
 
+    - name: Collect published packages
+      id: pkgs
+      env:
+        VER: ${{ steps.version.outputs.VERSION }}
+      run: |
+        $ErrorActionPreference = 'Stop'
+        # Extension is compared explicitly rather than passed to -Filter, because the Windows
+        # filter matches on the 8.3 short name as well and would also return the .snupkg files.
+        $lines = Get-ChildItem -Path ./nupkgs |
+          Where-Object { $_.Extension -eq '.nupkg' } |
+          ForEach-Object { $_.Name -replace "\.$([regex]::Escape($env:VER))\.nupkg$", '' } |
+          Sort-Object -Unique |
+          ForEach-Object { "- [$_](https://www.nuget.org/packages/$_/$env:VER)" }
+        if (-not $lines) { throw "No packages found in ./nupkgs" }
+        "PACKAGES<<PKGEOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+        $lines | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+        "PKGEOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+        Write-Host "Published $($lines.Count) packages."
+
   release:
     needs: publish  # 確保 NuGet 全數發佈成功後才建立 GitHub Release
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      with:
+        fetch-depth: 0  # the previous tag is needed for the compare link
+
     - name: Extract version from tag
       id: version
       run: |
         TAG="${{ github.ref_name }}"
         echo "VERSION=${TAG#v}" >> $GITHUB_OUTPUT
+
+    - name: Resolve compare link
+      id: compare
+      run: |
+        TAG="${{ github.ref_name }}"
+        PREV=$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)
+        if [ -n "$PREV" ]; then
+          echo "URL=https://github.com/${{ github.repository }}/compare/${PREV}...${TAG}" >> $GITHUB_OUTPUT
+        else
+          # First tag in the repository: there is nothing to compare against.
+          echo "URL=https://github.com/${{ github.repository }}/commits/${TAG}" >> $GITHUB_OUTPUT
+        fi
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65  # v2.6.2
@@ -110,3 +151,12 @@ jobs:
           變更說明：
           - [English](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/changelogs/${{ steps.version.outputs.VERSION }}.md)
           - [繁體中文](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/changelogs/${{ steps.version.outputs.VERSION }}.zh-TW.md)
+
+          ### 本次發佈的套件
+
+          ${{ needs.publish.outputs.packages }}
+
+          > `Bee.Cli` 是 dotnet tool，安裝方式與其他套件不同：
+          > `dotnet tool install -g Bee.Cli --version ${{ steps.version.outputs.VERSION }}`
+
+          **Full Changelog**: ${{ steps.compare.outputs.URL }}
