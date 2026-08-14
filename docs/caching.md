@@ -70,9 +70,10 @@ Four roles, and what each is responsible for:
 | **Provider** | `ICacheProvider` | A plain key → object store with expiration. Knows nothing about what it stores |
 | **Version store** | `ICacheNotifyVersionStore` | Per-process record of "what notify version have I observed for this key" |
 
-The provider is deliberately dumb — it has no atomic get-or-create, no knowledge of loading, no
-notion of a definition. Everything interesting lives in the cache classes, which is why a
-replacement provider ([§11](#11-replacing-the-provider)) is a small thing to write.
+The provider's responsibilities are deliberately kept to a minimum — no atomic get-or-create, no
+knowledge of loading, no notion of a definition. Loading and de-duplication stay in the cache
+classes, which is why a replacement provider ([§11](#11-replacing-the-provider)) is a small thing
+to write.
 
 ---
 

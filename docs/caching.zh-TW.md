@@ -67,8 +67,8 @@ flowchart TB
 | **Provider** | `ICacheProvider` | 一個帶到期時間的 key → object 儲存體。**不知道**自己存的是什麼 |
 | **版本存放區** | `ICacheNotifyVersionStore` | 各 process 自己的「我看到這個 key 的 notify 版本是多少」紀錄 |
 
-Provider 刻意做得很笨 —— 沒有 atomic get-or-create、不懂載入、不認識定義資料。所有有意思的邏輯
-都在快取類別裡，這也是為什麼寫一個替代 provider（[§11](#11-替換-provider)）是件小事。
+Provider 的職責刻意壓到最小 —— 沒有 atomic get-or-create、不懂載入、不認識定義資料。載入與去重
+全部留在快取類別裡，這也是為什麼寫一個替代 provider（[§11](#11-替換-provider)）是件小事。
 
 ---
 
