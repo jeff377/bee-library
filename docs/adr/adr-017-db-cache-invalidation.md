@@ -107,6 +107,7 @@ ADR 記錄的是決策當下的設計，以下為後續實作的偏離，供讀�
 ## 相關文件
 
 - [ADR-009](adr-009-cache-implementation.md)：`Bee.ObjectCaching` 快取實作
+- 機制總覽：[快取機制](../caching.zh-TW.md)（本機制在整體快取層中的位置）
 - [ADR-018](adr-018-db-define-storage.md)：定義儲存於資料庫（本機制的主要消費端之一）
 - 使用指引：[`development-cookbook.md`](../development-cookbook.md) §跨 process 快取失效
 - 命名慣例：[`database-naming-conventions.md`](../database-naming-conventions.md)

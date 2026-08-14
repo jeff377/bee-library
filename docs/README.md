@@ -38,6 +38,7 @@ Why the framework is built the way it is.
 | [FormSchema-Driven Database Access](formschema-data-access.md) | Concept | Medium | How Bee.Db generates SQL dynamically from a FormSchema, and why it is not an ORM |
 | [API ↔ BO Contract Design](api-bo-contract-design.md) | Concept | Medium | Three-tier API contract separation (Contracts / API Type / BO Type) and the naming conventions that drive it |
 | [Project Dependency Map](dependency-map.md) | Concept | Short | How the 16 `src/` projects depend on each other, and the rules that keep the graph acyclic |
+| [Caching](caching.md) | Concept | Long | How definition and database-backed caches work: the read path, the four invalidation signals, and the notification-table mechanism for cross-process / multi-node deployments |
 
 ## 3. Guides
 
@@ -88,7 +89,8 @@ The same documents, grouped by subject. A document appearing under several topic
 |-------|-----------|
 | **Database** | [Naming Conventions](database-naming-conventions.md) · [Reserved Names](framework-reserved-names.md) · [Settings Guide](database-settings-guide.md) · [Schema Upgrade](database-schema-upgrade.md) · [Dialect Differences](database-dialect-differences.md) · [FormSchema-Driven Access](formschema-data-access.md) |
 | **Definition layer** | [Definition Files Overview](definition-files-overview.md) · [Architecture Overview](architecture-overview.md) · [Expressions and Rules](expression-rules.md) · [Reserved Names](framework-reserved-names.md) |
-| **Multi-tenancy** | [Tenant Customization](customization.md) · [Definition Files Overview](definition-files-overview.md) · [Development Cookbook](development-cookbook.md) |
+| **Multi-tenancy** | [Tenant Customization](customization.md) · [Definition Files Overview](definition-files-overview.md) · [Development Cookbook](development-cookbook.md) · [Caching](caching.md) |
+| **Caching & performance** | [Caching](caching.md) · [Development Cookbook](development-cookbook.md) · [Development Constraints](development-constraints.md) |
 | **API & frontend** | [Contract Design](api-bo-contract-design.md) · [API Method Reference](api-method-reference.md) · [JSON-RPC Frontend Integration](jsonrpc-frontend-integration.md) · [Permission & Authorization](permission-authorization.md) · [API Key Management](api-key-management.md) |
 | **Types & time** | [Temporal Types](temporal-types.md) · [Time Zones](datetime-timezone.md) |
 | **Quality & conventions** | [Analyzer Rules](analyzer-rules.md) · [Development Constraints](development-constraints.md) · [Naming Conventions](database-naming-conventions.md) |

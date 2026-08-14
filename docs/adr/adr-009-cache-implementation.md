@@ -131,5 +131,6 @@ Bee.NET 為純 .NET 10 新框架、未發佈、無相容包袱，適合一次完
 
 ## 相關文件
 
+- 機制總覽：[快取機制](../caching.zh-TW.md)（讀取路徑、失效信號、快取清單）
 - 套件 README：[`src/Bee.ObjectCaching/README.md`](../../src/Bee.ObjectCaching/README.md)
 - 相關 commit：[`8099d03`](https://github.com/jeff377/bee-library/commit/8099d03)（移除 `DbChangeMonitor` placeholder）、[`715c159e`](https://github.com/jeff377/bee-library/commit/715c159e)（負向快取）
