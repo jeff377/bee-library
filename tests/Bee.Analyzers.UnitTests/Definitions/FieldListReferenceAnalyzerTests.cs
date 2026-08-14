@@ -39,6 +39,9 @@ namespace Bee.Analyzers.UnitTests.Definitions
             var message = diagnostic.GetMessage(CultureInfo.InvariantCulture);
             Assert.Contains("'unit_prise'", message, StringComparison.Ordinal);
             Assert.Contains("ListFields", message, StringComparison.Ordinal);
+
+            // ListFields 的未知欄位不是靜默跳過：版面少一欄，但 SelectBuilder 仍會拿到它並擲例外。
+            Assert.Contains("InvalidOperationException", message, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -64,6 +67,10 @@ namespace Bee.Analyzers.UnitTests.Definitions
             // Assert
             var message = Assert.Single(diagnostics).GetMessage(CultureInfo.InvariantCulture);
             Assert.Contains("LookupFields", message, StringComparison.Ordinal);
+
+            // LookupFields 才是真的靜默跳過（GetLookupFields 以 master.Fields.Contains 過濾）。
+            Assert.Contains("skipped silently", message, StringComparison.Ordinal);
+            Assert.DoesNotContain("InvalidOperationException", message, StringComparison.Ordinal);
         }
 
         [Fact]
