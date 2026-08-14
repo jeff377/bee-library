@@ -8,7 +8,7 @@
 
 ## Table of Contents
 
-1. [In One Sentence](#1-in-one-sentence)
+1. [What It Does](#1-what-it-does)
 2. [Why It's Not an ORM](#2-why-its-not-an-orm)
 3. [Core Concepts](#3-core-concepts)
 4. [Examples](#4-examples)
@@ -19,7 +19,7 @@
 
 ---
 
-## 1. In One Sentence
+## 1. What It Does
 
 Bee.Db uses `FormSchema` as the unit for describing business entities, links `FormSchema` instances through foreign-key fields (`RelationProgId`) into relation chains, and dynamically composes SELECT / INSERT / UPDATE / DELETE statements at runtime, returning data through `DataSet` — **without depending on strongly-typed entity classes**.
 
