@@ -5,7 +5,7 @@ namespace Bee.Repository
 {
     /// <summary>
     /// Base class for every repository. Carries the shared construction context and resolves the
-    /// target database once, so the nine framework repositories no longer each repeat the same
+    /// target database once, so framework repositories no longer each repeat the same
     /// wiring.
     /// </summary>
     /// <remarks>

@@ -8,7 +8,7 @@ using Bee.Definition.Sorting;
 namespace Bee.Db.Providers.PostgreSql
 {
     /// <summary>
-    /// PostgreSQL form-related SQL command builder, generating Select, Insert, Update, and Delete statements.
+    /// PostgreSQL form-related SQL command builder, generating Select, Count, and Delete statements.
     /// Counterpart to <see cref="SqlServer.SqlFormCommandBuilder"/> for the PostgreSQL provider.
     /// </summary>
     public class PgFormCommandBuilder : IFormCommandBuilder

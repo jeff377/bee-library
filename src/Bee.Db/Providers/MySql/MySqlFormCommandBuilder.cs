@@ -8,9 +8,9 @@ using Bee.Definition.Sorting;
 namespace Bee.Db.Providers.MySql
 {
     /// <summary>
-    /// MySQL 8.0+ form-related SQL command builder, generating SELECT, INSERT, UPDATE,
+    /// MySQL 8.0+ form-related SQL command builder, generating SELECT, SELECT COUNT,
     /// and DELETE statements. Counterpart to <see cref="Sqlite.SqliteFormCommandBuilder"/>
-    /// and <see cref="PostgreSql.PgFormCommandBuilder"/>; all four methods delegate to
+    /// and <see cref="PostgreSql.PgFormCommandBuilder"/>; all three methods delegate to
     /// the dialect-agnostic cores in <see cref="Bee.Db.Dml"/> with
     /// <see cref="DatabaseType.MySQL"/>, so backtick identifier quoting and other
     /// MySQL-specific output flow from the <see cref="DatabaseTypeExtensions"/> dictionaries.

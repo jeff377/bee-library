@@ -167,7 +167,7 @@ namespace Bee.Definition.Storage
         /// <inheritdoc/>
         /// <remarks>
         /// <para>
-        /// Only the four customizable types report a signal, and each resolves through the same
+        /// Only the five customizable types report a signal, and each resolves through the same
         /// <see cref="CustomizeOnlyPathOptions"/> the getters use, so a consumer watches exactly the
         /// file this storage would read. Every other type reports no signal rather than throwing —
         /// unlike the getters, a consumer may ask about any define type here without first knowing

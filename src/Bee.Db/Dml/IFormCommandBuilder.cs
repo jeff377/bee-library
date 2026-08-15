@@ -4,7 +4,7 @@ using Bee.Definition.Sorting;
 namespace Bee.Db.Dml
 {
     /// <summary>
-    /// Defines a form-related SQL command builder that generates Select, Insert, Update, and Delete statements.
+    /// Defines a form-related SQL command builder that generates Select, Count, and Delete statements.
     /// </summary>
     public interface IFormCommandBuilder
     {

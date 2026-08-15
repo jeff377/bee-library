@@ -39,11 +39,11 @@ namespace Bee.Hosting
     {
         /// <summary>
         /// Registers Bee.NET framework services and decrypts security keys from
-        /// <paramref name="configuration"/>. <c>app.UseBeeFramework()</c> remains available
-        /// as an ASP.NET Core integration extension point but no longer performs any
-        /// bootstrap work after Phase 7 removed the transitional <c>DbConnectionManager</c>
-        /// static shim — callers obtain <see cref="DbAccess"/> via
-        /// <see cref="IDbAccessFactory"/> (ctor injected).
+        /// <paramref name="configuration"/>. This call alone brings the framework up:
+        /// <c>app.UseBeeFramework()</c> carries no bootstrap work of its own since Phase 7
+        /// removed the transitional <c>DbConnectionManager</c> static shim — callers obtain
+        /// <see cref="DbAccess"/> via <see cref="IDbAccessFactory"/> (ctor injected). It does
+        /// still run host-side startup checks, so an ASP.NET Core host should keep calling it.
         /// </summary>
         /// <param name="services">The service collection.</param>
         /// <param name="configuration">The backend configuration (from SystemSettings.xml).</param>

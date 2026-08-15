@@ -8,9 +8,9 @@ using Bee.Definition.Sorting;
 namespace Bee.Db.Providers.Sqlite
 {
     /// <summary>
-    /// SQLite form-related SQL command builder, generating Select, Insert, Update, and Delete
+    /// SQLite form-related SQL command builder, generating Select, Count, and Delete
     /// statements. Counterpart to <see cref="SqlServer.SqlFormCommandBuilder"/> and
-    /// <see cref="PostgreSql.PgFormCommandBuilder"/> for the SQLite provider; all four methods
+    /// <see cref="PostgreSql.PgFormCommandBuilder"/> for the SQLite provider; all three methods
     /// delegate to the dialect-agnostic cores in <see cref="Bee.Db.Dml"/>.
     /// </summary>
     public class SqliteFormCommandBuilder : IFormCommandBuilder

@@ -7,7 +7,7 @@ using Bee.Definition.Storage;
 namespace Bee.ObjectCaching
 {
     /// <summary>
-    /// Default <see cref="ICustomizeDefineReader"/>: reads the four customizable types from the
+    /// Default <see cref="ICustomizeDefineReader"/>: reads the five customizable types from the
     /// per-customization-code override containers supplied by an
     /// <see cref="ICacheContainerProvider"/>. Hits return the cached read-only instance; a missing
     /// override file returns <c>null</c> without falling back to the base layer.

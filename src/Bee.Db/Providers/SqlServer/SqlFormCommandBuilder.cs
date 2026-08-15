@@ -8,7 +8,7 @@ using Bee.Definition.Sorting;
 namespace Bee.Db.Providers.SqlServer
 {
     /// <summary>
-    /// SQL Server form-related SQL command builder, generating Select, Insert, Update, and Delete statements.
+    /// SQL Server form-related SQL command builder, generating Select, Count, and Delete statements.
     /// </summary>
     public class SqlFormCommandBuilder : IFormCommandBuilder
     {
