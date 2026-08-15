@@ -16,7 +16,7 @@
 但該介面上只有三個方法。**有人照著 `<summary>` 抄，抄出了一個錯的斷言。**
 
 XML doc 隨 NuGet 套件的 `.xml` 一起發佈、直接出現在消費端 IntelliSense，
-依 [rules/public-docs.md](../../.claude/rules/public-docs.md) 它就是公開文件。
+依 [rules/public-docs.md](../../../.claude/rules/public-docs.md) 它就是公開文件。
 `TreatWarningsAsErrors=true` 擋得住「缺 XML doc」，**擋不住「XML doc 說的跟程式碼不一樣」**。
 
 本次因此對 `src/**/*.cs` 的 `///` 做一次全 repo 盤點。
@@ -39,9 +39,9 @@ XML doc 隨 NuGet 套件的 `.xml` 一起發佈、直接出現在消費端 Intel
 
 #### A1–A6 — `IFormCommandBuilder` 家族宣稱四種語句，實際只有三個方法
 
-根因：[adr-024](../adr/adr-024-dataform-save-dataadapter.md) 決策 D3 —— 存檔改走 `DataAdapter` 後，
+根因：[adr-024](../../adr/adr-024-dataform-save-dataadapter.md) 決策 D3 —— 存檔改走 `DataAdapter` 後，
 逐列 `InsertCommandBuilder` / `UpdateCommandBuilder` 已從 `src/Bee.Db/Dml` 移除，
-INSERT / UPDATE / DELETE 三句改由 [TableSchemaCommandBuilder.cs](../../src/Bee.Db/Dml/TableSchemaCommandBuilder.cs) 產生。
+INSERT / UPDATE / DELETE 三句改由 [TableSchemaCommandBuilder.cs](../../../src/Bee.Db/Dml/TableSchemaCommandBuilder.cs) 產生。
 **程式碼改了、XML doc 沒跟上。**
 
 介面實際成員：`BuildSelect` / `BuildCount` / `BuildDelete`（三個）。
@@ -50,30 +50,30 @@ the dialect-agnostic cores」。另外六份 `<summary>` **全都漏掉 `BuildCo
 
 | # | 檔案:行號 | XML doc 原文（節錄） | 判定 |
 |---|----------|--------------------|------|
-| A1 | [IFormCommandBuilder.cs:7](../../src/Bee.Db/Dml/IFormCommandBuilder.cs) | `generates Select, Insert, Update, and Delete statements` | 錯：無 Insert/Update；漏 Count |
-| A2 | [SqlFormCommandBuilder.cs:11](../../src/Bee.Db/Providers/SqlServer/SqlFormCommandBuilder.cs) | `generating Select, Insert, Update, and Delete statements` | 同上 |
-| A3 | [PgFormCommandBuilder.cs:11](../../src/Bee.Db/Providers/PostgreSql/PgFormCommandBuilder.cs) | `generating Select, Insert, Update, and Delete statements` | 同上 |
-| A4 | [SqliteFormCommandBuilder.cs:11-14](../../src/Bee.Db/Providers/Sqlite/SqliteFormCommandBuilder.cs) | `…Select, Insert, Update, and Delete statements…all four methods delegate to…` | 同上 + 方法數錯 |
-| A5 | [MySqlFormCommandBuilder.cs:10-16](../../src/Bee.Db/Providers/MySql/MySqlFormCommandBuilder.cs) | `…SELECT, INSERT, UPDATE, and DELETE statements…all four methods delegate to…` | 同上 + 方法數錯 |
-| A6 | [OracleFormCommandBuilder.cs:10-16](../../src/Bee.Db/Providers/Oracle/OracleFormCommandBuilder.cs) | `…SELECT, INSERT, UPDATE, and DELETE statements…all four methods delegate to…` | 同上 + 方法數錯 |
+| A1 | [IFormCommandBuilder.cs:7](../../../src/Bee.Db/Dml/IFormCommandBuilder.cs) | `generates Select, Insert, Update, and Delete statements` | 錯：無 Insert/Update；漏 Count |
+| A2 | [SqlFormCommandBuilder.cs:11](../../../src/Bee.Db/Providers/SqlServer/SqlFormCommandBuilder.cs) | `generating Select, Insert, Update, and Delete statements` | 同上 |
+| A3 | [PgFormCommandBuilder.cs:11](../../../src/Bee.Db/Providers/PostgreSql/PgFormCommandBuilder.cs) | `generating Select, Insert, Update, and Delete statements` | 同上 |
+| A4 | [SqliteFormCommandBuilder.cs:11-14](../../../src/Bee.Db/Providers/Sqlite/SqliteFormCommandBuilder.cs) | `…Select, Insert, Update, and Delete statements…all four methods delegate to…` | 同上 + 方法數錯 |
+| A5 | [MySqlFormCommandBuilder.cs:10-16](../../../src/Bee.Db/Providers/MySql/MySqlFormCommandBuilder.cs) | `…SELECT, INSERT, UPDATE, and DELETE statements…all four methods delegate to…` | 同上 + 方法數錯 |
+| A6 | [OracleFormCommandBuilder.cs:10-16](../../../src/Bee.Db/Providers/Oracle/OracleFormCommandBuilder.cs) | `…SELECT, INSERT, UPDATE, and DELETE statements…all four methods delegate to…` | 同上 + 方法數錯 |
 
 **建議修法**：四動詞清單改為 `Select, Count, and Delete`；`all four methods` 改為 `all three methods`。
 各實作原有的 dialect 說明（backtick quoting、`:` bind prefix、雙引號 quoting）皆屬正確，保留。
 
 #### A7 — `CustomizeDefineReader` 宣稱四種客製型別，實際五種
 
-- **檔案**：[CustomizeDefineReader.cs:10](../../src/Bee.ObjectCaching/CustomizeDefineReader.cs)
+- **檔案**：[CustomizeDefineReader.cs:10](../../../src/Bee.ObjectCaching/CustomizeDefineReader.cs)
 - **原文**：`Default ICustomizeDefineReader: reads the four customizable types from the per-customization-code override containers…`
 - **實際**：該類別實作五個 getter —— `GetCustomizeLanguage` / `GetCustomizeProgramSettings` /
   `GetCustomizeMenuSettings` / `GetCustomizePluginSettings` / `GetCustomizeFormLayout`。
-  介面 [ICustomizeDefineReader.cs:8](../../src/Bee.Definition/Storage/ICustomizeDefineReader.cs)
-  與 [CustomizeOnlyPathOptions.cs:3](../../src/Bee.Definition/CustomizeOnlyPathOptions.cs) 都正確寫「five」。
+  介面 [ICustomizeDefineReader.cs:8](../../../src/Bee.Definition/Storage/ICustomizeDefineReader.cs)
+  與 [CustomizeOnlyPathOptions.cs:3](../../../src/Bee.Definition/CustomizeOnlyPathOptions.cs) 都正確寫「five」。
 - **根因**：`PluginSettings` 於 commit `d9c189fa` 加入，此處計數未同步。
 - **建議修法**：`four` → `five`。
 
 #### A8 — `CustomizeOnlyStorage` 同一檔內四／五自相矛盾
 
-- **檔案**：[CustomizeOnlyStorage.cs:170](../../src/Bee.Definition/Storage/CustomizeOnlyStorage.cs)
+- **檔案**：[CustomizeOnlyStorage.cs:170](../../../src/Bee.Definition/Storage/CustomizeOnlyStorage.cs)
 - **原文**：`Only the four customizable types report a signal…`
 - **實際**：同檔 `GetChangeSource` 的 switch 有五個 case（ProgramSettings / MenuSettings /
   PluginSettings / FormLayout / Language）。且**同一個檔案**的類別 `<summary>`（:14）與
@@ -83,10 +83,10 @@ the dialect-agnostic cores」。另外六份 `<summary>` **全都漏掉 `BuildCo
 
 #### A9 — `CacheInfo.Initialize` 指向已不存在的 `CacheBootstrapper`
 
-- **檔案**：[CacheInfo.cs:38](../../src/Bee.ObjectCaching/CacheInfo.cs)
+- **檔案**：[CacheInfo.cs:38](../../../src/Bee.ObjectCaching/CacheInfo.cs)
 - **原文**：`Called by <c>CacheBootstrapper</c> (registered by <c>AddBeeFramework</c>) after settings are loaded.`
 - **實際**：全 solution 無 `CacheBootstrapper` 此型別。唯一的 production 呼叫端是
-  [BeeFrameworkServiceCollectionExtensions.cs:77](../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)
+  [BeeFrameworkServiceCollectionExtensions.cs:77](../../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)
   —— `AddBeeFramework` **直接**呼叫 `CacheInfo.Initialize(configuration)`，中間沒有 bootstrapper。
 - **根因**：靜態 facade 拆除期間（`db8194ce` 一帶）該型別被移除，散文指涉未清。
   **`<c>` 不受編譯期 cref 解析保護**，這正是它能存活至今的原因（見〈閘門評估〉）。
@@ -100,24 +100,24 @@ the dialect-agnostic cores」。另外六份 `<summary>` **全都漏掉 `BuildCo
 
 #### A10 — `RepositoryBase` 宣稱九個 framework repository，實際十一個
 
-- **檔案**：[RepositoryBase.cs:8](../../src/Bee.Repository/RepositoryBase.cs)
+- **檔案**：[RepositoryBase.cs:8](../../../src/Bee.Repository/RepositoryBase.cs)
 - **原文**：`…so the nine framework repositories no longer each repeat the same wiring.`
-- **實際**：[RepositoryFactory.cs:41-51](../../src/Bee.Repository/Factories/RepositoryFactory.cs)
+- **實際**：[RepositoryFactory.cs:41-51](../../../src/Bee.Repository/Factories/RepositoryFactory.cs)
   的 framework 軸映射表有 **11** 筆：System 九個 + `IAuditLogRepository` / `IAuditLogWriteRepository`。
   稽核軸的兩個 repository（`e6d0e2ff`）晚於 `RepositoryBase`（`3589c4c8`）加入。
 - **建議修法**：**刪掉數字**，改為 `so framework repositories no longer each repeat the same wiring`。
-  依 [single-source.md](../../.claude/rules/single-source.md)「清點數字 → 不寫（必漂且對讀者無用）」，
+  依 `~/.claude/rules/single-source.md`「清點數字 → 不寫（必漂且對讀者無用）」，
   改成 11 只是把下一次漂移往後推。
 
 ### B 級：過期敘述（當時為真，現已誤導）
 
 #### B1 — `AddBeeFramework` 宣稱 `UseBeeFramework` 不做任何事，兩份公開 doc 互相矛盾
 
-- **檔案**：[BeeFrameworkServiceCollectionExtensions.cs:41-46](../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)
+- **檔案**：[BeeFrameworkServiceCollectionExtensions.cs:41-46](../../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs)
 - **原文**：`app.UseBeeFramework() remains available as an ASP.NET Core integration extension point
   but no longer performs any bootstrap work after Phase 7 removed the transitional
   DbConnectionManager static shim…`
-- **實際**：[BeeFrameworkApplicationBuilderExtensions.cs:16-29](../../src/Bee.Api.AspNetCore/BeeFrameworkApplicationBuilderExtensions.cs)
+- **實際**：[BeeFrameworkApplicationBuilderExtensions.cs:16-29](../../../src/Bee.Api.AspNetCore/BeeFrameworkApplicationBuilderExtensions.cs)
   現在會執行 `WarnWhenApiKeyGateIsNotInForce`，且**它自己的 `<summary>` 寫的是**
   `Activates host-side framework startup checks`。兩份公開 XML doc 對同一個方法的描述已經打架：
   一份說「什麼都不做」、一份說「執行啟動檢查」。
@@ -155,7 +155,7 @@ the dialect-agnostic cores」。另外六份 `<summary>` **全都漏掉 `BuildCo
 
 ## 閘門評估：這件事能不能變成可重複的閘門？
 
-依 [single-source.md](../../.claude/rules/single-source.md) 的精神 —— 靠「記得一起改」不會成立
+依 `~/.claude/rules/single-source.md` 的精神 —— 靠「記得一起改」不會成立
 —— 這題必須正面回答。結論分三段，**其中兩段做得到、一段做不到**。
 
 > **執行結果**：以下三項行動皆已落地 —— `check-xmldoc-refs.sh` 已建立並實測，
@@ -192,8 +192,8 @@ error CS1574: XML 註解有無法解析的 cref 屬性 'NoSuchTypeXyz'
 佔位符（`Cxxx`、`SaveX`、`IXxxRepository`）後，**只剩 6 個需人工判讀、其中 1 個是真漂移**。
 訊噪比可接受，且 allowlist 只需維護數十筆。
 
-已實作為 [check-xmldoc-refs.sh](../../check-xmldoc-refs.sh)（比照既有的
-[check-public-docs.sh](../../check-public-docs.sh)），而非 analyzer ——
+已實作為 [check-xmldoc-refs.sh](../../../check-xmldoc-refs.sh)（比照既有的
+[check-public-docs.sh](../../../check-public-docs.sh)），而非 analyzer ——
 analyzer 拿不到跨專案的全 solution 符號表，腳本拿得到。
 
 **雙向實測**：修完 A9 後跑，乾淨通過（exit 0）；注入一個假的 `<c>GhostBootstrapperXyz</c>`
@@ -237,6 +237,6 @@ analyzer 拿不到跨專案的全 solution 符號表，腳本拿得到。
 
 ## 相關文件
 
-- [adr-024：DataForm 持久化改走 DataTable 級 DataAdapter](../adr/adr-024-dataform-save-dataadapter.md) —— A1–A6 的根因
-- [rules/public-docs.md](../../.claude/rules/public-docs.md) —— XML doc 屬公開文件的依據
-- [rules/single-source.md](../../.claude/rules/single-source.md) —— 「清點數字不寫」的通則
+- [adr-024：DataForm 持久化改走 DataTable 級 DataAdapter](../../adr/adr-024-dataform-save-dataadapter.md) —— A1–A6 的根因
+- [rules/public-docs.md](../../../.claude/rules/public-docs.md) —— XML doc 屬公開文件的依據
+- `~/.claude/rules/single-source.md` —— 「清點數字不寫」的通則
