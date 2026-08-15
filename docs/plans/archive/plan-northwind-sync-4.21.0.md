@@ -42,7 +42,7 @@ NuGet 只對**直接** PackageReference 匯入套件的 `build/` 資料夾（要
 均為 NuGet 4.21.0 套件參考版，各自 Connect → Sign in → 讀到真實資料。
 
 過程另外釐清兩件事，已寫進
-[gotchas/northwind-heads.md](../repo-ops/gotchas/northwind-heads.md) 的「iOS head」節：
+[gotchas/northwind-heads.md](../../repo-ops/gotchas/northwind-heads.md) 的「iOS head」節：
 
 - iOS 的 Xcode 版本綁定，正解是 `DEVELOPER_DIR` 而非 `xcode-select`（後者全機生效且需 sudo）
 - 乾淨樹上 `-t:Run` 必須分兩段（先 build 再 Run），否則擲
