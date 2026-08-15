@@ -11,7 +11,7 @@
 方法：10 個平行唯讀子代理分面向全量掃描 → 交叉去重 → P0/P1 主代理人工複驗（含實測 probe）。
 
 - 基準版本：v4.19.0（`src/Directory.Build.props` 的 `<Version>`），HEAD `227daa70`
-- 上輪體檢：2026-08-07（[plan-framework-review-2026-08-07.md](../plan-framework-review-2026-08-07.md)，基準 v4.17.0）
+- 上輪體檢：2026-08-07（[plan-framework-review-2026-08-07.md](plan-framework-review-2026-08-07.md)，基準 v4.17.0）
 - 期間變更：12 commit，`src/` 47 檔異動（+1,618 / −344）
 - **本輪目的是發版前把關**：自 v4.19.0 累積兩筆破壞性變更，CHANGELOG 尚未撰寫
 - 測試佐證：`./test.sh` 全綠 —— 16/16 專案、5,360 通過 / 1 略過（RSA）/ 0 失敗，四個 DB 容器全在

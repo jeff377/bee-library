@@ -11,6 +11,7 @@
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [框架全面體檢（2026-08-07）](plan-framework-review-2026-08-07.md) | 2026-08-16（過期封存） | 十一面向唯讀體檢（基準 v4.17.0）。P0 / P3 全數落地，P1 / P2 部分完成；**未結的 P1 / P2 / P4 項目隨基準版本推進而過期，不再由本 plan 追蹤**，現象是否仍成立須重新確認。續輪見同目錄的 2026-08-11 體檢；移交的 D-3 / D-5 由 `plan-definition-editor.md` 承接 |
 | [XML doc 漂移全 repo 盤點與修正](plan-xmldoc-drift-audit.md) | 2026-08-15 | 對 `src/**/*.cs` 的 991 檔／26,263 行 `///` 做四類全掃，修掉 10 筆 A 級實質錯誤（其中 8 筆是清點數字漂掉）與 1 筆過期敘述。落地兩道閘門：`check-xmldoc-refs.sh` 掃 `<c>` 懸空識別字，`code-style.md` 加上「散文提到自家型別一律用 `<see cref>`」與「不寫程式碼構件的清點數字」 |
 | [Bee.Northwind 同步至 bee-northwind-avalonia（框架 4.21.0）](plan-northwind-sync-4.21.0.md) | 2026-08-13 | 五階段全數落地：檔案同步、ProjectReference → PackageReference 4.21.0、README 雙語逐段 port、獨立 repo 五個 head build + 端到端冒煙（iOS 同日補驗）、commit 推上 `bee-northwind-avalonia` |
 | [skill 與 rule 的分層歸位](plan-skills-cleanup.md) | 2026-08-12 | 起於 repo 層 skill 精簡，執行中擴為三層歸位：repo skill（綁 bee-library 的慣例）／plugin skill（跨 repo 的開發流程）／常駐 rule（不知道要查也會違反的硬規則）。收斂 bootstrap 複寫為單一來源，並跨到 `~/.claude/` 與 `claude-plugins` repo |

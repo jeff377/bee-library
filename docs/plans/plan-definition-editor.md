@@ -2,13 +2,14 @@
 
 **狀態：📝 擬定中（2026-08-07）**
 
-> 本 plan **不在 2026-08-07 框架體檢的處理範圍內**，待體檢項目處理完畢後另行排程。
+> 本 plan **不在 2026-08-07 框架體檢的處理範圍內**，由該體檢標記移交。
+> 該體檢已於 2026-08-16 過期封存，**本 plan 的排程不再綁定它**，可獨立動工。
 
 定義類別上有 **723 處宣告式編輯器 metadata**（`[TreeNode]` 71 + `[Description]` 312 +
 `[Category]` 115 + `[Browsable]` 68 + `[TypeConverter]` 13 + `[DefaultValue]` 144），
 其中 **579 處純編輯器用途、零消費端**。本 plan 把它們接回實際的編輯器。
 
-來源：[plan-framework-review-2026-08-07.md](plan-framework-review-2026-08-07.md) 的 D-3 / D-5。
+來源：[plan-framework-review-2026-08-07.md](archive/plan-framework-review-2026-08-07.md) 的 D-3 / D-5。
 **該體檢不處理本議題，僅標記移交本 plan。**
 
 ---

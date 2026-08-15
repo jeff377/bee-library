@@ -1,12 +1,16 @@
 # 框架全面體檢（2026-08-07）
 
-**狀態：🚧 進行中（2026-08-07）**
+**狀態：📦 已封存（2026-08-16）—— 內容已過期，未結項目不再由本 plan 追蹤**
+
+> 基準版本 v4.17.0 距封存時已隔多個 minor，未結的 P1 / P2 / P4 項目**現象是否仍成立需重新確認**，
+> 不可直接照本文動手。續輪體檢見 [plan-framework-review-2026-08-11.md](plan-framework-review-2026-08-11.md)（基準 v4.19.0）。
+> 已移交的 D-3 / D-5 仍由 [plan-definition-editor.md](../plan-definition-editor.md) 承接，不受本次封存影響。
 
 對 17 個 `src/` 專案做十一面向唯讀體檢，產出分級重構計畫與評分。
 方法：10 個平行唯讀子代理分面向全量掃描 → 交叉去重 → P0/P1 逐項人工複驗。
 
 - 基準版本：v4.17.0
-- 上輪體檢：2026-07-28（`archive/plan-framework-review-2026-07-28.md`）
+- 上輪體檢：2026-07-28（`plan-framework-review-2026-07-28.md`）
 - 期間變更：167 commit（docs 77／feat 36／fix 21／refactor 12／test 9），`src/` 558 檔異動
 
 ---
@@ -61,7 +65,7 @@
 | ✅ 已修完成 | 17 | S-1、S-2、P-1、C-1、S-3、N-3、N-4、X-1、Z-1、C-2、C-3、C-4、X-3、C-6、C-7、Z-2、N-6 |
 | ❌ 查證後駁回（誤報） | 1 | D-1 |
 | ⬇️ 已裁決降級 | 2 | N-1（→P2，附四條修法與各自阻礙）、S-5（→P4，維護者裁決不套 record scope） |
-| 🔀 已裁決、部分完成或移交 | 4 | D-2（文件面已修，程式面裁決不接載入期）、D-4（裁決保留）、D-3 / D-5（移交 [plan-definition-editor.md](plan-definition-editor.md)） |
+| 🔀 已裁決、部分完成或移交 | 4 | D-2（文件面已修，程式面裁決不接載入期）、D-4（裁決保留）、D-3 / D-5（移交 [plan-definition-editor.md](../plan-definition-editor.md)） |
 | ✅ 隨 4.18.0 發版完成 | 2 | C-5、X-2 |
 | ⏸️ **有方向、未裁決是否執行** | 3 | **S-4、N-2、N-5**（全為 P1） |
 | 📝 有修法、未排程（P2） | 7 | A-1、A-2、A-3、A-4、P-2、P-3、P-4 |
@@ -416,8 +420,8 @@ XmlCodec.Serialize(obj)
 |---|------|------|------|
 | **❌ D-1** | ~~上輪 14 項死碼清單只清了 10 項~~ **2026-08-07 查證後駁回：整項誤報** | — | 所謂「未清 4 項」在上輪**全部經裁決明確保留**，不是漏清。上輪 plan 的刪除清單下方緊接著一張〈刻意保留〉表，本輪掃描只讀到被 `~~刪除線~~` 劃掉的原始清單、沒讀那張表。逐項複驗：`TreeNodeIgnoreAttribute` 上輪已標「⚠️ 本表一處誤判已更正」（7 處生產用途，防反射循環），本輪又列一次；`IDefineField` 由 `DbField` 實作，屬未被消費的抽象；`IElementCapabilityResolver` 的實作 `ElementCapabilityResolver.Default` 有 5 處生產呼叫（`LayoutCapabilityApplier` / `ListView.Commands` / `FormView` / DemoCenter ×3）；`CheckPackageUpdate`/`GetPackage` 是 base 擲 `NotSupportedException` 的刻意擴充點，已列入 `docs/api-method-reference` 與 `jsonrpc-frontend-integration`。上輪唯一真正遞延到本輪的是 `DateTimeExtensions.GetYearMonth`（零生產呼叫端）——但 BCL 無「當月一日」等價方法，非純 wrapper，依 code-style「0-caller 框架公開 API 保留」應留。**本項無動作。** |
 | **D-2** | `PermissionBindingValidator` 看似防護、production 零呼叫 → **查證後升級：公開文件宣稱的保證不存在** | `src/Bee.Definition/Settings/Permission/PermissionBindingValidator.cs` | 驗證 `PermissionModelId` / `ScopeRole` 綁定正確性，只有測試呼叫 7 次。**權限綁定錯誤在 runtime 不會被攔下**。建議接進定義載入或 `Bee.Cli` validate 指令（與 `Bee.Analyzers` 那條線是同一件事的兩種實作）。**2026-08-07 查證補充**：這不只是死碼——三處**公開文件**明文宣稱它在載入期生效：`docs/permission-authorization.md:66,160`（"is a load-time validation error"／"fails at load time"）、其 zh-TW 對應處、`docs/adr/adr-019:37`（「由 `PermissionBindingValidator` 於載入期報錯」）。與 X-2 同型：文件與事實不符比缺口本身更危險。**維護者裁決（2026-08-07）：改文件，讓敘述符合事實**，不接進定義載入。**✅ 文件面已完成**：`permission-authorization` 雙語新增〈定義驗證（由宿主呼叫）〉一節，明說框架不自動呼叫、並給出宿主接法的範例；三處誤述改為「回報錯誤」並連向該節；`adr-019` 三處（:20 硬性約束、:37 線 A、:68 fail-closed 邊界）同步更正——其中 :68 原本把它列為 fail-closed 的**緩解手段**，是三處裡最誤導的一處。`PermissionBindingValidator` 的 XML doc（會進消費端 IntelliSense）補 `<remarks>` 說明框架不自動執行、且無效綁定會退化成「無 enforcement」而非錯誤。**未做**：接進 `Bee.Cli` validate 指令，留待日後 |
-| **D-3** | ~~`TreeNode` 屬性叢集為死碼~~ → **改判：未接線的設計，另定 plan 處理** | `src/Bee.Base/Attributes/TreeNode{,Ignore}Attribute.cs`、`IDisplayName.cs` | **不刪除，且不在本次體檢範圍內處理**——見 [plan-definition-editor.md](plan-definition-editor.md)。原判定為 WinForms 遺留有誤：標註模型是連貫的領域階層描述（`CollectionFolder` 描述結構、7 個 `[TreeNodeIgnore]` 全數用於防反射循環），意圖是「定義物件 → 前端 TreeView」。實際為 71 處標註（41 + 23 無參數 + 7 ignore），非 62 |
-| **D-5** | **（新增）定義類別上另有 579 處純編輯器 metadata 零消費端** | `src/Bee.Definition/**`（`[Description]` 312、`[Category]` 115、`[Browsable]` 68、`[TypeConverter]` 13；`[DefaultValue]` 144 另有序列化用途故不計入） | 與 D-3 同源、規模大 7 倍。本輪散落類別掃描漏掉，因其掃描目標是「型別有無 caller」，而這些是 BCL attribute。根因：歷史工作模式為 TreeView + PropertyGrid 雙控件驅動，移植 Avalonia 時因**無內建 PropertyGrid** 而改為手寫面板（57 個 DataTemplate + 141 個欄位繫結），metadata 就此斷線。**另定 plan 處理**，見 [plan-definition-editor.md](plan-definition-editor.md) |
+| **D-3** | ~~`TreeNode` 屬性叢集為死碼~~ → **改判：未接線的設計，另定 plan 處理** | `src/Bee.Base/Attributes/TreeNode{,Ignore}Attribute.cs`、`IDisplayName.cs` | **不刪除，且不在本次體檢範圍內處理**——見 [plan-definition-editor.md](../plan-definition-editor.md)。原判定為 WinForms 遺留有誤：標註模型是連貫的領域階層描述（`CollectionFolder` 描述結構、7 個 `[TreeNodeIgnore]` 全數用於防反射循環），意圖是「定義物件 → 前端 TreeView」。實際為 71 處標註（41 + 23 無參數 + 7 ignore），非 62 |
+| **D-5** | **（新增）定義類別上另有 579 處純編輯器 metadata 零消費端** | `src/Bee.Definition/**`（`[Description]` 312、`[Category]` 115、`[Browsable]` 68、`[TypeConverter]` 13；`[DefaultValue]` 144 另有序列化用途故不計入） | 與 D-3 同源、規模大 7 倍。本輪散落類別掃描漏掉，因其掃描目標是「型別有無 caller」，而這些是 BCL attribute。根因：歷史工作模式為 TreeView + PropertyGrid 雙控件驅動，移植 Avalonia 時因**無內建 PropertyGrid** 而改為手寫面板（57 個 DataTemplate + 141 個欄位繫結），metadata 就此斷線。**另定 plan 處理**，見 [plan-definition-editor.md](../plan-definition-editor.md) |
 | **D-4** | `IUIViewService` 抽象縫 production 零實作 → **需裁決** | `src/Bee.UI.Core/IUIViewService.cs`、`ClientInfo.cs:169,354` | 唯一實作是三個測試 fake。所有實際 head 走另一個多載 → `ClientInfo.UIViewService` 恆 null。`ClientInfoInitializeTests` 註解自稱「補強覆蓋率」，4 個測試全為執行這條死路徑。**2026-08-07 查證補充**：事實成立——四個 head（Northwind.UI / Avalonia.Demo / DemoCenter / DefineEditor）全走 `InitializeAsync(string endpoint)`，各自寫 `ConnectionViewModel` 而非 dialog-callback。但它**不是無主的死碼，是有文件的宿主擴充點**：`development-cookbook:720` 教「1. Implement IUIViewService」、`terminology` 有詞條、`Bee.UI.Core/README` 列為 API、`adr-013:30,78` 以它為「Blazor 為何不屬 `Bee.UI.*`」的論據、`dependency-map:130` 更把它寫進 family 判別準則。依 code-style「0-caller 框架公開 API 保留」應留。**若要移除，牽動 A-3 提出的 family 判別準則改寫**（兩項應一起裁決）。純測試面的小問題（4 個測試只為執行死路徑）可獨立處理 |
 | **A-1** | `Bee.Api.AspNetCore` 越層直取 `ICacheContainer` | `BeeFrameworkApplicationBuilderExtensions.cs:2,50`；csproj 只宣告 `Bee.Hosting` | 跨層繞道 + 未宣告的遞移相依。本 repo 對顯式宣告有明確慣例（`Bee.Hosting.csproj:22-24` 註解）。**2026-07-28 後回歸**（`d66dc510`）。修法：暴露 `IApiKeyGateProbe` 於 `Bee.Hosting`，或補顯式 ProjectReference + 更新 constraints 文件 |
 | **A-2** | `BackendDefaultTypes` 以反射字串反指 8 個外層具象型別 | `src/Bee.Definition/BackendDefaultTypes.cs:15-53` | Domain Core（L2）指名 `Bee.Business` / `Bee.ObjectCaching` / `Bee.Repository`（L4）。**編譯期與相依圖都看不見**，改名只在執行期炸。卡在此處是因 `[DefaultValue]` 需編譯期常數。修法：移除 `[DefaultValue]`、常數搬到 `Bee.Hosting`（已引用全部三者），fallback 走既有的 `IsNullOrWhiteSpace` 成例 |
