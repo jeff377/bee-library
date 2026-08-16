@@ -30,6 +30,7 @@ This document provides a standard term reference for technical writing, ensuring
 |---------|------|-------------|
 | Definition-Driven Architecture | 定義導向架構 | BeeNET's core architectural pattern, using structural definitions to uniformly drive UI, database, and business logic |
 | Single Source of Truth | 唯一定義來源 | `FormSchema` as the system's only structural specification, avoiding duplicate implementations across three layers |
+| `progId` | 程式識別碼 | A functional program's unique identifier string, and the key of the type registry: `ProgramSettings.xml` binds a BO and a repository to it, and the JSON-RPC `method` is `progId.action`. The model follows COM+'s ProgID (a registry key mapping to a component type) — see [ADR-034](adr/adr-034-progid-type-registry.md). Spelled `ProgId` as a C# property and as an XML attribute. For the ones the framework reserves, see [Framework-Reserved Names](framework-reserved-names.md) |
 | NoCode | 零程式碼 | Fully generated automatically from `FormSchema`; no code required |
 | LowCode | 低程式碼 | Built on `FormSchema` with small overrides extending behavior |
 | AnyCode | 全程式碼 | Fully implemented by the developer, not driven by `FormSchema` |
