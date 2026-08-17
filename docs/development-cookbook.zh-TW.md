@@ -331,9 +331,11 @@ public class CustomerBo : FormBusinessObject
 
 #### 3. 解析行為
 
-`ProgramSettingsBoTypeResolver`(由 `AddBeeFramework` 註冊)讀取 `ProgramItem.BusinessObject`、透過 `AssemblyLoader` 載入型別、驗證繼承自 `BusinessObject`。**一般 progId** 的任何失敗(檔案不存在、型別解析失敗、繼承不對)皆 fallback 回 `FormBusinessObject` 而非中斷請求——支援漸進採用。
+`ProgramSettingsBoTypeResolver`(由 `AddBeeFramework` 註冊)讀取 `ProgramItem.BusinessObject`、透過 `AssemblyLoader` 載入型別、驗證繼承自 `BusinessObject`。**已宣告的名稱解析不出可用型別時一律拋例外**——型別載不到、或繼承不對,都是設定錯誤,沒有無害的解讀。退回換到的只有「看起來還在跑」:`FormBusinessObject` 接受任何 progId,一定建構成功,故障因此浮現得晚,症狀是「這支程式行為變成通用 CRUD」。
 
-**保留字 progId** `System` 與 `AuditLog` 受更嚴的規則約束:型別載不到、或不衍生自該軸的框架物件,會讓 host 起不來而非降級。那裡若沿用靜默退回,症狀會是 JSON-RPC「找不到方法」,把診斷者導向 API 層而非真正的成因(註冊表)。host 啟動時若發現缺項會自行補寫,既有的 `ProgramSettings.xml` 不需手動改。
+漸進採用仍然安全,因為**「沒宣告」不是失敗**:註冊表沒這筆 progId、或 `BusinessObject` 留空,仍如舊解析為 `FormBusinessObject`。只需要為真的要客製的 progId 填 `BusinessObject`。
+
+**保留字 progId** `System` 與 `AuditLog` 適用同一策略,只是基底約束更緊:必須解析為該軸的框架物件或其子類。host 啟動時若發現缺項會自行補寫,既有的 `ProgramSettings.xml` 不需手動改。
 
 解析結果在記憶體內的 `ProgramSettings` 實例存活期間快取;當 `ProgramSettingsCache` 透過 file watcher 重載檔案時,快取自動 reset。
 
@@ -533,7 +535,7 @@ BO 端以自己的介面取得它,免 cast、也不需指名資料庫——綁�
 private IOrderRepository Repository() => CreateFormRepository<IOrderRepository>();
 ```
 
-**與 `BusinessObject` 不同,`Repository` 型別載不到是直接拋。** 資料存取沒有無害的降級模式:退回等於讓這支程式的讀寫改跑作者刻意替換掉的通用 SQL,而故障會延後到資料已經錯了的時候才浮現。
+**與 `BusinessObject` 一樣,`Repository` 型別載不到是直接拋。** 資料存取沒有無害的降級模式:退回等於讓這支程式的讀寫改跑作者刻意替換掉的通用 SQL,而故障會延後到資料已經錯了的時候才浮現。留空則是「沒宣告」,照舊用框架自己的 repository。
 
 子類可以有自己的相依——工廠以 `ActivatorUtilities` 建構它,介面型別的建構子參數會自 DI 注入。但**不得**再宣告第二個 `string` 或 `Guid` 參數,那兩個型別已被工廠的引數佔用。
 

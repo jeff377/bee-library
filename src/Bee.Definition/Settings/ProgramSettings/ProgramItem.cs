@@ -62,6 +62,11 @@ namespace Bee.Definition.Settings
         /// Named after the role (the BO that handles this program) — matches the
         /// <c>BackendComponents</c> convention of using role names for type-name
         /// configuration properties.
+        /// <para>
+        /// Empty means "declare nothing", which is why it falls back. A name that is present but
+        /// will not load, or that does not derive from the expected business object, throws — the
+        /// same rule <see cref="Repository"/> follows.
+        /// </para>
         /// </remarks>
         [XmlAttribute]
         [Description("Business object bound to this program (assembly-qualified type name).")]
@@ -77,7 +82,7 @@ namespace Bee.Definition.Settings
         /// Same format and naming rule as <see cref="BusinessObject"/>:
         /// <c>"Namespace.Type, AssemblyName"</c>.
         /// <para>
-        /// The named type must derive from <c>DataFormRepository</c>, and unlike
+        /// The named type must derive from <c>DataFormRepository</c>, and as with
         /// <see cref="BusinessObject"/> a name that will not load is <b>never</b> tolerated — the
         /// factory throws rather than degrading to the default. Data access has no harmless
         /// degraded mode: silently substituting the generic repository would run a custom program's

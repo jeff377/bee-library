@@ -12,11 +12,10 @@ namespace Bee.Business.Form
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Every failure throws</b> — the opposite of the business-object axis, where an unloadable
-    /// name degrades to generic CRUD. A binding names the type that <i>is</i> the program, so
-    /// falling back still leaves a working program; a plugin is something the author added on
-    /// purpose, and skipping it would run the pipeline as though the customization were not there.
-    /// Silently omitting a credit check is worse than refusing to save.
+    /// <b>Every failure throws</b>, as on the business-object and repository axes: a declared name
+    /// that will not load is a configuration error, not something to work around. A plugin is
+    /// something the author added on purpose, and skipping it would run the pipeline as though the
+    /// customization were not there. Silently omitting a credit check is worse than refusing to save.
     /// </para>
     /// <para>
     /// Chains are cached by <c>(customizationCode, progId)</c>, which is also what makes the

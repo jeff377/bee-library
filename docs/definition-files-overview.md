@@ -110,17 +110,19 @@ The two attributes are independent — a program may customise its logic, its da
 neither. When both are set they are the same progId's pair: one program, one business object, one
 repository.
 
-**The two failure policies differ, deliberately.** A `BusinessObject` name that will not load
-degrades to the framework default: a misconfigured `Order` behaves generically, which is annoying
-but not an outage. A `Repository` name that will not load **throws**. Data access has no harmless
-degraded mode — falling back would run the program's reads and writes through the generic SQL its
-author replaced on purpose, and the failure would surface later, with the data already wrong.
+**Both attributes follow the same failure policy: a name that will not load throws.** Declaring
+nothing is not a failure — an empty attribute keeps the framework default, which is what makes
+incremental adoption safe. But a name that is present and will not resolve is a configuration
+error. Falling back would buy only the appearance of a running system: a misconfigured `Order`
+would behave generically for a while, and on the data-access side it would run the program's reads
+and writes through the generic SQL its author replaced on purpose, surfacing later with the data
+already wrong.
 
 `System` and `AuditLog` are reserved progIds and are entries like any other. The host registers
-them at startup if they are absent, and they are held to a stricter rule than ordinary progIds: a
-name that will not load, or one that does not derive from the framework object for that axis,
-fails the host rather than degrading. Their `Repository` is left empty — their business objects are
-not schema-driven CRUD and reach data through the framework repositories instead.
+them at startup if they are absent, and they carry a tighter base-type constraint than ordinary
+progIds: they must resolve to the framework object for that axis, or a subclass of it. Their
+`Repository` is left empty — their business objects are not schema-driven CRUD and reach data
+through the framework repositories instead.
 
 `ProgramSettings` is **server-side only**. It carries assembly-qualified type names that no client
 has any use for, so remote `GetDefine` refuses it alongside `SystemSettings` and `DatabaseSettings`.

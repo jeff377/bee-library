@@ -57,6 +57,10 @@ JSON-RPC「找不到方法 Login」，把診斷者導向 API 層或 client，而
 
 未採用「內建預設兜底」：服務雖不中斷，但**客製打錯字會靜默失效** —— 而客製化正是納入註冊表的主要動機。
 
+> **修訂（2026-08-16）：兩軸的失敗策略已收斂為一致，一律直接拋。**
+> 上表「一般 progId → 靜默退回」與下一節「`Repository` 與 `BusinessObject` 相反」是
+> **當時的決定，記錄保留原文**；現行行為見本 ADR 末的〈修訂紀錄〉。
+
 ### `Repository` 的失敗策略與 `BusinessObject` 相反
 
 `Repository` 型別載不到或不衍生自 `DataFormRepository`，**一律直接拋，不 fallback**，
@@ -160,6 +164,35 @@ private IOrderRepository Repository() => CreateFormRepository<IOrderRepository>(
 
 實例見 `apps/Bee.Northwind/Bee.Northwind.Server/Repositories/IOrderRepository.cs` 與
 同目錄的 `OrderRepository.cs`。
+
+## 修訂紀錄
+
+### 2026-08-16：兩軸的失敗策略收斂為一致（一律直接拋）
+
+原決策讓兩軸的失敗策略**刻意相反**：`BusinessObject` 靜默退回、`Repository` 直接拋。
+現改為**一律直接拋**——一般 progId 的 `BusinessObject` 型別載不到或基底不符，
+與保留字、與 `Repository` 軸一樣擲 `InvalidOperationException`。
+
+**改變的只有「宣告了一個名字、但那個名字解析不出可用型別」這一條路徑。**
+沒宣告（註冊表沒這筆 progId，或 `BusinessObject` 留空）仍解析為框架預設——
+一般 progId 得 `FormBusinessObject`、保留字得該軸的框架物件。**那不是失敗**，
+自我註冊補寫與「只為需要客製的 progId 填 `BusinessObject`」都仍然成立。
+
+理由是原決策自己就已經寫過、只是當時沒推到一般 progId 身上：
+
+- **退路換到的只有「看起來還在跑」。** `FormBusinessObject` 的建構子接受任何 progId，
+  一定建構成功，所以故障浮現得晚、面貌又指向 API 層而非註冊表——這正是原決策
+  拿來說明「保留字為何要拋」的同一段推理。差別只在保留字的症狀是「找不到 `Login`」、
+  一般 progId 的症狀是「這支程式行為變成通用 CRUD」，而後者可能整批交易寫完才被發現。
+- **兩軸相反本身就是負擔。** 同一筆 `ProgramItem`、兩個屬性、兩種失敗語意，
+  維護者與框架使用者都得記住哪個是哪個。
+- **「一個壞項不該拖垮整個系統」在多租戶下不成立。** 客製打錯字若靜默失效，
+  受害的是那個租戶而沒有人會知道——而客製化正是納入註冊表的主要動機。
+
+連帶：解析失敗**不進 type cache**（`GetOrAdd` 的 factory 擲例外時不會寫入），
+因此每次呼叫都會拋，不會第二次起靜默通過。
+`ProgramSettingsBoTypeResolver` 的 `ILogger` 建構子多載保留（既有呼叫端仍可編譯與繫結），
+但已無用途——退路沒了，那則 degrade log 也就沒有對象。
 
 ## 相關
 

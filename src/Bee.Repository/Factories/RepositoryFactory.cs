@@ -127,12 +127,12 @@ namespace Bee.Repository.Factories
         /// </exception>
         /// <remarks>
         /// <para>
-        /// <b>Every failure throws</b> — deliberately the opposite of the business-object axis,
-        /// where an unloadable name degrades to the generic CRUD object. There the cost of a typo
-        /// in <c>Order</c> is a program that behaves generically; here it would be reads and writes
-        /// running through the framework's own SQL after an author replaced that logic on purpose.
-        /// A fallback would not avert the failure, only postpone it to a point where the data is
-        /// already wrong.
+        /// <b>Every failure throws</b>, the same policy the business-object axis applies to a
+        /// declared binding. A name that will not load would otherwise send this program's reads
+        /// and writes through the framework's own SQL after an author replaced that logic on
+        /// purpose; a fallback would not avert the failure, only postpone it to a point where the
+        /// data is already wrong. An <b>empty</b> <c>Repository</c> is not a failure — it declares
+        /// nothing, and the framework's own repository serves the schema-driven CRUD.
         /// </para>
         /// <para>
         /// Unlike the business-object resolver this holds no type cache, so a definition reload

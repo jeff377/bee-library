@@ -74,30 +74,32 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("BusinessObject 指向不存在的型別時應 fallback 回 FormBusinessObject")]
-        public void Resolve_BusinessObjectUnresolvable_FallsBackToFormBusinessObject()
+        [DisplayName("BusinessObject 指向不存在的型別時應拋出並指名 progId 與型別名")]
+        public void Resolve_BusinessObjectUnresolvable_Throws()
         {
             var settings = BuildSettings(("P001", "NonExistent.Bo, NonExistent.Assembly"));
             var defineAccess = new ProgramSettingsDefineAccess(settings);
             var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
-            var result = resolver.Resolve("P001");
+            var ex = Assert.Throws<InvalidOperationException>(() => resolver.Resolve("P001"));
 
-            Assert.Equal(typeof(FormBusinessObject), result);
+            Assert.Contains("P001", ex.Message, StringComparison.Ordinal);
+            Assert.Contains("NonExistent.Bo, NonExistent.Assembly", ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
-        [DisplayName("BusinessObject 指向非 FormBusinessObject 子類時應 fallback 回 FormBusinessObject")]
-        public void Resolve_BusinessObjectNotAssignable_FallsBackToFormBusinessObject()
+        [DisplayName("BusinessObject 指向非 BusinessObject 子類時應拋出並指名預期基底")]
+        public void Resolve_BusinessObjectNotAssignable_Throws()
         {
-            // System.Object is a real type but not assignable to FormBusinessObject.
+            // System.Object is a real type but not assignable to BusinessObject.
             var settings = BuildSettings(("P001", "System.Object, System.Private.CoreLib"));
             var defineAccess = new ProgramSettingsDefineAccess(settings);
             var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
-            var result = resolver.Resolve("P001");
+            var ex = Assert.Throws<InvalidOperationException>(() => resolver.Resolve("P001"));
 
-            Assert.Equal(typeof(FormBusinessObject), result);
+            Assert.Contains("P001", ex.Message, StringComparison.Ordinal);
+            Assert.Contains(nameof(BusinessObject), ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]

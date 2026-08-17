@@ -337,9 +337,11 @@ public class CustomerBo : FormBusinessObject
 
 #### 3. Resolution behaviour
 
-`ProgramSettingsBoTypeResolver` (registered by `AddBeeFramework`) looks up `ProgramItem.BusinessObject`, loads the type via `AssemblyLoader`, and verifies it derives from `BusinessObject`. For an ordinary progId, any failure (missing file, unresolved type, wrong base class) falls back to `FormBusinessObject` rather than failing the request — incremental adoption is safe.
+`ProgramSettingsBoTypeResolver` (registered by `AddBeeFramework`) looks up `ProgramItem.BusinessObject`, loads the type via `AssemblyLoader`, and verifies it derives from `BusinessObject`. **A declared name that will not resolve throws** — an unloadable type, or one with the wrong base class, is a configuration error with no harmless reading. Falling back would buy only the appearance of a running system: `FormBusinessObject` accepts any progId, so it constructs happily and the failure surfaces later as generic behaviour where custom logic was expected.
 
-The **reserved progIds** `System` and `AuditLog` are held to a stricter rule: a type that will not load, or one that does not derive from the framework object for that axis, fails the host instead of degrading. A silent fallback there would surface as a JSON-RPC "method not found", pointing the diagnosis at the API layer rather than at the registry. The host registers both progIds at startup when they are absent, so an existing `ProgramSettings.xml` needs no manual edit.
+Incremental adoption is still safe, because **declaring nothing is not a failure**: a progId the registry does not mention, or one whose `BusinessObject` is empty, resolves to `FormBusinessObject` as before. Only declare `BusinessObject` for the progIds you actually customise.
+
+The **reserved progIds** `System` and `AuditLog` follow the same policy with a tighter base-type constraint: they must resolve to the framework object for that axis, or a subclass of it. The host registers both progIds at startup when they are absent, so an existing `ProgramSettings.xml` needs no manual edit.
 
 Resolved types are cached for the lifetime of the in-memory `ProgramSettings` instance; when `ProgramSettingsCache` reloads the file (via its file watcher), the cache resets automatically.
 
@@ -555,7 +557,7 @@ The business object asks for it by interface, with no cast and no database id to
 private IOrderRepository Repository() => CreateFormRepository<IOrderRepository>();
 ```
 
-**Unlike `BusinessObject`, a `Repository` that will not load throws.** Data access has no harmless degraded mode: falling back would run this program's reads and writes through the generic SQL its author replaced on purpose, and the failure would surface later with the data already wrong.
+**As with `BusinessObject`, a `Repository` that will not load throws.** Data access has no harmless degraded mode: falling back would run this program's reads and writes through the generic SQL its author replaced on purpose, and the failure would surface later with the data already wrong. An *empty* `Repository` declares nothing and keeps the framework's own.
 
 A subclass may add its own dependencies — the factory builds it with `ActivatorUtilities`, so interface-typed constructor parameters are injected from DI. It must not add a second `string` or `Guid` parameter, since those are already supplied by the factory.
 

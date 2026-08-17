@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Bee.Business.Form;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
@@ -45,16 +44,16 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("BusinessObject 型別名組件可載入但型別不存在（GetType→null）時應回退 FormBusinessObject")]
-        public void Resolve_TypeNameLoadableAssemblyButMissingType_FallsBack()
+        [DisplayName("BusinessObject 型別名組件可載入但型別不存在（GetType→null）時應拋出")]
+        public void Resolve_TypeNameLoadableAssemblyButMissingType_Throws()
         {
             var settings = BuildSettings(("P001", "Bee.Business.NoSuchTypeXyz, Bee.Business"));
             var defineAccess = new MutableDefineAccess(settings);
             var resolver = new ProgramSettingsBoTypeResolver(defineAccess);
 
-            var result = resolver.Resolve("P001");
+            var ex = Assert.Throws<InvalidOperationException>(() => resolver.Resolve("P001"));
 
-            Assert.Equal(typeof(FormBusinessObject), result);
+            Assert.Contains("NoSuchTypeXyz", ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]

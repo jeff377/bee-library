@@ -28,7 +28,6 @@ using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace Bee.Hosting
 {
@@ -255,16 +254,14 @@ namespace Bee.Hosting
 
             // 8. Business-object factory + progId → BO type resolver.
             //    ProgramSettingsBoTypeResolver looks up ProgramItem.BusinessObject in
-            //    ProgramSettings.xml. Ordinary progIds without one fall back to FormBusinessObject;
-            //    the reserved progIds resolve to the framework's own objects and fail fast when the
-            //    registry names something that will not load (see ProgramSettingsBoTypeResolver).
+            //    ProgramSettings.xml. A progId that declares none falls back to the framework
+            //    default — FormBusinessObject, or the framework's own object for a reserved progId.
+            //    A progId that declares a name the registry cannot honour fails the request rather
+            //    than degrading (see ProgramSettingsBoTypeResolver).
             services.AddSingleton<IBoTypeResolver>(sp =>
                 new ProgramSettingsBoTypeResolver(
                     sp.GetRequiredService<IDefineAccess>(),
-                    sp.GetRequiredService<ICustomizeDefineReader>(),
-                    // Optional: a host with no logging configured still resolves types, it just
-                    // reports nothing when a binding degrades.
-                    sp.GetService<ILogger<ProgramSettingsBoTypeResolver>>()));
+                    sp.GetRequiredService<ICustomizeDefineReader>()));
             //    The factory is no longer replaceable through BackendComponents: what it builds is
             //    decided by the registry, one progId at a time, which is both finer-grained and
             //    per-tenant. Swapping the whole factory was the only way to change a system business

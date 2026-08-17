@@ -133,72 +133,62 @@ namespace Bee.Business.UnitTests
         // ---- 解析失敗的可觀測性 ----
 
         [Fact]
-        [DisplayName("客製 BO 型別載不到時應降級並記錄一筆 error，訊息標示客製來源")]
-        public void Resolve_CustomizeTypeUnloadable_DegradesAndLogsWithCustomizeOrigin()
+        [DisplayName("客製 BO 型別載不到時應拋出，訊息標示客製來源")]
+        public void Resolve_CustomizeTypeUnloadable_ThrowsWithCustomizeOrigin()
         {
             var reader = new SpyCustomizeReader();
             reader.SetProgramSettings("acme", BuildSettings(("Order", "Acme.Typo.OrderBo, Acme.Typo")));
             var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("Order", BaseFormBoFqn)));
-            var logger = new RecordingLogger();
-            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, reader, logger);
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, reader);
 
-            var result = resolver.Resolve("acme", "Order");
+            var ex = Assert.Throws<InvalidOperationException>(() => resolver.Resolve("acme", "Order"));
 
-            Assert.Equal(typeof(FormBusinessObject), result);
-            var entry = Assert.Single(logger.Entries);
-            Assert.Equal(LogLevel.Error, entry.Level);
-            Assert.Contains("Order", entry.Message, StringComparison.Ordinal);
-            Assert.Contains("Acme.Typo.OrderBo, Acme.Typo", entry.Message, StringComparison.Ordinal);
-            Assert.Contains("acme", entry.Message, StringComparison.Ordinal);
+            Assert.Contains("Order", ex.Message, StringComparison.Ordinal);
+            Assert.Contains("Acme.Typo.OrderBo, Acme.Typo", ex.Message, StringComparison.Ordinal);
+            Assert.Contains("acme", ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
-        [DisplayName("型別不繼承 BusinessObject 時應降級並記錄一筆 error，訊息標示套裝來源")]
-        public void Resolve_TypeNotBusinessObject_DegradesAndLogsWithBaseOrigin()
+        [DisplayName("型別不繼承 BusinessObject 時應拋出，訊息標示套裝來源")]
+        public void Resolve_TypeNotBusinessObject_ThrowsWithBaseOrigin()
         {
             var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("Order", NotABusinessObjectFqn)));
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, null);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => resolver.Resolve("Order"));
+
+            Assert.Contains("base registry", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        [DisplayName("失敗不進 type cache：重複呼叫每次都應拋出，不會第二次起靜默通過")]
+        public void Resolve_RepeatedFailure_ThrowsEveryTime()
+        {
+            var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("Order", "Nope.OrderBo, Nope")));
+            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, null);
+
+            Assert.Throws<InvalidOperationException>(() => resolver.Resolve("Order"));
+            Assert.Throws<InvalidOperationException>(() => resolver.Resolve("Order"));
+            Assert.Throws<InvalidOperationException>(() => resolver.Resolve("Order"));
+        }
+
+        [Fact]
+        [DisplayName("帶 logger 的建構子多載保留可用（logger 已不再使用，不應收到任何訊息）")]
+        public void Ctor_LoggerOverload_StillResolvesAndLogsNothing()
+        {
+            var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("Order", BaseFormBoFqn)));
             var logger = new RecordingLogger();
             var resolver = new ProgramSettingsBoTypeResolver(defineAccess, null, logger);
 
             var result = resolver.Resolve("Order");
 
-            Assert.Equal(typeof(FormBusinessObject), result);
-            var entry = Assert.Single(logger.Entries);
-            Assert.Equal(LogLevel.Error, entry.Level);
-            Assert.Contains("base registry", entry.Message, StringComparison.Ordinal);
-        }
-
-        [Fact]
-        [DisplayName("解析成功時不應記錄任何訊息")]
-        public void Resolve_Succeeds_LogsNothing()
-        {
-            var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("Order", BaseFormBoFqn)));
-            var logger = new RecordingLogger();
-            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, null, logger);
-
-            resolver.Resolve("Order");
-
+            Assert.Equal(typeof(ProgramSettingsBoTypeResolverTests.TestableCustomFormBo), result);
             Assert.Empty(logger.Entries);
-        }
-
-        [Fact]
-        [DisplayName("因 type cache，同一 (customizeId, progId) 的失敗只記錄一次")]
-        public void Resolve_RepeatedFailure_LogsOnlyOnceBecauseOfTypeCache()
-        {
-            var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("Order", "Nope.OrderBo, Nope")));
-            var logger = new RecordingLogger();
-            var resolver = new ProgramSettingsBoTypeResolver(defineAccess, null, logger);
-
-            resolver.Resolve("Order");
-            resolver.Resolve("Order");
-            resolver.Resolve("Order");
-
-            Assert.Single(logger.Entries);
         }
 
         // ---- Test doubles ----
 
-        /// <summary>不繼承 <see cref="BusinessObject"/> 的型別，用於驗證「型別不相容」的降級路徑。</summary>
+        /// <summary>不繼承 <see cref="BusinessObject"/> 的型別，用於驗證「型別不相容」的失敗路徑。</summary>
         public sealed class NotABusinessObject { }
 
         private static string NotABusinessObjectFqn =>

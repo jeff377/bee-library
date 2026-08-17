@@ -13,8 +13,8 @@ using Bee.Definition.Storage;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
-    /// 保留字 progId（System / AuditLog）的解析防護：缺項回框架預設、型別載不到或基底不符 fail fast，
-    /// 以及一般 progId 的 silent fallback 政策不受影響。
+    /// 保留字 progId（System / AuditLog）的解析防護：缺項回框架預設、型別載不到或基底不符 fail fast。
+    /// 一般 progId 的失敗策略相同，差別只在預期基底較寬（BusinessObject 而非該軸的框架物件）。
     /// </summary>
     public class ReservedProgIdResolutionTests
     {
@@ -72,7 +72,7 @@ namespace Bee.Business.UnitTests
             Assert.Equal(typeof(CustomSystemBo), resolver.Resolve(SysProgIds.System));
         }
 
-        // ---- 已宣告但壞掉：fail fast（刻意與一般 progId 的 silent fallback 相反）----
+        // ---- 已宣告但壞掉：fail fast ----
 
         [Fact]
         [DisplayName("保留字綁定的型別載不到時應拋出並指名 progId 與型別名，不得靜默退回")]
@@ -119,14 +119,27 @@ namespace Bee.Business.UnitTests
             Assert.Throws<InvalidOperationException>(() => resolver.Resolve(SysProgIds.AuditLog));
         }
 
-        // ---- 一般 progId：政策不變 ----
+        // ---- 一般 progId：與保留字同樣 fail fast，只有預期基底較寬 ----
 
         [Fact]
-        [DisplayName("一般 progId 型別載不到時仍應靜默退回 FormBusinessObject（政策未受保留字改動影響）")]
-        public void Resolve_OrdinaryProgIdWithUnloadableType_FallsBackSilently()
+        [DisplayName("一般 progId 型別載不到時同樣應拋出——兩軸不再有相反的失敗策略")]
+        public void Resolve_OrdinaryProgIdWithUnloadableType_Throws()
         {
             var resolver = new ProgramSettingsBoTypeResolver(
                 new StubDefineAccess(Registry(("Order", "Bee.Business.NoSuchTypeXyz, Bee.Business"))));
+
+            var ex = Assert.Throws<InvalidOperationException>(() => resolver.Resolve("Order"));
+
+            Assert.Contains("Order", ex.Message, StringComparison.Ordinal);
+            Assert.Contains("NoSuchTypeXyz", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        [DisplayName("一般 progId 未宣告 BusinessObject 時仍應回傳 FormBusinessObject（「沒宣告」不是失敗）")]
+        public void Resolve_OrdinaryProgIdWithEmptyBusinessObject_ReturnsFormBusinessObject()
+        {
+            var resolver = new ProgramSettingsBoTypeResolver(
+                new StubDefineAccess(Registry(("Order", string.Empty))));
 
             Assert.Equal(typeof(FormBusinessObject), resolver.Resolve("Order"));
         }
