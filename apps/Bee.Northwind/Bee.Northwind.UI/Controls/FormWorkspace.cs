@@ -4,16 +4,20 @@ using Bee.UI.Avalonia.Views;
 namespace Bee.Northwind.UI.Controls;
 
 /// <summary>
-/// One form's workspace: hosts the <see cref="ListView"/> browse surface and swaps in a
+/// One form's workspace: hosts the <see cref="LocalizedListView"/> browse surface and swaps in a
 /// <see cref="FormView"/> for the selected record, switching back to the list when the record
 /// is saved or dismissed. This is the host-side orchestration of the ERP list/record flow —
 /// the framework ships <see cref="ListView"/> and <see cref="FormView"/> as independent
 /// controls and leaves the switching to the host.
+/// <para>
+/// Both surfaces are given a <see cref="NorthwindDefinitions"/> loader, which is what puts the
+/// demo on the localization and tenant-customization paths at all.
+/// </para>
 /// </summary>
 public sealed class FormWorkspace : UserControl
 {
     private readonly string _progId;
-    private readonly ListView _list;
+    private readonly LocalizedListView _list;
     private readonly ContentControl _host;
 
     /// <summary>
@@ -23,7 +27,7 @@ public sealed class FormWorkspace : UserControl
     {
         _progId = progId;
 
-        _list = new ListView { ProgId = progId };
+        _list = new LocalizedListView { ProgId = progId };
         _list.ViewRequested += (_, id) => ShowRecord(record => record.ViewAsync(id));
         _list.EditRequested += (_, id) => ShowRecord(record => record.EditAsync(id));
         _list.AddRequested += (_, _) => ShowRecord(record => record.NewAsync());
@@ -56,7 +60,14 @@ public sealed class FormWorkspace : UserControl
 
     private void ShowRecord(Func<FormView, Task> start)
     {
-        var record = new FormView { ProgId = _progId };
+        // The loader is what makes a record form read the packaged zh-TW captions, the tenant's
+        // overrides on top of them, and the Define/FormLayout/*.xml file — a form left without one
+        // fetches the schema as stored and generates its own layout, ignoring all three.
+        var record = new FormView
+        {
+            ProgId = _progId,
+            DefinitionLoader = NorthwindDefinitions.CreateLoader(),
+        };
         record.Saved += (_, _) => ReturnToList(reload: true);
         record.Closed += (_, _) => ReturnToList(reload: false);
 

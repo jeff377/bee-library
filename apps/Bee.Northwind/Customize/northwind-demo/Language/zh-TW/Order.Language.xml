@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tenant customization layer for the "northwind-demo" customization code, reached because
+     NorthwindCompanyInfoService's company names it and NorthwindSystemBusinessObject.Login copies
+     it onto the session. This tenant calls its customers 經銷商, so it renames the two captions
+     that say so and declares nothing else: the remaining keys keep resolving against
+     Define/Language/zh-TW/Order.Language.xml, and a caption the package adds later arrives here
+     for free. That is the difference between an override layer and a forked copy. -->
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Order" Lang="zh-TW">
+  <Items>
+    <LanguageItem Key="Field.customer_rowid.Caption" Value="經銷商" />
+    <LanguageItem Key="Field.ref_customer_name.Caption" Value="經銷商名稱" />
+  </Items>
+  <Enums />
+</LanguageResource>

@@ -15,6 +15,7 @@ Eight forms, master-detail orders with three lookups, framework organization tab
 - **Master-detail documents** — orders carry a detail grid with per-row product lookup, saved and reloaded as one unit.
 - **A custom business-logic object** — order numbering, status transitions, required-field validation, and amount calculation are the *only* C# in the app, in one `OrderBO`. The README's comparison table shows exactly which behavior is definition, which is framework, and which is application code.
 - **Framework system tables (`st_`) alongside business tables (`ft_`)** — `Employee` / `Department` are framework tables the app reuses and extends; `Customer` / `Product` / `Order` are business tables the app defines.
+- **Localized captions and a tenant customization layer** — the Order form's zh-TW captions come from a language resource, and a customization layer renames two of them for this tenant while inheriting the rest. Both are definition files; neither is code.
 
 ## Running the demo
 
@@ -167,12 +168,48 @@ This is the whole argument in one table.
 | Master-detail save as one unit | **framework** | repository, driven by the multi-table `FormSchema` |
 | progId to business-object and repository binding | **definition** | `ProgramSettings.xml` (the type registry) |
 | Navigation menu (grouped form list) | **definition** | `MenuSettings.xml` |
+| Localized captions and display names | **definition** | `Define/Language/{lang}/{progId}.Language.xml` |
+| Per-tenant caption overrides | **definition** | `Customize/{customizeId}/Language/…`, resolved per key |
 | Login / session / encryption | **framework** | `SystemBusinessObject`, API pipeline |
 | **Order number, status transitions, validation, amounts** | **application code** | `OrderBO` (the only business logic in the app) |
 
 The single C# business object, [`OrderBO`](Bee.Northwind.Server/BusinessObjects/OrderBO.cs), overrides `Save` / `GetNewData` to add what a generic form cannot express. Its pure rules are factored into [`OrderRules`](Bee.Northwind.Server/BusinessObjects/OrderRules.cs) and [`OrderDataSet`](Bee.Northwind.Server/BusinessObjects/OrderDataSet.cs), kept free of database dependencies and separate from the orchestration.
 
 Its two database queries live in [`IOrderRepository`](Bee.Northwind.Server/Repositories/IOrderRepository.cs) / [`OrderRepository`](Bee.Northwind.Server/Repositories/OrderRepository.cs), bound to the *same* registry entry as the business object — one progId, one business object, one repository. That is the style template for a form that needs data access beyond the generated CRUD: extend `IDataFormRepository` rather than replace it, derive from `DataFormRepository`, and let the business object ask for it by interface (`CreateFormRepository<IOrderRepository>()`). Keeping the SQL out of the business object is also what let these two queries route to the order's own company database instead of the one the business object happened to name.
+
+## Localization and the tenant customization layer
+
+The Order form is captioned twice over. `FormSchema` carries the English captions inline, so
+English needs no resource file at all — a missing key leaves the schema's own text in place.
+`Define/Language/zh-TW/Order.Language.xml` supplies the zh-TW captions, keyed by the same
+convention everywhere (`Schema.DisplayName`, `Table.{table}.DisplayName`, `Field.{field}.Caption`).
+
+On top of that sits the customization layer. The demo company names a customization code
+(`NorthwindCredentials.CustomizeId`), the session picks it up at sign-in, and every definition
+lookup then consults `Customize/{customizeId}/` before the packaged `Define/` tree. This tenant
+calls its customers 經銷商, so its resource declares exactly two keys:
+
+```xml
+<LanguageItem Key="Field.customer_rowid.Caption" Value="經銷商" />
+<LanguageItem Key="Field.ref_customer_name.Caption" Value="經銷商名稱" />
+```
+
+Everything else on the form still resolves against the packaged resource — **language text is
+overridden per key, not per file** — so a caption the package adds later reaches this tenant
+without touching its customization. Layouts and menus work the opposite way (whole file wins),
+because a partial merge of a visual arrangement has no intuitive answer.
+
+Two independent things gate the layer, and clearing either returns the demo to a plain packaged
+deployment with no other change: the session's customization code, and `PathOptions.CustomizePath`
+in [`NorthwindBackend`](Bee.Northwind.Server/NorthwindBackend.cs). Companies map many-to-one onto
+a customization code, so one code shared by many companies is the normal arrangement — the demo
+just happens to have one of each.
+
+Assembling all of this is the client's job, not the server's: the APIs serve definitions exactly
+as stored, and `FormDefinitionLoader` fetches both layers, applies the overlay, and hands the view
+a localized schema. That is why both surfaces in
+[`FormWorkspace`](Bee.Northwind.UI/Controls/FormWorkspace.cs) are given a loader — a view without
+one renders the schema as stored, in English, with a generated layout.
 
 ## Closing chapter: add a Region form in 30 minutes, with zero code
 
@@ -263,7 +300,9 @@ apps/Bee.Northwind/
 │   ├── DatabaseSettings.xml      the common + company + log databases
 │   ├── DbCategorySettings.xml    which tables exist, per category (drives schema build)
 │   ├── ProgramSettings.xml       the type registry (progId to business object + repository)
-│   └── MenuSettings.xml          the navigation menu (folders, order, captions)
+│   ├── MenuSettings.xml          the navigation menu (folders, order, captions)
+│   └── Language/{lang}/          localized captions, one file per progId
+├── Customize/{customizeId}/      the tenant customization layer (same shape as Define/)
 ├── Bee.Northwind.Server/         JSON-RPC backend, OrderBO, JSON seed data
 ├── Bee.Northwind.UI/             Avalonia shared UI (views, view models, navigation)
 ├── Bee.Northwind.Desktop/        desktop entry point (Avalonia.Desktop)

@@ -44,7 +44,17 @@ public static class NorthwindBackend
             Environment.SetEnvironmentVariable("BEE_MASTER_KEY", NorthwindCredentials.DemoMasterKey);
         }
 
-        var paths = new PathOptions { DefinePath = ResolveDefinePath() };
+        string definePath = ResolveDefinePath();
+        var paths = new PathOptions
+        {
+            DefinePath = definePath,
+            // Turns the tenant customization layer on. A non-empty CustomizePath is one half of the
+            // gate (SessionInfo.CustomizeId is the other), and the demo company names
+            // NorthwindCredentials.CustomizeId, so definition lookups consult
+            // Customize/northwind-demo/ before the packaged Define/ tree. Clearing either half
+            // returns the demo to a pure packaged deployment with no other change.
+            CustomizePath = ResolveCustomizePath(definePath),
+        };
 
         // The framework owns two whole categories of table the demo does not define itself: the
         // cross-company tables in common (st_user, st_session, st_cache_notify, ...) and the audit
@@ -100,6 +110,19 @@ public static class NorthwindBackend
         var dbAccessFactory = app.Services.GetRequiredService<IDbAccessFactory>();
         NorthwindSchemaSeeder.EnsureSchemaAndSeed(defineAccess, connectionManager, dbAccessFactory);
     }
+
+    /// <summary>
+    /// Resolves the tenant customization root as the sibling of the <c>Define</c> directory.
+    /// </summary>
+    /// <param name="definePath">The resolved <c>Define</c> directory.</param>
+    /// <remarks>
+    /// Derived from <paramref name="definePath"/> rather than walked for independently: the two
+    /// roots are siblings by layout, and a second walk could pair a <c>Define</c> from one checkout
+    /// with a <c>Customize</c> from an enclosing one. The directory need not exist — a missing
+    /// override file is the normal answer everywhere in the customization layer.
+    /// </remarks>
+    private static string ResolveCustomizePath(string definePath)
+        => Path.Combine(Path.GetDirectoryName(definePath)!, "Customize");
 
     private static string ResolveDefinePath()
     {

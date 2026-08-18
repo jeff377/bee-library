@@ -11,6 +11,14 @@ namespace Bee.Northwind.Server;
 /// It exists so company-scoped forms (<c>CategoryId="company"</c>) resolve their database:
 /// the router maps <c>SessionInfo.CompanyId</c> → this service → <c>CompanyDatabaseId</c>.
 /// <see cref="Set"/> / <see cref="Remove"/> are no-ops because the demo company is fixed.
+/// <para>
+/// The company also names a <c>CustomizeId</c>, which is what puts the demo on the tenant
+/// customization layer: a session derives its customization code from the company it enters, and
+/// definition lookups then consult <c>Customize/{CustomizeId}/</c> before the packaged layer.
+/// <see cref="NorthwindSystemBusinessObject"/> is what copies it across — the demo's shortcut
+/// login bypasses the framework's own <c>SessionCompanyBinder</c>, which is where that normally
+/// happens.
+/// </para>
 /// </remarks>
 public sealed class NorthwindCompanyInfoService : ICompanyInfoService
 {
@@ -19,6 +27,7 @@ public sealed class NorthwindCompanyInfoService : ICompanyInfoService
         CompanyId = NorthwindCredentials.CompanyId,
         CompanyName = NorthwindCredentials.CompanyName,
         CompanyDatabaseId = NorthwindCredentials.CompanyDatabaseId,
+        CustomizeId = NorthwindCredentials.CustomizeId,
     };
 
     /// <inheritdoc/>

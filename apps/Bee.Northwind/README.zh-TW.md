@@ -15,6 +15,7 @@
 - **Master-detail 單據** —— 訂單帶一個明細表格，每列可挑選商品，整筆一次儲存、一次重載。
 - **自訂業務邏輯物件** —— 單據編號、狀態轉移、必填驗證、金額計算是全應用**唯一**的 C#，集中在一個 `OrderBO`；下方對照表精確標示哪些行為屬定義、哪些屬框架、哪些屬應用程式碼。
 - **框架系統表（`st_`）與業務表（`ft_`）並存** —— `Employee` / `Department` 是應用沿用並擴充的框架表；`Customer` / `Product` / `Order` 是應用自定義的業務表。
+- **在地化標題與租戶客製層** —— 訂單表單的 zh-TW 標題來自語系資源，客製層再改掉其中兩個、其餘照樣繼承。兩者都是定義檔，都不是程式碼。
 
 ## 執行 demo
 
@@ -164,12 +165,44 @@ Northwind 是正規化的關聯式 schema；bee 是 `sys_rowid`（Guid）關連�
 | Master-detail 整筆一次儲存 | **框架** | repository，由多表 `FormSchema` 驅動 |
 | progId 對業務物件與 Repository 的綁定 | **定義** | `ProgramSettings.xml`（型別註冊表） |
 | 導航選單（分組表單清單） | **定義** | `MenuSettings.xml` |
+| 在地化標題與顯示名稱 | **定義** | `Define/Language/{lang}/{progId}.Language.xml` |
+| 各租戶的標題覆寫 | **定義** | `Customize/{customizeId}/Language/…`，逐 key 決定 |
 | 登入／工作階段／加密 | **框架** | `SystemBusinessObject`、API 管線 |
 | **單據編號、狀態轉移、驗證、金額** | **應用程式碼** | `OrderBO`（全應用唯一的業務邏輯） |
 
 唯一的 C# 業務物件 [`OrderBO`](Bee.Northwind.Server/BusinessObjects/OrderBO.cs) 覆寫 `Save` / `GetNewData`，補上一般表單無法表達的規則。其純規則拆到 [`OrderRules`](Bee.Northwind.Server/BusinessObjects/OrderRules.cs) 與 [`OrderDataSet`](Bee.Northwind.Server/BusinessObjects/OrderDataSet.cs)，不依賴資料庫、與協調流程分離。
 
 它的兩個資料庫查詢放在 [`IOrderRepository`](Bee.Northwind.Server/Repositories/IOrderRepository.cs) / [`OrderRepository`](Bee.Northwind.Server/Repositories/OrderRepository.cs)，與業務物件綁在**同一筆**註冊表項目上 —— 一支程式、一個業務物件、一個 Repository。這是「表單需要產生式 CRUD 以外的資料存取」時的樣式範本：**擴充** `IDataFormRepository` 而非取代它、衍生自 `DataFormRepository`，BO 端以介面取得（`CreateFormRepository<IOrderRepository>()`）。把 SQL 移出業務物件，也正是這兩個查詢得以路由到訂單自己的公司資料庫、而非業務物件當初隨手指名那個資料庫的原因。
+
+## 在地化與租戶客製層
+
+訂單表單的標題有兩套來源。英文那套內嵌在 `FormSchema` 的 `Caption`，所以英文根本不需要語系檔
+—— 查不到 key 時 schema 自己的字原樣留著。zh-TW 那套來自
+`Define/Language/zh-TW/Order.Language.xml`，key 的慣例到處都一樣（`Schema.DisplayName`、
+`Table.{表}.DisplayName`、`Field.{欄位}.Caption`）。
+
+客製層疊在它上面。demo 公司指名了一個客製化代碼（`NorthwindCredentials.CustomizeId`），
+登入時被抄進 session，之後每次定義查詢都會**先**看 `Customize/{customizeId}/`、再看套裝的
+`Define/`。這個租戶把客戶叫做「經銷商」，所以它的資源只宣告兩個 key：
+
+```xml
+<LanguageItem Key="Field.customer_rowid.Caption" Value="經銷商" />
+<LanguageItem Key="Field.ref_customer_name.Caption" Value="經銷商名稱" />
+```
+
+表單上其餘欄位照樣解析到套裝資源 —— **語系文字是逐 key 覆蓋，不是整檔取代** ——
+所以套裝日後新增的標題，不必動客製檔就會傳到這個租戶。版面與選單則相反（整檔取代），
+因為視覺編排做局部合併沒有直覺上的正解。
+
+有兩個彼此獨立的開關管著這一層，**清掉任一個就回到純套裝部署、其餘行為完全不變**：
+session 的客製化代碼，以及 [`NorthwindBackend`](Bee.Northwind.Server/NorthwindBackend.cs) 裡的
+`PathOptions.CustomizePath`。公司對客製化代碼是**多對一**，所以「多家公司共用一份客製」才是
+常態，demo 只是剛好各一。
+
+把這些組裝起來是 client 的工作、不是 server 的：API 一律把定義原樣送出，由
+`FormDefinitionLoader` 取回兩層、套用疊加，再把在地化後的 schema 交給畫面。這也是
+[`FormWorkspace`](Bee.Northwind.UI/Controls/FormWorkspace.cs) 兩個畫面都要給 loader 的原因
+—— 沒有 loader 的畫面只會拿到原樣的 schema、英文標題、以及自動產生的版面。
 
 ## 終章：三十分鐘加一張 Region 表單，零程式碼
 
@@ -260,7 +293,9 @@ apps/Bee.Northwind/
 │   ├── DatabaseSettings.xml      common + company + log 三個資料庫
 │   ├── DbCategorySettings.xml    各分類有哪些表（驅動建表）
 │   ├── ProgramSettings.xml       型別註冊表（progId 對業務物件 + Repository）
-│   └── MenuSettings.xml          導航選單（資料夾、排序、標題）
+│   ├── MenuSettings.xml          導航選單（資料夾、排序、標題）
+│   └── Language/{lang}/          在地化標題，每個 progId 一個檔
+├── Customize/{customizeId}/      租戶客製層（結構與 Define/ 相同）
 ├── Bee.Northwind.Server/         JSON-RPC 後端、OrderBO、JSON 種子資料
 ├── Bee.Northwind.UI/             Avalonia 共用 UI（views、view models、導航）
 ├── Bee.Northwind.Desktop/        桌面進入點（Avalonia.Desktop）

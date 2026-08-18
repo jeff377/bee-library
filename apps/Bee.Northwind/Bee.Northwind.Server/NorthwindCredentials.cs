@@ -40,6 +40,18 @@ public static class NorthwindCredentials
     public const string CompanyName = "Northwind Traders";
 
     /// <summary>
+    /// The tenant customization code the demo company maps onto. Becomes the folder name under
+    /// <c>PathOptions.CustomizePath</c>, so the customization layer reads
+    /// <c>Customize/northwind-demo/Language/{lang}/{namespace}.Language.xml</c>.
+    /// </summary>
+    /// <remarks>
+    /// Companies map many-to-one onto a customization code, so one code with one company is the
+    /// smallest arrangement that still exercises the layer. Clearing it — here or on the
+    /// <c>CompanyInfo</c> — short-circuits every customization lookup back to the packaged layer.
+    /// </remarks>
+    public const string CustomizeId = "northwind-demo";
+
+    /// <summary>
     /// The logical <c>DatabaseSettings</c> id backing the demo company — the
     /// <c>CompanyInfo.CompanyDatabaseId</c> the router resolves company scope to.
     /// </summary>

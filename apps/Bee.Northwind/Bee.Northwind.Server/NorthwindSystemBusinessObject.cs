@@ -1,5 +1,7 @@
 using Bee.Business.System;
 using Bee.Definition;
+using Bee.Definition.Identity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.Northwind.Server;
 
@@ -27,13 +29,27 @@ public sealed class NorthwindSystemBusinessObject : SystemBusinessObject
     }
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// WARNING: both fields have to be stamped here. Taking this shortcut means
+    /// <c>SessionCompanyBinder</c> never runs, and that is the only place the framework copies
+    /// <c>CompanyInfo.CustomizeId</c> onto the session. Setting <c>CompanyId</c> alone leaves the
+    /// customization code empty, which every customization lookup treats as "this deployment has
+    /// no customization layer" and short-circuits — silently, with no error anywhere.
+    /// </remarks>
     public override LoginResult Login(LoginArgs args)
     {
         var result = base.Login(args);
 
-        // The session was just created by base.Login; stamp the company context onto it.
+        // The session was just created by base.Login; stamp the company context onto it. The
+        // customization code is read back off the company rather than named again here, so the
+        // demo has exactly one place that decides which customization the company maps onto.
+        var company = Services.GetRequiredService<ICompanyInfoService>().Get(NorthwindCredentials.CompanyId)
+            ?? throw new InvalidOperationException(
+                $"Company '{NorthwindCredentials.CompanyId}' is not known to ICompanyInfoService.");
+
         var session = SessionInfoService.Get(result.AccessToken);
-        session.CompanyId = NorthwindCredentials.CompanyId;
+        session.CompanyId = company.CompanyId;
+        session.CustomizeId = company.CustomizeId;
         SessionInfoService.Set(session);
 
         return result;
