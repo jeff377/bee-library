@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tenant customization layer for the "northwind-demo" customization code — the layout half of
+     what Customize/northwind-demo/Language/zh-TW/Order.Language.xml does for captions, and the
+     contrast worth looking at: the two layers overlay at different granularities.
+
+     A language resource merges per key, so that file names two captions and inherits the rest. A
+     layout does not merge at all: CustomizeOverlay.PickFormLayout is `customize ?? base`, so this
+     file REPLACES Define/FormLayout/Order.FormLayout.xml outright and the packaged one is never
+     read. That is why the whole detail grid is repeated below even though nothing about it changes
+     — a partial file here would silently lose the section it omits, not inherit it.
+
+     What this tenant actually customizes: it neither ships its own orders nor tracks a salesperson,
+     so employee_rowid, shipper_rowid and freight are gone from the master block. The fields still
+     exist on the FormSchema and in the table — a layout decides what the screen shows, not what the
+     record holds.
+
+     The captions below are the packaged file's English text, copied verbatim and inert:
+     FormDefinitionLoader.GetRuntimeLayoutAsync runs FormLayoutCaptionApplier over the layout it
+     picks, which takes every caption from the already-localized FormSchema. Language resources own
+     the words, layout files own the arrangement — so this form renders in zh-TW like any other. -->
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Order" ProgId="Order" Caption="Order">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Order">
+      <Fields>
+        <LayoutField FieldName="sys_id" Caption="Order No" />
+        <LayoutField FieldName="order_date" Caption="Order Date" />
+        <LayoutField FieldName="customer_rowid" Caption="Customer" ControlType="ButtonEdit" DisplayFields="ref_customer_id,ref_customer_name" />
+        <LayoutField FieldName="status" Caption="Status" ControlType="DropDownEdit" />
+        <LayoutField FieldName="total_amount" Caption="Total Amount" ReadOnly="true" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+  <Details>
+    <LayoutGrid TableName="OrderDetail" Caption="Order Details">
+      <Columns>
+        <LayoutColumn FieldName="product_rowid" Caption="Product" ControlType="ButtonEdit" DisplayFields="ref_product_id,ref_product_name" />
+        <LayoutColumn FieldName="quantity" Caption="Quantity" />
+        <LayoutColumn FieldName="unit_price" Caption="Unit Price" />
+        <LayoutColumn FieldName="discount" Caption="Discount" />
+        <LayoutColumn FieldName="amount" Caption="Amount" ReadOnly="true" />
+        <LayoutColumn FieldName="sys_rowid" Caption="Row ID" Visible="false" />
+        <LayoutColumn FieldName="sys_master_rowid" Caption="Master Row ID" Visible="false" />
+      </Columns>
+    </LayoutGrid>
+  </Details>
+</FormLayout>
