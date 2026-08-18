@@ -1,4 +1,1 @@
 #nullable enable
-*REMOVED*Bee.Api.Contracts.AuditLog.IGetChangeLogResponse
-*REMOVED*Bee.Api.Contracts.AuditLog.IGetChangeLogResponse.Paging.get -> Bee.Definition.Paging.PagingInfo?
-*REMOVED*Bee.Api.Contracts.AuditLog.IGetChangeLogResponse.Table.get -> System.Data.DataTable?

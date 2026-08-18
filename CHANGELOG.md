@@ -4,6 +4,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.22.0]
+
+> This release is small and corrective, and two of its four items share a theme: a mechanism that was in place, looked healthy, and did nothing. The analyzers shipped their definition-file injection in `build/`, which NuGet imports only for a **direct** `PackageReference` — so every project reaching `Bee.Definition` transitively loaded the analyzer assemblies, found no files, and passed every rule silently. `BEE1004`, when it did fire, described a consequence that was true for only half the attributes it covers. Around those sit two breaking changes: the audit trail's change axis folds into the shared list contract it had been duplicating since it was built, and a declared business-object binding that will not resolve now throws instead of quietly degrading to generic CRUD. **The first breaking change is source- and binary-level; the second is behavioural and compiles unchanged.**
+
+📄 Full notes and design context: [docs/changelogs/4.22.0.md](docs/changelogs/4.22.0.md)
+
+### Breaking Changes
+
+- `Bee.Api.Contracts` / `Bee.Api.Core` / `Bee.Business` / `Bee.Api.Client`: the AuditLog change axis moves onto the shared list contract. `IGetChangeLogResponse`, `GetChangeLogResponse` and `GetChangeLogResult` are removed — they had members identical to `ILogListResponse` / `LogListResult` and were a leftover from phased implementation. `LogBusinessObject.GetChangeLog` now returns `LogListResult` and `LogApiConnector.GetChangeLogAsync` returns `Task<LogListResponse>`. **The wire format is unchanged**, so client and server need not be deployed together.
+- `Bee.Business`: a declared `BusinessObject` binding that will not resolve now throws `InvalidOperationException` instead of falling back to `FormBusinessObject`, matching the repository and plugin axes. A missing or empty entry still resolves to the framework default, so self-registration and incremental adoption are unaffected. The public surface does not change — this is binary compatible and behaviourally breaking. See [ADR-034](docs/adr/adr-034-progid-type-registry.md).
+
+### Added
+
+- `Bee.Definition`: `SystemActions.CheckPackageUpdate` and `SystemActions.GetPackage`. Both were anonymous-callable API surface with no action constant, leaving callers on magic strings. Purely additive.
+
+### Fixed
+
+- `Bee.Definition`: the analyzers' definition-file injection reaches transitive consumers. `Bee.Definition.targets` was packed into `build/`, which NuGet imports only for a direct `PackageReference` — so a project referencing only `Bee.Business`, `Bee.Db`, `Bee.Api.AspNetCore` or `Bee.Hosting` loaded the analyzers with zero files to read and passed every `BEE1xxx` / `BEE2xxx` rule silently, with nothing in the build reporting it. The targets move to `buildTransitive/`, and a new opt-in `BeeRequireDefinitionFiles` raises `BEE9003` when the glob matches nothing.
+- `Bee.Definition`: `BEE1004` states the runtime consequence for each attribute separately. The message claimed unknown entries are skipped silently, which holds for `LookupFields` but not for `ListFields` — only its layout half filters, while the query half reaches `SelectBuilder.Build` and throws on an unknown column.
+- Doc comments across `src/` are corrected — ten substantive errors, eight of them inventory counts that had drifted from the code they described. These ship in each package's `.xml` and appear in consumer IntelliSense. `check-xmldoc-refs.sh` now guards prose `<c>` references, which `CS1574` does not cover.
+
+### Upgrade
+
+```diff
+- Bee.Api.Contracts.AuditLog.IGetChangeLogResponse
++ Bee.Api.Contracts.AuditLog.ILogListResponse
+
+- Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse
++ Bee.Api.Core.Messages.AuditLog.LogListResponse
+
+- Bee.Business.AuditLog.GetChangeLogResult
++ Bee.Business.AuditLog.LogListResult
+```
+
+- **Verify every `BusinessObject` type name in `ProgramSettings.xml`, including each tenant's customization file, actually resolves.** A binding naming a type that would not load previously degraded to generic CRUD; it now throws on every request for that progId.
+
 ## [4.21.0]
 
 > This release is the outcome of a framework-wide review, and its centre of gravity is concurrency. A host serving several users from one process had them overwrite each other's transmission key; two cache bases built a cold key once per caller, so `EnterCompany` performed through one `SessionInfo` was invisible to a request holding another; and `EnterCompany` itself wrote a company into the shared session before it had finished resolving that company's roles. Alongside those, a batch of public surfaces with no consumer is removed and three public types are renamed away from collisions a host meets at service registration — **the breaking changes are source-level and none of them can be absorbed by doing nothing**. Two mechanisms that were declared but never wired up are connected: company-level number formatting, and the `-32002` / `-32003` error codes that have been published contract since 4.4.0. Expression evaluation is 4.7× faster, permission lookups no longer track deployment size, and a read's wire payload halves.

@@ -4,6 +4,42 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.22.0]
+
+> 本版篇幅小、性質是修正，而四項當中有兩項共用同一個主題：機制擺在那裡、看起來好好的，實際上什麼也沒做。analyzer 把定義檔注入打包在 `build/`，而 NuGet 只對**直接** `PackageReference` 匯入該資料夾——於是每個遞移取得 `Bee.Definition` 的專案都照常載入 analyzer 組件、卻一個檔案也讀不到，所有規則靜默通過。`BEE1004` 真的觸發時，訊息描述的後果也只對它所涵蓋的一半屬性成立。圍繞這兩項的是兩個破壞性變更：稽核軌跡的 change 軸收編回它自建立起就一直重複的共用清單合約，以及「宣告了卻解析不出型別」的 BO 綁定改為直接拋，不再靜默退回通用 CRUD。**前者是原始碼與二進位層級的破壞性變更，後者是行為破壞性、編譯不受影響。**
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.22.0.zh-TW.md](docs/changelogs/4.22.0.zh-TW.md)
+
+### 破壞性變更
+
+- `Bee.Api.Contracts` / `Bee.Api.Core` / `Bee.Business` / `Bee.Api.Client`：AuditLog 的 change 軸改用共用清單合約。移除 `IGetChangeLogResponse`、`GetChangeLogResponse` 與 `GetChangeLogResult`——三者的成員與 `ILogListResponse` / `LogListResult` 完全相同，是分期實作的殘留。`LogBusinessObject.GetChangeLog` 改回傳 `LogListResult`、`LogApiConnector.GetChangeLogAsync` 改回傳 `Task<LogListResponse>`。**wire 格式不變**，因此 client 與 server 不需同時部署。
+- `Bee.Business`：宣告了卻解析不出型別的 `BusinessObject` 綁定，現在擲 `InvalidOperationException`，不再退回 `FormBusinessObject`，與 Repository、Plugin 兩軸一致。沒有該筆或該筆留空時，仍照舊解析為框架預設，故自我註冊與漸進採用不受影響。公開表面零變更——本項二進位相容、行為破壞性。見 [ADR-034](docs/adr/adr-034-progid-type-registry.md)。
+
+### 新增
+
+- `Bee.Definition`：`SystemActions.CheckPackageUpdate` 與 `SystemActions.GetPackage`。兩者都是 anonymous 可呼叫的 API 表面卻沒有 action 常數，呼叫端只能用魔術字串。純新增。
+
+### 修正
+
+- `Bee.Definition`：analyzer 的定義檔注入現在能到達遞移消費者。`Bee.Definition.targets` 原本打包在 `build/`，而 NuGet 只對直接 `PackageReference` 匯入該資料夾——於是只引用 `Bee.Business`、`Bee.Db`、`Bee.Api.AspNetCore` 或 `Bee.Hosting` 的專案載入了 analyzer 卻沒有任何檔案可讀，所有 `BEE1xxx` / `BEE2xxx` 規則靜默通過，而建置過程對此隻字未提。targets 改放 `buildTransitive/`，並新增 opt-in 的 `BeeRequireDefinitionFiles`，在 glob 撈不到檔案時擲 `BEE9003`。
+- `Bee.Definition`：`BEE1004` 改為分別交代每個屬性的執行期後果。原訊息宣稱未知項目會被靜默跳過，這對 `LookupFields` 成立、對 `ListFields` 不成立——後者只有版面那一半會過濾，查詢那一半會走到 `SelectBuilder.Build`，對未知欄位直接擲例外。
+- 修正 `src/` 全域的文件註解——十筆實質錯誤，其中八筆是與程式碼脫節的清點數字。這些會隨各套件的 `.xml` 發佈並出現在消費端 IntelliSense。`check-xmldoc-refs.sh` 補上散文 `<c>` 參照的把關，那是 `CS1574` 涵蓋不到的一段。
+
+### 升級指引
+
+```diff
+- Bee.Api.Contracts.AuditLog.IGetChangeLogResponse
++ Bee.Api.Contracts.AuditLog.ILogListResponse
+
+- Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse
++ Bee.Api.Core.Messages.AuditLog.LogListResponse
+
+- Bee.Business.AuditLog.GetChangeLogResult
++ Bee.Business.AuditLog.LogListResult
+```
+
+- **檢查 `ProgramSettings.xml`（含各租戶客製檔）裡每一個 `BusinessObject` 型別名都確實解析得到。** 綁定所指型別載不到時，原本會退回通用 CRUD，現在該 progId 的每一次請求都會拋。
+
 ## [4.21.0]
 
 > 本版是一次全框架體檢的產出，重心在**並行正確性**。單一 process 服務多個使用者時，他們會互相覆蓋傳輸金鑰；兩個快取基底對冷 key 會每個呼叫端各建一份，於是經其中一份 `SessionInfo` 做的 `EnterCompany` 對持有另一份的請求完全不可見；而 `EnterCompany` 自己則在解析完公司角色之前就把公司寫進共用的 session。此外，一批零消費端的公開表面被移除、三個公開型別改名以避開宿主註冊服務時必然撞上的同名型別——**破壞性變更皆為原始碼層級，沒有一項能靠「不動」吸收掉**。兩個「宣告了但沒接上」的機制接回：公司層級的數值格式，以及自 4.4.0 起就是公告契約的 `-32002` / `-32003` 錯誤碼。運算式求值快 4.7 倍、權限查詢不再隨部署規模惡化、讀取的 wire payload 減半。

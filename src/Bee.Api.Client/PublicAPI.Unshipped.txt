@@ -1,3 +1,1 @@
 #nullable enable
-*REMOVED*virtual Bee.Api.Client.Connectors.LogApiConnector.GetChangeLogAsync(Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest! request) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.AuditLog.GetChangeLogResponse!>!
-virtual Bee.Api.Client.Connectors.LogApiConnector.GetChangeLogAsync(Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest! request) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.AuditLog.LogListResponse!>!

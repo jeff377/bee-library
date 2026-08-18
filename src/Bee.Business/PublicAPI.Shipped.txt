@@ -664,6 +664,7 @@ virtual Bee.Business.AuditLog.LogBusinessObject.GetAccessLog(Bee.Business.AuditL
 virtual Bee.Business.AuditLog.LogBusinessObject.GetApiAnomalyLog(Bee.Business.AuditLog.GetApiAnomalyLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetApiAnomalySummary(Bee.Business.AuditLog.GetApiAnomalySummaryArgs! args) -> Bee.Business.AuditLog.LogAggregateResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetChangeDetail(Bee.Business.AuditLog.GetChangeDetailArgs! args) -> Bee.Business.AuditLog.GetChangeDetailResult!
+virtual Bee.Business.AuditLog.LogBusinessObject.GetChangeLog(Bee.Business.AuditLog.GetChangeLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetDbAnomalyLog(Bee.Business.AuditLog.GetDbAnomalyLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetDbAnomalySummary(Bee.Business.AuditLog.GetDbAnomalySummaryArgs! args) -> Bee.Business.AuditLog.LogAggregateResult!
 virtual Bee.Business.AuditLog.LogBusinessObject.GetLoginLog(Bee.Business.AuditLog.GetLoginLogArgs! args) -> Bee.Business.AuditLog.LogListResult!
