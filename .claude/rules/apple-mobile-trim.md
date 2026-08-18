@@ -10,6 +10,26 @@ AOT 會禁用 `Reflection.Emit`，兩者都會打斷 `XmlSerializer` 這類靠�
 > `docs/repo-ops/gotchas/mobile-trim-aot.md`（按需讀，不常駐）。
 > 本檔只留判準與硬性要件。
 
+## 建 iOS 前先確認用的是哪個 Xcode
+
+.NET for iOS SDK **要求精確對應的 Xcode 版本**，不符就在 build 一開始直接失敗，
+錯誤訊息本身寫明了它要哪一版、現在是哪一版（本檔不複寫版號，那會漂）。
+
+**這不是「環境壞掉」，而且多半不必動 `xcode-select`** —— 對應版本通常已經**側裝**在
+`/Applications/` 下。撞到時先查，再以 `DEVELOPER_DIR` 指過去建，不要碰全域設定：
+
+```bash
+ls -d /Applications/Xcode*.app
+DEVELOPER_DIR=/Applications/<對應版本>.app/Contents/Developer dotnet build <iOS 專案> -c Release
+```
+
+> **判定成「本機環境不支援、與本次改動無關」之前，一定要先跑上面那兩行。**
+> 2026-08-18 就這樣誤判過一次：`xcode-select` 指著較新的主 Xcode，側裝的對應版本明明在，
+> 只因為沒帶 `DEVELOPER_DIR` 就把 iOS head 報成建不起來。指對之後 0 錯誤。
+
+`-p:ValidateXcodeVersion=false` **不是這題的答案** —— 它是跳過檢查、拿不對版的 Xcode 硬建，
+只保留給 gotchas 裡那幾條「驗閉包編不編得出來」的重現配方。要交付的建置一律用對版本。
+
 ## Sandbox 與 IO
 
 iOS / Mac Catalyst 的 `.app` bundle 是唯讀。任何把設定寫回 assembly 所在目錄的做法

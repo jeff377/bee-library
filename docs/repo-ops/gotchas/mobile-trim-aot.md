@@ -136,7 +136,17 @@ dotnet build -c Release -f net10.0-ios -r ios-arm64 \
 
 專案需要 `ApplicationId`（否則 `A bundle identifier is required`）。
 
-**iOS 編譯前置雷**：workload 鎖 Xcode 版本不符時 build 加 `-p:ValidateXcodeVersion=false`；
+**iOS 編譯前置雷**：上面幾條配方帶 `-p:ValidateXcodeVersion=false`，是因為它們的目的只是
+「驗整個閉包編不編得出來」，用哪一版 Xcode 無所謂。**一般的 iOS head 建置不要這樣繞** ——
+對應版本的 Xcode 通常已側裝在 `/Applications/` 下，用 `DEVELOPER_DIR` 指過去才是正解
+（判準見 `.claude/rules/apple-mobile-trim.md`「建 iOS 前先確認用的是哪個 Xcode」）：
+
+```bash
+DEVELOPER_DIR=/Applications/<對應版本>.app/Contents/Developer dotnet build <iOS 專案> -c Release
+```
+
+指定之後**同一輪的 `xcrun` / `simctl` 也要帶同一個 `DEVELOPER_DIR`**，否則工具鏈會分裂到兩版。
+
 device-target build 止於簽章可加 `-p:EnableCodeSigning=false` 完成 AOT build（驗證用）。
 
 ### 雷：Apple app bundle 不吃增量重建
