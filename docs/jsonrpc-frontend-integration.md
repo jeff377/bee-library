@@ -182,13 +182,16 @@ for the JS path:
 | Method | Args | Returns |
 |--------|------|---------|
 | `System.GetFormSchema` | `{ progId }` | `{ schema: FormSchema }` — fields, db types, relations (auto-localized using session's `Culture`) |
-| `System.GetFormLayout` | `{ progId, layoutId? }` | `{ layout: FormLayout }` — sections, fields, controlType, row/column spans (auto-localized) |
+| `System.GetFormLayout` | `{ progId, layoutId? }` | `{ layout: FormLayout }` — sections, fields, controlType, row/column spans, exactly as stored; empty when no definition exists |
 | `System.GetLanguage` | `{ lang, namespace }` | `{ resource: LanguageResource }` — localized text `Items` + `Enums` for one namespace × one language |
 
-The `FormLayout` is generated on demand from `FormSchema`, so JS can request
-either independently. For schema-driven UI rendering, both are usually
-fetched together (`GetFormSchema` for validation rules, `GetFormLayout` for
-the UI shape). `GetLanguage` is used when the JS app needs to look up
+Both are served exactly as stored — a `FormLayout` is authored at design time,
+never generated from the `FormSchema` — so JS can request either independently.
+For schema-driven UI rendering, both are usually fetched together
+(`GetFormSchema` for validation rules and captions, `GetFormLayout` for the UI
+shape). A layout file describes structure only, so its captions are taken from
+the schema; an empty result means no definition is stored, which is a
+configuration error rather than a cue to build one. `GetLanguage` is used when the JS app needs to look up
 localized text directly (e.g. button labels stored in a `Common` namespace,
 or enum dropdown options when the FormSchema's automatic localization isn't
 enough).

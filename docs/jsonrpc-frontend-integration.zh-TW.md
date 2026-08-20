@@ -177,12 +177,14 @@ JS 路徑有三個 JSON-native 姊妹方法：
 | 方法 | Args | 回傳 |
 |------|------|------|
 | `System.GetFormSchema` | `{ progId }` | `{ schema: FormSchema }` — 欄位、DB 型別、relations（依 session `Culture` 自動本地化） |
-| `System.GetFormLayout` | `{ progId, layoutId? }` | `{ layout: FormLayout }` — sections、fields、controlType、行列 span（自動本地化） |
+| `System.GetFormLayout` | `{ progId, layoutId? }` | `{ layout: FormLayout }` — sections、fields、controlType、行列 span，原樣回傳已存檔的定義；未存檔時回空值 |
 | `System.GetLanguage` | `{ lang, namespace }` | `{ resource: LanguageResource }` — 單一 namespace × 單一 lang 的 `Items` + `Enums` |
 
-`FormLayout` 由 `FormSchema` 動態 generate，JS 可獨立呼叫任一個。
-schema-driven UI 渲染通常會兩者都拿（`GetFormSchema` 拿驗證規則、
-`GetFormLayout` 拿 UI 結構）。需要直接查語系文字（按鈕標籤、共用詞典、
+兩者都原樣回傳已存檔的定義——`FormLayout` 於設計階段產出，**不會**由 `FormSchema`
+推導——JS 可獨立呼叫任一個。schema-driven UI 渲染通常會兩者都拿
+（`GetFormSchema` 拿驗證規則與欄位標題、`GetFormLayout` 拿 UI 結構）。
+版面檔只描述結構，標題取自 schema；回空值代表沒有存檔的定義，
+那屬設定錯誤，不是「自己組一份」的訊號。需要直接查語系文字（按鈕標籤、共用詞典、
 或 FormSchema 自動本地化覆蓋不到的下拉選項）時呼叫 `GetLanguage`。
 
 方法名稱**大小寫敏感** — `system.ping` 不會派遣到 `System.Ping`。

@@ -154,7 +154,7 @@ BO 程式碼處理複雜的，兩者各安其位。**租戶層只有「程式碼
 
 **已追查完畢並修復（2026-08-10）：是真實缺陷，不是模擬假象。**
 修復記於 [ADR-037](../adr/adr-037-wire-explicit-registration.md)，
-執行過程見 [plan-mobile-aot-wire.md](../plans/plan-mobile-aot-wire.md)。
+執行過程見 [plan-mobile-aot-wire.md](../plans/archive/plan-mobile-aot-wire.md)。
 已在五個環境驗證通過（閘門、NativeAOT、Mac Catalyst Release、iOS 模擬器 Release、
 iOS 裝置 full-AOT 編譯）；**僅餘 iOS 實機執行期未測**，屬低風險形式缺口。
 

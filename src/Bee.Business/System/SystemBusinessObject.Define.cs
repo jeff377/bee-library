@@ -190,8 +190,8 @@ namespace Bee.Business.System
             var layoutId = string.IsNullOrWhiteSpace(args.LayoutId) ? args.ProgId : args.LayoutId;
 
             // Base layer only. The caller fetches the customization layer through
-            // GetCustomizeFormLayout and picks between them with CustomizeOverlay, and generates
-            // one from the FormSchema when neither layer has a definition.
+            // GetCustomizeFormLayout and picks between them with CustomizeOverlay; when neither
+            // layer has a definition that is a configuration error, not a cue to generate one.
             var layout = DefineAccess.FindFormLayout(string.Empty, layoutId);
             return new GetFormLayoutResult { Xml = layout is null ? string.Empty : SerializeDefine(layout) };
         }
