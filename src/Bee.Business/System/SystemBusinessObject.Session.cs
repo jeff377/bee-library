@@ -344,9 +344,12 @@ namespace Bee.Business.System
         /// from New York still defaults to the Taipei date (ADR-032 D12). The culture is the
         /// authority for every string the language service resolves for this session.
         ///
-        /// An unset or unreadable user value falls back to the deployment-wide default rather than
-        /// failing the login: authentication is overridable and a deployment may authenticate
-        /// against something other than <c>st_user</c>, in which case there is no row to read.
+        /// An unset or blank user value falls back to the deployment-wide default rather than
+        /// failing the login: authentication is overridable, so a deployment authenticating against
+        /// something other than stored credentials may have no <b>row</b> here for the user signing
+        /// in. The <c>st_user</c> <b>table</b> itself is required either way — overriding
+        /// <see cref="AuthenticateUser"/> replaces the credential check, not the rest of the login
+        /// path, which reads this row and then persists the session seed to <c>st_session</c>.
         /// A deployment that wants UTC sets <c>DefaultTimeZone</c> to an empty string.
         ///
         /// Both values are read in a single query because both are needed on every login and live

@@ -12,8 +12,9 @@ internal static class Program
 
         // Bee backend (in-process JSON-RPC dispatch) — shared with the Blazor demos.
         // DemoBackend handles PathOptions, SQLite registration, AddBeeFramework, and
-        // swaps in DemoAuthenticatingSystemBusinessObject so demo/demo Login works
-        // without seeding st_user.
+        // swaps in DemoAuthenticatingSystemBusinessObject so demo/demo Login works without
+        // stored credentials. The common system tables are still created and seeded — overriding
+        // the credential check does not remove the rest of the login path.
         builder.AddBeeBackend();
 
         // Override the default resolver so progId "Echo" dispatches to the sample's

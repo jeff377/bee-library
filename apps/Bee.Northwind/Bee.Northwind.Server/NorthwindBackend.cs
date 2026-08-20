@@ -18,9 +18,15 @@ namespace Bee.Northwind.Server;
 /// <summary>
 /// One-line bootstrap for the Bee.Northwind demo. Resolves the sibling <c>Define</c>
 /// directory, registers SQLite, loads SystemSettings, wires <c>AddBeeFramework</c>, then
-/// binds the reserved "System" progId in ProgramSettings.xml so login authenticates against
-/// <see cref="NorthwindCredentials"/> without seeding system tables.
+/// binds the reserved "System" progId in ProgramSettings.xml to the app's own
+/// <c>SystemBusinessObject</c> subclass.
 /// </summary>
+/// <remarks>
+/// Authentication is deliberately <b>not</b> overridden here: the seeder writes
+/// <see cref="NorthwindCredentials"/> into <c>st_user</c> and sign-in runs the framework's own
+/// stored-credential check, which is the path a real deployment takes. The subclass exists for
+/// what happens after sign-in (company entry, roles, employee context).
+/// </remarks>
 /// <remarks>
 /// This is the self-contained mirror of the <c>samples/Bee.Samples.Shared</c> demo backend:
 /// the app depends only on the published <c>Bee.*</c> packages so it can graduate to its own

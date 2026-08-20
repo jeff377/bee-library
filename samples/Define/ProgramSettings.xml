@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The demo's type registry: progId to the types bound to it. Only the reserved System progId
-     needs an entry here — it is bound to the demo's own SystemBusinessObject subclass so
-     BeeLoginPanel works against a hard-coded credential without seeding st_user. Every other
-     progId is unregistered and resolves to the framework's default FormBusinessObject.
-
-     The framework self-registers the reserved progIds at startup when they are missing, so this
-     file would otherwise be created automatically with the framework defaults. -->
 <ProgramSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Items>
     <ProgramItem ProgId="System" DisplayName="System" BusinessObject="Bee.Samples.Shared.DemoAuthenticatingSystemBusinessObject, Bee.Samples.Shared" />
+    <ProgramItem ProgId="AuditLog" DisplayName="AuditLog" BusinessObject="Bee.Business.AuditLog.LogBusinessObject, Bee.Business" />
   </Items>
 </ProgramSettings>

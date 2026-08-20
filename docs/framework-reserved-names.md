@@ -14,6 +14,8 @@
 
 The `st_` prefix means "framework-owned table". It is **orthogonal to which database** the table lives in: an `st_*` table can live in the common database, the per-company database, or the log database — what matters is who owns it.
 
+**These tables are required runtime infrastructure, not optional scaffolding.** The framework reads and writes them while serving ordinary requests, so a deployment creates them whether or not it has a use for them of its own. Overriding a framework behaviour does not exempt a deployment from the tables behind it: replacing authentication (`AuthenticateUser`) substitutes the credential check alone — signing in still reads the user's locale from `st_user` and persists the session seed to `st_session` afterwards. Missing tables surface as database errors from whichever operation reached them first, not as a configuration diagnostic.
+
 ### 1.1 Common database (shared globally)
 
 | Table | Purpose |
