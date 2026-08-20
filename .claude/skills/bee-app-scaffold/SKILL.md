@@ -123,7 +123,7 @@ description: 在 bee-library（或畢業後的獨立 repo）搭一個「獨立 B
 3. **TableSchema 資料夾名 = CategoryId**。
 4. **slnx 不列舉 `Define/` 檔**：執行期資料、會過時；server 用 `PathOptions.DefinePath` 讀整個目錄。
 5. **覆寫服務在 `AddBeeFramework` 之後**註冊（後者勝）。
-6. **計算/伺服器衍生欄位標 `FormField.ReadOnly="true"`**（如 BO 算出的金額），免寫 FormLayout。
+6. **計算/伺服器衍生欄位標 `FormField.ReadOnly="true"`**（如 BO 算出的金額）——產生 FormLayout 時會帶到 `LayoutField.ReadOnly`，不必在版面另外標一次。**FormLayout 本身仍必須落檔**（執行階段不會自動產生）。
 
 ## 避雷（反覆踩過）
 

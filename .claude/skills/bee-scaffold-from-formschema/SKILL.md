@@ -24,13 +24,15 @@ bee-library 採 **FormSchema-driven** 設計：一個 FormSchema 同時驅動 UI
 
 | 產出 | 何時需要落檔 | Framework 入口 |
 |------|-------------|---------------|
-| **FormLayout** | **僅在要客製版面時** —— 框架 runtime 由 FormSchema 自動產生（`FormSchema.GetFormLayout` → `FormLayoutGenerator`），不落檔也能跑。另一個情境是補 `tests/Define/` fixture。 | `schema.GetFormLayout(layoutId)`（`FormSchema.cs`），`layoutId` 預設用 `ProgId` |
+| **FormLayout** | **一律需要** —— 版面在設計階段產出並存檔，執行階段一律讀它，**缺檔開表單即失敗**（不再有 runtime 自動產生）。 | `FormLayoutGenerator.Generate(schema, layoutId)`（`Bee.Definition.Layouts`），`layoutId` 預設用 `ProgId` |
 | **TableSchema** | **一律需要** —— seeder 靠它建表，且資料夾名必須 = CategoryId | `TableSchemaGenerator.Generate(formTable)` 或 `formTable.GenerateDbTable()`；對 schema 的**每個** FormTable 各產一份 |
 | **LanguageResource** | 要多語介面就需要 | 無 generator — 手構造 + `FormSchemaLocalizer` sub-key 常數。雙語：zh-TW 抄 schema 中文 caption、en-US 由翻譯字典推 |
 
-> **與 `bee-add-form` 的分工**：在既有 app 上加一張表單走 `bee-add-form`（4 處純定義修改，
-> **不含 FormLayout**，因為框架自動產生）。本 skill 處理的是「要客製版面」或
-> 「要補 fixture / i18n」時才需要的落檔動作。
+> **與 `bee-add-form` 的分工**：在既有 app 上加一張表單走 `bee-add-form`（5 處純定義修改，
+> **含 FormLayout**）。本 skill 是產出那份 FormLayout（以及 TableSchema / i18n）的手法——
+> 產出原貌後再手調版面，不要手刻。
+>
+> 落檔後也可改由 `tools/DefineEditor` 產生／編輯版面。
 
 **預設只產真正需要的類別**；使用者明說要三類全產（或只產某一類）時照辦。
 
@@ -54,6 +56,7 @@ using System.ComponentModel;
 using Bee.Base.Serialization;
 using Bee.Definition.Forms;
 using Bee.Definition.Language;
+using Bee.Definition.Layouts;
 
 namespace Bee.Definition.UnitTests.Scaffolding
 {
@@ -78,8 +81,8 @@ namespace Bee.Definition.UnitTests.Scaffolding
             string schemaPath = Path.Combine(definePath, "FormSchema", "{ProgId}.FormSchema.xml");
             var schema = XmlCodec.DeserializeFromFile<FormSchema>(schemaPath)!;
 
-            // 2. FormLayout
-            var layout = schema.GetFormLayout("{ProgId}");
+            // 2. FormLayout（設計階段產生器；執行階段只讀存好的檔）
+            var layout = FormLayoutGenerator.Generate(schema, "{ProgId}");
             XmlCodec.SerializeToFile(layout,
                 Path.Combine(definePath, "FormLayout", "{ProgId}.FormLayout.xml"));
 

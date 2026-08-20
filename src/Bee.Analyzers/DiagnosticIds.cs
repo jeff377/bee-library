@@ -71,7 +71,7 @@ namespace Bee.Analyzers
         public const string UnknownMappingSourceField = "BEE2004";
 
         /// <summary>
-        /// A FormSchema has no corresponding FormLayout.
+        /// A FormSchema has no corresponding FormLayout, which the run time requires.
         /// </summary>
         public const string MissingFormLayout = "BEE2005";
 

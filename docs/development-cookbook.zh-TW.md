@@ -256,7 +256,7 @@ FormSchema（Single Source of Truth）
 │       └── Fields: FormFieldCollection
 │
 ├── → 衍生 TableSchema（資料庫維度）
-├── → 衍生 FormLayout（UI 維度）
+├── → 設計階段衍生 FormLayout（UI 維度）
 └── → 驅動 SqlFormCommandBuilder（SQL 產生）
 ```
 

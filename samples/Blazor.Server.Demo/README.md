@@ -35,7 +35,7 @@ On first run:
 | Login form | `BeeLoginPanel` (Phase 1d) |
 | AccessToken cascading | `BeeAccessTokenProvider` (Phase 1d) |
 | Employee grid rendering | `DynamicGrid` + `FormSchema.GetListLayout()` |
-| Employee edit form | `DynamicForm` + `FormSchema.GetFormLayout(layoutId)` |
+| Employee edit form | `DynamicForm` + the stored `FormLayout` definition (`Define/FormLayout/Employee.FormLayout.xml`) |
 | Grid + form integration | `FormPage` |
 | CRUD through Bee | `FormDataObject.LoadAsync / SaveAsync / NewAsync / DeleteAsync` |
 | Local in-process dispatch | `BeeBlazorOptions.UseLocalProvider()` |

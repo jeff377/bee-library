@@ -33,15 +33,18 @@ namespace Bee.Analyzers.Definitions
 
         private static readonly DiagnosticDescriptor MissingFormLayout = new DiagnosticDescriptor(
             id: DiagnosticIds.MissingFormLayout,
-            title: "FormSchema should have a corresponding FormLayout",
+            title: "FormSchema must have a corresponding FormLayout",
             messageFormat: "FormSchema '{0}' has no corresponding layout at "
-                         + "FormLayout/{0}.FormLayout.xml, so the form has nothing to render. "
-                         + "Fix: add the layout file, or generate it from the schema.",
+                         + "FormLayout/{0}.FormLayout.xml, so opening the form fails at run time. "
+                         + "Fix: author the layout file at design time (a definition editor can "
+                         + "generate a starting point from the schema).",
             category: "Bee.Definition",
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            description: "A form schema drives both the database and the user interface. Without a layout "
-                       + "the schema defines data that no screen presents.",
+            description: "A form schema drives both the database and the user interface. The layout is "
+                       + "authored at design time and the run time renders it as stored — it is never "
+                       + "generated on the fly — so a schema without one defines data that no screen "
+                       + "can present.",
             helpLinkUri: null,
             customTags: WellKnownDiagnosticTags.CompilationEnd);
 

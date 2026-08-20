@@ -31,7 +31,7 @@ Bee.NET 隨套件提供 Roslyn analyzer，把框架慣例變成建置期診斷�
 | BEE2002 | Warning | TableSchema 必須位於 `TableSchema/<categoryId>/<表名>.TableSchema.xml`——資料夾必須等於 CategoryId |
 | BEE2003 | Error | `@RelationProgId` 必須是某個 FormSchema 宣告的 ProgId |
 | BEE2004 | Error | 關聯對應的 `SourceField` 必須由被引用的 schema 宣告 |
-| BEE2005 | Warning | FormSchema 應有對應的 FormLayout |
+| BEE2005 | Warning | FormSchema 必須有對應的 FormLayout——執行階段渲染已存檔的版面，缺檔即失敗 |
 | BEE2006 | Warning | FormSchema 的持久化欄位必須存在於 TableSchema |
 | BEE2007 | Info | 各語系應覆蓋相同的翻譯 key |
 

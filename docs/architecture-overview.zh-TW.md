@@ -86,7 +86,7 @@ BeeNET 以 **DataSet 取代強型別 Entity**，帶來：
 - **行為定義**：必填、唯讀、隱藏、驗證規則
 - **關聯定義**：與其他表單（FormSchema）之間的主/明細關係
 - **SQL 產生依據**：Repository CRUD 從 FormSchema 動態產生 SQL
-- **UI 推導來源**：FormLayout 從 FormSchema 推導版面結構
+- **UI 推導來源**：FormLayout 在**設計階段**從 FormSchema 推導版面結構；執行階段一律讀已存檔的 FormLayout 定義，不會即時推導
 - **DB 推導來源**：TableSchema 從 FormSchema 推導資料表結構
 
 ### 定義生成流程
@@ -110,7 +110,7 @@ graph TD
 
 ### Override 機制
 
-FormLayout 與 TableSchema 預設由 FormSchema 推導產生，但支援獨立調整：
+FormLayout 與 TableSchema 在設計階段由 FormSchema 推導產生並存成定義檔，之後支援獨立調整：
 
 ```
 FormSchema 更新
@@ -134,7 +134,7 @@ FormSchema 更新
 
 ## 4. FormLayout 介面層定義
 
-`FormLayout` 是 FormSchema 在 UI 維度的投影，描述表單的視覺配置。
+`FormLayout` 是 FormSchema 在 UI 維度的投影，描述表單的視覺配置。它於設計階段產出並存成定義檔：表單渲染的是已存檔的版面，缺檔屬設定錯誤，不會在執行階段臨時產生一份。
 
 ### 定位
 
@@ -333,7 +333,7 @@ BeeNET 提供三種開發深度，同一條演進軸線，非互斥的技術堆�
 
 | 模式 | 自由度 | 實作方式 | 適用情境 |
 |------|--------|----------|----------|
-| **NoCode** | 中 | FormSchema → FormLayout + TableSchema 自動產生 | 標準流程、資料導向表單 |
+| **NoCode** | 中 | FormSchema → FormLayout + TableSchema 於設計階段產生 | 標準流程、資料導向表單 |
 | **LowCode** | 高 | 事件、條件、規則擴充 BO | 輕度客製邏輯 |
 | **AnyCode** | 完全 | 自訂 UI / BO 方法 / AnyCode Repository | 複雜邏輯、跨模組整合、報表批次 |
 

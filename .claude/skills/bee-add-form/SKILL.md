@@ -1,14 +1,16 @@
 ---
 name: bee-add-form
-description: 在一個已接好的 Bee.NET app 上「加一張表單」的多檔流程與避雷 —— 一張可用的 CRUD 表單 = 4 處純定義修改（FormSchema + TableSchema + DbCategorySettings 註冊 + ProgramSettings 上選單），不寫 UI / CRUD 程式碼。涵蓋 4 檔 checklist（漏哪個會有什麼徵兆）、business 表用 company scope、TableSchema 資料夾必須 = CategoryId、FormSchema 慣例（lookup 的 RelationProgId+RelationFieldMappings+ref_* RelationField、master-detail 的 sys_master_rowid、DropDownEdit+ListItems、計算欄 FormField.ReadOnly、sys_name 可省）、何時才需要自訂 BO。當使用者要「加一張表單 / 主檔 / 單據」、「新增一個 ProgId / 畫面」、「為某張表做 CRUD」、「Bee 表單要怎麼定義 lookup / 明細 / 下拉 / 唯讀欄」之類需求時使用，即使沒明講「加表單」也要主動觸發。
+description: 在一個已接好的 Bee.NET app 上「加一張表單」的多檔流程與避雷 —— 一張可用的 CRUD 表單 = 5 處純定義修改（FormSchema + FormLayout + TableSchema + DbCategorySettings 註冊 + ProgramSettings 上選單），不寫 UI / CRUD 程式碼。涵蓋 5 檔 checklist（漏哪個會有什麼徵兆）、business 表用 company scope、TableSchema 資料夾必須 = CategoryId、FormSchema 慣例（lookup 的 RelationProgId+RelationFieldMappings+ref_* RelationField、master-detail 的 sys_master_rowid、DropDownEdit+ListItems、計算欄 FormField.ReadOnly、sys_name 可省）、何時才需要自訂 BO。當使用者要「加一張表單 / 主檔 / 單據」、「新增一個 ProgId / 畫面」、「為某張表做 CRUD」、「Bee 表單要怎麼定義 lookup / 明細 / 下拉 / 唯讀欄」之類需求時使用，即使沒明講「加表單」也要主動觸發。
 ---
 
 # Bee app 加一張表單
 
-在已接好的 Bee 後端（見 `bee-app-scaffold`）上加一張**可用的 CRUD 表單**，是 **4 處純定義修改**，不寫 UI 也不寫 CRUD code。FormLayout 由框架從 FormSchema 自動產生（`FormSchema.GetFormLayout` → `FormLayoutGenerator`），**不必寫**。
+在已接好的 Bee 後端（見 `bee-app-scaffold`）上加一張**可用的 CRUD 表單**，是 **5 處純定義修改**，不寫 UI 也不寫 CRUD code。
 
-> 例外：**要客製版面**時才需要把 FormLayout 落檔 —— 那時走 `bee-scaffold-from-formschema`
-> 產出原貌再改，不要手刻。
+> **FormLayout 一定要落檔。** 它在設計階段產出（`FormLayoutGenerator.Generate`），執行階段
+> 一律讀定義檔——**缺檔不會自動產生，開表單直接失敗**。不要手刻：走
+> `bee-scaffold-from-formschema` 產出原貌再改。
+> （這是 2026-08-20 的變更；在那之前框架會在執行期臨時生一份，舊筆記若說「不必寫」已失效。）
 
 > **參考實作**：`apps/Bee.Northwind/Define/`（純主檔、雙 lookup 的 Product、master-detail 的 Order）。對著抄最快。
 
@@ -23,14 +25,15 @@ description: 在一個已接好的 Bee.NET app 上「加一張表單」的多檔
 - 表單需要框架無法以定義表達的業務邏輯（單號、狀態機、驗證、金額）→ 表單照本 skill 加，**業務碼**走 **`bee-add-bo-method`** 或直接 override `Save`/`GetNewData`（見「何時需要自訂 BO」）
 - 從現成 FormSchema 反推 layout/language/tableschema sidecar → **`bee-scaffold-from-formschema`**
 
-## 4 處修改（漏一個的徵兆）
+## 5 處修改（漏一個的徵兆）
 
 | # | 檔案 | 作用 | 漏掉的徵兆 |
 |---|------|------|-----------|
 | 1 | `Define/FormSchema/<ProgId>.FormSchema.xml` | 表單欄位 + 清單欄 + lookup | 表單開不出來 |
-| 2 | `Define/TableSchema/<categoryId>/<table>.TableSchema.xml` | DB 表結構 + 索引 | seeder 建不出表 / CRUD 失敗 |
-| 3 | `Define/DbCategorySettings.xml` 對應 category 加 `<TableItem>` | 註冊表 → seeder 才會建、router 才知 table→db | 表沒建出來 |
-| 4 | `Define/ProgramSettings.xml` 加 `<ProgramItem>` | 上資料驅動選單（+ 選配 BO 綁定） | 表單不出現在選單 |
+| 2 | `Define/FormLayout/<ProgId>.FormLayout.xml` | 畫面版面（區段 + 欄位擺放 + 明細 grid） | **開表單即失敗**；建置期另有 BEE2005 警告 |
+| 3 | `Define/TableSchema/<categoryId>/<table>.TableSchema.xml` | DB 表結構 + 索引 | seeder 建不出表 / CRUD 失敗 |
+| 4 | `Define/DbCategorySettings.xml` 對應 category 加 `<TableItem>` | 註冊表 → seeder 才會建、router 才知 table→db | 表沒建出來 |
+| 5 | `Define/ProgramSettings.xml` 加 `<ProgramItem>` | 上資料驅動選單（+ 選配 BO 綁定） | 表單不出現在選單 |
 
 > **業務表全用 `company` scope**：FormSchema `CategoryId="company"`、TableSchema 放 `TableSchema/company/`、DbCategorySettings 掛 company 分類。CategoryId 是 DB scope 選擇器（common/company/log），不是自由標籤——business 資料掛 common 是錯的（見 `bee-app-scaffold` Part 1 / memory `categoryid-is-db-scope-selector`）。**TableSchema 資料夾名必須 = CategoryId**。
 
@@ -68,7 +71,7 @@ description: 在一個已接好的 Bee.NET app 上「加一張表單」的多檔
 `ControlType="DropDownEdit"` + `<ListItems><ListItem Value=".." Text=".."/></ListItems>`；預設值用 `DefaultValue="..."`。
 
 ### 計算 / 唯讀欄
-`FormField.ReadOnly="true"` —— 計算欄或伺服器衍生欄（如 BO 算出的金額）標唯讀，主檔欄與明細 InCell 格皆呈現唯讀。免寫 FormLayout。
+`FormField.ReadOnly="true"` —— 計算欄或伺服器衍生欄（如 BO 算出的金額）標唯讀，主檔欄與明細 InCell 格皆呈現唯讀；產生 FormLayout 時會一併帶到 `LayoutField.ReadOnly`，不必在版面另外標一次。
 
 ### 清單欄
 `ListFields="sys_id,sys_name,ref_xxx_name,..."` 控制清單檢視欄（顯示 `ref_*` 比 `*_rowid` 友善）。

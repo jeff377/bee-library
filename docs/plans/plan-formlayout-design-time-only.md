@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 框架路徑：移除 `FormSchema.GetFormLayout`、generator 轉設計階段公開 API、三個執行階段呼叫點改為讀定義檔／報錯；同步補齊 `samples/Define` 落檔與全部呼叫端（測試、樣本） | ✅ 已完成（2026-08-20） |
-| 2 | 公開文件雙語同步 + `docs/terminology*`、`docs/api-method-reference*`、BEE2005 訊息 + `.claude/skills` 三支 | 📝 待做 |
+| 2 | 公開文件雙語同步 + `docs/terminology*`、`docs/api-method-reference*`、BEE2005 訊息 + `.claude/skills` 三支 | ✅ 已完成（2026-08-20） |
 | 3 | `tools/DefineEditor` 新增「由 FormSchema 產生 FormLayout」入口 + `Smoke.cs` | 📝 待做 |
 | 4 | 端到端實測（Northwind 桌面 head、案例 repo `bee-northwind-avalonia`）與 PublicAPI／發版註記收尾 | 📝 待做 |
 
@@ -243,6 +243,12 @@ CacheDefineAccess.FindFormLayout(customizeId, layoutId)→ 缺檔回 null（客�
   `FormLayoutGenerator.Generate(schema, "{ProgId}")`；階段 3 落地後再補一句指向 DefineEditor。
 
 > `docs/plans/archive/` 下的舊 plan **不改**——那是當時的紀錄，不是現行行為。
+
+> **階段 2 執行中補上的兩處（計畫未列）**：
+> `SystemBusinessObject.GetFormLayout` 的 remarks 原寫「缺檔時 caller 應由 schema 產生一份」，
+> 與新定位相反（計畫只把它當「伺服端不推導」的證據引用，沒列入待改）；
+> `samples/Blazor.Server.Demo/README` 雙語的技術對照表點名 `FormSchema.GetFormLayout(layoutId)`，
+> 該成員已不存在。
 
 ## 階段 3 — DefineEditor 產生入口
 

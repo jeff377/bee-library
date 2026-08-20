@@ -71,7 +71,7 @@ BO 層 Args / Result 型別、`[ApiAccessControl]` 設定，與一行用途說�
 | `SetApiKeyExpiry` | Encrypted | Authenticated | 設定或清除金鑰的到期時間。與 `CreateApiKey` 不同，此處接受已過去的時間（退役既有金鑰的正當手段）。把關同 `CreateApiKey`。 |
 | `SetDeploymentAdmin` | LocalOnly | Authenticated | 設定或撤銷使用者的部署層管理員旗標（`st_user.deployment_admin`）—— 該身分管的是整個部署的資產，不是任何公司的資料。指派管理員屬部署期作業，遠端呼叫一律拒絕；這也是該欄唯一的寫入路徑。 |
 | `GetFormSchema` | Public | Authenticated | **JS-only。** 以 typed JSON tree 回傳 `FormSchema`（依 session `Culture` 自動本地化）。 |
-| `GetFormLayout` | Public | Authenticated | **JS-only。** 回傳 `FormLayout`（由自動本地化的 FormSchema 動態 generate）。 |
+| `GetFormLayout` | Public | Authenticated | **JS-only。** 原樣回傳 base 層的 `FormLayout` 定義；未存檔時回空值。 |
 | `GetDepartmentTree` | Public | Authenticated | 以 typed 物件（JSON / MessagePack）回傳當前公司的部門樹（per-company 組織階層）；未進公司時為 `null`。 |
 | `GetLanguage` | Public | Authenticated | **JS-only。** 取單一 `(Lang, Namespace)` 配對的 `LanguageResource`。 |
 | `GetCustomizeFormLayout` | Public | Authenticated | 以 XML 回傳 session 租戶的 `FormLayout` 覆寫；該租戶沒有客製時回空字串。customize code 取自 session，絕不由呼叫端提供。 |

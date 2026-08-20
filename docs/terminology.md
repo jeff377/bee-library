@@ -31,7 +31,7 @@ This document provides a standard term reference for technical writing, ensuring
 | Definition-Driven Architecture | 定義導向架構 | BeeNET's core architectural pattern, using structural definitions to uniformly drive UI, database, and business logic |
 | Single Source of Truth | 唯一定義來源 | `FormSchema` as the system's only structural specification, avoiding duplicate implementations across three layers |
 | `progId` | 程式識別碼 | A functional program's unique identifier string, and the key of the type registry: `ProgramSettings.xml` binds a BO and a repository to it, and the JSON-RPC `method` is `progId.action`. The model follows COM+'s ProgID (a registry key mapping to a component type) — see [ADR-034](adr/adr-034-progid-type-registry.md). Spelled `ProgId` as a C# property and as an XML attribute. For the ones the framework reserves, see [Framework-Reserved Names](framework-reserved-names.md) |
-| NoCode | 零程式碼 | Fully generated automatically from `FormSchema`; no code required |
+| NoCode | 零程式碼 | Definitions fully generated from `FormSchema` at design time; no code required |
 | LowCode | 低程式碼 | Built on `FormSchema` with small overrides extending behavior |
 | AnyCode | 全程式碼 | Fully implemented by the developer, not driven by `FormSchema` |
 | Master-Detail Pattern | 主從資料模式 | A master record (Master) associated with multiple detail records (Detail) |
@@ -53,7 +53,7 @@ This document provides a standard term reference for technical writing, ensuring
 | `FormField` | 表單欄位 | A single field inside a form table, with type, validation, and control information (carries `LangEnumName` for localized dropdown options) |
 | `FormLayout` | 表單版面配置 | The UI projection of a FormSchema, describing field arrangement |
 | `FormTableCollection` | 表單資料表集合 | A collection of all FormTables in a FormSchema |
-| `FormLayoutGenerator` | 表單版面配置產生器 | Automatically generates a FormLayout from a FormSchema |
+| `FormLayoutGenerator` | 表單版面配置產生器 | Generates a FormLayout from a FormSchema **at design time**; the runtime reads the saved definition instead |
 | `TableSchema` | 資料表結構 | The database projection of a FormSchema, mapping to physical table columns and indexes |
 | `DbTableIndex` | 資料表索引 | Table index definition, including uniqueness and primary key information |
 | `DbCategorySettings` | 資料庫類別設定 | A collection managing all logical database categories (common / company / log) |

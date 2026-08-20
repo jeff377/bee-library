@@ -86,7 +86,7 @@ This is **pragmatic clean architecture** -- preserving dependency direction and 
 - **Behavior definitions**: required, read-only, hidden, validation rules
 - **Relationship definitions**: master/detail relationships between forms (FormSchemas)
 - **SQL generation basis**: Repository CRUD dynamically generates SQL from FormSchema
-- **UI derivation source**: FormLayout derives layout structure from FormSchema
+- **UI derivation source**: FormLayout derives its layout structure from FormSchema **at design time**; the runtime renders the saved FormLayout definition and never derives one on the fly
 - **DB derivation source**: TableSchema derives table structure from FormSchema
 - **DbCategory routing**: `FormSchema.CategoryId` (required) determines which `DbCategory` the derived TableSchemas belong to (and thus the target connection / file path `TableSchema/{categoryId}/`)
 
@@ -111,7 +111,7 @@ graph TD
 
 ### Override Mechanism
 
-FormLayout and TableSchema are derived from FormSchema by default, but support independent adjustments:
+FormLayout and TableSchema are derived from FormSchema at design time and saved as definition files, then support independent adjustments:
 
 ```
 FormSchema updated
@@ -135,7 +135,7 @@ The overlay is **two independent read-only layers, never merged**: the base pack
 
 ## 4. FormLayout: UI Layer Definition
 
-`FormLayout` is the UI-dimension projection of FormSchema, describing the visual configuration of a form.
+`FormLayout` is the UI-dimension projection of FormSchema, describing the visual configuration of a form. It is produced at design time and stored as a definition file: a form renders the stored layout, and a missing one is a configuration error rather than a cue to generate a layout at runtime.
 
 ### Positioning
 
@@ -334,7 +334,7 @@ BeeNET provides three levels of development depth along a single evolution axis 
 
 | Mode | Flexibility | Implementation | Applicable Scenarios |
 |------|-------------|----------------|---------------------|
-| **NoCode** | Medium | FormSchema -> FormLayout + TableSchema auto-generated | Standard workflows, data-oriented forms |
+| **NoCode** | Medium | FormSchema -> FormLayout + TableSchema generated at design time | Standard workflows, data-oriented forms |
 | **LowCode** | High | Events, conditions, and rules to extend BO | Light customization logic |
 | **AnyCode** | Full | Custom UI / BO methods / AnyCode Repository | Complex logic, cross-module integration, reports and batch operations |
 

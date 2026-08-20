@@ -261,7 +261,7 @@ FormSchema (Single Source of Truth)
 │       └── Fields: FormFieldCollection
 │
 ├── → derives TableSchema (database dimension)
-├── → derives FormLayout (UI dimension)
+├── → derives FormLayout at design time (UI dimension)
 └── → drives IFormCommandBuilder family (SQL generation)
 ```
 

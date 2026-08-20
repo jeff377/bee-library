@@ -34,7 +34,7 @@ build time, where the message can name both the cause and the fix.
 | BEE2002 | Warning | A table schema must exist at `TableSchema/<categoryId>/<table>.TableSchema.xml` — the folder must match the CategoryId |
 | BEE2003 | Error | `@RelationProgId` must name a program identifier some form schema declares |
 | BEE2004 | Error | A relation mapping's `SourceField` must be declared by the referenced schema |
-| BEE2005 | Warning | A form schema should have a corresponding form layout |
+| BEE2005 | Warning | A form schema must have a corresponding form layout — the runtime renders the stored layout and fails without one |
 | BEE2006 | Warning | A persisted form schema field must exist as a column in the table schema |
 | BEE2007 | Info | Language resources should cover the same keys across cultures |
 

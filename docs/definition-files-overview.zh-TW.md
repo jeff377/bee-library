@@ -16,7 +16,7 @@ Bee.NET 是定義驅動的：`DefinePath` 下的 XML 不是外掛在應用上的
 |------|---------------------|--------|---------|
 | **FormSchema** | `FormSchema/{progId}.FormSchema.xml` | 定義中樞：欄位、型別、關聯、主從結構、計算欄與規則 | [架構總覽](architecture-overview.zh-TW.md) |
 | **TableSchema** | `TableSchema/{categoryId}/{tableName}.TableSchema.xml` | 實體資料表：欄位、型別、長度、可空性、索引 | [Schema 升級](database-schema-upgrade.zh-TW.md) |
-| **FormLayout** | `FormLayout/{layoutId}.FormLayout.xml` | 表單在畫面上如何排版 | [架構總覽](architecture-overview.zh-TW.md) |
+| **FormLayout** | `FormLayout/{layoutId}.FormLayout.xml` | 表單在畫面上如何排版。於設計階段產出——執行階段渲染這份檔案，缺檔即失敗 | [架構總覽](architecture-overview.zh-TW.md) |
 | **Language** | `Language/{lang}/{namespace}.Language.xml` | 在地化標題與列舉項目，每個 namespace × 語言一檔 | — |
 | **SystemSettings** | `SystemSettings.xml` | 行程層級設定：主金鑰來源、payload 選項、debug 模式 | [端到端開發指引](development-cookbook.zh-TW.md) |
 | **DatabaseSettings** | `DatabaseSettings.xml` | 實體資料庫與其連線字串 | [資料庫設定指引](database-settings-guide.zh-TW.md) |

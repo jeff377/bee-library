@@ -35,7 +35,7 @@ dotnet run
 | Login 表單 | `BeeLoginPanel`（Phase 1d） |
 | AccessToken cascading | `BeeAccessTokenProvider`（Phase 1d） |
 | 員工列表渲染 | `DynamicGrid` + `FormSchema.GetListLayout()` |
-| 員工編輯表單 | `DynamicForm` + `FormSchema.GetFormLayout(layoutId)` |
+| 員工編輯表單 | `DynamicForm` + 已存檔的 `FormLayout` 定義（`Define/FormLayout/Employee.FormLayout.xml`） |
 | 列表 + 表單整合 | `FormPage` |
 | CRUD 走 Bee | `FormDataObject.LoadAsync / SaveAsync / NewAsync / DeleteAsync` |
 | Local 模式 in-process 派遣 | `BeeBlazorOptions.UseLocalProvider()` |

@@ -166,12 +166,12 @@ namespace Bee.Business.System
         /// string when no layout is stored for that identifier.
         /// </summary>
         /// <remarks>
-        /// Serves the definition as stored — the layout is <b>not</b> generated from the
-        /// <see cref="FormSchema"/> here, and the customization layer is a separate call. A caller
+        /// Serves the definition as stored, and the customization layer is a separate call. A caller
         /// assembles the runtime layout itself: fetch this and the customization layout, pick
-        /// between them with <c>CustomizeOverlay</c>, generate from the schema when neither exists,
-        /// and take the captions from the localized schema. An empty result is a normal answer
-        /// meaning "no layout definition — generate one".
+        /// between them with <c>CustomizeOverlay</c>, and take the captions from the localized
+        /// schema. Layouts are authored at design time, so an empty result from both layers is a
+        /// configuration error for the caller to report — not a cue to generate one from the
+        /// <see cref="FormSchema"/>.
         /// </remarks>
         /// <param name="args">
         /// The input arguments. <c>ProgId</c> is required; an empty <c>LayoutId</c> resolves to

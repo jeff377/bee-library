@@ -31,7 +31,7 @@
 | Definition-Driven Architecture | 定義導向架構 | BeeNET 核心架構模式，以結構定義統一驅動 UI、資料庫與業務邏輯 |
 | Single Source of Truth | 唯一定義來源 | `FormSchema` 作為系統唯一結構規格，避免三層重複實作 |
 | `progId` | 程式識別碼 | 一支功能程式的唯一識別字串，也是型別註冊表的鍵：`ProgramSettings.xml` 以它綁定 BO 與 Repository，JSON-RPC 的 `method` 為 `progId.action`。模型沿自 COM+ 的 ProgID（登錄檔以機碼對映元件型別），見 [ADR-034](adr/adr-034-progid-type-registry.md)。C# 屬性與 XML 屬性上寫作 `ProgId`。框架保留的 progId 見[框架保留命名](framework-reserved-names.zh-TW.md) |
-| NoCode | 零程式碼 | 完全由 `FormSchema` 自動產生，無需撰寫程式碼 |
+| NoCode | 零程式碼 | 定義於設計階段完全由 `FormSchema` 產生，無需撰寫程式碼 |
 | LowCode | 低程式碼 | 以 `FormSchema` 為基礎，搭配少量覆寫擴充行為 |
 | AnyCode | 全程式碼 | 完全由開發者自行實作，不受 `FormSchema` 驅動 |
 | Master-Detail Pattern | 主從資料模式 | 一筆主檔（Master）對應多筆明細（Detail）的資料關聯結構 |
@@ -53,7 +53,7 @@
 | `FormField` | 表單欄位 | 表單資料表內的單一欄位，含型別、驗證、控制項資訊（透過 `LangEnumName` 指向語系化下拉選項） |
 | `FormLayout` | 表單版面配置 | FormSchema 的 UI 投影，描述欄位排列方式 |
 | `FormTableCollection` | 表單資料表集合 | FormSchema 內所有 FormTable 的集合 |
-| `FormLayoutGenerator` | 表單版面配置產生器 | 依據 FormSchema 自動產生 FormLayout |
+| `FormLayoutGenerator` | 表單版面配置產生器 | 於**設計階段**依 FormSchema 產生 FormLayout；執行階段改讀已存檔的定義 |
 | `TableSchema` | 資料表結構 | FormSchema 的資料庫投影，對應實體資料表欄位與索引 |
 | `DbTableIndex` | 資料表索引 | 資料表的索引定義，含唯一性與主鍵資訊 |
 | `DbCategorySettings` | 資料庫類別設定 | 管理所有邏輯資料庫類別（common / company / log）的設定集合 |

@@ -16,7 +16,7 @@ Thirteen definition types, enumerated as `DefineType` and all reached through `I
 |------------|------------------------------|------|---------------|
 | **FormSchema** | `FormSchema/{progId}.FormSchema.xml` | The definition hub: fields, types, relations, master-detail structure, computed fields and rules | [Architecture Overview](architecture-overview.md) |
 | **TableSchema** | `TableSchema/{categoryId}/{tableName}.TableSchema.xml` | The physical table: columns, types, lengths, nullability, indexes | [Schema Upgrade](database-schema-upgrade.md) |
-| **FormLayout** | `FormLayout/{layoutId}.FormLayout.xml` | How the form is arranged on screen | [Architecture Overview](architecture-overview.md) |
+| **FormLayout** | `FormLayout/{layoutId}.FormLayout.xml` | How the form is arranged on screen. Authored at design time — the runtime renders this file and fails when it is absent | [Architecture Overview](architecture-overview.md) |
 | **Language** | `Language/{lang}/{namespace}.Language.xml` | Localised captions and enum entries, one file per namespace × language | — |
 | **SystemSettings** | `SystemSettings.xml` | Process-wide settings: master key source, payload options, debug mode | [Development Cookbook](development-cookbook.md) |
 | **DatabaseSettings** | `DatabaseSettings.xml` | Physical databases and their connection strings | [Database Settings Guide](database-settings-guide.md) |
