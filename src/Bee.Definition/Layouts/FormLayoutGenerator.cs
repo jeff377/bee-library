@@ -8,7 +8,15 @@ namespace Bee.Definition.Layouts
     /// Converts a <see cref="FormSchema"/> into a single-record-mode <see cref="FormLayout"/>
     /// (master sections + detail grids).
     /// </summary>
-    internal static class FormLayoutGenerator
+    /// <remarks>
+    /// IMPORTANT: This is a design-time tool. It produces the starting point a definition editor
+    /// saves as a <c>FormLayout</c> definition file, which is then reviewed and adjusted by hand.
+    /// The runtime never calls it: a form renders the stored definition, and a missing definition
+    /// is a configuration error rather than a cue to generate one. Generating at runtime would let
+    /// the layout — the authority on what appears on screen — silently degrade into a projection of
+    /// the schema that nobody reviewed and that is stored nowhere.
+    /// </remarks>
+    public static class FormLayoutGenerator
     {
         /// <summary>
         /// System fields that must be added to detail grids regardless of <see cref="FormField.Visible"/>.

@@ -28,15 +28,15 @@ namespace Bee.Definition.UnitTests.Layouts
         [InlineData(ControlType.DropDownEdit, ControlType.DropDownEdit)]
         [InlineData(ControlType.CheckEdit, ControlType.CheckEdit)]
         [InlineData(ControlType.MemoEdit, ControlType.MemoEdit)]
-        [DisplayName("GetFormLayout 明細表非 Auto ControlType 應原樣保留")]
-        public void GetFormLayout_DetailTable_NonAutoControlType_PreservesValue(
+        [DisplayName("FormLayoutGenerator.Generate 明細表非 Auto ControlType 應原樣保留")]
+        public void Generate_DetailTable_NonAutoControlType_PreservesValue(
             ControlType controlType, ControlType expected)
         {
             var schema = BuildMasterDetailSchema();
             var detail = schema.Tables!.Add("OrderItem", "訂單明細");
             detail.Fields!.Add(new FormField("col", "欄", FieldDbType.String) { ControlType = controlType });
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             var grid = layout.Details!.First(g => g.TableName == "OrderItem");
             Assert.Equal(expected, grid.Columns![0].ControlType);
@@ -48,58 +48,58 @@ namespace Bee.Definition.UnitTests.Layouts
         [InlineData(FieldDbType.Text, ControlType.MemoEdit)]
         [InlineData(FieldDbType.String, ControlType.TextEdit)]
         [InlineData(FieldDbType.Integer, ControlType.NumericEdit)]
-        [DisplayName("GetFormLayout 明細表 ControlType=Auto 應依 DbType 推導 ControlType")]
-        public void GetFormLayout_DetailTable_AutoControlType_MapsDbTypeToControlType(
+        [DisplayName("FormLayoutGenerator.Generate 明細表 ControlType=Auto 應依 DbType 推導 ControlType")]
+        public void Generate_DetailTable_AutoControlType_MapsDbTypeToControlType(
             FieldDbType dbType, ControlType expected)
         {
             var schema = BuildMasterDetailSchema();
             var detail = schema.Tables!.Add("OrderItem", "訂單明細");
             detail.Fields!.Add(new FormField("col", "欄", dbType) { ControlType = ControlType.Auto });
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             var grid = layout.Details!.First(g => g.TableName == "OrderItem");
             Assert.Equal(expected, grid.Columns![0].ControlType);
         }
 
         [Fact]
-        [DisplayName("GetFormLayout 明細表 Width 應原樣傳遞至 LayoutColumn")]
-        public void GetFormLayout_DetailTable_PassesWidth()
+        [DisplayName("FormLayoutGenerator.Generate 明細表 Width 應原樣傳遞至 LayoutColumn")]
+        public void Generate_DetailTable_PassesWidth()
         {
             var schema = BuildMasterDetailSchema();
             var detail = schema.Tables!.Add("OrderItem", "訂單明細");
             detail.Fields!.Add(new FormField("col", "欄", FieldDbType.String) { Width = 250 });
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             var grid = layout.Details!.First(g => g.TableName == "OrderItem");
             Assert.Equal(250, grid.Columns![0].Width);
         }
 
         [Fact]
-        [DisplayName("GetFormLayout 明細表 Width=0 應保留 0（auto/未設）")]
-        public void GetFormLayout_DetailTable_WidthZero_StaysZero()
+        [DisplayName("FormLayoutGenerator.Generate 明細表 Width=0 應保留 0（auto/未設）")]
+        public void Generate_DetailTable_WidthZero_StaysZero()
         {
             var schema = BuildMasterDetailSchema();
             var detail = schema.Tables!.Add("OrderItem", "訂單明細");
             detail.Fields!.Add("col", "欄", FieldDbType.String);
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             var grid = layout.Details!.First(g => g.TableName == "OrderItem");
             Assert.Equal(0, grid.Columns![0].Width);
         }
 
         [Fact]
-        [DisplayName("GetFormLayout 明細表應跳過 Visible=false 的非系統欄位")]
-        public void GetFormLayout_DetailTable_SkipsInvisibleNonSystemFields()
+        [DisplayName("FormLayoutGenerator.Generate 明細表應跳過 Visible=false 的非系統欄位")]
+        public void Generate_DetailTable_SkipsInvisibleNonSystemFields()
         {
             var schema = BuildMasterDetailSchema();
             var detail = schema.Tables!.Add("OrderItem", "訂單明細");
             detail.Fields!.Add(new FormField("hidden", "隱藏", FieldDbType.String) { Visible = false });
             detail.Fields!.Add("visible", "顯示", FieldDbType.String);
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             var grid = layout.Details!.First(g => g.TableName == "OrderItem");
             Assert.Single(grid.Columns!);
@@ -107,28 +107,28 @@ namespace Bee.Definition.UnitTests.Layouts
         }
 
         [Fact]
-        [DisplayName("GetFormLayout 明細表所有欄位皆不可見時不應新增對應 Grid")]
-        public void GetFormLayout_DetailTable_AllFieldsInvisible_DoesNotAddGrid()
+        [DisplayName("FormLayoutGenerator.Generate 明細表所有欄位皆不可見時不應新增對應 Grid")]
+        public void Generate_DetailTable_AllFieldsInvisible_DoesNotAddGrid()
         {
             var schema = BuildMasterDetailSchema();
             var detail = schema.Tables!.Add("OrderItem", "訂單明細");
             detail.Fields!.Add(new FormField("hidden", "隱藏", FieldDbType.String) { Visible = false });
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             Assert.Empty(layout.Details!);
         }
 
         [Fact]
-        [DisplayName("GetFormLayout 明細表存在 sys_rowid 應補入 Grid 並設為 Visible=false")]
-        public void GetFormLayout_DetailTable_AddsHiddenRowIdColumn()
+        [DisplayName("FormLayoutGenerator.Generate 明細表存在 sys_rowid 應補入 Grid 並設為 Visible=false")]
+        public void Generate_DetailTable_AddsHiddenRowIdColumn()
         {
             var schema = BuildMasterDetailSchema();
             var detail = schema.Tables!.Add("OrderItem", "訂單明細");
             detail.Fields!.Add(new FormField(SysFields.RowId, "Row ID", FieldDbType.Guid) { Visible = false });
             detail.Fields!.Add("col", "欄", FieldDbType.String);
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             var grid = layout.Details!.First(g => g.TableName == "OrderItem");
             var rowId = grid.Columns!.FirstOrDefault(c => c.FieldName == SysFields.RowId);
@@ -137,15 +137,15 @@ namespace Bee.Definition.UnitTests.Layouts
         }
 
         [Fact]
-        [DisplayName("GetFormLayout 明細表存在 sys_master_rowid 應補入 Grid 並設為 Visible=false")]
-        public void GetFormLayout_DetailTable_AddsHiddenMasterRowIdColumn()
+        [DisplayName("FormLayoutGenerator.Generate 明細表存在 sys_master_rowid 應補入 Grid 並設為 Visible=false")]
+        public void Generate_DetailTable_AddsHiddenMasterRowIdColumn()
         {
             var schema = BuildMasterDetailSchema();
             var detail = schema.Tables!.Add("OrderItem", "訂單明細");
             detail.Fields!.Add(new FormField(SysFields.MasterRowId, "Master Row ID", FieldDbType.Guid) { Visible = false });
             detail.Fields!.Add("col", "欄", FieldDbType.String);
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             var grid = layout.Details!.First(g => g.TableName == "OrderItem");
             var masterRowId = grid.Columns!.FirstOrDefault(c => c.FieldName == SysFields.MasterRowId);
@@ -154,30 +154,30 @@ namespace Bee.Definition.UnitTests.Layouts
         }
 
         [Fact]
-        [DisplayName("GetFormLayout 主檔不會自動補入系統欄位（白名單僅作用於 Grid）")]
-        public void GetFormLayout_MasterSection_DoesNotAutoAddSystemFields()
+        [DisplayName("FormLayoutGenerator.Generate 主檔不會自動補入系統欄位（白名單僅作用於 Grid）")]
+        public void Generate_MasterSection_DoesNotAutoAddSystemFields()
         {
             var schema = new FormSchema("Demo", "示範");
             var master = schema.Tables!.Add("Demo", "示範");
             master.Fields!.Add(new FormField(SysFields.RowId, "Row ID", FieldDbType.Guid) { Visible = false });
             master.Fields!.Add("name", "名稱", FieldDbType.String);
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             Assert.Single(layout.Sections!);
             Assert.DoesNotContain(layout.Sections![0].Fields!, f => f.FieldName == SysFields.RowId);
         }
 
         [Fact]
-        [DisplayName("GetFormLayout 無主檔時主檔 Section 不產生，僅保留明細 Grid")]
-        public void GetFormLayout_NoMasterTable_OnlyDetailGrid()
+        [DisplayName("FormLayoutGenerator.Generate 無主檔時主檔 Section 不產生，僅保留明細 Grid")]
+        public void Generate_NoMasterTable_OnlyDetailGrid()
         {
             // ProgId 與 Tables 不匹配 → MasterTable 為 null
             var schema = new FormSchema("NotExist", "不存在");
             var other = schema.Tables!.Add("Other", "其他");
             other.Fields!.Add("col", "欄", FieldDbType.String);
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             Assert.Empty(layout.Sections!);
             Assert.Single(layout.Details!);
@@ -187,14 +187,14 @@ namespace Bee.Definition.UnitTests.Layouts
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [DisplayName("GetFormLayout 主檔欄位 FormField.ReadOnly 應傳遞到 LayoutField.ReadOnly")]
-        public void GetFormLayout_MasterField_PropagatesReadOnly(bool readOnly)
+        [DisplayName("FormLayoutGenerator.Generate 主檔欄位 FormField.ReadOnly 應傳遞到 LayoutField.ReadOnly")]
+        public void Generate_MasterField_PropagatesReadOnly(bool readOnly)
         {
             var schema = new FormSchema("Demo", "示範");
             var master = schema.Tables!.Add("Demo", "示範");
             master.Fields!.Add(new FormField("amount", "金額", FieldDbType.Currency) { ReadOnly = readOnly });
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             var field = layout.Sections![0].Fields!.First(f => f.FieldName == "amount");
             Assert.Equal(readOnly, field.ReadOnly);
@@ -203,14 +203,14 @@ namespace Bee.Definition.UnitTests.Layouts
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [DisplayName("GetFormLayout 明細欄位 FormField.ReadOnly 應傳遞到 LayoutColumn.ReadOnly")]
-        public void GetFormLayout_DetailColumn_PropagatesReadOnly(bool readOnly)
+        [DisplayName("FormLayoutGenerator.Generate 明細欄位 FormField.ReadOnly 應傳遞到 LayoutColumn.ReadOnly")]
+        public void Generate_DetailColumn_PropagatesReadOnly(bool readOnly)
         {
             var schema = BuildMasterDetailSchema();
             var detail = schema.Tables!.Add("OrderItem", "訂單明細");
             detail.Fields!.Add(new FormField("amount", "金額", FieldDbType.Currency) { ReadOnly = readOnly });
 
-            var layout = schema.GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             var grid = layout.Details!.First(g => g.TableName == "OrderItem");
             var column = grid.Columns!.First(c => c.FieldName == "amount");

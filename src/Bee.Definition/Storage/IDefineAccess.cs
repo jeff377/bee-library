@@ -219,13 +219,14 @@ namespace Bee.Definition.Storage
         /// <param name="layoutId">The form layout ID.</param>
         /// <returns>The customization layout, else the base layout, else <c>null</c>.</returns>
         /// <remarks>
-        /// The optional counterpart of <see cref="GetFormLayout(string, string)"/>. The runtime
-        /// layout path calls this and generates a layout from the <c>FormSchema</c> when the result
-        /// is <c>null</c>, so "no definition file" is a normal answer rather than a fault.
+        /// The optional counterpart of <see cref="GetFormLayout(string, string)"/>, for callers that
+        /// need to distinguish "neither layer stores one" from a fault. The runtime layout path
+        /// calls this and reports a <c>null</c> result as a configuration error: a form renders its
+        /// stored layout definition, and one is never generated on the fly.
         /// <para>
         /// Default implementation returns <c>null</c> — an access layer that offers no optional
-        /// lookup reports "no definition", which makes the runtime path fall back to generation,
-        /// exactly as it behaved before this member existed.
+        /// lookup reports "no definition", which the runtime path then surfaces as the same
+        /// configuration error.
         /// </para>
         /// </remarks>
         FormLayout? FindFormLayout(string customizeId, string layoutId) => null;

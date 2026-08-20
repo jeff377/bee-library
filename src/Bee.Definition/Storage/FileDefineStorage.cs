@@ -233,9 +233,11 @@ namespace Bee.Definition.Storage
         /// <param name="layoutId">The form layout ID.</param>
         /// <remarks>
         /// Returns <c>null</c> rather than throwing when the file is absent, honouring the
-        /// nullable return type declared on <see cref="IDefineStorage.GetFormLayout"/>. A missing
-        /// layout file is a normal scenario: the framework generates a layout from the
-        /// <see cref="FormSchema"/> when no file exists, so "absent" is an answer, not a fault.
+        /// nullable return type declared on <see cref="IDefineStorage.GetFormLayout"/>. This layer
+        /// reports whether a file exists and nothing more; how to read "absent" belongs to the
+        /// caller. The runtime layout path treats it as a configuration error — a form renders its
+        /// stored definition — while the customization layer treats it as "this tenant overrides
+        /// nothing", which is the common case.
         /// </remarks>
         public FormLayout? GetFormLayout(string layoutId)
         {

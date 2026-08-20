@@ -25,7 +25,7 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
         {
             var schema = new FormSchema("T", "T");
             schema.Tables!.Add("T", "T").Fields!.Add("report_month", "Month", FieldDbType.String);
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             SetFirstFieldControlType(layout, ControlType.YearMonthEdit);
             var dataObject = new FormDataObject(schema);
 
@@ -42,7 +42,7 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
         {
             var schema = new FormSchema("T", "T");
             schema.Tables!.Add("T", "T").Fields!.Add("remark", "Remark", FieldDbType.String);
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             SetFirstFieldControlType(layout, ControlType.MemoEdit);
             var dataObject = new FormDataObject(schema);
 
@@ -62,7 +62,7 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
             var schemaField = master.Fields!.Add("status", "Status", FieldDbType.String);
             schemaField.ListItems!.Add("A", "Active");
             schemaField.ListItems.Add("I", "Inactive");
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             SetFirstFieldControlType(layout, ControlType.DropDownEdit);
             var dataObject = new FormDataObject(schema);
 

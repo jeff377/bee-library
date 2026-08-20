@@ -6,10 +6,11 @@ using Bee.UI.Core.Permissions;
 namespace Bee.UI.Avalonia.Permissions
 {
     /// <summary>
-    /// Applies a client capability snapshot onto a freshly generated layout by hiding / marking
-    /// read-only its sensitive fields in place. Safe to mutate because the layout is generated per
-    /// view (via <c>FormSchema.GetFormLayout</c> / <c>GetListLayout</c>), not the cached
-    /// <see cref="FormSchema"/>: capability only narrows, never widens.
+    /// Applies a client capability snapshot onto a form's layout by hiding / marking read-only its
+    /// sensitive fields in place. Mutating in place is safe because every caller hands over a
+    /// per-view instance — a clone of the cached definition, or a list layout projected from the
+    /// schema — never the cached <see cref="FormSchema"/> itself: capability only narrows, never
+    /// widens.
     /// </summary>
     /// <remarks>
     /// Detail grid actions (Add / Edit / Delete rows) are deliberately NOT gated here. A detail grid

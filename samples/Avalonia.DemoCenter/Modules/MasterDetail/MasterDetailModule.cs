@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls;
 using Avalonia.DemoCenter.Modules.Views;
 
@@ -27,7 +28,7 @@ namespace Avalonia.DemoCenter.Modules.MasterDetail
         {
             var schema = SampleFormData.BuildSchema();
             var data = SampleFormData.BuildMasterDetail(schema);
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             return FormLayoutRenderer.Render(data, layout, GridEditMode.InCell);
         }
     }

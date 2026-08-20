@@ -96,7 +96,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         public void OnKeyDown_Delete_LookupModeAllowEdit_ClearsSelection()
         {
             var dataObject = BuildOrderDataObject();
-            var layout = BuildOrderSchema().GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(BuildOrderSchema(), "default");
             var layoutField = layout.Sections![0].Fields!.First(f => f.FieldName == "customer_rowid");
             var editor = new ButtonEdit();
             editor.Bind(dataObject, layoutField);
@@ -117,7 +117,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         public void OnKeyDown_Back_LookupModeAllowEdit_ClearsSelection()
         {
             var dataObject = BuildOrderDataObject();
-            var layout = BuildOrderSchema().GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(BuildOrderSchema(), "default");
             var layoutField = layout.Sections![0].Fields!.First(f => f.FieldName == "customer_rowid");
             var editor = new ButtonEdit();
             editor.Bind(dataObject, layoutField);

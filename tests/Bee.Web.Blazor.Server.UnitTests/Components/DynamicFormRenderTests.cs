@@ -4,6 +4,7 @@ using Bee.Definition.Forms;
 using Bee.Web.Blazor.Server.Components;
 using Bee.Web.Blazor.Server.DataObjects;
 using Bunit;
+using Bee.Definition.Layouts;
 
 namespace Bee.Web.Blazor.Server.UnitTests.Components
 {
@@ -35,7 +36,7 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
         public void DynamicForm_WithLayoutAndDataObject_RendersFormContainer()
         {
             var schema = BuildSchema();
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             var dataObject = new FormDataObject(schema);
 
             var cut = Render<DynamicForm>(p => p
@@ -50,7 +51,7 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
         public void DynamicForm_SectionShowCaptionFalse_DoesNotRenderLegend()
         {
             var schema = BuildSchema();
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             foreach (var section in layout.Sections!)
                 section.ShowCaption = false;
             var dataObject = new FormDataObject(schema);

@@ -65,11 +65,11 @@ namespace Bee.ObjectCaching
         /// <param name="layoutId">The layout identifier.</param>
         /// <exception cref="InvalidOperationException">Thrown when no layout is stored under that identifier.</exception>
         /// <remarks>
-        /// Kept mandatory even though the storage layer now reports a missing layout as
-        /// <c>null</c>: callers of this overload ask for a layout that must exist (the raw-definition
-        /// path behind <c>GetDefine</c>). Callers that treat "absent" as a normal answer — the
-        /// runtime path, which generates from the <c>FormSchema</c> instead — use
-        /// <see cref="FindFormLayout"/>.
+        /// Kept mandatory even though the storage layer reports a missing layout as <c>null</c>:
+        /// callers of this overload ask for a layout that must exist (the raw-definition path
+        /// behind <c>GetDefine</c>). Callers that need to inspect "absent" before deciding what it
+        /// means — the customization overlay, which reads it as "this tenant overrides nothing" —
+        /// use <see cref="FindFormLayout"/>.
         /// </remarks>
         public FormLayout GetFormLayout(string layoutId)
         {
@@ -97,10 +97,11 @@ namespace Bee.ObjectCaching
         /// <param name="layoutId">The layout identifier.</param>
         /// <returns>The customization layout, else the base layout, else <c>null</c>.</returns>
         /// <remarks>
-        /// The optional counterpart of <see cref="GetFormLayout(string, string)"/>, for the runtime
-        /// path where "no layout definition exists" is a normal answer that means "generate one from
-        /// the <c>FormSchema</c>". Whole-file selection, same as the mandatory overload: a
-        /// customization layout wins outright and the two layers are never merged.
+        /// The optional counterpart of <see cref="GetFormLayout(string, string)"/>, for callers that
+        /// need to see "neither layer stores one" rather than an exception. The runtime path reports
+        /// that as a configuration error — layouts are authored at design time, never generated on
+        /// the fly. Whole-file selection, same as the mandatory overload: a customization layout
+        /// wins outright and the two layers are never merged.
         /// </remarks>
         public FormLayout? FindFormLayout(string customizeId, string layoutId)
         {

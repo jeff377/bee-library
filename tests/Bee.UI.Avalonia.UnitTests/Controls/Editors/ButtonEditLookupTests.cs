@@ -51,7 +51,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var schema = BuildOrderSchema();
             var dataObject = new FormDataObject(schema);
             dataObject.InitializeNewMaster();
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             var layoutField = layout.Sections![0].Fields!.First(f => f.FieldName == "customer_rowid");
 
             var editor = new ButtonEdit();
@@ -132,7 +132,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var line = lineTable.NewRow();
             lineTable.Rows.Add(line);
 
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             var column = layout.Details![0].Columns!.First(c => c.FieldName == "product_rowid");
             var editor = new ButtonEdit();
             editor.Bind(dataObject, column, line);

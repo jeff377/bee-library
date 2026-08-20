@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Department" ProgId="Department" Caption="Department">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Department" ShowCaption="false">
+      <Fields>
+        <LayoutField FieldName="sys_no" Caption="Sequence" />
+        <LayoutField FieldName="sys_rowid" Caption="Row ID" />
+        <LayoutField FieldName="sys_id" Caption="Department ID" />
+        <LayoutField FieldName="sys_name" Caption="Department Name" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+</FormLayout>

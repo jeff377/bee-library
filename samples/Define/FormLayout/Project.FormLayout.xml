@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Project" ProgId="Project" Caption="Project">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Project" ShowCaption="false">
+      <Fields>
+        <LayoutField FieldName="sys_no" Caption="Sequence" />
+        <LayoutField FieldName="sys_rowid" Caption="Row ID" />
+        <LayoutField FieldName="sys_id" Caption="Project ID" />
+        <LayoutField FieldName="sys_name" Caption="Project Name" />
+        <LayoutField FieldName="owner_dept_rowid" Caption="Owner Department" ControlType="ButtonEdit" DisplayFields="ref_dept_id,ref_dept_name" />
+        <LayoutField FieldName="start_date" Caption="Start Date" ControlType="DateEdit" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+  <Details>
+    <LayoutGrid TableName="ProjectMember" Caption="Project Members">
+      <Columns>
+        <LayoutColumn FieldName="sys_no" Caption="Sequence" />
+        <LayoutColumn FieldName="sys_rowid" Caption="Row ID" />
+        <LayoutColumn FieldName="sys_master_rowid" Caption="Master Row ID" />
+        <LayoutColumn FieldName="member_rowid" Caption="Member" ControlType="ButtonEdit" DisplayFields="ref_member_id,ref_member_name" />
+        <LayoutColumn FieldName="role" Caption="Role" />
+      </Columns>
+    </LayoutGrid>
+  </Details>
+</FormLayout>

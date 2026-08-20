@@ -3,6 +3,7 @@ using System.Text.Json;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
 
 namespace Bee.Definition.UnitTests.Layouts
 {
@@ -79,7 +80,7 @@ namespace Bee.Definition.UnitTests.Layouts
         [DisplayName("FormLayout JSON 應包含關鍵屬性與巢狀結構")]
         public void FormLayout_JsonCodec_ContainsKeyStructure()
         {
-            var layout = BuildSampleSchema().GetFormLayout("default");
+            var layout = FormLayoutGenerator.Generate(BuildSampleSchema(), "default");
             var json = JsonCodec.Serialize(layout);
 
             using var doc = JsonDocument.Parse(json);

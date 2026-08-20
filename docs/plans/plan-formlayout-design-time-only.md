@@ -1,10 +1,10 @@
 # 計畫：FormLayout 收回設計階段，移除執行階段自動推導
 
-**狀態：📝 擬定中（2026-08-20）**
+**狀態：🚧 進行中（2026-08-20）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 框架路徑：移除 `FormSchema.GetFormLayout`、generator 轉設計階段公開 API、三個執行階段呼叫點改為讀定義檔／報錯；同步補齊 `samples/Define` 落檔與全部呼叫端（測試、樣本） | 📝 待做 |
+| 1 | 框架路徑：移除 `FormSchema.GetFormLayout`、generator 轉設計階段公開 API、三個執行階段呼叫點改為讀定義檔／報錯；同步補齊 `samples/Define` 落檔與全部呼叫端（測試、樣本） | ✅ 已完成（2026-08-20） |
 | 2 | 公開文件雙語同步 + `docs/terminology*`、`docs/api-method-reference*`、BEE2005 訊息 + `.claude/skills` 三支 | 📝 待做 |
 | 3 | `tools/DefineEditor` 新增「由 FormSchema 產生 FormLayout」入口 + `Smoke.cs` | 📝 待做 |
 | 4 | 端到端實測（Northwind 桌面 head、案例 repo `bee-northwind-avalonia`）與 PublicAPI／發版註記收尾 | 📝 待做 |
@@ -191,6 +191,27 @@ CacheDefineAccess.FindFormLayout(customizeId, layoutId)→ 缺檔回 null（客�
 - **這是二進位破壞性變更**（移除公開方法 → 消費端 `MissingMethodException`），
   屬 minor 版以上，須在 commit message 明寫判定（見 `rules/commit-verification.md` 第 2 條）。
 - `src/Bee.UI.Avalonia/PublicAPI.Unshipped.txt` 新增 `FormView.Layout`。
+
+## 階段 1 執行中的修正（2026-08-20 實測）
+
+三點與計畫的「現況」描述不同，記錄於此以免後續階段照錯的前提推導：
+
+1. **base 層缺 layout 檔時，client 端不是拿到 `null`，而是當場收到伺服端的例外。**
+   計畫依 `SystemBusinessObject.GetFormLayout`（缺檔回空字串）推得「空 XML → `default!` → `null`」，
+   但 `ClientDefineAccess.GetFormLayoutAsync` 走的是 `GetDefine`／`DefineType.FormLayout` 這條，
+   對應伺服端 `CacheDefineAccess.GetFormLayout(layoutId)` —— **缺檔即 throw**，傳到 client 是
+   `UserMessageException: FormLayout 'X' not found.`。
+   因此 `FormDefinitionLoader` 新加的 `InvalidOperationException` 是**第二道防線**（涵蓋伺服端回
+   空 payload 的情形），不是主要路徑。行為結論不變（缺檔即失敗、不推導），但
+   **測試不可斷言例外型別**，改為驗「擲例外且訊息含 layoutId」。
+
+2. **`FormView` 無 loader 分支必須 `Clone()`。** `ClientDefineAccess` 逐實例快取定義，
+   而 `LayoutCapabilityApplier.Apply` 是 in-place mutate ——
+   直接把快取實例交給它會違反「cache 內定義 init 後不可異動」。loader 那條本來就 clone。
+
+3. **BEE2005 未對 `tests/Define` 生效**（計畫階段 1.4 待確認的事項）：
+   `PermGateForm` 無 layout 檔而 clean Release build 零警告。該 fixture 只驗 BO 權限 gate、
+   攔在進 repository 之前，不走版面路徑，故**判定不補**。
 
 ## 階段 2 — 文件與 skill 同步
 

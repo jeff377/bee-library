@@ -48,7 +48,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             line["ref_product_name"] = "商品甲";
             lineTable.Rows.Add(line);
 
-            var layout = schema.GetFormLayout().Details![0];
+            var layout = FormLayoutGenerator.Generate(schema, "default").Details![0];
             var grid = new GridControl { AllowEdit = true, EditMode = GridEditMode.InCell };
             grid.Bind(dataObject, layout);
             return (grid, dataObject, line);
@@ -118,7 +118,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             // 無 data object 的 list 模式：lookup 偵測為 null、走文字 branch，
             // 文字欄位仍應取 DisplayFields 而非 rowid。
             var schema = BuildOrderSchema();
-            var layout = schema.GetFormLayout().Details![0];
+            var layout = FormLayoutGenerator.Generate(schema, "default").Details![0];
             var rows = new DataTable("OrderLine");
             rows.Columns.Add(SysFields.RowId, typeof(Guid));
             rows.Columns.Add("product_rowid", typeof(Guid));

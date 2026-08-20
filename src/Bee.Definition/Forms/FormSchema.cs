@@ -235,13 +235,6 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
-        /// Gets the form layout for this schema.
-        /// </summary>
-        /// <param name="layoutId">The layout ID to assign to the generated layout.</param>
-        public FormLayout GetFormLayout(string layoutId = "default")
-            => FormLayoutGenerator.Generate(this, layoutId);
-
-        /// <summary>
         /// Gets the list layout for this form schema.
         /// </summary>
         public LayoutGrid GetListLayout()

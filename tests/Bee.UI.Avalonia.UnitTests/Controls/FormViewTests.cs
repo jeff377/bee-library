@@ -72,8 +72,18 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             return dataSet;
         }
 
+        // A layout is a design-time artefact, so a backend-less host supplies one rather than
+        // letting the view derive it. These tests are such a host.
         private static TestFormView BuildView(FakeFormApiConnector connector)
-            => new() { Schema = BuildSchema(), FormConnector = connector };
+        {
+            var schema = BuildSchema();
+            return new()
+            {
+                Schema = schema,
+                FormConnector = connector,
+                Layout = FormLayoutGenerator.Generate(schema, TestProgId),
+            };
+        }
 
         // ---- reflection helpers ----
 
@@ -393,7 +403,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         public void Render_OneBorderPerSection()
         {
             var schema = BuildRenderSchema();
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             Assert.NotEmpty(layout.Sections!);
 
             var dataObject = new FormDataObject(schema);
@@ -673,7 +683,13 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             {
                 GetDataHandler = _ => new GetDataResponse { DataSet = dataSet },
             };
-            var view = new TestFormView { Schema = BuildComputedSchema(), FormConnector = connector };
+            var computedSchema = BuildComputedSchema();
+            var view = new TestFormView
+            {
+                Schema = computedSchema,
+                FormConnector = connector,
+                Layout = FormLayoutGenerator.Generate(computedSchema, TestProgId),
+            };
 
             await view.EditAsync(rowId);
             view.DataObject!.SetField("qty", "5");
@@ -694,7 +710,13 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
                     return new GetNewDataResponse { DataSet = dataSet };
                 },
             };
-            var view = new TestFormView { Schema = BuildComputedSchema(), FormConnector = connector };
+            var computedSchema = BuildComputedSchema();
+            var view = new TestFormView
+            {
+                Schema = computedSchema,
+                FormConnector = connector,
+                Layout = FormLayoutGenerator.Generate(computedSchema, TestProgId),
+            };
 
             await view.NewAsync();
 
@@ -723,7 +745,13 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             {
                 GetDataHandler = _ => new GetDataResponse { DataSet = dataSet },
             };
-            var view = new TestFormView { Schema = BuildComputedSchema(withDetail: true), FormConnector = connector };
+            var computedSchema = BuildComputedSchema(withDetail: true);
+            var view = new TestFormView
+            {
+                Schema = computedSchema,
+                FormConnector = connector,
+                Layout = FormLayoutGenerator.Generate(computedSchema, TestProgId),
+            };
 
             await view.EditAsync(rowId);
             var detailRow = view.DataObject!.DataSet.Tables["OrderItem"]!.Rows[0];
@@ -771,6 +799,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             {
                 Schema = schema,
                 FormConnector = connector,
+                Layout = FormLayoutGenerator.Generate(schema, TestProgId),
                 RoundingContextOverride = new RoundingContext { CurrencySettings = currencies },
             };
 
@@ -779,6 +808,26 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             view.DataObject!.SetField("qty", "1");
 
             Assert.Equal(2.124m, view.DataObject!.MasterRow!["amount"]);
+        }
+
+        [Fact]
+        [DisplayName("Layout 已由 host 設定時應直接採用，不經定義來源解析")]
+        public async Task ResolveLayout_HostSuppliedLayout_IsUsedAsIs()
+        {
+            var connector = new FakeFormApiConnector
+            {
+                GetDataHandler = _ => new GetDataResponse { DataSet = BuildServerDataSet(Guid.NewGuid(), "n") },
+            };
+            var schema = BuildSchema();
+            var supplied = FormLayoutGenerator.Generate(schema, TestProgId);
+            supplied.Caption = "host-supplied";
+            // No connector-backed define access and no DefinitionLoader: the only layout available is
+            // the one set here, which is exactly the backend-less host case the property exists for.
+            var view = new TestFormView { Schema = schema, FormConnector = connector, Layout = supplied };
+
+            await view.EditAsync(Guid.NewGuid());
+
+            Assert.Equal("host-supplied", GetPrivateField<FormLayout>(view, "_formLayout").Caption);
         }
 
         private sealed class TestFormView : FormView

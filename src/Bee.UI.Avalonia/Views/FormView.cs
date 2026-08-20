@@ -19,7 +19,7 @@ namespace Bee.UI.Avalonia.Views
     /// Single-record surface — the editor half of the ERP list/record split, paired with
     /// <see cref="ListView"/>. A record is one complete master + detail unit loaded through
     /// the form's <c>GetData</c> round-trip. The view renders the record from its
-    /// <see cref="FormSchema.GetFormLayout"/> (master sections + detail grids) and carries
+    /// <see cref="Layout"/> (master sections + detail grids) and carries
     /// the three <see cref="SingleFormMode"/> states: <see cref="SingleFormMode.View"/>
     /// (read-only, Back only), <see cref="SingleFormMode.Add"/> and
     /// <see cref="SingleFormMode.Edit"/> (editable, Save / Cancel). The host drives it through
@@ -46,6 +46,10 @@ namespace Bee.UI.Avalonia.Views
         /// <summary>Identifies the <see cref="Schema"/> styled property.</summary>
         public static readonly StyledProperty<FormSchema?> SchemaProperty =
             AvaloniaProperty.Register<FormView, FormSchema?>(nameof(Schema));
+
+        /// <summary>Identifies the <see cref="Layout"/> styled property.</summary>
+        public static readonly StyledProperty<FormLayout?> LayoutProperty =
+            AvaloniaProperty.Register<FormView, FormLayout?>(nameof(Layout));
 
         /// <summary>Identifies the <see cref="FormConnector"/> styled property.</summary>
         public static readonly StyledProperty<FormApiConnector?> FormConnectorProperty =
@@ -187,6 +191,25 @@ namespace Bee.UI.Avalonia.Views
         {
             get => GetValue(SchemaProperty);
             set => SetValue(SchemaProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="FormLayout"/> the record renders from. Leave it unset to have
+        /// the view resolve one; set it to render a layout the host already holds.
+        /// </summary>
+        /// <remarks>
+        /// The counterpart of <see cref="Schema"/>, and it exists for the same case: a host may drive
+        /// the view with definitions it built itself and no backend behind them. Layouts are authored
+        /// at design time, so a view with neither a layout here, nor a
+        /// <see cref="DefinitionLoader"/>, nor a backend to fetch one from has no layout to render
+        /// and says so — it does not derive one from the schema. To build one from a schema in code,
+        /// call the design-time <c>FormLayoutGenerator.Generate</c> explicitly and assign the result
+        /// here.
+        /// </remarks>
+        public FormLayout? Layout
+        {
+            get => GetValue(LayoutProperty);
+            set => SetValue(LayoutProperty, value);
         }
 
         /// <summary>Gets or sets the connector used for the load / save round-trips.</summary>

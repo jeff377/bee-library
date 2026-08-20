@@ -136,20 +136,5 @@ namespace Bee.Definition.UnitTests
             Assert.Equal(SysFields.RowId, rowIdColumn.FieldName);
             Assert.False(rowIdColumn.Visible);
         }
-
-        [Fact]
-        [DisplayName("GetFormLayout 對稱於 GetListLayout 應透過 FormLayoutGenerator 產生 FormLayout")]
-        public void GetFormLayout_DelegatesToFormLayoutGenerator()
-        {
-            var schema = new FormSchema("Demo", "示範");
-            var table = schema.Tables!.Add("Demo", "示範");
-            table.Fields!.Add("sys_id", "編號", FieldDbType.String);
-
-            var layout = schema.GetFormLayout("default");
-
-            Assert.NotNull(layout);
-            Assert.Equal("default", layout.LayoutId);
-            Assert.Equal("Demo", layout.ProgId);
-        }
     }
 }

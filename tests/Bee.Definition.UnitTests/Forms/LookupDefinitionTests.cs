@@ -180,12 +180,12 @@ namespace Bee.Definition.UnitTests.Forms
         }
 
         [Fact]
-        [DisplayName("GetFormLayout relation 欄位應解析為 ButtonEdit 並帶 DisplayFields")]
-        public void GetFormLayout_RelationField_ResolvesButtonEditWithDisplayField()
+        [DisplayName("FormLayoutGenerator.Generate relation 欄位應解析為 ButtonEdit 並帶 DisplayFields")]
+        public void Generate_RelationField_ResolvesButtonEditWithDisplayField()
         {
             var schema = BuildSchema();
 
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             var field = layout.Sections![0].Fields!.First(f => f.FieldName == "customer_rowid");
 
             Assert.Equal(ControlType.ButtonEdit, field.ControlType);
@@ -193,8 +193,8 @@ namespace Bee.Definition.UnitTests.Forms
         }
 
         [Fact]
-        [DisplayName("GetFormLayout：relation 欄 Visible=false 仍產出 ButtonEdit；被 DisplayFields 涵蓋的欄位不另行產生")]
-        public void GetFormLayout_RelationField_CoversDisplayFields()
+        [DisplayName("FormLayoutGenerator.Generate：relation 欄 Visible=false 仍產出 ButtonEdit；被 DisplayFields 涵蓋的欄位不另行產生")]
+        public void Generate_RelationField_CoversDisplayFields()
         {
             // 直觀設定：rowid 的原始值（Guid）永遠不會被看到 → Visible=false；
             // ref 欄位是實際看到的值 → Visible=true。ButtonEdit 由 RelationProgId
@@ -204,7 +204,7 @@ namespace Bee.Definition.UnitTests.Forms
             customerField.Visible = false;
             customerField.DisplayFields = string.Empty;  // 慣例：ref_customer_id + ref_customer_name
 
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             var fields = layout.Sections![0].Fields!;
 
             // relation 欄位仍產出（編輯入口）
@@ -217,15 +217,15 @@ namespace Bee.Definition.UnitTests.Forms
         }
 
         [Fact]
-        [DisplayName("GetFormLayout：未被 DisplayFields 涵蓋的 ref 欄位仍各自產出（不丟資訊）")]
-        public void GetFormLayout_UncoveredRelationDisplayField_StillEmitted()
+        [DisplayName("FormLayoutGenerator.Generate：未被 DisplayFields 涵蓋的 ref 欄位仍各自產出（不丟資訊）")]
+        public void Generate_UncoveredRelationDisplayField_StillEmitted()
         {
             var schema = BuildSchema();
             var customerField = schema.MasterTable!.Fields!["customer_rowid"];
             // 顯式只顯示名稱 → ref_customer_id 未被涵蓋，應以獨立欄位產出
             customerField.DisplayFields = "ref_customer_name";
 
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             var fields = layout.Sections![0].Fields!;
 
             Assert.Contains(fields, f => f.FieldName == "ref_customer_id");
@@ -233,8 +233,8 @@ namespace Bee.Definition.UnitTests.Forms
         }
 
         [Fact]
-        [DisplayName("GetFormLayout：明細表套用同一套涵蓋規則")]
-        public void GetFormLayout_DetailGrid_CoversDisplayFields()
+        [DisplayName("FormLayoutGenerator.Generate：明細表套用同一套涵蓋規則")]
+        public void Generate_DetailGrid_CoversDisplayFields()
         {
             var schema = BuildSchema();
             var detail = schema.Tables!.Add("OrderLine", "訂單明細");
@@ -251,7 +251,7 @@ namespace Bee.Definition.UnitTests.Forms
             detail.Fields!.Add(new FormField("ref_product_id", "商品代碼", FieldDbType.String, FieldType.RelationField));
             detail.Fields!.Add(new FormField("ref_product_name", "商品名稱", FieldDbType.String, FieldType.RelationField));
 
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             var columns = layout.Details![0].Columns!;
 
             var lookup = columns.First(c => c.FieldName == "product_rowid");

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Employee" ProgId="Employee" Caption="Employee">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Employee" ShowCaption="false">
+      <Fields>
+        <LayoutField FieldName="sys_no" Caption="Sequence" />
+        <LayoutField FieldName="sys_rowid" Caption="Row ID" />
+        <LayoutField FieldName="sys_id" Caption="Employee ID" />
+        <LayoutField FieldName="sys_name" Caption="Employee Name" />
+        <LayoutField FieldName="hire_date" Caption="Hire Date" ControlType="DateEdit" />
+        <LayoutField FieldName="is_active" Caption="Active" ControlType="CheckEdit" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+  <Details>
+    <LayoutGrid TableName="EmployeePhone" Caption="Employee Phones">
+      <Columns>
+        <LayoutColumn FieldName="sys_no" Caption="Sequence" />
+        <LayoutColumn FieldName="sys_rowid" Caption="Row ID" />
+        <LayoutColumn FieldName="sys_master_rowid" Caption="Master Row ID" />
+        <LayoutColumn FieldName="phone_type" Caption="Phone Type" />
+        <LayoutColumn FieldName="phone_no" Caption="Phone Number" />
+      </Columns>
+    </LayoutGrid>
+  </Details>
+</FormLayout>

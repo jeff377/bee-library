@@ -171,6 +171,33 @@ namespace Bee.Api.Client.UnitTests.Customization
         }
 
         [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("兩層皆無 layout 定義時應擲例外，不由 schema 即時推導")]
+        // The exception type is deliberately not asserted: a missing base definition surfaces from
+        // the server (`CacheDefineAccess.GetFormLayout` throws, relayed as `UserMessageException`)
+        // before the loader's own guard for the empty-payload case can run. What this test pins is
+        // the behaviour that matters — a missing layout fails loudly rather than being generated.
+        public async Task GetRuntimeLayout_NoDefinitionInEitherLayer_Throws()
+        {
+            var sessions = _fx.GetRequiredService<ISessionInfoService>();
+            var accessToken = TestSessionFactory.CreateAccessToken(_fx, SeedUserId);
+            try
+            {
+                var access = new ClientDefineAccess(new SystemApiConnector(accessToken));
+                var loader = new FormDefinitionLoader(access);
+                var schema = await loader.GetLocalizedSchemaAsync(TenantCustomizationFixture.ProgId, TenantCustomizationFixture.Lang);
+
+                var ex = await Assert.ThrowsAnyAsync<Exception>(
+                    () => loader.GetRuntimeLayoutAsync(TenantCustomizationFixture.ProgId, schema, "NoSuchLayoutId"));
+
+                Assert.Contains("NoSuchLayoutId", ex.Message, StringComparison.Ordinal);
+            }
+            finally
+            {
+                sessions.Remove(accessToken);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("回歸防護：未進公司的 session 取得的 schema 應與純 base 逐位元一致")]
         public async Task GetLocalizedSchema_SessionWithoutCompany_MatchesBaseLayerByteForByte()
         {

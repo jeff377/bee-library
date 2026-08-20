@@ -62,15 +62,8 @@ namespace Bee.UI.Avalonia.Views
             _liveComputation = new FormLiveComputation(Schema, _roundingContext);
             _dataObject.FieldValueChanged += OnLiveFieldValueChanged;
             _dataObject.RowAdded += OnLiveRowAdded;
-            // Without a loader the layout is generated from the schema, exactly as before. With one,
-            // it comes from the tenant's layout definition when it has one, else the base
-            // definition, else generation — with captions from the localized schema either way.
             string layoutProgId = string.IsNullOrEmpty(ProgId) ? Schema.ProgId : ProgId;
-            _formLayout = DefinitionLoader is null
-                ? Schema.GetFormLayout()
-                : await DefinitionLoader
-                    .GetRuntimeLayoutAsync(layoutProgId, Schema)
-                    .ConfigureAwait(true);
+            _formLayout = await ResolveLayoutAsync(layoutProgId).ConfigureAwait(true);
             // Degrade the layout against the cached capability snapshot before it
             // renders: hide sensitive fields without Read and mark them read-only without Update
             // (detail grid actions follow the form's edit mode, not permission). No-op when no

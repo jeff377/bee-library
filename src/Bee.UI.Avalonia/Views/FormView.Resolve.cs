@@ -10,7 +10,7 @@ using Bee.UI.Core;
 namespace Bee.UI.Avalonia.Views
 {
     /// <summary>
-    /// The overridable resolution hooks: schema, language, connector, access token and rounding context.
+    /// The overridable resolution hooks: schema, layout, language, connector, access token and rounding context.
     /// </summary>
     /// <remarks>
     /// Every member here is `protected virtual` and exists for a host to replace. Grouping them means a
@@ -29,9 +29,43 @@ namespace Bee.UI.Avalonia.Views
                 : await DefinitionLoader.GetLocalizedSchemaAsync(progId, ResolveLang()).ConfigureAwait(false);
 
         /// <summary>
+        /// Resolves the <see cref="FormLayout"/> the record renders from, in three steps: the
+        /// <see cref="Layout"/> the host set, else the <see cref="DefinitionLoader"/>'s assembled
+        /// runtime layout, else the stored base definition fetched through
+        /// <see cref="ClientInfo.DefineAccess"/>.
+        /// </summary>
+        /// <param name="progId">The program identifier, which doubles as the layout identifier.</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when no layout definition is stored under <paramref name="progId"/>. Layouts are
+        /// authored at design time and saved as definition files; neither this view nor the loader
+        /// generates one from the schema.
+        /// </exception>
+        protected virtual async Task<FormLayout> ResolveLayoutAsync(string progId)
+        {
+            if (Layout is not null) return Layout;
+
+            if (DefinitionLoader is not null)
+            {
+                return await DefinitionLoader
+                    .GetRuntimeLayoutAsync(progId, Schema!)
+                    .ConfigureAwait(false);
+            }
+
+            // The define cache hands back a shared instance, and the capability applier mutates the
+            // layout in place, so this path clones what it fetched. The loader path clones already.
+            var definition = await ClientInfo.DefineAccess.GetFormLayoutAsync(progId).ConfigureAwait(false);
+            return definition?.Clone()
+                ?? throw new InvalidOperationException(
+                    $"No FormLayout definition found for '{progId}'. Author one at design time and save "
+                    + $"it as 'FormLayout/{progId}.FormLayout.xml' under the definition path, or set "
+                    + $"{nameof(FormView)}.{nameof(Layout)} before loading the form.");
+        }
+
+        /// <summary>
         /// Gets or sets the assembler that turns the raw definitions the server serves into a
         /// localized schema and a runtime layout. <c>null</c> — the default — keeps the view purely
-        /// local: the schema is fetched as stored and the layout is generated from it.
+        /// local: the schema is fetched as stored, and the layout comes from
+        /// <see cref="Layout"/> or the stored definition.
         /// </summary>
         /// <remarks>
         /// <para>

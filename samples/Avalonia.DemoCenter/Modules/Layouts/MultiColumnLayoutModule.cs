@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls;
 using Avalonia.DemoCenter.Modules.Views;
 
@@ -26,7 +27,7 @@ namespace Avalonia.DemoCenter.Modules.Layouts
             var schema = SampleFormData.BuildMasterFormSchema();
             var data = SampleFormData.BuildMasterForm(schema);
 
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             layout.ColumnCount = 2;
             // Let the memo field span the full width of the two-column grid.
             foreach (var section in layout.Sections ?? [])

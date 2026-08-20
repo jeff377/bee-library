@@ -20,7 +20,7 @@ namespace Bee.Api.Client.Definitions
     ///   <item><description>fetch the raw schema;</description></item>
     ///   <item><description>fetch both language layers for every namespace the schema references, and localize the schema through <c>FormSchemaLocalizer</c>;</description></item>
     ///   <item><description>bake the company's number formats onto the schema through <c>NumberFormatApplier</c>;</description></item>
-    ///   <item><description>fetch both layout layers, pick between them with <c>CustomizeOverlay</c>, and generate from the schema when neither exists;</description></item>
+    ///   <item><description>fetch both layout layers and pick between them with <c>CustomizeOverlay</c>, failing when neither exists;</description></item>
     ///   <item><description>take the layout's captions from the localized schema, so a layout file describes structure only.</description></item>
     /// </list>
     /// <para>
@@ -95,12 +95,16 @@ namespace Bee.Api.Client.Definitions
 
         /// <summary>
         /// Returns the runtime layout for <paramref name="progId"/>: the tenant's layout definition
-        /// when it has one, else the base definition, else one generated from the schema — with the
-        /// captions taken from <paramref name="localizedSchema"/> in every case.
+        /// when it has one, else the base definition — with the captions taken from
+        /// <paramref name="localizedSchema"/> either way.
         /// </summary>
         /// <param name="progId">The program identifier.</param>
         /// <param name="localizedSchema">The localized schema, from <see cref="GetLocalizedSchemaAsync"/>.</param>
         /// <param name="layoutId">The layout identifier; empty resolves to <paramref name="progId"/>.</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when neither layer stores a layout definition. Layouts are authored at design time
+        /// and saved as definition files; the runtime never generates one from the schema.
+        /// </exception>
         public async Task<FormLayout> GetRuntimeLayoutAsync(string progId, FormSchema localizedSchema, string layoutId = "")
         {
             ArgumentNullException.ThrowIfNull(localizedSchema);
@@ -109,13 +113,12 @@ namespace Bee.Api.Client.Definitions
             var customize = await _defineAccess.GetCustomizeFormLayoutAsync(progId, effectiveLayoutId).ConfigureAwait(false);
             var @base = await _defineAccess.GetFormLayoutAsync(effectiveLayoutId).ConfigureAwait(false);
 
-            var definition = CustomizeOverlay.PickFormLayout(customize, @base);
-            if (definition is null)
-            {
-                // No layout definition at all is the common case: derive one from the schema, which
-                // already carries localized captions.
-                return localizedSchema.GetFormLayout(effectiveLayoutId);
-            }
+            var definition = CustomizeOverlay.PickFormLayout(customize, @base)
+                ?? throw new InvalidOperationException(
+                    $"No FormLayout definition found for layout '{effectiveLayoutId}' (progId '{progId}'), "
+                    + $"in either the tenant customization layer or the base layer. Author one at design "
+                    + $"time and save it as 'FormLayout/{effectiveLayoutId}.FormLayout.xml' under the "
+                    + $"definition path.");
 
             // Definitions come from the client define cache, so clone before the applier mutates.
             var layout = definition.Clone();

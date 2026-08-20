@@ -78,16 +78,23 @@ namespace Bee.Web.Blazor.Server.Components
             try
             {
                 var system = Factory.CreateSystemConnector(AccessToken);
-                // Without a loader the page stays purely local: raw schema, layout generated from
-                // it. With one, both layers of language and layout are fetched and assembled so
-                // tenant customization takes effect. See FormView.DefinitionLoader for why this is
-                // opt-in rather than always on.
+                // Without a loader the page stays purely local: both definitions are fetched exactly
+                // as stored. With one, both layers of language and layout are fetched and assembled
+                // so tenant customization takes effect. See FormView.DefinitionLoader for why this
+                // is opt-in rather than always on.
                 if (DefinitionLoader is null)
                 {
                     _schema = await system
                         .GetDefineAsync<FormSchema>(DefineType.FormSchema, [ProgId])
                         .ConfigureAwait(true);
-                    _formLayout = _schema.GetFormLayout();
+                    // A layout is authored at design time, so a missing one is a configuration
+                    // error rather than a cue to derive one from the schema.
+                    _formLayout = await system
+                        .GetDefineAsync<FormLayout>(DefineType.FormLayout, [ProgId])
+                        .ConfigureAwait(true)
+                        ?? throw new InvalidOperationException(
+                            $"No FormLayout definition found for '{ProgId}'. Author one at design time "
+                            + $"and save it as 'FormLayout/{ProgId}.FormLayout.xml' under the definition path.");
                 }
                 else
                 {

@@ -5,12 +5,13 @@ using Bee.Definition.Forms;
 using Bee.Web.Blazor.Server.Components;
 using Bee.Web.Blazor.Server.DataObjects;
 using Microsoft.AspNetCore.Components;
+using Bee.Definition.Layouts;
 
 namespace Bee.Web.Blazor.Server.UnitTests.Components
 {
     /// <summary>
     /// Structural checks for <see cref="DynamicForm"/>. Phase 1a verifies the public
-    /// component surface and that wiring through <see cref="FormSchema.GetFormLayout"/>
+    /// component surface and that wiring through <see cref="FormLayoutGenerator.Generate"/>
     /// produces a layout the component is willing to consume; deeper render assertions
     /// (with bUnit) land alongside the host-app sample in Phase 1b.
     /// </summary>
@@ -57,7 +58,7 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
         public void CanInstantiateAndAssignParameters()
         {
             var schema = BuildSchema();
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
             var dataObject = new FormDataObject(schema);
 
             var component = new DynamicForm();
@@ -79,7 +80,7 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
         public void GeneratedLayout_HasAtLeastOneSection()
         {
             var schema = BuildSchema();
-            var layout = schema.GetFormLayout();
+            var layout = FormLayoutGenerator.Generate(schema, "default");
 
             Assert.NotNull(layout.Sections);
             Assert.NotEmpty(layout.Sections!);

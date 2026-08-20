@@ -11,6 +11,7 @@ using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
 using Bee.Web.Blazor.Server.Components;
 using Bee.Web.Blazor.Server.DependencyInjection;
+using Bee.Definition.Layouts;
 
 namespace Bee.Web.Blazor.Server.UnitTests.Components
 {
@@ -46,6 +47,10 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
             {
                 if (typeof(T) == typeof(FormSchema))
                     return Task.FromResult((T)(object)_schema);
+                // The page reads the stored layout definition; it never derives one from the schema.
+                // This fake stands in for that stored definition.
+                if (typeof(T) == typeof(FormLayout))
+                    return Task.FromResult((T)(object)FormLayoutGenerator.Generate(_schema, _schema.ProgId));
 
                 throw new NotSupportedException($"GetDefineAsync<{typeof(T).Name}> 未在 Fake 中支援。");
             }

@@ -1,1 +1,4 @@
 #nullable enable
+*REMOVED*Bee.Definition.Forms.FormSchema.GetFormLayout(string! layoutId = "default") -> Bee.Definition.Layouts.FormLayout!
+Bee.Definition.Layouts.FormLayoutGenerator
+static Bee.Definition.Layouts.FormLayoutGenerator.Generate(Bee.Definition.Forms.FormSchema! schema, string! layoutId) -> Bee.Definition.Layouts.FormLayout!

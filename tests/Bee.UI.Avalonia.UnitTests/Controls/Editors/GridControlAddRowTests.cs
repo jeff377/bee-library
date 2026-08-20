@@ -4,6 +4,7 @@ using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.UI.Avalonia.Controls;
 using Bee.UI.Avalonia.DataObjects;
+using Bee.Definition.Layouts;
 
 namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 {
@@ -35,7 +36,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var masterRowId = Guid.NewGuid();
             dataObject.MasterRow![SysFields.RowId] = masterRowId;
 
-            var layout = schema.GetFormLayout().Details![0];
+            var layout = FormLayoutGenerator.Generate(schema, "default").Details![0];
             var grid = new GridControl { AllowEdit = true, EditMode = GridEditMode.InCell };
             grid.Bind(dataObject, layout);
 
@@ -56,7 +57,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             dataObject.InitializeNewMaster();
             dataObject.MasterRow![SysFields.RowId] = Guid.NewGuid();
 
-            var layout = schema.GetFormLayout().Details![0];
+            var layout = FormLayoutGenerator.Generate(schema, "default").Details![0];
             var grid = new GridControl { AllowEdit = true, EditMode = GridEditMode.InCell };
             grid.Bind(dataObject, layout);
 
