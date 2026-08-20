@@ -76,7 +76,7 @@ getdata     : 2 table(s) -> Order(1), OrderDetail(2)  ← 主從
 
 `apps/Bee.Northwind` 已於 2026-06-26 畢業至獨立 repo
 [`bee-northwind-avalonia`](https://github.com/jeff377/bee-northwind-avalonia)（見
-`archive/plan-northwind-avalonia-graduation.md`）。目標 repo 最後同步於 **2026-06-27
+`archive/plan-northwind-avalonia-graduation.md`，封存已清除，可查 git 歷史）。目標 repo 最後同步於 **2026-06-27
 （commit `243fde9`，框架 4.12.1）**，此後 bee-library 端已推進至 **4.21.0**，落後 9 個 minor。
 
 本計畫把目標 repo 同步至現況。**本機已有 clone**：`~/Desktop/repos/bee-northwind-avalonia`

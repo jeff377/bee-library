@@ -214,4 +214,4 @@ descriptor 寫在**函式庫端**（隨 NuGet 發佈，下游自動受益），�
 - [x] 採用解法（descriptor 內嵌 `Bee.Definition`）與涵蓋範圍記錄在本 plan。Sgen（階段 3）未觸發。
 - [x] 回寫 `maui.md` 的 Apple trim 決策樹為本次實測結論（#4 升為採用解法 + 當前對策更新）。
 - [x] 行動端 README（中英）的「Debug-only」說明更新為實際狀態（Release trim 已驗證）。
-- [x] 複本 `bee-northwind-avalonia` 已隨框架 **4.12.1** 發佈取得 descriptor（bump 5 個 `Bee.*` PackageReference 4.12.0→4.12.1，transitive 帶入；已確認套件 dll 內嵌 descriptor）+ README 同步。見 `plan-release-4.12.1-and-sync-copy.md`。
+- [x] 複本 `bee-northwind-avalonia` 已隨框架 **4.12.1** 發佈取得 descriptor（bump 5 個 `Bee.*` PackageReference 4.12.0→4.12.1，transitive 帶入；已確認套件 dll 內嵌 descriptor）+ README 同步。見 `plan-release-4.12.1-and-sync-copy.md`（封存已清除，可查 git 歷史）。

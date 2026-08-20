@@ -8,17 +8,17 @@
 
 | 項 | 工作項 | 對應軸 | 資料表 | plan | 狀態 |
 |----|--------|--------|--------|------|------|
-| 0 | 日誌基礎設施 | —（前置） | outbox（於項 2） | [plan-audit-0-foundation.md](plan-audit-0-foundation.md) | ✅ 已完成 |
-| 1 | 登入記錄 | ① | `st_log_login` | [plan-audit-1-login.md](plan-audit-1-login.md) | ✅ 已完成 |
-| 2 | 異動記錄（含安全⑥） | ③(+⑥) | `st_log_change`（DiffGram `changes_xml` 單表）；EAV `st_log_change_field` 選配 | [plan-audit-2-change.md](plan-audit-2-change.md) | ✅ 已完成 |
-| 3 | 檢視記錄 | ② | `st_log_access` | [plan-audit-3-access.md](plan-audit-3-access.md) | ✅ 已完成 |
-| 4 | 異常記錄（API + DB 分表） | ④/⑤ | `st_log_anomaly_api` + `st_log_anomaly_db` | [plan-audit-4-anomaly.md](plan-audit-4-anomaly.md) | ✅ 已完成 |
+| 0 | 日誌基礎設施 | —（前置） | outbox（於項 2） | plan-audit-0-foundation.md（封存已清除） | ✅ 已完成 |
+| 1 | 登入記錄 | ① | `st_log_login` | plan-audit-1-login.md（封存已清除） | ✅ 已完成 |
+| 2 | 異動記錄（含安全⑥） | ③(+⑥) | `st_log_change`（DiffGram `changes_xml` 單表）；EAV `st_log_change_field` 選配 | plan-audit-2-change.md（封存已清除） | ✅ 已完成 |
+| 3 | 檢視記錄 | ② | `st_log_access` | plan-audit-3-access.md（封存已清除） | ✅ 已完成 |
+| 4 | 異常記錄（API + DB 分表） | ④/⑤ | `st_log_anomaly_api` + `st_log_anomaly_db` | plan-audit-4-anomaly.md（封存已清除） | ✅ 已完成 |
 
 - 六軸→收斂成「基礎設施 + 登入① + 異動③(+安全⑥) + 檢視② + 異常④⑤」。
 - 排程：**0 ✅ → 1 登入 ✅ → 2 異動 ✅ → 3 檢視 ✅ → 4 異常 ✅**。各項均依「出細部 plan → 逐點定案 → 執行」完成。
-- **軸⑤系統/錯誤重新定義為「異常記錄」**（原「移出/observability」判斷已修正）：針對 **API + DB 的異常**（Error 錯誤 / Timeout 逾時 / Slow 過久）持久化，供 bug 追蹤 + 效能調校。逾時獨立於錯誤（infra/效能訊號，非 code bug）。實作框架既有但**未實作**的 `DbAccessAnomalyLogOptions` + 擴到 API 層。詳見 [plan-audit-4-anomaly.md](plan-audit-4-anomaly.md)。
+- **軸⑤系統/錯誤重新定義為「異常記錄」**（原「移出/observability」判斷已修正）：針對 **API + DB 的異常**（Error 錯誤 / Timeout 逾時 / Slow 過久）持久化，供 bug 追蹤 + 效能調校。逾時獨立於錯誤（infra/效能訊號，非 code bug）。實作框架既有但**未實作**的 `DbAccessAnomalyLogOptions` + 擴到 API 層。詳見 plan-audit-4-anomaly.md（封存已清除）。
 - **「執行記錄全記」取消**：異常記錄取代之——全記的價值部分＝異常（已涵蓋），且與登入/異動重複；audit 面由登入/異動/檢視涵蓋。`Tracer`/`TraceContext`（dev-time 偵錯執行流程）不作稽核來源。純技術 observability 仍走 `ILogWriter`/host `ILogger`（→ 檔案/Seq/APM），與業務稽核分離（對齊 SAP SM21 / Odoo ir.logging）。
-- **讀取側（查詢 / 檢視）**：本母計畫項 0–4 為**寫入側**；稽核記錄的**查詢 / 檢視 API**（記錄異動歷程 + DiffGram 還原、各 log 表列表、異常監控）另立 [plan-audit-log-query.md](plan-audit-log-query.md)，**已完成並封存**。
+- **讀取側（查詢 / 檢視）**：本母計畫項 0–4 為**寫入側**；稽核記錄的**查詢 / 檢視 API**（記錄異動歷程 + DiffGram 還原、各 log 表列表、異常監控）另立 plan-audit-log-query.md（封存已清除），**已完成並封存**。
 - **未來增強：per-form 稽核規則（涵蓋項 2 異動 + 項 3 檢視）**：目前異動/檢視皆「全記所有表單」。未來加一份 admin 執行期規則（「哪些 progId 要做異動/檢視記錄」，per-form、per-操作），對齊 **Odoo `auditlog.rule`**（管理員挑表單、不改程式）。SAP 對照：Change Documents 開發期旗標 / RAL 管理員設定。預設維持全記以相容。
 - 完成一項回頭把本表狀態更新為 ✅；全部完成後補 [framework-reserved-names.md](../../framework-reserved-names.md) §1 的 log 分類。**（已完成：§1.3 Log database 與 §2.1 `AuditLog` progId 英＋繁中皆已列齊。）**
 
@@ -134,7 +134,7 @@ Odoo 較輕量，以 ORM mixin 為主，正式 CRUD 稽核靠 OCA 模組補足�
 
 ### 4.3 各表 schema
 
-**① `st_log_login`（登入記錄）** — 軸①（**已實作**，見 [plan-audit-1-login.md](plan-audit-1-login.md)）
+**① `st_log_login`（登入記錄）** — 軸①（**已實作**，見 plan-audit-1-login.md（封存已清除））
 - 共通欄 +
 - `event`（Integer/enum `LoginEvent`）：`LoginSucceeded` / `LoginFailed` / `LockedOut` / `Logout`——**列舉自帶結果，不另設 result 欄**
 - `fail_reason`（String, null）：密碼錯誤 / 帳號鎖定 …（**不含明文密碼**，見 security.md）
@@ -155,7 +155,7 @@ Odoo 較輕量，以 ORM mixin 為主，正式 CRUD 稽核靠 OCA 模組補足�
   - who/when/prog_id/table/**row_key**/change_kind 為實體欄位（可查、可索引）；欄位級差異在 XML 內（換取「一次全記、零自訂 diff、可還原顯示」）。
 - **選配「可查詢模式」`st_log_change_field`（EAV，one row per changed field）**：`sys_rowid` + `sys_master_rowid`（→ 表頭）+ `field_name` + `field_type` + `old_value` + `new_value`。**僅在需要欄位級 SQL 報表/統計時**，對指定表額外攤開（對齊 SAP `CDPOS` / Odoo `mail.tracking.value`）。預設不開。
 
-**④ `st_log_access`（檢視記錄，opt-in）** — 軸②（**已實作**，見 [plan-audit-3-access.md](plan-audit-3-access.md)）
+**④ `st_log_access`（檢視記錄，opt-in）** — 軸②（**已實作**，見 plan-audit-3-access.md（封存已清除））
 - 共通欄 + `prog_id` + `row_key`——**record-level，不記欄位**（一次 `GetData` 明細檢視＝一列：誰看了哪筆）。
 - **預設關閉**（`AccessEnabled`）；只掛 `GetData`，`GetList` 不掛。目前全記所有表單，未來加 per-form 稽核規則（見頂部索引註記）。
 
@@ -211,7 +211,7 @@ Odoo 較輕量，以 ORM mixin 為主，正式 CRUD 稽核靠 OCA 模組補足�
 ## 7. 寫入架構、保留、分區、不可竄改
 
 ### 7.1 寫入架構
-> **註（項 2 定案更新）**：下方 transactional outbox 為原設計；異動記錄實作時重評為 **best-effort 非同步**（見 D2 / [plan-audit-2-change.md](plan-audit-2-change.md) §3）。outbox 保留為「零漏失需求」時的升級路徑。
+> **註（項 2 定案更新）**：下方 transactional outbox 為原設計；異動記錄實作時重評為 **best-effort 非同步**（見 D2 / plan-audit-2-change.md（封存已清除） §3）。outbox 保留為「零漏失需求」時的升級路徑。
 - 新增 `IAuditLogWriter` 抽象 + 預設實作（落 log DB via `DbAccess(DbScope.Log)`）。
 - **非同步 + 批次**：exec / login / access 走背景 channel/queue 批次 INSERT，避免阻塞主業務流程。
 - **交易邊界 → 採 transactional outbox（已定 D2）**：change-log 的一致性與業務資料強相關，故：
@@ -252,7 +252,7 @@ Odoo 較輕量，以 ORM mixin 為主，正式 CRUD 稽核靠 OCA 模組補足�
 **已定（2026-07-05）**
 
 - **D1 命名 → `st_log_*`**：`st_log_login` / `st_log_exec` / `st_log_change` / `st_log_change_field` / `st_log_access`（log 表在 log 分類下成群）。
-- **D2 異動 log 交易邊界 → ~~transactional outbox~~ 改採 best-effort 非同步**（項 2 定案時重評）：落到實作，outbox 需 per-company-DB outbox 表 + 多租戶跨庫 flush + repository 簽章改動，負擔過重；改由 BO 於 commit 後走項 0 `IAuditLogWriter`（可對 change 強制同步寫縮小漏失窗口）。零漏失需求出現時再升級 outbox（additive）。詳見 [plan-audit-2-change.md](plan-audit-2-change.md) §3。
+- **D2 異動 log 交易邊界 → ~~transactional outbox~~ 改採 best-effort 非同步**（項 2 定案時重評）：落到實作，outbox 需 per-company-DB outbox 表 + 多租戶跨庫 flush + repository 簽章改動，負擔過重；改由 BO 於 commit 後走項 0 `IAuditLogWriter`（可對 change 強制同步寫縮小漏失窗口）。零漏失需求出現時再升級 outbox（additive）。詳見 plan-audit-2-change.md（封存已清除） §3。
 - **D3 安全/組態（軸⑥）→ 併入 `st_log_change`**：以 `is_sensitive` 旗標 / `prog_id` 過濾區分，不另建表（§4.3）。
 - **D4 執行模式 → 逐項獨立 plan、定案再執行**（見頂部拆解表）。項 0 基礎設施已完成；現行進度以拆解表狀態為準。
 

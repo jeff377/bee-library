@@ -1,13 +1,13 @@
 # 計畫：FormLayout 收回設計階段，移除執行階段自動推導
 
-**狀態：🚧 進行中（2026-08-20）**
+**狀態：✅ 已完成（2026-08-20）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 框架路徑：移除 `FormSchema.GetFormLayout`、generator 轉設計階段公開 API、三個執行階段呼叫點改為讀定義檔／報錯；同步補齊 `samples/Define` 落檔與全部呼叫端（測試、樣本） | ✅ 已完成（2026-08-20） |
 | 2 | 公開文件雙語同步 + `docs/terminology*`、`docs/api-method-reference*`、BEE2005 訊息 + `.claude/skills` 三支 | ✅ 已完成（2026-08-20） |
 | 3 | `tools/DefineEditor` 新增「由 FormSchema 產生 FormLayout」入口 + `Smoke.cs` | ✅ 已完成（2026-08-20） |
-| 4 | 端到端實測（Northwind 桌面 head、案例 repo `bee-northwind-avalonia`）與 PublicAPI／發版註記收尾 | 🚧 進行中（2026-08-20）：驗證全數完成（含三處 UI 實跑）；**只剩發版收尾** |
+| 4 | 端到端實測（Northwind 桌面 head、案例 repo `bee-northwind-avalonia`）與 PublicAPI／發版註記收尾 | ✅ 已完成（2026-08-20）：驗證全數完成（含三處 UI 實跑），4.23.0 已發佈 |
 
 ## 背景
 
@@ -26,9 +26,9 @@
 
 | # | 位置 | 現況 |
 |---|------|------|
-| 1 | [FormSchema.cs:241](../../src/Bee.Definition/Forms/FormSchema.cs) | `public FormLayout GetFormLayout(string layoutId = "default") => FormLayoutGenerator.Generate(this, layoutId);` |
-| 2 | [FormDefinitionLoader.cs:117](../../src/Bee.Api.Client/Definitions/FormDefinitionLoader.cs) | `CustomizeOverlay.PickFormLayout` 回 `null` 時 `return localizedSchema.GetFormLayout(effectiveLayoutId);` |
-| 3 | [FormView.Commands.cs:70](../../src/Bee.UI.Avalonia/Views/FormView.Commands.cs)、[FormPage.razor.cs:90](../../src/Bee.Web.Blazor.Server/Components/FormPage.razor.cs) | 無 loader 分支：`DefinitionLoader is null ? Schema.GetFormLayout() : ...` |
+| 1 | [FormSchema.cs:241](../../../src/Bee.Definition/Forms/FormSchema.cs) | `public FormLayout GetFormLayout(string layoutId = "default") => FormLayoutGenerator.Generate(this, layoutId);` |
+| 2 | [FormDefinitionLoader.cs:117](../../../src/Bee.Api.Client/Definitions/FormDefinitionLoader.cs) | `CustomizeOverlay.PickFormLayout` 回 `null` 時 `return localizedSchema.GetFormLayout(effectiveLayoutId);` |
+| 3 | [FormView.Commands.cs:70](../../../src/Bee.UI.Avalonia/Views/FormView.Commands.cs)、[FormPage.razor.cs:90](../../../src/Bee.Web.Blazor.Server/Components/FormPage.razor.cs) | 無 loader 分支：`DefinitionLoader is null ? Schema.GetFormLayout() : ...` |
 
 伺服端**不**推導：`SystemBusinessObject.GetFormLayout` 走 `DefineAccess.FindFormLayout`，
 缺檔回空字串，並在 remarks 明寫「An empty result is a normal answer meaning "no layout definition
@@ -302,8 +302,17 @@ UI 實跑（2026-08-20，使用者逐一驗證，全數正常）：
 
 待使用者執行：
 
-- **8 發版收尾**（CHANGELOG 草稿、版號、PublicAPI.Unshipped → Shipped）—— 屬發版流程，
-  版號與時機是使用者決策。破壞性變更判定已寫進階段 1 的 commit message。
+發版收尾（2026-08-20 完成，**4.23.0 已發佈**）：
+
+- CHANGELOG 雙語 + `docs/changelogs/4.23.0` 明細檔雙語；決策另立
+  [ADR-039](../../adr/adr-039-formlayout-design-time-only.md)
+- `Version.props` → 4.23.0，`PublicAPI.Unshipped` → `Shipped`（破壞性變更判定寫進 commit message）
+- tag `v4.23.0` 推送，NuGet 發佈與 GitHub Release 皆成功
+- 打 tag 前另做一輪文件漂移巡檢，修掉四筆（見 commit `0b8c5960`）
+
+> **案例 repo 的驗證仍待未來**：`bee-northwind-avalonia` 固定在 4.22.0，八份 layout 齊全，
+> 升上 4.23.0 應不受影響，但那要等實際同步時才驗得到——那次會是本破壞性變更的
+> 第一個真實外部消費者證據。
 
 > **第 7 項的計畫假設已修正**：計畫把案例 repo 實測列為「本計畫唯一的外部消費者證據」，
 > 但它消費的是已發佈套件，現在跑只驗得到 4.22.0 的行為。真正該驗的時點是**升到本版之後**。

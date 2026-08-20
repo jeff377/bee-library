@@ -9,8 +9,12 @@
 
 **維護約定**：將 plan 移入本目錄時，一併在此登錄一列，並自上層索引移除。
 
+> **保留期限**：封存滿一個月的 plan 會被清除，git 歷史仍可追溯。
+> 2026-08-20 首次清理，移除 20 份 2026-07-20 以前完成者。
+
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [FormLayout 收回設計階段，移除執行階段自動推導](plan-formlayout-design-time-only.md) | 2026-08-20 | 版面改為設計階段產出並存檔，執行階段不再由 `FormSchema` 推導；移除 `FormSchema.GetFormLayout`、產生器轉公開 API、`FormView.Layout` 與 DefineEditor 產生入口。隨 4.23.0 發佈，決策見 [ADR-039](../../adr/adr-039-formlayout-design-time-only.md) |
 | [Northwind 案例走進客製覆蓋層](plan-northwind-customize-layer.md) | 2026-08-18 | 案例（`apps/Bee.Northwind`）首次接上客製覆蓋層：租戶客製語系資源改寫訂單表單的客戶欄標題，另加一份整份取代的 Order `FormLayout` 示範疊加粒度。**框架端不動**——`CustomizeOverlay` / `CustomizeDefineReader` 機制本就完好，缺的只有案例接線。獨立 repo `bee-northwind-avalonia` 之後另一輪同步 |
 | [框架全面體檢（2026-08-07）](plan-framework-review-2026-08-07.md) | 2026-08-16（過期封存） | 十一面向唯讀體檢（基準 v4.17.0）。P0 / P3 全數落地，P1 / P2 部分完成；**未結的 P1 / P2 / P4 項目隨基準版本推進而過期，不再由本 plan 追蹤**，現象是否仍成立須重新確認。續輪見同目錄的 2026-08-11 體檢；移交的 D-3 / D-5 由 [plan-property-grid-control.md](../plan-property-grid-control.md) 與 [plan-tree-view-builder.md](../plan-tree-view-builder.md) 承接 |
 | [XML doc 漂移全 repo 盤點與修正](plan-xmldoc-drift-audit.md) | 2026-08-15 | 對 `src/**/*.cs` 的 991 檔／26,263 行 `///` 做四類全掃，修掉 10 筆 A 級實質錯誤（其中 8 筆是清點數字漂掉）與 1 筆過期敘述。落地兩道閘門：`check-xmldoc-refs.sh` 掃 `<c>` 懸空識別字，`code-style.md` 加上「散文提到自家型別一律用 `<see cref>`」與「不寫程式碼構件的清點數字」 |
@@ -53,23 +57,3 @@
 | [Bee.Api.Contracts 命名空間按 BO 軸對齊](plan-contracts-namespace-align.md) | 2026-07-23 | 合約介面命名空間 |
 | [MessagePack 合約改採 property-name key](plan-messagepack-name-based-keys.md) | 2026-07-22 | `keyAsPropertyName`（ADR-030，wire breaking） |
 | [API 合約三棲序列化單元測試](plan-api-contract-serialization-tests.md) | 2026-07-22 | MessagePack + JSON round-trip |
-| [自訂運算式與規則引擎](plan-expression-rule-engine.md) | 2026-07-09 | 後端 + Avalonia 前端即時運算 |
-| [稽核日誌查詢](plan-audit-log-query.md) | 2026-07-08 | `st_log_*` 讀取側，`AuditLog` 軸 10 個方法 |
-| [異常記錄（項 4）](plan-audit-4-anomaly.md) | 2026-07-08 | `st_log_anomaly` |
-| [檢視記錄（項 3）](plan-audit-3-access.md) | 2026-07-07 | `st_log_access` |
-| [異動記錄（項 2）](plan-audit-2-change.md) | 2026-07-05 | `st_log_change` |
-| [登入記錄（項 1）](plan-audit-1-login.md) | 2026-07-05 | `st_log_login` |
-| [日誌基礎設施（項 0）](plan-audit-0-foundation.md) | 2026-07-05 | 稽核寫入側基礎 |
-| [前端權限 Capability](plan-permission-capability.md) | 2026-07-03 | element 細粒度降級 |
-| [SQL Server `datetime` → `datetime2`](plan-sqlserver-datetime2.md) | 2026-07-03 | 精度與最小值遷移 |
-| [數值處理核心](plan-numeric-core.md) | 2026-07-01 | `NumberKind` + 公司位數 + round-then-sum |
-| [多幣別數值](plan-numeric-multicurrency.md) | 2026-07-01 | `CurrencySettings` + CUKY + 現金捨入 |
-| [多計量單位數值](plan-numeric-uom.md) | 2026-07-01 | `UnitSettings` + UNIT 綁定 |
-| [發佈 4.12.1 並同步 Northwind 複本](plan-release-4.12.1-and-sync-copy.md) | 2026-06-27 | 行動端 trim descriptor |
-| [Bee.Northwind 畢業至獨立 repo](plan-northwind-avalonia-graduation.md) | 2026-06-26 | 同步至 `bee-northwind-avalonia` |
-| [Bee.Northwind 新增 Android head](plan-northwind-android.md) | 2026-06-26 | Avalonia `net10.0-android` |
-| [Bee.Northwind 新增 iOS head](plan-northwind-ios.md) | 2026-06-26 | Avalonia `net10.0-ios` |
-| [bee-northwind-avalonia 重新同步 + WASM head](plan-northwind-avalonia-resync.md) | 2026-06-24 | Browser backend |
-| [ERP 數值處理設計總覽](plan-numeric-formatting.md) | 📐 2026-06-21 | 決策紀錄，不直接執行；保存完整設計與 SAP / Odoo 研究，執行拆為上述三個 numeric plan |
-| [新增 Avalonia UI sample](plan-avalonia-sample.md) | 2026-06-09 | 鏡像 Maui.Demo |
-| [定義檔方案維護工具](plan-define-editor.md) | 2026-06-07 | Avalonia 桌面程式 DefineEditor |
