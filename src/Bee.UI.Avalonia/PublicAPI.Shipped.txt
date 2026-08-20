@@ -209,6 +209,8 @@ Bee.UI.Avalonia.Views.FormView.FormConnector.set -> void
 Bee.UI.Avalonia.Views.FormView.FormMode.get -> Bee.Definition.Layouts.SingleFormMode
 Bee.UI.Avalonia.Views.FormView.FormMode.set -> void
 Bee.UI.Avalonia.Views.FormView.FormView() -> void
+Bee.UI.Avalonia.Views.FormView.Layout.get -> Bee.Definition.Layouts.FormLayout?
+Bee.UI.Avalonia.Views.FormView.Layout.set -> void
 Bee.UI.Avalonia.Views.FormView.NewAsync() -> System.Threading.Tasks.Task!
 Bee.UI.Avalonia.Views.FormView.ProgId.get -> string!
 Bee.UI.Avalonia.Views.FormView.ProgId.set -> void
@@ -294,6 +296,7 @@ static readonly Bee.UI.Avalonia.Views.FormView.CompactWidthThresholdProperty -> 
 static readonly Bee.UI.Avalonia.Views.FormView.DetailEditModeProperty -> Avalonia.StyledProperty<Bee.UI.Avalonia.Controls.GridEditMode>!
 static readonly Bee.UI.Avalonia.Views.FormView.FormConnectorProperty -> Avalonia.StyledProperty<Bee.Api.Client.Connectors.FormApiConnector?>!
 static readonly Bee.UI.Avalonia.Views.FormView.FormModeProperty -> Avalonia.StyledProperty<Bee.Definition.Layouts.SingleFormMode>!
+static readonly Bee.UI.Avalonia.Views.FormView.LayoutProperty -> Avalonia.StyledProperty<Bee.Definition.Layouts.FormLayout?>!
 static readonly Bee.UI.Avalonia.Views.FormView.ProgIdProperty -> Avalonia.StyledProperty<string!>!
 static readonly Bee.UI.Avalonia.Views.FormView.SchemaProperty -> Avalonia.StyledProperty<Bee.Definition.Forms.FormSchema?>!
 static readonly Bee.UI.Avalonia.Views.ListView.AccessTokenProperty -> Avalonia.StyledProperty<System.Guid>!
@@ -311,6 +314,7 @@ virtual Bee.UI.Avalonia.Views.FormView.OnFormModeChanged(Bee.Definition.Layouts.
 virtual Bee.UI.Avalonia.Views.FormView.ResolveAccessToken() -> System.Guid
 virtual Bee.UI.Avalonia.Views.FormView.ResolveFormConnector(string! progId) -> Bee.Api.Client.Connectors.FormApiConnector!
 virtual Bee.UI.Avalonia.Views.FormView.ResolveLang() -> string!
+virtual Bee.UI.Avalonia.Views.FormView.ResolveLayoutAsync(string! progId) -> System.Threading.Tasks.Task<Bee.Definition.Layouts.FormLayout!>!
 virtual Bee.UI.Avalonia.Views.FormView.ResolveRoundingContextAsync() -> System.Threading.Tasks.Task<Bee.Definition.RoundingContext!>!
 virtual Bee.UI.Avalonia.Views.FormView.ResolveSchemaAsync(string! progId) -> System.Threading.Tasks.Task<Bee.Definition.Forms.FormSchema?>!
 virtual Bee.UI.Avalonia.Views.ListView.ResolveAccessToken() -> System.Guid

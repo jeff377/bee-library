@@ -22,9 +22,9 @@
     and samples/ as well. This one is imported explicitly by the two directories that want it.
   -->
   <PropertyGroup>
-    <Version>4.22.0</Version>
-    <AssemblyVersion>4.22.0.0</AssemblyVersion>
-    <FileVersion>4.22.0.0</FileVersion>
+    <Version>4.23.0</Version>
+    <AssemblyVersion>4.23.0.0</AssemblyVersion>
+    <FileVersion>4.23.0.0</FileVersion>
   </PropertyGroup>
 
 </Project>

@@ -719,6 +719,7 @@ Bee.Definition.Layouts.FormLayout.SerializeState.get -> Bee.Base.Serialization.S
 Bee.Definition.Layouts.FormLayout.SetObjectFilePath(string! filePath) -> void
 Bee.Definition.Layouts.FormLayout.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
 Bee.Definition.Layouts.FormLayoutCaptionApplier
+Bee.Definition.Layouts.FormLayoutGenerator
 Bee.Definition.Layouts.GridControlAllowActions
 Bee.Definition.Layouts.GridControlAllowActions.Add = 1 -> Bee.Definition.Layouts.GridControlAllowActions
 Bee.Definition.Layouts.GridControlAllowActions.All = Bee.Definition.Layouts.GridControlAllowActions.Add | Bee.Definition.Layouts.GridControlAllowActions.Edit | Bee.Definition.Layouts.GridControlAllowActions.Delete -> Bee.Definition.Layouts.GridControlAllowActions
@@ -1935,6 +1936,7 @@ static Bee.Definition.Language.LanguageEnumEntryCollectionExtensions.Add(this Be
 static Bee.Definition.Language.LanguageItemCollectionExtensions.Add(this Bee.Definition.Language.LanguageItemCollection? collection, string! key, string! value) -> Bee.Definition.Language.LanguageItem!
 static Bee.Definition.Layouts.FormEditModesExtensions.Allows(this Bee.Definition.Layouts.FormEditModes modes, Bee.Definition.Layouts.SingleFormMode formMode) -> bool
 static Bee.Definition.Layouts.FormLayoutCaptionApplier.Apply(Bee.Definition.Layouts.FormLayout! layout, Bee.Definition.Forms.FormSchema! schema) -> void
+static Bee.Definition.Layouts.FormLayoutGenerator.Generate(Bee.Definition.Forms.FormSchema! schema, string! layoutId) -> Bee.Definition.Layouts.FormLayout!
 static Bee.Definition.Layouts.LayoutColumnCollectionExtensions.Add(this Bee.Definition.Layouts.LayoutColumnCollection? collection, string! fieldName, string! caption, Bee.Definition.Layouts.ControlType controlType) -> Bee.Definition.Layouts.LayoutColumn!
 static Bee.Definition.Logging.AuditColumn.operator !=(Bee.Definition.Logging.AuditColumn left, Bee.Definition.Logging.AuditColumn right) -> bool
 static Bee.Definition.Logging.AuditColumn.operator ==(Bee.Definition.Logging.AuditColumn left, Bee.Definition.Logging.AuditColumn right) -> bool
