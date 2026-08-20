@@ -24,10 +24,13 @@ internal static class Smoke
         var formSchemaResult = RunFormSchemaSmoke(fixturePath);
         if (formSchemaResult != 0) return formSchemaResult;
 
+        var layoutGenResult = RunFormLayoutGenerationSmoke();
+        if (layoutGenResult != 0) return layoutGenResult;
+
         var singletonResult = RunSingletonSmoke();
         if (singletonResult != 0) return singletonResult;
 
-        Console.WriteLine("[smoke] OK — FormSchema + 8 multi-instance editors + ConnectionStringParser + tab commands all green.");
+        Console.WriteLine("[smoke] OK — FormSchema + FormLayout generation + 8 multi-instance editors + ConnectionStringParser + tab commands all green.");
         return 0;
     }
 
@@ -94,6 +97,61 @@ internal static class Smoke
             Console.WriteLine("[smoke:formschema] OK");
             return 0;
         }
+        finally { TryDelete(tempDir); }
+    }
+
+    /// <summary>
+    /// Covers "generate FormLayout from FormSchema" — the design-time step that produces the layout
+    /// the run time then renders. Uses a real {DefinePath}/FormSchema/... layout on disk because the
+    /// command derives the target path from the schema file's own location.
+    /// </summary>
+    private static int RunFormLayoutGenerationSmoke()
+    {
+        var tempDir = MakeTempDir("formlayout-gen");
+        try
+        {
+            const string progId = "SmokeGen";
+            var schemaDir = Path.Combine(tempDir, "FormSchema");
+            Directory.CreateDirectory(schemaDir);
+            var schemaPath = Path.Combine(schemaDir, $"{progId}.FormSchema.xml");
+
+            var schema = new FormSchema(progId, "Smoke 產生測試");
+            var master = schema.Tables!.Add(progId, "主檔");
+            master.Fields!.Add("sys_id", "編號", FieldDbType.String);
+            master.Fields!.Add("sys_name", "名稱", FieldDbType.String);
+            var detail = schema.Tables!.Add($"{progId}Detail", "明細");
+            detail.Fields!.Add("line_no", "項次", FieldDbType.Integer);
+            Bee.Base.Serialization.XmlCodec.SerializeToFile(schema, schemaPath);
+
+            var vm = FormSchemaDocumentViewModel.Load(schemaPath, SolutionContext.Empty);
+            // The command only applies to the schema node, which is what the context menu binds to.
+            vm.SelectedTreeNode = vm.Roots[0];
+            if (!vm.GenerateFormLayoutCommand.CanExecute(null))
+                return Fail(117, "GenerateFormLayout should be executable on the schema node");
+
+            string generatedPath = "";
+            vm.DefineFileGenerated += (_, path) => generatedPath = path;
+            vm.GenerateFormLayoutCommand.Execute(null);
+
+            var expected = Path.Combine(tempDir, "FormLayout", $"{progId}.FormLayout.xml");
+            if (!File.Exists(expected))
+                return Fail(118, $"FormLayout was not written to {expected}");
+            if (!string.Equals(generatedPath, expected, StringComparison.OrdinalIgnoreCase))
+                return Fail(119, "DefineFileGenerated did not report the written path");
+
+            // The generated file must be a loadable FormLayout document, not just bytes on disk.
+            var layoutVm = FormLayoutDocumentViewModel.Load(expected);
+            if (layoutVm.Root.ProgId != progId || layoutVm.Root.LayoutId != progId)
+                return Fail(120, "Generated FormLayout has wrong ProgId / LayoutId");
+            if (layoutVm.Root.Sections!.Count == 0)
+                return Fail(121, "Generated FormLayout has no master section");
+            if (layoutVm.Root.Details!.All(g => g.TableName != $"{progId}Detail"))
+                return Fail(122, "Generated FormLayout is missing the detail grid");
+
+            Console.WriteLine("[smoke:formlayout-gen] OK");
+            return 0;
+        }
+        catch (Exception ex) { return Fail(123, $"FormLayout generation smoke crashed: {ex.Message}"); }
         finally { TryDelete(tempDir); }
     }
 

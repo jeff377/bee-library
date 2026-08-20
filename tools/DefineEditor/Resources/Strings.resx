@@ -168,6 +168,11 @@
   <data name="FormSchema_AddListItem" xml:space="preserve"><value>Add ListItem</value></data>
   <data name="FormSchema_AddLookupMapping" xml:space="preserve"><value>Add Lookup Mapping</value></data>
   <data name="FormSchema_AddRelationMapping" xml:space="preserve"><value>Add Relation Mapping</value></data>
+  <data name="FormSchema_GenerateFormLayout" xml:space="preserve"><value>Generate FormLayout</value></data>
+  <data name="Status_FormLayoutGenerated" xml:space="preserve"><value>Generated {0}</value></data>
+  <data name="Confirm_OverwriteFormLayoutTitle" xml:space="preserve"><value>Overwrite existing FormLayout</value></data>
+  <data name="Confirm_OverwriteFormLayoutMessage" xml:space="preserve"><value>{0} already exists. Regenerating discards any manual layout adjustments in it. Overwrite?</value></data>
+  <data name="Action_Overwrite" xml:space="preserve"><value>Overwrite</value></data>
   <data name="FormSchema_Props" xml:space="preserve"><value>FormSchema properties</value></data>
   <data name="FormSchema_TableProps" xml:space="preserve"><value>FormTable properties</value></data>
   <data name="FormSchema_FieldProps" xml:space="preserve"><value>FormField properties</value></data>

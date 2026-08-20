@@ -155,6 +155,11 @@
   <data name="FormSchema_AddListItem" xml:space="preserve"><value>新增 ListItem</value></data>
   <data name="FormSchema_AddLookupMapping" xml:space="preserve"><value>新增 Lookup Mapping</value></data>
   <data name="FormSchema_AddRelationMapping" xml:space="preserve"><value>新增 Relation Mapping</value></data>
+  <data name="FormSchema_GenerateFormLayout" xml:space="preserve"><value>產生 FormLayout</value></data>
+  <data name="Status_FormLayoutGenerated" xml:space="preserve"><value>已產生 {0}</value></data>
+  <data name="Confirm_OverwriteFormLayoutTitle" xml:space="preserve"><value>覆寫既有的 FormLayout</value></data>
+  <data name="Confirm_OverwriteFormLayoutMessage" xml:space="preserve"><value>{0} 已存在。重新產生會丟掉其中人工調整過的版面。要覆寫嗎？</value></data>
+  <data name="Action_Overwrite" xml:space="preserve"><value>覆寫</value></data>
   <data name="FormSchema_Props" xml:space="preserve"><value>FormSchema 屬性</value></data>
   <data name="FormSchema_TableProps" xml:space="preserve"><value>FormTable 屬性</value></data>
   <data name="FormSchema_FieldProps" xml:space="preserve"><value>FormField 屬性</value></data>

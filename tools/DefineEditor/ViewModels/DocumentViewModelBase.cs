@@ -105,6 +105,21 @@ public abstract partial class DocumentViewModelBase : ViewModelBase, IDisposable
     public virtual IRelayCommand? FileValidateCommand => null;
 
     /// <summary>
+    /// Raised when a document editor writes a define file other than its own — currently only
+    /// FormSchema generating its FormLayout. Carries the absolute path of the written file.
+    /// </summary>
+    /// <remarks>
+    /// A document view-model has no reference to the solution tree, so it cannot refresh the tree
+    /// or open the new file itself. The main window owns both and subscribes to this instead,
+    /// which keeps the dependency pointing one way.
+    /// </remarks>
+    public event EventHandler<string>? DefineFileGenerated;
+
+    /// <summary>Raises <see cref="DefineFileGenerated"/> for <paramref name="filePath"/>.</summary>
+    protected void OnDefineFileGenerated(string filePath)
+        => DefineFileGenerated?.Invoke(this, filePath);
+
+    /// <summary>
     /// Replays <paramref name="issues"/> into <paramref name="issuesPanel"/> and,
     /// when any error-severity finding is present, prompts the user via a modal
     /// dialog whether to save anyway. Returns <c>true</c> when the caller should

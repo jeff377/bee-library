@@ -115,14 +115,47 @@ public partial class MainWindowViewModel : ViewModelBase
         OnPropertyChanged(nameof(ShowDocumentWelcome));
 
         foreach (var doc in _dirtySubscriptions)
+        {
             doc.PropertyChanged -= OnDocumentPropertyChanged;
+            doc.DefineFileGenerated -= OnDefineFileGenerated;
+        }
         _dirtySubscriptions.Clear();
         foreach (var doc in OpenDocuments)
         {
             doc.PropertyChanged += OnDocumentPropertyChanged;
+            doc.DefineFileGenerated += OnDefineFileGenerated;
             _dirtySubscriptions.Add(doc);
         }
         OnPropertyChanged(nameof(HasDirtyDocuments));
+    }
+
+    /// <summary>
+    /// Rescans the solution so a newly generated define file appears in the tree, then opens it.
+    /// </summary>
+    private void OnDefineFileGenerated(object? sender, string filePath)
+    {
+        if (string.IsNullOrEmpty(SolutionPath)) return;
+
+        Nodes = new ObservableCollection<DefineNode> { DefinePathScanner.Scan(SolutionPath) };
+        Solution = SolutionContext.FromTree(Nodes[0]);
+
+        var node = FindNodeByFilePath(Nodes[0], filePath);
+        if (node is not null) SelectedNode = node;
+    }
+
+    private static DefineNode? FindNodeByFilePath(DefineNode node, string filePath)
+    {
+        if (node.Kind == DefineNodeKind.DefineFile
+            && string.Equals(node.FilePath, filePath, StringComparison.OrdinalIgnoreCase))
+        {
+            return node;
+        }
+        foreach (var child in node.Children)
+        {
+            var found = FindNodeByFilePath(child, filePath);
+            if (found is not null) return found;
+        }
+        return null;
     }
 
     private void OnDocumentPropertyChanged(object? sender, PropertyChangedEventArgs e)

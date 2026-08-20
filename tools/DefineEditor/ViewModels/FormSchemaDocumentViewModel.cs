@@ -2,8 +2,10 @@ using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Definition.Collections;
 using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
 using Bee.DefineEditor.Models;
 using Bee.DefineEditor.Services;
+using Bee.DefineEditor.Views;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Bee.DefineEditor.ViewModels;
@@ -224,6 +226,55 @@ public sealed partial class FormSchemaDocumentViewModel : SingletonDocumentViewM
 
     private bool CanAddListItem() =>
         FindAncestor(SelectedTreeNode, FormSchemaKinds.Field) is not null;
+
+    /// <summary>
+    /// Generates the <see cref="FormLayout"/> definition for this schema and writes it to
+    /// <c>{DefinePath}/FormLayout/{ProgId}.FormLayout.xml</c>.
+    /// </summary>
+    /// <remarks>
+    /// This is where a layout comes from: the run time renders the stored definition and never
+    /// generates one, so every FormSchema needs this run once (BEE2005 reports the ones that
+    /// have not had it). Regenerating discards any hand-tuning of the existing file, which is why
+    /// an existing target is confirmed first — the only destructive thing this command does.
+    /// </remarks>
+    [RelayCommand(CanExecute = nameof(CanGenerateFormLayout))]
+    private async Task GenerateFormLayoutAsync()
+    {
+        string progId = Schema.ProgId;
+        if (string.IsNullOrWhiteSpace(progId)) return;
+
+        // {DefinePath}/FormSchema/{progId}.FormSchema.xml -> {DefinePath}
+        string? schemaDir = Path.GetDirectoryName(FilePath);
+        string? definePath = schemaDir is null ? null : Path.GetDirectoryName(schemaDir);
+        if (definePath is null) return;
+
+        string targetDir = Path.Combine(definePath, "FormLayout");
+        string targetPath = Path.Combine(targetDir, $"{progId}.FormLayout.xml");
+
+        if (File.Exists(targetPath) && !await ConfirmOverwriteFormLayoutAsync(progId))
+            return;
+
+        Directory.CreateDirectory(targetDir);
+        XmlCodec.SerializeToFile(FormLayoutGenerator.Generate(Schema, progId), targetPath);
+
+        StatusText = L("Status_FormLayoutGenerated", $"{progId}.FormLayout.xml");
+        OnDefineFileGenerated(targetPath);
+    }
+
+    private bool CanGenerateFormLayout() =>
+        SelectedKindIsSchema && !string.IsNullOrWhiteSpace(Schema.ProgId);
+
+    private static async Task<bool> ConfirmOverwriteFormLayoutAsync(string progId)
+    {
+        var owner = GetOwnerWindow();
+        if (owner is null) return true; // smoke / headless
+        return await ConfirmationDialog.ShowAsync(
+            owner,
+            L("Confirm_OverwriteFormLayoutTitle"),
+            L("Confirm_OverwriteFormLayoutMessage", $"{progId}.FormLayout.xml"),
+            confirmLabel: L("Action_Overwrite"),
+            cancelLabel: L("Action_Cancel"));
+    }
 
     protected override Action? GetDeleteAction(SettingsTreeNode node) => node.Kind switch
     {
