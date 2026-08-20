@@ -7,7 +7,7 @@
 | 1 | 框架路徑：移除 `FormSchema.GetFormLayout`、generator 轉設計階段公開 API、三個執行階段呼叫點改為讀定義檔／報錯；同步補齊 `samples/Define` 落檔與全部呼叫端（測試、樣本） | ✅ 已完成（2026-08-20） |
 | 2 | 公開文件雙語同步 + `docs/terminology*`、`docs/api-method-reference*`、BEE2005 訊息 + `.claude/skills` 三支 | ✅ 已完成（2026-08-20） |
 | 3 | `tools/DefineEditor` 新增「由 FormSchema 產生 FormLayout」入口 + `Smoke.cs` | ✅ 已完成（2026-08-20） |
-| 4 | 端到端實測（Northwind 桌面 head、案例 repo `bee-northwind-avalonia`）與 PublicAPI／發版註記收尾 | 🚧 進行中（2026-08-20）：自動化驗證全綠、外部 repo 曝險已評估；三處 UI 實跑與發版待使用者 |
+| 4 | 端到端實測（Northwind 桌面 head、案例 repo `bee-northwind-avalonia`）與 PublicAPI／發版註記收尾 | 🚧 進行中（2026-08-20）：驗證全數完成（含三處 UI 實跑）；**只剩發版收尾** |
 
 ## 背景
 
@@ -286,11 +286,22 @@ CacheDefineAccess.FindFormLayout(customizeId, layoutId)→ 缺檔回 null（客�
 | 7 | 案例 repo `bee-northwind-avalonia` 曝險評估 | **零曝險**：8 份 FormSchema 對 8 份 FormLayout 齊全，且全 repo 無 `GetFormLayout` 呼叫；它固定在 `PackageReference 4.22.0`，**升版前不受影響** |
 | — | `tools/DefineEditor --smoke` | 全 14 項綠（含新增的 `formlayout-gen`） |
 
+UI 實跑（2026-08-20，使用者逐一驗證，全數正常）：
+
+| # | 項目 | 結果 |
+|---|------|------|
+| 4 | `samples/Blazor.Server.Demo` 的 `<FormPage ProgId="Employee" />` | ✅ 正常。表單欄位來自新補的 `samples/Define/FormLayout/Employee.FormLayout.xml` |
+| 5 | `samples/Avalonia.DemoCenter` 三個 layout 模組 | ✅ 正常（無後端、host 自行供應版面那條路徑） |
+| 6 | `apps/Bee.Northwind` 桌面 head（remote，含 `Customize/` 的 Order 整檔覆寫） | ✅ 正常 |
+
+> **第 4 項連帶修掉一個既有缺陷**：Blazor demo 的登入自 session 持久化落地後就一直失敗
+> （`no such table: st_user`），與本計畫無關——已在 `87875e1d` 的獨立工作樹上重現同一錯誤。
+> 修法見 commit `8f2509c2`。該 commit 的結語另記了一項**仍未處理的框架問題**：
+> `UserRepository.GetLocale` 對「表不存在」不容錯，使 `ApplyUserLocale` 的 XML doc 承諾
+> （自訂認證的部署讀不到 `st_user` 就該 fallback）只兌現了一半。
+
 待使用者執行：
 
-- **4 / 5 / 6 的 UI 實跑**（`Blazor.Server.Demo`、`Avalonia.DemoCenter` 三個 layout 模組、
-  Northwind 桌面 head 含 `Customize/` 的 Order 覆寫）—— 依
-  `src/Bee.UI.Avalonia/CLAUDE.md` 的偏好「改動編譯通過即可交付，由使用者自行啟動測試」。
 - **8 發版收尾**（CHANGELOG 草稿、版號、PublicAPI.Unshipped → Shipped）—— 屬發版流程，
   版號與時機是使用者決策。破壞性變更判定已寫進階段 1 的 commit message。
 
