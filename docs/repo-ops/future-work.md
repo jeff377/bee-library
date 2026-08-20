@@ -180,3 +180,17 @@ dotnet test tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj -c Releas
 
 判讀與重現法的完整規範已收進 `.claude/rules/apple-mobile-trim.md`
 與 `.claude/rules/serialization.md`。
+
+## per-form 稽核規則：讓管理員挑哪些表單要記錄
+
+異動記錄與檢視記錄目前都是**全記所有表單**。實務上不是每張表單都值得記——
+稽核價值集中在少數高敏感／高爭議的單據，其餘只是量體。
+
+構想是一份**執行期**規則（不是編譯期旗標、也不是改程式）：管理員指定哪些 ProgId
+要做異動／檢視記錄，可再細到 per-操作。對齊 Odoo 的 `auditlog.rule`——管理員在畫面上
+挑 model，不動一行程式碼。SAP 那邊的對照是 Change Documents 的開發期旗標與 RAL 的
+管理員設定，兩者一硬一軟，Odoo 的做法更接近這裡要的。
+
+**預設必須維持全記**，否則既有部署升版後會靜默少記——稽核少記比多記危險得多。
+
+分類軸與各項的定位見 [ADR-040](../adr/adr-040-audit-trail-taxonomy.md)。

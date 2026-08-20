@@ -48,3 +48,4 @@ ADR 記錄**決策當下的脈絡與理由**，是理解「為何這樣設計」
 | [037](adr-037-wire-explicit-registration.md) | wire 型別一律顯式註冊 formatter，`object` 值改用判別式封套 | ✅ 已採納 |
 | [038](adr-038-definition-dependency-boundary.md) | 定義層相依邊界：運算式抽象下沉至 `Bee.Base`，判準以閘門固化 | ✅ 已採納 |
 | [039](adr-039-formlayout-design-time-only.md) | `FormLayout` 收回設計階段，執行階段不再由 `FormSchema` 推導 | ✅ 已採納 |
+| [040](adr-040-audit-trail-taxonomy.md) | 稽核軌跡的分類軸與寫入策略（四項實作、檢視預設關閉、DiffGram before/after） | ✅ 已採納 |

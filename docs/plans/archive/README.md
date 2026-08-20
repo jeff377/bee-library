@@ -51,7 +51,6 @@
 | [Bee.Definition 職責拆分](plan-bee-definition-split.md) | 2026-07-24 | Storage IO / Security 實作外移 |
 | [快取失效模型統一](plan-cache-invalidation-model.md) | 2026-07-24 | 檔案相依 + DB 相依皆進 `CacheItemPolicy` |
 | [DataSet 欄名全小寫](plan-dataset-lowercase-columns.md) | 2026-07-24 | 定義 / 資料 / UI 三者一致（ADR-029） |
-| [ERP 資料軌跡 / 日誌功能（母計畫）](plan-audit-trail.md) | 2026-07-24 | log 資料庫分類，統括下列項 0–4 與查詢側 |
 | [Avalonia 行動端 Release AOT / Trim 修正](plan-mobile-release-trim-safe.md) | 2026-07-24 | `ILLink.Descriptors.xml` 內嵌 |
 | [plan 工作流可攜化](plan-workflow-portability.md) | 2026-07-24 | 抽 skill → `plan-workflow` plugin |
 | [Bee.Api.Contracts 命名空間按 BO 軸對齊](plan-contracts-namespace-align.md) | 2026-07-23 | 合約介面命名空間 |
