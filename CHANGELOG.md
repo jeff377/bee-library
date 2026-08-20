@@ -4,6 +4,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.23.0]
+
+> This release closes a hole in the rule that a `FormLayout` is the authority on what a form shows. The rule already held for tenant customization, but not when the layout file was absent: the runtime quietly derived one from the `FormSchema` — a projection nobody reviewed and that exists nowhere, which is exactly what an authority is supposed to rule out. Layouts are now produced at design time and read as stored, the generator becomes public API, and `tools/DefineEditor` grows the command that produces the file. **The removal of `FormSchema.GetFormLayout` is source- and binary-breaking; under the pre-stable policy it ships as a minor.** Alongside it, the Blazor samples could not sign in at all, which traced back to a rule that had never been written down: the `st_*` system tables are required infrastructure, and overriding authentication does not exempt a deployment from them.
+
+📄 Full notes and design context: [docs/changelogs/4.23.0.md](docs/changelogs/4.23.0.md)
+
+### Breaking Changes
+
+- `Bee.Definition` / `Bee.Api.Client` / `Bee.UI.Avalonia` / `Bee.Web.Blazor.Server`: a `FormLayout` is produced at design time and the runtime no longer derives one. `FormSchema.GetFormLayout(string)` is removed; `FormDefinitionLoader.GetRuntimeLayoutAsync` throws `InvalidOperationException` when neither the tenant nor the base layer stores a definition, and both UI heads read the stored definition instead of deriving from the schema. **A deployment with a `FormSchema` and no matching `FormLayout` file will fail when the form is opened** — `BEE2005` lists them at build time. Customization overlay semantics are unchanged: a tenant layout still wins whole-file over the base layout. See [ADR-039](docs/adr/adr-039-formlayout-design-time-only.md).
+
+### Added
+
+- `Bee.Definition`: `FormLayoutGenerator` becomes public API (`FormLayoutGenerator.Generate(schema, layoutId)`), with `<remarks>` stating its design-time position. `GetListLayout()` / `GetLookupLayout()` are unchanged — those field sets are declared on `FormSchema` itself and have no file form.
+- `Bee.UI.Avalonia`: `FormView.Layout` and the overridable `FormView.ResolveLayoutAsync`. The counterpart of `FormView.Schema`, for a host driving the view with definitions it built itself and no backend behind them.
+- `tools/DefineEditor`: a **Generate FormLayout** command on the FormSchema node, writing `{DefinePath}/FormLayout/{ProgId}.FormLayout.xml`. Regenerating over an existing file asks for confirmation — it discards hand-tuning of the layout.
+
+### Fixed
+
+- `samples`: the Blazor demos could not sign in (`no such table: st_user`), affecting both `Blazor.Server.Demo` and `QuickStart.Server`. Overriding authentication had been taken to mean the common system tables were not needed; `AuthenticateUser` replaces the credential check alone, while the rest of the login path still reads `st_user` and writes `st_session`. Both tables are now materialized and seeded.
+
+### Changed
+
+- Docs: [Framework-Reserved Names](docs/framework-reserved-names.md) §1 states that `st_*` system tables are required runtime infrastructure and that overriding a framework behaviour does not exempt a deployment from the tables behind it. Five places that said otherwise are corrected, including `SystemBusinessObject.ApplyUserLocale`'s remarks, whose "there is no row to read" read like "there need be no table".
+
+### Upgrade
+
+Every `FormSchema` needs a `FormLayout` file; build with the analyzers enabled and `BEE2005` lists the ones that lack it. Produce them with **Generate FormLayout** in `tools/DefineEditor`, then review and adjust — the result is a definition from that point on.
+
+```diff
+- var layout = schema.GetFormLayout(layoutId);
++ var layout = FormLayoutGenerator.Generate(schema, layoutId);
+```
+
+This substitution is correct for **design-time** code only (a definition tool, a test fixture, a host building definitions in memory); it needs `using Bee.Definition.Layouts;`. Runtime code should read the stored definition through `FormDefinitionLoader.GetRuntimeLayoutAsync` or `IDefineAccess`. Hosts driving `FormView` with no backend set the new property instead:
+
+```diff
+  var view = new FormView { Schema = schema };
++ view.Layout = FormLayoutGenerator.Generate(schema, progId);
+```
+
+No coordinated deployment is required: the wire format and the customization overlay semantics are unchanged.
+
 ## [4.22.0]
 
 > This release is small and corrective, and two of its four items share a theme: a mechanism that was in place, looked healthy, and did nothing. The analyzers shipped their definition-file injection in `build/`, which NuGet imports only for a **direct** `PackageReference` — so every project reaching `Bee.Definition` transitively loaded the analyzer assemblies, found no files, and passed every rule silently. `BEE1004`, when it did fire, described a consequence that was true for only half the attributes it covers. Around those sit two breaking changes: the audit trail's change axis folds into the shared list contract it had been duplicating since it was built, and a declared business-object binding that will not resolve now throws instead of quietly degrading to generic CRUD. **The first breaking change is source- and binary-level; the second is behavioural and compiles unchanged.**

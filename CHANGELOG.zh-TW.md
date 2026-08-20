@@ -4,6 +4,48 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.23.0]
+
+> 本版補上「`FormLayout` 是畫面權威來源」這條規則的一個破口。該規則在客製層本來就成立，但在版面檔缺席時卻不成立：執行階段會默默由 `FormSchema` 推導一份——那是一份沒有人審過、也不存在於任何地方的投影，恰恰是「權威來源」應該排除的東西。版面現在一律在設計階段產出、執行階段原樣讀取，產生器轉為公開 API，`tools/DefineEditor` 補上產生該檔的入口。**移除 `FormSchema.GetFormLayout` 屬原始碼與二進位層級的破壞性變更；依 pre-stable 政策以 minor 發佈。** 與之並行的是 Blazor 範例完全無法登入，其根因可追到一條從未寫明的規則：`st_*` 系統表是必備設施，覆寫認證並不能讓部署豁免它們。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.23.0.zh-TW.md](docs/changelogs/4.23.0.zh-TW.md)
+
+### 破壞性變更
+
+- `Bee.Definition` / `Bee.Api.Client` / `Bee.UI.Avalonia` / `Bee.Web.Blazor.Server`：`FormLayout` 於設計階段產出，執行階段不再推導。移除 `FormSchema.GetFormLayout(string)`；`FormDefinitionLoader.GetRuntimeLayoutAsync` 在客製層與 base 層都沒有定義時擲 `InvalidOperationException`，兩個 UI head 也都改讀已存檔的定義而非由 schema 推導。**有 `FormSchema` 卻沒有對應 `FormLayout` 檔的部署，開啟表單時會失敗**——`BEE2005` 會在建置階段列出是哪些。客製層疊加語意不變：租戶版面仍整份勝出、覆蓋 base 版面。見 [ADR-039](docs/adr/adr-039-formlayout-design-time-only.md)。
+
+### 新增
+
+- `Bee.Definition`：`FormLayoutGenerator` 轉為公開 API（`FormLayoutGenerator.Generate(schema, layoutId)`），並以 `<remarks>` 敘明設計階段定位。`GetListLayout()` / `GetLookupLayout()` 維持不變——那兩組欄位集宣告在 `FormSchema` 自身，沒有落檔形式。
+- `Bee.UI.Avalonia`：新增 `FormView.Layout` 與可覆寫的 `FormView.ResolveLayoutAsync`。對稱於 `FormView.Schema`，供「以自建定義驅動畫面、背後無後端」的 host 使用。
+- `tools/DefineEditor`：FormSchema 節點新增 **產生 FormLayout** 命令，寫出 `{DefinePath}/FormLayout/{ProgId}.FormLayout.xml`。對既有檔案重新產生會先要求確認——那會丟掉版面上的人工調整。
+
+### 修正
+
+- `samples`：Blazor 範例無法登入（`no such table: st_user`），`Blazor.Server.Demo` 與 `QuickStart.Server` 皆受影響。原先把「覆寫認證」誤讀為「不需要 common 系統表」；`AuthenticateUser` 取代的只有憑證檢查，登入路徑其餘部分仍要讀 `st_user`、寫 `st_session`。兩張表現已 materialize 並種入資料。
+
+### 變更
+
+- 文件：[框架保留命名](docs/framework-reserved-names.zh-TW.md) §1 明訂 `st_*` 系統表為必備的執行階段設施，且覆寫框架行為不等於豁免其背後的資料表。五處講法相反的敘述一併修正，包括 `SystemBusinessObject.ApplyUserLocale` 的 remarks——原文「there is no row to read」講的是缺列，讀起來卻像「連表都不用有」。
+
+### 升級指引
+
+每一份 `FormSchema` 都需要對應的 `FormLayout` 檔；開著 analyzer 建置，`BEE2005` 會列出還缺哪些。用 `tools/DefineEditor` 的 **產生 FormLayout** 補齊，再逐一檢視調整——自該刻起它就是一份定義。
+
+```diff
+- var layout = schema.GetFormLayout(layoutId);
++ var layout = FormLayoutGenerator.Generate(schema, layoutId);
+```
+
+此替換**僅適用於設計階段程式碼**（定義工具、測試 fixture、在記憶體中建定義的 host），並需補 `using Bee.Definition.Layouts;`。執行階段的程式碼應改為經 `FormDefinitionLoader.GetRuntimeLayoutAsync` 或 `IDefineAccess` 讀取已存檔的定義。以無後端方式驅動 `FormView` 的 host 則改設新屬性：
+
+```diff
+  var view = new FormView { Schema = schema };
++ view.Layout = FormLayoutGenerator.Generate(schema, progId);
+```
+
+不需要協調式部署：wire 格式與客製層疊加語意都未變更。
+
 ## [4.22.0]
 
 > 本版篇幅小、性質是修正，而四項當中有兩項共用同一個主題：機制擺在那裡、看起來好好的，實際上什麼也沒做。analyzer 把定義檔注入打包在 `build/`，而 NuGet 只對**直接** `PackageReference` 匯入該資料夾——於是每個遞移取得 `Bee.Definition` 的專案都照常載入 analyzer 組件、卻一個檔案也讀不到，所有規則靜默通過。`BEE1004` 真的觸發時，訊息描述的後果也只對它所涵蓋的一半屬性成立。圍繞這兩項的是兩個破壞性變更：稽核軌跡的 change 軸收編回它自建立起就一直重複的共用清單合約，以及「宣告了卻解析不出型別」的 BO 綁定改為直接拋，不再靜默退回通用 CRUD。**前者是原始碼與二進位層級的破壞性變更，後者是行為破壞性、編譯不受影響。**
