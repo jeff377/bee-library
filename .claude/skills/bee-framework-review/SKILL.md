@@ -312,7 +312,7 @@ MD5 0、裸手動 `Dispose` 0、`throw ex;` 0、S2699 0、fixture 污染 0、牆
 
 | 項目 | 保留理由 |
 |------|---------|
-| `TreeNodeIgnoreAttribute`(連同 `TreeNodeAttribute`/`IDisplayName`,71 處標註) | 改判為「未接線的設計」,移交 `plan-definition-editor.md` |
+| `TreeNodeIgnoreAttribute`(連同 `TreeNodeAttribute`/`IDisplayName`,71 處標註) | 改判為「未接線的設計」,移交 `plan-tree-view-builder.md` |
 | `IDefineField` | `DbField` 實作它;屬未被消費的抽象而非死碼 |
 | `IElementCapabilityResolver` | 實作 `ElementCapabilityResolver.Default` 有 5 處生產呼叫(`LayoutCapabilityApplier` / `ListView.Commands` / `FormView` / DemoCenter ×3) |
 | `CheckPackageUpdate` / `GetPackage` 全棧(12 檔) | base 擲 `NotSupportedException` 的刻意擴充點,已列入 `docs/api-method-reference` 與 `jsonrpc-frontend-integration` |
