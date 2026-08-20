@@ -7,9 +7,9 @@ using Bee.Definition.Storage;
 namespace Bee.Samples.Shared;
 
 /// <summary>
-/// Process-once helper that auto-creates the demo's Employee tables and seeds two
-/// rows so the Blazor demo list view is not empty on first run. Idempotent: a second
-/// invocation is a no-op once schema + rows are in place.
+/// Process-once helper that auto-creates the demo's Employee tables plus the framework
+/// tables the Login path needs, and seeds rows so the Blazor demo list view is not empty
+/// on first run. Idempotent: a second invocation is a no-op once schema + rows are in place.
 /// </summary>
 /// <remarks>
 /// Reads schema definitions through <see cref="IDefineAccess"/> (which the Blazor host
@@ -26,6 +26,8 @@ public static class DemoSchemaSeeder
     private const string ProjectTable = "ft_project";
     private const string ProjectMemberTable = "ft_project_member";
     private const string CacheNotifyTable = "st_cache_notify";
+    private const string SessionTable = "st_session";
+    private const string UserTable = "st_user";
 
     public static void EnsureSchemaAndSeed(IDefineAccess defineAccess, IDbConnectionManager connectionManager, IDbAccessFactory dbAccessFactory)
     {
@@ -36,6 +38,7 @@ public static class DemoSchemaSeeder
         EnsureSchema(defineAccess, connectionManager);
         SeedEmployees(dbAccessFactory);
         SeedDepartments(dbAccessFactory);
+        SeedDemoUser(dbAccessFactory);
     }
 
     private static void EnsureSchema(IDefineAccess defineAccess, IDbConnectionManager connectionManager)
@@ -48,9 +51,13 @@ public static class DemoSchemaSeeder
         builder.Execute("common", DepartmentTable);
         builder.Execute("common", ProjectTable);
         builder.Execute("common", ProjectMemberTable);
-        // Framework table polled by CacheNotifyPoller; schema materialized from
-        // Bee.Definition embedded defaults by DemoBackend.AddBeeBackend.
+        // Framework tables, all materialized from Bee.Definition embedded defaults by
+        // DemoBackend.AddBeeBackend. st_cache_notify is polled by CacheNotifyPoller;
+        // st_session and st_user are both on the Login path — overriding authentication
+        // avoids stored credentials, not the session seed or the user's locale row.
         builder.Execute("common", CacheNotifyTable);
+        builder.Execute("common", SessionTable);
+        builder.Execute("common", UserTable);
     }
 
     private static void SeedEmployees(IDbAccessFactory dbAccessFactory)
@@ -76,6 +83,37 @@ public static class DemoSchemaSeeder
 
         InsertDepartment(dbAccess, "D001", "Engineering");
         InsertDepartment(dbAccess, "D002", "Sales");
+    }
+
+    /// <summary>
+    /// Seeds the row <c>Login</c> reads the signing-in user's locale from.
+    /// </summary>
+    /// <remarks>
+    /// Credentials are deliberately not seeded: <see cref="DemoAuthenticatingSystemBusinessObject"/>
+    /// authenticates against <see cref="DemoCredentials"/> and never reads this row's password,
+    /// which stays blank — and a blank stored hash is rejected outright by
+    /// <c>UserRepository.VerifyPassword</c>, so this row cannot be signed in to on its own.
+    /// Time zone and culture stay blank too, which is what makes the session fall back to the
+    /// deployment-wide defaults in <c>BackendConfiguration</c>.
+    /// </remarks>
+    private static void SeedDemoUser(IDbAccessFactory dbAccessFactory)
+    {
+        var dbAccess = dbAccessFactory.Create(DatabaseId);
+
+        var countSpec = new DbCommandSpec(
+            DbCommandKind.Scalar,
+            $"SELECT COUNT(*) FROM {UserTable} WHERE sys_id = {{0}}",
+            DemoCredentials.UserId);
+        var count = Convert.ToInt32(dbAccess.Execute(countSpec).Scalar, CultureInfo.InvariantCulture);
+        if (count > 0) return;
+
+        var spec = new DbCommandSpec(
+            DbCommandKind.NonQuery,
+            $"INSERT INTO {UserTable} (sys_rowid, sys_id, sys_name, password, time_zone, culture, sys_insert_time) " +
+            "VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6})",
+            Guid.NewGuid(), DemoCredentials.UserId, DemoCredentials.DisplayName,
+            string.Empty, string.Empty, string.Empty, DateTime.UtcNow);
+        dbAccess.Execute(spec);
     }
 
     private static void InsertDepartment(DbAccess dbAccess, string sysId, string name)

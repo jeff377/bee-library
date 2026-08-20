@@ -18,9 +18,16 @@ namespace Bee.Samples.Shared;
 /// One-line bootstrap for the Blazor demos. Resolves the shared
 /// <c>samples/Define</c> directory, registers SQLite, loads SystemSettings,
 /// wires <c>AddBeeFramework</c>; <c>Define/ProgramSettings.xml</c> binds the reserved "System" progId
-/// so the login panel can authenticate against <see cref="DemoCredentials"/>
-/// without seeding system tables.
+/// so the login panel can authenticate against <see cref="DemoCredentials"/> rather than
+/// against stored credentials.
 /// </summary>
+/// <remarks>
+/// Overriding authentication removes the need for stored credentials, but not the need for the
+/// common system tables themselves: <c>Login</c> still reads the user's locale from
+/// <c>st_user</c> and persists the session seed to <c>st_session</c> on every successful sign-in.
+/// Both are therefore materialized and created here — without them the demo authenticates fine
+/// and then fails inside session construction.
+/// </remarks>
 public static class DemoBackend
 {
     /// <summary>
@@ -53,13 +60,22 @@ public static class DemoBackend
             CustomizePath = ResolveCustomizePath(definePath),
         };
 
-        // AddBeeFramework registers the cache-notify poller, which reads st_cache_notify.
-        // Its TableSchema ships as an embedded framework default in Bee.Definition, so
-        // materialize it into the demo DefinePath (skip-if-exists) for IDefineAccess to
-        // resolve; DemoSchemaSeeder then creates the table alongside the Employee tables.
+        // Framework tables the demo cannot run without. Their TableSchemas ship as embedded
+        // defaults in Bee.Definition, so materialize them into the demo DefinePath
+        // (skip-if-exists) for IDefineAccess to resolve; DemoSchemaSeeder then creates them
+        // alongside the Employee tables.
+        //   st_cache_notify — polled by the cache-notify poller AddBeeFramework registers.
+        //   st_session      — the session seed every successful Login persists.
+        //   st_user         — read for the signing-in user's time zone and culture.
+        var requiredFrameworkTables = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "TableSchema/common/st_cache_notify.TableSchema.xml",
+            "TableSchema/common/st_session.TableSchema.xml",
+            "TableSchema/common/st_user.TableSchema.xml",
+        };
         Defaults.MaterializeTo(paths.DefinePath, new MaterializeOptions
         {
-            Filter = rel => rel == "TableSchema/common/st_cache_notify.TableSchema.xml"
+            Filter = requiredFrameworkTables.Contains
         });
 
         // SQLite providers — keep dialect registration explicit so the framework does

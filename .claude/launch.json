@@ -26,6 +26,19 @@
       ],
       "port": 5200,
       "autoPort": false
+    },
+    {
+      "name": "blazor-server-demo",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "samples/Blazor.Server.Demo/Blazor.Server.Demo.csproj",
+        "--configuration",
+        "Debug"
+      ],
+      "port": 5055,
+      "autoPort": false
     }
   ]
 }
