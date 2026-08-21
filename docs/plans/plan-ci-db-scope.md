@@ -1,11 +1,11 @@
 # 計畫：CI 依條件決定跑哪些資料庫測試
 
-**狀態：🚧 進行中（2026-08-21）** —— 實作已落地，待 CI 實測兩種模式各一次
+**狀態：✅ 已完成（2026-08-21）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | `build-ci.yml` 條件化 + 規則與文件同步 | ✅ 已完成（2026-08-21） |
-| 2 | CI 實測：精簡模式與完整模式各成功一次 | 🚧 進行中 |
+| 2 | CI 實測：精簡模式與完整模式各成功一次 | ✅ 已完成（2026-08-21） |
 
 ## 背景
 
@@ -194,14 +194,34 @@ run: >-
   ${{ steps.scope.outputs.full == 'true' && '--collect:"XPlat Code Coverage;Format=opencover"' || '' }}
 ```
 
-## 預期效果
+## 實測結果（2026-08-21）
 
-| 模式 | 預估時長 | 對照現況 |
-|------|---------|---------|
-| 精簡（日常 push） | 約 200~220 秒 | 479 秒 → 省過半 |
-| 完整（`[all-db]` / 手動） | 約 480 秒 | 與現況相當 |
+| 模式 | 實測時長 | run |
+|------|---------|-----|
+| 改動前（四 DB + Sonar，全部走 services） | 479 秒 | 32337882346 |
+| 精簡（本次 push，未帶標記） | **195 秒**（省 59%） | 32465533134 |
+| 完整（手動 dispatch `db_scope=all`） | **453 秒** | 32465584894 |
 
-精簡模式省下的來源：容器初始化 104 → 約 30 秒、Sonar 三步 149 → 0、測試 77 → 約 50 秒。
+逐項對照（秒）：
+
+| Step | 改動前 | 精簡 | 完整 |
+|------|-------|------|------|
+| Initialize containers | 104 | **16** | 14 |
+| Start extra database containers | — | skip | 38 |
+| Wait for extra database containers | — | skip | **0** |
+| Sonar Begin + Build + End | 149 | skip | 153 |
+| Test with coverage | 77 | 36 | 86 |
+
+三個確認點：
+
+1. **容器等待成本歸零**。完整模式的 `Wait for extra database containers` 花 **0 秒** ——
+   容器自 `Start`（38 秒，多半是 Oracle image 下載）後，經 setup 約 30 秒 + Strict build 64 秒
+   共約 94 秒背景時間已就緒。原先 `services:` 的 104 秒是純等待，重疊策略把它消掉了，
+   因此完整模式反而比改動前快 26 秒。
+2. **skip 是 `[DbFact]` 判定而非測試失敗**。精簡模式 skip 116 筆，恰為
+   PostgreSQL 48 + MySQL 31 + Oracle 36 = 115 加上原有 1 筆；完整模式 8122 passed / 2 skipped /
+   **0 failed**，四種資料庫確實都跑了。
+3. **SonarCloud 正常上報**，完整模式後 coverage 90.5% / line_coverage 92.7%。
 
 ## 風險與取捨
 
@@ -265,6 +285,13 @@ workflow 支援 `[all-db]` 標記還不夠 —— **沒有常駐規則說明它�
 漏跑的補救成本很低（手動 dispatch 重跑一次即可），所以這條是條文而非 hook 強制 ——
 不值得讓每次 push 都多一輪來回。
 ```
+
+### 實作時追加的兩點（plan 撰寫時未預見）
+
+1. **PR 事件拿不到 `github.event.head_commit`** —— 標記在 PR 上會失效。已補
+   `github.event.pull_request.title`，PR 標題帶標記同樣生效。
+2. **描述此機制的 commit message 會觸發它自己** —— 文字中出現字面標記即被 `grep -F` 命中。
+   誤觸發方向是「多跑」故安全，但撰寫相關 commit / 文件時需留意。
 
 > 強度採**條文**而非 hook：`PreToolUse` hook 只能 allow/deny、無法互動提問，
 > 要強制就得每次 push 都擋一輪，而漏跑的補救成本遠低於那個摩擦。
