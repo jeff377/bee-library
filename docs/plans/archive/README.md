@@ -14,6 +14,7 @@
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [CI 依條件決定跑哪些資料庫測試](plan-ci-db-scope.md) | 2026-08-21 | 日常 push 只起 SQL Server + SQLite（精簡模式，跳過 Sonar），四種資料庫全跑需 commit message 帶 `[all-db]` 或手動 dispatch。實測 479 → **195 秒**（省 59%）——四種資料庫的測試合計只花 77 秒，四個容器起來卻要 104 秒，成本在容器啟動而非測試本身。**明確不採用**依變更路徑自動判定：判定規則會與實際相依關係漂移，且誤判方向是「該跑卻沒跑」的靜默失效 |
 | [FormLayout 收回設計階段，移除執行階段自動推導](plan-formlayout-design-time-only.md) | 2026-08-20 | 版面改為設計階段產出並存檔，執行階段不再由 `FormSchema` 推導；移除 `FormSchema.GetFormLayout`、產生器轉公開 API、`FormView.Layout` 與 DefineEditor 產生入口。隨 4.23.0 發佈，決策見 [ADR-039](../../adr/adr-039-formlayout-design-time-only.md) |
 | [Northwind 案例走進客製覆蓋層](plan-northwind-customize-layer.md) | 2026-08-18 | 案例（`apps/Bee.Northwind`）首次接上客製覆蓋層：租戶客製語系資源改寫訂單表單的客戶欄標題，另加一份整份取代的 Order `FormLayout` 示範疊加粒度。**框架端不動**——`CustomizeOverlay` / `CustomizeDefineReader` 機制本就完好，缺的只有案例接線。獨立 repo `bee-northwind-avalonia` 之後另一輪同步 |
 | [框架全面體檢（2026-08-07）](plan-framework-review-2026-08-07.md) | 2026-08-16（過期封存） | 十一面向唯讀體檢（基準 v4.17.0）。P0 / P3 全數落地，P1 / P2 部分完成；**未結的 P1 / P2 / P4 項目隨基準版本推進而過期，不再由本 plan 追蹤**，現象是否仍成立須重新確認。續輪見同目錄的 2026-08-11 體檢；移交的 D-3 / D-5 由 [plan-property-grid-control.md](../plan-property-grid-control.md) 與 [plan-tree-view-builder.md](../plan-tree-view-builder.md) 承接 |
