@@ -22,11 +22,24 @@ on:
       - 'SonarQube.Analysis.xml'
       - '.github/workflows/build-ci.yml'
   workflow_dispatch:
+    inputs:
+      db_scope:
+        description: '資料庫測試範圍（all = 四種資料庫 + SonarCloud；lite = SQL Server + SQLite）'
+        type: choice
+        options:
+          - all
+          - lite
+        default: all
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    # 只有 SQL Server 常駐 service container —— 精簡與完整兩種模式都需要它。
+    # PostgreSQL / MySQL / Oracle 改由「Start extra database containers」step 以
+    # docker run 啟動，因為 GitHub Actions 的 `services:` 區塊不支援 `if:`，
+    # 無法依模式條件化。runner 直接跑在 host 上（非 container job），
+    # -p 對映後 localhost:{port} 可達，與 services 行為一致。
     services:
       sqlserver:
         image: mcr.microsoft.com/mssql/server:2022-latest
@@ -36,59 +49,58 @@ jobs:
         ports:
           - 1433:1433
 
-      postgresql:
-        image: postgres:17
-        env:
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpass
-          POSTGRES_DB: common
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: BeeTest_Password123!
-          MYSQL_DATABASE: common
-          MYSQL_USER: testuser
-          MYSQL_PASSWORD: testpass
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping -h localhost -uroot -pBeeTest_Password123!"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-
-      # Oracle 23ai Free，對齊本機 .runsettings 的 FREEPDB1 service name。
-      # gvenzl/oracle-free 是社群維護的事實標準；faststart 版預先建好 DB，
-      # 啟動時間 45~90s（image ~1.5GB）。pin digest 對應 tag :23-slim-faststart，
-      # 詳見 docs/plans/plan-oracle-main-ci-evaluation.md。
-      oracle:
-        image: gvenzl/oracle-free@sha256:c9803db54238b5be268c7f5916e3c5811ef106e58aeb2f1f9b690c135ed50672
-        env:
-          ORACLE_PASSWORD: BeeTest_Password123!
-          APP_USER: testuser
-          APP_USER_PASSWORD: testpass
-        ports:
-          - 1521:1521
-        options: >-
-          --health-cmd healthcheck.sh
-          --health-interval 20s
-          --health-timeout 10s
-          --health-retries 30
-          --health-start-period 60s
-
     steps:
     - name: Checkout code
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
       with:
         fetch-depth: 0
+
+    # 決定本次要跑哪些資料庫測試。預設「精簡」（SQL Server + SQLite）；
+    # 完整模式需明確指定：手動 dispatch 選 db_scope=all，或 commit message 帶 [all-db]。
+    # commit message 一律經 env 注入 —— 它是使用者可控字串，直接在 run: 內展開
+    # ${{ }} 會構成 script injection（同 sonarcloud.md 的 S7636 理由）。
+    - name: Resolve database scope
+      id: scope
+      env:
+        DISPATCH_SCOPE: ${{ github.event.inputs.db_scope }}
+        # head_commit 只存在於 push 事件；PR 事件改看 PR 標題，否則 [all-db] 在 PR 上會失效。
+        COMMIT_MSG: ${{ github.event.head_commit.message }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      run: |
+        full=false
+        if [ "$DISPATCH_SCOPE" = "all" ]; then
+          full=true
+        elif printf '%s' "$COMMIT_MSG$PR_TITLE" | grep -qF '[all-db]'; then
+          full=true
+        fi
+        echo "full=$full" >> "$GITHUB_OUTPUT"
+        if [ "$full" = true ]; then
+          echo "Database scope: all (SQL Server + SQLite + PostgreSQL + MySQL + Oracle), SonarCloud enabled"
+        else
+          echo "Database scope: lite (SQL Server + SQLite), SonarCloud skipped"
+          echo "  → 需要完整模式時：commit message 帶 [all-db]，或手動 workflow_dispatch 選 db_scope=all"
+        fi
+
+    # 越早啟動越好：容器在後續 setup / strict build 期間於背景就緒，
+    # 「Wait for extra database containers」才不必從零等（Oracle 冷啟動 45~90 秒）。
+    - name: Start extra database containers
+      if: steps.scope.outputs.full == 'true'
+      run: |
+        docker pull postgres:17 &
+        docker pull mysql:8.0 &
+        docker pull gvenzl/oracle-free@sha256:c9803db54238b5be268c7f5916e3c5811ef106e58aeb2f1f9b690c135ed50672 &
+        wait
+        docker run -d --name bee-pg -p 5432:5432 \
+          -e POSTGRES_USER=testuser -e POSTGRES_PASSWORD=testpass -e POSTGRES_DB=common \
+          postgres:17
+        docker run -d --name bee-mysql -p 3306:3306 \
+          -e MYSQL_ROOT_PASSWORD=BeeTest_Password123! -e MYSQL_DATABASE=common \
+          -e MYSQL_USER=testuser -e MYSQL_PASSWORD=testpass \
+          mysql:8.0
+        docker run -d --name bee-oracle -p 1521:1521 \
+          -e ORACLE_PASSWORD=BeeTest_Password123! -e APP_USER=testuser \
+          -e APP_USER_PASSWORD=testpass \
+          gvenzl/oracle-free@sha256:c9803db54238b5be268c7f5916e3c5811ef106e58aeb2f1f9b690c135ed50672
 
     - name: Setup .NET
       uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7  # v5.2.0
@@ -96,12 +108,14 @@ jobs:
         dotnet-version: 10.0.x
 
     - name: Setup Java (for SonarScanner)
+      if: steps.scope.outputs.full == 'true'
       uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654  # v5.2.0
       with:
         distribution: zulu
         java-version: '17'
 
     - name: Cache SonarCloud packages
+      if: steps.scope.outputs.full == 'true'
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
       with:
         path: ~/.sonar/cache
@@ -109,6 +123,7 @@ jobs:
         restore-keys: ${{ runner.os }}-sonar
 
     - name: Install SonarScanner for .NET
+      if: steps.scope.outputs.full == 'true'
       run: dotnet tool install --global dotnet-sonarscanner
 
     - name: Install sqlcmd
@@ -133,29 +148,13 @@ jobs:
         echo "SQL Server did not become ready in time" >&2
         exit 1
 
-    - name: Create test databases (common + company + log)
+    - name: Create SQL Server test databases (common + company + log)
       env:
         SA_PASSWORD: BeeTest_Password123!
-        MYSQL_ROOT_PASSWORD: BeeTest_Password123!
-        PGPASSWORD: testpass
       run: |
-        # SQL Server：sa 可建任何 DB
+        # sa 可建任何 DB
         /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P "$SA_PASSWORD" -C -Q \
           "IF DB_ID('common') IS NULL CREATE DATABASE common; IF DB_ID('company') IS NULL CREATE DATABASE company; IF DB_ID('log') IS NULL CREATE DATABASE log;"
-        # PostgreSQL：service container 已建 common；補建 company + log（testuser 為 superuser）
-        psql -h 127.0.0.1 -U testuser -d postgres -c \
-          "SELECT 1 FROM pg_database WHERE datname='company'" | grep -q '1 row' || \
-          psql -h 127.0.0.1 -U testuser -d postgres -c 'CREATE DATABASE company OWNER testuser'
-        psql -h 127.0.0.1 -U testuser -d postgres -c \
-          "SELECT 1 FROM pg_database WHERE datname='log'" | grep -q '1 row' || \
-          psql -h 127.0.0.1 -U testuser -d postgres -c 'CREATE DATABASE log OWNER testuser'
-        # MySQL：service container 已建 common；補建 company + log + grant testuser（需 root）
-        mysql -h 127.0.0.1 -u root -p"$MYSQL_ROOT_PASSWORD" -e \
-          "CREATE DATABASE IF NOT EXISTS company; \
-           CREATE DATABASE IF NOT EXISTS log; \
-           GRANT ALL PRIVILEGES ON company.* TO 'testuser'@'%'; \
-           GRANT ALL PRIVILEGES ON log.* TO 'testuser'@'%'; \
-           FLUSH PRIVILEGES;"
 
     # Strict build（analyzer gate）：未經 SonarScanner 包覆，TreatWarningsAsErrors
     # 與 .editorconfig 的 analyzer 規則會真正擋 build。Sonar-wrapped build 會削弱
@@ -163,7 +162,66 @@ jobs:
     - name: Strict build (analyzer gate)
       run: dotnet build Bee.Library.slnx --configuration Release
 
+    # 放在 Strict build 之後：容器自「Start extra database containers」起已在背景啟動約
+    # 一分鐘，這裡多半已就緒，等待本身幾乎不佔時間。
+    - name: Wait for extra database containers
+      if: steps.scope.outputs.full == 'true'
+      env:
+        MYSQL_ROOT_PASSWORD: BeeTest_Password123!
+      run: |
+        # 沿用各 image 內建的健康檢查指令（等同原先 services 的 --health-cmd）。
+        wait_for() {
+          local name="$1"; shift
+          for _ in $(seq 1 90); do
+            if docker exec "$name" "$@" > /dev/null 2>&1; then
+              echo "$name ready"
+              return 0
+            fi
+            sleep 2
+          done
+          echo "$name did not become ready in time" >&2
+          docker logs --tail 50 "$name" >&2 || true
+          exit 1
+        }
+        wait_for bee-pg     pg_isready -U testuser
+        wait_for bee-mysql  mysqladmin ping -h localhost -uroot -p"$MYSQL_ROOT_PASSWORD"
+        wait_for bee-oracle healthcheck.sh
+
+    # 三條連線字串只在完整模式存在；精簡模式下 [DbFact] 依 env var 未設值自動 skip
+    # （tests/Bee.Tests.Shared/DbFactAttribute.cs），SharedDatabaseState 也整條跳過
+    # 註冊與建 schema，因此不需要任何測試碼改動。
+    - name: Enable extra database connection strings
+      if: steps.scope.outputs.full == 'true'
+      run: |
+        {
+          echo 'BEE_TEST_CONNSTR_POSTGRESQL=Host=localhost;Port=5432;Database={@DbName};Username=testuser;Password=testpass'
+          echo 'BEE_TEST_CONNSTR_MYSQL=Server=localhost;Port=3306;Database={@DbName};User=testuser;Password=testpass;'
+          echo 'BEE_TEST_CONNSTR_ORACLE=Data Source=localhost:1521/FREEPDB1;User Id=testuser;Password=testpass;'
+        } >> "$GITHUB_ENV"
+
+    - name: Create PostgreSQL / MySQL test databases (company + log)
+      if: steps.scope.outputs.full == 'true'
+      env:
+        MYSQL_ROOT_PASSWORD: BeeTest_Password123!
+        PGPASSWORD: testpass
+      run: |
+        # PostgreSQL：容器已建 common；補建 company + log（testuser 為 superuser）
+        psql -h 127.0.0.1 -U testuser -d postgres -c \
+          "SELECT 1 FROM pg_database WHERE datname='company'" | grep -q '1 row' || \
+          psql -h 127.0.0.1 -U testuser -d postgres -c 'CREATE DATABASE company OWNER testuser'
+        psql -h 127.0.0.1 -U testuser -d postgres -c \
+          "SELECT 1 FROM pg_database WHERE datname='log'" | grep -q '1 row' || \
+          psql -h 127.0.0.1 -U testuser -d postgres -c 'CREATE DATABASE log OWNER testuser'
+        # MySQL：容器已建 common；補建 company + log + grant testuser（需 root）
+        mysql -h 127.0.0.1 -u root -p"$MYSQL_ROOT_PASSWORD" -e \
+          "CREATE DATABASE IF NOT EXISTS company; \
+           CREATE DATABASE IF NOT EXISTS log; \
+           GRANT ALL PRIVILEGES ON company.* TO 'testuser'@'%'; \
+           GRANT ALL PRIVILEGES ON log.* TO 'testuser'@'%'; \
+           FLUSH PRIVILEGES;"
+
     - name: SonarScanner Begin
+      if: steps.scope.outputs.full == 'true'
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
@@ -174,25 +232,33 @@ jobs:
           /d:sonar.host.url="https://sonarcloud.io" \
           /s:"$GITHUB_WORKSPACE/SonarQube.Analysis.xml"
 
+    # 只在完整模式跑。精簡模式跳過它不影響後續 --no-build 的步驟 ——
+    # 「Strict build (analyzer gate)」已用同一 Release configuration 建過，產物在；
+    # 這裡的 --no-incremental 是為了讓 SonarScanner 攔得到完整編譯，不是產物需求。
     - name: Build (for Sonar coverage)
+      if: steps.scope.outputs.full == 'true'
       run: dotnet build Bee.Library.slnx --configuration Release --no-incremental
 
+    # PostgreSQL / MySQL / Oracle 的連線字串由「Enable extra database connection strings」
+    # 經 $GITHUB_ENV 供應，只在完整模式存在；此處只列兩種模式都需要的兩條。
+    # 覆蓋率報告只在完整模式收集 —— 精簡模式不跑 SonarScanner，產了也沒人收，
+    # 且缺三個 provider 的報告上報只會把 SonarCloud 的數字壓低。
     - name: Test with coverage
       env:
         # {@DbName} 由 SharedDatabaseState 為每個 DatabaseItem 代換成 common / company，
         # 對應上一步預建的兩個實體資料庫；Oracle 例外（不走 DbName 區隔）。
         BEE_TEST_CONNSTR_SQLSERVER: "Server=localhost,1433;Database={@DbName};User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
-        BEE_TEST_CONNSTR_POSTGRESQL: "Host=localhost;Port=5432;Database={@DbName};Username=testuser;Password=testpass"
-        BEE_TEST_CONNSTR_MYSQL: "Server=localhost;Port=3306;Database={@DbName};User=testuser;Password=testpass;"
-        BEE_TEST_CONNSTR_ORACLE: "Data Source=localhost:1521/FREEPDB1;User Id=testuser;Password=testpass;"
         # SQLite is a pure driver with no service container — in-memory shared cache so
         # multiple connections see the same database (cache=shared) and there is no IO
         # to clean up between runs. Each {@DbName} substitution maps to an independent
         # in-memory DB (bee_test_common / bee_test_company / …).
         BEE_TEST_CONNSTR_SQLITE: "Data Source=file:bee_test_{@DbName}?mode=memory&cache=shared"
-      run: dotnet test Bee.Library.slnx --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage;Format=opencover"
+      run: >-
+        dotnet test Bee.Library.slnx --configuration Release --no-build --verbosity normal
+        ${{ steps.scope.outputs.full == 'true' && '--collect:"XPlat Code Coverage;Format=opencover"' || '' }}
 
     - name: SonarScanner End
+      if: steps.scope.outputs.full == 'true'
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
@@ -232,10 +298,8 @@ jobs:
     # WireContractDriftTests 的靜態閉包負責，兩道各管一半、缺一不可。
     - name: Mobile AOT gate (wire + XmlSerializer reflection-only path)
       env:
+        # 同 Test step：其餘三條由 $GITHUB_ENV 供應，只在完整模式存在。
         BEE_TEST_CONNSTR_SQLSERVER: "Server=localhost,1433;Database={@DbName};User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
-        BEE_TEST_CONNSTR_POSTGRESQL: "Host=localhost;Port=5432;Database={@DbName};Username=testuser;Password=testpass"
-        BEE_TEST_CONNSTR_MYSQL: "Server=localhost;Port=3306;Database={@DbName};User=testuser;Password=testpass;"
-        BEE_TEST_CONNSTR_ORACLE: "Data Source=localhost:1521/FREEPDB1;User Id=testuser;Password=testpass;"
         BEE_TEST_CONNSTR_SQLITE: "Data Source=file:bee_test_{@DbName}?mode=memory&cache=shared"
       run: |
         for proj in \

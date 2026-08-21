@@ -12,8 +12,13 @@
 ## 本機跑測試前的環境檢查（僅本機 + docker 可用時）
 
 > **適用範圍判定，一行搞定**：`command -v docker` —— 沒輸出就跳過整套規則直接跑測試
-> （`[DbFact]` 會依 env var 未設值自動 skip）。**CI 不適用**：`build-ci.yml` 走 service
-> container、env vars 由 workflow 注入，本節任何內容都不要帶進 yml。
+> （`[DbFact]` 會依 env var 未設值自動 skip）。**CI 不適用**：`build-ci.yml` 的容器與
+> env vars 由 workflow 自行處理，本節任何內容都不要帶進 yml。
+>
+> CI 有**兩種模式**：預設精簡（SQL Server 走 service container + SQLite，其餘三種 DB 的
+> `[DbFact]` 全數 skip）；帶 `[all-db]` 標記或手動 dispatch 時為完整（PostgreSQL / MySQL /
+> Oracle 另由 step 以 `docker run` 啟動）。判準與「push 前要先問使用者」見
+> `.claude/rules/testing.md` § CI 的資料庫範圍。
 
 ### 為何要先檢查
 

@@ -35,3 +35,22 @@
 
 `./test.sh`（會偵測並啟動本機 DB 容器）或 `./test.sh tests/<Proj>/<Proj>.csproj`。
 本機環境檢查、例外類型 → 容器的對照表、flaky 判定流程都在 `tests/CLAUDE.md`。
+
+## CI 的資料庫範圍：push 前先問使用者
+
+`build-ci.yml` 預設只跑 **SQL Server + SQLite**（精簡模式，約 3.5 分鐘，且**不跑 SonarCloud**）。
+四種資料庫全跑需**明確指定**：commit message（PR 則為 PR 標題）帶 `[all-db]`，
+或手動 `workflow_dispatch` 選 `db_scope=all`。
+
+**準備 commit / push 到 `main` 前，一律先問使用者本次要不要跑完整模式。**
+不要自行決定 —— 該不該全跑取決於使用者對這次改動的風險判斷，不是從 diff 看得出來的。
+
+需要主動**建議**全跑的訊號：改動觸及 `src/Bee.Db/Providers/**`、`src/Bee.Repository/**`、
+`SchemaSyntax` / `DbTypeMapper` / `NormalizeDbType`，或任何 SQL 產生邏輯。
+**發版前必須跑一次完整模式。**
+
+漏跑的補救成本很低（手動 dispatch 重跑一次即可），所以這條是條文而非 hook 強制 ——
+`PreToolUse` hook 只能 allow/deny、無法互動提問，要強制就得每次 push 都擋一輪，不值得。
+
+> 精簡模式跳過 Sonar 的連帶影響：`/sonar-fix`、`/ci-watch` 要看的是**完整模式**的 run，
+> 不是每次 push 的 run。
