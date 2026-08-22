@@ -10,8 +10,8 @@
   Required field to set before first run:
     - BackendConfiguration/SecurityKeySettings/MasterKeySource
       Default points at the `BEE_MASTER_KEY` environment variable. Set the env
-      var (a Base64 AES-CBC-HMAC combined 64-byte key) or change Type to
-      AzureKeyVault / File and supply the corresponding Value.
+      var (a Base64 AES-CBC-HMAC combined 64-byte key), or change Type to File
+      and supply the key file path as the Value.
 
   Optional fields to consider:
     - CommonConfiguration/IsDebugMode: enable verbose error responses for
