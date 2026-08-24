@@ -76,7 +76,7 @@ Bee.Api.Core.JsonRpc.JsonRpcExecutor.Execute(Bee.Api.Core.JsonRpc.JsonRpcRequest
 Bee.Api.Core.JsonRpc.JsonRpcExecutor.ExecuteAsync(Bee.Api.Core.JsonRpc.JsonRpcRequest! request) -> System.Threading.Tasks.Task<Bee.Api.Core.JsonRpc.JsonRpcResponse!>!
 Bee.Api.Core.JsonRpc.JsonRpcExecutor.IsLocalCall.get -> bool
 Bee.Api.Core.JsonRpc.JsonRpcExecutor.IsLocalCall.set -> void
-Bee.Api.Core.JsonRpc.JsonRpcExecutor.JsonRpcExecutor(Bee.Definition.IBusinessObjectFactory! boFactory, Bee.Definition.Security.IAccessTokenValidator! tokenValidator, Bee.Definition.Security.IApiEncryptionKeyProvider! keyProvider, Bee.Definition.Logging.IAuditLogWriter? anomalyWriter = null, Bee.Definition.Settings.AuditLogOptions? auditOptions = null, Bee.Definition.Identity.ISessionInfoService? sessionService = null) -> void
+Bee.Api.Core.JsonRpc.JsonRpcExecutor.JsonRpcExecutor(Bee.Definition.IBusinessObjectFactory! boFactory, Bee.Definition.Security.IAccessTokenValidator! tokenValidator, Bee.Definition.Security.IApiEncryptionKeyProvider! keyProvider, Bee.Definition.Logging.IAnomalyLogWriter? anomalyWriter = null, Bee.Definition.Settings.AuditLogOptions? auditOptions = null, Bee.Definition.Identity.ISessionInfoService? sessionService = null) -> void
 Bee.Api.Core.JsonRpc.JsonRpcParams
 Bee.Api.Core.JsonRpc.JsonRpcParams.JsonRpcParams() -> void
 Bee.Api.Core.JsonRpc.JsonRpcRequest

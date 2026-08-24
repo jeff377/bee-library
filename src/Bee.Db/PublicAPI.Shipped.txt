@@ -43,7 +43,7 @@ Bee.Db.DatabaseTypeExtensions
 Bee.Db.DbAccess
 Bee.Db.DbAccess.DatabaseType.get -> Bee.Definition.Database.DatabaseType
 Bee.Db.DbAccess.DbAccess(System.Data.Common.DbConnection! externalConnection, Bee.Definition.Database.DatabaseType databaseType, int maxCommandTimeout = 0) -> void
-Bee.Db.DbAccess.DbAccess(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager, int maxCommandTimeout = 0, Bee.Definition.Logging.IAuditLogWriter? anomalyWriter = null, Bee.Definition.Logging.DbAccessAnomalyLogOptions? anomalyOptions = null) -> void
+Bee.Db.DbAccess.DbAccess(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager, int maxCommandTimeout = 0, Bee.Definition.Logging.IAnomalyLogWriter? anomalyWriter = null, Bee.Definition.Logging.DbAccessAnomalyLogOptions? anomalyOptions = null) -> void
 Bee.Db.DbAccess.Execute(Bee.Db.DbCommandSpec! command) -> Bee.Db.DbCommandResult!
 Bee.Db.DbAccess.Execute(Bee.Db.DbCommandSpec! command, System.Data.Common.DbTransaction! transaction) -> Bee.Db.DbCommandResult!
 Bee.Db.DbAccess.ExecuteAsync(Bee.Db.DbCommandSpec! command, System.Data.Common.DbTransaction! transaction, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Bee.Db.DbCommandResult!>!
@@ -63,7 +63,7 @@ Bee.Db.DbAccess.UpdateDataTable(Bee.Db.DataTableUpdateSpec! spec) -> int
 Bee.Db.DbAccess.UpdateDataTables(System.Collections.Generic.IReadOnlyList<Bee.Db.DataTableUpdateSpec!>! specs) -> System.Collections.Generic.IReadOnlyList<int>!
 Bee.Db.DbAccessFactory
 Bee.Db.DbAccessFactory.Create(string! databaseId) -> Bee.Db.DbAccess!
-Bee.Db.DbAccessFactory.DbAccessFactory(Bee.Db.Manager.IDbConnectionManager! connectionManager, int maxCommandTimeout = 0, System.Func<Bee.Definition.Logging.IAuditLogWriter?>? anomalyWriterFactory = null, Bee.Definition.Logging.DbAccessAnomalyLogOptions? anomalyOptions = null) -> void
+Bee.Db.DbAccessFactory.DbAccessFactory(Bee.Db.Manager.IDbConnectionManager! connectionManager, int maxCommandTimeout = 0, System.Func<Bee.Definition.Logging.IAnomalyLogWriter?>? anomalyWriterFactory = null, Bee.Definition.Logging.DbAccessAnomalyLogOptions? anomalyOptions = null) -> void
 Bee.Db.DbBatchResult
 Bee.Db.DbBatchResult.DbBatchResult() -> void
 Bee.Db.DbBatchResult.Results.get -> Bee.Db.DbCommandResultCollection!

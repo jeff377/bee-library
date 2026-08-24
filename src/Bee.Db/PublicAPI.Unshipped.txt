@@ -1,5 +1,1 @@
 #nullable enable
-*REMOVED*Bee.Db.DbAccess.DbAccess(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager, int maxCommandTimeout = 0, Bee.Definition.Logging.IAuditLogWriter? anomalyWriter = null, Bee.Definition.Logging.DbAccessAnomalyLogOptions? anomalyOptions = null) -> void
-*REMOVED*Bee.Db.DbAccessFactory.DbAccessFactory(Bee.Db.Manager.IDbConnectionManager! connectionManager, int maxCommandTimeout = 0, System.Func<Bee.Definition.Logging.IAuditLogWriter?>? anomalyWriterFactory = null, Bee.Definition.Logging.DbAccessAnomalyLogOptions? anomalyOptions = null) -> void
-Bee.Db.DbAccess.DbAccess(string! databaseId, Bee.Db.Manager.IDbConnectionManager! connectionManager, int maxCommandTimeout = 0, Bee.Definition.Logging.IAnomalyLogWriter? anomalyWriter = null, Bee.Definition.Logging.DbAccessAnomalyLogOptions? anomalyOptions = null) -> void
-Bee.Db.DbAccessFactory.DbAccessFactory(Bee.Db.Manager.IDbConnectionManager! connectionManager, int maxCommandTimeout = 0, System.Func<Bee.Definition.Logging.IAnomalyLogWriter?>? anomalyWriterFactory = null, Bee.Definition.Logging.DbAccessAnomalyLogOptions? anomalyOptions = null) -> void

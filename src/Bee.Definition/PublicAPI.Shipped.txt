@@ -825,6 +825,18 @@ Bee.Definition.Logging.AccessAuditEntry.ProgId.get -> string!
 Bee.Definition.Logging.AccessAuditEntry.ProgId.init -> void
 Bee.Definition.Logging.AccessAuditEntry.RowKey.get -> string?
 Bee.Definition.Logging.AccessAuditEntry.RowKey.init -> void
+Bee.Definition.Logging.AnomalyEntry
+Bee.Definition.Logging.AnomalyEntry.AnomalyEntry() -> void
+Bee.Definition.Logging.AnomalyEntry.ElapsedMs.get -> int
+Bee.Definition.Logging.AnomalyEntry.ElapsedMs.init -> void
+Bee.Definition.Logging.AnomalyEntry.ErrorMessage.get -> string?
+Bee.Definition.Logging.AnomalyEntry.ErrorMessage.init -> void
+Bee.Definition.Logging.AnomalyEntry.ErrorType.get -> string?
+Bee.Definition.Logging.AnomalyEntry.ErrorType.init -> void
+Bee.Definition.Logging.AnomalyEntry.Kind.get -> Bee.Definition.Logging.AnomalyKind
+Bee.Definition.Logging.AnomalyEntry.Kind.init -> void
+Bee.Definition.Logging.AnomalyEntry.ThresholdMs.get -> int?
+Bee.Definition.Logging.AnomalyEntry.ThresholdMs.init -> void
 Bee.Definition.Logging.AnomalyKind
 Bee.Definition.Logging.AnomalyKind.Error = 1 -> Bee.Definition.Logging.AnomalyKind
 Bee.Definition.Logging.AnomalyKind.LargeAffected = 4 -> Bee.Definition.Logging.AnomalyKind
@@ -834,18 +846,8 @@ Bee.Definition.Logging.AnomalyKind.Timeout = 2 -> Bee.Definition.Logging.Anomaly
 Bee.Definition.Logging.AnomalyKind.Unauthorized = 6 -> Bee.Definition.Logging.AnomalyKind
 Bee.Definition.Logging.ApiAnomalyEntry
 Bee.Definition.Logging.ApiAnomalyEntry.ApiAnomalyEntry() -> void
-Bee.Definition.Logging.ApiAnomalyEntry.ElapsedMs.get -> int
-Bee.Definition.Logging.ApiAnomalyEntry.ElapsedMs.init -> void
-Bee.Definition.Logging.ApiAnomalyEntry.ErrorMessage.get -> string?
-Bee.Definition.Logging.ApiAnomalyEntry.ErrorMessage.init -> void
-Bee.Definition.Logging.ApiAnomalyEntry.ErrorType.get -> string?
-Bee.Definition.Logging.ApiAnomalyEntry.ErrorType.init -> void
-Bee.Definition.Logging.ApiAnomalyEntry.Kind.get -> Bee.Definition.Logging.AnomalyKind
-Bee.Definition.Logging.ApiAnomalyEntry.Kind.init -> void
 Bee.Definition.Logging.ApiAnomalyEntry.Method.get -> string!
 Bee.Definition.Logging.ApiAnomalyEntry.Method.init -> void
-Bee.Definition.Logging.ApiAnomalyEntry.ThresholdMs.get -> int?
-Bee.Definition.Logging.ApiAnomalyEntry.ThresholdMs.init -> void
 Bee.Definition.Logging.AuditColumn
 Bee.Definition.Logging.AuditColumn.AuditColumn() -> void
 Bee.Definition.Logging.AuditColumn.AuditColumn(string! Name, object? Value) -> void
@@ -918,18 +920,10 @@ Bee.Definition.Logging.DbAnomalyEntry.Command.init -> void
 Bee.Definition.Logging.DbAnomalyEntry.DatabaseId.get -> string!
 Bee.Definition.Logging.DbAnomalyEntry.DatabaseId.init -> void
 Bee.Definition.Logging.DbAnomalyEntry.DbAnomalyEntry() -> void
-Bee.Definition.Logging.DbAnomalyEntry.ElapsedMs.get -> int
-Bee.Definition.Logging.DbAnomalyEntry.ElapsedMs.init -> void
-Bee.Definition.Logging.DbAnomalyEntry.ErrorMessage.get -> string?
-Bee.Definition.Logging.DbAnomalyEntry.ErrorMessage.init -> void
-Bee.Definition.Logging.DbAnomalyEntry.ErrorType.get -> string?
-Bee.Definition.Logging.DbAnomalyEntry.ErrorType.init -> void
-Bee.Definition.Logging.DbAnomalyEntry.Kind.get -> Bee.Definition.Logging.AnomalyKind
-Bee.Definition.Logging.DbAnomalyEntry.Kind.init -> void
 Bee.Definition.Logging.DbAnomalyEntry.ResultRows.get -> int?
 Bee.Definition.Logging.DbAnomalyEntry.ResultRows.init -> void
-Bee.Definition.Logging.DbAnomalyEntry.ThresholdMs.get -> int?
-Bee.Definition.Logging.DbAnomalyEntry.ThresholdMs.init -> void
+Bee.Definition.Logging.IAnomalyLogWriter
+Bee.Definition.Logging.IAnomalyLogWriter.Write(Bee.Definition.Logging.AnomalyEntry! entry) -> void
 Bee.Definition.Logging.IAuditLogWriter
 Bee.Definition.Logging.IAuditLogWriter.Write(Bee.Definition.Logging.AuditEntry! entry) -> void
 Bee.Definition.Logging.LogOptions
@@ -949,6 +943,7 @@ Bee.Definition.Logging.LoginEvent.LoginSucceeded = 0 -> Bee.Definition.Logging.L
 Bee.Definition.Logging.LoginEvent.Logout = 3 -> Bee.Definition.Logging.LoginEvent
 Bee.Definition.Logging.LoginEvent.ServiceSessionCreated = 4 -> Bee.Definition.Logging.LoginEvent
 Bee.Definition.Logging.NullAuditLogWriter
+Bee.Definition.Logging.NullAuditLogWriter.Write(Bee.Definition.Logging.AnomalyEntry! entry) -> void
 Bee.Definition.Logging.NullAuditLogWriter.Write(Bee.Definition.Logging.AuditEntry! entry) -> void
 Bee.Definition.MaterializeOptions
 Bee.Definition.MaterializeOptions.Filter.get -> System.Predicate<string!>?
