@@ -127,6 +127,53 @@ namespace Bee.Hosting.UnitTests
             }
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        [DisplayName("異常記錄的開關只影響 IAnomalyLogWriter，稽核那一側不受牽動")]
+        public void AddBeeFramework_AnomalyEnabled_GatesOnlyTheAnomalyWriter(bool anomalyEnabled)
+        {
+            // 兩個介面各自解析：稽核開著時 IAuditLogWriter 一律是真的寫入器，而異常那一側
+            // 由 AnomalyEnabled 單獨決定。這一對正是拆成兩個介面換到的東西 —— 拆之前
+            // 「稽核開著但不記異常」這個組態在型別上看不出來。
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-fw-anomaly-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var configuration = new BackendConfiguration();
+                configuration.AuditLogOptions.Enabled = true;
+                configuration.AuditLogOptions.UseBackgroundWriter = false;
+                configuration.AuditLogOptions.AnomalyEnabled = anomalyEnabled;
+
+                var services = new ServiceCollection();
+                services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+                services.AddBeeFramework(
+                    configuration,
+                    new PathOptions { DefinePath = tempDir },
+                    autoCreateMasterKey: true);
+
+                using var sp = services.BuildServiceProvider();
+
+                var auditWriter = sp.GetRequiredService<IAuditLogWriter>();
+                var anomalyWriter = sp.GetRequiredService<IAnomalyLogWriter>();
+
+                Assert.IsNotType<NullAuditLogWriter>(auditWriter);
+                if (anomalyEnabled)
+                {
+                    // 同一個實例服務兩個介面 —— 佇列與退路行為對兩種記錄完全相同。
+                    Assert.Same(auditWriter, anomalyWriter);
+                }
+                else
+                {
+                    Assert.Same(NullAuditLogWriter.Instance, anomalyWriter);
+                }
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { /* best effort */ }
+            }
+        }
+
         [Fact]
         [DisplayName("AddBeeFramework 預設組態應能解析完整 DI 服務鏈（IDbConnectionManager 至 JsonRpcExecutor）")]
         public void AddBeeFramework_DefaultConfig_ResolvesFullServiceChain()

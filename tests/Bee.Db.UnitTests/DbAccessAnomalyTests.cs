@@ -23,18 +23,18 @@ namespace Bee.Db.UnitTests
         /// <summary>
         /// 收集 <see cref="DbAnomalyEntry"/> 的測試用 writer。
         /// </summary>
-        private sealed class CapturingAuditLogWriter : IAuditLogWriter
+        private sealed class CapturingAnomalyLogWriter : IAnomalyLogWriter
         {
             public List<DbAnomalyEntry> Entries { get; } = [];
 
-            public void Write(AuditEntry entry)
+            public void Write(AnomalyEntry entry)
             {
                 if (entry is DbAnomalyEntry anomaly) { Entries.Add(anomaly); }
             }
         }
 
         private DbAccess NewSqliteDbAccess(
-            IAuditLogWriter? writer, DbAccessAnomalyLogOptions? options, int maxCommandTimeout = 0)
+            IAnomalyLogWriter? writer, DbAccessAnomalyLogOptions? options, int maxCommandTimeout = 0)
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.SQLite);
             return new DbAccess(databaseId, _fx.GetRequiredService<IDbConnectionManager>(),
@@ -45,7 +45,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("未設定 writer 時命令照常執行且不寫任何異常記錄")]
         public void NoWriter_ExecutesWithoutAnomaly()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var dbAccess = NewSqliteDbAccess(writer: null, options: null);
 
             var result = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar, "SELECT 1"));
@@ -58,7 +58,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("Level 為 None 時即使門檻全開也不寫異常記錄")]
         public void LevelNone_WritesNothing()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var options = new DbAccessAnomalyLogOptions
             {
                 Level = DbAccessAnomalyLogLevel.None,
@@ -76,7 +76,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("Level 為 Error 時成功命令不記錄 Slow / LargeResult")]
         public void LevelError_SkipsSuccessAnomalies()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var options = new DbAccessAnomalyLogOptions
             {
                 Level = DbAccessAnomalyLogLevel.Error,
@@ -93,7 +93,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("結果列數超過門檻應記錄 LargeResult 並帶回實際列數")]
         public void ResultRowThresholdExceeded_LogsLargeResult()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var options = new DbAccessAnomalyLogOptions
             {
                 Level = DbAccessAnomalyLogLevel.Warning,
@@ -115,7 +115,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("影響列數超過門檻應記錄 LargeAffected")]
         public void AffectedRowThresholdExceeded_LogsLargeAffected()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var options = new DbAccessAnomalyLogOptions
             {
                 Level = DbAccessAnomalyLogLevel.Warning,
@@ -140,7 +140,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("執行時間門檻為 0 時不記錄 Slow")]
         public void ExecutionTimeThresholdDisabled_SkipsSlow()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var options = new DbAccessAnomalyLogOptions
             {
                 Level = DbAccessAnomalyLogLevel.Warning,
@@ -159,7 +159,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("命令失敗應記錄 Error 並保留原例外，命令文字不含參數值")]
         public void CommandFails_LogsErrorAndRethrows()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var options = new DbAccessAnomalyLogOptions { Level = DbAccessAnomalyLogLevel.Error };
             var dbAccess = NewSqliteDbAccess(writer, options);
             var commandText = "SELECT * FROM __no_such_table__ WHERE id = {0}";
@@ -183,7 +183,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("例外訊息含 timeout 字樣應分類為 Timeout")]
         public void TimeoutWorded_ClassifiesAsTimeout()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var options = new DbAccessAnomalyLogOptions { Level = DbAccessAnomalyLogLevel.Error };
             var dbAccess = NewSqliteDbAccess(writer, options);
 

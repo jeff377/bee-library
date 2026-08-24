@@ -40,7 +40,7 @@
 
 > `st_department` / `st_employee` 雖位於公司資料庫，但仍是 **框架所有**（record-scope 與組織樹功能所需），不是業務資料。Per-company 業務表請使用 `ft_` 前綴。
 
-### 1.3 Log 資料庫（資料軌跡）
+### 1.3 Log 資料庫（資料軌跡與異常）
 
 | 表名 | 用途 |
 |------|------|
@@ -50,6 +50,8 @@
 | `st_log_anomaly_api` | API 層異常（Error / Timeout / Slow）——哪個動作偏離正常。 |
 | `st_log_anomaly_db` | DB 層異常（Error / Timeout / Slow / 大量列數）——哪個資料庫 + 指令偏離正常。 |
 
+> 這五張表是兩件不同的事共用一個資料庫。前三張是**稽核軌跡** —— 誰對哪一筆做了什麼，經 `IAuditLogWriter` 寫入。後兩張是**執行異常** —— 哪一次執行偏離了正常，經 `IAnomalyLogWriter` 寫入；它們是維運訊號而非業務紀錄，所以 `st_log_anomaly_db` 連觸發者都沒有。見 [ADR-040](adr/adr-040-audit-trail-taxonomy.md)。
+>
 > Log 表**預設關閉（opt-in）**且自足：去正規化觸發者的 user / company，查詢不需跨資料庫 join（log 資料庫實體分離）。log 資料庫可依年份分庫（`log_2024`、`log_2025`…），當年度可寫、歷史唯讀。設計理由見 [ADR-027](adr/adr-027-audit-trail.md)。
 
 ---

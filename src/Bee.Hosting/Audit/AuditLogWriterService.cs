@@ -6,12 +6,17 @@ using Microsoft.Extensions.Hosting;
 namespace Bee.Hosting.Audit
 {
     /// <summary>
-    /// Background <see cref="IAuditLogWriter"/>: entries are enqueued onto a bounded in-memory
-    /// channel and drained in batches by the hosted service, keeping the log-database write off the
-    /// business request's critical path. When the queue is saturated the write degrades to
-    /// synchronous rather than dropping the entry, so audit records are never silently lost.
+    /// Background writer: entries are enqueued onto a bounded in-memory channel and drained in
+    /// batches by the hosted service, keeping the log-database write off the business request's
+    /// critical path. When the queue is saturated the write degrades to synchronous rather than
+    /// dropping the entry, so records are never silently lost.
     /// </summary>
-    internal sealed class AuditLogWriterService : BackgroundService, IAuditLogWriter
+    /// <remarks>
+    /// Serves both writer interfaces from one instance: the queue, the batch drain and the
+    /// saturation fallback are identical for an audit record and an anomaly record, so splitting
+    /// the implementation would duplicate all three.
+    /// </remarks>
+    internal sealed class AuditLogWriterService : BackgroundService, IAuditLogWriter, IAnomalyLogWriter
     {
         private readonly IAuditLogSink _sink;
         private readonly Channel<AuditEntry> _channel;
@@ -46,6 +51,9 @@ namespace Bee.Hosting.Audit
                 _sink.WriteBatch(new[] { entry });
             }
         }
+
+        /// <inheritdoc cref="IAnomalyLogWriter.Write(AnomalyEntry)"/>
+        public void Write(AnomalyEntry entry) => Write((AuditEntry)entry);
 
         /// <inheritdoc/>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

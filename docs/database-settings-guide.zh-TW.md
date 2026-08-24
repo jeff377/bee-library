@@ -67,7 +67,7 @@ DatabaseItem  CategoryId="log"      DbName=erp ──┘     st_company、st_use
                                                        ft_project、st_log_* 稽核表）
 ```
 
-> `st_log_*` = 框架 opt-in 的稽核表（`st_log_login`、`st_log_change`、`st_log_access`、`st_log_anomaly_api`、`st_log_anomaly_db`）；後續情境圖以「log tables」略稱。見 [框架保留命名 §1.3](framework-reserved-names.zh-TW.md)。
+> `st_log_*` = 框架 opt-in 的 log 表 —— 稽核軌跡（`st_log_login`、`st_log_change`、`st_log_access`）加上執行異常記錄（`st_log_anomaly_api`、`st_log_anomaly_db`）；後續情境圖以「log tables」略稱。見 [框架保留命名 §1.3](framework-reserved-names.zh-TW.md)。
 
 **狀況 2：分散部署（三個實體資料庫，各對應一個邏輯分類）**
 
@@ -258,7 +258,7 @@ DbCategorySettings
 |---------|------|--------|
 | `common` | 共用資料庫 — 跨公司共用的系統表 | `st_user`、`st_session`、`st_company`、`st_user_company` |
 | `company` | 公司資料庫 — 業務資料、各公司獨立 | `st_department`、`st_employee`、`ft_project` |
-| `log` | 日誌資料庫 — 寫入頻繁的資料軌跡 / 操作記錄 | `st_log_login`、`st_log_change`、`st_log_access`、`st_log_anomaly_api`、`st_log_anomaly_db`（opt-in）＋ 應用自訂 |
+| `log` | 日誌資料庫 — 寫入頻繁的稽核軌跡與執行異常記錄 | `st_log_login`、`st_log_change`、`st_log_access`、`st_log_anomaly_api`、`st_log_anomaly_db`（opt-in）＋ 應用自訂 |
 
 > 各分類下框架擁有的完整表清單，見 [框架保留命名](framework-reserved-names.zh-TW.md)。
 

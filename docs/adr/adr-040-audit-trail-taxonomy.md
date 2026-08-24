@@ -105,6 +105,38 @@
 改為由 BO 在 commit 後走 `IAuditLogWriter`，異動記錄可強制同步寫以縮小漏失窗口。
 **outbox 保留為升級路徑**：真正出現「零漏失」需求時再加，且該變更是 additive 的。
 
+### 七、寫入介面依決策二的分界拆成兩個（2026-08-24 補）
+
+決策二把「系統／錯誤」判為 observability、與業務稽核分離，但**寫入面一直只有一個
+`IAuditLogWriter`**：登入／異動／檢視與 API／DB 異常都走它。實作當時合在一起的理由是
+**寫入管線共用**（有上限佇列、批次、退路檔案、log 資料庫自己的 `DbAccess` 不做異常偵測），
+不是因為兩者回答同一種問題。
+
+盤點消費端後拆開：**七個呼叫點沿這條分界乾淨二分，沒有任何一個同時寫兩種**——
+`Bee.Business` 那四個只寫稽核，`Bee.Db` 與 `Bee.Api.*` 那三個只寫異常，
+而後者的欄位與參數**早就自己叫 `anomalyWriter`**，等於用命名補一個型別系統沒有表達的區分。
+
+| 面向 | 處置 |
+|------|------|
+| 介面 | `IAuditLogWriter`（收 `AuditEntry`）與 `IAnomalyLogWriter`（收 `AnomalyEntry`） |
+| 記錄型別 | 新增 `AnomalyEntry : AuditEntry` 中間基底，`ApiAnomalyEntry` / `DbAnomalyEntry` 改繼承它，兩者重複的五個欄位（`Kind` / `ElapsedMs` / `ThresholdMs` / `ErrorType` / `ErrorMessage`）上提 |
+| 寫入管線 | **不拆**。sink、write repository、佇列、批次、退路檔案完全共用，同一個實例實作兩個介面 |
+| 開關 | `AuditLogOptions` **不拆**。拆出獨立的 anomaly 選項會改 `SystemSettings.xml` 的結構，是所有既有部署都要跟著改的破壞性變更，而 `AnomalyEnabled` 本來就分得開 |
+
+> **保護是單向的，不要讀成雙向。** `AnomalyEntry` 繼承 `AuditEntry`（兩者共用一條寫入管線），
+> 所以 `IAuditLogWriter` 仍然收得下一筆異常記錄。型別系統擋住的只有反方向——
+> **異常的產生者寫不了登入、異動或檢視記錄**。風險方向上要防的正是那一向。
+> 要雙向就得改成平行基底，代價是共通欄位得複製兩份、且會動到 `IAuditLogWriteRepository`
+> 的公開簽章，不划算。
+
+**why 不下放 who／company 到中間層**：`ApiAnomalyEntry` 有 session 脈絡、共通欄照填，
+只有 `DbAnomalyEntry` 沒有——它覆寫 `AddCommonColumns` 成空的，並且保持原樣。
+一份共通結構要決定的不是有哪些共通欄，是誰可以整組不要。
+
+**未納入本次**：讀取側仍由 `LogBusinessObject` 一併服務，九支查詢方法共用保留 progId
+`AuditLog` 的授權。合規稽核與維運排錯在 ERP 是兩種角色，把讀取權限拆開價值更高，
+但那是權限模型的題目、不是寫入介面的題目，另案處理。
+
 ## 理由
 
 **為什麼照抄兩套 ERP 的分類而不自創。** 稽核分類的成本不在寫程式，而在事後發現切錯了——

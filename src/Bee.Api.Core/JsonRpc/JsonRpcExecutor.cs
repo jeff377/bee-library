@@ -24,7 +24,7 @@ namespace Bee.Api.Core.JsonRpc
         private readonly IBusinessObjectFactory _boFactory;
         private readonly IAccessTokenValidator _tokenValidator;
         private readonly IApiEncryptionKeyProvider _keyProvider;
-        private readonly IAuditLogWriter? _anomalyWriter;
+        private readonly IAnomalyLogWriter? _anomalyWriter;
         private readonly AuditLogOptions? _auditOptions;
         private readonly ISessionInfoService? _sessionService;
 
@@ -44,7 +44,7 @@ namespace Bee.Api.Core.JsonRpc
             IBusinessObjectFactory boFactory,
             IAccessTokenValidator tokenValidator,
             IApiEncryptionKeyProvider keyProvider,
-            IAuditLogWriter? anomalyWriter = null,
+            IAnomalyLogWriter? anomalyWriter = null,
             AuditLogOptions? auditOptions = null,
             ISessionInfoService? sessionService = null)
         {

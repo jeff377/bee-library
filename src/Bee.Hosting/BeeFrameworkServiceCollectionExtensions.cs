@@ -135,10 +135,16 @@ namespace Bee.Hosting
             services.AddSingleton<IDbAccessFactory>(sp =>
             {
                 // DB anomaly logging (opt-in). Lazy writer resolver breaks the construction cycle
-                // IDbAccessFactory → IAuditLogWriter → AuditLogDbSink → IDbAccessFactory.
+                // IDbAccessFactory → IAnomalyLogWriter → AuditLogDbSink → IDbAccessFactory.
+                //
+                // IMPORTANT: keep the null when anomaly logging is off — do not simplify this to an
+                // unconditional resolve on the grounds that a no-op writer is registered either way.
+                // DbAccess short-circuits on a null writer; a non-null no-op would make every DB
+                // command start a Stopwatch and take the try/catch path to produce a record that is
+                // then thrown away.
                 var audit = configuration.AuditLogOptions;
-                Func<IAuditLogWriter?>? anomalyWriterFactory =
-                    audit.AnomalyEnabled ? () => sp.GetService<IAuditLogWriter>() : null;
+                Func<IAnomalyLogWriter?>? anomalyWriterFactory =
+                    audit.AnomalyEnabled ? () => sp.GetService<IAnomalyLogWriter>() : null;
                 var anomalyOptions = audit.AnomalyEnabled ? configuration.LogOptions.DbAccess : null;
                 return new DbAccessFactory(
                     sp.GetRequiredService<IDbConnectionManager>(), 0, anomalyWriterFactory, anomalyOptions);
@@ -176,11 +182,20 @@ namespace Bee.Hosting
                 services.AddHostedService<ExpiredSessionCleanupService>();
             }
 
-            // 6d. Audit-trail (data-history) logging. Opt-in: when disabled every consumer gets the
-            //     no-op writer so IAuditLogWriter is always injectable with zero behavioural change.
-            //     When enabled, the background writer batches to the log database; hosts without an
-            //     IHost (e.g. in-process local) set UseBackgroundWriter=false for synchronous writes.
+            // 6d. Log writing. Opt-in: when disabled every consumer gets the no-op writer, so both
+            //     IAuditLogWriter and IAnomalyLogWriter are always injectable with zero behavioural
+            //     change. When enabled, the background writer batches to the log database; hosts
+            //     without an IHost (e.g. in-process local) set UseBackgroundWriter=false for
+            //     synchronous writes.
+            //
+            //     One instance serves both interfaces — the queue, the batch drain and the
+            //     saturation fallback are identical for an audit record and an anomaly record.
+            //     Registering the concrete type first is what makes the two resolutions share it.
+            //     The anomaly half has its own switch: a deployment can keep the audit trail on
+            //     while leaving anomaly recording off, which is why it is registered separately
+            //     rather than aliased onto the audit registration.
             services.AddSingleton(configuration.AuditLogOptions);
+            bool anomalyEnabled = configuration.AuditLogOptions is { Enabled: true, AnomalyEnabled: true };
             if (configuration.AuditLogOptions.Enabled)
             {
                 // Built through the factory, not by the container: every repository now takes
@@ -195,15 +210,29 @@ namespace Bee.Hosting
                     services.AddSingleton<AuditLogWriterService>();
                     services.AddSingleton<IAuditLogWriter>(sp => sp.GetRequiredService<AuditLogWriterService>());
                     services.AddHostedService(sp => sp.GetRequiredService<AuditLogWriterService>());
+                    if (anomalyEnabled)
+                    {
+                        services.AddSingleton<IAnomalyLogWriter>(sp => sp.GetRequiredService<AuditLogWriterService>());
+                    }
                 }
                 else
                 {
-                    services.AddSingleton<IAuditLogWriter, SynchronousAuditLogWriter>();
+                    services.AddSingleton<SynchronousAuditLogWriter>();
+                    services.AddSingleton<IAuditLogWriter>(sp => sp.GetRequiredService<SynchronousAuditLogWriter>());
+                    if (anomalyEnabled)
+                    {
+                        services.AddSingleton<IAnomalyLogWriter>(sp => sp.GetRequiredService<SynchronousAuditLogWriter>());
+                    }
                 }
             }
             else
             {
                 services.AddSingleton<IAuditLogWriter>(NullAuditLogWriter.Instance);
+            }
+
+            if (!anomalyEnabled)
+            {
+                services.AddSingleton<IAnomalyLogWriter>(NullAuditLogWriter.Instance);
             }
 
             // 5. Replaceable core services. Lifetimes default to Singleton in Phase 4 —

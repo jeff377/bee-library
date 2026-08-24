@@ -4,6 +4,36 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.24.0]
+
+> 本版把 `IAuditLogWriter` 一直同時承載的兩件事拆開。[ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 決策二早就把「系統／錯誤」判成 observability、與業務稽核分離，但寫入面始終只有一個介面：登入／異動／檢視與 API／DB 異常都走它。盤點消費端才看清那條分界其實是乾淨的——七個呼叫點沒有任何一個同時寫兩種，而異常那三個的欄位與參數**早就自己叫 `anomalyWriter`**，等於用命名補一個型別系統沒有表達的區分。**這是原始碼與二進位層級的破壞性變更**：三支公開建構子換參數型別，另有五個欄位由兩個異常記錄型別上提到新的共用基底。
+
+### 破壞性變更
+
+- `Bee.Definition` / `Bee.Db` / `Bee.Api.Core`：稽核寫入與異常寫入拆成兩個介面。新增 `IAnomalyLogWriter`（收 `AnomalyEntry`），`IAuditLogWriter` 維持原簽章、語意收在稽核軌跡那一側。`DbAccess`、`DbAccessFactory`、`JsonRpcExecutor` 三支建構子的 anomaly 參數型別由 `IAuditLogWriter` 改為 `IAnomalyLogWriter`（皆為 optional 參數，正常路徑經 DI 注入）。**`IAuditLogWriter` 的型別表面沒有變**，破壞只在「這三支不再接受它」。見 [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 決策七。
+- `Bee.Definition`：`ApiAnomalyEntry` 與 `DbAnomalyEntry` 改繼承新的 `AnomalyEntry` 基底，兩者原本逐字重複的五個欄位（`Kind` / `ElapsedMs` / `ThresholdMs` / `ErrorType` / `ErrorMessage`）上提到基底。**原始碼相容**——透過繼承照樣讀得到；**二進位不相容**——這五個屬性的存取子改由基底宣告，直接參考它們的組件必須重新編譯。
+
+### 新增
+
+- `Bee.Definition`：`IAnomalyLogWriter` 與 `AnomalyEntry`。`NullAuditLogWriter` 同時實作兩個介面（**不改名**，改公開型別名是另一筆破壞性變更、只換到名稱貼切）。
+- `Bee.Hosting`：`IAnomalyLogWriter` 與 `IAuditLogWriter` 各自註冊，異常那一側由 `AuditLogOptions.AnomalyEnabled` 單獨決定。稽核開著而異常關著時，前者解析得到真的寫入器、後者是 no-op——**這個組態在拆之前於型別上看不出來**。兩者都開時解析到同一個實例：佇列、批次與滿載退同步的行為對兩種記錄完全相同。
+
+### 變更
+
+- 文件：[ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 補決策七（含「保護是單向的」這個容易讀反的地方）、[框架保留命名](docs/framework-reserved-names.zh-TW.md) §1.3 點明五張 log 表其實是兩類、[資料庫設定指引](docs/database-settings-guide.zh-TW.md) 兩處不再把五張一律稱作稽核表、[術語表](docs/terminology.zh-TW.md) 補兩個新型別並補上 `AnomalyKind` 漏列的 `Unauthorized`。
+
+### 升級指引
+
+多數部署不受影響：三支建構子的 anomaly 參數都是 optional，正常路徑由 `AddBeeFramework` 注入。直接建構並自行傳入 writer 的程式碼改型別即可；自訂 writer 實作則補上 `IAnomalyLogWriter`。
+
+```diff
+- IAuditLogWriter? anomalyWriter = sp.GetService<IAuditLogWriter>();
++ IAnomalyLogWriter? anomalyWriter = sp.GetService<IAnomalyLogWriter>();
+  var factory = new DbAccessFactory(connectionManager, 0, () => anomalyWriter, anomalyOptions);
+```
+
+**即使沒有任何原始碼要改，也請重新編譯**——上提的那五個屬性其存取子已換了宣告型別。
+
 ## [4.23.0]
 
 > 本版補上「`FormLayout` 是畫面權威來源」這條規則的一個破口。該規則在客製層本來就成立，但在版面檔缺席時卻不成立：執行階段會默默由 `FormSchema` 推導一份——那是一份沒有人審過、也不存在於任何地方的投影，恰恰是「權威來源」應該排除的東西。版面現在一律在設計階段產出、執行階段原樣讀取，產生器轉為公開 API，`tools/DefineEditor` 補上產生該檔的入口。**移除 `FormSchema.GetFormLayout` 屬原始碼與二進位層級的破壞性變更；依 pre-stable 政策以 minor 發佈。** 與之並行的是 Blazor 範例完全無法登入，其根因可追到一條從未寫明的規則：`st_*` 系統表是必備設施，覆寫認證並不能讓部署豁免它們。

@@ -67,7 +67,7 @@ DatabaseItem  CategoryId="log"      DbName=erp ──┘     st_company, st_user
                                                        ft_project, st_log_* audit tables)
 ```
 
-> `st_log_*` = the framework's opt-in audit tables (`st_log_login`, `st_log_change`, `st_log_access`, `st_log_anomaly_api`, `st_log_anomaly_db`); the later scenarios abbreviate them as "log tables". See [Framework-Reserved Names §1.3](framework-reserved-names.md).
+> `st_log_*` = the framework's opt-in log tables — the audit trail (`st_log_login`, `st_log_change`, `st_log_access`) plus the execution-anomaly records (`st_log_anomaly_api`, `st_log_anomaly_db`); the later scenarios abbreviate them as "log tables". See [Framework-Reserved Names §1.3](framework-reserved-names.md).
 
 **Scenario 2: Distributed deployment (three physical DBs, one per logical category)**
 
@@ -258,7 +258,7 @@ The framework uses three default logical categories:
 |-------------|---------|----------------|
 | `common` | Shared database — system tables shared across companies | `st_user`, `st_session`, `st_company`, `st_user_company` |
 | `company` | Company database — business data, separate per company | `st_department`, `st_employee`, `ft_project` |
-| `log` | Log database — audit trail / operation records with frequent writes | `st_log_login`, `st_log_change`, `st_log_access`, `st_log_anomaly_api`, `st_log_anomaly_db` (opt-in) + application-defined |
+| `log` | Log database — audit trail and execution anomalies, with frequent writes | `st_log_login`, `st_log_change`, `st_log_access`, `st_log_anomaly_api`, `st_log_anomaly_db` (opt-in) + application-defined |
 
 > For the canonical list of framework-owned tables in each category, see [Framework-Reserved Names](framework-reserved-names.md).
 

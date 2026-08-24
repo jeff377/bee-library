@@ -227,7 +227,7 @@ namespace Bee.Api.AspNetCore.Controllers
 
             // `services` is known non-null here: a null provider yields null options above, which
             // already returned.
-            var writer = services!.GetService<IAuditLogWriter>();
+            var writer = services!.GetService<IAnomalyLogWriter>();
             if (writer == null) { return; }
 
             string sysId = ApiKeyValidation.SysId;

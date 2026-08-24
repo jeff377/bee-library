@@ -21,7 +21,7 @@ namespace Bee.Db
     {
         private readonly IDbConnectionManager _connectionManager;
         private readonly int _maxCommandTimeout;
-        private readonly Func<IAuditLogWriter?>? _anomalyWriterFactory;
+        private readonly Func<IAnomalyLogWriter?>? _anomalyWriterFactory;
         private readonly DbAccessAnomalyLogOptions? _anomalyOptions;
 
         /// <summary>
@@ -35,11 +35,11 @@ namespace Bee.Db
         /// <param name="anomalyWriterFactory">
         /// Optional lazy resolver for the DB-anomaly audit writer; null disables DB anomaly logging.
         /// Lazy (a factory, not the instance) to break the construction cycle
-        /// <c>IDbAccessFactory → IAuditLogWriter → AuditLogDbSink → IDbAccessFactory</c>.
+        /// <c>IDbAccessFactory → IAnomalyLogWriter → AuditLogDbSink → IDbAccessFactory</c>.
         /// </param>
         /// <param name="anomalyOptions">Optional DB anomaly thresholds / level.</param>
         public DbAccessFactory(IDbConnectionManager connectionManager, int maxCommandTimeout = 0,
-            Func<IAuditLogWriter?>? anomalyWriterFactory = null, DbAccessAnomalyLogOptions? anomalyOptions = null)
+            Func<IAnomalyLogWriter?>? anomalyWriterFactory = null, DbAccessAnomalyLogOptions? anomalyOptions = null)
         {
             _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
             _maxCommandTimeout = maxCommandTimeout;

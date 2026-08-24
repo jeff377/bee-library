@@ -79,10 +79,12 @@
 |----------|----------|------|
 | `LogOptions` | 日誌選項 | 日誌行為的設定參數 |
 | `DbAccessAnomalyLogOptions` | 資料庫存取異常日誌選項 | 資料庫異常存取行為的日誌設定（門檻由 DB 異常記錄器消費） |
-| `IAuditLogWriter` | 稽核日誌寫入介面 | 寫入稽核軌跡記錄到 log 資料庫的唯一入口（背景批次或同步，best-effort） |
-| `AuditEntry` | 稽核記錄基底 | 單筆稽核記錄的抽象基底；承載共通 who/when/where 欄位，子類再加各軸專屬欄位 |
+| `IAuditLogWriter` | 稽核日誌寫入介面 | 寫入稽核軌跡記錄（登入 / 異動 / 檢視）到 log 資料庫的入口（背景批次或同步，best-effort） |
+| `IAnomalyLogWriter` | 異常日誌寫入介面 | 寫入執行異常記錄到 log 資料庫的入口。與 `IAuditLogWriter` 分開，因為兩者答的問題不同：稽核答「誰對哪一筆做了什麼」，異常答「哪一次執行不對勁」 |
+| `AuditEntry` | 稽核記錄基底 | 單筆 log 記錄的抽象基底；承載共通 who/when/where 欄位，子類再加各軸專屬欄位 |
+| `AnomalyEntry` | 異常記錄基底 | 執行異常記錄的抽象基底，繼承 `AuditEntry` 以共用同一條寫入管線；承載 `Kind` / 耗時 / 門檻 / 錯誤型別與訊息 |
 | `AuditColumn` | 稽核欄位 | `AuditEntry` 提供給 INSERT 的一組欄名/值 |
-| `NullAuditLogWriter` | 空稽核寫入器 | 稽核停用時使用的 no-op `IAuditLogWriter` |
+| `NullAuditLogWriter` | 空寫入器 | 停用時使用的 no-op 寫入器，同時服務 `IAuditLogWriter` 與 `IAnomalyLogWriter` |
 | `LoginAuditEntry` | 登入稽核記錄 | `st_log_login` 的記錄（登入 / 登出 / 失敗 / 鎖定） |
 | `ChangeAuditEntry` | 異動稽核記錄 | `st_log_change` 的記錄（資料異動，DataSet DiffGram 新舊值） |
 | `AccessAuditEntry` | 檢視稽核記錄 | `st_log_access` 的記錄（檢視某筆記錄） |
@@ -271,7 +273,7 @@
 | `DatabaseType` | 資料庫類型 | `SQLServer`、`PostgreSQL`、`MySQL`、`Oracle`、`SQLite` |
 | `LoginEvent` | 登入事件 | `LoginSucceeded`、`LoginFailed`、`LockedOut`、`Logout`（記於 `st_log_login`） |
 | `ChangeKind` | 異動類型 | `Insert`、`Update`、`Delete`（記於 `st_log_change`） |
-| `AnomalyKind` | 異常類型 | `Error`、`Timeout`、`Slow`、`LargeAffected`、`LargeResult`（記於 `st_log_anomaly_*`） |
+| `AnomalyKind` | 異常類型 | `Error`、`Timeout`、`Slow`、`LargeAffected`、`LargeResult`、`Unauthorized`（記於 `st_log_anomaly_*`） |
 
 ---
 

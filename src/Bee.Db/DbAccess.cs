@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Data;
 using System.Data.Common;
 using Bee.Base.Data;
@@ -19,7 +20,7 @@ namespace Bee.Db
         private readonly string _connectionString = string.Empty;
         private readonly int _maxCommandTimeout;
         private readonly string _databaseId = string.Empty;
-        private readonly IAuditLogWriter? _anomalyWriter;
+        private readonly IAnomalyLogWriter? _anomalyWriter;
         private readonly DbAccessAnomalyLogOptions? _anomalyOptions;
 
         #region Constructors
@@ -42,12 +43,14 @@ namespace Bee.Db
         /// (e.g. 30 sec for mobile API, 60 sec for web, 120 sec for batch service).
         /// </param>
         /// <param name="anomalyWriter">
-        /// Optional audit writer for DB anomaly records (Error / Timeout / Slow / large-row);
+        /// Optional writer for DB anomaly records (Error / Timeout / Slow / large-row);
         /// null disables DB anomaly logging.
         /// </param>
         /// <param name="anomalyOptions">Optional DB anomaly thresholds and level.</param>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters",
+            Justification = "The overload pair is not new API: both constructors shipped together and only this one's anomalyWriter parameter changed type (IAuditLogWriter to IAnomalyLogWriter). RS0026 guards against a caller silently rebinding when an optional-parameter overload is added alongside an existing one, which cannot happen when neither overload has ever existed without the other and their first parameters are of unrelated types.")]
         public DbAccess(string databaseId, IDbConnectionManager connectionManager, int maxCommandTimeout = 0,
-            IAuditLogWriter? anomalyWriter = null, DbAccessAnomalyLogOptions? anomalyOptions = null)
+            IAnomalyLogWriter? anomalyWriter = null, DbAccessAnomalyLogOptions? anomalyOptions = null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             ArgumentNullException.ThrowIfNull(connectionManager);

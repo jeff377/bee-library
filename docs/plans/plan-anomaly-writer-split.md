@@ -1,11 +1,11 @@
 # 計畫：稽核寫入與異常寫入拆成兩個介面
 
-**狀態：📝 擬定中（2026-08-24）**
+**狀態：✅ 已完成（2026-08-24）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 型別與接線一次到位：`AnomalyEntry` 基底 ＋ `IAnomalyLogWriter` 介面、實作類同時實作兩個介面、DI 註冊兩次、三支公開建構子換參數型別、消費端與測試替身跟著換（**破壞性變更全部落在這一階段**） | 📝 待做 |
-| 2 | ADR、術語表、公開文件、CHANGELOG、`Bee.Definition` 相依閉包驗證 | 📝 待做 |
+| 1 | 型別與接線一次到位：`AnomalyEntry` 基底 ＋ `IAnomalyLogWriter` 介面、實作類同時實作兩個介面、DI 註冊兩次、三支公開建構子換參數型別、消費端與測試替身跟著換（**破壞性變更全部落在這一階段**） | ✅ 已完成（2026-08-24） |
+| 2 | ADR、術語表、公開文件、CHANGELOG、`Bee.Definition` 相依閉包驗證 | ✅ 已完成（2026-08-24） |
 
 > **為什麼不切成「純加法」與「換簽章」兩階段**：純加法那半做完的中間狀態是
 > 「兩個介面指向同一個實作，但沒有任何消費端用新介面」—— 不會單獨發版、下游也受益不到，
@@ -178,6 +178,86 @@ API 那側沒有這個問題（`JsonRpcExecutor.AnomalyEnabled` 與 `ApiServiceC
 跳 5.0.0 形式上更嚴格，但代價是所有下游 repo 的相依都要跟著跳大版，換到的只是 semver 的形式正確。
 
 **不走 `[Obsolete]` 過渡**（那需要先發一版留舊多載，成本高於這次的破壞面）。
+
+## 階段 1 執行紀錄（2026-08-24）
+
+Clean Release build 零錯誤零警告；`./test.sh` 全 17 個專案通過（5,682 passed / 0 failed /
+1 skipped，那筆 skip 是既有的 RSA 測試，與本次無關）。編譯期保證已實地驗證：
+`IAnomalyLogWriter.Write(new LoginAuditEntry())` 擲 `CS1503`（一次性 probe，未入版控）。
+
+⚠️⚠️ **兩件本 plan 沒預料到的事，兩件都要帶進階段 2 的 CHANGELOG。**
+
+### 一、D1-b 的欄位上提，同時是一筆公開 API 的移動（RS0017）
+
+把五個欄位上提到 `AnomalyEntry` 之後，PublicAPI analyzer 判定它們**不再是子類宣告的 API**：
+`ApiAnomalyEntry` 與 `DbAnomalyEntry` 各掉 10 筆存取子（5 個屬性 × get/init），
+共 **20 筆進 `PublicAPI.Unshipped.txt` 的 `*REMOVED*`**，同一批以 `AnomalyEntry.*` 重新出現。
+
+**原始碼相容**（透過繼承照樣讀得到），**二進位不相容**（存取子的宣告型別換了，呼叫端要重編）。
+本 plan 原本只把二進位破壞算在三支建構子上，**實際上還有這 20 筆**。
+與 4.24.0 的裁定不衝突（本來就要標破壞性變更），但 **CHANGELOG 要列出來**，
+否則下游只會去改建構子、不知道還得重編。
+
+### 二、`DbAccess` 撞上 RS0026，需要具名抑制
+
+`DbAccess` 有兩個帶 optional 參數的建構子，原本兩個都在 `Shipped` 裡、被 analyzer 放行；
+把其中一個宣告成「新增」之後 RS0026 就響了（`Do not add multiple overloads with optional parameters`）。
+
+處置：照 `src/Bee.Base/Expressions/IExpressionEvaluator.cs` 的**現成前例**，
+在該建構子上加具名 `[SuppressMessage("ApiDesign", "RS0026", Justification = ...)]`，
+Justification 寫明「這對多載不是新 API，兩個一直共存，且第一個參數型別互不相關，
+不存在 RS0026 要防的靜默重新繫結」。**符合 `code-style.md`「抑制單行必須附說明」。**
+
+### 範圍對帳
+
+宣告 17 項、實際 18 檔，**多動一個**：
+
+| 多動的檔案 | 為什麼 |
+|---|---|
+| `tests/Bee.Hosting.UnitTests/BeeFrameworkServiceResolutionTests.cs` | 平行路徑檢查時發現既有測試只斷言 `IAuditLogWriter` 解析得到，**新介面零覆蓋**；而本 plan 的驗收清單要求驗「`AnomalyEnabled = false` 時 `IAnomalyLogWriter` 解析得到 no-op」。補了一支 `[Theory]` 兩個 case：開著時兩個介面 `Assert.Same`（同一實例），關著時異常那一側是 `NullAuditLogWriter.Instance` 而稽核那一側不受牽動 |
+
+宣告了但未動：`src/Bee.Db/DbAccess.Anomaly.cs` —— 它用的是 `_anomalyWriter!`，
+欄位型別換了但該檔一個字都不必改。
+
+### 平行路徑檢查結果（無漏網）
+
+- **DI 只有一條註冊路徑**（`BeeFrameworkServiceCollectionExtensions`），samples / apps / tests 皆無自行註冊。
+- **sink 與 write repository 靠 `entry.TableName` 與 `GetColumns()` 分派，不看型別** ——
+  型別階層的變動對它們完全不可見。
+- **entry 型別無任何序列化標註**（`XmlInclude` / `MessagePackObject` / `JsonDerivedType` 全零命中），
+  沒有平行的 wire 路徑。
+- 其餘仍持有 `IAuditLogWriter` 的測試替身全部在 `Bee.Business.UnitTests`，**那是稽核那一側，正確地未動**。
+
+## 階段 2 執行紀錄（2026-08-24）
+
+`./check-public-docs.sh` 與 `./check-xmldoc-refs.sh` 皆綠（前者只剩兩筆既有的性質說明，
+不是連結）；`DefinitionDependencyGateTests` 通過；clean Release build 零錯誤零警告。
+
+| 文件 | 改了什麼 |
+|---|---|
+| [adr-040](../adr/adr-040-audit-trail-taxonomy.md) | 補**決策七**：寫入介面依決策二的分界拆成兩個。含四列處置表（介面／記錄型別／寫入管線／開關）、**單向保護的警語**、who／company 為何不下放、以及「讀取側未納入本次」 |
+| [`terminology.md`](../terminology.md) / [`.zh-TW`](../terminology.zh-TW.md) | 新增 `IAnomalyLogWriter`、`AnomalyEntry` 兩列；`IAuditLogWriter` 的說明收窄到「登入／異動／檢視」；`NullAuditLogWriter` 改述為同時服務兩個介面 |
+| [`framework-reserved-names.md`](../framework-reserved-names.md) / [`.zh-TW`](../framework-reserved-names.zh-TW.md) | §1.3 標題加「與異常」，引言前置一段點明五張表是兩類、各走哪個介面、以及 `st_log_anomaly_db` 連觸發者都沒有 |
+| [`database-settings-guide.md`](../database-settings-guide.md) / [`.zh-TW`](../database-settings-guide.zh-TW.md) | 兩處「五張＝稽核表」改為「稽核軌跡 ＋ 執行異常記錄」 |
+| `CHANGELOG.md` / `.zh-TW.md` | 新增 `## [4.24.0]` 一節：破壞性 2、新增 2、變更 1、升級指引。雙語各 6 條、章節與行位逐條對齊 |
+
+### 順手修掉的一筆文件漂移
+
+**`AnomalyKind` 在術語表雙語都只列五個值、漏了 `Unauthorized`**（2026-07-30 那批金鑰功能帶進來的第六個值）。
+與 ADR-027 D6 記的「異常五類」是同一筆漂移的另一個落點。**已補**。
+
+### 範圍對帳
+
+宣告 9 項、實際 **9 檔**，無超出。
+
+### CHANGELOG 的兩點說明
+
+- **寫進 `## [4.24.0]` 是符合本 repo 慣例的**：查過 4.23.0 那一節是由獨立 commit
+  `90e44fe4`（`docs(release): 4.23.0 CHANGELOG 草稿與 ADR-039`）在 **tag 之前**寫入的，
+  不是隨 tag 一起產生。
+- ⚠️ **`docs/changelogs/4.24.0.md` / `.zh-TW.md` 明細檔尚未建立**，所以那一節沒有
+  `📄 詳細變更與設計脈絡` 那一行。近八版都有這個連結，**發版時要補**
+  —— 屆時 4.24.0 若還收了別的東西，明細檔本來就該一次寫齊。
 
 ## 刻意不做
 

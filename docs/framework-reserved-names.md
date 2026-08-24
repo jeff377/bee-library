@@ -40,7 +40,7 @@ The `st_` prefix means "framework-owned table". It is **orthogonal to which data
 
 > `st_department` / `st_employee` live in the company database despite their `st_` prefix — they are **framework-owned** (the record-scope and organisation tree features need them), not business data. Per-company business tables should use the `ft_` prefix.
 
-### 1.3 Log database (audit trail)
+### 1.3 Log database (audit trail and anomalies)
 
 | Table | Purpose |
 |-------|---------|
@@ -50,6 +50,8 @@ The `st_` prefix means "framework-owned table". It is **orthogonal to which data
 | `st_log_anomaly_api` | API-layer anomalies (Error / Timeout / Slow) — which action deviated. |
 | `st_log_anomaly_db` | DB-layer anomalies (Error / Timeout / Slow / large-row) — which database + command deviated. |
 
+> These five tables are two different things sharing one database. The first three are the **audit trail** — who did what to which record, written through `IAuditLogWriter`. The last two are **execution anomalies** — which execution deviated from the normal envelope, written through `IAnomalyLogWriter`; they are an operational signal rather than a business record, which is why `st_log_anomaly_db` has no acting user at all. See [ADR-040](adr/adr-040-audit-trail-taxonomy.md).
+>
 > Log tables are **opt-in** (off by default) and self-sufficient: they denormalise the acting user / company so a query never joins across databases (the log database is physically separate). The log database can be year-partitioned (`log_2024`, `log_2025`, …) with the current year writable and history read-only. Design rationale: [ADR-027](adr/adr-027-audit-trail.md).
 
 ---

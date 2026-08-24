@@ -35,11 +35,11 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         /// <summary>
         /// 捕捉 anomaly 寫入的假 writer。
         /// </summary>
-        private sealed class CapturingAuditLogWriter : IAuditLogWriter
+        private sealed class CapturingAnomalyLogWriter : IAnomalyLogWriter
         {
-            public List<AuditEntry> Entries { get; } = [];
+            public List<AnomalyEntry> Entries { get; } = [];
 
-            public void Write(AuditEntry entry) => Entries.Add(entry);
+            public void Write(AnomalyEntry entry) => Entries.Add(entry);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         };
 
         private JsonRpcExecutor NewAuditExecutor(
-            IAuditLogWriter? writer,
+            IAnomalyLogWriter? writer,
             AuditLogOptions? options,
             ISessionInfoService? session,
             Guid accessToken,
@@ -135,7 +135,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         [DisplayName("啟用 anomaly 且呼叫失敗應寫入 Error 類別的異常記錄")]
         public void Execute_AnomalyEnabledFailure_WritesErrorAnomaly()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var token = Guid.NewGuid();
             var executor = NewAuditExecutor(writer, EnabledOptions(), new StubSessionInfoService(NewSession()), token);
 
@@ -157,7 +157,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         [DisplayName("啟用 anomaly 且 AccessToken 為空的失敗記錄不應保留權杖")]
         public void Execute_AnomalyEnabledFailureEmptyToken_WritesNullAccessToken()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var executor = NewAuditExecutor(writer, EnabledOptions(), new StubSessionInfoService(NewSession()), Guid.Empty);
 
             var response = executor.Execute(UnknownActionRequest());
@@ -174,7 +174,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         [DisplayName("異常記錄應帶入呼叫端應用識別（api_key_id / api_key_name）")]
         public void Execute_AnomalyEnabled_CarriesApiKeyIdentity()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var executor = NewAuditExecutor(writer, EnabledOptions(), new StubSessionInfoService(NewSession()), Guid.NewGuid());
             executor.ApiKeyValidation = new ApiKeyValidationResult(
                 ApiKeyStatus.Valid, "northwind-desktop", "Northwind Desktop");
@@ -190,7 +190,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         [DisplayName("未經金鑰閘門的呼叫，異常記錄的應用識別應為 null")]
         public void Execute_AnomalyEnabledWithoutApiKey_LeavesIdentityNull()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var executor = NewAuditExecutor(writer, EnabledOptions(), new StubSessionInfoService(NewSession()), Guid.NewGuid());
 
             executor.Execute(UnknownActionRequest());
@@ -206,7 +206,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         [DisplayName("啟用 anomaly 且成功但未逾慢查詢門檻不應寫入記錄")]
         public void Execute_AnomalyEnabledFastSuccess_WritesNoAnomaly()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var executor = NewAuditExecutor(writer, EnabledOptions(slowThresholdMs: 3000), new StubSessionInfoService(NewSession()), Guid.Empty);
 
             var response = executor.Execute(PingRequest());
@@ -221,7 +221,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         [DisplayName("啟用 anomaly 且逾慢查詢門檻時如有記錄應為 Slow 類別")]
         public void Execute_AnomalyEnabledSlowSuccess_WritesSlowAnomalyWhenExceeded()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             // 門檻設 1ms：reflection invoke + 追蹤幾乎必然逾越，觸發 Slow 寫入（line 147）。
             var executor = NewAuditExecutor(writer, EnabledOptions(slowThresholdMs: 1), new StubSessionInfoService(NewSession()), Guid.Empty);
 
@@ -238,7 +238,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         [DisplayName("有 writer 但 auditOptions 停用時失敗不應寫入記錄")]
         public void Execute_AuditOptionsDisabled_WritesNoAnomaly()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var options = new AuditLogOptions { Enabled = false, AnomalyEnabled = true };
             var executor = NewAuditExecutor(writer, options, new StubSessionInfoService(NewSession()), Guid.Empty);
 
@@ -252,7 +252,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         [DisplayName("有 writer 但 AnomalyEnabled 為 false 時失敗不應寫入記錄")]
         public void Execute_AnomalyFlagDisabled_WritesNoAnomaly()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var options = new AuditLogOptions { Enabled = true, AnomalyEnabled = false };
             var executor = NewAuditExecutor(writer, options, new StubSessionInfoService(NewSession()), Guid.Empty);
 
@@ -266,7 +266,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         [DisplayName("有 writer 但 auditOptions 為 null 時失敗不應寫入記錄")]
         public void Execute_AuditOptionsNull_WritesNoAnomaly()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var executor = NewAuditExecutor(writer, options: null, session: new StubSessionInfoService(NewSession()), accessToken: Guid.Empty);
 
             var response = executor.Execute(UnknownActionRequest());
@@ -279,7 +279,7 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         [DisplayName("有 writer 與啟用選項但 sessionService 為 null 時失敗不應寫入記錄")]
         public void Execute_SessionServiceNull_WritesNoAnomaly()
         {
-            var writer = new CapturingAuditLogWriter();
+            var writer = new CapturingAnomalyLogWriter();
             var executor = NewAuditExecutor(writer, EnabledOptions(), session: null, accessToken: Guid.Empty);
 
             var response = executor.Execute(UnknownActionRequest());

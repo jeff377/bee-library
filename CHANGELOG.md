@@ -4,6 +4,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.24.0]
+
+> This release splits the two things `IAuditLogWriter` had always carried at once. [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) decision 2 had already classified "system / error" as observability, separate from the business audit trail — but the write side still had a single interface, used by login / change / access and by API / DB anomalies alike. Taking stock of the call sites showed the dividing line was already clean: none of the seven writes both, and the three anomaly ones had **long since named their fields and parameters `anomalyWriter`** — naming standing in for a distinction the type system did not express. **This is a source- and binary-breaking change**: three public constructors change a parameter type, and five properties move from the two anomaly entry types up to a new shared base.
+
+### Breaking changes
+
+- `Bee.Definition` / `Bee.Db` / `Bee.Api.Core`: audit writing and anomaly writing are now two interfaces. `IAnomalyLogWriter` (taking `AnomalyEntry`) is new; `IAuditLogWriter` keeps its signature, with its meaning narrowed to the audit trail. The anomaly parameter on the `DbAccess`, `DbAccessFactory` and `JsonRpcExecutor` constructors changes from `IAuditLogWriter` to `IAnomalyLogWriter` (all optional parameters; the normal path is DI injection). **The type surface of `IAuditLogWriter` itself is unchanged** — the break is only that these three no longer accept it. See [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) decision 7.
+- `Bee.Definition`: `ApiAnomalyEntry` and `DbAnomalyEntry` now derive from the new `AnomalyEntry` base, and the five properties they duplicated verbatim (`Kind`, `ElapsedMs`, `ThresholdMs`, `ErrorType`, `ErrorMessage`) move up to it. **Source-compatible** — inheritance still exposes them; **binary-incompatible** — their accessors are now declared on the base, so assemblies referencing them directly must be recompiled.
+
+### Added
+
+- `Bee.Definition`: `IAnomalyLogWriter` and `AnomalyEntry`. `NullAuditLogWriter` implements both interfaces (**not renamed** — renaming a public type is another breaking change that buys nothing but a more fitting name).
+- `Bee.Hosting`: `IAnomalyLogWriter` and `IAuditLogWriter` are registered separately, with the anomaly half gated on `AuditLogOptions.AnomalyEnabled` alone. With auditing on and anomalies off, the former resolves to a real writer and the latter to a no-op — **a configuration that was invisible in the type system before the split**. With both on they resolve to the same instance: the queue, the batching and the saturation fallback behave identically for either kind of record.
+
+### Changed
+
+- Docs: [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) gains decision 7 (including the one-directional nature of the protection, which is easy to read backwards); [Framework-Reserved Names](docs/framework-reserved-names.md) §1.3 spells out that the five log tables are two different things; [Database Settings Guide](docs/database-settings-guide.md) no longer calls all five "audit tables" in either of the two places it did; [Terminology](docs/terminology.md) gains the two new types and the `Unauthorized` value that `AnomalyKind` was missing.
+
+### Upgrade notes
+
+Most deployments are unaffected: all three constructor parameters are optional and the normal path is injection through `AddBeeFramework`. Code that constructs these directly and passes a writer changes the type; a custom writer implementation adds `IAnomalyLogWriter`.
+
+```diff
+- IAuditLogWriter? anomalyWriter = sp.GetService<IAuditLogWriter>();
++ IAnomalyLogWriter? anomalyWriter = sp.GetService<IAnomalyLogWriter>();
+  var factory = new DbAccessFactory(connectionManager, 0, () => anomalyWriter, anomalyOptions);
+```
+
+**Recompile even if no source change is needed** — the five hoisted properties now declare their accessors on a different type.
+
 ## [4.23.0]
 
 > This release closes a hole in the rule that a `FormLayout` is the authority on what a form shows. The rule already held for tenant customization, but not when the layout file was absent: the runtime quietly derived one from the `FormSchema` — a projection nobody reviewed and that exists nowhere, which is exactly what an authority is supposed to rule out. Layouts are now produced at design time and read as stored, the generator becomes public API, and `tools/DefineEditor` grows the command that produces the file. **The removal of `FormSchema.GetFormLayout` is source- and binary-breaking; under the pre-stable policy it ships as a minor.** Alongside it, the Blazor samples could not sign in at all, which traced back to a rule that had never been written down: the `st_*` system tables are required infrastructure, and overriding authentication does not exempt a deployment from them.

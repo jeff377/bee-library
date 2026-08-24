@@ -79,10 +79,12 @@ This document provides a standard term reference for technical writing, ensuring
 |---------|------|-------------|
 | `LogOptions` | 日誌選項 | Configuration parameters for logging behavior |
 | `DbAccessAnomalyLogOptions` | 資料庫存取異常日誌選項 | Logging configuration for database access anomalies (thresholds consumed by the DB anomaly recorder) |
-| `IAuditLogWriter` | 稽核日誌寫入介面 | The single entry point for writing audit-trail entries to the log database (background/batch or synchronous, best-effort) |
-| `AuditEntry` | 稽核記錄基底 | Abstract base for one audit-trail row; carries the common who/when/where columns, subclasses add axis-specific columns |
+| `IAuditLogWriter` | 稽核日誌寫入介面 | Entry point for writing audit-trail entries (login / change / access) to the log database (background/batch or synchronous, best-effort) |
+| `IAnomalyLogWriter` | 異常日誌寫入介面 | Entry point for writing execution-anomaly entries to the log database. Separate from `IAuditLogWriter` because the two answer different questions: the audit trail records who did what to which record, an anomaly records which execution went wrong |
+| `AuditEntry` | 稽核記錄基底 | Abstract base for one log row; carries the common who/when/where columns, subclasses add axis-specific columns |
+| `AnomalyEntry` | 異常記錄基底 | Abstract base for an execution-anomaly row, deriving from `AuditEntry` so both share one write pipeline; carries `Kind`, elapsed time, threshold, error type and message |
 | `AuditColumn` | 稽核欄位 | A name/value pair an `AuditEntry` contributes to its INSERT |
-| `NullAuditLogWriter` | 空稽核寫入器 | No-op `IAuditLogWriter` used when audit logging is disabled |
+| `NullAuditLogWriter` | 空寫入器 | No-op writer used when logging is disabled; serves both `IAuditLogWriter` and `IAnomalyLogWriter` |
 | `LoginAuditEntry` | 登入稽核記錄 | Entry for `st_log_login` (login / logout / failure / lockout) |
 | `ChangeAuditEntry` | 異動稽核記錄 | Entry for `st_log_change` (data change, DataSet DiffGram before/after) |
 | `AccessAuditEntry` | 檢視稽核記錄 | Entry for `st_log_access` (record view) |
@@ -273,7 +275,7 @@ See [Temporal Types](temporal-types.md) for the cross-layer reference, and
 | `DatabaseType` | 資料庫類型 | `SQLServer`, `PostgreSQL`, `MySQL`, `Oracle`, `SQLite` |
 | `LoginEvent` | 登入事件 | `LoginSucceeded`, `LoginFailed`, `LockedOut`, `Logout` (recorded in `st_log_login`) |
 | `ChangeKind` | 異動類型 | `Insert`, `Update`, `Delete` (recorded in `st_log_change`) |
-| `AnomalyKind` | 異常類型 | `Error`, `Timeout`, `Slow`, `LargeAffected`, `LargeResult` (recorded in `st_log_anomaly_*`) |
+| `AnomalyKind` | 異常類型 | `Error`, `Timeout`, `Slow`, `LargeAffected`, `LargeResult`, `Unauthorized` (recorded in `st_log_anomaly_*`) |
 
 ---
 

@@ -1,1 +1,36 @@
 #nullable enable
+Bee.Definition.Logging.AnomalyEntry
+Bee.Definition.Logging.AnomalyEntry.AnomalyEntry() -> void
+Bee.Definition.Logging.AnomalyEntry.ElapsedMs.get -> int
+Bee.Definition.Logging.AnomalyEntry.ElapsedMs.init -> void
+Bee.Definition.Logging.AnomalyEntry.ErrorMessage.get -> string?
+Bee.Definition.Logging.AnomalyEntry.ErrorMessage.init -> void
+Bee.Definition.Logging.AnomalyEntry.ErrorType.get -> string?
+Bee.Definition.Logging.AnomalyEntry.ErrorType.init -> void
+Bee.Definition.Logging.AnomalyEntry.Kind.get -> Bee.Definition.Logging.AnomalyKind
+Bee.Definition.Logging.AnomalyEntry.Kind.init -> void
+Bee.Definition.Logging.AnomalyEntry.ThresholdMs.get -> int?
+Bee.Definition.Logging.AnomalyEntry.ThresholdMs.init -> void
+Bee.Definition.Logging.IAnomalyLogWriter
+Bee.Definition.Logging.IAnomalyLogWriter.Write(Bee.Definition.Logging.AnomalyEntry! entry) -> void
+Bee.Definition.Logging.NullAuditLogWriter.Write(Bee.Definition.Logging.AnomalyEntry! entry) -> void
+*REMOVED*Bee.Definition.Logging.ApiAnomalyEntry.ElapsedMs.get -> int
+*REMOVED*Bee.Definition.Logging.ApiAnomalyEntry.ElapsedMs.init -> void
+*REMOVED*Bee.Definition.Logging.ApiAnomalyEntry.ErrorMessage.get -> string?
+*REMOVED*Bee.Definition.Logging.ApiAnomalyEntry.ErrorMessage.init -> void
+*REMOVED*Bee.Definition.Logging.ApiAnomalyEntry.ErrorType.get -> string?
+*REMOVED*Bee.Definition.Logging.ApiAnomalyEntry.ErrorType.init -> void
+*REMOVED*Bee.Definition.Logging.ApiAnomalyEntry.Kind.get -> Bee.Definition.Logging.AnomalyKind
+*REMOVED*Bee.Definition.Logging.ApiAnomalyEntry.Kind.init -> void
+*REMOVED*Bee.Definition.Logging.ApiAnomalyEntry.ThresholdMs.get -> int?
+*REMOVED*Bee.Definition.Logging.ApiAnomalyEntry.ThresholdMs.init -> void
+*REMOVED*Bee.Definition.Logging.DbAnomalyEntry.ElapsedMs.get -> int
+*REMOVED*Bee.Definition.Logging.DbAnomalyEntry.ElapsedMs.init -> void
+*REMOVED*Bee.Definition.Logging.DbAnomalyEntry.ErrorMessage.get -> string?
+*REMOVED*Bee.Definition.Logging.DbAnomalyEntry.ErrorMessage.init -> void
+*REMOVED*Bee.Definition.Logging.DbAnomalyEntry.ErrorType.get -> string?
+*REMOVED*Bee.Definition.Logging.DbAnomalyEntry.ErrorType.init -> void
+*REMOVED*Bee.Definition.Logging.DbAnomalyEntry.Kind.get -> Bee.Definition.Logging.AnomalyKind
+*REMOVED*Bee.Definition.Logging.DbAnomalyEntry.Kind.init -> void
+*REMOVED*Bee.Definition.Logging.DbAnomalyEntry.ThresholdMs.get -> int?
+*REMOVED*Bee.Definition.Logging.DbAnomalyEntry.ThresholdMs.init -> void
