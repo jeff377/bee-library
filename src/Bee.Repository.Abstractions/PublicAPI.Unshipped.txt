@@ -1,1 +1,3 @@
 #nullable enable
+Bee.Repository.Abstractions.AuditLog.IAuditRuleRepository
+Bee.Repository.Abstractions.AuditLog.IAuditRuleRepository.GetRules(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Logging.AuditRule!>!

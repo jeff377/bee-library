@@ -3,9 +3,11 @@ using Bee.Business.Session;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Identity;
+using Bee.Definition.Logging;
 using Bee.Definition.Organization;
 using Bee.Definition.Security;
 using Bee.Definition.Storage;
+using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
 
@@ -123,6 +125,16 @@ namespace Bee.Business.Providers
 
             var rows = _repositoryFactory.Create<IDepartmentRepository>().GetDepartments(company.CompanyDatabaseId);
             return new DepartmentTree(companyId, rows);
+        }
+
+        /// <inheritdoc/>
+        public CompanyAuditRules? GetCompanyAuditRules(string companyId)
+        {
+            var company = GetCompanyInfo(companyId);
+            if (company == null) { return null; }
+
+            var rules = _repositoryFactory.Create<IAuditRuleRepository>().GetRules(company.CompanyDatabaseId);
+            return new CompanyAuditRules(companyId, rules);
         }
 
         /// <inheritdoc/>

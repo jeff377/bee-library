@@ -47,6 +47,7 @@ namespace Bee.Repository.Factories
             [typeof(IRolePermissionRepository)] = typeof(RolePermissionRepository),
             [typeof(IDepartmentRepository)] = typeof(DepartmentRepository),
             [typeof(IEmployeeRepository)] = typeof(EmployeeRepository),
+            [typeof(IAuditRuleRepository)] = typeof(AuditRuleRepository),
             [typeof(IAuditLogRepository)] = typeof(AuditLogRepository),
             [typeof(IAuditLogWriteRepository)] = typeof(AuditLogWriteRepository),
         };

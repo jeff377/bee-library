@@ -80,6 +80,35 @@ namespace Bee.Business.UnitTests.Form
                 TestBeeContext.CreateWithOverrides(_fx, [.. all]), Guid.NewGuid(), ProgId);
         }
 
+        /// <summary>
+        /// Builds a business object bound to the test repository under a caller-supplied access
+        /// token, optionally with a plugin chain and extra service overrides.
+        /// </summary>
+        /// <param name="accessToken">
+        /// The token the BO runs under. The other factory methods mint a throwaway one, which
+        /// resolves to no session — fine until a test needs the session's company, as the per-form
+        /// audit rule lookup does.
+        /// </param>
+        /// <param name="pluginResolver">Optional plugin chain resolver.</param>
+        /// <param name="overrides">Service overrides layered on the fixture's provider.</param>
+        public FormBusinessObject CreateBoWithSession(
+            Guid accessToken,
+            IFormPluginResolver? pluginResolver,
+            params (Type ServiceType, object? Instance)[] overrides)
+        {
+            var all = new List<(Type, object?)>
+            {
+                (typeof(IRepositoryFactory), new StubFactory(_repository))
+            };
+            if (pluginResolver != null)
+            {
+                all.Add((typeof(IFormPluginResolver), pluginResolver));
+            }
+            all.AddRange(overrides);
+            return new FormBusinessObject(
+                TestBeeContext.CreateWithOverrides(_fx, [.. all]), accessToken, ProgId);
+        }
+
         private sealed class StubFactory : IRepositoryFactory
         {
             private readonly IDataFormRepository _repository;

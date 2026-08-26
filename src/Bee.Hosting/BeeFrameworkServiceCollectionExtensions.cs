@@ -336,6 +336,13 @@ namespace Bee.Hosting
             services.AddSingleton<IApiKeyValidator>(sp =>
                 new ApiKeyValidator(sp.GetRequiredService<ICacheContainer>()));
 
+            // Audit rules: per-company snapshot of st_audit_rule, consulted by FormBusinessObject
+            // before writing a change or access entry. Registered unconditionally — the audit
+            // master switch is checked at the call site, not here, so toggling it needs no
+            // re-registration.
+            services.AddSingleton<IAuditRuleService>(sp =>
+                new AuditRuleService(sp.GetRequiredService<ICacheContainer>()));
+
             // Organization: per-company department-tree snapshot cache (record-scope source).
             services.AddSingleton<IDepartmentTreeService>(sp =>
                 new DepartmentTreeService(sp.GetRequiredService<ICacheContainer>()));

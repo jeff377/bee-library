@@ -1,1 +1,2 @@
 #nullable enable
+Bee.Business.Providers.CacheDataSourceProvider.GetCompanyAuditRules(string! companyId) -> Bee.Definition.Logging.CompanyAuditRules?

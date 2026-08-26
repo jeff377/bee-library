@@ -15,11 +15,28 @@ namespace Bee.Business.Form
         #region Audit trail
 
         /// <summary>
-        /// Whether data-change auditing is enabled (global + change category). Resolved through the
+        /// Whether data-change auditing applies to this form. Resolved through the
         /// <see cref="IBeeContext.Services"/> escape hatch; false gates out all capture work.
         /// </summary>
+        /// <remarks>
+        /// Two levels, and only the first is a gate: <see cref="AuditLogOptions.Enabled"/> switches
+        /// the whole subsystem off — short-circuiting before any rule lookup, so a deployment not
+        /// using the audit trail pays nothing — while
+        /// <see cref="AuditLogOptions.ChangeEnabled"/> supplies the value an
+        /// <see cref="AuditRuleMode.Inherit"/> rule defers to. A form declaring
+        /// <see cref="AuditRuleMode.On"/> is therefore recorded even where the deployment default
+        /// is off, which is the point of per-form rules.
+        /// </remarks>
         private bool ChangeAuditEnabled()
-            => Services.GetService<AuditLogOptions>() is { Enabled: true, ChangeEnabled: true };
+        {
+            var options = Services.GetService<AuditLogOptions>();
+            if (options is not { Enabled: true }) { return false; }
+
+            var rule = ResolveAuditRule();
+            return rule == null
+                ? options.ChangeEnabled
+                : rule.ChangeMode.Resolve(options.ChangeEnabled);
+        }
 
         /// <summary>
         /// Reads the master row's key and derives the <see cref="ChangeKind"/> from its state. Must be
@@ -116,17 +133,51 @@ namespace Bee.Business.Form
                 ChangeTableName = masterTableName,
                 RowKey = rowKey,
                 ChangeKind = changeKind,
-                IsSensitive = false,
+                IsSensitive = ResolveAuditRule()?.IsSensitive ?? false,
                 ChangesXml = changesXml,
                 Source = source,
             });
         }
 
         /// <summary>
-        /// Whether read/access auditing is enabled (global + access category).
+        /// Whether read/access auditing applies to this form.
         /// </summary>
+        /// <remarks>
+        /// Same two levels as <see cref="ChangeAuditEnabled"/>. This axis is where per-form rules
+        /// matter most: <see cref="AuditLogOptions.AccessEnabled"/> defaults to off because read
+        /// volume is high, so recording views of one sensitive form is only expressible as a rule.
+        /// </remarks>
         private bool AccessAuditEnabled()
-            => Services.GetService<AuditLogOptions>() is { Enabled: true, AccessEnabled: true };
+        {
+            var options = Services.GetService<AuditLogOptions>();
+            if (options is not { Enabled: true }) { return false; }
+
+            var rule = ResolveAuditRule();
+            return rule == null
+                ? options.AccessEnabled
+                : rule.AccessMode.Resolve(options.AccessEnabled);
+        }
+
+        /// <summary>
+        /// Gets this form's audit rule for the session's company, or <c>null</c> when the form has
+        /// none — which means every axis inherits the deployment default.
+        /// </summary>
+        /// <remarks>
+        /// No company entered also yields <c>null</c>, and correctly so: the rules live in a company
+        /// database, so there is nothing to read before one is chosen.
+        /// <para>
+        /// Reads the company id straight from the session rather than through
+        /// <c>ResolveAuditIdentity</c>, which additionally resolves the company <i>name</i> — work
+        /// this gate has no use for and would pay on every save and every record view.
+        /// </para>
+        /// </remarks>
+        private AuditRule? ResolveAuditRule()
+        {
+            string? companyId = SessionInfoService.Get(AccessToken)?.CompanyId;
+            if (string.IsNullOrEmpty(companyId)) { return null; }
+
+            return Services.GetService<IAuditRuleService>()?.Get(companyId)?.Find(ProgId);
+        }
 
         /// <summary>
         /// Writes an <see cref="AccessAuditEntry"/> recording that the given record was viewed

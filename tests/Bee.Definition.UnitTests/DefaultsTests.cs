@@ -13,7 +13,7 @@ namespace Bee.Definition.UnitTests
     public class DefaultsTests
     {
         // Expected manifest contents after Phase 1.1 migration:
-        // - 17 TableSchemas (7 common + 5 company + 5 log)
+        // - 18 TableSchemas (7 common + 6 company + 5 log)
         // - 2 FormSchemas (Department, Employee)
         // - 2 FormLayouts (Department, Employee)
         // - 4 Language resources (Department/Employee × en-US/zh-TW)
@@ -22,11 +22,11 @@ namespace Bee.Definition.UnitTests
         // - 1 UnitSettings.xml (curated system unit-of-measure master)
         // - 1 SystemSettings.xml (template with sensible defaults)
         // - 1 DatabaseSettings.xml (empty stub — connection strings are deployment-specific)
-        // Total: 30
-        private const int ExpectedEmbeddedCount = 30;
+        // Total: 31
+        private const int ExpectedEmbeddedCount = 31;
 
         [Fact]
-        [DisplayName("ListEmbedded 應回傳 30 個框架預設檔（17 st_* + 2 FormSchema + 2 FormLayout + 4 Language + 1 DbCategorySettings + 1 CurrencySettings + 1 UnitSettings + 1 SystemSettings + 1 DatabaseSettings）")]
+        [DisplayName("ListEmbedded 應回傳 31 個框架預設檔（18 st_* + 2 FormSchema + 2 FormLayout + 4 Language + 1 DbCategorySettings + 1 CurrencySettings + 1 UnitSettings + 1 SystemSettings + 1 DatabaseSettings）")]
         public void ListEmbedded_ReturnsExpectedCount()
         {
             var files = Defaults.ListEmbedded();
@@ -267,8 +267,8 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
-        [DisplayName("MaterializeTo Filter 限縮為 TableSchema 子集應只寫 17 檔")]
-        public void MaterializeTo_FilterTableSchemaOnly_WritesSixteen()
+        [DisplayName("MaterializeTo Filter 限縮為 TableSchema 子集應只寫 TableSchema 檔")]
+        public void MaterializeTo_FilterTableSchemaOnly_WritesTableSchemasOnly()
         {
             var tempDir = CreateTempDir();
             try
@@ -280,7 +280,7 @@ namespace Bee.Definition.UnitTests
 
                 var result = Defaults.MaterializeTo(tempDir, options);
 
-                Assert.Equal(17, result.WrittenCount);
+                Assert.Equal(18, result.WrittenCount);
                 Assert.All(result.WrittenRelativePaths, p => Assert.StartsWith("TableSchema/", p));
             }
             finally

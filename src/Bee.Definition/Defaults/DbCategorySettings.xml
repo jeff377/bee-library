@@ -19,6 +19,7 @@
 				<TableItem TableName="st_role" DisplayName="Role" />
 				<TableItem TableName="st_role_grant" DisplayName="Role grant" />
 				<TableItem TableName="st_user_role" DisplayName="User role" />
+				<TableItem TableName="st_audit_rule" DisplayName="Audit rule" />
 			</Tables>
 		</DbCategory>
 		<DbCategory Id="log" DisplayName="Log database">
