@@ -1,12 +1,12 @@
 # 計畫：per-form 稽核規則（異動 / 檢視改為逐表單可設定）
 
-**狀態：🚧 進行中（2026-08-26）**
+**狀態：✅ 已完成（2026-08-26）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 型別、`st_audit_rule` 表、per-company 快取、BO 消費端（讀取側全通） | ✅ 已完成（2026-08-26） |
 | 2 | 框架內建維護表單（Defaults 定義檔）＋ cache-notify 失效鏈 | ✅ 已完成（2026-08-26） |
-| 3 | 文件（ADR 補記、保留命名、CHANGELOG）與 ADR-027 待辦結案 | 📝 待做 |
+| 3 | 文件（ADR-041 新立、ADR-027/040 補記、術語表）與 ADR-027 待辦結案 | ✅ 已完成（2026-08-26） |
 
 ## 背景
 
@@ -350,14 +350,36 @@ per-form 決議：
 
 ## 階段 3：文件
 
-1. **ADR-027** —— 〈待辦〉第一條結案，改為指向新的決策記錄。
-2. **ADR-040** —— 決策四的「敏感度驅動」「限定入口」補記實作結果與**本次未做到的部分**
-   （欄位層敏感度）。若判定夠格，另立 ADR 記錄 per-form 規則的三態繼承語意。
-3. **[框架保留命名](../framework-reserved-names.zh-TW.md)** —— §1.2 公司資料庫加入
-   `st_audit_rule`、§2 加入保留 ProgId。**雙語兩份都要改。**
-4. **CHANGELOG** —— `docs/changelogs/<version>.md`，並註明相容性（無規則列 = 行為不變）。
-5. **`docs/development-constraints.md`** —— 若新增的 `CompanyAuditRules` 需列入
-   「init 後不可異動」清單，一併補上。
+| 項目 | 狀態 |
+|------|------|
+| **[ADR-041](../adr/adr-041-per-form-audit-rule.md)** —— 新立，收斂七項決策與「明確不納入」清單 | ✅ |
+| **ADR-027** —— 〈待辦〉第一條結案，指向 ADR-041 | ✅ |
+| **ADR-040** —— 決策四補記實作進度，明列欄位層敏感度與動作層維度**未做** | ✅ |
+| **[框架保留命名](../framework-reserved-names.zh-TW.md)** —— §1.2 加表、§2 加 progId，雙語 | ✅（階段 2 一併完成） |
+| **[術語表](../terminology.zh-TW.md)** —— 四個新公開型別，雙語 | ✅ |
+| **CHANGELOG** | ⏸️ **刻意延後至發版** |
+| **`docs/development-constraints.md`** | ❌ **判定不適用** |
+
+### 兩項與原訂不同的處置
+
+**CHANGELOG 延後。** 依 `rules/releasing.md`，CHANGELOG 與版號檔屬**發版流程**
+（`/dev-workflow:release`）的一部分，且根 `CHANGELOG.md` 沒有 Unreleased 段、
+版本區塊是發版當下才寫。現在建一個 `docs/changelogs/4.25.0.md` 等於預設了版號。
+發版時再補，內容至少要涵蓋：無規則列即現行行為（零破壞）、維護表單 fail-closed
+需先授權、以及升級前部署沒有 `st_audit_rule` 時視同無規則。
+
+**`development-constraints.md` 當時不適用。** 該檔該章的 Scope 原本明定為
+「Anything reached through `IDefineAccess.GetX(...)`」，而 `CompanyAuditRules` 是
+**資料庫相依快取**（經 `ICacheDataSourceProvider`），不走 `IDefineAccess`。
+既有的 `CompanyRolePermissions` / `DepartmentTree` 同樣不在該清單裡，
+只補 `CompanyAuditRules` 反而不一致。本次的防護因此落在
+[`CompanyAuditRules`](../../src/Bee.Definition/Logging/CompanyAuditRules.cs) 的
+XML doc `WARNING` 上。
+
+> **順帶發現的既有缺口（已另案補齊）**：該章原本完全沒有涵蓋 DB 相依快取，
+> 但不可異動的要求對它們一樣成立。該案已完成 —— 該章改名為
+> 〈Cached Data Immutability After Init〉，Scope 拆成「定義檔快取」與
+> 「資料庫相依快取」兩類，七個 DB 快取型別全數納入並補上 XML doc `WARNING`。
 
 ## 相容性
 

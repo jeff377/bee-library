@@ -51,7 +51,7 @@
 - **正面**：可回溯的業務資料軌跡（登入 / 異動含新舊值與 delete before-image / 檢視 / 異常）；一致的 opt-in、best-effort、去正規化自足、安全消毒設計；量體受控（檢視敏感度驅動、異常只記問題）。
 - **取捨**：異動記錄以「簡潔 + 可還原顯示」換取「欄位級 SQL 查詢力」（有需要再開選配 EAV）；best-effort 有極小漏失窗口（有需要再升 transactional outbox，entry / schema 不變）。
 - **相關**：系統表登記見 [framework-reserved-names §1.3](../framework-reserved-names.md)；`DbScope.Log` 路由見 [ADR-010](adr-010-logical-database-category.md)；DataForm Save 管線見 [ADR-024](adr-024-dataform-save-dataadapter.md)。
-- **待辦**：per-form 稽核規則（Odoo `auditlog.rule` 式的 admin 執行期選單，涵蓋異動 + 檢視；目前全記所有表單）；`ExecuteBatch` / `UpdateDataTables` 的 DB 異常偵測（目前僅 `Execute` 主路徑）；`st_cache_notify` 既有 SQL Server 升級 idempotency bug（另案）。
+- **待辦**：~~per-form 稽核規則~~（**已實作，見 [ADR-041](adr-041-per-form-audit-rule.md)**）；`ExecuteBatch` / `UpdateDataTables` 的 DB 異常偵測（目前僅 `Execute` 主路徑）；`st_cache_notify` 既有 SQL Server 升級 idempotency bug（另案）。
 
 ## 後記（2026-08-07）：診斷日誌的型別已變
 

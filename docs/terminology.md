@@ -91,6 +91,10 @@ This document provides a standard term reference for technical writing, ensuring
 | `ApiAnomalyEntry` | API 異常記錄 | Entry for `st_log_anomaly_api` (API error / timeout / slow) |
 | `DbAnomalyEntry` | DB 異常記錄 | Entry for `st_log_anomaly_db` (DB error / timeout / slow / large-row) |
 | `AuditLogOptions` | 稽核日誌選項 | Opt-in audit-log configuration (per-axis enable, background writer, thresholds) on `BackendConfiguration` |
+| `AuditRuleMode` | 稽核規則三態 | Per-form switch for one audit axis: `Inherit` (defer to the deployment default), `On`, `Off`. Persisted as an integer, `Inherit` = 0 |
+| `AuditRule` | 稽核規則 | One form's rule row from `st_audit_rule`: which axes are recorded for that progId, and whether its entries are marked sensitive |
+| `CompanyAuditRules` | 公司稽核規則快照 | One company's whole rule table, indexed by progId. Cached per company rather than per form, because most forms carry no rule at all |
+| `IAuditRuleService` | 稽核規則服務 | Access service fronting the per-company rule cache; consulted before writing a change or access entry |
 
 ### Definition Access
 

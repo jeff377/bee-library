@@ -91,6 +91,10 @@
 | `ApiAnomalyEntry` | API 異常記錄 | `st_log_anomaly_api` 的記錄（API 錯誤 / 逾時 / 過久） |
 | `DbAnomalyEntry` | DB 異常記錄 | `st_log_anomaly_db` 的記錄（DB 錯誤 / 逾時 / 過久 / 大量列數） |
 | `AuditLogOptions` | 稽核日誌選項 | opt-in 稽核日誌設定（各軸開關、背景寫入、門檻），掛在 `BackendConfiguration` |
+| `AuditRuleMode` | 稽核規則三態 | 單一稽核軸的逐表單開關：`Inherit`（沿用部署預設）／`On`／`Off`。以整數持久化，`Inherit` = 0 |
+| `AuditRule` | 稽核規則 | `st_audit_rule` 的單筆規則：該 progId 的哪些軸要記錄，以及其紀錄是否標為敏感 |
+| `CompanyAuditRules` | 公司稽核規則快照 | 一家公司的整張規則表，以 progId 索引。以公司為單位快取而非逐表單，因為多數表單根本沒有規則列 |
+| `IAuditRuleService` | 稽核規則服務 | per-company 規則快取的存取服務；寫出異動或檢視紀錄前先問它 |
 
 ### 定義存取
 
