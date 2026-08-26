@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Base.Serialization;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
+using Bee.Definition.Language;
 using Bee.Definition.Settings;
 
 namespace Bee.Definition.UnitTests
@@ -14,19 +15,20 @@ namespace Bee.Definition.UnitTests
     {
         // Expected manifest contents after Phase 1.1 migration:
         // - 18 TableSchemas (7 common + 6 company + 5 log)
-        // - 2 FormSchemas (Department, Employee)
-        // - 2 FormLayouts (Department, Employee)
-        // - 4 Language resources (Department/Employee × en-US/zh-TW)
+        // - 3 FormSchemas (Department, Employee, AuditRule)
+        // - 3 FormLayouts (Department, Employee, AuditRule)
+        // - 6 Language resources (Department/Employee/AuditRule × en-US/zh-TW)
         // - 1 DbCategorySettings.xml (minimal — st_* only, no ft_project)
         // - 1 CurrencySettings.xml (curated system currency master)
         // - 1 UnitSettings.xml (curated system unit-of-measure master)
         // - 1 SystemSettings.xml (template with sensible defaults)
         // - 1 DatabaseSettings.xml (empty stub — connection strings are deployment-specific)
-        // Total: 31
-        private const int ExpectedEmbeddedCount = 31;
+        // - 1 PermissionModels.xml (registry seeded with the framework's own AuditRule model)
+        // Total: 36
+        private const int ExpectedEmbeddedCount = 36;
 
         [Fact]
-        [DisplayName("ListEmbedded 應回傳 31 個框架預設檔（18 st_* + 2 FormSchema + 2 FormLayout + 4 Language + 1 DbCategorySettings + 1 CurrencySettings + 1 UnitSettings + 1 SystemSettings + 1 DatabaseSettings）")]
+        [DisplayName("ListEmbedded 應回傳 36 個框架預設檔（18 st_* + 3 FormSchema + 3 FormLayout + 6 Language + 1 DbCategorySettings + 1 CurrencySettings + 1 UnitSettings + 1 SystemSettings + 1 DatabaseSettings + 1 PermissionModels）")]
         public void ListEmbedded_ReturnsExpectedCount()
         {
             var files = Defaults.ListEmbedded();
@@ -61,6 +63,54 @@ namespace Bee.Definition.UnitTests
             var files = Defaults.ListEmbedded();
 
             Assert.Contains(expected, files);
+        }
+
+        [Fact]
+        [DisplayName("OpenEmbedded 對 AuditRule.FormSchema.xml 應帶出權限模型與語系化下拉來源")]
+        public void OpenEmbedded_AuditRuleFormSchema_DeclaresPermissionModelAndLangEnum()
+        {
+            var schema = XmlCodec.Deserialize<FormSchema>(ReadEmbedded("FormSchema/AuditRule.FormSchema.xml"));
+
+            Assert.NotNull(schema);
+            Assert.Equal("AuditRule", schema!.ProgId);
+            Assert.Equal("company", schema.CategoryId);
+            // 稽核政策是特權操作，是框架自帶表單中唯一宣告權限模型的一張。
+            Assert.Equal("AuditRule", schema.PermissionModelId);
+
+            var fields = schema.MasterTable!.Fields!;
+            Assert.Equal("AuditRuleMode", fields["change_mode"]!.LangEnumName);
+            Assert.Equal("AuditRuleMode", fields["access_mode"]!.LangEnumName);
+        }
+
+        [Theory]
+        [InlineData("zh-TW")]
+        [InlineData("en-US")]
+        [DisplayName("AuditRule 語系檔應含三態下拉的 AuditRuleMode enum")]
+        public void OpenEmbedded_AuditRuleLanguage_HasThreeStateEnum(string lang)
+        {
+            var resource = XmlCodec.Deserialize<LanguageResource>(
+                ReadEmbedded($"Language/{lang}/AuditRule.Language.xml"));
+
+            Assert.NotNull(resource);
+            var modes = resource!.GetEnum("AuditRuleMode");
+
+            Assert.NotNull(modes);
+            // 三個 code 必須對上 AuditRuleMode 的持久化值，錯一個下拉就選不到對的東西。
+            Assert.Equal(["0", "1", "2"], modes!.Entries.Select(e => e.Code));
+            Assert.All(modes.Entries, e => Assert.False(string.IsNullOrWhiteSpace(e.Text)));
+        }
+
+        [Fact]
+        [DisplayName("OpenEmbedded 對 PermissionModels.xml 應帶出框架自用的 AuditRule 模型")]
+        public void OpenEmbedded_PermissionModels_ContainsAuditRuleModel()
+        {
+            var models = XmlCodec.Deserialize<PermissionModels>(ReadEmbedded("PermissionModels.xml"));
+
+            Assert.NotNull(models);
+            var model = models!.Models!["AuditRule"];
+
+            Assert.NotNull(model);
+            Assert.Contains(model!.Rules!, r => r.Action == PermissionAction.Update);
         }
 
         [Fact]

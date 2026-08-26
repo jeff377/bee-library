@@ -2,6 +2,7 @@ using System.Data;
 using Bee.Base;
 using Bee.Db;
 using Bee.Db.Manager;
+using Bee.Definition.Database;
 using Bee.Definition.Logging;
 using Bee.Repository.Abstractions.AuditLog;
 
@@ -70,5 +71,34 @@ namespace Bee.Repository.AuditLog
             }
             return list;
         }
+
+        /// <inheritdoc/>
+        public void NotifyRulesChanged(string companyId)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
+            if (Context.CacheNotify == null) { return; }
+
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            using var connection = Context.ConnectionManager.CreateConnection(DbCategoryIds.Common);
+            connection.Open();
+            using var transaction = connection.BeginTransaction();
+
+            Context.CacheNotify.Touch(NotifyKey(companyId), transaction, dbType);
+
+            transaction.Commit();
+        }
+
+        /// <summary>
+        /// Builds the cache-notify key for a company's rule snapshot.
+        /// </summary>
+        /// <param name="companyId">The company business id.</param>
+        /// <remarks>
+        /// WARNING: must match the key the cached entry carries, which
+        /// <c>KeyObjectCache.CacheGroup</c> derives from the cached type's name. Renaming
+        /// <see cref="CompanyAuditRules"/> silently breaks invalidation — the bump lands on a key
+        /// nothing depends on, and every process keeps serving stale rules.
+        /// </remarks>
+        private static string NotifyKey(string companyId)
+            => $"{nameof(CompanyAuditRules)}:{companyId}";
     }
 }

@@ -13,9 +13,10 @@ namespace Bee.Repository.UnitTests
     /// 這是 per-form 稽核規則唯一的真實回歸風險——**升級前既有的部署沒有這張表**，
     /// 若讀不到就拋例外，每一次 Save 都會炸。
     /// <para>
-    /// 測試環境本身就是那個狀態：<c>tests/Define/DbCategorySettings.xml</c> 未登記
-    /// <c>st_audit_rule</c>，所以 seeder 不會建它。**若日後有人把它加進測試定義，本測試會失去意義
-    /// 而非失敗**，屆時要改為顯式 DROP 後再驗。
+    /// 探測對象刻意指向 <b>common</b> 資料庫：<c>st_audit_rule</c> 是 company scope 的表，
+    /// 結構上永遠不會出現在 common。早期版本改為指向 company 並依賴「測試定義沒登記這張表」，
+    /// 那種寫法在有人把它補進 <c>tests/Define</c> 時會**靜默失去意義而不是失敗**——
+    /// 而那正好已經發生了。
     /// </para>
     /// <para>
     /// 逐一涵蓋五種 provider：判斷表是否存在走的是各家自己的 <c>TableSchemaProvider</c>，
@@ -34,7 +35,7 @@ namespace Bee.Repository.UnitTests
 
         private void RunMissingTable(DatabaseType dbType)
         {
-            var databaseId = TestDbConventions.GetDatabaseId(dbType, "company");
+            var databaseId = TestDbConventions.GetDatabaseId(dbType, "common");
 
             var rules = CreateRepo().GetRules(databaseId);
 

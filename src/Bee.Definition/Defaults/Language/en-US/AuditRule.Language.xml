@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="AuditRule" Lang="en-US">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="Audit Rule" />
+    <LanguageItem Key="Table.AuditRule.DisplayName" Value="Audit Rule" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="Sequence No." />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="Row Id" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="Program Id" />
+    <LanguageItem Key="Field.sys_name.Caption" Value="Form Name" />
+    <LanguageItem Key="Field.change_mode.Caption" Value="Change Log" />
+    <LanguageItem Key="Field.access_mode.Caption" Value="Access Log" />
+    <LanguageItem Key="Field.is_sensitive.Caption" Value="Sensitive" />
+    <LanguageItem Key="Field.remark.Caption" Value="Remark" />
+    <LanguageItem Key="Field.sys_insert_time.Caption" Value="Created At" />
+  </Items>
+  <Enums>
+    <LanguageEnum Name="AuditRuleMode">
+      <Entry Code="0" Text="Inherit" />
+      <Entry Code="1" Text="On" />
+      <Entry Code="2" Text="Off" />
+    </LanguageEnum>
+  </Enums>
+</LanguageResource>

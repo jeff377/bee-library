@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Per-form audit rules. One row per form (sys_id = ProgId); a form with no row inherits the
+  deployment-wide defaults, which is why an empty table reproduces the pre-rule behaviour exactly.
+
+  `remark` is nullable against the framework default that text columns are NOT NULL. This is the
+  documented Oracle exception: Oracle treats '' as NULL, so VARCHAR2(n) DEFAULT '' NOT NULL is
+  self-contradictory and an INSERT omitting the column fails with ORA-01400 on a fresh CREATE.
+  Revert to NOT NULL once the Oracle dialect handles empty-string defaults.
+-->
+<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="st_audit_rule" DisplayName="稽核規則">
+  <Fields>
+    <DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
+    <DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
+    <DbField FieldName="sys_id" Caption="表單代碼" DbType="String" Length="50" />
+    <DbField FieldName="sys_name" Caption="表單名稱" DbType="String" Length="100" />
+    <DbField FieldName="change_mode" Caption="異動記錄" DbType="Integer" DefaultValue="0" />
+    <DbField FieldName="access_mode" Caption="檢視記錄" DbType="Integer" DefaultValue="0" />
+    <DbField FieldName="is_sensitive" Caption="敏感資料" DbType="Boolean" DefaultValue="0" />
+    <DbField FieldName="remark" Caption="備註" DbType="String" Length="255" AllowNull="true" />
+    <DbField FieldName="sys_insert_time" Caption="寫入時間" DbType="DateTime" />
+  </Fields>
+  <Indexes>
+    <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+      <IndexFields>
+        <IndexField FieldName="sys_no" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="rx_{0}" Unique="true">
+      <IndexFields>
+        <IndexField FieldName="sys_rowid" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="uk_{0}" Unique="true">
+      <IndexFields>
+        <IndexField FieldName="sys_id" />
+      </IndexFields>
+    </DbTableIndex>
+  </Indexes>
+</TableSchema>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="AuditRule" Lang="zh-TW">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="稽核規則" />
+    <LanguageItem Key="Table.AuditRule.DisplayName" Value="稽核規則" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="流水號" />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="唯一識別" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="表單代碼" />
+    <LanguageItem Key="Field.sys_name.Caption" Value="表單名稱" />
+    <LanguageItem Key="Field.change_mode.Caption" Value="異動記錄" />
+    <LanguageItem Key="Field.access_mode.Caption" Value="檢視記錄" />
+    <LanguageItem Key="Field.is_sensitive.Caption" Value="敏感資料" />
+    <LanguageItem Key="Field.remark.Caption" Value="備註" />
+    <LanguageItem Key="Field.sys_insert_time.Caption" Value="寫入時間" />
+  </Items>
+  <Enums>
+    <LanguageEnum Name="AuditRuleMode">
+      <Entry Code="0" Text="沿用預設" />
+      <Entry Code="1" Text="記錄" />
+      <Entry Code="2" Text="不記錄" />
+    </LanguageEnum>
+  </Enums>
+</LanguageResource>

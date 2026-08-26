@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Permission model registry — one file per deployment, listing every authorizable target model
+  with the actions it supports and each action's default record-scope strategy.
+
+  Shipped with the single model the framework itself requires: `AuditRule`, declared by
+  AuditRule.FormSchema.xml. Enforcement is fail-closed, so the model must also be granted to a
+  role (st_role_grant) before anyone can maintain audit rules — registering it here is necessary
+  but not sufficient.
+
+  Add one PermissionModel per aggregate root the deployment wants to authorize. A form opts in by
+  setting FormSchema.PermissionModelId; a form that leaves it empty is not permission-checked.
+-->
+<PermissionModels xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Models>
+    <PermissionModel ModelId="AuditRule" DisplayName="稽核規則">
+      <Rules>
+        <PermissionRule Action="Create" />
+        <PermissionRule Action="Read" />
+        <PermissionRule Action="Update" />
+        <PermissionRule Action="Delete" />
+      </Rules>
+    </PermissionModel>
+  </Models>
+</PermissionModels>

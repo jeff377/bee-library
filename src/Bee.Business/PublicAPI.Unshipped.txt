@@ -1,2 +1,6 @@
 #nullable enable
+Bee.Business.AuditLog.AuditRuleBusinessObject
+Bee.Business.AuditLog.AuditRuleBusinessObject.AuditRuleBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId) -> void
 Bee.Business.Providers.CacheDataSourceProvider.GetCompanyAuditRules(string! companyId) -> Bee.Definition.Logging.CompanyAuditRules?
+override Bee.Business.AuditLog.AuditRuleBusinessObject.DoAfterDelete(Bee.Business.Form.DeleteContext! context) -> void
+override Bee.Business.AuditLog.AuditRuleBusinessObject.DoAfterSave(Bee.Business.Form.SaveContext! context) -> void

@@ -1,5 +1,6 @@
 using Bee.Base;
 using Bee.Business.AuditLog;
+using Bee.Business.Form;
 using Bee.Business.System;
 using Bee.Definition;
 
@@ -19,6 +20,7 @@ namespace Bee.Business
         [
             new(SysProgIds.System, typeof(SystemBusinessObject), typeof(SystemBusinessObject)),
             new(SysProgIds.AuditLog, typeof(LogBusinessObject), typeof(LogBusinessObject)),
+            new(SysProgIds.AuditRule, typeof(AuditRuleBusinessObject), typeof(FormBusinessObject)),
         ];
 
         /// <summary>

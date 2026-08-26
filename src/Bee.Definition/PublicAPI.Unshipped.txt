@@ -26,6 +26,7 @@ Bee.Definition.Logging.CompanyAuditRules.Find(string! progId) -> Bee.Definition.
 Bee.Definition.Logging.IAuditRuleService
 Bee.Definition.Logging.IAuditRuleService.Get(string! companyId) -> Bee.Definition.Logging.CompanyAuditRules?
 Bee.Definition.Logging.IAuditRuleService.Remove(string! companyId) -> void
+const Bee.Definition.SysProgIds.AuditRule = "AuditRule" -> string!
 override Bee.Definition.Logging.AuditRule.Equals(object? obj) -> bool
 override Bee.Definition.Logging.AuditRule.GetHashCode() -> int
 override Bee.Definition.Logging.AuditRule.ToString() -> string!

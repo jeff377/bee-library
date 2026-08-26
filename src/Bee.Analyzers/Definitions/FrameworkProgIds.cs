@@ -23,7 +23,7 @@ namespace Bee.Analyzers.Definitions
         /// <summary>
         /// All program identifiers with a framework-supplied form schema.
         /// </summary>
-        public static readonly ImmutableArray<string> All = ImmutableArray.Create("Department", "Employee");
+        public static readonly ImmutableArray<string> All = ImmutableArray.Create("AuditRule", "Department", "Employee");
 
         /// <summary>
         /// Determines whether the framework supplies a form schema for the specified program identifier.

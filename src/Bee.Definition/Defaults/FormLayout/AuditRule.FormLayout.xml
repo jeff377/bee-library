@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="AuditRule" ProgId="AuditRule" Caption="稽核規則">
+  <Sections>
+    <LayoutSection Name="Main" Caption="稽核規則">
+      <Fields>
+        <LayoutField FieldName="sys_no" Caption="流水號" />
+        <LayoutField FieldName="sys_rowid" Caption="唯一識別" />
+        <LayoutField FieldName="sys_id" Caption="表單代碼" />
+        <LayoutField FieldName="sys_name" Caption="表單名稱" />
+        <LayoutField FieldName="change_mode" Caption="異動記錄" />
+        <LayoutField FieldName="access_mode" Caption="檢視記錄" />
+        <LayoutField FieldName="is_sensitive" Caption="敏感資料" />
+        <LayoutField FieldName="remark" Caption="備註" />
+        <LayoutField FieldName="sys_insert_time" Caption="寫入時間" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+</FormLayout>

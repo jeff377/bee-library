@@ -37,6 +37,7 @@
 | `st_user_role` | 使用者↔角色綁定。 |
 | `st_department` | 組織部門。 |
 | `st_employee` | 員工（連結 common DB 的 `st_user` 至 per-company 的組織位置）。 |
+| `st_audit_rule` | per-form 稽核規則（哪些表單要記異動／檢視，見 [ADR-027](adr/adr-027-audit-trail.md)）。 |
 
 > `st_department` / `st_employee` 雖位於公司資料庫，但仍是 **框架所有**（record-scope 與組織樹功能所需），不是業務資料。Per-company 業務表請使用 `ft_` 前綴。
 
@@ -73,6 +74,7 @@
 |--------|-------|------|
 | `Department` | `st_department` | 部門維護表單。 |
 | `Employee` | `st_employee` | 員工維護表單。 |
+| `AuditRule` | `st_audit_rule` | 稽核規則維護表單。**唯一宣告 `PermissionModelId` 的框架預設 form** —— 稽核政策是特權操作，enforcement 為 fail-closed，需先授權才能使用。 |
 
 每個 form progId 共通繼承的 FormBO action 清單見 [API 方法參考 §軸：Form](api-method-reference.zh-TW.md)。
 

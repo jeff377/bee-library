@@ -37,6 +37,7 @@ The `st_` prefix means "framework-owned table". It is **orthogonal to which data
 | `st_user_role` | User-to-role bindings. |
 | `st_department` | Organisational departments. |
 | `st_employee` | Employees (links a common-DB `st_user` to a per-company organisational position). |
+| `st_audit_rule` | Per-form audit rules (which forms record changes / views, see [ADR-027](adr/adr-027-audit-trail.md)). |
 
 > `st_department` / `st_employee` live in the company database despite their `st_` prefix — they are **framework-owned** (the record-scope and organisation tree features need them), not business data. Per-company business tables should use the `ft_` prefix.
 
@@ -73,6 +74,7 @@ The framework ships these forms as part of its organisation / record-scope featu
 |--------|---------------|---------|
 | `Department` | `st_department` | Department maintenance form. |
 | `Employee` | `st_employee` | Employee maintenance form. |
+| `AuditRule` | `st_audit_rule` | Audit rule maintenance form. **The only framework-shipped form that declares a `PermissionModelId`** — audit policy is a privileged operation, and enforcement is fail-closed, so the model must be granted before the form can be used. |
 
 See [API Method Reference §Axis: Form](api-method-reference.md#axis-form-formbusinessobject) for the standard FormBO actions inherited by every form progId.
 

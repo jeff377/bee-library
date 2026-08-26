@@ -173,11 +173,35 @@ namespace Bee.Business.Form
         /// </remarks>
         private AuditRule? ResolveAuditRule()
         {
+            if (IsAuditPolicyForm) { return s_auditPolicyRule; }
+
             string? companyId = SessionInfoService.Get(AccessToken)?.CompanyId;
             if (string.IsNullOrEmpty(companyId)) { return null; }
 
             return Services.GetService<IAuditRuleService>()?.Get(companyId)?.Find(ProgId);
         }
+
+        /// <summary>
+        /// Whether this instance is the audit-policy maintenance form itself.
+        /// </summary>
+        private bool IsAuditPolicyForm
+            => string.Equals(ProgId, SysProgIds.AuditRule, StringComparison.Ordinal);
+
+        /// <summary>
+        /// The rule the audit-policy form is held to: both axes recorded, always sensitive, and not
+        /// reachable from the rule table.
+        /// </summary>
+        /// <remarks>
+        /// IMPORTANT: this exemption is what stops the policy from switching off its own trail.
+        /// Were the form governed by an ordinary row, anyone able to edit it could set that row to
+        /// <see cref="AuditRuleMode.Off"/>, then silence any other form with nothing recording that
+        /// they had — the loophole closes on itself. Deliberately parallel to
+        /// <c>SystemBusinessObject.DeploymentAuditEnabled</c>, which likewise answers only to the
+        /// master switch: a deployment with auditing on cannot opt out of recording who granted
+        /// capability, and audit policy is exactly that kind of grant.
+        /// </remarks>
+        private static readonly AuditRule s_auditPolicyRule =
+            new(SysProgIds.AuditRule, AuditRuleMode.On, AuditRuleMode.On, IsSensitive: true);
 
         /// <summary>
         /// Writes an <see cref="AccessAuditEntry"/> recording that the given record was viewed
