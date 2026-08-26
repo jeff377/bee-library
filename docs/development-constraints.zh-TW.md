@@ -27,23 +27,53 @@
 
 `tests/Bee.Tests.Shared/TestProcessBootstrap.cs` 展示測試 process 的正確初始化順序。
 
-## 定義資料初始化後不可異動
+## 快取資料初始化後不可異動
 
-框架初始化完成後，**所有伺服端 cache 內的定義資料一律為唯讀，執行期間不可
-被異動**。每個 session 透過 `IDefineAccess` / `ICacheContainer` 共用同一份
-in-memory 實例，cache 為 process-wide；對單一 session 做的調整會洩漏到其他
-所有 session，並行的 mutation 會競態。
+框架初始化完成後，**所有伺服端 cache 內的物件一律為唯讀，執行期間不可被
+異動**。每個 session 從 process-wide 的 `ICacheContainer` 拿到的是同一份
+in-memory 實例；對單一 session 做的調整會洩漏到其他所有 session，並行的
+mutation 會競態。
 
-### 適用範圍
+這條規則的成立理由是「cache 為共用」，與資料從哪裡載入無關。因此下面兩類
+都適用 —— 從定義檔載入的定義資料，以及從資料庫載入的快照。
+
+### 適用範圍：定義檔快取
 
 任何透過 `IDefineAccess.GetX(...)` 取得的物件（由同名 `ICacheContainer` slot
 back-up）：
 
 - `FormSchema`、`FormLayout`、`TableSchema`
 - `SystemSettings`、`DatabaseSettings`、`ProgramSettings`、`DbCategorySettings`
+- `MenuSettings`、`PluginSettings`、`PermissionModels`、`CurrencySettings`、
+  `UnitSettings`
 - `LanguageResource`
-- `SessionInfo` 是刻意保留的例外 —— 它本來就是 per-session 實體、非共用
-  定義資料，cache key 即 access token
+
+### 適用範圍：資料庫相依快取
+
+這類經 `ICacheDataSourceProvider` 載入（而非 `IDefineAccess`），失效走共用的
+cache-notify 表（而非 `SaveX` 呼叫）—— 但它們同樣存在於 process-wide 的
+`ICacheContainer`、同樣被所有 session 共用，所以同一條禁令一體適用。取用管道
+是 `ICacheContainer` slot 或包裝它的服務（`ICompanyInfoService`、
+`IRolePermissionService`、`IDepartmentTreeService`、`IAuditRuleService`、
+`IApiKeyValidator`）：
+
+| 快取型別 | `ICacheContainer` slot | cache key |
+|---------|------------------------|-----------|
+| `CompanyInfo` | `CompanyInfo` | 公司 id |
+| `CompanyRolePermissions` | `CompanyRolePermissions` | 公司 id |
+| `DepartmentTree` | `DepartmentTree` | 公司 id |
+| `CompanyAuditRules` | `CompanyAuditRules` | 公司 id |
+| `ApiKeyInfo` | `ApiKey` | 金鑰 `sys_id` |
+| `ApiKeyGateState` | `ApiKeyGate` | `ApiKeyGateState.CacheKey` |
+
+其中 `CompanyAuditRules` 與 `CompanyRolePermissions` 由結構本身保證 —— 不公開
+任何 setter，索引在建構子內一次建好。另外四個因為同時要跨 wire 而帶有 public
+setter，這條規則在它們身上編譯器管不到；請把 cache 交給你的實例一律視為凍結。
+
+### 唯一的例外
+
+`SessionInfo` 是刻意保留的例外 —— 它本來就是 per-session 實體、非共用資料，
+cache key 即 access token。
 
 ### 禁止樣式
 
@@ -62,20 +92,30 @@ back-up）：
   FormSchemaLocalizer.Localize(customised, sessionLang);
   return customised;
   ```
-- **持久化變更**走 `IDefineAccess.SaveX(...)`：
+- **定義資料的持久化變更**走 `IDefineAccess.SaveX(...)`：
   1. 寫入後端 storage
   2. invalidate cache slot，下一次 `GetX` 從 storage rebuild
+- **資料庫相依資料的持久化變更**走所屬 repository 加上一筆 cache-notify 記錄，
+  由 poller 在每個 process 失效該 slot。這類**沒有** `SaveX`；只寫了資料列卻
+  漏掉 notify 記錄，會讓所有 process 繼續拿舊快照。
 - **需要 deep copy？** 用該類型的 `Clone()` 方法（已提供於 `FormSchema` /
   `FormTable` / `FormField` / `TableSchema` / `DatabaseSettings` 等）。
   **不可**用 `XmlCodec` round-trip 替代 —— 它會在來源 mutate state。
+  **資料庫相依的那幾個型別沒有 `Clone()`** —— 它們是拿來讀的快照，不是拿來
+  客製的。需要 per-session 變體時，把要用的值複製進自己的物件，不要為此補一個
+  `Clone()` 再去 mutate。
 
 ### 為什麼這條重要
 
 Bee.NET 設計用於多租戶 ASP.NET Core / Blazor Server host：單一 process 同時
 服務眾多 session，每個 session 可能有不同語系與租戶 context。Cache 是
 singleton；序列化生命週期 hook 讓即使是「讀取性質」的 `XmlCodec.Serialize`
-對共用狀態也非冪等。**「定義資料 init 後不可異動」**這條 invariant 是讓
+對共用狀態也非冪等。**「快取資料載入後不可異動」**這條 invariant 是讓
 所有 session 能安全共用 cache 實例、無需協調的單一基礎規則。
+
+資料庫相依快取只會把賭注放大、不會縮小：它們持有的是授權狀態。被 mutate 的
+`CompanyRolePermissions` 或 `DepartmentTree` 不只是讓某個 session 看到錯的
+標題 —— 它會在其他 session 上放行或擋掉存取。
 
 ## 跨層禁止事項
 

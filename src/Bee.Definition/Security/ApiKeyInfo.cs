@@ -15,6 +15,12 @@ namespace Bee.Definition.Security
     /// <see cref="ExpiredAt"/> is checked on every validation rather than through cache expiry, so
     /// a key stops working the moment it expires regardless of how long it stays cached.
     /// </para>
+    /// <para>
+    /// WARNING: this is a cache-shared instance. It must not be mutated after it is loaded — every
+    /// caller presenting the same key receives the same reference, and this record decides whether
+    /// the call is authenticated. The setters exist for the serializers, not for callers. See
+    /// <c>docs/development-constraints.md</c> § <i>Cached Data Immutability After Init</i>.
+    /// </para>
     /// </remarks>
     public class ApiKeyInfo : IKeyObject
     {

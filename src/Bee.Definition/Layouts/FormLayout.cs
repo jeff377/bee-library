@@ -149,7 +149,7 @@ namespace Bee.Definition.Layouts
         /// <remarks>
         /// Layouts obtained through <c>IDefineAccess</c> are process-wide cached instances shared
         /// by every session — clone before mutating. See
-        /// <c>docs/development-constraints.md</c> § <i>Definition Data Immutability After Init</i>.
+        /// <c>docs/development-constraints.md</c> § <i>Cached Data Immutability After Init</i>.
         /// </remarks>
         public FormLayout Clone()
         {

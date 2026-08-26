@@ -98,7 +98,7 @@ namespace Bee.Definition.Customization
         /// <para>
         /// The merged entry is always a new instance: both inputs come from a process-wide
         /// definition cache and must never be mutated (see <c>docs/development-constraints.md</c>,
-        /// Definition Data Immutability After Init). When only one layer declares the progId that
+        /// Cached Data Immutability After Init). When only one layer declares the progId that
         /// layer's own instance is returned as-is — there is nothing to merge, and callers only read.
         /// </para>
         /// </remarks>

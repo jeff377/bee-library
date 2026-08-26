@@ -185,7 +185,7 @@ Two things that are easy to conflate:
 
 Everything obtained through `IDefineAccess.GetX(...)` is a **process-wide cached instance** shared by every session. Mutating one at runtime leaks across sessions. Clone before modifying, and persist changes through `IDefineAccess.SaveX(...)`, which writes to storage and invalidates the cache slot.
 
-See [Development Constraints § Definition Data Immutability After Init](development-constraints.md) for the full rule.
+See [Development Constraints § Cached Data Immutability After Init](development-constraints.md) for the full rule.
 
 ### Storage is pluggable
 

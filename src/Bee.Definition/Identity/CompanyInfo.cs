@@ -14,6 +14,13 @@ namespace Bee.Definition.Identity
     /// isolation. The log database is shared across all companies under a fixed
     /// <c>"log"</c> databaseId (see <c>DbScope.Log</c>), so there is no per-company
     /// log database id property.
+    /// <para>
+    /// WARNING: this is a cache-shared instance. It must not be mutated after it is loaded — every
+    /// session in the company receives the same reference, and <see cref="CompanyDatabaseId"/>
+    /// selects which database that company's repositories read and write, so a mutation redirects
+    /// other sessions' data access. The setters exist for the serializers, not for callers. See
+    /// <c>docs/development-constraints.md</c> § <i>Cached Data Immutability After Init</i>.
+    /// </para>
     /// </remarks>
     public class CompanyInfo : IKeyObject
     {

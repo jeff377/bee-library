@@ -39,7 +39,7 @@ namespace Bee.Business
     /// the cached <see cref="ProgramSettings"/> is what lets a read-only deployment start at all —
     /// the registration result takes part in resolution whether or not the file write succeeded,
     /// and the process-wide cache instance is never mutated (see
-    /// <c>docs/development-constraints.md</c>, Definition Data Immutability After Init).
+    /// <c>docs/development-constraints.md</c>, Cached Data Immutability After Init).
     /// </para>
     /// <para>
     /// When a non-empty customization code is supplied, the customization

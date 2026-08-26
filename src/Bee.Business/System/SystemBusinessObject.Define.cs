@@ -213,7 +213,7 @@ namespace Bee.Business.System
         /// <para>
         /// The resource is read from the Define cache via
         /// <c>IDefineAccess.GetLanguage</c> and returned as-is. Per
-        /// <c>docs/development-constraints.md § Definition Data Immutability After Init</c>,
+        /// <c>docs/development-constraints.md § Cached Data Immutability After Init</c>,
         /// the cached instance must not be mutated; callers that need per-session
         /// adjustments should clone the result.
         /// </para>

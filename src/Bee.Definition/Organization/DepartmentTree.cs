@@ -15,6 +15,13 @@ namespace Bee.Definition.Organization
     /// rows) and cached per company so scope queries (<c>Dept</c> / <c>DeptAndSub</c>) run from memory.
     /// The nested forest is immutable after construction; the index is a read-only derivation (built
     /// once under a lock), so a cached instance is never mutated by queries.
+    /// <para>
+    /// WARNING: this is a cache-shared instance. It must not be mutated after construction — every
+    /// session in the company receives the same reference, and the tree drives record-scope
+    /// authorization, so a mutation changes what other sessions may read. The setters exist for the
+    /// serializers, not for callers: treat an instance handed to you by the cache as frozen. See
+    /// <c>docs/development-constraints.md</c> § <i>Cached Data Immutability After Init</i>.
+    /// </para>
     /// </remarks>
     public class DepartmentTree : IKeyObject
     {

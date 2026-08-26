@@ -427,7 +427,7 @@ through `IDefineAccess.SaveX(...)`, which persists and invalidates. `XmlCodec.Se
 `SessionInfo` is the deliberate exception: it is per-session already.
 
 The full rule, the table of concrete violations, and the reasoning are in
-[Development Constraints § Definition Data Immutability After Init](development-constraints.md).
+[Development Constraints § Cached Data Immutability After Init](development-constraints.md).
 
 ---
 

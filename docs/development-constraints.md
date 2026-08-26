@@ -27,24 +27,57 @@ See [development-cookbook.md § Framework Initialization Order](development-cook
 
 `tests/Bee.Tests.Shared/TestProcessBootstrap.cs` demonstrates the correct initialization order for the test process.
 
-## Definition Data Immutability After Init
+## Cached Data Immutability After Init
 
-After framework initialization, **all server-side cached definition data is
-read-only and must not be mutated at runtime**. Every session shares the same
-in-memory instance through `IDefineAccess` / `ICacheContainer`, and the cache
-is process-wide; per-session adjustments leak to every other session, and
-concurrent mutations race.
+After framework initialization, **every server-side cached object is read-only
+and must not be mutated at runtime**. Each session receives the same in-memory
+instance out of the process-wide `ICacheContainer`; per-session adjustments leak
+to every other session, and concurrent mutations race.
 
-### Scope
+The rule follows from the cache being shared, not from where the data came from.
+It therefore covers both kinds of cache below — definition data loaded from the
+definition files, and snapshots loaded from the database.
+
+### Scope: Definition-File Caches
 
 Anything reached through `IDefineAccess.GetX(...)` (which is backed by the
 `ICacheContainer` slot of the same name):
 
 - `FormSchema`, `FormLayout`, `TableSchema`
 - `SystemSettings`, `DatabaseSettings`, `ProgramSettings`, `DbCategorySettings`
+- `MenuSettings`, `PluginSettings`, `PermissionModels`, `CurrencySettings`,
+  `UnitSettings`
 - `LanguageResource`
-- `SessionInfo` is the deliberate exception — it is a per-session entity, not
-  shared definition data, and the cache key is the access token
+
+### Scope: Database-Backed Caches
+
+These are loaded through `ICacheDataSourceProvider` rather than `IDefineAccess`,
+and invalidated through the common cache-notify table rather than by a `SaveX`
+call — but they live in the same process-wide `ICacheContainer` and are shared by
+every session in exactly the same way, so the same prohibition applies. Reach
+them through the `ICacheContainer` slot or the service that wraps it
+(`ICompanyInfoService`, `IRolePermissionService`, `IDepartmentTreeService`,
+`IAuditRuleService`, `IApiKeyValidator`):
+
+| Cached type | `ICacheContainer` slot | Cache key |
+|-------------|------------------------|-----------|
+| `CompanyInfo` | `CompanyInfo` | company id |
+| `CompanyRolePermissions` | `CompanyRolePermissions` | company id |
+| `DepartmentTree` | `DepartmentTree` | company id |
+| `CompanyAuditRules` | `CompanyAuditRules` | company id |
+| `ApiKeyInfo` | `ApiKey` | key `sys_id` |
+| `ApiKeyGateState` | `ApiKeyGate` | `ApiKeyGateState.CacheKey` |
+
+`CompanyAuditRules` and `CompanyRolePermissions` enforce the rule structurally —
+they expose no setters and build their indexes once in the constructor. The other
+four carry public setters because they also cross the wire, so on those the rule
+is a convention the compiler cannot check; treat an instance handed to you by the
+cache as frozen.
+
+### Scope: The One Exception
+
+`SessionInfo` is the deliberate exception — it is a per-session entity, not
+shared data, and the cache key is the access token.
 
 ### Forbidden Patterns
 
@@ -63,13 +96,21 @@ Anything reached through `IDefineAccess.GetX(...)` (which is backed by the
   FormSchemaLocalizer.Localize(customised, sessionLang);
   return customised;
   ```
-- **Persistent changes** go through `IDefineAccess.SaveX(...)` which:
+- **Persistent changes to definition data** go through `IDefineAccess.SaveX(...)`
+  which:
   1. Writes to backing storage
   2. Invalidates the cache slot so the next `GetX` rebuilds from storage
+- **Persistent changes to database-backed data** go through the owning repository
+  plus a cache-notify entry; the poller then invalidates the slot in every
+  process. There is no `SaveX` for these, and writing the row without the notify
+  entry leaves every process serving the stale snapshot.
 - **Need a deep copy?** Use the type's `Clone()` method (provided on
   `FormSchema` / `FormTable` / `FormField` / `TableSchema` /
   `DatabaseSettings` etc.). Never substitute `XmlCodec` round-trip — it
   mutates state on the source.
+  **The database-backed types have no `Clone()`** — they are snapshots meant to
+  be read, not customized. If you need a per-session variant, copy the values you
+  need into your own object rather than adding a `Clone()` and mutating.
 
 ### Why This Matters
 
@@ -77,9 +118,14 @@ Bee.NET is designed for multi-tenant ASP.NET Core / Blazor Server hosts where a
 single process serves many concurrent sessions, each potentially in a different
 language and tenant context. The cache is a singleton; lifecycle-aware
 serialization hooks make even read-only operations like `XmlCodec.Serialize`
-non-idempotent against shared state. The invariant **"definition data is
-immutable after init"** is the single rule that lets every session safely
-share the same cached instances without coordination.
+non-idempotent against shared state. The invariant **"cached data is immutable
+after load"** is the single rule that lets every session safely share the same
+cached instances without coordination.
+
+The database-backed caches raise the stakes rather than lowering them: they hold
+authorization state. A mutated `CompanyRolePermissions` or `DepartmentTree` does
+not merely show one session the wrong caption — it grants or denies access in
+other sessions.
 
 ## Cross-Layer Forbidden Practices
 
