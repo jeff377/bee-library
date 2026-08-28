@@ -114,6 +114,12 @@ public static class NorthwindSchemaSeeder
         // deferred relation pass requires sys_id, and details declare no deferred relations.
         new("ft_order_detail", "OrderDetail.json",
             Forward: new() { ["sys_master_rowid"] = "ft_order", ["product_rowid"] = "ft_product" }),
+        // Per-form audit rules. No relations of its own — sys_id is the progId it governs, and a
+        // form with no row here inherits the deployment-wide switches in SystemSettings.xml.
+        // The three seeded rows exist to make the mechanism visible: this demo has ChangeEnabled
+        // on and AccessEnabled off, so Order and Customer demonstrate a rule turning reads ON
+        // against that default, and Category demonstrates one turning changes OFF.
+        new("st_audit_rule", "AuditRule.json"),
     };
 
     public static void EnsureSchemaAndSeed(

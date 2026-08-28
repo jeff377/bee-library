@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="AuditRule" ProgId="AuditRule" Caption="Audit Rules">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Audit Rule">
+      <Fields>
+        <LayoutField FieldName="sys_no" Caption="Sequence No." />
+        <LayoutField FieldName="sys_rowid" Caption="Row Id" />
+        <LayoutField FieldName="sys_id" Caption="Program Id" />
+        <LayoutField FieldName="sys_name" Caption="Form Name" />
+        <LayoutField FieldName="change_mode" Caption="Change Log" />
+        <LayoutField FieldName="access_mode" Caption="Access Log" />
+        <LayoutField FieldName="is_sensitive" Caption="Sensitive" />
+        <LayoutField FieldName="remark" Caption="Remark" />
+        <LayoutField FieldName="sys_insert_time" Caption="Created At" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+</FormLayout>

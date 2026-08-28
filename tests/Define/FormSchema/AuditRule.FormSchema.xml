@@ -11,6 +11,10 @@
 
   The two mode fields take their dropdown options from the `AuditRuleMode` language enum rather
   than static ListItems, so the options follow the caller's language like every other label.
+
+  ControlType is set explicitly on all three non-text fields. `Auto` does not infer a dropdown from
+  the presence of options — it falls back to TextEdit — so an option source without a ControlType
+  loads the options and then has nowhere to show them.
 -->
 <FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="AuditRule" DisplayName="稽核規則" CategoryId="company" PermissionModelId="AuditRule" ListFields="sys_id,sys_name,change_mode,access_mode,is_sensitive">
   <Tables>
@@ -20,9 +24,9 @@
         <FormField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" Visible="false" />
         <FormField FieldName="sys_id" Caption="表單代碼" DbType="String" Required="true" />
         <FormField FieldName="sys_name" Caption="表單名稱" DbType="String" />
-        <FormField FieldName="change_mode" Caption="異動記錄" DbType="Integer" LangEnumName="AuditRuleMode" />
-        <FormField FieldName="access_mode" Caption="檢視記錄" DbType="Integer" LangEnumName="AuditRuleMode" />
-        <FormField FieldName="is_sensitive" Caption="敏感資料" DbType="Boolean" />
+        <FormField FieldName="change_mode" Caption="異動記錄" DbType="Integer" ControlType="DropDownEdit" LangEnumName="AuditRuleMode" />
+        <FormField FieldName="access_mode" Caption="檢視記錄" DbType="Integer" ControlType="DropDownEdit" LangEnumName="AuditRuleMode" />
+        <FormField FieldName="is_sensitive" Caption="敏感資料" DbType="Boolean" ControlType="CheckEdit" />
         <FormField FieldName="remark" Caption="備註" DbType="String" />
         <FormField FieldName="sys_insert_time" Caption="寫入時間" DbType="DateTime" Visible="false" />
       </Fields>

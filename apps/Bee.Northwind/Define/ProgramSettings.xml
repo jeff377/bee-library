@@ -11,5 +11,8 @@
     <ProgramItem ProgId="Employee" DisplayName="Employees" />
     <ProgramItem ProgId="Order" DisplayName="Orders" BusinessObject="Bee.Northwind.Server.BusinessObjects.OrderBO, Bee.Northwind.Server" Repository="Bee.Northwind.Server.Repositories.OrderRepository, Bee.Northwind.Server" />
     <ProgramItem ProgId="AuditLog" DisplayName="AuditLog" BusinessObject="Bee.Business.AuditLog.LogBusinessObject, Bee.Business" />
+    <!-- No BusinessObject attribute: AuditRule is a framework-reserved progId and resolves to
+         AuditRuleBusinessObject on its own. -->
+    <ProgramItem ProgId="AuditRule" DisplayName="Audit Rules" />
   </Items>
 </ProgramSettings>

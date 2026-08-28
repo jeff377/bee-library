@@ -139,6 +139,10 @@ manifest 已開 dev 明文 HTTP。在 **iOS 模擬器**則用 `http://localhost:
 
 稽核在 `SystemSettings.xml` 開啟之後，**每一次登入成功、失敗與鎖定都會自動落進 `st_log_login`**，同樣零應用程式碼：框架的 `Login` 本身就在三個分支各寫一次。demo 把 `UseBackgroundWriter` 設為 `false`，記錄在登入回傳的當下就看得到；正式部署維持預設的批次寫入。
 
+**要稽核哪些表單是逐張決定的，不是一個開關管全部。** `SystemSettings.xml` 訂部署層預設——本示範記異動、不記檢視——而 `st_audit_rule` 逐張覆寫它。seeder 植入三筆規則讓機制看得見：`Order` 與 `Customer` 把檢視記錄**打開**（壓過部署預設）並標為敏感；`Category` 把異動記錄**關掉**，因為參考資料的異動在稽核軌跡裡只是雜訊。其餘表單沒有規則列，直接沿用預設。規則存在公司資料庫，由 Administration 下的 **Audit Rules** 表單維護。
+
+> 本示範的 `AuditRule.FormSchema.xml` 拿掉了框架版宣告的 `PermissionModelId`，因為 Northwind 完全沒有權限基礎設施，而 enforcement 是 fail-closed——留著會讓這張表單誰都打不開。**真實部署應保留它**，並把該模型授權給管理者角色：能編輯這些規則的人，等於能決定什麼被記錄、什麼不被記錄。
+
 ## Northwind → bee 模型對應
 
 Northwind 是正規化的關聯式 schema；bee 是 `sys_rowid`（Guid）關連模型。本 demo 借用 Northwind 的業務案例與資料，但鍵與關連一律遵循 bee 慣例：

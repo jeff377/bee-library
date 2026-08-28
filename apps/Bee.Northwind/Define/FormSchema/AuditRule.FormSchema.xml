@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Per-form audit rules. Which forms record data changes and record views, decided per company at
+  run time rather than in a definition file — so the policy survives an application upgrade.
+
+  Two deliberate departures from the framework's shipped copy
+  (src/Bee.Definition/Defaults/FormSchema/AuditRule.FormSchema.xml):
+
+  1. No PermissionModelId. The framework declares one because audit policy is a privileged
+     operation, and enforcement is fail-closed. This demo has no permission infrastructure at all —
+     no st_role / st_role_grant / st_user_role, no PermissionModels.xml — so keeping it would make
+     the form impossible to open. A real deployment keeps the framework's declaration and grants
+     the model to an administrator role.
+  2. Static ListItems instead of LangEnumName. The demo carries almost no language resources
+     (see Define/Language), so a localized enum would resolve to nothing; Order.FormSchema.xml
+     takes the same route for its status field.
+-->
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="AuditRule" DisplayName="Audit Rules" CategoryId="company" ListFields="sys_id,sys_name,change_mode,access_mode,is_sensitive">
+  <Tables>
+    <FormTable TableName="AuditRule" DbTableName="st_audit_rule" DisplayName="Audit Rule">
+      <Fields>
+        <FormField FieldName="sys_no" Caption="Sequence No." DbType="AutoIncrement" Visible="false" />
+        <FormField FieldName="sys_rowid" Caption="Row Id" DbType="Guid" Visible="false" />
+        <FormField FieldName="sys_id" Caption="Program Id" DbType="String" Required="true" />
+        <FormField FieldName="sys_name" Caption="Form Name" DbType="String" />
+        <FormField FieldName="change_mode" Caption="Change Log" DbType="Integer" ControlType="DropDownEdit" DefaultValue="0">
+          <ListItems>
+            <ListItem Value="0" Text="Inherit" />
+            <ListItem Value="1" Text="On" />
+            <ListItem Value="2" Text="Off" />
+          </ListItems>
+        </FormField>
+        <FormField FieldName="access_mode" Caption="Access Log" DbType="Integer" ControlType="DropDownEdit" DefaultValue="0">
+          <ListItems>
+            <ListItem Value="0" Text="Inherit" />
+            <ListItem Value="1" Text="On" />
+            <ListItem Value="2" Text="Off" />
+          </ListItems>
+        </FormField>
+        <FormField FieldName="is_sensitive" Caption="Sensitive" DbType="Boolean" ControlType="CheckEdit" />
+        <FormField FieldName="remark" Caption="Remark" DbType="String" />
+        <FormField FieldName="sys_insert_time" Caption="Created At" DbType="DateTime" Visible="false" />
+      </Fields>
+    </FormTable>
+  </Tables>
+</FormSchema>

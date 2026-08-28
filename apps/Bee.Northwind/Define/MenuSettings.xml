@@ -29,5 +29,10 @@
         <MenuEntry Id="order" Caption="Orders" Order="10" ProgId="Order" />
       </Items>
     </MenuFolder>
+    <MenuFolder Id="administration" Caption="Administration" Order="40">
+      <Items>
+        <MenuEntry Id="audit-rule" Caption="Audit Rules" Order="10" ProgId="AuditRule" />
+      </Items>
+    </MenuFolder>
   </Items>
 </MenuSettings>

@@ -1,0 +1,5 @@
+[
+  { "sys_id": "Order", "sys_name": "Orders", "change_mode": "0", "access_mode": "1", "is_sensitive": "1", "remark": "Orders carry revenue and customer terms: record who reads them, not just who changes them.", "sys_insert_time": "2026-01-01" },
+  { "sys_id": "Customer", "sys_name": "Customers", "change_mode": "0", "access_mode": "1", "is_sensitive": "1", "remark": "Personal data — reads are recorded so an export can be traced back to whoever opened the records.", "sys_insert_time": "2026-01-01" },
+  { "sys_id": "Category", "sys_name": "Categories", "change_mode": "2", "access_mode": "0", "is_sensitive": "0", "remark": "Reference data with no audit value; kept out of the trail so the signal stays readable.", "sys_insert_time": "2026-01-01" }
+]

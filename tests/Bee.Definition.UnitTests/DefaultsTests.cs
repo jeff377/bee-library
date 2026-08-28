@@ -3,6 +3,7 @@ using Bee.Base.Serialization;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Language;
+using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 
 namespace Bee.Definition.UnitTests
@@ -80,6 +81,11 @@ namespace Bee.Definition.UnitTests
             var fields = schema.MasterTable!.Fields!;
             Assert.Equal("AuditRuleMode", fields["change_mode"]!.LangEnumName);
             Assert.Equal("AuditRuleMode", fields["access_mode"]!.LangEnumName);
+            // ControlType.Auto 會 fall back 到 TextEdit，不會因為有選項來源就給下拉——
+            // 少了這個屬性，選項載得到卻沒地方顯示。
+            Assert.Equal(ControlType.DropDownEdit, fields["change_mode"]!.ControlType);
+            Assert.Equal(ControlType.DropDownEdit, fields["access_mode"]!.ControlType);
+            Assert.Equal(ControlType.CheckEdit, fields["is_sensitive"]!.ControlType);
         }
 
         [Theory]
