@@ -24,7 +24,7 @@ namespace Bee.Northwind.Server;
 /// <c>st_user_company</c>, and the demo then runs the framework's own sign-in and company entry
 /// against those rows — the same two steps a multi-company deployment takes. A single company
 /// makes the second step look redundant; it is not, and taking a shortcut past it costs more
-/// than it saves (see <c>apps/Bee.Northwind/README.md</c>).
+/// than it saves — the demo's README records what that shortcut cost when it was tried.
 /// </remarks>
 /// <remarks>
 /// This is the self-contained mirror of the <c>samples/Bee.Samples.Shared</c> demo backend:
