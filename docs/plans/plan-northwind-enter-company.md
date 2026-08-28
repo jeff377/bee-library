@@ -1,12 +1,12 @@
 # 計畫：Northwind 案例改走框架的 `EnterCompany`（維持單一公司）
 
-**狀態：🚧 進行中（2026-08-28）**
+**狀態：✅ 已完成（2026-08-28）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 後端：seed `st_company` / `st_user_company`、建三張角色表、刪除兩個捷徑類別 | ✅ 已完成（2026-08-28） |
 | 2 | 前端：登入成功後自動 `EnterCompanyAsync`（不做公司選單 UI） | ✅ 已完成（2026-08-28） |
-| 3 | 文件與鏡像：雙語 README、`bee-northwind-avalonia` 同步 | 🚧 進行中 |
+| 3 | 文件與鏡像：雙語 README、`bee-northwind-avalonia` 同步 | ✅ 已完成（2026-08-28） |
 
 > **執行裁定**：使用者於 2026-08-28 裁定「直接改程式」，並選擇**不延後**到 Day 13 發佈之後
 > —— 第六節原建議的「Day 13 照常發佈、之後才動 code」因此不適用，Day 13 的案例段改由
@@ -171,8 +171,16 @@ ClientInfo.ApplyEnterCompanyResult(company);
 - 雙語 README：修正稽核規則那一段（現在描述的行為不會發生）；`NorthwindSystemBusinessObject`
   相關敘述整段移除。
 - `bee-northwind-avalonia`（下游鏡像）：**在本 repo 三個階段都驗完之後才同步**，一次推完整組。
-  現況兩邊的 `NorthwindSystemBusinessObject.cs` / `NorthwindCompanyInfoService.cs` /
-  `NorthwindCredentials.cs` 完全相同，同步時是純刪除 + seeder 換版。
+
+> **實際執行（2026-08-28）**：同步時發現鏡像**必須先發版才做得成** —— per-form 稽核規則的
+> 框架碼在 `v4.24.0` 之後、尚未進任何 tag，鏡像（當時在 4.22.0）拿不到。因此先發
+> **4.25.0**（完整模式 CI 綠燈後推 tag、NuGet 發佈成功），鏡像再一次升到 4.25.0 並同步兩批改動。
+> ⚠️ EnterCompany 那一半其實 4.22.0 就跑得動（所需 API 逐一驗過皆已存在）；**非發版不可的
+> 只有稽核規則那一半**。
+>
+> 刻意不同步的檔案：`.smoke.yaml`、`Bee.Northwind.Browser/README.md`、README 的路徑與框架連結、
+> 各 csproj 的參考型式（`PackageReference` vs `ProjectReference`）—— 這些在兩個 repo 本來就該不同，
+> README 因此是**逐段套用**而非整份覆蓋。
 
 ---
 
