@@ -132,13 +132,20 @@ All three categories are registered in `Define/DbCategorySettings.xml`, and the 
 
 This demo is single-company, so all three databases point at the same `northwind.db` file. **The category is what the framework routes on, so moving the audit trail (or one company) to its own database later is a change to `DatabaseSettings.xml` alone — not one form definition has to move.**
 
-It auto-enters one fixed company at login (`NorthwindCompanyInfoService` + a `CompanyId` stamped on the session). A real multi-company deployment would give each company its own database and enter it through the full `EnterCompany` flow — which validates `st_company` and `st_user_company`, so those two tables are created but unused here.
+### Sign-in is two steps, and the demo takes both
 
-### Sign-in and the audit trail, both with zero application code
+Signing in answers two questions, and the framework asks them separately. `Login` answers *who you are*; `EnterCompany` answers *which company you are in*, and fills the half of the session that cannot be derived without that answer — the customization code, the roles, and the record-scope row ids. The demo has one company, so it enters it automatically right after sign-in; a deployment with several puts a chooser between the two calls and changes nothing else.
 
-Sign-in uses the **framework's own `st_user` authentication**: the seeder writes a `demo` account into `st_user` on first start, with the password hashed through `PasswordHasher` at seed time (not a literal hash, which would silently stop matching the first time the hashing parameters change). The application contains no authentication code at all — comparing an account and a password is the same operation in every deployment, so it belongs to the framework.
+**Both steps run entirely on framework code.** The application substitutes no service and overrides no method:
 
-That row also carries `time_zone` and `culture`, so the session takes its zone from the **user** rather than from the server or a deployment default.
+- **Authentication** is the framework's own `st_user` check. The seeder writes a `demo` account on first start, with the password hashed through `PasswordHasher` at seed time (not a literal hash, which would silently stop matching the first time the hashing parameters change). Comparing an account and a password is the same operation in every deployment, so it belongs to the framework.
+- **Company entry** is the framework's own `EnterCompany`. The seeder writes the matching `st_company` and `st_user_company` rows, and the call then validates the company exists and is enabled, checks the user's access, and snapshots roles and the employee context onto the session.
+
+That `st_user` row also carries `time_zone` and `culture`, so the session takes its zone from the **user** rather than from the server or a deployment default.
+
+> **A single company is not a reason to skip the second step.** An earlier version of this demo took that shortcut — it stamped `SessionInfo.CompanyId` in an overridden `Login` instead of calling `EnterCompany` — and it cost more than it saved, in two ways that were both silent. Company-keyed lookups such as the per-form audit rules below resolve the company through `st_company`, so with no row there they returned "no rules" and every rule was ignored. And `EnterCompany` persists the company onto the `st_session` seed, which an application cannot do for itself; without it the company survived only in the cache, so a server restart handed the client back a session that authenticated but could not open a single company-scoped form.
+
+### The audit trail, with zero application code
 
 With auditing enabled in `SystemSettings.xml`, **every successful, failed and locked-out sign-in lands in `st_log_login` automatically**, again with no application code: the framework's own `Login` writes one record on each of those three paths. The demo sets `UseBackgroundWriter` to `false` so a record is visible the moment sign-in returns; a production host keeps the default batch writer.
 

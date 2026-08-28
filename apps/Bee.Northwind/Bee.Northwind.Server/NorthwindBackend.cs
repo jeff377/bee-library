@@ -6,7 +6,6 @@ using Bee.Db.Manager;
 using Bee.Db.Providers.Sqlite;
 using Bee.Definition;
 using Bee.Definition.Database;
-using Bee.Definition.Identity;
 using Bee.Definition.Storage;
 using Bee.Hosting;
 using Microsoft.AspNetCore.Builder;
@@ -17,15 +16,15 @@ namespace Bee.Northwind.Server;
 
 /// <summary>
 /// One-line bootstrap for the Bee.Northwind demo. Resolves the sibling <c>Define</c>
-/// directory, registers SQLite, loads SystemSettings, wires <c>AddBeeFramework</c>, then
-/// binds the reserved "System" progId in ProgramSettings.xml to the app's own
-/// <c>SystemBusinessObject</c> subclass.
+/// directory, registers SQLite, loads SystemSettings and wires <c>AddBeeFramework</c>.
 /// </summary>
 /// <remarks>
-/// Authentication is deliberately <b>not</b> overridden here: the seeder writes
-/// <see cref="NorthwindCredentials"/> into <c>st_user</c> and sign-in runs the framework's own
-/// stored-credential check, which is the path a real deployment takes. The subclass exists for
-/// what happens after sign-in (company entry, roles, employee context).
+/// Nothing on the session axis is overridden or substituted. The seeder writes
+/// <see cref="NorthwindCredentials"/> into <c>st_user</c>, <c>st_company</c> and
+/// <c>st_user_company</c>, and the demo then runs the framework's own sign-in and company entry
+/// against those rows — the same two steps a multi-company deployment takes. A single company
+/// makes the second step look redundant; it is not, and taking a shortcut past it costs more
+/// than it saves (see <c>apps/Bee.Northwind/README.md</c>).
 /// </remarks>
 /// <remarks>
 /// This is the self-contained mirror of the <c>samples/Bee.Samples.Shared</c> demo backend:
@@ -91,14 +90,10 @@ public static class NorthwindBackend
             paths,
             autoCreateMasterKey: true);
 
-        // Nothing to register for the custom login: Define/ProgramSettings.xml binds the reserved
-        // progId "System" to NorthwindSystemBusinessObject, and the framework
-        // resolves it from there like any other progId.
-
-        // Replace the default ICompanyInfoService (which reads st_company) with a hard-coded
-        // demo company, so company-scoped forms route to the company database without seeding
-        // the company / user-access tables. Registered after AddBeeFramework so it wins.
-        builder.Services.AddSingleton<ICompanyInfoService, NorthwindCompanyInfoService>();
+        // Nothing is registered past AddBeeFramework. Sign-in, company entry and company lookup
+        // all run the framework's own implementations: NorthwindSchemaSeeder writes the st_user,
+        // st_company and st_user_company rows they read, and the client calls EnterCompany after
+        // Login like any other deployment.
 
         return paths;
     }

@@ -129,13 +129,20 @@ manifest 已開 dev 明文 HTTP。在 **iOS 模擬器**則用 `http://localhost:
 
 本 demo 是單公司，所以三個資料庫都指向同一個 `northwind.db` 檔。**分類是框架路由的依據，所以日後要把稽核或某家公司拆到獨立資料庫，改的只有 `DatabaseSettings.xml` 一個檔，一份表單定義都不必動。**
 
-登入時自動進入一個固定公司（`NorthwindCompanyInfoService` + 在 session 蓋上 `CompanyId`）。真實的多公司部署會給每家公司各自的資料庫，並走完整的 `EnterCompany` 流程進入 —— 那條流程會驗 `st_company` 與 `st_user_company`，所以本 demo 那兩張表是建了不用的空表。
+### 登入是兩步，而本示範兩步都走
 
-### 登入與稽核，兩者都是零應用程式碼
+登入要回答兩個問題，框架把它們分開問。`Login` 回答**你是誰**；`EnterCompany` 回答**你在哪一家公司**，並填上那半個必須先知道公司才推導得出來的 session —— 客製化代碼、角色、以及 record-scope 的列識別。本示範只有一家公司，所以登入成功後直接自動進入；有好幾家的部署在兩次呼叫之間插一個選單，其餘一律不變。
 
-登入走**框架自己的 `st_user` 認證**：seeder 在首次啟動時把 `demo` 帳號寫進 `st_user`，密碼以 `PasswordHasher` 現算雜湊存入（不是寫死的雜湊值，否則換一次雜湊參數就對不上）。應用沒有任何一行認證程式 —— 比對帳號密碼在每個部署都一樣，所以那件事屬於框架。
+**兩步都跑在框架程式碼上。** 應用沒有替換任何服務，也沒有覆寫任何方法：
 
-那一列同時帶著 `time_zone` 與 `culture`，於是 session 的時區取自**使用者**而不是伺服器或部署預設值。
+- **認證**走框架自己的 `st_user` 檢查。seeder 在首次啟動時把 `demo` 帳號寫進 `st_user`，密碼以 `PasswordHasher` 現算雜湊存入（不是寫死的雜湊值，否則換一次雜湊參數就對不上）。比對帳號密碼在每個部署都一樣，所以那件事屬於框架。
+- **進公司**走框架自己的 `EnterCompany`。seeder 寫入對應的 `st_company` 與 `st_user_company` 兩列，該呼叫接著驗公司存在且啟用、查使用者的存取權，再把角色與員工脈絡快照到 session 上。
+
+`st_user` 那一列同時帶著 `time_zone` 與 `culture`，於是 session 的時區取自**使用者**而不是伺服器或部署預設值。
+
+> **只有一家公司不是跳過第二步的理由。** 本示範早期版本走過那條捷徑 —— 在覆寫的 `Login` 裡直接蓋上 `SessionInfo.CompanyId`，不呼叫 `EnterCompany` —— 而它付出的比省下的多，且兩筆代價都是無聲的。其一，以公司為鍵的查找（例如下面的 per-form 稽核規則）是透過 `st_company` 解出公司的，那張表沒有列就一律回「沒有規則」，每一條規則因此都不生效。其二，`EnterCompany` 會把公司寫進 `st_session` 的種子，而**應用自己做不到這件事**；少了它，公司只活在快取裡，伺服器一重啟，客戶端拿回的就是一個認證得過、卻連一張公司分類表單都打不開的 session。
+
+### 稽核：零應用程式碼
 
 稽核在 `SystemSettings.xml` 開啟之後，**每一次登入成功、失敗與鎖定都會自動落進 `st_log_login`**，同樣零應用程式碼：框架的 `Login` 本身就在三個分支各寫一次。demo 把 `UseBackgroundWriter` 設為 `false`，記錄在登入回傳的當下就看得到；正式部署維持預設的批次寫入。
 

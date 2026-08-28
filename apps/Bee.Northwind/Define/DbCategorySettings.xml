@@ -27,6 +27,14 @@
         <TableItem TableName="st_department" DisplayName="Department" />
         <TableItem TableName="st_employee" DisplayName="Employee" />
         <TableItem TableName="st_audit_rule" DisplayName="Audit Rule" />
+        <!-- The permission tables are registered but never seeded. EnterCompany snapshots roles
+             for the session it is building, and the repository behind that read has no
+             "table missing" fallback — an unregistered table would fail sign-in outright rather
+             than resolving to "this user holds no roles". Empty is the demo's intended state:
+             no form here declares a PermissionModelId, so both permission axes stay inert. -->
+        <TableItem TableName="st_role" DisplayName="Role" />
+        <TableItem TableName="st_role_grant" DisplayName="Role Grant" />
+        <TableItem TableName="st_user_role" DisplayName="User Role" />
       </Tables>
     </DbCategory>
     <!-- log: audit trail. Separate category, so a deployment can move the trail to its own

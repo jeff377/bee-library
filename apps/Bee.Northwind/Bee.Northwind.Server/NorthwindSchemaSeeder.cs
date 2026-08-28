@@ -70,11 +70,10 @@ public static class NorthwindSchemaSeeder
     /// list self-maintaining, so <see cref="VerifyCommonRegistration"/> compares the registered
     /// set against what the framework actually ships and fails startup on a gap.
     ///
-    /// The trade-off is that tables this demo never uses — <c>st_company</c>,
-    /// <c>st_user_company</c>, <c>st_define</c>, <c>st_api_key</c> — are created empty, because it
-    /// substitutes its own <c>ICompanyInfoService</c> and does not store definitions in the
-    /// database. A few unused empty tables in the demo SQLite file are a cheaper price than
-    /// silently breaking every head the next time the framework reaches for a new table.
+    /// The trade-off is that tables this demo never uses — <c>st_define</c>, <c>st_api_key</c> —
+    /// are created empty, because it keeps its definitions on disk and publishes no API key.
+    /// A few unused empty tables in the demo SQLite file are a cheaper price than silently
+    /// breaking every head the next time the framework reaches for a new table.
     /// </remarks>
     public static IReadOnlyList<string> GetFrameworkCommonTables()
     {
@@ -131,7 +130,7 @@ public static class NorthwindSchemaSeeder
 
         VerifyCommonRegistration(defineAccess);
         EnsureSchema(defineAccess, connectionManager);
-        SeedDemoUser(dbAccessFactory.Create(CommonDatabaseId));
+        SeedCommon(dbAccessFactory.Create(CommonDatabaseId));
 
         // The rest of the seed data is business data, so it lands in the company database.
         var dbAccess = dbAccessFactory.Create(CompanyDatabaseId);
@@ -184,6 +183,23 @@ public static class NorthwindSchemaSeeder
     }
 
     /// <summary>
+    /// Seeds the common-database rows sign-in depends on: the demo account, the demo company, and
+    /// the grant that lets one enter the other.
+    /// </summary>
+    /// <remarks>
+    /// All three are required for the demo to reach a usable session, and they are required
+    /// <em>together</em>: <c>EnterCompany</c> reads the company row, then the grant row, and treats
+    /// a miss on either as the same refusal. Seeding one without the other produces a sign-in that
+    /// succeeds and a company that cannot be entered.
+    /// </remarks>
+    private static void SeedCommon(DbAccess dbAccess)
+    {
+        SeedDemoUser(dbAccess);
+        SeedDemoCompany(dbAccess);
+        SeedCompanyAccess(dbAccess);
+    }
+
+    /// <summary>
     /// Seeds the single demo account into <c>st_user</c> so sign-in runs the framework's own
     /// <c>st_user</c> authentication rather than an application-supplied credential check.
     /// </summary>
@@ -215,6 +231,76 @@ public static class NorthwindSchemaSeeder
             NorthwindCredentials.TimeZone,
             NorthwindCredentials.Culture,
             false));
+    }
+
+    /// <summary>
+    /// Seeds the single demo company into <c>st_company</c>, which is what lets the session enter a
+    /// company through the framework's own <c>EnterCompany</c> rather than an application shortcut.
+    /// </summary>
+    /// <remarks>
+    /// <c>customize_id</c> is the column the tenant customization layer hangs on: the binder copies
+    /// it onto the session, and every definition lookup then consults
+    /// <c>Customize/{customize_id}/</c> first. Leaving it empty short-circuits the whole layer with
+    /// no error anywhere, so the demo's customized order layout would simply stop being used.
+    /// <para>
+    /// The three XML columns are given explicit empty strings rather than left out. They are
+    /// <c>DbType="Text"</c>, and MySQL does not allow a DEFAULT on TEXT — the framework therefore
+    /// emits no default for them, and a hand-written INSERT that omits them fails on that provider.
+    /// </para>
+    /// </remarks>
+    private static void SeedDemoCompany(DbAccess dbAccess)
+    {
+        var countSpec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT COUNT(*) FROM st_company");
+        if (Convert.ToInt32(dbAccess.Execute(countSpec).Scalar, CultureInfo.InvariantCulture) > 0) { return; }
+
+        const string sql =
+            "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, customize_id, " +
+            "number_formats_xml, default_currency, cash_rounding_xml, allowed_currencies_xml, enabled) " +
+            "VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9})";
+
+        dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql,
+            Guid.NewGuid(),
+            NorthwindCredentials.CompanyId,
+            NorthwindCredentials.CompanyName,
+            NorthwindCredentials.CompanyDatabaseId,
+            NorthwindCredentials.CustomizeId,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            true));
+    }
+
+    /// <summary>
+    /// Grants the demo account access to the demo company by seeding the <c>st_user_company</c>
+    /// row that <c>EnterCompany</c> checks.
+    /// </summary>
+    /// <remarks>
+    /// The grant is stored as row ids, so both sides are resolved from their business ids first.
+    /// A missing target aborts startup rather than skipping the row: without this grant sign-in
+    /// still succeeds and every company-scoped form then fails, which is a long way from the cause.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">The user or company row could not be resolved.</exception>
+    private static void SeedCompanyAccess(DbAccess dbAccess)
+    {
+        var countSpec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT COUNT(*) FROM st_user_company");
+        if (Convert.ToInt32(dbAccess.Execute(countSpec).Scalar, CultureInfo.InvariantCulture) > 0) { return; }
+
+        var userRowId = ResolveRowId(dbAccess, "st_user", NorthwindCredentials.UserId);
+        var companyRowId = ResolveRowId(dbAccess, "st_company", NorthwindCredentials.CompanyId);
+        if (userRowId == Guid.Empty || companyRowId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "Northwind startup aborted: could not resolve the rows behind the company grant — " +
+                $"st_user '{NorthwindCredentials.UserId}' and st_company '{NorthwindCredentials.CompanyId}' " +
+                "must both exist before st_user_company is seeded. Delete northwind.db to reseed from scratch.");
+        }
+
+        const string sql =
+            "INSERT INTO st_user_company (sys_rowid, user_rowid, company_rowid) VALUES ({0}, {1}, {2})";
+
+        dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql,
+            Guid.NewGuid(), userRowId, companyRowId));
     }
 
     /// <summary>

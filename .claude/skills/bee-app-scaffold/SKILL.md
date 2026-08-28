@@ -78,15 +78,38 @@ description: 在 bee-library（或畢業後的獨立 repo）搭一個「獨立 B
 
 可對照的實作：`apps/Bee.Northwind/Bee.Northwind.Server/NorthwindBackend.cs`。
 
-## Part 3 — 輕量 company context
+## Part 3 — company context：單公司也要走 `EnterCompany`
 
-要 company scope 又不想建 `st_user` / `st_company` / `st_user_company` / 走完整 `EnterCompany`：
+⛔ **不要用「硬編 `ICompanyInfoService` + 在覆寫的 `Login` 裡蓋 `SessionInfo.CompanyId`」這條捷徑。**
+Northwind 走過，2026-08-28 移除，代價是兩個無聲的錯誤行為：
 
-- **自訂 `ICompanyInfoService`**（`NorthwindCompanyInfoService.cs`）：`Get(companyId)` 回固定 demo 公司（`CompanyDatabaseId="company"`），`Set`/`Remove` no-op。DI 覆寫掉預設（讀 `st_company` 的版本）。
-- **override `SystemBusinessObject.Login`**（在自訂 auth BO 內）：`base.Login` 後 `SessionInfoService.Get(token).CompanyId = 固定值; Set(...)`。`Get` 回**非 nullable** `SessionInfo`，勿加 null 檢查（CS8073）。
-- 表單若無 `PermissionModelId`，免角色/員工快照（那是 `EnterCompany` 才需要）。
+1. **以公司為鍵的查找全部失效。** `CacheDataSourceProvider` 的 `GetCompanyRolePermissions` /
+   `GetDepartmentTree` / `GetCompanyAuditRules` 都先呼叫 `GetCompanyInfo`，而那一支走
+   **`ICompanyRepository`（讀 `st_company`）**，不是被你替換掉的 `ICompanyInfoService`。
+   `st_company` 沒有列 → 一律回 `null` → 那些機制靜默不生效。
+2. **session 重建會掉公司，而且應用補不了。** `EnterCompany` 除了寫快取還會
+   `SessionRepository.UpdateSession(CreateSeed(...))` 把公司寫進 `st_session` 種子；
+   而 `CreateSeed` 是 `private static`、`SessionRepository` 是 `private`，**子類別拿不到**。
+   快取一被逐出或伺服器一重啟，重建出來的 session 沒有公司，所有 `CategoryId="company"`
+   表單擲 `CompanyNotEnteredException`。
 
-這是「hardcoded 登入」的 company 情境對應版 —— 最小可用、單公司。
+正解就是照框架的兩步走，成本比捷徑低：
+
+- **seed 三張表**：`st_user`、`st_company`（`customize_id` 別漏，客製層靠它）、`st_user_company`。
+  三個 XML 欄（`number_formats_xml` / `cash_rounding_xml` / `allowed_currencies_xml`）是
+  `DbType="Text"`，手寫 INSERT 必須顯式給 `''`（MySQL 的 TEXT 不能有 DEFAULT）。
+- ⛔ **同時要註冊 `st_role` / `st_role_grant` / `st_user_role`**（company 類，空表即可）。
+  `RolePermissionRepository` **沒有** schema 探測保護（`AuditRuleRepository` 有），
+  只 seed `st_company` 而不建這三張，會把「靜默失效」升級成**登入後進不了公司**。
+- **client 端登入後呼叫一次** `SystemApiConnector.EnterCompanyAsync(companyId)` +
+  `ClientInfo.ApplyEnterCompanyResult(...)`。單公司就自動帶入，不必做選單。
+  ⚠️ **connector 要重新取**：`ClientInfo.ApplyLoginResult` 會把快取的 connector 丟掉
+  （它是用登入前的空 token 建的），沿用登入前的區域變數會得到
+  「AccessToken is required or invalid」。
+- 表單若無 `PermissionModelId`，角色空著無妨 —— 伺服端與前端都在 `modelId` 為空時短路。
+
+可對照的實作：`apps/Bee.Northwind/Bee.Northwind.Server/NorthwindSchemaSeeder.cs`
+（`SeedCommon`）與 `apps/Bee.Northwind/Bee.Northwind.UI/ViewModels/LoginViewModel.cs`。
 
 ## Part 4 — 自訂 auth（免 st_user）
 

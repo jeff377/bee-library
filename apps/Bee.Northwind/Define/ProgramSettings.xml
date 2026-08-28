@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ProgramSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Items>
-    <ProgramItem ProgId="System" DisplayName="System" BusinessObject="Bee.Northwind.Server.NorthwindSystemBusinessObject, Bee.Northwind.Server" />
+    <!-- No BusinessObject attribute: System is a framework-reserved progId and resolves to the
+         framework's own SystemBusinessObject. The entry stays declared rather than being deleted
+         so startup self-registration has nothing missing to add — that path rewrites this whole
+         file, comments included. -->
+    <ProgramItem ProgId="System" DisplayName="System" />
     <ProgramItem ProgId="Category" DisplayName="Categories" />
     <ProgramItem ProgId="Supplier" DisplayName="Suppliers" />
     <ProgramItem ProgId="Customer" DisplayName="Customers" />
