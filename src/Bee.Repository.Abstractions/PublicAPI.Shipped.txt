@@ -71,6 +71,9 @@ Bee.Repository.Abstractions.AuditLog.IAuditLogRepository.GetLoginLog(Bee.Reposit
 Bee.Repository.Abstractions.AuditLog.IAuditLogRepository.GetTopApiMethods(System.DateTime? fromUtc, System.DateTime? toUtc, int topN, string? companyId) -> System.Data.DataTable!
 Bee.Repository.Abstractions.AuditLog.IAuditLogWriteRepository
 Bee.Repository.Abstractions.AuditLog.IAuditLogWriteRepository.WriteBatch(System.Collections.Generic.IReadOnlyList<Bee.Definition.Logging.AuditEntry!>! entries) -> void
+Bee.Repository.Abstractions.AuditLog.IAuditRuleRepository
+Bee.Repository.Abstractions.AuditLog.IAuditRuleRepository.GetRules(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Logging.AuditRule!>!
+Bee.Repository.Abstractions.AuditLog.IAuditRuleRepository.NotifyRulesChanged(string! companyId) -> void
 Bee.Repository.Abstractions.AuditLog.LoginLogQuery
 Bee.Repository.Abstractions.AuditLog.LoginLogQuery.CompanyId.get -> string?
 Bee.Repository.Abstractions.AuditLog.LoginLogQuery.CompanyId.init -> void

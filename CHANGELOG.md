@@ -4,6 +4,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.25.0]
+
+> Auditing had one switch per axis for the whole deployment: change logging on or off, access logging on or off, every form at once. This release adds the granularity that was missing — `st_audit_rule` holds one row per form per company, resolved at run time — closing the first open item on [ADR-027](docs/adr/adr-027-audit-trail.md) and the two unimplemented requirements of [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) decision 4. **A form with no row inherits the deployment default, so an absent or empty table reproduces the previous behaviour exactly.** The maintenance form ships with the framework as the reserved `AuditRule` progId, and it is the one form the rules cannot switch off: a policy able to silence its own trail would close the loophole on itself. See [ADR-041](docs/adr/adr-041-per-form-audit-rule.md).
+
+### Breaking changes
+
+- `Bee.ObjectCaching`: `ICacheContainer` gains a `CompanyAuditRules` member. Source-breaking only for code **outside** the framework that implements the interface — the same shape as the `DepartmentTree` member added in 4.7.0, and it ships as a minor for the same reason.
+
+### Added
+
+- `Bee.Definition`: `AuditRule`, `AuditRuleMode` (`Inherit` / `On` / `Off`) with `AuditRuleModeExtensions.Resolve`, `CompanyAuditRules`, `IAuditRuleService`, and the reserved `SysProgIds.AuditRule`. `ICacheDataSourceProvider.GetCompanyAuditRules` is **defaulted to `null`** so a host with its own implementation stays binary-compatible — and that default is also the correct answer for it, since no rules means every form inherits.
+- `Bee.Definition` defaults: the `st_audit_rule` `TableSchema`, and the `AuditRule` `FormSchema` / `FormLayout` / language resources (en-US, zh-TW). `PermissionModels.xml` joins the shipped defaults, carrying the `AuditRule` model that gates who may change audit policy.
+- `Bee.ObjectCaching`: `CompanyAuditRulesCache` and `AuditRuleService`. Invalidation goes through the shared cache-notify table under the key `CompanyAuditRules:{companyId}`.
+- `Bee.Repository.Abstractions` / `Bee.Repository`: `IAuditRuleRepository` and `AuditRuleRepository`. It **probes the schema before reading**, so a deployment predating the table keeps running on its deployment-wide settings rather than failing.
+- `Bee.Business`: `AuditRuleBusinessObject`, the maintenance form behind the reserved `AuditRule` progId. It bumps cache-notify after save and delete, which is what makes an edit take effect in every process rather than only the one that made it.
+- `Bee.Hosting`: `IAuditRuleService` is registered unconditionally — the audit master switch is checked at the call site, so toggling it needs no re-registration.
+
+### Changed
+
+- `Bee.Business`: `FormBusinessObject` consults the form's rule before writing a change or access entry, falling back to the deployment default when there is none. `IsSensitive` on a change entry now comes from the rule; it had been hard-coded `false`, so the form axis could not express sensitivity at all.
+- `Bee.Analyzers`: `AuditRule` joins the framework-reserved progIds, so **BEE2005** no longer asks an application to supply a `FormLayout` for it.
+
+### Upgrade notes
+
+Nothing to do. With `st_audit_rule` absent or empty every form inherits the deployment-wide switches, and behaviour is unchanged. Rules take effect once the table is built and the `AuditRule` progId is reachable from a menu.
+
+**One trap worth naming.** Rules are keyed by company and resolved through `st_company`. A deployment that enters its company by stamping `SessionInfo.CompanyId` directly — instead of calling `EnterCompany` — will find that **no rule ever applies, silently**, because the lookup finds no company row. The same shortcut also skips the `st_session` seed write that only `EnterCompany` performs, so the company is lost whenever a session is rebuilt from its seed. If an application overrides `Login` to set the company itself, seed `st_company` / `st_user_company` and call `EnterCompany` instead.
+
 ## [4.24.0]
 
 > This release splits the two things `IAuditLogWriter` had always carried at once. [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) decision 2 had already classified "system / error" as observability, separate from the business audit trail — but the write side still had a single interface, used by login / change / access and by API / DB anomalies alike. Taking stock of the call sites showed the dividing line was already clean: none of the seven writes both, and the three anomaly ones had **long since named their fields and parameters `anomalyWriter`** — naming standing in for a distinction the type system did not express. **This is a source- and binary-breaking change**: three public constructors change a parameter type, and five properties move from the two anomaly entry types up to a new shared base.

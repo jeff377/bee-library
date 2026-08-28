@@ -1,5 +1,1 @@
 #nullable enable
-Bee.Repository.AuditLog.AuditRuleRepository
-Bee.Repository.AuditLog.AuditRuleRepository.AuditRuleRepository(Bee.Repository.IRepositoryContext! ctx, System.Guid accessToken, string! progId) -> void
-Bee.Repository.AuditLog.AuditRuleRepository.GetRules(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Logging.AuditRule!>!
-Bee.Repository.AuditLog.AuditRuleRepository.NotifyRulesChanged(string! companyId) -> void

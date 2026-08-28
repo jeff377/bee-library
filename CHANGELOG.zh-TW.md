@@ -4,6 +4,34 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.25.0]
+
+> 稽核原本每一軸只有一個部署層開關：異動記錄開或關、檢視記錄開或關，全部表單一起決定。本版補上缺的那層顆粒度——`st_audit_rule` 逐公司、逐表單各一列，於執行期解析——結清 [ADR-027](docs/adr/adr-027-audit-trail.md) 待辦的第一條，以及 [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 決策四中尚未實作的兩條。**沒有規則列的表單沿用部署層預設，所以表不存在或空的時候，行為與先前完全相同。** 維護表單由框架隨附，掛在保留字 progId `AuditRule` 上，而它是唯一一張規則關不掉的表單：能讓自己的軌跡消音的政策，等於自己把漏洞補死。見 [ADR-041](docs/adr/adr-041-per-form-audit-rule.md)。
+
+### 破壞性變更
+
+- `Bee.ObjectCaching`：`ICacheContainer` 新增 `CompanyAuditRules` 成員。只對框架**之外**實作該介面的程式碼構成原始碼破壞——與 4.7.0 新增 `DepartmentTree` 成員同一個形狀，也基於同一個理由以 minor 發佈。
+
+### 新增
+
+- `Bee.Definition`：`AuditRule`、`AuditRuleMode`（`Inherit` / `On` / `Off`）與 `AuditRuleModeExtensions.Resolve`、`CompanyAuditRules`、`IAuditRuleService`，以及保留字 `SysProgIds.AuditRule`。`ICacheDataSourceProvider.GetCompanyAuditRules` **預設回 `null`**，自帶實作的 host 因此維持二進位相容——而那個預設對它也正好是對的答案：沒有規則就等於每張表單都沿用預設。
+- `Bee.Definition` 內建定義：`st_audit_rule` 的 `TableSchema`，以及 `AuditRule` 的 `FormSchema` / `FormLayout` / 語系資源（en-US、zh-TW）。`PermissionModels.xml` 納入隨附預設，帶著管控「誰能改稽核政策」的 `AuditRule` 模型。
+- `Bee.ObjectCaching`：`CompanyAuditRulesCache` 與 `AuditRuleService`。失效走共用的 cache-notify 表，鍵為 `CompanyAuditRules:{companyId}`。
+- `Bee.Repository.Abstractions` / `Bee.Repository`：`IAuditRuleRepository` 與 `AuditRuleRepository`。它**讀取前先探測 schema**，所以早於這張表的部署會繼續跑在部署層設定上，而不是直接失敗。
+- `Bee.Business`：`AuditRuleBusinessObject`，保留字 progId `AuditRule` 背後的維護表單。存檔與刪除後會推一筆 cache-notify，這是讓一次編輯在每個行程都生效、而不是只在改的那一個生效的關鍵。
+- `Bee.Hosting`：`IAuditRuleService` 無條件註冊——稽核主開關是在呼叫點檢查的，所以開關切換不需要重新註冊。
+
+### 變更
+
+- `Bee.Business`：`FormBusinessObject` 在寫異動或檢視記錄之前先查該表單的規則，沒有規則才退回部署層預設。異動記錄的 `IsSensitive` 現在取自規則；它原本硬寫 `false`，表單這一軸因此完全無法表達敏感度。
+- `Bee.Analyzers`：`AuditRule` 納入框架保留字 progId，**BEE2005** 因此不再要求應用為它補一份 `FormLayout`。
+
+### 升級指引
+
+不需要做任何事。`st_audit_rule` 不存在或為空時，每張表單都沿用部署層開關，行為不變。等這張表建起來、`AuditRule` progId 掛上選單之後，規則才開始生效。
+
+**有一個坑值得點名。** 規則以公司為鍵，並且是**透過 `st_company` 解出公司的**。若某個部署是在 session 上直接蓋 `SessionInfo.CompanyId` 來進公司——而不是呼叫 `EnterCompany`——那麼查找找不到公司列，**所有規則都不會生效，而且無聲無息**。同一條捷徑還會跳過只有 `EnterCompany` 才做的 `st_session` 種子寫入，於是 session 一旦從種子重建，公司就掉了。應用如果覆寫 `Login` 自行設定公司，請改為 seed `st_company` / `st_user_company` 並呼叫 `EnterCompany`。
+
 ## [4.24.0]
 
 > 本版把 `IAuditLogWriter` 一直同時承載的兩件事拆開。[ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 決策二早就把「系統／錯誤」判成 observability、與業務稽核分離，但寫入面始終只有一個介面：登入／異動／檢視與 API／DB 異常都走它。盤點消費端才看清那條分界其實是乾淨的——七個呼叫點沒有任何一個同時寫兩種，而異常那三個的欄位與參數**早就自己叫 `anomalyWriter`**，等於用命名補一個型別系統沒有表達的區分。**這是原始碼與二進位層級的破壞性變更**：三支公開建構子換參數型別，另有五個欄位由兩個異常記錄型別上提到新的共用基底。

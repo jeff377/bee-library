@@ -1,10 +1,1 @@
 #nullable enable
-Bee.ObjectCaching.CacheContainerService.CompanyAuditRules.get -> Bee.ObjectCaching.Database.CompanyAuditRulesCache!
-Bee.ObjectCaching.Database.CompanyAuditRulesCache
-Bee.ObjectCaching.Database.CompanyAuditRulesCache.CompanyAuditRulesCache(string! cachePrefix = "") -> void
-Bee.ObjectCaching.ICacheContainer.CompanyAuditRules.get -> Bee.ObjectCaching.Database.CompanyAuditRulesCache!
-Bee.ObjectCaching.Services.AuditRuleService
-Bee.ObjectCaching.Services.AuditRuleService.AuditRuleService(Bee.ObjectCaching.ICacheContainer! cache) -> void
-Bee.ObjectCaching.Services.AuditRuleService.Get(string! companyId) -> Bee.Definition.Logging.CompanyAuditRules?
-Bee.ObjectCaching.Services.AuditRuleService.Remove(string! companyId) -> void
-override Bee.ObjectCaching.Database.CompanyAuditRulesCache.CreateInstance(string! key) -> Bee.Definition.Logging.CompanyAuditRules?

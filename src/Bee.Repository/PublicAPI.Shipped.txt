@@ -14,6 +14,10 @@ Bee.Repository.AuditLog.AuditLogRepository.GetTopApiMethods(System.DateTime? fro
 Bee.Repository.AuditLog.AuditLogWriteRepository
 Bee.Repository.AuditLog.AuditLogWriteRepository.AuditLogWriteRepository(Bee.Repository.IRepositoryContext! ctx, System.Guid accessToken, string! progId) -> void
 Bee.Repository.AuditLog.AuditLogWriteRepository.WriteBatch(System.Collections.Generic.IReadOnlyList<Bee.Definition.Logging.AuditEntry!>! entries) -> void
+Bee.Repository.AuditLog.AuditRuleRepository
+Bee.Repository.AuditLog.AuditRuleRepository.AuditRuleRepository(Bee.Repository.IRepositoryContext! ctx, System.Guid accessToken, string! progId) -> void
+Bee.Repository.AuditLog.AuditRuleRepository.GetRules(string! databaseId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Logging.AuditRule!>!
+Bee.Repository.AuditLog.AuditRuleRepository.NotifyRulesChanged(string! companyId) -> void
 Bee.Repository.Factories.RepositoryFactory
 Bee.Repository.Factories.RepositoryFactory.Context.get -> Bee.Repository.IRepositoryContext!
 Bee.Repository.Factories.RepositoryFactory.Create<T>(System.Guid accessToken = default(System.Guid)) -> T!

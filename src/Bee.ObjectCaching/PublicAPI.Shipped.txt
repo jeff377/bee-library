@@ -9,6 +9,7 @@ Bee.ObjectCaching.CacheContainerService.CacheContainerService(Bee.Definition.Sto
 Bee.ObjectCaching.CacheContainerService.CacheContainerService(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix) -> void
 Bee.ObjectCaching.CacheContainerService.CacheContainerService(Bee.Definition.Storage.IDefineStorage! storage, Bee.Definition.PathOptions! paths, string! cachePrefix, System.Func<Bee.Definition.ICacheDataSourceProvider!>? dataSource) -> void
 Bee.ObjectCaching.CacheContainerService.CachePrefix.get -> string!
+Bee.ObjectCaching.CacheContainerService.CompanyAuditRules.get -> Bee.ObjectCaching.Database.CompanyAuditRulesCache!
 Bee.ObjectCaching.CacheContainerService.CompanyInfo.get -> Bee.ObjectCaching.Database.CompanyInfoCache!
 Bee.ObjectCaching.CacheContainerService.CompanyRolePermissions.get -> Bee.ObjectCaching.Database.CompanyRolePermissionsCache!
 Bee.ObjectCaching.CacheContainerService.CurrencySettings.get -> Bee.ObjectCaching.Define.CurrencySettingsCache!
@@ -96,6 +97,8 @@ Bee.ObjectCaching.Database.ApiKeyGateCache
 Bee.ObjectCaching.Database.ApiKeyGateCache.ApiKeyGateCache(string! cachePrefix = "") -> void
 Bee.ObjectCaching.Database.ApiKeyGateCache.GetState() -> Bee.Definition.Security.ApiKeyGateState?
 Bee.ObjectCaching.Database.ApiKeyGateCache.RemoveState() -> void
+Bee.ObjectCaching.Database.CompanyAuditRulesCache
+Bee.ObjectCaching.Database.CompanyAuditRulesCache.CompanyAuditRulesCache(string! cachePrefix = "") -> void
 Bee.ObjectCaching.Database.CompanyInfoCache
 Bee.ObjectCaching.Database.CompanyInfoCache.CompanyInfoCache(string! cachePrefix = "") -> void
 Bee.ObjectCaching.Database.CompanyRolePermissionsCache
@@ -139,6 +142,7 @@ Bee.ObjectCaching.Define.UnitSettingsCache.UnitSettingsCache(Bee.Definition.Stor
 Bee.ObjectCaching.ICacheContainer
 Bee.ObjectCaching.ICacheContainer.ApiKey.get -> Bee.ObjectCaching.Database.ApiKeyCache!
 Bee.ObjectCaching.ICacheContainer.ApiKeyGate.get -> Bee.ObjectCaching.Database.ApiKeyGateCache!
+Bee.ObjectCaching.ICacheContainer.CompanyAuditRules.get -> Bee.ObjectCaching.Database.CompanyAuditRulesCache!
 Bee.ObjectCaching.ICacheContainer.CompanyInfo.get -> Bee.ObjectCaching.Database.CompanyInfoCache!
 Bee.ObjectCaching.ICacheContainer.CompanyRolePermissions.get -> Bee.ObjectCaching.Database.CompanyRolePermissionsCache!
 Bee.ObjectCaching.ICacheContainer.CurrencySettings.get -> Bee.ObjectCaching.Define.CurrencySettingsCache!
@@ -183,6 +187,10 @@ Bee.ObjectCaching.Providers.MemoryCacheProvider.Set(string! key, object! value, 
 Bee.ObjectCaching.Services.ApiKeyValidator
 Bee.ObjectCaching.Services.ApiKeyValidator.ApiKeyValidator(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.ApiKeyValidator.Validate(string? apiKey) -> Bee.Definition.Security.ApiKeyValidationResult!
+Bee.ObjectCaching.Services.AuditRuleService
+Bee.ObjectCaching.Services.AuditRuleService.AuditRuleService(Bee.ObjectCaching.ICacheContainer! cache) -> void
+Bee.ObjectCaching.Services.AuditRuleService.Get(string! companyId) -> Bee.Definition.Logging.CompanyAuditRules?
+Bee.ObjectCaching.Services.AuditRuleService.Remove(string! companyId) -> void
 Bee.ObjectCaching.Services.CompanyAuthorizationService
 Bee.ObjectCaching.Services.CompanyAuthorizationService.Can(System.Guid accessToken, string! modelId, Bee.Definition.Settings.PermissionAction action) -> bool
 Bee.ObjectCaching.Services.CompanyAuthorizationService.CompanyAuthorizationService(Bee.Definition.Identity.ISessionInfoService! sessionInfoService, Bee.Definition.Identity.IRolePermissionService! rolePermissionService) -> void
@@ -218,6 +226,7 @@ override Bee.ObjectCaching.Database.ApiKeyCache.GetPolicy(string! key) -> Bee.Ob
 override Bee.ObjectCaching.Database.ApiKeyGateCache.CacheGroup.get -> string!
 override Bee.ObjectCaching.Database.ApiKeyGateCache.CreateInstance(string! key) -> Bee.Definition.Security.ApiKeyGateState?
 override Bee.ObjectCaching.Database.ApiKeyGateCache.GetPolicy(string! key) -> Bee.ObjectCaching.CacheItemPolicy!
+override Bee.ObjectCaching.Database.CompanyAuditRulesCache.CreateInstance(string! key) -> Bee.Definition.Logging.CompanyAuditRules?
 override Bee.ObjectCaching.Database.CompanyInfoCache.CreateInstance(string! key) -> Bee.Definition.Identity.CompanyInfo?
 override Bee.ObjectCaching.Database.CompanyRolePermissionsCache.CreateInstance(string! key) -> Bee.Definition.Identity.CompanyRolePermissions?
 override Bee.ObjectCaching.Database.DepartmentTreeCache.CreateInstance(string! key) -> Bee.Definition.Organization.DepartmentTree?

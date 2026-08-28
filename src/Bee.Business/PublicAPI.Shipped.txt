@@ -4,6 +4,8 @@ Bee.Business.Attributes.ExecFuncAccessControlAttribute.AccessRequirement.get -> 
 Bee.Business.Attributes.ExecFuncAccessControlAttribute.ExecFuncAccessControlAttribute(Bee.Definition.Security.ApiAccessRequirement accessRequirement = Bee.Definition.Security.ApiAccessRequirement.Authenticated) -> void
 Bee.Business.Attributes.ExecFuncAccessControlAttribute.LocalOnly.get -> bool
 Bee.Business.Attributes.ExecFuncAccessControlAttribute.LocalOnly.set -> void
+Bee.Business.AuditLog.AuditRuleBusinessObject
+Bee.Business.AuditLog.AuditRuleBusinessObject.AuditRuleBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId) -> void
 Bee.Business.AuditLog.GetAccessLogArgs
 Bee.Business.AuditLog.GetAccessLogArgs.FromUtc.get -> System.DateTime?
 Bee.Business.AuditLog.GetAccessLogArgs.FromUtc.set -> void
@@ -324,6 +326,7 @@ Bee.Business.Providers.CacheDataSourceProvider
 Bee.Business.Providers.CacheDataSourceProvider.CacheDataSourceProvider(Bee.Repository.Abstractions.Factories.IRepositoryFactory! repositoryFactory, System.IServiceProvider! services) -> void
 Bee.Business.Providers.CacheDataSourceProvider.GetApiKey(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
 Bee.Business.Providers.CacheDataSourceProvider.GetApiKeyGateState() -> Bee.Definition.Security.ApiKeyGateState!
+Bee.Business.Providers.CacheDataSourceProvider.GetCompanyAuditRules(string! companyId) -> Bee.Definition.Logging.CompanyAuditRules?
 Bee.Business.Providers.CacheDataSourceProvider.GetCompanyInfo(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
 Bee.Business.Providers.CacheDataSourceProvider.GetCompanyRolePermissions(string! companyId) -> Bee.Definition.Identity.CompanyRolePermissions?
 Bee.Business.Providers.CacheDataSourceProvider.GetDepartmentTree(string! companyId) -> Bee.Definition.Organization.DepartmentTree?
@@ -637,6 +640,8 @@ Bee.Business.Validator.AccessTokenValidator.Validate(System.Guid accessToken) ->
 const Bee.Business.Security.LoginAttemptTracker.DefaultLockoutMinutes = 15 -> int
 const Bee.Business.Security.LoginAttemptTracker.DefaultMaxFailedAttempts = 5 -> int
 const Bee.Business.Security.LoginAttemptTracker.DefaultMaxTrackedAccounts = 10000 -> int
+override Bee.Business.AuditLog.AuditRuleBusinessObject.DoAfterDelete(Bee.Business.Form.DeleteContext! context) -> void
+override Bee.Business.AuditLog.AuditRuleBusinessObject.DoAfterSave(Bee.Business.Form.SaveContext! context) -> void
 override Bee.Business.Form.FormBusinessObject.DoExecFunc(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 override Bee.Business.Form.FormBusinessObject.DoExecFuncAnonymous(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 override Bee.Business.ReservedProgIdBinding.Equals(object? obj) -> bool

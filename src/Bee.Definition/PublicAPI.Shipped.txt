@@ -457,6 +457,7 @@ Bee.Definition.IBusinessObjectFactory.CreateBusinessObject(System.Guid accessTok
 Bee.Definition.ICacheDataSourceProvider
 Bee.Definition.ICacheDataSourceProvider.GetApiKey(string! sysId) -> Bee.Definition.Security.ApiKeyInfo?
 Bee.Definition.ICacheDataSourceProvider.GetApiKeyGateState() -> Bee.Definition.Security.ApiKeyGateState!
+Bee.Definition.ICacheDataSourceProvider.GetCompanyAuditRules(string! companyId) -> Bee.Definition.Logging.CompanyAuditRules?
 Bee.Definition.ICacheDataSourceProvider.GetCompanyInfo(string! companyId) -> Bee.Definition.Identity.CompanyInfo?
 Bee.Definition.ICacheDataSourceProvider.GetCompanyRolePermissions(string! companyId) -> Bee.Definition.Identity.CompanyRolePermissions?
 Bee.Definition.ICacheDataSourceProvider.GetDepartmentTree(string! companyId) -> Bee.Definition.Organization.DepartmentTree?
@@ -884,6 +885,24 @@ Bee.Definition.Logging.AuditEntry.UserId.get -> string?
 Bee.Definition.Logging.AuditEntry.UserId.init -> void
 Bee.Definition.Logging.AuditEntry.UserName.get -> string?
 Bee.Definition.Logging.AuditEntry.UserName.init -> void
+Bee.Definition.Logging.AuditRule
+Bee.Definition.Logging.AuditRule.<Clone>$() -> Bee.Definition.Logging.AuditRule!
+Bee.Definition.Logging.AuditRule.AccessMode.get -> Bee.Definition.Logging.AuditRuleMode
+Bee.Definition.Logging.AuditRule.AccessMode.init -> void
+Bee.Definition.Logging.AuditRule.AuditRule(string! ProgId, Bee.Definition.Logging.AuditRuleMode ChangeMode, Bee.Definition.Logging.AuditRuleMode AccessMode, bool IsSensitive) -> void
+Bee.Definition.Logging.AuditRule.ChangeMode.get -> Bee.Definition.Logging.AuditRuleMode
+Bee.Definition.Logging.AuditRule.ChangeMode.init -> void
+Bee.Definition.Logging.AuditRule.Deconstruct(out string! ProgId, out Bee.Definition.Logging.AuditRuleMode ChangeMode, out Bee.Definition.Logging.AuditRuleMode AccessMode, out bool IsSensitive) -> void
+Bee.Definition.Logging.AuditRule.Equals(Bee.Definition.Logging.AuditRule? other) -> bool
+Bee.Definition.Logging.AuditRule.IsSensitive.get -> bool
+Bee.Definition.Logging.AuditRule.IsSensitive.init -> void
+Bee.Definition.Logging.AuditRule.ProgId.get -> string!
+Bee.Definition.Logging.AuditRule.ProgId.init -> void
+Bee.Definition.Logging.AuditRuleMode
+Bee.Definition.Logging.AuditRuleMode.Inherit = 0 -> Bee.Definition.Logging.AuditRuleMode
+Bee.Definition.Logging.AuditRuleMode.Off = 2 -> Bee.Definition.Logging.AuditRuleMode
+Bee.Definition.Logging.AuditRuleMode.On = 1 -> Bee.Definition.Logging.AuditRuleMode
+Bee.Definition.Logging.AuditRuleModeExtensions
 Bee.Definition.Logging.ChangeAuditEntry
 Bee.Definition.Logging.ChangeAuditEntry.ChangeAuditEntry() -> void
 Bee.Definition.Logging.ChangeAuditEntry.ChangeKind.get -> Bee.Definition.Logging.ChangeKind
@@ -902,6 +921,11 @@ Bee.Definition.Logging.ChangeKind
 Bee.Definition.Logging.ChangeKind.Delete = 3 -> Bee.Definition.Logging.ChangeKind
 Bee.Definition.Logging.ChangeKind.Insert = 1 -> Bee.Definition.Logging.ChangeKind
 Bee.Definition.Logging.ChangeKind.Update = 2 -> Bee.Definition.Logging.ChangeKind
+Bee.Definition.Logging.CompanyAuditRules
+Bee.Definition.Logging.CompanyAuditRules.CompanyAuditRules(string! companyId, System.Collections.Generic.IReadOnlyList<Bee.Definition.Logging.AuditRule!>! rules) -> void
+Bee.Definition.Logging.CompanyAuditRules.CompanyId.get -> string!
+Bee.Definition.Logging.CompanyAuditRules.Count.get -> int
+Bee.Definition.Logging.CompanyAuditRules.Find(string! progId) -> Bee.Definition.Logging.AuditRule?
 Bee.Definition.Logging.DbAccessAnomalyLogOptions
 Bee.Definition.Logging.DbAccessAnomalyLogOptions.AffectedRowThreshold.get -> int
 Bee.Definition.Logging.DbAccessAnomalyLogOptions.AffectedRowThreshold.set -> void
@@ -926,6 +950,9 @@ Bee.Definition.Logging.IAnomalyLogWriter
 Bee.Definition.Logging.IAnomalyLogWriter.Write(Bee.Definition.Logging.AnomalyEntry! entry) -> void
 Bee.Definition.Logging.IAuditLogWriter
 Bee.Definition.Logging.IAuditLogWriter.Write(Bee.Definition.Logging.AuditEntry! entry) -> void
+Bee.Definition.Logging.IAuditRuleService
+Bee.Definition.Logging.IAuditRuleService.Get(string! companyId) -> Bee.Definition.Logging.CompanyAuditRules?
+Bee.Definition.Logging.IAuditRuleService.Remove(string! companyId) -> void
 Bee.Definition.Logging.LogOptions
 Bee.Definition.Logging.LogOptions.DbAccess.get -> Bee.Definition.Logging.DbAccessAnomalyLogOptions!
 Bee.Definition.Logging.LogOptions.DbAccess.set -> void
@@ -1759,6 +1786,7 @@ const Bee.Definition.SysFields.UpdateTime = "sys_update_time" -> string!
 const Bee.Definition.SysFields.UpdateUserRowId = "sys_update_user_rowid" -> string!
 const Bee.Definition.SysFields.ValidDate = "sys_valid_date" -> string!
 const Bee.Definition.SysProgIds.AuditLog = "AuditLog" -> string!
+const Bee.Definition.SysProgIds.AuditRule = "AuditRule" -> string!
 const Bee.Definition.SysProgIds.System = "System" -> string!
 const Bee.Definition.SystemActions.CheckPackageUpdate = "CheckPackageUpdate" -> string!
 const Bee.Definition.SystemActions.CreateApiKey = "CreateApiKey" -> string!
@@ -1839,6 +1867,9 @@ override Bee.Definition.Layouts.LayoutSection.ToString() -> string!
 override Bee.Definition.Logging.AccessAuditEntry.TableName.get -> string!
 override Bee.Definition.Logging.ApiAnomalyEntry.TableName.get -> string!
 override Bee.Definition.Logging.AuditColumn.GetHashCode() -> int
+override Bee.Definition.Logging.AuditRule.Equals(object? obj) -> bool
+override Bee.Definition.Logging.AuditRule.GetHashCode() -> int
+override Bee.Definition.Logging.AuditRule.ToString() -> string!
 override Bee.Definition.Logging.ChangeAuditEntry.TableName.get -> string!
 override Bee.Definition.Logging.DbAccessAnomalyLogOptions.ToString() -> string!
 override Bee.Definition.Logging.DbAnomalyEntry.TableName.get -> string!
@@ -1935,6 +1966,9 @@ static Bee.Definition.Layouts.FormLayoutGenerator.Generate(Bee.Definition.Forms.
 static Bee.Definition.Layouts.LayoutColumnCollectionExtensions.Add(this Bee.Definition.Layouts.LayoutColumnCollection? collection, string! fieldName, string! caption, Bee.Definition.Layouts.ControlType controlType) -> Bee.Definition.Layouts.LayoutColumn!
 static Bee.Definition.Logging.AuditColumn.operator !=(Bee.Definition.Logging.AuditColumn left, Bee.Definition.Logging.AuditColumn right) -> bool
 static Bee.Definition.Logging.AuditColumn.operator ==(Bee.Definition.Logging.AuditColumn left, Bee.Definition.Logging.AuditColumn right) -> bool
+static Bee.Definition.Logging.AuditRule.operator !=(Bee.Definition.Logging.AuditRule? left, Bee.Definition.Logging.AuditRule? right) -> bool
+static Bee.Definition.Logging.AuditRule.operator ==(Bee.Definition.Logging.AuditRule? left, Bee.Definition.Logging.AuditRule? right) -> bool
+static Bee.Definition.Logging.AuditRuleModeExtensions.Resolve(this Bee.Definition.Logging.AuditRuleMode mode, bool inherited) -> bool
 static Bee.Definition.Logging.NullAuditLogWriter.Instance.get -> Bee.Definition.Logging.NullAuditLogWriter!
 static Bee.Definition.MaterializeOptions.Default.get -> Bee.Definition.MaterializeOptions!
 static Bee.Definition.MaterializeResult.operator !=(Bee.Definition.MaterializeResult? left, Bee.Definition.MaterializeResult? right) -> bool
