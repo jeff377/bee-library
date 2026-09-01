@@ -3,7 +3,10 @@ using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.Messages;
 using Bee.Api.Core.Messages.System;
 using Bee.Definition;
+using Bee.Definition.Identity;
+using Bee.Definition.Logging;
 using Bee.Definition.Security;
+using Bee.Definition.Settings;
 using Bee.Tests.Shared;
 
 namespace Bee.Api.Core.UnitTests
@@ -199,6 +202,23 @@ namespace Bee.Api.Core.UnitTests
             });
         }
 
+        [Fact]
+        [DisplayName("重放拒絕應記為 AnomalyKind.Replay 而非 Error")]
+        public void Execute_ReplayRejected_IsLoggedAsReplayAnomaly()
+        {
+            // 折進泛用 Error 的話，「某 session 連續被拒」這個訊號就看不見了——
+            // 而那正好是用戶端時鐘偏移或有人重送封包的判別依據。
+            WithFrameRequired(true, () =>
+            {
+                var staleMs = DateTimeOffset.UtcNow.AddHours(-1).ToUnixTimeMilliseconds();
+
+                var entries = ExecuteAndCaptureAnomalies(new ApiPayloadFrame(staleMs, sequence: 0));
+
+                var entry = Assert.IsType<ApiAnomalyEntry>(Assert.Single(entries));
+                Assert.Equal(AnomalyKind.Replay, entry.Kind);
+            });
+        }
+
         /// <summary>
         /// 以指定的 frame 送出一次 Encoded 的 Ping 呼叫（Ping 未宣告序號檢查）。
         /// </summary>
@@ -241,5 +261,56 @@ namespace Bee.Api.Core.UnitTests
 
         private static ApiPayloadFrame FrameWith(long sequence)
             => new(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), sequence);
+
+        /// <summary>
+        /// 以啟用 anomaly 記錄的 executor 送出一次呼叫，回傳捕捉到的 anomaly 紀錄。
+        /// </summary>
+        /// <param name="frame">要夾帶的重放防護 frame。</param>
+        private List<AnomalyEntry> ExecuteAndCaptureAnomalies(ApiPayloadFrame frame)
+        {
+            var writer = new CapturingAnomalyLogWriter();
+            var executor = new JsonRpcExecutor(
+                _fx.GetRequiredService<IBusinessObjectFactory>(),
+                _fx.GetRequiredService<IAccessTokenValidator>(),
+                _fx.GetRequiredService<IApiEncryptionKeyProvider>(),
+                writer,
+                new AuditLogOptions { Enabled = true, AnomalyEnabled = true, ApiSlowThresholdMs = 60_000 },
+                new StubSessionInfoService())
+            {
+                AccessToken = Guid.Empty,
+                IsLocalCall = true,
+            };
+
+            var request = new JsonRpcRequest
+            {
+                Method = $"{SysProgIds.System}.Ping",
+                Params = new JsonRpcParams
+                {
+                    Value = new PingRequest { ClientName = "replay-test" },
+                    Frame = frame,
+                },
+                Id = Guid.NewGuid().ToString(),
+            };
+            ApiPayloadConverter.TransformTo(request.Params, PayloadFormat.Encoded);
+            executor.Execute(request);
+
+            return writer.Entries;
+        }
+
+        private sealed class CapturingAnomalyLogWriter : IAnomalyLogWriter
+        {
+            public List<AnomalyEntry> Entries { get; } = [];
+
+            public void Write(AnomalyEntry entry) => Entries.Add(entry);
+        }
+
+        private sealed class StubSessionInfoService : ISessionInfoService
+        {
+            public SessionInfo Get(Guid accessToken) => new() { UserId = "u1", UserName = "User One" };
+
+            public void Set(SessionInfo sessionInfo) { }
+
+            public void Remove(Guid accessToken) { }
+        }
     }
 }

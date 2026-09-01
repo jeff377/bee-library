@@ -1,12 +1,12 @@
 # 計畫：JSON-RPC 封包重放防護（Anti-Replay）
 
-**狀態：🚧 進行中（2026-09-01）**
+**狀態：✅ 已完成（2026-09-01）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | Wire frame 承載 timestamp，伺服器端時窗檢查 | ✅ 已完成（2026-09-01） |
 | 2 | Per-session 序號滑動視窗（零 DB），`ApiAccessControlAttribute` 第三維度 | ✅ 已完成（2026-09-01） |
-| 3 | 重放事件納入 anomaly log，文件與 ADR | 📝 待做 |
+| 3 | 重放事件納入 anomaly log，文件與 ADR | ✅ 已完成（2026-09-01） |
 
 ## 背景
 
@@ -300,13 +300,19 @@ JS 呼叫端該走哪條路，需要獨立評估，不應綁在本計畫的交�
 **已知不涵蓋**：`Public` 等級方法若以 Plain 呼叫則無 frame、不受檢查（D11 的降級繞道）。
 `ApiReplayProtection.UniqueSequence` 的 XML doc 已明載此限制。
 
-### 階段 3：可觀測性與文件
+### 階段 3：可觀測性與文件 ✅
 
-1. `AnomalyKind` 新增 `Replay`（列舉加值為相容變更），比照 `Unauthorized` 的處理方式
-2. ADR 記錄 D1（為何不放 `ApiPayload` 明文層）與 D2（Encoded 的效力邊界）
-3. `docs/development-constraints.md` 補上防護邊界；README 據 D2 誠實描述
-4. 升級指引寫明 D10 的行為變化（逾時重送會失敗），並指出需要安全重試的場景應自行實作冪等鍵
-5. 文件寫明 D11 的限制：`Public` 等級方法可經格式降級繞過重放防護，`ExecFuncAnonymous` 的冪等由應用層自負
+**實作結果（2026-09-01）**
+
+- `AnomalyKind.Replay`（= 7），於 `JsonRpcExecutor.LogApiFailureAnomaly` 分類。
+  整合點選在既有的失敗記錄路徑而非新開一條——比照 `Unauthorized` 那種 transport 層寫入
+  並不適用，重放拒絕是 executor 內部丟出的例外。
+- [ADR-042](../adr/adr-042-api-replay-protection.md) —— 七項決策 + 三項明確不納入
+- `docs/development-constraints.md` / `.zh-TW.md` —— 新增「API 重放防護限制」四條
+- `src/Bee.Api.Core/README.md` / `.zh-TW.md` —— 新增「重放防護」小節
+- 1 個測試（重放拒絕記為 `Replay` 而非 `Error`）
+
+本階段零行為變更，只補可觀測性與說明。
 
 ## 測試
 

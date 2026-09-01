@@ -226,7 +226,12 @@ namespace Bee.Api.Core.JsonRpc
         {
             if (stopwatch == null) { return; }
             stopwatch.Stop();
-            var kind = IsTimeout(rootEx) ? AnomalyKind.Timeout : AnomalyKind.Error;
+            // A replay rejection is filed under its own kind: unlike an Error it says nothing is
+            // broken, and a run of them points at a drifted client clock or a caller resending
+            // captured packets — neither of which is visible once folded into generic errors.
+            var kind = rootEx is ReplayRejectedException ? AnomalyKind.Replay
+                : IsTimeout(rootEx) ? AnomalyKind.Timeout
+                : AnomalyKind.Error;
             WriteApiAnomaly(method, kind, stopwatch.ElapsedMilliseconds,
                 errorType: rootEx.GetType().Name, errorMessage: SanitizeMessage(rootEx.Message));
         }

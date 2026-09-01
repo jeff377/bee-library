@@ -1,6 +1,7 @@
 #nullable enable
 Bee.Definition.Attributes.ApiAccessControlAttribute.ReplayProtection.get -> Bee.Definition.Security.ApiReplayProtection
 Bee.Definition.Attributes.ApiAccessControlAttribute.ReplayProtection.set -> void
+Bee.Definition.Logging.AnomalyKind.Replay = 7 -> Bee.Definition.Logging.AnomalyKind
 Bee.Definition.Security.ApiReplayProtection
 Bee.Definition.Security.ApiReplayProtection.None = 0 -> Bee.Definition.Security.ApiReplayProtection
 Bee.Definition.Security.ApiReplayProtection.UniqueSequence = 1 -> Bee.Definition.Security.ApiReplayProtection

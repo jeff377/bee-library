@@ -306,6 +306,29 @@ from it. Three constraints follow:
   `SessionInfo` and only calls `SessionInfoService.Set` produces a session with no row behind it:
   it dies at the next restart, and on another node it does not exist at all.
 
+## API Replay Protection Constraints
+
+With `ApiServiceOptions.RequireWireFrame` enabled, Encoded and Encrypted requests carry a wire
+frame (timestamp + sequence number) inside the encrypted envelope. See
+[ADR-042](adr/adr-042-api-replay-protection.md) for the reasoning. Four constraints follow:
+
+- **Both ends must be set to the same value.** Whether a frame is present is a deployment-level
+  fact and is never read from the packet — were the server to "detect" it, an attacker could turn
+  the protection off simply by removing the frame. A mismatched pair therefore fails, deliberately.
+  Rollout order: **upgrade the package on both ends first, then enable the switch on both**.
+- **The Plain path is unprotected.** Plaintext offers no binding an attacker cannot forge: any
+  anti-replay field can be rewritten (to the current time, to a higher sequence), which makes it a
+  fresh legitimate request rather than a replay. Methods at `ApiProtectionLevel.Public` — including
+  `Save`, `Delete` and `ExecFunc` — may still be called as Plain, and that path carries no frame and
+  is not checked. `Encoded` carries a frame but has no HMAC, so it only stops a verbatim resend.
+- **A timed-out request fails on resend rather than retrying successfully.** Sequence numbers reject
+  replays; idempotency keys make retries safe. Neither substitutes for the other. The framework has
+  no automatic retry, but a retry loop in your own code — or a user pressing "submit" again — will
+  hit this. Implement an idempotency key where a retry has to be safe.
+- **Anonymous calls are not sequence-checked.** Sequence numbers are counted per session, and there
+  is no session before sign-in. If `ExecFuncAnonymous` has side effects, its idempotency is the
+  application's responsibility.
+
 ## Database Schema Constraints
 
 The framework's schema definition (`TableSchema`) and upgrade mechanism (`TableUpgradeOrchestrator`) **deliberately do not support** the following database-level elements:

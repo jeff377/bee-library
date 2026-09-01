@@ -32,6 +32,17 @@
 - `NoEncryptionEncryptor` -- 僅供測試使用的旁路加密器。
 - `ApiPayloadOptionsFactory` -- 依據保護等級建立管線選項。
 
+### 重放防護（選用，預設關閉）
+
+- `ApiPayloadFrame` -- 加密封套內的時間戳與序號，前置於 payload body。
+- `ReplayWindow` / `IReplayWindowStore` -- per-session 的序號滑動視窗（64 格位圖，零資料庫往返）。
+- `ApiServiceOptions.RequireWireFrame` -- 總開關，**用戶端與伺服器必須設成同一個值**。
+- `ApiReplayProtection` -- `ApiAccessControlAttribute` 的第三維度，逐方法宣告是否檢查序號。
+
+僅涵蓋 `Encoded` 與 `Encrypted`。`Plain` 沒有封套，任何防重放欄位都能被改寫，因此不帶 frame；
+`Encoded` 帶 frame 但無 HMAC，只擋無腦原樣重送。完整邊界、啟用順序與已知限制見
+[ADR-042](../../docs/adr/adr-042-api-replay-protection.md)。
+
 ### 授權與存取控制
 
 - `IApiAuthorizationValidator` / `ApiAuthorizationValidator` -- 驗證傳入請求的授權上下文。

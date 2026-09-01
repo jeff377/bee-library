@@ -32,6 +32,18 @@
 - `NoEncryptionEncryptor` -- bypass encryptor for testing only.
 - `ApiPayloadOptionsFactory` -- creates pipeline options based on protection level.
 
+### Anti-Replay (optional, off by default)
+
+- `ApiPayloadFrame` -- timestamp and sequence number carried inside the encrypted envelope, ahead of the payload body.
+- `ReplayWindow` / `IReplayWindowStore` -- per-session sliding window of sequence numbers (64-slot bitmap, no database round trip).
+- `ApiServiceOptions.RequireWireFrame` -- the master switch; **client and server must be set to the same value**.
+- `ApiReplayProtection` -- third dimension of `ApiAccessControlAttribute`, declaring per method whether sequences are checked.
+
+Covers `Encoded` and `Encrypted` only. `Plain` has no envelope, so any anti-replay field could be
+rewritten and none is sent; `Encoded` carries a frame but has no HMAC, so it only stops a verbatim
+resend. See [ADR-042](../../docs/adr/adr-042-api-replay-protection.md) for the full boundary,
+rollout order and known limitations.
+
 ### Authorization & Access Control
 
 - `IApiAuthorizationValidator` / `ApiAuthorizationValidator` -- validates authorization context for incoming requests.

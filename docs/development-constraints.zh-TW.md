@@ -289,6 +289,25 @@ API Request/Response 與 BO Args/Result 型別必須遵守命名慣例，`ApiOut
 - **自訂登入流程必須走框架的建構路徑。** 只建構 `SessionInfo` 並呼叫 `SessionInfoService.Set`
   的程式碼，會產生一個背後沒有列的 session：行程一重啟就消失，在其他節點上根本不存在。
 
+## API 重放防護限制
+
+啟用 `ApiServiceOptions.RequireWireFrame` 後，Encoded 與 Encrypted 的請求會在加密封套內夾帶
+一段 wire frame（時間戳 + 序號）。設計背景見 [ADR-042](adr/adr-042-api-replay-protection.md)。
+由此衍生四項限制：
+
+- **兩端必須設成同一個值。** frame 的有無是部署層級的事實，不由封包自述——伺服器若「偵測」
+  frame 在不在，攻擊者只要把 frame 拿掉就能關閉防護。因此兩端設定不一致必然失敗，這是刻意的。
+  啟用順序：**兩端先升套件，再同時開啟兩端開關**。
+- **Plain 路徑不受保護。** 明文沒有攻擊者無法偽造的綁定，任何防重放欄位他都能改寫（改成當下
+  時間、改成更大的序號），那就是一個全新的合法請求。`ApiProtectionLevel.Public` 的方法
+  （含 `Save` / `Delete` / `ExecFunc`）仍允許以 Plain 呼叫，該路徑不帶 frame、不受檢查。
+  `Encoded` 帶 frame 但無 HMAC，只擋無腦原樣重送。
+- **逾時重送會失敗，而非重試成功。** 序號解的是「拒絕重放」，冪等鍵解的是「安全重試」，
+  兩者不可互相取代。框架本身沒有自動重試，但應用層自己包的重試迴圈、以及使用者手動
+  「重新送出」都會踩到；需要安全重試的場景請自行實作冪等鍵。
+- **匿名呼叫不做序號檢查。** 序號是 per session 的，登入前沒有 session 可計數。
+  `ExecFuncAnonymous` 若有副作用，其冪等由應用層自負。
+
 ## 資料庫 Schema 限制
 
 框架的 schema 定義（`TableSchema`）與升級機制（`TableUpgradeOrchestrator`）**刻意不支援**下列資料庫層元素：

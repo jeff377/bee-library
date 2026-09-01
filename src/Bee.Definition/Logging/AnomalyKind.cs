@@ -30,5 +30,16 @@ namespace Bee.Definition.Logging
         /// place such attempts become visible.
         /// </remarks>
         Unauthorized = 6,
+
+        /// <summary>
+        /// (API) The call was rejected before it ran — the replay-protection gate refused it.
+        /// </summary>
+        /// <remarks>
+        /// Not a code defect, and separated from <see cref="Error"/> because the two call for
+        /// different responses: a burst of these from one session is either a client whose clock
+        /// has drifted out of the accepted window, or a caller resending captured packets. Neither
+        /// is visible if they are filed as generic errors.
+        /// </remarks>
+        Replay = 7,
     }
 }
