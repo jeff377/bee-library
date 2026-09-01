@@ -1,1 +1,20 @@
 #nullable enable
+Bee.Api.Core.JsonRpc.ApiPayload.Frame.get -> Bee.Api.Core.JsonRpc.ApiPayloadFrame?
+Bee.Api.Core.JsonRpc.ApiPayload.Frame.set -> void
+Bee.Api.Core.JsonRpc.ApiPayloadFrame
+Bee.Api.Core.JsonRpc.ApiPayloadFrame.ApiPayloadFrame(long timestampMs, long sequence) -> void
+Bee.Api.Core.JsonRpc.ApiPayloadFrame.Prepend(byte[]! body) -> byte[]!
+Bee.Api.Core.JsonRpc.ApiPayloadFrame.Sequence.get -> long
+Bee.Api.Core.JsonRpc.ApiPayloadFrame.TimestampMs.get -> long
+Bee.Api.Core.JsonRpc.ApiPayloadFrame.Version.get -> byte
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.ReplayRejected = -32005 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.ReplayRejectedException
+Bee.Api.Core.JsonRpc.ReplayRejectedException.ReplayRejectedException(string! message) -> void
+Bee.Api.Core.JsonRpc.ReplayRejectedException.ReplayRejectedException(string! message, System.Exception! innerException) -> void
+const Bee.Api.Core.JsonRpc.ApiPayloadFrame.CurrentVersion = 1 -> byte
+const Bee.Api.Core.JsonRpc.ApiPayloadFrame.Version1Size = 17 -> int
+static Bee.Api.Core.ApiServiceOptions.RequireWireFrame.get -> bool
+static Bee.Api.Core.ApiServiceOptions.RequireWireFrame.set -> void
+static Bee.Api.Core.ApiServiceOptions.WireFrameTimestampTolerance.get -> System.TimeSpan
+static Bee.Api.Core.ApiServiceOptions.WireFrameTimestampTolerance.set -> void
+static Bee.Api.Core.JsonRpc.ApiPayloadFrame.Extract(byte[]! framed, out byte[]! body) -> Bee.Api.Core.JsonRpc.ApiPayloadFrame!

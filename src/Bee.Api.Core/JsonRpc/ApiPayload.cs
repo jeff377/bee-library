@@ -47,6 +47,23 @@ namespace Bee.Api.Core.JsonRpc
         public object? Value { get; set; }
 
         /// <summary>
+        /// Gets or sets the anti-replay frame that travels inside the envelope, ahead of the body.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately <b>not</b> serialized: were these values written to the JSON envelope beside
+        /// <see cref="Format"/> and <see cref="TypeName"/> they would sit in plaintext, where an
+        /// attacker could rewrite them at will. <see cref="ApiPayloadConverter"/> packs the frame in
+        /// front of the encoded body and encrypts the two together, so the payload HMAC covers it.
+        /// <para>
+        /// On the way out, leave this null to have the converter stamp the current time; on the way
+        /// in, the converter fills it from the frame it read. It is null whenever
+        /// <see cref="ApiServiceOptions.RequireWireFrame"/> is off, and for Plain payloads always.
+        /// </para>
+        /// </remarks>
+        [JsonIgnore]
+        public ApiPayloadFrame? Frame { get; set; }
+
+        /// <summary>
         /// Gets or sets the type name of the payload value, used to specify the target type during deserialization.
         /// </summary>
         [JsonPropertyName("type")]

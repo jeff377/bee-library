@@ -1,10 +1,10 @@
 # 計畫：JSON-RPC 封包重放防護（Anti-Replay）
 
-**狀態：📝 擬定中（2026-08-31）**
+**狀態：🚧 進行中（2026-09-01）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | Wire frame 承載 timestamp，伺服器端時窗檢查 | 📝 待做 |
+| 1 | Wire frame 承載 timestamp，伺服器端時窗檢查 | ✅ 已完成（2026-09-01） |
 | 2 | Per-session 序號滑動視窗（零 DB），`ApiAccessControlAttribute` 第三維度 | 📝 待做 |
 | 3 | 重放事件納入 anomaly log，文件與 ADR | 📝 待做 |
 
@@ -128,11 +128,14 @@ connector 各自從 0 遞增，同一 token 就會送出重複序號，第二個
 **不可用明文 flag 標示「本封包有無 frame」**：那是典型的降級攻擊面，攻擊者把 flag 改掉，
 伺服器就不檢查了，整套防護歸零。
 
-正解是由**伺服器端設定**決定是否要求 frame，封包不得自述：
+正解是由**部署設定**決定是否使用 frame，封包不得自述。實作上兩端讀同一個開關
+`ApiServiceOptions.RequireWireFrame`：
 
-- 要求 frame 的 server 一律期待 frame，舊 client 直接被拒
-- 這是正確行為而非副作用——舊 client 就是沒有重放防護，拒絕它正是這個功能的目的
-- 部署順序因此是：先升 client、再開 server 開關；開關預設關閉，讓升級期間兩者並存
+- 開啟時 client 一律寫 frame、server 一律期待 frame；關閉時兩端都不用，行為與升級前完全相同
+- **兩端設定不一致必然失敗**，這是刻意的：server 端若「偵測」frame 在不在，攻擊者只要把
+  frame 拿掉就能讓 server 以為本來就沒有——那正是要防的降級。回歸測試
+  `RestoreFrom_FrameWrittenButNotExpected_FailsToDecode` 釘住這個行為
+- 部署順序因此是：**兩端先升套件**（開關預設關閉，零行為變化），**再同時開啟兩端開關**
 
 這也意味著**開關不能做成 per-method**（attribute 只能決定「檢不檢查序號」，不能決定
 「解不解析 frame」）——frame 的有無是連線層級的事實，不是方法層級的政策。
@@ -153,6 +156,11 @@ frame 前置於 `Encode` 的輸出。因此接收端解密後可直接讀 frame�
 「frame 版本不符，請升級用戶端」，而不是把 body 亂數解讀成 timestamp 後報出「時間偏差
 三萬年」這種完全誤導的錯誤。**這條檢查擋不住攻擊者**（version 可偽造，只是還得過 HMAC），
 不得寫成安全機制。它真正的正戲在 v2：讀第一個 byte 即知要吃掉幾個 byte，不必再斷裂一次。
+
+**frame 是雙向的。** 兩端共用同一份 converter 與同一個開關，因此 server 回應也會帶 frame，
+client 剝離後丟棄、不做檢查。這是對稱設計的自然結果而非疏漏——要讓 response 不帶 frame，
+就得讓 converter 知道方向，而那需要對既有 public 方法加參數（見階段 1 的實作註記）。
+response 方向的 frame 目前是純開銷（17 bytes），但也預留了日後防 response 重放的位置。
 
 **邊界條件**
 
@@ -242,14 +250,27 @@ JS 呼叫端該走哪條路，需要獨立評估，不應綁在本計畫的交�
 
 ## 階段拆解
 
-### 階段 1：timestamp 時窗
-
-1. `ApiPayloadConverter` 新增 frame 編解碼（D1、D8）
-2. `JsonRpcExecutor` 在 `RestoreFrom` 後檢查 timestamp 偏差（D3）
-3. 時窗長度進 `ApiServiceOptions`，預設值見「未決事項 C」
-4. 用戶端在 `TransformRequestPayload` 路徑填入 UTC now
+### 階段 1：timestamp 時窗 ✅
 
 單獨交付即有價值：擋掉所有陳年封包（log 外洩、離職員工的舊抓包）。
+
+**實作結果（2026-09-01）**
+
+- `ApiPayloadFrame` — frame 型別與 big-endian 編解碼
+- `ApiPayloadConverter` — 在 `Encode` 之後、`Encrypt` 之前 prepend，解密後剝離
+- `ApiServiceOptions.RequireWireFrame` / `WireFrameTimestampTolerance`（預設關閉 / 5 分鐘）
+- `JsonRpcExecutor.ValidateFrameTimestamp` + `JsonRpcErrorCode.ReplayRejected`（-32005）
+- `ReplayRejectedException`，於 `MapException` 映射
+- 11 個測試（frame round-trip、big-endian 位移、長度不足、版本不符、三種格式行為、時窗兩側）
+
+**與原計畫的兩處出入**
+
+1. **frame 掛在 `ApiPayload.Frame`（`[JsonIgnore]`），不是 converter 的新多載。**
+   原本要為 `TransformTo` / `RestoreFrom` 各加一個帶 frame 的多載，但 analyzer 的 `RS0027`
+   擋下了——既有多載的 `encryptionKey` 帶預設值，而「有 optional 參數的 API 必須是參數最多的
+   多載」。改用屬性後兩個方法簽章完全不動，`ApiConnector` 也不必改。
+2. **`Bee.Api.Client` 沒有任何改動**，因為 client 與 server 走的是同一份 converter。
+   原計畫預期要改 `TransformRequestPayload`。
 
 ### 階段 2：序號滑動視窗
 

@@ -129,7 +129,10 @@ namespace Bee.Api.Core.JsonRpc
 
                 // Access confirmed: retrieve the encryption key and decrypt the payload.
                 byte[]? apiEncryptionKey = GetApiEncryptionKey(format);
+                // The frame rides inside the envelope, so the replay gate can only run once the
+                // payload is decrypted — it is a second gate after ValidateAccess, not part of it.
                 ApiPayloadConverter.RestoreFrom(request.Params, format, apiEncryptionKey);
+                ValidateFrameTimestamp(request.Params.Frame);
 
                 // Invoke the method and convert the result.
                 var value = await InvokeMethodAsync(businessObject, method, request.Params.Value)
@@ -153,6 +156,26 @@ namespace Bee.Api.Core.JsonRpc
                 LogApiFailureAnomaly(request.Method, rootEx, stopwatch);
             }
             return response;
+        }
+
+        /// <summary>
+        /// Refuses a call whose frame timestamp is too far from server time.
+        /// </summary>
+        /// <param name="frame">The frame read from the request, or null when none was required.</param>
+        /// <exception cref="ReplayRejectedException">Thrown when the drift exceeds the configured tolerance.</exception>
+        private static void ValidateFrameTimestamp(ApiPayloadFrame? frame)
+        {
+            if (frame == null) { return; }
+
+            long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            long driftMs = Math.Abs(nowMs - frame.TimestampMs);
+            double toleranceMs = ApiServiceOptions.WireFrameTimestampTolerance.TotalMilliseconds;
+
+            if (driftMs > toleranceMs)
+            {
+                throw new ReplayRejectedException(
+                    $"The request timestamp is {driftMs / 1000} seconds away from server time, outside the accepted window. Check the client clock.");
+            }
         }
 
         #region Anomaly detection
@@ -358,6 +381,8 @@ namespace Bee.Api.Core.JsonRpc
                 return (JsonRpcErrorCode.CompanyAccessDenied, ex.Message);
             if (ex is ForbiddenException)
                 return (JsonRpcErrorCode.PermissionDenied, ex.Message);
+            if (ex is ReplayRejectedException)
+                return (JsonRpcErrorCode.ReplayRejected, ex.Message);
             if (IsUserFacingException(ex))
                 return (JsonRpcErrorCode.UserMessage, ex.Message);
             return (JsonRpcErrorCode.InternalError,

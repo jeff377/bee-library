@@ -62,6 +62,17 @@ namespace Bee.Api.Core.JsonRpc
         PermissionDenied = -32004,
 
         /// <summary>
+        /// The call was refused by the replay-protection gate (-32005): the wire frame is missing,
+        /// unreadable, or its timestamp falls outside the accepted window. Maps to HTTP 400 Bad Request.
+        /// </summary>
+        /// <remarks>
+        /// A distinct code so the caller can tell "retrying will not help" apart from
+        /// <see cref="Unauthorized"/>, where a fresh credential would. A client that keeps hitting
+        /// this is either out of clock sync with the server or predates the frame requirement.
+        /// </remarks>
+        ReplayRejected = -32005,
+
+        /// <summary>
         /// A user-facing business message produced by business logic, intended to be
         /// shown to the end user (-32099). Acts as a catch-all container for messages
         /// raised via <c>UserMessageException</c> or the legacy BCL-exception whitelist.

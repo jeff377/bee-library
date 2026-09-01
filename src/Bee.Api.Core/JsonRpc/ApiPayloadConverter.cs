@@ -18,6 +18,11 @@ namespace Bee.Api.Core.JsonRpc
         /// <exception cref="InvalidOperationException">
         /// Thrown when <paramref name="targetFormat"/> is Encrypted but no key is provided, or when Payload.Value is null.
         /// </exception>
+        /// <remarks>
+        /// When <see cref="ApiServiceOptions.RequireWireFrame"/> is on, an anti-replay frame is
+        /// packed in front of the encoded body. Plain payloads are returned untouched and never
+        /// carry one.
+        /// </remarks>
         public static void TransformTo(ApiPayload payload, PayloadFormat targetFormat, byte[]? encryptionKey = null)
         {
             if (targetFormat == PayloadFormat.Plain)
@@ -34,6 +39,14 @@ namespace Bee.Api.Core.JsonRpc
 
             var transformer = ApiServiceOptions.PayloadTransformer;
             var bytes = transformer.Encode(payload.Value, type);
+
+            if (ApiServiceOptions.RequireWireFrame)
+            {
+                // Prepend after encoding and before encryption, so the payload HMAC covers the frame.
+                var frame = payload.Frame ?? new ApiPayloadFrame(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), sequence: 0);
+                payload.Frame = frame;
+                bytes = frame.Prepend(bytes);
+            }
 
             if (targetFormat == PayloadFormat.Encrypted)
             {
@@ -57,6 +70,13 @@ namespace Bee.Api.Core.JsonRpc
         /// Thrown when <paramref name="sourceFormat"/> is Encrypted but no key is provided, or when TypeName cannot be resolved.
         /// </exception>
         /// <exception cref="InvalidCastException">Thrown when Payload.Value is not of type byte[].</exception>
+        /// <exception cref="ReplayRejectedException">
+        /// Thrown when <see cref="ApiServiceOptions.RequireWireFrame"/> is on but the payload carries
+        /// no readable frame — most often a client older than that requirement.
+        /// </exception>
+        /// <remarks>
+        /// The frame that was read is left on <see cref="ApiPayload.Frame"/> for the caller to check.
+        /// </remarks>
         public static void RestoreFrom(ApiPayload payload, PayloadFormat sourceFormat, byte[]? encryptionKey = null)
         {
             if (sourceFormat == PayloadFormat.Plain)
@@ -88,6 +108,13 @@ namespace Bee.Api.Core.JsonRpc
                     throw new InvalidOperationException("Missing encryption key for encrypted payload.");
 
                 bytes = transformer.Decrypt(bytes, encryptionKey);
+            }
+
+            if (ApiServiceOptions.RequireWireFrame)
+            {
+                // Whether a frame is expected is a deployment decision, never read from the packet:
+                // letting a request declare "I carry no frame" would be a downgrade attack.
+                payload.Frame = ApiPayloadFrame.Extract(bytes, out bytes);
             }
 
             payload.Value = transformer.Decode(bytes, type);
