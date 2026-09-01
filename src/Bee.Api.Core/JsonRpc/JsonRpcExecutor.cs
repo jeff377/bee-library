@@ -133,6 +133,7 @@ namespace Bee.Api.Core.JsonRpc
                 // payload is decrypted — it is a second gate after ValidateAccess, not part of it.
                 ApiPayloadConverter.RestoreFrom(request.Params, format, apiEncryptionKey);
                 ValidateFrameTimestamp(request.Params.Frame);
+                ValidateFrameSequence(method, request.Params.Frame);
 
                 // Invoke the method and convert the result.
                 var value = await InvokeMethodAsync(businessObject, method, request.Params.Value)
@@ -175,6 +176,32 @@ namespace Bee.Api.Core.JsonRpc
             {
                 throw new ReplayRejectedException(
                     $"The request timestamp is {driftMs / 1000} seconds away from server time, outside the accepted window. Check the client clock.");
+            }
+        }
+
+        /// <summary>
+        /// Refuses a call whose sequence number this session has already used.
+        /// </summary>
+        /// <param name="method">The method being invoked, whose declaration says whether to check.</param>
+        /// <param name="frame">The frame read from the request, or null when none was required.</param>
+        /// <exception cref="ReplayRejectedException">Thrown when the sequence repeats or is out of range.</exception>
+        /// <remarks>
+        /// Skipped for anonymous callers: sequence numbers are counted per session, and a call made
+        /// without one has nothing to count against — every anonymous caller would otherwise share
+        /// a single window and evict each other's numbers.
+        /// </remarks>
+        private void ValidateFrameSequence(MethodInfo method, ApiPayloadFrame? frame)
+        {
+            if (frame == null || AccessToken == Guid.Empty) { return; }
+
+            var attr = ApiAccessValidator.FindAccessControl(method);
+            if (attr?.ReplayProtection != ApiReplayProtection.UniqueSequence) { return; }
+
+            var window = ApiServiceOptions.ReplayWindowStore.GetOrAdd(AccessToken);
+            if (!window.TryAccept(frame.Sequence))
+            {
+                throw new ReplayRejectedException(
+                    "This request repeats a sequence number the session has already used, or falls outside the accepted range.");
             }
         }
 

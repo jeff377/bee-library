@@ -1,3 +1,4 @@
+using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Exceptions;
@@ -253,6 +254,13 @@ namespace Bee.Api.Client.Connectors
 
             if (format != PayloadFormat.Plain)
             {
+                if (ApiServiceOptions.RequireWireFrame)
+                {
+                    // Numbered here rather than inside the converter: only the connector knows
+                    // which session the call belongs to, and the counter is per session.
+                    request.Params.Frame = new ApiPayloadFrame(
+                        DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), Session.NextSequence());
+                }
                 ApiPayloadConverter.TransformTo(request.Params, format, Session.ApiEncryptionKey);
             }
 

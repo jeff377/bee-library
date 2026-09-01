@@ -254,7 +254,8 @@ namespace Bee.Business
         /// Executes a custom method; requires authentication.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated,
+            ReplayProtection = ApiReplayProtection.UniqueSequence)]
         public ExecFuncResult ExecFunc(ExecFuncArgs args)
         {
             var result = new ExecFuncResult();

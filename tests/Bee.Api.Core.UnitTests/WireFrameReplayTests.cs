@@ -145,37 +145,101 @@ namespace Bee.Api.Core.UnitTests
             });
         }
 
+        [Fact]
+        [DisplayName("宣告 UniqueSequence 的方法重複序號應回 ReplayRejected")]
+        public void Execute_RepeatedSequenceOnGuardedMethod_ReturnsReplayRejected()
+        {
+            WithFrameRequired(true, () =>
+            {
+                // 每個測試用獨立 token，視窗才不會與其他測試互相干擾。
+                var token = Guid.NewGuid();
+
+                var first = Execute("ExecFunc", new ExecFuncRequest("noop"), FrameWith(1), token);
+                var replay = Execute("ExecFunc", new ExecFuncRequest("noop"), FrameWith(1), token);
+                var nextSequence = Execute("ExecFunc", new ExecFuncRequest("noop"), FrameWith(2), token);
+
+                // 第一次會一路走到 BO 內部（"noop" 這個自訂方法不存在，故為 InternalError）
+                // ——重點在它不是 ReplayRejected，表示序號檢查放行了。
+                Assert.Equal((int)JsonRpcErrorCode.InternalError, first.Error!.Code);
+                Assert.Equal((int)JsonRpcErrorCode.ReplayRejected, replay.Error!.Code);
+                // 換一個序號仍應放行，證明拒絕是針對重複而非一律擋下。
+                Assert.Equal((int)JsonRpcErrorCode.InternalError, nextSequence.Error!.Code);
+            });
+        }
+
+        [Fact]
+        [DisplayName("未宣告序號檢查的方法重複序號應正常執行")]
+        public void Execute_RepeatedSequenceOnUnguardedMethod_Succeeds()
+        {
+            // 查詢類方法重放無害，全面套用只是徒增每次呼叫的判斷。
+            WithFrameRequired(true, () =>
+            {
+                var token = Guid.NewGuid();
+                var value = new PingRequest { ClientName = "replay-test" };
+
+                Assert.Null(Execute("Ping", value, FrameWith(1), token).Error);
+                Assert.Null(Execute("Ping", value, FrameWith(1), token).Error);
+            });
+        }
+
+        [Fact]
+        [DisplayName("匿名呼叫不做序號檢查（無 session 可計數）")]
+        public void Execute_RepeatedSequenceAnonymously_Succeeds()
+        {
+            // 序號是 per session 的。匿名呼叫全共用 Guid.Empty，若也檢查，
+            // 不同用戶端會互相把對方的序號用掉而大量誤拒。
+            WithFrameRequired(true, () =>
+            {
+                var first = Execute("ExecFunc", new ExecFuncRequest("noop"), FrameWith(1), Guid.Empty);
+                var replay = Execute("ExecFunc", new ExecFuncRequest("noop"), FrameWith(1), Guid.Empty);
+
+                // 同上，InternalError 表示兩次都通過了序號閘門走到 BO 內部。
+                Assert.Equal((int)JsonRpcErrorCode.InternalError, first.Error!.Code);
+                Assert.Equal((int)JsonRpcErrorCode.InternalError, replay.Error!.Code);
+            });
+        }
+
         /// <summary>
-        /// 以指定的 frame 送出一次 Encoded 的 Ping 呼叫。
+        /// 以指定的 frame 送出一次 Encoded 的 Ping 呼叫（Ping 未宣告序號檢查）。
         /// </summary>
         /// <param name="frame">要夾帶的重放防護 frame。</param>
         private JsonRpcResponse ExecutePing(ApiPayloadFrame frame)
+            => Execute("Ping", new PingRequest { ClientName = "replay-test" }, frame, Guid.Empty);
+
+        /// <summary>
+        /// 以指定的 frame 與 token 送出一次 Encoded 的 SystemBO 呼叫。
+        /// </summary>
+        /// <param name="action">動作名稱。</param>
+        /// <param name="value">傳入值。</param>
+        /// <param name="frame">要夾帶的重放防護 frame。</param>
+        /// <param name="accessToken">存取權杖；<see cref="Guid.Empty"/> 代表匿名呼叫。</param>
+        private JsonRpcResponse Execute(string action, object value, ApiPayloadFrame frame, Guid accessToken)
         {
             var executor = new JsonRpcExecutor(
                 _fx.GetRequiredService<IBusinessObjectFactory>(),
                 _fx.GetRequiredService<IAccessTokenValidator>(),
                 _fx.GetRequiredService<IApiEncryptionKeyProvider>())
             {
-                AccessToken = Guid.Empty,
+                AccessToken = accessToken,
+                // 本機呼叫可跳過 token 驗證，讓測試不必先建立 session（那會碰資料庫）；
+                // 序號檢查本身與此無關，它只看 token 是否為 Empty。
                 IsLocalCall = true,
             };
 
             var request = new JsonRpcRequest
             {
-                Method = $"{SysProgIds.System}.Ping",
-                Params = new JsonRpcParams
-                {
-                    Value = new PingRequest { ClientName = "replay-test" },
-                    Frame = frame,
-                },
+                Method = $"{SysProgIds.System}.{action}",
+                Params = new JsonRpcParams { Value = value, Frame = frame },
                 Id = Guid.NewGuid().ToString(),
             };
 
-            // Encoded 而非 Encrypted：時窗檢查讀的是 frame，與加密無關，而 Encoded 不需要
-            // 傳輸金鑰，測試因此不必先建立 session（那會碰資料庫）。
+            // Encoded 而非 Encrypted：frame 的讀取與加密無關，而 Encoded 不需要傳輸金鑰。
             ApiPayloadConverter.TransformTo(request.Params, PayloadFormat.Encoded);
 
             return executor.Execute(request);
         }
+
+        private static ApiPayloadFrame FrameWith(long sequence)
+            => new(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), sequence);
     }
 }

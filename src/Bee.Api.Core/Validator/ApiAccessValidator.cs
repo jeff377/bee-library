@@ -67,6 +67,18 @@ namespace Bee.Api.Core.Validator
         }
 
         /// <summary>
+        /// Resolves the access-control declaration that governs a method, following the same
+        /// method → base method → declaring type priority that <see cref="ValidateAccess"/> uses.
+        /// </summary>
+        /// <param name="method">The target method.</param>
+        /// <returns>The governing attribute, or null when the method is covered by none.</returns>
+        public static ApiAccessControlAttribute? FindAccessControl(MethodInfo method)
+        {
+            ArgumentNullException.ThrowIfNull(method);
+            return FindAccessAttribute(method);
+        }
+
+        /// <summary>
         /// Attempts to retrieve the <see cref="ApiAccessControlAttribute"/> using the following priority:
         /// 1. Directly on the method.
         /// 2. On the base method definition (override inheritance).

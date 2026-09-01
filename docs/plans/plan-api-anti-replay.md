@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | Wire frame 承載 timestamp，伺服器端時窗檢查 | ✅ 已完成（2026-09-01） |
-| 2 | Per-session 序號滑動視窗（零 DB），`ApiAccessControlAttribute` 第三維度 | 📝 待做 |
+| 2 | Per-session 序號滑動視窗（零 DB），`ApiAccessControlAttribute` 第三維度 | ✅ 已完成（2026-09-01） |
 | 3 | 重放事件納入 anomaly log，文件與 ADR | 📝 待做 |
 
 ## 背景
@@ -272,12 +272,33 @@ JS 呼叫端該走哪條路，需要獨立評估，不應綁在本計畫的交�
 2. **`Bee.Api.Client` 沒有任何改動**，因為 client 與 server 走的是同一份 converter。
    原計畫預期要改 `TransformRequestPayload`。
 
-### 階段 2：序號滑動視窗
+### 階段 2：序號滑動視窗 ✅
 
-1. `ReplayWindow` 結構（`highest` + bitmap），per-token 存放於獨立快取
-2. `ApiSessionContext` 維護遞增序號，`ApiPayloadConverter` 寫入 frame
-3. `ApiAccessControlAttribute` 新增維度（D7），決定哪些方法套用
-4. 拒絕時的例外型別與 `JsonRpcErrorCode`
+**實作結果（2026-09-01）**
+
+- `ReplayWindow` — `highest` + 64-bit bitmap，`MaxForwardJump` 定為 1,000,000
+- `IReplayWindowStore` / `MemoryReplayWindowStore` — per-token 視窗，process-local
+- `ApiReplayProtection`（`Bee.Definition.Security`）+ `ApiAccessControlAttribute.ReplayProtection`
+- `ApiSessionContext.NextSequence()`（`Interlocked.Increment`）、`ApiConnector` 取號填入 frame
+- `ApiAccessValidator.FindAccessControl` 公開，供 executor 讀取方法的宣告
+- 22 個測試（視窗演算法 11、executor 層 3、階段 1 既有 8）
+
+**實作期間定下的四件事**
+
+1. **視窗存活期 = 2× timestamp 容許時窗，與 session 生命週期完全解耦。**
+   用舊序號的重放，其 timestamp 必定也過期、已被階段 1 擋下，所以視窗只在時窗內有意義。
+   不必掛 logout 清理，記憶體上界是「時窗內活躍的 session 數」。
+2. **匿名呼叫（`Guid.Empty`）不做序號檢查。** 序號是 per session 的，匿名呼叫全共用一個
+   token，若也檢查，不同用戶端會互相把對方的序號用掉而大量誤拒。這也呼應 D11——匿名路徑
+   本來就防不了重放。
+3. **標記範圍就是「遠端可達且有副作用」的完整集合**：`Save`、`Delete`、`ExecFunc`、
+   `EnterCompany`、`LeaveCompany`。其餘寫入方法（`SaveDefine`、`SaveCustomizePluginSettings`、
+   `SetDeploymentAdmin`）全為 `LocalOnly`，遠端呼叫不到；`Define.cs` 的 `Public` 方法全為唯讀。
+4. **`IReplayWindowStore` 做成介面，是 D6 多節點退化的出路。** 預設 process-local；需要跨節點
+   強一致的部署可換上共享實作，不必改框架。
+
+**已知不涵蓋**：`Public` 等級方法若以 Plain 呼叫則無 frame、不受檢查（D11 的降級繞道）。
+`ApiReplayProtection.UniqueSequence` 的 XML doc 已明載此限制。
 
 ### 階段 3：可觀測性與文件
 

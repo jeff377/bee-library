@@ -23,6 +23,8 @@ namespace Bee.Api.Client
     /// </remarks>
     public sealed class ApiSessionContext
     {
+        private long _sequence;
+
         /// <summary>
         /// The shared instance used by connectors that were not given one.
         /// </summary>
@@ -38,6 +40,23 @@ namespace Bee.Api.Client
         /// Typically unused in local connection scenarios.
         /// </summary>
         public byte[] ApiEncryptionKey { get; set; } = Array.Empty<byte>();
+
+        /// <summary>
+        /// Hands out the next sequence number for this session's replay frames.
+        /// </summary>
+        /// <returns>A number this session has not returned before.</returns>
+        /// <remarks>
+        /// The counter belongs here rather than on a connector because the server's window is keyed
+        /// by session: an application holds several connectors at once and they share one session,
+        /// so a per-connector counter would issue the same numbers twice and the second connector's
+        /// requests would be refused as replays.
+        /// <para>
+        /// Starting from zero on a fresh instance is safe. <see cref="ApiEncryptionKey"/> lives only
+        /// in memory, so a restarted client must sign in again and receives a new access token —
+        /// and the server's window is per token, hence empty.
+        /// </para>
+        /// </remarks>
+        public long NextSequence() => Interlocked.Increment(ref _sequence);
 
         /// <summary>
         /// Gets or sets the signed-in user's IANA time zone id; blank disables time zone conversion.

@@ -1,5 +1,6 @@
 using Bee.Definition.Settings;
 using Bee.Api.Core.Authorization;
+using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.Transformers;
 
 namespace Bee.Api.Core
@@ -16,6 +17,7 @@ namespace Bee.Api.Core
         private static IApiPayloadCompressor _payloadCompressor = new GzipPayloadCompressor(); // Default implementation
         private static IApiPayloadEncryptor _payloadEncryptor = new AesPayloadEncryptor(); // Default implementation
         private static TimeSpan _wireFrameTimestampTolerance = TimeSpan.FromMinutes(5);
+        private static IReplayWindowStore _replayWindowStore = new MemoryReplayWindowStore();
 
         /// <summary>
         /// Initializes the API service options by configuring the serializer, compressor, and encryptor implementations.
@@ -136,6 +138,21 @@ namespace Bee.Api.Core
                     throw new ArgumentOutOfRangeException(nameof(value), "The tolerance must be greater than zero.");
                 _wireFrameTimestampTolerance = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the store holding each session's sequence-number window.
+        /// </summary>
+        /// <remarks>
+        /// The default keeps windows in this process's memory, which is what a single-node
+        /// deployment wants. Behind a load balancer without token affinity each node keeps its own,
+        /// so a captured packet can be replayed once per node — still bounded, but a deployment
+        /// that needs better can substitute a shared implementation here.
+        /// </remarks>
+        public static IReplayWindowStore ReplayWindowStore
+        {
+            get => _replayWindowStore;
+            set => _replayWindowStore = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>

@@ -43,7 +43,8 @@ namespace Bee.Business.Form
         /// </para>
         /// </remarks>
         /// <param name="args">The input arguments.</param>
-        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated,
+            ReplayProtection = ApiReplayProtection.UniqueSequence)]
         public virtual SaveResult Save(SaveArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
@@ -190,7 +191,8 @@ namespace Bee.Business.Form
         /// authorization and record-scope resolution.
         /// </remarks>
         /// <param name="args">The input arguments.</param>
-        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated,
+            ReplayProtection = ApiReplayProtection.UniqueSequence)]
         public virtual DeleteResult Delete(DeleteArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);

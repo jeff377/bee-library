@@ -30,6 +30,17 @@ namespace Bee.Definition.Attributes
         /// Gets the access authorization requirement (whether login is required).
         /// </summary>
         public ApiAccessRequirement AccessRequirement { get; }
+
+        /// <summary>
+        /// Gets or sets whether each call must carry a sequence number the session has not used
+        /// before. Defaults to <see cref="ApiReplayProtection.None"/>.
+        /// </summary>
+        /// <remarks>
+        /// A settable property rather than a fourth constructor parameter: adding an optional
+        /// parameter to a shipped public constructor is a binary-breaking change, and every caller
+        /// of the two-argument form would have to be recompiled.
+        /// </remarks>
+        public ApiReplayProtection ReplayProtection { get; set; } = ApiReplayProtection.None;
     }
 
 }

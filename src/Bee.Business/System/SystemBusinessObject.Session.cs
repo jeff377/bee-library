@@ -89,7 +89,8 @@ namespace Bee.Business.System
         /// probing the error text. Over JSON-RPC it arrives as
         /// <c>JsonRpcErrorCode.CompanyAccessDenied</c> (HTTP 403 semantics).
         /// </remarks>
-        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated,
+            ReplayProtection = ApiReplayProtection.UniqueSequence)]
         public virtual EnterCompanyResult EnterCompany(EnterCompanyArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
@@ -121,7 +122,8 @@ namespace Bee.Business.System
         /// without error. To completely sign out, use <c>Logout</c> instead, which
         /// performs the same clear-up internally before destroying the session.
         /// </remarks>
-        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated,
+            ReplayProtection = ApiReplayProtection.UniqueSequence)]
         public virtual LeaveCompanyResult LeaveCompany(LeaveCompanyArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
