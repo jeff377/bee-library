@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Globalization;
 using System.Text.Json;
 using Bee.Base.Security;
@@ -137,7 +138,7 @@ public static class NorthwindSchemaSeeder
         var seedDir = Path.Combine(AppContext.BaseDirectory, "SeedData");
 
         foreach (var seed in s_seeds)
-            InsertRows(dbAccess, seed, seedDir);
+            InsertRows(dbAccess, connectionManager, seed, seedDir);
 
         foreach (var seed in s_seeds.Where(s => s.Deferred is not null))
             ApplyDeferredRelations(dbAccess, seed, seedDir);
@@ -376,10 +377,29 @@ public static class NorthwindSchemaSeeder
 
     }
 
-    private static void InsertRows(DbAccess dbAccess, SeedTable seed, string seedDir)
+    /// <summary>
+    /// Seeds one table from its JSON file, inside a single transaction.
+    /// </summary>
+    /// <remarks>
+    /// The transaction spans the whole table because that is the granularity the idempotence gate
+    /// works at: the gate skips the table when it already holds any row, so a partial insert is
+    /// permanent — the next startup sees a non-empty table, skips it, and the missing rows never
+    /// arrive. Nothing reports it either, because neither the gate nor the insert loop notices that
+    /// the row count disagrees with the seed file.
+    /// <para>
+    /// That is not hypothetical: <c>ft_order_detail</c> was found holding 11 of its 12 seed rows,
+    /// which left order 10252's total short by the missing line (2026-09-01).
+    /// </para>
+    /// </remarks>
+    private static void InsertRows(
+        DbAccess dbAccess, IDbConnectionManager connectionManager, SeedTable seed, string seedDir)
     {
         var countSpec = new DbCommandSpec(DbCommandKind.Scalar, $"SELECT COUNT(*) FROM {seed.Table}");
         if (Convert.ToInt32(dbAccess.Execute(countSpec).Scalar, CultureInfo.InvariantCulture) > 0) return;
+
+        using var connection = connectionManager.CreateConnection(CompanyDatabaseId);
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
 
         foreach (var row in ReadRows(seedDir, seed.File))
         {
@@ -393,15 +413,17 @@ public static class NorthwindSchemaSeeder
 
                 columns.Add(pair.Key);
                 if (seed.Forward is not null && seed.Forward.TryGetValue(pair.Key, out var target))
-                    values.Add(ResolveRowId(dbAccess, target, pair.Value.GetString()));
+                    values.Add(ResolveRowId(dbAccess, target, pair.Value.GetString(), transaction));
                 else
                     values.Add(pair.Value.GetString() ?? string.Empty);
             }
 
             var placeholders = string.Join(",", Enumerable.Range(0, values.Count).Select(i => $"{{{i}}}"));
             var sql = $"INSERT INTO {seed.Table} ({string.Join(",", columns)}) VALUES ({placeholders})";
-            dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql, values.ToArray()));
+            dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql, values.ToArray()), transaction);
         }
+
+        transaction.Commit();
     }
 
     private static void ApplyDeferredRelations(DbAccess dbAccess, SeedTable seed, string seedDir)
@@ -424,11 +446,24 @@ public static class NorthwindSchemaSeeder
         }
     }
 
-    private static Guid ResolveRowId(DbAccess dbAccess, string targetTable, string? sysId)
+    /// <summary>
+    /// Resolves a target row's <c>sys_rowid</c> from its <c>sys_id</c>.
+    /// </summary>
+    /// <param name="dbAccess">The database accessor.</param>
+    /// <param name="targetTable">The table holding the target row.</param>
+    /// <param name="sysId">The target's business id, as carried by the seed file.</param>
+    /// <param name="transaction">
+    /// The insert transaction when called from <see cref="InsertRows"/>; the lookup must run inside
+    /// it, or it reads through a second connection that cannot see the uncommitted rows.
+    /// Null from the deferred pass, which runs after every table is committed.
+    /// </param>
+    private static Guid ResolveRowId(
+        DbAccess dbAccess, string targetTable, string? sysId, DbTransaction? transaction = null)
     {
         if (string.IsNullOrEmpty(sysId)) return Guid.Empty;
         var spec = new DbCommandSpec(DbCommandKind.Scalar, $"SELECT sys_rowid FROM {targetTable} WHERE sys_id = {{0}}", sysId);
-        return ToGuid(dbAccess.Execute(spec).Scalar);
+        var result = transaction is null ? dbAccess.Execute(spec) : dbAccess.Execute(spec, transaction);
+        return ToGuid(result.Scalar);
     }
 
     private static List<Dictionary<string, JsonElement>> ReadRows(string seedDir, string file)
