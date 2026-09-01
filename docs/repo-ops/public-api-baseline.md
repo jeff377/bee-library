@@ -14,6 +14,7 @@
 | 新增了 public 型別／成員 | `RS0016` | 把診斷訊息裡的那一行加進 `PublicAPI.Unshipped.txt` |
 | 刪除或改了簽名 | `RS0017` | 從基準檔刪掉舊的那一行（**這正是 review 要看見的 diff**） |
 | Razor 產生碼的 nullable-oblivious 簽名 | `RS0041` | 已於 `Bee.Web.Blazor.Server.csproj` 以 `NoWarn` 關閉，見該處註解 |
+| 新多載的參數比既有「帶 optional 參數」的多載還多 | `RS0027` | **不能靠加基準檔解決**，要改設計，見下節 |
 
 > **為什麼要有這個機制**：在此之前，「公開表面有刪改」的唯一把關是 commit subject 要帶 `!`，
 > 而這道人工關卡已經連續兩次漏掉真實的 breaking（`IExcelHelper`、`IEvictableCache`，
@@ -23,6 +24,41 @@
 > `IEvictableCache` 雖然 commit 沒標 `!`，CHANGELOG **有**記到（4.16.0 根檔雙語 + 明細檔雙語）；
 > `IExcelHelper` 則是**連 CHANGELOG 都沒有**，直到 2026-08-07 的框架體檢查出才回溯補記。
 > 導入基準檔擋住的是「以後」，先前已經漏出去的仍需人工回補，不會自己消失。
+
+## `RS0027`：既有多載帶 optional 參數時，加不了參數更多的新多載
+
+**症狀**：想為既有公開方法加一個「參數更多」的新多載來承載新功能，build 直接失敗：
+
+```text
+error RS0027: 'TransformTo' violates the backcompat requirement:
+'API with optional parameter(s) should have the most parameters amongst its public overloads'
+```
+
+**這一則與上表其他診斷不同：它不是「基準檔沒申報」，把新簽章加進
+`PublicAPI.Unshipped.txt` 完全沒用。** 分析器擋的是簽章組合本身。
+
+**根因**：既有多載已經帶預設參數 ——
+`TransformTo(ApiPayload, PayloadFormat, byte[]? encryptionKey = null)`。RS0027 要求
+「帶 optional 參數的 API 必須是所有公開多載中參數最多的那個」，因此任何參數更多的新多載，
+都會讓**既有那個**變成違規。而既有多載已 shipped，拿掉它的預設值是破壞性變更 ——
+兩邊都動不了。
+
+**正解：不加多載，把新資料掛成型別上的屬性讓方法讀取。**
+2026-09-01 的 JSON-RPC 重放防護階段 1（`509b17e7`）就是這樣解的：新的 frame 資料改掛
+`ApiPayload.Frame`（`[JsonIgnore]`，`src/Bee.Api.Core/JsonRpc/ApiPayload.cs`），
+`ApiPayloadConverter.TransformTo` / `RestoreFrom` 兩個簽章一個字都沒動。
+
+**副作用反而是好的**：簽章不動，呼叫端（`src/Bee.Api.Client/Connectors/ApiConnector.cs`）
+也跟著不用改。「被迫掛屬性」在這裡不是妥協 —— 新資料本來就屬於 payload 的狀態，
+從一開始就該是屬性而非額外參數。
+
+**次佳選項是新多載改名**（如 `TransformToFramed`）：編得過，但公開 API 表面會多出一組
+語意重疊的名字。只有在新資料真的不屬於任何既有型別時才考慮。
+
+> 判別法：**要新加的東西是「這次呼叫的參數」還是「這個物件的狀態」？**
+> 是狀態就掛屬性，RS0027 只是提早把這個設計問題攤開。
+> 若確定該是參數，第一次設計公開方法時就別急著給預設值 —— optional 參數把該方法
+> **永久釘死**成「參數最多的那個多載」，是比想像中更硬的長期約束。
 
 ## 日常：改了公開 API 怎麼辦
 

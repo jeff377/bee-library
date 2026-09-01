@@ -19,6 +19,13 @@
 | [northwind-heads.md](northwind-heads.md) | Northwind 四 head 工具鏈（含 iOS 的 Xcode 版本綁定）與獨立 repo 同步流程 |
 | [definition-and-customization.md](definition-and-customization.md) | 客製範圍的兩種數法（同一個漏連踩三次）、覆蓋層粒度、`FormSchema` 中樞圖的兩種衍生 |
 
+## 不在本目錄的鄰居
+
+公開 API 基準（`PublicApiAnalyzers`）的雷寫在
+[../public-api-baseline.md](../public-api-baseline.md)——那份已經是該分析器的權威維運文件，
+拆兩處放必漂。**撞到 `RS0027`（既有多載帶 optional 參數，就加不了參數更多的新多載）先看那份**，
+它是「改設計」而非「補基準檔」的一類。
+
 ## 寫入原則
 
 - **只記「再踩機率高」的**。一次性的環境問題、已被框架根治且不會復發的，不留。
