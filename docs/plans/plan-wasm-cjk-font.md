@@ -1,6 +1,6 @@
 # 計畫：WASM head 的中文字型缺失
 
-**狀態：📝 擬定中（2026-09-01）**
+**狀態：✅ 已完成（2026-09-01）**
 
 ## 背景
 
@@ -43,61 +43,67 @@ PingFang、Android 有 Noto CJK。瀏覽器沙箱裡沒有系統字型可借，A
 （`Alfreds Futterkiste`、`Queso Cabrales`）全是西文，目前無中文資料，但這是 demo 的巧合
 而非保證。
 
-## 決策點
+## 決策：固定 WASM head 的 UI 語系，不內嵌字型
 
-### D1：字型涵蓋範圍 —— subset 至常用字集（已定案 2026-09-01）
+原本規劃內嵌 subset 過的 Noto Sans TC（見下方「被推翻的路線」）。實作到一半量出兩個數字後
+改變方向：
 
-| 選項 | 大小 | 風險 |
-|------|------|------|
-| A. 完整 Noto Sans TC | ~5–6 MB | 無邊界問題；WASM 首載變重 |
-| B. subset 至常用字集（Big5 常用 5401 字） | ~1–1.5 MB | 罕用字（人名、地名）仍為方塊 |
-| C. subset 至現有語言檔用字（34 字） | ~10 KB | **不建議**——加一個欄位就破，且破得無聲 |
+- **要顯示的中文只有 24 個 key**（`Order.Language.xml`，34 個唯一漢字）
+- **最小可用的 CJK 字型是 5.4 MB**（`NotoSansTC-Regular.otf`，SubsetOTF/TC 版）
 
-**採 B。** 5401 常用字覆蓋現代中文絕大多數用字，1.5 MB 對 WASM 可接受；A 的 5 MB 對
-首次載入是實質負擔，而它多買到的是罕用字，對這個 demo 的價值不高。選 B 須在文件標明
-「資料含罕用字時仍會缺字」這個邊界。
+為 24 個 key 讓 demo 背 5.4 MB 不成比例。改為在 Browser head 固定 UI 語系：
 
-subset 以 `fonttools` 產生後**產物入版控**，不納入建置流程——一次性工作換掉持續維護成本，
-字型升版時再重跑一次即可。
+```csharp
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
+```
 
-### D2：放在 app 層（已定案 2026-09-01）
+定義的在地化走 `CultureInfo.CurrentUICulture`，釘住它就不會載入 `Define/Language/zh-TW`，
+標籤回到 `FormSchema` 本身的英文 `Caption`，中文不再出現，也就不需要 CJK 字形。
 
-**放 app 層（`Bee.Northwind.Browser`）。**
+**只改 Browser head。** 其餘三個 head 有系統字型可借（macOS / iOS 的 PingFang、Android 的
+Noto CJK），中文顯示完全正常，仍跟隨系統語系並看得到 zh-TW 資源——那是
+`71f995b3` 加語系資源時要示範的東西，不該為了 WASM 的顯示問題在所有平台關掉。
 
-字型選擇是應用的品牌與在地化決策，不該由框架替所有消費者決定，更不該讓
-`Bee.UI.Avalonia` 套件因此增加數 MB——那會傳染給每一個下游，包含根本不需要中文的專案。
+**副作用是好的**：`.smoke.yaml` 的 `expect_text`（`Order Details`、`Total Amount`）本來在中文
+語系下必然對不上，釘住語系後冒煙流程的文字比對才真正有效。
 
-框架該做的是**把這個雷寫進文件**：任何 Bee 的 WASM head 都會遇到同一件事，而它在桌面上
-完全看不出來。
+### 被推翻的路線：內嵌 CJK 字型
 
-### D3：其餘 `WithInterFont()` 呼叫點不動（已定案 2026-09-01）
+留著是因為量到的數字對日後重啟這個議題有用，而不是要照著做。
 
-全 repo 共 6 處：Northwind 四個 head、`samples/Avalonia.DemoCenter`、`tools/DefineEditor`。
+| 方案 | 淨增量（相對 61 MB 基數） |
+|------|------------------------|
+| 完整 Noto Sans TC 取代 Inter | +3.6 MB（Inter 本身佔 1.81 MB） |
+| subset 至常用字集取代 Inter | −0.3 MB，但需 fonttools 與常用字表，且罕用字**無聲**變方塊 |
 
-**只改 `Bee.Northwind.Browser`。** 其餘都是桌面或有系統字型 fallback 的平台，目前
-無症狀。`tools/DefineEditor` 在 Linux 上可能缺中文字型，但那是未經確認的推測，不在本計畫
-範圍——真要處理應另案並先實測。
+**若日後 WASM 真的要支援中文**（例如接上 `SessionInfo.Culture` 讓使用者自選語系），
+就得回到這條路線；屆時完整字型優於 subset——在 61 MB 的基數上，4 MB 差距換不到
+「罕用字失敗且不報錯」這個風險。
 
-## 實作步驟
+### D3：其餘 `WithInterFont()` 呼叫點不動（維持）
 
-1. 取得 Noto Sans TC（SIL OFL 授權，可再散布），以 `fonttools` subset 至常用字集（D1），產物入版控
-2. 字型檔放入 `apps/Bee.Northwind/Bee.Northwind.Browser/Assets/`，設為 `AvaloniaResource`
-3. `Program.cs` 移除 `.WithInterFont()`，改以 `FontManagerOptions` 指定內嵌字型為預設，
-   並將 Inter 保留為拉丁字型的 fallback（見
-   [Program.cs](../../apps/Bee.Northwind/Bee.Northwind.Browser/Program.cs)）
-4. 確認授權檔（OFL.txt）一併納入
-5. 量測 WASM 產出大小變化，記錄於本計畫
+全 repo 共 6 處。其餘 5 處都是桌面或有系統字型 fallback 的平台，目前無症狀。
+`tools/DefineEditor` 在 Linux 上可能缺中文字型，但那是未經實測的推測，不憑推測擴大範圍。
 
-## 驗證
+## 實作結果
 
-- 瀏覽器語系設為 zh-TW，登入後 Orders 清單與訂單明細的欄位標籤正確顯示中文
-- 瀏覽器語系設為 en-US，畫面與現況一致（無回歸）
-- 記錄 `dotnet publish` 後 `wwwroot` 的總大小變化
-- 其餘三個 head 不受影響（本計畫不動它們）
+- [Program.cs](../../apps/Bee.Northwind/Bee.Northwind.Browser/Program.cs) 一行 culture 釘選 +
+  說明為何如此（含「其他 head 不受影響」）
+- 未新增任何資產、未改 csproj、bundle 大小不變
+
+## 驗證（2026-09-01 實測）
+
+於中文語系瀏覽器完成連線 → 登入 → Orders 清單 → 訂單 10248 明細：
+
+- 欄位標籤全部正常顯示（`Order No`、`Customer Name`、`Total Amount`、`Order Details` 等），無方塊
+- 資料與金額正確：P011 Queso Cabrales 252 + P003 Aniseed Syrup 100 = Total Amount 352
+- 其餘三個 head 未改動
 
 ## 明確不納入
 
 - **其餘五個 `WithInterFont()` 呼叫點**（D3）
-- **框架層提供 CJK 字型**（D2）——會讓所有下游套件變重
-- **動態字型載入 / web font**：Avalonia 自行管理字型堆疊，不走瀏覽器的 `@font-face`，
-  這條路需要先驗證可行性，不在本計畫範圍
+- **內嵌任何 CJK 字型**——見「被推翻的路線」
+- **讓 WASM 支援中文**：本計畫是讓 demo 不顯示中文，不是讓它正確顯示中文。
+  真要支援得回到字型路線。
+- **接上 `SessionInfo.Culture`**：框架有 `st_user.culture` → `SessionInfo.Culture` 的機制，
+  但這個 demo 的 UI 讀的是 `CultureInfo.CurrentUICulture`，兩者無關；改接是另一個議題。
