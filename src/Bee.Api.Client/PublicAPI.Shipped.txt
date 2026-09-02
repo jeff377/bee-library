@@ -5,6 +5,7 @@ Bee.Api.Client.ApiSessionContext
 Bee.Api.Client.ApiSessionContext.ApiEncryptionKey.get -> byte[]!
 Bee.Api.Client.ApiSessionContext.ApiEncryptionKey.set -> void
 Bee.Api.Client.ApiSessionContext.ApiSessionContext() -> void
+Bee.Api.Client.ApiSessionContext.NextSequence() -> long
 Bee.Api.Client.ApiSessionContext.UserTimeZoneId.get -> string!
 Bee.Api.Client.ApiSessionContext.UserTimeZoneId.set -> void
 Bee.Api.Client.ClientDefineAccess

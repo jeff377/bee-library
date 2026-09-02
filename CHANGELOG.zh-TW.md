@@ -4,6 +4,43 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.26.0]
+
+> 一個被側錄的 JSON-RPC 封包重送一次就會再執行一次：payload 有驗證，但裡面沒有任何東西能讓一次呼叫成為唯一。本版加上 wire frame —— 版本、時戳與序號，prepend 在**加密封套之內**，因此受 payload HMAC 保護 —— 以及 per-session 的滑動視窗，拒收已經收過的序號。**預設關閉（`ApiServiceOptions.RequireWireFrame`），且兩端讀同一個開關而不是偵測 frame 在不在：會偵測的伺服端，攻擊者拿掉 frame 就能降級。** 見 [ADR-042](docs/adr/adr-042-api-replay-protection.md)。同時，兩端各自私藏的「例外對錯誤碼」映射收斂為一張有序登錄表（[ADR-043](docs/adr/adr-043-error-contract-single-registry.md)）—— 它要排除的漂移已經真的發生過一次 —— 而 schema 升級補上四種 dialect 的描述同步，並修好一個會讓升級直接中斷的 Oracle 比對缺陷。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.26.0.zh-TW.md](docs/changelogs/4.26.0.zh-TW.md)
+
+### 新增
+
+- `Bee.Api.Core`：`Encoded` 與 `Encrypted` 兩種 wire 格式的重放防護。`ApiPayloadFrame`（版本 + 時戳 + 序號，big-endian，17 bytes）與 `ApiPayload.Frame`；`ReplayWindow`、`IReplayWindowStore` 與 `MemoryReplayWindowStore`；`ReplayRejectedException` 與 `JsonRpcErrorCode.ReplayRejected`（`-32005`）；`ApiServiceOptions.RequireWireFrame`、`WireFrameTimestampTolerance`（五分鐘）與 `ReplayWindowStore`。**預設關閉。** 見 [ADR-042](docs/adr/adr-042-api-replay-protection.md)。
+- `Bee.Definition`：`ApiReplayProtection` 與 `ApiAccessControlAttribute.ReplayProtection`，逐方法宣告哪些呼叫要求序號唯一。標上的是 `Save`、`Delete`、`ExecFunc`、`EnterCompany` 與 `LeaveCompany` —— 遠端可達且有副作用的方法的完整集合。
+- `Bee.Definition`：`AnomalyKind.Replay`，讓「某個 session 連續被拒」保持成獨立訊號，而不是折進泛用錯誤裡看不見。
+- `Bee.Api.Client`：`ApiSessionContext.NextSequence()`。
+- `Bee.Api.Core`：`ApiAccessValidator.FindAccessControl(MethodInfo)`。
+- `Bee.Db`：`IDescriptionSyncCommandBuilder`，經 `IDialectFactory.CreateDescriptionSyncCommandBuilder()` 取得，四種 dialect（SQL Server、PostgreSQL、Oracle、MySQL）全數實作。工廠上的那個成員是**回傳 `null` 的 default interface member**，外部既有的 dialect 實作原始碼與二進位皆相容。
+
+### 變更
+
+- `Bee.Api.Core`：`JsonRpcErrorContract` 成為「例外對錯誤碼」映射的單一登錄。伺服端的 `MapException` 與呼叫端的回應處理改讀同一份宣告，新增一種錯誤從此是一處編輯，而不是兩處、且沒有任何機制保證同步。行為與重構前完全一致。見 [ADR-043](docs/adr/adr-043-error-contract-single-registry.md)。
+- 文件：JSON-RPC 錯誤碼表補上 `-32005`，並更正 `-32001` —— 認證失敗實際回 `-32600` 加 HTTP 401，`-32001` 零產生者。開發限制文件的對映表改為指向 `JsonRpcErrorContract`，不再複寫一份。
+
+### 修正
+
+- `Bee.Db`（Oracle）：宣告 `AllowNull="true"` 的 `String` / `Text` 欄位永遠對不上自己的讀回值，於是每一輪比對都產生 `AlterFieldChange`。在 `String` 上無害，在 `CLOB` 上致命 —— Oracle 拒絕任何重述 LOB 型別的 `MODIFY`、擲 `ORA-22859`，而 `AlterColumns` 排在 `AddColumns` 之前，升級因此在新欄位加上去之前就中止。`st_log_anomaly_api` 與 `st_log_anomaly_db` 永久停在缺兩欄的狀態。
+- `Bee.Db`：描述同步原本只認 SQL Server 這一種 dialect，於是 `ALTER` 加進去的欄位在其餘 dialect 永遠拿不到 caption；而 `TableSchemaDiff.IsEmpty` 把描述差異算進去，那些表往後每次比對都回報有差異，永遠清不掉。MySQL 的 `MODIFY COLUMN` 現在會保住 `AUTO_INCREMENT`（原本會把它拔掉，之後所有 `INSERT` 全部失敗）。SQLite 則完全不回報描述差異，因為它根本無處可存。
+- `apps/Bee.Northwind`：seed 每張表各包一個 transaction。部分插入原本會永久殘留 —— 冪等 gate 只要表非空就整批跳過 —— 於是少了一筆訂單明細而沒有任何錯誤訊息。Browser head 釘住 `en-US`，因為瀏覽器沙箱沒有可 fallback 的 CJK 字型。
+
+### 升級指引
+
+不需要做任何事。`RequireWireFrame` 預設為 `false`，行為不變。
+
+要開啟重放防護：**兩端**先升套件，再把用戶端與伺服端的開關同時打開。該開關不做協商，設定不一致會讓每一次呼叫都失敗。開之前值得先知道四條限制 —— `Plain` 格式不受保護、逾時重送會失敗而不是安靜地成功、匿名呼叫不做序號檢查，以及單就時戳檢查而言，被側錄的封包在容許時窗內（預設五分鐘）仍可重放；收窄那段落差是序號視窗的職責。
+
+```csharp
+// 伺服端與用戶端，啟動時 —— 要嘛都開，要嘛都不開。
+ApiServiceOptions.RequireWireFrame = true;
+```
+
 ## [4.25.0]
 
 > 稽核原本每一軸只有一個部署層開關：異動記錄開或關、檢視記錄開或關，全部表單一起決定。本版補上缺的那層顆粒度——`st_audit_rule` 逐公司、逐表單各一列，於執行期解析——結清 [ADR-027](docs/adr/adr-027-audit-trail.md) 待辦的第一條，以及 [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 決策四中尚未實作的兩條。**沒有規則列的表單沿用部署層預設，所以表不存在或空的時候，行為與先前完全相同。** 維護表單由框架隨附，掛在保留字 progId `AuditRule` 上，而它是唯一一張規則關不掉的表單：能讓自己的軌跡消音的政策，等於自己把漏洞補死。見 [ADR-041](docs/adr/adr-041-per-form-audit-rule.md)。

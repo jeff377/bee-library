@@ -4,6 +4,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.26.0]
+
+> A captured JSON-RPC packet could be resent and would execute again: the payload is authenticated, but it carries nothing that makes a call unique. This release adds a wire frame — version, timestamp and sequence number, prepended *inside* the encrypted envelope so the payload HMAC covers it — and a per-session sliding window that refuses a sequence it has already accepted. **It is off by default (`ApiServiceOptions.RequireWireFrame`), and both ends read that switch rather than detecting the frame, because a server that detected it could be downgraded by stripping it.** See [ADR-042](docs/adr/adr-042-api-replay-protection.md). Alongside it, the exception-to-error-code mapping that each end had held privately becomes one ordered registry ([ADR-043](docs/adr/adr-043-error-contract-single-registry.md)) — the drift it rules out had already happened once — and schema upgrade gains description sync on all four dialects, plus a fix for an Oracle comparison that aborted upgrades outright.
+
+📄 Full notes and design context: [docs/changelogs/4.26.0.md](docs/changelogs/4.26.0.md)
+
+### Added
+
+- `Bee.Api.Core`: replay protection for the `Encoded` and `Encrypted` wire formats. `ApiPayloadFrame` (version + timestamp + sequence, big-endian, 17 bytes) with `ApiPayload.Frame`; `ReplayWindow`, `IReplayWindowStore` and `MemoryReplayWindowStore`; `ReplayRejectedException` and `JsonRpcErrorCode.ReplayRejected` (`-32005`); `ApiServiceOptions.RequireWireFrame`, `WireFrameTimestampTolerance` (five minutes) and `ReplayWindowStore`. **Off by default.** See [ADR-042](docs/adr/adr-042-api-replay-protection.md).
+- `Bee.Definition`: `ApiReplayProtection` and `ApiAccessControlAttribute.ReplayProtection`, declaring per method which calls require a unique sequence. `Save`, `Delete`, `ExecFunc`, `EnterCompany` and `LeaveCompany` carry it — the complete set of remotely reachable methods with side effects.
+- `Bee.Definition`: `AnomalyKind.Replay`, so a session being refused repeatedly stays visible as its own signal instead of folding into generic errors.
+- `Bee.Api.Client`: `ApiSessionContext.NextSequence()`.
+- `Bee.Api.Core`: `ApiAccessValidator.FindAccessControl(MethodInfo)`.
+- `Bee.Db`: `IDescriptionSyncCommandBuilder`, reached through `IDialectFactory.CreateDescriptionSyncCommandBuilder()` and implemented for SQL Server, PostgreSQL, Oracle and MySQL. The factory member is a **default interface member returning `null`**, so an external dialect implementation keeps compiling and running.
+
+### Changed
+
+- `Bee.Api.Core`: `JsonRpcErrorContract` becomes the single registry for the exception-to-error-code mapping. The server's `MapException` and the client's response handling now read the same declaration, so adding an error is one edit rather than two that nothing keeps in step. Behaviour is unchanged. See [ADR-043](docs/adr/adr-043-error-contract-single-registry.md).
+- Docs: the JSON-RPC error-code table gains `-32005` and corrects `-32001` — authentication failure answers `-32600` with HTTP 401, and `-32001` has no producer. The mapping table in the development constraints now points at `JsonRpcErrorContract` instead of restating it.
+
+### Fixed
+
+- `Bee.Db` (Oracle): a `String` / `Text` column declared `AllowNull="true"` never matched its own read-back, so every comparison produced an `AlterFieldChange`. Harmless on a `String`, fatal on a `CLOB` — Oracle refuses any `MODIFY` that restates a LOB type with `ORA-22859`, and because `AlterColumns` runs before `AddColumns`, the upgrade aborted before the new columns were added. `st_log_anomaly_api` and `st_log_anomaly_db` were stuck two columns short.
+- `Bee.Db`: description sync only recognised the SQL Server dialect, so a column added by an `ALTER` never received its caption anywhere else — and since `TableSchemaDiff.IsEmpty` counts description changes, those tables reported a difference on every comparison, forever. MySQL's `MODIFY COLUMN` now preserves `AUTO_INCREMENT` (it previously dropped it, breaking every subsequent `INSERT`). SQLite reports no description difference at all, because it has no facility to store one.
+- `apps/Bee.Northwind`: seeding wraps each table in its own transaction. A partial insert used to survive permanently — the idempotence gate skips any non-empty table — leaving one order detail row missing with no error. The Browser head pins `en-US`, since the browser sandbox has no CJK font to fall back to.
+
+### Upgrade notes
+
+Nothing to do. `RequireWireFrame` defaults to `false` and behaviour is unchanged.
+
+To switch replay protection on: upgrade **both** ends first, then set the flag on the client and the server together. The switch is not negotiated, so a mismatch fails every call. Four limits are worth knowing before flipping it — the `Plain` format is not protected, a timed-out request that is retried fails rather than quietly succeeding, anonymous calls are not sequence-checked, and within the timestamp check alone a captured packet stays replayable for the tolerance window (five minutes by default); narrowing that gap is the sequence window's job.
+
+```csharp
+// Server and client, at startup — both, or neither.
+ApiServiceOptions.RequireWireFrame = true;
+```
+
 ## [4.25.0]
 
 > Auditing had one switch per axis for the whole deployment: change logging on or off, access logging on or off, every form at once. This release adds the granularity that was missing — `st_audit_rule` holds one row per form per company, resolved at run time — closing the first open item on [ADR-027](docs/adr/adr-027-audit-trail.md) and the two unimplemented requirements of [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) decision 4. **A form with no row inherits the deployment default, so an absent or empty table reproduces the previous behaviour exactly.** The maintenance form ships with the framework as the reserved `AuditRule` progId, and it is the one form the rules cannot switch off: a policy able to silence its own trail would close the loophole on itself. See [ADR-041](docs/adr/adr-041-per-form-audit-rule.md).

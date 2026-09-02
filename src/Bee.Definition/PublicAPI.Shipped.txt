@@ -8,6 +8,8 @@ Bee.Definition.Attributes.ApiAccessControlAttribute
 Bee.Definition.Attributes.ApiAccessControlAttribute.AccessRequirement.get -> Bee.Definition.Security.ApiAccessRequirement
 Bee.Definition.Attributes.ApiAccessControlAttribute.ApiAccessControlAttribute(Bee.Definition.Security.ApiProtectionLevel protectionLevel, Bee.Definition.Security.ApiAccessRequirement accessRequirement = Bee.Definition.Security.ApiAccessRequirement.Authenticated) -> void
 Bee.Definition.Attributes.ApiAccessControlAttribute.ProtectionLevel.get -> Bee.Definition.Security.ApiProtectionLevel
+Bee.Definition.Attributes.ApiAccessControlAttribute.ReplayProtection.get -> Bee.Definition.Security.ApiReplayProtection
+Bee.Definition.Attributes.ApiAccessControlAttribute.ReplayProtection.set -> void
 Bee.Definition.BackendDefaultTypes
 Bee.Definition.BeeContext
 Bee.Definition.BeeContext.BeeContext() -> void
@@ -842,6 +844,7 @@ Bee.Definition.Logging.AnomalyKind
 Bee.Definition.Logging.AnomalyKind.Error = 1 -> Bee.Definition.Logging.AnomalyKind
 Bee.Definition.Logging.AnomalyKind.LargeAffected = 4 -> Bee.Definition.Logging.AnomalyKind
 Bee.Definition.Logging.AnomalyKind.LargeResult = 5 -> Bee.Definition.Logging.AnomalyKind
+Bee.Definition.Logging.AnomalyKind.Replay = 7 -> Bee.Definition.Logging.AnomalyKind
 Bee.Definition.Logging.AnomalyKind.Slow = 3 -> Bee.Definition.Logging.AnomalyKind
 Bee.Definition.Logging.AnomalyKind.Timeout = 2 -> Bee.Definition.Logging.AnomalyKind
 Bee.Definition.Logging.AnomalyKind.Unauthorized = 6 -> Bee.Definition.Logging.AnomalyKind
@@ -1177,6 +1180,9 @@ Bee.Definition.Security.ApiProtectionLevel.Encoded = 1 -> Bee.Definition.Securit
 Bee.Definition.Security.ApiProtectionLevel.Encrypted = 2 -> Bee.Definition.Security.ApiProtectionLevel
 Bee.Definition.Security.ApiProtectionLevel.LocalOnly = 3 -> Bee.Definition.Security.ApiProtectionLevel
 Bee.Definition.Security.ApiProtectionLevel.Public = 0 -> Bee.Definition.Security.ApiProtectionLevel
+Bee.Definition.Security.ApiReplayProtection
+Bee.Definition.Security.ApiReplayProtection.None = 0 -> Bee.Definition.Security.ApiReplayProtection
+Bee.Definition.Security.ApiReplayProtection.UniqueSequence = 1 -> Bee.Definition.Security.ApiReplayProtection
 Bee.Definition.Security.EncryptionKeyProtector
 Bee.Definition.Security.IAccessTokenValidator
 Bee.Definition.Security.IAccessTokenValidator.Validate(System.Guid accessToken) -> bool

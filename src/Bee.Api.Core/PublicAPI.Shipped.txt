@@ -30,18 +30,28 @@ Bee.Api.Core.Conversion.ApiOutputConverter
 Bee.Api.Core.JsonRpc.ApiPayload
 Bee.Api.Core.JsonRpc.ApiPayload.ApiPayload() -> void
 Bee.Api.Core.JsonRpc.ApiPayload.Format.get -> Bee.Api.Core.Messages.PayloadFormat
+Bee.Api.Core.JsonRpc.ApiPayload.Frame.get -> Bee.Api.Core.JsonRpc.ApiPayloadFrame?
+Bee.Api.Core.JsonRpc.ApiPayload.Frame.set -> void
 Bee.Api.Core.JsonRpc.ApiPayload.SerializeState.get -> Bee.Base.Serialization.SerializeState
 Bee.Api.Core.JsonRpc.ApiPayload.TypeName.get -> string!
 Bee.Api.Core.JsonRpc.ApiPayload.TypeName.set -> void
 Bee.Api.Core.JsonRpc.ApiPayload.Value.get -> object?
 Bee.Api.Core.JsonRpc.ApiPayload.Value.set -> void
 Bee.Api.Core.JsonRpc.ApiPayloadConverter
+Bee.Api.Core.JsonRpc.ApiPayloadFrame
+Bee.Api.Core.JsonRpc.ApiPayloadFrame.ApiPayloadFrame(long timestampMs, long sequence) -> void
+Bee.Api.Core.JsonRpc.ApiPayloadFrame.Prepend(byte[]! body) -> byte[]!
+Bee.Api.Core.JsonRpc.ApiPayloadFrame.Sequence.get -> long
+Bee.Api.Core.JsonRpc.ApiPayloadFrame.TimestampMs.get -> long
+Bee.Api.Core.JsonRpc.ApiPayloadFrame.Version.get -> byte
 Bee.Api.Core.JsonRpc.ApiPayloadJsonConverter<T>
 Bee.Api.Core.JsonRpc.ApiPayloadJsonConverter<T>.ApiPayloadJsonConverter() -> void
 Bee.Api.Core.JsonRpc.ApiPayloadJsonConverterFactory
 Bee.Api.Core.JsonRpc.ApiPayloadJsonConverterFactory.ApiPayloadJsonConverterFactory() -> void
 Bee.Api.Core.JsonRpc.DateTimeWireGuard
 Bee.Api.Core.JsonRpc.DateTimeZoneConverter
+Bee.Api.Core.JsonRpc.IReplayWindowStore
+Bee.Api.Core.JsonRpc.IReplayWindowStore.GetOrAdd(System.Guid accessToken) -> Bee.Api.Core.JsonRpc.ReplayWindow!
 Bee.Api.Core.JsonRpc.JsonRpcError
 Bee.Api.Core.JsonRpc.JsonRpcError.Code.get -> int
 Bee.Api.Core.JsonRpc.JsonRpcError.Code.set -> void
@@ -60,8 +70,10 @@ Bee.Api.Core.JsonRpc.JsonRpcErrorCode.InvalidRequest = -32600 -> Bee.Api.Core.Js
 Bee.Api.Core.JsonRpc.JsonRpcErrorCode.MethodNotFound = -32601 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
 Bee.Api.Core.JsonRpc.JsonRpcErrorCode.ParseError = -32700 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
 Bee.Api.Core.JsonRpc.JsonRpcErrorCode.PermissionDenied = -32004 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorCode.ReplayRejected = -32005 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
 Bee.Api.Core.JsonRpc.JsonRpcErrorCode.Unauthorized = -32001 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
 Bee.Api.Core.JsonRpc.JsonRpcErrorCode.UserMessage = -32099 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorContract
 Bee.Api.Core.JsonRpc.JsonRpcException
 Bee.Api.Core.JsonRpc.JsonRpcException.ErrorCode.get -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
 Bee.Api.Core.JsonRpc.JsonRpcException.HttpStatusCode.get -> int
@@ -106,12 +118,22 @@ Bee.Api.Core.JsonRpc.JsonRpcResponse.Result.set -> void
 Bee.Api.Core.JsonRpc.JsonRpcResponse.SerializeState.get -> Bee.Base.Serialization.SerializeState
 Bee.Api.Core.JsonRpc.JsonRpcResult
 Bee.Api.Core.JsonRpc.JsonRpcResult.JsonRpcResult() -> void
+Bee.Api.Core.JsonRpc.MemoryReplayWindowStore
+Bee.Api.Core.JsonRpc.MemoryReplayWindowStore.Count.get -> int
+Bee.Api.Core.JsonRpc.MemoryReplayWindowStore.GetOrAdd(System.Guid accessToken) -> Bee.Api.Core.JsonRpc.ReplayWindow!
+Bee.Api.Core.JsonRpc.MemoryReplayWindowStore.MemoryReplayWindowStore() -> void
 Bee.Api.Core.JsonRpc.PayloadSwap
 Bee.Api.Core.JsonRpc.PayloadSwap.Dispose() -> void
 Bee.Api.Core.JsonRpc.PayloadSwap.Equals(Bee.Api.Core.JsonRpc.PayloadSwap other) -> bool
 Bee.Api.Core.JsonRpc.PayloadSwap.PayloadSwap() -> void
 Bee.Api.Core.JsonRpc.PayloadSwap.PayloadSwap(System.Action! restore) -> void
 Bee.Api.Core.JsonRpc.PayloadZoneConverter
+Bee.Api.Core.JsonRpc.ReplayRejectedException
+Bee.Api.Core.JsonRpc.ReplayRejectedException.ReplayRejectedException(string! message) -> void
+Bee.Api.Core.JsonRpc.ReplayRejectedException.ReplayRejectedException(string! message, System.Exception! innerException) -> void
+Bee.Api.Core.JsonRpc.ReplayWindow
+Bee.Api.Core.JsonRpc.ReplayWindow.ReplayWindow() -> void
+Bee.Api.Core.JsonRpc.ReplayWindow.TryAccept(long sequence) -> bool
 Bee.Api.Core.Messages.ApiCallContext
 Bee.Api.Core.Messages.ApiCallContext.AccessToken.get -> System.Guid
 Bee.Api.Core.Messages.ApiCallContext.AccessToken.set -> void
@@ -620,6 +642,10 @@ Bee.Api.Core.Transformers.NoEncryptionEncryptor.Encrypt(byte[]! bytes, byte[]! e
 Bee.Api.Core.Transformers.NoEncryptionEncryptor.EncryptionMethod.get -> string!
 Bee.Api.Core.Transformers.NoEncryptionEncryptor.NoEncryptionEncryptor() -> void
 Bee.Api.Core.Validator.ApiAccessValidator
+const Bee.Api.Core.JsonRpc.ApiPayloadFrame.CurrentVersion = 1 -> byte
+const Bee.Api.Core.JsonRpc.ApiPayloadFrame.Version1Size = 17 -> int
+const Bee.Api.Core.JsonRpc.ReplayWindow.MaxForwardJump = 1000000 -> long
+const Bee.Api.Core.JsonRpc.ReplayWindow.WindowSize = 64 -> int
 const Bee.Api.Core.Messages.ApiHeaders.ApiKey = "X-Api-Key" -> string!
 const Bee.Api.Core.Messages.ApiHeaders.Authorization = "Authorization" -> string!
 const Bee.Api.Core.Messages.ApiHeaders.ContentType = "Content-Type" -> string!
@@ -642,6 +668,12 @@ static Bee.Api.Core.ApiServiceOptions.PayloadSerializer.get -> Bee.Api.Core.Tran
 static Bee.Api.Core.ApiServiceOptions.PayloadSerializer.set -> void
 static Bee.Api.Core.ApiServiceOptions.PayloadTransformer.get -> Bee.Api.Core.Transformers.IApiPayloadTransformer!
 static Bee.Api.Core.ApiServiceOptions.PayloadTransformer.set -> void
+static Bee.Api.Core.ApiServiceOptions.ReplayWindowStore.get -> Bee.Api.Core.JsonRpc.IReplayWindowStore!
+static Bee.Api.Core.ApiServiceOptions.ReplayWindowStore.set -> void
+static Bee.Api.Core.ApiServiceOptions.RequireWireFrame.get -> bool
+static Bee.Api.Core.ApiServiceOptions.RequireWireFrame.set -> void
+static Bee.Api.Core.ApiServiceOptions.WireFrameTimestampTolerance.get -> System.TimeSpan
+static Bee.Api.Core.ApiServiceOptions.WireFrameTimestampTolerance.set -> void
 static Bee.Api.Core.Authorization.ApiAuthorizationResult.Fail(Bee.Api.Core.JsonRpc.JsonRpcErrorCode code, string! errorMessage) -> Bee.Api.Core.Authorization.ApiAuthorizationResult!
 static Bee.Api.Core.Authorization.ApiAuthorizationResult.Success(System.Guid accessToken) -> Bee.Api.Core.Authorization.ApiAuthorizationResult!
 static Bee.Api.Core.Conversion.ApiInputConverter.Convert(object! source, System.Type! targetType) -> object?
@@ -649,12 +681,14 @@ static Bee.Api.Core.Conversion.ApiOutputConverter.Convert(object! boResult) -> o
 static Bee.Api.Core.Conversion.ApiOutputConverter.ConvertResultValue<T>(object! value) -> T?
 static Bee.Api.Core.JsonRpc.ApiPayloadConverter.RestoreFrom(Bee.Api.Core.JsonRpc.ApiPayload! payload, Bee.Api.Core.Messages.PayloadFormat sourceFormat, byte[]? encryptionKey = null) -> void
 static Bee.Api.Core.JsonRpc.ApiPayloadConverter.TransformTo(Bee.Api.Core.JsonRpc.ApiPayload! payload, Bee.Api.Core.Messages.PayloadFormat targetFormat, byte[]? encryptionKey = null) -> void
+static Bee.Api.Core.JsonRpc.ApiPayloadFrame.Extract(byte[]! framed, out byte[]! body) -> Bee.Api.Core.JsonRpc.ApiPayloadFrame!
 static Bee.Api.Core.JsonRpc.DateTimeWireGuard.Validate(object? value) -> void
 static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.ConvertFilterValue(object? value, string! timeZoneId, bool toUtc) -> object?
 static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UserToUtc(System.Data.DataSet? dataSet, string! timeZoneId) -> System.Data.DataSet?
 static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UserToUtc(System.Data.DataTable? table, string! timeZoneId) -> System.Data.DataTable?
 static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UtcToUser(System.Data.DataSet? dataSet, string! timeZoneId) -> System.Data.DataSet?
 static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UtcToUser(System.Data.DataTable? table, string! timeZoneId) -> System.Data.DataTable?
+static Bee.Api.Core.JsonRpc.JsonRpcErrorContract.TryRebuild(int code, string! message, out System.Exception? exception) -> bool
 static Bee.Api.Core.JsonRpc.PayloadSwap.operator !=(Bee.Api.Core.JsonRpc.PayloadSwap left, Bee.Api.Core.JsonRpc.PayloadSwap right) -> bool
 static Bee.Api.Core.JsonRpc.PayloadSwap.operator ==(Bee.Api.Core.JsonRpc.PayloadSwap left, Bee.Api.Core.JsonRpc.PayloadSwap right) -> bool
 static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUserZone(object? payload, string! timeZoneId) -> void
@@ -662,6 +696,7 @@ static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUtc(object? payload, string! 
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateCompressor(string! name) -> Bee.Api.Core.Transformers.IApiPayloadCompressor!
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateEncryptor(string! name, bool isDebugMode) -> Bee.Api.Core.Transformers.IApiPayloadEncryptor!
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateSerializer(string! name) -> Bee.Api.Core.Transformers.IApiPayloadSerializer!
+static Bee.Api.Core.Validator.ApiAccessValidator.FindAccessControl(System.Reflection.MethodInfo! method) -> Bee.Definition.Attributes.ApiAccessControlAttribute?
 static Bee.Api.Core.Validator.ApiAccessValidator.ValidateAccess(System.Reflection.MethodInfo! method, Bee.Api.Core.Messages.ApiCallContext! context, Bee.Definition.Security.IAccessTokenValidator! tokenValidator) -> void
 virtual Bee.Api.Core.Authorization.ApiAuthorizationValidator.IsApiKeyRequired(string! method) -> bool
 virtual Bee.Api.Core.Authorization.ApiAuthorizationValidator.IsAuthorizationRequired(string! method) -> bool

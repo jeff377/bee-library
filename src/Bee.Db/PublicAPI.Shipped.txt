@@ -133,6 +133,8 @@ Bee.Db.DbParameterSpecCollectionExtensions
 Bee.Db.DbTypeMapper
 Bee.Db.Ddl.ICreateTableCommandBuilder
 Bee.Db.Ddl.ICreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
+Bee.Db.Ddl.IDescriptionSyncCommandBuilder
+Bee.Db.Ddl.IDescriptionSyncCommandBuilder.GetStatements(Bee.Db.Schema.TableSchemaDiff! diff) -> System.Collections.Generic.IReadOnlyList<string!>!
 Bee.Db.Ddl.ITableAlterCommandBuilder
 Bee.Db.Ddl.ITableAlterCommandBuilder.GetExecutionKind(Bee.Db.Schema.Changes.ITableChange! change) -> Bee.Db.Schema.ChangeExecutionKind
 Bee.Db.Ddl.ITableAlterCommandBuilder.GetStatements(string! tableName, Bee.Db.Schema.Changes.ITableChange! change) -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -259,6 +261,7 @@ Bee.Db.Manager.IDbConnectionManager.GetConnectionInfo(string! databaseId) -> Bee
 Bee.Db.Manager.IDbConnectionManager.Remove(string! databaseId) -> bool
 Bee.Db.Providers.IDialectFactory
 Bee.Db.Providers.IDialectFactory.CreateCreateTableCommandBuilder() -> Bee.Db.Ddl.ICreateTableCommandBuilder!
+Bee.Db.Providers.IDialectFactory.CreateDescriptionSyncCommandBuilder() -> Bee.Db.Ddl.IDescriptionSyncCommandBuilder?
 Bee.Db.Providers.IDialectFactory.CreateFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> Bee.Db.Dml.IFormCommandBuilder!
 Bee.Db.Providers.IDialectFactory.CreateTableAlterCommandBuilder() -> Bee.Db.Ddl.ITableAlterCommandBuilder!
 Bee.Db.Providers.IDialectFactory.CreateTableRebuildCommandBuilder() -> Bee.Db.Ddl.ITableRebuildCommandBuilder!
@@ -267,8 +270,12 @@ Bee.Db.Providers.IDialectFactory.GetDefaultValueExpression(Bee.Base.Data.FieldDb
 Bee.Db.Providers.MySql.MySqlCreateTableCommandBuilder
 Bee.Db.Providers.MySql.MySqlCreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
 Bee.Db.Providers.MySql.MySqlCreateTableCommandBuilder.MySqlCreateTableCommandBuilder() -> void
+Bee.Db.Providers.MySql.MySqlDescriptionSyncCommandBuilder
+Bee.Db.Providers.MySql.MySqlDescriptionSyncCommandBuilder.GetStatements(Bee.Db.Schema.TableSchemaDiff! diff) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.MySql.MySqlDescriptionSyncCommandBuilder.MySqlDescriptionSyncCommandBuilder() -> void
 Bee.Db.Providers.MySql.MySqlDialectFactory
 Bee.Db.Providers.MySql.MySqlDialectFactory.CreateCreateTableCommandBuilder() -> Bee.Db.Ddl.ICreateTableCommandBuilder!
+Bee.Db.Providers.MySql.MySqlDialectFactory.CreateDescriptionSyncCommandBuilder() -> Bee.Db.Ddl.IDescriptionSyncCommandBuilder?
 Bee.Db.Providers.MySql.MySqlDialectFactory.CreateFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> Bee.Db.Dml.IFormCommandBuilder!
 Bee.Db.Providers.MySql.MySqlDialectFactory.CreateTableAlterCommandBuilder() -> Bee.Db.Ddl.ITableAlterCommandBuilder!
 Bee.Db.Providers.MySql.MySqlDialectFactory.CreateTableRebuildCommandBuilder() -> Bee.Db.Ddl.ITableRebuildCommandBuilder!
@@ -292,8 +299,12 @@ Bee.Db.Providers.MySql.MySqlTableSchemaProvider.MySqlTableSchemaProvider(string!
 Bee.Db.Providers.Oracle.OracleCreateTableCommandBuilder
 Bee.Db.Providers.Oracle.OracleCreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
 Bee.Db.Providers.Oracle.OracleCreateTableCommandBuilder.OracleCreateTableCommandBuilder() -> void
+Bee.Db.Providers.Oracle.OracleDescriptionSyncCommandBuilder
+Bee.Db.Providers.Oracle.OracleDescriptionSyncCommandBuilder.GetStatements(Bee.Db.Schema.TableSchemaDiff! diff) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.Oracle.OracleDescriptionSyncCommandBuilder.OracleDescriptionSyncCommandBuilder() -> void
 Bee.Db.Providers.Oracle.OracleDialectFactory
 Bee.Db.Providers.Oracle.OracleDialectFactory.CreateCreateTableCommandBuilder() -> Bee.Db.Ddl.ICreateTableCommandBuilder!
+Bee.Db.Providers.Oracle.OracleDialectFactory.CreateDescriptionSyncCommandBuilder() -> Bee.Db.Ddl.IDescriptionSyncCommandBuilder?
 Bee.Db.Providers.Oracle.OracleDialectFactory.CreateFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> Bee.Db.Dml.IFormCommandBuilder!
 Bee.Db.Providers.Oracle.OracleDialectFactory.CreateTableAlterCommandBuilder() -> Bee.Db.Ddl.ITableAlterCommandBuilder!
 Bee.Db.Providers.Oracle.OracleDialectFactory.CreateTableRebuildCommandBuilder() -> Bee.Db.Ddl.ITableRebuildCommandBuilder!
@@ -317,8 +328,12 @@ Bee.Db.Providers.Oracle.OracleTableSchemaProvider.OracleTableSchemaProvider(stri
 Bee.Db.Providers.PostgreSql.PgCreateTableCommandBuilder
 Bee.Db.Providers.PostgreSql.PgCreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
 Bee.Db.Providers.PostgreSql.PgCreateTableCommandBuilder.PgCreateTableCommandBuilder() -> void
+Bee.Db.Providers.PostgreSql.PgDescriptionSyncCommandBuilder
+Bee.Db.Providers.PostgreSql.PgDescriptionSyncCommandBuilder.GetStatements(Bee.Db.Schema.TableSchemaDiff! diff) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.PostgreSql.PgDescriptionSyncCommandBuilder.PgDescriptionSyncCommandBuilder() -> void
 Bee.Db.Providers.PostgreSql.PgDialectFactory
 Bee.Db.Providers.PostgreSql.PgDialectFactory.CreateCreateTableCommandBuilder() -> Bee.Db.Ddl.ICreateTableCommandBuilder!
+Bee.Db.Providers.PostgreSql.PgDialectFactory.CreateDescriptionSyncCommandBuilder() -> Bee.Db.Ddl.IDescriptionSyncCommandBuilder?
 Bee.Db.Providers.PostgreSql.PgDialectFactory.CreateFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> Bee.Db.Dml.IFormCommandBuilder!
 Bee.Db.Providers.PostgreSql.PgDialectFactory.CreateTableAlterCommandBuilder() -> Bee.Db.Ddl.ITableAlterCommandBuilder!
 Bee.Db.Providers.PostgreSql.PgDialectFactory.CreateTableRebuildCommandBuilder() -> Bee.Db.Ddl.ITableRebuildCommandBuilder!
@@ -342,8 +357,12 @@ Bee.Db.Providers.PostgreSql.PgTableSchemaProvider.PgTableSchemaProvider(string! 
 Bee.Db.Providers.SqlServer.SqlCreateTableCommandBuilder
 Bee.Db.Providers.SqlServer.SqlCreateTableCommandBuilder.GetCommandText(Bee.Definition.Database.TableSchema! tableSchema) -> string!
 Bee.Db.Providers.SqlServer.SqlCreateTableCommandBuilder.SqlCreateTableCommandBuilder() -> void
+Bee.Db.Providers.SqlServer.SqlDescriptionSyncCommandBuilder
+Bee.Db.Providers.SqlServer.SqlDescriptionSyncCommandBuilder.GetStatements(Bee.Db.Schema.TableSchemaDiff! diff) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.SqlServer.SqlDescriptionSyncCommandBuilder.SqlDescriptionSyncCommandBuilder() -> void
 Bee.Db.Providers.SqlServer.SqlDialectFactory
 Bee.Db.Providers.SqlServer.SqlDialectFactory.CreateCreateTableCommandBuilder() -> Bee.Db.Ddl.ICreateTableCommandBuilder!
+Bee.Db.Providers.SqlServer.SqlDialectFactory.CreateDescriptionSyncCommandBuilder() -> Bee.Db.Ddl.IDescriptionSyncCommandBuilder?
 Bee.Db.Providers.SqlServer.SqlDialectFactory.CreateFormCommandBuilder(Bee.Definition.Forms.FormSchema! formDefine, Bee.Definition.Storage.IDefineAccess! defineAccess) -> Bee.Db.Dml.IFormCommandBuilder!
 Bee.Db.Providers.SqlServer.SqlDialectFactory.CreateTableAlterCommandBuilder() -> Bee.Db.Ddl.ITableAlterCommandBuilder!
 Bee.Db.Providers.SqlServer.SqlDialectFactory.CreateTableRebuildCommandBuilder() -> Bee.Db.Ddl.ITableRebuildCommandBuilder!
