@@ -27,6 +27,9 @@ namespace Bee.Db.Providers.SqlServer
         public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => new SqlTableRebuildCommandBuilder();
 
         /// <inheritdoc />
+        public IDescriptionSyncCommandBuilder? CreateDescriptionSyncCommandBuilder() => new SqlDescriptionSyncCommandBuilder();
+
+        /// <inheritdoc />
         public IFormCommandBuilder CreateFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess)
             => new SqlFormCommandBuilder(formDefine, defineAccess);
 

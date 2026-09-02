@@ -33,6 +33,9 @@ namespace Bee.Db.Providers.MySql
         public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => new MySqlTableRebuildCommandBuilder();
 
         /// <inheritdoc />
+        public IDescriptionSyncCommandBuilder? CreateDescriptionSyncCommandBuilder() => new MySqlDescriptionSyncCommandBuilder();
+
+        /// <inheritdoc />
         public IFormCommandBuilder CreateFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess)
             => new MySqlFormCommandBuilder(formDefine, defineAccess);
 

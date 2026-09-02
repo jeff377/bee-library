@@ -2,7 +2,6 @@ using Bee.Base;
 using Bee.Db.Ddl;
 using Bee.Db.Manager;
 using Bee.Db.Providers;
-using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema.Changes;
 
 namespace Bee.Db.Schema
@@ -187,32 +186,30 @@ namespace Bee.Db.Schema
             if (addColumnStmts.Count > 0) stages.Add(new UpgradeStage(UpgradeStageKind.AddColumns, addColumnStmts));
             if (createIndexStmts.Count > 0) stages.Add(new UpgradeStage(UpgradeStageKind.CreateIndexes, createIndexStmts));
 
-            AppendDescriptionSyncStage(stages, tableName, diff);
+            AppendDescriptionSyncStage(stages, diff);
 
             return new UpgradePlan(UpgradeExecutionMode.Alter, stages, warnings);
         }
 
         /// <summary>
-        /// Appends a description-sync stage to <paramref name="stages"/> when the active dialect
-        /// supports column-description persistence and there are description changes to apply.
+        /// Appends a description-sync stage to <paramref name="stages"/> when the active dialect can
+        /// persist descriptions and there is something to apply.
         /// </summary>
         /// <remarks>
-        /// Description sync is currently SQL Server-only — <see cref="SqlExtendedPropertyCommandBuilder"/>
-        /// emits <c>sp_addextendedproperty</c> calls. Other dialects (PostgreSQL / SQLite / MySQL / Oracle)
-        /// either don't persist column descriptions in the framework's CREATE TABLE output (SQLite, MySQL)
-        /// or use a different syntax that hasn't been wired through yet. Skipping for non-SQL-Server avoids
-        /// running SQL Server-specific SQL against them (which would throw errors such as
-        /// <c>Parameter '@name' must be defined</c>). When description persistence is added to other dialects,
-        /// abstract this via an <c>IDescriptionSyncCommandBuilder</c> on <c>IDialectFactory</c>.
+        /// The sync runs last, after the columns it describes exist. A dialect that cannot store
+        /// descriptions at all returns no builder and the stage is skipped, which is why the seam is
+        /// <see cref="IDialectFactory.CreateDescriptionSyncCommandBuilder"/> returning null rather
+        /// than a builder that yields nothing: the distinction is "this dialect has no such facility",
+        /// not "nothing changed".
         /// </remarks>
-        private void AppendDescriptionSyncStage(List<UpgradeStage> stages, string tableName, TableSchemaDiff diff)
+        private void AppendDescriptionSyncStage(List<UpgradeStage> stages, TableSchemaDiff diff)
         {
-            if (diff.DescriptionChanges.Count == 0) return;
-            if (_dialect is not SqlDialectFactory) return;
+            var builder = _dialect.CreateDescriptionSyncCommandBuilder();
+            if (builder == null) return;
 
-            var descSql = SqlExtendedPropertyCommandBuilder.GetCommandText(tableName, diff.DescriptionChanges);
-            if (StringUtilities.IsNotEmpty(descSql))
-                stages.Add(new UpgradeStage(UpgradeStageKind.SyncDescriptions, new[] { descSql }));
+            var statements = builder.GetStatements(diff);
+            if (statements.Count > 0)
+                stages.Add(new UpgradeStage(UpgradeStageKind.SyncDescriptions, statements));
         }
 
     }

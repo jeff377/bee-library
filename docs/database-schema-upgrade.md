@@ -104,7 +104,7 @@ Internally the upgrade is split into three stages, each callable in isolation:
 | `AddIndexChange` | Create an index |
 | `DropIndexChange` | Drop an index |
 
-It also carries `DescriptionChanges` (MS_Description / extended-property synchronization). Description / extended-property synchronization is currently applied on **SQL Server only**; other dialects skip this step (see Stage 5 in §7).
+It also carries `DescriptionChanges` (table / column description drift). Description synchronization runs on SQL Server, PostgreSQL, MySQL and Oracle; SQLite has no facility to store descriptions, so the comparer does not report description drift there at all (see Stage 5 in §7).
 
 ### UpgradePlan (Execution Plan)
 
@@ -221,7 +221,15 @@ Stage 4: CreateIndexes      Create new indexes; recreate ones dropped in Stage 1
 Stage 5: SyncDescriptions   Sync extended properties (MS_Description)
 ```
 
-> Stage 5 (`SyncDescriptions`) runs on **SQL Server only** — the orchestrator skips it for every other dialect, so no description / extended-property SQL is emitted there.
+> Stage 5 (`SyncDescriptions`) is produced by the dialect's `IDescriptionSyncCommandBuilder`
+> (`sp_addextendedproperty` on SQL Server, `COMMENT ON` on PostgreSQL / Oracle, an inline
+> `COMMENT` clause on MySQL). A dialect that cannot store descriptions supplies no builder and
+> the stage is skipped — SQLite is the only such dialect today.
+>
+> The stage also covers the columns added in Stage 3: the comparer only reports drift for columns
+> present on both sides, so a column that does not exist in the database yet produces no drift
+> entry of its own. Without this, a column added by an in-place upgrade would never receive its
+> caption and every later comparison would report the table as out of date.
 
 ### Failure behaviour
 

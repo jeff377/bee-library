@@ -88,6 +88,13 @@ namespace Bee.Db.Schema
         /// <param name="target">The list to populate.</param>
         private void PopulateDescriptionChanges(List<DescriptionChange> target)
         {
+            // SQLite has no COMMENT facility, so `SqliteTableSchemaProvider` reads every caption back
+            // as empty and every captioned table would report drift that no statement can ever clear.
+            // `TableSchemaDiff.IsEmpty` counts description drift, so reporting it here would make
+            // "is this table up to date?" permanently answer no while producing no SQL to fix it.
+            if (this.DatabaseType == DatabaseType.SQLite)
+                return;
+
             var real = this.RealTable!;
             // Table-level: DisplayName
             AddDescriptionDrift(target, DescriptionLevel.Table, string.Empty,

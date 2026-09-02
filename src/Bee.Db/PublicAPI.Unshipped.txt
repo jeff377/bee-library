@@ -1,1 +1,20 @@
 #nullable enable
+Bee.Db.Ddl.IDescriptionSyncCommandBuilder
+Bee.Db.Ddl.IDescriptionSyncCommandBuilder.GetStatements(Bee.Db.Schema.TableSchemaDiff! diff) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.IDialectFactory.CreateDescriptionSyncCommandBuilder() -> Bee.Db.Ddl.IDescriptionSyncCommandBuilder?
+Bee.Db.Providers.MySql.MySqlDescriptionSyncCommandBuilder
+Bee.Db.Providers.MySql.MySqlDescriptionSyncCommandBuilder.GetStatements(Bee.Db.Schema.TableSchemaDiff! diff) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.MySql.MySqlDescriptionSyncCommandBuilder.MySqlDescriptionSyncCommandBuilder() -> void
+Bee.Db.Providers.MySql.MySqlDialectFactory.CreateDescriptionSyncCommandBuilder() -> Bee.Db.Ddl.IDescriptionSyncCommandBuilder?
+Bee.Db.Providers.Oracle.OracleDescriptionSyncCommandBuilder
+Bee.Db.Providers.Oracle.OracleDescriptionSyncCommandBuilder.GetStatements(Bee.Db.Schema.TableSchemaDiff! diff) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.Oracle.OracleDescriptionSyncCommandBuilder.OracleDescriptionSyncCommandBuilder() -> void
+Bee.Db.Providers.Oracle.OracleDialectFactory.CreateDescriptionSyncCommandBuilder() -> Bee.Db.Ddl.IDescriptionSyncCommandBuilder?
+Bee.Db.Providers.PostgreSql.PgDescriptionSyncCommandBuilder
+Bee.Db.Providers.PostgreSql.PgDescriptionSyncCommandBuilder.GetStatements(Bee.Db.Schema.TableSchemaDiff! diff) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.PostgreSql.PgDescriptionSyncCommandBuilder.PgDescriptionSyncCommandBuilder() -> void
+Bee.Db.Providers.PostgreSql.PgDialectFactory.CreateDescriptionSyncCommandBuilder() -> Bee.Db.Ddl.IDescriptionSyncCommandBuilder?
+Bee.Db.Providers.SqlServer.SqlDescriptionSyncCommandBuilder
+Bee.Db.Providers.SqlServer.SqlDescriptionSyncCommandBuilder.GetStatements(Bee.Db.Schema.TableSchemaDiff! diff) -> System.Collections.Generic.IReadOnlyList<string!>!
+Bee.Db.Providers.SqlServer.SqlDescriptionSyncCommandBuilder.SqlDescriptionSyncCommandBuilder() -> void
+Bee.Db.Providers.SqlServer.SqlDialectFactory.CreateDescriptionSyncCommandBuilder() -> Bee.Db.Ddl.IDescriptionSyncCommandBuilder?

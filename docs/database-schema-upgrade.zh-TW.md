@@ -104,7 +104,7 @@ bool upgraded = builder.Execute("company", "st_employee", new UpgradeOptions
 | `AddIndexChange` | 新增索引 |
 | `DropIndexChange` | 刪除索引 |
 
-另含 `DescriptionChanges`（MS_Description / extended property 同步）。description / extended property 同步目前**僅 SQL Server** 執行，其餘方言略過此步驟（見 §7 Stage 5）。
+另含 `DescriptionChanges`（表／欄位描述差異）。description 同步在 SQL Server、PostgreSQL、MySQL、Oracle 皆會執行；SQLite 無法儲存描述，因此比對器在該方言下根本不回報描述差異（見 §7 Stage 5）。
 
 ### UpgradePlan（執行計畫）
 
@@ -218,10 +218,17 @@ Stage 1: DropIndexes        刪除即將被改定義的索引
 Stage 2: AlterColumns       既有欄位 rename / 改型別 / 改長度 / 改 nullable
 Stage 3: AddColumns         新增欄位
 Stage 4: CreateIndexes      建新索引、重建先前刪除的
-Stage 5: SyncDescriptions   extended property（MS_Description）同步
+Stage 5: SyncDescriptions   同步表／欄位描述
 ```
 
-> Stage 5（`SyncDescriptions`）**僅 SQL Server** 執行 —— 其餘方言 orchestrator 直接略過此 stage，不會產生 description / extended property 相關 SQL。
+> Stage 5（`SyncDescriptions`）的語句由該方言的 `IDescriptionSyncCommandBuilder` 產生
+> （SQL Server 用 `sp_addextendedproperty`、PostgreSQL / Oracle 用 `COMMENT ON`、
+> MySQL 用欄位定義內的 `COMMENT` 子句）。無法儲存描述的方言不提供 builder，此 stage 直接略過
+> —— 目前只有 SQLite 屬此類。
+>
+> 此 stage 同時涵蓋 Stage 3 新加的欄位：比對器只對「兩側都存在」的欄位判斷描述差異，
+> 資料庫裡還不存在的欄位不會產生任何差異記錄。少了這一段，in-place 升級加進來的欄位
+> 永遠拿不到 caption，之後每次比對都會把該表判成尚未同步。
 
 ### 失敗行為
 

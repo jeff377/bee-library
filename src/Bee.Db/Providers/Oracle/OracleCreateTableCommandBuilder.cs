@@ -260,7 +260,7 @@ namespace Bee.Db.Providers.Oracle
             if (StringUtilities.IsEmpty(TableSchema.DisplayName))
                 return string.Empty;
 
-            return $"COMMENT ON TABLE {OracleSchemaSyntax.QuoteName(tableName)} IS '{OracleSchemaSyntax.EscapeSqlString(TableSchema.DisplayName)}'";
+            return OracleSchemaSyntax.GetTableCommentStatement(tableName, this.TableSchema.DisplayName);
         }
     }
 }

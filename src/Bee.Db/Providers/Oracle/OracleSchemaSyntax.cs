@@ -206,7 +206,32 @@ namespace Bee.Db.Providers.Oracle
             if (StringUtilities.IsEmpty(field.Caption))
                 return string.Empty;
 
-            return $"COMMENT ON COLUMN {QuoteName(tableName)}.{QuoteName(field.FieldName)} IS '{EscapeSqlString(field.Caption)}'";
+            return GetColumnCommentStatement(tableName, field.FieldName, field.Caption);
+        }
+
+        /// <summary>
+        /// Generates the <c>COMMENT ON COLUMN "table"."column" IS 'description'</c> statement.
+        /// No trailing semicolon — callers either wrap it in <c>EXECUTE IMMEDIATE</c> or dispatch
+        /// it as a single statement.
+        /// </summary>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="fieldName">The column name.</param>
+        /// <param name="description">The description to store.</param>
+        public static string GetColumnCommentStatement(string tableName, string fieldName, string description)
+        {
+            return $"COMMENT ON COLUMN {QuoteName(tableName)}.{QuoteName(fieldName)} IS '{EscapeSqlString(description)}'";
+        }
+
+        /// <summary>
+        /// Generates the <c>COMMENT ON TABLE "table" IS 'description'</c> statement.
+        /// No trailing semicolon, for the same reason as
+        /// <see cref="GetColumnCommentStatement(string, string, string)"/>.
+        /// </summary>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="description">The description to store.</param>
+        public static string GetTableCommentStatement(string tableName, string description)
+        {
+            return $"COMMENT ON TABLE {QuoteName(tableName)} IS '{EscapeSqlString(description)}'";
         }
     }
 }

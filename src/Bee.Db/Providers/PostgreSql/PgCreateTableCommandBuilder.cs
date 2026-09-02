@@ -145,29 +145,14 @@ namespace Bee.Db.Providers.PostgreSql
         {
             var sb = new StringBuilder();
             if (StringUtilities.IsNotEmpty(this.TableSchema.DisplayName))
-                sb.AppendLine(BuildTableCommentStatement(tableName, this.TableSchema.DisplayName));
+                sb.AppendLine(PgSchemaSyntax.GetTableCommentStatement(tableName, this.TableSchema.DisplayName));
 
             foreach (var field in this.TableSchema.Fields!.Where(f => StringUtilities.IsNotEmpty(f.Caption)))
             {
-                sb.AppendLine(BuildColumnCommentStatement(tableName, field.FieldName, field.Caption));
+                sb.AppendLine(PgSchemaSyntax.GetColumnCommentStatement(tableName, field.FieldName, field.Caption));
             }
             return sb.ToString().Trim();
         }
 
-        /// <summary>
-        /// Builds a <c>COMMENT ON TABLE</c> statement for the table-level description.
-        /// </summary>
-        private static string BuildTableCommentStatement(string tableName, string description)
-        {
-            return $"COMMENT ON TABLE {PgSchemaSyntax.QuoteName(tableName)} IS '{PgSchemaSyntax.EscapeSqlString(description)}';";
-        }
-
-        /// <summary>
-        /// Builds a <c>COMMENT ON COLUMN</c> statement for a column-level description.
-        /// </summary>
-        private static string BuildColumnCommentStatement(string tableName, string columnName, string description)
-        {
-            return $"COMMENT ON COLUMN {PgSchemaSyntax.QuoteName(tableName)}.{PgSchemaSyntax.QuoteName(columnName)} IS '{PgSchemaSyntax.EscapeSqlString(description)}';";
-        }
     }
 }

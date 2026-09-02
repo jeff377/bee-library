@@ -152,6 +152,27 @@ namespace Bee.Db.Providers.MySql
         }
 
         /// <summary>
+        /// Generates the column definition for an <c>ALTER TABLE ... MODIFY COLUMN</c> on an existing
+        /// column.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: MySQL's MODIFY replaces the whole column definition, so anything the fragment
+        /// omits is dropped — <see cref="GetColumnDefinition"/> carries no <c>AUTO_INCREMENT</c>, and
+        /// using it on an identity column silently turns that column into a plain BIGINT with no
+        /// default (every later INSERT then fails with "Field 'x' doesn't have a default value").
+        /// The AutoIncrement form is emitted without the inline <c>PRIMARY KEY</c> clause that
+        /// <see cref="GetAutoIncrementColumnDefinition"/> carries, since the table already has one.
+        /// </remarks>
+        /// <param name="field">The field definition.</param>
+        public static string GetModifyColumnDefinition(DbField field)
+        {
+            if (field.DbType != FieldDbType.AutoIncrement)
+                return GetColumnDefinition(field);
+
+            return $"{QuoteName(field.FieldName)} BIGINT NOT NULL AUTO_INCREMENT{GetCommentClause(field.Caption)}";
+        }
+
+        /// <summary>
         /// Returns the <c>COMMENT 'caption'</c> clause for a column with a non-empty caption,
         /// or empty string when the caption is empty. The framework emits COMMENT so the
         /// schema reader can round-trip captions cleanly (otherwise every fixture re-run

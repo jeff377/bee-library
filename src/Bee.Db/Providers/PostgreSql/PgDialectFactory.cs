@@ -27,6 +27,9 @@ namespace Bee.Db.Providers.PostgreSql
         public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => new PgTableRebuildCommandBuilder();
 
         /// <inheritdoc />
+        public IDescriptionSyncCommandBuilder? CreateDescriptionSyncCommandBuilder() => new PgDescriptionSyncCommandBuilder();
+
+        /// <inheritdoc />
         public IFormCommandBuilder CreateFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess)
             => new PgFormCommandBuilder(formDefine, defineAccess);
 

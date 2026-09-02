@@ -103,7 +103,7 @@ namespace Bee.Db.Providers.MySql
         /// </summary>
         private static string BuildAlterFieldStatement(string tableName, DbField newField)
         {
-            string newDef = MySqlSchemaSyntax.GetColumnDefinition(newField);
+            string newDef = MySqlSchemaSyntax.GetModifyColumnDefinition(newField);
             return $"ALTER TABLE {MySqlSchemaSyntax.QuoteName(tableName)} MODIFY COLUMN {newDef};";
         }
 

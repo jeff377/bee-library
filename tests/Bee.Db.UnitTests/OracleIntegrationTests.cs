@@ -436,10 +436,12 @@ namespace Bee.Db.UnitTests
                 // 冪等性：第二輪比對不應再產生任何差異（否則每次啟動都重跑一次失敗的升級）。
                 var secondDiff = new TableSchemaComparer(define, upgraded, DatabaseType.Oracle).CompareToDiff();
                 Assert.Empty(secondDiff.Changes);
-                // 斷言「不再產生語句」而非 NoChange：ALTER 加的欄位在 Oracle 拿不到 COMMENT ON COLUMN
-                // （description sync 目前只接了 SQL Server），api_key_id 的 caption 因此永遠算一筆
-                // DescriptionChange。那條路只影響 Mode，不產生任何 SQL，與本迴歸無關。
-                Assert.Empty(orchestrator.Plan(secondDiff).AllStatements);
+                // ALTER 加欄位的同一份 plan 也要把該欄的 caption 寫進 USER_COL_COMMENTS，
+                // 否則 api_key_id 的 caption 永遠算一筆 DescriptionChange，diff 不會空，
+                // 「這張表是不是最新的」永遠答否。
+                Assert.Empty(secondDiff.DescriptionChanges);
+                Assert.True(secondDiff.IsEmpty);
+                Assert.Equal(UpgradeExecutionMode.NoChange, orchestrator.Plan(secondDiff).Mode);
             }
             finally
             {

@@ -39,6 +39,17 @@ namespace Bee.Db.Providers
         ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder();
 
         /// <summary>
+        /// Creates the builder that persists table and column descriptions during an ALTER upgrade,
+        /// or <c>null</c> when the dialect has no facility to store them (SQLite).
+        /// </summary>
+        /// <remarks>
+        /// Defaulted so that an existing external <see cref="IDialectFactory"/> implementation keeps
+        /// compiling and running; a dialect that does persist descriptions has to override it, or the
+        /// captions of columns added by an in-place upgrade never reach the database.
+        /// </remarks>
+        IDescriptionSyncCommandBuilder? CreateDescriptionSyncCommandBuilder() => null;
+
+        /// <summary>
         /// Creates a form command builder for the specified form schema.
         /// </summary>
         /// <param name="formDefine">The form schema definition.</param>

@@ -82,6 +82,34 @@ ADD 時拆兩段：① 先以常數空 Guid 預設 `ADD COLUMN ... NOT NULL DEFA
 **殘留**：無框架層殘留。但「ALTER ADD 的跨 dialect 預設值/nullability 差異，本機與 CI 走不同路徑」
 這個**模式**會重複出現——見上面 Oracle 那則。
 
+## MySQL：`MODIFY COLUMN` 會整段換掉欄位定義 —— 漏 `AUTO_INCREMENT` 就把自增拔掉（已修）
+
+**症狀**：MySQL `Field 'sys_no' doesn't have a default value`，出現在毫不相干的 INSERT 測試上
+（`EmployeeBuildSelectIntegrationTests` 一次 6 個）。**而且第二輪重跑就全綠** ——
+極像 flaky，實際不是。
+
+**根因**：MySQL 的 `ALTER TABLE ... MODIFY COLUMN` 是**整段替換**，片段裡沒寫的東西一律消失。
+`MySqlSchemaSyntax.GetColumnDefinition` 產生的是 `type + nullability + default + comment`，
+**不含 `AUTO_INCREMENT`**（那在 `GetAutoIncrementColumnDefinition` 裡）。拿它對 identity 欄下
+MODIFY，欄位就變成純 `BIGINT NOT NULL` 且無預設值，之後每次 INSERT 都失敗。
+
+**為何第二輪會自己好**：下一輪比對讀回的 `sys_no` 已不是 AutoIncrement，
+`AlterCompatibilityRules` 把 AutoIncrement 的型別家族變動判為 **Rebuild**，整張表以
+`CREATE TABLE` 重建 → 自增與 comment 都回來了。**「重跑就過」在這裡是破壞已被掩蓋，不是 flaky。**
+
+**觸發路徑**：description sync 落地 MySQL 時，對「caption 漂移但沒有結構異動」的欄位下
+MODIFY COLUMN 補 `COMMENT`。該欄剛好是 `sys_no` 就中。ALTER 路徑本身碰不到 ——
+AutoIncrement 的變動一律被路由到 Rebuild。
+
+**已修**：新增 `MySqlSchemaSyntax.GetModifyColumnDefinition`，AutoIncrement 欄改輸出
+`BIGINT NOT NULL AUTO_INCREMENT COMMENT '...'`（不帶 `PRIMARY KEY`，表上已經有了），
+`MySqlDescriptionSyncCommandBuilder` 與 `MySqlTableAlterCommandBuilder` 兩處都改走它。
+
+**通則**：**只有 MySQL 把描述存在欄位定義裡**，所以只有它的描述同步得下 `MODIFY COLUMN`
+這種破壞性語句；Oracle / PostgreSQL 的 `COMMENT ON` 與 SQL Server 的 extended property
+都是純 metadata、動不到欄位定義。往 MySQL 加任何「只是想改個附屬屬性」的 MODIFY 之前，
+先確認片段有沒有把 `AUTO_INCREMENT`、`GENERATED`、`ON UPDATE` 這類子句一起帶上。
+
 ## SQLite：GUID 是區分大小寫的 TEXT（已修，但有殘留）
 
 **症狀**：開既有訂單新增明細，明細**有** INSERT 進 DB，但 reload 後「消失」。實際是孤兒列。

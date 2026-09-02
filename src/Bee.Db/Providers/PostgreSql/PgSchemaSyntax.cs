@@ -110,5 +110,26 @@ namespace Bee.Db.Providers.PostgreSql
             string defaultClause = StringUtilities.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
             return $"{QuoteName(field.FieldName)} {dbType} {nullability}{defaultClause}";
         }
+
+        /// <summary>
+        /// Generates the <c>COMMENT ON TABLE "table" IS 'description';</c> statement.
+        /// </summary>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="description">The description to store.</param>
+        public static string GetTableCommentStatement(string tableName, string description)
+        {
+            return $"COMMENT ON TABLE {QuoteName(tableName)} IS '{EscapeSqlString(description)}';";
+        }
+
+        /// <summary>
+        /// Generates the <c>COMMENT ON COLUMN "table"."column" IS 'description';</c> statement.
+        /// </summary>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="columnName">The column name.</param>
+        /// <param name="description">The description to store.</param>
+        public static string GetColumnCommentStatement(string tableName, string columnName, string description)
+        {
+            return $"COMMENT ON COLUMN {QuoteName(tableName)}.{QuoteName(columnName)} IS '{EscapeSqlString(description)}';";
+        }
     }
 }

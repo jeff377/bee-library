@@ -33,6 +33,9 @@ namespace Bee.Db.Providers.Oracle
         public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => new OracleTableRebuildCommandBuilder();
 
         /// <inheritdoc />
+        public IDescriptionSyncCommandBuilder? CreateDescriptionSyncCommandBuilder() => new OracleDescriptionSyncCommandBuilder();
+
+        /// <inheritdoc />
         public IFormCommandBuilder CreateFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess)
             => new OracleFormCommandBuilder(formDefine, defineAccess);
 
