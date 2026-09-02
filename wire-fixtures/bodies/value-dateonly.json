@@ -1,0 +1,13 @@
+{
+  "case": "value-dateonly",
+  "description": "WireValueCode.DateOnly. Round-trip \u0022O\u0022 format.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      17,
+      "2026-03-14"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "case": "value-byte",
+  "description": "WireValueCode.Byte.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      2,
+      200
+    ]
+  }
+}

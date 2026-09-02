@@ -1,0 +1,13 @@
+{
+  "case": "value-uint32",
+  "description": "WireValueCode.UInt32.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      7,
+      4000000000
+    ]
+  }
+}

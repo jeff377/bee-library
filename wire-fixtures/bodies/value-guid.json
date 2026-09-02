@@ -1,0 +1,13 @@
+{
+  "case": "value-guid",
+  "description": "WireValueCode.Guid. \u0022D\u0022 format; must not decay into a plain string.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      18,
+      "6f9619ff-8b86-d011-b42d-00c04fc964ff"
+    ]
+  }
+}

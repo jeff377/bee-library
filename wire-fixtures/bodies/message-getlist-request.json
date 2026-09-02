@@ -1,0 +1,41 @@
+{
+  "case": "message-getlist-request",
+  "description": "A nested filter tree and sort fields; enums such as the comparison operator travel as strings.",
+  "codec": "json",
+  "type": "Bee.Api.Core.Messages.Form.GetListRequest, Bee.Api.Core",
+  "body": {
+    "selectFields": "sys_id,amount",
+    "filter": {
+      "kind": "Group",
+      "nodes": [
+        {
+          "fieldName": "amount",
+          "operator": "GreaterThan",
+          "value": [
+            12,
+            "100"
+          ]
+        },
+        {
+          "fieldName": "hired_at",
+          "operator": "Between",
+          "value": [
+            14,
+            "2026-03-14T15:09:26.5350000Z"
+          ],
+          "secondValue": [
+            14,
+            "2026-04-13T15:09:26.5350000Z"
+          ]
+        }
+      ]
+    },
+    "sortFields": [
+      {
+        "fieldName": "sys_id",
+        "direction": "Desc"
+      }
+    ],
+    "parameters": []
+  }
+}

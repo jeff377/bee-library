@@ -1,0 +1,13 @@
+{
+  "case": "value-uint64",
+  "description": "WireValueCode.UInt64. Quoted for the same reason as Int64.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      9,
+      "18446744073709551615"
+    ]
+  }
+}

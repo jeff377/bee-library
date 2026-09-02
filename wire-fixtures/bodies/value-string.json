@@ -1,0 +1,13 @@
+{
+  "case": "value-string",
+  "description": "WireValueCode.String.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      13,
+      "hello"
+    ]
+  }
+}

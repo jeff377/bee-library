@@ -1,0 +1,13 @@
+{
+  "case": "value-bytearray",
+  "description": "WireValueCode.ByteArray. Base64.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      19,
+      "AQL6/w=="
+    ]
+  }
+}

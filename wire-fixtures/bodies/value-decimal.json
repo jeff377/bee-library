@@ -1,0 +1,13 @@
+{
+  "case": "value-decimal",
+  "description": "WireValueCode.Decimal. Quoted: a JSON number is a double and cannot hold a decimal\u0027s precision.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      12,
+      "79228162514264337593543950335"
+    ]
+  }
+}

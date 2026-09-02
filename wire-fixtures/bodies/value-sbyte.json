@@ -1,0 +1,13 @@
+{
+  "case": "value-sbyte",
+  "description": "WireValueCode.SByte.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      3,
+      -100
+    ]
+  }
+}

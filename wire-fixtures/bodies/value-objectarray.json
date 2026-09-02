@@ -1,0 +1,26 @@
+{
+  "case": "value-objectarray",
+  "description": "WireValueCode.ObjectArray. Each element carries its own discriminator, recursing through the same envelope.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      22,
+      [
+        [
+          6,
+          1
+        ],
+        [
+          13,
+          "two"
+        ],
+        [
+          12,
+          "3.5"
+        ]
+      ]
+    ]
+  }
+}

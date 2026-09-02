@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Bee.Api.Contracts.Form;
 using Bee.Definition.Filters;
 using Bee.Definition.Paging;
@@ -20,6 +21,7 @@ namespace Bee.Business.Form
         /// <summary>
         /// Gets or sets the filter condition tree; <c>null</c> indicates an unfiltered query.
         /// </summary>
+        [JsonConverter(typeof(FilterNodeJsonConverter))]
         public FilterNode? Filter { get; set; }
 
         /// <summary>

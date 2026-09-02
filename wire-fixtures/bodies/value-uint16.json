@@ -1,0 +1,13 @@
+{
+  "case": "value-uint16",
+  "description": "WireValueCode.UInt16.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      5,
+      60000
+    ]
+  }
+}

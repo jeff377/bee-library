@@ -1,0 +1,9 @@
+{
+  "case": "value-null",
+  "description": "A null object-typed member is omitted from the JSON entirely - the property is absent, not written as null. A reader must treat a missing property as null.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v"
+  }
+}

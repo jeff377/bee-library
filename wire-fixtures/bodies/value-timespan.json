@@ -1,0 +1,13 @@
+{
+  "case": "value-timespan",
+  "description": "WireValueCode.TimeSpan. Constant \u0022c\u0022 format.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      16,
+      "1.02:03:04.0050000"
+    ]
+  }
+}

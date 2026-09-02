@@ -1,0 +1,80 @@
+{
+  "case": "dataset",
+  "description": "DataSet: the shape of tables and relations.",
+  "codec": "json",
+  "type": "System.Data.DataSet, System.Data.Common",
+  "body": {
+    "dataSetName": "Order",
+    "tables": [
+      {
+        "tableName": "Master",
+        "columns": [
+          {
+            "name": "sys_id",
+            "type": "String",
+            "allowNull": true,
+            "readOnly": false,
+            "maxLength": -1,
+            "caption": "sys_id",
+            "defaultValue": null
+          }
+        ],
+        "primaryKeys": [],
+        "rows": [
+          {
+            "state": "Unchanged",
+            "current": {
+              "sys_id": "O001"
+            }
+          }
+        ]
+      },
+      {
+        "tableName": "Detail",
+        "columns": [
+          {
+            "name": "sys_id",
+            "type": "String",
+            "allowNull": true,
+            "readOnly": false,
+            "maxLength": -1,
+            "caption": "sys_id",
+            "defaultValue": null
+          },
+          {
+            "name": "sys_master_rowid",
+            "type": "String",
+            "allowNull": true,
+            "readOnly": false,
+            "maxLength": -1,
+            "caption": "sys_master_rowid",
+            "defaultValue": null
+          }
+        ],
+        "primaryKeys": [],
+        "rows": [
+          {
+            "state": "Unchanged",
+            "current": {
+              "sys_id": "D001",
+              "sys_master_rowid": "O001"
+            }
+          }
+        ]
+      }
+    ],
+    "relations": [
+      {
+        "name": "Master_Detail",
+        "parentTable": "Master",
+        "childTable": "Detail",
+        "parentColumns": [
+          "sys_id"
+        ],
+        "childColumns": [
+          "sys_master_rowid"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "case": "value-datetimeoffset",
+  "description": "WireValueCode.DateTimeOffset. Round-trip \u0022O\u0022 format.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      15,
+      "2026-03-14T23:09:26.5350000\u002B08:00"
+    ]
+  }
+}

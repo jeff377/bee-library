@@ -1,0 +1,13 @@
+{
+  "case": "value-int64",
+  "description": "WireValueCode.Int64. Quoted: a JSON number is a double to every JavaScript reader, which cannot hold an integer past 2^53.",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      8,
+      "9007199254740993"
+    ]
+  }
+}

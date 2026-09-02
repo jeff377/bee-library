@@ -1,0 +1,11 @@
+{
+  "case": "message-ping-request",
+  "description": "A message type: camelCase naming and the parameters collection inherited from ApiRequest.",
+  "codec": "json",
+  "type": "Bee.Api.Core.Messages.System.PingRequest, Bee.Api.Core",
+  "body": {
+    "clientName": "web",
+    "traceId": "t-001",
+    "parameters": []
+  }
+}

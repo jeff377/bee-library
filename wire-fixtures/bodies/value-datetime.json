@@ -1,0 +1,13 @@
+{
+  "case": "value-datetime",
+  "description": "WireValueCode.DateTime. Round-trip \u0022O\u0022 format, which keeps DateTimeKind (ADR-032 depends on it).",
+  "codec": "json",
+  "type": "Bee.Definition.Collections.Parameter, Bee.Definition",
+  "body": {
+    "name": "v",
+    "value": [
+      14,
+      "2026-03-14T15:09:26.5350000Z"
+    ]
+  }
+}

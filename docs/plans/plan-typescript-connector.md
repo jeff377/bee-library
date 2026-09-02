@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | Server 端：新增 JSON body codec，payload envelope 支援 per-request codec 宣告 | ✅ 已完成（2026-09-02） |
 | 2 | .NET client 端支援宣告 codec，補跨 codec 的 round-trip 與安全性測試 | ✅ 已完成（2026-09-02） |
-| 3 | Wire fixture 產生器：由 .NET 產出黃金樣本，供跨語言驗證 | 📝 待做 |
+| 3 | Wire fixture 產生器：由 .NET 產出黃金樣本，供跨語言驗證 | ✅ 已完成（2026-09-03） |
 | 4 | TypeScript Connector 套件（加密層 + connector API + fixture 驗證） | 📝 待做 |
 
 ## 背景
@@ -205,6 +205,37 @@ JSON body 對此比 MessagePack 更敏感：MessagePack 寫入時轉 UTC，JSON 
   - anti-replay frame 在 JSON codec 下仍生效。
 
 ### 階段 3：Wire fixture 產生器
+
+**已完成（2026-09-03）。** 樣本在 `wire-fixtures/bodies/`（26 個），產生與驗證在
+`tests/Bee.Api.Core.UnitTests/WireFixtureTests.cs`，用法與 wire 規則寫在
+`wire-fixtures/README.md`（英文，樣本是給另一個語言的 client 讀的）。
+
+##### 兩個與原規劃不同的決定
+
+1. **覆蓋「每條編碼規則」，不是「每個 wire 型別」。** 逐型別產樣本會得到上百個幾乎同構的
+   檔案，卻漏掉真正會錯的地方：判別碼、DataTable 形狀、camelCase、列舉字串化。訊息型別
+   本身是屬性袋，TS 端由型別定義產生即可。目前涵蓋 22 個 `WireValueCode`、DataTable
+   （含 rowState 與 Modified 的 original/current）、DataSet、以及兩個代表性訊息型別。
+2. **樣本只固定 body 原文，不固定壓縮／加密後的 bytes。** gzip 輸出跨 .NET 版本不保證一致，
+   AES-CBC 每次用隨機 IV，本質不可固定。那兩層是標準演算法、各語言 library 自己保證；
+   需要釘住的是只有這個框架知道的 JSON 形狀。
+
+##### ⚠️ 樣本上線當天就抓到一個既有缺陷
+
+`GetListRequest.Filter` 的宣告型別是 `FilterNode`（抽象基底），而 System.Text.Json 綁宣告型別，
+於是指派給它的 `FilterGroup` 只會寫出 `{"kind":"Group"}`——**運算子與整棵子樹靜默消失，
+不擲例外**。這不是本計畫引入的：`FilterGroup.Nodes` 早有 `FilterNodeCollectionJsonConverter`，
+但單一節點的那一半沒有，而編碼過的 body 一直只走 MessagePack（那端有自己的 formatter），
+所以只在 Plain 路徑上壞著、沒人踩到。JSON body codec 一上線就會在最常用的清單查詢上生效。
+
+修法是 `FilterNodeJsonConverter`（`src/Bee.Definition/Filters/`），**標在屬性上而非型別上**。
+標在 `FilterNode` 型別上會被子類繼承，寫 `FilterGroup` 時再度進入同一個 converter，
+無限遞迴到 stack 爆掉——那是 segfault，不是可捕捉的例外，實作時已實際踩過一次。
+
+守護有兩層：`FilterNodeJsonConverterTests`（行為）與 `FilterNodeConverterCoverageTests`
+（反射掃描，新增可寫入的 `FilterNode` 屬性卻忘了標註就會紅——「逐屬性標註」正是會漏的那種規則）。
+
+原規劃內容：
 
 跨語言 wire **唯一擋得住漂移的機制**是雙向 round-trip，因此由 .NET 產出黃金樣本：
 
