@@ -4,7 +4,9 @@
 `Bee.Northwind.UI`（Avalonia App/VM/View）、共用後端 `Bee.Northwind.Server`。
 Web 案例是 **Avalonia Browser (WASM) backend**，**不是另寫 Blazor**（`.UseBrowser` vs `.UseDesktop` 對稱）。
 
-`apps/` 不觸發 CI（見 [test-ci-release.md](test-ci-release.md)）——所以這裡壞掉不會有人通知你。
+`apps/` 不觸發 bee-library 的 CI（見 [test-ci-release.md](test-ci-release.md)）——**這一份**壞掉不會有人
+通知你。鏡像 repo `bee-northwind-avalonia` 自 2026-09-02 起有自己的 CI（見下方「鏡像 repo 的 CI」），
+但它驗的是**已發佈的 NuGet 套件**那一份，抓不到 in-repo 這份對 `src/` 的漂移。
 
 ## Android head
 
@@ -47,6 +49,16 @@ export DEVELOPER_DIR=/Applications/Xcode-26.5.0.app/Contents/Developer
 錯誤訊息只說「裝 26.5 或換 workload」，沒提 `DEVELOPER_DIR` 這條路，所以很容易被判成
 「環境壞了、只能擱置」——2026-08-13 的 4.21.0 同步就是這樣把 iOS 記成環境問題豁免掉的，
 實際上兩台 Xcode 早就都在機器上。
+
+**要求的版號會隨 workload 移動，所以任何腳本都不該寫死它** —— 改從 SDK 自身讀
+（`_RecommendedXcodeVersion` 宣告於 `Microsoft.iOS.Sdk.Versions.props`，restore 之後可取）：
+
+```bash
+dotnet msbuild <iOS 專案> -getProperty:_RecommendedXcodeVersion -p:ValidateXcodeVersion=false
+```
+
+證據：2026-09-02 同一天，本機的 workload 要 **26.5**、GitHub `macos-latest` runner 上的要 **26.6**。
+把本機看到的 26.5 寫進 CI，那個 job 會第一次就紅在一個與被驗程式完全無關的地方。
 
 **乾淨樹上 `-t:Run` 必須分兩段跑。**
 
@@ -118,9 +130,12 @@ Avalonia 輸入層**（canvas 上 `div.avalonia-native-host` 攔截），UI 點�
 Avalonia 時即時 dogfooding。獨立 repo 那份是「外部視角、純 NuGet」的快照證明，兩者並存。
 **`git rm` 延後到 `Bee.UI.Avalonia` 全部完成才執行。**
 
-**同步流程**（已跑三輪）：**先發新框架版本**（in-repo 新功能依賴的 src 變更必須先上 NuGet）→
+**同步流程**：**先發新框架版本**（in-repo 新功能依賴的 src 變更必須先上 NuGet）→
 複製變更檔覆蓋 → 重套 ProjectReference→PackageReference 並 bump → 文件/launch 同步 →
-本機 build + HTTP 冒煙（該 repo 無 CI）→ 直接 push main。
+本機 build + 冒煙 → 直接 push main（push 前先問使用者）。
+
+**本機驗完仍要看 CI 一眼。** 該 repo 已有 CI，而本機與 runner 的環境差異是真的會咬人的
+（Xcode 版號、workload 有無）——本機全綠不等於 CI 會綠。
 
 **三個踩過的雷**：
 
@@ -132,3 +147,31 @@ Avalonia 時即時 dogfooding。獨立 repo 那份是「外部視角、純 NuGet
 3. **`gh secret set` 語法雷**：`gh secret set <KEY值>` 會把 key 值當 secret **名稱**建出來
    （且在 UI 上洩漏 key）；正確是 `gh secret set NUGET_API_KEY --body "<值>"`，
    事後 `gh secret list` 看 Updated 時間戳確認。**發佈前先確認該 secret 是新的有效 key。**
+
+## 鏡像 repo 的 CI
+
+`bee-northwind-avalonia` 自 2026-09-02 起有 `.github/workflows/build-ci.yml`，兩個 job：
+ubuntu 建五個 head（Server / UI / Desktop / Browser / Android）並跑一段執行期冒煙，
+macOS 單獨建 iOS。**它驗的是對已發佈 NuGet 套件的建置**，這正是外部使用者會遇到的那條路徑。
+
+**方案含跨平台 head 時，不能做方案層 `dotnet restore`。**
+
+```
+error NETSDK1178: The project depends on the following workload packs that do not exist
+in any of the workloads available in this installation: Microsoft.iOS.Sdk.net10.0_26.5
+[.../Bee.Northwind.iOS.csproj]
+```
+
+不帶參數的 `dotnet restore` 會還原**整個方案**，而方案含 iOS head —— 它的 workload pack 在
+Linux 上不存在也不可能存在，於是還原在碰到任何一個建得起來的專案之前就中止，五個 head 全被 skip。
+正解是各專案自行還原（建置步驟不帶 `--no-restore`），專案清單因此也只留在建置步驟一處。
+
+**這個雷本機驗不出來** —— 手動驗證時是逐專案 `dotnet build`，從不會跑到方案層 restore。
+
+**冒煙要驗「建置看不見」的東西，否則不值得加。** 這段冒煙起 server、等它建表 seed 完，
+再斷言關鍵列數與訂單 10252 **由明細加總而得**的總額（而非讀存好的欄位，缺一行才會顯示成錯的數字）。
+針對的是 seeder 的冪等 gate：它會跳過任何已有列的表，因此部分插入是永久性的且無人回報 ——
+`ft_order_detail` 只有 12 筆中 11 筆那次就是這樣活下來的，建置完全看不出來。
+
+**加完冒煙要驗它真的會紅。** 不會紅的冒煙比沒有更糟，因為它會給出「有在驗」的錯覺。
+作法是故意破壞資料再跑一次（刪掉訂單 10252 的一筆明細），確認該段確實 exit 1。
