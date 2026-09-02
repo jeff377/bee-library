@@ -125,6 +125,65 @@ namespace Bee.Api.Client.UnitTests
             Assert.Contains(typeof(ArgumentException), s_userMessageWhitelist);
         }
 
+        [Fact]
+        [DisplayName("登錄表必須把衍生型別排在基底型別之前（否則後者會吃掉前者）")]
+        public void ErrorContract_DeclaresDerivedTypesBeforeTheirBaseTypes()
+        {
+            var rows = JsonRpcErrorContract.Rows;
+            var shadowed = new List<string>();
+
+            for (int i = 0; i < rows.Count; i++)
+            {
+                for (int j = i + 1; j < rows.Count; j++)
+                {
+                    // 比對是 IsInstanceOfType（可指派），所以排在前面的基底型別會攔下後面的衍生型別，
+                    // 讓那一列永遠match不到。這不是風格問題，是那一列直接失效。
+                    if (rows[i].ExceptionType != rows[j].ExceptionType
+                        && rows[i].ExceptionType.IsAssignableFrom(rows[j].ExceptionType))
+                    {
+                        shadowed.Add($"{rows[j].ExceptionType.Name}(第 {j} 列) 被 {rows[i].ExceptionType.Name}(第 {i} 列) 遮蔽");
+                    }
+                }
+            }
+
+            Assert.True(shadowed.Count == 0,
+                $"登錄表順序錯誤，下列各列永遠不會被match到：{string.Join("；", shadowed)}");
+        }
+
+        [Fact]
+        [DisplayName("每個可重建的錯誤碼在登錄表中只能有一個重建型別")]
+        public void ErrorContract_DeclaresExactlyOneRebuildPerCode()
+        {
+            var duplicated = JsonRpcErrorContract.Rows
+                .Where(row => row.CanRebuild)
+                .GroupBy(row => row.Code)
+                .Where(group => group.Count() > 1)
+                .Select(group => group.Key)
+                .ToList();
+
+            Assert.True(duplicated.Count == 0,
+                $"這些錯誤碼宣告了多個重建型別，呼叫端會拿到先宣告的那個：{string.Join(", ", duplicated)}");
+        }
+
+        [Fact]
+        [DisplayName("登錄表可重建的碼必須與本測試宣告的規格完全一致")]
+        public void ErrorContract_RebuildableCodes_MatchDeclaredSpecification()
+        {
+            // 本測試的 s_reconstructedCodes 是**規格**，刻意獨立於實作手寫一份：
+            // 測試若改讀受測程式自己的清單，就只是拿實作驗證實作，什麼也證明不了。
+            var expected = s_reconstructedCodes
+                .Select(pair => (pair.Code, pair.ExceptionType))
+                .OrderBy(pair => (int)pair.Code)
+                .ToList();
+            var actual = JsonRpcErrorContract.Rows
+                .Where(row => row.CanRebuild)
+                .Select(row => (row.Code, row.ExceptionType))
+                .OrderBy(pair => (int)pair.Code)
+                .ToList();
+
+            Assert.Equal(expected, actual);
+        }
+
         [Theory]
         [MemberData(nameof(ReconstructedCodes))]
         [DisplayName("伺服端應把宣告的例外型別映成宣告的錯誤碼，且原樣保留訊息")]

@@ -10,6 +10,7 @@ Bee.Api.Core.JsonRpc.ApiPayloadFrame.Version.get -> byte
 Bee.Api.Core.JsonRpc.IReplayWindowStore
 Bee.Api.Core.JsonRpc.IReplayWindowStore.GetOrAdd(System.Guid accessToken) -> Bee.Api.Core.JsonRpc.ReplayWindow!
 Bee.Api.Core.JsonRpc.JsonRpcErrorCode.ReplayRejected = -32005 -> Bee.Api.Core.JsonRpc.JsonRpcErrorCode
+Bee.Api.Core.JsonRpc.JsonRpcErrorContract
 Bee.Api.Core.JsonRpc.MemoryReplayWindowStore
 Bee.Api.Core.JsonRpc.MemoryReplayWindowStore.Count.get -> int
 Bee.Api.Core.JsonRpc.MemoryReplayWindowStore.GetOrAdd(System.Guid accessToken) -> Bee.Api.Core.JsonRpc.ReplayWindow!
@@ -31,4 +32,5 @@ static Bee.Api.Core.ApiServiceOptions.RequireWireFrame.set -> void
 static Bee.Api.Core.ApiServiceOptions.WireFrameTimestampTolerance.get -> System.TimeSpan
 static Bee.Api.Core.ApiServiceOptions.WireFrameTimestampTolerance.set -> void
 static Bee.Api.Core.JsonRpc.ApiPayloadFrame.Extract(byte[]! framed, out byte[]! body) -> Bee.Api.Core.JsonRpc.ApiPayloadFrame!
+static Bee.Api.Core.JsonRpc.JsonRpcErrorContract.TryRebuild(int code, string! message, out System.Exception? exception) -> bool
 static Bee.Api.Core.Validator.ApiAccessValidator.FindAccessControl(System.Reflection.MethodInfo! method) -> Bee.Definition.Attributes.ApiAccessControlAttribute?

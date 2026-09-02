@@ -189,9 +189,10 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 
 `ApiConnector.FinalizeResponse` 依 `JsonRpcError.Code` 重建例外：
 
-- `UserMessage` → `UserMessageException(message)`，訊息純淨無前綴，可直接顯示給使用者
-- `PermissionDenied` → `ForbiddenException`；`CompanyAccessDenied` → `CompanyAccessDeniedException`；`CompanyNotEntered` → `CompanyNotEnteredException`；`ReplayRejected` → `ReplayRejectedException` —— 各自帶原訊息重建，呼叫端可依型別分支
+- 有宣告例外型別的 code → 重建為該型別，帶原訊息、無前綴，呼叫端可依型別分支
 - 其餘 code → 拋出 `InvalidOperationException($"API error: {code} - {message}")`，保留協定層除錯資訊
+
+哪個 code 對應哪個例外型別，**權威來源是 [`JsonRpcErrorContract`](../src/Bee.Api.Core/JsonRpc/JsonRpcErrorContract.cs)**——伺服端與呼叫端都從那一份宣告消費，本文不複寫一份對照表。設計理由見 [ADR-043](adr/adr-043-error-contract-single-registry.md)。
 
 Client 端建議的 catch 順序：
 

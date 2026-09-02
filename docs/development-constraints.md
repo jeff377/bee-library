@@ -199,9 +199,10 @@ When `CommonConfiguration.IsDebugMode` is enabled, the original message is passe
 
 `ApiConnector.FinalizeResponse` rebuilds exceptions based on `JsonRpcError.Code`:
 
-- `UserMessage` → `UserMessageException(message)` with the original message verbatim (no prefix), ready to be shown to the end user
-- `PermissionDenied` → `ForbiddenException`; `CompanyAccessDenied` → `CompanyAccessDeniedException`; `CompanyNotEntered` → `CompanyNotEnteredException`; `ReplayRejected` → `ReplayRejectedException` — each rebuilt with the original message, so the caller can branch on the type
+- A code that declares an exception type → rebuilt as that type, carrying the original message verbatim (no prefix), so the caller can branch on the type
 - Every other code → `InvalidOperationException($"API error: {code} - {message}")`, preserving the protocol-level debugging info
+
+Which code maps to which exception type is declared once, in [`JsonRpcErrorContract`](../src/Bee.Api.Core/JsonRpc/JsonRpcErrorContract.cs) — both ends read that single declaration, so this document does not keep a second copy of the table. See [ADR-043](adr/adr-043-error-contract-single-registry.md) for the reasoning.
 
 Recommended client-side catch order:
 

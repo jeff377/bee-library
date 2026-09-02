@@ -49,3 +49,6 @@ ADR 記錄**決策當下的脈絡與理由**，是理解「為何這樣設計」
 | [038](adr-038-definition-dependency-boundary.md) | 定義層相依邊界：運算式抽象下沉至 `Bee.Base`，判準以閘門固化 | ✅ 已採納 |
 | [039](adr-039-formlayout-design-time-only.md) | `FormLayout` 收回設計階段，執行階段不再由 `FormSchema` 推導 | ✅ 已採納 |
 | [040](adr-040-audit-trail-taxonomy.md) | 稽核軌跡的分類軸與寫入策略（四項實作、檢視預設關閉、DiffGram before/after） | ✅ 已採納 |
+| [041](adr-041-per-form-audit-rule.md) | per-form 稽核規則 —— 異動與檢視改為逐表單設定 | ✅ 已採納 |
+| [042](adr-042-api-replay-protection.md) | API 重放防護 —— 加密封套內的 wire frame | ✅ 已採納 |
+| [043](adr-043-error-contract-single-registry.md) | 錯誤契約以單一登錄表達，兩端從同一份宣告消費 | ✅ 已採納 |

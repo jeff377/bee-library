@@ -1,7 +1,6 @@
 using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
-using Bee.Base.Exceptions;
 using Bee.Base.Tracing;
 using Bee.Api.Client.Providers;
 using Bee.Api.Core.Conversion;
@@ -177,22 +176,19 @@ namespace Bee.Api.Client.Connectors
         /// </summary>
         /// <remarks>
         /// <para>
-        /// Error mapping reverses the server-side mapping performed by
-        /// <c>JsonRpcExecutor.MapException</c>: a <see cref="JsonRpcErrorCode.UserMessage"/>
-        /// code is reconstructed as a <see cref="UserMessageException"/> with the original
-        /// message (no prefix), so callers can <c>catch (UserMessageException)</c> and
-        /// surface the message verbatim to the end user. All other codes wrap into
-        /// <see cref="InvalidOperationException"/> with the legacy
+        /// Error mapping reverses what the executor did on the way out, and both directions read
+        /// the same declaration in <see cref="JsonRpcErrorContract"/> — a code that declares an
+        /// exception type is rebuilt as that type carrying the original message with no prefix, so
+        /// callers can <c>catch</c> the type instead of comparing integers. Everything else wraps
+        /// into <see cref="InvalidOperationException"/> with the legacy
         /// <c>"API error: {code} - {message}"</c> format to preserve existing catch logic.
         /// </para>
         /// <para>
-        /// IMPORTANT: the branches below and the server's mapping are two halves of one contract,
-        /// and nothing in the compiler ties them together. A code the server learns to produce but
-        /// this method does not learn to rebuild lands silently in the generic branch, and the
-        /// <c>catch</c> the exception type's own documentation promises never runs. That has
-        /// already happened once, to <see cref="JsonRpcErrorCode.ReplayRejected"/>.
-        /// <c>ErrorContractDriftTests</c> is what now holds the two halves together; a new code
-        /// with a specific exception type must be declared there.
+        /// Adding a new exception type to the wire is therefore one edit, in the contract. It used
+        /// to be two, in two assemblies, with nothing tying them together — which is how
+        /// <see cref="JsonRpcErrorCode.ReplayRejected"/> came to be produced by the server and
+        /// silently dropped into the generic branch here, leaving the <c>catch</c> that type's own
+        /// documentation promises unreachable.
         /// </para>
         /// </remarks>
         private T FinalizeResponse<T>(JsonRpcResponse response, PayloadFormat actualFormat)
@@ -200,16 +196,8 @@ namespace Bee.Api.Client.Connectors
             TraceResponse(response);
             if (response.Error != null)
             {
-                if (response.Error.Code == (int)JsonRpcErrorCode.UserMessage)
-                    throw new UserMessageException(response.Error.Message);
-                if (response.Error.Code == (int)JsonRpcErrorCode.PermissionDenied)
-                    throw new ForbiddenException(response.Error.Message);
-                if (response.Error.Code == (int)JsonRpcErrorCode.CompanyAccessDenied)
-                    throw new CompanyAccessDeniedException(response.Error.Message);
-                if (response.Error.Code == (int)JsonRpcErrorCode.CompanyNotEntered)
-                    throw new CompanyNotEnteredException(response.Error.Message);
-                if (response.Error.Code == (int)JsonRpcErrorCode.ReplayRejected)
-                    throw new ReplayRejectedException(response.Error.Message);
+                if (JsonRpcErrorContract.TryRebuild(response.Error.Code, response.Error.Message, out var rebuilt))
+                    throw rebuilt;
                 throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
             }
             RestoreResponsePayload(response, actualFormat);

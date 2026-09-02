@@ -356,26 +356,6 @@ namespace Bee.Api.Core.JsonRpc
         }
 
         /// <summary>
-        /// Returns true for exception types whose message is safe to surface to API clients.
-        /// Business-layer and validation exceptions are user-facing; infrastructure exceptions are not.
-        /// </summary>
-        /// <remarks>
-        /// <c>UserMessageException</c> is the preferred type for new code. BCL exceptions
-        /// remain on the whitelist as a transition path; they are scheduled for gradual
-        /// removal once business code has migrated.
-        /// </remarks>
-        private static bool IsUserFacingException(Exception ex)
-        {
-            return ex is UserMessageException
-                || ex is UnauthorizedAccessException
-                || ex is ArgumentException          // includes ArgumentNullException, ArgumentOutOfRangeException
-                || ex is InvalidOperationException
-                || ex is NotSupportedException
-                || ex is FormatException
-                || ex is JsonRpcException;
-        }
-
-        /// <summary>
         /// Maps an exception to the corresponding JSON-RPC error code and message used in
         /// the response envelope. User-facing exceptions surface their original message;
         /// infrastructure exceptions return a generic message to avoid leaking internals.
@@ -383,6 +363,12 @@ namespace Bee.Api.Core.JsonRpc
         /// <param name="ex">The exception (already unwrapped) to map.</param>
         /// <returns>A tuple of the JSON-RPC error code and the message to expose.</returns>
         /// <remarks>
+        /// <para>
+        /// Which exception travels as which code is declared once, in
+        /// <see cref="JsonRpcErrorContract"/>, and the client rebuilds from that same declaration.
+        /// What stays here is only what the contract deliberately leaves out: the fallback for an
+        /// exception it does not cover.
+        /// </para>
         /// <para>
         /// Exposed as <c>internal</c> for direct unit testing through
         /// <c>InternalsVisibleTo</c>; the mapping is a protocol-level contract, not an
@@ -407,16 +393,8 @@ namespace Bee.Api.Core.JsonRpc
         /// </remarks>
         internal static (JsonRpcErrorCode code, string message) MapException(Exception ex)
         {
-            if (ex is CompanyNotEnteredException)
-                return (JsonRpcErrorCode.CompanyNotEntered, ex.Message);
-            if (ex is CompanyAccessDeniedException)
-                return (JsonRpcErrorCode.CompanyAccessDenied, ex.Message);
-            if (ex is ForbiddenException)
-                return (JsonRpcErrorCode.PermissionDenied, ex.Message);
-            if (ex is ReplayRejectedException)
-                return (JsonRpcErrorCode.ReplayRejected, ex.Message);
-            if (IsUserFacingException(ex))
-                return (JsonRpcErrorCode.UserMessage, ex.Message);
+            if (JsonRpcErrorContract.TryGetCode(ex, out var code))
+                return (code, ex.Message);
             return (JsonRpcErrorCode.InternalError,
                 SysInfo.IsDebugMode ? ex.Message : "Internal server error");
         }
