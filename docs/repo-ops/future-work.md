@@ -1,7 +1,7 @@
 # 未來工作構想
 
 尚未啟動、也還沒寫成 plan 的方向。**這裡只記「為什麼要做、要等什麼、啟動時第一步是什麼」**；
-真正啟動時依 `plan-workflow:plan-write` 寫 `docs/plans/plan-<主題>.md` 交使用者 review 後才執行。
+真正啟動時依 `dev-workflow:plan-write` 寫 `docs/plans/plan-<主題>.md` 交使用者 review 後才執行。
 
 ## `sys_date` 系統欄位：替「單據日期」這個角色命名
 
@@ -194,3 +194,151 @@ dotnet test tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj -c Releas
 **預設必須維持全記**，否則既有部署升版後會靜默少記——稽核少記比多記危險得多。
 
 分類軸與各項的定位見 [ADR-040](../adr/adr-040-audit-trail-taxonomy.md)。
+
+## 匯率主檔與自動帶值：多幣別唯二的缺口
+
+**構想（2026-09-01 使用者追問多幣別設計時盤點出來）**：補上**公司層的匯率主檔**，
+以及**建單時按單據日期自動帶出匯率**。換算本身不缺——見下節。
+
+### 前提：單據自帶匯率欄位（決定了其餘所有判斷）
+
+多幣別單據的 ERP 慣例是**把當時的匯率直接存在單據主檔欄位上，以單據上的匯率為準**。
+這個前提決定了整節的形狀：
+
+- **匯率主檔的角色是「預設值來源」，不是「計算依據」**。建單時帶出 → 寫入單據欄位 →
+  之後所有計算以單據上那個值為準。匯率表事後修改，已開單據不受影響。
+- **手動覆寫天然成立**——合約約定匯率、預售鎖匯，使用者直接改單據欄位即可。
+- **事後查帳看單據自己就夠**，不需回查匯率表歷史。
+
+由此再推一層，決定匯率主檔的**正確性要求與失敗行為**：
+
+- **取不到匯率不該阻擋建單** —— 它是參考值不是憑證資料。查無當日匯率時應留空或給 0
+  讓使用者自行輸入，而非擲例外或擋下存檔。
+- **取值策略可以是「不晚於單據日期的最近一筆」**，不必要求當日精確命中 ——
+  假日、未維護日在實務上必然存在。
+- **稽核要求相對低** —— 它不是憑證級資料；真正需要留痕的是單據上那個值，而那本來就
+  隨單據走稽核軌跡。
+
+### 換算能力已經具備（**曾被誤判為「整個不存在」**）
+
+盤點初期判為「換算那半整個不存在」，**這個判斷高估了缺口**。單據自帶匯率欄位之後，
+本幣換算用**純定義**即可成立，不需要任何新框架能力：
+
+```
+sys_exchange_rate   NumberKind="ExchangeRate"                       ← Preserve，不捨入
+amt_doc             NumberKind="Amount"                             ← 走 schema.CurrencyField
+amt_local           NumberKind="Amount" CurrencyField="sys_local_currency"
+                    ValueExpression="amt_doc * sys_exchange_rate"
+```
+
+鏈上每一環都已實作：
+
+- `ResolveRefCode` 讓**每個欄位各自指定 `CurrencyField`**，取不到才退回 `schema.CurrencyField`
+  （`src/Bee.Definition/Forms/FormExpressionCalculator.cs`），代碼值取自該列的變數表 ——
+  原幣欄與本幣欄因此**各自**解析到不同幣別的位數。
+- 匯率欄是 `Preserve`（`NumberKindProfile.GetRoundingPolicy`），不會被捨到 5 位再拿去乘，
+  乘法吃完整精度（符合 [ADR-026](../adr/adr-026-numeric-semantics-rounding.md) D4）。
+- 乘積走 `RoundByKind` 捨到**本幣**位數後 round-then-sum。
+
+因此 **ADR-026 D2 的「原幣/本幣各依自己的貨幣鍵欄獨立 round-then-sum」不是規劃，
+是現在就成立的行為**。（靜態推導，每一環都對過實作；尚未寫測試實跑。）
+
+**連帶更正：`NumberKind.ExchangeRate` 不是孤立標籤。** 盤點初期以「框架有沒有自己拿它去乘」
+為準，判它零消費者近乎死碼 —— **判準錯了**。它的角色本來就是「單據上那個匯率欄位」的
+數值語意宣告（5 位、不捨入、位數不隨公司變），而乘法本就該由 app 在 FormSchema 上宣告，
+這正是 FormSchema 驅動的一貫策略。該標籤現在就可用。
+
+### 真正的缺口
+
+| 層 | 內容 | 狀態 |
+|----|------|------|
+| 系統層 | 幣別代碼、最小單位 | ✅ 已有 |
+| 公司層 | 本位幣、可用幣別、現金捨入 | ✅ 已有 |
+| **公司層資料** | **匯率主檔（帶日期）** | ❌ 缺 |
+| 單據層 | 匯率欄位、本幣金額計算欄 | ✅ 已可宣告 |
+| **框架** | **建單時按單據日期自動帶出匯率** | ❌ 缺 |
+
+自動帶值有現成接縫：`FormBusinessObject.GetNewData` 或 `DefaultValueExpression` ——
+與本檔 `sys_date` 那節是同一個機制，兩者宜一併考慮（單據日期正是取匯率的依據）。
+
+**另有一處待釐清**：`CompanyInfo.DefaultCurrency` 的 XML doc 自稱
+*default (local/home) currency*，但實際只當位數解析的 fallback 用 —— **它是預設幣別，
+不是本位幣**。名稱與措辭暗示了一個框架其實沒有的概念，補換算時應一併釐清。
+
+### 第一題：匯率放哪一層 —— 資料層，不是定義層
+
+這題一度判錯（初次建議「跟 `CurrencySettings` 同層、走 `IDefineStorage` 與 `GetDefine` 通道」），
+由使用者以租賃雲端情境指正。錯因是**把 SAP 的 client 層直接類比成本框架的系統層**：
+SAP 一個 client = 一個企業集團（公司代碼共用財務政策，要出合併報表本就該同一組匯率），
+本框架一個部署 = **多個彼此無關的企業**。兩者不是同一個層級。
+
+即使採 SAP 那種不綁本幣的絕對報價模型（TCURR 存幣別對幣別，與公司無關），
+SaaS 下仍然不能共用，理由有三：**取價來源不同**（台銀／日銀／ECB，同日同幣對數字不同）、
+**法定匯率規定不同**（各國稅法指定交易日即期／月平均／期末）、
+**匯率類型與財務政策不同**。Odoo 則更直接 —— `res.currency.rate` 存「1 單位公司本幣 =
+rate 單位外幣」，`company_id` 是結構性必要維度（Odoo 自述該欄位當初就是從 `res.currency`
+搬到 `res.currency.rate` 的，因為「幣別是全世界通用的定義，匯率則因公司與時間而異」）。
+
+因此匯率應比照 `src/Bee.ObjectCaching/Database/` 既有那一族（`DepartmentTreeCache`、
+`CompanyRolePermissionsCache`、`CompanyAuditRulesCache`），走 `ICacheDataSourceProvider`
++ company 資料庫 + cache-notify 失效，而非 `DefineType` + `IDefineAccess`。
+
+**`CustomizeId` 不是替代解**：定義檔確實有 per-tenant 疊加（`CustomizeOverlay`），
+但那是「這間公司用哪一套**客製定義版本**」—— 多間公司可共用同一個 `CustomizeId`，
+且定義檔低頻、隨版本走。匯率是每日變動的業務資料，用它承載等於把資料塞進定義層。
+
+**判準（可回頭檢查其他分層）**：**這個資料是「客觀事實」還是「商業判斷」？**
+客觀事實（ISO 4217 幣別代碼與小數位、計量單位）→ 系統層定義檔；
+商業判斷（匯率、現金捨入政策、可用幣別）→ 公司層資料。
+框架既有分層**已經符合這條** —— `CompanyInfo.CashRounding` 與 `AllowedCurrencies` 在公司層、
+`CurrencySettings` 在系統層。**`CurrencySettings` 留系統層是正確的，不受本項影響。**
+
+### 第二題：匯率主檔的維度
+
+| 維度 | 必要性 | 理由 |
+|------|-------|------|
+| 公司 | ✅ 第一版必要 | 見第一題 |
+| **生效日期** | ✅ **第一版必要** | 建單時要按**單據日期**取值（補單／倒填日期不能給當前匯率）；期末評價要用期末匯率 |
+| 幣別對（或幣別） | ✅ 第一版必要 | 見第三題 |
+| 匯率類型（即期／記帳／月平均） | ⚠️ 可延後 | Odoo 就沒有；但 key 要預留，事後加維度是破壞性變更 |
+
+> **日期維度的理由曾被寫錯**：初版寫成「事後查帳要能重現」。單據自帶匯率之後，
+> 重現靠單據自己，不需回查匯率表。日期維度改由「建單時按單據日期取值」與「期末評價」撐著。
+
+### 第三題：資料模型
+
+| 模型 | 代表 | 特徵 |
+|------|------|------|
+| 相對本幣 | Odoo `res.currency.rate` | 筆數少；跨第三幣別靠本幣三角換算 |
+| 幣別對絕對報價 | SAP `TCURR`（來源幣＋目標幣＋匯率類型＋生效日） | 可直接報價；筆數多 |
+
+**傾向後者**：三角換算會**多一次捨入**（USD→TWD→JPY 的中間值要不要捨、捨到幾位），
+直接報價沒有這個中間值。此誤差比匯率表大一些的儲存成本嚴重得多。
+
+### 已知限制與待審項
+
+- **集團合併報表沒有共用基準**：匯率完全 per company 後，同集團兩間公司各自維護，
+  合併時對不起來（SAP 放 client 層正為此）。本框架目前沒有「集團」這一層。
+  這是**已知限制**，真的需要時是**加一層**，不是把匯率搬回系統層。
+- **`NumberKind.ExchangeRate` 固定 5 位，是否夠用取決於報價方向**：若單據一律存
+  「1 外幣 = n 本幣」的正向報價（TWD/USD = 31.50000），5 位對絕大多數幣對夠用；
+  只有 IDR、VND 這類極端幣別才需要 SAP TCURF 那種因子機制
+  （ADR-026 尾段自列的未做項）。**反向報價（JPY→USD = 0.0067…）才會立刻不夠。**
+- **`CurrencyItem.Name` 沒有多語系**：現為單一字串，而顯示名需要（US Dollar／美元／米ドル）。
+  框架有 LanguageResource 機制，此處未接上。
+- **`CurrencyItem.Symbol` 的顯示位置未表達**：前綴（`$1,234.56`）vs 後綴（`1 234,56 €`）
+  是**地區慣例**、跟使用者語系走，不跟幣別走。Odoo 有 `position` 欄位但同樣掛在幣別上，
+  其實也不完全對。
+- **系統層的「最小單位」並沒有比「位數」多表達什麼**：現金捨入已分出去給
+  `CompanyCashRounding` 之後，系統層 `CurrencyItem.Rounding` 依 ISO 4217 只可能是
+  `1 / 0.1 / 0.01 / 0.001`；`CurrencySettings.DecimalsFromRounding` 就是在數 10 的次方
+  （塞 0.05 只會被算成 2 位）。**這不用改**（與 Odoo 一致、便於未來對接），
+  但別誤以為它承載了現金捨入那層語意。
+
+**要等什麼**：等實際的多幣別換算需求（目前無 app 在用）。基礎設施已齊備 ——
+company-scope 資料庫相依快取那一族是現成 pattern，`bee-add-cache-object` skill
+已涵蓋其完整跨檔流程。
+
+**啟動時第一步**：先寫一個 throw-away test 實跑上面那條純定義換算鏈（確認靜態推導成立），
+再定資料模型（第三題），然後依 `bee-add-cache-object` 開匯率快取物件。
+捨入政策本身另有 `docs/plans/plan-rounding-mode.md`。
