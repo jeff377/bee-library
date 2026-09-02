@@ -46,6 +46,10 @@ CREATE 與 ALTER ADD 都涵蓋，既有列一樣會被填 0。省略它得到的
 > 更根本的修法是讓比對兩側都做同一套正規化，但那會動到全部 5 個 provider 的 diff 行為；
 > 在那之前，加欄時記得「預設值等於內建值就別寫」。
 
+> **同一族的症狀在本檔還有兩則** —— Oracle 的可空性投射（見上）與 SQLite 的描述差異（見下）。
+> 共通形狀是**「定義側寫得出、該 dialect 側存不進或讀不回」**，於是兩側永遠對不上。
+> 這類差異不是「還沒做」，是**不具可比性**，正解一律是讓比對器不要拿它來判差異。
+
 ## MySQL：`TEXT` 不能有 DEFAULT → 省略該欄的 INSERT 直接失敗
 
 **症狀**：只有 MySQL 爆 `Field 'x' doesn't have a default value`（strict mode）。
@@ -131,6 +135,30 @@ ALTER ADD 共用 `GetColumnDefinition`，一改兩路徑齊覆蓋。GUID hex 全
 2. COLLATE 只讓**比對**大小寫無關、**不正規化儲存值**；既有 SQLite 表需重建 schema 才吃到新 collation。
 3. **「client 端讀回的 GUID 欄是 String 型」這件事會外溢** —— 運算式引擎的 coerce 雷就是它引起的，
    見 [serialization-and-expressions.md](serialization-and-expressions.md)。
+
+## SQLite：沒有 COMMENT 機制 → 描述差異永遠清不掉（已修）
+
+**症狀**：沒有錯誤、沒有 SQL、沒有任何徵兆。只有在問「這張表升級完了嗎」時才看得出來 ——
+只要 TableSchema 有任何 caption，`CompareToDiff` 就永遠回報有差異，`Plan` 永遠回傳
+**零 stage 的 `Alter`**，`UpgradeExecutionMode.NoChange` 永遠不會出現。
+
+**根因**：SQLite 沒有 `COMMENT ON`、也沒有欄位註解欄位，`SqliteTableSchemaProvider`
+因此把每個 `Caption` 一律讀回**空字串**（`Caption = string.Empty`，寫死的）。
+比對器的保守政策是「define 有值、real 沒有 → 算一筆 `DescriptionChange`」，
+而 `TableSchemaDiff.IsEmpty` 把 `DescriptionChanges` 算進去 —— 於是差異必然存在、
+且沒有任何語句能消除它。
+
+**為何不是「補一個 SQLite 的 description sync builder」就好**：那個 builder 產不出東西。
+這不是「還沒接」，是**該 dialect 根本無處可寫**。給它一個回傳空清單的 builder，
+差異照樣留在 diff 裡，`IsEmpty` 照樣是 false。
+
+**已修**：`TableSchemaComparer.PopulateDescriptionChanges` 在 `DatabaseType.SQLite` 直接
+return —— 無法持久化的東西就不該被列為差異。這與 Oracle 的 `NormalizeNullability` 同一個
+思路：**該 dialect 控制不了的屬性，兩側不具可比性，不要拿來判差異**。
+
+**判別法**：新增任何「定義有、但某個 dialect 存不進資料庫」的中繼資料時，先問
+**這個差異有沒有任何語句能消除它？** 沒有就不該讓它進 diff，否則它會靜靜地把該表
+永久釘在「未同步」狀態 —— 不報錯，只是永遠答否。
 
 ## decimal 精度：框架不設參數 scale，DB 行為不一致
 
