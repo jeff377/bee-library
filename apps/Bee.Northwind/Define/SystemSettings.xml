@@ -5,7 +5,6 @@
     <IsDebugMode>true</IsDebugMode>
     <AllowedTypeNamespaces></AllowedTypeNamespaces>
     <ApiPayloadOptions>
-      <Serializer>messagepack</Serializer>
       <Compressor>gzip</Compressor>
       <Encryptor>aes-cbc-hmac</Encryptor>
     </ApiPayloadOptions>

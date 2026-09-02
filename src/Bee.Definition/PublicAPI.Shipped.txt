@@ -1209,8 +1209,6 @@ Bee.Definition.Settings.ApiPayloadOptions.Compressor.get -> string!
 Bee.Definition.Settings.ApiPayloadOptions.Compressor.set -> void
 Bee.Definition.Settings.ApiPayloadOptions.Encryptor.get -> string!
 Bee.Definition.Settings.ApiPayloadOptions.Encryptor.set -> void
-Bee.Definition.Settings.ApiPayloadOptions.Serializer.get -> string!
-Bee.Definition.Settings.ApiPayloadOptions.Serializer.set -> void
 Bee.Definition.Settings.AuditLogOptions
 Bee.Definition.Settings.AuditLogOptions.AccessEnabled.get -> bool
 Bee.Definition.Settings.AuditLogOptions.AccessEnabled.set -> void

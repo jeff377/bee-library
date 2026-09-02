@@ -140,7 +140,9 @@ namespace Bee.Api.Core.JsonRpc
                     .ConfigureAwait(false);
                 value = ApiOutputConverter.Convert(value!);
 
-                response.Result = new JsonRpcResult { Value = value };
+                // The answer is written with the codec the caller asked for, the same way it keeps
+                // the caller's format. A client that negotiated one cannot decode anything else.
+                response.Result = new JsonRpcResult { Value = value, Codec = request.Params.Codec };
                 ApiPayloadConverter.TransformTo(response.Result, format, apiEncryptionKey);
                 Tracer.End(ctx);
                 LogApiSlowAnomaly(request.Method, stopwatch);

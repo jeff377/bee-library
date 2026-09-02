@@ -1,1 +1,17 @@
 #nullable enable
+Bee.Api.Core.JsonRpc.ApiPayload.Codec.get -> string!
+Bee.Api.Core.JsonRpc.ApiPayload.Codec.set -> void
+Bee.Api.Core.Transformers.ApiPayloadTransformer.Decode(object! payload, System.Type! type, Bee.Api.Core.Transformers.IApiPayloadSerializer! serializer) -> object?
+Bee.Api.Core.Transformers.ApiPayloadTransformer.Encode(object! payload, System.Type! type, Bee.Api.Core.Transformers.IApiPayloadSerializer! serializer) -> byte[]!
+Bee.Api.Core.Transformers.IApiPayloadTransformer.Decode(object! payload, System.Type! type, Bee.Api.Core.Transformers.IApiPayloadSerializer! serializer) -> object?
+Bee.Api.Core.Transformers.IApiPayloadTransformer.Encode(object! payload, System.Type! type, Bee.Api.Core.Transformers.IApiPayloadSerializer! serializer) -> byte[]!
+Bee.Api.Core.Transformers.JsonPayloadSerializer
+Bee.Api.Core.Transformers.JsonPayloadSerializer.Deserialize(byte[]! bytes, System.Type! type) -> object?
+Bee.Api.Core.Transformers.JsonPayloadSerializer.JsonPayloadSerializer() -> void
+Bee.Api.Core.Transformers.JsonPayloadSerializer.SerializationMethod.get -> string!
+Bee.Api.Core.Transformers.JsonPayloadSerializer.Serialize(object! value, System.Type! type) -> byte[]!
+Bee.Api.Core.Transformers.PayloadCodecNames
+const Bee.Api.Core.Transformers.PayloadCodecNames.Json = "json" -> string!
+const Bee.Api.Core.Transformers.PayloadCodecNames.MessagePack = "messagepack" -> string!
+static Bee.Api.Core.ApiServiceOptions.AcceptedPayloadCodecs.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
+static Bee.Api.Core.ApiServiceOptions.ResolvePayloadSerializer(string? codec) -> Bee.Api.Core.Transformers.IApiPayloadSerializer!

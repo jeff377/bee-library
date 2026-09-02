@@ -18,14 +18,13 @@ namespace Bee.Definition.UnitTests.Settings
             Assert.False(config.IsDebugMode);
             Assert.Equal(string.Empty, config.AllowedTypeNamespaces);
             Assert.NotNull(config.ApiPayloadOptions);
-            Assert.Equal("messagepack", config.ApiPayloadOptions.Serializer);
         }
 
         [Fact]
         [DisplayName("屬性應可被設定並讀回")]
         public void Properties_AreSettable()
         {
-            var payload = new ApiPayloadOptions { Serializer = "json" };
+            var payload = new ApiPayloadOptions { Compressor = "none" };
             var config = new CommonConfiguration
             {
                 Version = "4.0.1",

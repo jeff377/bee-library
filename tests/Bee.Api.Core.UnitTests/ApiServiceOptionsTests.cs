@@ -37,7 +37,7 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("Initialize(ApiPayloadOptions, isDebugMode) 應依名稱建立對應實作")]
+        [DisplayName("Initialize(ApiPayloadOptions, isDebugMode) 應依名稱建立壓縮與加密實作")]
         public void Initialize_WithOptions_SetsImplementations()
         {
             var originalSerializer = ApiServiceOptions.PayloadSerializer;
@@ -47,13 +47,14 @@ namespace Bee.Api.Core.UnitTests
             {
                 var options = new ApiPayloadOptions
                 {
-                    Serializer = "messagepack",
                     Compressor = "none",
                     Encryptor = "none"
                 };
 
                 ApiServiceOptions.Initialize(options, isDebugMode: true);
 
+                // 序列化不在此設定：兩種 codec 恆可用，由請求自行宣告，
+                // PayloadSerializer 維持預設以服務未宣告的請求。
                 Assert.IsType<MessagePackPayloadSerializer>(ApiServiceOptions.PayloadSerializer);
                 Assert.IsType<NoCompressionCompressor>(ApiServiceOptions.PayloadCompressor);
                 Assert.IsType<NoEncryptionEncryptor>(ApiServiceOptions.PayloadEncryptor);

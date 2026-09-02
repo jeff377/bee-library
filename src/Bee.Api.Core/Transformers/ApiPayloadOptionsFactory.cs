@@ -8,15 +8,21 @@
         /// <summary>
         /// Creates the serializer component with the specified name.
         /// </summary>
-        /// <param name="name">The serializer name, e.g., "messagepack".</param>
+        /// <param name="name">The serializer name, e.g., "messagepack" or "json".</param>
         /// <returns>The serializer component.</returns>
         /// <exception cref="NotSupportedException">The serializer name is not supported.</exception>
+        /// <remarks>
+        /// The names are matched ordinally and travel on the wire, so they are part of the
+        /// contract — see <see cref="PayloadCodecNames"/>.
+        /// </remarks>
         public static IApiPayloadSerializer CreateSerializer(string name)
         {
             switch (name)
             {
-                case "messagepack":
+                case PayloadCodecNames.MessagePack:
                     return new MessagePackPayloadSerializer();
+                case PayloadCodecNames.Json:
+                    return new JsonPayloadSerializer();
                 default:
                     throw new NotSupportedException($"Unsupported serializer: {name}");
             }

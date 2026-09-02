@@ -18,10 +18,32 @@ namespace Bee.Api.Core
         private static IApiPayloadEncryptor _payloadEncryptor = new AesPayloadEncryptor(); // Default implementation
         private static TimeSpan _wireFrameTimestampTolerance = TimeSpan.FromMinutes(5);
         private static IReplayWindowStore _replayWindowStore = new MemoryReplayWindowStore();
+        /// <summary>
+        /// The body codecs a request may name, always all of them.
+        /// </summary>
+        /// <remarks>
+        /// Not a deployment setting. Both are the framework's own, both decode into the same
+        /// whitelisted types under the same depth limit, and System.Text.Json is already reachable
+        /// by an anonymous caller regardless — the envelope is JSON, and a Plain body is
+        /// deserialized by <see cref="Conversion.ApiInputConverter"/>. Gating the JSON body codec
+        /// behind a switch would have guarded a door that is open either way, while making a
+        /// browser client's support depend on a setting someone has to remember to turn on.
+        /// </remarks>
+        private static readonly IReadOnlyDictionary<string, IApiPayloadSerializer> s_codecs =
+            new Dictionary<string, IApiPayloadSerializer>(StringComparer.Ordinal)
+            {
+                [PayloadCodecNames.MessagePack] = new MessagePackPayloadSerializer(),
+                [PayloadCodecNames.Json] = new JsonPayloadSerializer()
+            };
 
         /// <summary>
-        /// Initializes the API service options by configuring the serializer, compressor, and encryptor implementations.
+        /// Initializes the API service options by configuring the compressor and encryptor implementations.
         /// </summary>
+        /// <remarks>
+        /// The body codec is not configured here: both built-in codecs are always available and a
+        /// request names the one it speaks. <see cref="PayloadSerializer"/> stays at its default
+        /// and serves requests that name none.
+        /// </remarks>
         /// <param name="payloadOptions">Provides options related to API payload processing, such as serialization, compression, and encryption.</param>
         /// <param name="isDebugMode">
         /// Whether the host is running in debug/development mode. Forwarded to
@@ -30,7 +52,6 @@ namespace Bee.Api.Core
         /// </param>
         public static void Initialize(ApiPayloadOptions payloadOptions, bool isDebugMode)
         {
-            PayloadSerializer = ApiPayloadOptionsFactory.CreateSerializer(payloadOptions.Serializer);
             PayloadCompressor = ApiPayloadOptionsFactory.CreateCompressor(payloadOptions.Compressor);
             PayloadEncryptor = ApiPayloadOptionsFactory.CreateEncryptor(payloadOptions.Encryptor, isDebugMode);
         }
@@ -156,10 +177,71 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
+        /// Gets the names of the body codecs a request may ask for.
+        /// </summary>
+        public static IReadOnlyCollection<string> AcceptedPayloadCodecs => (IReadOnlyCollection<string>)s_codecs.Keys;
+
+        /// <summary>
+        /// Resolves the body codec a payload asked for by name.
+        /// </summary>
+        /// <param name="codec">
+        /// The codec name read off the payload envelope. Blank means the payload named none, which
+        /// is what every client predating negotiation sends, and resolves to
+        /// <see cref="PayloadSerializer"/>.
+        /// </param>
+        /// <returns>The serializer to encode or decode the body with.</returns>
+        /// <exception cref="NotSupportedException">
+        /// The payload named a codec that does not exist.
+        /// </exception>
+        /// <remarks>
+        /// WARNING: <paramref name="codec"/> arrives from the wire, so it is screened for shape
+        /// before it is echoed anywhere. A name that is not well-formed is refused without being
+        /// repeated back, which keeps arbitrary caller-supplied text out of the error surface and
+        /// out of anything that records it.
+        /// </remarks>
+        public static IApiPayloadSerializer ResolvePayloadSerializer(string? codec)
+        {
+            if (string.IsNullOrEmpty(codec))
+                return PayloadSerializer;
+
+            if (!IsWellFormedCodecName(codec))
+                throw new NotSupportedException("The requested payload codec name is not valid.");
+
+            // A custom serializer installed through the component overload answers to its own
+            // name, which is not one of the built-in two.
+            if (string.Equals(codec, PayloadSerializer.SerializationMethod, StringComparison.Ordinal))
+                return PayloadSerializer;
+
+            if (s_codecs.TryGetValue(codec, out var serializer))
+                return serializer;
+
+            throw new NotSupportedException($"Unknown payload codec '{codec}'.");
+        }
+
+        /// <summary>
+        /// Whether a codec name is shaped like one at all: lower-case letters, digits and hyphens,
+        /// up to 32 characters.
+        /// </summary>
+        private static bool IsWellFormedCodecName(string codec)
+        {
+            if (codec.Length > 32)
+                return false;
+
+            foreach (var c in codec)
+            {
+                if (!(char.IsAsciiLetterLower(c) || char.IsAsciiDigit(c) || c == '-'))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Gets a summary of the current settings, including the active serializer, compressor, and encryptor.
         /// </summary>
         public static string CurrentSettingsSummary =>
             $"Serializer: {PayloadSerializer.SerializationMethod}, " +
+            $"Codecs: {string.Join('|', AcceptedPayloadCodecs)}, " +
             $"Compressor: {PayloadCompressor.CompressionMethod}, " +
             $"Encryptor: {PayloadEncryptor.EncryptionMethod}";
     }

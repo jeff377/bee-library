@@ -190,7 +190,6 @@ namespace Bee.Definition.UnitTests
             Assert.Equal(Bee.Definition.Security.MasterKeySourceType.Environment, masterKey.Type);
             Assert.Equal("BEE_MASTER_KEY", masterKey.Value);
             // ApiPayloadOptions 預設值
-            Assert.Equal("messagepack", settings.CommonConfiguration.ApiPayloadOptions.Serializer);
             Assert.Equal("aes-cbc-hmac", settings.CommonConfiguration.ApiPayloadOptions.Encryptor);
         }
 

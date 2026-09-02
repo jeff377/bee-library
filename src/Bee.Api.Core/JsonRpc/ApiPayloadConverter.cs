@@ -22,6 +22,10 @@ namespace Bee.Api.Core.JsonRpc
         /// When <see cref="ApiServiceOptions.RequireWireFrame"/> is on, an anti-replay frame is
         /// packed in front of the encoded body. Plain payloads are returned untouched and never
         /// carry one.
+        /// <para>
+        /// The body codec is read from <see cref="ApiPayload.Codec"/>; leave it blank to use the
+        /// deployment default, which is what every client predating negotiation does.
+        /// </para>
         /// </remarks>
         public static void TransformTo(ApiPayload payload, PayloadFormat targetFormat, byte[]? encryptionKey = null)
         {
@@ -38,7 +42,20 @@ namespace Bee.Api.Core.JsonRpc
             payload.TypeName = type.FullName + ", " + type.Assembly.GetName().Name;
 
             var transformer = ApiServiceOptions.PayloadTransformer;
-            var bytes = transformer.Encode(payload.Value, type);
+
+            // NOTE: A payload that names no codec goes through the two-argument overload, the one
+            // every transformer has always had. Only a negotiated codec asks a transformer for the
+            // newer capability, so a host's own transformer keeps serving every existing client.
+            byte[] bytes;
+            if (string.IsNullOrEmpty(payload.Codec))
+            {
+                bytes = transformer.Encode(payload.Value, type);
+            }
+            else
+            {
+                var serializer = ApiServiceOptions.ResolvePayloadSerializer(payload.Codec);
+                bytes = transformer.Encode(payload.Value, type, serializer);
+            }
 
             if (ApiServiceOptions.RequireWireFrame)
             {
@@ -117,7 +134,11 @@ namespace Bee.Api.Core.JsonRpc
                 payload.Frame = ApiPayloadFrame.Extract(bytes, out bytes);
             }
 
-            payload.Value = transformer.Decode(bytes, type);
+            // The codec is read off the payload, never passed in: the writer stamped it, and the
+            // reader has to honour what actually arrived.
+            payload.Value = string.IsNullOrEmpty(payload.Codec)
+                ? transformer.Decode(bytes, type)
+                : transformer.Decode(bytes, type, ApiServiceOptions.ResolvePayloadSerializer(payload.Codec));
             payload.Format = PayloadFormat.Plain;
         }
 

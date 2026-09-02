@@ -9,12 +9,11 @@ namespace Bee.Definition.UnitTests.Settings
     public class ApiPayloadOptionsTests
     {
         [Fact]
-        [DisplayName("預設建構子應初始化為預設 Serializer/Compressor/Encryptor")]
+        [DisplayName("預設建構子應初始化為預設 Compressor/Encryptor")]
         public void DefaultConstructor_InitializesDefaults()
         {
             var options = new ApiPayloadOptions();
 
-            Assert.Equal("messagepack", options.Serializer);
             Assert.Equal("gzip", options.Compressor);
             Assert.Equal("aes-cbc-hmac", options.Encryptor);
         }
@@ -25,12 +24,10 @@ namespace Bee.Definition.UnitTests.Settings
         {
             var options = new ApiPayloadOptions
             {
-                Serializer = "json",
                 Compressor = "none",
                 Encryptor = "none"
             };
 
-            Assert.Equal("json", options.Serializer);
             Assert.Equal("none", options.Compressor);
             Assert.Equal("none", options.Encryptor);
         }
@@ -41,13 +38,12 @@ namespace Bee.Definition.UnitTests.Settings
         {
             var options = new ApiPayloadOptions
             {
-                Serializer = "messagepack",
                 Compressor = "gzip",
                 Encryptor = "aes-cbc-hmac"
             };
 
             Assert.Equal(
-                "Serializer: messagepack, Compressor: gzip, Encryptor: aes-cbc-hmac",
+                "Compressor: gzip, Encryptor: aes-cbc-hmac",
                 options.ToString());
         }
     }

@@ -3,18 +3,19 @@
 namespace Bee.Definition.Settings
 {
     /// <summary>
-    /// Provides API payload handling options, such as serialization, compression, and encryption.
+    /// Provides API payload handling options: compression and encryption.
     /// </summary>
+    /// <remarks>
+    /// The body codec is deliberately absent. Compression and encryption are deployment policy —
+    /// whether payloads are protected, and how — but which codec a body is written in is the
+    /// client's own capability, so it is declared per request on the payload envelope instead. A
+    /// request that declares none is read as MessagePack, which is what every client predating
+    /// negotiation sends.
+    /// </remarks>
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    [Description("Provides API payload handling options, such as serialization, compression, and encryption.")]
+    [Description("Provides API payload handling options: compression and encryption.")]
     public class ApiPayloadOptions
     {
-        /// <summary>
-        /// Specifies the serializer name, e.g., messagepack.
-        /// </summary>
-        [Description("Specifies the serializer name, e.g., messagepack.")]
-        public string Serializer { get; set; } = "messagepack";
-
         /// <summary>
         /// Specifies the compressor name, e.g., gzip, none.
         /// </summary>
@@ -32,7 +33,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         public override string ToString()
         {
-            return $"Serializer: {Serializer}, Compressor: {Compressor}, Encryptor: {Encryptor}";
+            return $"Compressor: {Compressor}, Encryptor: {Encryptor}";
         }
     }
 

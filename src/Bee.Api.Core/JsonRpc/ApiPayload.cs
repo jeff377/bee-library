@@ -41,6 +41,31 @@ namespace Bee.Api.Core.JsonRpc
         public PayloadFormat Format { get; internal set; } = PayloadFormat.Plain;
 
         /// <summary>
+        /// Gets or sets the name of the codec the body is encoded with.
+        /// </summary>
+        /// <remarks>
+        /// Blank means the payload names none, which is what every client predating negotiation
+        /// sends; the reader then takes it to mean the deployment's configured default.
+        /// <para>
+        /// Unlike <see cref="Format"/> this is set by the caller, before the payload is
+        /// transformed: which codec to speak is the client's choice, not something the conversion
+        /// derives. Both <see cref="ApiPayloadConverter.TransformTo"/> and
+        /// <see cref="ApiPayloadConverter.RestoreFrom"/> read it from here.
+        /// </para>
+        /// <para>
+        /// Unlike the anti-replay frame this rides in the clear, and that is deliberate: a codec
+        /// name is not a security property. It selects how the body is spelled, not how well it is
+        /// protected — encryption still wraps whatever the codec produced — so rewriting it in
+        /// flight yields a body that fails to decode rather than one that decodes with less
+        /// protection. Compare <see cref="ApiServiceOptions.RequireWireFrame"/>, which is
+        /// deliberately not negotiated for exactly the opposite reason.
+        /// </para>
+        /// </remarks>
+        [JsonPropertyName("codec")]
+        [DefaultValue("")]
+        public string Codec { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the payload value.
         /// </summary>
         [JsonPropertyName("value")]

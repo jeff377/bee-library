@@ -7,6 +7,7 @@ using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Tracing;
 using Bee.Api.Core.Messages;
+using Bee.Api.Core.Transformers;
 
 namespace Bee.Api.Client.UnitTests
 {
@@ -144,6 +145,89 @@ namespace Bee.Api.Client.UnitTests
                 SysInfo.TraceListener = previousListener;
             }
         }
+
+        #region PayloadCodec
+
+        /// <summary>
+        /// 模擬 server 的回應：沿用請求宣告的 codec 與格式編碼回應，正是
+        /// <c>JsonRpcExecutor</c> 的行為。少了這一步，client 端會拿到一個沒有 TypeName
+        /// 的 Result 而在還原時失敗——那是測試骨架的問題，不是待測行為。
+        /// </summary>
+        private static FakeJsonRpcProvider CreateEchoProvider(PayloadFormat format)
+        {
+            return new FakeJsonRpcProvider
+            {
+                ResponseFactory = req =>
+                {
+                    var response = new JsonRpcResponse(req)
+                    {
+                        Result = new JsonRpcResult { Value = "echoed", Codec = req.Params.Codec }
+                    };
+                    // Encrypted 未帶金鑰時 client 端會降級為 Encoded，回應照同一格式編碼。
+                    var actual = format == PayloadFormat.Plain ? PayloadFormat.Plain : PayloadFormat.Encoded;
+                    ApiPayloadConverter.TransformTo(response.Result, actual);
+                    return response;
+                }
+            };
+        }
+
+        [Theory]
+        [DisplayName("設定 PayloadCodec 後，非 Plain 的請求應在信封標記該 codec")]
+        [InlineData(PayloadFormat.Encoded)]
+        [InlineData(PayloadFormat.Encrypted)]
+        public async Task ExecuteAsync_WithPayloadCodec_StampsCodecOnRequest(PayloadFormat format)
+        {
+            var provider = CreateEchoProvider(format);
+            var connector = CreateConnector(provider);
+            connector.PayloadCodec = PayloadCodecNames.Json;
+
+            // Encrypted 在未設金鑰時會自動降級為 Encoded，兩者都會編碼 body，正是本測試要看的。
+            await connector.ExecuteAsync<string>(TestProgId, TestAction, "payload", format);
+
+            Assert.Equal(PayloadCodecNames.Json, provider.LastRequest!.Params.Codec);
+            Assert.IsType<byte[]>(provider.LastRequest.Params.Value);
+        }
+
+        [Fact]
+        [DisplayName("未設定 PayloadCodec 時信封的 codec 應留空，維持既有 MessagePack 行為")]
+        public async Task ExecuteAsync_WithoutPayloadCodec_LeavesCodecBlank()
+        {
+            var provider = CreateEchoProvider(PayloadFormat.Encoded);
+            var connector = CreateConnector(provider);
+
+            await connector.ExecuteAsync<string>(TestProgId, TestAction, "payload", PayloadFormat.Encoded);
+
+            Assert.Equal(string.Empty, provider.LastRequest!.Params.Codec);
+        }
+
+        [Fact]
+        [DisplayName("Plain 請求不帶編碼後的 body，因此不應標記 codec")]
+        public async Task ExecuteAsync_PlainFormat_DoesNotStampCodec()
+        {
+            var provider = CreateEchoProvider(PayloadFormat.Plain);
+            var connector = CreateConnector(provider);
+            connector.PayloadCodec = PayloadCodecNames.Json;
+
+            await connector.ExecuteAsync<string>(TestProgId, TestAction, "payload", PayloadFormat.Plain);
+
+            Assert.Equal(string.Empty, provider.LastRequest!.Params.Codec);
+        }
+
+        [Fact]
+        [DisplayName("以 json codec 送出的請求，回應同樣以 json codec 編碼時應能解回原值")]
+        public async Task ExecuteAsync_JsonCodec_RoundTripsThroughResponse()
+        {
+            var provider = CreateEchoProvider(PayloadFormat.Encoded);
+            var connector = CreateConnector(provider);
+            connector.PayloadCodec = PayloadCodecNames.Json;
+
+            var result = await connector.ExecuteAsync<string>(
+                TestProgId, TestAction, "payload", PayloadFormat.Encoded);
+
+            Assert.Equal("echoed", result);
+        }
+
+        #endregion
 
         /// <summary>
         /// 收集追蹤事件的測試用 writer。

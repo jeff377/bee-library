@@ -58,6 +58,9 @@ namespace Bee.Api.Core.JsonRpc
                 case "type":
                     payload.TypeName = reader.GetString() ?? string.Empty;
                     break;
+                case "codec":
+                    payload.Codec = reader.GetString() ?? string.Empty;
+                    break;
                 default:
                     reader.Skip();
                     break;
@@ -107,6 +110,11 @@ namespace Bee.Api.Core.JsonRpc
                 JsonSerializer.Serialize(writer, value.Value, value.Value.GetType(), options);
 
             writer.WriteString("type", value.TypeName);
+
+            // Omitted when blank so a payload on the default codec stays byte-for-byte what it was
+            // before negotiation existed.
+            if (!string.IsNullOrEmpty(value.Codec))
+                writer.WriteString("codec", value.Codec);
 
             writer.WriteEndObject();
         }

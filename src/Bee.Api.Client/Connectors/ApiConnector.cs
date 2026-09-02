@@ -5,6 +5,7 @@ using Bee.Base.Tracing;
 using Bee.Api.Client.Providers;
 using Bee.Api.Core.Conversion;
 using Bee.Api.Core.Messages;
+using Bee.Api.Core.Transformers;
 
 
 namespace Bee.Api.Client.Connectors
@@ -94,6 +95,23 @@ namespace Bee.Api.Client.Connectors
         /// Gets or sets the API service provider.
         /// </summary>
         public IJsonRpcProvider Provider { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the body codec this connector speaks, blank for the framework default
+        /// (MessagePack).
+        /// </summary>
+        /// <remarks>
+        /// Set it to <see cref="PayloadCodecNames.Json"/> to put the bodies of this connector's
+        /// calls on the JSON codec. Only the serialization step changes: compression, encryption
+        /// and the anti-replay frame are unaffected, and a Plain call carries no encoded body at
+        /// all, so this has no effect on one.
+        /// <para>
+        /// The name is stamped on the request and the server answers in the same codec. A server
+        /// too old to read the field falls back to MessagePack and fails to decode the body, which
+        /// is the intended outcome — a mismatch is refused rather than silently misread.
+        /// </para>
+        /// </remarks>
+        public string PayloadCodec { get; set; } = string.Empty;
 
         /// <summary>
         /// Asynchronously executes an API method.
@@ -255,6 +273,10 @@ namespace Bee.Api.Client.Connectors
 
             if (format != PayloadFormat.Plain)
             {
+                // Stamped before the transform, which reads it off the payload the same way the
+                // receiving end does.
+                request.Params.Codec = PayloadCodec;
+
                 if (ApiServiceOptions.RequireWireFrame)
                 {
                     // Numbered here rather than inside the converter: only the connector knows

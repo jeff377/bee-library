@@ -13,15 +13,28 @@
         /// <returns>The processed data (typically a byte array).</returns>
         public byte[] Encode(object payload, Type type)
         {
+            return Encode(payload, type, ApiServiceOptions.PayloadSerializer);
+        }
+
+        /// <summary>
+        /// Serializes and compresses the specified object using an explicitly chosen serializer.
+        /// </summary>
+        /// <param name="payload">The raw data object to process.</param>
+        /// <param name="type">The type of the object.</param>
+        /// <param name="serializer">The body codec to serialize with.</param>
+        /// <returns>The processed data (typically a byte array).</returns>
+        public byte[] Encode(object payload, Type type, IApiPayloadSerializer serializer)
+        {
             if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload), "Input data cannot be null.");
             }
+            ArgumentNullException.ThrowIfNull(serializer);
 
             try
             {
-                byte[] bytes = ApiServiceOptions.PayloadSerializer.Serialize(payload, type);  // Serialize
-                return ApiServiceOptions.PayloadCompressor.Compress(bytes);                    // Compress
+                byte[] bytes = serializer.Serialize(payload, type);              // Serialize
+                return ApiServiceOptions.PayloadCompressor.Compress(bytes);      // Compress
             }
             catch (Exception ex)
             {
@@ -40,10 +53,23 @@
         /// <returns>The restored original data object.</returns>
         public object? Decode(object payload, Type type)
         {
+            return Decode(payload, type, ApiServiceOptions.PayloadSerializer);
+        }
+
+        /// <summary>
+        /// Decompresses and deserializes the processed data using an explicitly chosen serializer.
+        /// </summary>
+        /// <param name="payload">The processed data (typically a byte array).</param>
+        /// <param name="type">The target object type.</param>
+        /// <param name="serializer">The body codec to deserialize with.</param>
+        /// <returns>The restored original data object.</returns>
+        public object? Decode(object payload, Type type, IApiPayloadSerializer serializer)
+        {
             if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload), "Input data cannot be null.");
             }
+            ArgumentNullException.ThrowIfNull(serializer);
 
             try
             {
@@ -53,8 +79,8 @@
                     throw new InvalidCastException("Invalid data type. The input data must be a byte array.");
                 }
 
-                byte[] decompressed = ApiServiceOptions.PayloadCompressor.Decompress(bytes);       // Decompress
-                return ApiServiceOptions.PayloadSerializer.Deserialize(decompressed, type);        // Deserialize
+                byte[] decompressed = ApiServiceOptions.PayloadCompressor.Decompress(bytes);  // Decompress
+                return serializer.Deserialize(decompressed, type);                            // Deserialize
             }
             catch (Exception ex)
             {
