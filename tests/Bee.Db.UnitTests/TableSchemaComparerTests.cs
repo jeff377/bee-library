@@ -50,6 +50,76 @@ namespace Bee.Db.UnitTests
             Assert.Equal(DbUpgradeAction.New, result.UpgradeAction);
         }
 
+        // ---------- Oracle：定義層 AllowNull 對 String / Text 不可比 ----------
+        // 迴歸：Oracle 一律把 String/Text 建成 nullable，OracleTableSchemaProvider 因此固定回報
+        // AllowNull=false 以對齊「定義寫 false」的情形。定義寫 AllowNull="true" 時兩側永遠對不上，
+        // 每次升級都重發一次 AlterFieldChange —— 對 Text 是致命的（MODIFY 重述 CLOB → ORA-22859），
+        // 整份 plan 中斷，同批真正該做的 AddFieldChange 也永遠落不了地。
+
+        private static TableSchema BuildNullableTextSchema(bool defineAllowNull)
+        {
+            var schema = new TableSchema { TableName = "st_demo" };
+            schema.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+            var text = schema.Fields!.Add("error_message", "Message", FieldDbType.Text);
+            text.AllowNull = defineAllowNull;
+            return schema;
+        }
+
+        [Fact]
+        [DisplayName("Oracle：定義 Text AllowNull=true 對上讀回的 AllowNull=false 不應產生差異")]
+        public void CompareToDiff_OracleNullableText_ProducesNoChange()
+        {
+            var define = BuildNullableTextSchema(defineAllowNull: true);
+            // OracleTableSchemaProvider 對 String/Text 固定回報 AllowNull=false。
+            var real = BuildNullableTextSchema(defineAllowNull: false);
+
+            var diff = new TableSchemaComparer(define, real, DatabaseType.Oracle).CompareToDiff();
+
+            Assert.Empty(diff.Changes);
+        }
+
+        [Fact]
+        [DisplayName("Oracle：定義 String AllowNull=true 對上讀回的 AllowNull=false 不應產生差異")]
+        public void CompareToDiff_OracleNullableString_ProducesNoChange()
+        {
+            var define = new TableSchema { TableName = "st_demo" };
+            define.Fields!.Add("user_id", "User", FieldDbType.String, 50).AllowNull = true;
+            var real = new TableSchema { TableName = "st_demo" };
+            real.Fields!.Add("user_id", "User", FieldDbType.String, 50).AllowNull = false;
+
+            var diff = new TableSchemaComparer(define, real, DatabaseType.Oracle).CompareToDiff();
+
+            Assert.Empty(diff.Changes);
+        }
+
+        [Fact]
+        [DisplayName("Oracle：nullable Text 不可比不應吃掉同一份 diff 裡真正的新欄位")]
+        public void CompareToDiff_OracleNullableTextWithNewField_StillReportsAddField()
+        {
+            var define = BuildNullableTextSchema(defineAllowNull: true);
+            define.Fields!.Add("api_key_id", "API Key", FieldDbType.String, 50).AllowNull = true;
+            var real = BuildNullableTextSchema(defineAllowNull: false);
+
+            var diff = new TableSchemaComparer(define, real, DatabaseType.Oracle).CompareToDiff();
+
+            var change = Assert.Single(diff.Changes);
+            Assert.Equal("api_key_id", Assert.IsType<AddFieldChange>(change).Field.FieldName);
+        }
+
+        [Fact]
+        [DisplayName("非 Oracle：Text 的 AllowNull 差異仍應被視為差異")]
+        public void CompareToDiff_NonOracleNullableText_ReportsAlterField()
+        {
+            // 其餘 provider 忠實回報實際 nullability，AllowNull 因此是可比的真實差異。
+            var define = BuildNullableTextSchema(defineAllowNull: true);
+            var real = BuildNullableTextSchema(defineAllowNull: false);
+
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
+
+            var change = Assert.Single(diff.Changes);
+            Assert.Equal("error_message", Assert.IsType<AlterFieldChange>(change).NewField.FieldName);
+        }
+
         [Fact]
         [DisplayName("結構完全相同時 UpgradeAction 應為 None")]
         public void Compare_IdenticalSchemas_ReturnsNone()

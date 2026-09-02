@@ -152,6 +152,23 @@ namespace Bee.Db.Providers.Oracle
         }
 
         /// <summary>
+        /// Generates the MODIFY column fragment for a LOB column: name + optional inline DEFAULT,
+        /// with the type deliberately omitted.
+        /// </summary>
+        /// <remarks>
+        /// Oracle rejects any <c>MODIFY</c> that restates a LOB column's type with <c>ORA-22859</c>,
+        /// even when the type is unchanged, but it does accept <c>DEFAULT</c> and nullability changes
+        /// on one. Crossing the LOB boundary is not modifiable at all and is routed to a table rebuild.
+        /// </remarks>
+        /// <param name="field">The field definition.</param>
+        public static string GetLobColumnDefaultFragment(DbField field)
+        {
+            string defaultExpression = GetDefaultExpression(field);
+            string defaultClause = StringUtilities.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
+            return $"{QuoteName(field.FieldName)}{defaultClause}";
+        }
+
+        /// <summary>
         /// Returns the effective Oracle nullability clause (<c>NULL</c> / <c>NOT NULL</c>) for a field.
         /// String/Text columns are always nullable regardless of the definition's <see cref="DbField.AllowNull"/>,
         /// since Oracle equates '' with NULL so a non-null empty string is inexpressible.

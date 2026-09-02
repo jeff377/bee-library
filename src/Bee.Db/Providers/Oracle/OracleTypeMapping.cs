@@ -36,6 +36,19 @@ namespace Bee.Db.Providers.Oracle
         private const int VarcharMaxLength = 4000;
 
         /// <summary>
+        /// Determines whether the field maps to an Oracle LOB column (<c>CLOB</c> or <c>BLOB</c>).
+        /// Derived from <see cref="GetOracleType(DbField)"/> so the two cannot drift apart — note a
+        /// <see cref="FieldDbType.String"/> field is a LOB too once its length leaves the VARCHAR2 range.
+        /// </summary>
+        /// <param name="field">The field definition.</param>
+        public static bool IsLobType(DbField field)
+        {
+            string dbType = GetOracleType(field);
+            return string.Equals(dbType, "CLOB", StringComparison.Ordinal)
+                || string.Equals(dbType, "BLOB", StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Returns the Oracle column type expression for the given field definition.
         /// </summary>
         /// <param name="field">The field definition.</param>

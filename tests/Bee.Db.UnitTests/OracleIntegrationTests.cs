@@ -12,6 +12,8 @@ using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Definition.Storage;
 using Bee.Db.Manager;
+using Bee.Db.Schema;
+using Bee.Db.Schema.Changes;
 
 namespace Bee.Db.UnitTests
 {
@@ -397,7 +399,68 @@ namespace Bee.Db.UnitTests
             }
         }
 
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle 升級：含 nullable Text 欄的表加欄應成功且冪等（迴歸 ORA-22859）")]
+        public void Upgrade_TableWithNullableTextColumn_AddsColumnAndIsIdempotent()
+        {
+            const string tableName = "tb_it_lobupg";
+            var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.Oracle);
+            var connectionManager = _fx.GetRequiredService<IDbConnectionManager>();
+            var dbAccess = _fx.NewDbAccess(databaseId);
+            DropQuotedTable(dbAccess, tableName);
+
+            try
+            {
+                // 建表：定義層對 Text 標 AllowNull=true，Oracle 實體一律建成 nullable CLOB。
+                var initial = BuildLobUpgradeSchema(tableName, includeAddedColumn: false);
+                CreateTable(dbAccess, initial);
+
+                // 升級：多一個 String 欄。CLOB 欄本身沒變，不該被一起發 MODIFY。
+                var define = BuildLobUpgradeSchema(tableName, includeAddedColumn: true);
+                var provider = new OracleTableSchemaProvider(databaseId, connectionManager);
+                var orchestrator = new TableUpgradeOrchestrator(new OracleDialectFactory(), connectionManager);
+
+                var diff = new TableSchemaComparer(define, provider.GetTableSchema(tableName), DatabaseType.Oracle).CompareToDiff();
+                var plan = orchestrator.Plan(diff);
+                // CLOB 欄若被誤判為有差異，這裡會多出一筆 AlterColumns stage 並在 Execute 擲 ORA-22859。
+                Assert.Equal(UpgradeExecutionMode.Alter, plan.Mode);
+                var addChange = Assert.Single(diff.Changes);
+                Assert.Equal("api_key_id", Assert.IsType<AddFieldChange>(addChange).Field.FieldName);
+
+                orchestrator.Execute(plan, databaseId);
+
+                var upgraded = provider.GetTableSchema(tableName);
+                Assert.NotNull(upgraded);
+                Assert.True(upgraded!.Fields!.Contains("api_key_id"));
+
+                // 冪等性：第二輪比對不應再產生任何差異（否則每次啟動都重跑一次失敗的升級）。
+                var secondDiff = new TableSchemaComparer(define, upgraded, DatabaseType.Oracle).CompareToDiff();
+                Assert.Empty(secondDiff.Changes);
+                // 斷言「不再產生語句」而非 NoChange：ALTER 加的欄位在 Oracle 拿不到 COMMENT ON COLUMN
+                // （description sync 目前只接了 SQL Server），api_key_id 的 caption 因此永遠算一筆
+                // DescriptionChange。那條路只影響 Mode，不產生任何 SQL，與本迴歸無關。
+                Assert.Empty(orchestrator.Plan(secondDiff).AllStatements);
+            }
+            finally
+            {
+                DropQuotedTable(dbAccess, tableName);
+            }
+        }
+
         // ---------- helpers ----------
+
+        private static TableSchema BuildLobUpgradeSchema(string tableName, bool includeAddedColumn)
+        {
+            var schema = new TableSchema { TableName = tableName };
+            schema.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+            schema.Fields!.Add("user_id", "User", FieldDbType.String, 50).AllowNull = true;
+            schema.Fields!.Add("error_message", "Message", FieldDbType.Text).AllowNull = true;
+            if (includeAddedColumn)
+                schema.Fields!.Add("api_key_id", "API Key", FieldDbType.String, 50).AllowNull = true;
+            schema.Indexes!.AddPrimaryKey(SysFields.RowId);
+            return schema;
+        }
+
 
         private static TableSchema BuildCrudTableSchema(string tableName)
         {

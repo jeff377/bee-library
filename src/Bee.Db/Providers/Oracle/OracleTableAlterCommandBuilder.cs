@@ -35,7 +35,16 @@ namespace Bee.Db.Providers.Oracle
                 case DropIndexChange _:
                     return ChangeExecutionKind.Alter;
                 case AlterFieldChange alter:
-                    return AlterCompatibilityRules.GetKindForTypeChange(alter.OldField.DbType, alter.NewField.DbType);
+                    {
+                        var kind = AlterCompatibilityRules.GetKindForTypeChange(alter.OldField.DbType, alter.NewField.DbType);
+                        // Oracle cannot MODIFY a column across the LOB boundary: VARCHAR2 to CLOB raises
+                        // ORA-22858 and CLOB to VARCHAR2 raises ORA-22859. The dialect-neutral rules put
+                        // both types in the same String family and would otherwise pick the in-place path.
+                        if (kind == ChangeExecutionKind.Alter
+                            && OracleTypeMapping.IsLobType(alter.OldField) != OracleTypeMapping.IsLobType(alter.NewField))
+                            return ChangeExecutionKind.Rebuild;
+                        return kind;
+                    }
                 default:
                     return ChangeExecutionKind.NotSupported;
             }
@@ -58,7 +67,11 @@ namespace Bee.Db.Providers.Oracle
                 case AddFieldChange add:
                     return new[] { BuildAddFieldStatement(tableName, add.Field) };
                 case AlterFieldChange alter:
-                    return new[] { BuildAlterFieldStatement(tableName, alter.OldField, alter.NewField) };
+                    {
+                        // A LOB whose only modifiable clauses already match yields no statement at all.
+                        string sql = BuildAlterFieldStatement(tableName, alter.OldField, alter.NewField);
+                        return StringUtilities.IsEmpty(sql) ? Array.Empty<string>() : new[] { sql };
+                    }
                 case RenameFieldChange rename:
                     return new[] { BuildRenameFieldStatement(tableName, rename) };
                 case AddIndexChange addIndex:
@@ -83,8 +96,9 @@ namespace Bee.Db.Providers.Oracle
 
         /// <summary>
         /// Builds the Oracle <c>ALTER TABLE ... MODIFY (column-definition)</c> statement. Type and
-        /// default are always re-emitted; the nullability clause is appended only when the effective
+        /// default are re-emitted; the nullability clause is appended only when the effective
         /// nullability actually changes between <paramref name="oldField"/> and <paramref name="newField"/>.
+        /// LOB columns take the reduced form built by <see cref="BuildLobAlterFieldStatement"/>.
         /// </summary>
         /// <remarks>
         /// Oracle rejects a redundant nullability hint — specifying <c>NOT NULL</c> on an
@@ -94,11 +108,37 @@ namespace Bee.Db.Providers.Oracle
         /// </remarks>
         private static string BuildAlterFieldStatement(string tableName, DbField oldField, DbField newField)
         {
-            string typeDef = OracleSchemaSyntax.GetColumnTypeAndDefault(newField);
             string oldNull = OracleSchemaSyntax.GetNullabilityClause(oldField);
             string newNull = OracleSchemaSyntax.GetNullabilityClause(newField);
             string nullClause = oldNull != newNull ? $" {newNull}" : string.Empty;
+
+            if (OracleTypeMapping.IsLobType(newField))
+                return BuildLobAlterFieldStatement(tableName, oldField, newField, nullClause);
+
+            string typeDef = OracleSchemaSyntax.GetColumnTypeAndDefault(newField);
             return $"ALTER TABLE {OracleSchemaSyntax.QuoteName(tableName)} MODIFY ({typeDef}{nullClause});";
+        }
+
+        /// <summary>
+        /// Builds the MODIFY statement for a column that is a LOB on both sides of the change, or an
+        /// empty string when nothing modifiable differs.
+        /// </summary>
+        /// <remarks>
+        /// Oracle rejects any MODIFY that restates a LOB column's type with <c>ORA-22859</c>, even when
+        /// the type is unchanged, so the type is dropped from the statement and only DEFAULT and
+        /// nullability are emitted. Both sides are LOBs here by construction: a change that crosses the
+        /// LOB boundary is routed to a rebuild by <see cref="GetExecutionKind"/> and never reaches this
+        /// method.
+        /// </remarks>
+        private static string BuildLobAlterFieldStatement(string tableName, DbField oldField, DbField newField, string nullClause)
+        {
+            string newFragment = OracleSchemaSyntax.GetLobColumnDefaultFragment(newField);
+            string oldFragment = OracleSchemaSyntax.GetLobColumnDefaultFragment(oldField);
+            // Nothing Oracle will accept on a LOB actually differs; `MODIFY ("COL")` alone is not valid syntax.
+            if (string.Equals(newFragment, oldFragment, StringComparison.Ordinal) && nullClause.Length == 0)
+                return string.Empty;
+
+            return $"ALTER TABLE {OracleSchemaSyntax.QuoteName(tableName)} MODIFY ({newFragment}{nullClause});";
         }
 
         /// <summary>

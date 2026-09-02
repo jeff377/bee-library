@@ -1,5 +1,6 @@
 using Bee.Definition.Database;
 using Bee.Base;
+using Bee.Base.Data;
 using Bee.Db.Schema.Changes;
 
 namespace Bee.Db.Schema
@@ -134,7 +135,7 @@ namespace Bee.Db.Schema
             {
                 if (this.RealTable!.Fields!.Contains(field.FieldName))
                 {
-                    if (!field.Compare(this.RealTable.Fields[field.FieldName]))
+                    if (!CompareField(field, this.RealTable.Fields[field.FieldName]))
                     {
                         // Field exists but differs; mark as upgrade
                         field.UpgradeAction = DbUpgradeAction.Upgrade;
@@ -149,6 +150,43 @@ namespace Bee.Db.Schema
                 }
             }
             return isMatch;
+        }
+
+        /// <summary>
+        /// Compares a defined field against its database counterpart under the active dialect's
+        /// nullability semantics.
+        /// </summary>
+        /// <param name="defineField">The field as declared in the definition.</param>
+        /// <param name="realField">The field as read back from the database.</param>
+        private bool CompareField(DbField defineField, DbField realField)
+        {
+            return NormalizeNullability(defineField).Compare(NormalizeNullability(realField));
+        }
+
+        /// <summary>
+        /// Collapses the nullability of a field whose effective nullability the active dialect does not
+        /// let the definition control, so the two sides of a comparison stay comparable.
+        /// </summary>
+        /// <remarks>
+        /// Oracle equates the empty string with NULL, so `OracleSchemaSyntax` emits every String / Text /
+        /// Time column as nullable no matter what the definition says, and `OracleTableSchemaProvider`
+        /// reports those columns back as non-nullable to line up with a definition that declares
+        /// `AllowNull=false`. A definition that declares `AllowNull="true"` therefore never matched its own
+        /// read-back and re-issued an ALTER on every upgrade. That is fatal for Text: Oracle rejects any
+        /// MODIFY that restates a LOB column's type with ORA-22859, so the whole upgrade aborted and the
+        /// genuine changes in the same plan never landed.
+        /// </remarks>
+        /// <param name="field">The field to normalize.</param>
+        private DbField NormalizeNullability(DbField field)
+        {
+            if (this.DatabaseType != DatabaseType.Oracle || !field.AllowNull)
+                return field;
+            if (field.DbType != FieldDbType.String && field.DbType != FieldDbType.Text
+                && field.DbType != FieldDbType.Time)
+                return field;
+            var normalized = field.Clone();
+            normalized.AllowNull = false;
+            return normalized;
         }
 
         /// <summary>
@@ -252,7 +290,7 @@ namespace Bee.Db.Schema
                     // DB already has a column with the target name; compare definitions directly.
                     // Any stale OriginalFieldName hint is treated as already-applied and ignored here.
                     var realField = this.RealTable.Fields[defineField.FieldName];
-                    if (!defineField.Compare(realField))
+                    if (!CompareField(defineField, realField))
                         diff.Changes.Add(new AlterFieldChange(realField.Clone(), defineField.Clone()));
                     continue;
                 }
@@ -267,7 +305,7 @@ namespace Bee.Db.Schema
                     // AlterFieldChange against a projection of the real column under the new name.
                     var postRenameField = oldRealField.Clone();
                     postRenameField.FieldName = defineField.FieldName;
-                    if (!defineField.Compare(postRenameField))
+                    if (!CompareField(defineField, postRenameField))
                         diff.Changes.Add(new AlterFieldChange(postRenameField, defineField.Clone()));
                     continue;
                 }

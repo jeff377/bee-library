@@ -180,6 +180,88 @@ namespace Bee.Db.UnitTests
             Assert.DoesNotContain("MODIFY COLUMN", sql);
         }
 
+        // ---------- LOB（CLOB / BLOB）---------- 迴歸 ORA-22859 / ORA-22858
+
+        [Fact]
+        [DisplayName("Oracle GetStatements：Text→Text 的 MODIFY 不得重述 CLOB 型別（迴歸 ORA-22859）")]
+        public void GetStatements_AlterField_TextToText_NeverRestatesClob()
+        {
+            // Oracle 對 LOB 欄的 MODIFY 只要帶型別就擲 ORA-22859，即使型別根本沒變。
+            var oldField = new DbField("error_message", "Msg", FieldDbType.Text) { AllowNull = false };
+            var newField = new DbField("error_message", "Msg", FieldDbType.Text) { AllowNull = true };
+            var statements = _builder.GetStatements("st_demo", new AlterFieldChange(oldField, newField));
+
+            Assert.DoesNotContain(statements, sql => sql.Contains("CLOB", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        [DisplayName("Oracle GetStatements：LOB 欄無可改子句時不產生任何語句（MODIFY (\"COL\") 非合法語法）")]
+        public void GetStatements_AlterField_LobWithNothingModifiable_EmitsNoStatement()
+        {
+            // Text 兩側的 nullability 恆為 NULL、default 恆為空 —— MODIFY 沒有任何合法內容可帶。
+            var oldField = new DbField("error_message", "Msg", FieldDbType.Text) { AllowNull = false };
+            var newField = new DbField("error_message", "Msg", FieldDbType.Text) { AllowNull = true };
+            var statements = _builder.GetStatements("st_demo", new AlterFieldChange(oldField, newField));
+
+            Assert.Empty(statements);
+        }
+
+        [Fact]
+        [DisplayName("Oracle GetStatements：LOB 欄的 default 變動應只發 DEFAULT，不帶型別")]
+        public void GetStatements_AlterField_LobDefaultChange_EmitsDefaultWithoutType()
+        {
+            // Length > 4000 的 String 映射為 CLOB —— 同樣受 ORA-22859 限制，但 DEFAULT 可改。
+            var oldField = new DbField("blob_text", "Text", FieldDbType.String) { Length = 5000, AllowNull = false };
+            var newField = new DbField("blob_text", "Text", FieldDbType.String) { Length = 5000, AllowNull = false, DefaultValue = "x" };
+            var statements = _builder.GetStatements("st_demo", new AlterFieldChange(oldField, newField));
+
+            var sql = Assert.Single(statements);
+            Assert.Equal("ALTER TABLE \"ST_DEMO\" MODIFY (\"BLOB_TEXT\" DEFAULT 'x');", sql);
+        }
+
+        [Fact]
+        [DisplayName("Oracle GetStatements：Binary→Binary 的 MODIFY 不得重述 BLOB 型別（迴歸 ORA-22859）")]
+        public void GetStatements_AlterField_BinaryToBinary_NeverRestatesBlob()
+        {
+            var oldField = new DbField("payload", "Payload", FieldDbType.Binary) { AllowNull = true };
+            var newField = new DbField("payload", "Payload", FieldDbType.Binary) { AllowNull = false };
+            var statements = _builder.GetStatements("st_demo", new AlterFieldChange(oldField, newField));
+
+            var sql = Assert.Single(statements);
+            Assert.DoesNotContain("BLOB", sql, StringComparison.Ordinal);
+            Assert.Equal("ALTER TABLE \"ST_DEMO\" MODIFY (\"PAYLOAD\" NOT NULL);", sql);
+        }
+
+        [Fact]
+        [DisplayName("Oracle GetExecutionKind：String→Text（VARCHAR2→CLOB）應為 Rebuild（迴歸 ORA-22858）")]
+        public void GetExecutionKind_StringToText_IsRebuild()
+        {
+            // 兩者同屬 dialect-neutral 的 String family，預設會挑 in-place ALTER；
+            // 但 Oracle 無法以 MODIFY 跨越 LOB 邊界。
+            var oldField = new DbField("note", "Note", FieldDbType.String) { Length = 100 };
+            var newField = new DbField("note", "Note", FieldDbType.Text);
+            Assert.Equal(ChangeExecutionKind.Rebuild, _builder.GetExecutionKind(new AlterFieldChange(oldField, newField)));
+        }
+
+        [Fact]
+        [DisplayName("Oracle GetExecutionKind：Text→String（CLOB→VARCHAR2）應為 Rebuild（迴歸 ORA-22859）")]
+        public void GetExecutionKind_TextToString_IsRebuild()
+        {
+            var oldField = new DbField("note", "Note", FieldDbType.Text);
+            var newField = new DbField("note", "Note", FieldDbType.String) { Length = 100 };
+            Assert.Equal(ChangeExecutionKind.Rebuild, _builder.GetExecutionKind(new AlterFieldChange(oldField, newField)));
+        }
+
+        [Fact]
+        [DisplayName("Oracle GetExecutionKind：String 長度跨越 VARCHAR2 上限應為 Rebuild")]
+        public void GetExecutionKind_StringCrossingVarcharCeiling_IsRebuild()
+        {
+            // 兩側都是 FieldDbType.String，但 5000 落在 CLOB、100 落在 VARCHAR2。
+            var oldField = new DbField("note", "Note", FieldDbType.String) { Length = 100 };
+            var newField = new DbField("note", "Note", FieldDbType.String) { Length = 5000 };
+            Assert.Equal(ChangeExecutionKind.Rebuild, _builder.GetExecutionKind(new AlterFieldChange(oldField, newField)));
+        }
+
         [Fact]
         [DisplayName("Oracle GetStatements：RenameField 產生 RENAME COLUMN（雙引號）")]
         public void GetStatements_RenameField_EmitsRenameColumn()
