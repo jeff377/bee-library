@@ -21,13 +21,15 @@ namespace Bee.Tests.Shared
     /// not the value — decides the binding).
     /// </summary>
     /// <remarks>
-    /// Test assemblies run as parallel processes against the same physical database, so the
-    /// whole seed runs inside one transaction. The first table (<c>ft_category</c>) has a
-    /// unique <c>sys_id</c>: the winning process commits the complete set atomically, while a
-    /// loser blocks on that unique key, then fails and rolls back (its exception is caught and
-    /// logged by <c>SharedDatabaseState.EnsureDatabase</c>). Other processes therefore never
-    /// observe a half-seeded database — they either see nothing (and seed it themselves) or the
-    /// full committed set. Relation columns in the JSON carry the target's <c>sys_id</c>;
+    /// Test assemblies run as parallel processes against the same physical database. Setup is
+    /// serialised machine-wide by <see cref="CrossProcessLock"/>, and the whole seed also runs
+    /// inside one transaction so that it stays correct if that lock ever times out. The first
+    /// table (<c>ft_category</c>) has a unique <c>sys_id</c>: the winning process commits the
+    /// complete set atomically, while a loser blocks on that unique key, then fails and rolls
+    /// back — <see cref="Seed"/> confirms the winner's rows are there and treats its own failure
+    /// as benign. Other processes therefore never observe a half-seeded database — they either
+    /// see nothing (and seed it themselves) or the full committed set. Relation columns in the
+    /// JSON carry the target's <c>sys_id</c>;
     /// forward relations resolve to the target's <c>sys_rowid</c> on insert, and the one
     /// circular relation (<c>st_department.manager_rowid</c> → an employee) is applied in a
     /// second pass within the same transaction.
@@ -79,6 +81,27 @@ namespace Bee.Tests.Shared
             // the last barrier a loser fails on, so its presence means the full set committed).
             if (CountRows(dbType, dbAccess, "ft_category", transaction: null) > 0) return;
 
+            try
+            {
+                InsertAll(dbType, access, dbAccess, connectionManager, companyDatabaseId);
+            }
+            catch (DbException ex)
+            {
+                // Losing the race is benign, and it is the database that says so rather than the
+                // error code: our transaction rolled back, so a non-empty ft_category can only be
+                // the winner's committed set. An empty one means the failure was ours to answer for.
+                if (CountRows(dbType, dbAccess, "ft_category", transaction: null) == 0) throw;
+                Console.WriteLine($"SharedDatabaseState: {companyDatabaseId} Northwind seed already committed by a concurrent test process ({ex.GetType().Name} ignored)");
+            }
+        }
+
+        private static void InsertAll(
+            DatabaseType dbType,
+            IDefineAccess access,
+            DbAccess dbAccess,
+            IDbConnectionManager connectionManager,
+            string companyDatabaseId)
+        {
             using var connection = connectionManager.CreateConnection(companyDatabaseId);
             connection.Open();
             using var transaction = connection.BeginTransaction();
@@ -89,8 +112,7 @@ namespace Bee.Tests.Shared
             foreach (var seed in s_seeds.Where(s => s.Deferred is not null))
                 ApplyDeferredRelations(dbType, dbAccess, transaction, seed);
 
-            // On any exception above, `using var transaction` disposes uncommitted and rolls
-            // back; the exception propagates to EnsureDatabase, which logs and skips this DB.
+            // On any exception above, `using var transaction` disposes uncommitted and rolls back.
             transaction.Commit();
             Console.WriteLine($"SharedDatabaseState: {companyDatabaseId} Northwind seed committed");
         }

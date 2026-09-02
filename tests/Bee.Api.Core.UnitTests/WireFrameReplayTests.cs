@@ -17,13 +17,19 @@ namespace Bee.Api.Core.UnitTests
     /// <remarks>
     /// 會改寫 <see cref="ApiServiceOptions.RequireWireFrame"/> 這個 process-wide 靜態開關，
     /// 故掛 ApiServiceOptionsState collection 標記，並一律以 try/finally 還原。
+    /// <para>
+    /// fixture 必須是 <see cref="SharedDbFixture"/>（會建 schema）而非 <see cref="BeeTestFixture"/>
+    /// （不建）：本類別以 <c>Guid.NewGuid()</c> 當 access token，未植入 session 快取，server 端
+    /// 因此走 rebuild 路徑讀 <c>st_session</c>。掛錯 fixture 只有在「別的類別或行程剛好先把表建好」
+    /// 時才會過 —— 對著全新的資料庫就會以 <c>Invalid object name 'st_session'</c> 現形。
+    /// </para>
     /// </remarks>
     [Collection("ApiServiceOptionsState")]
-    public class WireFrameReplayTests : IClassFixture<BeeTestFixture>
+    public class WireFrameReplayTests : IClassFixture<SharedDbFixture>
     {
         private readonly BeeTestFixture _fx;
 
-        public WireFrameReplayTests(BeeTestFixture fx)
+        public WireFrameReplayTests(SharedDbFixture fx)
         {
             _fx = fx;
         }

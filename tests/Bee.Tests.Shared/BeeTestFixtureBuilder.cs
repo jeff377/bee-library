@@ -106,8 +106,12 @@ namespace Bee.Tests.Shared
                 // Schema + seed are process-wide (idempotent); resolved IDefineAccess
                 // shares the same DatabaseSettings cache that SharedDatabaseState
                 // populated via GlobalFixture's bootstrap path.
+                var defineAccess = provider.GetRequiredService<Bee.Definition.Storage.IDefineAccess>();
+                // …though "shares the same cache" only holds until someone invalidates that slot,
+                // so re-apply the registrations before reading them rather than assuming.
+                SharedDatabaseState.EnsureDatabaseSettingsApplied(defineAccess);
                 SharedDatabaseState.EnsureSchemaAndSeed(
-                    provider.GetRequiredService<Bee.Definition.Storage.IDefineAccess>(),
+                    defineAccess,
                     provider.GetRequiredService<IDbConnectionManager>());
             }
 

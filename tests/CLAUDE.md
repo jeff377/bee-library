@@ -230,9 +230,38 @@ xUnit 預設 collection-level parallel：**不同 test class 平行執行**，�
 > 這條與上方「並行 flaky 的容錯空間」不衝突：那條講**同一 commit 內 isolated 通過 /
 > full suite 失敗**（連跑 2–3 次判定）；這條講**跨 commit 首次執行都紅**。
 
-### 3. seed 的冪等必須跨行程原子
+### 3. 建表與 seed 的冪等都必須跨行程原子
 
-`SharedDatabaseState` 的 seed 會被多個平行 test 行程對**同一實體 DB**同時執行。
+`SharedDatabaseState` 的 setup 會被多個平行 test 行程對**同一實體 DB**同時執行。
+**建表與 seed 是同一個結構問題的兩半**，兩半都要處理。
+
+#### 3a. 建表（fixture setup）
+
+`TableSchemaBuilder.Execute` 內部是 read-then-create：讀不到表就規劃 `CREATE TABLE`。
+兩行程同時進來就各規劃一次，輸家撞到
+`There is already an object named 'st_user'`（SQL Server 2714；其餘 provider 各有自己的措辭）。
+
+**正解有三層，缺一不可：**
+
+1. **跨行程序列化整段 setup** —— `CrossProcessLock`（`FileShare.None` 開檔取得 advisory
+   lock，行程結束由 OS 釋放，不像 named mutex 會留下 abandoned 狀態）。取不到就等，
+   逾時後**放行不掛起**（fail open），因為每一步本身仍具容錯。
+2. **衝突判定看資料庫、不看錯誤碼** —— 「動作前表不存在、動作後表存在」即為別的行程建好了，
+   視為 benign。**不要比對各 provider 的錯誤碼／訊息**，那要維護 5 份對照表且會漂。
+   seed 列的競賽同理：重跑一次 probe，看得到贏家的列就採用它。
+3. **單一步驟失敗不得中止整段 setup** —— 每張表 / 每個 seed 步驟各自記錄失敗後**繼續往下走**。
+   曾經一個 `CREATE TABLE` 衝突就讓 seed 整段跳過，症狀是幾十個測試之後才炸出
+   `User not found.` / `Cannot resolve user rowid`，看起來完全不像 setup 的問題。
+
+**能連上但沒有 seed user 的資料庫則直接擲例外** —— 那是「setup 沒完成」的唯一硬指標，
+必須在原因還在手上時就喊出來。個別步驟失敗（例如某張 log 表升不上去）只賠上它自己的測試，
+不擲例外，但會以 `!!!` 前綴印出完整例外。
+
+> **`catch (Exception)` 是這一切的根源**：它讓「setup 失敗」在 log 裡長得像
+> 「setup 完成」。可容忍的只有 `DbException`，且只在「容器沒開 → 整個 DB 跳過」這一種情境。
+
+#### 3b. seed 列
+
 以 per-table `SELECT COUNT(*)>0 then skip` 做冪等**不具跨行程原子性** —— 兩行程同時見 0
 就各插一次。有 unique 業務鍵（`sys_id`）的表靠 unique 衝突讓輸家丟例外自保；
 **無唯一業務鍵的表會被重複 seed**。
