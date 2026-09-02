@@ -202,10 +202,11 @@ JS 路徑有三個 JSON-native 姊妹方法：
 | `-32601` | `MethodNotFound` | 找不到 `progId.action` | 檢查方法名稱 / 大小寫 |
 | `-32602` | `InvalidParams` | args 驗證失敗 | 看 `message` 內容 |
 | `-32000` | `InternalError` | 未處理的 server 端例外 | 訊息不適合對使用者顯示。正式環境為遮蔽訊息，僅 debug 模式帶原始訊息 |
-| `-32001` | `Unauthorized` | Token 缺、無效、過期 | 重新登入 |
+| `-32001` | `Unauthorized` | 保留碼，**目前無產生者**。金鑰或 token 被拒實際回 `-32600` 加 HTTP 401 | 併入 `-32600` 處理 |
 | `-32002` | `CompanyNotEntered` | 方法需要公司 context | 先呼叫 `System.EnterCompany` |
 | `-32003` | `CompanyAccessDenied` | 使用者沒有此公司權限 | 顯示拒絕、切換公司 |
 | `-32004` | `PermissionDenied` | 已登入但對此 model/action 無權限 | 顯示拒絕 |
+| `-32005` | `ReplayRejected` | wire frame 缺漏、無法讀取，或時間戳超出容許區間 | 重試無用；檢查 client 時鐘 |
 | `-32099` | `UserMessage` | 業務規則違反（驗證、權限、領域規則） | 直接把 `message` 顯示給使用者 |
 
 User-facing 範圍（特別是 `-32099`）的 `message` 可以原樣顯示給終端使用者。

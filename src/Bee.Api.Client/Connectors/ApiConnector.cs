@@ -176,6 +176,7 @@ namespace Bee.Api.Client.Connectors
         /// Traces the response, checks for errors, restores the payload, and converts the result value.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Error mapping reverses the server-side mapping performed by
         /// <c>JsonRpcExecutor.MapException</c>: a <see cref="JsonRpcErrorCode.UserMessage"/>
         /// code is reconstructed as a <see cref="UserMessageException"/> with the original
@@ -183,6 +184,16 @@ namespace Bee.Api.Client.Connectors
         /// surface the message verbatim to the end user. All other codes wrap into
         /// <see cref="InvalidOperationException"/> with the legacy
         /// <c>"API error: {code} - {message}"</c> format to preserve existing catch logic.
+        /// </para>
+        /// <para>
+        /// IMPORTANT: the branches below and the server's mapping are two halves of one contract,
+        /// and nothing in the compiler ties them together. A code the server learns to produce but
+        /// this method does not learn to rebuild lands silently in the generic branch, and the
+        /// <c>catch</c> the exception type's own documentation promises never runs. That has
+        /// already happened once, to <see cref="JsonRpcErrorCode.ReplayRejected"/>.
+        /// <c>ErrorContractDriftTests</c> is what now holds the two halves together; a new code
+        /// with a specific exception type must be declared there.
+        /// </para>
         /// </remarks>
         private T FinalizeResponse<T>(JsonRpcResponse response, PayloadFormat actualFormat)
         {
@@ -197,6 +208,8 @@ namespace Bee.Api.Client.Connectors
                     throw new CompanyAccessDeniedException(response.Error.Message);
                 if (response.Error.Code == (int)JsonRpcErrorCode.CompanyNotEntered)
                     throw new CompanyNotEnteredException(response.Error.Message);
+                if (response.Error.Code == (int)JsonRpcErrorCode.ReplayRejected)
+                    throw new ReplayRejectedException(response.Error.Message);
                 throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
             }
             RestoreResponsePayload(response, actualFormat);

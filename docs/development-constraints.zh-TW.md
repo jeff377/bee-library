@@ -189,8 +189,9 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 
 `ApiConnector.FinalizeResponse` 依 `JsonRpcError.Code` 重建例外：
 
-- `code == UserMessage` → 拋出 `UserMessageException(message)`，訊息純淨無前綴，可直接顯示給使用者
-- 其他 code → 拋出 `InvalidOperationException($"API error: {code} - {message}")`，保留協定層除錯資訊
+- `UserMessage` → `UserMessageException(message)`，訊息純淨無前綴，可直接顯示給使用者
+- `PermissionDenied` → `ForbiddenException`；`CompanyAccessDenied` → `CompanyAccessDeniedException`；`CompanyNotEntered` → `CompanyNotEnteredException`；`ReplayRejected` → `ReplayRejectedException` —— 各自帶原訊息重建，呼叫端可依型別分支
+- 其餘 code → 拋出 `InvalidOperationException($"API error: {code} - {message}")`，保留協定層除錯資訊
 
 Client 端建議的 catch 順序：
 

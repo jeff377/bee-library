@@ -211,10 +211,11 @@ Method names are **case-sensitive** — `system.ping` will not dispatch.
 | `-32601` | `MethodNotFound` | Unknown `progId.action` | Check method name / casing |
 | `-32602` | `InvalidParams` | Args validation failed | Inspect `message` |
 | `-32000` | `InternalError` | Unhandled server-side exception | Not user-facing. The message is masked in production and carries the original text only in debug mode |
-| `-32001` | `Unauthorized` | Token missing, invalid, or expired | Re-login |
+| `-32001` | `Unauthorized` | Reserved; **no producer today**. A rejected key or token comes back as `-32600` with HTTP 401 | Handle it under `-32600` |
 | `-32002` | `CompanyNotEntered` | Method needs company context | Call `System.EnterCompany` first |
 | `-32003` | `CompanyAccessDenied` | User has no rights to this company | Display denial, switch company |
 | `-32004` | `PermissionDenied` | Authenticated but no rights for this model/action | Display denial |
+| `-32005` | `ReplayRejected` | The wire frame is missing, unreadable, or its timestamp is outside the accepted window | Retrying will not help; check the client clock |
 | `-32099` | `UserMessage` | Business-rule violation (validation, auth, domain rule) | Display `message` to user |
 
 For anything in the user-facing range (`-32099` especially), `message` is safe to

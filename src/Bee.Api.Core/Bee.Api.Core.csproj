@@ -36,6 +36,11 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Bee.Api.Core.UnitTests" />
+    <!-- The error contract has two halves: JsonRpcExecutor.MapException maps an exception to a
+         code, and ApiConnector.FinalizeResponse maps that code back to an exception. Only a test
+         that sees both can assert they agree, and the client test project is the one that already
+         references both assemblies. -->
+    <InternalsVisibleTo Include="Bee.Api.Client.UnitTests" />
   </ItemGroup>
 
 </Project>

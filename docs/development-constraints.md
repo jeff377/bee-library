@@ -199,8 +199,9 @@ When `CommonConfiguration.IsDebugMode` is enabled, the original message is passe
 
 `ApiConnector.FinalizeResponse` rebuilds exceptions based on `JsonRpcError.Code`:
 
-- `code == UserMessage` → throws `UserMessageException(message)` with the original message verbatim (no prefix), ready to be shown to the end user
-- Other codes → throws `InvalidOperationException($"API error: {code} - {message}")`, preserving the protocol-level debugging info
+- `UserMessage` → `UserMessageException(message)` with the original message verbatim (no prefix), ready to be shown to the end user
+- `PermissionDenied` → `ForbiddenException`; `CompanyAccessDenied` → `CompanyAccessDeniedException`; `CompanyNotEntered` → `CompanyNotEnteredException`; `ReplayRejected` → `ReplayRejectedException` — each rebuilt with the original message, so the caller can branch on the type
+- Every other code → `InvalidOperationException($"API error: {code} - {message}")`, preserving the protocol-level debugging info
 
 Recommended client-side catch order:
 
