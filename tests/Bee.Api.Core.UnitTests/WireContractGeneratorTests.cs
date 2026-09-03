@@ -66,7 +66,7 @@ namespace Bee.Api.Core.UnitTests
                 "export interface GetListRequest {",
                 "export interface PingResponse {",
                 // wire 專屬形狀：反射看不出這幾個，它們由自訂 converter 決定。
-                "export type WireValue =",
+                "export type WireValueEnvelope =",
                 "export interface DataSet {",
                 "export interface DataTable {",
             ];

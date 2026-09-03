@@ -5,8 +5,15 @@
 // them with JsonStringEnumConverter), and an object-typed member is the discriminated
 // envelope this package calls a wire value.
 
-/** A value carrying its type discriminator: `[code, value]`. */
-export type WireValue = [number, unknown] | null;
+/**
+ * An object-typed member as it appears on the wire: `[code, value]`, or null when the
+ * member is absent.
+ *
+ * Named for the envelope rather than the value on purpose — a client decodes this into
+ * whatever the code says, and that decoded value is a different type with a different
+ * name. Calling both `WireValue` would collide in any package that re-exports the two.
+ */
+export type WireValueEnvelope = [number, unknown] | null;
 
 /** A column's shape inside a serialized DataTable. */
 export interface DataColumnShape {
@@ -503,7 +510,7 @@ export interface PagingOptions {
 
 export interface Parameter {
   name?: string;
-  value?: WireValue;
+  value?: WireValueEnvelope;
 }
 
 export interface PingRequest {
