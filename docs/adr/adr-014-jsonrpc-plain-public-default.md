@@ -4,6 +4,11 @@
 
 已採納（2026-05-26）
 
+**補充於 [ADR-044](adr-044-payload-codec-negotiation.md)（2026-09-03）** —— 本 ADR 的結論
+（Plain 為 JS 前端路徑、七個方法維持 `Public`）**仍然有效且未被取代**。ADR-044 另外提供了
+一條「JS 前端需要應用層加密時」的路徑，並逐條回應本 ADR〈為何不為 JS 前端做「JS 版加密
+管線」〉的評估。
+
 ## 背景
 
 Bee.NET 在 v4.5 階段已為三類前端 host 完成連線抽象（[ADR-013](adr-013-frontend-api-connection-strategy.md)）：桌面端走 `Bee.UI.Core` static singleton、Blazor Server / WASM 走 `Bee.Web.*` 與 DI。三者共用 `Bee.Api.Client` 通訊層，但都假設客戶端是 .NET runtime — RSA key exchange + AES-CBC-HMAC + MessagePack 序列化 + gzip 壓縮的完整 payload pipeline。

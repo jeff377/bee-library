@@ -255,6 +255,7 @@ JSON body 對此比 MessagePack 更敏感：MessagePack 寫入時轉 UTC，JSON 
 |------|-----|
 | repo | `bee-connector-js`（另立 repo，見「待決事項」1） |
 | npm 套件 | `bee-connector`（unscoped） |
+| demo | 放 `bee-connector-js`，後端沿用 bee-library 的 `samples/QuickStart.Server` |
 
 - `connector` 沿用框架既有的概念名（`ApiConnector` / `FormApiConnector` /
   `SystemApiConnector`），對既有使用者零學習成本。
@@ -265,6 +266,15 @@ JSON body 對此比 MessagePack 更敏感：MessagePack 寫入時轉 UTC，JSON 
   一套 CI 與發佈設定，與 bee-library 完全不共用。
 - 名稱查核（2026-09-03）：`bee-connector` 於 npm 未被佔用；`bee-client` 已被佔用。
   unscoped 名稱先搶先贏，**要用就趁早發一個 `0.0.1` 佔名**（該動作由維護者自行執行）。
+
+**demo 不放 bee-library**：`samples/Web.Js.Demo` 已經存在，定位是「零建置、零 npm 的
+純 JS」——那個定位本身有價值（示範最低門檻），加進 npm 套件與 build step 會毀掉它。
+TS 套件的 demo 是該套件的門面，跟著套件走；後端則指示開發者起 `samples/QuickStart.Server`，
+bee-library 因此維持純 dotnet、TS repo 維持純 npm。
+
+**與既有 JS 支援的關係**：本計畫**不取代** [adr-014](../adr/adr-014-jsonrpc-plain-public-default.md)
+的 Plain 路徑，它仍是 JS 前端的預設。兩條路徑的分工與 ADR-014 三條拒絕理由的逐條對照，
+見 [adr-044](../adr/adr-044-payload-codec-negotiation.md)。
 
 **版本對應**：TS 套件有自己的發佈節奏，不硬跟 bee-library 的版號走，但必須說得出它對應
 哪一版的 wire。最輕的做法是在套件內記一個相容的 fixture 版本，CI 以該 tag 的
