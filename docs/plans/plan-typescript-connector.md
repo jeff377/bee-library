@@ -1,6 +1,6 @@
 # 計畫：TypeScript Connector（JS 前端支援加密傳輸）
 
-**狀態：🚧 進行中（2026-09-03）**
+**狀態：✅ 已完成（2026-09-03）**
 
 > 設計決策與理由已升格為 [adr-044](../adr/adr-044-payload-codec-negotiation.md)（長效紀錄）。
 > 本文件保留執行過程與階段進度。
@@ -10,7 +10,7 @@
 | 1 | Server 端：新增 JSON body codec，payload envelope 支援 per-request codec 宣告 | ✅ 已完成（2026-09-02） |
 | 2 | .NET client 端支援宣告 codec，補跨 codec 的 round-trip 與安全性測試 | ✅ 已完成（2026-09-02） |
 | 3 | Wire fixture 產生器：由 .NET 產出黃金樣本，供跨語言驗證 | ✅ 已完成（2026-09-03） |
-| 4 | TypeScript Connector 套件（加密層 + connector API + fixture 驗證） | 📝 待做 |
+| 4 | TypeScript Connector 套件（加密層 + connector API + fixture 驗證） | ✅ 已完成（2026-09-03） |
 
 ## 背景
 
@@ -248,6 +248,54 @@ JSON body 對此比 MessagePack 更敏感：MessagePack 寫入時轉 UTC，JSON 
 - fixture 隨套件版本發布，TS repo 取用對應版本。
 
 ### 階段 4：TypeScript Connector 套件
+
+**已完成（2026-09-03）。** 套件在 [bee-connector-js](https://github.com/jeff377/bee-connector-js)，
+每一層都以跨語言證據驗證，而非同語言的 round-trip：
+
+| 層 | 驗證方式 |
+|----|---------|
+| AES-CBC-HMAC | 解開 .NET `AesCbcHmacCryptor` 實際產生的密文 |
+| gzip | 解開 .NET `GzipPayloadCompressor` 的輸出 |
+| RSA 交握 | 單一向量雙向驗證（金鑰對由 Web Crypto 產、密文由 .NET 產） |
+| JSON body codec | 本 repo 發布的 26 個 wire 樣本，逐一 round-trip |
+| API 合約型別 | CI 每次建置比對，漂了就紅 |
+| 整條路徑 | 對 `samples/QuickStart.Server` 的端到端 smoke |
+
+##### 三個與原規劃不同的決定
+
+1. **合約型別由產生器輸出，不手寫。** 原規劃只說「由 `Messages/**` 產生 `.d.ts`」，
+   實作時擴為 `wire-contracts/`（`messages.d.ts` + `type-names.ts`），由
+   `WireContractGeneratorTests` 釘住。型別名對映特別重要：編碼過的 payload 必須在信封
+   指名 assembly-qualified type，手抄的話搬一次命名空間就指向解析不到的型別，而症狀是
+   執行期被拒、不是編譯錯誤。
+2. **樣本不入版控，合約入版控。** 兩者角色不同：樣本只餵測試，合約是**建置的輸入**——
+   一個離線編不起來的套件，比一份受 CI 檢查的衍生檔更糟。
+3. **未做 anti-replay frame。** `ApiServiceOptions.RequireWireFrame` 預設關閉，且**客戶端
+   無從查詢伺服端是否開啟**（它不在 `CommonConfiguration` 裡）。TS 端要支援它，得先補上
+   能力宣告——見「後續」。
+
+##### 實作中踩到、值得記住的三個「不報錯的錯」
+
+- **`FilterNode` 多型靜默丟失整棵篩選子樹**（既有缺陷，本計畫揭露並修正，詳見階段 3）。
+- **`WireValue` 撞名被靜默丟棄。** 合約的 `WireValue`（wire 上的信封）與 codec 的
+  `WireValue`（信封拆開後的值）同名，而 TypeScript 對 `export *` 的名稱衝突不報錯、
+  是把該名稱排除。源頭改名為 `WireValueEnvelope`，消費端再以 namespace 匯出。
+- **GitHub raw CDN 讓防漂閘門報出不成立的「一致」。** push 後一段時間內 raw 會回舊版，
+  於是 `--check` 拿舊合約比對而通過。改走 contents API 直接取 blob。
+
+另有一個誤導性很強的 CI 失敗：matrix 兩個 job 從同一 IP 各抓一次全套樣本，撞爆未認證
+GitHub API 的 60 次/小時上限，症狀卻是「某個隨機樣本檔 403」且只有一個 Node 版本紅——
+看起來像下載不穩或 Node 版本差異。解法是注入 `GITHUB_TOKEN`。
+
+##### 後續（不屬於本計畫）
+
+- **wire 能力宣告**：`RequireWireFrame` 應可被客戶端查詢，否則不隨框架發版的前端無從得知
+  伺服端是否要求 frame，而它一開啟就會拒絕所有舊客戶端。
+- **收斂到 tag**：合約與樣本目前釘 `main`，待本 repo 發版後改為對應 tag。
+- **npm 佔名**：`bee-connector` 尚未發布，unscoped 名稱先搶先贏。
+
+原規劃內容：
+
 
 **落腳與命名（已決，2026-09-03）**
 
