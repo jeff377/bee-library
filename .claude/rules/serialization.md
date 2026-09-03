@@ -5,14 +5,24 @@
 > 行動端 trim / AOT 的型別形狀要件 → `rules/apple-mobile-trim.md`。
 > 踩雷脈絡 → `docs/repo-ops/gotchas/serialization-and-expressions.md`。
 
-## MessagePack 是唯一的 wire body 格式
+## wire body codec 逐請求協商（adr-044）
 
-`ApiPayloadOptionsFactory.CreateSerializer` 的 switch **只有 `messagepack` 一個 case** ——
-**框架沒有 JSON body serializer**。`PayloadFormat`（Plain/Encoded/Encrypted）是**加密/壓縮維度**，
-與 JSON-vs-MessagePack 無關。
+body codec **不是部署設定**，由每個請求在 payload 信封的 `codec` 欄位宣告，伺服端**以同一個
+codec 回應**；**未宣告即 MessagePack** —— 那是相容性常數而非挑出來的預設值（所有早於協商機制的
+客戶端都不宣告且都送 MessagePack）。可用名稱與對應實作見 `PayloadCodecNames` 與
+`ApiPayloadOptionsFactory.CreateSerializer`，**本檔不複寫那份清單**。
 
-因此 **client（含 iOS / Android / WASM head）與 server 兩端都跑 MessagePack**。
-「行動端走 JSON、MessagePack 只在桌面/伺服器間」的假設不成立。
+`PayloadFormat`（Plain/Encoded/Encrypted）是**加密/壓縮維度**，與 codec 正交：`Plain` 的 body
+一律是信封那一份 System.Text.Json，只有 `Encoded` / `Encrypted` 的 body 才由 codec 決定怎麼拼寫。
+
+因此 **.NET client（含 iOS / Android / WASM head）不宣告時兩端仍都跑 MessagePack**，
+`ApiConnector.PayloadCodec` 是那一端唯一的改法。「行動端走 JSON、MessagePack 只在桌面/伺服器間」
+的假設仍然不成立。
+
+> ⚠️ **`ApiPayloadOptions.Serializer` 已於 4.27.0 移除**（破壞性變更）；殘留在既有
+> `SystemSettings.xml` 的 `<Serializer>` 元素會被**忽略**而不是被採用。
+> 「框架沒有 JSON body serializer」「`CreateSerializer` 只有一個 case」是 **4.26.0 以前**的結論，
+> **別再照它推導**。
 
 ## 定義層不得引入傳輸格式套件（adr-036）
 

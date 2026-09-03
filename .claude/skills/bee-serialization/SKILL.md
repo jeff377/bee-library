@@ -1,6 +1,6 @@
 ---
 name: bee-serialization
-description: bee-library 物件「三棲序列化」(XML / JSON / MessagePack)的設計指引。核心兩軸用途——XML 用於持久化(存檔 / 定義檔 / 快照 / 落 DB)、JSON + MessagePack 用於 API 傳遞(JSON-RPC 信封恆為 JSON；payload body 在 Encoded/Encrypted 下是 MessagePack)。涵蓋物件 recipe(無參數 ctor + XML/JSON 標籤，定義層不帶任何序列化套件標註)、集合(繼承 Bee.Base.Collections 基底 + 必到 WireContracts 顯式註冊 formatter)、wire 傳遞模式(物件本身 vs XML string)、行動端 AOT 型別形狀要件、踩雷與三棲 round-trip 測試樣板。當使用者要「物件要支援 XML/JSON/MessagePack」、「序列化」、「傳前端又要存檔」、「跨 wire 傳物件」、「KeyCollectionBase 集合序列化」、「新增 wire 型別」、「可序列化物件設計」之類需求時使用。
+description: bee-library 物件「三棲序列化」(XML / JSON / MessagePack)的設計指引。核心兩軸用途——XML 用於持久化(存檔 / 定義檔 / 快照 / 落 DB)、JSON + MessagePack 用於 API 傳遞(JSON-RPC 信封恆為 JSON；Encoded/Encrypted 的 body 由請求逐次宣告 codec，未宣告即 MessagePack)。涵蓋物件 recipe(無參數 ctor + XML/JSON 標籤，定義層不帶任何序列化套件標註)、集合(繼承 Bee.Base.Collections 基底 + 必到 WireContracts 顯式註冊 formatter)、wire 傳遞模式(物件本身 vs XML string)、行動端 AOT 型別形狀要件、踩雷與三棲 round-trip 測試樣板。當使用者要「物件要支援 XML/JSON/MessagePack」、「序列化」、「傳前端又要存檔」、「跨 wire 傳物件」、「KeyCollectionBase 集合序列化」、「新增 wire 型別」、「可序列化物件設計」之類需求時使用。
 ---
 
 # bee-library 三棲序列化（XML / JSON / MessagePack）
@@ -15,13 +15,13 @@ description: bee-library 物件「三棲序列化」(XML / JSON / MessagePack)�
 |--------|--------|------|--------|
 | **XML** | **持久化** | `XmlCodec` | 存檔、定義檔（FormSchema / TableSchema…）、快照、任何落磁碟 / DB 的物件 |
 | **JSON** | **API 傳遞** | `System.Text.Json` | JSON-RPC 信封恆為 JSON；`PayloadFormat.Plain` 時 payload 值也內嵌為 JSON |
-| **MessagePack** | **API 傳遞** | `MessagePackCodec` | `PayloadFormat.Encoded` / `Encrypted` 時的 payload body（base64 的 MessagePack bytes） |
+| **MessagePack** | **API 傳遞** | `MessagePackCodec` | `PayloadFormat.Encoded` / `Encrypted` 的 payload body，未宣告 codec 時的預設（base64 的 MessagePack bytes） |
 
 - **XML = 持久化軸**；**JSON + MessagePack = 傳輸軸**。
-- **`PayloadFormat` 是「加密／壓縮」維度，不是「JSON vs MessagePack」的選擇器**——
-  但它間接決定 body 格式：`Plain` 走 JSON 內嵌，`Encoded`/`Encrypted` 走 MessagePack。
-  框架**沒有** JSON body serializer（`ApiPayloadOptionsFactory.CreateSerializer` 只有
-  `messagepack` 一個 case）。
+- **`PayloadFormat` 是「加密／壓縮」維度，不是「JSON vs MessagePack」的選擇器**：
+  `Plain` 走 JSON 內嵌，`Encoded`/`Encrypted` 的 body **由請求在信封的 `codec` 欄位逐次宣告**
+  （adr-044），未宣告即 MessagePack。判準與名稱見 `rules/serialization.md` 與 `PayloadCodecNames`。
+  ⚠️ 「框架沒有 JSON body serializer」是 **4.26.0 以前**的結論，別再照它推導。
 - 一個「既要傳前端、又要存快照」的物件 → **三棲都要**（如 `DepartmentTree`）。
 - 一個只跨 wire 的 API DTO → 需 JSON + MessagePack，不需 XML。
 
@@ -203,7 +203,7 @@ var fromMp = MessagePackCodec.Deserialize<Foo>(bytes)!;
 
 | 來源 | 管什麼 | 載入方式 |
 |------|--------|---------|
-| `rules/serialization.md` | wire 綁定的硬性規則（MessagePack 是唯一 body 格式、定義層不得引入傳輸套件） | 常駐 |
+| `rules/serialization.md` | wire 綁定的硬性規則（body codec 逐請求協商、定義層不得引入傳輸套件） | 常駐 |
 | `src/Bee.Api.Core/CLAUDE.md` | **wire 註冊程序、誤判點、`object` 封套、AOT 實測與回歸閘門** | 觸及該專案時 |
 | `rules/apple-mobile-trim.md` | 行動端 trim / AOT 的完整脈絡與型別形狀要件 | 常駐 |
 | `rules/definition.md` + `src/Bee.Definition/CLAUDE.md` | 定義層集合基底、cache 不可異動、setter 寫法 | 常駐 / 觸及時 |

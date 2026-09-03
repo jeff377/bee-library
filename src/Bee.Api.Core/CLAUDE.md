@@ -1,7 +1,7 @@
 # Bee.Api.Core：wire 序列化細節
 
 本檔在 agent 觸及 `src/Bee.Api.Core/` 下任何檔案時自動載入（巢狀 `CLAUDE.md` 為 lazy loading）。
-跨層的序列化結論（MessagePack 是唯一 wire body 格式、定義層不得引入傳輸格式套件）在
+跨層的序列化結論（body codec 逐請求協商、定義層不得引入傳輸格式套件）在
 `.claude/rules/serialization.md`（常駐）。踩雷脈絡見
 `../../docs/repo-ops/gotchas/serialization-and-expressions.md`。
 
@@ -22,6 +22,12 @@
 
 漏補會被 `WireContractDriftTests` 擋下（它走同一條型別閉包比對註冊清單），
 不需要人工維護 `WireMemberCount` 常數。
+
+**JSON codec（adr-044）不需要這一套** —— `JsonPayloadSerializer` 走 System.Text.Json，
+形狀與 `Plain` body 一致。但兩條 wire **共用同一組 `WireValueCode` 判別碼**
+（`Wire/WireValueCode.cs`，`WireValueCodePinTests` 同時釘住兩者），
+且 JSON 的 body 原文由 `wire-fixtures/` 的黃金樣本釘住 —— 動到 `object` 成員的封套或
+`DataTable` / 列舉形狀時，`WireFixtureTests` 會紅，**那份 diff 就是 wire 的變更說明**。
 
 **wire 成員的定義＝JSON 的定義**：public 可讀可寫、未標 `[JsonIgnore]` 的屬性。
 框架管理成員（`Tag` / `Key` / `SerializeState` / `Collection`）本就帶該標註，自動排除。

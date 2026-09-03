@@ -7,8 +7,10 @@
 查證過程（2026-07-22）：
 
 - **`PayloadFormat`（Plain / Encoded / Encrypted）＝加密／壓縮維度**，不是 JSON-vs-MessagePack。
-- body serializer 由 `ApiPayloadOptions.Serializer` 決定，而 `ApiPayloadOptionsFactory.CreateSerializer`
-  的 switch **只有 `messagepack` 一個 case**——框架沒有 JSON body serializer。
+- body serializer 當時由 `ApiPayloadOptions.Serializer` 決定，而 `ApiPayloadOptionsFactory.CreateSerializer`
+  的 switch 只有 `messagepack` 一個 case。⚠️ **這半已於 4.27.0 過期**：該設定已移除，codec 改為
+  逐請求宣告，且 JSON body codec 已存在（adr-044）。**上面那條「維度正交」的結論反而更成立** ——
+  現在是 `PayloadFormat` 管加密／壓縮、`codec` 管怎麼拼寫，兩者各走各的。
 - `FormApiConnector` 預設 `Encrypted`、`Login` 用 `Encoded` → authenticated 呼叫 body 一定經
   MessagePack，**client 與 server 兩端都跑**（client = `Bee.Api.Client`，跑在 iOS/Android/WASM head 上）。
 
