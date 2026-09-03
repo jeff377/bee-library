@@ -488,7 +488,7 @@ public class <Axis>BusinessObject<Action>Tests : IClassFixture<SharedDbFixture>
 
 **Commit + push**：
 - [ ] 桌面環境直接 commit 到 main，push 後等 CI 跑完並回報
-- [ ] 失敗時依 `rules/pull-request.md` 流程處理（明確可修則直接修復、commit、push）
+- [ ] 失敗時依 `~/.claude/rules/pull-request.md` 流程處理（明確可修則直接修復、commit、push）
 
 ## 參考檔案（讀程式碼對著看）
 

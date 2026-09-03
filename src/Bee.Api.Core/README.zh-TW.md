@@ -50,9 +50,8 @@
 - `ApiAccessValidator` -- 透過 `ApiAccessControlAttribute` 實施方法層級保護。
 - `ApiCallContext` -- 擷取每次呼叫的中繼資料（Token、保護等級、呼叫者身分）。
 
-### 型別對應與契約註冊
+### 型別對應
 
-- `ApiContractRegistry` -- 將契約介面對應至具體的 API 請求/回應型別。
 - `ApiInputConverter` -- 將原始 JSON-RPC 參數轉換為強型別請求物件。
 - `ApiHeaders` -- API 通訊的標準標頭常數。
 - `PayloadFormat` -- 定義保護等級的列舉（`Plain`、`Encoded`、`Encrypted`）。
@@ -81,7 +80,6 @@
 | `ApiServiceOptions` | 可插拔元件的靜態 DI 註冊 |
 | `ApiPayloadTransformer` | 序列化 -> 壓縮 -> 加密管線 |
 | `ApiAccessValidator` | 透過 `ApiAccessControlAttribute` 實施方法層級保護 |
-| `ApiContractRegistry` | 將契約介面對應至 API 型別 |
 | `PayloadFormat` | 保護等級列舉（`Plain`、`Encoded`、`Encrypted`） |
 | `ApiAuthorizationValidator` | 請求授權驗證 |
 | `ApiCallContext` | 每次呼叫的中繼資料（Token、保護等級、身分） |
@@ -105,6 +103,8 @@ Bee.Api.Core/
                     ApiAuthorizationContext、ApiAuthorizationResult
   Conversion/       ApiInputConverter、ApiOutputConverter
                     （.NET 物件模型轉換：API 型別 ↔ BO 型別）
+  Json/             WireValueJsonConverter、FilterNodeJsonConverter
+                    （JSON body codec 對 `object` 成員的判別式封套）
   JsonRpc/          JsonRpcExecutor、JsonRpcRequest、JsonRpcResponse、JsonRpcError、
                     JsonRpcException、ApiPayload、ApiPayloadConverter
   Messages/         ApiMessageBase、ApiRequest、ApiResponse、
@@ -116,18 +116,19 @@ Bee.Api.Core/
   MessagePack/      SafeMessagePackSerializerOptions、MessagePackCodec、
                     WireContracts（顯式註冊）、WireValueFormatter、
                     ADO.NET 型別自訂格式器
-  Registry/         ApiContractRegistry（Contract → API 型別註冊中心）
   Transformers/     IApiPayloadTransformer、ApiPayloadTransformer、
                     IApiPayloadSerializer、MessagePackPayloadSerializer、
                     IApiPayloadCompressor、GzipPayloadCompressor、
                     IApiPayloadEncryptor、AesPayloadEncryptor、
-                    NoEncryptionEncryptor、ApiPayloadOptionsFactory
+                    NoEncryptionEncryptor、ApiPayloadOptionsFactory、
+                    JsonPayloadSerializer、PayloadCodecNames
                     （byte 層級 payload 管線；與 Conversion 的 .NET 物件層級
                     型別轉換抽象層次不同）
   Validator/        ApiAccessValidator
+  Wire/             WireValueCode（兩條 wire 共用的判別碼）
   （根目錄）         ApiServiceOptions（使用者啟動配置入口）
 ```
 
 命名空間佈局遵循 [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md) 的設計原則：
-契約依職能歸類（`Messages` 放訊息型別、`Conversion` 放型別轉換、`Registry` 放註冊中心等）；
+契約依職能歸類（`Messages` 放訊息型別、`Conversion` 放型別轉換、`Transformers` 放 byte 層級管線等）；
 根層只保留跨切面基礎設施（此處僅 `ApiServiceOptions`）。

@@ -9,8 +9,7 @@ argument-hint: "[--mode=daily|fix，預設 fix]"
 - **未指定 / `--mode=fix`**：手動模式（本機 session，完整修正閉環）
 - **`--mode=daily`**：每日自動模式（只查詢 + 比對快照 + 輸出差異報告，不改碼）
 
-相關計畫：`docs/plans/plan-sonar-fix.md`
-狀態檔：`docs/.sonar-fix-state/`
+狀態檔：`docs/.sonar-fix-state/`（首次執行時建立）
 
 ## 共用：FETCH 階段
 
@@ -176,7 +175,7 @@ curl -s "$BASE/measures/component_tree?component=$KEY&metricKeys=coverage&qualif
 ## 參考規則
 
 - `.claude/rules/sonarcloud.md`：SonarCloud 規則對照表
-- `.claude/rules/scanning.md`：SAST 基本安全要求
+- `~/.claude/rules/scanning.md`：SAST 基本安全要求（使用者層）
 - `.claude/rules/testing.md`：測試撰寫模式
-- `.claude/rules/pull-request.md`：push/CI 失敗處理
+- `~/.claude/rules/pull-request.md`：push/CI 失敗處理（使用者層）
 - `.claude/commands/ci-watch.md`：push 後盯 CI 的下游 skill

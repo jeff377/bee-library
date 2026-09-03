@@ -87,7 +87,8 @@ private static DataGridTemplateColumn BuildColumn(LayoutColumn column)
 
 - [ADR-001：使用 DataSet 作為跨層 DTO](adr-001-dataset-as-dto.md) — 為何 DataTable 是 client 端直接 render 的單位
 - [ADR-013：前端 API 連線策略](adr-013-frontend-api-connection-strategy.md) — `Bee.UI.Avalonia` 為 `Bee.UI.*` family 的一員
-- `src/Bee.UI.Avalonia/Controls/DynamicGrid.cs` — 實作 + 詳細 `<remarks>` 註解
+- `src/Bee.UI.Avalonia/Controls/GridControl.cs`（其後由 `DynamicGrid` 更名，並依職責拆為
+  `GridControl.Columns` / `.Cells` / `.Rows` / `.Binding` 等分檔）— 實作 + 詳細 `<remarks>` 註解
 - `docs/development-cookbook.md` §「Avalonia desktop (Bee.UI.Avalonia)」 — 從使用者角度說明 binding 策略
 
 ## 不在範圍

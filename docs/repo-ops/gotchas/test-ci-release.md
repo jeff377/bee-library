@@ -144,7 +144,8 @@ commit 觸發 publish，`--skip-duplicate` 讓已發佈的跳過、只補推新�
 
 ## 框架體檢（`bee-framework-review`）的方法論
 
-各次結果與分級計畫寫在 `docs/plans/plan-framework-review.md`（入版控）。以下是**跨體檢沿用**的方法：
+各次結果與分級計畫每輪一份，落在 `docs/plans/`，完成後封存為
+`docs/plans/archive/plan-framework-review-<YYYY-MM-DD>.md`（入版控）。以下是**跨體檢沿用**的方法：
 
 1. **「分數下降」多半是掃描深度提升，不是回歸——但必須逐項用 git 驗證才能這樣說。**
    2026-07-28 那輪多數降幅來自把 `PackageReference`、`git show` 歷史比對、**實際執行驗證**納入掃描；

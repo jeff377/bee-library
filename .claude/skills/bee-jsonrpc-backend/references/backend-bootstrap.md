@@ -1,6 +1,6 @@
 # Backend bootstrap 樣板
 
-`Program.cs` + `XxxBackend`。改 `Xxx` 為你的專案名。基於 `Bee.Samples.Shared/DemoBackend.cs`(與框架同版),並已在實際專案的 server 上驗證過。
+`Program.cs` + `XxxBackend`。改 `Xxx` 為你的專案名。基於 `samples/Bee.Samples.Shared/DemoBackend.cs`(與框架同版),並已在實際專案的 server 上驗證過。
 
 ## Program.cs
 

@@ -40,6 +40,7 @@
 - `Bee.Db/Dml/SelectCommandBuilder.cs`：組合 SELECT / FROM / WHERE / ORDER BY
 - 架構詳細說明於 `docs/architecture-overview.md`
 - 資料存取層的具體模式（FormMap）說明於 `docs/formmap.zh-TW.md`
+  —— **該文件已隨下方後記所述的名稱取消一併移除**。
 
 ## 後記（2026-08-13）：「FormMap」這個名稱已取消
 

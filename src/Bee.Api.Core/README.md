@@ -51,9 +51,8 @@ rollout order and known limitations.
 - `ApiAccessValidator` -- enforces method-level protection via `ApiAccessControlAttribute`.
 - `ApiCallContext` -- captures per-call metadata (token, protection level, caller identity).
 
-### Type Mapping & Contract Registry
+### Type Mapping
 
-- `ApiContractRegistry` -- maps contract interfaces to concrete API request/response types.
 - `ApiInputConverter` -- converts raw JSON-RPC parameters to strongly-typed request objects.
 - `ApiHeaders` -- standard header constants for API communication.
 - `PayloadFormat` -- enum defining protection levels (`Plain`, `Encoded`, `Encrypted`).
@@ -85,7 +84,6 @@ rollout order and known limitations.
 | `ApiServiceOptions` | Static DI registry for pluggable components |
 | `ApiPayloadTransformer` | Serialize -> Compress -> Encrypt pipeline |
 | `ApiAccessValidator` | Method-level protection via `ApiAccessControlAttribute` |
-| `ApiContractRegistry` | Maps contract interfaces to API types |
 | `PayloadFormat` | Protection level enum (`Plain`, `Encoded`, `Encrypted`) |
 | `ApiAuthorizationValidator` | Request authorization validation |
 | `ApiCallContext` | Per-call metadata (token, protection, identity) |
@@ -109,6 +107,8 @@ Bee.Api.Core/
                     ApiAuthorizationContext, ApiAuthorizationResult
   Conversion/       ApiInputConverter, ApiOutputConverter
                     (.NET object-model conversion: API type <-> BO type)
+  Json/             WireValueJsonConverter, FilterNodeJsonConverter
+                    (JSON body codec's discriminated envelope for `object` members)
   JsonRpc/          JsonRpcExecutor, JsonRpcRequest, JsonRpcResponse, JsonRpcError,
                     JsonRpcException, ApiPayload, ApiPayloadConverter
   Messages/         ApiMessageBase, ApiRequest, ApiResponse,
@@ -120,19 +120,20 @@ Bee.Api.Core/
   MessagePack/      SafeMessagePackSerializerOptions, MessagePackCodec,
                     WireContracts (explicit registrations), WireValueFormatter,
                     custom formatters for ADO.NET types
-  Registry/         ApiContractRegistry (contract -> API type registry)
   Transformers/     IApiPayloadTransformer, ApiPayloadTransformer,
                     IApiPayloadSerializer, MessagePackPayloadSerializer,
                     IApiPayloadCompressor, GzipPayloadCompressor,
                     IApiPayloadEncryptor, AesPayloadEncryptor,
-                    NoEncryptionEncryptor, ApiPayloadOptionsFactory
+                    NoEncryptionEncryptor, ApiPayloadOptionsFactory,
+                    JsonPayloadSerializer, PayloadCodecNames
                     (byte-level payload pipeline; distinct from Conversion's
                     .NET object-level type mapping)
   Validator/        ApiAccessValidator
+  Wire/             WireValueCode (the discriminator both wires share)
   (root)            ApiServiceOptions (user-facing startup configuration)
 ```
 
 The namespace layout follows the design principles in [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md):
 contracts grouped by responsibility (`Messages` for message types, `Conversion` for type
-conversion, `Registry` for registries, etc.); the root reserved for cross-cutting
+conversion, `Transformers` for the byte-level pipeline, etc.); the root reserved for cross-cutting
 infrastructure (here, only `ApiServiceOptions`).

@@ -75,10 +75,12 @@ BO 回傳：{Action}Result   ──反射搜尋 Bee.Api.Core 組件──▶   A
 
 ### 程式碼
 
-- **新增**：`src/Bee.Api.Core/ApiOutputConverter.cs`
+- **新增**：`src/Bee.Api.Core/ApiOutputConverter.cs`（其後移至 `Conversion/` 子資料夾）
 - **修改**：`src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs`（新增 1 行呼叫）
-- **修改**：`src/Bee.Api.Core/ApiInputConverter.cs`（補強 `JsonElement` 反序列化路徑）
+- **修改**：`src/Bee.Api.Core/ApiInputConverter.cs`（補強 `JsonElement` 反序列化路徑；
+  其後移至 `Conversion/` 子資料夾）
 - **保留**：`ApiContractRegistry`（供 Encoded/Encrypted 格式的 MessagePack 序列化轉換使用）
+  —— **該型別其後已移除**，見 [ADR-004](adr-004-messagepack-payload.md) 的註記。
 
 ### 文件
 

@@ -13,8 +13,8 @@
     <IsDebugMode>true</IsDebugMode>
     <!-- 你的 args/result 命名空間；Encoded/Encrypted 的 typeless 序列化靠這個白名單 -->
     <AllowedTypeNamespaces>Xxx.Server.Contracts</AllowedTypeNamespaces>
+    <!-- body codec 不在這裡設：由每個請求在信封宣告，未宣告即 MessagePack（adr-044）。 -->
     <ApiPayloadOptions>
-      <Serializer>messagepack</Serializer>
       <Compressor>gzip</Compressor>
       <Encryptor>aes-cbc-hmac</Encryptor>
     </ApiPayloadOptions>

@@ -49,7 +49,7 @@ argument-hint: "[分支名稱，預設 main]"
 
 ## 參考規則
 
-- `.claude/rules/pull-request.md`：CI 失敗處理流程
+- `~/.claude/rules/pull-request.md`：CI 失敗處理流程（使用者層）
 - `.claude/rules/sonarcloud.md`：SonarCloud 規則對照
-- `.claude/rules/scanning.md`：SAST 基本安全要求
+- `~/.claude/rules/scanning.md`：SAST 基本安全要求（使用者層）
 ```
