@@ -29,6 +29,8 @@ Bee.Api.Core.Conversion.ApiInputConverter
 Bee.Api.Core.Conversion.ApiOutputConverter
 Bee.Api.Core.JsonRpc.ApiPayload
 Bee.Api.Core.JsonRpc.ApiPayload.ApiPayload() -> void
+Bee.Api.Core.JsonRpc.ApiPayload.Codec.get -> string!
+Bee.Api.Core.JsonRpc.ApiPayload.Codec.set -> void
 Bee.Api.Core.JsonRpc.ApiPayload.Format.get -> Bee.Api.Core.Messages.PayloadFormat
 Bee.Api.Core.JsonRpc.ApiPayload.Frame.get -> Bee.Api.Core.JsonRpc.ApiPayloadFrame?
 Bee.Api.Core.JsonRpc.ApiPayload.Frame.set -> void
@@ -601,8 +603,10 @@ Bee.Api.Core.Transformers.ApiPayloadOptionsFactory
 Bee.Api.Core.Transformers.ApiPayloadTransformer
 Bee.Api.Core.Transformers.ApiPayloadTransformer.ApiPayloadTransformer() -> void
 Bee.Api.Core.Transformers.ApiPayloadTransformer.Decode(object! payload, System.Type! type) -> object?
+Bee.Api.Core.Transformers.ApiPayloadTransformer.Decode(object! payload, System.Type! type, Bee.Api.Core.Transformers.IApiPayloadSerializer! serializer) -> object?
 Bee.Api.Core.Transformers.ApiPayloadTransformer.Decrypt(byte[]! encryptedBytes, byte[]! encryptionKey) -> byte[]!
 Bee.Api.Core.Transformers.ApiPayloadTransformer.Encode(object! payload, System.Type! type) -> byte[]!
+Bee.Api.Core.Transformers.ApiPayloadTransformer.Encode(object! payload, System.Type! type, Bee.Api.Core.Transformers.IApiPayloadSerializer! serializer) -> byte[]!
 Bee.Api.Core.Transformers.ApiPayloadTransformer.Encrypt(byte[]! rawBytes, byte[]! encryptionKey) -> byte[]!
 Bee.Api.Core.Transformers.GzipPayloadCompressor
 Bee.Api.Core.Transformers.GzipPayloadCompressor.Compress(byte[]! bytes) -> byte[]!
@@ -623,9 +627,16 @@ Bee.Api.Core.Transformers.IApiPayloadSerializer.SerializationMethod.get -> strin
 Bee.Api.Core.Transformers.IApiPayloadSerializer.Serialize(object! value, System.Type! type) -> byte[]!
 Bee.Api.Core.Transformers.IApiPayloadTransformer
 Bee.Api.Core.Transformers.IApiPayloadTransformer.Decode(object! payload, System.Type! type) -> object?
+Bee.Api.Core.Transformers.IApiPayloadTransformer.Decode(object! payload, System.Type! type, Bee.Api.Core.Transformers.IApiPayloadSerializer! serializer) -> object?
 Bee.Api.Core.Transformers.IApiPayloadTransformer.Decrypt(byte[]! encryptedBytes, byte[]! encryptionKey) -> byte[]!
 Bee.Api.Core.Transformers.IApiPayloadTransformer.Encode(object! payload, System.Type! type) -> byte[]!
+Bee.Api.Core.Transformers.IApiPayloadTransformer.Encode(object! payload, System.Type! type, Bee.Api.Core.Transformers.IApiPayloadSerializer! serializer) -> byte[]!
 Bee.Api.Core.Transformers.IApiPayloadTransformer.Encrypt(byte[]! rawBytes, byte[]! encryptionKey) -> byte[]!
+Bee.Api.Core.Transformers.JsonPayloadSerializer
+Bee.Api.Core.Transformers.JsonPayloadSerializer.Deserialize(byte[]! bytes, System.Type! type) -> object?
+Bee.Api.Core.Transformers.JsonPayloadSerializer.JsonPayloadSerializer() -> void
+Bee.Api.Core.Transformers.JsonPayloadSerializer.SerializationMethod.get -> string!
+Bee.Api.Core.Transformers.JsonPayloadSerializer.Serialize(object! value, System.Type! type) -> byte[]!
 Bee.Api.Core.Transformers.MessagePackPayloadSerializer
 Bee.Api.Core.Transformers.MessagePackPayloadSerializer.Deserialize(byte[]! bytes, System.Type! type) -> object?
 Bee.Api.Core.Transformers.MessagePackPayloadSerializer.MessagePackPayloadSerializer() -> void
@@ -641,6 +652,7 @@ Bee.Api.Core.Transformers.NoEncryptionEncryptor.Decrypt(byte[]! bytes, byte[]! e
 Bee.Api.Core.Transformers.NoEncryptionEncryptor.Encrypt(byte[]! bytes, byte[]! encryptionKey) -> byte[]!
 Bee.Api.Core.Transformers.NoEncryptionEncryptor.EncryptionMethod.get -> string!
 Bee.Api.Core.Transformers.NoEncryptionEncryptor.NoEncryptionEncryptor() -> void
+Bee.Api.Core.Transformers.PayloadCodecNames
 Bee.Api.Core.Validator.ApiAccessValidator
 const Bee.Api.Core.JsonRpc.ApiPayloadFrame.CurrentVersion = 1 -> byte
 const Bee.Api.Core.JsonRpc.ApiPayloadFrame.Version1Size = 17 -> int
@@ -649,12 +661,15 @@ const Bee.Api.Core.JsonRpc.ReplayWindow.WindowSize = 64 -> int
 const Bee.Api.Core.Messages.ApiHeaders.ApiKey = "X-Api-Key" -> string!
 const Bee.Api.Core.Messages.ApiHeaders.Authorization = "Authorization" -> string!
 const Bee.Api.Core.Messages.ApiHeaders.ContentType = "Content-Type" -> string!
+const Bee.Api.Core.Transformers.PayloadCodecNames.Json = "json" -> string!
+const Bee.Api.Core.Transformers.PayloadCodecNames.MessagePack = "messagepack" -> string!
 override Bee.Api.Core.JsonRpc.ApiPayloadJsonConverter<T>.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> T?
 override Bee.Api.Core.JsonRpc.ApiPayloadJsonConverter<T>.Write(System.Text.Json.Utf8JsonWriter! writer, T! value, System.Text.Json.JsonSerializerOptions! options) -> void
 override Bee.Api.Core.JsonRpc.ApiPayloadJsonConverterFactory.CanConvert(System.Type! typeToConvert) -> bool
 override Bee.Api.Core.JsonRpc.ApiPayloadJsonConverterFactory.CreateConverter(System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Text.Json.Serialization.JsonConverter!
 override Bee.Api.Core.JsonRpc.PayloadSwap.Equals(object? obj) -> bool
 override Bee.Api.Core.JsonRpc.PayloadSwap.GetHashCode() -> int
+static Bee.Api.Core.ApiServiceOptions.AcceptedPayloadCodecs.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
 static Bee.Api.Core.ApiServiceOptions.AuthorizationValidator.get -> Bee.Api.Core.Authorization.IApiAuthorizationValidator!
 static Bee.Api.Core.ApiServiceOptions.AuthorizationValidator.set -> void
 static Bee.Api.Core.ApiServiceOptions.CurrentSettingsSummary.get -> string!
@@ -672,6 +687,7 @@ static Bee.Api.Core.ApiServiceOptions.ReplayWindowStore.get -> Bee.Api.Core.Json
 static Bee.Api.Core.ApiServiceOptions.ReplayWindowStore.set -> void
 static Bee.Api.Core.ApiServiceOptions.RequireWireFrame.get -> bool
 static Bee.Api.Core.ApiServiceOptions.RequireWireFrame.set -> void
+static Bee.Api.Core.ApiServiceOptions.ResolvePayloadSerializer(string? codec) -> Bee.Api.Core.Transformers.IApiPayloadSerializer!
 static Bee.Api.Core.ApiServiceOptions.WireFrameTimestampTolerance.get -> System.TimeSpan
 static Bee.Api.Core.ApiServiceOptions.WireFrameTimestampTolerance.set -> void
 static Bee.Api.Core.Authorization.ApiAuthorizationResult.Fail(Bee.Api.Core.JsonRpc.JsonRpcErrorCode code, string! errorMessage) -> Bee.Api.Core.Authorization.ApiAuthorizationResult!

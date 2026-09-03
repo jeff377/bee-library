@@ -253,6 +253,8 @@ Bee.Definition.Filters.FilterNodeCollection.AddRange(System.Collections.Generic.
 Bee.Definition.Filters.FilterNodeCollection.FilterNodeCollection() -> void
 Bee.Definition.Filters.FilterNodeCollectionJsonConverter
 Bee.Definition.Filters.FilterNodeCollectionJsonConverter.FilterNodeCollectionJsonConverter() -> void
+Bee.Definition.Filters.FilterNodeJsonConverter
+Bee.Definition.Filters.FilterNodeJsonConverter.FilterNodeJsonConverter() -> void
 Bee.Definition.Filters.FilterNodeKind
 Bee.Definition.Filters.FilterNodeKind.Condition = 0 -> Bee.Definition.Filters.FilterNodeKind
 Bee.Definition.Filters.FilterNodeKind.Group = 1 -> Bee.Definition.Filters.FilterNodeKind
@@ -1835,6 +1837,8 @@ override Bee.Definition.Filters.FilterCondition.ToString() -> string!
 override Bee.Definition.Filters.FilterGroup.Kind.get -> Bee.Definition.Filters.FilterNodeKind
 override Bee.Definition.Filters.FilterNodeCollectionJsonConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> Bee.Definition.Filters.FilterNodeCollection?
 override Bee.Definition.Filters.FilterNodeCollectionJsonConverter.Write(System.Text.Json.Utf8JsonWriter! writer, Bee.Definition.Filters.FilterNodeCollection! value, System.Text.Json.JsonSerializerOptions! options) -> void
+override Bee.Definition.Filters.FilterNodeJsonConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> Bee.Definition.Filters.FilterNode?
+override Bee.Definition.Filters.FilterNodeJsonConverter.Write(System.Text.Json.Utf8JsonWriter! writer, Bee.Definition.Filters.FilterNode! value, System.Text.Json.JsonSerializerOptions! options) -> void
 override Bee.Definition.Forms.FieldMapping.ToString() -> string!
 override Bee.Definition.Forms.FormField.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
 override Bee.Definition.Forms.FormField.ToString() -> string!

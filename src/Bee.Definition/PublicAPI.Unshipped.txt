@@ -1,5 +1,1 @@
 #nullable enable
-Bee.Definition.Filters.FilterNodeJsonConverter
-Bee.Definition.Filters.FilterNodeJsonConverter.FilterNodeJsonConverter() -> void
-override Bee.Definition.Filters.FilterNodeJsonConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> Bee.Definition.Filters.FilterNode?
-override Bee.Definition.Filters.FilterNodeJsonConverter.Write(System.Text.Json.Utf8JsonWriter! writer, Bee.Definition.Filters.FilterNode! value, System.Text.Json.JsonSerializerOptions! options) -> void

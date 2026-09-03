@@ -4,6 +4,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.27.0]
+
+> A browser front end could not call an encoded endpoint: the wire body was MessagePack and nothing else, and this framework's MessagePack wire is some thirty hand-written formatters — mirroring them in another language creates a second authority over the same contract, with nothing to notice when the two drift. **The body codec moves from a deployment setting to a per-request declaration on the envelope, and a JSON codec joins MessagePack**, so a JavaScript client needs only JSON, gzip, AES-CBC-HMAC and RSA — all native. See [ADR-044](docs/adr/adr-044-payload-codec-negotiation.md). Two artefacts ship with it so a client in another language has something to check itself against rather than a document to obey: 26 wire body samples, and a TypeScript contract generated from the message types by reflection. Alongside them, a filter sent on the `Plain` path had been losing its entire subtree in silence, and the anonymous attack surface becomes a named declaration that a new `Anonymous` method cannot join without stating what it exposes.
+
+📄 Full notes and design context: [docs/changelogs/4.27.0.md](docs/changelogs/4.27.0.md)
+
+### Breaking changes
+
+- `Bee.Definition`: `ApiPayloadOptions.Serializer` is removed. With the codec declared per request, its only remaining job was deciding what the server reads when a client declares nothing — and that answer can only be `messagepack`, making it a compatibility constant rather than a deployment choice. A leftover `<Serializer>` element in `SystemSettings.xml` is ignored, so no settings file needs editing. It ships as a minor under the pre-stable policy.
+
+### Added
+
+- `Bee.Api.Core`: a JSON body codec, and per-request codec selection. `JsonPayloadSerializer`, `PayloadCodecNames` (`json` / `messagepack`), `ApiPayload.Codec`, `ApiServiceOptions.AcceptedPayloadCodecs` and `ResolvePayloadSerializer`. A request that names no codec is read as MessagePack, so its envelope is byte-for-byte what it was before. See [ADR-044](docs/adr/adr-044-payload-codec-negotiation.md).
+- `Bee.Api.Core`: codec-aware `Encode` / `Decode` overloads on `IApiPayloadTransformer`. They are **default interface members that throw**, so a custom transformer keeps compiling and keeps serving every call that declares no codec, rather than silently encoding with a codec the caller did not ask for.
+- `Bee.Api.Core`: `WireValueCode` becomes the shared discriminator for `object`-typed wire members on both wires — JSON cannot tell a `decimal` from a `double` or a `Guid` from a `string`, so those members travel as a `[code, value]` envelope. `decimal`, `long` and `ulong` are written as JSON strings, since a JSON number is a `double` to every JavaScript reader.
+- `Bee.Api.Client`: `ApiConnector.PayloadCodec`. Unset means MessagePack.
+- `wire-fixtures/`: 26 wire body samples produced and verified by `WireFixtureTests`, with a README for the author of a client in another language. They cover every encoding rule rather than every type, and fix only the body text — gzip and AES-CBC output are inherently unpinnable.
+- `wire-contracts/`: a TypeScript contract generated from the message types by reflection — `messages.d.ts` (91 interfaces, 11 enums, describing the **wire** shape) and `type-names.ts` (the assembly-qualified names an encoded payload must carry). Both are pinned by `WireContractGeneratorTests`, so a renamed field turns red here rather than silently vanishing from a client.
+- `Bee.Definition`: `FilterNodeJsonConverter`, applied on the property rather than the type — on the type it would be inherited by the subclasses and recurse until the stack goes.
+- Tests: `AnonymousApiSurfaceTests` turns the anonymous attack surface into a named declaration, each entry stating what an unauthenticated caller learns; `ApiAccessControlPinTests` pins every method's protection level and access requirement, which nothing could see before — attribute arguments do not reach `PublicAPI.Shipped.txt`, and the change alters who may send a payload rather than its shape.
+
+### Changed
+
+- Docs: [ADR-044](docs/adr/adr-044-payload-codec-negotiation.md) records the codec decision and answers [ADR-014](docs/adr/adr-014-jsonrpc-plain-public-default.md)'s rejection of a JavaScript encryption pipeline point by point. ADR-014 is **not superseded** — `Plain` remains the default path for a JavaScript front end and the seven methods remain `Public`; its status line now points to ADR-044 so the two are reachable from each other.
+
+### Fixed
+
+- `Bee.Definition`: a `Filter` sent on the `Plain` path lost its entire subtree. `GetListRequest.Filter` is declared as the abstract `FilterNode` and `System.Text.Json` binds to the declared type, so an assigned `FilterGroup` wrote out `{"kind":"Group"}` — operator and filter tree gone, with no exception and no trace. **This is a behavioural change**: a query that used to return everything now returns a filtered set.
+
+### Upgrade notes
+
+Nothing to do. A request that declares no codec produces an identical envelope and behaves exactly as before.
+
+- Delete the `<Serializer>` element from `SystemSettings.xml` if it is still there — it is ignored rather than honoured.
+- A custom `IApiPayloadTransformer` needs the three-argument `Encode` / `Decode` overloads only to serve clients that negotiate a codec.
+- `Plain` requests carrying a `Filter` now apply it; check anything downstream written against the unfiltered result.
+
+```csharp
+// .NET client, to send a JSON body:
+connector.PayloadCodec = PayloadCodecNames.Json;   // unset means MessagePack
+```
+
 ## [4.26.0]
 
 > A captured JSON-RPC packet could be resent and would execute again: the payload is authenticated, but it carries nothing that makes a call unique. This release adds a wire frame — version, timestamp and sequence number, prepended *inside* the encrypted envelope so the payload HMAC covers it — and a per-session sliding window that refuses a sequence it has already accepted. **It is off by default (`ApiServiceOptions.RequireWireFrame`), and both ends read that switch rather than detecting the frame, because a server that detected it could be downgraded by stripping it.** See [ADR-042](docs/adr/adr-042-api-replay-protection.md). Alongside it, the exception-to-error-code mapping that each end had held privately becomes one ordered registry ([ADR-043](docs/adr/adr-043-error-contract-single-registry.md)) — the drift it rules out had already happened once — and schema upgrade gains description sync on all four dialects, plus a fix for an Oracle comparison that aborted upgrades outright.

@@ -44,6 +44,8 @@ Bee.Api.Client.Connectors.ApiConnector.ApiConnector(System.Guid accessToken, Bee
 Bee.Api.Client.Connectors.ApiConnector.ApiConnector(string! endpoint, System.Guid accessToken) -> void
 Bee.Api.Client.Connectors.ApiConnector.ApiConnector(string! endpoint, System.Guid accessToken, Bee.Api.Client.ApiSessionContext! session) -> void
 Bee.Api.Client.Connectors.ApiConnector.ExecuteAsync<T>(string! progId, string! action, object! value, Bee.Api.Core.Messages.PayloadFormat format) -> System.Threading.Tasks.Task<T>!
+Bee.Api.Client.Connectors.ApiConnector.PayloadCodec.get -> string!
+Bee.Api.Client.Connectors.ApiConnector.PayloadCodec.set -> void
 Bee.Api.Client.Connectors.ApiConnector.Provider.get -> Bee.Api.Client.Providers.IJsonRpcProvider!
 Bee.Api.Client.Connectors.ApiConnector.Session.get -> Bee.Api.Client.ApiSessionContext!
 Bee.Api.Client.Connectors.FormApiConnector

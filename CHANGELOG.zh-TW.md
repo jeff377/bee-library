@@ -4,6 +4,48 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.27.0]
+
+> 瀏覽器前端呼叫不了編碼過的端點：body 只有 MessagePack 一種，而本框架的 MessagePack wire 是三十餘支手寫 formatter —— 在另一個語言鏡像它們，等於為同一份合約建立第二個權威來源，而兩邊漂掉時沒有任何機制會發現。**body codec 從部署層設定改為在信封上逐請求宣告，並在 MessagePack 之外新增 JSON codec**，JavaScript client 於是只需要 JSON、gzip、AES-CBC-HMAC 與 RSA —— 全是原生 API。見 [ADR-044](docs/adr/adr-044-payload-codec-negotiation.md)。隨之發布兩份產物，讓另一個語言的 client 有東西可以驗自己、而不是一份文件要遵守：26 個 wire body 樣本，以及由訊息型別反射產生的 TypeScript 合約。同時修掉一個在 `Plain` 路徑上靜默丟失整棵篩選子樹的缺陷，並把匿名攻擊面改為具名申報 —— 新增標了 `Anonymous` 的方法，必須寫明它揭露了什麼才進得來。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.27.0.zh-TW.md](docs/changelogs/4.27.0.zh-TW.md)
+
+### 破壞性變更
+
+- `Bee.Definition`：移除 `ApiPayloadOptions.Serializer`。codec 改為逐請求宣告後，它只剩「客戶端未宣告時 server 用哪個解」一個作用，而那個答案只能是 `messagepack` —— 它已是相容性常數而非部署選擇。`SystemSettings.xml` 裡殘留的 `<Serializer>` 元素會被忽略，故不必修改任何設定檔。依 pre-stable 政策以 minor 發佈。
+
+### 新增
+
+- `Bee.Api.Core`：JSON body codec，以及逐請求的 codec 選擇。`JsonPayloadSerializer`、`PayloadCodecNames`（`json` / `messagepack`）、`ApiPayload.Codec`、`ApiServiceOptions.AcceptedPayloadCodecs` 與 `ResolvePayloadSerializer`。未宣告 codec 的請求一律讀為 MessagePack，其信封與先前 byte-for-byte 相同。見 [ADR-044](docs/adr/adr-044-payload-codec-negotiation.md)。
+- `Bee.Api.Core`：`IApiPayloadTransformer` 新增 codec-aware 的 `Encode` / `Decode` 多載。兩者是 **default interface member 且預設擲回**，因此自訂 transformer 照樣編得過、也照樣服務所有未宣告 codec 的呼叫，而不會靜默用呼叫端沒要求的 codec 編碼。
+- `Bee.Api.Core`：`WireValueCode` 成為兩條 wire 共用的判別碼，用於宣告型別為 `object` 的成員 —— JSON 分不出 `decimal` 與 `double`、`Guid` 與 `string`，故這類成員以 `[code, value]` 封套傳遞。`decimal`、`long`、`ulong` 寫成 JSON 字串，因為 JSON number 對每個 JavaScript 讀取端都是 `double`。
+- `Bee.Api.Client`：`ApiConnector.PayloadCodec`。未設定即為 MessagePack。
+- `wire-fixtures/`：26 個 wire body 樣本，由 `WireFixtureTests` 產生並驗證，附一份給「另一個語言的 client 作者」的 README。樣本覆蓋每一條編碼規則而非每一個型別，且只固定 body 原文 —— gzip 與 AES-CBC 的輸出本質上不可固定。
+- `wire-contracts/`：由訊息型別反射產生的 TypeScript 合約 —— `messages.d.ts`（91 個 interface、11 個列舉，描述的是 **wire** 形狀）與 `type-names.ts`（編碼過的 payload 必須攜帶的 assembly-qualified 型別名）。兩者由 `WireContractGeneratorTests` 釘住，欄位改名會在這裡紅，而不是從某個 client 上靜默消失。
+- `Bee.Definition`：`FilterNodeJsonConverter`，標在屬性上而非型別上 —— 標在型別上會被子類繼承，遞迴到 stack 爆掉。
+- 測試：`AnonymousApiSurfaceTests` 把匿名攻擊面改為具名申報，每一項都要寫明未登入者能知道什麼；`ApiAccessControlPinTests` 釘住每個方法的保護等級與驗證需求 —— 這件事先前沒有任何機制看得到：attribute 的參數不進 `PublicAPI.Shipped.txt`，而該變更改的是「誰能送」而非 payload 形狀。
+
+### 變更
+
+- 文件：[ADR-044](docs/adr/adr-044-payload-codec-negotiation.md) 記錄 codec 的決策，並逐條回應 [ADR-014](docs/adr/adr-014-jsonrpc-plain-public-default.md) 對「JS 版加密管線」的拒絕。ADR-014 **沒有被取代** —— `Plain` 仍是 JS 前端的預設路徑、七個方法仍是 `Public`；其狀態行現在指向 ADR-044，讓兩邊雙向可達。
+
+### 修正
+
+- `Bee.Definition`：`Plain` 路徑上送出的 `Filter` 會丟失整棵子樹。`GetListRequest.Filter` 的宣告型別是抽象基底 `FilterNode`，而 `System.Text.Json` 綁的是宣告型別，於是指派給它的 `FilterGroup` 只寫出 `{"kind":"Group"}` —— 運算子與整棵篩選樹消失，不擲例外也不留紀錄。**這是一次行為變更**：原本回傳全部資料的查詢，現在會回傳篩選後的結果。
+
+### 升級指引
+
+無事可做。未宣告 codec 的請求，信封完全相同，行為與先前一致。
+
+- 把 `SystemSettings.xml` 裡的 `<Serializer>` 元素刪掉（若還在）—— 它是被忽略而不是被採用。
+- 自訂的 `IApiPayloadTransformer` 只有在要服務「會協商 codec 的 client」時，才需要實作三參數的 `Encode` / `Decode` 多載。
+- 帶 `Filter` 的 `Plain` 請求現在會真的套用該篩選；請檢查下游是否有東西照著「未篩選的結果」寫。
+
+```csharp
+// .NET client 要送 JSON body：
+connector.PayloadCodec = PayloadCodecNames.Json;   // 未設定即為 MessagePack
+```
+
 ## [4.26.0]
 
 > 一個被側錄的 JSON-RPC 封包重送一次就會再執行一次：payload 有驗證，但裡面沒有任何東西能讓一次呼叫成為唯一。本版加上 wire frame —— 版本、時戳與序號，prepend 在**加密封套之內**，因此受 payload HMAC 保護 —— 以及 per-session 的滑動視窗，拒收已經收過的序號。**預設關閉（`ApiServiceOptions.RequireWireFrame`），且兩端讀同一個開關而不是偵測 frame 在不在：會偵測的伺服端，攻擊者拿掉 frame 就能降級。** 見 [ADR-042](docs/adr/adr-042-api-replay-protection.md)。同時，兩端各自私藏的「例外對錯誤碼」映射收斂為一張有序登錄表（[ADR-043](docs/adr/adr-043-error-contract-single-registry.md)）—— 它要排除的漂移已經真的發生過一次 —— 而 schema 升級補上四種 dialect 的描述同步，並修好一個會讓升級直接中斷的 Oracle 比對缺陷。
