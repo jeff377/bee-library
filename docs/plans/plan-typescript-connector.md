@@ -246,6 +246,29 @@ JSON body 對此比 MessagePack 更敏感：MessagePack 寫入時轉 UTC，JSON 
 
 ### 階段 4：TypeScript Connector 套件
 
+**落腳與命名（已決，2026-09-03）**
+
+| 項目 | 值 |
+|------|-----|
+| repo | `bee-connector-js`（另立 repo，見「待決事項」1） |
+| npm 套件 | `bee-connector`（unscoped） |
+
+- `connector` 沿用框架既有的概念名（`ApiConnector` / `FormApiConnector` /
+  `SystemApiConnector`），對既有使用者零學習成本。
+- repo 加 `-js` 後綴而套件不加：repo 名要能與 `bee-library`（.NET）並排時一眼分出生態，
+  套件名活在 npm 裡、上下文已隱含。用 `-js` 而非 `-ts` 是因為發佈的是 JS + `.d.ts`，
+  後綴描述消費端比描述實作語言有用。
+- **npm 不是 NuGet**：兩個生態各自獨立的 registry、帳號與發佈流程，該 repo 會有自己的
+  一套 CI 與發佈設定，與 bee-library 完全不共用。
+- 名稱查核（2026-09-03）：`bee-connector` 於 npm 未被佔用；`bee-client` 已被佔用。
+  unscoped 名稱先搶先贏，**要用就趁早發一個 `0.0.1` 佔名**（該動作由維護者自行執行）。
+
+**版本對應**：TS 套件有自己的發佈節奏，不硬跟 bee-library 的版號走，但必須說得出它對應
+哪一版的 wire。最輕的做法是在套件內記一個相容的 fixture 版本，CI 以該 tag 的
+`wire-fixtures/` 驗證——wire 一變，TS 端 CI 就紅，而不是等使用者踩到。
+
+
+
 - 加密層：RSA-OAEP-SHA256 交握、AES-CBC-HMAC（含 little-endian 佈局）、gzip。
 - Connector API：對齊 .NET 的 `SystemApiConnector` / `FormApiConnector` 形狀。
 - 型別定義由 `Bee.Api.Core/Messages/**` 產生 `.d.ts`，避免手抄漂掉。
@@ -255,7 +278,7 @@ JSON body 對此比 MessagePack 更敏感：MessagePack 寫入時轉 UTC，JSON 
 
 ## 待決事項
 
-1. ~~TS 套件落腳處~~ →  **已決（2026-09-02）：另立 repo。**
+1. ~~TS 套件落腳處~~ →  **已決（2026-09-02）：另立 repo，命名見階段 4。**
    框架改動留在 bee-library，fixture 由 bee-library 產生並隨版本發布，TS repo 取用對應版本。
    bee-library 的 CI 維持純 dotnet，不引入 npm。
 2. 是否同時提供 `Encoded`（不加密）給 JS——同一條路少一步，建議提供。
