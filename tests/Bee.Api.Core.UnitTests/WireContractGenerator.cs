@@ -124,6 +124,42 @@ namespace Bee.Api.Core.UnitTests
             return builder.ToString().TrimEnd() + Environment.NewLine;
         }
 
+        /// <summary>
+        /// 產生「型別名 → assembly-qualified name」的對映。
+        /// </summary>
+        /// <remarks>
+        /// 編碼過的 payload 必須在信封裡指名型別，伺服端據以解析並過白名單。那串名字含
+        /// 命名空間與組件名，跨 repo 手抄必漂——訊息型別搬一次命名空間，抄本就指向一個
+        /// 解析不到的型別，而症狀是執行期被拒、不是編譯錯誤。
+        /// </remarks>
+        public static string GenerateTypeNames()
+        {
+            var types = typeof(Messages.ApiMessageBase).Assembly.GetTypes()
+                .Where(t => t.IsClass && !t.IsAbstract && t.IsPublic)
+                .Where(t => t.Namespace?.StartsWith(MessageNamespace, StringComparison.Ordinal) == true)
+                .OrderBy(t => t.Name, StringComparer.Ordinal)
+                .ToList();
+
+            var builder = new StringBuilder();
+            builder.AppendLine("// Generated from the Bee.NET message types — do not edit by hand.");
+            builder.AppendLine("//");
+            builder.AppendLine("// An encoded payload must name its type in the envelope; the server resolves it from this");
+            builder.AppendLine("// string and screens it against an allow-list first.");
+            builder.AppendLine();
+            builder.AppendLine("export const WireTypeNames = {");
+
+            foreach (var type in types)
+            {
+                var qualified = $"{type.FullName}, {type.Assembly.GetName().Name}";
+                builder.AppendLine(CultureInfo.InvariantCulture, $"  {type.Name}: '{qualified}',");
+            }
+
+            builder.AppendLine("} as const;");
+            builder.AppendLine();
+            builder.AppendLine("export type WireTypeName = keyof typeof WireTypeNames;");
+            return builder.ToString();
+        }
+
         private static string RenderEnum(Type type)
         {
             var members = Enum.GetNames(type).Select(n => $"'{n}'");

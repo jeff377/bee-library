@@ -9,6 +9,13 @@ A hand-written type table in another repository is a second authority for the sa
 When the server renames a property, that copy does not find out — and the symptom is a field
 silently missing, not an error. Generating it makes the table a derivative rather than a claim.
 
+## What is here
+
+| File | Contents |
+|------|----------|
+| `messages.d.ts` | The message types as TypeScript interfaces |
+| `type-names.ts` | Assembly-qualified type names, which an encoded payload must carry in its envelope |
+
 ## What these describe
 
 The **JSON shape on the wire**, not the CLR declarations:

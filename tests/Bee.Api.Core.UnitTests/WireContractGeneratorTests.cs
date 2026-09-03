@@ -17,6 +17,9 @@ namespace Bee.Api.Core.UnitTests
     /// </remarks>
     public class WireContractGeneratorTests
     {
+        private static string TypeNamesPath() =>
+            Path.Combine(Path.GetDirectoryName(ContractPath())!, "type-names.ts");
+
         private static string ContractPath()
         {
             var dir = new DirectoryInfo(AppContext.BaseDirectory);
@@ -51,6 +54,42 @@ namespace Bee.Api.Core.UnitTests
                 "訊息型別與已產生的 TypeScript 合約不符。" + Environment.NewLine +
                 "若這是刻意的合約變更，以 BEE_REGENERATE_WIRE_CONTRACTS=1 重新產生並逐筆讀過 diff——" +
                 "欄位改名或移除，對不隨框架一起發版的 client 是破壞性變更。");
+        }
+
+        [Fact]
+        [DisplayName("產生的型別名對映應與現行訊息型別一致")]
+        public void GeneratedTypeNames_MatchMessageTypes()
+        {
+            var generated = WireContractGenerator.GenerateTypeNames();
+            var path = TypeNamesPath();
+
+            if (RegenerateRequested)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllText(path, generated);
+                return;
+            }
+
+            Assert.True(File.Exists(path), $"型別名對映不存在（{path}）。以 BEE_REGENERATE_WIRE_CONTRACTS=1 產生。");
+
+            Assert.True(string.Equals(File.ReadAllText(path), generated, StringComparison.Ordinal),
+                "訊息型別與已產生的型別名對映不符。" + Environment.NewLine +
+                "訊息型別搬命名空間或改名，會讓跨語言 client 送出一個伺服端解析不到的型別名——" +
+                "症狀是執行期被拒，不是編譯錯誤。");
+        }
+
+        [Fact]
+        [DisplayName("型別名必須是 assembly-qualified，否則伺服端解析不到")]
+        public void GeneratedTypeNames_AreAssemblyQualified()
+        {
+            var generated = WireContractGenerator.GenerateTypeNames();
+
+            Assert.Contains(
+                "LoginRequest: 'Bee.Api.Core.Messages.System.LoginRequest, Bee.Api.Core',",
+                generated, StringComparison.Ordinal);
+            Assert.Contains(
+                "GetListRequest: 'Bee.Api.Core.Messages.Form.GetListRequest, Bee.Api.Core',",
+                generated, StringComparison.Ordinal);
         }
 
         [Fact]
