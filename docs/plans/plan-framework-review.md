@@ -1,6 +1,7 @@
 # 框架全面體檢（2026-09-04）
 
-**狀態：🚧 進行中（2026-09-04）** —— 批次 1（P0-1 / P1-2 / P1-9）已落地；其餘待排。
+**狀態：🚧 進行中（2026-09-04）** —— 批次 1（P0-1 / P1-2 / P1-9）與批次 2（六道閘門：
+P1-4 / P1-5 / P1-6 / P1-11 / API-1 / API-2，連帶 DOC-8 與 Z-8 的一半）已落地；其餘待排。
 
 對 17 個 `src/` 專案做十一面向唯讀體檢，產出分級重構計畫與評分。
 方法：10 個平行唯讀子代理分面向全量掃描 → 交叉去重 → P0/P1 主代理複驗（含執行期 probe 與實測）。
@@ -63,7 +64,7 @@
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
 | P0 | 已出貨功能遠端不可用 | 1 | ✅ **已完成**（2026-09-04，P0-1 修正 + 新增保留字 progId 建構閘門，負向驗證通過） |
-| P1 | 授權邊界、跨語言 wire 正確性、實測效能、閘門可靠性 | 11 | 🚧 進行中 —— **P1-2 / P1-9 已完成**（2026-09-04）；P1-3 已裁決走「改編碼」，其餘 8 項待排 |
+| P1 | 授權邊界、跨語言 wire 正確性、實測效能、閘門可靠性 | 11 | 🚧 進行中 —— **P1-2 / P1-4 / P1-5 / P1-6 / P1-9 / P1-11 已完成**（2026-09-04，六項閘門皆經負向驗證）；P1-3 已裁決走「改編碼」；**剩 P1-1（記錄範圍繞過）、P1-3、P1-7（測試併發改寫共用快取）、P1-8（UpdateBatchSize）、P1-10（Bee.Definition README）** |
 | P2 | 結構、並行、一致性 | 12 | 📝 擬定中 |
 | P3 | 文件漂移與低風險清理 | 14 | 📝 擬定中 |
 | P4 | 觀察／待裁決 | 16 | 📝 擬定中 |
@@ -191,7 +192,7 @@ password 同樣符合該描述卻不在清單內。
 （未採用的 (b)：維持現狀、在 `wire-fixtures/README.md` 與 `messages.d.ts` 前言明寫此例外，
 並把 `datatable.json` 的樣本值換成會爆掉 double 的數字。）
 
-### P1-4　「伺服端以同一個 codec 回應」是新機制的核心不變式，零測試
+### P1-4　「伺服端以同一個 codec 回應」是新機制的核心不變式，零測試　✅ 已修（2026-09-04）
 
 `src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs:145` —— `Codec = request.Params.Codec`
 
@@ -202,7 +203,7 @@ password 同樣符合該描述卻不在清單內。
 **修法**：加一條「request 宣告 json → `response.Result.Codec == "json"` 且該 body 真的由 JSON codec 解得開」，
 並反向驗證（暫時清掉那個賦值應變紅）。
 
-### P1-5　fixture 完整性閘門恆真，且現況已違反
+### P1-5　fixture 完整性閘門恆真，且現況已違反　✅ 已修（2026-09-04）
 
 `tests/Bee.Api.Core.UnitTests/WireFixtureTests.cs:287-289`
 
@@ -226,7 +227,7 @@ Assert.Equal(22, codeCases.Count);
 **修法**：(a) 斷言改為由 `WireValueCode` 常數表驅動的「每個常數都有對應案例」；(b) 補 `value-datatable`；
 (c) 加一條逐一比對 `s_codes` 與 `ResolveCode` 的測試。
 
-### P1-6　`[ApiAccessControl].ReplayProtection` 是第三個安全維度，卻無任何守門
+### P1-6　`[ApiAccessControl].ReplayProtection` 是第三個安全維度，卻無任何守門　✅ 已修（2026-09-04）
 
 `src/Bee.Definition/Attributes/ApiAccessControlAttribute.cs:43`（4.26.0 新增）
 使用點 5 處：`BusinessObject.cs:258`（`ExecFunc`）、`FormBusinessObject.Write.cs:47`（`Save`）、`:195`（`Delete`）、
@@ -327,7 +328,7 @@ ADR-039 / `29d844d1`（4.23.0）已移除執行階段推導，CHANGELOG 4.23.0 �
 
 引入：`0b68854b`（2026-08-10）移除相依時未同步 README，該敘述在上輪基準當下已經是假的。
 
-### P1-11　NUL 位元組讓 repo 的整套 grep 閘門對一個檔靜默失明
+### P1-11　NUL 位元組讓 repo 的整套 grep 閘門對一個檔靜默失明　✅ 已修（2026-09-04）
 
 `src/Bee.Api.Client/Definitions/SnapshotLanguageService.cs:43`
 
@@ -362,8 +363,8 @@ Python 逐檔驗證全 repo（src/tests/tools/apps/samples）含 NUL 的 `.cs` *
 |---|------|------|------|
 | **ARCH-1** | 四條硬約束零可執行閘門 | `tests/` | 「BO 無 `Bee.Db`」「後端無 `Bee.Api.Client`」「Repository 抽象未被繞過」「Contracts 零實作污染」目前**只靠每輪體檢重掃**。全 `tests/` 只有 `DefinitionDependencyGateTests.cs` 一支做相依斷言。前兩條可用同一份 `deps.json` 讀取碼斷言（約 20 行、零新相依），第四條可用反射斷言 Contracts 組件內零 `MethodBody` |
 | **GATE-1** | BEE9001 的啟用條件本身無 canary | `src/Directory.Build.targets:27` | `BeeEnforceDependencyBoundary` 的 Condition 是三個 `MSBuildProjectName` 字串比對。專案改名或編輯時漏掉一項，target 靜默不執行，**沒有任何東西會紅**。`Bee.Base` 有閉包測試當 backstop；**`Bee.Api.Contracts` 沒有**（它在 `Bee.Definition` 的下游，不在任何閉包測試觀察範圍內）。修法：把閉包測試參數化為多個 root |
-| **API-1** | 上輪最高槓桿建議只落地一半 | `tests/Bee.Business.UnitTests/BoApiSurfaceTests.cs` | (a) action 常數↔BO 方法 ✅ **已落地且做得更好**（`86887768` 的 `ActionSurfaceTests`，雙向 + 防空轉，首跑即抓到兩個未登記常數）；(b) baseline↔`docs/api-method-reference.md` ❌ **未落地**（該測試全檔零檔案 IO）。而 `docs/api-method-reference.md:10-13` 雙語對外宣稱「the build will fail otherwise」。目前 41 筆同步是靠紀律。**加上那個 Fact 當天就會綠**（已逐筆比對確認），一次關閉 API-1/P1-6/DOC-5 三項的復發路徑 |
-| **API-2** | 新增的閘門缺防空轉斷言 | `tests/Bee.Business.UnitTests/Contracts/BusinessContractPairingTests.cs` | 只有一個 `[Theory]`，反射列舉回零筆時**恆綠**。同家族四個閘門（`ApiContractPairingTests` / `ActionSurfaceTests` / `PayloadZoneCoverageGuardTests` / `WireContractDriftTests`）都有。**一致性缺口而非知識缺口**，加 4 行。該檔在 `227daa70` 不存在 → 上輪把這條寫成教訓 #4，隔天新增的閘門就違反了 |
+| **API-1** ✅ 已修 | 上輪最高槓桿建議只落地一半 | `tests/Bee.Business.UnitTests/BoApiSurfaceTests.cs` | (a) action 常數↔BO 方法 ✅ **已落地且做得更好**（`86887768` 的 `ActionSurfaceTests`，雙向 + 防空轉，首跑即抓到兩個未登記常數）；(b) baseline↔`docs/api-method-reference.md` ❌ **未落地**（該測試全檔零檔案 IO）。而 `docs/api-method-reference.md:10-13` 雙語對外宣稱「the build will fail otherwise」。目前 41 筆同步是靠紀律。**加上那個 Fact 當天就會綠**（已逐筆比對確認），一次關閉 API-1/P1-6/DOC-5 三項的復發路徑 |
+| **API-2** ✅ 已修 | 新增的閘門缺防空轉斷言 | `tests/Bee.Business.UnitTests/Contracts/BusinessContractPairingTests.cs` | 只有一個 `[Theory]`，反射列舉回零筆時**恆綠**。同家族四個閘門（`ApiContractPairingTests` / `ActionSurfaceTests` / `PayloadZoneCoverageGuardTests` / `WireContractDriftTests`）都有。**一致性缺口而非知識缺口**，加 4 行。該檔在 `227daa70` 不存在 → 上輪把這條寫成教訓 #4，隔天新增的閘門就違反了 |
 | **CON-1** | `AuditLogWriterService.ExecuteAsync` 無例外護欄 | `src/Bee.Hosting/Audit/AuditLogWriterService.cs:60-77` | 只 catch `OperationCanceledException`；其他例外 → `BackgroundService` Faulted → .NET 預設 `StopHost` **整個應用停機**。**本 repo 的 `docs/adr/adr-017:77` 已明文寫下這條規則**，`CacheNotifyPoller.SafePoll` / `ExpiredSessionCleanupService.SafeCleanup` 都照做了，**唯獨稽核寫入器沒有**。逸出點：`SpillToFile` 的 `NotSupportedException`／`ArgumentException`、`TimeoutException`、**任何自訂 `IAuditLogSink`**（公開 DI 接縫，這種部署下應視為 P1）。引入 `abbff6fc`（2026-07-05） |
 | **CON-2** | 稽核檔案 fallback 多執行緒無鎖 append | `src/Bee.Hosting/Audit/AuditLogDbSink.cs:66-88` | `File.AppendAllText` 無序列化，三條並行路徑指向同一檔（背景 drain、佇列飽和時的**每條請求執行緒**、`SynchronousAuditLogWriter`）。Windows 下 `FileShare.Read` 開檔並行會擲 `IOException` → 被 `:82` catch → **該批稽核靜默遺失**，推翻 `AuditLogWriterService` 類別註解「records are never silently lost」。**最大並行度恰好出現在唯一會走到這條路徑的時刻**（log DB 失敗 → 佇列塞滿 → 全部改走同步 fallback） |
 | **CON-3** | `Bee.UI.Core.ClientInfo` per-user 狀態放 public static，零警語 | `src/Bee.UI.Core/ClientInfo.cs:13-23` | CON-1（上輪）修掉的形狀往上一層：`_accessToken`、`_capabilities`（權限快照）、`_company`、`_defineAccess`（帶 tenant customization）全是「屬於某個登入使用者」的狀態。對照組 `ApiSessionContext` 帶了完整 WARNING，`ClientInfo` 只有一句「Provides client-side connection state」。repo 內無多使用者可達鏈（Blazor 只參考 `Bee.Api.Client`），但 **`Bee.UI.Core` 是發佈的 NuGet 套件**。另三個 `??=` lazy init 無同步 |
@@ -388,7 +389,7 @@ Python 逐檔驗證全 repo（src/tests/tools/apps/samples）含 NUL 的 `.cs` *
 | **DOC-5** | `src/Bee.Base/README.md:62,107` + `.zh-TW.md:60,104` | `12e96696` 把 `Bee.Base.Tracing.TraceListener` 更名為 `TraceDispatcher`，同步改了 `docs/permission-authorization*`，**漏掉組件自己的 README**；更名後又被 `2510e343` 編輯過一次仍未修。（`SysInfo.TraceListener` 屬性與 `ITraceListener` 介面刻意保留，`SysInfo.cs:16` 的 doc 正確） |
 | **DOC-6** | `src/Bee.Business/README.md:27,50` + `.zh-TW.md:27,50` | `2510e343` 從 `ISystemBusinessObject` 移除 `GetDefine`/`SaveDefine`，README 仍逐一列名且寫「7 個成員」（實際 5 個）。**名字錯了讀者看得出來，數字錯了看不出來 —— 本例兩者同時漂** |
 | **DOC-7** | `docs/caching.md:228-232, 368-377` + `.zh-TW` | 逐字複寫 `ICacheDataSourceProvider` 的介面宣告卻缺 `GetCompanyAuditRules`；「Cache Inventory › Database caches」6 個只列 5 個，缺 `CompanyAuditRulesCache`。最後編輯（`86cb67e3`）與 `CompanyAuditRules` 引入（`684dd139`）**同一天**。對照 `docs/development-constraints.md:63-68` 的同一份清單是對的 —— 兩份公開文件說法不一致 |
-| **DOC-8** | `docs/api-method-reference.md:22` + `.zh-TW.md:20` | Protection 欄位說明寫「`Public` / `Encoded` / `Encrypted`」三級，**同一份文件的表格裡有 5 列在用 `LocalOnly`**。與 `.claude/rules/security.md` 2026-08-12 修掉的是同一筆漂移，只修了 agent 那份、沒修外部讀者那份。修法比照：改成指向 `ApiProtectionLevel` 的 XML doc，不複寫成員 |
+| **DOC-8** ✅ 已修 | `docs/api-method-reference.md:22` + `.zh-TW.md:20` | Protection 欄位說明寫「`Public` / `Encoded` / `Encrypted`」三級，**同一份文件的表格裡有 5 列在用 `LocalOnly`**。與 `.claude/rules/security.md` 2026-08-12 修掉的是同一筆漂移，只修了 agent 那份、沒修外部讀者那份。修法比照：改成指向 `ApiProtectionLevel` 的 XML doc，不複寫成員 |
 | **DOC-9** | `docs/api-bo-contract-design.md:58-71, 188-197` + `.zh-TW` | 整節教已被 ADR-036 移除的 MessagePack 標註（`[MessagePackObject(keyAsPropertyName: true)]` 範例 ×2、`[IgnoreMember]`），且**自我矛盾**（`:60` 說不要加 `[Key(int)]`，`:191` 的表格說「`[Key(n)]` Yes (from 100)」，兩半都已失效）。上輪 DOC-1 修掉了同型內容的 skill，**這份公開文件不在該次盤點範圍內**。**真正的成本**：`WireContract`/`WireContracts`/`MessagePackCodec` 全是 `internal`，`PublicAPI.Shipped.txt` 沒有任何註冊 formatter 的公開接縫 → 外部開發者**沒有辦法**依 ADR-037 註冊自己的訊息型別，選項實際只剩「桌面限定」或「改用 JSON codec」，而這一點目前沒有任何文件說明 |
 | **DOC-10** | `docs/jsonrpc-frontend-integration.md:19-25, 60` + `.zh-TW` | 仍寫「`params.format` — **always `0`** from JS」並把 payload 加密列為 .NET client 專屬 —— ADR-044 存在的唯一理由就是解除這個限制。同時 `wire-fixtures/README.md` 與 `wire-contracts/README.md`（真正寫給跨語言 client 作者的兩份）**沒有被 `docs/README.md` 或任何 `docs/*.md` 引用過**，新機制的說明書存在但從公開索引走不到 |
 
