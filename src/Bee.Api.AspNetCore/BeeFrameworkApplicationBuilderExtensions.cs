@@ -1,5 +1,5 @@
 using System.Data.Common;
-using Bee.ObjectCaching;
+using Bee.Definition.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -48,12 +48,14 @@ namespace Bee.Api.AspNetCore
         {
             if (logger == null) { return; }
 
-            var cache = services.GetService<ICacheContainer>();
-            if (cache == null) { return; }
+            // Asked through the definition-layer seam rather than ICacheContainer: this layer has no
+            // business knowing the answer is cached, let alone by which assembly.
+            var gateState = services.GetService<IApiKeyGateStateProvider>();
+            if (gateState == null) { return; }
 
             try
             {
-                var gate = cache.ApiKeyGate.GetState();
+                var gate = gateState.GetState();
                 if (gate is { InForce: true }) { return; }
 
                 // Error rather than Warning: this is the difference between having an API key gate

@@ -335,6 +335,10 @@ namespace Bee.Hosting
             // services.AddSingleton<IApiKeyValidator, MyValidator>() after AddBeeFramework.
             services.AddSingleton<IApiKeyValidator>(sp =>
                 new ApiKeyValidator(sp.GetRequiredService<ICacheContainer>()));
+            // The gate state as a question the API layer can ask without referencing the cache
+            // implementation. UseBeeFramework's startup check is the only caller today.
+            services.AddSingleton<IApiKeyGateStateProvider>(sp =>
+                new ApiKeyGateStateProvider(sp.GetRequiredService<ICacheContainer>()));
 
             // Audit rules: per-company snapshot of st_audit_rule, consulted by FormBusinessObject
             // before writing a change or access entry. Registered unconditionally — the audit

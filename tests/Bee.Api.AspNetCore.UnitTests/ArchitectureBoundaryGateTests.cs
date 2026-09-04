@@ -50,6 +50,61 @@ namespace Bee.Api.AspNetCore.UnitTests
             { "Bee.Db", "Bee.Api.Client" },
         };
 
+        /// <summary>「這個組件不得<b>用到</b>那個組件的型別」的清單。</summary>
+        /// <remarks>
+        /// <para>
+        /// 與上面的閉包清單管的不是同一件事，工具也不同。閉包用 deps.json，抓得到「宣告了卻還沒
+        /// 使用」的相依；這裡要抓的是**反過來的那一半** —— 用了型別卻沒有在 csproj 宣告。
+        /// </para>
+        /// <para>
+        /// WARNING: 這一條<b>不能</b>用 deps.json。SDK 會在 Build 之前把傳遞專案參考併進
+        /// <c>@(ProjectReference)</c>，所以程式碼可以 <c>using</c> 一個只是「經由別人傳遞進來」的
+        /// 組件，而 csproj 與 deps.json 上都不會有那條邊。實測過：把 API 層改回直接解析
+        /// <c>ICacheContainer</c>，deps.json 版本的斷言照樣是綠的。<see cref="Assembly.GetReferencedAssemblies"/>
+        /// 反映的是編譯後 IL 真正參考了誰，那才是這條約束要看的東西。
+        /// </para>
+        /// </remarks>
+        public static TheoryData<string, string> ForbiddenAssemblyUsages() => new()
+        {
+            // API 層不得知道快取是怎麼實作的 —— 它問的是「這個部署有沒有生效的 API key gate」，
+            // 該問題經 Bee.Definition 的 IApiKeyGateStateProvider 提出。
+            // development-constraints 的禁止表列了「API 層直接參考 Repository 層」，
+            // 這一條落在表外但形狀相同。
+            { "Bee.Api.AspNetCore", "Bee.ObjectCaching" },
+        };
+
+        [Theory]
+        [MemberData(nameof(ForbiddenAssemblyUsages))]
+        [DisplayName("硬約束：指定組件的 IL 不得參考被禁組件（傳遞可見不代表可以用）")]
+        public void CompiledAssembly_DoesNotReferenceForbiddenAssembly(string root, string forbidden)
+        {
+            var assembly = LoadFrameworkAssembly(root);
+            var referenced = assembly.GetReferencedAssemblies()
+                .Select(name => name.Name)
+                .Where(name => name != null)
+                .ToArray();
+
+            // 防空轉：載錯組件或參考表是空的，下面的斷言會恆真。
+            Assert.NotEmpty(referenced);
+            Assert.Contains("Bee.Definition", referenced, StringComparer.OrdinalIgnoreCase);
+
+            Assert.False(
+                referenced.Contains(forbidden, StringComparer.OrdinalIgnoreCase),
+                $"{root} 的 IL 參考了 {forbidden}，跨越了分層邊界 —— 傳遞看得到不代表可以用。" +
+                "若需要它提供的某個答案，請在 Bee.Definition 開一個唯讀查詢介面，由組裝層注入實作。");
+        }
+
+        /// <summary>
+        /// 從測試輸出目錄載入指定的框架組件。
+        /// </summary>
+        /// <param name="assemblyName">組件名稱（不含副檔名）。</param>
+        private static Assembly LoadFrameworkAssembly(string assemblyName)
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, $"{assemblyName}.dll");
+            Assert.True(File.Exists(path), $"找不到組件：{path}");
+            return Assembly.LoadFrom(path);
+        }
+
         [Theory]
         [MemberData(nameof(ForbiddenEdges))]
         [DisplayName("硬約束：指定組件的傳遞相依閉包不得含有被禁組件")]
