@@ -12,6 +12,7 @@ BEE1004 | Bee.Definition | Error | FieldListReferenceAnalyzer — field lists mu
 BEE1005 | Bee.Definition | Error | RelationMappingAnalyzer — a relation mapping must target a declared field
 BEE1006 | Bee.Definition | Warning | RelationMappingAnalyzer — a relation field should be populated by a mapping
 BEE1007 | Bee.Definition | Error | DuplicateFieldNameAnalyzer — a table must not declare the same field twice
+BEE1008 | Bee.Definition | Info | PermissionModelAnalyzer — a form schema with no PermissionModelId is open to every authenticated caller
 BEE2001 | Bee.Definition | Warning | FormSchemaTableRegistrationAnalyzer — table must be registered under the declared scope
 BEE2002 | Bee.Definition | Warning | SidecarDefinitionAnalyzer — a table schema must exist under the folder matching the scope
 BEE2003 | Bee.Definition | Error | RelationReferenceAnalyzer — a relation field must reference an existing FormSchema

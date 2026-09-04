@@ -22,6 +22,18 @@ Bee.NET 隨套件提供 Roslyn analyzer，把框架慣例變成建置期診斷�
 | BEE1005 | Error | 關聯對應的 `DestinationField` 必須是已宣告欄位 |
 | BEE1006 | Warning | 標記 `Type="RelationField"` 的欄位應有對應寫入 |
 | BEE1007 | Error | 同一張表不得重複宣告同名欄位 |
+| BEE1008 | Info | 未宣告 `PermissionModelId` 的 FormSchema 對所有已認證呼叫者全開 —— 層一授權對它是 no-op |
+
+
+> **BEE1008 預設看不到，這是刻意的取捨。** 未標記的表單保持開放是框架的漸進採用策略
+> （見 `FormBusinessObject.Authorize` 的 XML doc），把它設成 warning 會讓每個採用到一半的
+> 部署當場 build 失敗。代價是 `Info` 對應 MSBuild message、預設 verbosity 下不顯示，而
+> definition analyzer 都是 CompilationEnd、IDE 也不會即時顯示 —— **等於機制存在但你不會看到**。
+> 完成權限模型導入之後，在 `.editorconfig` 提升它才有實際把關效果：
+>
+> ```ini
+> dotnet_diagnostic.BEE1008.severity = warning
+> ```
 
 ### 定義檔——跨檔一致性（BEE2xxx）
 

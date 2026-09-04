@@ -101,6 +101,12 @@ namespace Bee.Analyzers
         public const string MissingExecFuncAccessControl = "BEE3003";
 
         /// <summary>
+        /// A form schema declares no <c>PermissionModelId</c>, so its layer-1 authorization is a
+        /// no-op and every authenticated caller may read and write through it.
+        /// </summary>
+        public const string MissingPermissionModelId = "BEE1008";
+
+        /// <summary>
         /// A collection declares an additional public Add overload, which reflection-only
         /// serialization cannot resolve unambiguously.
         /// </summary>

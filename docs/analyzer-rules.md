@@ -25,6 +25,20 @@ build time, where the message can name both the cause and the fix.
 | BEE1005 | Error | A relation mapping's `DestinationField` must be a declared field |
 | BEE1006 | Warning | A field marked `Type="RelationField"` should be populated by a mapping |
 | BEE1007 | Error | A table must not declare the same field name twice |
+| BEE1008 | Info | A form schema with no `PermissionModelId` is open to every authenticated caller — layer-1 authorization is a no-op for it |
+
+
+> **BEE1008 is invisible by default, and that is a deliberate trade-off.** Leaving unmarked forms
+> open is the framework's gradual-adoption stance (see the XML doc on `FormBusinessObject.Authorize`),
+> and a warning would fail the build of every deployment that is midway through adopting permission
+> models. The cost is that `Info` maps to an MSBuild message, which the default verbosity does not
+> print — and every definition analyzer is a compilation-end diagnostic, so IDEs do not surface it
+> live either. **The rule exists, but you will not see it.** Raise it in `.editorconfig` once a
+> deployment has finished adopting permission models, and it starts doing real work:
+>
+> ```ini
+> dotnet_diagnostic.BEE1008.severity = warning
+> ```
 
 ### Definition files — cross file (BEE2xxx)
 

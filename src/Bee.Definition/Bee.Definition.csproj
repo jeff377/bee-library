@@ -28,9 +28,15 @@
 
     ReferenceOutputAssembly is false because the analyzer is not part of this assembly's API surface;
     the ProjectReference exists only to order the build and to feed the analyzer to the compiler.
-    OutputItemType="Analyzer" means Bee.Definition IS analyzed by its own rules — that is deliberate,
-    so the framework's Defaults/ definitions are held to the same rules a consumer's are. PrivateAssets
-    keeps the analyzer out of the package's dependency surface.
+    PrivateAssets keeps it out of the package's dependency surface.
+
+    OutputItemType="Analyzer" means this project's own C# is checked by the BEE3xxx / BEE4xxx rules,
+    which is deliberate: the framework holds itself to the conventions it asks consumers to follow.
+
+    It does NOT mean the definition rules (BEE1xxx / BEE2xxx) see Defaults/. Those read XML through
+    AdditionalFiles, which buildTransitive/Bee.Definition.targets populates from a `Define/**` glob —
+    and this project does not import its own buildTransitive targets. Defaults/ is validated by
+    tests/Bee.Definition.UnitTests/DefaultsTests.cs instead.
   -->
   <ItemGroup>
     <ProjectReference Include="..\Bee.Analyzers\Bee.Analyzers.csproj"
