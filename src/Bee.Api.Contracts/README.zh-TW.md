@@ -67,7 +67,7 @@
 
 - **軸分命名空間** -- 介面依 `System` / `Form` / `AuditLog` 子命名空間分組，對映 `Bee.Business.*` 與 `Bee.Api.Core.Messages.*` 兩層，使「合約介面、訊息實作、商業物件」三者共用同一軸。跨 BO 的泛用 `IExecFunc*` 派發契約保留在根命名空間 `Bee.Api.Contracts`（鏡像 `Bee.Api.Core.Messages` 根層的 `ExecFunc*` 實作）。
 - **純介面定義** -- 每個 API 操作以 `IXxxRequest` / `IXxxResponse` 配對定義，本專案不含任何實作邏輯。
-- **MessagePack 序列化** -- 資料類別如 `PackageUpdateInfo` 使用 `[MessagePackObject]` 與 `[Key(n)]` 屬性進行高效能二進位序列化。
+- **不帶序列化標註** -- 資料類別如 `PackageUpdateInfo` 是帶 public 可讀寫屬性的普通型別。它們與 wire 的綁定以手寫 formatter 的形式住在 `Bee.Api.Core`，因此本套件不相依任何傳輸格式（[ADR-036](../../docs/adr/adr-036-wire-serialization-externalized.md)）。
 - **RSA 安全機制** -- 登入契約包含 `ClientPublicKey`（用戶端產生）與 `ApiEncryptionKey`（伺服器產生），用於安全金鑰交換。
 - **穩定列舉值** -- `PackageDelivery` 成員具有明確的整數值，不可變更既有值以維護序列化相容性。
 - **啟用可為 Null 參考型別**（`<Nullable>enable</Nullable>`）。

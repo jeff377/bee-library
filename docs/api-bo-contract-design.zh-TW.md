@@ -55,12 +55,11 @@ namespace Bee.Api.Contracts.System
 
 ### API 合約型別（Bee.Api.Core.Messages.System）
 
-繼承 `ApiRequest` / `ApiResponse`，實作合約介面，標記 MessagePack 序列化屬性。用戶端透過這些型別發送請求與接收回應。
+繼承 `ApiRequest` / `ApiResponse`，實作合約介面。用戶端透過這些型別發送請求與接收回應。
 
-合約型別採**屬性名為鍵**（`[MessagePackObject(keyAsPropertyName: true)]`）：成員以屬性名作為 wire 鍵，與 JSON 合約一致，並消除脆弱的整數鍵編號協調。**不要**加 `[Key(int)]`；排除成員用 `[IgnoreMember]`，僅在 wire 名需與屬性名不同時用 `[Key("name")]`。見 [ADR-030](adr/adr-030-messagepack-name-based-keys.md)。
+它們**完全不帶任何序列化標註** —— 一個帶 public 可讀寫屬性的普通類別就是全部：
 
 ```csharp
-[MessagePackObject(keyAsPropertyName: true)]
 public class LoginRequest : ApiRequest, ILoginRequest
 {
     public string UserId { get; set; } = string.Empty;
@@ -68,7 +67,6 @@ public class LoginRequest : ApiRequest, ILoginRequest
     public string ClientPublicKey { get; set; } = string.Empty;
 }
 
-[MessagePackObject(keyAsPropertyName: true)]
 public class LoginResponse : ApiResponse, ILoginResponse
 {
     public Guid AccessToken { get; set; } = Guid.Empty;
@@ -79,7 +77,22 @@ public class LoginResponse : ApiResponse, ILoginResponse
 }
 ```
 
-> **例外 —— `[Union]` 多型階層**（如 `FilterNode`）維持整數 `[Key]` + `[Union]`，因 `[Union]` 與 `keyAsPropertyName` 不相容。
+那 wire 綁定在哪裡：
+
+- **JSON** —— System.Text.Json 以屬性名綁定，不需要宣告任何東西。
+- **MessagePack** —— 由 `src/Bee.Api.Core/MessagePack/WireContracts.*.cs` 的手寫合約逐一列出成員。
+  **新增訊息型別必須到那裡註冊**：resolver 在禁用動態碼的平台上沒有反射退路；
+  wire 閉包與註冊對不上時 `WireContractDriftTests` 會讓建置失敗。
+
+標註之所以被拿掉，正是因為留著它們會把傳輸套件放進定義層每一個消費者的相依表面。
+見 [ADR-036](adr/adr-036-wire-serialization-externalized.md)。
+
+> **僅限框架 repository。** `WireContract`、`WireContracts` 與 `MessagePackCodec` 都是 `internal`，
+> 因此本 repository 之外的應用**無法**為自己的訊息型別註冊 formatter。那種型別只能經由反射式
+> resolver 上 MessagePack wire —— 桌面與伺服器可行，在沒有動態碼的執行環境會擲例外。
+> 逐請求宣告 `codec: json`（[ADR-044](adr/adr-044-payload-codec-negotiation.md)）可完全繞開這個問題。
+
+> **多型階層**（`FilterNode` 與其子型別）需要的不只是一份成員清單，因此有專屬的手寫 formatter —— `FilterNodeFormatter` —— 在成員旁邊寫入判別子。同一個檔案家族、同一套註冊方式，只有 formatter 是量身打造的。
 
 ### BO 參數型別（Bee.Business）
 
@@ -185,14 +198,13 @@ public class RecalcArgs : BusinessArgs
 
 ## 序列化規則
 
-| 層級 | `[MessagePackObject]` | `[Key(n)]` | `IObjectSerialize` |
+| 層級 | 序列化標註 | wire 註冊 | `IObjectSerialize` |
 |------|:---:|:---:|:---:|
-| 合約介面 | 否 | 否 | 否 |
-| API 型別 | **是** | **是**（從 100 起） | 是（基底提供） |
-| BO 型別 | 否 | 否 | 否 |
+| 合約介面 | 無 | — | 否 |
+| API 型別 | **無** | `WireContracts.*.cs`（框架 repository） | 是（基底提供） |
+| BO 型別 | 無 | — | 否 |
 
-- `[Key(0)]` 保留給基底類別的 `ParameterCollection` 屬性
-- 自訂屬性的 Key 從 100 開始，避免與基底衝突
+沒有任何一層帶 MessagePack 標註。XML 標註屬於會被存成檔案的定義型別，不屬於這些 wire 訊息。
 
 ---
 
@@ -257,8 +269,10 @@ public LoginResult Login(LoginArgs args) { ... }
    - `IGetOrderResponse.cs` — 輸出屬性
 
 2. **建立 API 合約型別**（`src/Bee.Api.Core/Messages/System/` 或 `Messages/Form/` 等對應模組目錄；namespace 為 `Bee.Api.Core.Messages.<Module>`）
-   - `GetOrderRequest.cs` — 繼承 `ApiRequest`，實作 `IGetOrderRequest`，標記 MessagePack
-   - `GetOrderResponse.cs` — 繼承 `ApiResponse`，實作 `IGetOrderResponse`，標記 MessagePack
+   - `GetOrderRequest.cs` — 繼承 `ApiRequest`，實作 `IGetOrderRequest`；不帶標註
+   - `GetOrderResponse.cs` — 繼承 `ApiResponse`，實作 `IGetOrderResponse`；不帶標註
+   - 兩者都要到 `src/Bee.Api.Core/MessagePack/WireContracts.*.cs` 註冊 —— 漏了
+     `WireContractDriftTests` 會讓建置失敗
 
 3. **實作 BO 方法**
    - 方法簽章使用具體 `GetOrderArgs` / `GetOrderResult` 型別

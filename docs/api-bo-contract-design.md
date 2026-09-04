@@ -55,12 +55,11 @@ namespace Bee.Api.Contracts.System
 
 ### API Contract Types (Bee.Api.Core.Messages.System)
 
-Inherit `ApiRequest` / `ApiResponse`, implement contract interfaces, and carry MessagePack serialization attributes. Clients use these types to send requests and receive responses.
+Inherit `ApiRequest` / `ApiResponse` and implement the contract interfaces. Clients use these types to send requests and receive responses.
 
-Contract types use **property-name keys** (`[MessagePackObject(keyAsPropertyName: true)]`): members are keyed by their property name on the wire, matching the JSON contract and removing the fragile integer-key coordination. Do not add `[Key(int)]`; use `[IgnoreMember]` to exclude a member, and `[Key("name")]` only when the wire name must differ from the property name. See [ADR-030](adr/adr-030-messagepack-name-based-keys.md).
+They carry **no serialization attributes at all** — a plain class with public read/write properties is the whole recipe:
 
 ```csharp
-[MessagePackObject(keyAsPropertyName: true)]
 public class LoginRequest : ApiRequest, ILoginRequest
 {
     public string UserId { get; set; } = string.Empty;
@@ -68,7 +67,6 @@ public class LoginRequest : ApiRequest, ILoginRequest
     public string ClientPublicKey { get; set; } = string.Empty;
 }
 
-[MessagePackObject(keyAsPropertyName: true)]
 public class LoginResponse : ApiResponse, ILoginResponse
 {
     public Guid AccessToken { get; set; } = Guid.Empty;
@@ -79,7 +77,25 @@ public class LoginResponse : ApiResponse, ILoginResponse
 }
 ```
 
-> **Exception — `[Union]` polymorphic hierarchies** (e.g. `FilterNode`) keep integer `[Key]` + `[Union]`, because `[Union]` is incompatible with `keyAsPropertyName`.
+Where the wire binding lives instead:
+
+- **JSON** — System.Text.Json binds by property name; nothing to declare.
+- **MessagePack** — a hand-written contract in `src/Bee.Api.Core/MessagePack/WireContracts.*.cs`
+  names each member explicitly. **A new message type has to be registered there**, because the
+  resolver has no reflection fallback on platforms that forbid dynamic code; `WireContractDriftTests`
+  fails the build when the wire closure and the registrations disagree.
+
+This is why the attributes are gone: keeping them would have put a transport package on the dependency
+surface of every consumer of the definition layer. See
+[ADR-036](adr/adr-036-wire-serialization-externalized.md).
+
+> **Framework repository only.** `WireContract`, `WireContracts` and `MessagePackCodec` are `internal`,
+> so an application outside this repository cannot register a formatter for a message type of its own.
+> Such a type reaches the MessagePack wire only through the reflection-based resolver — which works on
+> desktop and server, and throws on a runtime without dynamic code. Declaring `codec: json` per request
+> ([ADR-044](adr/adr-044-payload-codec-negotiation.md)) avoids the question entirely.
+
+> **Polymorphic hierarchies** (`FilterNode` and its subtypes) need more than a member list, so they have a dedicated hand-written formatter — `FilterNodeFormatter` — that writes a discriminator alongside the members. Same file family, same registration; only the formatter is bespoke.
 
 ### BO Parameter Types (Bee.Business)
 
@@ -188,14 +204,14 @@ public class RecalcArgs : BusinessArgs
 
 ## Serialization Rules
 
-| Layer | `[MessagePackObject]` | `[Key(n)]` | `IObjectSerialize` |
+| Layer | Serialization attributes | Wire registration | `IObjectSerialize` |
 |-------|:---:|:---:|:---:|
-| Contract interface | No | No | No |
-| API type | **Yes** | **Yes** (from 100) | Yes (provided by base) |
-| BO type | No | No | No |
+| Contract interface | None | — | No |
+| API type | **None** | `WireContracts.*.cs` (framework repository) | Yes (provided by base) |
+| BO type | None | — | No |
 
-- `[Key(0)]` is reserved for the base class `ParameterCollection` property
-- Custom property keys start at 100 to avoid conflicts with the base class
+No layer carries MessagePack attributes. XML annotations belong to the definition types that are
+persisted as files, not to these wire messages.
 
 ---
 
@@ -261,8 +277,10 @@ Using `GetOrder` as an example:
    - `IGetOrderResponse.cs` — output properties
 
 2. **Create API contract types** (`src/Bee.Api.Core/Messages/System/` or `Messages/Form/` etc.; namespace is `Bee.Api.Core.Messages.<Module>`)
-   - `GetOrderRequest.cs` — inherits `ApiRequest`, implements `IGetOrderRequest`, with MessagePack
-   - `GetOrderResponse.cs` — inherits `ApiResponse`, implements `IGetOrderResponse`, with MessagePack
+   - `GetOrderRequest.cs` — inherits `ApiRequest`, implements `IGetOrderRequest`; no attributes
+   - `GetOrderResponse.cs` — inherits `ApiResponse`, implements `IGetOrderResponse`; no attributes
+   - Register both in `src/Bee.Api.Core/MessagePack/WireContracts.*.cs` — `WireContractDriftTests`
+     fails the build if you forget
 
 3. **Implement BO method**
    - Method signature uses the concrete `GetOrderArgs` / `GetOrderResult` types

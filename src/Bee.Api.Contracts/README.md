@@ -67,7 +67,7 @@
 
 - **Axis-based namespaces** -- interfaces are grouped into `System` / `Form` / `AuditLog` sub-namespaces that mirror the `Bee.Business.*` and `Bee.Api.Core.Messages.*` layers, so a contract, its message implementation, and its business object share the same axis. The generic cross-BO `IExecFunc*` dispatch contract stays at the root `Bee.Api.Contracts` (mirroring the root-level `ExecFunc*` implementation in `Bee.Api.Core.Messages`).
 - **Pure interface definitions** -- each API operation is defined as an `IXxxRequest` / `IXxxResponse` pair; no implementation logic in this project.
-- **MessagePack serialization** -- data classes such as `PackageUpdateInfo` use `[MessagePackObject]` and `[Key(n)]` attributes for high-performance binary serialization.
+- **No serialization attributes** -- data classes such as `PackageUpdateInfo` are plain types with public read/write properties. Their binding to the wire lives in `Bee.Api.Core` as hand-written formatters, so this package takes no dependency on a transport format ([ADR-036](../../docs/adr/adr-036-wire-serialization-externalized.md)).
 - **RSA-based security** -- the login contract includes `ClientPublicKey` (client-generated) and `ApiEncryptionKey` (server-generated) for secure key exchange.
 - **Stable enum values** -- `PackageDelivery` members have explicit integer values; existing values must not change to preserve serialization compatibility.
 - **Nullable reference types** enabled (`<Nullable>enable</Nullable>`).
