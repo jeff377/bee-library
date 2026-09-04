@@ -5,6 +5,7 @@ Bee.Business.Attributes.ExecFuncAccessControlAttribute.ExecFuncAccessControlAttr
 Bee.Business.Attributes.ExecFuncAccessControlAttribute.LocalOnly.get -> bool
 Bee.Business.Attributes.ExecFuncAccessControlAttribute.LocalOnly.set -> void
 Bee.Business.AuditLog.AuditRuleBusinessObject
+Bee.Business.AuditLog.AuditRuleBusinessObject.AuditRuleBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = false) -> void
 Bee.Business.AuditLog.GetAccessLogArgs
 Bee.Business.AuditLog.GetAccessLogArgs.FromUtc.get -> System.DateTime?
 Bee.Business.AuditLog.GetAccessLogArgs.FromUtc.set -> void
@@ -124,6 +125,7 @@ Bee.Business.AuditLog.LogAggregateResult.LogAggregateResult() -> void
 Bee.Business.AuditLog.LogAggregateResult.Table.get -> System.Data.DataTable?
 Bee.Business.AuditLog.LogAggregateResult.Table.set -> void
 Bee.Business.AuditLog.LogBusinessObject
+Bee.Business.AuditLog.LogBusinessObject.LogBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = false) -> void
 Bee.Business.AuditLog.LogListResult
 Bee.Business.AuditLog.LogListResult.LogListResult() -> void
 Bee.Business.AuditLog.LogListResult.Paging.get -> Bee.Definition.Paging.PagingInfo?
@@ -141,6 +143,7 @@ Bee.Business.BusinessObject.ApiKeyName.get -> string?
 Bee.Business.BusinessObject.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
 Bee.Business.BusinessObject.ApiKeyValidation.set -> void
 Bee.Business.BusinessObject.BoFactory.get -> Bee.Definition.IBusinessObjectFactory!
+Bee.Business.BusinessObject.BusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = false) -> void
 Bee.Business.BusinessObject.Context.get -> Bee.Definition.IBeeContext!
 Bee.Business.BusinessObject.CreateDataFormRepository(string! progId) -> Bee.Repository.Abstractions.Form.IDataFormRepository!
 Bee.Business.BusinessObject.CreateFormRepository<T>() -> T!
@@ -198,6 +201,7 @@ Bee.Business.Form.DeleteResult.DeleteResult() -> void
 Bee.Business.Form.DeleteResult.RowsAffected.get -> int
 Bee.Business.Form.DeleteResult.RowsAffected.set -> void
 Bee.Business.Form.FormBusinessObject
+Bee.Business.Form.FormBusinessObject.FormBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = false) -> void
 Bee.Business.Form.FormBusinessPlugin
 Bee.Business.Form.FormBusinessPlugin.AccessToken.get -> System.Guid
 Bee.Business.Form.FormBusinessPlugin.Context.get -> Bee.Definition.IBeeContext!
@@ -595,6 +599,7 @@ Bee.Business.System.SetDeploymentAdminResult.SetDeploymentAdminResult() -> void
 Bee.Business.System.SetDeploymentAdminResult.UserId.get -> string!
 Bee.Business.System.SetDeploymentAdminResult.UserId.set -> void
 Bee.Business.System.SystemBusinessObject
+Bee.Business.System.SystemBusinessObject.SystemBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = false) -> void
 Bee.Business.Validator.AccessTokenValidator
 Bee.Business.Validator.AccessTokenValidator.AccessTokenValidator(Bee.Definition.Identity.ISessionInfoService! sessionInfoService) -> void
 Bee.Business.Validator.AccessTokenValidator.Validate(System.Guid accessToken) -> bool

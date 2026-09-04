@@ -53,3 +53,11 @@ BEE4001 | Bee.Serialization | Error | CollectionFormatterRegistrationAnalyzer �
 BEE4002 | Bee.Serialization | Error | WireFieldNameAnalyzer — a JSON rename must not conflict with name-based MessagePack keys
 BEE4003 | Bee.Serialization | Error | UnionKeyStrategyAnalyzer — a union hierarchy must use integer MessagePack keys
 BEE4004 | Bee.Serialization | Error | MessagePackConstructorOrderAnalyzer — constructor parameters must follow integer key order
+
+## Release 4.28.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------------|----------|-------------------------------------------------------------------
+BEE1008 | Bee.Definition | Info | PermissionModelAnalyzer — a form schema with no PermissionModelId is open to every authenticated caller

@@ -1,11 +1,1 @@
 #nullable enable
-Bee.Api.Core.Validator.ApiCallContext
-Bee.Api.Core.Validator.ApiCallContext.AccessToken.get -> System.Guid
-Bee.Api.Core.Validator.ApiCallContext.AccessToken.set -> void
-Bee.Api.Core.Validator.ApiCallContext.ApiCallContext() -> void
-Bee.Api.Core.Validator.ApiCallContext.ApiCallContext(System.Guid accessToken, bool isLocalCall, Bee.Api.Core.Messages.PayloadFormat format) -> void
-Bee.Api.Core.Validator.ApiCallContext.Format.get -> Bee.Api.Core.Messages.PayloadFormat
-Bee.Api.Core.Validator.ApiCallContext.Format.set -> void
-Bee.Api.Core.Validator.ApiCallContext.IsLocalCall.get -> bool
-Bee.Api.Core.Validator.ApiCallContext.IsLocalCall.set -> void
-static Bee.Api.Core.Validator.ApiAccessValidator.ValidateAccess(System.Reflection.MethodInfo! method, Bee.Api.Core.Validator.ApiCallContext! context, Bee.Definition.Security.IAccessTokenValidator! tokenValidator) -> void

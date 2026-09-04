@@ -1,14 +1,1 @@
 #nullable enable
-Bee.Api.Client.HttpUtilities
-static Bee.Api.Client.HttpUtilities.GetAsync(string! endpoint, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
-static Bee.Api.Client.HttpUtilities.IsEndpointReachableAsync(string! endpoint, System.TimeSpan? timeout = null) -> System.Threading.Tasks.Task<bool>!
-static Bee.Api.Client.HttpUtilities.IsUrl(string! input) -> bool
-static Bee.Api.Client.HttpUtilities.PostAsync(string! endpoint, string! body, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
-Bee.Api.Client.FormDataGuard
-static Bee.Api.Client.FormDataGuard.RequireConnector(Bee.Api.Client.Connectors.FormApiConnector? connector, string! operation) -> Bee.Api.Client.Connectors.FormApiConnector!
-static Bee.Api.Client.FormDataGuard.RequireMasterRowId(System.Data.DataRow? masterRow) -> System.Guid
-Bee.Api.Client.FormValueBinding
-static Bee.Api.Client.FormValueBinding.BuildEmptyDataSet(Bee.Definition.Forms.FormSchema! schema) -> System.Data.DataSet!
-static Bee.Api.Client.FormValueBinding.GetEmptyValue(System.Type! targetType) -> object!
-static Bee.Api.Client.FormValueBinding.ToBindingString(object? raw) -> string!
-static Bee.Api.Client.FormValueBinding.ToColumnValue(string? value, System.Data.DataColumn! column) -> object!

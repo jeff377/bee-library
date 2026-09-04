@@ -611,6 +611,15 @@ Bee.Api.Core.Transformers.NoEncryptionEncryptor.EncryptionMethod.get -> string!
 Bee.Api.Core.Transformers.NoEncryptionEncryptor.NoEncryptionEncryptor() -> void
 Bee.Api.Core.Transformers.PayloadCodecNames
 Bee.Api.Core.Validator.ApiAccessValidator
+Bee.Api.Core.Validator.ApiCallContext
+Bee.Api.Core.Validator.ApiCallContext.AccessToken.get -> System.Guid
+Bee.Api.Core.Validator.ApiCallContext.AccessToken.set -> void
+Bee.Api.Core.Validator.ApiCallContext.ApiCallContext() -> void
+Bee.Api.Core.Validator.ApiCallContext.ApiCallContext(System.Guid accessToken, bool isLocalCall, Bee.Api.Core.Messages.PayloadFormat format) -> void
+Bee.Api.Core.Validator.ApiCallContext.Format.get -> Bee.Api.Core.Messages.PayloadFormat
+Bee.Api.Core.Validator.ApiCallContext.Format.set -> void
+Bee.Api.Core.Validator.ApiCallContext.IsLocalCall.get -> bool
+Bee.Api.Core.Validator.ApiCallContext.IsLocalCall.set -> void
 const Bee.Api.Core.JsonRpc.ApiPayloadFrame.CurrentVersion = 1 -> byte
 const Bee.Api.Core.JsonRpc.ApiPayloadFrame.Version1Size = 17 -> int
 const Bee.Api.Core.JsonRpc.ReplayWindow.MaxForwardJump = 1000000 -> long
@@ -669,6 +678,7 @@ static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUtc(object? payload, string! 
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateCompressor(string! name) -> Bee.Api.Core.Transformers.IApiPayloadCompressor!
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateEncryptor(string! name, bool isDebugMode) -> Bee.Api.Core.Transformers.IApiPayloadEncryptor!
 static Bee.Api.Core.Validator.ApiAccessValidator.FindAccessControl(System.Reflection.MethodInfo! method) -> Bee.Definition.Attributes.ApiAccessControlAttribute?
+static Bee.Api.Core.Validator.ApiAccessValidator.ValidateAccess(System.Reflection.MethodInfo! method, Bee.Api.Core.Validator.ApiCallContext! context, Bee.Definition.Security.IAccessTokenValidator! tokenValidator) -> void
 virtual Bee.Api.Core.Authorization.ApiAuthorizationValidator.IsApiKeyRequired(string! method) -> bool
 virtual Bee.Api.Core.Authorization.ApiAuthorizationValidator.IsAuthorizationRequired(string! method) -> bool
 virtual Bee.Api.Core.JsonRpc.ApiPayload.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void

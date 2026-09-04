@@ -4,6 +4,85 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.28.0]
+
+> This release is the outcome of a systematic framework review, and it found one shape of defect over and over: **a protection mechanism whose real coverage is narrower than its apparent coverage, with nothing to say so.** The record-scope check on a form save was skipped entirely when the payload carried only detail rows. Audit-log queries fell open across every tenant when no company had been entered. On a fresh deployment the cache-notify baseline sat hours in the future, silently stopping cache invalidation until the wall clock caught up. A stored password whose hash segment was empty verified against any input. Alongside the fixes, the mechanisms that were supposed to notice are now themselves under test: six gates that claimed to check something and did not, an analyzer release history that had been empty since the analyzers first shipped — so the rule that catches a silently retired rule could never fire — and 38 tests that were reaching a database by accident. `System.CheckPackageUpdate` and `System.GetPackage` are removed outright: extension points with a consumer on neither path.
+
+📄 Full notes and design context: [docs/changelogs/4.28.0.md](docs/changelogs/4.28.0.md)
+
+### Breaking Changes
+
+- `Bee.Api.Contracts` / `Bee.Api.Core` / `Bee.Business`: `System.CheckPackageUpdate` and `System.GetPackage` are removed in full — contracts, wire messages, BO args and results, `SystemActions` constants, MessagePack registrations and the generated TypeScript contract. Both were extension points whose base threw `NotSupportedException`, and neither had a consumer: no `Bee.Api.Client` connector method, and the documentation said outright they were not for the JavaScript front end.
+- `Bee.Api.Contracts`: `ISaveResponse.AffectedRows` and `IEnterCompanyResponse.Capabilities` narrow to `IReadOnlyDictionary`. The concrete implementations are untouched; only code that reads these *through the contract interface* and wants a concrete type needs an edit.
+- `Bee.Business`: the `isLocalCall` constructor parameter on `BusinessObject` and its four subclasses now defaults to `false`. Default `true` meant that constructing a BO directly — the one path that bypasses `ApiAccessValidator` — was trusted by default, leaving four second-line guards open on exactly the path least in need of trust.
+- `Bee.Api.Core`: `ApiCallContext` moves to `Bee.Api.Core.Validator`; it is the validator's input and never crosses the wire. `ApiPayloadOptionsFactory.CreateSerializer` is removed — the body codec is declared per request, not per deployment.
+- `Bee.Base` → `Bee.Api.Client`: `HttpUtilities` moves. `Bee.Base` is every project's dependency, including offline definition tools; its three call sites were always in `Bee.Api.Client`.
+- `Bee.Api.Core`: `DataTable` cells typed `decimal`, `long` or `ulong` are written as JSON strings, matching the rule the `object` envelope already followed. Readers still accept bare numbers, so a cross-language client written against the 4.27.0 fixtures keeps working.
+- `Bee.Db`: MySQL string-literal escaping now escapes backslashes, so generated DDL text changes.
+- `Bee.Db`: `UpgradeOptions.AllowColumnNarrowing` becomes `init`-only — a mutable property on a shared static `Default` let any caller enable possibly-truncating changes process-wide and permanently.
+- `Bee.Business`: `AuditRuleBusinessObject` gains a fourth constructor parameter (binary-breaking, source-compatible), and `st_user.password` joins `ProtectedFields`.
+
+### Security
+
+- `Bee.Base`: `PasswordHasher.VerifyPassword` returned `true` for a stored value whose hash segment was empty — PBKDF2 asked for zero bytes returns an empty array, and `FixedTimeEquals` calls two empty spans equal. A value of `v2.100000..` therefore verified against any password, on both the v2 and legacy branches. Together with `st_user.password` being absent from `ProtectedFields` — so any deployment with a user-maintenance form over `st_user` could write that column — the two formed a complete privilege-escalation chain. Both are closed.
+- `Bee.Business`: the level-two record-scope check on `FormBusinessObject.Save` was skipped whenever the payload carried no master table, while the repository wrote each table independently — so a save containing only detail rows wrote them against out-of-scope master records with no check at all. A second route through the same hole: a detail row's `sys_master_rowid` was taken from the payload verbatim, so an in-scope master with detail rows pointing elsewhere passed, and `Modified` could move existing details out of someone else's record. Both are now refused.
+- `Bee.Repository`: audit-log queries were fail-open on the tenant boundary. `company_id` shared the same "skip when null" helper as optional filters like `prog_id`, so a session that had entered no company received every company's audit records. Seven entry points are now fail-closed.
+- `Bee.Definition`: a definition file that failed to deserialize returned the server's absolute path to the remote caller. The message now carries the file name only; the full path moves to `Exception.Data` under the new `SerializationErrorData.FilePath` for server-side logging.
+- `Bee.Db`: MySQL was the one dialect treating `\` as an escape character, and `EscapeSqlString` only doubled quotes — so a backslash swallowed the closing quote and the literal escaped into the following statement. This is not only an injection surface: a column description ending in a backslash is enough to make the generated DDL a syntax error.
+
+### Added
+
+- `Bee.Analyzers`: **BEE1008** reports a `FormSchema` that declares no `PermissionModelId`. Level-one authorization returns immediately when it is empty — deliberate, for gradual adoption — but the consequence was visible nowhere: such a form is open to every authenticated caller while build, tests and analyzers all stay green. It reports rather than enforces, at `Info` severity; raise it to `warning` in `.editorconfig` once adoption is complete.
+- `Bee.Definition`: `IApiKeyGateStateProvider`, a read-only seam answering whether the API key gate is in force, so the API layer no longer takes a type dependency on the caching implementation to answer it.
+- `Bee.Api.Client`: `FormValueBinding` and `FormDataGuard`, the form-data rules both UI heads had been carrying private copies of.
+- `Bee.Base`: `SerializationLifecycle.BeginSerialize`, a scope that pairs `NotifyBefore` with `NotifyAfter` structurally; `JsonCodec.DeserializeAsync(Stream, …)`; `SerializationErrorData`.
+- `Bee.Definition`: `LanguageKey.Split`, replacing a `SplitFullKey` duplicated verbatim across two `ILanguageService` implementations — the key format is the interface's contract, not an implementation detail.
+- Gates: six mechanisms that claimed to check something and did not are now real, and the architecture gate switched from `deps.json` to `Assembly.GetReferencedAssemblies()` after a deliberately planted violation left it green — the SDK folds transitive project references into `@(ProjectReference)`, so code can `using` an assembly that appears on no declared edge. New gates cover the dependency lock across three assemblies, the `Bee.Api.Core.Messages` namespace, the `isLocalCall` default across every `BusinessObject` subclass, `Bee.Base`'s freedom from `System.Net.Http`, and the cache-notify baseline basis.
+
+### Changed
+
+- `Bee.Db`: the write path sets `UpdateBatchSize`, replacing one round trip per row. Measured against a local SQL Server container: 100 rows 32 ms → 3 ms, 500 rows 145 ms → 9 ms. Support is detected by asking the adapter rather than by a provider list — SQL Server, MySQL and Oracle accept it; Npgsql and the framework's SQLite adapter do not. Until now this path had DB coverage on SQLite only, which is one of the two that cannot batch.
+- `Bee.Api.AspNetCore`: the request body is deserialized straight from the stream. `EnableBuffering()` spilled every body over 30 KB to a temporary file for a rewind capability nothing used, and a `params.value` carrying a base64 gzip body is over that threshold for any save with detail rows. Measured over a full HTTP round trip: 64 KB 0.46 ms → 0.22 ms, 1 MB 2.81 ms → 1.28 ms, 4 MB 9.51 ms → 4.76 ms — and 16 KB unchanged, which is what proves the cause is the spill.
+- `Bee.Hosting`: `AuditLogWriterService` gains an exception guard. `IAuditLogSink` is a public DI seam, so anything it throws escaped into `BackgroundService`, and .NET's default `StopHost` behaviour meant one failed log write could take the deployment down. ADR-017 had set this rule for `CacheNotifyPoller`; this was the one service without it. The file fallback also serializes its appends.
+- `Bee.Analyzers`: `AnalyzerReleases.Shipped.md` is backfilled from tag snapshots (22 rules at 4.16.0, BEE3003 at 4.18.0, BEE4001–BEE4004 removed at 4.19.0). It had been empty since the analyzers first shipped, so RS2003 — the rule that catches a shipped diagnostic disappearing — could never fire, which is precisely how those four retired unannounced.
+- Docs: 239 prose references to first-party types across 144 files move from `<c>` to `<see cref>`, putting them under the compiler. `check-xmldoc-refs.sh` gains the reverse check, and `check-public-docs.sh` a sixth pass for public documents linking into the internal agent-rules directory.
+
+### Fixed
+
+- `Bee.Business`: every `AuditRule.*` call over JSON-RPC threw `MissingMethodException`. `AuditRuleBusinessObject` declared only a three-parameter constructor while `BusinessObjectFactory` always activates with four, and constructors are not inherited — so the per-form audit-rule maintenance form shipped in 4.25.0 was never reachable remotely. Its only test constructed the type directly and never went through the factory.
+- `Bee.Db`: the cache-notify baseline for an empty table carried its own dialect table returning **local** time, while every row's `sys_update_time` is stamped UTC by the write side. On a fresh deployment the first poll cursor therefore landed in the future and every later window came back empty — cache invalidation stopped silently until the wall clock caught up, eight hours at UTC+8. The reader now derives the expression from the same source as the writer. It went unnoticed because the four local containers and the GitHub runner all run UTC; Oracle is the one dialect that shows it, since `LOCALTIMESTAMP` follows the *client* session's timezone.
+- `Bee.Api.Core`: `MemoryReplayWindowStore` stamped `Entry.LastTouchedMs` after inserting the entry, so a sweep landing in that gap read 0, judged the entry older than any cutoff and evicted a window still in use — silently resetting replay protection for that session.
+- `Bee.Base`: a serialization failure left the object permanently in `SerializeState.Serialize`, because `NotifyAfter` was never reached. The objects being serialized are often process-wide cached definitions, and in that state every empty-collection getter returns `null` while several callers dereference with `!` — turning a transient failure into a permanent one.
+- `Bee.UI.Blazor`: a NOT NULL column whose `DefaultValue` was still `DBNull` — the normal shape of a raw ADO.NET column in a server response — received `DBNull` and threw `NoNullAllowedException` on `EndEdit`. The Avalonia head had fixed this in its own copy; sinking the shared rules into `Bee.Api.Client` carried the fix across.
+- `Bee.UI.Core`: `ClientInfo` now documents that it holds one signed-in user's state process-wide, and guards its three lazy initializations. Two threads could each build an instance, and the orphan is the problem — `ResetDefineCache` clears one while callers keep using the other, so a tenant switch leaves the old customized definitions in place.
+- Docs: `Bee.Definition`'s README claimed an upstream dependency on MessagePack (removed in 4.19.0) and "no business logic and no I/O" against 7 files of file IO. Five stale claims across both language versions are corrected.
+
+### Upgrade notes
+
+Most deployments need no change. Four cases to check:
+
+```csharp
+// 1. Reading a contract collection through the interface type:
+- Dictionary<string, int> rows = response.AffectedRows;   // ISaveResponse
++ IReadOnlyDictionary<string, int> rows = response.AffectedRows;
+// Reading through the concrete SaveResponse / SaveResult is unaffected.
+
+// 2. Constructing a BO directly and relying on the in-process path:
+- var bo = new SystemBusinessObject(sessionInfo);
++ var bo = new SystemBusinessObject(sessionInfo, isLocalCall: true);
+// Otherwise the four second-line guards now apply, which is the point.
+
+// 3. HttpUtilities moved assembly and namespace:
+- using Bee.Base;
++ using Bee.Api.Client;
+```
+
+- `System.CheckPackageUpdate` and `System.GetPackage` are gone. A host that implemented either extension point should remove its override; there is no replacement, and there was no caller.
+- A cross-language client reading `DataTable` cells must accept `decimal` / `long` / `ulong` as quoted JSON strings. Its writer needs no change — the reader still accepts bare numbers.
+- A MySQL deployment whose column descriptions or default values contain a backslash could not upgrade at all before (the generated DDL was a syntax error); it now writes correctly. This assumes the server's default `sql_mode`, without `NO_BACKSLASH_ESCAPES`.
+- A deployment that computed password hashes itself and wrote them into `st_user.password` through a FormSchema data path will now be refused by `RemoveProtectedFields`. The framework itself has no path that writes that column.
+- Audit-log queries made without entering a company now return nothing rather than every tenant's records.
+
 ## [4.27.0]
 
 > A browser front end could not call an encoded endpoint: the wire body was MessagePack and nothing else, and this framework's MessagePack wire is some thirty hand-written formatters — mirroring them in another language creates a second authority over the same contract, with nothing to notice when the two drift. **The body codec moves from a deployment setting to a per-request declaration on the envelope, and a JSON codec joins MessagePack**, so a JavaScript client needs only JSON, gzip, AES-CBC-HMAC and RSA — all native. See [ADR-044](docs/adr/adr-044-payload-codec-negotiation.md). Two artefacts ship with it so a client in another language has something to check itself against rather than a document to obey: 26 wire body samples, and a TypeScript contract generated from the message types by reflection. Alongside them, a filter sent on the `Plain` path had been losing its entire subtree in silence, and the anonymous attack surface becomes a named declaration that a new `Anonymous` method cannot join without stating what it exposes.

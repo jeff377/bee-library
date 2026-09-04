@@ -184,6 +184,9 @@ Bee.ObjectCaching.Providers.MemoryCacheProvider.MemoryCacheProvider() -> void
 Bee.ObjectCaching.Providers.MemoryCacheProvider.MemoryCacheProvider(Microsoft.Extensions.Caching.Memory.MemoryCache! memoryCache) -> void
 Bee.ObjectCaching.Providers.MemoryCacheProvider.Remove(string! key) -> void
 Bee.ObjectCaching.Providers.MemoryCacheProvider.Set(string! key, object! value, Bee.ObjectCaching.CacheItemPolicy! policy) -> void
+Bee.ObjectCaching.Services.ApiKeyGateStateProvider
+Bee.ObjectCaching.Services.ApiKeyGateStateProvider.ApiKeyGateStateProvider(Bee.ObjectCaching.ICacheContainer! cache) -> void
+Bee.ObjectCaching.Services.ApiKeyGateStateProvider.GetState() -> Bee.Definition.Security.ApiKeyGateState?
 Bee.ObjectCaching.Services.ApiKeyValidator
 Bee.ObjectCaching.Services.ApiKeyValidator.ApiKeyValidator(Bee.ObjectCaching.ICacheContainer! cache) -> void
 Bee.ObjectCaching.Services.ApiKeyValidator.Validate(string? apiKey) -> Bee.Definition.Security.ApiKeyValidationResult!

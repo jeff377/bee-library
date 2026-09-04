@@ -110,6 +110,9 @@ Bee.Api.Client.Definitions.SnapshotLanguageService.GetLangText(string! lang, str
 Bee.Api.Client.Definitions.SnapshotLanguageService.SnapshotLanguageService(System.Collections.Generic.IReadOnlyDictionary<string!, Bee.Api.Client.Definitions.LanguageLayers>! snapshot, string! defaultLang) -> void
 Bee.Api.Client.Definitions.SnapshotLanguageService.TryGetLangText(string! lang, string! fullKey, out string! text) -> bool
 Bee.Api.Client.Definitions.SnapshotLanguageService.TryGetLangText(string! lang, string! namespace, string! subKey, out string! text) -> bool
+Bee.Api.Client.FormDataGuard
+Bee.Api.Client.FormValueBinding
+Bee.Api.Client.HttpUtilities
 Bee.Api.Client.Providers.IJsonRpcProvider
 Bee.Api.Client.Providers.IJsonRpcProvider.ExecuteAsync(Bee.Api.Core.JsonRpc.JsonRpcRequest! request) -> System.Threading.Tasks.Task<Bee.Api.Core.JsonRpc.JsonRpcResponse!>!
 Bee.Api.Client.Providers.LocalApiProvider
@@ -145,6 +148,16 @@ static Bee.Api.Client.ApiSessionContext.Ambient.get -> Bee.Api.Client.ApiSession
 static Bee.Api.Client.Definitions.LanguageLayers.operator !=(Bee.Api.Client.Definitions.LanguageLayers left, Bee.Api.Client.Definitions.LanguageLayers right) -> bool
 static Bee.Api.Client.Definitions.LanguageLayers.operator ==(Bee.Api.Client.Definitions.LanguageLayers left, Bee.Api.Client.Definitions.LanguageLayers right) -> bool
 static Bee.Api.Client.Definitions.SnapshotLanguageService.BuildKey(string! lang, string! ns) -> string!
+static Bee.Api.Client.FormDataGuard.RequireConnector(Bee.Api.Client.Connectors.FormApiConnector? connector, string! operation) -> Bee.Api.Client.Connectors.FormApiConnector!
+static Bee.Api.Client.FormDataGuard.RequireMasterRowId(System.Data.DataRow? masterRow) -> System.Guid
+static Bee.Api.Client.FormValueBinding.BuildEmptyDataSet(Bee.Definition.Forms.FormSchema! schema) -> System.Data.DataSet!
+static Bee.Api.Client.FormValueBinding.GetEmptyValue(System.Type! targetType) -> object!
+static Bee.Api.Client.FormValueBinding.ToBindingString(object? raw) -> string!
+static Bee.Api.Client.FormValueBinding.ToColumnValue(string? value, System.Data.DataColumn! column) -> object!
+static Bee.Api.Client.HttpUtilities.GetAsync(string! endpoint, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
+static Bee.Api.Client.HttpUtilities.IsEndpointReachableAsync(string! endpoint, System.TimeSpan? timeout = null) -> System.Threading.Tasks.Task<bool>!
+static Bee.Api.Client.HttpUtilities.IsUrl(string! input) -> bool
+static Bee.Api.Client.HttpUtilities.PostAsync(string! endpoint, string! body, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
 virtual Bee.Api.Client.Connectors.FormApiConnector.DeleteAsync(System.Guid rowId) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.Form.DeleteResponse!>!
 virtual Bee.Api.Client.Connectors.FormApiConnector.GetDataAsync(System.Guid rowId) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.Form.GetDataResponse!>!
 virtual Bee.Api.Client.Connectors.FormApiConnector.GetListAsync(string! selectFields = "", Bee.Definition.Filters.FilterNode? filter = null, Bee.Definition.Sorting.SortFieldCollection? sortFields = null, Bee.Definition.Paging.PagingOptions? paging = null) -> System.Threading.Tasks.Task<Bee.Api.Core.Messages.Form.GetListResponse!>!

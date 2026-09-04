@@ -176,6 +176,7 @@ Bee.Base.Serialization.IObjectSerializeFile
 Bee.Base.Serialization.IObjectSerializeFile.ObjectFilePath.get -> string!
 Bee.Base.Serialization.IObjectSerializeFile.SetObjectFilePath(string! filePath) -> void
 Bee.Base.Serialization.JsonCodec
+Bee.Base.Serialization.SerializationErrorData
 Bee.Base.Serialization.SerializationExtensions
 Bee.Base.Serialization.SerializationUtilities
 Bee.Base.Serialization.SerializeState
@@ -249,6 +250,7 @@ Bee.Base.ValueUtilities
 const Bee.Base.Security.ApiKeyFormat.MaxSysIdLength = 50 -> int
 const Bee.Base.Security.ApiKeyFormat.MinSysIdLength = 3 -> int
 const Bee.Base.Security.ApiKeyFormat.Separator = '.' -> char
+const Bee.Base.Serialization.SerializationErrorData.FilePath = "Bee.FilePath" -> string!
 const Bee.Base.Tracing.TraceCategories.General = "General" -> string!
 const Bee.Base.Tracing.TraceCategories.JsonRpc = "JsonRpc" -> string!
 const Bee.Base.ValueUtilities.TimeOnlyFormat = "HH:mm" -> string!
@@ -336,6 +338,7 @@ static Bee.Base.Security.RsaCryptor.GenerateRsaKeyPair(out string! publicKey, ou
 static Bee.Base.Serialization.Gzip.Compress(byte[]! bytes) -> byte[]!
 static Bee.Base.Serialization.Gzip.Decompress(byte[]! bytes) -> byte[]!
 static Bee.Base.Serialization.JsonCodec.Deserialize<T>(string! json, bool includeTypeName = true) -> T?
+static Bee.Base.Serialization.JsonCodec.DeserializeAsync<T>(System.IO.Stream! stream, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T?>
 static Bee.Base.Serialization.JsonCodec.DeserializeFromFile<T>(string! filePath) -> T?
 static Bee.Base.Serialization.JsonCodec.Serialize(object! value, bool ignoreDefaultValue = true, bool ignoreNullValue = true, bool includeTypeName = true) -> string!
 static Bee.Base.Serialization.JsonCodec.SerializeToFile(object! value, string! filePath) -> void

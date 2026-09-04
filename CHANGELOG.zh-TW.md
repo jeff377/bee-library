@@ -4,6 +4,85 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.28.0]
+
+> 本版是一次系統性框架健檢的產出，而它反覆撞見同一種形狀的缺陷：**一道防護機制的實際涵蓋範圍比它看起來的窄，而沒有任何東西會說出這件事。** 表單存檔的記錄範圍檢查，在 payload 只帶明細列時整個被跳過。稽核記錄查詢在尚未進入公司時對所有租戶敞開。全新部署的 cache-notify 基準落在數小時之後的未來，快取失效機制靜默停擺，直到牆鐘追上為止。雜湊段為空的儲存密碼，對任何輸入都驗證通過。除了修正之外，那些「本來該發現」的機制自己也被納入把關：六道宣稱有檢查而實際沒有的閘門、一份自 analyzer 首次出貨起就一行都沒有的出貨紀錄（於是「抓到規則被悄悄退役」的那條規則永遠不可能觸發），以及 38 筆意外相依到資料庫的測試。`System.CheckPackageUpdate` 與 `System.GetPackage` 整串移除：兩條路徑都沒有消費者的擴充點。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.28.0.zh-TW.md](docs/changelogs/4.28.0.zh-TW.md)
+
+### 破壞性變更
+
+- `Bee.Api.Contracts` / `Bee.Api.Core` / `Bee.Business`：`System.CheckPackageUpdate` 與 `System.GetPackage` 整串移除 —— 契約、wire 訊息、BO 的 Args 與 Result、`SystemActions` 常數、MessagePack 註冊，以及產生的 TypeScript 合約。兩者都是基底擲 `NotSupportedException` 的擴充點，且都沒有消費者：`Bee.Api.Client` 沒有對應的 connector 方法，而文件明寫它們不給 JavaScript 前端用。
+- `Bee.Api.Contracts`：`ISaveResponse.AffectedRows` 與 `IEnterCompanyResponse.Capabilities` 收斂為 `IReadOnlyDictionary`。具象實作一字未改；只有「透過契約介面」取用並期望具象型別的程式碼需要改宣告。
+- `Bee.Business`：`BusinessObject` 及其四個子類的 `isLocalCall` 建構子參數預設改為 `false`。預設 `true` 的意思是「直接建構 BO —— 唯一繞過 `ApiAccessValidator` 的路徑 —— 預設被當成可信」，於是四道第二線守衛對這條最不該被信任的路徑全數放行。
+- `Bee.Api.Core`：`ApiCallContext` 搬到 `Bee.Api.Core.Validator`；它是驗證器的輸入，從不上 wire。`ApiPayloadOptionsFactory.CreateSerializer` 移除 —— body codec 是逐請求宣告的，不是部署層設定。
+- `Bee.Base` → `Bee.Api.Client`：`HttpUtilities` 搬家。`Bee.Base` 是每一個專案的相依，含離線的定義檔工具；而它的三個呼叫點從頭到尾都在 `Bee.Api.Client`。
+- `Bee.Api.Core`：`DataTable` 中型別為 `decimal` / `long` / `ulong` 的儲存格改以 JSON 字串寫出，與 `object` 封套早已遵守的規則一致。讀取端仍接受裸數字，所以依 4.27.0 fixtures 實作的跨語言 client 不會被打斷。
+- `Bee.Db`：MySQL 的字面值逸出補上反斜線，產生的 DDL 文字因此改變。
+- `Bee.Db`：`UpgradeOptions.AllowColumnNarrowing` 改為 `init` —— 可變屬性掛在共用的 static `Default` 上，等於任何呼叫端都能把「允許可能截斷資料的變更」開給全 process 且永久生效。
+- `Bee.Business`：`AuditRuleBusinessObject` 增加第四個建構子參數（二進位破壞、原始碼相容），且 `st_user.password` 納入 `ProtectedFields`。
+
+### 安全性
+
+- `Bee.Base`：`PasswordHasher.VerifyPassword` 對雜湊段為空的儲存值回傳 `true` —— PBKDF2 要 0 個輸出位元組會回空陣列，而 `FixedTimeEquals` 判兩個空 span 相等。`v2.100000..` 因此對任何密碼驗證通過，v2 與 legacy 兩個分支皆然。再加上 `st_user.password` 先前不在 `ProtectedFields` 內 —— 任何在 `st_user` 上建了使用者維護表單的部署都寫得到該欄 —— 兩者合起來是一條完整的提權鏈。兩處一併關閉。
+- `Bee.Business`：`FormBusinessObject.Save` 的層二記錄範圍檢查，在 payload 不帶主檔表時整個被跳過，而 repository 對每張表獨立判斷是否寫入 —— 於是一個只含明細列的 Save，會對範圍外的主檔記錄寫入明細，完全沒有經過檢查。同一個破口的第二條走法：明細列的 `sys_master_rowid` 是 payload 原樣採用，所以帶一個範圍內的主檔、明細卻指向別處就能過關，而 `Modified` 更可以把既有明細從別人的記錄搬出來。兩者現在都拒絕。
+- `Bee.Repository`：稽核記錄查詢在租戶邊界上是 fail-open。`company_id` 與 `prog_id` 這類選用篩選共用同一個「null 就略過」的 helper，因此尚未進入公司的 session 會拿到所有公司的稽核記錄。七個入口全部改為 fail-closed。
+- `Bee.Definition`：定義檔反序列化失敗時，把伺服器的絕對路徑回傳給遠端呼叫者。訊息現在只留檔名，完整路徑移到 `Exception.Data` 的新常數 `SerializationErrorData.FilePath` 供伺服端記錄。
+- `Bee.Db`：MySQL 是這裡唯一預設把 `\` 當逸出字元的方言，而 `EscapeSqlString` 只做引號加倍 —— 反斜線於是吃掉後面那個引號，字面值一路跑進後續語句。這不只是注入面：一段以反斜線結尾的欄位說明，就足以讓產生的 DDL 語法錯誤。
+
+### 新增
+
+- `Bee.Analyzers`：**BEE1008** 報告未宣告 `PermissionModelId` 的 `FormSchema`。層一授權在該值為空時直接 return —— 那是刻意的，為了漸進採用 —— 但後果從來沒有任何地方看得到：這樣的表單對每個已認證呼叫者全開，而 build、測試與既有 analyzer 全都是綠的。它只報告不強制，嚴重度為 `Info`；導入完成後在 `.editorconfig` 提升為 `warning` 才有實際把關。
+- `Bee.Definition`：`IApiKeyGateStateProvider`，唯讀接縫，只回答「API key gate 現在生不生效」，API 層因此不再為了得到這個答案而相依快取實作。
+- `Bee.Api.Client`：`FormValueBinding` 與 `FormDataGuard` —— 兩個 UI head 各自帶著私有副本的表單資料規則。
+- `Bee.Base`：`SerializationLifecycle.BeginSerialize`，以 scope 結構性保證 `NotifyBefore` 與 `NotifyAfter` 配對；`JsonCodec.DeserializeAsync(Stream, …)`；`SerializationErrorData`。
+- `Bee.Definition`：`LanguageKey.Split`，取代在兩個 `ILanguageService` 實作中逐字重複的 `SplitFullKey` —— key 格式是介面的契約，不是實作細節。
+- 閘門：六道宣稱有檢查而實際沒有的機制現在是真的了；架構閘門在一次刻意製造的違規下仍是綠的，因此由 `deps.json` 改用 `Assembly.GetReferencedAssemblies()` —— SDK 會把傳遞專案參考併進 `@(ProjectReference)`，所以程式碼可以 `using` 一個在任何已宣告的邊上都看不到的組件。新增的閘門涵蓋三個受鎖組件的相依鎖、`Bee.Api.Core.Messages` 命名空間、所有 `BusinessObject` 子類的 `isLocalCall` 預設值、`Bee.Base` 不得參考 `System.Net.Http`，以及 cache-notify 的基準來源。
+
+### 變更
+
+- `Bee.Db`：寫入路徑設定 `UpdateBatchSize`，取代每列一次 round trip。對本機 SQL Server 容器實測：100 列 32 ms → 3 ms、500 列 145 ms → 9 ms。支援與否以「問 adapter」偵測而非寫死 provider 清單 —— SQL Server、MySQL、Oracle 接受；Npgsql 與框架自己的 SQLite adapter 不接受。在此之前這條路徑的 DB 測試只有 SQLite，而它正是不支援批次的兩個之一。
+- `Bee.Api.AspNetCore`：請求主體改為直接由 stream 反序列化。`EnableBuffering()` 為了一個沒有人使用的重繞能力，把每個超過 30 KB 的 body 寫到暫存檔，而帶 base64 gzip body 的 `params.value` 在任何含明細的存檔上都超過門檻。完整 HTTP 往返實測：64 KB 0.46 ms → 0.22 ms、1 MB 2.81 ms → 1.28 ms、4 MB 9.51 ms → 4.76 ms —— 而 16 KB 毫無差異，那正是「成因是磁碟 spill」的證明。
+- `Bee.Hosting`：`AuditLogWriterService` 補上例外護欄。`IAuditLogSink` 是公開的 DI 接縫，它擲出的任何東西都會逸出到 `BackgroundService`，而 .NET 預設的 `StopHost` 行為意味著一次失敗的 log 寫入就能把部署帶走。ADR-017 早就為 `CacheNotifyPoller` 立下這條規則，這支是唯一沒拿到的。檔案 fallback 的 append 也改為序列化。
+- `Bee.Analyzers`：`AnalyzerReleases.Shipped.md` 依 tag 快照回填（4.16.0 的 22 條、4.18.0 的 BEE3003、4.19.0 移除 BEE4001–BEE4004）。它自 analyzer 首次出貨起就是空的，於是 RS2003 —— 抓「已出貨診斷消失」的那條規則 —— 永遠不可能觸發，而那正是那四條在 4.19.0 悄悄退役卻無人出聲的原因。
+- 文件：144 個檔中 239 處對自家型別的散文引用由 `<c>` 改為 `<see cref>`，交給編譯器把關。`check-xmldoc-refs.sh` 補上反向檢查，`check-public-docs.sh` 補上第六道 —— 公開文件連向內部 agent 規範目錄。
+
+### 修正
+
+- `Bee.Business`：所有經 JSON-RPC 的 `AuditRule.*` 呼叫都擲 `MissingMethodException`。`AuditRuleBusinessObject` 只宣告三參數建構子，而 `BusinessObjectFactory` 固定以四個引數啟動，且 C# 建構子不繼承 —— 於是 4.25.0 出貨的每表單稽核規則維護表單，遠端從未能用。它唯一的測試直接建構該型別，從不走工廠。
+- `Bee.Db`：cache-notify 的空表基準自帶一份方言對照表、回的是**本地**時間，而每一列的 `sys_update_time` 都由寫入端戳 UTC。全新部署的第一個 poll 游標因此落在未來，之後每次 poll 的視窗都撈不到列 —— 快取失效機制靜默停擺，直到牆鐘追上，UTC+8 就是八小時。讀取端現在從寫入端的同一個來源取得該表達式。一直沒被發現，是因為本機四個容器與 GitHub runner 全跑 UTC；Oracle 是唯一會現形的方言，因為 `LOCALTIMESTAMP` 取的是**用戶端** session 的時區。
+- `Bee.Api.Core`：`MemoryReplayWindowStore` 在插入項目之後才寫 `Entry.LastTouchedMs`，落在那個空隙的 sweep 會讀到 0、判定它比任何 cutoff 都舊，於是移除一個正在使用的 window —— 該 session 的重放防護被靜默重置一次。
+- `Bee.Base`：序列化失敗會讓物件**永久**停在 `SerializeState.Serialize`，因為 `NotifyAfter` 永遠不會被執行到。被序列化的往往是 process-wide 的快取定義實例，而在該狀態下每個空集合 getter 都回 `null`、數個呼叫端以 `!` 解參考 —— 瞬時的失敗被轉成了永久的失敗。
+- `Bee.UI.Blazor`：`DefaultValue` 仍是 `DBNull` 的 NOT NULL 欄位 —— 那正是伺服器回應中原始 ADO.NET column 的常態形狀 —— 會收到 `DBNull` 並在 `EndEdit` 擲 `NoNullAllowedException`。Avalonia head 早已在自己的副本裡修好；把共用規則下沉到 `Bee.Api.Client` 順帶把修正帶了過去。
+- `Bee.UI.Core`：`ClientInfo` 現在明文標示它以 process-wide 靜態持有**一個**登入使用者的狀態，並保護三處延遲初始化。兩條執行緒可能各建一個實例，而**孤兒才是問題** —— `ResetDefineCache` 清掉的是其中一個，呼叫端卻繼續用另一個，於是切換租戶時舊的客製化定義還留著。
+- 文件：`Bee.Definition` 的 README 宣稱上游相依含 MessagePack（4.19.0 已移除），並宣稱「no business logic and no I/O」，而定義層現有 7 個檔的檔案 IO。雙語版共五處失實宣稱已更正。
+
+### 升級指引
+
+多數部署不需要任何改動。四種情形要檢查：
+
+```csharp
+// 1. 透過契約介面取用集合成員：
+- Dictionary<string, int> rows = response.AffectedRows;   // ISaveResponse
++ IReadOnlyDictionary<string, int> rows = response.AffectedRows;
+// 透過具象的 SaveResponse / SaveResult 取用則完全不受影響。
+
+// 2. 直接建構 BO 且依賴本機路徑：
+- var bo = new SystemBusinessObject(sessionInfo);
++ var bo = new SystemBusinessObject(sessionInfo, isLocalCall: true);
+// 否則四道第二線守衛此後會生效 —— 而那正是重點。
+
+// 3. HttpUtilities 換了組件與命名空間：
+- using Bee.Base;
++ using Bee.Api.Client;
+```
+
+- `System.CheckPackageUpdate` 與 `System.GetPackage` 已不存在。實作過任一擴充點的宿主應移除該覆寫；沒有替代品，而它本來就沒有呼叫者。
+- 跨語言 client 讀 `DataTable` 儲存格時，必須能接受 `decimal` / `long` / `ulong` 為帶引號的 JSON 字串。它的寫入端不需要改 —— 讀取端仍接受裸數字。
+- 欄位說明或預設值含反斜線的 MySQL 部署，先前根本升級不了（產生的 DDL 是語法錯誤）；此後會正確寫入。此處假設伺服器的預設 `sql_mode`，不含 `NO_BACKSLASH_ESCAPES`。
+- 自行算好密碼雜湊、經 FormSchema 資料路徑寫入 `st_user.password` 的部署，此後會被 `RemoveProtectedFields` 擋下。框架本身沒有任何寫入該欄的路徑。
+- 未進入公司就發出的稽核記錄查詢，此後回傳空結果而不是所有租戶的記錄。
+
 ## [4.27.0]
 
 > 瀏覽器前端呼叫不了編碼過的端點：body 只有 MessagePack 一種，而本框架的 MessagePack wire 是三十餘支手寫 formatter —— 在另一個語言鏡像它們，等於為同一份合約建立第二個權威來源，而兩邊漂掉時沒有任何機制會發現。**body codec 從部署層設定改為在信封上逐請求宣告，並在 MessagePack 之外新增 JSON codec**，JavaScript client 於是只需要 JSON、gzip、AES-CBC-HMAC 與 RSA —— 全是原生 API。見 [ADR-044](docs/adr/adr-044-payload-codec-negotiation.md)。隨之發布兩份產物，讓另一個語言的 client 有東西可以驗自己、而不是一份文件要遵守：26 個 wire body 樣本，以及由訊息型別反射產生的 TypeScript 合約。同時修掉一個在 `Plain` 路徑上靜默丟失整棵篩選子樹的缺陷，並把匿名攻擊面改為具名申報 —— 新增標了 `Anonymous` 的方法，必須寫明它揭露了什麼才進得來。

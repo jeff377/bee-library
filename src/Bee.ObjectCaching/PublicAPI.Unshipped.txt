@@ -1,4 +1,1 @@
 #nullable enable
-Bee.ObjectCaching.Services.ApiKeyGateStateProvider
-Bee.ObjectCaching.Services.ApiKeyGateStateProvider.ApiKeyGateStateProvider(Bee.ObjectCaching.ICacheContainer! cache) -> void
-Bee.ObjectCaching.Services.ApiKeyGateStateProvider.GetState() -> Bee.Definition.Security.ApiKeyGateState?

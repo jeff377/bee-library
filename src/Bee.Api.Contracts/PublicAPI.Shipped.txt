@@ -103,6 +103,7 @@ Bee.Api.Contracts.Form.IGetNewDataResponse.DataSet.get -> System.Data.DataSet?
 Bee.Api.Contracts.Form.ISaveRequest
 Bee.Api.Contracts.Form.ISaveRequest.DataSet.get -> System.Data.DataSet?
 Bee.Api.Contracts.Form.ISaveResponse
+Bee.Api.Contracts.Form.ISaveResponse.AffectedRows.get -> System.Collections.Generic.IReadOnlyDictionary<string!, int>!
 Bee.Api.Contracts.Form.ISaveResponse.DataSet.get -> System.Data.DataSet?
 Bee.Api.Contracts.IExecFuncRequest
 Bee.Api.Contracts.IExecFuncRequest.FuncId.get -> string!
@@ -126,6 +127,7 @@ Bee.Api.Contracts.System.ICreateSessionResponse.ExpiredAt.get -> System.DateTime
 Bee.Api.Contracts.System.IEnterCompanyRequest
 Bee.Api.Contracts.System.IEnterCompanyRequest.CompanyId.get -> string!
 Bee.Api.Contracts.System.IEnterCompanyResponse
+Bee.Api.Contracts.System.IEnterCompanyResponse.Capabilities.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Bee.Definition.Settings.PermissionAction>!
 Bee.Api.Contracts.System.IEnterCompanyResponse.Company.get -> Bee.Definition.Identity.CompanyInfo!
 Bee.Api.Contracts.System.IGetCommonConfigurationRequest
 Bee.Api.Contracts.System.IGetCommonConfigurationResponse

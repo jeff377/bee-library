@@ -665,6 +665,7 @@ Bee.Definition.Language.LanguageItemCollection
 Bee.Definition.Language.LanguageItemCollection.LanguageItemCollection() -> void
 Bee.Definition.Language.LanguageItemCollection.LanguageItemCollection(Bee.Definition.Language.LanguageResource! resource) -> void
 Bee.Definition.Language.LanguageItemCollectionExtensions
+Bee.Definition.Language.LanguageKey
 Bee.Definition.Language.LanguageResource
 Bee.Definition.Language.LanguageResource.Enums.get -> Bee.Definition.Language.LanguageEnumCollection!
 Bee.Definition.Language.LanguageResource.GetEnum(string! name) -> Bee.Definition.Language.LanguageEnum?
@@ -1195,6 +1196,8 @@ Bee.Definition.Security.IApiEncryptionKeyProvider.SupportsSessionRebuild.get -> 
 Bee.Definition.Security.IApiKeyContextAware
 Bee.Definition.Security.IApiKeyContextAware.ApiKeyValidation.get -> Bee.Definition.Security.ApiKeyValidationResult!
 Bee.Definition.Security.IApiKeyContextAware.ApiKeyValidation.set -> void
+Bee.Definition.Security.IApiKeyGateStateProvider
+Bee.Definition.Security.IApiKeyGateStateProvider.GetState() -> Bee.Definition.Security.ApiKeyGateState?
 Bee.Definition.Security.IApiKeyValidator
 Bee.Definition.Security.IApiKeyValidator.Validate(string? apiKey) -> Bee.Definition.Security.ApiKeyValidationResult!
 Bee.Definition.Security.ILoginAttemptTracker
@@ -1777,6 +1780,7 @@ const Bee.Definition.PropertyCategories.Behavior = "Behavior" -> string!
 const Bee.Definition.PropertyCategories.Data = "Data" -> string!
 const Bee.Definition.PropertyCategories.Layout = "Layout" -> string!
 const Bee.Definition.ProtectedFields.DeploymentAdmin = "deployment_admin" -> string!
+const Bee.Definition.ProtectedFields.Password = "password" -> string!
 const Bee.Definition.Security.ApiKeyGateState.CacheKey = "[gate]" -> string!
 const Bee.Definition.Settings.CurrencySettings.FallbackRounding = 0.01 -> decimal
 const Bee.Definition.Settings.UnitSettings.FallbackDecimals = 0 -> int
@@ -1966,6 +1970,7 @@ static Bee.Definition.Identity.UserRoleRow.operator !=(Bee.Definition.Identity.U
 static Bee.Definition.Identity.UserRoleRow.operator ==(Bee.Definition.Identity.UserRoleRow? left, Bee.Definition.Identity.UserRoleRow? right) -> bool
 static Bee.Definition.Language.LanguageEnumEntryCollectionExtensions.Add(this Bee.Definition.Language.LanguageEnumEntryCollection? collection, string! code, string! text) -> Bee.Definition.Language.LanguageEnumEntry!
 static Bee.Definition.Language.LanguageItemCollectionExtensions.Add(this Bee.Definition.Language.LanguageItemCollection? collection, string! key, string! value) -> Bee.Definition.Language.LanguageItem!
+static Bee.Definition.Language.LanguageKey.Split(string! fullKey) -> (string! Namespace, string! SubKey)
 static Bee.Definition.Layouts.FormEditModesExtensions.Allows(this Bee.Definition.Layouts.FormEditModes modes, Bee.Definition.Layouts.SingleFormMode formMode) -> bool
 static Bee.Definition.Layouts.FormLayoutCaptionApplier.Apply(Bee.Definition.Layouts.FormLayout! layout, Bee.Definition.Forms.FormSchema! schema) -> void
 static Bee.Definition.Layouts.FormLayoutGenerator.Generate(Bee.Definition.Forms.FormSchema! schema, string! layoutId) -> Bee.Definition.Layouts.FormLayout!
