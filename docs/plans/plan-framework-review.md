@@ -1,8 +1,8 @@
 # 框架全面體檢（2026-09-04）
 
-**狀態：🚧 進行中（2026-09-04）** —— 批次 1（P0-1 / P1-2 / P1-9）、批次 2（六道閘門：
-P1-4 / P1-5 / P1-6 / P1-11 / API-1 / API-2，連帶 DOC-8 與 Z-8 的一半）與 P1-1 已落地；
-**P1 剩 4 項**（P1-3 / P1-7 / P1-8 / P1-10）。
+**狀態：🚧 進行中（2026-09-04）** —— P0 已關閉；**P1 11 項中 8 項已落地**
+（批次 1：P0-1 / P1-2 / P1-9；批次 2 六道閘門：P1-4 / P1-5 / P1-6 / P1-11 / API-1 / API-2，
+連帶 DOC-8 與 Z-8 的一半；其後 P1-1、P1-7）。**剩 P1-3 / P1-8 / P1-10**，P2–P4 未排。
 
 對 17 個 `src/` 專案做十一面向唯讀體檢，產出分級重構計畫與評分。
 方法：10 個平行唯讀子代理分面向全量掃描 → 交叉去重 → P0/P1 主代理複驗（含執行期 probe 與實測）。
@@ -65,7 +65,7 @@ P1-4 / P1-5 / P1-6 / P1-11 / API-1 / API-2，連帶 DOC-8 與 Z-8 的一半）�
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
 | P0 | 已出貨功能遠端不可用 | 1 | ✅ **已完成**（2026-09-04，P0-1 修正 + 新增保留字 progId 建構閘門，負向驗證通過） |
-| P1 | 授權邊界、跨語言 wire 正確性、實測效能、閘門可靠性 | 11 | 🚧 進行中 —— **P1-1 / P1-2 / P1-4 / P1-5 / P1-6 / P1-9 / P1-11 已完成**（2026-09-04，皆經負向驗證）；P1-3 已裁決走「改編碼」；**剩 P1-3、P1-7（測試併發改寫共用快取）、P1-8（UpdateBatchSize）、P1-10（Bee.Definition README）** |
+| P1 | 授權邊界、跨語言 wire 正確性、實測效能、閘門可靠性 | 11 | 🚧 進行中 —— **8 項已完成**（P1-1 / P1-2 / P1-4 / P1-5 / P1-6 / P1-7 / P1-9 / P1-11，2026-09-04，皆經負向驗證或實測）；**剩 3 項**：P1-3（已裁決走「改編碼」）、P1-8（`UpdateBatchSize`）、P1-10（`Bee.Definition` README，後半卡在遞延中的 A-5） |
 | P2 | 結構、並行、一致性 | 12 | 📝 擬定中 |
 | P3 | 文件漂移與低風險清理 | 14 | 📝 擬定中 |
 | P4 | 觀察／待裁決 | 16 | 📝 擬定中 |
@@ -251,7 +251,7 @@ Assert.Equal(22, codeCases.Count);
 
 **修法**：`ApiSurfaceEntry` 加第四欄；方法參考表加一欄。
 
-### P1-7　測試對 process-wide 快取實例併發改寫 → 實測 flaky
+### P1-7　測試對 process-wide 快取實例併發改寫 → 實測 flaky　✅ 已修（2026-09-04）
 
 `tests/Bee.Db.UnitTests/Manager/DbConnectionManagerTests.cs:30,39,47,56`、
 `tests/Bee.Db.UnitTests/Manager/DbAccessFactoryTests.cs:39,58`
@@ -280,8 +280,11 @@ GetConnectionInfo_EmptyConnectionString_ThrowsInvalidOperationException
 引入：`c07c447b`（2026-04-19）／`89f8ae73`（2026-05-13），早於基準 → 既有問題首次掃出。
 上輪測試面向掃的是「顯式等待」與「fixture 污染」，**沒掃「測試對共用快取的併發改寫」**。
 
-**修法**：兩個類別掛同一個 `[Collection]`（用 `const`，不用字串字面值），或給 `Bee.Db.UnitTests` 加
-`DisableTestParallelization`；更好的是改用隔離的 `DatabaseSettings` 實例而不碰快取。
+**修法（2026-09-04 已落地，走「不碰快取」那條）**：兩個類別自帶隔離的 `DatabaseSettings`
+（`IsolatedDatabaseSettingsProvider`），直接建構 `DbConnectionManagerService`。沒有選 `[Collection]`
+序列化 —— 那只是讓違規不再產生症狀。連 `SharedDbFixture` 也一併去掉（這兩個類別測的是連線字串組裝，
+本來就不需要資料庫），19 個測試從「要等容器」變成 20ms。驗證方式是 `./test.sh` **連跑兩次**皆全綠，
+與當初判定這筆 flaky 的方法相同。
 
 ### P1-8　寫入路徑每列一次 DB round trip（`UpdateBatchSize` 從未設定）
 
@@ -378,7 +381,7 @@ Python 逐檔驗證全 repo（src/tests/tools/apps/samples）含 NUL 的 `.cs` *
 | **CON-3** | `Bee.UI.Core.ClientInfo` per-user 狀態放 public static，零警語 | `src/Bee.UI.Core/ClientInfo.cs:13-23` | CON-1（上輪）修掉的形狀往上一層：`_accessToken`、`_capabilities`（權限快照）、`_company`、`_defineAccess`（帶 tenant customization）全是「屬於某個登入使用者」的狀態。對照組 `ApiSessionContext` 帶了完整 WARNING，`ClientInfo` 只有一句「Provides client-side connection state」。repo 內無多使用者可達鏈（Blazor 只參考 `Bee.Api.Client`），但 **`Bee.UI.Core` 是發佈的 NuGet 套件**。另三個 `??=` lazy init 無同步 |
 | **CON-4** | `XmlCodec.Serialize` 無 try/finally，例外讓共用實例**永久**卡在 serialize 狀態 | `src/Bee.Base/Serialization/XmlCodec.cs:15-35` | `NotifyBefore` → 序列化擲例外 → `NotifyAfter` 永不執行。與 N-1 疊加：`SerializeDefine` 序列化的就是 process-wide 快取實例，一次失敗 → 該快取 FormSchema/TableSchema 永遠停在 `Serialize` 狀態 → 所有空集合 getter 從此回 `null` → 四個裸 `!` 解參考點 NRE（`PgCreateTableCommandBuilder.cs:111` 等，**無索引的表完全正常**）。**把 N-1 的「瞬時」轉成「永久」。單行修法** |
 | **D-1** | 兩個 UI head 的 `FormDataObject` 182 行逐字重複，doc 自承無 enforcement 卻仍無閘門 | `src/Bee.Web.Blazor.Server/DataObjects/FormDataObject.cs` vs `src/Bee.UI.Avalonia/DataObjects/FormDataObject*.cs` | Blazor 版 213 行非瑣碎碼中 182 行（85%）與 Avalonia 版逐字相同（5 組完整方法）。兩邊 doc 都寫「Deliberately parallel」+「Nothing enforces this at compile time」——**寫下來之後就停在那裡**。重複內容含錯誤訊息字面值、`InvariantCulture` 日期格式決策、`FieldDbType`→預設值對映。**論證另有事實漏洞**：兩邊都說「共同的家只能是 `Bee.UI.Core`」，但兩個 head 都已直接參考 `Bee.Api.Client`，那是一個不會把 Blazor 拉進 `Bee.UI.*` 家族的共同祖先。修法擇一：純資料/轉換的 5 個 helper 下沉到 `Bee.Api.Client`；或補 drift 測試把 WARNING 變成會紅的閘門 |
-| **T-2** | `Bee.Hosting.UnitTests` 完全沒有並行保護，5 個類別驅動同一個 process-wide static | `tests/Bee.Hosting.UnitTests/` | `CacheInfo.NotifyVersions`（`public static { get; set; }`）由 `CacheNotifyPollSession.Poll()` 寫入；`CacheNotifyPollerTests`／`CacheNotifyPollerUnitTests`／`CacheNotifyPollerExecuteAsyncTests`／`CacheNotifyPollSessionUnitTests`／`DbDefineCacheInvalidationTests` 五個類別皆觸及，該組件**既無 `[Collection]` 也無 `DisableTestParallelization`**。這是上輪 TEST-3 對 `Bee.Definition.UnitTests` 的判定一字不改地適用於鄰居 —— **修正沒有推廣到同形的地方**（與 P1-7 同一族） |
+| **T-2** ❌ 查證後不成立 | `Bee.Hosting.UnitTests` 完全沒有並行保護，5 個類別驅動同一個 process-wide static | `tests/Bee.Hosting.UnitTests/` | `CacheInfo.NotifyVersions`（`public static { get; set; }`）由 `CacheNotifyPollSession.Poll()` 寫入；`CacheNotifyPollerTests`／`CacheNotifyPollerUnitTests`／`CacheNotifyPollerExecuteAsyncTests`／`CacheNotifyPollSessionUnitTests`／`DbDefineCacheInvalidationTests` 五個類別皆觸及，該組件**既無 `[Collection]` 也無 `DisableTestParallelization`**。這是上輪 TEST-3 對 `Bee.Definition.UnitTests` 的判定一字不改地適用於鄰居 —— **修正沒有推廣到同形的地方**（與 P1-7 同一族）。<br>**2026-09-04 查證後判定不成立**：`CacheInfo.NotifyVersions` 背後是 `ConcurrentDictionary`（`CacheNotifyVersionStore.cs:15`），沒有 `KeyCollectionBase` 那種可被破壞的結構；且該組件**沒有任何測試寫那個屬性**（grep 零命中），5 個類別是經 production 的 `CacheNotifyPollSession.Poll` 間接寫入 store。加 `DisableTestParallelization` 會為不存在的問題付出整組序列化的代價。該組件真正的殘留是 **T-6**（`CrossNode_PostgreSQL` 的全表 poll cursor），與此無關 |
 | **SEC-3** | MySQL `EscapeSqlString` 只做引號加倍，反斜線逸出未處理 | `src/Bee.Db/Providers/MySql/MySqlSchemaSyntax.cs:81` | MySQL 預設把 `\` 當逸出字元（SQL Server / PostgreSQL / Oracle 的引號加倍正確，**MySQL 是唯一例外**）。輸入 `a\'` → `a\''` → `\'` 被吃成一個引號、隨後那個 `'` 提前關閉字串。三個 sink 全在 DDL 升級路徑：`MySqlDescriptionSyncCommandBuilder.cs:41`、`MySqlSchemaSyntax.cs:183`、`:108`。可達性：需已是「定義作者」（`SaveDefine` 為 `LocalOnly`），屬**定義作者→升級時任意 DDL** 的權限提升。**`fe0097de`（4.27.0）的四方言描述同步把 sink 從 2 個擴到 3 個** —— 上輪「這個形狀在 repo 裡還有幾份？」再次被驗證 |
 | **PERF-2** | `Request.EnableBuffering()` 讓每個 > 30 KB 的 body 落磁碟再讀回 | `src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs:88-92` | **重繞能力零使用**（主代理複驗：全 repo 只有這一處讀 body，controller 無 `[FromBody]`，進來時 body 本來就在位置 0）。子代理實測門檻與成本：<br>`29 KB → InMemory=True`，`40 KB → InMemory=False`（ASP.NET Core 預設 `bufferThreshold` 30 KB）<br>`64 KB` 0.45→0.14 ms（3.17×）、`256 KB` 0.94→0.36 ms、`1 MB` 2.74→1.11 ms、`4 MB` 10.41→4.56 ms<br>**16 KB 那列無差異，正是因果證明。** 信封裡 `params.value` 是 base64 的 gzip body（1.33× 膨脹），任何帶明細的 Save/GetData 都在門檻之上。修法：拿掉那兩行，改 `JsonSerializer.DeserializeAsync(Request.Body, ...)` |
 
