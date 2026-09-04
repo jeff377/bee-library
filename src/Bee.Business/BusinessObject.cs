@@ -33,8 +33,25 @@ namespace Bee.Business
         /// uniform signature is what lets the factory construct any registered type without knowing
         /// which family it belongs to — the same reason COM+ has a single <c>CoCreateInstance</c>
         /// rather than one entry point per component kind.
+        /// <para>
+        /// WARNING: <paramref name="isLocalCall"/> defaults to <c>false</c>, and the default is the
+        /// security-relevant part. It used to default to <c>true</c>, which meant a caller that
+        /// constructed a business object directly — the only way to reach one without passing
+        /// through <c>ApiAccessValidator</c> — was treated as a trusted in-process caller by
+        /// default. Several methods keep a second line of defence keyed on
+        /// <see cref="IsLocalCall"/> (minting an API key without deployment-admin rights, granting
+        /// deployment admin, writing server-only definitions), and every one of those guards let
+        /// the default path straight through. Only a caller that had bothered to write
+        /// <c>isLocalCall: false</c> was stopped, which is the caller least in need of stopping.
+        /// </para>
+        /// <para>
+        /// The framework itself never relies on the default: <c>BusinessObjectFactory</c> always
+        /// passes the value it resolved from the transport. The default only governs code that
+        /// constructs a business object by hand, and for that code "not local until you say so" is
+        /// the answer that fails safe.
+        /// </para>
         /// </remarks>
-        protected BusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+        protected BusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = false)
         {
             _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
             AccessToken = accessToken;

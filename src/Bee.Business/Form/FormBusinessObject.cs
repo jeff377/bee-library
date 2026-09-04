@@ -19,7 +19,7 @@ namespace Bee.Business.Form
         /// <param name="accessToken">The access token.</param>
         /// <param name="progId">The program identifier.</param>
         /// <param name="isLocalCall">Whether the call originates from a local source.</param>
-        public FormBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+        public FormBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = false)
             : base(ctx, accessToken, progId, isLocalCall)
         { }
 

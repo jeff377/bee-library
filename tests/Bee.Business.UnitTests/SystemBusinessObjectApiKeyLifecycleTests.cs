@@ -34,7 +34,8 @@ namespace Bee.Business.UnitTests
         private IDbConnectionManager ConnectionManager => _fx.GetRequiredService<IDbConnectionManager>();
 
         private SystemBusinessObject CreateBo()
-            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
+            // 本機呼叫路徑，見 SystemBusinessObjectApiKeyTests 的同一個 helper。
+            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System, isLocalCall: true);
 
         private static string NewSysId() => "life-" + Guid.NewGuid().ToString("N");
 
@@ -252,7 +253,7 @@ namespace Bee.Business.UnitTests
                 var ctx = TestBeeContext.CreateWithOverrides(_fx,
                     (typeof(AuditLogOptions), new AuditLogOptions { Enabled = true }),
                     (typeof(IAuditLogWriter), writer));
-                var bo = new SystemBusinessObject(ctx, Guid.Empty, SysProgIds.System);
+                var bo = new SystemBusinessObject(ctx, Guid.Empty, SysProgIds.System, isLocalCall: true);
 
                 bo.SetApiKeyEnabled(new SetApiKeyEnabledArgs { SysId = sysId, Enabled = false });
 

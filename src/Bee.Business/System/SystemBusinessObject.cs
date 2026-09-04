@@ -21,7 +21,7 @@ namespace Bee.Business.System
         /// <param name="accessToken">The access token.</param>
         /// <param name="progId">The program identifier; always <see cref="SysProgIds.System"/>, accepted for signature uniformity and not read.</param>
         /// <param name="isLocalCall">Whether the call originates from a local source.</param>
-        public SystemBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+        public SystemBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = false)
             : base(ctx, accessToken, progId, isLocalCall)
         { }
 

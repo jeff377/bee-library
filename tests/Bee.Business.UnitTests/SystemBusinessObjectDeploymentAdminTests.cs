@@ -25,7 +25,8 @@ namespace Bee.Business.UnitTests
         public SystemBusinessObjectDeploymentAdminTests(SharedDbFixture fx) { _fx = fx; }
 
         private SystemBusinessObject CreateBo()
-            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
+            // SetDeploymentAdmin 的守衛只放行本機呼叫，所以這裡必須顯式宣告。
+            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System, isLocalCall: true);
 
         private IDbConnectionManager ConnectionManager => _fx.GetRequiredService<IDbConnectionManager>();
 

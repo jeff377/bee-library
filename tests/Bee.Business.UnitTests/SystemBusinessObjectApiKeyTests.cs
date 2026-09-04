@@ -32,7 +32,9 @@ namespace Bee.Business.UnitTests
         /// 本機呼叫端（<c>isLocalCall</c> 預設 true），即部署期在主機上的呼叫路徑。
         /// </summary>
         private SystemBusinessObject CreateBo()
-            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
+            // isLocalCall: true 是這裡的重點，不是省略 —— 這些測試驗的正是「本機呼叫不必是
+            // deployment admin 也能鑄造金鑰」那條路徑。預設值改為 false 之後必須寫出來。
+            => new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System, isLocalCall: true);
 
         private static string NewSysId() => "bo-" + Guid.NewGuid().ToString("N");
 
@@ -227,7 +229,7 @@ namespace Bee.Business.UnitTests
                 token = NewSession(userId);
 
                 // 尚無管理員的部署必須鑄得出第一把金鑰，否則階段 1 保留的 bootstrap 路徑就斷了。
-                var result = new SystemBusinessObject(TestBeeContext.Create(_fx), token, SysProgIds.System)
+                var result = new SystemBusinessObject(TestBeeContext.Create(_fx), token, SysProgIds.System, isLocalCall: true)
                     .CreateApiKey(new CreateApiKeyArgs { SysId = sysId, SysName = "Bootstrap" });
 
                 Assert.Equal(sysId, result.SysId);

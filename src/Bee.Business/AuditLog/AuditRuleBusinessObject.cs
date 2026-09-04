@@ -33,7 +33,7 @@ namespace Bee.Business.AuditLog
         /// throws <c>MissingMethodException</c> before the method is ever looked up. The
         /// <c>ReservedProgIdConstructionTests</c> gate is what keeps this true.
         /// </remarks>
-        public AuditRuleBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+        public AuditRuleBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = false)
             : base(ctx, accessToken, progId, isLocalCall)
         {
         }

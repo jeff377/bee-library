@@ -38,7 +38,7 @@ namespace Bee.Business.UnitTests
             var ctx = TestBeeContext.CreateWithOverrides(_fx,
                 (typeof(AuditLogOptions), new AuditLogOptions { Enabled = enabled, ChangeEnabled = changeEnabled }),
                 (typeof(IAuditLogWriter), writer));
-            return new SystemBusinessObject(ctx, Guid.Empty, SysProgIds.System);
+            return new SystemBusinessObject(ctx, Guid.Empty, SysProgIds.System, isLocalCall: true);
         }
 
         private static ChangeAuditEntry SingleChange(CapturingAuditLogWriter writer)
