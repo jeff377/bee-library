@@ -57,7 +57,17 @@ namespace Bee.Api.Core.UnitTests
               defaultValue: unknown;
             }
 
-            /** A row, carrying its state and the versions that state implies. */
+            /**
+             * A row, carrying its state and the versions that state implies.
+             *
+             * A cell carries no discriminator: its type comes from the matching `DataColumnShape.type`
+             * in the same document. Two of those types do not arrive as JSON numbers —
+             * **`Decimal` and `Int64` (and `UInt64`) are JSON strings**, for the same reason the
+             * object envelope quotes them: a JSON number is a double to every JavaScript reader,
+             * which holds neither a decimal's precision nor an integer past 2^53, and `JSON.parse`
+             * has already lost it before your code runs. Read those cells by the column's `type`,
+             * not by `typeof`.
+             */
             export interface DataRowShape {
               state: 'Unchanged' | 'Added' | 'Modified' | 'Deleted';
               current?: Record<string, unknown>;
