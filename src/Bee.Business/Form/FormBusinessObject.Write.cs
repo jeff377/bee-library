@@ -53,13 +53,10 @@ namespace Bee.Business.Form
             AuthorizeSave(args.DataSet);
 
             var repository = CreateDataFormRepository(ProgId);
-            // Layer-2 record scope is re-checked only when an existing master record is saved — any
-            // master row state other than Added. (A save that only changes details leaves the master
-            // Unchanged but still modifies the record, so it counts as an Update; Added is a Create,
-            // governed by the action grant. Scope is master-only, so once the master passes the whole
-            // record persists with it.)
-            if (HasExistingMasterWrite(args.DataSet))
-                EnforceWriteScope(args.DataSet, repository);
+            // Layer-2 record scope. Called unconditionally: the payload shapes that need refusing are
+            // exactly the ones that used to skip the call. An insert-only save still resolves no scope
+            // filter (Added maps to no action), so this costs a pass over the rows and nothing more.
+            EnforceWriteScope(args.DataSet, repository);
 
             var schema = DefineAccess.GetFormSchema(ProgId);
             var context = new SaveContext(args, args.DataSet, repository, schema);

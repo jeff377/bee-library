@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Data;
 using Bee.Base.Exceptions;
 using Bee.Business.Form;
+using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Identity;
 using Bee.Definition.Paging;
@@ -87,6 +88,119 @@ namespace Bee.Business.UnitTests.Form
             return ds;
         }
 
+        /// <summary>
+        /// 主檔表被整個省略、只送明細列——層二檢查在修正前會直接 early-return，
+        /// 而 repository 照樣把明細寫進去。
+        /// </summary>
+        private static DataSet DetailRowsWithoutMasterTableDataSet()
+        {
+            var ds = new DataSet();
+            var detail = ds.Tables.Add(GatedProgId + "_Item");
+            detail.Columns.Add("sys_rowid", typeof(Guid));
+            detail.Columns.Add(SysFields.MasterRowId, typeof(Guid));
+            detail.Columns.Add("qty");
+            var drow = detail.NewRow();
+            drow["sys_rowid"] = Guid.NewGuid();
+            drow[SysFields.MasterRowId] = Guid.NewGuid();   // 別人的主檔
+            drow["qty"] = "1";
+            detail.Rows.Add(drow);
+            ds.AcceptChanges();
+            drow["qty"] = "2";
+            return ds;
+        }
+
+        /// <summary>
+        /// 帶一個主檔，明細以 <paramref name="state"/> 的狀態指向另一筆<b>不在 payload 內</b>的主檔。
+        /// </summary>
+        /// <param name="state">明細列要呈現的狀態。</param>
+        private static DataSet MasterWithDetailOwnedByAbsentMaster(DataRowState state)
+        {
+            var (ds, _, drow) = BuildMasterDetail();
+            drow[SysFields.MasterRowId] = Guid.NewGuid();   // 別人的主檔
+
+            if (state == DataRowState.Added) { return ds; }
+
+            ds.AcceptChanges();
+            drow["qty"] = "2";                             // → Modified，MasterRowId 兩版皆為別人的
+            return ds;
+        }
+
+        /// <summary>
+        /// 明細原本掛在別人的主檔下，被改嫁到本次 payload 帶著的主檔。
+        /// </summary>
+        /// <remarks>
+        /// Current 指向在場的主檔，只有 Original 指向不在場的那一筆——<b>只驗 Current 的實作
+        /// 抓不到這一種</b>，而它同樣是把別人記錄裡的資料搬走。這個案例存在的唯一理由就是
+        /// 釘住 <c>WrittenVersions</c> 對 Modified 回傳兩個版本。
+        /// </remarks>
+        private static DataSet MasterWithDetailReparentedFromAbsentMaster()
+        {
+            var (ds, masterRowId, drow) = BuildMasterDetail();
+            drow[SysFields.MasterRowId] = Guid.NewGuid();   // 別人的主檔
+            ds.AcceptChanges();
+            drow[SysFields.MasterRowId] = masterRowId;      // → Modified，改嫁到在場的主檔
+            return ds;
+        }
+
+        /// <summary>
+        /// 建一組「主檔一列 + 明細一列」，回傳 DataSet、主檔 rowid 與明細列（皆為 Added 狀態）。
+        /// </summary>
+        private static (DataSet DataSet, Guid MasterRowId, DataRow DetailRow) BuildMasterDetail()
+        {
+            var ds = new DataSet();
+            var masterRowId = Guid.NewGuid();
+
+            var master = ds.Tables.Add(GatedProgId);
+            master.Columns.Add(SysFields.RowId, typeof(Guid));
+            master.Columns.Add("sys_id");
+            var mrow = master.NewRow();
+            mrow[SysFields.RowId] = masterRowId;
+            mrow["sys_id"] = "m";
+            master.Rows.Add(mrow);
+
+            var detail = ds.Tables.Add(GatedProgId + "_Item");
+            detail.Columns.Add(SysFields.RowId, typeof(Guid));
+            detail.Columns.Add(SysFields.MasterRowId, typeof(Guid));
+            detail.Columns.Add("qty");
+            var drow = detail.NewRow();
+            drow[SysFields.RowId] = Guid.NewGuid();
+            drow["qty"] = "1";
+            detail.Rows.Add(drow);
+
+            return (ds, masterRowId, drow);
+        }
+
+        /// <summary>
+        /// 正規的明細-only 編輯：主檔在場（Unchanged），明細指向的就是它。
+        /// </summary>
+        private static DataSet WellFormedDetailEditDataSet()
+        {
+            var ds = new DataSet();
+            var masterRowId = Guid.NewGuid();
+
+            var master = ds.Tables.Add(GatedProgId);
+            master.Columns.Add(SysFields.RowId, typeof(Guid));
+            master.Columns.Add("sys_id");
+            var mrow = master.NewRow();
+            mrow[SysFields.RowId] = masterRowId;
+            mrow["sys_id"] = "m";
+            master.Rows.Add(mrow);
+
+            var detail = ds.Tables.Add(GatedProgId + "_Item");
+            detail.Columns.Add(SysFields.RowId, typeof(Guid));
+            detail.Columns.Add(SysFields.MasterRowId, typeof(Guid));
+            detail.Columns.Add("qty");
+            var drow = detail.NewRow();
+            drow[SysFields.RowId] = Guid.NewGuid();
+            drow[SysFields.MasterRowId] = masterRowId;
+            drow["qty"] = "1";
+            detail.Rows.Add(drow);
+
+            ds.AcceptChanges();
+            drow["qty"] = "2";
+            return ds;
+        }
+
         [Fact]
         [DisplayName("GetList 無 Read 授權應擋 ForbiddenException")]
         public void GetList_NoReadGrant_ThrowsForbidden()
@@ -161,6 +275,56 @@ namespace Bee.Business.UnitTests.Form
             var repo = new StubRepo { InScope = false };
             var bo = Bo(PermissionAction.Update, repo);
             Assert.Throws<ForbiddenException>(() => bo.Save(new SaveArgs { DataSet = DetailOnlyEditDataSet() }));
+        }
+
+        [Fact]
+        [DisplayName("Save 省略主檔表、只送明細列應擋 ForbiddenException（層二繞過）")]
+        public void Save_DetailRowsWithoutMasterTable_ThrowsForbidden()
+        {
+            // InScope=true：即使記錄範圍檢查會放行，這個 payload 形狀本身就沒有可檢查的主檔，
+            // 所以擋下的理由是結構而非範圍——用 true 才證明得了這一點。
+            var repo = new StubRepo { InScope = true };
+            var bo = Bo(PermissionAction.Update, repo);
+
+            Assert.Throws<ForbiddenException>(
+                () => bo.Save(new SaveArgs { DataSet = DetailRowsWithoutMasterTableDataSet() }));
+        }
+
+        [Theory]
+        [InlineData(DataRowState.Added)]
+        [InlineData(DataRowState.Modified)]
+        [DisplayName("Save 的明細指向 payload 未攜帶的主檔應擋 ForbiddenException")]
+        public void Save_DetailOwnedByAbsentMaster_ThrowsForbidden(DataRowState state)
+        {
+            var repo = new StubRepo { InScope = true };
+            var bo = Bo(PermissionAction.Create | PermissionAction.Update, repo);
+
+            Assert.Throws<ForbiddenException>(
+                () => bo.Save(new SaveArgs { DataSet = MasterWithDetailOwnedByAbsentMaster(state) }));
+        }
+
+        [Fact]
+        [DisplayName("Save 把別人主檔下的明細改嫁到自己的主檔應擋 ForbiddenException（Original 版本）")]
+        public void Save_DetailReparentedFromAbsentMaster_ThrowsForbidden()
+        {
+            var repo = new StubRepo { InScope = true };
+            var bo = Bo(PermissionAction.Update, repo);
+
+            Assert.Throws<ForbiddenException>(
+                () => bo.Save(new SaveArgs { DataSet = MasterWithDetailReparentedFromAbsentMaster() }));
+        }
+
+        [Fact]
+        [DisplayName("對照組：主檔在場且明細指向它的正規明細編輯應放行")]
+        public void Save_WellFormedDetailEdit_PassesGate()
+        {
+            // 沒有這一條，上面三個測試用「一律拒絕」也能滿足。
+            var repo = new StubRepo { InScope = true };
+            var bo = Bo(PermissionAction.Update, repo);
+
+            var ex = Record.Exception(() => bo.Save(new SaveArgs { DataSet = WellFormedDetailEditDataSet() }));
+
+            Assert.Null(ex);
         }
 
         [Fact]

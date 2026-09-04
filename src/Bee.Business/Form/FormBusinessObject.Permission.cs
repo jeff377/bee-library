@@ -63,24 +63,6 @@ namespace Bee.Business.Form
         }
 
         /// <summary>
-        /// Whether the DataSet saves an existing master record — i.e. the master table has a row whose
-        /// state is anything other than <c>Added</c> (Modified / Unchanged / Deleted). These are the
-        /// saves layer-2 record scope re-checks; a pure insert (only <c>Added</c> master rows) is not.
-        /// </summary>
-        /// <param name="dataSet">The DataSet about to be persisted.</param>
-        private bool HasExistingMasterWrite(DataSet dataSet)
-        {
-            var masterTableName = DefineAccess.GetFormSchema(ProgId).MasterTable?.TableName;
-            if (string.IsNullOrEmpty(masterTableName) || !dataSet.Tables.Contains(masterTableName)) { return false; }
-
-            foreach (DataRow row in dataSet.Tables[masterTableName]!.Rows)
-            {
-                if (row.RowState != DataRowState.Added) { return true; }
-            }
-            return false;
-        }
-
-        /// <summary>
         /// Enforces layer-2 record scope on writes by authoritatively re-querying each saved master
         /// row. <c>Deleted</c> → Delete scope; <c>Modified</c> / <c>Unchanged</c> → Update scope (a
         /// details-only edit leaves the master Unchanged but still updates the record). Each is
@@ -90,24 +72,68 @@ namespace Bee.Business.Form
         /// action grant). A no-op when the form declares no <c>PermissionModelId</c> or the action's
         /// scope is unrestricted.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// WARNING: scope is master-only — the record persists with the master that passed. That only
+        /// holds while <b>every</b> written detail row belongs to a master row in this payload, so two
+        /// structural checks guard it, and both are load-bearing:
+        /// </para>
+        /// <list type="number">
+        /// <item><description>A payload that carries detail rows but <b>no master table at all</b> is
+        ///   refused. Without it the whole method returned early — no master table meant nothing to
+        ///   scope-check — while the repository went on writing the details.</description></item>
+        /// <item><description>Every written detail row's <see cref="SysFields.MasterRowId"/> must name
+        ///   a master row present here. Without it a payload could pair one in-scope master with
+        ///   details pointing at someone else's, and re-parent existing detail rows on the way — the
+        ///   full column set is written on update, so that column is not read-only in practice.</description></item>
+        /// </list>
+        /// <para>
+        /// Both are refusals rather than silent drops: the shapes have no legitimate use. The framework's
+        /// own details-only edit carries the master row in <c>Unchanged</c> state, which is exactly why
+        /// <see cref="WriteScopeActionForRowState"/> maps that state to Update.
+        /// </para>
+        /// </remarks>
         /// <param name="dataSet">The DataSet about to be persisted.</param>
         /// <param name="repository">The repository used for the authoritative in-scope check.</param>
-        /// <exception cref="ForbiddenException">A mutated master row is outside the caller's scope.</exception>
+        /// <exception cref="ForbiddenException">A mutated master row is outside the caller's scope, or a
+        /// detail row does not belong to a master row in this payload.</exception>
         private void EnforceWriteScope(DataSet dataSet, IDataFormRepository repository)
         {
             var schema = DefineAccess.GetFormSchema(ProgId);
             if (string.IsNullOrEmpty(schema.PermissionModelId)) { return; }
 
             var masterTableName = schema.MasterTable?.TableName;
-            if (string.IsNullOrEmpty(masterTableName) || !dataSet.Tables.Contains(masterTableName)) { return; }
+            if (string.IsNullOrEmpty(masterTableName)) { return; }
+
+            if (!dataSet.Tables.Contains(masterTableName))
+            {
+                if (HasPendingRows(dataSet))
+                {
+                    throw new ForbiddenException(
+                        $"Save must carry the '{masterTableName}' row the details belong to; " +
+                        $"record scope on model '{schema.PermissionModelId}' cannot be resolved without it.");
+                }
+                return;
+            }
+
+            var masterTable = dataSet.Tables[masterTableName]!;
+            bool hasRowId = masterTable.Columns.Contains(SysFields.RowId);
+            var savedMasterRowIds = new HashSet<Guid>();
 
             // Resolve the scope filter only once an Update/Delete row is found, and at most once per
             // action — an insert-only save resolves nothing; N same-action rows reuse one filter.
             IScopeResolver? resolver = null;
             var scopeByAction = new Dictionary<PermissionAction, FilterNode?>();
 
-            foreach (DataRow row in dataSet.Tables[masterTableName]!.Rows)
+            foreach (DataRow row in masterTable.Rows)
             {
+                var version = row.RowState == DataRowState.Deleted ? DataRowVersion.Original : DataRowVersion.Default;
+                var rowId = hasRowId ? ValueUtilities.CGuid(row[SysFields.RowId, version]) : Guid.Empty;
+
+                // Collected for every state, Added included: the details of a brand-new master
+                // reference the rowid this payload is inserting.
+                if (rowId != Guid.Empty) { savedMasterRowIds.Add(rowId); }
+
                 var action = WriteScopeActionForRowState(row.RowState);
                 if (action == PermissionAction.None) { continue; }
 
@@ -119,12 +145,83 @@ namespace Bee.Business.Form
                 }
                 if (scopeFilter == null) { continue; }
 
-                var version = row.RowState == DataRowState.Deleted ? DataRowVersion.Original : DataRowVersion.Default;
-                var rowId = ValueUtilities.CGuid(row[SysFields.RowId, version]);
                 if (!repository.ExistsInScope(rowId, scopeFilter))
                     throw new ForbiddenException($"Record out of scope for '{action}' on model '{schema.PermissionModelId}'.");
             }
+
+            EnforceDetailOwnership(dataSet, masterTableName, savedMasterRowIds, schema.PermissionModelId);
         }
+
+        /// <summary>
+        /// Whether any table in the DataSet has a row the repository would write.
+        /// </summary>
+        /// <param name="dataSet">The DataSet about to be persisted.</param>
+        private static bool HasPendingRows(DataSet dataSet)
+        {
+            foreach (DataTable table in dataSet.Tables)
+            {
+                foreach (DataRow row in table.Rows)
+                {
+                    if (row.RowState != DataRowState.Unchanged) { return true; }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Requires every written detail row to belong to a master row carried by this payload —
+        /// those are the rows <see cref="EnforceWriteScope"/> has just confirmed in the caller's scope.
+        /// </summary>
+        /// <remarks>
+        /// <c>Unchanged</c> rows are skipped because the repository never writes them. A
+        /// <c>Modified</c> row is checked on both versions: the current value is where it is moving to,
+        /// the original is where it is moving from, and taking a row out of someone else's record is
+        /// as much a scope violation as putting one into it. Detail tables that declare no
+        /// <see cref="SysFields.MasterRowId"/> are skipped — the column the repository would write
+        /// does not exist, so there is nothing to forge.
+        /// </remarks>
+        /// <param name="dataSet">The DataSet about to be persisted.</param>
+        /// <param name="masterTableName">The master table's name.</param>
+        /// <param name="savedMasterRowIds">The master rowids carried by this payload.</param>
+        /// <param name="modelId">The permission model, for the failure message.</param>
+        /// <exception cref="ForbiddenException">A detail row names a master outside this payload.</exception>
+        private static void EnforceDetailOwnership(
+            DataSet dataSet, string masterTableName, HashSet<Guid> savedMasterRowIds, string modelId)
+        {
+            foreach (DataTable table in dataSet.Tables)
+            {
+                if (StringUtilities.IsEquals(table.TableName, masterTableName)) { continue; }
+                if (!table.Columns.Contains(SysFields.MasterRowId)) { continue; }
+
+                foreach (DataRow row in table.Rows)
+                {
+                    foreach (var version in WrittenVersions(row.RowState))
+                    {
+                        var owner = ValueUtilities.CGuid(row[SysFields.MasterRowId, version]);
+                        if (owner == Guid.Empty) { continue; }
+                        if (!savedMasterRowIds.Contains(owner))
+                        {
+                            throw new ForbiddenException(
+                                $"Detail row in '{table.TableName}' belongs to a record this save does not " +
+                                $"carry; record scope on model '{modelId}' cannot be confirmed for it.");
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// The row versions whose <see cref="SysFields.MasterRowId"/> the repository would write for
+        /// a row in the supplied state.
+        /// </summary>
+        /// <param name="state">The row state.</param>
+        private static IEnumerable<DataRowVersion> WrittenVersions(DataRowState state) => state switch
+        {
+            DataRowState.Added => [DataRowVersion.Default],
+            DataRowState.Deleted => [DataRowVersion.Original],
+            DataRowState.Modified => [DataRowVersion.Original, DataRowVersion.Default],
+            _ => [],
+        };
 
         /// <summary>
         /// Enforces the layer-1 permission check for a Save by deriving the required actions
