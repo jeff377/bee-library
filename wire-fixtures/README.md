@@ -11,6 +11,21 @@ nothing to catch the two drifting apart. The JSON codec exists so a browser clie
 and these samples are what keeps the two ends honest: the .NET side generates and verifies them, and
 a client uses them to check it can read what .NET writes and write what .NET reads.
 
+## ⚠️ These are Encoded / Encrypted bodies, not Plain request bodies
+
+A fixture body is what the **JSON body codec** produces, which is the `Encoded` and `Encrypted`
+paths. It is **not** a valid `Plain` request body, and the difference is silent rather than loud:
+
+- `object`-typed members carry a discriminated envelope — `"value": [12, "100"]`. Plain writes and
+  reads the **bare** value (`"value": 100`). Posting a fixture body as Plain does not fail; the
+  member deserializes to a `JsonElement` holding the array and travels on, so a filter value reaches
+  WHERE construction as `[12,"100"]` with no exception and no log line.
+- Empty collections appear (`"parameters": []`) where a Plain body omits them.
+
+If you are building a `Plain` client, follow
+[JSON-RPC Frontend Integration](../docs/jsonrpc-frontend-integration.md) instead. Use these fixtures
+when your client declares `"codec": "json"` on the payload envelope.
+
 ## What a fixture contains
 
 ```json

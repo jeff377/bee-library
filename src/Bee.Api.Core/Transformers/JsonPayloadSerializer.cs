@@ -21,10 +21,31 @@ namespace Bee.Api.Core.Transformers
     /// encoding and before encryption.
     /// </para>
     /// <para>
-    /// The shape matches what a Plain payload already puts on the wire — same camelCase naming,
-    /// same DataSet and DataTable converters, same string-valued enums — so a client has one JSON
-    /// shape to understand rather than two. The one addition is
-    /// <see cref="WireValueJsonConverter"/>, which JSON needs and Plain has always lacked.
+    /// The shape follows what a Plain payload already puts on the wire — same camelCase naming,
+    /// same DataSet and DataTable converters, same string-valued enums — so a client has mostly one
+    /// JSON shape to understand rather than two.
+    /// </para>
+    /// <para>
+    /// WARNING: "mostly" is load-bearing, and a body written for this codec is <b>not</b> a valid
+    /// Plain body. Two differences:
+    /// <list type="number">
+    /// <item>
+    /// <b><c>object</c>-typed members carry a discriminated envelope</b> (<c>[code, value]</c>) via
+    /// <see cref="WireValueJsonConverter"/>, which Plain has always lacked. Plain writes and reads
+    /// the bare value. Sending this codec's shape as Plain does <b>not</b> fail — the member
+    /// deserializes to a <c>JsonElement</c> holding the two-element array and travels on, so a
+    /// <c>FilterCondition.Value</c> would reach WHERE construction as <c>[12,"100"]</c> with no
+    /// exception and no log line. The converter cannot simply be added to the Plain read path
+    /// either: its reader requires the envelope, so it would break every client sending bare values.
+    /// </item>
+    /// <item>
+    /// <b>Empty collections are written, not omitted.</b> This codec does not dispatch the
+    /// <c>IObjectSerialize</c> lifecycle, so the <c>IsSerializeEmpty</c> short-circuit Plain relies
+    /// on does not apply and a member such as <c>parameters</c> appears as <c>[]</c>.
+    /// </item>
+    /// </list>
+    /// The fixtures under <c>wire-fixtures/</c> are bodies for <b>this</b> codec — the
+    /// <c>Encoded</c> and <c>Encrypted</c> paths — and are not Plain request bodies.
     /// </para>
     /// </remarks>
     public class JsonPayloadSerializer : IApiPayloadSerializer

@@ -272,6 +272,18 @@ namespace Bee.Api.Core.Json
             var type = Type.GetType(typeName)
                 ?? throw new InvalidOperationException($"JSON deserialization blocked: unknown type '{typeName}'.");
 
+            // Second layer, on the resolved type rather than the name it arrived as. The MessagePack
+            // side has always had one (`ThrowIfDeserializingTypeIsDisallowed`); this wire only had
+            // the name screen, so the two escape hatches were not equally deep — which matters
+            // exactly when a deployment widens `AllowedTypeNamespaces` and the name screen stops
+            // being the narrow thing it is by default. Re-checking the shape also catches a name
+            // that resolved to something other than what it spelled.
+            if (!WireTypeWhitelist.IsRuntimeTypeAllowed(type))
+            {
+                throw new InvalidOperationException(
+                    $"JSON deserialization blocked: resolved type '{type.FullName}' is not in the allowed type whitelist.");
+            }
+
             return JsonSerializer.Deserialize(ref reader, type, options);
         }
 

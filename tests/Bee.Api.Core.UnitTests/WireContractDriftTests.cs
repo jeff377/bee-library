@@ -153,15 +153,26 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// wire 成員的定義與 JSON 相同：public 可讀可寫、且未標 <c>[JsonIgnore]</c> 的屬性。
+        /// wire 成員的定義與 JSON 相同：public 可讀可寫、且未被 <c>[JsonIgnore]</c> 排除的屬性。
         /// 框架管理成員（<c>Tag</c> / <c>Key</c> / <c>SerializeState</c>）都帶著該標註，
         /// 因此自動被排除。
         /// </summary>
+        /// <remarks>
+        /// WARNING: 必須讀 <see cref="JsonIgnoreAttribute.Condition"/>，不能只看標註存不存在。
+        /// <c>[JsonIgnore(Condition = JsonIgnoreCondition.Never)]</c> 的語意是**永不忽略** ——
+        /// 只看存在性會把它判成「被忽略」，剛好相反。<c>FormField</c> 與 <c>DbField</c> 已在用這個
+        /// 寫法，目前不在 wire 閉包內故未爆，但那是運氣不是設計。
+        /// <para>
+        /// 同一個 bug 曾出現在 BEE4007（規則只看 attribute 存在、未讀 <c>Condition</c>），
+        /// 該規則於 2026-07-30 剔除時已記錄成因 —— 然後它活在這裡。
+        /// </para>
+        /// </remarks>
         private static List<string> WireMemberNames(Type type) =>
             type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.GetIndexParameters().Length == 0)
                 .Where(p => p.GetMethod is { IsPublic: true } && p.SetMethod is { IsPublic: true })
-                .Where(p => p.GetCustomAttribute<JsonIgnoreAttribute>() == null)
+                .Where(p => p.GetCustomAttribute<JsonIgnoreAttribute>() is not { } ignore
+                            || ignore.Condition == JsonIgnoreCondition.Never)
                 .Select(p => p.Name)
                 .ToList();
 

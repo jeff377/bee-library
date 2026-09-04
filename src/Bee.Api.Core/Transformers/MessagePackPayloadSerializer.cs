@@ -10,7 +10,7 @@ namespace Bee.Api.Core.Transformers
         /// <summary>
         /// Gets the identifier string for the serialization format.
         /// </summary>
-        public string SerializationMethod => "messagepack";
+        public string SerializationMethod => PayloadCodecNames.MessagePack;
 
         /// <summary>
         /// Serializes the object to a byte array.

@@ -43,11 +43,17 @@ namespace Bee.Api.Core.JsonRpc
 
             var transformer = ApiServiceOptions.PayloadTransformer;
 
-            // NOTE: A payload that names no codec goes through the two-argument overload, the one
-            // every transformer has always had. Only a negotiated codec asks a transformer for the
-            // newer capability, so a host's own transformer keeps serving every existing client.
+            // NOTE: A payload whose codec the deployment default already serves goes through the
+            // two-argument overload, the one every transformer has always had. Only a codec that
+            // actually changes the body asks a transformer for the newer capability, so a host's
+            // own transformer keeps serving every existing client.
+            //
+            // WARNING: the test is "does this codec change anything", not "did the payload name
+            // one". A client naming the deployment's own codec explicitly — the most natural thing
+            // to write — changes nothing, and used to be handed NotSupportedException by a custom
+            // transformer for asking a question with the same answer.
             byte[] bytes;
-            if (string.IsNullOrEmpty(payload.Codec))
+            if (UsesDefaultCodec(payload.Codec))
             {
                 bytes = transformer.Encode(payload.Value, type);
             }
@@ -136,11 +142,26 @@ namespace Bee.Api.Core.JsonRpc
 
             // The codec is read off the payload, never passed in: the writer stamped it, and the
             // reader has to honour what actually arrived.
-            payload.Value = string.IsNullOrEmpty(payload.Codec)
+            payload.Value = UsesDefaultCodec(payload.Codec)
                 ? transformer.Decode(bytes, type)
                 : transformer.Decode(bytes, type, ApiServiceOptions.ResolvePayloadSerializer(payload.Codec));
             payload.Format = PayloadFormat.Plain;
         }
+
+        /// <summary>
+        /// Says whether the named codec is the one the deployment default already produces.
+        /// </summary>
+        /// <param name="codec">The codec name read off the payload envelope; blank means none was named.</param>
+        /// <returns><c>true</c> when the two-argument transformer overload produces the same bytes.</returns>
+        /// <remarks>
+        /// Blank counts, because that is what every client predating negotiation sends. So does a
+        /// codec whose name matches <see cref="ApiServiceOptions.PayloadSerializer"/>: naming the
+        /// default explicitly is a legitimate thing for a client to do and must not require more of
+        /// a transformer than saying nothing does.
+        /// </remarks>
+        private static bool UsesDefaultCodec(string? codec) =>
+            string.IsNullOrEmpty(codec)
+            || string.Equals(codec, ApiServiceOptions.PayloadSerializer.SerializationMethod, StringComparison.Ordinal);
 
         /// <summary>
         /// Validates that the TypeName is in the allowed type whitelist.

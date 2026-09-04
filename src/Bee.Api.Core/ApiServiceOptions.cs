@@ -179,7 +179,21 @@ namespace Bee.Api.Core
         /// <summary>
         /// Gets the names of the body codecs a request may ask for.
         /// </summary>
-        public static IReadOnlyCollection<string> AcceptedPayloadCodecs => (IReadOnlyCollection<string>)s_codecs.Keys;
+        /// <remarks>
+        /// WARNING: this must agree with <see cref="ResolvePayloadSerializer"/>, which also accepts
+        /// the name a custom <see cref="PayloadSerializer"/> reports. Listing only the built-in
+        /// registry told a deployment that had installed its own codec that the codec it accepts
+        /// does not exist — and this list is what a client is meant to negotiate against.
+        /// </remarks>
+        public static IReadOnlyCollection<string> AcceptedPayloadCodecs
+        {
+            get
+            {
+                string custom = PayloadSerializer.SerializationMethod;
+                if (s_codecs.ContainsKey(custom)) { return (IReadOnlyCollection<string>)s_codecs.Keys; }
+                return [.. s_codecs.Keys, custom];
+            }
+        }
 
         /// <summary>
         /// Resolves the body codec a payload asked for by name.
