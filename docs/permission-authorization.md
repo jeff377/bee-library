@@ -248,6 +248,10 @@ The check reads the flag from the database **on every call**, deliberately unlik
 
 The framework enforces "only write path" at runtime, not by convention: `ProtectedFields` lists the column, and the FormSchema-driven write path (`DataFormRepository.Save`) strips it from every INSERT and UPDATE **even if a form declares it**. Without that, a deployment that built its own user-maintenance form over `st_user` would have handed its ordinary users a route to promote themselves. Reads are unaffected — a form may display the column, it simply cannot store it.
 
+`st_user.password` is protected the same way, and for a sharper reason: the column grants the privilege of *being* the user, and its contents are load-bearing — `PasswordHasher.VerifyPassword` parses the iteration count, salt and hash out of the stored string. A form writing that column would be storing values the verifier never produced. The framework itself has no write path for it at all.
+
+> **Upgrading:** a deployment that set passwords through its own maintenance form over `st_user` will find that column silently dropped from the save after this change. Move it to a dedicated operation that hashes what it stores; a form has no way to produce a value `VerifyPassword` will accept.
+
 The framework ships no `st_user` rows, so seeding a first administrator on a brand-new deployment is the deployment's own decision; the column defaults to "not an administrator" either way.
 
 ## 13. Audit trail

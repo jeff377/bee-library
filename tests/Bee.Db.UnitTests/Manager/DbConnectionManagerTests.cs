@@ -2,60 +2,70 @@ using System.ComponentModel;
 using Bee.Definition;
 using Bee.Definition.Settings;
 using Bee.Definition.Database;
-using Bee.Definition.Storage;
-using Bee.Tests.Shared;
 using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests.Manager
 {
     /// <summary>
     /// DbConnectionManager 的快取與連線資訊組裝測試。
-    /// 使用唯一 databaseId 以避免與其他測試共用的全域快取互相干擾。
     /// </summary>
-    
-    public class DbConnectionManagerTests : IClassFixture<SharedDbFixture>
+    /// <remarks>
+    /// <para>
+    /// 這個類別自帶一份隔離的 <see cref="DatabaseSettings"/>（見
+    /// <see cref="IsolatedDatabaseSettingsProvider"/>），<b>不碰 process-wide 的定義快取</b>。
+    /// 先前它與 <c>DbAccessFactoryTests</c> 都對快取實例做 <c>Items.Add/Remove</c>，
+    /// 平行執行下實測會擲 <c>ArgumentOutOfRangeException</c>。
+    /// </para>
+    /// <para>
+    /// 這裡測的是連線字串組裝，本來就不需要資料庫，所以連 <c>SharedDbFixture</c> 也一併去掉。
+    /// </para>
+    /// </remarks>
+    public sealed class DbConnectionManagerTests : IDisposable
     {
-        private readonly SharedDbFixture _fx;
-        private readonly IDbConnectionManager _manager;
+        private readonly IsolatedDatabaseSettingsProvider _provider = new();
+        private readonly DbConnectionManagerService _manager;
 
-        public DbConnectionManagerTests(SharedDbFixture fx)
+        public DbConnectionManagerTests()
         {
-            _fx = fx;
-            _manager = _fx.GetRequiredService<IDbConnectionManager>();
+            TestDbProviders.EnsureSqlServerRegistered();
+            _manager = new DbConnectionManagerService(_provider);
         }
+
+        /// <summary>
+        /// 退訂 <c>GlobalEvents.DatabaseSettingsChanged</c>：static event 會抓著訂閱者不放，
+        /// 每個測試類別留一個活的訂閱者，下一個測試的事件就會清到它。
+        /// </summary>
+        public void Dispose() => _manager.Dispose();
+
         private static string NewId(string label) => $"bee_dcm_{label}_{Guid.NewGuid():N}";
 
         private DatabaseItem AddItem(string id, Action<DatabaseItem> configure)
         {
-            var settings = _fx.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             var item = new DatabaseItem { Id = id, DatabaseType = DatabaseType.SQLServer };
             configure(item);
-            settings.Items!.Add(item);
+            _provider.Settings.Items!.Add(item);
             return item;
         }
 
         private void RemoveItem(string id)
         {
-            var settings = _fx.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
-            if (settings.Items!.Contains(id))
-                settings.Items!.Remove(settings.Items[id]!);
+            if (_provider.Settings.Items!.Contains(id))
+                _provider.Settings.Items!.Remove(_provider.Settings.Items[id]!);
             _manager.Remove(id);
         }
 
         private DatabaseServer AddServer(string id, Action<DatabaseServer> configure)
         {
-            var settings = _fx.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             var server = new DatabaseServer { Id = id, DatabaseType = DatabaseType.SQLServer };
             configure(server);
-            settings.Servers!.Add(server);
+            _provider.Settings.Servers!.Add(server);
             return server;
         }
 
         private void RemoveServer(string id)
         {
-            var settings = _fx.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
-            if (settings.Servers!.Contains(id))
-                settings.Servers!.Remove(settings.Servers[id]!);
+            if (_provider.Settings.Servers!.Contains(id))
+                _provider.Settings.Servers!.Remove(_provider.Settings.Servers[id]!);
         }
 
         [Theory]

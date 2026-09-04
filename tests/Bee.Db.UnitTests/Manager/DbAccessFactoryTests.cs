@@ -2,16 +2,29 @@ using System.ComponentModel;
 using Bee.Db.Manager;
 using Bee.Definition.Database;
 using Bee.Definition.Settings;
-using Bee.Definition.Storage;
-using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests.Manager
 {
-    public class DbAccessFactoryTests : IClassFixture<SharedDbFixture>
+    /// <summary>
+    /// DbAccessFactory 的建構與型別解析測試。
+    /// </summary>
+    /// <remarks>
+    /// 自帶隔離的 <see cref="DatabaseSettings"/>，不碰 process-wide 的定義快取 ——
+    /// 理由見 <see cref="IsolatedDatabaseSettingsProvider"/>。這裡不開連線，
+    /// 只驗工廠回傳的 <c>DbAccess</c> 帶對 <c>DatabaseType</c>。
+    /// </remarks>
+    public sealed class DbAccessFactoryTests : IDisposable
     {
-        private readonly SharedDbFixture _fx;
+        private readonly IsolatedDatabaseSettingsProvider _provider = new();
+        private readonly DbConnectionManagerService _manager;
 
-        public DbAccessFactoryTests(SharedDbFixture fx) { _fx = fx; }
+        public DbAccessFactoryTests()
+        {
+            TestDbProviders.EnsureSqlServerRegistered();
+            _manager = new DbConnectionManagerService(_provider);
+        }
+
+        public void Dispose() => _manager.Dispose();
 
         [Fact]
         [DisplayName("DbAccessFactory 構造子需要 IDbConnectionManager")]
@@ -27,7 +40,7 @@ namespace Bee.Db.UnitTests.Manager
         [DisplayName("DbAccessFactory 指定 maxCommandTimeout 應建立實例")]
         public void DbAccessFactory_WithTimeout_CreatesInstance(int timeout)
         {
-            var factory = new DbAccessFactory(_fx.GetRequiredService<IDbConnectionManager>(), timeout);
+            var factory = new DbAccessFactory(_manager, timeout);
             Assert.NotNull(factory);
         }
 
@@ -36,28 +49,18 @@ namespace Bee.Db.UnitTests.Manager
         public void Create_ValidDatabaseId_ReturnsDbAccessWithCorrectType()
         {
             string id = $"bee_factory_{Guid.NewGuid():N}";
-            DatabaseSettings settings = _fx.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
-            settings.Items!.Add(new DatabaseItem
+            _provider.Settings.Items!.Add(new DatabaseItem
             {
                 Id = id,
                 DatabaseType = DatabaseType.SQLServer,
                 ConnectionString = "Server=test;"
             });
-            var manager = _fx.GetRequiredService<IDbConnectionManager>();
 
-            try
-            {
-                var factory = new DbAccessFactory(manager, 30);
-                var dbAccess = factory.Create(id);
+            var factory = new DbAccessFactory(_manager, 30);
+            var dbAccess = factory.Create(id);
 
-                Assert.NotNull(dbAccess);
-                Assert.Equal(DatabaseType.SQLServer, dbAccess.DatabaseType);
-            }
-            finally
-            {
-                settings.Items!.Remove(settings.Items[id]!);
-                manager.Remove(id);
-            }
+            Assert.NotNull(dbAccess);
+            Assert.Equal(DatabaseType.SQLServer, dbAccess.DatabaseType);
         }
     }
 }
