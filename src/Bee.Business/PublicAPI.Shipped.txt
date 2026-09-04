@@ -378,14 +378,6 @@ Bee.Business.Session.SessionCompanyBinding.Company.init -> void
 Bee.Business.Session.SessionCompanyBinding.Deconstruct(out Bee.Definition.Identity.CompanyInfo! Company, out System.Collections.Generic.Dictionary<string!, Bee.Definition.Settings.PermissionAction>! Capabilities) -> void
 Bee.Business.Session.SessionCompanyBinding.Equals(Bee.Business.Session.SessionCompanyBinding? other) -> bool
 Bee.Business.Session.SessionCompanyBinding.SessionCompanyBinding(Bee.Definition.Identity.CompanyInfo! Company, System.Collections.Generic.Dictionary<string!, Bee.Definition.Settings.PermissionAction>! Capabilities) -> void
-Bee.Business.System.CheckPackageUpdateArgs
-Bee.Business.System.CheckPackageUpdateArgs.CheckPackageUpdateArgs() -> void
-Bee.Business.System.CheckPackageUpdateArgs.Queries.get -> System.Collections.Generic.List<Bee.Api.Contracts.System.PackageUpdateQuery!>!
-Bee.Business.System.CheckPackageUpdateArgs.Queries.set -> void
-Bee.Business.System.CheckPackageUpdateResult
-Bee.Business.System.CheckPackageUpdateResult.CheckPackageUpdateResult() -> void
-Bee.Business.System.CheckPackageUpdateResult.Updates.get -> System.Collections.Generic.List<Bee.Api.Contracts.System.PackageUpdateInfo!>!
-Bee.Business.System.CheckPackageUpdateResult.Updates.set -> void
 Bee.Business.System.CreateApiKeyArgs
 Bee.Business.System.CreateApiKeyArgs.Contact.get -> string?
 Bee.Business.System.CreateApiKeyArgs.Contact.set -> void
@@ -690,7 +682,6 @@ virtual Bee.Business.Form.FormBusinessPlugin.BeforeDelete(Bee.Business.Form.Dele
 virtual Bee.Business.Form.FormBusinessPlugin.BeforeSave(Bee.Business.Form.SaveContext! context) -> void
 virtual Bee.Business.System.SystemBusinessObject.ApplyUserLocale(Bee.Definition.Identity.SessionInfo! sessionInfo) -> void
 virtual Bee.Business.System.SystemBusinessObject.AuthenticateUser(Bee.Business.System.LoginArgs! args, out string! userName) -> bool
-virtual Bee.Business.System.SystemBusinessObject.CheckPackageUpdate(Bee.Business.System.CheckPackageUpdateArgs! args) -> Bee.Business.System.CheckPackageUpdateResult!
 virtual Bee.Business.System.SystemBusinessObject.CreateApiKey(Bee.Business.System.CreateApiKeyArgs! args) -> Bee.Business.System.CreateApiKeyResult!
 virtual Bee.Business.System.SystemBusinessObject.CreateSession(Bee.Business.System.CreateSessionArgs! args) -> Bee.Business.System.CreateSessionResult!
 virtual Bee.Business.System.SystemBusinessObject.EnterCompany(Bee.Business.System.EnterCompanyArgs! args) -> Bee.Business.System.EnterCompanyResult!

@@ -52,7 +52,6 @@ namespace Bee.Api.Core.UnitTests
             { "LogBusinessObject.GetDbAnomalySummary", ("Encrypted", "Authenticated") },
             { "LogBusinessObject.GetLoginLog", ("Encrypted", "Authenticated") },
             { "LogBusinessObject.GetTopApiMethods", ("Encrypted", "Authenticated") },
-            { "SystemBusinessObject.CheckPackageUpdate", ("Encoded", "Anonymous") },
             { "SystemBusinessObject.CreateApiKey", ("Encrypted", "Authenticated") },
             { "SystemBusinessObject.CreateSession", ("LocalOnly", "Anonymous") },
             { "SystemBusinessObject.EnterCompany", ("Public", "Authenticated") },

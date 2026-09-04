@@ -45,7 +45,7 @@ namespace Bee.Business
         /// <c>isLocalCall: false</c> was stopped, which is the caller least in need of stopping.
         /// </para>
         /// <para>
-        /// The framework itself never relies on the default: <c>BusinessObjectFactory</c> always
+        /// The framework itself never relies on the default: <see cref="BusinessObjectFactory"/> always
         /// passes the value it resolved from the transport. The default only governs code that
         /// constructs a business object by hand, and for that code "not local until you say so" is
         /// the answer that fails safe.

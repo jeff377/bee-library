@@ -1794,7 +1794,6 @@ const Bee.Definition.SysFields.ValidDate = "sys_valid_date" -> string!
 const Bee.Definition.SysProgIds.AuditLog = "AuditLog" -> string!
 const Bee.Definition.SysProgIds.AuditRule = "AuditRule" -> string!
 const Bee.Definition.SysProgIds.System = "System" -> string!
-const Bee.Definition.SystemActions.CheckPackageUpdate = "CheckPackageUpdate" -> string!
 const Bee.Definition.SystemActions.CreateApiKey = "CreateApiKey" -> string!
 const Bee.Definition.SystemActions.CreateSession = "CreateSession" -> string!
 const Bee.Definition.SystemActions.EnterCompany = "EnterCompany" -> string!

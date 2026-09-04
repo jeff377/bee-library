@@ -32,14 +32,6 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("CheckPackageUpdate 在基底類別應拋 NotSupportedException")]
-        public void CheckPackageUpdate_BaseClass_ThrowsNotSupported()
-        {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
-            Assert.Throws<NotSupportedException>(() => bo.CheckPackageUpdate(new CheckPackageUpdateArgs()));
-        }
-
-        [Fact]
         [DisplayName("GetPackage 在基底類別應拋 NotSupportedException")]
         public void GetPackage_BaseClass_ThrowsNotSupported()
         {

@@ -65,17 +65,6 @@ namespace Bee.Business.System
         }
 
         /// <summary>
-        /// Checks whether a newer version of the package is available.
-        /// </summary>
-        /// <param name="args">The input arguments.</param>
-        [ApiAccessControl(ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous)]
-        public virtual CheckPackageUpdateResult CheckPackageUpdate(CheckPackageUpdateArgs args)
-        {
-            // Implemented in derived classes.
-            throw new NotSupportedException("CheckPackageUpdate is not implemented in the base class.");
-        }
-
-        /// <summary>
         /// Gets package information.
         /// </summary>
         /// <param name="args">The input arguments.</param>

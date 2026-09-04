@@ -12,7 +12,7 @@ namespace Bee.Business.UnitTests
     /// <summary>
     /// <see cref="SystemBusinessObject"/> 除 Login 外的補強測試：
     /// 涵蓋 Ping / GetCommonConfiguration / GetDefine / SaveDefine 分支、
-    /// CheckPackageUpdate / GetPackage 未實作的 NotSupportedException、
+    /// GetPackage 未實作的 NotSupportedException、
     /// 以及 ExecFunc（本地呼叫）基本路徑。
     /// </summary>
     public class SystemBusinessObjectExtraTests : IClassFixture<SharedDbFixture>
@@ -95,15 +95,6 @@ namespace Bee.Business.UnitTests
             var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System, isLocalCall: false);
             Assert.Throws<NotSupportedException>(() =>
                 bo.SaveDefine(new SaveDefineArgs { DefineType = DefineType.DatabaseSettings, Xml = "<x/>" }));
-        }
-
-        [Fact]
-        [DisplayName("CheckPackageUpdate 基底實作應拋 NotSupportedException")]
-        public void CheckPackageUpdate_BaseImpl_Throws()
-        {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
-            Assert.Throws<NotSupportedException>(() =>
-                bo.CheckPackageUpdate(new CheckPackageUpdateArgs()));
         }
 
         [Fact]

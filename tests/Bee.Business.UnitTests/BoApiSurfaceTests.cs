@@ -65,7 +65,6 @@ namespace Bee.Business.UnitTests
             new ApiSurfaceEntry("LogBusinessObject", "GetTopApiMethods",    ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),
 
             // System axis — SystemBusinessObject (system-level operations).
-            new ApiSurfaceEntry("SystemBusinessObject", "CheckPackageUpdate",     ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous),
             // Encrypted（原為 LocalOnly）：把關移交 IDeploymentAuthorizationService —— 遠端須是
             // 部署層管理員，僅「已驗證」仍不足。本機呼叫免管理員，維持首把金鑰的 bootstrap 路徑。
             new ApiSurfaceEntry("SystemBusinessObject", "CreateApiKey",           ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated),

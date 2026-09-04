@@ -32,8 +32,6 @@ namespace Bee.Api.Core.MessagePack
             list.Add(new NullableFormatter<System.Int32>());
 
             list.Add(new ListFormatter<Bee.Api.Contracts.AuditLog.RecordFieldChange>());
-            list.Add(new ListFormatter<Bee.Api.Contracts.System.PackageUpdateInfo>());
-            list.Add(new ListFormatter<Bee.Api.Contracts.System.PackageUpdateQuery>());
             list.Add(new ListFormatter<Bee.Api.Core.MessagePack.SerializableDataColumn>());
             list.Add(new ListFormatter<Bee.Api.Core.MessagePack.SerializableDataRelation>());
             list.Add(new ListFormatter<Bee.Api.Core.MessagePack.SerializableDataRow>());

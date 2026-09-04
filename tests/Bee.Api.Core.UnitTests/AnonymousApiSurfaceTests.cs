@@ -45,8 +45,6 @@ namespace Bee.Api.Core.UnitTests
                 "登入本身。免登入是定義上的必然；API key 仍要求，因為「哪個應用嘗試登入」正是要記錄的事。",
             ["SystemBusinessObject.GetCommonConfiguration"] =
                 "客戶端啟動流程在登入前就需要它決定壓縮與加密設定。回應內容是部署層的 payload 設定，不含資料。",
-            ["SystemBusinessObject.CheckPackageUpdate"] =
-                "版本更新檢查，基底類別未實作、由應用自行提供。要求 Encoded 以上傳輸。",
             ["SystemBusinessObject.GetPackage"] =
                 "套件下載，基底類別未實作、由應用自行提供。要求 Encoded 以上傳輸。",
             ["SystemBusinessObject.CreateSession"] =
@@ -118,7 +116,6 @@ namespace Bee.Api.Core.UnitTests
             string[] requireHeader =
             [
                 $"{SysProgIds.System}.GetCommonConfiguration",
-                $"{SysProgIds.System}.CheckPackageUpdate",
                 $"{SysProgIds.System}.GetPackage",
                 $"{SysProgIds.System}.ExecFuncAnonymous",
             ];

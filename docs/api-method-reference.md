@@ -93,7 +93,6 @@ Singleton system-level BO, accessed as `System.<action>` over the wire.
 | `GetLanguage` | Public | Authenticated | **JS-only.** Returns a `LanguageResource` for one `(Lang, Namespace)` pair. |
 | `GetCustomizeFormLayout` | Public | Authenticated | Returns the session tenant's `FormLayout` override as XML, or an empty string when the tenant declares none. The customize code comes from the session, never from the caller. |
 | `GetCustomizeLanguage` | Public | Authenticated | Returns the session tenant's `LanguageResource` override as XML, or an empty string when the tenant declares none. |
-| `CheckPackageUpdate` | Encoded | Anonymous | Reports whether a client package upgrade is available. |
 | `GetPackage` | Encoded | Anonymous | Streams a client upgrade package binary. |
 
 > **JS-only methods.** `GetFormSchema` / `GetFormLayout` / `GetLanguage` use

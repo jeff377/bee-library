@@ -24,7 +24,7 @@
 ### 系統操作
 
 - `ISystemBusinessObject` -- 跨 BO 契約：`Login`、`CreateSession`、`EnterCompany`、`LeaveCompany`、`Logout`。純 API 方法（`Ping`、`GetFormSchema`、`GetFormLayout`、`GetLanguage` 等）在具象類別上 public + `[ApiAccessControl]`，刻意不放進此介面
-- 每個操作對應 Args/Result 組合：`LoginArgs`/`LoginResult`、`PingArgs`/`PingResult`、`CreateSessionArgs`/`CreateSessionResult`、`GetDefineArgs`/`GetDefineResult`、`SaveDefineArgs`/`SaveDefineResult`、`CheckPackageUpdateArgs`/`CheckPackageUpdateResult`、`GetPackageArgs`/`GetPackageResult`、`GetCommonConfigurationArgs`/`GetCommonConfigurationResult`
+- 每個操作對應 Args/Result 組合：`LoginArgs`/`LoginResult`、`PingArgs`/`PingResult`、`CreateSessionArgs`/`CreateSessionResult`、`GetDefineArgs`/`GetDefineResult`、`SaveDefineArgs`/`SaveDefineResult`、`GetPackageArgs`/`GetPackageResult`、`GetCommonConfigurationArgs`/`GetCommonConfigurationResult`
 
 ### 表單操作
 
@@ -77,7 +77,7 @@ Bee.Business/
                     # ISystemBusinessObject、SystemBusinessObject、SystemExecFuncHandler，
                     # 以及系統操作的 Args/Result 組合
                     # （Login、Ping、CreateSession、GetDefine、SaveDefine、
-                    #   CheckPackageUpdate、GetPackage、GetCommonConfiguration）
+                    #   GetPackage、GetCommonConfiguration）
   Providers/        # StaticApiEncryptionKeyProvider、DynamicApiEncryptionKeyProvider、
                     # CacheDataSourceProvider
   Security/         # LoginAttemptTracker（記憶體內帳戶鎖定追蹤器）

@@ -9,14 +9,6 @@ namespace Bee.Api.Core.MessagePack
         /// </summary>
         private static void AddSystemMessages(List<IMessagePackFormatter> list)
         {
-            list.Add(WireContract.For<Bee.Api.Core.Messages.System.CheckPackageUpdateRequest>()
-                .Member(nameof(Bee.Api.Core.Messages.System.CheckPackageUpdateRequest.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.CheckPackageUpdateRequest.Queries), static x => x.Queries, static (x, v) => x.Queries = v)
-                .Build());
-            list.Add(WireContract.For<Bee.Api.Core.Messages.System.CheckPackageUpdateResponse>()
-                .Member(nameof(Bee.Api.Core.Messages.System.CheckPackageUpdateResponse.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.CheckPackageUpdateResponse.Updates), static x => x.Updates, static (x, v) => x.Updates = v)
-                .Build());
             list.Add(WireContract.For<Bee.Api.Core.Messages.System.CreateApiKeyRequest>()
                 .Member(nameof(Bee.Api.Core.Messages.System.CreateApiKeyRequest.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)
                 .Member(nameof(Bee.Api.Core.Messages.System.CreateApiKeyRequest.SysId), static x => x.SysId, static (x, v) => x.SysId = v)

@@ -87,7 +87,6 @@ BO 層 Args / Result 型別、`[ApiAccessControl]` 設定，與一行用途說�
 | `GetLanguage` | Public | Authenticated | **JS-only。** 取單一 `(Lang, Namespace)` 配對的 `LanguageResource`。 |
 | `GetCustomizeFormLayout` | Public | Authenticated | 以 XML 回傳 session 租戶的 `FormLayout` 覆寫；該租戶沒有客製時回空字串。customize code 取自 session，絕不由呼叫端提供。 |
 | `GetCustomizeLanguage` | Public | Authenticated | 以 XML 回傳 session 租戶的 `LanguageResource` 覆寫；該租戶沒有客製時回空字串。 |
-| `CheckPackageUpdate` | Encoded | Anonymous | 回報是否有 client 端套件升級可用。 |
 | `GetPackage` | Encoded | Anonymous | 串流回傳 client 端升級套件 binary。 |
 
 > **JS-only 方法。** `GetFormSchema` / `GetFormLayout` / `GetLanguage` 內部走

@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using Bee.Api.Contracts.AuditLog;
-using Bee.Api.Contracts.System;
 using Bee.Api.Core.MessagePack;
 using Bee.Base.Serialization;
 using Bee.Definition.Logging;
@@ -18,70 +17,6 @@ namespace Bee.Api.Core.UnitTests.MessagePack
     /// </remarks>
     public class ContractsDtoRoundTripTests
     {
-        [Fact]
-        [DisplayName("PackageUpdateInfo MessagePack 與 JSON round-trip 應正確還原")]
-        public void PackageUpdateInfo_RoundTrips_PreservesValues()
-        {
-            var original = new PackageUpdateInfo
-            {
-                AppId = "SettingsEditor",
-                ComponentId = "Main",
-                UpdateAvailable = true,
-                LatestVersion = "1.2.4",
-                Mandatory = true,
-                PackageSize = 1234567L,
-                Sha256 = "abcdef0123456789",
-                Delivery = PackageDelivery.Api,
-                PackageUrl = "https://example.invalid/pkg.zip",
-                ReleaseNotes = "修正若干問題"
-            };
-
-            AssertPackageUpdateInfo(MessagePackCodec.Deserialize<PackageUpdateInfo>(MessagePackCodec.Serialize(original)));
-            AssertPackageUpdateInfo(JsonCodec.Deserialize<PackageUpdateInfo>(JsonCodec.Serialize(original)));
-        }
-
-        private static void AssertPackageUpdateInfo(PackageUpdateInfo? restored)
-        {
-            Assert.NotNull(restored);
-            Assert.Equal("SettingsEditor", restored.AppId);
-            Assert.Equal("Main", restored.ComponentId);
-            Assert.True(restored.UpdateAvailable);
-            Assert.Equal("1.2.4", restored.LatestVersion);
-            Assert.True(restored.Mandatory);
-            Assert.Equal(1234567L, restored.PackageSize);
-            Assert.Equal("abcdef0123456789", restored.Sha256);
-            Assert.Equal(PackageDelivery.Api, restored.Delivery);
-            Assert.Equal("https://example.invalid/pkg.zip", restored.PackageUrl);
-            Assert.Equal("修正若干問題", restored.ReleaseNotes);
-        }
-
-        [Fact]
-        [DisplayName("PackageUpdateQuery MessagePack 與 JSON round-trip 應正確還原")]
-        public void PackageUpdateQuery_RoundTrips_PreservesValues()
-        {
-            var original = new PackageUpdateQuery
-            {
-                AppId = "Client",
-                ComponentId = "Plugin-XYZ",
-                CurrentVersion = "1.2.3",
-                Platform = "macOS",
-                Channel = "Beta"
-            };
-
-            AssertPackageUpdateQuery(MessagePackCodec.Deserialize<PackageUpdateQuery>(MessagePackCodec.Serialize(original)));
-            AssertPackageUpdateQuery(JsonCodec.Deserialize<PackageUpdateQuery>(JsonCodec.Serialize(original)));
-        }
-
-        private static void AssertPackageUpdateQuery(PackageUpdateQuery? restored)
-        {
-            Assert.NotNull(restored);
-            Assert.Equal("Client", restored.AppId);
-            Assert.Equal("Plugin-XYZ", restored.ComponentId);
-            Assert.Equal("1.2.3", restored.CurrentVersion);
-            Assert.Equal("macOS", restored.Platform);
-            Assert.Equal("Beta", restored.Channel);
-        }
-
         [Fact]
         [DisplayName("RecordFieldChange MessagePack 與 JSON round-trip 應正確還原（含 null 值欄位）")]
         public void RecordFieldChange_RoundTrips_PreservesValues()

@@ -78,8 +78,6 @@ export type LoginEvent = 'LoginSucceeded' | 'LoginFailed' | 'LockedOut' | 'Logou
 
 export type NumberKind = 'None' | 'Quantity' | 'Weight' | 'Amount' | 'Percent' | 'UnitPrice' | 'Cost' | 'ExchangeRate';
 
-export type PackageDelivery = 'Url' | 'Api';
-
 export type PayloadFormat = 'Plain' | 'Encoded' | 'Encrypted';
 
 export type SortDirection = 'Asc' | 'Desc';
@@ -107,16 +105,6 @@ export interface ApiKeySummary {
 export interface CashRoundingItem {
   currencyCode?: string;
   unit: number;
-}
-
-export interface CheckPackageUpdateRequest {
-  parameters?: Parameter[];
-  queries?: PackageUpdateQuery[];
-}
-
-export interface CheckPackageUpdateResponse {
-  parameters?: Parameter[];
-  updates?: PackageUpdateInfo[];
 }
 
 export interface CompanyInfo {
@@ -482,27 +470,6 @@ export interface LogoutResponse {
 export interface NumberFormatItem {
   decimals: number;
   kind: NumberKind;
-}
-
-export interface PackageUpdateInfo {
-  appId?: string;
-  componentId?: string;
-  delivery: PackageDelivery;
-  latestVersion?: string;
-  mandatory: boolean;
-  packageSize: number;
-  packageUrl?: string;
-  releaseNotes?: string;
-  sha256?: string;
-  updateAvailable: boolean;
-}
-
-export interface PackageUpdateQuery {
-  appId?: string;
-  channel?: string;
-  componentId?: string;
-  currentVersion?: string;
-  platform?: string;
 }
 
 export interface PagingInfo {

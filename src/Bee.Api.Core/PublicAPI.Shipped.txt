@@ -350,14 +350,6 @@ Bee.Api.Core.Messages.PayloadFormat
 Bee.Api.Core.Messages.PayloadFormat.Encoded = 1 -> Bee.Api.Core.Messages.PayloadFormat
 Bee.Api.Core.Messages.PayloadFormat.Encrypted = 2 -> Bee.Api.Core.Messages.PayloadFormat
 Bee.Api.Core.Messages.PayloadFormat.Plain = 0 -> Bee.Api.Core.Messages.PayloadFormat
-Bee.Api.Core.Messages.System.CheckPackageUpdateRequest
-Bee.Api.Core.Messages.System.CheckPackageUpdateRequest.CheckPackageUpdateRequest() -> void
-Bee.Api.Core.Messages.System.CheckPackageUpdateRequest.Queries.get -> System.Collections.Generic.List<Bee.Api.Contracts.System.PackageUpdateQuery!>!
-Bee.Api.Core.Messages.System.CheckPackageUpdateRequest.Queries.set -> void
-Bee.Api.Core.Messages.System.CheckPackageUpdateResponse
-Bee.Api.Core.Messages.System.CheckPackageUpdateResponse.CheckPackageUpdateResponse() -> void
-Bee.Api.Core.Messages.System.CheckPackageUpdateResponse.Updates.get -> System.Collections.Generic.List<Bee.Api.Contracts.System.PackageUpdateInfo!>!
-Bee.Api.Core.Messages.System.CheckPackageUpdateResponse.Updates.set -> void
 Bee.Api.Core.Messages.System.CreateApiKeyRequest
 Bee.Api.Core.Messages.System.CreateApiKeyRequest.Contact.get -> string?
 Bee.Api.Core.Messages.System.CreateApiKeyRequest.Contact.set -> void

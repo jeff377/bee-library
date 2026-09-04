@@ -178,7 +178,7 @@ The complete catalog (with `[ApiAccessControl]` per method) lives at
 | Authenticated — Session | `System.EnterCompany`, `System.LeaveCompany`, `System.Logout`, `System.GetDepartmentTree` |
 | Authenticated — Definition | `System.GetDefine`, `System.SaveDefine` (SystemSettings / DatabaseSettings are local-call-only); `System.GetFormSchema`, `System.GetFormLayout`, `System.GetLanguage` (JSON-native, JS-preferred) |
 | Authenticated — Form CRUD | `<ProgId>.GetList`, `GetNewData`, `GetData`, `Save`, `Delete` |
-| **Not for JS** | `System.CheckPackageUpdate`, `System.GetPackage` (Encoded, .NET runtime use) |
+| **Not for JS** | `System.GetPackage` (Encoded, .NET runtime use) |
 
 **JSON-native schema / layout / language retrieval**
 

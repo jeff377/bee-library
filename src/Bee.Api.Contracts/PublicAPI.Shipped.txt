@@ -107,8 +107,6 @@ Bee.Api.Contracts.Form.ISaveResponse.DataSet.get -> System.Data.DataSet?
 Bee.Api.Contracts.IExecFuncRequest
 Bee.Api.Contracts.IExecFuncRequest.FuncId.get -> string!
 Bee.Api.Contracts.IExecFuncResponse
-Bee.Api.Contracts.System.ICheckPackageUpdateRequest
-Bee.Api.Contracts.System.ICheckPackageUpdateResponse
 Bee.Api.Contracts.System.ICreateApiKeyRequest
 Bee.Api.Contracts.System.ICreateApiKeyRequest.Contact.get -> string?
 Bee.Api.Contracts.System.ICreateApiKeyRequest.ExpiredAt.get -> System.DateTime?
@@ -229,37 +227,3 @@ Bee.Api.Contracts.System.ISetDeploymentAdminResponse.UserId.get -> string!
 Bee.Api.Contracts.System.PackageDelivery
 Bee.Api.Contracts.System.PackageDelivery.Api = 1 -> Bee.Api.Contracts.System.PackageDelivery
 Bee.Api.Contracts.System.PackageDelivery.Url = 0 -> Bee.Api.Contracts.System.PackageDelivery
-Bee.Api.Contracts.System.PackageUpdateInfo
-Bee.Api.Contracts.System.PackageUpdateInfo.AppId.get -> string!
-Bee.Api.Contracts.System.PackageUpdateInfo.AppId.set -> void
-Bee.Api.Contracts.System.PackageUpdateInfo.ComponentId.get -> string!
-Bee.Api.Contracts.System.PackageUpdateInfo.ComponentId.set -> void
-Bee.Api.Contracts.System.PackageUpdateInfo.Delivery.get -> Bee.Api.Contracts.System.PackageDelivery
-Bee.Api.Contracts.System.PackageUpdateInfo.Delivery.set -> void
-Bee.Api.Contracts.System.PackageUpdateInfo.LatestVersion.get -> string!
-Bee.Api.Contracts.System.PackageUpdateInfo.LatestVersion.set -> void
-Bee.Api.Contracts.System.PackageUpdateInfo.Mandatory.get -> bool
-Bee.Api.Contracts.System.PackageUpdateInfo.Mandatory.set -> void
-Bee.Api.Contracts.System.PackageUpdateInfo.PackageSize.get -> long
-Bee.Api.Contracts.System.PackageUpdateInfo.PackageSize.set -> void
-Bee.Api.Contracts.System.PackageUpdateInfo.PackageUpdateInfo() -> void
-Bee.Api.Contracts.System.PackageUpdateInfo.PackageUrl.get -> string!
-Bee.Api.Contracts.System.PackageUpdateInfo.PackageUrl.set -> void
-Bee.Api.Contracts.System.PackageUpdateInfo.ReleaseNotes.get -> string!
-Bee.Api.Contracts.System.PackageUpdateInfo.ReleaseNotes.set -> void
-Bee.Api.Contracts.System.PackageUpdateInfo.Sha256.get -> string!
-Bee.Api.Contracts.System.PackageUpdateInfo.Sha256.set -> void
-Bee.Api.Contracts.System.PackageUpdateInfo.UpdateAvailable.get -> bool
-Bee.Api.Contracts.System.PackageUpdateInfo.UpdateAvailable.set -> void
-Bee.Api.Contracts.System.PackageUpdateQuery
-Bee.Api.Contracts.System.PackageUpdateQuery.AppId.get -> string!
-Bee.Api.Contracts.System.PackageUpdateQuery.AppId.set -> void
-Bee.Api.Contracts.System.PackageUpdateQuery.Channel.get -> string!
-Bee.Api.Contracts.System.PackageUpdateQuery.Channel.set -> void
-Bee.Api.Contracts.System.PackageUpdateQuery.ComponentId.get -> string!
-Bee.Api.Contracts.System.PackageUpdateQuery.ComponentId.set -> void
-Bee.Api.Contracts.System.PackageUpdateQuery.CurrentVersion.get -> string!
-Bee.Api.Contracts.System.PackageUpdateQuery.CurrentVersion.set -> void
-Bee.Api.Contracts.System.PackageUpdateQuery.PackageUpdateQuery() -> void
-Bee.Api.Contracts.System.PackageUpdateQuery.Platform.get -> string!
-Bee.Api.Contracts.System.PackageUpdateQuery.Platform.set -> void

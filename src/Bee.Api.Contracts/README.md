@@ -39,7 +39,6 @@
 
 ### Package Management
 
-- `ICheckPackageUpdateRequest` / `ICheckPackageUpdateResponse` -- query available package updates
 - `IGetPackageRequest` / `IGetPackageResponse` -- download package content
 - `PackageUpdateQuery` -- query parameters for update check
 - `PackageUpdateInfo` -- update metadata (version, size, SHA-256, delivery mode), serialized with MessagePack
@@ -56,7 +55,6 @@
 | `ISaveDefineRequest` / `ISaveDefineResponse` | Definition persistence contract |
 | `IExecFuncRequest` / `IExecFuncResponse` | Custom function execution contract |
 | `IGetCommonConfigurationRequest` / `IGetCommonConfigurationResponse` | Configuration retrieval contract |
-| `ICheckPackageUpdateRequest` / `ICheckPackageUpdateResponse` | Package update check contract |
 | `IGetPackageRequest` / `IGetPackageResponse` | Package download contract |
 | `PackageUpdateQuery` | Update check query parameters |
 | `PackageUpdateInfo` | Package update metadata (MessagePack) |
@@ -112,7 +110,7 @@ Bee.Api.Contracts/
     IPingRequest.cs / IPingResponse.cs
     IEnterCompany* / ILeaveCompany* / IGetLanguage*
     IGetDefine* / ISaveDefine* / IGetFormSchema* / IGetFormLayout* / IGetDepartmentTreeResponse
-    IGetCommonConfiguration* / ICheckPackageUpdate* / IGetPackage*
+    IGetCommonConfiguration* / IGetPackage*
     PackageUpdateQuery.cs / PackageUpdateInfo.cs / PackageDelivery.cs
   Form/                                               # namespace Bee.Api.Contracts.Form
     IGetList* / IGetData* / IGetNewData* / ISave* / IDelete* / IGetLookup*

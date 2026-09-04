@@ -39,7 +39,6 @@
 
 ### 套件管理
 
-- `ICheckPackageUpdateRequest` / `ICheckPackageUpdateResponse` -- 查詢可用的套件更新
 - `IGetPackageRequest` / `IGetPackageResponse` -- 下載套件內容
 - `PackageUpdateQuery` -- 更新檢查的查詢參數
 - `PackageUpdateInfo` -- 更新中繼資料（版本、大小、SHA-256、交付模式），以 MessagePack 序列化
@@ -56,7 +55,6 @@
 | `ISaveDefineRequest` / `ISaveDefineResponse` | 定義儲存契約 |
 | `IExecFuncRequest` / `IExecFuncResponse` | 自訂函式執行契約 |
 | `IGetCommonConfigurationRequest` / `IGetCommonConfigurationResponse` | 組態擷取契約 |
-| `ICheckPackageUpdateRequest` / `ICheckPackageUpdateResponse` | 套件更新檢查契約 |
 | `IGetPackageRequest` / `IGetPackageResponse` | 套件下載契約 |
 | `PackageUpdateQuery` | 更新檢查查詢參數 |
 | `PackageUpdateInfo` | 套件更新中繼資料（MessagePack） |
@@ -107,7 +105,7 @@ Bee.Api.Contracts/
     IPingRequest.cs / IPingResponse.cs
     IEnterCompany* / ILeaveCompany* / IGetLanguage*
     IGetDefine* / ISaveDefine* / IGetFormSchema* / IGetFormLayout* / IGetDepartmentTreeResponse
-    IGetCommonConfiguration* / ICheckPackageUpdate* / IGetPackage*
+    IGetCommonConfiguration* / IGetPackage*
     PackageUpdateQuery.cs / PackageUpdateInfo.cs / PackageDelivery.cs
   Form/                                               # namespace Bee.Api.Contracts.Form
     IGetList* / IGetData* / IGetNewData* / ISave* / IDelete* / IGetLookup*

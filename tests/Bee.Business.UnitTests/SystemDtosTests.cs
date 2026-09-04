@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Bee.Api.Contracts.System;
 using Bee.Business.System;
 using Bee.Definition;
 
@@ -151,27 +150,6 @@ namespace Bee.Business.UnitTests
 
             result.CommonConfiguration = "<c/>";
             Assert.Equal("<c/>", result.CommonConfiguration);
-        }
-
-        [Fact]
-        [DisplayName("CheckPackageUpdateArgs.Queries 預設為空集合")]
-        public void CheckPackageUpdateArgs_Defaults()
-        {
-            var args = new CheckPackageUpdateArgs();
-            Assert.NotNull(args.Queries);
-            Assert.Empty(args.Queries);
-
-            args.Queries.Add(new PackageUpdateQuery { AppId = "app" });
-            Assert.Single(args.Queries);
-        }
-
-        [Fact]
-        [DisplayName("CheckPackageUpdateResult.Updates 預設為空集合")]
-        public void CheckPackageUpdateResult_Defaults()
-        {
-            var result = new CheckPackageUpdateResult();
-            Assert.NotNull(result.Updates);
-            Assert.Empty(result.Updates);
         }
 
         [Fact]

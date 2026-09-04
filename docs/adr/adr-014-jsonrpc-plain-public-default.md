@@ -144,6 +144,9 @@ JS 走 `Plain` + HTTPS + Bearer Token 的雙重保護線，與 ADR-013 Family B�
 
 `CheckPackageUpdate` / `GetPackage` 維持 `Encoded`，因為這兩個是 `.NET` runtime 端的套件更新機制，JS 前端沒有對應需求。
 
+> **註（2026-09-04）**：`CheckPackageUpdate` 已移除 —— 它是基底擲 `NotSupportedException` 的擴充點，從未有實際消費者。
+> 本節的決策對留下的 `GetPackage` 不變。
+
 ### 安全模型
 
 | 攻擊向量 | 防護線 |

@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Bee.Api.Contracts.System;
 using Bee.Api.Core.MessagePack;
 using Bee.Api.Core.Messages.System;
 using Bee.Definition.Security;
@@ -16,79 +15,6 @@ namespace Bee.Api.Core.UnitTests
     /// </remarks>
     public class CollectionMemberRoundTripTests
     {
-        [Fact]
-        [DisplayName("CheckPackageUpdateRequest.Queries 應帶值 round-trip 並保留順序")]
-        public void CheckPackageUpdateRequest_Queries_RoundTrips()
-        {
-            var original = new CheckPackageUpdateRequest
-            {
-                Queries =
-                [
-                    new PackageUpdateQuery
-                    {
-                        AppId = "Northwind", ComponentId = "Main",
-                        CurrentVersion = "1.2.3", Platform = "Osx-arm64", Channel = "Beta",
-                    },
-                    new PackageUpdateQuery { AppId = "Tools", CurrentVersion = "0.9.0" },
-                ],
-            };
-
-            var restored = MessagePackCodec.Deserialize<CheckPackageUpdateRequest>(
-                MessagePackCodec.Serialize(original));
-
-            Assert.NotNull(restored);
-            Assert.Equal(2, restored.Queries.Count);
-
-            var first = restored.Queries[0];
-            Assert.Equal("Northwind", first.AppId);
-            Assert.Equal("Main", first.ComponentId);
-            Assert.Equal("1.2.3", first.CurrentVersion);
-            Assert.Equal("Osx-arm64", first.Platform);
-            Assert.Equal("Beta", first.Channel);
-
-            // 第二個 item 的預設值同時證明「未賦值的欄位不會被前一個 item 汙染」。
-            Assert.Equal("Tools", restored.Queries[1].AppId);
-            Assert.Equal("0.9.0", restored.Queries[1].CurrentVersion);
-        }
-
-        [Fact]
-        [DisplayName("CheckPackageUpdateResponse.Updates 應帶值 round-trip（含 enum 與 long 欄位）")]
-        public void CheckPackageUpdateResponse_Updates_RoundTrips()
-        {
-            var original = new CheckPackageUpdateResponse
-            {
-                Updates =
-                [
-                    new PackageUpdateInfo
-                    {
-                        AppId = "Northwind", ComponentId = "Main", UpdateAvailable = true,
-                        LatestVersion = "2.0.0", Mandatory = true, PackageSize = 123_456_789L,
-                        Sha256 = "abc123", Delivery = PackageDelivery.Api,
-                        PackageUrl = "https://example.invalid/pkg.zip", ReleaseNotes = "修了很多東西",
-                    },
-                    new PackageUpdateInfo { AppId = "Tools", UpdateAvailable = false },
-                ],
-            };
-
-            var restored = MessagePackCodec.Deserialize<CheckPackageUpdateResponse>(
-                MessagePackCodec.Serialize(original));
-
-            Assert.NotNull(restored);
-            Assert.Equal(2, restored.Updates.Count);
-
-            var first = restored.Updates[0];
-            Assert.True(first.UpdateAvailable);
-            Assert.Equal("2.0.0", first.LatestVersion);
-            Assert.True(first.Mandatory);
-            Assert.Equal(123_456_789L, first.PackageSize);
-            Assert.Equal("abc123", first.Sha256);
-            Assert.Equal(PackageDelivery.Api, first.Delivery);
-            Assert.Equal("https://example.invalid/pkg.zip", first.PackageUrl);
-            Assert.Equal("修了很多東西", first.ReleaseNotes);
-
-            Assert.False(restored.Updates[1].UpdateAvailable);
-        }
-
         [Fact]
         [DisplayName("ListApiKeysResponse.ApiKeys 應帶值 round-trip（含 nullable DateTime 的有值與 null 兩態）")]
         public void ListApiKeysResponse_ApiKeys_RoundTrips()
