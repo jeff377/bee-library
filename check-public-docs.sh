@@ -38,4 +38,17 @@ grep -rn "docs/plans" "${SRC_ROOTS[@]}" "${SRC_EXT[@]}" 2>/dev/null | exclude_bu
 section 5 "原始碼與建置檔 — 點名 plan 檔名（預期無輸出）"
 grep -rnE "plan-[a-z0-9]+(-[a-z0-9]+)+" "${SRC_ROOTS[@]}" "${SRC_EXT[@]}" 2>/dev/null | exclude_build
 
+# `.claude/` 依 rules/public-docs.md 是「給 agent 的工程規範，非產品文件」，與 docs/plans/
+# 同屬公開文件不得指向的對象。這一道與上面五道方向不同：那些防「指向階段性文件」，
+# 這道防「指向外部讀者根本開不了的檔案」——`~/.claude/...`（使用者家目錄）尤其如此。
+#
+# 實例：docs/api-method-reference 曾連向 .claude/rules/security.md 與一支 skill，
+# adr-006 更指向 `~/.claude/rules/code-style.md`。這五處活到 2026-09-04 的盤點才被抓到，
+# 因為前五道只掃 docs/plans/，不涵蓋這個方向。
+section 6 "markdown — 指向 .claude/（預期無輸出）"
+# CLAUDE.md 本身就是 agent 規範、不是公開文件（見 rules/public-docs.md 的分類表），
+# 它指向 .claude/rules/ 完全合法，排除之。
+grep -rn --include="*.md" -e "\.claude/" "${MD_ROOTS[@]}" 2>/dev/null \
+  | grep -v "/CLAUDE\.md:" | exclude_md
+
 echo

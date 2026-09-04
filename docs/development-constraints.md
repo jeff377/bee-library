@@ -3,7 +3,7 @@
 [繁體中文](development-constraints.zh-TW.md) · [← Docs Index](README.md)
 
 > This document lists the framework's design constraints and forbidden practices, as a reference for AI coding tools to avoid generating code that violates framework conventions.
-> For security-related rules, see [Security Rules](../.claude/rules/security.md).
+> For authorization behaviour, see [Permission & Authorization](permission-authorization.md); the account-security constraints are in this document below.
 
 ## Initialization Order Constraints
 

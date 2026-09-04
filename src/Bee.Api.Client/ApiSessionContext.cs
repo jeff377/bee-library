@@ -32,6 +32,17 @@ namespace Bee.Api.Client
         /// This is the pre-existing process-wide behaviour, kept so a desktop host needs no change.
         /// It is deliberately not the answer for a multi-user host: sharing it there is the defect
         /// this type exists to fix.
+        /// <para>
+        /// WARNING: falling back to this in a multi-user host does not fail loudly, it fails as a
+        /// replay rejection nobody can explain. The shared <c>NextSequence()</c> hands out one
+        /// counter across every session, so any one session sees large gaps in its own numbers; and
+        /// because the server's window remembers a fixed span of recent sequences, two of that
+        /// session's own requests arriving out of order far enough apart are refused as replays.
+        /// The host that forgot to register a scoped context sees intermittent
+        /// <c>ReplayRejected</c> on perfectly legitimate traffic.
+        /// <c>Bee.Web.Blazor.Server</c> registers one per circuit; a host wiring this up itself has
+        /// to do the same.
+        /// </para>
         /// </remarks>
         public static ApiSessionContext Ambient { get; } = new ApiSessionContext();
 

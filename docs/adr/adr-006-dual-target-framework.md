@@ -62,4 +62,4 @@
 
 - 所有專案 `.csproj` 統一為 `<TargetFramework>net10.0</TargetFramework>`
 - `Bee.Base/Security/PasswordHasher.cs` 已移除 `#if NETSTANDARD2_0` 條件編譯，統一使用 PBKDF2-SHA256
-- `~/.claude/rules/code-style.md`（使用者層）已移除 netstandard2.0 相關限制規則
+- 開發規範中 netstandard2.0 相關的限制條文已一併移除

@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 📄 Full notes and design context: [docs/changelogs/4.27.0.md](docs/changelogs/4.27.0.md)
 
-### Breaking changes
+### Breaking Changes
 
 - `Bee.Definition`: `ApiPayloadOptions.Serializer` is removed. With the codec declared per request, its only remaining job was deciding what the server reads when a client declares nothing — and that answer can only be `messagepack`, making it a compatibility constant rather than a deployment choice. A leftover `<Serializer>` element in `SystemSettings.xml` is ignored, so no settings file needs editing. It ships as a minor under the pre-stable policy.
 
@@ -89,7 +89,7 @@ ApiServiceOptions.RequireWireFrame = true;
 
 📄 Full notes and design context: [docs/changelogs/4.25.0.md](docs/changelogs/4.25.0.md)
 
-### Breaking changes
+### Breaking Changes
 
 - `Bee.ObjectCaching`: `ICacheContainer` gains a `CompanyAuditRules` member. Source-breaking only for code **outside** the framework that implements the interface — the same shape as the `DepartmentTree` member added in 4.7.0, and it ships as a minor for the same reason.
 
@@ -119,7 +119,7 @@ Nothing to do. With `st_audit_rule` absent or empty every form inherits the depl
 
 📄 Full notes and design context: [docs/changelogs/4.24.0.md](docs/changelogs/4.24.0.md)
 
-### Breaking changes
+### Breaking Changes
 
 - `Bee.Definition` / `Bee.Db` / `Bee.Api.Core`: audit writing and anomaly writing are now two interfaces. `IAnomalyLogWriter` (taking `AnomalyEntry`) is new; `IAuditLogWriter` keeps its signature, with its meaning narrowed to the audit trail. The anomaly parameter on the `DbAccess`, `DbAccessFactory` and `JsonRpcExecutor` constructors changes from `IAuditLogWriter` to `IAnomalyLogWriter` (all optional parameters; the normal path is DI injection). **The type surface of `IAuditLogWriter` itself is unchanged** — the break is only that these three no longer accept it. See [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) decision 7.
 - `Bee.Definition`: `ApiAnomalyEntry` and `DbAnomalyEntry` now derive from the new `AnomalyEntry` base, and the five properties they duplicated verbatim (`Kind`, `ElapsedMs`, `ThresholdMs`, `ErrorType`, `ErrorMessage`) move up to it. **Source-compatible** — inheritance still exposes them; **binary-incompatible** — their accessors are now declared on the base, so assemblies referencing them directly must be recompiled.

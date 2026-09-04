@@ -299,12 +299,28 @@ namespace Bee.Business.System
         /// </summary>
         /// <param name="define">The definition object.</param>
         /// <remarks>
-        /// NOTE: most definitions handed here come from the process-wide cache, and
+        /// WARNING: most definitions handed here come from the process-wide cache, and
         /// <see cref="XmlCodec.Serialize"/> toggles the serialization state on the object it is
-        /// given. Concurrent readers of that same instance therefore see empty collection getters
-        /// return <c>null</c> for the duration of the call. The effect is transient and the
-        /// deserialized result is unaffected, so it is accepted rather than worked around by
-        /// copying every definition on every fetch.
+        /// given. This is accepted rather than worked around by copying every definition on every
+        /// fetch — but "accepted" is only honest if the cost is stated in full, and two parts of it
+        /// are worse than transient:
+        /// <list type="bullet">
+        /// <item>
+        /// A concurrent reader of the same instance sees empty collection getters return
+        /// <c>null</c>. Several call sites dereference those with <c>!</c>, because an empty
+        /// collection is a perfectly ordinary state — so the reader does not merely read a null,
+        /// it can throw <c>NullReferenceException</c>.
+        /// </item>
+        /// <item>
+        /// Two concurrent serializations of the same instance are not independent: the first to
+        /// finish clears the state while the second is still writing, so the second emits an empty
+        /// collection as <c>&lt;Items /&gt;</c> instead of omitting it. That output is already on
+        /// its way to a caller. It is <b>not</b> transient — it is a wrong document that was sent.
+        /// </item>
+        /// </list>
+        /// Neither is a reason to change the design here; both are reasons not to describe the cost
+        /// as smaller than it is. The failure a reader should expect is "rare, and when it happens
+        /// it is either an exception or a subtly wrong payload", not "briefly odd".
         /// <para>
         /// <see cref="DefineType.DatabaseSettings"/> is the one that must not be served from the
         /// cache at all — see <c>GetDefine</c>, which reads it from file so the

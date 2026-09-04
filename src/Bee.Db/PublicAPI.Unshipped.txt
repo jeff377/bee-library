@@ -1,1 +1,2 @@
 #nullable enable
+Bee.Db.Schema.UpgradeOptions.AllowColumnNarrowing.init -> void

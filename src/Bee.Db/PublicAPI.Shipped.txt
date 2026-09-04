@@ -494,7 +494,6 @@ Bee.Db.Schema.UpgradeExecutionMode.NoChange = 0 -> Bee.Db.Schema.UpgradeExecutio
 Bee.Db.Schema.UpgradeExecutionMode.Rebuild = 3 -> Bee.Db.Schema.UpgradeExecutionMode
 Bee.Db.Schema.UpgradeOptions
 Bee.Db.Schema.UpgradeOptions.AllowColumnNarrowing.get -> bool
-Bee.Db.Schema.UpgradeOptions.AllowColumnNarrowing.set -> void
 Bee.Db.Schema.UpgradeOptions.UpgradeOptions() -> void
 Bee.Db.Schema.UpgradePlan
 Bee.Db.Schema.UpgradePlan.AllStatements.get -> System.Collections.Generic.IEnumerable<string!>!

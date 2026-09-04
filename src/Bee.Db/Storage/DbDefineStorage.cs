@@ -86,6 +86,11 @@ namespace Bee.Db.Storage
             _databaseId = DefineDatabaseId;
         }
 
+        // NOTE: `??=` here is not synchronised, and it is safe only because both services resolve
+        // to singletons — two threads racing produce the same instance, so the loser's write is
+        // harmless. WARNING: that is a property of the registration, not of this code. Re-register
+        // either service as transient and this silently produces a per-race instance with no
+        // symptom to notice.
         private IDbConnectionManager ConnectionManager => _connectionManager ??= Resolve<IDbConnectionManager>();
 
         private ICacheNotifyService CacheNotify => _cacheNotify ??= Resolve<ICacheNotifyService>();

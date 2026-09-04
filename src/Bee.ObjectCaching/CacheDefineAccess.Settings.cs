@@ -35,6 +35,20 @@ namespace Bee.ObjectCaching
         /// <see cref="DatabaseItem.Password"/> are decrypted in place on first read
         /// (subsequent cache hits see plain text and the decrypt step is an idempotent no-op).
         /// </summary>
+        /// <remarks>
+        /// WARNING: this mutates a cached instance, which the framework otherwise forbids — see
+        /// "Cached Data Immutability After Init" in the development constraints. It is admitted here
+        /// rather than hidden because the reasoning does not generalise, and a reader who copies the
+        /// shape without the reasoning will land somewhere it does not hold.
+        /// <para>
+        /// Why it converges: <c>Decrypt</c> returns a value with no <c>enc:</c> prefix unchanged, so
+        /// the operation is idempotent; each caller runs the whole decrypt from the top, so a caller
+        /// that races a partially-decrypted instance finishes the job itself; and a string
+        /// assignment is atomic, so no reader ever observes a half-written value. Every one of those
+        /// three has to hold. Mutating a cached instance in any way that is <b>not</b> idempotent,
+        /// or that writes anything wider than a reference, is a cross-session data leak.
+        /// </para>
+        /// </remarks>
         public DatabaseSettings GetDatabaseSettings()
         {
             var settings = _cache.DatabaseSettings.Get()!;

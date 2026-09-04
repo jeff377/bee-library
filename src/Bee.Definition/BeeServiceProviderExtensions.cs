@@ -8,6 +8,20 @@ namespace Bee.Definition
     /// to <c>Bee.Business</c> so BO base classes can use it for the rare per-method
     /// service lookups.
     /// </summary>
+    /// <remarks>
+    /// WARNING: <c>internal</c> avoids the collision at the package boundary, not inside
+    /// <c>Bee.Business</c> — and that is where the trap is. Any file there that both
+    /// <c>using Microsoft.Extensions.DependencyInjection;</c> and calls
+    /// <c>GetService&lt;T&gt;</c> / <c>GetRequiredService&lt;T&gt;</c> gets <b>CS0121</b>: two
+    /// extension methods, equally applicable, neither preferred.
+    /// <para>
+    /// It compiles today by coincidence rather than by design. Exactly one file in
+    /// <c>Bee.Business</c> carries that using (<c>FormPluginRunner.cs</c>) and it happens to make
+    /// no such call. Adding the call there — or adding the using to any of the ~50 files that do
+    /// call these — is enough. The fix when it happens is to qualify the call, not to delete
+    /// either extension.
+    /// </para>
+    /// </remarks>
     internal static class BeeServiceProviderExtensions
     {
         /// <summary>

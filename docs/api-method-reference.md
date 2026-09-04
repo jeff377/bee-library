@@ -149,5 +149,5 @@ When the corresponding `AuditLogOptions` category is enabled (opt-in, off by def
 ## See also
 
 - [API Contract & BO Parameter Design](api-bo-contract-design.md) — Layered design rationale for Contract / Args / Result
-- [Security rules](../.claude/rules/security.md) — `ApiAccessControl` semantics + payload pipeline
-- [bee-add-bo-method skill](../.claude/skills/bee-add-bo-method/SKILL.md) — Step-by-step for adding a new method (includes updating this reference)
+- [Permission & Authorization](permission-authorization.md) — what each `[ApiAccessControl]` requirement means at run time
+- [ADR-004](adr/adr-004-messagepack-payload.md) and [ADR-044](adr/adr-044-payload-codec-negotiation.md) — the payload pipeline and per-request codec negotiation

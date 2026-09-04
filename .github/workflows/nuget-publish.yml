@@ -38,50 +38,52 @@ jobs:
         # restore it explicitly so the subsequent build --no-restore step works.
         dotnet restore tools/Bee.Cli/Bee.Cli.csproj
 
-    - name: Build all projects
+    # build 與 pack 在同一個 step、共用同一份清單。
+    #
+    # WARNING: 這裡曾經是兩份手工維護的清單，而 pack 帶 --no-build —— 於是
+    # src/Bee.Expressions 在 pack 清單、不在 build 清單，只靠 Bee.UI.Avalonia /
+    # Bee.Hosting 的 ProjectReference 傳遞建到它才沒炸。那兩條參考一旦消失，
+    # 發版當下才會失敗，而發版是最不該有意外的時刻。
+    #
+    # 合併成一個 step 是為了讓清單只存在一份：拆成兩步就得把清單傳過去，
+    # 而任何傳遞手段（檔案、env）都會再引入自己的失敗模式。
+    # 順序有意義：相依在前，且必須全部 build 完才開始 pack（pack 帶 --no-build）。
+    - name: Build and pack all projects
       run: |
         $ErrorActionPreference = 'Stop'
         $ver = "${{ steps.version.outputs.VERSION }}"
-        dotnet build src/Bee.Base/Bee.Base.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Definition/Bee.Definition.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Db/Bee.Db.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Business/Bee.Business.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Hosting/Bee.Hosting.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Repository/Bee.Repository.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj --configuration Release --no-restore /p:Version=$ver
-        # Framework CLI (dotnet tool) — lock-stepped to framework version.
-        dotnet build tools/Bee.Cli/Bee.Cli.csproj --configuration Release --no-restore /p:Version=$ver
+        $projects = @(
+          'src/Bee.Base/Bee.Base.csproj'
+          'src/Bee.Expressions/Bee.Expressions.csproj'
+          'src/Bee.Definition/Bee.Definition.csproj'
+          'src/Bee.ObjectCaching/Bee.ObjectCaching.csproj'
+          'src/Bee.Db/Bee.Db.csproj'
+          'src/Bee.Api.Contracts/Bee.Api.Contracts.csproj'
+          'src/Bee.Business/Bee.Business.csproj'
+          'src/Bee.Api.Core/Bee.Api.Core.csproj'
+          'src/Bee.Api.Client/Bee.Api.Client.csproj'
+          'src/Bee.UI.Core/Bee.UI.Core.csproj'
+          'src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj'
+          'src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj'
+          'src/Bee.Repository/Bee.Repository.csproj'
+          'src/Bee.Hosting/Bee.Hosting.csproj'
+          'src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj'
+          'src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj'
+          # Framework CLI (dotnet tool) — lock-stepped to framework version.
+          'tools/Bee.Cli/Bee.Cli.csproj'
+        )
 
-    - name: Pack NuGet packages
-      run: |
-        $ErrorActionPreference = 'Stop'
-        $ver = "${{ steps.version.outputs.VERSION }}"
-        dotnet pack src/Bee.Base/Bee.Base.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Expressions/Bee.Expressions.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Definition/Bee.Definition.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Db/Bee.Db.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Business/Bee.Business.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Hosting/Bee.Hosting.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        # Framework CLI (dotnet tool).
-        dotnet pack tools/Bee.Cli/Bee.Cli.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        Write-Host "== build =="
+        foreach ($proj in $projects) {
+          dotnet build $proj --configuration Release --no-restore /p:Version=$ver
+          if ($LASTEXITCODE -ne 0) { throw "build failed: $proj" }
+        }
+
+        Write-Host "== pack =="
+        foreach ($proj in $projects) {
+          dotnet pack $proj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+          if ($LASTEXITCODE -ne 0) { throw "pack failed: $proj" }
+        }
 
     - name: Push to NuGet
       env:

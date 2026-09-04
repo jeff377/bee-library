@@ -43,7 +43,10 @@ namespace Bee.Api.Core.Validator
             if (attr.AccessRequirement == ApiAccessRequirement.Authenticated && !IsTokenValid(context.AccessToken, tokenValidator))
                 throw new UnauthorizedAccessException("AccessToken is required or invalid.");
 
-            if (attr.ProtectionLevel == ApiProtectionLevel.LocalOnly && !context.IsLocalCall)
+            // No IsLocalCall test here: the early return above already sent every local call away,
+            // so reaching this line means the call is remote. The condition used to carry
+            // `&& !context.IsLocalCall`, which read as if it were deciding something.
+            if (attr.ProtectionLevel == ApiProtectionLevel.LocalOnly)
                 throw new UnauthorizedAccessException("This API is restricted to local calls only.");
 
             // Validate the access level based on the caller's payload format
