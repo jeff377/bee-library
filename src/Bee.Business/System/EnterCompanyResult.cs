@@ -19,5 +19,8 @@ namespace Bee.Business.System
         /// roles in the entered company. Copied to the wire response by <c>ApiOutputConverter</c>.
         /// </summary>
         public Dictionary<string, PermissionAction> Capabilities { get; set; } = [];
+
+        /// <inheritdoc />
+        IReadOnlyDictionary<string, PermissionAction> IEnterCompanyResponse.Capabilities => Capabilities;
     }
 }

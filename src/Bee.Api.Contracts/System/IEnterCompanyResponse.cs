@@ -19,6 +19,6 @@ namespace Bee.Api.Contracts.System
         /// it to degrade toolbar commands, grid actions, and sensitive fields. A model absent from
         /// the map means no permission.
         /// </summary>
-        Dictionary<string, PermissionAction> Capabilities { get; }
+        IReadOnlyDictionary<string, PermissionAction> Capabilities { get; }
     }
 }

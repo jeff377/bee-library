@@ -11,5 +11,8 @@ namespace Bee.Business.System
         /// Gets or sets the list of query items to check.
         /// </summary>
         public List<PackageUpdateQuery> Queries { get; set; } = [];
+
+        /// <inheritdoc />
+        IReadOnlyList<PackageUpdateQuery> ICheckPackageUpdateRequest.Queries => Queries;
     }
 }

@@ -11,5 +11,8 @@ namespace Bee.Business.System
         /// Gets or sets the list of update information items, each corresponding to a query in <see cref="CheckPackageUpdateArgs"/> in order.
         /// </summary>
         public List<PackageUpdateInfo> Updates { get; set; } = [];
+
+        /// <inheritdoc />
+        IReadOnlyList<PackageUpdateInfo> ICheckPackageUpdateResponse.Updates => Updates;
     }
 }

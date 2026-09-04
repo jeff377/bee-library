@@ -8,6 +8,6 @@ namespace Bee.Api.Contracts.System
         /// <summary>
         /// Gets the list of package update queries.
         /// </summary>
-        List<PackageUpdateQuery> Queries { get; }
+        IReadOnlyList<PackageUpdateQuery> Queries { get; }
     }
 }

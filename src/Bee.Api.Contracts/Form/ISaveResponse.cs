@@ -20,6 +20,6 @@ namespace Bee.Api.Contracts.Form
         /// Gets the per-table affected-row counts (table name → rows touched),
         /// suitable for caller-side logging or UI status messages.
         /// </summary>
-        Dictionary<string, int> AffectedRows { get; }
+        IReadOnlyDictionary<string, int> AffectedRows { get; }
     }
 }

@@ -18,5 +18,8 @@ namespace Bee.Business.Form
         /// touched).
         /// </summary>
         public Dictionary<string, int> AffectedRows { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <inheritdoc />
+        IReadOnlyDictionary<string, int> ISaveResponse.AffectedRows => AffectedRows;
     }
 }

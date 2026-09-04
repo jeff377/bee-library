@@ -1,1 +1,5 @@
 #nullable enable
+Bee.Api.Contracts.Form.ISaveResponse.AffectedRows.get -> System.Collections.Generic.IReadOnlyDictionary<string!, int>!
+Bee.Api.Contracts.System.ICheckPackageUpdateRequest.Queries.get -> System.Collections.Generic.IReadOnlyList<Bee.Api.Contracts.System.PackageUpdateQuery!>!
+Bee.Api.Contracts.System.ICheckPackageUpdateResponse.Updates.get -> System.Collections.Generic.IReadOnlyList<Bee.Api.Contracts.System.PackageUpdateInfo!>!
+Bee.Api.Contracts.System.IEnterCompanyResponse.Capabilities.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Bee.Definition.Settings.PermissionAction>!

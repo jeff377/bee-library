@@ -11,5 +11,8 @@ namespace Bee.Api.Core.Messages.System
         /// Gets or sets the list of available package updates.
         /// </summary>
         public List<PackageUpdateInfo> Updates { get; set; } = [];
+
+        /// <inheritdoc />
+        IReadOnlyList<PackageUpdateInfo> ICheckPackageUpdateResponse.Updates => Updates;
     }
 }

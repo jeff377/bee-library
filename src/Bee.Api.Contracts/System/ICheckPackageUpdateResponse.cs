@@ -8,6 +8,6 @@ namespace Bee.Api.Contracts.System
         /// <summary>
         /// Gets the list of available package updates.
         /// </summary>
-        List<PackageUpdateInfo> Updates { get; }
+        IReadOnlyList<PackageUpdateInfo> Updates { get; }
     }
 }

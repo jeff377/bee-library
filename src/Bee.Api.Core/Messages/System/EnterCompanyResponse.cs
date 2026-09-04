@@ -21,5 +21,8 @@ namespace Bee.Api.Core.Messages.System
         /// fields. A model absent from the map means no permission.
         /// </summary>
         public Dictionary<string, PermissionAction> Capabilities { get; set; } = [];
+
+        /// <inheritdoc />
+        IReadOnlyDictionary<string, PermissionAction> IEnterCompanyResponse.Capabilities => Capabilities;
     }
 }
