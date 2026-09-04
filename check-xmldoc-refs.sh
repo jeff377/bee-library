@@ -25,6 +25,7 @@ ALLOWLIST=(
   # --- 刻意指涉的已移除型別（原文即寫 used to / which is gone / the former）---
   SafeTypelessFormatter ItemsForSerialization NumberFormatPresets
   GetIndexsCommandText
+  CreateSerializer
   # --- 前瞻建議中的假想型別（尚未實作，原文為 "abstract this via …"）---
   IDescriptionSyncCommandBuilder
   # --- 文件用佔位符，非真實型別名 ---

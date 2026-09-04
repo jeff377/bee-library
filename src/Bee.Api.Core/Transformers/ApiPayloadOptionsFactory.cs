@@ -3,31 +3,18 @@
     /// <summary>
     /// Factory class that creates API payload encoding components based on configuration values.
     /// </summary>
+    /// <remarks>
+    /// NOTE: there is deliberately no <c>CreateSerializer</c> here. The body codec is <b>not</b> a
+    /// deployment setting — each request declares it on the payload envelope and the server answers
+    /// with the same one (ADR-044). A factory taking a codec name kept implying otherwise, and the
+    /// implication was actively dangerous: feeding its result to
+    /// <see cref="Bee.Api.Core.ApiServiceOptions.Initialize(Bee.Api.Core.Transformers.IApiPayloadSerializer, Bee.Api.Core.Transformers.IApiPayloadCompressor, Bee.Api.Core.Transformers.IApiPayloadEncryptor)"/>
+    /// changes what a request that declares <i>no</i> codec is read as, which silently breaks every
+    /// client predating negotiation. Compressor and encryptor stay, because those two really are
+    /// deployment settings.
+    /// </remarks>
     public static class ApiPayloadOptionsFactory
     {
-        /// <summary>
-        /// Creates the serializer component with the specified name.
-        /// </summary>
-        /// <param name="name">The serializer name, e.g., "messagepack" or "json".</param>
-        /// <returns>The serializer component.</returns>
-        /// <exception cref="NotSupportedException">The serializer name is not supported.</exception>
-        /// <remarks>
-        /// The names are matched ordinally and travel on the wire, so they are part of the
-        /// contract — see <see cref="PayloadCodecNames"/>.
-        /// </remarks>
-        public static IApiPayloadSerializer CreateSerializer(string name)
-        {
-            switch (name)
-            {
-                case PayloadCodecNames.MessagePack:
-                    return new MessagePackPayloadSerializer();
-                case PayloadCodecNames.Json:
-                    return new JsonPayloadSerializer();
-                default:
-                    throw new NotSupportedException($"Unsupported serializer: {name}");
-            }
-        }
-
         /// <summary>
         /// Creates the compressor component with the specified name.
         /// </summary>

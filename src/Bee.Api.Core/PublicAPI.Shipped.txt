@@ -136,15 +136,6 @@ Bee.Api.Core.JsonRpc.ReplayRejectedException.ReplayRejectedException(string! mes
 Bee.Api.Core.JsonRpc.ReplayWindow
 Bee.Api.Core.JsonRpc.ReplayWindow.ReplayWindow() -> void
 Bee.Api.Core.JsonRpc.ReplayWindow.TryAccept(long sequence) -> bool
-Bee.Api.Core.Messages.ApiCallContext
-Bee.Api.Core.Messages.ApiCallContext.AccessToken.get -> System.Guid
-Bee.Api.Core.Messages.ApiCallContext.AccessToken.set -> void
-Bee.Api.Core.Messages.ApiCallContext.ApiCallContext() -> void
-Bee.Api.Core.Messages.ApiCallContext.ApiCallContext(System.Guid accessToken, bool isLocalCall, Bee.Api.Core.Messages.PayloadFormat format) -> void
-Bee.Api.Core.Messages.ApiCallContext.Format.get -> Bee.Api.Core.Messages.PayloadFormat
-Bee.Api.Core.Messages.ApiCallContext.Format.set -> void
-Bee.Api.Core.Messages.ApiCallContext.IsLocalCall.get -> bool
-Bee.Api.Core.Messages.ApiCallContext.IsLocalCall.set -> void
 Bee.Api.Core.Messages.ApiHeaders
 Bee.Api.Core.Messages.ApiMessageBase
 Bee.Api.Core.Messages.ApiMessageBase.ApiMessageBase() -> void
@@ -677,9 +668,7 @@ static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUserZone(object? payload, str
 static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUtc(object? payload, string! timeZoneId) -> Bee.Api.Core.JsonRpc.PayloadSwap
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateCompressor(string! name) -> Bee.Api.Core.Transformers.IApiPayloadCompressor!
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateEncryptor(string! name, bool isDebugMode) -> Bee.Api.Core.Transformers.IApiPayloadEncryptor!
-static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateSerializer(string! name) -> Bee.Api.Core.Transformers.IApiPayloadSerializer!
 static Bee.Api.Core.Validator.ApiAccessValidator.FindAccessControl(System.Reflection.MethodInfo! method) -> Bee.Definition.Attributes.ApiAccessControlAttribute?
-static Bee.Api.Core.Validator.ApiAccessValidator.ValidateAccess(System.Reflection.MethodInfo! method, Bee.Api.Core.Messages.ApiCallContext! context, Bee.Definition.Security.IAccessTokenValidator! tokenValidator) -> void
 virtual Bee.Api.Core.Authorization.ApiAuthorizationValidator.IsApiKeyRequired(string! method) -> bool
 virtual Bee.Api.Core.Authorization.ApiAuthorizationValidator.IsAuthorizationRequired(string! method) -> bool
 virtual Bee.Api.Core.JsonRpc.ApiPayload.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void

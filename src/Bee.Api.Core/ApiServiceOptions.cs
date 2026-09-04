@@ -60,6 +60,20 @@ namespace Bee.Api.Core
         /// Initializes the API payload encoding components by directly specifying the serializer, compressor, and encryptor implementations.
         /// This overload can replace the default factory-based creation and is suitable for advanced customization scenarios.
         /// </summary>
+        /// <remarks>
+        /// WARNING: <paramref name="serializer"/> is not "the codec this deployment uses" — the codec
+        /// is declared per request and the server answers with the same one (ADR-044). What this sets
+        /// is the codec a request that declares <b>none</b> is read as, and that answer is a
+        /// compatibility constant: every client predating negotiation sends MessagePack without
+        /// saying so. Installing a different serializer here therefore reads those clients' bodies
+        /// with a codec they did not use, and the failure is at deserialization time on the server,
+        /// far from this call.
+        /// <para>
+        /// The legitimate use is installing a serializer the framework does not ship, whose name
+        /// <see cref="ResolvePayloadSerializer"/> then also accepts. Swapping between the built-in
+        /// codecs is not a use for it.
+        /// </para>
+        /// </remarks>
         /// <param name="serializer">The custom serializer.</param>
         /// <param name="compressor">The custom compressor.</param>
         /// <param name="encryptor">The custom encryptor.</param>

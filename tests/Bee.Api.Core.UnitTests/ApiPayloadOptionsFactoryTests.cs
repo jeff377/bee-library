@@ -8,21 +8,6 @@ namespace Bee.Api.Core.UnitTests
     /// </summary>
     public class ApiPayloadOptionsFactoryTests
     {
-        [Fact]
-        [DisplayName("CreateSerializer(\"messagepack\") 應回傳 MessagePackPayloadSerializer")]
-        public void CreateSerializer_MessagePack_ReturnsMessagePackSerializer()
-        {
-            var serializer = ApiPayloadOptionsFactory.CreateSerializer("messagepack");
-
-            Assert.IsType<MessagePackPayloadSerializer>(serializer);
-        }
-
-        [Fact]
-        [DisplayName("CreateSerializer 傳入未支援名稱應拋出 NotSupportedException")]
-        public void CreateSerializer_Unknown_Throws()
-        {
-            Assert.Throws<NotSupportedException>(() => ApiPayloadOptionsFactory.CreateSerializer("unknown"));
-        }
 
         [Fact]
         [DisplayName("CreateCompressor(\"gzip\") 應回傳 GzipPayloadCompressor")]

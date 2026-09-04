@@ -8,8 +8,14 @@
 | 2 | 在地化實作（`LabelTranslator` 接上語言來源） | 📝 擬定中 |
 
 定義類別上有大量 `System.ComponentModel` 標註（`[Description]` / `[Category]` /
-`[Browsable]` / `[TypeConverter]` / `[DefaultValue]`），**絕大多數純編輯器用途、零消費端**。
+`[Browsable]` / `[TypeConverter]` / `[DefaultValue]`），**多數純編輯器用途、零消費端**。
 本 plan 交付吃這些標註的 Avalonia PropertyGrid 控件。
+
+> ⚠️ **`[DefaultValue]` 是例外，它有消費端，動它會改變輸出**（2026-09-04 更正）。
+> `XmlSerializer` 依它省略「等於預設值」的成員 —— 實證：`FormField` 的 `Type` /
+> `ControlType` / `MaxLength` 三個屬性在 `tests/Define/FormSchema/AuditRule.FormSchema.xml`
+> 的 `<FormField>` 裡**完全不輸出**。把它當成「純編輯器用途」而移除或改值，會改變**所有
+> 定義檔的序列化形狀**。原文把它併進「零消費端」那句，會直接誤導實作者。
 
 > 2026-08-17 量測：`[Description]` 311、`[Category]` 114、`[Browsable]` 68、
 > `[TypeConverter]` 13、`[DefaultValue]` 144。**此為當時快照，不是需要維護的數字** ——

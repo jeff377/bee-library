@@ -78,18 +78,10 @@ export type LoginEvent = 'LoginSucceeded' | 'LoginFailed' | 'LockedOut' | 'Logou
 
 export type NumberKind = 'None' | 'Quantity' | 'Weight' | 'Amount' | 'Percent' | 'UnitPrice' | 'Cost' | 'ExchangeRate';
 
-export type PayloadFormat = 'Plain' | 'Encoded' | 'Encrypted';
-
 export type SortDirection = 'Asc' | 'Desc';
 
 export interface AllowedCurrencyItem {
   code?: string;
-}
-
-export interface ApiCallContext {
-  accessToken: string;
-  format: PayloadFormat;
-  isLocalCall: boolean;
 }
 
 export interface ApiKeySummary {

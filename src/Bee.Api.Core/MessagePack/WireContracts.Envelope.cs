@@ -17,11 +17,6 @@ namespace Bee.Api.Core.MessagePack
                 .Member(nameof(Bee.Api.Contracts.AuditLog.RecordFieldChange.OldValue), static x => x.OldValue, static (x, v) => x.OldValue = v)
                 .Member(nameof(Bee.Api.Contracts.AuditLog.RecordFieldChange.NewValue), static x => x.NewValue, static (x, v) => x.NewValue = v)
                 .Build());
-            list.Add(WireContract.For<Bee.Api.Core.Messages.ApiCallContext>()
-                .Member(nameof(Bee.Api.Core.Messages.ApiCallContext.AccessToken), static x => x.AccessToken, static (x, v) => x.AccessToken = v)
-                .Member(nameof(Bee.Api.Core.Messages.ApiCallContext.IsLocalCall), static x => x.IsLocalCall, static (x, v) => x.IsLocalCall = v)
-                .Member(nameof(Bee.Api.Core.Messages.ApiCallContext.Format), static x => x.Format, static (x, v) => x.Format = v)
-                .Build());
             list.Add(WireContract.For<Bee.Api.Core.Messages.ExecFuncRequest>()
                 .Member(nameof(Bee.Api.Core.Messages.ExecFuncRequest.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)
                 .Member(nameof(Bee.Api.Core.Messages.ExecFuncRequest.FuncId), static x => x.FuncId, static (x, v) => x.FuncId = v)

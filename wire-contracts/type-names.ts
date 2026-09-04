@@ -4,7 +4,6 @@
 // string and screens it against an allow-list first.
 
 export const WireTypeNames = {
-  ApiCallContext: 'Bee.Api.Core.Messages.ApiCallContext, Bee.Api.Core',
   CreateApiKeyRequest: 'Bee.Api.Core.Messages.System.CreateApiKeyRequest, Bee.Api.Core',
   CreateApiKeyResponse: 'Bee.Api.Core.Messages.System.CreateApiKeyResponse, Bee.Api.Core',
   CreateSessionRequest: 'Bee.Api.Core.Messages.System.CreateSessionRequest, Bee.Api.Core',
