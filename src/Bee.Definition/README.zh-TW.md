@@ -10,10 +10,19 @@
 
 Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型別系統。它定義了定義驅動架構的「語言」——每一個表單、資料庫表、UI 佈局與系統設定，都透過此處宣告的型別來表達。
 
-在 BeeNET 的相依關係圖中，此套件**不包含商業邏輯，也不執行 I/O**。它是純粹的型別與合約庫：介面、POCO、列舉與屬性標籤。這使其保持穩定且輕量——此處的 API 異動會向上波及整個技術堆疊，因此 API 表面採保守演進策略。
+此套件不包含商業邏輯：介面、POCO、列舉與屬性標籤。此處的 API 異動會向上波及整個技術堆疊，因此 API 表面採保守演進策略。
 
-- **上游相依**：Bee.Base、MessagePack
-- **下游消費者**：Bee.Api.Contracts、Bee.Api.Core、Bee.Repository.Abstractions、Bee.Db、Bee.ObjectCaching、Bee.Business
+但它**目前並非零 I/O**，這點在推敲分層時有差別。`Storage/`（檔案式定義儲存）、
+`Security/MasterKeyProvider`、`PathOptions` / `CustomizeOnlyPathOptions` 與 `Defaults`
+會讀寫磁碟上的定義檔。要把它們搬走屬於資料遷移而非重構 ——
+`BackendDefaultTypes.DefineStorage` 的型別名寫在每個既有部署的 `SystemSettings.xml` 裡，
+搬家必須配套舊型別名的相容對映 —— 在那之前它們留在這裡。
+
+- **層級**：最底層 —— 所有上層共用的型別系統。
+- **相依**：由建置期閘門 **BEE9001** 鎖定在一份明確的允許清單上。加在這裡的任何東西都會被框架的
+  每一個消費者繼承，因此放寬清單是一個刻意的決策，記錄於
+  [ADR-038](../../docs/adr/adr-038-definition-dependency-boundary.md)。目前的相依圖見
+  [相依關係圖](../../docs/dependency-map.zh-TW.md) —— 本檔不複寫一份，因為第二份就是第二個要維護對的東西。
 
 ## 目標框架
 
@@ -25,7 +34,7 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 
 - **FormSchema 作為定義中樞** — 單一 FormSchema 同時驅動 UI 渲染（FormLayout）、資料庫投影（TableSchema）與驗證規則，消除跨層規格不一致的問題。
 - **結構化篩選與排序模型** — `FilterCondition` 與 `FilterGroup` 組成樹狀查詢模型，並提供工廠方法（`Equal`、`Contains`、`Between`、`In` 等），實現型別安全的查詢建構。
-- **雙軌序列化支援** — 型別同時標註 MessagePack（高效能二進位）與 XML 序列化屬性，兼顧 API 傳輸效率與人類可讀的組態檔案。
+- **可序列化但不帶傳輸相依** — 型別只帶 XML 標註（對應磁碟上的定義檔），沒有別的。它與 API wire 的綁定以手寫 formatter 的形式住在 `Bee.Api.Core`，因此定義層不會相依任何傳輸格式（[ADR-036](../../docs/adr/adr-036-wire-serialization-externalized.md)）。
 - **DI 注入的執行時期服務** — `IDefineAccess`、`ISessionInfoService`、`IDatabaseSettingsProvider`、`IApiEncryptionKeyProvider`、`IAccessTokenValidator` 等介面在此宣告，於 host 啟動時由 `AddBeeFramework` 註冊到 DI 容器，使 Definition 層與具體實作解耦。
 - **安全合約** — `IAccessTokenValidator`、`IApiEncryptionKeyProvider` 等介面定義安全邊界，不強制綁定實作細節。
 - **DefineType 驅動的 CRUD** — `DefineType` 列舉與 `DefineTypeExtensions.ToClrType()` 擴充方法將定義類別對應至 CLR 型別，透過 `IDefineAccess` 與 `IDefineStorage` 實現泛型載入/儲存。
@@ -54,7 +63,7 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 
 ## 設計慣例
 
-- **MessagePack `[Key]` + XML `[XmlElement]` 雙重標註** — 每個可序列化屬性同時攜帶兩種屬性標籤，以支援二進位與 XML 兩種通道。
+- **只用 XML 標註** — 可序列化屬性帶 `[XmlElement]` / `[XmlAttribute]`，成員若不該上 JSON wire 則加 `[JsonIgnore]`。兩者都是 BCL 詞彙。**不要加 MessagePack 標註**：那會把傳輸套件放進每一個消費者的相依表面，正是 BEE9001 要擋的事。
 - **以 XML 註冊表選擇可替換服務** — `BackendComponents`（位於 `SystemSettings.xml`）為每個可替換介面（`IDefineAccess`、`ISessionInfoService` 等）宣告對應的具體型別名稱。`AddBeeFramework` 在啟動時讀取註冊表，將設定的型別註冊到 DI 容器；`BackendDefaultTypes` 持有框架預設型別名稱常數。
 - **FilterCondition 的工廠方法** — 偏好使用 `FilterCondition.Equal(...)` 而非 `new FilterCondition { ... }`，以提升可讀性與一致性。
 - **DefineType 列舉作為分派鍵** — `DefineTypeExtensions.ToClrType()` 將列舉值對應至 CLR 型別，實現泛型定義 CRUD，無需硬編碼型別參考。
@@ -81,8 +90,14 @@ Bee.Definition/
   Security/         IAccessTokenValidator、IApiEncryptionKeyProvider、
                     MasterKeyProvider、MasterKeySourceType、
                     ApiAccessRequirement、ApiProtectionLevel
-  Serialization/    自訂 MessagePack 格式化器
   Settings/         SystemSettings、DatabaseSettings、ProgramSettings、MenuSettings、DbCategorySettings
+  Attributes/       ApiAccessControlAttribute 等宣告式標記
+  Collections/      以 KeyCollection 為基底的集合型別（Parameter、Property 等）
+  Customization/    租戶客製化疊層
+  Defaults/         隨框架出貨的定義檔（內嵌資源）
+  Language/         ILanguageService、LanguageResource、FormSchemaLocalizer
+  Organization/     DepartmentTree、EmployeeContext
+  Paging/           PagingInfo 等分頁型別
   Sorting/          SortField、SortFieldCollection、SortDirection
   Storage/          IDefineAccess、ICustomizeDefineReader、CustomizeOnlyStorage 等
   （根目錄）         跨切面基礎設施：

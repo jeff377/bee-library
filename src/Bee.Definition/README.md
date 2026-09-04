@@ -10,10 +10,21 @@ Core type library for the definition-driven architecture, describing forms, data
 
 Bee.Definition sits at the foundation of the BeeNET framework, providing the shared type system that all upper layers depend on. It defines the "language" of the definition-driven architecture — every form, database table, UI layout, and system setting is expressed through types declared here.
 
-In the BeeNET dependency graph, this package contains **no business logic and no I/O**. It is a pure type + contract library: interfaces, POCOs, enums, and attributes. This keeps it stable and lightweight — changes here ripple upward through the entire stack, so the API surface evolves conservatively.
+It holds no business logic: interfaces, POCOs, enums and attributes. Changes here ripple upward through the entire stack, so the API surface evolves conservatively.
 
-- **Upstream dependencies**: Bee.Base, MessagePack
-- **Downstream consumers**: Bee.Api.Contracts, Bee.Api.Core, Bee.Repository.Abstractions, Bee.Db, Bee.ObjectCaching, Bee.Business
+It is **not** free of I/O today, and the difference matters if you are reasoning about layering.
+`Storage/` (the file-backed definition storage), `Security/MasterKeyProvider`, `PathOptions` /
+`CustomizeOnlyPathOptions` and `Defaults` read and write definition files from disk. Moving them out
+is a data migration rather than a refactor — `BackendDefaultTypes.DefineStorage` names those types in
+every existing deployment's `SystemSettings.xml`, so relocating them needs a compatibility mapping for
+the old type names — and they stay here until that is done.
+
+- **Layer**: foundation — the shared type system every upper layer speaks.
+- **Dependencies**: locked to an explicit allowlist by the **BEE9001** build gate. Anything added here
+  is inherited by every consumer of the framework, so widening the allowlist is a deliberate decision
+  recorded in [ADR-038](../../docs/adr/adr-038-definition-dependency-boundary.md). The current graph
+  lives in the [dependency map](../../docs/dependency-map.md) — this file does not restate it, because
+  a second copy is a second thing to keep right.
 
 ## Target Framework
 
@@ -25,7 +36,7 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 
 - **FormSchema as the definition hub** — a single FormSchema simultaneously drives UI rendering (FormLayout), database projection (TableSchema), and validation rules, eliminating cross-layer specification drift.
 - **Structured filter & sort model** — `FilterCondition` and `FilterGroup` compose a tree-based query model with factory methods (`Equal`, `Contains`, `Between`, `In`, etc.) for type-safe query building.
-- **Dual serialization support** — types are annotated for both MessagePack (high-performance binary) and XML serialization, enabling efficient API transport and human-readable configuration files.
+- **Serializable without a transport dependency** — types carry XML annotations for the definition files on disk, and nothing else. Their binding to the API wire lives in `Bee.Api.Core` as hand-written formatters, so the definition layer never takes a dependency on a transport format ([ADR-036](../../docs/adr/adr-036-wire-serialization-externalized.md)).
 - **DI-injected runtime services** — interfaces such as `IDefineAccess`, `ISessionInfoService`, `IDatabaseSettingsProvider`, `IApiEncryptionKeyProvider`, and `IAccessTokenValidator` are defined here and registered through `AddBeeFramework` at host startup, decoupling Definition from concrete implementations.
 - **Security contracts** — interfaces like `IAccessTokenValidator` and `IApiEncryptionKeyProvider` define security boundaries without imposing implementation details.
 - **DefineType-driven CRUD** — the `DefineType` enum and the `DefineTypeExtensions.ToClrType()` extension method map definition categories to CLR types, enabling generic load/save through `IDefineAccess` and `IDefineStorage`.
@@ -54,7 +65,7 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 
 ## Design Conventions
 
-- **MessagePack `[Key]` + XML `[XmlElement]` dual annotation** — every serializable property carries both attributes to support binary and XML channels.
+- **XML annotations only** — a serializable property carries `[XmlElement]` / `[XmlAttribute]` and, where a member must stay off the JSON wire, `[JsonIgnore]`. Both are BCL vocabulary. **Do not add MessagePack attributes**: they would put a transport package on the dependency surface of every consumer, which is exactly what BEE9001 refuses.
 - **Replaceable services via XML registry** — `BackendComponents` (in `SystemSettings.xml`) declares the concrete type name for each replaceable interface (`IDefineAccess`, `ISessionInfoService`, etc.). `AddBeeFramework` reads the registry at startup and registers the configured types in the DI container; `BackendDefaultTypes` holds the framework-default type-name constants.
 - **Factory methods on FilterCondition** — prefer `FilterCondition.Equal(...)` over `new FilterCondition { ... }` for readability and consistency.
 - **DefineType enum as dispatch key** — `DefineTypeExtensions.ToClrType()` maps enum values to CLR types, enabling generic definition CRUD without hard-coding type references.
@@ -81,8 +92,14 @@ Bee.Definition/
   Security/         IAccessTokenValidator, IApiEncryptionKeyProvider,
                     MasterKeyProvider, MasterKeySourceType,
                     ApiAccessRequirement, ApiProtectionLevel
-  Serialization/    Custom MessagePack formatters
   Settings/         SystemSettings, DatabaseSettings, ProgramSettings, MenuSettings, DbCategorySettings
+  Attributes/       ApiAccessControlAttribute and the other declarative markers
+  Collections/      KeyCollection-based collection types (Parameter, Property, ...)
+  Customization/    Tenant customization overlay
+  Defaults/         The definition files shipped with the framework (embedded resources)
+  Language/         ILanguageService, LanguageResource, FormSchemaLocalizer
+  Organization/     DepartmentTree, EmployeeContext
+  Paging/           PagingInfo and friends
   Sorting/          SortField, SortFieldCollection, SortDirection
   Storage/          IDefineAccess, ICustomizeDefineReader, CustomizeOnlyStorage (and friends)
   (root)            Cross-cutting infrastructure:
