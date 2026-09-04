@@ -96,7 +96,15 @@ namespace Bee.Base.Serialization
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"DeserializeFromFile Error: {ex.Message}\nFileName: {filePath}", ex);
+                // WARNING: the file name only, never the path. InvalidOperationException maps to
+                // JsonRpcErrorCode.UserMessage, and that mapping returns Message verbatim to the
+                // caller — so an authenticated remote caller hitting a corrupt definition file
+                // would otherwise be handed the server's absolute directory layout. The full path
+                // goes in Data for the server's own log, which is where it belongs.
+                var error = new InvalidOperationException(
+                    $"DeserializeFromFile Error: {ex.Message}\nFileName: {Path.GetFileName(filePath)}", ex);
+                error.Data[SerializationErrorData.FilePath] = filePath;
+                throw error;
             }
         }
     }

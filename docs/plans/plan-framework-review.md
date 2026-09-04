@@ -1,7 +1,10 @@
 # 框架全面體檢（2026-09-04）
 
-**狀態：🚧 進行中（2026-09-04）** —— **P0 與 P1 全數關閉**（1 + 11 項）。
-連帶落地：API-1 / API-2 / DOC-8 / DOC-9 / Z-8 的一半。**P2–P4 其餘未排**。
+**狀態：🚧 進行中（2026-09-04）** —— **P0 / P1 / P2 全數關閉**（1 + 11 + 12 項），
+**P3 的 DOC 系列（19 條）亦全數關閉**。P3 其餘與 P4 進行中。
+
+> 每一項修正都經**負向驗證**（刻意弄壞、確認閘門會紅）或**實測**（真資料庫、真環境）。
+> 過程中查出報告本身數處有誤，逐筆記在對應條目 —— 那些更正也是本次產出的一部分。
 
 > **MessagePack 標註的文件殘留已全部清除**（P1-10 + DOC-9 兩個 commit）：全公開文件對
 > `[MessagePackObject` / `[Key(` / `keyAsPropertyName` / `[Union(` 命中歸零。共同根因是
@@ -73,9 +76,12 @@
 |------|------|--------|------|
 | P0 | 已出貨功能遠端不可用 | 1 | ✅ **已完成**（2026-09-04，P0-1 修正 + 新增保留字 progId 建構閘門，負向驗證通過） |
 | P1 | 授權邊界、跨語言 wire 正確性、實測效能、閘門可靠性 | 11 | ✅ **已完成**（2026-09-04，11 項全數落地，皆經負向驗證或實測） |
-| P2 | 結構、並行、一致性 | 12 | 📝 擬定中 |
-| P3 | 文件漂移與低風險清理 | 14 | 📝 擬定中 |
-| P4 | 觀察／待裁決 | 16 | 📝 擬定中 |
+| P2 | 結構、並行、一致性 | 12 | ✅ **已完成**（2026-09-04，含 D-1 的 helper 下沉；T-2 查證後不成立） |
+| P3 | 文件漂移與低風險清理 | — | 🚧 **進行中**（DOC 系列 19 條 ✅、ARCH-2 / ARCH-3 ✅、T-5 ✅、T-7 ✅ + 衍生 T-8 的 A 類 ✅、T-6 部分完成、**CON-5 / SEC-4 / SEC-5 / T-3 ✅**；其餘進行中） |
+| P4 | 觀察／待裁決 | — | 📝 擬定中（`A-5` / `A-3` 經使用者裁決維持遞延） |
+
+> **階段的項目數不寫死**：條目在執行中會被拆分（T-7 → 衍生 T-8）或查證後撤銷（T-2、CON-6），
+> 寫死的數字必漂。各級別的實際清單以下方對應段落為準。
 
 ---
 
@@ -462,10 +468,10 @@ Python 逐檔驗證全 repo（src/tests/tools/apps/samples）含 NUL 的 `.cs` *
 
 | # | 項目 |
 |---|------|
-| **SEC-4** | 定義檔反序列化失敗把伺服器絕對路徑回傳給遠端呼叫者（`XmlCodec.cs:106`、`JsonCodec.cs:163`）。`InvalidOperationException` 在 `JsonRpcErrorContract:84` 映射為 `UserMessage`，`MapException` 對契約覆蓋型別原樣回傳 `ex.Message` → 遠端已認證的 `System.GetDefine` 遇到損毀定義檔即收到 `/…/Define/FormSchema/xxx.xml`。違反 `scanning.md`「例外訊息禁止包含內部路徑」。修法：只回檔名，完整路徑寫 log |
-| **SEC-5** | 稽核記錄的租戶過濾是 fail-open 形狀（`src/Bee.Repository/AuditLog/AuditLogRepository.cs:71,100,113,127,157,185,279`）。`company_id` 這個**租戶邊界**與 `prog_id`/`user_id` 這些**選用篩選**共用同一個「null 就略過」helper；`LogBusinessObject.CurrentCompanyId()` 未進入公司時回 null → 條件消失 → 回傳全部公司的稽核記錄。**目前不可達**（`CompanyAuthorizationService.Can` 在 `CompanyId` 為空時回 `false`），但跨租戶隔離因此依賴另一個**可被宿主替換的**型別的實作細節。修法：`ChangeLogQuery.CompanyId` 為空時直接擲例外 |
+| **SEC-4** ✅ 已修（2026-09-04） | 定義檔反序列化失敗把伺服器絕對路徑回傳給遠端呼叫者（`XmlCodec.cs:106`、`JsonCodec.cs:163`）。`InvalidOperationException` 在 `JsonRpcErrorContract:84` 映射為 `UserMessage`，`MapException` 對契約覆蓋型別原樣回傳 `ex.Message` → 遠端已認證的 `System.GetDefine` 遇到損毀定義檔即收到 `/…/Define/FormSchema/xxx.xml`。違反 `scanning.md`「例外訊息禁止包含內部路徑」。修法：只回檔名，完整路徑寫 log<br>**已落地**：訊息只留檔名，完整路徑改放 `Exception.Data`（新增 `SerializationErrorData.FilePath`）供伺服端記錄。`XmlCodec` / `JsonCodec` 兩處
+| **SEC-5** ✅ 已修（2026-09-04） | 稽核記錄的租戶過濾是 fail-open 形狀（`src/Bee.Repository/AuditLog/AuditLogRepository.cs:71,100,113,127,157,185,279`）。`company_id` 這個**租戶邊界**與 `prog_id`/`user_id` 這些**選用篩選**共用同一個「null 就略過」helper；`LogBusinessObject.CurrentCompanyId()` 未進入公司時回 null → 條件消失 → 回傳全部公司的稽核記錄。**目前不可達**（`CompanyAuthorizationService.Can` 在 `CompanyId` 為空時回 `false`），但跨租戶隔離因此依賴另一個**可被宿主替換的**型別的實作細節。修法：`ChangeLogQuery.CompanyId` 為空時直接擲例外<br>**已落地**：七個入口（`GetChangeLog` / `GetLoginLog` / `GetAccessLog` / `GetApiAnomalyLog` / `GetChangeById` / `GetApiAnomalySummary` / `GetTopApiMethods`）全部改為 fail-closed，缺租戶範圍即擲例外。<br>**先查過有無合法的跨租戶讀取**：`LogBusinessObject.CurrentCompanyId()` 就是 session 的 CompanyId，deployment admin 沒有旁路 —— 沒有。<br>**⚠️ 我又漏做 CON-6 的教訓**：改完才發現 `AuditLogQueryDbFactTests` 有 6 筆在守相反行為（「無 company filter → 兩列都回」）。判讀後確認那是**描述缺陷、不是刻意決定**（沒有任何註解宣告允許跨租戶讀取），於是測試改為斷言新規格，並**多驗一條租戶隔離**（c2 看不到 c1 的列）
 | **SEC-6** | 未標 `PermissionModelId` 的表單完全沒有授權，且**無任何偵測機制**（`FormBusinessObject.Permission.cs:32,48,100,136` 四處「為空 → 直接 return」）。這是刻意的 opt-in 授權（XML doc 註明 gradual adoption），但 `src/Bee.Analyzers/` 沒有對應規則（BEE3001/3003 只管 `[ApiAccessControl]`），一張漏標的表單會靜默對所有已認證使用者全開，build 綠、測試綠。修法：比照 BEE3001 加一條定義層 analyzer（`Bee.Analyzers/Definitions/` 已有讀 FormSchema 的基礎設施） |
-| **CON-5** | `MemoryReplayWindowStore` 的 sweep 有 TOCTOU（`:28-35, 68-73`）：`GetOrAdd` 建立的 `Entry` 其 `LastTouchedMs` 預設 **0**，在 `Volatile.Write` 之前若另一執行緒進 `SweepIfDue`，會把它當過期移除 → 該 session 下一個請求拿到全新 window（`_highest = -1`）→ **重放防護在該 session 上重置一次**。機率極低但這是安全控制，修法一行（建構時初始化）。引入 `7a4cb0e9`（4.27.0）→ 本輪唯一的新並行缺陷 |
+| **CON-5** ✅ 已修（2026-09-04） | `MemoryReplayWindowStore` 的 sweep 有 TOCTOU（`:28-35, 68-73`）：`GetOrAdd` 建立的 `Entry` 其 `LastTouchedMs` 預設 **0**，在 `Volatile.Write` 之前若另一執行緒進 `SweepIfDue`，會把它當過期移除 → 該 session 下一個請求拿到全新 window（`_highest = -1`）→ **重放防護在該 session 上重置一次**。機率極低但這是安全控制，修法一行（建構時初始化）。引入 `7a4cb0e9`（4.27.0）→ 本輪唯一的新並行缺陷<br>**已落地**：建構子蓋時間戳。**閘門用結構性斷言而非行為測試**：這個 race 沒辦法用行為乾淨隔離 —— 要撞到它就得把淘汰期調到毫秒級，但那樣執行緒被排程延遲超過淘汰期就是**合法**淘汰，修正在位時也會紅（實測三次紅一次）。第一版並行測試就是這樣，把 bug 放回去仍全綠
 | **CON-6** | `ExpiredSessionCleanupService.SafeCleanup` 只 catch `DbException`，姊妹的 `CacheNotifyPoller.SafePoll` 同時 catch `InvalidOperationException` —— 而 `_repositoryFactory.Create<ISessionRepository>()` 正是會擲後者的呼叫。逸出即 StopHost（同 CON-1） |
 
 ### 其他
@@ -479,7 +485,7 @@ Python 逐檔驗證全 repo（src/tests/tools/apps/samples）含 NUL 的 `.cs` *
 | **D-3** | `ReadStringArray` 同組件同資料夾內重複（259 字元）：`DataSetJsonConverter.cs:164` vs `DataTableJsonConverter.Read.cs:113`。合併成本近乎零 |
 | **D-4** | Provider dialect 逐字重複 7 組（S4144）。**這一項要小心裁決**：`rules/database.md` 明示各 provider 應保有獨立演化空間，「刻意不共用」在這裡是合理設計。但其中 `StripStringLiteral`、`BuildIndexFieldList`、`GetIndexesCommandText` 是**方言中立的純解析／組字串**，建議只抽這幾個，**發 SQL 的部分（`GetStatements`/`GetTableSchema`）維持獨立**。<br>**正面對照**：本視窗新增的 `*DescriptionSyncCommandBuilder` 四件套**做對了** —— 共用部分抽成 `DescriptionSyncChanges.Collect(...)`，各 provider 只剩 20–50 行方言輸出。新程式碼的模式是對的，舊的沒回頭補 |
 | **M-3** | 14 個**可變** `private static` 欄位仍用 `_` 前綴，與實例欄位無法區分（`ApiServiceOptions.cs:14-20` 7 個、`ClientInfo.cs:18-23` 6 個、`SysInfo.cs:49` 1 個）。`.editorconfig:70-75` 的 `s_` 規則 `required_modifiers = static, readonly` **只管不可變靜態**，可變靜態落到 `private_fields_underscore` —— 而**可變的 process-wide 狀態恰恰是最需要在讀者眼前標記出來的那一類**（這三個檔全是 `static class`，正是 CON-3 那類問題的溫床）。上輪 M-3 的結案敘述沒提到這個缺口。修法：`required_modifiers` 放寬為 `static`，14 處改名皆為私有、零公開 API 影響 |
-| **T-3** | `MemoryReplayWindowStore`（出貨預設的防重放儲存）**零測試** —— 全 `tests/` 對它與 `IReplayWindowStore` 的參照數 0。它甚至公開 `public int Count`，doc 寫「intended for tests and diagnostics」，**而沒有任何測試用它**。這是上輪 SEC-2（`LoginAttemptTracker` 無淘汰）的同形重演：每個預設部署都在用的 per-session map，其淘汰政策無人驗證（兄弟型別 `ReplayWindow` 有 10 筆測試） |
+| **T-3** ✅ 已修（2026-09-04） | `MemoryReplayWindowStore`（出貨預設的防重放儲存）**零測試** —— 全 `tests/` 對它與 `IReplayWindowStore` 的參照數 0。它甚至公開 `public int Count`，doc 寫「intended for tests and diagnostics」，**而沒有任何測試用它**。這是上輪 SEC-2（`LoginAttemptTracker` 無淘汰）的同形重演：每個預設部署都在用的 per-session map，其淘汰政策無人驗證（兄弟型別 `ReplayWindow` 有 10 筆測試）<br>**已落地**：補 `MemoryReplayWindowStoreTests` 4 筆（同 token 回同一 window、不同 token 隔離、建構時蓋時間戳的回歸、閒置淘汰）
 | **T-4** | DB 相依快取的直接覆蓋普遍缺席：`CompanyAuditRulesCache`（新）、`CompanyInfoCache`、`DepartmentTreeCache`、`ApiKeyGateCache`、`CompanyRolePermissionsCache` 在 `tests/` 的參照數皆為 **0**。依 `rules/definition.md`，這是「沒有 `SaveX`、只靠 cache-notify 失效」的高風險類別（漏 notify 就全 process 拿舊值）。服務層有測試，快取層本身沒有 |
 | **T-5** ✅ 已修（2026-09-04） | `tests/CLAUDE.md:152-155` 的並行保護清單是錯的：寫「`Bee.Api.Client` / `Bee.Api.Core` / **`Bee.Definition`** / `Bee.ObjectCaching` / `Bee.UI.Avalonia`」五個組件用 `DisableTestParallelization`，實際只有 **4 個**（`Bee.Definition.UnitTests` 沒有該屬性，走的是只序列化 3 個類別的 `ProcessWideStateCollection`）。危害在下半句：「那比逐類別掛 `[Collection]` 可靠」—— 文件宣稱 `Bee.Definition` 有**較強**的保護，實際只有它自己承認會漏的那道。<br>**先查有沒有實質漏網**：`ProcessWideStateCollection` 只涵蓋 3 個類別，但實測全組件掃過 `BEE_MASTER_KEY` / `GlobalEvents` / `BuildServiceProvider` 的檔案後，另兩個命中（`DefaultsTests`、`MasterKeySourceTests`）都只是把 `"BEE_MASTER_KEY"` 當**字串值**用、沒碰環境變數 —— **沒有漏網**，T-5 是純文件錯誤。<br>順帶查證「每個名稱都有對應的 `CollectionDefinition`，零孤兒」：成立。grep 命中的兩處 `[Collection("Initialize")]` 都在註解裡描述舊狀態，不是真的 attribute。<br>**2026-09-04 已落地，修的是宣稱而不是文字**：文件自己就說 `DisableTestParallelization` 「比逐類別掛 `[Collection]` 可靠」，那就讓它成真 —— 給 `Bee.Definition.UnitTests` 補上該屬性。成本實測 352–634 ms → 723–823 ms（1,086 筆），在動輒數分鐘的全套裡可忽略。`ProcessWideStateCollection` 因此變成冗餘，保留作為紀錄並註明「不要因為它冗餘就換回它」。<br>**並消掉會再漂的那份清單**：五個組件名改成一道 `grep` 指令（`single-source.md`：有權威來源就只指路）。原本那份清單漂掉時**沒有任何機制會發現** —— 這次是靠人工盤點才抓到 |
 | **T-6** ⚠️ 部分完成（2026-09-04） | 未結案 flaky `DbDefineCacheInvalidationTests.CrossNode_PostgreSQL` 期間**零 commit 觸及**。結構性曝險三項：poll cursor 是**全表**的（`CacheNotifyReader.cs:53` `SELECT MAX(sys_update_time) FROM st_cache_notify`）而該表被每個平行測試行程共寫；PG 的時間來源是 `LOCALTIMESTAMP`（**交易起始時間**）而欄位 DEFAULT 是 tz-aware，這條不對稱只在 PG/Oracle 存在；加上 T-2 的無序列化。建議修法：把 poll baseline/delta 限縮到測試自己的 key 前綴（測試已用 `progId = "E2E_" + Guid`，只差 reader 沒有 key filter 多載）。<br>另一筆 `ApiAspNetCoreTests.ExecFunc_Hello_ReturnsNotNull` 的**根因已由 `99636efd` 處理**（`CrossProcessLock` + seed 單一交易 + setup 失敗不再靜默），建議冷啟連跑數次後正式結案。<br>**⛔ 原本的 flake 沒有重現，不宣稱修好**：`CrossNode_PostgreSQL` 單跑 20/20 綠，今日四種 DB 完整模式 CI 亦綠，全套連跑 12 輪 0 失敗。plan 點名的「poll cursor 是全表的」結構性曝險仍在，但**修它要為了測試在 `ICacheNotifyReader` 上新增 production API**（key filter 多載），在重現不出來的前提下不划算。**維持觀察，再犯再說。**<br>**✅ 但在同一個元件裡查到一個真的 bug（原 plan 未指出）**：`CacheNotifyReader` 的空表 baseline 自帶一份方言對照表，回的是**本地時間**（`getdate()` / `LOCALTIMESTAMP` / `CURRENT_TIMESTAMP(6)`），而每一列的 `sys_update_time` 都由寫入端以 **UTC** 戳（欄位 DEFAULT 與 `CacheNotifyService.BuildUpsertSpec` 都讀 `IDialectFactory.GetDefaultValueExpression`）。**五個方言中四個不對稱**，只有 SQLite 剛好一致。<br>危害：全新部署（`st_cache_notify` 空表）的第一個 poll 游標落在未來，之後每次 poll 的視窗都撈不到列 —— **快取失效機制靜默停擺**，直到牆鐘追上。UTC+8 就是八小時。違反 ADR-032 D1「資料庫一律存 UTC、時區轉換在用戶端」。<br>**活證據**（負向驗證時實測，非推論）：Oracle 回 `15:18:34` 而 UTC 是 `07:18:34`，正好差 8 小時。且 Oracle 的 `LOCALTIMESTAMP` 取的是**用戶端 session 時區**而非資料庫時區 ——基準取決於哪台機器在跑 poller，比伺服器時區更糟。<br>**為什麼一直沒被發現**：本機四個容器與 GitHub runner 全跑 UTC，兩式在那裡剛好相等。Oracle 是唯一會現形的，因為它看的是用戶端時區。<br>修法：讀取端改從寫入端同一個來源取值，刪掉那份重複的方言表（`single-source`）。<br>閘門兩層：表達式必須與寫入端完全相同（純邏輯，UTC 環境下唯一驗得到的方式）＋四方言實跑驗回傳值貼近 UTC。負向驗證：改回舊的本地時間表達式後兩層都紅 |
@@ -671,6 +677,12 @@ Python 逐檔驗證全 repo（src/tests/tools/apps/samples）含 NUL 的 `.cs` *
 8. **P1-9 + P1-10 + DOC-1~DOC-10**（公開文件把已移除機制寫成現行）—— 低成本高價值；DOC-1（Northwind）是唯一「照做會壞」等級
 9. **P2 的 ARCH-1 + GATE-1**（四條硬約束與 BEE9001 的可執行閘門）+ **CON-1 + CON-4**（各一處，`SafeDrain` 與 try/finally）
 10. **P2/P3 其餘** + **P4 裁決**（尤其 Z-6 的 `isLocalCall` 預設，建議至少改為 `false` 這個安全的一邊）
+
+> **執行實況（2026-09-04）**：1–9 全部落地。第 10 步中，P2 已全數關閉、P3 的 DOC 系列（19 條）
+> 與 ARCH-2 / ARCH-3 / T-5 / T-7 亦已關閉。**實際順序與上表有出入**，因為執行中發現的東西改變了
+> 優先序：T-7 掃出 71 筆同類（衍生 T-8）、T-6 的 flake 沒重現卻在同元件查到一個真的 UTC 基準 bug、
+> ARCH-1 的閘門自己在完整模式 CI 上紅了。**這些都不是原計畫看得出來的**，這也是為什麼上表的
+> 「項目數」不再寫死。
 
 ---
 

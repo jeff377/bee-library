@@ -68,6 +68,19 @@ namespace Bee.Api.Core.JsonRpc
 
         private sealed class Entry
         {
+            /// <summary>
+            /// Stamps the entry as touched at construction.
+            /// </summary>
+            /// <remarks>
+            /// WARNING: this must not default to 0. <see cref="GetOrAdd"/> writes the real timestamp
+            /// only after <c>GetOrAdd</c> returns, and a sweep running in that gap would read 0,
+            /// find it older than any cutoff, and drop a window that is in active use. The session's
+            /// next request would then get a fresh window with no history — which is to say the
+            /// replay protection would silently reset itself for that session. Unlikely, but this is
+            /// a security control, and the cost of closing it is this line.
+            /// </remarks>
+            public Entry() => LastTouchedMs = Environment.TickCount64;
+
             public ReplayWindow Window { get; } = new();
 
             public long LastTouchedMs;

@@ -63,12 +63,38 @@ namespace Bee.Repository.AuditLog
         {
         }
 
+        /// <summary>
+        /// Refuses a query that carries no company scope.
+        /// </summary>
+        /// <param name="companyId">The tenant scope the caller resolved.</param>
+        /// <param name="operation">The calling method, named in the message.</param>
+        /// <returns>The non-empty company id.</returns>
+        /// <exception cref="InvalidOperationException">The scope is missing.</exception>
+        /// <remarks>
+        /// WARNING: the company filter is a **tenant boundary**, not an optional filter, and the two
+        /// used to be expressed identically — both went through <c>WhereBuilder.Eq</c>, which drops
+        /// the clause when the value is null. A caller that had not entered a company therefore did
+        /// not get "no rows"; it got **every company's audit trail**. Failing closed here means the
+        /// isolation no longer rests on an unrelated type — <c>CompanyAuthorizationService.Can</c>
+        /// happens to return false without a company today, but a host may replace it.
+        /// </remarks>
+        private static string RequireCompanyScope(string? companyId, string operation)
+        {
+            if (string.IsNullOrWhiteSpace(companyId))
+            {
+                throw new InvalidOperationException(
+                    $"{operation} requires a company scope; audit records are per-tenant and an " +
+                    "unscoped read would cross the tenant boundary.");
+            }
+            return companyId;
+        }
+
         /// <inheritdoc/>
         public AuditLogPage GetChangeLog(ChangeLogQuery query, PagingOptions paging)
         {
             ArgumentNullException.ThrowIfNull(query);
             var where = new WhereBuilder()
-                .Eq(ColCompanyId, query.CompanyId)
+                .Eq(ColCompanyId, RequireCompanyScope(query.CompanyId, nameof(GetChangeLog)))
                 .Eq("prog_id", query.ProgId)
                 .Eq("row_key", query.RowKey)
                 .Eq(ColUserId, query.UserId)
@@ -81,12 +107,10 @@ namespace Bee.Repository.AuditLog
         /// <inheritdoc/>
         public DataTable? GetChangeById(Guid sysRowId, string? companyId)
         {
+            string scope = RequireCompanyScope(companyId, nameof(GetChangeById));
             var dbAccess = CreateDbAccess();
-            var spec = string.IsNullOrEmpty(companyId)
-                ? new DbCommandSpec(DbCommandKind.DataTable,
-                    "SELECT " + ChangeDetailColumns + " FROM st_log_change WHERE sys_rowid = {0}", sysRowId)
-                : new DbCommandSpec(DbCommandKind.DataTable,
-                    "SELECT " + ChangeDetailColumns + " FROM st_log_change WHERE sys_rowid = {0} AND company_id = {1}", sysRowId, companyId);
+            var spec = new DbCommandSpec(DbCommandKind.DataTable,
+                "SELECT " + ChangeDetailColumns + " FROM st_log_change WHERE sys_rowid = {0} AND company_id = {1}", sysRowId, scope);
 
             var table = dbAccess.Execute(spec).Table;
             return table != null && table.Rows.Count > 0 ? table : null;
@@ -97,7 +121,7 @@ namespace Bee.Repository.AuditLog
         {
             ArgumentNullException.ThrowIfNull(query);
             var where = new WhereBuilder()
-                .Eq(ColCompanyId, query.CompanyId)
+                .Eq(ColCompanyId, RequireCompanyScope(query.CompanyId, nameof(GetLoginLog)))
                 .Eq(ColUserId, query.UserId)
                 .Eq("event", (int?)query.Event)
                 .Gte(ColLogTime, query.FromUtc)
@@ -110,7 +134,7 @@ namespace Bee.Repository.AuditLog
         {
             ArgumentNullException.ThrowIfNull(query);
             var where = new WhereBuilder()
-                .Eq(ColCompanyId, query.CompanyId)
+                .Eq(ColCompanyId, RequireCompanyScope(query.CompanyId, nameof(GetAccessLog)))
                 .Eq("prog_id", query.ProgId)
                 .Eq("row_key", query.RowKey)
                 .Eq(ColUserId, query.UserId)
@@ -124,7 +148,7 @@ namespace Bee.Repository.AuditLog
         {
             ArgumentNullException.ThrowIfNull(query);
             var where = new WhereBuilder()
-                .Eq(ColCompanyId, query.CompanyId)
+                .Eq(ColCompanyId, RequireCompanyScope(query.CompanyId, nameof(GetApiAnomalyLog)))
                 .Eq(ColUserId, query.UserId)
                 .Eq("method", query.Method)
                 .Eq("anomaly_kind", (int?)query.Kind)
@@ -154,7 +178,7 @@ namespace Bee.Repository.AuditLog
         public DataTable GetApiAnomalySummary(DateTime? fromUtc, DateTime? toUtc, string? companyId)
         {
             var where = new WhereBuilder()
-                .Eq(ColCompanyId, companyId)
+                .Eq(ColCompanyId, RequireCompanyScope(companyId, nameof(GetApiAnomalySummary)))
                 .Gte(ColLogTime, fromUtc)
                 .Lte(ColLogTime, toUtc);
             var (whereSql, values) = where.Build();
@@ -182,7 +206,7 @@ namespace Bee.Repository.AuditLog
             int take = Math.Clamp(topN, 1, MaxTopN);
             var dbType = Context.ConnectionManager.GetConnectionInfo(DatabaseId).DatabaseType;
             var where = new WhereBuilder()
-                .Eq(ColCompanyId, companyId)
+                .Eq(ColCompanyId, RequireCompanyScope(companyId, nameof(GetTopApiMethods)))
                 .Gte(ColLogTime, fromUtc)
                 .Lte(ColLogTime, toUtc);
             var (whereSql, values) = where.Build();

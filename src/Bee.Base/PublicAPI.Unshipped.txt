@@ -5,3 +5,5 @@ static Bee.Base.Serialization.JsonCodec.DeserializeAsync<T>(System.IO.Stream! st
 *REMOVED*static Bee.Base.HttpUtilities.IsEndpointReachableAsync(string! endpoint, System.TimeSpan? timeout = null) -> System.Threading.Tasks.Task<bool>!
 *REMOVED*static Bee.Base.HttpUtilities.IsUrl(string! input) -> bool
 *REMOVED*static Bee.Base.HttpUtilities.PostAsync(string! endpoint, string! body, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
+Bee.Base.Serialization.SerializationErrorData
+const Bee.Base.Serialization.SerializationErrorData.FilePath = "Bee.FilePath" -> string!
