@@ -18,18 +18,26 @@ namespace Bee.Api.Core.UnitTests
     /// 會改寫 <see cref="ApiServiceOptions.RequireWireFrame"/> 這個 process-wide 靜態開關，
     /// 故掛 ApiServiceOptionsState collection 標記，並一律以 try/finally 還原。
     /// <para>
-    /// fixture 必須是 <see cref="SharedDbFixture"/>（會建 schema）而非 <see cref="BeeTestFixture"/>
-    /// （不建）：本類別以 <c>Guid.NewGuid()</c> 當 access token，未植入 session 快取，server 端
-    /// 因此走 rebuild 路徑讀 <c>st_session</c>。掛錯 fixture 只有在「別的類別或行程剛好先把表建好」
-    /// 時才會過 —— 對著全新的資料庫就會以 <c>Invalid object name 'st_session'</c> 現形。
+    /// 本類別**完全不碰資料庫**，需要 token 的測試一律用
+    /// <see cref="TestSessionFactory.CreateAccessToken"/> 取得 —— 它把 SessionInfo 直接寫進
+    /// session 快取，server 端因此讀得到而不必走 rebuild 路徑查 <c>st_session</c>。
+    /// 這裡驗的是重放序號的判斷（<c>ReplayWindowStore</c>，純記憶體），session 從哪裡來與它無關。
+    /// </para>
+    /// <para>
+    /// NOTE: 先前兩筆測試直接拿 <c>Guid.NewGuid()</c> 當 token，於是每次呼叫都落到 rebuild 路徑，
+    /// 讓一組純邏輯測試變成需要資料庫容器 —— 沒有容器的環境會紅在
+    /// <c>Connection string for database 'common' is null</c>，而不是任何與重放有關的原因。
+    /// 當時的修法是掛 <see cref="SharedDbFixture"/> 讓它有表可讀；正解是根本不要產生那個相依。
+    /// <c>rules/testing.md</c> 第 2 條也是這個意思：純邏輯測試不該用 <c>[DbFact]</c> 跳過，
+    /// 那種紅燈要直接修掉。
     /// </para>
     /// </remarks>
     [Collection("ApiServiceOptionsState")]
-    public class WireFrameReplayTests : IClassFixture<SharedDbFixture>
+    public class WireFrameReplayTests : IClassFixture<BeeTestFixture>
     {
         private readonly BeeTestFixture _fx;
 
-        public WireFrameReplayTests(SharedDbFixture fx)
+        public WireFrameReplayTests(BeeTestFixture fx)
         {
             _fx = fx;
         }
@@ -161,7 +169,7 @@ namespace Bee.Api.Core.UnitTests
             WithFrameRequired(true, () =>
             {
                 // 每個測試用獨立 token，視窗才不會與其他測試互相干擾。
-                var token = Guid.NewGuid();
+                var token = TestSessionFactory.CreateAccessToken(_fx);
 
                 var first = Execute("ExecFunc", new ExecFuncRequest("noop"), FrameWith(1), token);
                 var replay = Execute("ExecFunc", new ExecFuncRequest("noop"), FrameWith(1), token);
@@ -183,7 +191,7 @@ namespace Bee.Api.Core.UnitTests
             // 查詢類方法重放無害，全面套用只是徒增每次呼叫的判斷。
             WithFrameRequired(true, () =>
             {
-                var token = Guid.NewGuid();
+                var token = TestSessionFactory.CreateAccessToken(_fx);
                 var value = new PingRequest { ClientName = "replay-test" };
 
                 Assert.Null(Execute("Ping", value, FrameWith(1), token).Error);
