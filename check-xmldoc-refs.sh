@@ -40,6 +40,28 @@ is_allowed() {
   return 1
 }
 
+# 先擋掉會讓下面整套 grep 靜默失明的東西：原始碼裡的 NUL 位元組。
+#
+# grep 把含 NUL 的檔案當 binary，於是它對每一道 grep 都變成空的 —— 不是報錯，是**無聲跳過**。
+# 實際踩過：SnapshotLanguageService.cs 的 `$"{lang}\x00{ns}"` 把 NUL 寫成了原始位元組而非 `\0`
+# 逸出序列，該檔 5,432 bytes 的原始碼對下面的比對母體貢獻 0 bytes，它自己的 <c> 也永遠不被檢查。
+# 2026-09-04 的框架體檢才發現，中間沒有任何機制會出聲。
+#
+# 行為完全等價的寫法是 `\0`（C# 逸出序列，編譯後位元組相同），所以這條沒有正當例外。
+# 判定法用 `tr -d '\000'` 後與原檔比對：shell 變數存不住 NUL，所以不能靠 grep 樣式去找它。
+NUL_HITS=$(
+  find src tests tools apps samples -name '*.cs' \
+       -not -path '*/bin/*' -not -path '*/obj/*' 2>/dev/null \
+  | while IFS= read -r f; do
+      tr -d '\000' < "$f" | cmp -s - "$f" || echo "$f"
+    done
+)
+if [[ -n "$NUL_HITS" ]]; then
+  echo "原始碼含 NUL 位元組（grep 會把整個檔案當 binary 而無聲跳過，請改用 \\0 逸出序列）："
+  echo "$NUL_HITS" | sed 's/^/    /'
+  exit 1
+fi
+
 # 比對母體：全 solution 的**非 XML doc** 行。含 tests/ 等非發佈目錄是刻意的 ——
 # 這支只問「這個名字還存在嗎」，不問「它在哪一層」。
 CODE=$(mktemp)

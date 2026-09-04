@@ -19,9 +19,21 @@ This is the single-page reference of every public BO method exposed through
 | Column | Meaning |
 |--------|---------|
 | **Method** | The JSON-RPC `method` field — `progId.action`. Listed action constants live in `SystemActions` / `FormActions` / `LogActions`. |
-| **Protection** | `[ApiAccessControl]` first arg: `Public` / `Encoded` / `Encrypted`. See [security rules](../.claude/rules/security.md). |
-| **Auth** | `[ApiAccessControl]` second arg: `Anonymous` / `Authenticated`. |
+| **Protection** | `[ApiAccessControl]` first arg. The values and what each one means are on `ApiProtectionLevel` — see [`src/Bee.Definition/Security/ApiProtectionLevel.cs`](../src/Bee.Definition/Security/ApiProtectionLevel.cs). Note the table below uses `LocalOnly` as well as the transport levels. |
+| **Auth** | `[ApiAccessControl]` second arg — see [`src/Bee.Definition/Security/ApiAccessRequirement.cs`](../src/Bee.Definition/Security/ApiAccessRequirement.cs). |
 | **Purpose** | One-line summary; see XML doc on the BO method for full detail. |
+
+### Replay protection
+
+These methods additionally declare `ReplayProtection = UniqueSequence`: each call must carry a
+sequence number the session has not used before, or the server answers `-32005 ReplayRejected`.
+A client that reuses or replays a request frame on one of them will be refused.
+
+- `Delete`
+- `EnterCompany`
+- `ExecFunc`
+- `LeaveCompany`
+- `Save`
 
 ### Naming convention (Contract / Args / Result derivable from action)
 

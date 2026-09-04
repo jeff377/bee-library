@@ -69,5 +69,14 @@ namespace Bee.Business.UnitTests.Contracts
                 $"{boType.FullName} 應實作 {expected}。API 與 BO 之間的屬性複製是靠名稱比對、" +
                 "對不上會靜默丟欄位，契約介面是唯一在編譯期擋下這件事的機制。");
         }
+
+        [Fact]
+        [DisplayName("BO 參數 / 結果型別清單不得為空（防空轉）")]
+        public void BusinessDtoTypes_IsNotEmpty()
+        {
+            // 上面的 Theory 是反射列舉驅動的：`BusinessArgs` 換組件、或 IsPublic 這類條件寫失準，
+            // 回傳零筆時 xUnit 的 Theory 零案例即通過，整個閘門會變成恆綠而沒有任何徵兆。
+            Assert.NotEmpty(BusinessDtoTypes());
+        }
     }
 }

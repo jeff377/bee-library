@@ -17,9 +17,20 @@ BO 層 Args / Result 型別、`[ApiAccessControl]` 設定，與一行用途說�
 | 欄位 | 意義 |
 |------|------|
 | **Method** | JSON-RPC `method` 欄位 — `progId.action`。對應 `SystemActions` / `FormActions` / `LogActions` 常數。 |
-| **Protection** | `[ApiAccessControl]` 第一參數：`Public` / `Encoded` / `Encrypted`。詳見[安全規範](../.claude/rules/security.md)。 |
-| **Auth** | `[ApiAccessControl]` 第二參數：`Anonymous` / `Authenticated`。 |
+| **Protection** | `[ApiAccessControl]` 第一參數。可用值與各自語意見 `ApiProtectionLevel` 的 XML doc（[`src/Bee.Definition/Security/ApiProtectionLevel.cs`](../src/Bee.Definition/Security/ApiProtectionLevel.cs)）。注意下表除了傳輸層級外也用到 `LocalOnly`。 |
+| **Auth** | `[ApiAccessControl]` 第二參數，見 [`src/Bee.Definition/Security/ApiAccessRequirement.cs`](../src/Bee.Definition/Security/ApiAccessRequirement.cs)。 |
 | **用途** | 一行摘要；完整說明見對應 BO 方法的 XML doc。 |
+
+### 重放防護
+
+下列方法另外宣告了 `ReplayProtection = UniqueSequence`：每次呼叫都必須帶一個該 session 沒用過的
+序號，否則伺服端回 `-32005 ReplayRejected`。在這些方法上重送同一個 request frame 會被拒絕。
+
+- `Delete`
+- `EnterCompany`
+- `ExecFunc`
+- `LeaveCompany`
+- `Save`
 
 ### 命名慣例（Contract / Args / Result 可由 action 推導）
 

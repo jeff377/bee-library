@@ -1,9 +1,11 @@
 using System.ComponentModel;
+using System.Reflection;
 using System.Data;
 using System.Text.Json;
 using Bee.Api.Core.Messages.Form;
 using Bee.Api.Core.Messages.System;
 using Bee.Api.Core.Transformers;
+using Bee.Api.Core.Wire;
 using Bee.Definition.Collections;
 using Bee.Definition.Filters;
 using Bee.Definition.Sorting;
@@ -98,6 +100,8 @@ namespace Bee.Api.Core.UnitTests
                 "WireValueCode.DBNull. The value is written as null; the discriminator is what separates it from a real null.");
             yield return ("objectarray", new object[] { 1, "two", 3.5m },
                 "WireValueCode.ObjectArray. Each element carries its own discriminator, recursing through the same envelope.");
+            yield return ("datatable", BuildTable(),
+                "WireValueCode.DataTable. A DataTable reached through an object-typed member still carries a discriminator - unlike a top-level DataTable body, where the type is already known. See the `datatable` fixture for the payload shape itself.");
             yield return ("null", null!, "A null object-typed member is omitted from the JSON entirely - the property is absent, not written as null. A reader must treat a missing property as null.");
         }
 
@@ -285,8 +289,28 @@ namespace Bee.Api.Core.UnitTests
                 Assert.Contains(name, names);
 
             // 每個判別碼都要有樣本：漏一個就是 TS 端某個型別會靜默錯值。
-            var codeCases = names.Where(n => n.StartsWith("value-", StringComparison.Ordinal)).ToList();
-            Assert.Equal(22, codeCases.Count);
+            //
+            // 這裡刻意由 WireValueCode 的常數反射推導，而不是比對一個數字。原本寫的是
+            // `Assert.Equal(22, codeCases.Count)`，那個斷言有兩個問題：新增判別碼而不補樣本時
+            // 數量不變、照樣綠；而且它當時**已經是錯的**——22 個 value-* 檔其實是「21 個判別碼
+            // + value-null」，WireValueCode.DataTable(21) 從來沒有樣本，數字相等純屬巧合。
+            var codes = typeof(WireValueCode)
+                .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                .Where(f => f.IsLiteral && f.FieldType == typeof(int) && f.Name != nameof(WireValueCode.Count))
+                .Select(f => f.Name)
+                .ToList();
+
+            // 防空轉：反射條件寫失準時，下面的 foreach 會一圈都不跑。
+            Assert.Equal(WireValueCode.Count - 1, codes.Count);
+
+            foreach (var code in codes)
+            {
+                string fixtureName = $"value-{code.ToLowerInvariant()}";
+                Assert.True(
+                    names.Contains(fixtureName),
+                    $"WireValueCode.{code} 沒有對應的 {fixtureName} 樣本。跨語言 client 沒有東西可以" +
+                    "對照這個判別碼的形狀，寫錯了不會有人發現。");
+            }
         }
     }
 }
