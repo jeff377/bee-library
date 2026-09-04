@@ -243,6 +243,29 @@ grep -rn 'DisableTestParallelization *= *true' tests/ --include='*.cs'
 > 這條與上方「並行 flaky 的容錯空間」不衝突：那條講**同一 commit 內 isolated 通過 /
 > full suite 失敗**（連跑 2–3 次判定）；這條講**跨 commit 首次執行都紅**。
 
+### 4. 枚舉 `GetTypes()` 的閘門必須在覆蓋率插樁下驗過
+
+**覆蓋率插樁會往組件裡注入型別。** coverlet 注入的是
+`Coverlet.Core.Instrumentation.Tracker.<組件名>_<guid>`，帶著 `RecordHit` / `RegisterUnloadEvents`
+等方法。任何「枚舉某組件的型別、對形狀下斷言」的閘門都會把它算進去。
+
+**而且這條在精簡模式的 CI 上驗不到** —— 覆蓋率只在**完整模式**收
+（`build-ci.yml` 的 `--collect:"XPlat Code Coverage"`）。所以這種閘門可以在本機綠、
+在精簡模式的 CI 綠好幾週，直到某次帶 `[all-db]` 才紅。
+
+本機重現要帶同一個旗標：
+
+```bash
+dotnet test <測試專案> -c Release --settings .runsettings --collect:"XPlat Code Coverage;Format=opencover"
+```
+
+**正解是以命名空間限縮到「原始碼宣告的型別」**，不要列舉工具名（每種插樁工具注在自己的
+命名空間下，列舉必漏）。並把**防空轉斷言放在過濾之後** —— 過濾條件若寫錯，迴圈會一圈都不跑
+而恆綠，那比誤判更糟。
+
+> 實例：`ArchitectureBoundaryGateTests.ApiContracts_ContainNoImplementation`
+> 把注入的 Tracker 報成「合約軸混進了實作」（2026-09-04 修）。
+
 ### 3. 建表與 seed 的冪等都必須跨行程原子
 
 `SharedDatabaseState` 的 setup 會被多個平行 test 行程對**同一實體 DB**同時執行。

@@ -162,9 +162,23 @@ namespace Bee.Api.AspNetCore.UnitTests
         public void ApiContracts_ContainNoImplementation()
         {
             var assembly = typeof(Bee.Api.Contracts.System.IPingRequest).Assembly;
-            var types = assembly.GetTypes().Where(type => !type.IsNested).ToArray();
+            const string RootNamespace = "Bee.Api.Contracts";
 
-            // 防空轉：型別載不到時下面的迴圈一圈都不跑。
+            // 只看原始碼宣告的型別。WARNING: 覆蓋率插樁會**往組件裡注入型別**——coverlet 注入
+            // 的是 Coverlet.Core.Instrumentation.Tracker.<組件名>_<guid>，帶著 RecordHit 等方法，
+            // 對這道閘門看起來就是「合約軸混進了實作」。以命名空間限縮而非列舉工具名，
+            // 因為每種插樁工具都注在自己的命名空間下。
+            //
+            // 這條在精簡模式的 CI 上驗不到：覆蓋率只在完整模式收（build-ci.yml 的
+            // --collect:"XPlat Code Coverage"）。本機重現要帶同一個旗標。
+            var types = assembly.GetTypes()
+                .Where(type => !type.IsNested)
+                .Where(type => type.Namespace is not null
+                    && (type.Namespace == RootNamespace
+                        || type.Namespace.StartsWith(RootNamespace + ".", StringComparison.Ordinal)))
+                .ToArray();
+
+            // 防空轉：放在過濾**之後**——上面那道命名空間條件若寫錯，迴圈會一圈都不跑而恆綠。
             Assert.NotEmpty(types);
 
             var offenders = new List<string>();
