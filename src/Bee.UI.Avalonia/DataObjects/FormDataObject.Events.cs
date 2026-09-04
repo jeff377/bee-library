@@ -1,6 +1,5 @@
 using System.Data;
-using System.Globalization;
-using Bee.Api.Client.Connectors;
+using Bee.Api.Client;
 using Bee.Base.Data;
 using Bee.Definition;
 using Bee.Definition.Forms;
@@ -97,7 +96,7 @@ namespace Bee.UI.Avalonia.DataObjects
             FieldValueChanged?.Invoke(this, new FieldValueChangedEventArgs(
                 ((DataTable)sender!).TableName,
                 e.Column!.ColumnName,
-                FormatForBinding(e.ProposedValue),
+                FormValueBinding.ToBindingString(e.ProposedValue),
                 e.Row));
         }
 
@@ -117,116 +116,6 @@ namespace Bee.UI.Avalonia.DataObjects
         {
             IsDirty = true;
             RowDeleted?.Invoke(this, new RowChangedEventArgs(((DataTable)sender!).TableName, e.Row));
-        }
-
-        private FormApiConnector RequireConnector(string operation)
-        {
-            return _connector
-                ?? throw new InvalidOperationException(
-                    $"{operation} requires a FormApiConnector; pass one to the FormDataObject constructor.");
-        }
-
-        private Guid RequireMasterRowId()
-        {
-            var row = MasterRow
-                ?? throw new InvalidOperationException("No master row is loaded; cannot delete.");
-            if (!row.Table.Columns.Contains(SysFields.RowId))
-                throw new InvalidOperationException(
-                    $"Master table is missing the '{SysFields.RowId}' column; cannot delete.");
-
-            var raw = row[SysFields.RowId];
-            if (raw is null || raw == DBNull.Value)
-                throw new InvalidOperationException(
-                    $"Master row has a null '{SysFields.RowId}'; cannot delete.");
-
-            return raw is Guid g ? g : Guid.Parse(raw.ToString()!);
-        }
-
-        private static DataSet BuildEmptyDataSet(FormSchema schema)
-        {
-            var dataSet = new DataSet(schema.ProgId);
-
-            if (schema.Tables is null)
-                return dataSet;
-
-            var masterTable = schema.MasterTable;
-            foreach (var table in schema.Tables)
-            {
-                var dataTable = new DataTable(table.TableName);
-                if (table.Fields is not null)
-                {
-                    foreach (var field in table.Fields)
-                        dataTable.AddColumn(field.FieldName, field.DbType);
-                }
-                dataSet.Tables.Add(dataTable);
-            }
-
-            if (masterTable is not null && !dataSet.Tables.Contains(masterTable.TableName))
-            {
-                var dataTable = new DataTable(masterTable.TableName);
-                dataSet.Tables.Add(dataTable);
-            }
-
-            return dataSet;
-        }
-
-        private static string FormatForBinding(object? raw)
-        {
-            if (raw is null || raw == DBNull.Value)
-                return string.Empty;
-
-            return raw switch
-            {
-                // ISO 8601 keeps round-trip parity with desktop DatePicker / TextBox controls.
-                DateTime dt => dt.TimeOfDay == TimeSpan.Zero
-                    ? dt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-                    : dt.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture),
-                IFormattable f => f.ToString(null, CultureInfo.InvariantCulture),
-                _ => raw.ToString() ?? string.Empty,
-            };
-        }
-
-        // NOTE: Internal (not private) so GridControl's in-cell editors reuse the same
-        // string-to-column coercion rules instead of growing a divergent copy.
-        internal static object ConvertToColumnValue(string? value, DataColumn column)
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                if (column.AllowDBNull) return DBNull.Value;
-
-                // Non-nullable column: prefer the column's own DefaultValue when it
-                // was properly seeded (DataTableExtensions.AddColumn pins this to a
-                // type-appropriate non-null for every FieldDbType). Server-side
-                // responses often arrive with raw ADO.NET columns whose DefaultValue
-                // is still DBNull — for those, synthesise a non-null fallback from
-                // the column's CLR type rather than writing DBNull into a NOT NULL
-                // column, which would raise NoNullAllowedException on EndEdit.
-                if (column.DefaultValue is not null && column.DefaultValue != DBNull.Value)
-                    return column.DefaultValue;
-                return ResolveEmptyValueForType(column.DataType);
-            }
-
-            var targetType = column.DataType;
-            if (targetType == typeof(string))
-                return value;
-            if (targetType == typeof(Guid))
-                return Guid.Parse(value);
-            if (targetType == typeof(byte[]))
-                return Convert.FromBase64String(value);
-            if (targetType == typeof(DateTime))
-                return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal);
-
-            return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
-        }
-
-        internal static object ResolveEmptyValueForType(Type targetType)
-        {
-            if (targetType == typeof(string)) return string.Empty;
-            if (targetType == typeof(Guid)) return Guid.Empty;
-            if (targetType == typeof(DateTime)) return DateTime.MinValue;
-            if (targetType == typeof(byte[])) return Array.Empty<byte>();
-            if (targetType.IsValueType) return Activator.CreateInstance(targetType)!;
-            return DBNull.Value;
         }
     }
 }

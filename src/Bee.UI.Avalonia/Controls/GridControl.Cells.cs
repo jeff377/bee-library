@@ -1,3 +1,4 @@
+using Bee.Api.Client;
 using System.Data;
 using System.Globalization;
 using Avalonia;
@@ -9,7 +10,6 @@ using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls.Editors;
-using Bee.UI.Avalonia.DataObjects;
 
 namespace Bee.UI.Avalonia.Controls
 {
@@ -387,7 +387,7 @@ namespace Bee.UI.Avalonia.Controls
         {
             try
             {
-                converted = FormDataObject.ConvertToColumnValue(value, column);
+                converted = FormValueBinding.ToColumnValue(value, column);
                 return true;
             }
             catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException)

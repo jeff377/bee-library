@@ -1,5 +1,5 @@
 using System.Data;
-using System.Globalization;
+using Bee.Api.Client;
 using Bee.Api.Client.Connectors;
 using Bee.Base.Data;
 using Bee.Definition;
@@ -21,17 +21,20 @@ namespace Bee.Web.Blazor.Server.DataObjects
     /// the local <see cref="DataSet"/> with the server response.
     /// </para>
     /// <para>
-    /// <b>Deliberately parallel to <c>Bee.UI.Avalonia.DataObjects.FormDataObject</c>.</b>
-    /// The two are near-identical and neither carries a UI-framework dependency, so merging them
-    /// looks obvious — but the shared home would have to be <c>Bee.UI.Core</c>, and consuming it is
-    /// exactly what places a package in the <c>Bee.UI.*</c> family (docs/dependency-map.md).
-    /// <c>Bee.Web.Blazor.*</c> is a separate family on purpose: a circuit has no file IO and no
-    /// dialog service, so <c>IEndpointStorage</c> / <c>IUIViewService</c> mean nothing here.
+    /// The value rules this type used to carry privately — DataSet seeding, string/column
+    /// coercion, display formatting, the CRUD preconditions — now live once in
+    /// <c>Bee.Api.Client</c> (<c>FormValueBinding</c> and <c>FormDataGuard</c>), which both this
+    /// head and <c>Bee.Web.Blazor.Server</c> already reference. They are head-agnostic: the same
+    /// <see cref="FormSchema"/> and the same server responses drive every head.
     /// </para>
     /// <para>
-    /// WARNING: a behavioural change here — DataSet seeding, default values for a
-    /// <see cref="FieldDbType"/>, connector round-trip handling — must be mirrored in the Avalonia
-    /// copy. Nothing enforces this at compile time.
+    /// NOTE: this used to be a verbatim copy of the Avalonia head's version, marked "deliberately
+    /// parallel" on the grounds that the only shared home would be <c>Bee.UI.Core</c> — which
+    /// would put <c>Bee.Web.Blazor.Server</c> inside the <c>Bee.UI.*</c> family, and Blazor is a
+    /// separate family on purpose. That reasoning had a hole: <c>Bee.Api.Client</c> is a common
+    /// ancestor of both heads and carries no such family meaning. It also had a cost — the note
+    /// said nothing enforced the parallel, and the two copies did in fact diverge, with one side
+    /// writing <see cref="DBNull"/> into a non-nullable column long after the other had fixed it.
     /// </para>
     /// </remarks>
     public class FormDataObject
@@ -57,7 +60,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
 
             _schema = schema;
             _connector = connector;
-            DataSet = BuildEmptyDataSet(schema);
+            DataSet = FormValueBinding.BuildEmptyDataSet(schema);
         }
 
         /// <summary>
@@ -119,7 +122,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
             if (!row.Table.Columns.Contains(fieldName)) return string.Empty;
 
             var raw = row[fieldName];
-            return FormatForBinding(raw);
+            return FormValueBinding.ToBindingString(raw);
         }
 
         /// <summary>
@@ -137,7 +140,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
             if (!row.Table.Columns.Contains(fieldName)) return;
 
             var column = row.Table.Columns[fieldName]!;
-            row[fieldName] = ConvertToColumnValue(value, column);
+            row[fieldName] = FormValueBinding.ToColumnValue(value, column);
             IsDirty = true;
         }
 
@@ -180,7 +183,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
         /// </exception>
         public async Task LoadAsync(Guid rowId)
         {
-            var connector = RequireConnector(nameof(LoadAsync));
+            var connector = FormDataGuard.RequireConnector(_connector, nameof(LoadAsync));
 
             IsLoading = true;
             try
@@ -209,7 +212,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
         /// </exception>
         public async Task SaveAsync()
         {
-            var connector = RequireConnector(nameof(SaveAsync));
+            var connector = FormDataGuard.RequireConnector(_connector, nameof(SaveAsync));
 
             IsLoading = true;
             try
@@ -236,14 +239,14 @@ namespace Bee.Web.Blazor.Server.DataObjects
         /// </exception>
         public async Task DeleteAsync()
         {
-            var connector = RequireConnector(nameof(DeleteAsync));
-            var rowId = RequireMasterRowId();
+            var connector = FormDataGuard.RequireConnector(_connector, nameof(DeleteAsync));
+            var rowId = FormDataGuard.RequireMasterRowId(MasterRow);
 
             IsLoading = true;
             try
             {
                 await connector.DeleteAsync(rowId).ConfigureAwait(false);
-                DataSet = BuildEmptyDataSet(_schema);
+                DataSet = FormValueBinding.BuildEmptyDataSet(_schema);
                 IsDirty = false;
             }
             finally
@@ -263,7 +266,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
         /// </exception>
         public async Task NewAsync()
         {
-            var connector = RequireConnector(nameof(NewAsync));
+            var connector = FormDataGuard.RequireConnector(_connector, nameof(NewAsync));
 
             IsLoading = true;
             try
@@ -280,96 +283,6 @@ namespace Bee.Web.Blazor.Server.DataObjects
             {
                 IsLoading = false;
             }
-        }
-
-        private FormApiConnector RequireConnector(string operation)
-        {
-            return _connector
-                ?? throw new InvalidOperationException(
-                    $"{operation} requires a FormApiConnector; pass one to the FormDataObject constructor.");
-        }
-
-        private Guid RequireMasterRowId()
-        {
-            var row = MasterRow
-                ?? throw new InvalidOperationException("No master row is loaded; cannot delete.");
-            if (!row.Table.Columns.Contains(SysFields.RowId))
-                throw new InvalidOperationException(
-                    $"Master table is missing the '{SysFields.RowId}' column; cannot delete.");
-
-            var raw = row[SysFields.RowId];
-            if (raw is null || raw == DBNull.Value)
-                throw new InvalidOperationException(
-                    $"Master row has a null '{SysFields.RowId}'; cannot delete.");
-
-            return raw is Guid g ? g : Guid.Parse(raw.ToString()!);
-        }
-
-        private static DataSet BuildEmptyDataSet(FormSchema schema)
-        {
-            var dataSet = new DataSet(schema.ProgId);
-
-            if (schema.Tables is null)
-                return dataSet;
-
-            var masterTable = schema.MasterTable;
-            foreach (var table in schema.Tables)
-            {
-                var dataTable = new DataTable(table.TableName);
-                if (table.Fields is not null)
-                {
-                    foreach (var field in table.Fields)
-                        dataTable.AddColumn(field.FieldName, field.DbType);
-                }
-                dataSet.Tables.Add(dataTable);
-            }
-
-            if (masterTable is not null && !dataSet.Tables.Contains(masterTable.TableName))
-            {
-                var dataTable = new DataTable(masterTable.TableName);
-                dataSet.Tables.Add(dataTable);
-            }
-
-            return dataSet;
-        }
-
-        private static string FormatForBinding(object? raw)
-        {
-            if (raw is null || raw == DBNull.Value)
-                return string.Empty;
-
-            return raw switch
-            {
-                // ISO 8601 keeps round-trip parity with HTML date/datetime-local inputs.
-                DateTime dt => dt.TimeOfDay == TimeSpan.Zero
-                    ? dt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-                    : dt.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture),
-                IFormattable f => f.ToString(null, CultureInfo.InvariantCulture),
-                _ => raw.ToString() ?? string.Empty,
-            };
-        }
-
-        private static object ConvertToColumnValue(string? value, DataColumn column)
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                // Schemas built by DataTableExtensions.AddColumn pin AllowDBNull=false for
-                // any FieldDbType that exposes a non-null default; respect that contract
-                // by falling back to the column default rather than forcing DBNull.
-                return column.AllowDBNull ? DBNull.Value : column.DefaultValue;
-            }
-
-            var targetType = column.DataType;
-            if (targetType == typeof(string))
-                return value;
-            if (targetType == typeof(Guid))
-                return Guid.Parse(value);
-            if (targetType == typeof(byte[]))
-                return Convert.FromBase64String(value);
-            if (targetType == typeof(DateTime))
-                return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal);
-
-            return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
         }
     }
 }

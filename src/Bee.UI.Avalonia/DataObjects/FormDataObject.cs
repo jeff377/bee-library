@@ -1,4 +1,5 @@
 using System.Data;
+using Bee.Api.Client;
 using Bee.Api.Client.Connectors;
 using Bee.Base.Data;
 using Bee.Definition;
@@ -20,18 +21,20 @@ namespace Bee.UI.Avalonia.DataObjects
     /// the local <see cref="DataSet"/> with the server response.
     /// </para>
     /// <para>
-    /// <b>Deliberately parallel to <c>Bee.Web.Blazor.Server.DataObjects.FormDataObject</c>.</b>
-    /// The two are near-identical and neither carries a UI-framework dependency, so merging them
-    /// looks obvious — but the shared home would have to be <c>Bee.UI.Core</c>, and that would put
-    /// <c>Bee.Web.Blazor.Server</c> inside the <c>Bee.UI.*</c> family. The family criterion
-    /// (docs/dependency-map.md) is precisely "does the package consume the <c>Bee.UI.Core</c>
-    /// abstractions", and Blazor is separate on purpose: a circuit has no file IO and no dialog
-    /// service, so <c>IEndpointStorage</c> / <c>IUIViewService</c> mean nothing there.
+    /// The value rules this type used to carry privately — DataSet seeding, string/column
+    /// coercion, display formatting, the CRUD preconditions — now live once in
+    /// <c>Bee.Api.Client</c> (<c>FormValueBinding</c> and <c>FormDataGuard</c>), which both this
+    /// head and <c>Bee.Web.Blazor.Server</c> already reference. They are head-agnostic: the same
+    /// <see cref="FormSchema"/> and the same server responses drive every head.
     /// </para>
     /// <para>
-    /// WARNING: a behavioural change here — DataSet seeding, default values for a
-    /// <see cref="FieldDbType"/>, connector round-trip handling — must be mirrored in the Blazor
-    /// copy. Nothing enforces this at compile time.
+    /// NOTE: this used to be a verbatim copy of the Blazor head's version, marked "deliberately
+    /// parallel" on the grounds that the only shared home would be <c>Bee.UI.Core</c> — which
+    /// would put <c>Bee.Web.Blazor.Server</c> inside the <c>Bee.UI.*</c> family, and Blazor is a
+    /// separate family on purpose. That reasoning had a hole: <c>Bee.Api.Client</c> is a common
+    /// ancestor of both heads and carries no such family meaning. It also had a cost — the note
+    /// said nothing enforced the parallel, and the two copies did in fact diverge, with one side
+    /// writing <see cref="DBNull"/> into a non-nullable column long after the other had fixed it.
     /// </para>
     /// </remarks>
     public partial class FormDataObject
@@ -62,7 +65,7 @@ namespace Bee.UI.Avalonia.DataObjects
             _schema = schema;
             _connector = connector;
             DataSet = null!;
-            ReplaceDataSet(BuildEmptyDataSet(schema), notify: false);
+            ReplaceDataSet(FormValueBinding.BuildEmptyDataSet(schema), notify: false);
         }
 
         /// <summary>
@@ -186,7 +189,7 @@ namespace Bee.UI.Avalonia.DataObjects
             EnsureOwnedRow(row);
 
             if (!row.Table.Columns.Contains(fieldName)) return string.Empty;
-            return FormatForBinding(row[fieldName]);
+            return FormValueBinding.ToBindingString(row[fieldName]);
         }
 
         /// <summary>
@@ -233,7 +236,7 @@ namespace Bee.UI.Avalonia.DataObjects
             if (!row.Table.Columns.Contains(fieldName)) return;
 
             var column = row.Table.Columns[fieldName]!;
-            var newValue = ConvertToColumnValue(value, column);
+            var newValue = FormValueBinding.ToColumnValue(value, column);
             if (Equals(newValue, row[fieldName])) return;
 
             // The write itself raises FieldValueChanged and marks dirty through the
@@ -396,7 +399,7 @@ namespace Bee.UI.Avalonia.DataObjects
             if (!selectedRow.Table.Columns.Contains(SysFields.RowId))
                 throw new InvalidOperationException("The lookup selection is missing the sys_rowid column.");
 
-            SetLookupField(targetRow, field.FieldName, FormatForBinding(selectedRow[SysFields.RowId]));
+            SetLookupField(targetRow, field.FieldName, FormValueBinding.ToBindingString(selectedRow[SysFields.RowId]));
 
             foreach (var mapping in ResolveLookupMappings(field))
             {
@@ -406,7 +409,7 @@ namespace Bee.UI.Avalonia.DataObjects
                     throw new InvalidOperationException(
                         $"Lookup source field '{mapping.SourceField}' is not in the lookup result; " +
                         "declare it in the target form's LookupFields.");
-                SetLookupField(targetRow, mapping.DestinationField, FormatForBinding(selectedRow[mapping.SourceField]));
+                SetLookupField(targetRow, mapping.DestinationField, FormValueBinding.ToBindingString(selectedRow[mapping.SourceField]));
             }
         }
 

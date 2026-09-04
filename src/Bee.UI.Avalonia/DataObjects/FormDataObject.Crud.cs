@@ -1,3 +1,4 @@
+using Bee.Api.Client;
 using Bee.Api.Client.Connectors;
 using Bee.Definition;
 
@@ -20,7 +21,7 @@ namespace Bee.UI.Avalonia.DataObjects
         /// </exception>
         public async Task LoadAsync(Guid rowId)
         {
-            var connector = RequireConnector(nameof(LoadAsync));
+            var connector = FormDataGuard.RequireConnector(_connector, nameof(LoadAsync));
 
             IsLoading = true;
             try
@@ -53,7 +54,7 @@ namespace Bee.UI.Avalonia.DataObjects
         /// </exception>
         public async Task SaveAsync()
         {
-            var connector = RequireConnector(nameof(SaveAsync));
+            var connector = FormDataGuard.RequireConnector(_connector, nameof(SaveAsync));
 
             IsLoading = true;
             try
@@ -80,14 +81,14 @@ namespace Bee.UI.Avalonia.DataObjects
         /// </exception>
         public async Task DeleteAsync()
         {
-            var connector = RequireConnector(nameof(DeleteAsync));
-            var rowId = RequireMasterRowId();
+            var connector = FormDataGuard.RequireConnector(_connector, nameof(DeleteAsync));
+            var rowId = FormDataGuard.RequireMasterRowId(MasterRow);
 
             IsLoading = true;
             try
             {
                 await connector.DeleteAsync(rowId);
-                ReplaceDataSet(BuildEmptyDataSet(_schema));
+                ReplaceDataSet(FormValueBinding.BuildEmptyDataSet(_schema));
                 IsDirty = false;
             }
             finally
@@ -107,7 +108,7 @@ namespace Bee.UI.Avalonia.DataObjects
         /// </exception>
         public async Task NewAsync()
         {
-            var connector = RequireConnector(nameof(NewAsync));
+            var connector = FormDataGuard.RequireConnector(_connector, nameof(NewAsync));
 
             IsLoading = true;
             try

@@ -1,3 +1,4 @@
+using Bee.Api.Client;
 using System.Data;
 using Avalonia;
 using Avalonia.LogicalTree;
@@ -135,7 +136,7 @@ namespace Bee.UI.Avalonia.Controls
                     if (!column.AllowDBNull
                         && (column.DefaultValue is null || column.DefaultValue == DBNull.Value))
                     {
-                        row[column] = FormDataObject.ResolveEmptyValueForType(column.DataType);
+                        row[column] = FormValueBinding.GetEmptyValue(column.DataType);
                     }
                 }
             }
