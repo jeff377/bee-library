@@ -1,7 +1,12 @@
 # 框架全面體檢（2026-09-04）
 
 **狀態：🚧 進行中（2026-09-04）** —— **P0 與 P1 全數關閉**（1 + 11 項）。
-連帶落地：API-1 / API-2 / DOC-8 / Z-8 的一半。**P2–P4 未排**。
+連帶落地：API-1 / API-2 / DOC-8 / DOC-9 / Z-8 的一半。**P2–P4 其餘未排**。
+
+> **MessagePack 標註的文件殘留已全部清除**（P1-10 + DOC-9 兩個 commit）：全公開文件對
+> `[MessagePackObject` / `[Key(` / `keyAsPropertyName` / `[Union(` 命中歸零。共同根因是
+> `plan-definition-messagepack-decoupling.md`（✅ 2026-08-09 完成）改完程式碼、文件沒跟 ——
+> **plan 完成不等於文件完成**，這條值得寫進下輪的方法論。
 
 > **A-5（把 1,121 行檔案 IO 搬離定義層）經使用者裁決維持遞延**（2026-09-04）。
 > P1-10 的 README 敘述因此改為陳述現況並說明它為何還在，而不是承諾搬離。
@@ -422,7 +427,7 @@ Python 逐檔驗證全 repo（src/tests/tools/apps/samples）含 NUL 的 `.cs` *
 | **DOC-6** | `src/Bee.Business/README.md:27,50` + `.zh-TW.md:27,50` | `2510e343` 從 `ISystemBusinessObject` 移除 `GetDefine`/`SaveDefine`，README 仍逐一列名且寫「7 個成員」（實際 5 個）。**名字錯了讀者看得出來，數字錯了看不出來 —— 本例兩者同時漂** |
 | **DOC-7** | `docs/caching.md:228-232, 368-377` + `.zh-TW` | 逐字複寫 `ICacheDataSourceProvider` 的介面宣告卻缺 `GetCompanyAuditRules`；「Cache Inventory › Database caches」6 個只列 5 個，缺 `CompanyAuditRulesCache`。最後編輯（`86cb67e3`）與 `CompanyAuditRules` 引入（`684dd139`）**同一天**。對照 `docs/development-constraints.md:63-68` 的同一份清單是對的 —— 兩份公開文件說法不一致 |
 | **DOC-8** ✅ 已修 | `docs/api-method-reference.md:22` + `.zh-TW.md:20` | Protection 欄位說明寫「`Public` / `Encoded` / `Encrypted`」三級，**同一份文件的表格裡有 5 列在用 `LocalOnly`**。與 `.claude/rules/security.md` 2026-08-12 修掉的是同一筆漂移，只修了 agent 那份、沒修外部讀者那份。修法比照：改成指向 `ApiProtectionLevel` 的 XML doc，不複寫成員 |
-| **DOC-9** | `docs/api-bo-contract-design.md:58-71, 188-197` + `.zh-TW` | 整節教已被 ADR-036 移除的 MessagePack 標註（`[MessagePackObject(keyAsPropertyName: true)]` 範例 ×2、`[IgnoreMember]`），且**自我矛盾**（`:60` 說不要加 `[Key(int)]`，`:191` 的表格說「`[Key(n)]` Yes (from 100)」，兩半都已失效）。上輪 DOC-1 修掉了同型內容的 skill，**這份公開文件不在該次盤點範圍內**。**真正的成本**：`WireContract`/`WireContracts`/`MessagePackCodec` 全是 `internal`，`PublicAPI.Shipped.txt` 沒有任何註冊 formatter 的公開接縫 → 外部開發者**沒有辦法**依 ADR-037 註冊自己的訊息型別，選項實際只剩「桌面限定」或「改用 JSON codec」，而這一點目前沒有任何文件說明 |
+| **DOC-9** ✅ 已修（2026-09-04） | `docs/api-bo-contract-design.md:58-71, 188-197` + `.zh-TW` | 整節教已被 ADR-036 移除的 MessagePack 標註（`[MessagePackObject(keyAsPropertyName: true)]` 範例 ×2、`[IgnoreMember]`），且**自我矛盾**（`:60` 說不要加 `[Key(int)]`，`:191` 的表格說「`[Key(n)]` Yes (from 100)」，兩半都已失效）。上輪 DOC-1 修掉了同型內容的 skill，**這份公開文件不在該次盤點範圍內**。**真正的成本**：`WireContract`/`WireContracts`/`MessagePackCodec` 全是 `internal`，`PublicAPI.Shipped.txt` 沒有任何註冊 formatter 的公開接縫 → 外部開發者**沒有辦法**依 ADR-037 註冊自己的訊息型別，選項實際只剩「桌面限定」或「改用 JSON codec」，而這一點目前沒有任何文件說明 |
 | **DOC-10** | `docs/jsonrpc-frontend-integration.md:19-25, 60` + `.zh-TW` | 仍寫「`params.format` — **always `0`** from JS」並把 payload 加密列為 .NET client 專屬 —— ADR-044 存在的唯一理由就是解除這個限制。同時 `wire-fixtures/README.md` 與 `wire-contracts/README.md`（真正寫給跨語言 client 作者的兩份）**沒有被 `docs/README.md` 或任何 `docs/*.md` 引用過**，新機制的說明書存在但從公開索引走不到 |
 
 ### 清點數字、版號與 ADR 註記
@@ -683,4 +688,11 @@ Python 逐檔驗證全 repo（src/tests/tools/apps/samples）含 NUL 的 `.cs` *
 
 7. **實測會改變結論，而且兩個方向都會。** 本輪實測**升格**了三項（P0-1 的 `MissingMethodException`、P1-2 的 `VerifyPassword = True`、P1-8 的 14.3×），也**降格**了三項（`ApiInputConverter` 的 `GetRawText` 實測 0.98–1.11× 而非瓶頸、`BuildVariables` 上限只有 17%、信封字串具現只有 1.03–1.66× 而非主因）。**降格與升格同樣有價值** —— 它把注意力從看起來像問題的地方移開。
 
-8. **「文件宣稱有保證」本輪出現至少八次**（上輪五次）：`BoApiSurfaceTests` 的 DisplayName（**上輪點名未修**）、`docs/api-method-reference` 的「the build will fail otherwise」、`WireFixtureTests` 的「每個判別碼都要有樣本」、`src/Bee.Api.Core/CLAUDE.md` 的「兩條 wire 共用判別碼（同時釘住兩者）」、`DbConnectionManagerTests` 的「使用唯一 databaseId 以避免干擾」、`AuditLogWriterService` 的「records are never silently lost」、`FormBusinessObject.Write` 的「once the master passes」、`Bee.Definition/README` 的「no I/O」。**這個數字在上升，說明對「宣稱」的產出速度高於對它的驗證速度。** 建議把「帶絕對語氣的註解必須指出對應執行路徑」做成 code review 的固定檢查項，而不只是體檢時的追問。
+8. **「plan 完成」不等於「文件完成」，而且殘留會活很久。** `plan-definition-messagepack-decoupling.md`
+   於 2026-08-09 標記完成，程式碼確實改乾淨了（`src/` 對 MessagePack 標註命中 0），但文件裡有
+   **九處**教人加那些標註的敘述活到 2026-09-04 才被清 —— 分佈在 `Bee.Definition/README`（4 處）、
+   `api-bo-contract-design`（3 處）、`Bee.Api.Contracts/README`（1 處）、以及一條失效的 ADR-030 引用。
+   其中最危險的是設計慣例與範例程式碼：外部開發者會照抄，而照做即違反 BEE9001 擋的相依邊界。
+   **下輪對每一份標記完成的 plan，固定問一次：它改了哪些型別／標註，公開文件跟了嗎？**
+
+9. **「文件宣稱有保證」本輪出現至少八次**（上輪五次）：`BoApiSurfaceTests` 的 DisplayName（**上輪點名未修**）、`docs/api-method-reference` 的「the build will fail otherwise」、`WireFixtureTests` 的「每個判別碼都要有樣本」、`src/Bee.Api.Core/CLAUDE.md` 的「兩條 wire 共用判別碼（同時釘住兩者）」、`DbConnectionManagerTests` 的「使用唯一 databaseId 以避免干擾」、`AuditLogWriterService` 的「records are never silently lost」、`FormBusinessObject.Write` 的「once the master passes」、`Bee.Definition/README` 的「no I/O」。**這個數字在上升，說明對「宣稱」的產出速度高於對它的驗證速度。** 建議把「帶絕對語氣的註解必須指出對應執行路徑」做成 code review 的固定檢查項，而不只是體檢時的追問。
