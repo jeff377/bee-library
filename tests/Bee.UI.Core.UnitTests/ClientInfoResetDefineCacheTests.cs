@@ -15,7 +15,7 @@ namespace Bee.UI.Core.UnitTests
     public class ClientInfoResetDefineCacheTests
     {
         private static readonly FieldInfo s_defineAccessField =
-            typeof(ClientInfo).GetField("_defineAccess", BindingFlags.NonPublic | BindingFlags.Static)!;
+            typeof(ClientInfo).GetField("s_defineAccess", BindingFlags.NonPublic | BindingFlags.Static)!;
 
         [Fact]
         [DisplayName("ResetDefineCache _defineAccess 為 null 時應直接回傳，不拋例外")]

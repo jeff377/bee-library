@@ -53,7 +53,7 @@ namespace Bee.Base.Serialization
                         break;
 
                     case "primaryKeys":
-                        primaryKeys = ReadStringArray(ref reader);
+                        primaryKeys = JsonReaderExtensions.ReadStringArray(ref reader);
                         break;
 
                     case "rows":
@@ -140,20 +140,6 @@ namespace Bee.Base.Serialization
             }
             value = null;
             return false;
-        }
-
-        private static List<string> ReadStringArray(ref Utf8JsonReader reader)
-        {
-            var list = new List<string>();
-            if (reader.TokenType != JsonTokenType.StartArray)
-                return list;
-
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
-            {
-                if (reader.TokenType == JsonTokenType.String)
-                    list.Add(reader.GetString()!);
-            }
-            return list;
         }
 
         private static List<RowDef> ReadRows(ref Utf8JsonReader reader, List<ColumnDef> columns)

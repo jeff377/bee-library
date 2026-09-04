@@ -18,10 +18,10 @@ namespace Bee.UI.Core.UnitTests
     public class ClientInfoLoadSettingsTests
     {
         private static readonly FieldInfo s_clientSettingsField =
-            typeof(ClientInfo).GetField("_clientSettings", BindingFlags.NonPublic | BindingFlags.Static)!;
+            typeof(ClientInfo).GetField("s_clientSettings", BindingFlags.NonPublic | BindingFlags.Static)!;
 
         private static readonly FieldInfo s_systemConnectorField =
-            typeof(ClientInfo).GetField("_systemConnector", BindingFlags.NonPublic | BindingFlags.Static)!;
+            typeof(ClientInfo).GetField("s_systemConnector", BindingFlags.NonPublic | BindingFlags.Static)!;
 
         [Fact]
         [DisplayName("LoadClientSettings 設定檔存在時應成功反序列化並回傳非 null 的 ClientSettings")]

@@ -2,3 +2,5 @@
 const Bee.Definition.ProtectedFields.Password = "password" -> string!
 Bee.Definition.Security.IApiKeyGateStateProvider
 Bee.Definition.Security.IApiKeyGateStateProvider.GetState() -> Bee.Definition.Security.ApiKeyGateState?
+Bee.Definition.Language.LanguageKey
+static Bee.Definition.Language.LanguageKey.Split(string! fullKey) -> (string! Namespace, string! SubKey)

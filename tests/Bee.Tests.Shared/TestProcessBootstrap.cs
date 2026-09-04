@@ -19,9 +19,9 @@ namespace Bee.Tests.Shared
     public static class TestProcessBootstrap
     {
         private static readonly object s_initLock = new();
-        private static bool _initialized;
-        private static string? _sharedDefinePath;
-        private static string? _sharedCustomizePath;
+        private static bool s_initialized;
+        private static string? s_sharedDefinePath;
+        private static string? s_sharedCustomizePath;
 
         /// <summary>
         /// Hard-coded Base64 AES-CBC-HMAC combined key (64 bytes) used by the test
@@ -48,7 +48,7 @@ namespace Bee.Tests.Shared
             get
             {
                 EnsureInitialized();
-                return _sharedDefinePath!;
+                return s_sharedDefinePath!;
             }
         }
 
@@ -77,7 +77,7 @@ namespace Bee.Tests.Shared
             get
             {
                 EnsureInitialized();
-                return _sharedCustomizePath!;
+                return s_sharedCustomizePath!;
             }
         }
 
@@ -86,12 +86,12 @@ namespace Bee.Tests.Shared
         /// </summary>
         public static void EnsureInitialized()
         {
-            if (_initialized) return;
+            if (s_initialized) return;
             lock (s_initLock)
             {
-                if (_initialized) return;
+                if (s_initialized) return;
                 InitializeOnce();
-                _initialized = true;
+                s_initialized = true;
             }
         }
 
@@ -106,12 +106,12 @@ namespace Bee.Tests.Shared
                 Environment.SetEnvironmentVariable("BEE_MASTER_KEY", TestMasterKey);
             }
 
-            _sharedDefinePath = CreateSharedDefinePath();
-            _sharedCustomizePath = CreateSharedCustomizePath();
+            s_sharedDefinePath = CreateSharedDefinePath();
+            s_sharedCustomizePath = CreateSharedCustomizePath();
             var pathOptions = new PathOptions
             {
-                DefinePath = _sharedDefinePath,
-                CustomizePath = _sharedCustomizePath
+                DefinePath = s_sharedDefinePath,
+                CustomizePath = s_sharedCustomizePath
             };
 
             // Bootstrap 暫時用一個 DefineAccess 讓 SharedDatabaseState.EnsureRegistered

@@ -45,7 +45,7 @@ namespace Bee.Api.Client.Definitions
         /// <inheritdoc/>
         public string GetLangText(string lang, string fullKey)
         {
-            SplitFullKey(fullKey, out string @namespace, out string subKey);
+            (string @namespace, string subKey) = LanguageKey.Split(fullKey);
             return GetLangText(lang, @namespace, subKey);
         }
 
@@ -63,7 +63,7 @@ namespace Bee.Api.Client.Definitions
         /// <inheritdoc/>
         public bool TryGetLangText(string lang, string fullKey, out string text)
         {
-            SplitFullKey(fullKey, out string @namespace, out string subKey);
+            (string @namespace, string subKey) = LanguageKey.Split(fullKey);
             return TryGetLangText(lang, @namespace, subKey, out text);
         }
 
@@ -77,7 +77,7 @@ namespace Bee.Api.Client.Definitions
         /// <inheritdoc/>
         public LanguageEnum? GetLangEnum(string lang, string fullName)
         {
-            SplitFullKey(fullName, out string @namespace, out string enumName);
+            (string @namespace, string enumName) = LanguageKey.Split(fullName);
             return GetLangEnum(lang, @namespace, enumName);
         }
 
@@ -99,7 +99,7 @@ namespace Bee.Api.Client.Definitions
         /// <inheritdoc/>
         public string? GetLangEnumText(string lang, string fullName, string code)
         {
-            SplitFullKey(fullName, out string @namespace, out string enumName);
+            (string @namespace, string enumName) = LanguageKey.Split(fullName);
             return GetLangEnum(lang, @namespace, enumName)?.GetText(code);
         }
 
@@ -109,19 +109,5 @@ namespace Bee.Api.Client.Definitions
         private bool UseDefaultLangFallback(string lang)
             => !string.IsNullOrEmpty(_defaultLang)
                && !string.Equals(lang, _defaultLang, StringComparison.OrdinalIgnoreCase);
-
-        private static void SplitFullKey(string fullKey, out string @namespace, out string subKey)
-        {
-            ArgumentNullException.ThrowIfNull(fullKey);
-            int dot = fullKey.IndexOf('.');
-            if (dot < 0)
-            {
-                @namespace = fullKey;
-                subKey = string.Empty;
-                return;
-            }
-            @namespace = fullKey.Substring(0, dot);
-            subKey = fullKey.Substring(dot + 1);
-        }
     }
 }

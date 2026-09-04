@@ -55,11 +55,20 @@ namespace Bee.Api.Core.JsonRpc
         /// remarks.
         /// </summary>
         /// <remarks>
-        /// The six BCL rows collapsing into <see cref="JsonRpcErrorCode.UserMessage"/> are a
-        /// transition path, not the destination: <see cref="UserMessageException"/> is the type new
-        /// business code should throw, and the BCL rows are meant to be retired once the code that
-        /// throws them has migrated. Removing a row narrows what reaches the caller as a readable
-        /// message, so each one goes when its callers do, not before.
+        /// The rows that collapse into <see cref="JsonRpcErrorCode.UserMessage"/> without rebuilding
+        /// — <see cref="UnauthorizedAccessException"/>, <see cref="ArgumentException"/>,
+        /// <see cref="InvalidOperationException"/>, <see cref="NotSupportedException"/>,
+        /// <see cref="FormatException"/> and <see cref="JsonRpcException"/> — are a transition path,
+        /// not the destination: <see cref="UserMessageException"/> is the type new business code
+        /// should throw, and these are meant to be retired once the code that throws them has
+        /// migrated. Removing a row narrows what reaches the caller as a readable message, so each
+        /// one goes when its callers do, not before.
+        /// <para>
+        /// NOTE: named rather than counted. This said "the six BCL rows", which had the count right
+        /// and the label wrong — <see cref="JsonRpcException"/> is the framework's own type, so no
+        /// wording with a number in it was true. A wrong name is visible to the reader; a wrong
+        /// count is not (<c>code-style.md</c>, "不寫程式碼構件的清點數字").
+        /// </para>
         /// </remarks>
         private static readonly Mapping[] s_mappings =
         [

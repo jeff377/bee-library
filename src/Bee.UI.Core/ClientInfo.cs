@@ -54,12 +54,12 @@ namespace Bee.UI.Core
         /// </remarks>
         private static readonly Lock s_stateGate = new();
 
-        private static ClientSettings? _clientSettings;
-        private static SystemApiConnector? _systemConnector;
-        private static ClientDefineAccess? _defineAccess;
-        private static Guid _accessToken = Guid.Empty;
-        private static IReadOnlyDictionary<string, PermissionAction>? _capabilities;
-        private static CompanyInfo? _company;
+        private static ClientSettings? s_clientSettings;
+        private static SystemApiConnector? s_systemConnector;
+        private static ClientDefineAccess? s_defineAccess;
+        private static Guid s_accessToken = Guid.Empty;
+        private static IReadOnlyDictionary<string, PermissionAction>? s_capabilities;
+        private static CompanyInfo? s_company;
 
         /// <summary>
         /// Command-line arguments parsed at <see cref="InitializeAsync(IUIViewService, SupportedConnectTypes)"/>.
@@ -86,7 +86,7 @@ namespace Bee.UI.Core
         {
             get
             {
-                lock (s_stateGate) { return _clientSettings ??= LoadClientSettings(); }
+                lock (s_stateGate) { return s_clientSettings ??= LoadClientSettings(); }
             }
         }
 
@@ -112,24 +112,25 @@ namespace Bee.UI.Core
         /// </summary>
         public static Guid AccessToken
         {
-            get { return _accessToken; }
+            get { return s_accessToken; }
             private set
             {
-                // NOTE: 重設 AccessToken 必須同步清掉 SystemApiConnector 與 ClientDefineAccess 快取，
-                // 否則後續呼叫會帶舊 token 對 server 失敗。
-                if (value != _accessToken)
+                // NOTE: resetting the access token has to clear the `SystemApiConnector` and
+                // `ClientDefineAccess` caches with it. Otherwise later calls carry the old token
+                // and fail against the server.
+                if (value != s_accessToken)
                 {
                     // One identity change, one visible step: a reader must not be able to catch a
                     // new token paired with the previous identity's capability snapshot.
                     lock (s_stateGate)
                     {
-                        _accessToken = value;
-                        _systemConnector = null;
-                        _defineAccess = null;
+                        s_accessToken = value;
+                        s_systemConnector = null;
+                        s_defineAccess = null;
                         // A new (or cleared) token means a different identity — the cached capability
                         // snapshot no longer applies. Reset to null so degradation is disabled until
                         // the next EnterCompany populates it.
-                        _capabilities = null;
+                        s_capabilities = null;
                     }
                 }
             }
@@ -142,7 +143,7 @@ namespace Bee.UI.Core
         {
             get
             {
-                lock (s_stateGate) { return _systemConnector ??= CreateSystemApiConnector(); }
+                lock (s_stateGate) { return s_systemConnector ??= CreateSystemApiConnector(); }
             }
         }
 
@@ -181,7 +182,7 @@ namespace Bee.UI.Core
         {
             get
             {
-                lock (s_stateGate) { return _defineAccess ??= new ClientDefineAccess(SystemApiConnector); }
+                lock (s_stateGate) { return s_defineAccess ??= new ClientDefineAccess(SystemApiConnector); }
             }
         }
 
@@ -203,7 +204,7 @@ namespace Bee.UI.Core
         public static void ResetDefineCache()
         {
             ClientDefineAccess? defineAccess;
-            lock (s_stateGate) { defineAccess = _defineAccess; }
+            lock (s_stateGate) { defineAccess = s_defineAccess; }
             defineAccess?.ClearCache();
         }
 
@@ -235,14 +236,14 @@ namespace Bee.UI.Core
         /// no permission on that model. This is UX degradation only; the backend remains the
         /// authoritative security boundary.
         /// </remarks>
-        public static IReadOnlyDictionary<string, PermissionAction>? Capabilities => _capabilities;
+        public static IReadOnlyDictionary<string, PermissionAction>? Capabilities => s_capabilities;
 
         /// <summary>
         /// Gets the current company entered through <c>EnterCompany</c>, or <c>null</c> when no company
         /// context is active. Carries the company-level decimal-place overrides and default (home)
         /// currency used to round computed numeric fields client-side. Read-only UX aid; the server rounds authoritatively on save.
         /// </summary>
-        public static CompanyInfo? Company => _company;
+        public static CompanyInfo? Company => s_company;
 
         /// <summary>
         /// Caches the capability snapshot and company info from an <c>EnterCompany</c> response, and
@@ -259,8 +260,8 @@ namespace Bee.UI.Core
         public static void ApplyEnterCompanyResult(EnterCompanyResponse response)
         {
             ArgumentNullException.ThrowIfNull(response);
-            _capabilities = response.Capabilities;
-            _company = response.Company;
+            s_capabilities = response.Capabilities;
+            s_company = response.Company;
             ResetDefineCache();
         }
 
@@ -274,8 +275,8 @@ namespace Bee.UI.Core
         /// </remarks>
         public static void ClearCompanyContext()
         {
-            _capabilities = null;
-            _company = null;
+            s_capabilities = null;
+            s_company = null;
             ResetDefineCache();
         }
 
@@ -291,10 +292,12 @@ namespace Bee.UI.Core
                 ApiClientInfo.ConnectType = ConnectType.Remote;
                 ApiClientInfo.Endpoint = endpoint;
             }
-            // NOTE: 連線方式變更必定使既有 token 失效，強制重登。
+            // NOTE: changing the connection method always invalidates the existing token, so a
+            // fresh sign-in is required.
             AccessToken = Guid.Empty;
-            // 一併清掉時區：session 失效後那個時區已無所屬，留著會在下次登入前被誤用來換算
-            // （ADR-032 D13）。重新登入時 ApplyLoginResult 會重新填入。
+            // The time zone goes with it. Once the session is gone that zone belongs to nobody,
+            // and leaving it behind means it would be used for conversions before the next sign-in
+            // (ADR-032 D13). `ApplyLoginResult` fills it in again on the way back.
             ApiClientInfo.UserTimeZoneId = string.Empty;
         }
 
@@ -461,7 +464,7 @@ namespace Bee.UI.Core
             // The Connector layer sits below this one, so it cannot read UserInfo — hand it the zone
             // it needs to convert payloads with (ADR-032 D4).
             ApiClientInfo.UserTimeZoneId = UserInfo.TimeZone;
-            // NOTE: 未來如有其他登入後需設定的屬性，請於此處擴充
+            // NOTE: any further post-sign-in state belongs here.
         }
 
         private static Dictionary<string, string> ParseCommandLineArgs()

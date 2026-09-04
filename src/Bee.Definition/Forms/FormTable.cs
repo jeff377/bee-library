@@ -37,8 +37,8 @@ namespace Bee.Definition.Forms
         /// </summary>
         public FormTable()
         {
-            // 在建構子指派而非欄位初始設定式：Lazy 的 factory 捕捉 this，而 C# 不允許
-            // 欄位初始設定式取用 this（CS0027）。
+            // Assigned in the constructor rather than in a field initializer. The `Lazy` factory
+            // captures `this`, and a field initializer may not read `this` in C# (CS0027).
             _relationFieldReferences = new Lazy<RelationFieldReferenceCollection>(
                 CreateRelationFieldReferences, LazyThreadSafetyMode.ExecutionAndPublication);
         }

@@ -15,5 +15,9 @@
     <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />
     <ProjectReference Include="..\Bee.Repository.Abstractions\Bee.Repository.Abstractions.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Bee.ObjectCaching.UnitTests" />
+  </ItemGroup>
+
 
 </Project>

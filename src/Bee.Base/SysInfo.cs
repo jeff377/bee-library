@@ -46,7 +46,7 @@ namespace Bee.Base
         /// Backing field for <see cref="AllowedTypeNamespaces"/>.
         /// Pre-populated with the default allowed type namespaces for JSON-RPC data transfer.
         /// </summary>
-        private static List<string> _allowedTypeNamespaces =
+        private static List<string> s_allowedTypeNamespaces =
             ["Bee.Base", "Bee.Definition", "Bee.Api.Contracts", "Bee.Api.Core", "Bee.Business"];
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Bee.Base
         /// Note: Bee.Base, Bee.Definition, Bee.Api.Contracts, Bee.Api.Core and Bee.Business are
         /// built-in default namespaces and do not need to be specified.
         /// </summary>
-        public static IReadOnlyList<string> AllowedTypeNamespaces => _allowedTypeNamespaces;
+        public static IReadOnlyList<string> AllowedTypeNamespaces => s_allowedTypeNamespaces;
 
         /// <summary>
         /// Validates whether the specified type name is in an allowed namespace.
@@ -83,7 +83,7 @@ namespace Bee.Base
         {
             Version = configuration.Version;
             IsDebugMode = configuration.IsDebugMode;
-            _allowedTypeNamespaces = BuildAllowedTypeNamespaces(configuration.AllowedTypeNamespaces);
+            s_allowedTypeNamespaces = BuildAllowedTypeNamespaces(configuration.AllowedTypeNamespaces);
         }
 
         /// <summary>

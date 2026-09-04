@@ -49,7 +49,7 @@ namespace Bee.Definition.Language
         /// <inheritdoc/>
         public string GetLangText(string lang, string fullKey)
         {
-            SplitFullKey(fullKey, out string @namespace, out string subKey);
+            (string @namespace, string subKey) = LanguageKey.Split(fullKey);
             return GetLangText("", lang, @namespace, subKey);
         }
 
@@ -81,7 +81,7 @@ namespace Bee.Definition.Language
         /// <inheritdoc/>
         public bool TryGetLangText(string lang, string fullKey, out string text)
         {
-            SplitFullKey(fullKey, out string @namespace, out string subKey);
+            (string @namespace, string subKey) = LanguageKey.Split(fullKey);
             return TryGetLangText("", lang, @namespace, subKey, out text);
         }
 
@@ -104,7 +104,7 @@ namespace Bee.Definition.Language
         /// <inheritdoc/>
         public LanguageEnum? GetLangEnum(string lang, string fullName)
         {
-            SplitFullKey(fullName, out string @namespace, out string enumName);
+            (string @namespace, string enumName) = LanguageKey.Split(fullName);
             return GetLangEnum("", lang, @namespace, enumName);
         }
 
@@ -141,7 +141,7 @@ namespace Bee.Definition.Language
         /// <inheritdoc/>
         public string? GetLangEnumText(string customizeId, string lang, string fullName, string code)
         {
-            SplitFullKey(fullName, out string @namespace, out string enumName);
+            (string @namespace, string enumName) = LanguageKey.Split(fullName);
             return GetLangEnum(customizeId, lang, @namespace, enumName)?.GetText(code);
         }
 
@@ -185,24 +185,6 @@ namespace Bee.Definition.Language
         {
             var settings = _defineAccess.GetSystemSettings();
             return settings?.CommonConfiguration?.DefaultLang ?? string.Empty;
-        }
-
-        /// <summary>
-        /// Splits the full key on the first <c>.</c> into namespace + sub-key.
-        /// Inputs without a <c>.</c> are treated as namespace-only with an empty sub-key.
-        /// </summary>
-        private static void SplitFullKey(string fullKey, out string @namespace, out string subKey)
-        {
-            ArgumentNullException.ThrowIfNull(fullKey);
-            int dot = fullKey.IndexOf('.');
-            if (dot < 0)
-            {
-                @namespace = fullKey;
-                subKey = string.Empty;
-                return;
-            }
-            @namespace = fullKey.Substring(0, dot);
-            subKey = fullKey.Substring(dot + 1);
         }
     }
 }

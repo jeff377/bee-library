@@ -152,25 +152,11 @@ namespace Bee.Base.Serialization
                         case "name": rel.Name = reader.GetString() ?? string.Empty; break;
                         case "parentTable": rel.ParentTable = reader.GetString() ?? string.Empty; break;
                         case "childTable": rel.ChildTable = reader.GetString() ?? string.Empty; break;
-                        case "parentColumns": rel.ParentColumns = ReadStringArray(ref reader); break;
-                        case "childColumns": rel.ChildColumns = ReadStringArray(ref reader); break;
+                        case "parentColumns": rel.ParentColumns = JsonReaderExtensions.ReadStringArray(ref reader); break;
+                        case "childColumns": rel.ChildColumns = JsonReaderExtensions.ReadStringArray(ref reader); break;
                     }
                 }
                 list.Add(rel);
-            }
-            return list;
-        }
-
-        private static List<string> ReadStringArray(ref Utf8JsonReader reader)
-        {
-            var list = new List<string>();
-            if (reader.TokenType != JsonTokenType.StartArray)
-                return list;
-
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
-            {
-                if (reader.TokenType == JsonTokenType.String)
-                    list.Add(reader.GetString()!);
             }
             return list;
         }

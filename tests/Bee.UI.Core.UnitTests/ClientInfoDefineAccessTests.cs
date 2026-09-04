@@ -14,10 +14,10 @@ namespace Bee.UI.Core.UnitTests
     public class ClientInfoDefineAccessTests
     {
         private static readonly FieldInfo s_defineAccessField =
-            typeof(ClientInfo).GetField("_defineAccess", BindingFlags.NonPublic | BindingFlags.Static)!;
+            typeof(ClientInfo).GetField("s_defineAccess", BindingFlags.NonPublic | BindingFlags.Static)!;
 
         private static readonly FieldInfo s_systemConnectorField =
-            typeof(ClientInfo).GetField("_systemConnector", BindingFlags.NonPublic | BindingFlags.Static)!;
+            typeof(ClientInfo).GetField("s_systemConnector", BindingFlags.NonPublic | BindingFlags.Static)!;
 
         [Fact]
         [DisplayName("DefineAccess getter 多次存取應回傳同一快取實例")]

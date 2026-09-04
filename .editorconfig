@@ -67,12 +67,15 @@ dotnet_naming_symbols.private_const_fields.applicable_kinds = field
 dotnet_naming_symbols.private_const_fields.applicable_accessibilities = private, protected, protected_internal, private_protected
 dotnet_naming_symbols.private_const_fields.required_modifiers = const
 
-dotnet_naming_rule.private_static_readonly_fields_s_prefix.symbols = private_static_readonly_fields
-dotnet_naming_rule.private_static_readonly_fields_s_prefix.style = s_camel_case_style
-dotnet_naming_rule.private_static_readonly_fields_s_prefix.severity = warning
-dotnet_naming_symbols.private_static_readonly_fields.applicable_kinds = field
-dotnet_naming_symbols.private_static_readonly_fields.applicable_accessibilities = private, protected, protected_internal, private_protected
-dotnet_naming_symbols.private_static_readonly_fields.required_modifiers = static, readonly
+# required_modifiers 是 static 而非 static readonly：**可變**的 process-wide 狀態正是最需要在
+# 讀者眼前標記出來的那一類。只管不可變靜態時，可變靜態會落到下面的 _camelCase 規則，
+# 與執行個體欄位無法區分 —— 而那兩者的並行風險天差地別。
+dotnet_naming_rule.private_static_fields_s_prefix.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_s_prefix.style = s_camel_case_style
+dotnet_naming_rule.private_static_fields_s_prefix.severity = warning
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private, protected, protected_internal, private_protected
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
 
 dotnet_naming_rule.private_fields_underscore.symbols = private_fields
 dotnet_naming_rule.private_fields_underscore.style = underscore_camel_case_style

@@ -16,7 +16,8 @@ namespace Bee.Business.Form
     {
         #region Authorization (layer-1 model + action gate)
 
-        // 寫入動作的判定順序；層一不涉 record scope，故每個 action 只需判一次（逐列等價）。
+        // The order in which write actions are evaluated. Layer one does not consider record
+        // scope, so one check per action is enough — checking it per row would give the same answer.
         private static readonly PermissionAction[] s_writeActions =
             { PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete };
 

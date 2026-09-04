@@ -28,10 +28,10 @@ namespace Bee.Tests.Shared
     public static partial class SharedDatabaseState
     {
         private static readonly Lock s_registerLock = new();
-        private static bool _registered;
+        private static bool s_registered;
 
         private static readonly Lock s_schemaLock = new();
-        private static bool _schemaInitialised;
+        private static bool s_schemaInitialised;
 
         // The resource this guards is the database container shared by every test process on
         // the machine, not this working copy, so the name is deliberately not path-derived:
@@ -56,7 +56,7 @@ namespace Bee.Tests.Shared
             ArgumentNullException.ThrowIfNull(bootstrapAccess);
             lock (s_registerLock)
             {
-                if (_registered) return;
+                if (s_registered) return;
 
                 var categoryIds = GetCategoryIds(bootstrapAccess);
                 RegisterSqlServer(bootstrapAccess, categoryIds);
@@ -66,7 +66,7 @@ namespace Bee.Tests.Shared
                 RegisterOracle(bootstrapAccess, categoryIds);
                 EnsureFallbackCommonDatabaseItem(bootstrapAccess);
 
-                _registered = true;
+                s_registered = true;
             }
         }
 
@@ -117,7 +117,7 @@ namespace Bee.Tests.Shared
             ArgumentNullException.ThrowIfNull(connectionManager);
             lock (s_schemaLock)
             {
-                if (_schemaInitialised) return;
+                if (s_schemaInitialised) return;
 
                 // `s_schemaLock` only makes this once-per-process; the whole setup is also
                 // once-per-machine because test assemblies run as parallel processes against
@@ -133,7 +133,7 @@ namespace Bee.Tests.Shared
                     EnsureDatabase(DatabaseType.Oracle, access, connectionManager);
                 }
 
-                _schemaInitialised = true;
+                s_schemaInitialised = true;
             }
         }
     }

@@ -127,7 +127,7 @@ namespace Bee.UI.Core.UnitTests
             var originalType = ApiClientInfo.ConnectType;
             var originalEndpoint = ApiClientInfo.Endpoint;
             var sysConnField = typeof(ClientInfo).GetField(
-                "_systemConnector", BindingFlags.NonPublic | BindingFlags.Static);
+                "s_systemConnector", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.NotNull(sysConnField);
             var originalConnector = sysConnField!.GetValue(null);
             try

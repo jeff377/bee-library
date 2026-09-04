@@ -217,10 +217,14 @@ namespace Bee.Db.Providers.Oracle
         /// <param name="storageName">Table name in Oracle storage form (UPPERCASE).</param>
         private DataTable GetColumns(string storageName)
         {
-            // DATA_DEFAULT 是 LONG 型別 — 不能與 CHAR '' 在 COALESCE 中混用（ORA-00932）。
-            // 直接 SELECT，DBNull 在 ParseDbField 透過 IsNull 檢查轉成 string.Empty。
-            // Length: 字串型用 CHAR_LENGTH（CHAR semantic），二進位/RAW 用 DATA_LENGTH（byte）；
-            // CHAR_LENGTH 對 RAW 永遠是 0，會導致 RAW(16)→Binary 誤判而非 Guid。
+            // `DATA_DEFAULT` is a LONG column, which Oracle refuses to mix with a CHAR `''` inside
+            // COALESCE (ORA-00932). It is therefore selected as it is, and `ParseDbField` turns the
+            // resulting DBNull into an empty string through its own IsNull check.
+            //
+            // Length comes from a different column per type. Character types use `CHAR_LENGTH`,
+            // which counts characters, while binary and RAW types use `DATA_LENGTH`, which counts
+            // bytes. WARNING: `CHAR_LENGTH` is always zero for a RAW column, so reading length from
+            // it would turn `RAW(16)` into Binary instead of Guid.
             string sql =
                 "SELECT c.COLUMN_NAME AS \"FieldName\", " +
                 "       c.DATA_TYPE AS \"DbType\", " +
@@ -285,9 +289,10 @@ namespace Bee.Db.Providers.Oracle
                 dbField.Scale = scale;
             }
 
-            // IDENTITY 欄位的 DATA_DEFAULT 是 Oracle 自動產生的 sequence call
-            // （形如 "OWNER"."ISEQ$$_NNNN".nextval），不應與 define 的 DefaultValue 比對；
-            // 強制設為空字串以維持 round-trip 一致。
+            // An IDENTITY column's `DATA_DEFAULT` is a sequence call Oracle generated itself,
+            // shaped like `"OWNER"."ISEQ$$_NNNN".nextval`. Comparing that against the definition's
+            // own DefaultValue is meaningless, so it is forced to an empty string and the round trip
+            // stays consistent.
             if (dbField.DbType == FieldDbType.AutoIncrement)
             {
                 dbField.DefaultValue = string.Empty;
@@ -295,7 +300,8 @@ namespace Bee.Db.Providers.Oracle
             }
 
             string originalDefaultValue = OracleSchemaSyntax.GetDefaultValueExpression(dbField.DbType);
-            // DATA_DEFAULT 是 LONG 欄位且未在 query 中 COALESCE，DBNull 視同空字串。
+            // `DATA_DEFAULT` is a LONG column and the query does not COALESCE it, so a DBNull
+            // here means the same thing as an empty string.
             string rawDefault = row.IsNull("DefaultValue") ? string.Empty : row.GetFieldValue<string>("DefaultValue");
             dbField.DefaultValue = ParseDBDefaultValue(dataType, rawDefault, originalDefaultValue);
             return dbField;

@@ -131,7 +131,7 @@ namespace Bee.Db.Providers.SqlServer
 
             // Get the index name
             string name = ValueUtilities.CStr(table.DefaultView[0]["name"]);
-            // 取得主索引
+            // Read the primary key index.
             var tableIndex = new DbTableIndex();
             tableIndex.PrimaryKey = true;
             tableIndex.Name = name;

@@ -11,13 +11,13 @@ namespace Bee.Api.Core
     /// </summary>
     public static class ApiServiceOptions
     {
-        private static IApiAuthorizationValidator _authorizationValidator = new ApiAuthorizationValidator(); // Default implementation
-        private static IApiPayloadTransformer _payloadTransformer = new ApiPayloadTransformer(); // Default implementation
-        private static IApiPayloadSerializer _payloadSerializer = new MessagePackPayloadSerializer(); // Default implementation
-        private static IApiPayloadCompressor _payloadCompressor = new GzipPayloadCompressor(); // Default implementation
-        private static IApiPayloadEncryptor _payloadEncryptor = new AesPayloadEncryptor(); // Default implementation
-        private static TimeSpan _wireFrameTimestampTolerance = TimeSpan.FromMinutes(5);
-        private static IReplayWindowStore _replayWindowStore = new MemoryReplayWindowStore();
+        private static IApiAuthorizationValidator s_authorizationValidator = new ApiAuthorizationValidator(); // Default implementation
+        private static IApiPayloadTransformer s_payloadTransformer = new ApiPayloadTransformer(); // Default implementation
+        private static IApiPayloadSerializer s_payloadSerializer = new MessagePackPayloadSerializer(); // Default implementation
+        private static IApiPayloadCompressor s_payloadCompressor = new GzipPayloadCompressor(); // Default implementation
+        private static IApiPayloadEncryptor s_payloadEncryptor = new AesPayloadEncryptor(); // Default implementation
+        private static TimeSpan s_wireFrameTimestampTolerance = TimeSpan.FromMinutes(5);
+        private static IReplayWindowStore s_replayWindowStore = new MemoryReplayWindowStore();
         /// <summary>
         /// The body codecs a request may name, always all of them.
         /// </summary>
@@ -79,8 +79,8 @@ namespace Bee.Api.Core
         /// </summary>
         public static IApiAuthorizationValidator AuthorizationValidator
         {
-            get => _authorizationValidator;
-            set => _authorizationValidator = value ?? throw new ArgumentNullException(nameof(value));
+            get => s_authorizationValidator;
+            set => s_authorizationValidator = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
@@ -88,8 +88,8 @@ namespace Bee.Api.Core
         /// </summary>
         public static IApiPayloadTransformer PayloadTransformer
         {
-            get => _payloadTransformer;
-            set => _payloadTransformer = value ?? throw new ArgumentNullException(nameof(value));
+            get => s_payloadTransformer;
+            set => s_payloadTransformer = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
@@ -97,8 +97,8 @@ namespace Bee.Api.Core
         /// </summary>
         public static IApiPayloadSerializer PayloadSerializer
         {
-            get => _payloadSerializer;
-            set => _payloadSerializer = value ?? throw new ArgumentNullException(nameof(value));
+            get => s_payloadSerializer;
+            set => s_payloadSerializer = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
@@ -106,8 +106,8 @@ namespace Bee.Api.Core
         /// </summary>
         public static IApiPayloadCompressor PayloadCompressor
         {
-            get => _payloadCompressor;
-            set => _payloadCompressor = value ?? throw new ArgumentNullException(nameof(value));
+            get => s_payloadCompressor;
+            set => s_payloadCompressor = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
@@ -115,8 +115,8 @@ namespace Bee.Api.Core
         /// </summary>
         public static IApiPayloadEncryptor PayloadEncryptor
         {
-            get => _payloadEncryptor;
-            set => _payloadEncryptor = value ?? throw new ArgumentNullException(nameof(value));
+            get => s_payloadEncryptor;
+            set => s_payloadEncryptor = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
@@ -152,12 +152,12 @@ namespace Bee.Api.Core
         /// <exception cref="ArgumentOutOfRangeException">Thrown when set to a non-positive value.</exception>
         public static TimeSpan WireFrameTimestampTolerance
         {
-            get => _wireFrameTimestampTolerance;
+            get => s_wireFrameTimestampTolerance;
             set
             {
                 if (value <= TimeSpan.Zero)
                     throw new ArgumentOutOfRangeException(nameof(value), "The tolerance must be greater than zero.");
-                _wireFrameTimestampTolerance = value;
+                s_wireFrameTimestampTolerance = value;
             }
         }
 
@@ -172,8 +172,8 @@ namespace Bee.Api.Core
         /// </remarks>
         public static IReplayWindowStore ReplayWindowStore
         {
-            get => _replayWindowStore;
-            set => _replayWindowStore = value ?? throw new ArgumentNullException(nameof(value));
+            get => s_replayWindowStore;
+            set => s_replayWindowStore = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
