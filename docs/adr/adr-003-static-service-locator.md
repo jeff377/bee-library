@@ -2,7 +2,7 @@
 
 ## 狀態
 
-**Superseded by [ADR-011](adr-011-di-replaces-service-locator.md)（v5.0，2026-05）** —— 框架已全面改為 DI ctor 注入。本 ADR 保留作為歷史決策紀錄。
+**Superseded by [ADR-011](adr-011-di-replaces-service-locator.md)（2026-05）** —— 框架已全面改為 DI ctor 注入。本 ADR 保留作為歷史決策紀錄。
 
 ## 原狀態
 

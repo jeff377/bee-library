@@ -8,6 +8,11 @@
 （見下方「對 ADR-030 的修訂」），但不改變 [ADR-004](adr-004-messagepack-payload.md)
 「MessagePack 作為 API payload 格式」的決策本身。
 
+> **註（2026-09-04，superseded-in-part）**：本 ADR 的前提「wire 只有 MessagePack 一種格式」
+> 已由 [ADR-044](adr-044-payload-codec-negotiation.md) 解除 —— body codec 改為逐請求協商，
+> JSON codec 與 MessagePack 並列。**本 ADR 的核心決策不受影響**：定義層仍不得承載任何傳輸格式
+> 套件，wire 綁定仍留在 `Bee.Api.Core`。改變的只是「那一層裡有幾個 codec」。
+
 ## 背景
 
 `Bee.Definition` 是定義層：`FormSchema`、`TableSchema`、`FormLayout` 等結構的宿主，

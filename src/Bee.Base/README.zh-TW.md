@@ -7,8 +7,7 @@
 ## 架構定位
 
 - **層級**：基礎設施層（Bee.NET 框架最底層）
-- **下游**（依賴此專案者）：幾乎所有其他 `Bee.*` 專案（`Bee.Definition`、`Bee.Business`、`Bee.Api.Core` 等）
-- **上游**（此專案依賴）：無（使用執行階段內建的 `System.Text.Json`）
+- **在相依圖中的位置**：見[專案相依性全景圖](../../docs/dependency-map.zh-TW.md)。**此處不逐一列出** —— 權威來源是 csproj，而散落在每份套件 README 的散文拷貝會漂且無人察覺。它們確實漂了：`Bee.Hosting` 抽出後，有四份 README 的下游數個月都沒把它補上。
 
 ## 目標框架
 
@@ -57,7 +56,7 @@
 ### 追蹤與診斷
 
 - `Tracer` / `TraceContext` -- 結構化診斷追蹤
-- `TraceListener` / `ITraceWriter` -- 可插拔的追蹤輸出目標
+- `TraceDispatcher` / `ITraceWriter` -- 可插拔的追蹤輸出目標
 
 ### 運算式抽象
 
@@ -101,7 +100,7 @@ Bee.Base/
   Expressions/         # IExpressionEvaluator、ExpressionPolicy、ExpressionEvaluationException
   Security/            # AES、RSA、PBKDF2、檔案雜湊工具
   Serialization/       # JSON/XML 序列化、GZip 壓縮
-  Tracing/             # Tracer、TraceContext、TraceListener、ITraceWriter
+  Tracing/             # Tracer、TraceContext、TraceDispatcher、ITraceListener、ITraceWriter
   *.cs（根目錄）        # ValueUtilities、StringExtensions、StringUtilities、DateTimeExtensions、FileUtilities、
                        # IPValidator、SysInfo、IKeyObject 等
 ```

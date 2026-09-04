@@ -204,17 +204,11 @@ policy.ChangeNotifyKey        = changeSource.NotifyKey;   // 資料庫式 storag
 
 資料庫快取一律透過 `Bee.Definition` 的單一介面載入：
 
-```csharp
-public interface ICacheDataSourceProvider
-{
-    SessionInfo? GetSessionInfo(Guid accessToken);
-    CompanyInfo? GetCompanyInfo(string companyId);
-    CompanyRolePermissions? GetCompanyRolePermissions(string companyId);
-    DepartmentTree? GetDepartmentTree(string companyId);
-    ApiKeyInfo? GetApiKey(string sysId);
-    ApiKeyGateState GetApiKeyGateState();
-}
-```
+宣告在
+[`src/Bee.Definition/ICacheDataSourceProvider.cs`](../src/Bee.Definition/ICacheDataSourceProvider.cs)，
+此處不複寫一份 —— 抄下來的簽章清單會漂，而這一份確實漂過：整整一個版本沒有
+`GetCompanyAuditRules`。下方的 **Database caches** 表格逐一列出每個快取對應的方法，
+那才是讀這份文件的人需要的部分。
 
 每個方法都是某一個快取**唯一**的載入路徑，由該快取的 `CreateInstance` 在 miss 時呼叫。
 每個方法都回傳**定義層型別**而非 repository —— 這個介面位於 `Bee.Definition`，而
@@ -345,6 +339,7 @@ t=9.2  節點 B：某個請求讀取 FormSchema "Employee"。MemoryCache 評估�
 | `CompanyInfoCache` | `companyId` | `GetCompanyInfo` | 由 repository 資料庫 router 消費 |
 | `CompanyRolePermissionsCache` | `companyId` | `GetCompanyRolePermissions` | 各公司的權限快照 |
 | `DepartmentTreeCache` | `companyId` | `GetDepartmentTree` | 各公司的組織樹 |
+| `CompanyAuditRulesCache` | `companyId` | `GetCompanyAuditRules` | 各公司的稽核規則快照 |
 | `ApiKeyCache` | 金鑰識別碼 | `GetApiKey` | **60 分鐘絕對到期**；負向視窗縮短為 1 分鐘 |
 | `ApiKeyGateCache` | 單一固定 key | `GetApiKeyGateState` | **60 分鐘絕對到期**；與 `ApiKeyInfo` 共用 cache group，金鑰異動也會失效閘門 |
 

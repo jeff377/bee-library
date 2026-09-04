@@ -7,8 +7,7 @@
 ## Architecture Position
 
 - **Layer**: Business Logic Layer
-- **Downstream** (dependents): `Bee.Api.Core` (via Provider invocation)
-- **Upstream** (dependencies): `Bee.Api.Contracts`, `Bee.Definition`, `Bee.Repository.Abstractions`
+- **Position in the dependency graph**: see [Project Dependency Map](../../docs/dependency-map.md). Not enumerated here — the csproj files are the authority, and a prose copy in every package README drifts with nothing to catch it. These did: `Bee.Hosting` was missing as a dependent from four of them for months after it was extracted.
 
 ## Target Framework
 
@@ -24,7 +23,7 @@
 
 ### System Operations
 
-- `ISystemBusinessObject` -- the cross-BO contract: `Login`, `CreateSession`, `GetDefine`, `SaveDefine`, `EnterCompany`, `LeaveCompany`, `Logout`. API-only methods (`Ping`, `GetFormSchema`, `GetFormLayout`, `GetLanguage`, …) are public on the concrete class with `[ApiAccessControl]` and deliberately stay off this interface
+- `ISystemBusinessObject` -- the cross-BO contract: `Login`, `CreateSession`, `EnterCompany`, `LeaveCompany`, `Logout`. API-only methods (`Ping`, `GetFormSchema`, `GetFormLayout`, `GetLanguage`, …) are public on the concrete class with `[ApiAccessControl]` and deliberately stay off this interface
 - Argument/result pairs for each operation: `LoginArgs`/`LoginResult`, `PingArgs`/`PingResult`, `CreateSessionArgs`/`CreateSessionResult`, `GetDefineArgs`/`GetDefineResult`, `SaveDefineArgs`/`SaveDefineResult`, `CheckPackageUpdateArgs`/`CheckPackageUpdateResult`, `GetPackageArgs`/`GetPackageResult`, `GetCommonConfigurationArgs`/`GetCommonConfigurationResult`
 
 ### Form Operations
@@ -47,7 +46,7 @@
 | Class / Interface | Purpose |
 |-------------------|---------|
 | `IBusinessObject` | Base BO interface (`ExecFunc`, `ExecFuncAnonymous`) |
-| `ISystemBusinessObject` | Cross-BO system operations (7 members; API-only methods stay on the concrete class) |
+| `ISystemBusinessObject` | Cross-BO system operations (API-only methods stay on the concrete class) |
 | `IFormBusinessObject` | Form-level business logic interface |
 | `BusinessObjectFactory` | Factory for creating BO instances |
 | `LoginAttemptTracker` | Account lockout after consecutive failures |

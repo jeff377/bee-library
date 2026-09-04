@@ -2,7 +2,10 @@
 
 [English](dependency-map.md) · [← 文件索引](README.zh-TW.md)
 
-本文件以視覺化方式呈現 Bee.NET 框架中 16 個 `src/` 專案之間的相依關係。
+本文件以視覺化方式呈現 Bee.NET 框架中 `src/` 專案之間的相依關係。
+圖中涵蓋的是執行期套件；`Bee.Analyzers` 不列入，因為執行期沒有任何專案參考它 ——
+消費端拿到的是建置期 analyzer，畫進去等於多一條組件圖上不存在的邊。
+（此處不寫專案數：那會漂，而 `src/` 目錄本身就是權威來源。）
 
 **閱讀方式**：箭頭方向 A → B 表示「A 依賴 B」；圖表由下而上排列，最底層為無相依性的基礎套件。
 
@@ -97,7 +100,7 @@ graph BT
 | Bee.Repository | Microsoft.Extensions.DependencyInjection.Abstractions 10.x |
 | Bee.Hosting | Microsoft.Extensions.DependencyInjection 10.x、Microsoft.Extensions.Hosting.Abstractions 10.x |
 | Bee.Api.AspNetCore | `FrameworkReference: Microsoft.AspNetCore.App` |
-| Bee.Web.Blazor.Server | `Microsoft.AspNetCore.Components.Web` 等 Blazor Server 套件 |
+| Bee.Web.Blazor.Server | `FrameworkReference: Microsoft.AspNetCore.App` |
 | Bee.UI.Avalonia | Avalonia 12.0.x、Avalonia.Controls.DataGrid 12.0.x |
 | Bee.Api.Contracts / Bee.Api.Client / Bee.Repository.Abstractions / Bee.UI.Core | *(none)* |
 
@@ -108,7 +111,8 @@ graph BT
 
 ## 目標框架摘要
 
-所有專案皆以 `net10.0` 單一目標發布。
+所有執行期套件皆以 `net10.0` 單一目標發布。例外是 `Bee.Analyzers`，它以 `netstandard2.0` 為目標
+—— Roslyn 就是以該框架載入 analyzer，這是 analyzer host 的要求而非選擇。
 
 ## 工具套件（獨立發行）
 
@@ -120,7 +124,7 @@ graph BT
 
 同位於 `tools/` 但不上 NuGet：
 
-- **Bee.DefineEditor**（`tools/DefineEditor/`）—— Avalonia 桌面工具，可視覺化編輯九種定義類型。以 `.app` / `.exe` 形式對外發行而非套件或 dotnet tool。開啟資料夾時 in-process 呼叫 `Bee.Definition.Defaults.MaterializeTo(...)`。
+- **Bee.DefineEditor**（`tools/DefineEditor/`）—— Avalonia 桌面工具，可視覺化編輯各種定義類型。以 `.app` / `.exe` 形式對外發行而非套件或 dotnet tool。開啟資料夾時 in-process 呼叫 `Bee.Definition.Defaults.MaterializeTo(...)`。
 
 ## 架構要點
 

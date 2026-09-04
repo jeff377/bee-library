@@ -7,8 +7,8 @@
 ## 架構定位
 
 - **層級**：基礎設施層（快取）
-- **下游**（依賴此專案者）：應用程式、`Bee.Business`（間接）
-- **上游**（此專案依賴）：`Bee.Definition`、`Microsoft.Extensions.Caching.Memory`
+- **在相依圖中的位置**：見[專案相依性全景圖](../../docs/dependency-map.zh-TW.md)。**此處不逐一列出** —— 權威來源是 csproj，而散落在每份套件 README 的散文拷貝會漂且無人察覺。它們確實漂了：`Bee.Hosting` 抽出後，有四份 README 的下游數個月都沒把它補上。
+- 由應用程式消費。
 
 ## 目標框架
 

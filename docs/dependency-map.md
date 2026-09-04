@@ -2,7 +2,11 @@
 
 [繁體中文](dependency-map.zh-TW.md) · [← Docs Index](README.md)
 
-This document visualizes the dependencies among the 16 `src/` projects of the Bee.NET framework.
+This document visualizes the dependencies among the `src/` projects of the Bee.NET framework.
+The diagram covers the runtime packages; `Bee.Analyzers` is left out because nothing references it
+at runtime — consumers get it as a build-time analyzer, and drawing it would add an edge that does
+not exist in the assembly graph. (No project count here: it drifts, and the `src/` directory is the
+authority.)
 
 **How to read**: an arrow A → B means "A depends on B"; the diagram is laid out bottom-up, with the most foundational packages (no dependencies) at the bottom.
 
@@ -97,7 +101,7 @@ graph BT
 | Bee.Repository | Microsoft.Extensions.DependencyInjection.Abstractions 10.x |
 | Bee.Hosting | Microsoft.Extensions.DependencyInjection 10.x, Microsoft.Extensions.Hosting.Abstractions 10.x |
 | Bee.Api.AspNetCore | `FrameworkReference: Microsoft.AspNetCore.App` |
-| Bee.Web.Blazor.Server | `Microsoft.AspNetCore.Components.Web` and related Blazor Server packages |
+| Bee.Web.Blazor.Server | `FrameworkReference: Microsoft.AspNetCore.App` |
 | Bee.UI.Avalonia | Avalonia 12.0.x, Avalonia.Controls.DataGrid 12.0.x |
 | Bee.Api.Contracts / Bee.Api.Client / Bee.Repository.Abstractions / Bee.UI.Core | *(none)* |
 
@@ -108,7 +112,9 @@ graph BT
 
 ## Target Framework Summary
 
-All projects target `net10.0`.
+All runtime packages target `net10.0`. The exception is `Bee.Analyzers`, which targets
+`netstandard2.0` — that is what Roslyn loads analyzers as, so it is a requirement of the analyzer
+host rather than a choice.
 
 ## Tooling Packages (separately distributed)
 
@@ -120,7 +126,7 @@ Not part of the `src/` library graph above — these ship as `dotnet tool` globa
 
 Also under `tools/` but not on NuGet:
 
-- **Bee.DefineEditor** (`tools/DefineEditor/`) — Avalonia desktop tool for visually editing the nine define types. Distributed as a downloadable `.app` / `.exe` rather than as a library or dotnet tool. Calls `Bee.Definition.Defaults.MaterializeTo(...)` in-process on folder open.
+- **Bee.DefineEditor** (`tools/DefineEditor/`) — Avalonia desktop tool for visually editing the define types. Distributed as a downloadable `.app` / `.exe` rather than as a library or dotnet tool. Calls `Bee.Definition.Defaults.MaterializeTo(...)` in-process on folder open.
 
 ## Architectural Notes
 

@@ -37,7 +37,7 @@ Why the framework is built the way it is.
 |----------|------|--------|-------------|
 | [FormSchema-Driven Database Access](formschema-data-access.md) | Concept | Medium | How Bee.Db generates SQL dynamically from a FormSchema, and why it is not an ORM |
 | [API ↔ BO Contract Design](api-bo-contract-design.md) | Concept | Medium | Three-tier API contract separation (Contracts / API Type / BO Type) and the naming conventions that drive it |
-| [Project Dependency Map](dependency-map.md) | Concept | Short | How the 16 `src/` projects depend on each other, and the rules that keep the graph acyclic |
+| [Project Dependency Map](dependency-map.md) | Concept | Short | How the `src/` projects depend on each other, and the rules that keep the graph acyclic |
 | [Caching](caching.md) | Concept | Long | How definition and database-backed caches work: the read path, the four invalidation signals, and the notification-table mechanism for cross-process / multi-node deployments |
 
 ## 3. Guides
@@ -52,6 +52,8 @@ How to actually do a thing.
 | [Permission & Authorization](permission-authorization.md) | Guide | Medium | The two-layer authorization model (action gate + record scope): PermissionModels, `FormField.ScopeRole`, the role/grant tables, read filtering and authoritative write-side re-query — plus the separate deployment-level axis for installation-wide assets |
 | [API Key Management](api-key-management.md) | Guide | Short | What an API key identifies (the calling application, not the user), how the gate turns itself on, who may manage keys, and the rotation procedure |
 | [JSON-RPC Frontend Integration](jsonrpc-frontend-integration.md) | Guide | Long | Calling the JSON-RPC API from a JavaScript / TypeScript frontend with no .NET on the client: wire format, auth flow, TypeScript wrapper |
+| [Wire Contract](../wire-contracts/README.md) | Reference | Short | The TypeScript contract generated from the message types — what a non-.NET client codes against |
+| [Wire Fixtures](../wire-fixtures/README.md) | Reference | Short | Golden body samples for every wire message, to check a client implementation against |
 | [DatabaseSettings & DbCategorySettings Guide](database-settings-guide.md) | Guide | Long | Structure, access patterns and runtime behaviour of the two database-related settings files |
 | [Database Schema Upgrade](database-schema-upgrade.md) | Guide | Medium | Synchronising definition changes to a live database: the diff → plan → execute pipeline, ALTER vs rebuild, dry runs |
 

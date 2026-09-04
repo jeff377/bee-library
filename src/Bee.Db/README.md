@@ -7,8 +7,7 @@
 ## Architecture Position
 
 - **Layer**: Data Access Layer (infrastructure)
-- **Downstream** (dependents): `Bee.Repository`
-- **Upstream** (dependencies): `Bee.Definition`
+- **Position in the dependency graph**: see [Project Dependency Map](../../docs/dependency-map.md). Not enumerated here — the csproj files are the authority, and a prose copy in every package README drifts with nothing to catch it. These did: `Bee.Hosting` was missing as a dependent from four of them for months after it was extracted.
 
 ## Target Framework
 
@@ -34,7 +33,7 @@
 > Bee.Db is **`FormSchema`-driven**: `FormSchema` describes business entities, and the query context recursively walks `FormSchema` chains to expand JOINs — yielding a "form-level relation" data-access experience distinct from ORM. See [FormSchema-Driven Database Access](../../docs/formschema-data-access.md).
 
 - `SelectCommandBuilder` -- builds SELECT commands from `FormSchema` definitions
-- `ISelectBuilder` / `IFromBuilder` / `IWhereBuilder` / `ISortBuilder` -- composable builder interfaces for SELECT, FROM, WHERE, and ORDER BY clauses
+- `SelectBuilder` / `FromBuilder` / `WhereBuilder` / `SortBuilder` / `LimitBuilder` -- composable builders for the SELECT, FROM, WHERE, ORDER BY and row-limit clauses
 - `SelectContext` -- query context tracking field mappings and table joins
 - `WhereBuilder` -- filter-to-SQL translation with parameterized output
 
@@ -157,7 +156,7 @@ converted — see [ADR-033](../../docs/adr/adr-033-time-of-day-semantics.md).
 
 ## Design Conventions
 
-- **Builder Pattern** -- query composition through `ISelectBuilder`, `IFromBuilder`, `IWhereBuilder`, `ISortBuilder` interfaces, each responsible for a single SQL clause.
+- **Builder Pattern** -- query composition through `SelectBuilder`, `FromBuilder`, `WhereBuilder` and `SortBuilder`, each responsible for a single SQL clause. They are concrete classes: the matching one-implementation interfaces were removed, because no caller ever held one by its interface type.
 - **Specification Pattern** -- `DbCommandSpec`, `DbBatchSpec`, and `DataTableUpdateSpec` encapsulate execution intent as data, decoupling command definition from execution.
 - **IL Emit Mapping** -- `ILMapper<T>` generates `DynamicMethod` delegates at runtime for zero-reflection DataReader mapping; delegates are cached per query shape.
 - **Placeholder Auto-Conversion** -- `DbCommandSpec` accepts both positional (`{0}`, `{1}`) and named (`{Name}`) placeholders, converting them to provider-specific parameter syntax (`@p0`, `:p0`).
@@ -175,9 +174,9 @@ Bee.Db/
                    # IFormCommandBuilder,
                    # SelectCommandBuilder / DeleteCommandBuilder,
                    # (insert / update go through DataAdapter, see ADR-024)
-                   # ISelectBuilder/SelectBuilder, IFromBuilder/FromBuilder,
-                   # IWhereBuilder/WhereBuilder/InternalWhereBuilder/WhereBuildResult,
-                   # ISortBuilder/SortBuilder,
+                   # SelectBuilder, FromBuilder, LimitBuilder,
+                   # WhereBuilder/InternalWhereBuilder/WhereBuildResult,
+                   # SortBuilder,
                    # SelectContext, SelectContextBuilder,
                    # QueryFieldMapping, QueryFieldMappingCollection,
                    # TableJoin, TableJoinCollection,

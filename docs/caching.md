@@ -221,17 +221,11 @@ message bus the framework does not otherwise need. The framework's answer is a n
 
 Database caches load through a single interface in `Bee.Definition`:
 
-```csharp
-public interface ICacheDataSourceProvider
-{
-    SessionInfo? GetSessionInfo(Guid accessToken);
-    CompanyInfo? GetCompanyInfo(string companyId);
-    CompanyRolePermissions? GetCompanyRolePermissions(string companyId);
-    DepartmentTree? GetDepartmentTree(string companyId);
-    ApiKeyInfo? GetApiKey(string sysId);
-    ApiKeyGateState GetApiKeyGateState();
-}
-```
+The declaration lives in
+[`src/Bee.Definition/ICacheDataSourceProvider.cs`](../src/Bee.Definition/ICacheDataSourceProvider.cs)
+and is not reproduced here — a copied signature list drifts, and this one did: it went a whole
+release missing `GetCompanyAuditRules`. The **Database caches** table below names one method per
+cache, which is the part a reader of this document actually needs.
 
 Each method is the sole load path for one cache, called from that cache's `CreateInstance` on a
 miss. Every method returns a definition-layer type rather than a repository — this interface lives
@@ -373,6 +367,7 @@ a cache uses the framework default of a **20-minute sliding** window with negati
 | `CompanyInfoCache` | `companyId` | `GetCompanyInfo` | Consumed by the repository database router |
 | `CompanyRolePermissionsCache` | `companyId` | `GetCompanyRolePermissions` | Per-company permission snapshot |
 | `DepartmentTreeCache` | `companyId` | `GetDepartmentTree` | Per-company organization tree |
+| `CompanyAuditRulesCache` | `companyId` | `GetCompanyAuditRules` | Per-company audit-rule snapshot |
 | `ApiKeyCache` | key identifier | `GetApiKey` | **60-minute absolute**; negative window shortened to 1 minute |
 | `ApiKeyGateCache` | single fixed key | `GetApiKeyGateState` | **60-minute absolute**; shares `ApiKeyInfo`'s cache group so key changes invalidate the gate too |
 

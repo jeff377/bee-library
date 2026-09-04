@@ -147,7 +147,7 @@ Client receives → LoginResponse (API Type, MessagePack)
 
 - **ApiInputConverter**: maps API Request property values to BO Args (matched by property name) and handles `JsonElement` from HTTP input
 - **ApiOutputConverter**: after execution, automatically maps BO `{Action}Result` to `{Action}Response` via reflection; results cached in `ConcurrentDictionary` (see [ADR-007](adr/adr-007-convention-based-type-resolution.md))
-- **ApiContractRegistry**: type whitelist used by MessagePack Typeless serialization (Encoded / Encrypted formats); unrelated to output mapping
+- The wire body is written by the codec the request declares (`messagepack` or `json`); it plays no part in output mapping. See [ADR-044](adr/adr-044-payload-codec-negotiation.md).
 
 ## ExecFunc Custom Function Pattern
 
@@ -569,10 +569,10 @@ FormApiConnector queries data
   → IFormCommandBuilder (per-DB provider) is used
     → Retrieves FormSchema from IDefineAccess (DI ctor injected)
     → SelectCommandBuilder.Build(tableName, fields, filter, sort)
-      → IFromBuilder: produce FROM clause (with JOIN)
-      → IWhereBuilder: produce WHERE clause from FilterCondition
-      → ISelectBuilder: produce SELECT field list
-      → ISortBuilder: produce ORDER BY clause
+      → FromBuilder: produce FROM clause (with JOIN)
+      → WhereBuilder: produce WHERE clause from FilterCondition
+      → SelectBuilder: produce SELECT field list
+      → SortBuilder: produce ORDER BY clause
     → returns parameterized DbCommandSpec
   → DbAccess.Execute(spec) executes the query
 ```

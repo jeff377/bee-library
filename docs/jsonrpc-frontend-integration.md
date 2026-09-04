@@ -25,6 +25,14 @@ If the frontend can host a .NET runtime, use `Bee.Api.Client` — it gives you t
 contracts, MessagePack throughput, and payload encryption "for free". If the
 frontend is JS, this guide is the path.
 
+Payload encryption is **not** a .NET-only capability. A JS client that wants
+`Encoded` or `Encrypted` declares `"codec": "json"` on the payload envelope and the
+server answers with the same codec — that is what [ADR-044](adr/adr-044-payload-codec-negotiation.md)
+exists for. The cross-language artefacts for that path are
+[`wire-contracts/`](../wire-contracts/README.md) (a TypeScript contract generated from
+the message types) and [`wire-fixtures/`](../wire-fixtures/README.md) (golden body
+samples to check an implementation against).
+
 See [ADR-013: Frontend API connection strategy](adr/adr-013-frontend-api-connection-strategy.md)
 for the broader policy.
 
@@ -57,7 +65,7 @@ Authorization: Bearer <access-token>     // omit for anonymous methods
 ```
 
 - `method` — `<ProgId>.<Action>`, dispatched to the BO by reflection
-- `params.format` — **always `0`** (`PayloadFormat.Plain`) from JS
+- `params.format` — `0` (`PayloadFormat.Plain`) for the plain path this guide covers. It is **not** restricted to that: since [ADR-044](adr/adr-044-payload-codec-negotiation.md) a JS client can also use `Encoded` / `Encrypted` by declaring `"codec": "json"` on the envelope, which needs only JSON, gzip, AES-CBC-HMAC and RSA — all available in the browser
 - `params.value` — your args object, with **camelCase or PascalCase property names**
   (server deserializes case-insensitive)
 - `id` — any client-chosen identifier echoed back in the response

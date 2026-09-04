@@ -37,7 +37,7 @@
 |------|------|------|------|
 | [FormSchema 驅動的資料庫存取](formschema-data-access.zh-TW.md) | 概念 | 中 | Bee.Db 如何以 FormSchema 為單位動態產生 SQL，以及它為何不是 ORM |
 | [API ↔ BO 契約設計](api-bo-contract-design.zh-TW.md) | 概念 | 中 | API 契約三層分離（Contracts / API Type / BO Type）與驅動它的命名慣例 |
-| [專案相依性全景圖](dependency-map.zh-TW.md) | 概念 | 短 | 16 個 `src/` 專案的相依關係，以及維持相依圖無環的規則 |
+| [專案相依性全景圖](dependency-map.zh-TW.md) | 概念 | 短 | `src/` 專案之間的相依關係，以及維持相依圖無環的規則 |
 | [快取機制](caching.zh-TW.md) | 概念 | 長 | 定義快取與資料庫相依快取如何運作：讀取路徑、四種失效信號，以及跨 process / 多節點的通知表機制 |
 
 ## 3. 開發指引
@@ -52,6 +52,8 @@
 | [權限與授權指南](permission-authorization.zh-TW.md) | 指引 | 中 | 兩層授權（動作 gate + record scope）的設定與運作：PermissionModels、`FormField.ScopeRole`、roles/grants 三表、讀取過濾與寫入端權威 re-query；另含部署層授權（管的是整個部署的資產，與公司權限互不授予） |
 | [API 金鑰管理](api-key-management.zh-TW.md) | 指引 | 短 | API 金鑰識別的是「呼叫的應用程式」而非使用者：閘門如何自行啟用、誰能管理金鑰、以及輪替流程 |
 | [JSON-RPC 前端整合指引](jsonrpc-frontend-integration.zh-TW.md) | 指引 | 長 | 從 JavaScript / TypeScript 前端呼叫 JSON-RPC API（前端無 .NET）：wire format、認證流程、TypeScript wrapper |
+| [Wire 合約](../wire-contracts/README.md) | 參考 | 短 | 由訊息型別產生的 TypeScript 合約 —— 非 .NET 用戶端據以實作的對象 |
+| [Wire Fixtures](../wire-fixtures/README.md) | 參考 | 短 | 每個 wire 訊息的 golden body 樣本，供用戶端實作對照驗證 |
 | [DatabaseSettings 與 DbCategorySettings 指引](database-settings-guide.zh-TW.md) | 指引 | 長 | 兩個資料庫相關設定檔的結構、存取方式與運作流程 |
 | [資料庫 Schema 升級](database-schema-upgrade.zh-TW.md) | 指引 | 中 | 將定義變更同步到線上資料庫：diff → plan → execute 管線、ALTER vs 重建、乾跑 |
 

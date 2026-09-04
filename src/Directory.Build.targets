@@ -3,9 +3,11 @@
   <!--
     Dependency boundary for the assemblies every consumer inherits (ADR-038).
 
-    Bee.Base is a dependency of every project in the framework and Bee.Definition has six direct
-    dependents, so anything added here is inherited by every consumer of the framework — including
-    consumers that only want to read definitions. Bee.Api.Contracts is locked for the same reason:
+    Bee.Base is a dependency of every project in the framework and Bee.Definition is the most
+    depended-on project in it, so anything added here is inherited by every consumer of the
+    framework — including consumers that only want to read definitions. (No dependent count here:
+    it drifts and nothing checks it. The csproj files are the authority; docs/dependency-map.md
+    renders them.) Bee.Api.Contracts is locked for the same reason:
     it sits in the transitive closure of every UI head. This target locks each of them to an explicit
     allowlist: adding a reference fails the build rather than silently widening the public
     dependency surface. Widening it is allowed, but it has to be a decision someone made on

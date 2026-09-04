@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: Composition root (DI registration)
-- **Downstream** (dependents): `Bee.Api.AspNetCore`; non-ASP.NET Core hosts (WinForms / WPF / Console / Worker Service / integration tests)
-- **Upstream** (dependencies): `Bee.Api.Core`, `Bee.Business`, `Bee.Db`, `Bee.Repository`, `Bee.ObjectCaching` (which transitively bring in `Bee.Definition`, `Bee.Base`, `Bee.Repository.Abstractions`, `Bee.Api.Contracts`)
+- **Position in the dependency graph**: see [Project Dependency Map](../../docs/dependency-map.md). Not enumerated here — the csproj files are the authority, and a prose copy in every package README drifts with nothing to catch it. These did: `Bee.Hosting` was missing as a dependent from four of them for months after it was extracted.
+- Also consumed by non-ASP.NET Core hosts: WinForms / WPF / Console / Worker Service / integration tests.
 
 A composition root reaches across every layer by definition, so the "API layer must not reference the
 Repository layer" constraint does not apply here. What does apply: **this package holds no data access

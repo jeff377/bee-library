@@ -87,6 +87,8 @@ ApiServiceOptions.RequireWireFrame = true;
 
 > 稽核原本每一軸只有一個部署層開關：異動記錄開或關、檢視記錄開或關，全部表單一起決定。本版補上缺的那層顆粒度——`st_audit_rule` 逐公司、逐表單各一列，於執行期解析——結清 [ADR-027](docs/adr/adr-027-audit-trail.md) 待辦的第一條，以及 [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 決策四中尚未實作的兩條。**沒有規則列的表單沿用部署層預設，所以表不存在或空的時候，行為與先前完全相同。** 維護表單由框架隨附，掛在保留字 progId `AuditRule` 上，而它是唯一一張規則關不掉的表單：能讓自己的軌跡消音的政策，等於自己把漏洞補死。見 [ADR-041](docs/adr/adr-041-per-form-audit-rule.md)。
 
+📄 完整說明與設計脈絡：[docs/changelogs/4.25.0.zh-TW.md](docs/changelogs/4.25.0.zh-TW.md)
+
 ### 破壞性變更
 
 - `Bee.ObjectCaching`：`ICacheContainer` 新增 `CompanyAuditRules` 成員。只對框架**之外**實作該介面的程式碼構成原始碼破壞——與 4.7.0 新增 `DepartmentTree` 成員同一個形狀，也基於同一個理由以 minor 發佈。
@@ -114,6 +116,8 @@ ApiServiceOptions.RequireWireFrame = true;
 ## [4.24.0]
 
 > 本版把 `IAuditLogWriter` 一直同時承載的兩件事拆開。[ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 決策二早就把「系統／錯誤」判成 observability、與業務稽核分離，但寫入面始終只有一個介面：登入／異動／檢視與 API／DB 異常都走它。盤點消費端才看清那條分界其實是乾淨的——七個呼叫點沒有任何一個同時寫兩種，而異常那三個的欄位與參數**早就自己叫 `anomalyWriter`**，等於用命名補一個型別系統沒有表達的區分。**這是原始碼與二進位層級的破壞性變更**：三支公開建構子換參數型別，另有五個欄位由兩個異常記錄型別上提到新的共用基底。
+
+📄 完整說明與設計脈絡：[docs/changelogs/4.24.0.zh-TW.md](docs/changelogs/4.24.0.zh-TW.md)
 
 ### 破壞性變更
 

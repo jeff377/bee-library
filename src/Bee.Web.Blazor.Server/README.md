@@ -9,8 +9,8 @@
 - **Layer**: Web Frontend (Razor Class Library)
 - **Hosting model**: Blazor Server — component logic executes on the ASP.NET Core server; the browser receives DOM diffs via SignalR.
 - **Provider binding**: pairs with `LocalApiProvider` from `Bee.Api.Client` (in-process call, no HTTP round-trip).
-- **Upstream**: `Bee.Api.Client`
-- **Downstream**: ASP.NET Core host applications.
+- **Position in the dependency graph**: see [Project Dependency Map](../../docs/dependency-map.md). Not enumerated here — the csproj files are the authority, and a prose copy in every package README drifts with nothing to catch it. These did: `Bee.Hosting` was missing as a dependent from four of them for months after it was extracted.
+- Consumed by ASP.NET Core host applications.
 
 ## Target Framework
 

@@ -24,6 +24,13 @@
 如果前端能跑 .NET runtime，請用 `Bee.Api.Client` — 你會免費拿到強型別契約、
 MessagePack 效能、payload 加密。如果前端是 JS，走本指引。
 
+payload 加密**不是 .NET 專屬能力**。JS 用戶端要用 `Encoded` 或 `Encrypted`，
+只需在 payload 信封宣告 `"codec": "json"`，伺服端會以同一個 codec 回應 ——
+那正是 [ADR-044](adr/adr-044-payload-codec-negotiation.md) 存在的理由。
+這條路徑的跨語言素材是 [`wire-contracts/`](../wire-contracts/README.md)
+（由訊息型別產生的 TypeScript 合約）與 [`wire-fixtures/`](../wire-fixtures/README.md)
+（可拿來對照自家實作的 golden body 樣本）。
+
 整體策略見 [ADR-013：前端 API 連線策略](adr/adr-013-frontend-api-connection-strategy.md)。
 
 ---
@@ -55,7 +62,7 @@ Authorization: Bearer <access-token>     // anonymous 方法可省略
 ```
 
 - `method` — `<ProgId>.<Action>`，server 用 reflection 派遣到對應 BO
-- `params.format` — JS 端**永遠 `0`**（`PayloadFormat.Plain`）
+- `params.format` — 本指引涵蓋的 plain 路徑用 `0`（`PayloadFormat.Plain`）。**並非只能如此**：自 [ADR-044](adr/adr-044-payload-codec-negotiation.md) 起，JS 用戶端只要在信封宣告 `"codec": "json"` 就能走 `Encoded` / `Encrypted`，所需的 JSON、gzip、AES-CBC-HMAC 與 RSA 瀏覽器全都有
 - `params.value` — args 物件，**camelCase 或 PascalCase 屬性名都可以**
   （server 反序列化 case-insensitive）
 - `id` — client 任選的識別字串，response 會原樣回傳

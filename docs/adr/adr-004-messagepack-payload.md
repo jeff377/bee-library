@@ -7,6 +7,11 @@
 > **註（2026-07-22，superseded-in-part）**：本 ADR「MessagePack 作為 API Payload 格式」的決策維持不變；惟下方「理由 › Schema Evolution」所述的**整數 `[Key]` 鍵策略**，已由 [ADR-030](adr-030-messagepack-name-based-keys.md)（**已採納/已執行**）改為 property-name key（`keyAsPropertyName`）—— 合約、多數 DTO 與非-Union 集合 item 皆改以屬性名為 wire 鍵。**例外**：`[Union]` 多型階層（如 `FilterNode`）與 DataSet wire plumbing 仍維持整數 `[Key]`。新增一般 MessagePack 合約型別時採 `keyAsPropertyName`，新增多型階層時採整數 `[Key]` + `[Union]`。
 >
 > **再註（2026-08-11）**：上一段末兩句的**操作指引已失效，不可照做**。[ADR-036](adr-036-wire-serialization-externalized.md) 之後全 repo 已無 `[MessagePackObject]` / `[Key]` / `[Union]`，定義層不帶任何序列化標註；[ADR-037](adr-037-wire-explicit-registration.md) 再把 wire 綁定改為「一律到 `WireContracts.*.cs` 顯式註冊 formatter」。多型（`FilterNode`）改以具名 `Kind` 判別欄承載，不再用 `[Union]`。<br>本段保留原文以存決策脈絡；**現行做法一律以 ADR-036 / ADR-037 為準**。
+>
+> **三註（2026-09-04，superseded-in-part）**：本 ADR 的「MessagePack 作為 API Payload 格式」
+> 已由 [ADR-044](adr-044-payload-codec-negotiation.md) **部分取代** —— body codec 改為**逐請求協商**，
+> MessagePack 不再是唯一選項，也不再是「挑出來的預設值」而是相容性常數（未宣告 codec 即 MessagePack，
+> 因為所有早於協商機制的用戶端都不宣告且都送 MessagePack）。JSON codec 與之並列。
 
 ## 背景
 

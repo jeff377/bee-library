@@ -7,8 +7,7 @@
 ## Architecture Position
 
 - **Layer**: API Layer (core engine)
-- **Downstream** (dependents): `Bee.Api.AspNetCore`, `Bee.Api.Client`
-- **Upstream** (dependencies): `Bee.Api.Contracts`, `Bee.Definition`
+- **Position in the dependency graph**: see [Project Dependency Map](../../docs/dependency-map.md). Not enumerated here — the csproj files are the authority, and a prose copy in every package README drifts with nothing to catch it. These did: `Bee.Hosting` was missing as a dependent from four of them for months after it was extracted.
 
 ## Target Framework
 
@@ -107,13 +106,13 @@ Bee.Api.Core/
                     ApiAuthorizationContext, ApiAuthorizationResult
   Conversion/       ApiInputConverter, ApiOutputConverter
                     (.NET object-model conversion: API type <-> BO type)
-  Json/             WireValueJsonConverter, FilterNodeJsonConverter
+  Json/             WireValueJsonConverter
                     (JSON body codec's discriminated envelope for `object` members)
   JsonRpc/          JsonRpcExecutor, JsonRpcRequest, JsonRpcResponse, JsonRpcError,
                     JsonRpcException, ApiPayload, ApiPayloadConverter
   Messages/         ApiMessageBase, ApiRequest, ApiResponse,
                     ExecFuncRequest, ExecFuncResponse,
-                    ApiHeaders, PayloadFormat, ApiErrorInfo, ApiCallContext
+                    ApiHeaders, PayloadFormat, ApiCallContext
     System/         Built-in system-level request/response types
                     (Login, Ping, CreateSession, GetDefine, SaveDefine,
                     GetPackage, CheckPackageUpdate, GetCommonConfiguration)

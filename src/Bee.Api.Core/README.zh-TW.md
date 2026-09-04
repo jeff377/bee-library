@@ -7,8 +7,7 @@
 ## 架構定位
 
 - **層級**：API 層（核心引擎）
-- **下游**（依賴此專案）：`Bee.Api.AspNetCore`、`Bee.Api.Client`
-- **上游**（此專案依賴）：`Bee.Api.Contracts`、`Bee.Definition`
+- **在相依圖中的位置**：見[專案相依性全景圖](../../docs/dependency-map.zh-TW.md)。**此處不逐一列出** —— 權威來源是 csproj，而散落在每份套件 README 的散文拷貝會漂且無人察覺。它們確實漂了：`Bee.Hosting` 抽出後，有四份 README 的下游數個月都沒把它補上。
 
 ## 目標框架
 
@@ -103,13 +102,13 @@ Bee.Api.Core/
                     ApiAuthorizationContext、ApiAuthorizationResult
   Conversion/       ApiInputConverter、ApiOutputConverter
                     （.NET 物件模型轉換：API 型別 ↔ BO 型別）
-  Json/             WireValueJsonConverter、FilterNodeJsonConverter
+  Json/             WireValueJsonConverter
                     （JSON body codec 對 `object` 成員的判別式封套）
   JsonRpc/          JsonRpcExecutor、JsonRpcRequest、JsonRpcResponse、JsonRpcError、
                     JsonRpcException、ApiPayload、ApiPayloadConverter
   Messages/         ApiMessageBase、ApiRequest、ApiResponse、
                     ExecFuncRequest、ExecFuncResponse、
-                    ApiHeaders、PayloadFormat、ApiErrorInfo、ApiCallContext
+                    ApiHeaders、PayloadFormat、ApiCallContext
     System/         內建系統級請求/回應型別
                     （Login、Ping、CreateSession、GetDefine、SaveDefine、
                     GetPackage、CheckPackageUpdate、GetCommonConfiguration）

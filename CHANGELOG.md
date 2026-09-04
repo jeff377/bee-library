@@ -87,6 +87,8 @@ ApiServiceOptions.RequireWireFrame = true;
 
 > Auditing had one switch per axis for the whole deployment: change logging on or off, access logging on or off, every form at once. This release adds the granularity that was missing — `st_audit_rule` holds one row per form per company, resolved at run time — closing the first open item on [ADR-027](docs/adr/adr-027-audit-trail.md) and the two unimplemented requirements of [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) decision 4. **A form with no row inherits the deployment default, so an absent or empty table reproduces the previous behaviour exactly.** The maintenance form ships with the framework as the reserved `AuditRule` progId, and it is the one form the rules cannot switch off: a policy able to silence its own trail would close the loophole on itself. See [ADR-041](docs/adr/adr-041-per-form-audit-rule.md).
 
+📄 Full notes and design context: [docs/changelogs/4.25.0.md](docs/changelogs/4.25.0.md)
+
 ### Breaking changes
 
 - `Bee.ObjectCaching`: `ICacheContainer` gains a `CompanyAuditRules` member. Source-breaking only for code **outside** the framework that implements the interface — the same shape as the `DepartmentTree` member added in 4.7.0, and it ships as a minor for the same reason.
@@ -114,6 +116,8 @@ Nothing to do. With `st_audit_rule` absent or empty every form inherits the depl
 ## [4.24.0]
 
 > This release splits the two things `IAuditLogWriter` had always carried at once. [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) decision 2 had already classified "system / error" as observability, separate from the business audit trail — but the write side still had a single interface, used by login / change / access and by API / DB anomalies alike. Taking stock of the call sites showed the dividing line was already clean: none of the seven writes both, and the three anomaly ones had **long since named their fields and parameters `anomalyWriter`** — naming standing in for a distinction the type system did not express. **This is a source- and binary-breaking change**: three public constructors change a parameter type, and five properties move from the two anomaly entry types up to a new shared base.
+
+📄 Full notes and design context: [docs/changelogs/4.24.0.md](docs/changelogs/4.24.0.md)
 
 ### Breaking changes
 

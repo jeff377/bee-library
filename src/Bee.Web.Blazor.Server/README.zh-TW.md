@@ -9,8 +9,8 @@
 - **層級**：Web 前端（Razor Class Library）
 - **Hosting 模式**：Blazor Server —— 元件邏輯在 ASP.NET Core 伺服端執行，瀏覽器透過 SignalR 接收 DOM diff。
 - **Provider 配對**：搭配 `Bee.Api.Client` 中的 `LocalApiProvider`（進程內呼叫，無 HTTP round-trip）。
-- **上游相依**：`Bee.Api.Client`
-- **下游消費**：ASP.NET Core 宿主應用程式。
+- **在相依圖中的位置**：見[專案相依性全景圖](../../docs/dependency-map.zh-TW.md)。**此處不逐一列出** —— 權威來源是 csproj，而散落在每份套件 README 的散文拷貝會漂且無人察覺。它們確實漂了：`Bee.Hosting` 抽出後，有四份 README 的下游數個月都沒把它補上。
+- 由 ASP.NET Core 宿主應用程式消費。
 
 ## 目標框架
 

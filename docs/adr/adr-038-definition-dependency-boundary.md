@@ -77,7 +77,7 @@ ADR-036 的判準只說「外部套件相依」，未定義界線。本 ADR 補�
 
 | 閘門 | 位置 | 涵蓋範圍 |
 |------|------|---------|
-| **建置期鎖** | `src/Directory.Build.targets`（診斷碼 `BEE9001`） | `Bee.Base` / `Bee.Definition` **直接**宣告的 `PackageReference` / `ProjectReference` |
+| **建置期鎖** | `src/Directory.Build.targets`（診斷碼 `BEE9001`） | 受鎖組件**直接**宣告的 `PackageReference` / `ProjectReference`（清單見該檔的 `BeeEnforceDependencyBoundary` 條件，此處不複寫） |
 | **傳遞閉包測試** | `tests/Bee.Definition.UnitTests/DefinitionDependencyGateTests.cs` | `Bee.Definition` 的**整個傳遞相依閉包** |
 
 兩道都需要，因為各自看不到對方那一半：建置期鎖看不到「經由某個 `ProjectReference`

@@ -7,8 +7,7 @@
 ## 架構定位
 
 - **層級**：資料存取層（基礎設施）
-- **下游**（依賴此套件）：`Bee.Repository`
-- **上游**（此套件依賴）：`Bee.Definition`
+- **在相依圖中的位置**：見[專案相依性全景圖](../../docs/dependency-map.zh-TW.md)。**此處不逐一列出** —— 權威來源是 csproj，而散落在每份套件 README 的散文拷貝會漂且無人察覺。它們確實漂了：`Bee.Hosting` 抽出後，有四份 README 的下游數個月都沒把它補上。
 
 ## 目標框架
 
@@ -34,7 +33,7 @@
 > Bee.Db 由 **`FormSchema` 驅動**：以 `FormSchema` 為單位描述業務實體，由查詢上下文沿 `FormSchema` 鏈遞迴展開 JOIN，產生與 ORM 不同的「表單級關聯」資料存取體驗。詳見 [FormSchema 驅動的資料庫存取](../../docs/formschema-data-access.zh-TW.md)。
 
 - `SelectCommandBuilder` -- 根據 `FormSchema` 定義建構 SELECT 命令
-- `ISelectBuilder` / `IFromBuilder` / `IWhereBuilder` / `ISortBuilder` -- 可組合的建構器介面，分別負責 SELECT、FROM、WHERE 與 ORDER BY 子句
+- `SelectBuilder` / `FromBuilder` / `WhereBuilder` / `SortBuilder` / `LimitBuilder` -- 可組合的建構器，分別負責 SELECT、FROM、WHERE、ORDER BY 與筆數限制子句
 - `SelectContext` -- 查詢上下文，追蹤欄位映射與資料表聯結
 - `WhereBuilder` -- 篩選條件轉 SQL，產出參數化結果
 
@@ -155,7 +154,7 @@ Host=localhost;Port=5432;Database={@DbName};Username={@UserId};Password={@Passwo
 
 ## 設計慣例
 
-- **Builder Pattern** -- 透過 `ISelectBuilder`、`IFromBuilder`、`IWhereBuilder`、`ISortBuilder` 介面組合查詢，各自負責單一 SQL 子句。
+- **Builder Pattern** -- 透過 `SelectBuilder`、`FromBuilder`、`WhereBuilder`、`SortBuilder` 組合查詢，各自負責單一 SQL 子句。它們是具象類別：對應的單一實作介面已移除，因為沒有任何呼叫端以介面型別持有它們。
 - **Specification Pattern** -- `DbCommandSpec`、`DbBatchSpec`、`DataTableUpdateSpec` 將執行意圖封裝為資料，解耦命令定義與執行。
 - **IL Emit 映射** -- `ILMapper<T>` 於執行階段產生 `DynamicMethod` 委派，實現零反射 DataReader 映射；委派依查詢結構快取。
 - **佔位符自動轉換** -- `DbCommandSpec` 接受位置型（`{0}`、`{1}`）與具名（`{Name}`）佔位符，自動轉換為提供者專屬參數語法（`@p0`、`:p0`）。
@@ -173,9 +172,9 @@ Bee.Db/
                    # IFormCommandBuilder，
                    # SelectCommandBuilder / DeleteCommandBuilder，
                    # （insert / update 改走 DataAdapter，見 ADR-024）
-                   # ISelectBuilder/SelectBuilder、IFromBuilder/FromBuilder、
-                   # IWhereBuilder/WhereBuilder/InternalWhereBuilder/WhereBuildResult、
-                   # ISortBuilder/SortBuilder、
+                   # SelectBuilder、FromBuilder、LimitBuilder、
+                   # WhereBuilder/InternalWhereBuilder/WhereBuildResult、
+                   # SortBuilder、
                    # SelectContext、SelectContextBuilder、
                    # QueryFieldMapping、QueryFieldMappingCollection、
                    # TableJoin、TableJoinCollection、

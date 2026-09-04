@@ -282,7 +282,7 @@ API Request / Response and BO Args / Result types must follow naming conventions
 | Contract (`Bee.Api.Contracts`) | `I{Action}Request` | `I{Action}Response` |
 
 - Types deviating from the naming convention will not be auto-converted; BO return values will pass through to the client and cause type errors
-- `ApiContractRegistry` is still used as a MessagePack Typeless serialization whitelist for Encoded / Encrypted formats, but **manual `Register` calls are no longer required** to set up response mapping
+- Response mapping needs **no manual registration**: it is resolved by the naming convention above. The registry that once required `Register` calls is gone, and so is the Typeless serialization it whitelisted for — see [ADR-007](adr/adr-007-convention-based-type-resolution.md) and [ADR-037](adr/adr-037-wire-explicit-registration.md)
 
 ## Account Security Constraints
 

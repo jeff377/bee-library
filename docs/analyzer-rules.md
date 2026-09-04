@@ -57,7 +57,7 @@ build time, where the message can name both the cause and the fix.
 
 | ID | Severity | Rule |
 |----|----------|------|
-| BEE9001 | Error | `Bee.Base` and `Bee.Definition` may only reference what their allowlist names |
+| BEE9001 | Error | A locked assembly may only reference what its allowlist names |
 | BEE9002 | Error | `Version`, `AssemblyVersion` and `FileVersion` must stay in step |
 | BEE9003 | Error | `BeeDefinitionFilesGlob` matched no files while `BeeRequireDefinitionFiles` is set |
 
@@ -65,8 +65,10 @@ build time, where the message can name both the cause and the fix.
 has one home. BEE9001 and BEE9002 live in `src/Directory.Build.targets` and are framework-internal —
 a consumer project cannot trigger them. BEE9003 ships in the package and is opt-in; see
 [Checking what the glob matched](#checking-what-the-glob-matched). BEE9001 exists because anything
-added to the two lowest-level assemblies is inherited by every consumer of the framework
-([ADR-038](adr/adr-038-definition-dependency-boundary.md)); BEE9002 exists because a release that
+added to the assemblies at the bottom of the dependency graph is inherited by every consumer of the
+framework ([ADR-038](adr/adr-038-definition-dependency-boundary.md)). Which assemblies are locked is
+not listed here — `src/Directory.Build.targets` declares them and nothing would catch this copy
+drifting; it already did, staying at two after a third was added; BEE9002 exists because a release that
 bumps only `Version` ships packages whose assemblies still claim the previous version, and a
 published package cannot be recalled.
 

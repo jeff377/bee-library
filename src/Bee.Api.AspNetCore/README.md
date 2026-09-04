@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: API Layer (hosting)
-- **Downstream** (dependents): Applications (user inherits the controller)
-- **Upstream** (dependencies): `Bee.Hosting` (which transitively brings in `Bee.Api.Core`)
+- **Position in the dependency graph**: see [Project Dependency Map](../../docs/dependency-map.md). Not enumerated here — the csproj files are the authority, and a prose copy in every package README drifts with nothing to catch it. These did: `Bee.Hosting` was missing as a dependent from four of them for months after it was extracted.
+- Consumed by application code: the user inherits the controller.
 
 ## Target Frameworks
 

@@ -54,15 +54,17 @@ Bee.NET 隨套件提供 Roslyn analyzer，把框架慣例變成建置期診斷�
 
 | ID | 嚴重度 | 規則 |
 |----|--------|------|
-| BEE9001 | Error | `Bee.Base` 與 `Bee.Definition` 只能參考允許清單列出的項目 |
+| BEE9001 | Error | 受鎖組件只能參考其允許清單列出的項目 |
 | BEE9002 | Error | `Version`、`AssemblyVersion`、`FileVersion` 必須同步 |
 | BEE9003 | Error | 設了 `BeeRequireDefinitionFiles` 但 `BeeDefinitionFilesGlob` 比對不到任何檔案 |
 
 **BEE9xxx 都不是 Roslyn analyzer**，而是 MSBuild target；列在此處是為了讓編號有一個統一的歸屬。
 BEE9001 與 BEE9002 位於 `src/Directory.Build.targets`，屬框架內部規則，消費端專案不會觸發；
 BEE9003 隨套件發布且為 opt-in，見[確認 glob 實際比對到什麼](#確認-glob-實際比對到什麼)。
-BEE9001 的存在理由是：加在最底層那兩個組件上的任何東西，都會被框架的每一個消費者繼承
-（[ADR-038](adr/adr-038-definition-dependency-boundary.md)）。BEE9002 的存在理由是：
+BEE9001 的存在理由是：加在相依圖最底層那些組件上的任何東西，都會被框架的每一個消費者繼承
+（[ADR-038](adr/adr-038-definition-dependency-boundary.md)）。**受鎖組件是哪幾個不寫在這裡**——
+由 `src/Directory.Build.targets` 宣告，而這份拷貝漂掉不會有任何機制發現；它已經漂過一次，
+在第三個組件加入之後仍停在「兩個」。BEE9002 的存在理由是：
 只 bump `Version` 的發版會送出「組件仍宣稱前一版」的套件，而已發布的套件無法回收。
 
 上方表格中有三處標為框架內部規則——BEE3002 只在框架自身的 `Bee.Definition` 組件內執行，

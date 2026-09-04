@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: UI Layer (shared client foundation)
-- **Downstream** (dependents): `Bee.UI.Avalonia` (the Blazor family does **not** consume `Bee.UI.Core` -- see [ADR-013](../../docs/adr/adr-013-frontend-api-connection-strategy.md))
-- **Upstream** (dependencies): `Bee.Api.Client`
+- **Position in the dependency graph**: see [Project Dependency Map](../../docs/dependency-map.md). Not enumerated here — the csproj files are the authority, and a prose copy in every package README drifts with nothing to catch it. These did: `Bee.Hosting` was missing as a dependent from four of them for months after it was extracted.
+- The Blazor family does **not** consume `Bee.UI.Core` — see [ADR-013](../../docs/adr/adr-013-frontend-api-connection-strategy.md).
 
 ## Target Framework
 

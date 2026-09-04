@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: Data Access Layer (implementation)
-- **Downstream** (dependents): Applications (repositories resolved via DI-registered factories)
-- **Upstream** (dependencies): `Bee.Db`, `Bee.Repository.Abstractions`
+- **Position in the dependency graph**: see [Project Dependency Map](../../docs/dependency-map.md). Not enumerated here — the csproj files are the authority, and a prose copy in every package README drifts with nothing to catch it. These did: `Bee.Hosting` was missing as a dependent from four of them for months after it was extracted.
+- Consumed by application code; repositories are resolved through DI-registered factories.
 
 ## Target Framework
 

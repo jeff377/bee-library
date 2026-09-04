@@ -7,8 +7,7 @@
 ## Architecture Position
 
 - **Layer**: Infrastructure (bottom layer of the Bee.NET framework)
-- **Downstream** (dependents): Almost all other `Bee.*` projects (`Bee.Definition`, `Bee.Business`, `Bee.Api.Core`, etc.)
-- **Upstream** (dependencies): None (uses `System.Text.Json` built into the runtime)
+- **Position in the dependency graph**: see [Project Dependency Map](../../docs/dependency-map.md). Not enumerated here — the csproj files are the authority, and a prose copy in every package README drifts with nothing to catch it. These did: `Bee.Hosting` was missing as a dependent from four of them for months after it was extracted.
 
 ## Target Framework
 
@@ -59,7 +58,7 @@
 ### Tracing & Diagnostics
 
 - `Tracer` / `TraceContext` -- structured diagnostic tracing
-- `TraceListener` / `ITraceWriter` -- pluggable trace output targets
+- `TraceDispatcher` / `ITraceWriter` -- pluggable trace output targets
 
 ### Expression Abstraction
 
@@ -104,7 +103,7 @@ Bee.Base/
   Expressions/         # IExpressionEvaluator, ExpressionPolicy, ExpressionEvaluationException
   Security/            # AES, RSA, PBKDF2, file hash utilities
   Serialization/       # JSON/XML serialization, GZip compression
-  Tracing/             # Tracer, TraceContext, TraceListener, ITraceWriter
+  Tracing/             # Tracer, TraceContext, TraceDispatcher, ITraceListener, ITraceWriter
   *.cs (root)          # ValueUtilities, StringExtensions, StringUtilities, DateTimeExtensions, FileUtilities,
                        # IPValidator, SysInfo, IKeyObject, etc.
 ```

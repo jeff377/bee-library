@@ -142,7 +142,7 @@ Client 接收 → LoginResponse (API Type, MessagePack)
 
 - **ApiInputConverter**：將 API Request 的屬性值對應到 BO Args（依屬性名稱匹配），並處理 HTTP 傳入的 `JsonElement`
 - **ApiOutputConverter**：執行後將 BO `{Action}Result` 以反射自動對應到 `{Action}Response`，結果以 `ConcurrentDictionary` 快取（詳見 [ADR-007](adr/adr-007-convention-based-type-resolution.md)）
-- **ApiContractRegistry**：供 MessagePack Typeless 序列化（Encoded / Encrypted 格式）使用的型別白名單，與輸出映射無關
+- wire body 由該次請求宣告的 codec（`messagepack` 或 `json`）寫出，與輸出映射無關。見 [ADR-044](adr/adr-044-payload-codec-negotiation.md)。
 
 ## ExecFunc 自訂函式模式
 
@@ -547,10 +547,10 @@ FormApiConnector 查詢資料
   → SqlFormCommandBuilder(progId)
     → 從 IDefineAccess（DI ctor 注入）取得 FormSchema
     → SelectCommandBuilder.Build(tableName, fields, filter, sort)
-      → IFromBuilder: 產生 FROM 子句（含 JOIN）
-      → IWhereBuilder: 從 FilterCondition 產生 WHERE 子句
-      → ISelectBuilder: 產生 SELECT 欄位清單
-      → ISortBuilder: 產生 ORDER BY 子句
+      → FromBuilder: 產生 FROM 子句（含 JOIN）
+      → WhereBuilder: 從 FilterCondition 產生 WHERE 子句
+      → SelectBuilder: 產生 SELECT 欄位清單
+      → SortBuilder: 產生 ORDER BY 子句
     → 回傳參數化的 DbCommandSpec
   → DbAccess.Execute(spec) 執行查詢
 ```

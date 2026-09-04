@@ -18,6 +18,7 @@ Bee.NET 定義檔（DefinePath 下的 9 種 XML）的桌面維護工具。Avalon
 | **DbCategorySettings**（單例） | [DbCategorySettingsDocumentView](Views/DbCategorySettingsDocumentView.axaml) | Categories → Tables 兩層；驗證重複 Id / TableName |
 | **ProgramSettings**（單例） | [ProgramSettingsDocumentView](Views/ProgramSettingsDocumentView.axaml) | Categories → Programs 兩層；ProgramItem 含 ProgId / DisplayName / BusinessObject |
 | **PermissionModels**（單例） | [PermissionModelsDocumentView](Views/PermissionModelsDocumentView.axaml) | Models → Rules 兩層；Action / Scope 為下拉；含 `PermissionModels.Validate()` 整合 |
+| **MenuSettings**（單例） | [MenuSettingsDocumentView](Views/MenuSettingsDocumentView.axaml) | MenuFolder → MenuEntry 樹狀結構；資料夾與項目各自的屬性面板 |
 | **DatabaseSettings**（單例） | [DatabaseSettingsDocumentView](Views/DatabaseSettingsDocumentView.axaml) | Servers + Items 兩個 group；含 **連線字串貼上拆解**（SQL Server / PostgreSQL / MySQL / Oracle） + 4 類靜態驗證 |
 | **FormSchema**（多份） | [FormSchemaDocumentView](Views/FormSchemaDocumentView.axaml) | Tables → Fields → Relation / Lookup 對應；RelationProgId 來自方案內其他 FormSchema 候選。schema 節點右鍵可**產生 FormLayout** |
 | **TableSchema**（多份） | [TableSchemaDocumentView](Views/TableSchemaDocumentView.axaml) | Fields + Indexes 兩個 group；IndexField 含 SortDirection；驗證 PrimaryKey 唯一性 |
@@ -38,7 +39,7 @@ dotnet run --project tools/DefineEditor/Bee.DefineEditor.csproj --configuration 
 
 ### Headless smoke
 
-`--smoke <FormSchema-fixture-path>` 模式跑全部 round-trip（FormSchema + 8 個 multi-instance editor + ConnectionStringParser），不啟動視窗：
+`--smoke <FormSchema-fixture-path>` 模式跑全部 round-trip，不啟動視窗。**實際跑哪幾個不列在這裡**（那會漂）—— 權威來源是 `Smoke.Run`，它逐一呼叫各個 `Run*Smoke`：
 
 ```bash
 dotnet run --project tools/DefineEditor/Bee.DefineEditor.csproj --configuration Debug \

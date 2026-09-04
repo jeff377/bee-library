@@ -269,7 +269,7 @@ API Request/Response 與 BO Args/Result 型別必須遵守命名慣例，`ApiOut
 | Contract（`Bee.Api.Contracts`） | `I{Action}Request` | `I{Action}Response` |
 
 - 偏離命名慣例的型別將無法自動轉換，BO 回傳值會直接流至用戶端造成型別錯誤
-- `ApiContractRegistry` 仍用於 Encoded / Encrypted 格式的 MessagePack Typeless 序列化白名單，但**不再需要手動呼叫 `Register`** 來建立回應映射
+- 回應映射**不需任何手動註冊**，由上表的命名慣例解析。當年需要 `Register` 的那個註冊表已移除，它所白名單的 Typeless 序列化也已移除 —— 見 [ADR-007](adr/adr-007-convention-based-type-resolution.md) 與 [ADR-037](adr/adr-037-wire-explicit-registration.md)
 
 ## 帳號安全限制
 
