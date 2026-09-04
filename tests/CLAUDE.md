@@ -149,10 +149,23 @@ xUnit 預設 collection-level parallel：**不同 test class 平行執行**，�
 | `ProcessWideStateCollection.Name` | `BEE_MASTER_KEY` 環境變數、`GlobalEvents`、測試 body 內建立的 DI 容器 |
 | `ApiServiceOptionsState` | `ApiServiceOptions.*` |
 
-**每個名稱都有對應的 `CollectionDefinition`，零孤兒。** 另有數個組件改以
-`DisableTestParallelization` 整組序列化（`Bee.Api.Client` / `Bee.Api.Core` /
-`Bee.Definition` / `Bee.ObjectCaching` / `Bee.UI.Avalonia`），那比逐類別掛 `[Collection]`
-可靠 —— 讀取端會隨新測試增加，逐一補必然遺漏。
+**每個名稱都有對應的 `CollectionDefinition`，零孤兒。**
+
+另有數個組件改以 `DisableTestParallelization` **整組**序列化，那比逐類別掛 `[Collection]`
+可靠 —— 讀取端會隨新測試增加，而「新增測試時記得補 `[Collection]`」這種要求必然遺漏，
+且漏掉時**看起來有序列化、實際沒有**，不會有任何編譯或測試訊號。
+
+**是哪幾個組件不寫在這裡**（那會漂），要知道就跑：
+
+```bash
+grep -rn 'DisableTestParallelization *= *true' tests/ --include='*.cs'
+```
+
+> **這一段本身漂過一次**（2026-09-04 修正）：原文列了五個組件名，其中 `Bee.Definition`
+> 當時**沒有**該屬性，走的是只涵蓋三個類別的 `ProcessWideStateCollection`。危害在下半句
+> ——文件宣稱它有**較強**的保護，實際只有它自己承認會漏的那道。修法是兩件事：
+> 給 `Bee.Definition.UnitTests` 補上該屬性讓宣稱成真（實測成本 +0.2–0.4 秒 / 1,086 筆），
+> 以及**把那份清單換成上面那道指令** —— 清單沒有任何機制會發現它漂了。
 
 > **新增 collection 時用 `const` 而非字串字面值**（如 `ProcessWideStateCollection.Name`）：
 > 打錯字的字面值會讓 xUnit 建一個沒人共用的隱式分組，**看起來有序列化、實際沒有**，

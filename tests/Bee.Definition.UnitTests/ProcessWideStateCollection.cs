@@ -19,8 +19,15 @@ namespace Bee.Definition.UnitTests
     /// <para>
     /// WARNING: 判準是「**碰到**同一份 process-wide 狀態」，不是「修改它」。讀取端落在寫入端的
     /// try/finally 視窗裡，行為一樣會錯 —— 這正是本 repo 先前踩過的形狀（見
-    /// <c>rules/testing.md</c>）。新增會建立 DI 容器、或會動環境變數／全域事件的測試類別時，
-    /// 一併加入這個 collection。
+    /// <c>rules/testing.md</c>）。
+    /// </para>
+    /// <para>
+    /// NOTE: 本 collection 自 2026-09-04 起是**冗餘**的 —— 整個組件已由 <c>AssemblyInfo.cs</c> 的
+    /// <c>DisableTestParallelization</c> 序列化，**新增測試類別不必再記得加進來**。保留它是作為
+    /// 「哪些類別會碰 process-wide 狀態、以及為什麼」的紀錄（與 <c>Bee.Api.Core</c> 的
+    /// <c>ApiServiceOptionsStateCollection</c> 同一個做法）。<b>不要因為它冗餘就移除
+    /// <c>DisableTestParallelization</c> 換回它</b> —— 那等於把結構性保障換回「記得補」，
+    /// 而那個要求必然遺漏，且漏掉時沒有任何訊號。
     /// </para>
     /// </remarks>
     [CollectionDefinition(Name)]
