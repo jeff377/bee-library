@@ -29,6 +29,15 @@
             "defaultValue": null
           },
           {
+            "name": "ref_no",
+            "type": "Long",
+            "allowNull": true,
+            "readOnly": false,
+            "maxLength": -1,
+            "caption": "ref_no",
+            "defaultValue": null
+          },
+          {
             "name": "hired_at",
             "type": "DateTime",
             "allowNull": true,
@@ -55,7 +64,8 @@
             "state": "Unchanged",
             "current": {
               "sys_id": "E001",
-              "amount": 1234.56,
+              "amount": "79228162514264337593543950335",
+              "ref_no": "9007199254740993",
               "hired_at": "2026-03-14T15:09:26.535",
               "row_guid": "6f9619ff-8b86-d011-b42d-00c04fc964ff"
             }
@@ -64,13 +74,15 @@
             "state": "Modified",
             "current": {
               "sys_id": "E002",
-              "amount": 99.99,
+              "amount": "0.0000000000000000000000000001",
+              "ref_no": "1",
               "hired_at": "2026-03-14T15:09:26.535",
               "row_guid": "6f9619ff-8b86-d011-b42d-00c04fc964ff"
             },
             "original": {
               "sys_id": "E002",
-              "amount": 10,
+              "amount": "10",
+              "ref_no": "1",
               "hired_at": "2026-03-14T15:09:26.535",
               "row_guid": "6f9619ff-8b86-d011-b42d-00c04fc964ff"
             }
@@ -79,7 +91,8 @@
             "state": "Added",
             "current": {
               "sys_id": "E003",
-              "amount": 7,
+              "amount": "7",
+              "ref_no": "9223372036854775807",
               "hired_at": "2026-03-14T15:09:26.535",
               "row_guid": "6f9619ff-8b86-d011-b42d-00c04fc964ff"
             }

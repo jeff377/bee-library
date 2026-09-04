@@ -1,4 +1,5 @@
 using System.Data;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Bee.Base.Data;
@@ -42,10 +43,7 @@ namespace Bee.Base.Serialization
                 writer.WriteNumber("maxLength", col.MaxLength);
                 writer.WriteString("caption", col.Caption);
                 writer.WritePropertyName("defaultValue");
-                if (col.DefaultValue is DBNull || col.DefaultValue == null)
-                    writer.WriteNullValue();
-                else
-                    JsonSerializer.Serialize(writer, col.DefaultValue, col.DefaultValue.GetType(), options);
+                WriteCellValue(writer, col.DefaultValue, options);
                 writer.WriteEndObject();
             }
             writer.WriteEndArray();
@@ -113,13 +111,58 @@ namespace Bee.Base.Serialization
             foreach (DataColumn col in columns)
             {
                 writer.WritePropertyName(col.ColumnName);
-                var val = row[col, version];
-                if (val is DBNull)
-                    writer.WriteNullValue();
-                else
-                    JsonSerializer.Serialize(writer, val, val.GetType(), options);
+                WriteCellValue(writer, row[col, version], options);
             }
             writer.WriteEndObject();
+        }
+
+        /// <summary>
+        /// Writes one cell (or a column's default value).
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        /// <param name="value">The value to write; <c>null</c> and <see cref="DBNull"/> both write JSON null.</param>
+        /// <param name="options">The serializer options, used for every other type.</param>
+        /// <remarks>
+        /// <para>
+        /// IMPORTANT: <see cref="decimal"/>, <see cref="long"/> and <see cref="ulong"/> are written as
+        /// JSON strings, not numbers — the same rule the object envelope applies, and for the same
+        /// reason. A JSON number is a double to every JavaScript reader, which can hold neither a
+        /// decimal's precision nor an integer past 2^53, so writing them unquoted corrupts money and
+        /// identifiers before the client's own code ever sees the value. `JSON.parse` has already
+        /// done the damage by then, and the column's `type` in the metadata cannot undo it.
+        /// </para>
+        /// <para>
+        /// This used to be the half the rule did not cover: the envelope quoted them while cells —
+        /// where an ERP's money actually travels — did not. The two fixtures sat next to each other
+        /// in `wire-fixtures/bodies/` writing the same type two different ways.
+        /// </para>
+        /// <para>
+        /// A column's `defaultValue` shares this path for consistency. In practice it is never one of
+        /// the quoted types: `FieldDbTypeExtensions.GetDefaultValue` yields `0` (an <see cref="int"/>)
+        /// for the numeric field types, so the reader — which has no column context there — is not
+        /// asked to parse a quoted number back.
+        /// </para>
+        /// </remarks>
+        private static void WriteCellValue(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
+        {
+            switch (value)
+            {
+                case null or DBNull:
+                    writer.WriteNullValue();
+                    break;
+                case decimal d:
+                    writer.WriteStringValue(d.ToString(CultureInfo.InvariantCulture));
+                    break;
+                case long l:
+                    writer.WriteStringValue(l.ToString(CultureInfo.InvariantCulture));
+                    break;
+                case ulong u:
+                    writer.WriteStringValue(u.ToString(CultureInfo.InvariantCulture));
+                    break;
+                default:
+                    JsonSerializer.Serialize(writer, value, value.GetType(), options);
+                    break;
+            }
         }
 
         #endregion

@@ -57,12 +57,16 @@ These are the places where a plausible-looking implementation is silently wrong:
 
 - **`object`-typed members carry a discriminator**: `[code, value]`, where the code is the
   framework's wire value code. A bare value is not accepted.
-- **`decimal`, `int64` and `uint64` are JSON strings**, not numbers. A JSON number is a double to
-  every JavaScript reader, which holds neither a decimal's precision nor an integer past 2^53.
+- **`decimal`, `int64` and `uint64` are JSON strings**, not numbers — in an `object`-typed member
+  **and in a `DataTable` cell alike**. A JSON number is a double to every JavaScript reader, which
+  holds neither a decimal's precision nor an integer past 2^53, and `JSON.parse` has already done
+  the damage before your own code sees the value. The `datatable` fixture uses `decimal.MaxValue`
+  and 2^53+1 for exactly this reason: read them as numbers and they will not match.
 - **A null `object`-typed member is absent**, not written as `null`. Treat a missing property as
   null.
 - **`DataTable` cells carry no discriminator** — their types come from the column metadata in the
-  same document, so the table shape is identical to a Plain payload's.
+  same document, so the table shape is identical to a Plain payload's. That is what makes the
+  quoting rule above load-bearing here: a cell has nothing else to say "this is a decimal".
 - **Enums travel as strings** (`"GreaterThan"`, `"Desc"`).
 - **Date and time values are round-trip formatted** and the wire is UTC in both directions. Applying
   the user's time zone is the client's job, and nothing on the server checks it — get it wrong and

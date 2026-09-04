@@ -105,22 +105,32 @@ namespace Bee.Api.Core.UnitTests
             yield return ("null", null!, "A null object-typed member is omitted from the JSON entirely - the property is absent, not written as null. A reader must treat a missing property as null.");
         }
 
+        /// <summary>
+        /// 樣本用的 master 表。
+        /// </summary>
+        /// <remarks>
+        /// <c>amount</c> 與 <c>ref_no</c> 刻意用<b>存不進 double</b> 的值：整份樣本的作用是讓另一個
+        /// 語言的 client 對照自己讀寫得對，而 <c>1234.56</c> 這種值就算被 <c>JSON.parse</c> 轉成 double
+        /// 也剛好看不出差別 —— 樣本會示範不出它要示範的規則。用 <c>decimal.MaxValue</c> 與
+        /// 2^53+1，讀取端只要把它們當數字處理就會立刻對不上。
+        /// </remarks>
         private static DataTable BuildTable()
         {
             var table = new DataTable("Employee");
             table.Columns.Add("sys_id", typeof(string));
             table.Columns.Add("amount", typeof(decimal));
+            table.Columns.Add("ref_no", typeof(long));
             table.Columns.Add("hired_at", typeof(DateTime));
             table.Columns.Add("row_guid", typeof(Guid));
             table.PrimaryKey = [table.Columns["sys_id"]!];
 
-            var unchanged = table.Rows.Add("E001", 1234.56m, s_fixedUtc, s_fixedGuid);
-            var modified = table.Rows.Add("E002", 10m, s_fixedUtc, s_fixedGuid);
+            var unchanged = table.Rows.Add("E001", 79228162514264337593543950335m, 9007199254740993L, s_fixedUtc, s_fixedGuid);
+            var modified = table.Rows.Add("E002", 10m, 1L, s_fixedUtc, s_fixedGuid);
             table.AcceptChanges();
             _ = unchanged;
-            modified["amount"] = 99.99m;   // 造出 Modified：current 與 original 都要上線
+            modified["amount"] = 0.0000000000000000000000000001m;   // 造出 Modified：current 與 original 都要上線
 
-            table.Rows.Add("E003", 7m, s_fixedUtc, s_fixedGuid);  // Added
+            table.Rows.Add("E003", 7m, long.MaxValue, s_fixedUtc, s_fixedGuid);  // Added
             return table;
         }
 

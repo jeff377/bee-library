@@ -110,6 +110,38 @@ namespace Bee.Base.Serialization
             }
         }
 
+        /// <summary>
+        /// Parses a quoted numeric cell back to the column's own type.
+        /// </summary>
+        /// <param name="text">The quoted text.</param>
+        /// <param name="targetType">The column's CLR type — <see cref="decimal"/>, <see cref="long"/> or <see cref="ulong"/>.</param>
+        /// <param name="value">The parsed value when this returns <c>true</c>.</param>
+        /// <remarks>
+        /// Returns <c>false</c> rather than throwing when the text is not a number: the caller then
+        /// hands the string on unchanged and <see cref="DataRow"/> reports the type mismatch against
+        /// the real column. Swallowing it here would turn a malformed payload into a silent default.
+        /// </remarks>
+        private static bool TryParseQuotedNumber(string text, Type targetType, out object? value)
+        {
+            if (targetType == typeof(decimal) && decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var d))
+            {
+                value = d;
+                return true;
+            }
+            if (targetType == typeof(long) && long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var l))
+            {
+                value = l;
+                return true;
+            }
+            if (targetType == typeof(ulong) && ulong.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var u))
+            {
+                value = u;
+                return true;
+            }
+            value = null;
+            return false;
+        }
+
         private static List<string> ReadStringArray(ref Utf8JsonReader reader)
         {
             var list = new List<string>();
@@ -207,6 +239,16 @@ namespace Bee.Base.Serialization
             switch (reader.TokenType)
             {
                 case JsonTokenType.String:
+                    // The writer quotes decimal / long / ulong so a JavaScript reader does not lose
+                    // them to double. Parse them back against the column's own type — invariant,
+                    // because that is how they were written.
+                    if (targetType == typeof(decimal) || targetType == typeof(long) || targetType == typeof(ulong))
+                    {
+                        var text = reader.GetString();
+                        if (!string.IsNullOrEmpty(text) && TryParseQuotedNumber(text, targetType, out var number))
+                            return number;
+                        return text;
+                    }
                     // Only guess at a date when the column is not a string one. A text column
                     // holding an ISO-8601-shaped value ("2026-07-28" in a remark or a user-defined
                     // code) would otherwise be parsed to DateTime and then rendered back as
@@ -216,6 +258,8 @@ namespace Bee.Base.Serialization
                         return dt;
                     return reader.GetString();
                 case JsonTokenType.Number:
+                    // Still accepted: a client written against a release that wrote these unquoted
+                    // keeps working. Only the writer changed.
                     if (reader.TryGetInt64(out var l))
                         return l;
                     // Decimal before double: a monetary value with more than 15 significant digits
