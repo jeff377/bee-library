@@ -1,7 +1,8 @@
 # 框架全面體檢（2026-09-04）
 
-**狀態：🚧 進行中（2026-09-04）** —— 批次 1（P0-1 / P1-2 / P1-9）與批次 2（六道閘門：
-P1-4 / P1-5 / P1-6 / P1-11 / API-1 / API-2，連帶 DOC-8 與 Z-8 的一半）已落地；其餘待排。
+**狀態：🚧 進行中（2026-09-04）** —— 批次 1（P0-1 / P1-2 / P1-9）、批次 2（六道閘門：
+P1-4 / P1-5 / P1-6 / P1-11 / API-1 / API-2，連帶 DOC-8 與 Z-8 的一半）與 P1-1 已落地；
+**P1 剩 4 項**（P1-3 / P1-7 / P1-8 / P1-10）。
 
 對 17 個 `src/` 專案做十一面向唯讀體檢，產出分級重構計畫與評分。
 方法：10 個平行唯讀子代理分面向全量掃描 → 交叉去重 → P0/P1 主代理複驗（含執行期 probe 與實測）。
@@ -64,7 +65,7 @@ P1-4 / P1-5 / P1-6 / P1-11 / API-1 / API-2，連帶 DOC-8 與 Z-8 的一半）�
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
 | P0 | 已出貨功能遠端不可用 | 1 | ✅ **已完成**（2026-09-04，P0-1 修正 + 新增保留字 progId 建構閘門，負向驗證通過） |
-| P1 | 授權邊界、跨語言 wire 正確性、實測效能、閘門可靠性 | 11 | 🚧 進行中 —— **P1-2 / P1-4 / P1-5 / P1-6 / P1-9 / P1-11 已完成**（2026-09-04，六項閘門皆經負向驗證）；P1-3 已裁決走「改編碼」；**剩 P1-1（記錄範圍繞過）、P1-3、P1-7（測試併發改寫共用快取）、P1-8（UpdateBatchSize）、P1-10（Bee.Definition README）** |
+| P1 | 授權邊界、跨語言 wire 正確性、實測效能、閘門可靠性 | 11 | 🚧 進行中 —— **P1-1 / P1-2 / P1-4 / P1-5 / P1-6 / P1-9 / P1-11 已完成**（2026-09-04，皆經負向驗證）；P1-3 已裁決走「改編碼」；**剩 P1-3、P1-7（測試併發改寫共用快取）、P1-8（UpdateBatchSize）、P1-10（Bee.Definition README）** |
 | P2 | 結構、並行、一致性 | 12 | 📝 擬定中 |
 | P3 | 文件漂移與低風險清理 | 14 | 📝 擬定中 |
 | P4 | 觀察／待裁決 | 16 | 📝 擬定中 |
@@ -107,7 +108,7 @@ public AuditRuleBusinessObject(IBeeContext ctx, Guid accessToken, string progId)
 
 ## P1
 
-### P1-1　layer-2 記錄範圍在「明細-only 的 Save」下完全不執行
+### P1-1　layer-2 記錄範圍在「明細-only 的 Save」下完全不執行　✅ 已修（2026-09-04）
 
 `src/Bee.Business/Form/FormBusinessObject.Permission.cs:74`（`HasExistingMasterWrite`）、`:102`（`EnforceWriteScope`）、
 `src/Bee.Repository/Form/DataFormRepository.cs:264`
@@ -129,8 +130,15 @@ if (string.IsNullOrEmpty(masterTableName) || !dataSet.Tables.Contains(masterTabl
 前提：已認證且對該 form 具備寫入 grant、其 scope 被限縮。需知道目標 `sys_master_rowid`（GUID 猜不到，
 但會經 lookup 欄位、報表、匯出、以及「曾在 scope 內後被移出」等管道外洩）。**靜態分析結論，未端到端實測。**
 
-**修法**：`Save` 在 `schema.MasterTable` 存在而 DataSet 未帶主檔表時拒絕（一行）；
-或對每列明細以其 `sys_master_rowid` 走 `ExistsInScope`（完整解）。
+**修法（2026-09-04 已落地，兩道檢查都做）**：`EnforceWriteScope` 改為無條件呼叫，並加
+(1) 宣告了主檔表卻只帶待寫明細列 → 拒絕；(2) 每個待寫明細列的 `sys_master_rowid` 必須是
+本次 payload 帶著的主檔列之一（`Modified` 檢查 Original 與 Current 兩版）。
+
+> **修正過程中發現同一破口的第二種走法，已一併關掉**：明細的 `sys_master_rowid` 同樣是
+> payload 原樣採用，且 `Modified` 列會被完整欄位 UPDATE 改寫 —— 帶一個 in-scope 主檔、
+> 明細卻指向另一筆，或把既有明細從別人的記錄改嫁出來，都能繞過。只修回報的那一種會
+> 製造已經修好的錯覺。`HasExistingMasterWrite` 隨之移除：它的兩個 false 情形
+> （純新增 vs 主檔表缺席）語意相反卻回同一個答案，正是這個 bug 的形狀。
 
 引入：`2d217c11`（2026-06-05），早於上輪基準 → 既有問題首次掃出。
 
