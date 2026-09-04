@@ -1,8 +1,8 @@
 # 框架全面體檢（2026-09-04）
 
-**狀態：🚧 進行中（2026-09-04）** —— P0 已關閉；**P1 11 項中 8 項已落地**
+**狀態：🚧 進行中（2026-09-04）** —— P0 已關閉；**P1 11 項中 9 項已落地**
 （批次 1：P0-1 / P1-2 / P1-9；批次 2 六道閘門：P1-4 / P1-5 / P1-6 / P1-11 / API-1 / API-2，
-連帶 DOC-8 與 Z-8 的一半；其後 P1-1、P1-7）。**剩 P1-3 / P1-8 / P1-10**，P2–P4 未排。
+連帶 DOC-8 與 Z-8 的一半；其後 P1-1、P1-7、P1-3）。**剩 P1-8 / P1-10**，P2–P4 未排。
 
 對 17 個 `src/` 專案做十一面向唯讀體檢，產出分級重構計畫與評分。
 方法：10 個平行唯讀子代理分面向全量掃描 → 交叉去重 → P0/P1 主代理複驗（含執行期 probe 與實測）。
@@ -65,7 +65,7 @@
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
 | P0 | 已出貨功能遠端不可用 | 1 | ✅ **已完成**（2026-09-04，P0-1 修正 + 新增保留字 progId 建構閘門，負向驗證通過） |
-| P1 | 授權邊界、跨語言 wire 正確性、實測效能、閘門可靠性 | 11 | 🚧 進行中 —— **8 項已完成**（P1-1 / P1-2 / P1-4 / P1-5 / P1-6 / P1-7 / P1-9 / P1-11，2026-09-04，皆經負向驗證或實測）；**剩 3 項**：P1-3（已裁決走「改編碼」）、P1-8（`UpdateBatchSize`）、P1-10（`Bee.Definition` README，後半卡在遞延中的 A-5） |
+| P1 | 授權邊界、跨語言 wire 正確性、實測效能、閘門可靠性 | 11 | 🚧 進行中 —— **9 項已完成**（P1-1 ~ P1-7、P1-9、P1-11，2026-09-04，皆經負向驗證或實測）；**剩 2 項**：P1-8（`UpdateBatchSize`）、P1-10（`Bee.Definition` README，後半卡在遞延中的 A-5） |
 | P2 | 結構、並行、一致性 | 12 | 📝 擬定中 |
 | P3 | 文件漂移與低風險清理 | 14 | 📝 擬定中 |
 | P4 | 觀察／待裁決 | 16 | 📝 擬定中 |
@@ -171,7 +171,7 @@ password 同樣符合該描述卻不在清單內。
 **修法**：`storedHash.Length == 0 || salt.Length == 0` 即 `return false`；`iterations` 設下限（如 10,000）；
 `st_user.password` 加入 `ProtectedFields`。
 
-### P1-3　`DataTable` 儲存格的 `decimal` / `int64` 在 JSON codec 上以 JSON number 輸出
+### P1-3　`DataTable` 儲存格的 `decimal` / `int64` 在 JSON codec 上以 JSON number 輸出　✅ 已修（2026-09-04）
 
 `src/Bee.Base/Serialization/DataTableJsonConverter.cs:119`
 （`JsonSerializer.Serialize(writer, val, val.GetType(), options)`）
@@ -194,8 +194,17 @@ password 同樣符合該描述卻不在清單內。
 
 **時效性是這條列 P1 的理由**：`wire-fixtures/` 一旦有實際跨語言 client 依循，改動就是破壞性變更；**現在改幾乎免費。**
 
-**修法（2026-09-04 已裁決：走 (a) 改編碼）**：儲存格對 `Decimal` / `Long`（以 column metadata 的 `type`
-為準，不是 CLR 型別）改寫為 JSON 字串，與 `object` 封套一致，並補一個高位數 fixture。
+**修法（2026-09-04 已落地：走 (a) 改編碼）**：儲存格與欄位 `defaultValue` 共用一個 `WriteCellValue`，
+對 `decimal` / `long` / `ulong` 以 invariant 格式寫成 JSON 字串（依**值的執行期型別**判斷，
+讀取端則依**欄位的 CLR 型別**解回，兩邊各用最可靠的來源）。讀取端**仍接受裸數字**，
+所以照 4.27.0 fixtures 實作的 client 不會被打斷。
+
+> **樣本值一併換掉**：`BuildTable` 原本用 `1234.56` / `99.99`，那種值就算被當成 double 也看不出
+> 差別 —— 樣本示範不出它要示範的規則。改用 `decimal.MaxValue`、最小刻度、2^53+1 與 `long.MaxValue`。
+>
+> **影響範圍比回報的大一層**：這個 converter 由 `JsonCodec`（Plain / ADR-014）、
+> `JsonPayloadSerializer`（JSON codec / ADR-044）與 `ApiInputConverter` 三處共用，兩條 wire 都是
+> 給 JavaScript 讀的，所以同一個問題在 ADR-014 那條也存在、一起關掉。
 代價是要改 `wire-fixtures/` 的既有樣本，但目前沒有外部 client 依循，成本最低的時機就是現在。
 （未採用的 (b)：維持現狀、在 `wire-fixtures/README.md` 與 `messages.d.ts` 前言明寫此例外，
 並把 `datatable.json` 的樣本值換成會爆掉 double 的數字。）
