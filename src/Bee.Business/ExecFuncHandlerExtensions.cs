@@ -91,7 +91,7 @@ namespace Bee.Business
             {
                 var rootEx = ex.Unwrap();
                 ExceptionDispatchInfo.Capture(rootEx).Throw();  // Re-throw preserving the original stack trace
-                throw; // 不會執行到，純粹為了編譯器
+                throw;   // Unreachable. It is here only because the compiler cannot see that.
             }
         }
     }

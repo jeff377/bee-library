@@ -157,14 +157,7 @@ namespace Bee.Db.Providers.Sqlite
         /// </summary>
         /// <param name="tableName">The table name.</param>
         private string GetIndexesCommandText(string tableName)
-        {
-            var sb = new StringBuilder();
-            foreach (DbTableIndex index in this.TableSchema.Indexes!.Where(i => !i.PrimaryKey))
-            {
-                sb.AppendLine(GetIndexCommandText(tableName, index));
-            }
-            return sb.ToString().Trim();
-        }
+            => IndexStatementJoiner.Join(this.TableSchema.Indexes, tableName, GetIndexCommandText);
 
         /// <summary>
         /// Gets the SQL statement for creating a single index.

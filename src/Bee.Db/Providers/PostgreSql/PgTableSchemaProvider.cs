@@ -342,7 +342,7 @@ namespace Bee.Db.Providers.PostgreSql
                 case "character varying":
                 case "varchar":
                 case "text":
-                    normalized = StripStringLiteral(trimmed);
+                    normalized = SqlLiteralParser.StripStringLiteral(trimmed);
                     break;
                 case "boolean":
                 case "bool":
@@ -385,18 +385,5 @@ namespace Bee.Db.Providers.PostgreSql
                 .Replace(" ", string.Empty)
                 .Replace("(", string.Empty)
                 .Replace(")", string.Empty);
-
-        /// <summary>
-        /// Strips the surrounding single quotes and unescapes doubled quotes for a PG string literal.
-        /// </summary>
-        private static string StripStringLiteral(string value)
-        {
-            if (value.Length >= 2 && value.StartsWith('\'') && value.EndsWith('\''))
-            {
-                string inner = value.Substring(1, value.Length - 2);
-                return inner.Replace("''", "'");
-            }
-            return value;
-        }
     }
 }

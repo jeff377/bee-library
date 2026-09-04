@@ -97,3 +97,37 @@ done
 本 repo 的相依深度約需 6 輪收斂。
 
 `-p:BeeSarifDir` 這個開關定義在 `src/Directory.Build.props`，未傳值時完全不生效。
+
+---
+
+## Analyzer 規則的同一套機制（`AnalyzerReleases.*.md`）
+
+`src/Bee.Analyzers/` 另有一對基準檔，形狀與 `PublicAPI.*` 相同，由
+`Microsoft.CodeAnalysis.Analyzers` 的 release tracking 比對：
+
+| 檔案 | 內容 |
+|------|------|
+| `AnalyzerReleases.Shipped.md` | **已發布**版本的規則，依 `## Release x.y.z` 分節 |
+| `AnalyzerReleases.Unshipped.md` | 上次發版**之後**新增／移除／改嚴重度的規則 |
+
+| 情況 | 診斷 |
+|------|------|
+| 新規則未申報 | `RS2000` |
+| 已出貨規則消失，且未在 Removed Rules 申報 | `RS2003` |
+
+> ⚠️ **`RS2003` 對空的 Shipped 檔完全不會觸發。** 本 repo 的 `Shipped.md` 從建立起到
+> 4.28.0 之前**一行都沒有**，而 analyzer 自 4.16.0 就隨 `Bee.Definition` 出貨了。
+> 後果正是空基準檔該有的後果：`RS2000` 照樣擋得住「新規則未申報」，但「已出貨的規則被移除」
+> 這一半形同不存在 —— **BEE4001–BEE4004 在 4.19.0 被退役，沒有任何東西出聲**。
+> 4.28.0 依 tag 快照回填了 4.16.0 / 4.18.0 / 4.19.0 三節。
+
+### 發版時要做的事
+
+`PublicAPI.Unshipped.txt → Shipped.txt` 之外，**還有第三份基準要搬**：
+
+```
+AnalyzerReleases.Unshipped.md  →  AnalyzerReleases.Shipped.md（新增一節 ## Release x.y.z）
+```
+
+漏搬不會有任何訊號 —— 規則會永遠停在 Unshipped，而 `RS2003` 也就永遠保護不到它。
+這正是 4.16.0–4.27.0 之間發生的事。

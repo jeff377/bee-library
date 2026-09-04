@@ -62,7 +62,7 @@ namespace Bee.Db.Providers.SqlServer
             // Build the primary key constraint clause
             string primaryKey = GetPrimaryKeyCommandText(dbTableName);
             // Build the index creation clause
-            string indexs = GetIndexsCommandText(dbTableName);
+            string indexs = GetIndexesCommandText(dbTableName);
 
             var sb = new StringBuilder();
             // Assemble the CREATE TABLE statement
@@ -173,16 +173,8 @@ namespace Bee.Db.Providers.SqlServer
         /// Gets the SQL statements for creating all non-primary-key indexes.
         /// </summary>
         /// <param name="tableName">The table name.</param>
-        private string GetIndexsCommandText(string tableName)
-        {
-            var sb = new StringBuilder();
-            foreach (DbTableIndex index in this.TableSchema.Indexes!)
-            {
-                if (!index.PrimaryKey)
-                    sb.AppendLine(GetIndexCommandText(tableName, index));
-            }
-            return sb.ToString().Trim(); // 避免最後多餘的換行
-        }
+        private string GetIndexesCommandText(string tableName)
+            => IndexStatementJoiner.Join(this.TableSchema.Indexes, tableName, GetIndexCommandText);
 
         /// <summary>
         /// Gets the SQL statement for creating a single index.

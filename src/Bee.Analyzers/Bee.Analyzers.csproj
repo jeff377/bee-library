@@ -44,6 +44,16 @@
     Analyzer release tracking (RS2008). Every rule must be listed in the unshipped release before it
     builds, and moved into the shipped release when a version goes out. This is the analyzer
     equivalent of the PublicAPI baselines used elsewhere in the repository.
+
+    WARNING: the move is the half that gets forgotten, and forgetting it is silent. Shipped.md held
+    nothing at all until 4.28.0 even though the analyzer had shipped since 4.16.0, and the cost was
+    exactly what an empty baseline costs: RS2000 still caught a new rule that was never declared,
+    but RS2003 — "a rule you shipped is gone" — cannot fire against an empty shipped list, so four
+    rules (BEE4001-BEE4004) were retired in 4.19.0 with nothing to say so.
+
+    Releasing therefore has a third baseline to move, alongside the two PublicAPI ones:
+    AnalyzerReleases.Unshipped.md -> AnalyzerReleases.Shipped.md under a "## Release x.y.z" heading.
+    See docs/repo-ops/public-api-baseline.md.
   -->
   <ItemGroup>
     <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />

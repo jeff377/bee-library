@@ -416,7 +416,7 @@ namespace Bee.Db.Providers.Oracle
                 case "nchar":
                 case "clob":
                 case "nclob":
-                    normalized = StripStringLiteral(trimmed);
+                    normalized = SqlLiteralParser.StripStringLiteral(trimmed);
                     break;
                 default:
                     normalized = trimmed;
@@ -426,20 +426,6 @@ namespace Bee.Db.Providers.Oracle
             return string.Equals(originalDefaultValue, normalized, StringComparison.OrdinalIgnoreCase)
                 ? string.Empty
                 : normalized;
-        }
-
-        /// <summary>
-        /// Strips surrounding single quotes and unescapes doubled quotes for an Oracle
-        /// string literal default (e.g. <c>'O''Brien'</c> → <c>O'Brien</c>).
-        /// </summary>
-        private static string StripStringLiteral(string value)
-        {
-            if (value.Length >= 2 && value.StartsWith('\'') && value.EndsWith('\''))
-            {
-                string inner = value.Substring(1, value.Length - 2);
-                return inner.Replace("''", "'");
-            }
-            return value;
         }
     }
 }
