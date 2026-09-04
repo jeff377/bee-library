@@ -1,8 +1,9 @@
 # 框架全面體檢（2026-09-04）
 
-**狀態：🚧 進行中（2026-09-04）** —— P0 已關閉；**P1 11 項中 9 項已落地**
+**狀態：🚧 進行中（2026-09-04）** —— P0 已關閉；**P1 11 項中 10 項已落地**
 （批次 1：P0-1 / P1-2 / P1-9；批次 2 六道閘門：P1-4 / P1-5 / P1-6 / P1-11 / API-1 / API-2，
-連帶 DOC-8 與 Z-8 的一半；其後 P1-1、P1-7、P1-3）。**剩 P1-8 / P1-10**，P2–P4 未排。
+連帶 DOC-8 與 Z-8 的一半；其後 P1-1、P1-7、P1-3、P1-8）。
+**剩 P1-10**（需先裁決 A-5 怎麼寫），P2–P4 未排。
 
 對 17 個 `src/` 專案做十一面向唯讀體檢，產出分級重構計畫與評分。
 方法：10 個平行唯讀子代理分面向全量掃描 → 交叉去重 → P0/P1 主代理複驗（含執行期 probe 與實測）。
@@ -65,7 +66,7 @@
 | 階段 | 範圍 | 項目數 | 狀態 |
 |------|------|--------|------|
 | P0 | 已出貨功能遠端不可用 | 1 | ✅ **已完成**（2026-09-04，P0-1 修正 + 新增保留字 progId 建構閘門，負向驗證通過） |
-| P1 | 授權邊界、跨語言 wire 正確性、實測效能、閘門可靠性 | 11 | 🚧 進行中 —— **9 項已完成**（P1-1 ~ P1-7、P1-9、P1-11，2026-09-04，皆經負向驗證或實測）；**剩 2 項**：P1-8（`UpdateBatchSize`）、P1-10（`Bee.Definition` README，後半卡在遞延中的 A-5） |
+| P1 | 授權邊界、跨語言 wire 正確性、實測效能、閘門可靠性 | 11 | 🚧 進行中 —— **10 項已完成**（P1-1 ~ P1-9、P1-11，2026-09-04，皆經負向驗證或實測）；**剩 1 項**：P1-10（`Bee.Definition` README，後半卡在遞延中的 A-5，需先裁決） |
 | P2 | 結構、並行、一致性 | 12 | 📝 擬定中 |
 | P3 | 文件漂移與低風險清理 | 14 | 📝 擬定中 |
 | P4 | 觀察／待裁決 | 16 | 📝 擬定中 |
@@ -295,7 +296,7 @@ GetConnectionInfo_EmptyConnectionString_ThrowsInvalidOperationException
 本來就不需要資料庫），19 個測試從「要等容器」變成 20ms。驗證方式是 `./test.sh` **連跑兩次**皆全綠，
 與當初判定這筆 flaky 的方法相同。
 
-### P1-8　寫入路徑每列一次 DB round trip（`UpdateBatchSize` 從未設定）
+### P1-8　寫入路徑每列一次 DB round trip（`UpdateBatchSize` 從未設定）　✅ 已修（2026-09-04）
 
 `src/Bee.Db/DbAccess.Update.cs:68-78`（`ApplySpec`）
 
@@ -315,9 +316,19 @@ UpdateBatchSize = 0（不限）:   2.11 ms  ( 21 µs/row)      ratio = 14.3x
 
 對照：上輪判為雜訊的 PERF-2 是 0.50 µs／請求、P-3 是 8 µs／Save。
 
-**修法**：在 `ApplySpec` 內 **provider-gated** 設定 `adapter.UpdateBatchSize`
-（`DbDataAdapter` 基底對 `!= 1` 擲 `NotSupportedException`；SQL Server / Oracle 支援，其餘須逐一驗證）。
-對應 `rules/database.md` 的 `NormalizeDbType` 慣例。**屬 `[all-db]` 範圍。**
+**修法（2026-09-04 已落地）**：`ApplySpec` 內以**能力偵測**開啟批次，而非硬寫 provider 清單 ——
+基底 setter 擲 `NotSupportedException`，所以「問它」就是檢查本身；清單會漂，也管不到宿主為某個
+`DatabaseType` 註冊了哪個 factory。結果以 adapter 型別為 key 快取。批次上限用有界的 100 而非 0。
+
+實測支援度：**SQL Server / MySQL / Oracle 接受；Npgsql 與框架自己的 SQLite adapter 擲例外**
+（已由 `ProviderBatchingSupportTests` 釘住，provider 改行為就會紅）。
+
+走 `UpdateDataTables` 自身重新實測（本機 SQL Server 容器，三次中位數）：
+**100 列 32 ms → 3 ms（10.7×）、500 列 145 ms → 9 ms（16.1×）**。
+
+> **順帶補掉一個覆蓋缺口**：在此之前 adapter 寫入路徑的 DB 測試**只有 SQLite** —— 而 SQLite 恰好是
+> 不支援批次的兩個之一，也就是說批次實際生效的三個 provider 對這條路徑是零覆蓋。新增
+> `UpdateDataTablesBatchingTests`（五個 provider 各一個 `[DbFact]`）。
 
 引入：`c6dc285f`，遠早於本輪 → 既有缺陷，兩輪體檢都沒往 ADO.NET adapter 這個框架邊界看。
 
