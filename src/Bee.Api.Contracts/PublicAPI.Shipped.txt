@@ -156,19 +156,6 @@ Bee.Api.Contracts.System.IGetLanguageRequest.Lang.get -> string!
 Bee.Api.Contracts.System.IGetLanguageRequest.Namespace.get -> string!
 Bee.Api.Contracts.System.IGetLanguageResponse
 Bee.Api.Contracts.System.IGetLanguageResponse.Xml.get -> string?
-Bee.Api.Contracts.System.IGetPackageRequest
-Bee.Api.Contracts.System.IGetPackageRequest.AppId.get -> string!
-Bee.Api.Contracts.System.IGetPackageRequest.Channel.get -> string!
-Bee.Api.Contracts.System.IGetPackageRequest.ComponentId.get -> string!
-Bee.Api.Contracts.System.IGetPackageRequest.FileId.get -> string!
-Bee.Api.Contracts.System.IGetPackageRequest.Platform.get -> string!
-Bee.Api.Contracts.System.IGetPackageRequest.Version.get -> string!
-Bee.Api.Contracts.System.IGetPackageResponse
-Bee.Api.Contracts.System.IGetPackageResponse.Content.get -> byte[]!
-Bee.Api.Contracts.System.IGetPackageResponse.FileName.get -> string!
-Bee.Api.Contracts.System.IGetPackageResponse.FileSize.get -> long
-Bee.Api.Contracts.System.IGetPackageResponse.PackageUrl.get -> string!
-Bee.Api.Contracts.System.IGetPackageResponse.Sha256.get -> string!
 Bee.Api.Contracts.System.ILeaveCompanyRequest
 Bee.Api.Contracts.System.ILeaveCompanyResponse
 Bee.Api.Contracts.System.IListApiKeysRequest
@@ -224,6 +211,3 @@ Bee.Api.Contracts.System.ISetDeploymentAdminRequest.UserId.get -> string!
 Bee.Api.Contracts.System.ISetDeploymentAdminResponse
 Bee.Api.Contracts.System.ISetDeploymentAdminResponse.IsDeploymentAdmin.get -> bool
 Bee.Api.Contracts.System.ISetDeploymentAdminResponse.UserId.get -> string!
-Bee.Api.Contracts.System.PackageDelivery
-Bee.Api.Contracts.System.PackageDelivery.Api = 1 -> Bee.Api.Contracts.System.PackageDelivery
-Bee.Api.Contracts.System.PackageDelivery.Url = 0 -> Bee.Api.Contracts.System.PackageDelivery

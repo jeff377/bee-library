@@ -39,10 +39,8 @@
 
 ### 套件管理
 
-- `IGetPackageRequest` / `IGetPackageResponse` -- 下載套件內容
 - `PackageUpdateQuery` -- 更新檢查的查詢參數
 - `PackageUpdateInfo` -- 更新中繼資料（版本、大小、SHA-256、交付模式），以 MessagePack 序列化
-- `PackageDelivery` -- 列舉，定義交付模式（`Url` 或 `Api`）
 
 ## 主要公開 API
 
@@ -55,10 +53,7 @@
 | `ISaveDefineRequest` / `ISaveDefineResponse` | 定義儲存契約 |
 | `IExecFuncRequest` / `IExecFuncResponse` | 自訂函式執行契約 |
 | `IGetCommonConfigurationRequest` / `IGetCommonConfigurationResponse` | 組態擷取契約 |
-| `IGetPackageRequest` / `IGetPackageResponse` | 套件下載契約 |
 | `PackageUpdateQuery` | 更新檢查查詢參數 |
-| `PackageUpdateInfo` | 套件更新中繼資料（MessagePack） |
-| `PackageDelivery` | 交付模式列舉（`Url` / `Api`） |
 
 ## 設計慣例
 
@@ -66,7 +61,6 @@
 - **純介面定義** -- 每個 API 操作以 `IXxxRequest` / `IXxxResponse` 配對定義，本專案不含任何實作邏輯。
 - **不帶序列化標註** -- 資料類別如 `PackageUpdateInfo` 是帶 public 可讀寫屬性的普通型別。它們與 wire 的綁定以手寫 formatter 的形式住在 `Bee.Api.Core`，因此本套件不相依任何傳輸格式（[ADR-036](../../docs/adr/adr-036-wire-serialization-externalized.md)）。
 - **RSA 安全機制** -- 登入契約包含 `ClientPublicKey`（用戶端產生）與 `ApiEncryptionKey`（伺服器產生），用於安全金鑰交換。
-- **穩定列舉值** -- `PackageDelivery` 成員具有明確的整數值，不可變更既有值以維護序列化相容性。
 - **啟用可為 Null 參考型別**（`<Nullable>enable</Nullable>`）。
 
 ## 這些介面為什麼存在
@@ -105,8 +99,7 @@ Bee.Api.Contracts/
     IPingRequest.cs / IPingResponse.cs
     IEnterCompany* / ILeaveCompany* / IGetLanguage*
     IGetDefine* / ISaveDefine* / IGetFormSchema* / IGetFormLayout* / IGetDepartmentTreeResponse
-    IGetCommonConfiguration* / IGetPackage*
-    PackageUpdateQuery.cs / PackageUpdateInfo.cs / PackageDelivery.cs
+    IGetCommonConfiguration*
   Form/                                               # namespace Bee.Api.Contracts.Form
     IGetList* / IGetData* / IGetNewData* / ISave* / IDelete* / IGetLookup*
   AuditLog/                                           # namespace Bee.Api.Contracts.AuditLog

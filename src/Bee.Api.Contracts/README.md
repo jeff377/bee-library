@@ -39,10 +39,8 @@
 
 ### Package Management
 
-- `IGetPackageRequest` / `IGetPackageResponse` -- download package content
 - `PackageUpdateQuery` -- query parameters for update check
 - `PackageUpdateInfo` -- update metadata (version, size, SHA-256, delivery mode), serialized with MessagePack
-- `PackageDelivery` -- enum defining delivery mode (`Url` or `Api`)
 
 ## Key Public APIs
 
@@ -55,10 +53,7 @@
 | `ISaveDefineRequest` / `ISaveDefineResponse` | Definition persistence contract |
 | `IExecFuncRequest` / `IExecFuncResponse` | Custom function execution contract |
 | `IGetCommonConfigurationRequest` / `IGetCommonConfigurationResponse` | Configuration retrieval contract |
-| `IGetPackageRequest` / `IGetPackageResponse` | Package download contract |
 | `PackageUpdateQuery` | Update check query parameters |
-| `PackageUpdateInfo` | Package update metadata (MessagePack) |
-| `PackageDelivery` | Delivery mode enum (`Url` / `Api`) |
 
 ## Design Conventions
 
@@ -66,7 +61,6 @@
 - **Pure interface definitions** -- each API operation is defined as an `IXxxRequest` / `IXxxResponse` pair; no implementation logic in this project.
 - **No serialization attributes** -- data classes such as `PackageUpdateInfo` are plain types with public read/write properties. Their binding to the wire lives in `Bee.Api.Core` as hand-written formatters, so this package takes no dependency on a transport format ([ADR-036](../../docs/adr/adr-036-wire-serialization-externalized.md)).
 - **RSA-based security** -- the login contract includes `ClientPublicKey` (client-generated) and `ApiEncryptionKey` (server-generated) for secure key exchange.
-- **Stable enum values** -- `PackageDelivery` members have explicit integer values; existing values must not change to preserve serialization compatibility.
 - **Nullable reference types** enabled (`<Nullable>enable</Nullable>`).
 
 ## Why These Interfaces Exist
@@ -110,8 +104,7 @@ Bee.Api.Contracts/
     IPingRequest.cs / IPingResponse.cs
     IEnterCompany* / ILeaveCompany* / IGetLanguage*
     IGetDefine* / ISaveDefine* / IGetFormSchema* / IGetFormLayout* / IGetDepartmentTreeResponse
-    IGetCommonConfiguration* / IGetPackage*
-    PackageUpdateQuery.cs / PackageUpdateInfo.cs / PackageDelivery.cs
+    IGetCommonConfiguration*
   Form/                                               # namespace Bee.Api.Contracts.Form
     IGetList* / IGetData* / IGetNewData* / ISave* / IDelete* / IGetLookup*
   AuditLog/                                           # namespace Bee.Api.Contracts.AuditLog

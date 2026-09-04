@@ -81,7 +81,6 @@ namespace Bee.Business.UnitTests
             new ApiSurfaceEntry("SystemBusinessObject", "GetFormLayout",          ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetFormSchema",          ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetLanguage",            ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
-            new ApiSurfaceEntry("SystemBusinessObject", "GetPackage",             ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous),
             new ApiSurfaceEntry("SystemBusinessObject", "LeaveCompany",           ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated, ApiReplayProtection.UniqueSequence),
             // 以下三個與 CreateApiKey 同一把關：金鑰屬整個部署，遠端須是部署層管理員，
             // 本機直通以保住 bootstrap。ListApiKeys 不回傳雜湊。

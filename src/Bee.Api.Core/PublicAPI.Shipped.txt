@@ -450,32 +450,6 @@ Bee.Api.Core.Messages.System.GetLanguageResponse
 Bee.Api.Core.Messages.System.GetLanguageResponse.GetLanguageResponse() -> void
 Bee.Api.Core.Messages.System.GetLanguageResponse.Xml.get -> string?
 Bee.Api.Core.Messages.System.GetLanguageResponse.Xml.set -> void
-Bee.Api.Core.Messages.System.GetPackageRequest
-Bee.Api.Core.Messages.System.GetPackageRequest.AppId.get -> string!
-Bee.Api.Core.Messages.System.GetPackageRequest.AppId.set -> void
-Bee.Api.Core.Messages.System.GetPackageRequest.Channel.get -> string!
-Bee.Api.Core.Messages.System.GetPackageRequest.Channel.set -> void
-Bee.Api.Core.Messages.System.GetPackageRequest.ComponentId.get -> string!
-Bee.Api.Core.Messages.System.GetPackageRequest.ComponentId.set -> void
-Bee.Api.Core.Messages.System.GetPackageRequest.FileId.get -> string!
-Bee.Api.Core.Messages.System.GetPackageRequest.FileId.set -> void
-Bee.Api.Core.Messages.System.GetPackageRequest.GetPackageRequest() -> void
-Bee.Api.Core.Messages.System.GetPackageRequest.Platform.get -> string!
-Bee.Api.Core.Messages.System.GetPackageRequest.Platform.set -> void
-Bee.Api.Core.Messages.System.GetPackageRequest.Version.get -> string!
-Bee.Api.Core.Messages.System.GetPackageRequest.Version.set -> void
-Bee.Api.Core.Messages.System.GetPackageResponse
-Bee.Api.Core.Messages.System.GetPackageResponse.Content.get -> byte[]!
-Bee.Api.Core.Messages.System.GetPackageResponse.Content.set -> void
-Bee.Api.Core.Messages.System.GetPackageResponse.FileName.get -> string!
-Bee.Api.Core.Messages.System.GetPackageResponse.FileName.set -> void
-Bee.Api.Core.Messages.System.GetPackageResponse.FileSize.get -> long
-Bee.Api.Core.Messages.System.GetPackageResponse.FileSize.set -> void
-Bee.Api.Core.Messages.System.GetPackageResponse.GetPackageResponse() -> void
-Bee.Api.Core.Messages.System.GetPackageResponse.PackageUrl.get -> string!
-Bee.Api.Core.Messages.System.GetPackageResponse.PackageUrl.set -> void
-Bee.Api.Core.Messages.System.GetPackageResponse.Sha256.get -> string!
-Bee.Api.Core.Messages.System.GetPackageResponse.Sha256.set -> void
 Bee.Api.Core.Messages.System.LeaveCompanyRequest
 Bee.Api.Core.Messages.System.LeaveCompanyRequest.LeaveCompanyRequest() -> void
 Bee.Api.Core.Messages.System.LeaveCompanyResponse

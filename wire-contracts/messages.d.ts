@@ -388,25 +388,6 @@ export interface GetNewDataResponse {
   parameters?: Parameter[];
 }
 
-export interface GetPackageRequest {
-  appId?: string;
-  channel?: string;
-  componentId?: string;
-  fileId?: string;
-  parameters?: Parameter[];
-  platform?: string;
-  version?: string;
-}
-
-export interface GetPackageResponse {
-  content?: string;
-  fileName?: string;
-  fileSize: number;
-  packageUrl?: string;
-  parameters?: Parameter[];
-  sha256?: string;
-}
-
 export interface GetTopApiMethodsRequest {
   fromUtc?: string;
   parameters?: Parameter[];

@@ -144,8 +144,10 @@ JS 走 `Plain` + HTTPS + Bearer Token 的雙重保護線，與 ADR-013 Family B�
 
 `CheckPackageUpdate` / `GetPackage` 維持 `Encoded`，因為這兩個是 `.NET` runtime 端的套件更新機制，JS 前端沒有對應需求。
 
-> **註（2026-09-04）**：`CheckPackageUpdate` 已移除 —— 它是基底擲 `NotSupportedException` 的擴充點，從未有實際消費者。
-> 本節的決策對留下的 `GetPackage` 不變。
+> **註（2026-09-04）**：`CheckPackageUpdate` 與 `GetPackage` **兩者皆已移除**。它們是基底擲
+> `NotSupportedException` 的擴充點，從未有實際消費者 —— 既不給 JS 前端用（如本節所述），
+> `Bee.Api.Client` 也沒有對應的 connector 方法，而 API 合約的直接消費者就是 connector。
+> 本節保留作為當時的決策紀錄。
 
 ### 安全模型
 

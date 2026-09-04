@@ -152,56 +152,5 @@ namespace Bee.Business.UnitTests
             Assert.Equal("<c/>", result.CommonConfiguration);
         }
 
-        [Fact]
-        [DisplayName("GetPackageArgs 預設值與屬性 round-trip")]
-        public void GetPackageArgs_Defaults_And_RoundTrip()
-        {
-            var args = new GetPackageArgs();
-            Assert.Equal(string.Empty, args.AppId);
-            Assert.Equal("Main", args.ComponentId);
-            Assert.Equal(string.Empty, args.Version);
-            Assert.Equal("Win-x64", args.Platform);
-            Assert.Equal("Stable", args.Channel);
-            Assert.Equal(string.Empty, args.FileId);
-
-            args.AppId = "app";
-            args.ComponentId = "plugin";
-            args.Version = "1.2.3";
-            args.Platform = "macOS";
-            args.Channel = "Beta";
-            args.FileId = "variant-a";
-
-            Assert.Equal("app", args.AppId);
-            Assert.Equal("plugin", args.ComponentId);
-            Assert.Equal("1.2.3", args.Version);
-            Assert.Equal("macOS", args.Platform);
-            Assert.Equal("Beta", args.Channel);
-            Assert.Equal("variant-a", args.FileId);
-        }
-
-        [Fact]
-        [DisplayName("GetPackageResult 預設值與屬性 round-trip")]
-        public void GetPackageResult_Defaults_And_RoundTrip()
-        {
-            var result = new GetPackageResult();
-            Assert.Equal("package.zip", result.FileName);
-            Assert.Empty(result.Content);
-            Assert.Equal(0L, result.FileSize);
-            Assert.Equal(string.Empty, result.Sha256);
-            Assert.Equal(string.Empty, result.PackageUrl);
-
-            var content = new byte[] { 1, 2, 3 };
-            result.FileName = "a.zip";
-            result.Content = content;
-            result.FileSize = 3;
-            result.Sha256 = "abc";
-            result.PackageUrl = "http://host/a.zip";
-
-            Assert.Equal("a.zip", result.FileName);
-            Assert.Same(content, result.Content);
-            Assert.Equal(3L, result.FileSize);
-            Assert.Equal("abc", result.Sha256);
-            Assert.Equal("http://host/a.zip", result.PackageUrl);
-        }
     }
 }

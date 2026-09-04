@@ -1808,7 +1808,6 @@ const Bee.Definition.SystemActions.GetDepartmentTree = "GetDepartmentTree" -> st
 const Bee.Definition.SystemActions.GetFormLayout = "GetFormLayout" -> string!
 const Bee.Definition.SystemActions.GetFormSchema = "GetFormSchema" -> string!
 const Bee.Definition.SystemActions.GetLanguage = "GetLanguage" -> string!
-const Bee.Definition.SystemActions.GetPackage = "GetPackage" -> string!
 const Bee.Definition.SystemActions.LeaveCompany = "LeaveCompany" -> string!
 const Bee.Definition.SystemActions.ListApiKeys = "ListApiKeys" -> string!
 const Bee.Definition.SystemActions.Login = "Login" -> string!

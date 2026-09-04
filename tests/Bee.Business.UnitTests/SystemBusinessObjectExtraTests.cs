@@ -98,15 +98,6 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("GetPackage 基底實作應拋 NotSupportedException")]
-        public void GetPackage_BaseImpl_Throws()
-        {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
-            Assert.Throws<NotSupportedException>(() =>
-                bo.GetPackage(new GetPackageArgs()));
-        }
-
-        [Fact]
         [DisplayName("ExecFuncAnonymous(Hello) 應回傳 Hello 問候")]
         public void ExecFuncAnonymous_Hello_ReturnsGreeting()
         {

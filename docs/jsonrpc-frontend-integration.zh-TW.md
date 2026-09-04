@@ -173,7 +173,6 @@ Token 是 `Guid` 字串。Token 有效期限預設 1 小時；過期後 backend 
 | Authenticated — Session | `System.EnterCompany`、`System.LeaveCompany`、`System.Logout`、`System.GetDepartmentTree` |
 | Authenticated — Definition | `System.GetDefine`、`System.SaveDefine`（SystemSettings / DatabaseSettings 限 local call）；`System.GetFormSchema`、`System.GetFormLayout`、`System.GetLanguage`（JSON-native，JS 優先用） |
 | Authenticated — Form CRUD | `<ProgId>.GetList`、`GetNewData`、`GetData`、`Save`、`Delete` |
-| **JS 不會用到** | `System.GetPackage`（Encoded，.NET runtime 用） |
 
 **JSON-native 取得 schema / layout / language**
 

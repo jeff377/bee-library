@@ -31,14 +31,6 @@ namespace Bee.Business.UnitTests
             Assert.True(result.ServerTime <= DateTime.UtcNow.AddSeconds(1));
         }
 
-        [Fact]
-        [DisplayName("GetPackage 在基底類別應拋 NotSupportedException")]
-        public void GetPackage_BaseClass_ThrowsNotSupported()
-        {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, SysProgIds.System);
-            Assert.Throws<NotSupportedException>(() => bo.GetPackage(new GetPackageArgs()));
-        }
-
         [Theory]
         [InlineData(0)]
         [InlineData(-1)]

@@ -45,8 +45,6 @@ namespace Bee.Api.Core.UnitTests
                 "登入本身。免登入是定義上的必然；API key 仍要求，因為「哪個應用嘗試登入」正是要記錄的事。",
             ["SystemBusinessObject.GetCommonConfiguration"] =
                 "客戶端啟動流程在登入前就需要它決定壓縮與加密設定。回應內容是部署層的 payload 設定，不含資料。",
-            ["SystemBusinessObject.GetPackage"] =
-                "套件下載，基底類別未實作、由應用自行提供。要求 Encoded 以上傳輸。",
             ["SystemBusinessObject.CreateSession"] =
                 "宣告為 LocalOnly，遠端呼叫在 BO 層一律被拒——它不是匿名攻擊面的一部分，Anonymous 只對行程內呼叫有意義。",
             ["BusinessObject.ExecFuncAnonymous"] =
@@ -116,7 +114,6 @@ namespace Bee.Api.Core.UnitTests
             string[] requireHeader =
             [
                 $"{SysProgIds.System}.GetCommonConfiguration",
-                $"{SysProgIds.System}.GetPackage",
                 $"{SysProgIds.System}.ExecFuncAnonymous",
             ];
             foreach (var method in requireHeader)

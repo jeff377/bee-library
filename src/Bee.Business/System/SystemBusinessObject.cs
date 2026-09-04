@@ -65,17 +65,6 @@ namespace Bee.Business.System
         }
 
         /// <summary>
-        /// Gets package information.
-        /// </summary>
-        /// <param name="args">The input arguments.</param>
-        [ApiAccessControl(ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous)]
-        public virtual GetPackageResult GetPackage(GetPackageArgs args)
-        {
-            // Implemented in derived classes.
-            throw new NotSupportedException("GetPackage is not implemented in the base class.");
-        }
-
-        /// <summary>
         /// Override to provide the implementation for <see cref="BusinessObject.ExecFunc"/>.
         /// </summary>
         protected override void DoExecFunc(ExecFuncArgs args, ExecFuncResult result)

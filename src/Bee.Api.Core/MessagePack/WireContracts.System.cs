@@ -99,23 +99,6 @@ namespace Bee.Api.Core.MessagePack
                 .Member(nameof(Bee.Api.Core.Messages.System.GetLanguageResponse.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)
                 .Member(nameof(Bee.Api.Core.Messages.System.GetLanguageResponse.Xml), static x => x.Xml, static (x, v) => x.Xml = v)
                 .Build());
-            list.Add(WireContract.For<Bee.Api.Core.Messages.System.GetPackageRequest>()
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageRequest.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageRequest.AppId), static x => x.AppId, static (x, v) => x.AppId = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageRequest.ComponentId), static x => x.ComponentId, static (x, v) => x.ComponentId = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageRequest.Version), static x => x.Version, static (x, v) => x.Version = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageRequest.Platform), static x => x.Platform, static (x, v) => x.Platform = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageRequest.Channel), static x => x.Channel, static (x, v) => x.Channel = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageRequest.FileId), static x => x.FileId, static (x, v) => x.FileId = v)
-                .Build());
-            list.Add(WireContract.For<Bee.Api.Core.Messages.System.GetPackageResponse>()
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageResponse.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageResponse.FileName), static x => x.FileName, static (x, v) => x.FileName = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageResponse.Content), static x => x.Content, static (x, v) => x.Content = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageResponse.FileSize), static x => x.FileSize, static (x, v) => x.FileSize = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageResponse.Sha256), static x => x.Sha256, static (x, v) => x.Sha256 = v)
-                .Member(nameof(Bee.Api.Core.Messages.System.GetPackageResponse.PackageUrl), static x => x.PackageUrl, static (x, v) => x.PackageUrl = v)
-                .Build());
             list.Add(WireContract.For<Bee.Api.Core.Messages.System.LeaveCompanyRequest>()
                 .Member(nameof(Bee.Api.Core.Messages.System.LeaveCompanyRequest.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)
                 .Build());

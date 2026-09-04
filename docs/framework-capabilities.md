@@ -74,7 +74,6 @@ See [JSON-RPC Frontend Integration](jsonrpc-frontend-integration.md) and [API Me
 | **Wire contracts** | Wire types register their MessagePack formatters explicitly, so payloads work on runtimes without dynamic code (iOS AOT) |
 | **Time zone at the wire** | Conversion happens at the payload boundary; storage stays UTC. See [Time Zone Handling](datetime-timezone.md) |
 | **JS frontend surface** | Non-.NET frontends use Plain JSON, with typed variants of `GetFormSchema` / `GetFormLayout` / `GetLanguage` |
-| **Package update** | `GetPackage` lets a client download its own upgrade |
 
 ## 5. Session and Authentication
 

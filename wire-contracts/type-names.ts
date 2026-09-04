@@ -46,8 +46,6 @@ export const WireTypeNames = {
   GetLookupResponse: 'Bee.Api.Core.Messages.Form.GetLookupResponse, Bee.Api.Core',
   GetNewDataRequest: 'Bee.Api.Core.Messages.Form.GetNewDataRequest, Bee.Api.Core',
   GetNewDataResponse: 'Bee.Api.Core.Messages.Form.GetNewDataResponse, Bee.Api.Core',
-  GetPackageRequest: 'Bee.Api.Core.Messages.System.GetPackageRequest, Bee.Api.Core',
-  GetPackageResponse: 'Bee.Api.Core.Messages.System.GetPackageResponse, Bee.Api.Core',
   GetTopApiMethodsRequest: 'Bee.Api.Core.Messages.AuditLog.GetTopApiMethodsRequest, Bee.Api.Core',
   LeaveCompanyRequest: 'Bee.Api.Core.Messages.System.LeaveCompanyRequest, Bee.Api.Core',
   LeaveCompanyResponse: 'Bee.Api.Core.Messages.System.LeaveCompanyResponse, Bee.Api.Core',

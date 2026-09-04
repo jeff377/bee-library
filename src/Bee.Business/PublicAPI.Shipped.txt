@@ -478,32 +478,6 @@ Bee.Business.System.GetLanguageResult
 Bee.Business.System.GetLanguageResult.GetLanguageResult() -> void
 Bee.Business.System.GetLanguageResult.Xml.get -> string?
 Bee.Business.System.GetLanguageResult.Xml.set -> void
-Bee.Business.System.GetPackageArgs
-Bee.Business.System.GetPackageArgs.AppId.get -> string!
-Bee.Business.System.GetPackageArgs.AppId.set -> void
-Bee.Business.System.GetPackageArgs.Channel.get -> string!
-Bee.Business.System.GetPackageArgs.Channel.set -> void
-Bee.Business.System.GetPackageArgs.ComponentId.get -> string!
-Bee.Business.System.GetPackageArgs.ComponentId.set -> void
-Bee.Business.System.GetPackageArgs.FileId.get -> string!
-Bee.Business.System.GetPackageArgs.FileId.set -> void
-Bee.Business.System.GetPackageArgs.GetPackageArgs() -> void
-Bee.Business.System.GetPackageArgs.Platform.get -> string!
-Bee.Business.System.GetPackageArgs.Platform.set -> void
-Bee.Business.System.GetPackageArgs.Version.get -> string!
-Bee.Business.System.GetPackageArgs.Version.set -> void
-Bee.Business.System.GetPackageResult
-Bee.Business.System.GetPackageResult.Content.get -> byte[]!
-Bee.Business.System.GetPackageResult.Content.set -> void
-Bee.Business.System.GetPackageResult.FileName.get -> string!
-Bee.Business.System.GetPackageResult.FileName.set -> void
-Bee.Business.System.GetPackageResult.FileSize.get -> long
-Bee.Business.System.GetPackageResult.FileSize.set -> void
-Bee.Business.System.GetPackageResult.GetPackageResult() -> void
-Bee.Business.System.GetPackageResult.PackageUrl.get -> string!
-Bee.Business.System.GetPackageResult.PackageUrl.set -> void
-Bee.Business.System.GetPackageResult.Sha256.get -> string!
-Bee.Business.System.GetPackageResult.Sha256.set -> void
 Bee.Business.System.ISystemBusinessObject
 Bee.Business.System.ISystemBusinessObject.CreateSession(Bee.Business.System.CreateSessionArgs! args) -> Bee.Business.System.CreateSessionResult!
 Bee.Business.System.ISystemBusinessObject.EnterCompany(Bee.Business.System.EnterCompanyArgs! args) -> Bee.Business.System.EnterCompanyResult!
@@ -694,7 +668,6 @@ virtual Bee.Business.System.SystemBusinessObject.GetDepartmentTree(Bee.Business.
 virtual Bee.Business.System.SystemBusinessObject.GetFormLayout(Bee.Business.System.GetFormLayoutArgs! args) -> Bee.Business.System.GetFormLayoutResult!
 virtual Bee.Business.System.SystemBusinessObject.GetFormSchema(Bee.Business.System.GetFormSchemaArgs! args) -> Bee.Business.System.GetFormSchemaResult!
 virtual Bee.Business.System.SystemBusinessObject.GetLanguage(Bee.Business.System.GetLanguageArgs! args) -> Bee.Business.System.GetLanguageResult!
-virtual Bee.Business.System.SystemBusinessObject.GetPackage(Bee.Business.System.GetPackageArgs! args) -> Bee.Business.System.GetPackageResult!
 virtual Bee.Business.System.SystemBusinessObject.LeaveCompany(Bee.Business.System.LeaveCompanyArgs! args) -> Bee.Business.System.LeaveCompanyResult!
 virtual Bee.Business.System.SystemBusinessObject.ListApiKeys(Bee.Business.System.ListApiKeysArgs! args) -> Bee.Business.System.ListApiKeysResult!
 virtual Bee.Business.System.SystemBusinessObject.Login(Bee.Business.System.LoginArgs! args) -> Bee.Business.System.LoginResult!

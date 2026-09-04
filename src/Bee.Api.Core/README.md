@@ -115,7 +115,7 @@ Bee.Api.Core/
                     ApiHeaders, PayloadFormat, ApiCallContext
     System/         Built-in system-level request/response types
                     (Login, Ping, CreateSession, GetDefine, SaveDefine,
-                    GetPackage, GetCommonConfiguration)
+                    GetCommonConfiguration)
   MessagePack/      SafeMessagePackSerializerOptions, MessagePackCodec,
                     WireContracts (explicit registrations), WireValueFormatter,
                     custom formatters for ADO.NET types

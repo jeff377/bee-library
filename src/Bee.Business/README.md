@@ -24,7 +24,7 @@
 ### System Operations
 
 - `ISystemBusinessObject` -- the cross-BO contract: `Login`, `CreateSession`, `EnterCompany`, `LeaveCompany`, `Logout`. API-only methods (`Ping`, `GetFormSchema`, `GetFormLayout`, `GetLanguage`, …) are public on the concrete class with `[ApiAccessControl]` and deliberately stay off this interface
-- Argument/result pairs for each operation: `LoginArgs`/`LoginResult`, `PingArgs`/`PingResult`, `CreateSessionArgs`/`CreateSessionResult`, `GetDefineArgs`/`GetDefineResult`, `SaveDefineArgs`/`SaveDefineResult`, `GetPackageArgs`/`GetPackageResult`, `GetCommonConfigurationArgs`/`GetCommonConfigurationResult`
+- Argument/result pairs for each operation: `LoginArgs`/`LoginResult`, `PingArgs`/`PingResult`, `CreateSessionArgs`/`CreateSessionResult`, `GetDefineArgs`/`GetDefineResult`, `SaveDefineArgs`/`SaveDefineResult`, `GetCommonConfigurationArgs`/`GetCommonConfigurationResult`
 
 ### Form Operations
 
@@ -77,7 +77,7 @@ Bee.Business/
                     # ISystemBusinessObject, SystemBusinessObject, SystemExecFuncHandler,
                     # and Args/Result pairs for system operations
                     # (Login, Ping, CreateSession, GetDefine, SaveDefine,
-                    #  GetPackage, GetCommonConfiguration)
+                    #  GetCommonConfiguration)
   Providers/        # StaticApiEncryptionKeyProvider, DynamicApiEncryptionKeyProvider,
                     # CacheDataSourceProvider
   Security/         # LoginAttemptTracker (in-memory account-lockout tracker)

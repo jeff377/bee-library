@@ -74,7 +74,6 @@
 | **Wire 契約註冊** | wire 型別顯式註冊 MessagePack formatter，因此在沒有動態碼的 runtime（iOS AOT）上同樣可用 |
 | **wire 邊界時區轉換** | 轉換發生在 payload 邊界，儲存端維持 UTC。見[時區處理](datetime-timezone.zh-TW.md) |
 | **JS 前端表面** | 非 .NET 前端走 Plain JSON，並有 `GetFormSchema` / `GetFormLayout` / `GetLanguage` 的 typed 版本 |
-| **套件更新** | `GetPackage` 讓 client 自行下載升級 |
 
 ## 5. Session 與認證
 

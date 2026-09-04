@@ -104,12 +104,6 @@ namespace Bee.Definition
         /// <summary>Stores one tenant's business plugin bindings.</summary>
         public const string SaveCustomizePluginSettings = "SaveCustomizePluginSettings";
         /// <summary>
-        /// Gets one package's delivery information (download url or inline payload). The base
-        /// business object throws; a host application supplies the implementation by overriding it.
-        /// </summary>
-        public const string GetPackage = "GetPackage";
-
-        /// <summary>
         /// Executes a custom function.
         /// </summary>
         public const string ExecFunc = "ExecFunc";

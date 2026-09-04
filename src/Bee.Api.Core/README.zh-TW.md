@@ -111,7 +111,7 @@ Bee.Api.Core/
                     ApiHeaders、PayloadFormat、ApiCallContext
     System/         內建系統級請求/回應型別
                     （Login、Ping、CreateSession、GetDefine、SaveDefine、
-                    GetPackage、GetCommonConfiguration）
+                    GetCommonConfiguration）
   MessagePack/      SafeMessagePackSerializerOptions、MessagePackCodec、
                     WireContracts（顯式註冊）、WireValueFormatter、
                     ADO.NET 型別自訂格式器

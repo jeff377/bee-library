@@ -9,7 +9,6 @@ namespace Bee.Api.Core.MessagePack
         /// </summary>
         private static void AddGenericInstantiations(List<IMessagePackFormatter> list)
         {
-            list.Add(new WireEnumFormatter<Bee.Api.Contracts.System.PackageDelivery>());
             list.Add(new WireEnumFormatter<Bee.Api.Core.Messages.PayloadFormat>());
             list.Add(new WireEnumFormatter<Bee.Base.Data.FieldDbType>());
             list.Add(new WireEnumFormatter<Bee.Definition.DefineType>());

@@ -64,7 +64,6 @@ namespace Bee.Api.Core.UnitTests
             { "SystemBusinessObject.GetFormLayout", ("Public", "Authenticated") },
             { "SystemBusinessObject.GetFormSchema", ("Public", "Authenticated") },
             { "SystemBusinessObject.GetLanguage", ("Public", "Authenticated") },
-            { "SystemBusinessObject.GetPackage", ("Encoded", "Anonymous") },
             { "SystemBusinessObject.LeaveCompany", ("Public", "Authenticated") },
             { "SystemBusinessObject.ListApiKeys", ("Encrypted", "Authenticated") },
             { "SystemBusinessObject.Login", ("Public", "Anonymous") },
