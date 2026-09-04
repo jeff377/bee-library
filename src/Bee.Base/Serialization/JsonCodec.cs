@@ -130,6 +130,29 @@ namespace Bee.Base.Serialization
         }
 
         /// <summary>
+        /// Deserializes an object directly from a JSON stream.
+        /// </summary>
+        /// <typeparam name="T">The target type.</typeparam>
+        /// <param name="stream">The stream positioned at the start of the JSON document.</param>
+        /// <param name="cancellationToken">Cancels the read.</param>
+        /// <remarks>
+        /// The string overload materialises the whole document as UTF-16 before parsing it. On a
+        /// request path that is a second copy of every byte received, and for a large body it is a
+        /// large-object-heap allocation per request per direction. Reading from the stream skips it.
+        /// <para>
+        /// Uses the same options as <see cref="Deserialize{T}(string, bool)"/>, so the two agree on
+        /// naming, enums and the <c>DataTable</c> / <c>DataSet</c> converters. Nothing here should
+        /// ever construct its own options: they are the type-contract cache, and a per-call instance
+        /// misses it every time.
+        /// </para>
+        /// </remarks>
+        public static ValueTask<T?> DeserializeAsync<T>(Stream stream, CancellationToken cancellationToken = default)
+        {
+            var options = GetJsonSerializerOptions(true, false, writeIndented: false);
+            return JsonSerializer.DeserializeAsync<T>(stream, options, cancellationToken);
+        }
+
+        /// <summary>
         /// Serializes an object to a JSON file.
         /// </summary>
         /// <param name="value">The object to serialize.</param>
