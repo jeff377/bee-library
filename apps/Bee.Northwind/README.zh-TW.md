@@ -264,7 +264,7 @@ Region 是業務資料,所以放在 **company** 分類(`TableSchema/company/`),�
 </FormSchema>
 ```
 
-不需要寫 `FormLayout` 檔 —— 框架會在交付時從 `FormSchema` 自動產生版面。
+同時要寫對應的 `FormLayout/ft_region.FormLayout.xml`。執行階段渲染的就是這個檔，**檔案不存在會失敗** —— 框架不再從 `FormSchema` 推導版面。`FormLayoutGenerator` 可在設計階段依 schema 產生一份初稿，產出後存檔，之後就跟其他定義檔一樣編輯。
 
 ### 3. 註冊資料表 —— 加到 `Define/DbCategorySettings.xml` 的 company 分類
 

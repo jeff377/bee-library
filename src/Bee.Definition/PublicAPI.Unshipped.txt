@@ -1,1 +1,2 @@
 #nullable enable
+const Bee.Definition.ProtectedFields.Password = "password" -> string!

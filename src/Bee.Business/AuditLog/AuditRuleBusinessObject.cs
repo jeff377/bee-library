@@ -25,8 +25,16 @@ namespace Bee.Business.AuditLog
         /// <param name="ctx">The business context.</param>
         /// <param name="accessToken">The current request's access token.</param>
         /// <param name="progId">The program identifier.</param>
-        public AuditRuleBusinessObject(IBeeContext ctx, Guid accessToken, string progId)
-            : base(ctx, accessToken, progId)
+        /// <param name="isLocalCall">Whether the call originates from a local source.</param>
+        /// <remarks>
+        /// WARNING: the parameter list must match what <see cref="BusinessObjectFactory"/> passes to
+        /// <c>Activator.CreateInstance</c>. Constructors are not inherited, so a reserved business
+        /// object that declares a shorter one is unreachable through JSON-RPC dispatch — the factory
+        /// throws <c>MissingMethodException</c> before the method is ever looked up. The
+        /// <c>ReservedProgIdConstructionTests</c> gate is what keeps this true.
+        /// </remarks>
+        public AuditRuleBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+            : base(ctx, accessToken, progId, isLocalCall)
         {
         }
 

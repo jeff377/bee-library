@@ -271,7 +271,7 @@ A region is business data, so it goes in the **company** category (`TableSchema/
 </FormSchema>
 ```
 
-There is no `FormLayout` file to write — the framework generates the layout from the `FormSchema` at delivery time.
+Write the matching `FormLayout/ft_region.FormLayout.xml` as well. The runtime renders that file and **fails when it is absent** — it no longer derives a layout from the `FormSchema`. `FormLayoutGenerator` produces a starting point from the schema at design time; the result is saved and edited like any other definition.
 
 ### 3. Register the table — add to the company category in `Define/DbCategorySettings.xml`
 

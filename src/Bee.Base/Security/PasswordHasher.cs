@@ -50,6 +50,7 @@ namespace Bee.Base.Security
                     int iterations = int.Parse(parts[0], CultureInfo.InvariantCulture);
                     byte[] salt = Convert.FromBase64String(parts[1]);
                     byte[] storedHash = Convert.FromBase64String(parts[2]);
+                    if (!IsUsableStoredHash(salt, storedHash)) { return false; }
                     var computedHash = PBKDF2SHA256(password, salt, iterations, storedHash.Length);
                     return CryptographicOperations.FixedTimeEquals(storedHash, computedHash);
                 }
@@ -61,6 +62,7 @@ namespace Bee.Base.Security
                     int iterations = int.Parse(parts[0], CultureInfo.InvariantCulture);
                     byte[] salt = Convert.FromBase64String(parts[1]);
                     byte[] storedHash = Convert.FromBase64String(parts[2]);
+                    if (!IsUsableStoredHash(salt, storedHash)) { return false; }
                     var computedHash = PBKDF2SHA1Legacy(password, salt, iterations, storedHash.Length);
                     return CryptographicOperations.FixedTimeEquals(storedHash, computedHash);
                 }
@@ -73,6 +75,29 @@ namespace Bee.Base.Security
                 return false;
             }
         }
+
+        /// <summary>
+        /// Determines whether the components parsed out of a stored hash can represent a real hash.
+        /// </summary>
+        /// <param name="salt">The salt parsed from the stored value.</param>
+        /// <param name="storedHash">The hash parsed from the stored value.</param>
+        /// <remarks>
+        /// WARNING: without this an empty hash segment authenticates every password. PBKDF2 asked for
+        /// zero output bytes returns an empty array, and
+        /// <see cref="CryptographicOperations.FixedTimeEquals(ReadOnlySpan{byte}, ReadOnlySpan{byte})"/>
+        /// reports two empty spans as equal — so a stored value of <c>v2.100000..</c> would verify
+        /// against anything. Both format branches parse their components the same way and so need the
+        /// same guard.
+        /// <para>
+        /// The iteration count is deliberately not floored here. A low count weakens offline cracking
+        /// of that one password, but reaching it already requires the ability to write the stored
+        /// value, and a floor would lock out legitimate legacy hashes created with fewer iterations.
+        /// Counts of zero or less are already rejected: PBKDF2 throws for them and the caller's
+        /// catch turns that into a failed verification.
+        /// </para>
+        /// </remarks>
+        private static bool IsUsableStoredHash(byte[] salt, byte[] storedHash)
+            => salt.Length > 0 && storedHash.Length > 0;
 
         /// <summary>
         /// Generates a PBKDF2-SHA256 hash.

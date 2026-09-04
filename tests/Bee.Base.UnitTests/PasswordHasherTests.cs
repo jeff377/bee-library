@@ -105,5 +105,43 @@ namespace Bee.Base.UnitTests
             // Base64 解析失敗 → catch 區段回傳 false
             Assert.False(PasswordHasher.VerifyPassword("any", "v2.100000.!!!bad-base64!!!.xx"));
         }
+
+        /// <summary>
+        /// 雜湊段為空的儲存值不得驗證通過任何密碼。
+        /// </summary>
+        /// <remarks>
+        /// 這條守的是一個實測過的繞過：PBKDF2 要 0 個輸出位元組會回空陣列，而
+        /// <c>CryptographicOperations.FixedTimeEquals</c> 判定兩個空 span 相等，於是
+        /// <c>v2.100000..</c> 這種儲存值會對<b>任何</b>密碼回傳 true。v2 與 legacy 兩個分支
+        /// 各自解析、各自比對，所以兩邊都要測；鹽為空同理。
+        /// </remarks>
+        [Theory]
+        [InlineData("v2.100000..")]
+        [InlineData("v2.1..")]
+        [InlineData("1..")]
+        [InlineData("v2.100000.AAAAAAAAAAAAAAAAAAAAAA==.")]
+        [InlineData("v2.100000..AAAAAAAAAAAAAAAAAAAAAA==")]
+        [DisplayName("雜湊段或鹽為空的儲存值應驗證失敗（不得對任意密碼回傳 true）")]
+        public void VerifyPassword_EmptyHashOrSaltSegment_ReturnsFalse(string storedHash)
+        {
+            Assert.False(PasswordHasher.VerifyPassword("any password at all", storedHash));
+            Assert.False(PasswordHasher.VerifyPassword(string.Empty, storedHash));
+        }
+
+        /// <summary>
+        /// 對照組：雜湊段非空時仍照常區分正確與錯誤密碼。
+        /// </summary>
+        /// <remarks>
+        /// 沒有這一條，上面那個 Theory 也可以用「一律回 false」來滿足 —— 那會鎖死所有人。
+        /// </remarks>
+        [Fact]
+        [DisplayName("對照組：雜湊段非空時驗證行為不變")]
+        public void VerifyPassword_NonEmptySegments_StillDiscriminates()
+        {
+            string stored = PasswordHasher.HashPassword("correct horse");
+
+            Assert.True(PasswordHasher.VerifyPassword("correct horse", stored));
+            Assert.False(PasswordHasher.VerifyPassword("wrong horse", stored));
+        }
     }
 }

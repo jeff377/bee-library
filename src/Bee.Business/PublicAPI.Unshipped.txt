@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*Bee.Business.AuditLog.AuditRuleBusinessObject.AuditRuleBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId) -> void
+Bee.Business.AuditLog.AuditRuleBusinessObject.AuditRuleBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId, bool isLocalCall = true) -> void

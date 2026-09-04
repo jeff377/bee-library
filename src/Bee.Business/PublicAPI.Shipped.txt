@@ -5,7 +5,6 @@ Bee.Business.Attributes.ExecFuncAccessControlAttribute.ExecFuncAccessControlAttr
 Bee.Business.Attributes.ExecFuncAccessControlAttribute.LocalOnly.get -> bool
 Bee.Business.Attributes.ExecFuncAccessControlAttribute.LocalOnly.set -> void
 Bee.Business.AuditLog.AuditRuleBusinessObject
-Bee.Business.AuditLog.AuditRuleBusinessObject.AuditRuleBusinessObject(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId) -> void
 Bee.Business.AuditLog.GetAccessLogArgs
 Bee.Business.AuditLog.GetAccessLogArgs.FromUtc.get -> System.DateTime?
 Bee.Business.AuditLog.GetAccessLogArgs.FromUtc.set -> void

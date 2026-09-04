@@ -22,9 +22,23 @@ namespace Bee.Definition
         /// </summary>
         public const string DeploymentAdmin = "deployment_admin";
 
+        /// <summary>
+        /// The password hash on <c>st_user</c>. Written only by the dedicated password operations,
+        /// which hash what they store.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: this column grants the privilege of <i>being</i> the user, so the FormSchema path
+        /// must not write it whatever a deployment's user-maintenance form declares. Its shape is
+        /// also load-bearing — <c>PasswordHasher.VerifyPassword</c> reads the iteration count, salt
+        /// and hash out of the stored string — so a form writing it would be storing values the
+        /// verifier never produced.
+        /// </remarks>
+        public const string Password = "password";
+
         private static readonly HashSet<string> s_protected = new(StringComparer.OrdinalIgnoreCase)
         {
             $"st_user.{DeploymentAdmin}",
+            $"st_user.{Password}",
         };
 
         /// <summary>
