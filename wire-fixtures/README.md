@@ -83,3 +83,10 @@ BEE_REGENERATE_WIRE_FIXTURES=1 dotnet test tests/Bee.Api.Core.UnitTests/Bee.Api.
 ```
 
 Read the resulting diff before committing it — that diff is the wire change description.
+
+## Who consumes this
+
+[`bee-connector-js`](https://github.com/jeff377/bee-connector-js) fetches these samples in its
+`test:wire` suite instead of committing a copy. **A diff here turns that repository's CI red**, and
+that is the intended notification — the samples are the only shared fact between the two languages,
+so a change that lands here and nowhere else leaves the TypeScript reader parsing the old shape.

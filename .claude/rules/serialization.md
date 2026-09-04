@@ -24,6 +24,21 @@ codec 回應**；**未宣告即 MessagePack** —— 那是相容性常數而非
 > 「框架沒有 JSON body serializer」「`CreateSerializer` 只有一個 case」是 **4.26.0 以前**的結論，
 > **別再照它推導**。
 
+## wire 形狀變更有另一個 repo 的下游
+
+`wire-contracts/messages.d.ts` 與 `wire-fixtures/` 是**跨語言合約的權威來源**，
+TypeScript 客戶端 [`bee-connector-js`](https://github.com/jeff377/bee-connector-js)
+同步它們（刻意不簽入副本 —— 複製一份就是第二個權威），其 CI 會比對抓到的內容。
+
+因此**改動這兩處會讓那個 repo 的 CI 變紅，那是預期行為、不是意外** —— 紅燈就是通知機制。
+只在這邊落地而沒有跟進另一邊，等於讓同一份合約的兩半互相矛盾，而 TS 端仍照舊形狀解析。
+
+> 這條規則刻意記在 bee-library 而不是 bee-connector-js：**需要它的是在這裡改 wire 的人**，
+> 而那個人不會打開另一個 repo。記在那邊等於保證被忽略。
+
+判別法：**這次改動會讓 `wire-contracts/` 或 `wire-fixtures/` 出現 diff 嗎？** 會，就要一起安排
+另一邊。相關的重生成指令寫在那兩個資料夾各自的 README，本檔不複寫。
+
 ## 定義層不得引入傳輸格式套件（adr-036）
 
 `src/Bee.Definition` **不得**有 `MessagePack`（或任何傳輸格式套件）的 `PackageReference`。

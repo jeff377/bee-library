@@ -13,8 +13,47 @@ namespace Bee.UI.Core
     /// <summary>
     /// Provides client-side connection state and access to API connectors.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// WARNING: this holds <b>one signed-in user's</b> state in process-wide statics — the access
+    /// token, the capability snapshot, the entered company, and a definition cache carrying that
+    /// user's tenant customization. That is correct for a desktop head, where one process serves one
+    /// user, and <b>wrong for a host that serves several users from one process</b>: every session
+    /// would write the same fields, so the last sign-in wins and earlier users would read someone
+    /// else's identity.
+    /// </para>
+    /// <para>
+    /// This is a stated limitation, not an oversight — but nothing in the type system marks the
+    /// boundary, so a server-side UI head built on this package inherits the defect silently.
+    /// <c>Bee.Api.Client</c> already went through this: its per-user statics moved to
+    /// <c>ApiSessionContext</c>, one instance per session. A multi-user head needs the same
+    /// treatment here before using this type.
+    /// </para>
+    /// <para>
+    /// Deployment-level values are a different matter and belong exactly where they are:
+    /// <see cref="EndpointStorage"/> and <see cref="ApiKeyStorage"/> identify the application, not
+    /// a user, so making them per-session would be wrong rather than safer.
+    /// </para>
+    /// </remarks>
     public static class ClientInfo
     {
+        /// <summary>
+        /// Guards the lazily created singletons and the resets that clear them.
+        /// </summary>
+        /// <remarks>
+        /// The getters are reached from the UI thread and from continuations of
+        /// <c>ConfigureAwait(false)</c> awaits, so two threads can enter the same <c>??=</c> at once.
+        /// The wasted instance is not the problem — the orphan is: <see cref="ResetDefineCache"/>
+        /// would clear whichever one it happens to hold while callers keep using the other, and a
+        /// tenant switch would leave the old customization in play.
+        /// <para>
+        /// A <see cref="Lazy{T}"/> would not fit: these are deliberately resettable (a new access
+        /// token drops the connector and the definition cache), and replacing the <c>Lazy</c>
+        /// instance only moves the race.
+        /// </para>
+        /// </remarks>
+        private static readonly Lock s_stateGate = new();
+
         private static ClientSettings? _clientSettings;
         private static SystemApiConnector? _systemConnector;
         private static ClientDefineAccess? _defineAccess;
@@ -47,8 +86,7 @@ namespace Bee.UI.Core
         {
             get
             {
-                _clientSettings ??= LoadClientSettings();
-                return _clientSettings;
+                lock (s_stateGate) { return _clientSettings ??= LoadClientSettings(); }
             }
         }
 
@@ -81,13 +119,18 @@ namespace Bee.UI.Core
                 // 否則後續呼叫會帶舊 token 對 server 失敗。
                 if (value != _accessToken)
                 {
-                    _accessToken = value;
-                    _systemConnector = null;
-                    _defineAccess = null;
-                    // A new (or cleared) token means a different identity — the cached capability
-                    // snapshot no longer applies. Reset to null so degradation is disabled until
-                    // the next EnterCompany populates it.
-                    _capabilities = null;
+                    // One identity change, one visible step: a reader must not be able to catch a
+                    // new token paired with the previous identity's capability snapshot.
+                    lock (s_stateGate)
+                    {
+                        _accessToken = value;
+                        _systemConnector = null;
+                        _defineAccess = null;
+                        // A new (or cleared) token means a different identity — the cached capability
+                        // snapshot no longer applies. Reset to null so degradation is disabled until
+                        // the next EnterCompany populates it.
+                        _capabilities = null;
+                    }
                 }
             }
         }
@@ -99,8 +142,7 @@ namespace Bee.UI.Core
         {
             get
             {
-                _systemConnector ??= CreateSystemApiConnector();
-                return _systemConnector;
+                lock (s_stateGate) { return _systemConnector ??= CreateSystemApiConnector(); }
             }
         }
 
@@ -139,8 +181,7 @@ namespace Bee.UI.Core
         {
             get
             {
-                _defineAccess ??= new ClientDefineAccess(SystemApiConnector);
-                return _defineAccess;
+                lock (s_stateGate) { return _defineAccess ??= new ClientDefineAccess(SystemApiConnector); }
             }
         }
 
@@ -161,7 +202,9 @@ namespace Bee.UI.Core
         /// </remarks>
         public static void ResetDefineCache()
         {
-            _defineAccess?.ClearCache();
+            ClientDefineAccess? defineAccess;
+            lock (s_stateGate) { defineAccess = _defineAccess; }
+            defineAccess?.ClearCache();
         }
 
         /// <summary>

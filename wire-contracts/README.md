@@ -38,3 +38,13 @@ BEE_REGENERATE_WIRE_CONTRACTS=1 dotnet test tests/Bee.Api.Core.UnitTests/Bee.Api
 ```
 
 Read the resulting diff before committing it.
+
+## Who consumes this
+
+[`bee-connector-js`](https://github.com/jeff377/bee-connector-js) — the TypeScript client — syncs
+this file rather than keeping a copy, and its CI compares what it fetched against what is here.
+
+That has a consequence worth expecting rather than discovering: **a wire change made here turns that
+repository's CI red**, and it is meant to. The red is the notification. Landing a change to these
+declarations or to `wire-fixtures/` without following it up there leaves the two halves of one
+contract disagreeing, with the TypeScript side reading the old shape.
