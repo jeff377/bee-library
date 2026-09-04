@@ -1,5 +1,7 @@
 using System.Data;
 using System.Globalization;
+using Bee.Base.Data;
+using Bee.Db.Manager;
 using Bee.Definition.Database;
 
 namespace Bee.Db.CacheNotify
@@ -52,7 +54,7 @@ namespace Bee.Db.CacheNotify
             // Read as a naive value (no parameters involved) to match the tz-naive column.
             var scalar = dbAccess.ExecuteScalar($"SELECT MAX({upd}) FROM {tbl}");
             if (scalar is null || scalar is DBNull)
-                scalar = dbAccess.ExecuteScalar(NaiveNowCommandText(databaseType));
+                scalar = dbAccess.ExecuteScalar(BaselineNowCommandText(databaseType));
 
             return Convert.ToDateTime(scalar, CultureInfo.InvariantCulture);
         }
@@ -92,17 +94,41 @@ namespace Bee.Db.CacheNotify
             return changes;
         }
 
-        // Server "now" as a tz-naive value matching the sys_update_time column type. Distinct from
-        // the column's default expression, which is tz-aware on PostgreSQL/Oracle.
-        private static string NaiveNowCommandText(DatabaseType databaseType) => databaseType switch
+        /// <summary>
+        /// Server "now" for the empty-table baseline, taken from the same dialect expression that
+        /// stamps <c>sys_update_time</c>.
+        /// </summary>
+        /// <param name="databaseType">The dialect to build the statement for.</param>
+        /// <returns>A SELECT returning one value on the same basis as the rows being polled.</returns>
+        /// <remarks>
+        /// WARNING: this must stay on the same basis as the write side, and it did not. It used to
+        /// carry its own dialect table returning <b>server local</b> time (<c>getdate()</c>,
+        /// <c>LOCALTIMESTAMP</c>, <c>CURRENT_TIMESTAMP(6)</c>) while every row is stamped in
+        /// <b>UTC</b> — by the column's CREATE TABLE default and by
+        /// <c>CacheNotifyService.BuildUpsertSpec</c>, both of which read
+        /// <see cref="Bee.Db.Providers.IDialectFactory.GetDefaultValueExpression"/>. On a database server in a
+        /// zone ahead of UTC the baseline therefore started in the future, so
+        /// <see cref="ReadChangesSince"/> matched nothing and cache invalidation was silently dead
+        /// until wall-clock time caught up — eight hours on a UTC+8 server. Invisible wherever the
+        /// server runs UTC, which is why local containers and CI never showed it.
+        /// <para>
+        /// Asking the registry rather than keeping a second table here is the point: two dialect
+        /// tables that must agree will drift, and this one drifts silently.
+        /// </para>
+        /// </remarks>
+        internal static string BaselineNowCommandText(DatabaseType databaseType)
         {
-            DatabaseType.SQLServer => "SELECT getdate()",
-            DatabaseType.PostgreSQL => "SELECT LOCALTIMESTAMP",
-            DatabaseType.MySQL => "SELECT CURRENT_TIMESTAMP(6)",
-            DatabaseType.Oracle => "SELECT LOCALTIMESTAMP FROM dual",
-            DatabaseType.SQLite => "SELECT CURRENT_TIMESTAMP",
-            _ => throw new NotSupportedException($"Cache-notify baseline now is not defined for {databaseType}.")
-        };
+            // Registered-check first so an unsupported dialect keeps reporting NotSupportedException
+            // rather than the registry's KeyNotFoundException.
+            string now = DbDialectRegistry.IsRegistered(databaseType)
+                ? DbDialectRegistry.Get(databaseType).GetDefaultValueExpression(FieldDbType.DateTime)
+                : string.Empty;
+            if (now.Length == 0)
+                throw new NotSupportedException($"Cache-notify baseline now is not defined for {databaseType}.");
+
+            // Oracle has no FROM-less SELECT.
+            return databaseType == DatabaseType.Oracle ? $"SELECT {now} FROM dual" : $"SELECT {now}";
+        }
 
         // (DateTime format, SQL cast template) for the high-water threshold passed as a string.
         // Formats are paired with their cast so MySQL (space separator) and the ISO-8601 'T'
