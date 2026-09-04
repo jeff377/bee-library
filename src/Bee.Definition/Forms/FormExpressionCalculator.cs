@@ -354,7 +354,7 @@ namespace Bee.Definition.Forms
         /// the <see cref="DataColumn"/> name: expressions reference fields by their declared name and the
         /// engine's identifiers are case-sensitive, so keying by the column name would bind the expression
         /// to whatever casing the in-memory DataSet happens to store. That casing has changed once
-        /// already — <c>DataTableExtensions.AddColumn</c> stored column names uppercased before ADR-029
+        /// already — <c>AddColumn</c> stored column names uppercased before ADR-029
         /// and lowercases them now — and keying by the column name left <c>quantity</c> unresolved against
         /// a <c>QUANTITY</c> column. Columns with no schema field fall back to their column name (nothing
         /// references them).

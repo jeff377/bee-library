@@ -11,7 +11,7 @@ namespace Bee.Definition
     /// </summary>
     /// <remarks>
     /// Uses <see cref="CollectionBase{T}"/> (not a keyed collection) so the table travels
-    /// over the MessagePack wire as part of <c>CompanyInfo</c>; the custom MessagePack resolver only
+    /// over the MessagePack wire as part of <see cref="Bee.Definition.Identity.CompanyInfo"/>; the custom MessagePack resolver only
     /// recognises this base. The keyed-lookup semantics are provided by <see cref="FindDecimals"/>.
     /// </remarks>
     [Description("Company number-format override table.")]

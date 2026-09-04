@@ -11,7 +11,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
 {
     /// <summary>
     /// Field editor for <see cref="ControlType.DropDownEdit"/>: a <see cref="ComboBox"/>
-    /// that loads its options from <c>FormField.ListItems</c> and binds the selected
+    /// that loads its options from <see cref="Bee.Definition.Forms.FormField.ListItems"/> and binds the selected
     /// <see cref="ListItem.Value"/> to a <see cref="FormDataObject"/> field.
     /// </summary>
     public class DropDownEdit : ComboBox, IFieldEditor

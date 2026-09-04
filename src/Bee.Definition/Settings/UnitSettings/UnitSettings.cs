@@ -8,7 +8,7 @@ namespace Bee.Definition.Settings
     /// System-level unit-of-measure master (SAP T006-style): a curated table of <see cref="UnitItem"/>
     /// carrying each unit's display decimals. Unit decimals are system-wide and independent of company;
     /// quantities and weights bind a unit field and resolve their decimals from the bound unit's value.
-    /// Persisted as a singleton define through <c>IDefineStorage</c> (file or DB) and shipped to the
+    /// Persisted as a singleton define through <see cref="Bee.Definition.Storage.IDefineStorage"/> (file or DB) and shipped to the
     /// client so the UI can resolve quantity/weight decimals at runtime.
     /// </summary>
     /// <remarks>

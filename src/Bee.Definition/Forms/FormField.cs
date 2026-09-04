@@ -294,7 +294,7 @@ namespace Bee.Definition.Forms
         /// layout generator to <see cref="Layouts.LayoutFieldBase.ReadOnly"/>, so a
         /// <see cref="FormSchema"/> can mark computed or server-derived fields (for example an
         /// order line amount calculated by the business object) non-editable without authoring a
-        /// separate <c>FormLayout</c>.
+        /// separate <see cref="FormLayout"/>.
         /// </summary>
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
@@ -305,7 +305,7 @@ namespace Bee.Definition.Forms
         /// <summary>
         /// Gets or sets a value indicating whether this field is required (mandatory input).
         /// Propagated by the layout generator to <see cref="Layouts.LayoutFieldBase.Required"/>,
-        /// driving the required caption colour cue without authoring a separate <c>FormLayout</c>.
+        /// driving the required caption colour cue without authoring a separate <see cref="FormLayout"/>.
         /// </summary>
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
@@ -336,7 +336,7 @@ namespace Bee.Definition.Forms
         /// or a fully-qualified <c>"{namespace}.{enumName}"</c> (e.g. <c>"Common.Gender"</c>).
         /// </summary>
         /// <remarks>
-        /// When non-empty, <c>FormSchemaLocalizer</c> replaces <see cref="ListItems"/> with
+        /// When non-empty, <see cref="Bee.Definition.Language.FormSchemaLocalizer"/> replaces <c>ListItems</c> with
         /// the resolved <see cref="Language.LanguageEnum"/> entries at API delivery time.
         /// Leave empty to keep statically-defined <see cref="ListItems"/> as the option source.
         /// </remarks>

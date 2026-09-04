@@ -30,7 +30,7 @@ namespace Bee.Api.Core.JsonRpc
     /// switch in <see cref="Validate"/> when adding one.
     ///
     /// This runs at the Connector boundary rather than at a serializer entry point on purpose:
-    /// in-process calls (<c>LocalApiProvider</c> with <c>PayloadFormat.Plain</c>) never serialize,
+    /// in-process calls (<c>LocalApiProvider</c> with <c>Plain</c>) never serialize,
     /// so a serializer-level guard would leave that path unguarded.
     /// </remarks>
     public static class DateTimeWireGuard

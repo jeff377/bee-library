@@ -16,7 +16,7 @@ namespace Bee.Repository.Form
     /// <summary>
     /// Repository implementation for data forms; executes FormSchema-driven SELECT
     /// statements against the master table via the dialect-specific
-    /// <c>IFormCommandBuilder</c>.
+    /// <see cref="Bee.Db.Dml.IFormCommandBuilder"/>.
     /// </summary>
     public partial class DataFormRepository : RepositoryBase, IDataFormRepository
     {

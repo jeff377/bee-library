@@ -2,7 +2,7 @@ namespace Bee.Definition.Identity
 {
     /// <summary>
     /// The record-scope identity of the current user within an entered company, resolved once at
-    /// <c>EnterCompany</c> and snapshotted onto <c>SessionInfo</c> so scope filtering runs from memory.
+    /// <c>EnterCompany</c> and snapshotted onto <see cref="SessionInfo"/> so scope filtering runs from memory.
     /// </summary>
     /// <param name="UserRowId">The user row id (<c>st_user.sys_rowid</c>); used by the <c>Own</c> scope.</param>
     /// <param name="EmployeeRowId">The linked employee row id (<c>st_employee.sys_rowid</c>); <see cref="System.Guid.Empty"/> when the user has no employee in this company. Used by the <c>Own</c> scope.</param>

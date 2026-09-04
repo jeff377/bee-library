@@ -34,7 +34,7 @@ namespace Bee.Api.Core.Authorization
         /// <see cref="ApiKeyValidationResult.NotChecked"/> when the key gate did not run.
         /// </summary>
         /// <remarks>
-        /// Deliberately a verdict rather than an <c>IApiKeyValidator</c>: this type is a data
+        /// Deliberately a verdict rather than an <see cref="IApiKeyValidator"/>: this type is a data
         /// carrier, and holding a service here would make it a service locator and put the
         /// authorization validator — which only decides — in charge of running the check.
         /// The transport layer validates once and the verdict is then read by the authorization

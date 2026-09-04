@@ -13,7 +13,7 @@ namespace Bee.Definition.Logging
     /// observes anomalies from taking a dependency on the audit trail.
     /// <para>
     /// IMPORTANT: the separation is one-directional. <see cref="AnomalyEntry"/> derives from
-    /// <c>AuditEntry</c> so the two share one write pipeline, which means
+    /// <see cref="AuditEntry"/> so the two share one write pipeline, which means
     /// <see cref="IAuditLogWriter"/> still accepts an anomaly entry. What the type system prevents
     /// is the reverse — an anomaly producer cannot write a login, change or access record.
     /// </para>

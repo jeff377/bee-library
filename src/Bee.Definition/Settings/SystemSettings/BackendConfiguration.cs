@@ -57,7 +57,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         /// <remarks>
         /// Kept here alongside <see cref="CacheNotifyOptions"/> rather than under
-        /// <c>BackgroundServiceConfiguration</c>: <c>AddBeeFramework</c> receives this object, and
+        /// <see cref="BackgroundServiceConfiguration"/>: <c>AddBeeFramework</c> receives this object, and
         /// a hosted service can only be registered from settings it can actually see at that
         /// point.
         /// </remarks>

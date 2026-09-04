@@ -11,7 +11,7 @@ namespace Bee.Definition.Organization
     /// never serialised.
     /// </summary>
     /// <remarks>
-    /// Loaded by <c>DepartmentTreeService</c> from the company database (flat <see cref="DepartmentRow"/>
+    /// Loaded by <c>DepartmentTreeService</c> from the company database (flat <see cref="Bee.Definition.Organization.DepartmentRow"/>
     /// rows) and cached per company so scope queries (<c>Dept</c> / <c>DeptAndSub</c>) run from memory.
     /// The nested forest is immutable after construction; the index is a read-only derivation (built
     /// once under a lock), so a cached instance is never mutated by queries.

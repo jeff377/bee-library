@@ -5,7 +5,7 @@ namespace Bee.Definition.Settings
     /// </summary>
     /// <remarks>
     /// Strategies are pure semantics: the concrete column is supplied by the consuming
-    /// FormSchema via <c>FormField.ScopeRole</c>, not named here. Parameterised strategies
+    /// FormSchema via <see cref="Bee.Definition.Forms.FormField.ScopeRole"/>, not named here. Parameterised strategies
     /// (owner-field, node lists, custom predicates) are deferred — this phase ships the four
     /// parameter-free strategies plus <see cref="Inherit"/>.
     /// </remarks>

@@ -42,11 +42,11 @@ namespace Bee.Definition.Language
         /// throws <c>ArgumentException: Property set method not found</c> mid-document, which
         /// surfaces as the misleading "error in XML document (line, col)". The desktop's
         /// Emit-based path fills get-only collections happily, so this only ever fails on device.
-        /// <c>[XmlArray]</c> collections (<c>LanguageResource.Items</c>, <c>.Enums</c>) are not
+        /// <c>[XmlArray]</c> collections (<see cref="LanguageResource.Items"/>, <c>.Enums</c>) are not
         /// affected and stay get-only.
         /// <para>
         /// NOTE: The setter copies into the existing collection instead of replacing the field.
-        /// <c>KeyCollectionBase.Owner</c> is get-only and can only be set by the constructor, so
+        /// <c>Owner</c> is get-only and can only be set by the constructor, so
         /// assigning the incoming instance — which <c>XmlSerializer</c> built through the
         /// parameterless constructor and therefore has no owner — would permanently break the
         /// back-reference to this enum.

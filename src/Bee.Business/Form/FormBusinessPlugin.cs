@@ -9,7 +9,7 @@ namespace Bee.Business.Form
     /// <remarks>
     /// <para>
     /// Override only the stages the customization needs; the rest do nothing. A plugin is bound to
-    /// a progId in <c>PluginSettings</c>, which names the type and nothing else — the stages come
+    /// a progId in <see cref="Bee.Definition.Settings.PluginSettings"/>, which names the type and nothing else — the stages come
     /// from what the class overrides, so one requirement that spans several stages stays one class.
     /// </para>
     /// <para>

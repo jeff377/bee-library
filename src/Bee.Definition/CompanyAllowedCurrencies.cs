@@ -7,12 +7,12 @@ namespace Bee.Definition
     /// <summary>
     /// A company-level whitelist of usable currency codes (a per-company subset stricter than the
     /// SAP/Odoo global model). Empty means the company may use every currency in the system
-    /// <c>CurrencySettings</c>. Drives the currency drop-down options on documents. Carried by
-    /// <c>CompanyInfo</c> over the MessagePack wire.
+    /// <see cref="CurrencySettings"/>. Drives the currency drop-down options on documents. Carried by
+    /// <see cref="Bee.Definition.Identity.CompanyInfo"/> over the MessagePack wire.
     /// </summary>
     /// <remarks>
     /// Uses <see cref="CollectionBase{T}"/> so the whitelist serializes cleanly as part of
-    /// <c>CompanyInfo</c>; <c>MessagePackCodec</c> registers
+    /// <see cref="Bee.Definition.Identity.CompanyInfo"/>; <c>MessagePackCodec</c> registers
     /// <c>CollectionBaseFormatter&lt;CompanyAllowedCurrencies, AllowedCurrencyItem&gt;</c>.
     /// </remarks>
     [Description("Company allowed-currency whitelist.")]

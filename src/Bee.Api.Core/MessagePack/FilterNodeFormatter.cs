@@ -10,7 +10,7 @@ namespace Bee.Api.Core.MessagePack
     /// carrying an explicit <c>Kind</c> discriminator.
     /// </summary>
     /// <remarks>
-    /// Mirrors what <c>FilterNodeCollectionJsonConverter</c> already does on the JSON wire: read
+    /// Mirrors what <see cref="FilterNodeCollectionJsonConverter"/> already does on the JSON wire: read
     /// <see cref="FilterNode.Kind"/>, pick the concrete type, bind its members. Doing the same here
     /// gives the two formats one shared mental model, and lets the definition layer drop
     /// <c>[Union]</c> — the only reason it was pinned to integer keys.

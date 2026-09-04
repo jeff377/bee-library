@@ -68,7 +68,7 @@ namespace Bee.Business
 
         /// <summary>
         /// Reads the session's tenant customization code so the resolver can overlay the
-        /// customization <c>ProgramSettings</c> on top of the base one. Anonymous calls and
+        /// customization <see cref="Bee.Definition.Settings.ProgramSettings"/> on top of the base one. Anonymous calls and
         /// sessions that have not entered a company yield an empty code, which resolves against
         /// the base layer exactly as before.
         /// </summary>

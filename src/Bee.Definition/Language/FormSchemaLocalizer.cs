@@ -20,7 +20,7 @@ namespace Bee.Definition.Language
     /// </para>
     /// <para>
     /// The localizer mutates the schema in place. Callers that share schema instances
-    /// (e.g. via the <c>FormSchema</c> Define cache) must clone first; this class deliberately
+    /// (e.g. via the <see cref="FormSchema"/> Define cache) must clone first; this class deliberately
     /// does <b>not</b> clone, so the same helper composes cleanly with explicit cloning at
     /// the call site (typically the BO method right before returning to the API surface).
     /// </para>
@@ -70,7 +70,7 @@ namespace Bee.Definition.Language
         /// </summary>
         /// <param name="schema">The schema to mutate. Must not be a shared cache instance — clone first.</param>
         /// <param name="customizeId">
-        /// The tenant customization code, from <c>SessionInfo.CustomizeId</c>. Empty resolves against
+        /// The tenant customization code, from <see cref="Bee.Definition.Identity.SessionInfo.CustomizeId"/>. Empty resolves against
         /// the base layer only — identical to <see cref="Localize(FormSchema, string)"/>.
         /// </param>
         /// <param name="lang">The BCP-47 language code (e.g. <c>"zh-TW"</c>).</param>

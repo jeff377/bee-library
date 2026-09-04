@@ -26,7 +26,7 @@ namespace Bee.UI.Core
     /// This is a stated limitation, not an oversight — but nothing in the type system marks the
     /// boundary, so a server-side UI head built on this package inherits the defect silently.
     /// <c>Bee.Api.Client</c> already went through this: its per-user statics moved to
-    /// <c>ApiSessionContext</c>, one instance per session. A multi-user head needs the same
+    /// <see cref="ApiSessionContext"/>, one instance per session. A multi-user head needs the same
     /// treatment here before using this type.
     /// </para>
     /// <para>
@@ -248,7 +248,7 @@ namespace Bee.UI.Core
         /// <summary>
         /// Caches the capability snapshot and company info from an <c>EnterCompany</c> response, and
         /// discards definitions cached for the previous tenant. The host calls this after
-        /// <c>SystemApiConnector.EnterCompanyAsync</c>.
+        /// <see cref="SystemApiConnector.EnterCompanyAsync"/>.
         /// </summary>
         /// <remarks>
         /// The cache flush is done here rather than left to the caller. Entering a company is exactly

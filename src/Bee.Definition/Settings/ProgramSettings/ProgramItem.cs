@@ -60,7 +60,7 @@ namespace Bee.Definition.Settings
         /// Expected format: <c>"Namespace.Type, AssemblyName"</c>
         /// (e.g. <c>"MyErp.Business.WorkOrderBo, MyErp.Business"</c>).
         /// Named after the role (the BO that handles this program) — matches the
-        /// <c>BackendComponents</c> convention of using role names for type-name
+        /// <see cref="BackendComponents"/> convention of using role names for type-name
         /// configuration properties.
         /// <para>
         /// Empty means "declare nothing", which is why it falls back. A name that is present but

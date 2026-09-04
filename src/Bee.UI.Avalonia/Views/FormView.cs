@@ -203,7 +203,7 @@ namespace Bee.UI.Avalonia.Views
         /// at design time, so a view with neither a layout here, nor a
         /// <see cref="DefinitionLoader"/>, nor a backend to fetch one from has no layout to render
         /// and says so — it does not derive one from the schema. To build one from a schema in code,
-        /// call the design-time <c>FormLayoutGenerator.Generate</c> explicitly and assign the result
+        /// call the design-time <see cref="FormLayoutGenerator.Generate"/> explicitly and assign the result
         /// here.
         /// </remarks>
         public FormLayout? Layout

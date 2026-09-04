@@ -11,7 +11,7 @@ namespace Bee.Definition;
 /// <para>
 /// These files describe the <c>st_*</c> system tables, the framework-shipped
 /// <c>Department</c> / <c>Employee</c> forms, and the minimum
-/// <c>DbCategorySettings</c> contract. Consumers use
+/// <see cref="Bee.Definition.Settings.DbCategorySettings"/> contract. Consumers use
 /// <see cref="MaterializeTo(string, MaterializeOptions?)"/> at setup time (via
 /// CLI or tooling) to seed their <c>DefinePath</c> from these embedded copies.
 /// </para>

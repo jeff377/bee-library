@@ -29,7 +29,7 @@ namespace Bee.Repository.Abstractions.AuditLog
         /// <remarks>
         /// The announcement is a version bump on the <b>common</b> database's cache-notify table,
         /// while the rules themselves live in a company database — the same split
-        /// <c>CompanyRolePermissions</c> already uses, because the notify poller watches exactly one
+        /// <see cref="Bee.Definition.Identity.CompanyRolePermissions"/> already uses, because the notify poller watches exactly one
         /// database.
         /// <para>
         /// WARNING: this necessarily runs in its own transaction, after the rule change has

@@ -25,7 +25,7 @@ namespace Bee.Definition.Identity
         /// An empty value means UTC.
         /// </summary>
         /// <remarks>
-        /// Empty by default, matching <c>SessionInfo.TimeZone</c>: the effective zone is supplied
+        /// Empty by default, matching <see cref="SessionInfo.TimeZone"/>: the effective zone is supplied
         /// by the server at login, and the conversion layer already treats a blank zone as UTC.
         /// </remarks>
         public string TimeZone { get; set; } = string.Empty;

@@ -31,7 +31,7 @@ namespace Bee.Definition.Security
         /// The single cache key this state is stored under. Shares the cache group of
         /// <see cref="ApiKeyInfo"/> so key changes and gate changes are invalidated by the same
         /// notify group, and is bracketed to keep it disjoint from any real <c>sys_id</c>
-        /// (which <c>ApiKeyFormat</c> restricts to lowercase letters, digits and hyphens).
+        /// (which <see cref="Bee.Base.Security.ApiKeyFormat"/> restricts to lowercase letters, digits and hyphens).
         /// </summary>
         public const string CacheKey = "[gate]";
 

@@ -362,7 +362,7 @@ namespace Bee.Db.Providers.PostgreSql
 
         /// <summary>
         /// The canonical form of the framework's UTC "now" default, as emitted by
-        /// <c>PgSchemaSyntax</c>.
+        /// <see cref="PgSchemaSyntax"/>.
         /// </summary>
         private const string UtcNowDefaultExpression = "(NOW() AT TIME ZONE 'UTC')";
 

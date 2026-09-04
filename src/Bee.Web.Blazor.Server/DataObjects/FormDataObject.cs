@@ -10,7 +10,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
     /// <summary>
     /// Holds the in-memory <see cref="System.Data.DataSet"/> for a single form view
     /// (one master row plus zero or more detail tables) and exposes a small string-based
-    /// access surface for two-way binding by <c>DynamicForm</c> / <c>DynamicGrid</c>.
+    /// access surface for two-way binding by <see cref="Bee.Web.Blazor.Server.Components.DynamicForm"/> / <see cref="Bee.Web.Blazor.Server.Components.DynamicGrid"/>.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -23,7 +23,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
     /// <para>
     /// The value rules this type used to carry privately — DataSet seeding, string/column
     /// coercion, display formatting, the CRUD preconditions — now live once in
-    /// <c>Bee.Api.Client</c> (<c>FormValueBinding</c> and <c>FormDataGuard</c>), which both this
+    /// <c>Bee.Api.Client</c> (<see cref="FormValueBinding"/> and <see cref="FormDataGuard"/>), which both this
     /// head and <c>Bee.Web.Blazor.Server</c> already reference. They are head-agnostic: the same
     /// <see cref="FormSchema"/> and the same server responses drive every head.
     /// </para>

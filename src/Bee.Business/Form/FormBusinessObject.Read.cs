@@ -52,7 +52,7 @@ namespace Bee.Business.Form
         /// <summary>
         /// Retrieves lookup candidate rows for picker windows that reference this form.
         /// The projection is the server-resolved lookup field set
-        /// (see <c>FormSchema.GetLookupFields</c>) prefixed with <c>sys_rowid</c>;
+        /// (see <see cref="FormSchema.GetLookupFields"/>) prefixed with <c>sys_rowid</c>;
         /// the caller cannot widen it.
         /// </summary>
         /// <param name="args">The input arguments.</param>
@@ -60,7 +60,7 @@ namespace Bee.Business.Form
         /// Unlike <see cref="GetList"/>, this action is intentionally not gated by the
         /// form's <c>Read</c> permission: a user who may not browse the target form's
         /// list still needs to pick a reference value from it. Exposure is bounded by
-        /// the <c>FormSchema.LookupFields</c> declaration. Override
+        /// the <see cref="FormSchema.LookupFields"/> declaration. Override
         /// <see cref="GetLookupFilter"/> to constrain the candidate rows (e.g. active
         /// records only). When <see cref="GetLookupArgs.Paging"/> is <c>null</c> a
         /// default page size of 100 is applied.

@@ -12,7 +12,7 @@ namespace Bee.Definition
     /// </remarks>
     public enum DecimalsSource
     {
-        /// <summary>Company override table (<c>CompanyNumberFormats</c>), falling back to the framework default.</summary>
+        /// <summary>Company override table (<see cref="CompanyNumberFormats"/>), falling back to the framework default.</summary>
         Company = 0,
 
         /// <summary>Bound currency key field (SAP CUKY); falls back to company when no currency is resolved.</summary>

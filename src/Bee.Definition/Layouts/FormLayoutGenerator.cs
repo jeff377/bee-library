@@ -10,7 +10,7 @@ namespace Bee.Definition.Layouts
     /// </summary>
     /// <remarks>
     /// IMPORTANT: This is a design-time tool. It produces the starting point a definition editor
-    /// saves as a <c>FormLayout</c> definition file, which is then reviewed and adjusted by hand.
+    /// saves as a <see cref="FormLayout"/> definition file, which is then reviewed and adjusted by hand.
     /// The runtime never calls it: a form renders the stored definition, and a missing definition
     /// is a configuration error rather than a cue to generate one. Generating at runtime would let
     /// the layout — the authority on what appears on screen — silently degrade into a projection of

@@ -10,9 +10,9 @@ namespace Bee.Definition.Security
     /// server. That one carries <see cref="ApiKeyInfo.HashedKey"/> — it is the cache's payload for
     /// validating a presented key — and putting a credential hash on the wire would hand every
     /// operator an offline-crackable artefact. Do not add the hash here, and do not widen
-    /// <c>ApiKeyInfo</c>'s use to cover listing.
+    /// <see cref="ApiKeyInfo"/>'s use to cover listing.
     /// <para>
-    /// Unlike <c>ApiKeyInfo</c>, disabled keys are included: managing a key's lifecycle is exactly
+    /// Unlike <see cref="ApiKeyInfo"/>, disabled keys are included: managing a key's lifecycle is exactly
     /// the case where the disabled ones matter.
     /// </para>
     /// </remarks>

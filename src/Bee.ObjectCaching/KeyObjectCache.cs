@@ -96,7 +96,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         /// <remarks>
         /// Concurrent misses on the same key produce one instance, not one per caller. That matters
-        /// beyond the wasted work: <c>SessionInfo</c> is cached here, and two callers holding
+        /// beyond the wasted work: <see cref="Bee.Definition.Identity.SessionInfo"/> is cached here, and two callers holding
         /// different instances of the same session means a write through one — <c>EnterCompany</c>,
         /// for example — is invisible to the other.
         /// </remarks>
@@ -181,7 +181,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         /// <remarks>
         /// The default is the <c>"group:entity"</c> convention writers use with
-        /// <c>ICacheNotifyService.Touch</c>. A subclass whose storage reports an authoritative key
+        /// <c>Touch</c>. A subclass whose storage reports an authoritative key
         /// (the define caches) has already set it, and that value is kept.
         /// </remarks>
         /// <param name="key">The member key.</param>

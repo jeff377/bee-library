@@ -7,7 +7,7 @@ namespace Bee.Definition.Security
     /// </summary>
     /// <remarks>
     /// Carries the hashed secret, never the plaintext key: the framework cannot recover a key once
-    /// issued (see <c>ApiKeyHasher</c>). Disabled rows are excluded by the repository, so an
+    /// issued (see <see cref="Bee.Base.Security.ApiKeyHasher"/>). Disabled rows are excluded by the repository, so an
     /// instance of this type always represents an enabled key — the same treatment
     /// <c>CompanyRepository</c> gives disabled companies, and the reason there is no
     /// <c>Enabled</c> property here.
@@ -38,7 +38,7 @@ namespace Bee.Definition.Security
 
         /// <summary>
         /// Gets or sets the hashed secret segment, in the <c>v1.{salt}.{hash}</c> form produced by
-        /// <c>ApiKeyHasher.HashSecret</c>.
+        /// <see cref="Bee.Base.Security.ApiKeyHasher.HashSecret"/>.
         /// </summary>
         public string HashedKey { get; set; } = string.Empty;
 

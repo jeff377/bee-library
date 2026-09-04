@@ -17,7 +17,7 @@ namespace Bee.Business
     {
         /// <summary>
         /// Gets the assembly-qualified name of <see cref="DefaultType"/>, in the form
-        /// <c>ProgramItem.BusinessObject</c> stores.
+        /// <see cref="Bee.Definition.Settings.ProgramItem.BusinessObject"/> stores.
         /// </summary>
         public string DefaultTypeName
             => $"{DefaultType.FullName}, {DefaultType.Assembly.GetName().Name}";

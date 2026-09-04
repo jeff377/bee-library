@@ -12,7 +12,7 @@ namespace Bee.Definition
 
         /// <summary>
         /// Retrieves lookup candidate rows for picker windows referencing this
-        /// form; the projection is server-resolved from <c>FormSchema.LookupFields</c>.
+        /// form; the projection is server-resolved from <see cref="Bee.Definition.Forms.FormSchema.LookupFields"/>.
         /// </summary>
         public const string GetLookup = "GetLookup";
 

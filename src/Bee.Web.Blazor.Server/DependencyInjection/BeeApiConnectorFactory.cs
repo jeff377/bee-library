@@ -61,7 +61,7 @@ namespace Bee.Web.Blazor.Server.DependencyInjection
         /// </summary>
         /// <param name="accessToken">
         /// The session access token; pass <see cref="Guid.Empty"/> for anonymous calls
-        /// (the BO method must declare <c>ApiAccessRequirement.Anonymous</c>).
+        /// (the BO method must declare <see cref="Bee.Definition.Security.ApiAccessRequirement.Anonymous"/>).
         /// </param>
         /// <param name="progId">The program identifier (e.g. "Employee").</param>
         public virtual FormApiConnector CreateFormConnector(Guid accessToken, string progId)

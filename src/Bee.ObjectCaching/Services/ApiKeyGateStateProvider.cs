@@ -7,7 +7,7 @@ namespace Bee.ObjectCaching.Services
     /// </summary>
     /// <remarks>
     /// A one-method pass-through, and that is the point: the caller needs the answer, not the cache.
-    /// Without it the API layer resolved <c>ICacheContainer</c> directly, which put a type dependency
+    /// Without it the API layer resolved <see cref="ICacheContainer"/> directly, which put a type dependency
     /// on this assembly — the caching implementation — into a layer that should only speak the
     /// definition vocabulary.
     /// </remarks>

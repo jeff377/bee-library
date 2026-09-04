@@ -8,14 +8,14 @@ namespace Bee.Api.Core.JsonRpc
     /// zone, leaving calendar-day columns untouched.
     /// </summary>
     /// <remarks>
-    /// Which columns move is decided by the <c>FieldDbType</c> marker the payload already carries
-    /// (ADR-031), so no <c>FormSchema</c> is needed and report / AnyCode results convert correctly
+    /// Which columns move is decided by the <see cref="FieldDbType"/> marker the payload already carries
+    /// (ADR-031), so no <see cref="Bee.Definition.Forms.FormSchema"/> is needed and report / AnyCode results convert correctly
     /// too: <c>Date</c> never shifts (a calendar day has no instant to re-express, and shifting it
     /// would land on the wrong day), <c>DateTime</c> always does.
     ///
     /// The cell's <see cref="DateTimeKind"/> is ignored. A round-tripped value comes back as
     /// <c>Unspecified</c> on one wire and <c>Utc</c> on the other (ADR-032 D6), so branching on it
-    /// would make conversion depend on the deployment's <c>PayloadFormat</c>. The direction is the
+    /// would make conversion depend on the deployment's <see cref="Bee.Api.Core.Messages.PayloadFormat"/>. The direction is the
     /// caller's to state, which is what the two entry points do.
     ///
     /// Both row versions are converted. A modified row carries Original alongside Current, and the

@@ -13,7 +13,7 @@ namespace Bee.Base.Serialization
     ///
     /// No production type implements this yet. Wiring it up takes two halves: an implementation
     /// on the complex type, plus a null-returning gate on the containing property, shaped like
-    /// the one on <c>SystemSettings.ExtendedProperties</c>.
+    /// the one on <c>ExtendedProperties</c>.
     /// </remarks>
     public interface IObjectSerializeEmpty
     {

@@ -5,7 +5,7 @@ namespace Bee.Definition
     /// handles a particular API call, selected by progId through the type registry.
     /// </summary>
     /// <remarks>
-    /// Return type is <see cref="object"/> rather than <c>IBusinessObject</c> to avoid a
+    /// Return type is <c>object</c> rather than <c>IBusinessObject</c> to avoid a
     /// reverse dependency from <c>Bee.Definition</c> to <c>Bee.Business</c> (where
     /// <c>IBusinessObject</c> lives). Callers cast to <c>IBusinessObject</c> at use sites.
     /// </remarks>

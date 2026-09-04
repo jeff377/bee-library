@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Components;
 namespace Bee.Web.Blazor.Server.Components
 {
     /// <summary>
-    /// Code-behind for <c>DynamicGrid.razor</c>. Renders a <see cref="LayoutGrid"/>
+    /// Code-behind for <c>DynamicGrid.razor</c>. Renders a <see cref="Bee.Definition.Layouts.LayoutGrid"/>
     /// over a <see cref="DataTable"/> and raises <see cref="OnRowSelected"/> with
     /// the <see cref="SysFields.RowId"/> Guid when a row is clicked.
     /// </summary>
     /// <remarks>
     /// The grid is intentionally <em>presentation-only</em>: the host (typically
-    /// <c>FormPage</c>) owns the call to <c>FormApiConnector.GetListAsync</c> and
+    /// <see cref="Bee.Web.Blazor.Server.Components.FormPage"/>) owns the call to <see cref="Bee.Api.Client.Connectors.FormApiConnector.GetListAsync"/> and
     /// passes the resulting <see cref="DataTable"/> in via <see cref="Rows"/>.
     /// Keeping the fetch outside the grid lets the host coordinate refresh with
     /// the master form (e.g. re-load the list after Save / Delete).

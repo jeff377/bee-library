@@ -18,7 +18,7 @@ namespace Bee.Definition
 
         /// <summary>
         /// Per-session company database. Resolved by routing through
-        /// <c>SessionInfo.CompanyId</c> to <c>CompanyInfo.CompanyDatabaseId</c>.
+        /// <see cref="Bee.Definition.Identity.SessionInfo.CompanyId"/> to <see cref="Bee.Definition.Identity.CompanyInfo.CompanyDatabaseId"/>.
         /// </summary>
         Company,
 

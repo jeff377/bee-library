@@ -57,7 +57,7 @@ namespace Bee.Definition.Identity
         /// <remarks>
         /// Empty means the standard (non-customized) deployment — every customization overlay
         /// short-circuits to the base layer. The value is derived from
-        /// <c>CompanyInfo.CustomizeId</c> by <c>EnterCompany</c> and cleared by
+        /// <see cref="CompanyInfo.CustomizeId"/> by <c>EnterCompany</c> and cleared by
         /// <c>LeaveCompany</c> / <c>Logout</c> (in step with <see cref="CompanyId"/>).
         /// </remarks>
         public string CustomizeId { get; set; } = string.Empty;
@@ -71,7 +71,7 @@ namespace Bee.Definition.Identity
         /// <see cref="TimeZone"/>: hard-coding <c>zh-TW</c> made the language service's fallback
         /// path unreachable for every logged-in call and silently bound the framework to one
         /// region. Login fills this from <c>st_user.culture</c>, falling back to
-        /// <c>BackendConfiguration.DefaultLanguage</c>.
+        /// <see cref="Bee.Definition.Settings.BackendConfiguration.DefaultLanguage"/>.
         /// </remarks>
         public string Culture { get; set; } = string.Empty;
 
@@ -85,7 +85,7 @@ namespace Bee.Definition.Identity
         /// <c>PayloadZoneConverter</c> — already treats a blank zone as UTC, and hard-coding a
         /// zone here made that path unreachable while silently binding the framework to a single
         /// region. Login fills this from <c>st_user.time_zone</c>, falling back to
-        /// <c>BackendConfiguration.DefaultTimeZone</c>.
+        /// <see cref="Bee.Definition.Settings.BackendConfiguration.DefaultTimeZone"/>.
         /// </remarks>
         public string TimeZone { get; set; } = string.Empty;
 

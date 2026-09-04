@@ -12,7 +12,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
     /// <summary>
     /// Field editor for <see cref="ControlType.TextEdit"/>: a <see cref="TextBox"/>
     /// two-way bound to a <see cref="FormDataObject"/> field, applying
-    /// <c>FormField.MaxLength</c> and the layout read-only flag automatically.
+    /// <see cref="Bee.Definition.Forms.FormField.MaxLength"/> and the layout read-only flag automatically.
     /// </summary>
     public class TextEdit : TextBox, IFieldEditor
     {

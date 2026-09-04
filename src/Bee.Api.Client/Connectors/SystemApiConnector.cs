@@ -212,7 +212,7 @@ namespace Bee.Api.Client.Connectors
         /// <param name="layoutId">The layout identifier; empty resolves to <paramref name="progId"/>.</param>
         /// <remarks>
         /// The companion of the base-layer fetch: obtain both layers and pick between them with
-        /// <c>CustomizeOverlay</c>. There is deliberately no customization-code parameter — the
+        /// <see cref="Bee.Definition.Customization.CustomizeOverlay"/>. There is deliberately no customization-code parameter — the
         /// server takes it from the session, so a caller cannot ask for another tenant's overrides.
         /// </remarks>
         public virtual async Task<FormLayout?> GetCustomizeFormLayoutAsync(string progId, string layoutId = "")
@@ -290,7 +290,7 @@ namespace Bee.Api.Client.Connectors
         /// <param name="contact">The contact for a third-party holder, so an incident has someone to reach.</param>
         /// <param name="expiredAt">The UTC expiry, or <c>null</c> for a key that does not expire.</param>
         /// <remarks>
-        /// IMPORTANT: <c>CreateApiKeyResponse.ApiKey</c> is the only time the plaintext key exists
+        /// IMPORTANT: <see cref="CreateApiKeyResponse.ApiKey"/> is the only time the plaintext key exists
         /// outside the caller — the server keeps just a hash. Persist it here or issue a replacement.
         /// <para>
         /// A remote call requires the signed-in user to be a deployment administrator; an

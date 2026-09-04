@@ -15,7 +15,7 @@ namespace Bee.Repository.AuditLog
     /// Declares no scope: its table lives in a company database, but its caller is the cache data
     /// source, which is told which company to read and holds no token to route with. Routing by
     /// session here would read the caller's company instead of the requested one — the same
-    /// reasoning as <c>DepartmentRepository</c>.
+    /// reasoning as <see cref="Bee.Repository.System.DepartmentRepository"/>.
     /// </remarks>
     public class AuditRuleRepository : RepositoryBase, IAuditRuleRepository
     {
@@ -94,7 +94,7 @@ namespace Bee.Repository.AuditLog
         /// <param name="companyId">The company business id.</param>
         /// <remarks>
         /// WARNING: must match the key the cached entry carries, which
-        /// <c>KeyObjectCache.CacheGroup</c> derives from the cached type's name. Renaming
+        /// <c>CacheGroup</c> derives from the cached type's name. Renaming
         /// <see cref="CompanyAuditRules"/> silently breaks invalidation — the bump lands on a key
         /// nothing depends on, and every process keeps serving stale rules.
         /// </remarks>

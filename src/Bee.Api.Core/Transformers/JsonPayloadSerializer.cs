@@ -40,7 +40,7 @@ namespace Bee.Api.Core.Transformers
     /// </item>
     /// <item>
     /// <b>Empty collections are written, not omitted.</b> This codec does not dispatch the
-    /// <c>IObjectSerialize</c> lifecycle, so the <c>IsSerializeEmpty</c> short-circuit Plain relies
+    /// <see cref="IObjectSerialize"/> lifecycle, so the <c>IsSerializeEmpty</c> short-circuit Plain relies
     /// on does not apply and a member such as <c>parameters</c> appears as <c>[]</c>.
     /// </item>
     /// </list>

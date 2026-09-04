@@ -6,7 +6,7 @@ namespace Bee.Definition.Identity
 {
     /// <summary>
     /// Layer-2 record-scope resolver. Combines the session's record-scope identity
-    /// (<c>SessionInfo.UserRowId</c> / <c>EmployeeRowId</c> / <c>DeptRowId</c>), the roles' granted
+    /// (<see cref="SessionInfo.UserRowId"/> / <c>EmployeeRowId</c> / <c>DeptRowId</c>), the roles' granted
     /// scope strategies for a (model, action), the permission model's default scope, and the
     /// department tree into a query filter.
     /// </summary>
@@ -33,7 +33,7 @@ namespace Bee.Definition.Identity
         /// <param name="accessToken">The caller's access token (resolves the session snapshot).</param>
         /// <param name="modelId">The permission model id.</param>
         /// <param name="action">The single action being authorized (<c>Read</c> / <c>Update</c> / <c>Delete</c>).</param>
-        /// <param name="formSchema">The form schema (supplies the owner/department columns via <c>ScopeRole</c>).</param>
+        /// <param name="formSchema">The form schema (supplies the owner/department columns via <see cref="ScopeRole"/>).</param>
         FilterNode? ResolveFilter(Guid accessToken, string modelId, PermissionAction action, FormSchema formSchema);
     }
 }

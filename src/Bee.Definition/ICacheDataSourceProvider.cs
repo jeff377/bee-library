@@ -17,8 +17,8 @@ namespace Bee.Definition
     /// <para>
     /// WARNING: implementations must be resolved lazily, on the first cache miss. Resolving one
     /// while the cache container is still under construction closes the dependency cycle
-    /// <c>ICacheContainer</c> to <c>ICacheDataSourceProvider</c> to the repository factory to
-    /// <c>IDefineAccess</c> and back to <c>ICacheContainer</c>.
+    /// <c>ICacheContainer</c> to <see cref="Bee.Definition.ICacheDataSourceProvider"/> to the repository factory to
+    /// <see cref="Bee.Definition.Storage.IDefineAccess"/> and back to <c>ICacheContainer</c>.
     /// </para>
     /// </remarks>
     public interface ICacheDataSourceProvider

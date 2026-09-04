@@ -62,7 +62,7 @@ namespace Bee.Definition.Storage
         /// Gets the base-layer menu definition.
         /// </summary>
         /// <remarks>
-        /// Default implementation delegates to <see cref="GetDefine"/>; <c>CacheDefineAccess</c>
+        /// Default implementation delegates to <c>GetDefine</c>; <c>CacheDefineAccess</c>
         /// overrides it with its cache path.
         /// </remarks>
         MenuSettings GetMenuSettings() => (MenuSettings)GetDefine(DefineType.MenuSettings);
@@ -90,15 +90,15 @@ namespace Bee.Definition.Storage
         /// Gets the base-layer business plugin bindings.
         /// </summary>
         /// <remarks>
-        /// Default implementation delegates to <see cref="GetDefine"/>; <c>CacheDefineAccess</c>
+        /// Default implementation delegates to <c>GetDefine</c>; <c>CacheDefineAccess</c>
         /// overrides it with its cache path.
         /// </remarks>
         /// <remarks>
         /// No customization-aware overload, matching <see cref="GetProgramSettings"/>: the two
         /// layers add up per progId, and a consumer needs the chain of the one program it is
         /// running, not a merge of every program. It reads this base copy, asks
-        /// <c>ICustomizeDefineReader</c> for the tenant copy, and combines them for its progId with
-        /// <c>CustomizeOverlay.GetPluginTypes</c> — the same routine a client would run, so both
+        /// <see cref="ICustomizeDefineReader"/> for the tenant copy, and combines them for its progId with
+        /// <see cref="Bee.Definition.Customization.CustomizeOverlay.GetPluginTypes"/> — the same routine a client would run, so both
         /// ends agree.
         /// </remarks>
         PluginSettings GetPluginSettings() => (PluginSettings)GetDefine(DefineType.PluginSettings);
@@ -113,7 +113,7 @@ namespace Bee.Definition.Storage
         /// Gets the permission model registry.
         /// </summary>
         /// <remarks>
-        /// Default implementation delegates to <see cref="GetDefine"/>; <c>CacheDefineAccess</c>
+        /// Default implementation delegates to <c>GetDefine</c>; <c>CacheDefineAccess</c>
         /// overrides it with its cache path.
         /// </remarks>
         PermissionModels GetPermissionModels() => (PermissionModels)GetDefine(DefineType.PermissionModels);
@@ -128,7 +128,7 @@ namespace Bee.Definition.Storage
         /// Gets the system-level currency master.
         /// </summary>
         /// <remarks>
-        /// Default implementation delegates to <see cref="GetDefine"/>; <c>CacheDefineAccess</c>
+        /// Default implementation delegates to <c>GetDefine</c>; <c>CacheDefineAccess</c>
         /// overrides it with its cache path.
         /// </remarks>
         CurrencySettings GetCurrencySettings() => (CurrencySettings)GetDefine(DefineType.CurrencySettings);
@@ -143,7 +143,7 @@ namespace Bee.Definition.Storage
         /// Gets the system-level unit-of-measure master.
         /// </summary>
         /// <remarks>
-        /// Default implementation delegates to <see cref="GetDefine"/>; <c>CacheDefineAccess</c>
+        /// Default implementation delegates to <c>GetDefine</c>; <c>CacheDefineAccess</c>
         /// overrides it with its cache path.
         /// </remarks>
         UnitSettings GetUnitSettings() => (UnitSettings)GetDefine(DefineType.UnitSettings);

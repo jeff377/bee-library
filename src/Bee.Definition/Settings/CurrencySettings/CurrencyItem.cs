@@ -53,7 +53,7 @@ namespace Bee.Definition.Settings
         /// Gets or sets the natural minor unit (ISO 4217 minor unit) for this currency: <c>0.01</c>
         /// for two-decimal currencies, <c>1</c> for zero-decimal currencies (JPY). This expresses the
         /// currency's inherent smallest unit and drives display decimals; it does not carry any
-        /// company cash-rounding policy (see <c>CompanyCashRounding</c>).
+        /// company cash-rounding policy (see <see cref="CompanyCashRounding"/>).
         /// </summary>
         [XmlAttribute]
         public decimal Rounding { get; set; } = 0.01m;

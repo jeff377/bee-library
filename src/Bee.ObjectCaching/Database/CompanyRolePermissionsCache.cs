@@ -7,7 +7,7 @@ namespace Bee.ObjectCaching.Database
     /// Per-company role-permission snapshot cache, keyed by company id. Reads through to
     /// <see cref="ICacheDataSourceProvider.GetCompanyRolePermissions"/> on a miss, which resolves
     /// the company database and reads the permission tables; invalidation goes through the common
-    /// cache-notify table (cache group <c>CompanyRolePermissions</c>).
+    /// cache-notify table (cache group <see cref="CompanyRolePermissions"/>).
     /// </summary>
     public class CompanyRolePermissionsCache : KeyObjectCache<CompanyRolePermissions>
     {

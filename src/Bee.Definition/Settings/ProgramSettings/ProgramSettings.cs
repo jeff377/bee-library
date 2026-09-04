@@ -22,8 +22,8 @@ namespace Bee.Definition.Settings
     /// </para>
     /// <para>
     /// Server-side only: it carries assembly-qualified type names that no client has any use for,
-    /// so it is gated out of remote <c>GetDefine</c> alongside <c>SystemSettings</c> and
-    /// <c>DatabaseSettings</c>.
+    /// so it is gated out of remote <c>GetDefine</c> alongside <see cref="SystemSettings"/> and
+    /// <see cref="DatabaseSettings"/>.
     /// </para>
     /// </remarks>
     [Description("Program settings.")]

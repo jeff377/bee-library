@@ -15,7 +15,7 @@ namespace Bee.Definition.Filters
         /// </summary>
         /// <remarks>
         /// This is the polymorphic discriminator on both wire formats, and both read it from
-        /// outside the type: <c>FilterNodeCollectionJsonConverter</c> for JSON, and the API layer's
+        /// outside the type: <see cref="FilterNodeCollectionJsonConverter"/> for JSON, and the API layer's
         /// filter node formatter for MessagePack. Being get-only, it is never bound back on the way
         /// in — each subclass computes it.
         /// <para>

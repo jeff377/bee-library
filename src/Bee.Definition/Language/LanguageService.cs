@@ -10,7 +10,7 @@ namespace Bee.Definition.Language
     /// </summary>
     /// <remarks>
     /// Stateless with respect to the current user. Read-through cache lives in
-    /// the <c>LanguageResourceCache</c> slot behind <see cref="IDefineAccess"/>;
+    /// the <c>LanguageResourceCache</c> slot behind <see cref="Bee.Definition.Storage.IDefineAccess"/>;
     /// this service does no caching of its own.
     ///
     /// When a non-empty customization code is supplied, text lookups are overlaid per key: the

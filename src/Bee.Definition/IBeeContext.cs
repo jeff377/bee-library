@@ -27,7 +27,7 @@ namespace Bee.Definition
         /// <summary>
         /// Escape hatch for resolving services not in the typed core members.
         /// Use sparingly — reserved for rare per-method needs (e.g. login-only
-        /// helpers used by <c>SystemBusinessObject.Login</c>). Greppable via
+        /// helpers used by <c>Login</c>). Greppable via
         /// <c>Services.GetService&lt;T&gt;</c> for audit.
         /// </summary>
         IServiceProvider Services { get; }

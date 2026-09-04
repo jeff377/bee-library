@@ -117,7 +117,7 @@ namespace Bee.Repository.Factories
         }
 
         /// <summary>
-        /// Resolves the repository type registered for a progId in <c>ProgramSettings</c>, applying
+        /// Resolves the repository type registered for a progId in <see cref="ProgramSettings"/>, applying
         /// the tenant customization overlay.
         /// </summary>
         /// <param name="accessToken">The current request's access token, used only to read the session's customization code.</param>
@@ -244,7 +244,7 @@ namespace Bee.Repository.Factories
         /// <summary>
         /// Maps a form schema's category to the logical database scope it means at runtime.
         /// </summary>
-        /// <param name="categoryId">The <c>FormSchema.CategoryId</c> value.</param>
+        /// <param name="categoryId">The <see cref="Bee.Definition.Forms.FormSchema.CategoryId"/> value.</param>
         /// <exception cref="InvalidOperationException">Thrown when the category is not one the framework recognises.</exception>
         internal static DbScope ParseCategoryId(string categoryId)
             => categoryId switch

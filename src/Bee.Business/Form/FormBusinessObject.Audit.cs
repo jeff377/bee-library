@@ -196,7 +196,7 @@ namespace Bee.Business.Form
         /// Were the form governed by an ordinary row, anyone able to edit it could set that row to
         /// <see cref="AuditRuleMode.Off"/>, then silence any other form with nothing recording that
         /// they had — the loophole closes on itself. Deliberately parallel to
-        /// <c>SystemBusinessObject.DeploymentAuditEnabled</c>, which likewise answers only to the
+        /// <see cref="Bee.Business.System.SystemBusinessObject.DeploymentAuditEnabled"/>, which likewise answers only to the
         /// master switch: a deployment with auditing on cannot opt out of recording who granted
         /// capability, and audit policy is exactly that kind of grant.
         /// </remarks>

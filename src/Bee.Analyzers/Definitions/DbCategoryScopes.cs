@@ -3,8 +3,8 @@ using System.Collections.Immutable;
 namespace Bee.Analyzers.Definitions
 {
     /// <summary>
-    /// The database scope identifiers accepted by <c>FormSchema.CategoryId</c> and
-    /// <c>DatabaseItem.CategoryId</c>.
+    /// The database scope identifiers accepted by <c>CategoryId</c> and
+    /// <c>CategoryId</c>.
     /// </summary>
     /// <remarks>
     /// IMPORTANT: These values duplicate the constants on <c>Bee.Definition.Database.DbCategoryIds</c>.

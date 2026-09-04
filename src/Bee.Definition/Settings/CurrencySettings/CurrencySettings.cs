@@ -8,7 +8,7 @@ namespace Bee.Definition.Settings
     /// System-level currency master (SAP TCURX-style): a curated table of <see cref="CurrencyItem"/>
     /// carrying each currency's natural minor unit. Currency decimals are system-wide and independent
     /// of company; the company layer may only override the final cash-rounding unit
-    /// (<c>CompanyCashRounding</c>). Persisted as a singleton define through <c>IDefineStorage</c>
+    /// (<see cref="Bee.Definition.CompanyCashRounding"/>). Persisted as a singleton define through <see cref="Bee.Definition.Storage.IDefineStorage"/>
     /// (file or DB) and shipped to the client so the UI can resolve amount decimals at runtime.
     /// </summary>
     /// <remarks>

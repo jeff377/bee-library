@@ -12,7 +12,7 @@ namespace Bee.ObjectCaching
     /// <remarks>
     /// <para>
     /// Writes through <see cref="CustomizeOnlyPathOptions"/> rather than through
-    /// <c>CustomizeOnlyStorage</c>, which stays read-only as its name promises. Both agree on where
+    /// <see cref="CustomizeOnlyStorage"/>, which stays read-only as its name promises. Both agree on where
     /// the file lives because both ask the same path options.
     /// </para>
     /// <para>

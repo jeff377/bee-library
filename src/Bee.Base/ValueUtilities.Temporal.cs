@@ -122,7 +122,7 @@ namespace Bee.Base
         /// <remarks>
         /// Returns <see cref="DateOnly"/> so a calendar day is distinguishable from an instant at the
         /// point of use, the same distinction the definition layer draws between
-        /// <c>FieldDbType.Date</c> and <c>FieldDbType.DateTime</c>. Use
+        /// <see cref="Bee.Base.Data.FieldDbType.Date"/> and <see cref="Bee.Base.Data.FieldDbType.DateTime"/>. Use
         /// <see cref="CDateTime(object, DateTime)"/> when a <see cref="DateTime"/> is wanted — notably
         /// when writing back into a <see cref="System.Data.DataColumn"/>, which stores calendar-day
         /// columns as <see cref="DateTime"/> and rejects a <see cref="DateOnly"/> value.

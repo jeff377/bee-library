@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Components;
 namespace Bee.Web.Blazor.Server.Components
 {
     /// <summary>
-    /// Code-behind for <c>FormPage.razor</c>. Wires <see cref="DynamicGrid"/>
+    /// Code-behind for <c>FormPage.razor</c>. Wires <see cref="Bee.Web.Blazor.Server.Components.DynamicGrid"/>
     /// (list view) to <see cref="DynamicForm"/> (master detail) via a shared
     /// <see cref="FormDataObject"/>: selecting a list row drives
     /// <see cref="FormDataObject.LoadAsync"/>; the toolbar buttons fan out to
@@ -24,7 +24,7 @@ namespace Bee.Web.Blazor.Server.Components
     /// and supplies it through a cascading parameter. Anonymous use is allowed
     /// (<see cref="AccessToken"/> defaults to <see cref="Guid.Empty"/>); the
     /// backend BO methods being called must then declare
-    /// <c>ApiAccessRequirement.Anonymous</c> themselves.
+    /// <see cref="Bee.Definition.Security.ApiAccessRequirement.Anonymous"/> themselves.
     /// </remarks>
     public partial class FormPage : ComponentBase
     {
@@ -59,7 +59,7 @@ namespace Bee.Web.Blazor.Server.Components
         /// runtime layout. <c>null</c> — the default — keeps the page purely local.
         /// </summary>
         /// <remarks>
-        /// Opt-in for the same reason as <c>FormView.DefinitionLoader</c>: assembling costs extra
+        /// Opt-in for the same reason as <c>DefinitionLoader</c>: assembling costs extra
         /// round trips, so a page states plainly whether it pays for tenant customization.
         /// </remarks>
         [Parameter]

@@ -39,7 +39,7 @@ namespace Bee.Definition.Language
 
         /// <summary>
         /// Initializes a new <see cref="BeeStringLocalizer{T}"/> with an explicit
-        /// language provider — typically wired to <c>SessionInfo.Culture</c> or another
+        /// language provider — typically wired to <see cref="Bee.Definition.Identity.SessionInfo.Culture"/> or another
         /// per-request value.
         /// </summary>
         /// <param name="service">The underlying language resource service.</param>
@@ -64,7 +64,7 @@ namespace Bee.Definition.Language
         /// This adapter is a client-side / UI-side surface with no session of its own, which is
         /// why the customization code arrives as a delegate rather than a parameter. The value it
         /// yields localizes that client's own UI; server-side lookups always read
-        /// <c>SessionInfo.CustomizeId</c> instead and never a client-supplied code.
+        /// <see cref="Bee.Definition.Identity.SessionInfo.CustomizeId"/> instead and never a client-supplied code.
         /// </remarks>
         public BeeStringLocalizer(ILanguageService service, Func<string> langProvider, Func<string> customizeIdProvider)
         {

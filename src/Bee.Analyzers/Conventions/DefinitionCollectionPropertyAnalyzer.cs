@@ -21,7 +21,7 @@ namespace Bee.Analyzers.Conventions
     /// something an analyzer can identify reliably — an ordinary DTO with a <c>List&lt;string&gt;</c>
     /// property looks exactly the same — and the convention was only ever about the definition layer.
     /// Widening it to all framework assemblies was measured and rejected: it reported three cross-layer
-    /// DTOs in <c>Bee.Business</c> (<c>CheckPackageUpdateArgs.Queries</c> and friends) where a plain list
+    /// DTOs in <c>Bee.Business</c> (<c>Queries</c> and friends) where a plain list
     /// is correct, because those types need none of the behaviour above. Unlike the other rules here,
     /// BEE3002 therefore serves the framework's own consistency rather than the consumer's build.
     /// </para>

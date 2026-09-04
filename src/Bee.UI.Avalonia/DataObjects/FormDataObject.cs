@@ -23,7 +23,7 @@ namespace Bee.UI.Avalonia.DataObjects
     /// <para>
     /// The value rules this type used to carry privately — DataSet seeding, string/column
     /// coercion, display formatting, the CRUD preconditions — now live once in
-    /// <c>Bee.Api.Client</c> (<c>FormValueBinding</c> and <c>FormDataGuard</c>), which both this
+    /// <c>Bee.Api.Client</c> (<see cref="FormValueBinding"/> and <see cref="FormDataGuard"/>), which both this
     /// head and <c>Bee.Web.Blazor.Server</c> already reference. They are head-agnostic: the same
     /// <see cref="FormSchema"/> and the same server responses drive every head.
     /// </para>
@@ -204,7 +204,7 @@ namespace Bee.UI.Avalonia.DataObjects
         /// Re-writing that echo would dirty the row and, on NOT-NULL columns whose
         /// <see cref="DataColumn.DefaultValue"/> is still <see cref="DBNull"/> (typical
         /// for tables that round-trip through the wire and never went through
-        /// <c>DataTableExtensions.AddColumn</c>), raise <see cref="NoNullAllowedException"/>
+        /// <c>AddColumn</c>), raise <c>NoNullAllowedException</c>
         /// during <c>EndEdit</c>. Comparing against the existing value first short-
         /// circuits both hazards.
         /// </remarks>

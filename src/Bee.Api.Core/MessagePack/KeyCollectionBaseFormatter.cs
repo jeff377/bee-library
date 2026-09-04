@@ -16,7 +16,7 @@ namespace Bee.Api.Core.MessagePack
     /// the item type.
     /// <para>
     /// The key is not written — each item already carries it (<c>Key</c>, surfaced by subclasses
-    /// under a domain name such as <c>Parameter.Name</c>), so <c>Add</c> re-derives the index and
+    /// under a domain name such as <see cref="Bee.Definition.Collections.Parameter.Name"/>), so <c>Add</c> re-derives the index and
     /// a serialized key would only be a second copy that could disagree with the first.
     /// </para>
     /// <para>

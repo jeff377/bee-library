@@ -9,15 +9,15 @@ namespace Bee.Definition.Database
     /// </para>
     /// <list type="bullet">
     /// <item><b>CategoryId</b> values for logical classification on
-    /// <c>DatabaseItem.CategoryId</c> and <c>FormSchema.CategoryId</c>.</item>
+    /// <see cref="Bee.Definition.Settings.DatabaseItem.CategoryId"/> and <see cref="Bee.Definition.Forms.FormSchema.CategoryId"/>.</item>
     /// <item><b>DatabaseId</b> conventions for framework system routing
-    /// (e.g., <c>SessionRepository</c> uses <see cref="Common"/> as the literal
-    /// <c>DatabaseItem.Id</c> for the shared system database).</item>
+    /// (e.g., <c>SessionRepository</c> uses <c>Common</c> as the literal
+    /// <see cref="Bee.Definition.Settings.DatabaseItem.Id"/> for the shared system database).</item>
     /// </list>
     /// <para>
     /// In multi-tenant or time-archived deployments, the physical
-    /// <c>DatabaseItem.Id</c> may diverge from the CategoryId (e.g.,
-    /// <c>company001</c>, <c>log2025</c>), but the <c>DatabaseItem.CategoryId</c>
+    /// <see cref="Bee.Definition.Settings.DatabaseItem.Id"/> may diverge from the CategoryId (e.g.,
+    /// <c>company001</c>, <c>log2025</c>), but the <see cref="Bee.Definition.Settings.DatabaseItem.CategoryId"/>
     /// remains one of these constants. For the <see cref="Common"/> category,
     /// the framework requires Id == CategoryId == "common" (enforced at startup
     /// by <c>services.AddBeeFramework</c>).

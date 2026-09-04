@@ -10,7 +10,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
     /// <summary>
     /// Field editor for <see cref="ControlType.ButtonEdit"/>: a <see cref="TextEdit"/>
     /// with a trailing lookup icon. When the bound field carries relation metadata
-    /// (<c>FormField.RelationProgId</c>), the editor runs the built-in lookup flow:
+    /// (<see cref="Bee.Definition.Forms.FormField.RelationProgId"/>), the editor runs the built-in lookup flow:
     /// the text shows the resolved display field, the icon opens
     /// <see cref="LookupDialog"/>, a selection writes the row id and mapped fields
     /// back through the data object, and Delete / Backspace clears the selection.

@@ -168,8 +168,8 @@ namespace Bee.Business
 
         /// <summary>
         /// Resolves localized text for the given full key using the current session's
-        /// language (<c>SessionInfo.Culture</c>) and tenant customization
-        /// (<c>SessionInfo.CustomizeId</c>), falling back to the system
+        /// language (<see cref="SessionInfo.Culture"/>) and tenant customization
+        /// (<see cref="SessionInfo.CustomizeId"/>), falling back to the system
         /// default language and then to the key itself if both miss.
         /// </summary>
         /// <param name="fullKey">The full key (<c>"{namespace}.{subKey}"</c>); split on the first <c>.</c>.</param>
@@ -197,7 +197,7 @@ namespace Bee.Business
 
         /// <summary>
         /// Reads the current session's BCP-47 language code from
-        /// <c>SessionInfo.Culture</c>. Returns an empty string when no
+        /// <see cref="SessionInfo.Culture"/>. Returns an empty string when no
         /// session is established yet (anonymous calls); <see cref="ILanguageService"/>
         /// then falls back through to the system default language.
         /// </summary>
@@ -210,7 +210,7 @@ namespace Bee.Business
 
         /// <summary>
         /// Reads the current session's tenant customization code from
-        /// <c>SessionInfo.CustomizeId</c>. Returns an empty string when no session is established
+        /// <see cref="SessionInfo.CustomizeId"/>. Returns an empty string when no session is established
         /// or no company has been entered — the customization overlay then short-circuits and every
         /// lookup resolves against the base layer.
         /// </summary>

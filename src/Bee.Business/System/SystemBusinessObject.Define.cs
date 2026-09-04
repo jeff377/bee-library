@@ -50,20 +50,20 @@ namespace Bee.Business.System
         /// <remarks>
         /// <para>
         /// This API hands back a definition <b>as stored</b>, and for this one type the cached
-        /// instance cannot honour that: <c>CacheDefineAccess.GetDatabaseSettings</c> decrypts in
+        /// instance cannot honour that: <c>GetDatabaseSettings</c> decrypts in
         /// place on first read, so the cache holds plain-text passwords from then on. Serving that
         /// instance would put credentials in the response.
         /// </para>
         /// <para>
         /// WARNING: the bypass belongs here, at the API boundary, and not in
         /// <c>CacheDefineAccess</c>. Its <c>GetDefine</c> is the framework's general definition
-        /// accessor — several <c>IDefineAccess</c> members route through it — so special-casing a
+        /// accessor — several <see cref="IDefineAccess"/> members route through it — so special-casing a
         /// type there would change what every internal caller receives. Worse, a class named for
         /// caching that quietly skips the cache for one type is a trap for whoever reads it next.
         /// </para>
         /// <para>
         /// Callers needing usable credentials — building a connection string, testing a
-        /// connection — go through <c>IDefineAccess.GetDatabaseSettings</c>, which is cached and
+        /// connection — go through <see cref="IDefineAccess.GetDatabaseSettings"/>, which is cached and
         /// decrypted and is untouched by this. Reading the file here is affordable because this
         /// path is local-only tooling asking for the definition, not a per-request lookup.
         /// </para>
@@ -85,7 +85,7 @@ namespace Bee.Business.System
         /// <remarks>
         /// ProgramSettings joined that list when it became the pure type registry: it holds
         /// assembly-qualified type names, no client has any use for them, and the menu that clients
-        /// actually need moved to <c>MenuSettings</c>.
+        /// actually need moved to <see cref="MenuSettings"/>.
         /// </remarks>
         /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
@@ -115,8 +115,8 @@ namespace Bee.Business.System
         /// The per-type entry point for ordinary clients, as against <see cref="GetDefine"/>, which
         /// serves every definition type and is gated for tooling. Both carry XML and both serve the
         /// definition <b>as stored</b>: no localization, no number-format baking, no customization
-        /// overlay. Callers apply those themselves — <c>FormSchemaLocalizer</c>,
-        /// <c>NumberFormatApplier</c> and <c>CustomizeOverlay</c> all live in <c>Bee.Definition</c>
+        /// overlay. Callers apply those themselves — <see cref="FormSchemaLocalizer"/>,
+        /// <see cref="Bee.Definition.Forms.NumberFormatApplier"/> and <see cref="Bee.Definition.Customization.CustomizeOverlay"/> all live in <c>Bee.Definition</c>
         /// so the server and every client run the identical code.
         /// </para>
         /// <para>
@@ -168,7 +168,7 @@ namespace Bee.Business.System
         /// <remarks>
         /// Serves the definition as stored, and the customization layer is a separate call. A caller
         /// assembles the runtime layout itself: fetch this and the customization layout, pick
-        /// between them with <c>CustomizeOverlay</c>, and take the captions from the localized
+        /// between them with <see cref="Bee.Definition.Customization.CustomizeOverlay"/>, and take the captions from the localized
         /// schema. Layouts are authored at design time, so an empty result from both layers is a
         /// configuration error for the caller to report — not a cue to generate one from the
         /// <see cref="FormSchema"/>.
@@ -208,11 +208,11 @@ namespace Bee.Business.System
         /// path used by JS / TypeScript clients works correctly. Sibling methods
         /// <see cref="GetFormSchema"/> and <see cref="GetFormLayout"/> follow the
         /// same convention. .NET clients should use <see cref="GetDefine"/> with
-        /// <c>DefineType.Language</c> for the XML-based access path.
+        /// <see cref="DefineType.Language"/> for the XML-based access path.
         /// </para>
         /// <para>
         /// The resource is read from the Define cache via
-        /// <c>IDefineAccess.GetLanguage</c> and returned as-is. Per
+        /// <see cref="IDefineAccess.GetLanguage"/> and returned as-is. Per
         /// <c>docs/development-constraints.md § Cached Data Immutability After Init</c>,
         /// the cached instance must not be mutated; callers that need per-session
         /// adjustments should clone the result.
@@ -240,11 +240,11 @@ namespace Bee.Business.System
         /// </summary>
         /// <remarks>
         /// The companion of <see cref="GetFormLayout"/>: a caller fetches both layers and picks
-        /// between them with <c>CustomizeOverlay</c>. Kept as a separate call rather than a second
+        /// between them with <see cref="Bee.Definition.Customization.CustomizeOverlay"/>. Kept as a separate call rather than a second
         /// field on one response so the connector's existing method contracts stay as they are.
         /// <para>
         /// <b>Which tenant is not negotiable.</b> The customization code comes from
-        /// <c>SessionInfo.CustomizeId</c> and is deliberately absent from the arguments — accepting
+        /// <see cref="Bee.Definition.Identity.SessionInfo.CustomizeId"/> and is deliberately absent from the arguments — accepting
         /// it from the caller would let anyone read any tenant's customization.
         /// </para>
         /// </remarks>
@@ -307,7 +307,7 @@ namespace Bee.Business.System
         /// copying every definition on every fetch.
         /// <para>
         /// <see cref="DefineType.DatabaseSettings"/> is the one that must not be served from the
-        /// cache at all — see <c>CacheDefineAccess.GetDefine</c>, which reads it from file so the
+        /// cache at all — see <c>GetDefine</c>, which reads it from file so the
         /// passwords stay encrypted.
         /// </para>
         /// </remarks>
@@ -346,10 +346,10 @@ namespace Bee.Business.System
         /// remote clients read definitions through <see cref="GetDefine"/> and never write them.
         /// </para>
         /// <para>
-        /// The previous guard only rejected <c>SystemSettings</c> and <c>DatabaseSettings</c> from
+        /// The previous guard only rejected <see cref="SystemSettings"/> and <see cref="DatabaseSettings"/> from
         /// remote callers, which left every other definition type writable by any authenticated
-        /// account — including <c>PermissionModels</c> (the authorisation model itself),
-        /// <c>DbCategorySettings</c> (which database each table resolves to) and <c>FormSchema</c>
+        /// account — including <see cref="PermissionModels"/> (the authorisation model itself),
+        /// <see cref="DbCategorySettings"/> (which database each table resolves to) and <see cref="FormSchema"/>
         /// (whose expressions are evaluated server-side). Gating the whole method removes that
         /// class of escalation rather than enumerating the sensitive types.
         /// </para>

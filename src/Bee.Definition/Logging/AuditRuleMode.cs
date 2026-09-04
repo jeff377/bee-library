@@ -7,7 +7,7 @@ namespace Bee.Definition.Logging
     /// <remarks>
     /// <see cref="Inherit"/> is the persisted default (<c>0</c>), so a deployment whose rule table
     /// is empty behaves exactly as it did before per-form rules existed. Only
-    /// <c>AuditLogOptions.Enabled</c> gates this resolution; the per-axis switches supply the value
+    /// <see cref="Bee.Definition.Settings.AuditLogOptions.Enabled"/> gates this resolution; the per-axis switches supply the value
     /// <see cref="Inherit"/> defers to rather than acting as a second gate.
     /// </remarks>
     public enum AuditRuleMode

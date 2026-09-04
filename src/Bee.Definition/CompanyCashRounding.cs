@@ -7,11 +7,11 @@ namespace Bee.Definition
     /// <summary>
     /// A company-level table of per-currency cash-rounding overrides (SAP T001R-style). Empty means
     /// the company applies no extra cash rounding — the final amount stays at the currency's natural
-    /// minor unit. Carried by <c>CompanyInfo</c> over the MessagePack wire.
+    /// minor unit. Carried by <see cref="Bee.Definition.Identity.CompanyInfo"/> over the MessagePack wire.
     /// </summary>
     /// <remarks>
     /// Uses <see cref="CollectionBase{T}"/> so the table serializes cleanly as part of
-    /// <c>CompanyInfo</c>; <c>MessagePackCodec</c> registers
+    /// <see cref="Bee.Definition.Identity.CompanyInfo"/>; <c>MessagePackCodec</c> registers
     /// <c>CollectionBaseFormatter&lt;CompanyCashRounding, CashRoundingItem&gt;</c>. Keyed lookup is
     /// provided by <see cref="FindUnit"/>.
     /// </remarks>

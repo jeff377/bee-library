@@ -30,7 +30,7 @@ namespace Bee.Api.Core.MessagePack
     /// <para>
     /// The discriminator is an <c>int</c> for the known set and a <c>string</c> type name for
     /// anything else. The string branch is the escape hatch for the application-configured
-    /// namespaces (<c>SysInfo.AllowedTypeNamespaces</c>): it still goes through the non-generic
+    /// namespaces (<see cref="Bee.Base.SysInfo.AllowedTypeNamespaces"/>): it still goes through the non-generic
     /// overload and therefore still only works where dynamic code does. That is a deliberate
     /// trade — it keeps the existing extensibility on the server without holding the framework's
     /// own value types hostage to it.

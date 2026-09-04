@@ -149,7 +149,7 @@ namespace Bee.Definition.Forms
 
         /// <summary>
         /// Gets or sets the permission model id that this form's main aggregate maps to.
-        /// References a <c>PermissionModel.ModelId</c> in the permission registry; the
+        /// References a <see cref="Bee.Definition.Settings.PermissionModel.ModelId"/> in the permission registry; the
         /// backend method-level enforcement uses it to resolve the (model, action) to check.
         /// Empty means the form declares no permission model (enforcement is skipped).
         /// </summary>

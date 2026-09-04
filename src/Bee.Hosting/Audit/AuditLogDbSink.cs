@@ -72,7 +72,7 @@ namespace Bee.Hosting.Audit
         /// <para>
         /// WARNING: the append is serialized, and it has to be. Three paths reach this file at once —
         /// the background drain, every request thread once the queue saturates, and
-        /// <c>SynchronousAuditLogWriter</c> in deployments that run without the background writer.
+        /// <see cref="SynchronousAuditLogWriter"/> in deployments that run without the background writer.
         /// <see cref="File.AppendAllText(string, string)"/> opens with <c>FileShare.Read</c>, so
         /// concurrent appends fail with <see cref="IOException"/> — and the batch that lost the race
         /// would be dropped after a single log line.

@@ -5,8 +5,8 @@ namespace Bee.Business.Form
     /// </summary>
     /// <remarks>
     /// This is the decoupling layer for <b>BO-to-BO calls</b>, matching
-    /// <c>ISystemBusinessObject</c>: a caller resolves a form BO by
-    /// <c>progId</c> through <c>IBusinessObjectFactory</c> (see <c>CreateFormBO</c>), casts to this
+    /// <see cref="Bee.Business.System.ISystemBusinessObject"/>: a caller resolves a form BO by
+    /// <c>progId</c> through <see cref="Bee.Definition.IBusinessObjectFactory"/> (see <c>CreateFormBO</c>), casts to this
     /// interface, and invokes a method without binding to a concrete class — so host-side BO
     /// customisation cannot break callers.
     /// <para>
@@ -17,8 +17,8 @@ namespace Bee.Business.Form
     /// </para>
     /// <para>
     /// <b>Pure-API methods do not belong here</b> — methods that only ever arrive through
-    /// <c>JsonRpcExecutor.Execute</c> and have no BO consumer are declared on the concrete
-    /// <c>FormBusinessObject</c> with <c>[ApiAccessControl]</c> and stay out of this interface.
+    /// <c>Execute</c> and have no BO consumer are declared on the concrete
+    /// <see cref="FormBusinessObject"/> with <c>[ApiAccessControl]</c> and stay out of this interface.
     /// </para>
     /// </remarks>
     public interface IFormBusinessObject : IBusinessObject
@@ -32,7 +32,7 @@ namespace Bee.Business.Form
 
         /// <summary>
         /// Retrieves lookup candidate rows for picker windows that reference this
-        /// form; the projection is server-resolved from <c>FormSchema.LookupFields</c>.
+        /// form; the projection is server-resolved from <see cref="Bee.Definition.Forms.FormSchema.LookupFields"/>.
         /// </summary>
         /// <param name="args">The input arguments.</param>
         GetLookupResult GetLookup(GetLookupArgs args);

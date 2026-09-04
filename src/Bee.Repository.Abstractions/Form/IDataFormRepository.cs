@@ -16,7 +16,7 @@ namespace Bee.Repository.Abstractions.Form
         /// </summary>
         /// <param name="selectFields">
         /// The comma-separated field names to retrieve; an empty value falls back to
-        /// <c>FormSchema.ListFields</c>, then to all fields.
+        /// <see cref="Bee.Definition.Forms.FormSchema.ListFields"/>, then to all fields.
         /// </param>
         /// <param name="filter">The filter condition tree; <c>null</c> for an unfiltered query.</param>
         /// <param name="sortFields">The sort field collection; <c>null</c> uses the default ordering.</param>

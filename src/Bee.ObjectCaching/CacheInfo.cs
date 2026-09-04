@@ -41,7 +41,7 @@ namespace Bee.ObjectCaching
         /// Only replaces <see cref="Provider"/> when the configured type differs from the
         /// current provider's runtime type. This preserves cached entries when host startup
         /// invokes <see cref="Initialize"/> after the default provider has already received
-        /// data (e.g. test fixtures that pre-populate <c>DatabaseSettings.Items</c>).
+        /// data (e.g. test fixtures that pre-populate <see cref="DatabaseSettings.Items"/>).
         /// </remarks>
         /// <param name="configuration">The backend configuration.</param>
         public static void Initialize(BackendConfiguration configuration)

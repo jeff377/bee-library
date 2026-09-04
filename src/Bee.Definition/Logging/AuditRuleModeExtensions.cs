@@ -10,13 +10,13 @@ namespace Bee.Definition.Logging
         /// </summary>
         /// <param name="mode">The per-form mode.</param>
         /// <param name="inherited">
-        /// The deployment-wide default this axis uses (<c>AuditLogOptions.ChangeEnabled</c> or
-        /// <c>AuditLogOptions.AccessEnabled</c>), returned when <paramref name="mode"/> is
+        /// The deployment-wide default this axis uses (<see cref="Bee.Definition.Settings.AuditLogOptions.ChangeEnabled"/> or
+        /// <see cref="Bee.Definition.Settings.AuditLogOptions.AccessEnabled"/>), returned when <paramref name="mode"/> is
         /// <see cref="AuditRuleMode.Inherit"/>.
         /// </param>
         /// <returns><c>true</c> when the axis should be recorded for this form.</returns>
         /// <remarks>
-        /// The master switch <c>AuditLogOptions.Enabled</c> is deliberately not a parameter: it is
+        /// The master switch <see cref="Bee.Definition.Settings.AuditLogOptions.Enabled"/> is deliberately not a parameter: it is
         /// checked by the caller before this is reached, so that a deployment with auditing off
         /// never pays for a rule lookup.
         /// </remarks>

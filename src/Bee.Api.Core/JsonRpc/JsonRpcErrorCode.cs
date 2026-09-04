@@ -57,7 +57,7 @@ namespace Bee.Api.Core.JsonRpc
         /// model (-32004) — the layer-1 model+action authorization check. Maps to HTTP 403
         /// Forbidden. Distinct from <see cref="CompanyAccessDenied"/> (company-level) and
         /// <see cref="Unauthorized"/> (missing/invalid credential); raised via
-        /// <c>ForbiddenException</c>.
+        /// <see cref="Bee.Base.Exceptions.ForbiddenException"/>.
         /// </summary>
         PermissionDenied = -32004,
 
@@ -75,7 +75,7 @@ namespace Bee.Api.Core.JsonRpc
         /// <summary>
         /// A user-facing business message produced by business logic, intended to be
         /// shown to the end user (-32099). Acts as a catch-all container for messages
-        /// raised via <c>UserMessageException</c> or the legacy BCL-exception whitelist.
+        /// raised via <see cref="Bee.Base.Exceptions.UserMessageException"/> or the legacy BCL-exception whitelist.
         /// </summary>
         /// <remarks>
         /// The value -32099 is deliberately placed at the tail of the server-defined

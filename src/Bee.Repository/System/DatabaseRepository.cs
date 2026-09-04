@@ -31,7 +31,7 @@ namespace Bee.Repository.System
         /// When <see cref="DatabaseItem.ServerId"/> is set, the connection string and
         /// <see cref="DatabaseItem.DatabaseType"/> are taken from the referenced
         /// <see cref="DatabaseServer"/>; the item's <c>UserId</c>/<c>Password</c> override
-        /// the server's when non-empty (mirrors <c>DbConnectionManagerService</c>).
+        /// the server's when non-empty (mirrors <see cref="DbConnectionManagerService"/>).
         /// </remarks>
         public void TestConnection(DatabaseItem item)
         {

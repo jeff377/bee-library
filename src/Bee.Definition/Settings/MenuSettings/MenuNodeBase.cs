@@ -72,7 +72,7 @@ namespace Bee.Definition.Settings
         /// <remarks>
         /// WARNING: This is a design-time switch, not a permission mechanism. Its value is the same
         /// for every user of a deployment. Per-user visibility belongs to the permission layer
-        /// (<c>PermissionModels</c>); using this flag to hide privileged functions would hide them
+        /// (<see cref="PermissionModels"/>); using this flag to hide privileged functions would hide them
         /// from everyone and protect nothing.
         /// </remarks>
         [XmlAttribute]

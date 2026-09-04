@@ -31,7 +31,7 @@ namespace Bee.Definition.Customization
     /// <para>
     /// <b>Security:</b> this class receives the customization copy, it never chooses it. Which
     /// tenant's customization is loaded stays a server-side decision driven by
-    /// <c>SessionInfo.CustomizeId</c>. What is shared here is the selection algorithm, not the
+    /// <see cref="Bee.Definition.Identity.SessionInfo.CustomizeId"/>. What is shared here is the selection algorithm, not the
     /// choice of tenant.
     /// </para>
     /// </remarks>
@@ -185,7 +185,7 @@ namespace Bee.Definition.Customization
         /// <param name="customize">The customization layout, or <c>null</c> when the tenant provides none.</param>
         /// <param name="base">The base layout, or <c>null</c> when no layout definition exists.</param>
         /// <returns>The customization layout, else the base layout, else <c>null</c> — the caller
-        /// then generates one from the <c>FormSchema</c>.</returns>
+        /// then generates one from the <see cref="Bee.Definition.Forms.FormSchema"/>.</returns>
         public static FormLayout? PickFormLayout(FormLayout? customize, FormLayout? @base)
             => customize ?? @base;
 

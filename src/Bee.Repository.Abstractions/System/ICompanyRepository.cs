@@ -6,7 +6,7 @@ namespace Bee.Repository.Abstractions.System
     /// Data access interface for company master records (<c>st_company</c>).
     /// </summary>
     /// <remarks>
-    /// Used by <c>ICompanyInfoService</c> to fall back to the database when the
+    /// Used by <see cref="ICompanyInfoService"/> to fall back to the database when the
     /// in-memory cache misses. The returned <see cref="CompanyInfo"/> is the same
     /// shape that <c>EnterCompany</c> hands back to clients.
     /// </remarks>

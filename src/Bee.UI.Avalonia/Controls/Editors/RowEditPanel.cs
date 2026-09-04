@@ -25,7 +25,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
     {
         /// <summary>
         /// Default screen width (DIPs) below which the edit form collapses to a single column —
-        /// phones and narrow windows. Mirrors <c>FormView.DefaultCompactWidthThreshold</c>.
+        /// phones and narrow windows. Mirrors <see cref="Bee.UI.Avalonia.Views.FormView.DefaultCompactWidthThreshold"/>.
         /// </summary>
         public const double CompactWidthThreshold = 600;
 

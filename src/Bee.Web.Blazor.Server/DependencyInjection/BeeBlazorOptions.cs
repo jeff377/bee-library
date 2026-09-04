@@ -27,7 +27,7 @@ namespace Bee.Web.Blazor.Server.DependencyInjection
         /// <summary>
         /// Configures the in-process (<see cref="BeeBlazorProviderMode.Local"/>)
         /// provider. The host must also call <c>AddBeeFramework</c> and assign
-        /// <c>ApiClientInfo.LocalServiceProvider</c> so connector calls can be
+        /// <see cref="Bee.Api.Client.ApiClientInfo.LocalServiceProvider"/> so connector calls can be
         /// dispatched in process.
         /// </summary>
         public BeeBlazorOptions UseLocalProvider()

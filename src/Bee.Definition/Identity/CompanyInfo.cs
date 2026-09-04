@@ -8,11 +8,11 @@ namespace Bee.Definition.Identity
     /// </summary>
     /// <remarks>
     /// Returned by <c>EnterCompany</c> and resolved by company-aware repositories
-    /// via the cached <c>ICompanyInfoService</c>. <c>CompanyDatabaseId</c> references
-    /// a logical <c>DatabaseSettings</c> entry; multiple companies may point at the
+    /// via the cached <see cref="ICompanyInfoService"/>. <c>CompanyDatabaseId</c> references
+    /// a logical <see cref="DatabaseSettings"/> entry; multiple companies may point at the
     /// same id and rely on the <c>sys_company_rowid</c> column for row-level
     /// isolation. The log database is shared across all companies under a fixed
-    /// <c>"log"</c> databaseId (see <c>DbScope.Log</c>), so there is no per-company
+    /// <c>"log"</c> databaseId (see <see cref="DbScope.Log"/>), so there is no per-company
     /// log database id property.
     /// <para>
     /// WARNING: this is a cache-shared instance. It must not be mutated after it is loaded — every
@@ -47,7 +47,7 @@ namespace Bee.Definition.Identity
         public string CompanyName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the logical <c>DatabaseSettings</c> id used for the
+        /// Gets or sets the logical <see cref="DatabaseSettings"/> id used for the
         /// company-category database during this session.
         /// </summary>
         public string CompanyDatabaseId { get; set; } = string.Empty;
@@ -59,7 +59,7 @@ namespace Bee.Definition.Identity
         /// Empty means the standard (non-customized) deployment. Companies map many-to-one onto a
         /// customization code (a group can share one customization set). Loaded from the
         /// <c>customize_id</c> column by <c>CompanyRepository</c>; <c>EnterCompany</c> copies it
-        /// into <c>SessionInfo.CustomizeId</c> for the session's customization overlay.
+        /// into <see cref="SessionInfo.CustomizeId"/> for the session's customization overlay.
         /// </remarks>
         public string CustomizeId { get; set; } = string.Empty;
 
@@ -83,7 +83,7 @@ namespace Bee.Definition.Identity
 
         /// <summary>
         /// Gets or sets the company's default (local/home) currency code — an ISO 4217 alpha-3 code
-        /// matching a <c>CurrencySettings</c> entry. Empty means unset (amounts with no resolvable
+        /// matching a <see cref="CurrencySettings"/> entry. Empty means unset (amounts with no resolvable
         /// currency fall back to the framework default of two decimals). Loaded from the
         /// <c>default_currency</c> column by <c>CompanyRepository</c>.
         /// </summary>

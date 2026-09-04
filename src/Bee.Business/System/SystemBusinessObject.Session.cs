@@ -87,7 +87,7 @@ namespace Bee.Business.System
         /// <see cref="CompanyAccessDeniedException"/> with the message
         /// <c>"Company access denied."</c> so callers cannot enumerate companies by
         /// probing the error text. Over JSON-RPC it arrives as
-        /// <c>JsonRpcErrorCode.CompanyAccessDenied</c> (HTTP 403 semantics).
+        /// <c>CompanyAccessDenied</c> (HTTP 403 semantics).
         /// </remarks>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated,
             ReplayProtection = ApiReplayProtection.UniqueSequence)]
@@ -149,7 +149,7 @@ namespace Bee.Business.System
         /// <param name="args">The input arguments (currently carries no fields).</param>
         /// <remarks>
         /// Idempotent — calling on an unknown or already-expired access token succeeds
-        /// without error. The clean-up sequence is: clear <c>SessionInfo.CompanyId</c>
+        /// without error. The clean-up sequence is: clear <see cref="SessionInfo.CompanyId"/>
         /// (no-op if already null), delete the seed from <c>st_session</c>, then remove the
         /// session entry from the cache. Callers do not need to call <c>LeaveCompany</c>
         /// before <c>Logout</c>.
@@ -182,7 +182,7 @@ namespace Bee.Business.System
         /// Clears every company-scoped value snapshotted onto the session by <c>EnterCompany</c>
         /// (company id, customization code, roles, and the record-scope identity row ids), leaving
         /// the session alive but company-less. Caller persists the change via
-        /// <c>SessionInfoService.Set</c>.
+        /// <c>Set</c>.
         /// </summary>
         /// <param name="sessionInfo">The session to reset.</param>
         private static void ClearCompanyContext(SessionInfo sessionInfo)
@@ -303,7 +303,7 @@ namespace Bee.Business.System
         /// <returns>True if authentication succeeded; otherwise, false.</returns>
         /// <remarks>
         /// The default implementation authenticates against the framework's own <c>st_user</c> table:
-        /// the password is verified against the stored hash by <c>IUserRepository.VerifyPassword</c>
+        /// the password is verified against the stored hash by <see cref="IUserRepository.VerifyPassword"/>
         /// and the display name is read from <c>st_user.sys_name</c>. Override in subclasses that
         /// authenticate against something else (a directory service, an identity provider, a
         /// deployment's own user table).

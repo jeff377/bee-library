@@ -8,12 +8,12 @@ namespace Bee.Repository
 {
     /// <summary>
     /// Construction-time context handed to every repository. The data-access counterpart of
-    /// <c>IBeeContext</c>: it aggregates the cross-cutting services a repository needs so that
+    /// <see cref="Bee.Definition.IBeeContext"/>: it aggregates the cross-cutting services a repository needs so that
     /// every repository can share one constructor signature.
     /// </summary>
     /// <remarks>
     /// Lives in <c>Bee.Repository</c> rather than <c>Bee.Repository.Abstractions</c> because its
-    /// members are <c>Bee.Db</c> types. Consumers only ever name <c>IRepositoryFactory</c>, which
+    /// members are <c>Bee.Db</c> types. Consumers only ever name <see cref="Bee.Repository.Abstractions.Factories.IRepositoryFactory"/>, which
     /// does stay in the abstractions package, so <c>Bee.Business</c> and <c>Bee.ObjectCaching</c>
     /// keep their present dependencies. Anything that names this interface — a repository, or a
     /// host writing its own — already references <c>Bee.Repository</c> for the base class.

@@ -51,8 +51,8 @@ namespace Bee.ObjectCaching
         /// </param>
         /// <remarks>
         /// WARNING: <paramref name="dataSource"/> must stay a factory. Resolving the provider here
-        /// closes the dependency cycle <c>ICacheContainer</c> to <c>ICacheDataSourceProvider</c> to
-        /// the repository factory to <c>IDefineAccess</c> and back to <c>ICacheContainer</c>, which
+        /// closes the dependency cycle <see cref="ICacheContainer"/> to <see cref="ICacheDataSourceProvider"/> to
+        /// the repository factory to <see cref="IDefineAccess"/> and back to <see cref="ICacheContainer"/>, which
         /// deadlocks service resolution in <c>AddBeeFramework</c>. Deferring the call to the first
         /// cache miss breaks the cycle, because this container is fully constructed by then.
         /// </remarks>

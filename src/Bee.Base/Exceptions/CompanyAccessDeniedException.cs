@@ -8,7 +8,7 @@ namespace Bee.Base.Exceptions
     /// <para>
     /// The three causes are deliberately merged into one exception carrying one message, so that
     /// error text cannot be used to enumerate valid company identifiers. The JSON-RPC transport
-    /// surfaces this via <c>JsonRpcErrorCode.CompanyAccessDenied</c> (HTTP 403 Forbidden
+    /// surfaces this via <c>CompanyAccessDenied</c> (HTTP 403 Forbidden
     /// semantics); the client reconstructs it from that code so callers can
     /// <c>catch (CompanyAccessDeniedException)</c> and route the user back to company selection.
     /// </para>

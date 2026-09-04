@@ -18,9 +18,9 @@ namespace Bee.Api.Client.Definitions
     /// </para>
     /// <list type="number">
     ///   <item><description>fetch the raw schema;</description></item>
-    ///   <item><description>fetch both language layers for every namespace the schema references, and localize the schema through <c>FormSchemaLocalizer</c>;</description></item>
-    ///   <item><description>bake the company's number formats onto the schema through <c>NumberFormatApplier</c>;</description></item>
-    ///   <item><description>fetch both layout layers and pick between them with <c>CustomizeOverlay</c>, failing when neither exists;</description></item>
+    ///   <item><description>fetch both language layers for every namespace the schema references, and localize the schema through <see cref="FormSchemaLocalizer"/>;</description></item>
+    ///   <item><description>bake the company's number formats onto the schema through <see cref="NumberFormatApplier"/>;</description></item>
+    ///   <item><description>fetch both layout layers and pick between them with <see cref="CustomizeOverlay"/>, failing when neither exists;</description></item>
     ///   <item><description>take the layout's captions from the localized schema, so a layout file describes structure only.</description></item>
     /// </list>
     /// <para>
@@ -132,7 +132,7 @@ namespace Bee.Api.Client.Definitions
         /// </summary>
         /// <remarks>
         /// The namespaces are the schema's own <c>ProgId</c> plus any namespace named by a
-        /// fully-qualified <c>FormField.LangEnumName</c> (<c>"Common.Gender"</c>), which is how a
+        /// fully-qualified <see cref="FormField.LangEnumName"/> (<c>"Common.Gender"</c>), which is how a
         /// schema borrows a shared option set. Each is fetched in the requested language and, when
         /// different, the default language too, so the service can apply the same fall-back the
         /// server does.

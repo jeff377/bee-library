@@ -33,7 +33,7 @@ namespace Bee.Base
         /// This asks whether the value's <b>text form</b> is empty, which is not the same question
         /// as <see cref="ValueUtilities.IsEmpty(object)"/>, and for some types the two disagree:
         /// <c>Guid.Empty</c> and <c>DateTime.MinValue</c> render as non-empty text, so this returns
-        /// <c>false</c> where <c>ValueUtilities.IsEmpty</c> returns <c>true</c>. Use this one only
+        /// <c>false</c> where <c>IsEmpty</c> returns <c>true</c>. Use this one only
         /// when the text is what matters.
         /// </remarks>
         /// <param name="value">The value to check.</param>

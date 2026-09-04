@@ -245,7 +245,7 @@ namespace Bee.Api.Client
         /// <remarks>
         /// This is the base layer exactly as stored — no customization overlay, no generation. The
         /// tenant's layer comes from <see cref="GetCustomizeFormLayoutAsync"/> as a separate call,
-        /// and picking between the two is the caller's job (see <c>FormDefinitionLoader</c>).
+        /// and picking between the two is the caller's job (see <see cref="Bee.Api.Client.Definitions.FormDefinitionLoader"/>).
         /// <see cref="ClearCache"/> on tenant switch keeps the cache consistent.
         /// </remarks>
         public Task<FormLayout> GetFormLayoutAsync(string layoutId)

@@ -7,7 +7,7 @@ namespace Bee.Base.Exceptions
     /// credential: here the caller is authenticated but has not been granted the action.
     /// </summary>
     /// <remarks>
-    /// The JSON-RPC transport surfaces this via <c>JsonRpcErrorCode.PermissionDenied</c>
+    /// The JSON-RPC transport surfaces this via <c>PermissionDenied</c>
     /// (HTTP 403 Forbidden semantics); the client reconstructs it from that code so callers
     /// can <c>catch (ForbiddenException)</c> and degrade the UI accordingly.
     /// </remarks>

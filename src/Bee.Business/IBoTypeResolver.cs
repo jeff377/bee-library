@@ -5,10 +5,10 @@ namespace Bee.Business
     /// </summary>
     /// <remarks>
     /// The framework registers <see cref="ProgramSettingsBoTypeResolver"/> by default via
-    /// <c>AddBeeFramework</c>, which looks up <c>ProgramItem.BusinessObject</c> in
+    /// <c>AddBeeFramework</c>, which looks up <see cref="Bee.Definition.Settings.ProgramItem.BusinessObject"/> in
     /// <c>ProgramSettings.xml</c>. Every business object is resolved this way — the reserved
     /// progIds are registry entries like any other rather than a separate code path. Hosts that
-    /// need to bypass <c>ProgramSettings</c> entirely can replace the registration with
+    /// need to bypass <see cref="Bee.Definition.Settings.ProgramSettings"/> entirely can replace the registration with
     /// <see cref="DefaultBoTypeResolver"/> or a custom implementation.
     /// </remarks>
     public interface IBoTypeResolver

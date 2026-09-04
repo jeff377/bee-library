@@ -47,7 +47,7 @@ namespace Bee.Repository.Abstractions.Factories
         /// <summary>
         /// Creates a framework repository by its interface.
         /// </summary>
-        /// <typeparam name="T">The repository interface (for example <c>ISessionRepository</c>).</typeparam>
+        /// <typeparam name="T">The repository interface (for example <see cref="Bee.Repository.Abstractions.System.ISessionRepository"/>).</typeparam>
         /// <param name="accessToken">
         /// The access token, for the repositories that route to a company database.
         /// <see cref="Guid.Empty"/> is the correct value outside a request — background services and

@@ -10,7 +10,7 @@ namespace Bee.Definition
         /// <summary>
         /// Default API encryption key provider type. The deriving provider is the default because
         /// its key survives cache eviction and is identical on every node, which session rebuild
-        /// depends on; it requires <c>SecurityKeySettings.ApiEncryptionKey</c> to be configured.
+        /// depends on; it requires <see cref="Bee.Definition.Settings.SecurityKeySettings.ApiEncryptionKey"/> to be configured.
         /// </summary>
         public const string ApiEncryptionKeyProvider = "Bee.Business.Providers.DerivedApiEncryptionKeyProvider, Bee.Business";
         /// <summary>

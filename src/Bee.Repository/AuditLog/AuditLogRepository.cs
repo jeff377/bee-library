@@ -75,7 +75,7 @@ namespace Bee.Repository.AuditLog
         /// used to be expressed identically — both went through <c>WhereBuilder.Eq</c>, which drops
         /// the clause when the value is null. A caller that had not entered a company therefore did
         /// not get "no rows"; it got **every company's audit trail**. Failing closed here means the
-        /// isolation no longer rests on an unrelated type — <c>CompanyAuthorizationService.Can</c>
+        /// isolation no longer rests on an unrelated type — <c>Can</c>
         /// happens to return false without a company today, but a host may replace it.
         /// </remarks>
         private static string RequireCompanyScope(string? companyId, string operation)

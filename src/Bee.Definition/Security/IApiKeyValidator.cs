@@ -8,7 +8,7 @@ namespace Bee.Definition.Security
     /// <remarks>
     /// Resolved from the host container per call by the API controller, because the check needs
     /// backend services (the key cache, and through it the database) that the static
-    /// <c>ApiServiceOptions.AuthorizationValidator</c> cannot reach.
+    /// <c>AuthorizationValidator</c> cannot reach.
     /// <para>
     /// WARNING: only a definitive answer from the store may produce
     /// <see cref="ApiKeyStatus.NotConfigured"/>. A lookup failure must propagate rather than being

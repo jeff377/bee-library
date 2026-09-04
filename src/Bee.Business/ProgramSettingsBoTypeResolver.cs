@@ -10,7 +10,7 @@ namespace Bee.Business
 {
     /// <summary>
     /// Resolves the concrete <see cref="BusinessObject"/>-derived type for a given progId by
-    /// looking up <c>ProgramItem.BusinessObject</c> in <see cref="ProgramSettings"/>, with an
+    /// looking up <see cref="ProgramItem.BusinessObject"/> in <see cref="ProgramSettings"/>, with an
     /// optional tenant customization overlay via <see cref="ICustomizeDefineReader"/>.
     /// </summary>
     /// <remarks>
@@ -32,7 +32,7 @@ namespace Bee.Business
     /// </para>
     /// <para>
     /// <b>An absent entry is not a failure.</b> A progId the registry does not mention, or one whose
-    /// <c>BusinessObject</c> is empty, resolves to the framework default —
+    /// <see cref="BusinessObject"/> is empty, resolves to the framework default —
     /// <see cref="FormBusinessObject"/> for an ordinary progId, and the framework's own type for a
     /// reserved one. Nothing failed there: the entry is simply absent, which for a reserved progId
     /// is exactly what startup self-registration fills in. Keeping that here rather than mutating
@@ -240,7 +240,7 @@ namespace Bee.Business
         }
 
         /// <summary>
-        /// Builds the failure for a <c>BusinessObject</c> type name that will not load. Reserved and
+        /// Builds the failure for a <see cref="BusinessObject"/> type name that will not load. Reserved and
         /// ordinary progIds fail alike; only the wording distinguishes them, because which one it is
         /// changes where the operator looks.
         /// </summary>
@@ -254,7 +254,7 @@ namespace Bee.Business
         }
 
         /// <summary>
-        /// Builds the failure for a <c>BusinessObject</c> type that loads but does not derive from the
+        /// Builds the failure for a <see cref="BusinessObject"/> type that loads but does not derive from the
         /// base the progId requires.
         /// </summary>
         private static InvalidOperationException NotDerived(

@@ -3,8 +3,8 @@ using System.Globalization;
 namespace Bee.UI.Avalonia.Controls
 {
     /// <summary>
-    /// Formats a raw field value into its display string, shared by <c>GridControl</c> cells and
-    /// the <c>NumericEdit</c> editor so a value renders identically in a grid and in a form field.
+    /// Formats a raw field value into its display string, shared by <see cref="GridControl"/> cells and
+    /// the <see cref="Bee.UI.Avalonia.Controls.Editors.NumericEdit"/> editor so a value renders identically in a grid and in a form field.
     /// All formatting uses <see cref="CultureInfo.InvariantCulture"/> (the framework's canonical
     /// wire/display culture); an explicit <c>DisplayFormat</c> wins over the numeric format.
     /// </summary>

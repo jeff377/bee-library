@@ -6,7 +6,7 @@ namespace Bee.Api.Contracts.Form
     /// Contract interface for the GetLookup request.
     /// </summary>
     /// <remarks>
-    /// Lookup queries return the field set declared by <c>FormSchema.LookupFields</c>
+    /// Lookup queries return the field set declared by <see cref="Bee.Definition.Forms.FormSchema.LookupFields"/>
     /// (falling back to <c>sys_id</c> / <c>sys_name</c>), always prefixed with
     /// <c>sys_rowid</c>; the caller cannot widen the projection. The search text is
     /// matched server-side against the string-typed lookup fields.

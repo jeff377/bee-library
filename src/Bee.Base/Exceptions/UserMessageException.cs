@@ -10,7 +10,7 @@ namespace Bee.Base.Exceptions
     /// genuine program error: control flow is aborted because the operation cannot
     /// be completed, and the message is meant to reach the user as-is. The C# layer
     /// still throws (matching .NET conventions for flow control), and the JSON-RPC
-    /// transport layer surfaces it via <c>JsonRpcErrorCode.UserMessage</c>.
+    /// transport layer surfaces it via <c>UserMessage</c>.
     ///
     /// <para>
     /// Prefer this type over BCL exceptions (<see cref="InvalidOperationException"/>,

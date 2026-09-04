@@ -20,9 +20,11 @@ cd "$(dirname "$0")"
 ALLOWLIST=(
   # --- 外部套件 / BCL 型別（不在本 solution 內宣告）---
   AsyncLocal CoCreateInstance InternalsVisibleTo ToolStripMenuItem
+  FileBufferingReadStream
   FormatterNotRegisteredException TypelessFormatter
   # --- 刻意指涉的已移除型別（原文即寫 used to / which is gone / the former）---
   SafeTypelessFormatter ItemsForSerialization NumberFormatPresets
+  GetIndexsCommandText
   # --- 前瞻建議中的假想型別（尚未實作，原文為 "abstract this via …"）---
   IDescriptionSyncCommandBuilder
   # --- 文件用佔位符，非真實型別名 ---
@@ -30,6 +32,7 @@ ALLOWLIST=(
   # --- SQL 關鍵字 / 資料字典物件 / 欄位名 ---
   ALL_TABLES ALL_TAB_COMMENTS ALL_COL_COMMENTS ANDEC ANSI_QUOTES
   DO_SUM QUANTITY SIZE SQL_MODE USERNAME
+  LOCALTIMESTAMP NO_BACKSLASH_ESCAPES
 )
 
 is_allowed() {
@@ -84,5 +87,54 @@ done < <(
     | sed 's|<c>\(.*\)</c>|\1|' | sort -u
 )
 
-[[ $status -eq 0 ]] && echo "OK：src/ 的 XML doc 散文無指空的 <c> 識別字。"
-exit $status
+# ---------------------------------------------------------------------------
+# 反向檢查：該用 <see cref> 卻用了 <c>
+#
+# 上面那道守「<c> 指向的東西還在嗎」，但檔頭寫的優先序是「**能改用 cref 的就改用**」——
+# 而那句話先前沒有任何機制在執行。結果是 2026-09-04 盤點時，光 src/ 就有 239 處
+# <c> 指著同 solution 內、cref 解析得到的型別，且趨勢在增加（上輪基準 245 → 該次 259）。
+#
+# 判準取「同專案內宣告的型別」——跨組件向下相依也能 cref，但要完全限定名，
+# 這裡不追那一層以免誤報。檔名型（Foo.xml / Bar.razor）本來就該用 <c>，先排除。
+#
+# 有輸出時的正解：改成 <see cref="…"/>（同 namespace 直接寫名字；不同 namespace 用
+# 完全限定名，**不要為了 cref 加 using** —— 那會觸發 IDE0005）。真的解析不到才進下面的
+# allowlist，並註明原因。
+CREF_ALLOWLIST=(
+  # --- 重名型別：完全限定名有多個候選，指定任何一個都可能誤導 ---
+  WhereBuilder
+)
+
+is_cref_allowed() {
+  local id="${1%%.*}"
+  for a in "${CREF_ALLOWLIST[@]}"; do [[ "$id" == "$a" ]] && return 0; done
+  return 1
+}
+
+cref_status=0
+while IFS= read -r line; do
+  file="${line%%:*}"; id="${line##*:}"
+  is_cref_allowed "$id" && continue
+  cref_status=1
+  echo "該用 <see cref> 卻用了 <c>：${id}  (${file})"
+done < <(
+  for f in $(find src -name '*.cs' -not -path '*/bin/*' -not -path '*/obj/*'); do
+    proj=$(echo "$f" | cut -d/ -f2)
+    grep -h '^[[:space:]]*///' "$f" | grep -o '<c>[A-Za-z_][A-Za-z0-9_.]*</c>' \
+      | sed 's|<c>\(.*\)</c>|\1|' \
+      | grep -vE '\.(xml|json|md|cs|txt|props|targets|csproj|editorconfig|razor|axaml)$' \
+      | while IFS= read -r id; do
+          root="${id%%.*}"
+          if grep -rqE "\b(class|interface|struct|enum|record)[[:space:]]+${root}\b" \
+               "src/${proj}" --include='*.cs' --exclude-dir=bin --exclude-dir=obj 2>/dev/null; then
+            echo "${f}:${id}"
+          fi
+        done
+  done | sort -u
+)
+
+if [[ $status -eq 0 && $cref_status -eq 0 ]]; then
+  echo "OK：src/ 的 XML doc 散文無指空的 <c>，也沒有該用 cref 卻用 <c> 的。"
+fi
+[[ $status -ne 0 || $cref_status -ne 0 ]] && exit 1
+exit 0

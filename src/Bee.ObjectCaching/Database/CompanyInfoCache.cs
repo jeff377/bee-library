@@ -34,8 +34,8 @@ namespace Bee.ObjectCaching.Database
         /// <remarks>
         /// WARNING: <paramref name="dataSource"/> must stay a factory. Resolving the provider while
         /// <see cref="CacheContainerService"/> is under construction closes the dependency cycle
-        /// <c>ICacheContainer</c> to <c>ICacheDataSourceProvider</c> to the repository factory to
-        /// <c>IDefineAccess</c> and back to <c>ICacheContainer</c>. Deferring the call to the first
+        /// <see cref="ICacheContainer"/> to <see cref="ICacheDataSourceProvider"/> to the repository factory to
+        /// <see cref="Bee.Definition.Storage.IDefineAccess"/> and back to <see cref="Bee.ObjectCaching.ICacheContainer"/>. Deferring the call to the first
         /// cache miss breaks that cycle, because the container singleton is fully constructed by then.
         /// </remarks>
         internal CompanyInfoCache(Func<ICacheDataSourceProvider>? dataSource, string cachePrefix)

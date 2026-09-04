@@ -57,7 +57,7 @@ namespace Bee.Api.Client
         }
 
         /// <summary>
-        /// Gets or sets the in-process backend service provider used by <c>LocalApiProvider</c>.
+        /// Gets or sets the in-process backend service provider used by <see cref="Bee.Api.Client.Providers.LocalApiProvider"/>.
         /// Set this once at startup to the result of
         /// <c>services.AddBeeFramework(configuration).BuildServiceProvider()</c> when the
         /// application wants to execute backend logic in-process.

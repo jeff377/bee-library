@@ -7,7 +7,7 @@ namespace Bee.ObjectCaching.Database
     /// Per-company audit-rule snapshot cache, keyed by company id. Reads through to
     /// <see cref="ICacheDataSourceProvider.GetCompanyAuditRules"/> on a miss, which resolves the
     /// company database and reads <c>st_audit_rule</c>; invalidation goes through the common
-    /// cache-notify table (cache group <c>CompanyAuditRules</c>).
+    /// cache-notify table (cache group <see cref="CompanyAuditRules"/>).
     /// </summary>
     /// <remarks>
     /// Keyed by company rather than by program id on purpose: most forms carry no rule at all, so

@@ -14,7 +14,7 @@ namespace Bee.Api.Core.JsonRpc
     /// in step by nothing but the habit of remembering. That is a structural problem rather than a
     /// discipline one, and it failed exactly as predicted: the executor learned to produce
     /// <see cref="JsonRpcErrorCode.ReplayRejected"/> while the client never learned to rebuild it,
-    /// so the <c>catch</c> that <c>ReplayRejectedException</c> documents was unreachable for as long
+    /// so the <c>catch</c> that <see cref="ReplayRejectedException"/> documents was unreachable for as long
     /// as the code compiled and the tests passed.
     /// </para>
     /// <para>
@@ -28,7 +28,7 @@ namespace Bee.Api.Core.JsonRpc
     /// <para>
     /// Two things deliberately stay out of this table. The fallback to
     /// <see cref="JsonRpcErrorCode.InternalError"/> is a policy about what an unrecognized failure
-    /// may reveal (and reads <c>SysInfo.IsDebugMode</c> to decide), not a correspondence between a
+    /// may reveal (and reads <see cref="Bee.Base.SysInfo.IsDebugMode"/> to decide), not a correspondence between a
     /// type and a code; and the client's generic branch is a message format, not a mapping. Both
     /// live where they are applied.
     /// </para>

@@ -13,7 +13,7 @@ namespace Bee.Api.Core.Messages.Form
     {
         /// <summary>
         /// Gets or sets the comma-separated field names; an empty value falls back to
-        /// <c>FormSchema.ListFields</c>, then to all fields.
+        /// <see cref="Bee.Definition.Forms.FormSchema.ListFields"/>, then to all fields.
         /// </summary>
         public string SelectFields { get; set; } = string.Empty;
 

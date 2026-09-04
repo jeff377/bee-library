@@ -14,7 +14,7 @@ namespace Bee.Web.Blazor.Server.Components
     /// <remarks>
     /// Phase 1a is layout-only and renders the master area only. Detail grids
     /// (<see cref="FormLayout.Details"/>) are wired up in Phase 1b together with
-    /// <c>DynamicGrid</c>.
+    /// <see cref="DynamicGrid"/>.
     /// </remarks>
     public partial class DynamicForm : ComponentBase
     {

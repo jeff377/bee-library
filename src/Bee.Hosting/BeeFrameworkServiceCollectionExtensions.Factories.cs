@@ -24,7 +24,7 @@ namespace Bee.Hosting
         /// <summary>
         /// Resolves the configured <see cref="IDefineAccess"/> implementation. Supports
         /// <c>(IDefineStorage, PathOptions, ICacheContainer, byte[], ICustomizeDefineReader)</c>
-        /// (used by <c>CacheDefineAccess</c> with the customization overlay),
+        /// (used by <see cref="CacheDefineAccess"/> with the customization overlay),
         /// <c>(IDefineStorage, PathOptions, ICacheContainer, byte[])</c>,
         /// <c>(IDefineStorage, PathOptions)</c>, <c>(IDefineStorage)</c> (legacy), and
         /// parameterless ctors.
@@ -140,8 +140,8 @@ namespace Bee.Hosting
         /// crypto paths see a consistent "no key configured" sentinel.
         /// </summary>
         /// <remarks>
-        /// NOTE: <c>SecurityKeySettings.CookieEncryptionKey</c> and
-        /// <c>SecurityKeySettings.DatabaseEncryptionKey</c> are deliberately not decrypted here.
+        /// NOTE: <see cref="SecurityKeySettings.CookieEncryptionKey"/> and
+        /// <see cref="SecurityKeySettings.DatabaseEncryptionKey"/> are deliberately not decrypted here.
         /// Nothing in the framework reads either one, so decrypting them produced two byte arrays
         /// that were dropped on the floor. Add them back when a consumer exists — not before, or
         /// the bundle grows fields again with nowhere to go.

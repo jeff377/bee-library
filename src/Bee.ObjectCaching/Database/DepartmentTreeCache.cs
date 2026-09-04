@@ -7,7 +7,7 @@ namespace Bee.ObjectCaching.Database
     /// Per-company department-tree snapshot cache, keyed by company id. Reads through to
     /// <see cref="ICacheDataSourceProvider.GetDepartmentTree"/> on a miss, which resolves the
     /// company database and reads <c>st_department</c>; invalidation goes through the common
-    /// cache-notify table (cache group <c>DepartmentTree</c>).
+    /// cache-notify table (cache group <see cref="DepartmentTree"/>).
     /// </summary>
     public class DepartmentTreeCache : KeyObjectCache<DepartmentTree>
     {

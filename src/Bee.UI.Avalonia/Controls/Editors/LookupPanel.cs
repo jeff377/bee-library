@@ -12,7 +12,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
     /// <summary>
     /// The selection surface of a lookup picker: a search box, a
     /// <see cref="GridControl"/> bound to the target form's lookup layout
-    /// (see <c>FormSchema.GetLookupLayout</c>), and OK / Cancel buttons.
+    /// (see <see cref="FormSchema.GetLookupLayout"/>), and OK / Cancel buttons.
     /// Rows come from <see cref="FormApiConnector.GetLookupAsync"/>, so the
     /// projection and search semantics are server-resolved.
     /// </summary>

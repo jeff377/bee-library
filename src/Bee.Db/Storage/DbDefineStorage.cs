@@ -21,9 +21,9 @@ namespace Bee.Db.Storage
     /// observe the change via the notification table and evict the corresponding cache.
     /// </summary>
     /// <remarks>
-    /// Covers the DB-storable definition types (<c>DbCategorySettings</c>, <c>ProgramSettings</c>,
-    /// <c>CurrencySettings</c>, <c>TableSchema</c>, <c>FormSchema</c>, <c>FormLayout</c>,
-    /// <c>Language</c>). <c>SystemSettings</c> / <c>DatabaseSettings</c> remain file-based (startup
+    /// Covers the DB-storable definition types (<see cref="DbCategorySettings"/>, <see cref="ProgramSettings"/>,
+    /// <see cref="CurrencySettings"/>, <see cref="TableSchema"/>, <see cref="FormSchema"/>, <see cref="FormLayout"/>,
+    /// <c>Language</c>). <see cref="SystemSettings"/> / <see cref="DatabaseSettings"/> remain file-based (startup
     /// bootstrap) and never reach this storage.
     /// <para>
     /// <c>define_type</c> is the cached type's name (<c>typeof(T).Name</c>), so it equals the cache

@@ -29,7 +29,7 @@ namespace Bee.Hosting.CacheNotify
         /// </summary>
         /// <remarks>
         /// Takes no cache reference: the poller only publishes observed versions to
-        /// <c>CacheInfo.NotifyVersions</c>, and every cache entry carrying a matching
+        /// <see cref="Bee.ObjectCaching.CacheInfo.NotifyVersions"/>, and every cache entry carrying a matching
         /// <c>ChangeNotifyKey</c> expires itself on next read — including entries in per-tenant or
         /// per-fixture containers, which a single injected container could never have reached.
         /// </remarks>

@@ -23,7 +23,7 @@ namespace Bee.Definition.Layouts
     /// </para>
     /// <para>
     /// The layout is mutated in place, so callers must not pass a shared cache instance — clone
-    /// first (<see cref="FormLayout.Clone"/>). This mirrors <c>FormSchemaLocalizer</c>, which makes
+    /// first (<see cref="Bee.Definition.Layouts.FormLayout.Clone"/>). This mirrors <see cref="Bee.Definition.Language.FormSchemaLocalizer"/>, which makes
     /// the same demand for the same reason.
     /// </para>
     /// </remarks>

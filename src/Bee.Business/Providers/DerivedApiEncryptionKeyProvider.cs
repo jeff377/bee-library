@@ -35,7 +35,7 @@ namespace Bee.Business.Providers
         /// Initializes a new <see cref="DerivedApiEncryptionKeyProvider"/>.
         /// </summary>
         /// <param name="rootKey">
-        /// The root key material, taken from <c>SecurityKeySettings.ApiEncryptionKey</c>.
+        /// The root key material, taken from <see cref="Bee.Definition.Settings.SecurityKeySettings.ApiEncryptionKey"/>.
         /// </param>
         /// <exception cref="ArgumentException">Thrown when the root key is empty.</exception>
         public DerivedApiEncryptionKeyProvider(byte[] rootKey)
@@ -52,7 +52,7 @@ namespace Bee.Business.Providers
 
         /// <summary>
         /// Creates a provider whose root key is derived from the master key, for deployments that
-        /// have not configured <c>SecurityKeySettings.ApiEncryptionKey</c>.
+        /// have not configured <see cref="Bee.Definition.Settings.SecurityKeySettings.ApiEncryptionKey"/>.
         /// </summary>
         /// <param name="masterKey">The deployment's master key.</param>
         /// <returns>A provider rooted at a key derived from <paramref name="masterKey"/>.</returns>

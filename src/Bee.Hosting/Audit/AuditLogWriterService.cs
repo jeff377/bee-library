@@ -99,13 +99,13 @@ namespace Bee.Hosting.Audit
         /// <see cref="BackgroundService"/>, and .NET's default
         /// <c>BackgroundServiceExceptionBehavior.StopHost</c> then stops the whole application —
         /// <b>a failed log write would take the deployment down with it</b>. ADR-017 established this
-        /// for <c>CacheNotifyPoller</c>; this service was the one that never got it.
+        /// for <see cref="Bee.Hosting.CacheNotify.CacheNotifyPoller"/>; this service was the one that never got it.
         /// </para>
         /// <para>
         /// The catch is deliberately unfiltered, and deliberately unlike its sibling services.
-        /// <c>CacheNotifyPoller</c> and <c>ExpiredSessionCleanupService</c> call framework-internal
+        /// <see cref="Bee.Hosting.CacheNotify.CacheNotifyPoller"/> and <see cref="Bee.Hosting.Session.ExpiredSessionCleanupService"/> call framework-internal
         /// code, so they can enumerate what it throws and let anything else through as a bug —
-        /// <c>ExpiredSessionCleanupService</c> has a test pinning exactly that. Here the call goes to
+        /// <see cref="Bee.Hosting.Session.ExpiredSessionCleanupService"/> has a test pinning exactly that. Here the call goes to
         /// <see cref="IAuditLogSink"/>, a public DI seam: a deployment's own sink can throw anything
         /// at all, and the framework has no list to write. Losing a batch of log records is strictly
         /// better than stopping the application over one, and the failure is reported at error level

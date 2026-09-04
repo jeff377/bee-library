@@ -269,7 +269,7 @@ namespace Bee.Repository.System
         /// </summary>
         /// <param name="key">The key identifier, or <see cref="ApiKeyGateState.CacheKey"/> for the gate.</param>
         /// <remarks>
-        /// WARNING: the group must stay <c>ApiKeyInfo</c> for both. It is the group the key cache
+        /// WARNING: the group must stay <see cref="ApiKeyInfo"/> for both. It is the group the key cache
         /// derives its notify keys from, and the gate cache overrides its own group to match — that
         /// shared group is what lets one write invalidate both.
         /// </remarks>

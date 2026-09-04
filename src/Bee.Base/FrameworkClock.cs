@@ -19,7 +19,7 @@ namespace Bee.Base
     /// The one place a date must still travel as <see cref="DateTime"/> is a <c>DataSet</c> cell —
     /// <c>DataColumn</c> coerces through <c>IConvertible</c>, which <see cref="DateOnly"/> does not
     /// implement, so a calendar-day column stays <c>typeof(DateTime)</c> and carries its
-    /// day-versus-instant meaning in a <c>FieldDbType</c> marker instead (ADR-031). Callers writing
+    /// day-versus-instant meaning in a <see cref="Bee.Base.Data.FieldDbType"/> marker instead (ADR-031). Callers writing
     /// into a <c>DataSet</c> convert at that boundary.
     /// </remarks>
     public static class FrameworkClock

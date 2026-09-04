@@ -5,7 +5,7 @@ namespace Bee.Repository.Abstractions.AuditLog
     /// <summary>
     /// Typed filter for a change-log (<c>st_log_change</c>) list query. Every field is optional and
     /// AND-combined; each maps directly to an indexed column so the query stays parameterised and
-    /// avoids full-table scans. A generic <c>FilterNode</c> is intentionally not used — the log tables
+    /// avoids full-table scans. A generic <see cref="Bee.Definition.Filters.FilterNode"/> is intentionally not used — the log tables
     /// are not FormSchema-driven, so there is no filter-to-SQL builder to reuse and an explicit column
     /// set keeps the query surface (and injection surface) closed.
     /// </summary>

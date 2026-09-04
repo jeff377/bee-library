@@ -11,8 +11,8 @@ namespace Bee.Repository.Abstractions
     /// <list type="bullet">
     /// <item><see cref="DbScope.Common"/> → fixed databaseId <c>"common"</c>; does not require a session.</item>
     /// <item><see cref="DbScope.Log"/> → fixed databaseId <c>"log"</c>; does not require a session.</item>
-    /// <item><see cref="DbScope.Company"/> → resolved via <c>SessionInfo.CompanyId</c>
-    /// and <c>CompanyInfo.CompanyDatabaseId</c>.</item>
+    /// <item><see cref="Bee.Definition.DbScope.Company"/> → resolved via <see cref="Bee.Definition.Identity.SessionInfo.CompanyId"/>
+    /// and <see cref="Bee.Definition.Identity.CompanyInfo.CompanyDatabaseId"/>.</item>
     /// </list>
     /// </remarks>
     public interface IRepositoryDatabaseRouter
@@ -35,7 +35,7 @@ namespace Bee.Repository.Abstractions
         /// </exception>
         /// <exception cref="InvalidOperationException">
         /// <paramref name="scope"/> is <see cref="DbScope.Company"/> and a company was entered,
-        /// but the corresponding <c>CompanyInfo</c> is not available in the cache.
+        /// but the corresponding <see cref="Bee.Definition.Identity.CompanyInfo"/> is not available in the cache.
         /// </exception>
         string Resolve(DbScope scope, Guid accessToken);
     }

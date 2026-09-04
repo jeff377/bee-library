@@ -27,7 +27,7 @@ namespace Bee.Api.Core.Conversion
         /// </summary>
         /// <remarks>
         /// WARNING: <see cref="JsonStringEnumConverter"/> must stay, and must match whatever
-        /// <c>JsonCodec</c> writes. That writer emits enums as names, so a reader without this
+        /// <see cref="Bee.Base.Serialization.JsonCodec"/> writes. That writer emits enums as names, so a reader without this
         /// converter throws on the first response property that happens to be an enum. The converter
         /// still accepts numeric values, so it only widens what can be read.
         /// </remarks>
@@ -67,7 +67,7 @@ namespace Bee.Api.Core.Conversion
         /// (which occurs when the response is received over HTTP).
         /// </summary>
         /// <typeparam name="T">The expected result type.</typeparam>
-        /// <param name="value">The raw result value from <c>JsonRpcResult.Value</c>.</param>
+        /// <param name="value">The raw result value from <c>Value</c>.</param>
         /// <returns>The value converted to type <typeparamref name="T"/>.</returns>
         public static T? ConvertResultValue<T>(object value)
         {

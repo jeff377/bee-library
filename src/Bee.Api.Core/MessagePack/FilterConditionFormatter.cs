@@ -10,7 +10,7 @@ namespace Bee.Api.Core.MessagePack
     /// </summary>
     /// <remarks>
     /// A formatter registered for the base type does not cover the subclasses: a call site holding
-    /// a <c>FilterCondition</c> resolves <c>IMessagePackFormatter&lt;FilterCondition&gt;</c>, which
+    /// a <see cref="FilterCondition"/> resolves <c>IMessagePackFormatter&lt;FilterCondition&gt;</c>, which
     /// the contractless resolver used to build on demand — and cannot where dynamic code is off.
     /// The bytes are identical either way; the polymorphic formatter writes the same discriminated
     /// map whichever static type it was reached through.

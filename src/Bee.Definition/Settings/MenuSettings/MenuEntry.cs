@@ -8,7 +8,7 @@ namespace Bee.Definition.Settings
     /// A leaf node that opens one registered program.
     /// </summary>
     /// <remarks>
-    /// Named <c>MenuEntry</c> rather than <c>MenuItem</c> on purpose: this type is consumed by
+    /// Named <see cref="MenuEntry"/> rather than <c>MenuItem</c> on purpose: this type is consumed by
     /// every UI head, and <c>MenuItem</c> is taken by practically all of them
     /// (<c>Avalonia.Controls.MenuItem</c>, <c>System.Windows.Controls.MenuItem</c>,
     /// WinForms' <c>ToolStripMenuItem</c>, third-party control suites). The collision would land

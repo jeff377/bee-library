@@ -9,7 +9,7 @@ namespace Bee.Business.Session
     /// customization code, roles and record-scope row ids onto the session.
     /// </summary>
     /// <remarks>
-    /// Shared by <c>SystemBusinessObject.EnterCompany</c> and by session rebuild, which must
+    /// Shared by <see cref="Bee.Business.System.SystemBusinessObject.EnterCompany"/> and by session rebuild, which must
     /// arrive at exactly the same session state — a rebuild that derived company context
     /// differently would silently hand the user a different set of permissions than the one they
     /// signed in with. Re-running the access check on rebuild is also what makes a revoked company

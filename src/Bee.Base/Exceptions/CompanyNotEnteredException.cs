@@ -11,7 +11,7 @@ namespace Bee.Base.Exceptions
     /// <c>IRepositoryDatabaseRouter</c>, and that resolution is impossible without a company.
     /// </para>
     /// <para>
-    /// The JSON-RPC transport surfaces this via <c>JsonRpcErrorCode.CompanyNotEntered</c>
+    /// The JSON-RPC transport surfaces this via <c>CompanyNotEntered</c>
     /// (HTTP 409 Conflict semantics); the client reconstructs it from that code so callers can
     /// <c>catch (CompanyNotEnteredException)</c> and send the user to company selection.
     /// This is a recoverable protocol state, not a business message: it must not be shown to the

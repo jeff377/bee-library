@@ -119,7 +119,7 @@ namespace Bee.Db
         /// <para>
         /// Support is detected rather than listed, because a hard-coded provider list would be wrong
         /// in both directions: it drifts as providers gain support, and it cannot know which factory
-        /// a host actually registered for a given <c>DatabaseType</c>. <see cref="DbDataAdapter"/>'s
+        /// a host actually registered for a given <see cref="DatabaseType"/>. <see cref="DbDataAdapter"/>'s
         /// base setter throws <see cref="NotSupportedException"/>, so asking is the check. Measured
         /// today: SQL Server, MySQL and Oracle accept it; Npgsql and the framework's own SQLite
         /// adapter throw.

@@ -19,7 +19,7 @@ namespace Bee.Business.Providers
     /// </summary>
     /// <remarks>
     /// Repositories are obtained from <see cref="IRepositoryFactory"/> per call rather than
-    /// injected one by one, mirroring how <c>FormBusinessObject</c> obtains its form repository.
+    /// injected one by one, mirroring how <see cref="Bee.Business.Form.FormBusinessObject"/> obtains its form repository.
     /// A new database-backed cache therefore adds a method here and leaves this constructor alone.
     /// <para>
     /// The per-company snapshots resolve the company database themselves — the permission and

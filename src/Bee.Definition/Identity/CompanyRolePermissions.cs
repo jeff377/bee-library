@@ -6,7 +6,7 @@ namespace Bee.Definition.Identity
     /// <summary>
     /// A per-company permission snapshot loaded from the company database's permission tables:
     /// <see cref="Grants"/> (role→model→action, for the <c>Can</c> check) and <see cref="UserRoles"/>
-    /// (user→role, for <c>EnterCompany</c> to fill <c>SessionInfo.Roles</c>). Cached per company so
+    /// (user→role, for <c>EnterCompany</c> to fill <see cref="SessionInfo.Roles"/>). Cached per company so
     /// permission checks run entirely from memory — DB is touched only when (re)loading the snapshot.
     /// </summary>
     /// <remarks>
@@ -117,7 +117,7 @@ namespace Bee.Definition.Identity
         /// multi-role union (capability accrues across roles). Returns <see cref="PermissionAction.None"/>
         /// when none of the roles grants anything on the model.
         /// </summary>
-        /// <param name="roleIds">The role business ids the user holds (e.g. <c>SessionInfo.Roles</c>).</param>
+        /// <param name="roleIds">The role business ids the user holds (e.g. <see cref="SessionInfo.Roles"/>).</param>
         /// <param name="modelId">The permission model id to check.</param>
         public PermissionAction GetAllowed(IEnumerable<string> roleIds, string modelId)
         {
@@ -143,7 +143,7 @@ namespace Bee.Definition.Identity
         /// permission (the client resolver treats an absent model as denied). Freshly built each
         /// call, so the caller owns the returned dictionary.
         /// </summary>
-        /// <param name="roleIds">The role business ids the user holds (e.g. <c>SessionInfo.Roles</c>).</param>
+        /// <param name="roleIds">The role business ids the user holds (e.g. <see cref="SessionInfo.Roles"/>).</param>
         public Dictionary<string, PermissionAction> GetAllowedByModel(IEnumerable<string> roleIds)
         {
             ArgumentNullException.ThrowIfNull(roleIds);
@@ -168,7 +168,7 @@ namespace Bee.Definition.Identity
         /// <see cref="ScopeStrategy.Inherit"/>); the resolver resolves <c>Inherit</c> against the
         /// permission model's default and merges across roles. Empty when no held role grants the action.
         /// </summary>
-        /// <param name="roleIds">The role business ids the user holds (e.g. <c>SessionInfo.Roles</c>).</param>
+        /// <param name="roleIds">The role business ids the user holds (e.g. <see cref="SessionInfo.Roles"/>).</param>
         /// <param name="modelId">The permission model id to check.</param>
         /// <param name="action">The single action to check.</param>
         public IReadOnlyList<ScopeStrategy> GetEffectiveScopes(IEnumerable<string> roleIds, string modelId, PermissionAction action)
@@ -191,9 +191,9 @@ namespace Bee.Definition.Identity
 
         /// <summary>
         /// Gets the role business ids assigned to the given user — used by <c>EnterCompany</c> to
-        /// populate <c>SessionInfo.Roles</c> from <c>SessionInfo.UserId</c> without touching the database.
+        /// populate <see cref="SessionInfo.Roles"/> from <see cref="SessionInfo.UserId"/> without touching the database.
         /// </summary>
-        /// <param name="userId">The user business id (<c>SessionInfo.UserId</c> = <c>st_user.sys_id</c>).</param>
+        /// <param name="userId">The user business id (<see cref="SessionInfo.UserId"/> = <c>st_user.sys_id</c>).</param>
         public IReadOnlyList<string> GetUserRoleIds(string userId)
         {
             return _rolesByUser.TryGetValue(userId, out var roles) ? roles : [];

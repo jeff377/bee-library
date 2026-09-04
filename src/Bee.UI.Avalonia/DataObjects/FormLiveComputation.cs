@@ -12,14 +12,14 @@ namespace Bee.UI.Avalonia.DataObjects
     /// and new-row default expressions (<see cref="FormField.DefaultValueExpression"/>), delegating to the
     /// shared <see cref="FormExpressionCalculator"/> so a field previewed on the client matches what the
     /// server writes on save. The wiring that subscribes <see cref="FormDataObject.FieldValueChanged"/> and
-    /// refreshes detail grids lives in <c>FormView</c>; this service is the recompute core it drives.
+    /// refreshes detail grids lives in <see cref="Bee.UI.Avalonia.Views.FormView"/>; this service is the recompute core it drives.
     /// </summary>
     /// <remarks>
     /// A recompute writes its results straight into the bound <see cref="DataRow"/>, which re-raises
     /// <see cref="FormDataObject.FieldValueChanged"/>. The <see cref="IsRecomputing"/> flag lets the wiring
     /// ignore those self-inflicted echoes, and a computed field is never itself a recompute trigger, so a
     /// single edit produces exactly one recompute pass. Rounding uses framework-default decimal places
-    /// (Tier 1): the empty <see cref="RoundingContext"/> falls back to the per-<c>NumberKind</c> defaults,
+    /// (Tier 1): the empty <see cref="RoundingContext"/> falls back to the per-<see cref="NumberKind"/> defaults,
     /// so a preview differs from the saved value only where a company overrides those places — the server
     /// corrects it on save.
     /// </remarks>

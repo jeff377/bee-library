@@ -105,7 +105,7 @@ namespace Bee.Db.CacheNotify
         /// carry its own dialect table returning <b>server local</b> time (<c>getdate()</c>,
         /// <c>LOCALTIMESTAMP</c>, <c>CURRENT_TIMESTAMP(6)</c>) while every row is stamped in
         /// <b>UTC</b> — by the column's CREATE TABLE default and by
-        /// <c>CacheNotifyService.BuildUpsertSpec</c>, both of which read
+        /// <see cref="CacheNotifyService.BuildUpsertSpec"/>, both of which read
         /// <see cref="Bee.Db.Providers.IDialectFactory.GetDefaultValueExpression"/>. On a database server in a
         /// zone ahead of UTC the baseline therefore started in the future, so
         /// <see cref="ReadChangesSince"/> matched nothing and cache invalidation was silently dead
