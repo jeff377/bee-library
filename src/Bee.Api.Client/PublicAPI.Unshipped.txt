@@ -1,1 +1,6 @@
 #nullable enable
+Bee.Api.Client.HttpUtilities
+static Bee.Api.Client.HttpUtilities.GetAsync(string! endpoint, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
+static Bee.Api.Client.HttpUtilities.IsEndpointReachableAsync(string! endpoint, System.TimeSpan? timeout = null) -> System.Threading.Tasks.Task<bool>!
+static Bee.Api.Client.HttpUtilities.IsUrl(string! input) -> bool
+static Bee.Api.Client.HttpUtilities.PostAsync(string! endpoint, string! body, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!

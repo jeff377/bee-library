@@ -102,6 +102,6 @@ Bee.Base/
   Security/            # AES、RSA、PBKDF2、檔案雜湊工具
   Serialization/       # JSON/XML 序列化、GZip 壓縮
   Tracing/             # Tracer、TraceContext、TraceListener、ITraceWriter
-  *.cs（根目錄）        # ValueUtilities、StringExtensions、StringUtilities、DateTimeExtensions、FileUtilities、HttpUtilities、
+  *.cs（根目錄）        # ValueUtilities、StringExtensions、StringUtilities、DateTimeExtensions、FileUtilities、
                        # IPValidator、SysInfo、IKeyObject 等
 ```

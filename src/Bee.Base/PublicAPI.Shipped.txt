@@ -134,7 +134,6 @@ Bee.Base.Expressions.IExpressionEvaluator.Evaluate<T>(string! expression, System
 Bee.Base.Expressions.IExpressionEvaluator.GetReferencedVariables(string! expression) -> System.Collections.Generic.IReadOnlyList<string!>!
 Bee.Base.FileUtilities
 Bee.Base.FrameworkClock
-Bee.Base.HttpUtilities
 Bee.Base.IDisplayName
 Bee.Base.IDisplayName.DisplayName.get -> string!
 Bee.Base.IDisplayName.DisplayName.set -> void
@@ -315,10 +314,6 @@ static Bee.Base.FileUtilities.GetAssemblyPath() -> string!
 static Bee.Base.FileUtilities.IsLocalPath(string! input) -> bool
 static Bee.Base.FrameworkClock.Now(string! timeZoneId) -> System.DateTime
 static Bee.Base.FrameworkClock.Today(string! timeZoneId) -> System.DateOnly
-static Bee.Base.HttpUtilities.GetAsync(string! endpoint, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
-static Bee.Base.HttpUtilities.IsEndpointReachableAsync(string! endpoint, System.TimeSpan? timeout = null) -> System.Threading.Tasks.Task<bool>!
-static Bee.Base.HttpUtilities.IsUrl(string! input) -> bool
-static Bee.Base.HttpUtilities.PostAsync(string! endpoint, string! body, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
 static Bee.Base.Security.AesCbcHmacCryptor.Decrypt(byte[]! encryptedData, byte[]! aesKey, byte[]! hmacKey) -> byte[]!
 static Bee.Base.Security.AesCbcHmacCryptor.Encrypt(byte[]! plainBytes, byte[]! aesKey, byte[]! hmacKey) -> byte[]!
 static Bee.Base.Security.AesCbcHmacKeyGenerator.FromBase64CombinedKey(string! base64, out byte[]! aesKey, out byte[]! hmacKey) -> void

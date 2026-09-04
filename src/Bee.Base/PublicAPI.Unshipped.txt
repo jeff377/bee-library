@@ -1,2 +1,7 @@
 #nullable enable
 static Bee.Base.Serialization.JsonCodec.DeserializeAsync<T>(System.IO.Stream! stream, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T?>
+*REMOVED*Bee.Base.HttpUtilities
+*REMOVED*static Bee.Base.HttpUtilities.GetAsync(string! endpoint, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!
+*REMOVED*static Bee.Base.HttpUtilities.IsEndpointReachableAsync(string! endpoint, System.TimeSpan? timeout = null) -> System.Threading.Tasks.Task<bool>!
+*REMOVED*static Bee.Base.HttpUtilities.IsUrl(string! input) -> bool
+*REMOVED*static Bee.Base.HttpUtilities.PostAsync(string! endpoint, string! body, System.Collections.Specialized.NameValueCollection? headers = null) -> System.Threading.Tasks.Task<string!>!

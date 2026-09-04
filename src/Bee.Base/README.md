@@ -105,6 +105,6 @@ Bee.Base/
   Security/            # AES, RSA, PBKDF2, file hash utilities
   Serialization/       # JSON/XML serialization, GZip compression
   Tracing/             # Tracer, TraceContext, TraceListener, ITraceWriter
-  *.cs (root)          # ValueUtilities, StringExtensions, StringUtilities, DateTimeExtensions, FileUtilities, HttpUtilities,
+  *.cs (root)          # ValueUtilities, StringExtensions, StringUtilities, DateTimeExtensions, FileUtilities,
                        # IPValidator, SysInfo, IKeyObject, etc.
 ```

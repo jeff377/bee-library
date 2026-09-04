@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Bee.Base.UnitTests
+namespace Bee.Api.Client.UnitTests
 {
     public class HttpUtilitiesTests
     {

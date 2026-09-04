@@ -2,11 +2,19 @@ using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Text;
 
-namespace Bee.Base
+namespace Bee.Api.Client
 {
     /// <summary>
     /// Utility library for HTTP operations.
     /// </summary>
+    /// <remarks>
+    /// Lives here rather than in <c>Bee.Base</c>: every project in the framework inherits that
+    /// assembly — including UI heads that only read definitions and tools that never open a socket —
+    /// so a network primitive there put an unused capability on every consumer's public surface.
+    /// Its callers have always been in this package. See <c>rules/dependency-boundary.md</c>:
+    /// <c>Bee.Base</c> takes abstractions that are genuinely shared across layers, not everything
+    /// that happens to have no dependencies.
+    /// </remarks>
     public static class HttpUtilities
     {
         private static readonly ConcurrentDictionary<string, HttpClient> s_clientMap = new ConcurrentDictionary<string, HttpClient>();
