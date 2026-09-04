@@ -10,11 +10,11 @@ namespace Bee.Business.UnitTests
     /// <see cref="BusinessObjectFactoryExtensions"/> 擴充方法測試。
     /// 驗證 typed wrapper 直接回傳介面、避免呼叫端重複 cast。
     /// </summary>
-    public class BusinessObjectFactoryExtensionsTests : IClassFixture<SharedDbFixture>
+    public class BusinessObjectFactoryExtensionsTests : IClassFixture<BeeTestFixture>
     {
-        private readonly SharedDbFixture _fx;
+        private readonly BeeTestFixture _fx;
 
-        public BusinessObjectFactoryExtensionsTests(SharedDbFixture fx) { _fx = fx; }
+        public BusinessObjectFactoryExtensionsTests(BeeTestFixture fx) { _fx = fx; }
 
         private IBusinessObjectFactory Factory => _fx.GetRequiredService<IBusinessObjectFactory>();
 
@@ -22,7 +22,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("CreateFormBO 應回傳 IFormBusinessObject 介面實例")]
         public void CreateFormBO_ReturnsFormBusinessObjectInterface()
         {
-            var token = Guid.NewGuid();
+            var token = TestSessionFactory.CreateAccessToken(_fx);
 
             IFormBusinessObject bo = Factory.CreateFormBO(token, "prog01", isLocalCall: true);
 
@@ -34,7 +34,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("CreateFormBO 傳入 isLocalCall=false 應保留設定")]
         public void CreateFormBO_WithIsLocalCallFalse_PreservesFlag()
         {
-            var bo = (FormBusinessObject)Factory.CreateFormBO(Guid.NewGuid(), "prog01", isLocalCall: false);
+            var bo = (FormBusinessObject)Factory.CreateFormBO(TestSessionFactory.CreateAccessToken(_fx), "prog01", isLocalCall: false);
 
             Assert.False(bo.IsLocalCall);
         }
@@ -43,7 +43,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("CreateSystemBO 應回傳 ISystemBusinessObject 介面實例")]
         public void CreateSystemBO_ReturnsSystemBusinessObjectInterface()
         {
-            var token = Guid.NewGuid();
+            var token = TestSessionFactory.CreateAccessToken(_fx);
 
             ISystemBusinessObject bo = Factory.CreateSystemBO(token, isLocalCall: true);
 
@@ -55,7 +55,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("CreateSystemBO 傳入 isLocalCall=false 應保留設定")]
         public void CreateSystemBO_WithIsLocalCallFalse_PreservesFlag()
         {
-            var bo = (SystemBusinessObject)Factory.CreateSystemBO(Guid.NewGuid(), isLocalCall: false);
+            var bo = (SystemBusinessObject)Factory.CreateSystemBO(TestSessionFactory.CreateAccessToken(_fx), isLocalCall: false);
 
             Assert.False(bo.IsLocalCall);
         }

@@ -24,17 +24,23 @@ namespace Bee.Business.UnitTests.Contracts
     /// 所以出貨時整個套件是綠的。
     /// </para>
     /// <para>
-    /// <b>兩層互補，刻意重疊。</b><c>CreateBusinessObject_*</c> 走真實工廠，是最貼近實際失敗的一層，
-    /// 但它需要資料庫容器；<c>DefaultType_DeclaresConstructorMatchingTheBase</c> 是純反射、無外部相依，
-    /// 容器不在時仍然守得住。兩者都<b>不硬編工廠傳的引數形狀</b>——前者根本不需要知道，後者從
-    /// <see cref="BusinessObject"/> 基底的建構子推導。抄一份形狀下來就又多了一個會漂的來源。
+    /// <b>兩層互補，刻意重疊。</b><c>CreateBusinessObject_*</c> 走真實工廠，是最貼近實際失敗的一層；
+    /// <c>DefaultType_DeclaresConstructorMatchingTheBase</c> 是純反射，連工廠都不經過。兩者都
+    /// <b>不硬編工廠傳的引數形狀</b>——前者根本不需要知道，後者從 <see cref="BusinessObject"/>
+    /// 基底的建構子推導。抄一份形狀下來就又多了一個會漂的來源。
+    /// </para>
+    /// <para>
+    /// NOTE: 走工廠那層曾經需要資料庫容器 —— 它以裸 <c>Guid.NewGuid()</c> 當權杖，BO 建構過程
+    /// <c>SessionInfoService.Get</c> 查不到就走 rebuild 路徑讀 <c>st_session</c>。那個相依與本測試的
+    /// 主題（建構子形狀）無關，已改用 <see cref="TestSessionFactory.CreateAccessToken"/> 拆掉，
+    /// fixture 也隨之從 <c>SharedDbFixture</c> 降為 <see cref="BeeTestFixture"/>。
     /// </para>
     /// </remarks>
-    public class ReservedProgIdConstructionTests : IClassFixture<SharedDbFixture>
+    public class ReservedProgIdConstructionTests : IClassFixture<BeeTestFixture>
     {
-        private readonly SharedDbFixture _fx;
+        private readonly BeeTestFixture _fx;
 
-        public ReservedProgIdConstructionTests(SharedDbFixture fx) { _fx = fx; }
+        public ReservedProgIdConstructionTests(BeeTestFixture fx) { _fx = fx; }
 
         private IBusinessObjectFactory Factory => _fx.GetRequiredService<IBusinessObjectFactory>();
 
@@ -54,7 +60,7 @@ namespace Bee.Business.UnitTests.Contracts
             var binding = Bee.Business.ReservedProgIds.Find(progId);
             Assert.NotNull(binding);
 
-            var bo = Factory.CreateBusinessObject(Guid.NewGuid(), progId, isLocalCall: true);
+            var bo = Factory.CreateBusinessObject(TestSessionFactory.CreateAccessToken(_fx), progId, isLocalCall: true);
 
             // 斷言用 ExpectedBaseType 而非 DefaultType：部署可以在註冊表把保留字綁到自己的子類，
             // 那是合法的，而不論綁到哪一個，它都必須滿足該 progId 的基底約束。
@@ -66,7 +72,7 @@ namespace Bee.Business.UnitTests.Contracts
         [DisplayName("每個保留字 progId 建出的 BO 都應保留 isLocalCall=false")]
         public void CreateBusinessObject_EveryReservedProgId_PreservesRemoteFlag(string progId)
         {
-            var bo = Factory.CreateBusinessObject(Guid.NewGuid(), progId, isLocalCall: false);
+            var bo = Factory.CreateBusinessObject(TestSessionFactory.CreateAccessToken(_fx), progId, isLocalCall: false);
 
             var businessObject = Assert.IsAssignableFrom<BusinessObject>(bo);
             Assert.False(businessObject.IsLocalCall);

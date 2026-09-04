@@ -10,18 +10,18 @@ namespace Bee.Business.UnitTests
     /// <see cref="BusinessObjectFactory"/> 工廠方法測試。
     /// 透過 per-class <see cref="SharedDbFixture"/> 解析 DI-注入後的 factory 實例。
     /// </summary>
-    public class BusinessObjectFactoryTests : IClassFixture<SharedDbFixture>
+    public class BusinessObjectFactoryTests : IClassFixture<BeeTestFixture>
     {
-        private readonly SharedDbFixture _fx;
+        private readonly BeeTestFixture _fx;
 
-        public BusinessObjectFactoryTests(SharedDbFixture fx) { _fx = fx; }
+        public BusinessObjectFactoryTests(BeeTestFixture fx) { _fx = fx; }
         private IBusinessObjectFactory Factory => _fx.GetRequiredService<IBusinessObjectFactory>();
 
         [Fact]
         [DisplayName("CreateBusinessObject 應回傳 SystemBusinessObject 並保留 AccessToken")]
         public void CreateBusinessObject_System_ReturnsSystemBusinessObject()
         {
-            var token = Guid.NewGuid();
+            var token = TestSessionFactory.CreateAccessToken(_fx);
 
             var obj = Factory.CreateBusinessObject(token, SysProgIds.System, isLocalCall: true);
 
@@ -34,7 +34,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("CreateBusinessObject 傳入 isLocalCall=false 應保留設定")]
         public void CreateBusinessObject_System_WithIsLocalCallFalse_PreservesFlag()
         {
-            var obj = Factory.CreateBusinessObject(Guid.NewGuid(), SysProgIds.System, isLocalCall: false);
+            var obj = Factory.CreateBusinessObject(TestSessionFactory.CreateAccessToken(_fx), SysProgIds.System, isLocalCall: false);
 
             var bo = Assert.IsType<SystemBusinessObject>(obj);
             Assert.False(bo.IsLocalCall);
@@ -44,7 +44,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("CreateBusinessObject 應回傳 FormBusinessObject 並保留 ProgId")]
         public void CreateBusinessObject_Form_ReturnsFormBusinessObject()
         {
-            var token = Guid.NewGuid();
+            var token = TestSessionFactory.CreateAccessToken(_fx);
 
             var obj = Factory.CreateBusinessObject(token, "prog01", isLocalCall: true);
 
@@ -58,7 +58,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("CreateBusinessObject 傳入 isLocalCall=false 應保留設定")]
         public void CreateBusinessObject_Form_WithIsLocalCallFalse_PreservesFlag()
         {
-            var obj = Factory.CreateBusinessObject(Guid.NewGuid(), "prog01", isLocalCall: false);
+            var obj = Factory.CreateBusinessObject(TestSessionFactory.CreateAccessToken(_fx), "prog01", isLocalCall: false);
 
             var bo = Assert.IsType<FormBusinessObject>(obj);
             Assert.False(bo.IsLocalCall);

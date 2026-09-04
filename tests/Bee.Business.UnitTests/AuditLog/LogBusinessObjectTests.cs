@@ -21,23 +21,24 @@ namespace Bee.Business.UnitTests.AuditLog
     /// 查無資料丟例外；三方法皆有權限 gate 與參數驗證。
     /// </summary>
     /// <remarks>
-    /// fixture 必須是 <see cref="SharedDbFixture"/>：BO 以裸 <c>Guid.NewGuid()</c> 權杖建構，
+    /// NOTE: 開頭那句「不接實體 DB」曾經只是意圖 —— BO 以裸 <c>Guid.NewGuid()</c> 權杖建構，
     /// 而它的方法會 <c>SessionInfoService.Get(AccessToken)</c>（查目前公司、取語系），該權杖
-    /// 不在 cache 內因而走 rebuild 路徑讀 <c>st_session</c>。只有 <c>SharedDbFixture</c> 會建 schema。
+    /// 不在 cache 內因而走 rebuild 路徑讀 <c>st_session</c>，於是整個類別實際上需要容器。
+    /// 改用 <see cref="TestSessionFactory.CreateAccessToken"/> 後才真的成立。
     /// </remarks>
-    public class LogBusinessObjectTests : IClassFixture<SharedDbFixture>
+    public class LogBusinessObjectTests : IClassFixture<BeeTestFixture>
     {
         private const string ProgId = "Employee";
-        private readonly SharedDbFixture _fx;
+        private readonly BeeTestFixture _fx;
 
-        public LogBusinessObjectTests(SharedDbFixture fx) { _fx = fx; }
+        public LogBusinessObjectTests(BeeTestFixture fx) { _fx = fx; }
 
         private LogBusinessObject Bo(StubAuditLogRepository repo, bool authorized = true)
         {
             var ctx = TestBeeContext.CreateWithOverrides(_fx,
                 (typeof(ICompanyAuthorizationService), new FakeAuth(authorized)),
                 (typeof(IRepositoryFactory), new StubAuditLogRepositoryFactory(repo)));
-            return new LogBusinessObject(ctx, Guid.NewGuid(), SysProgIds.AuditLog);
+            return new LogBusinessObject(ctx, TestSessionFactory.CreateAccessToken(_fx), SysProgIds.AuditLog);
         }
 
         // ---- GetChangeLog (filtered list) ----

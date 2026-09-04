@@ -19,22 +19,28 @@ namespace Bee.Business.UnitTests.Form
     /// 驗證越權 action 被擋（ForbiddenException）、有權放行、Save 逐列 RowState、空
     /// PermissionModelId 跳過。攔截路徑在進 repository 前即擋,故不需真實 DB。
     /// </summary>
-    public class FormBusinessObjectPermissionGateTests : IClassFixture<SharedDbFixture>
+    /// <remarks>
+    /// NOTE: 「不需真實 DB」曾經只是意圖 —— BO 以裸 <c>Guid.NewGuid()</c> 建構,方法內
+    /// <c>SessionInfoService.Get</c>(查目前公司、取語系) 查不到就走 rebuild 路徑讀
+    /// <c>st_session</c>,於是整個類別實際上需要容器。改用
+    /// <see cref="TestSessionFactory.CreateAccessToken"/> 後才真的成立。
+    /// </summary>
+    public class FormBusinessObjectPermissionGateTests : IClassFixture<BeeTestFixture>
     {
         // FormSchema 'PermGateForm' 宣告 PermissionModelId='PermGateModel' → gate 啟用。
         private const string GatedProgId = "PermGateForm";
         // 'Employee' 未宣告 PermissionModelId → gate 跳過。
         private const string UngatedProgId = "Employee";
 
-        private readonly SharedDbFixture _fx;
-        public FormBusinessObjectPermissionGateTests(SharedDbFixture fx) { _fx = fx; }
+        private readonly BeeTestFixture _fx;
+        public FormBusinessObjectPermissionGateTests(BeeTestFixture fx) { _fx = fx; }
 
         private FormBusinessObject Bo(PermissionAction allowed, IDataFormRepository? repo = null, string progId = GatedProgId)
         {
             var overrides = new List<(Type, object?)> { (typeof(ICompanyAuthorizationService), new FakeAuth(allowed)) };
             if (repo != null) { overrides.Add((typeof(IRepositoryFactory), new FakeFactory(repo))); }
             var ctx = TestBeeContext.CreateWithOverrides(_fx, overrides.ToArray());
-            return new FormBusinessObject(ctx, Guid.NewGuid(), progId);
+            return new FormBusinessObject(ctx, TestSessionFactory.CreateAccessToken(_fx), progId);
         }
 
         private static DataSet AddedRowDataSet()

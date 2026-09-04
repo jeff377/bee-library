@@ -1,6 +1,7 @@
 # T-8：71 筆「`[Fact]` 卻需要資料庫」的分類
 
-**狀態：📋 待裁決（2026-09-04）** —— 分類已完成，尚未動任何測試碼。
+**狀態：✅ A 類已全數拆除（2026-09-04）** —— 38 個 case 不再需要資料庫。
+B 類 33 個 case 依建議維持現狀（未標 `[DbFact]`）。
 上游條目見 [plan-framework-review.md](plan-framework-review.md) 的 **T-7 / T-8**。
 
 ---
@@ -39,7 +40,16 @@ dotnet test Bee.Library.slnx --configuration Release
 
 ---
 
-## A 類 — 意外相依（34 個方法 / 38 個 case）
+## A 類 — 意外相依（34 個方法 / 38 個 case）　✅ 已全數拆除
+
+> **落地結果（2026-09-04）**：七個類別全部改用
+> `TestSessionFactory.CreateAccessToken(_fx)`，六個類別的 fixture 隨之從
+> `SharedDbFixture` 降為 `BeeTestFixture`（`ClientDefineAccessTests` 同時改掉建構子）。
+> 無 DB 環境的紅燈從 71 降到 33，**剩下的 33 筆與下方 B 類清單逐類別、逐筆數完全吻合**
+> —— 這是「拆對了、且沒有誤傷」的證據。有 DB 環境 5,931 passed / 0 failed，連跑三次。
+>
+> 三個類別的 class doc 一併改寫：把「所以 fixture 必須是 SharedDbFixture」換成
+> 「那個相依已拆掉、以及它當初為何存在」。**留著舊敘述會讓下一個人照抄同一個權宜做法。**
 
 **共同根因只有一個**：BO 以裸 `Guid.NewGuid()` 當 access token 建構，而 BO 的方法會
 `SessionInfoService.Get(AccessToken)`（查目前公司、取語系）。該權杖不在 cache 內，
@@ -75,7 +85,7 @@ server 端讀得到就不必 rebuild。拆完通常整個類別也能從 `Shared
 
 ---
 
-## B 類 — 真的需要資料庫（33 個方法 / 33 個 case）
+## B 類 — 真的需要資料庫（33 個方法 / 33 個 case）　⬜ 維持現狀
 
 主題本身就是資料庫狀態，植入 session 只會把失敗往後推一步。**正解是標 `[DbFact]`。**
 

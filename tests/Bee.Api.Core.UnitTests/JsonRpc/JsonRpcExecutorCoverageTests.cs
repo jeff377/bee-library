@@ -19,11 +19,11 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
     /// 權杖，真實 <see cref="IAccessTokenValidator"/> 因此必定 session cache miss，轉而走 rebuild
     /// 路徑讀 <c>st_session</c>。只有 <c>SharedDbFixture</c> 會建 schema。
     /// </remarks>
-    public class JsonRpcExecutorCoverageTests : IClassFixture<SharedDbFixture>
+    public class JsonRpcExecutorCoverageTests : IClassFixture<BeeTestFixture>
     {
-        private readonly SharedDbFixture _fx;
+        private readonly BeeTestFixture _fx;
 
-        public JsonRpcExecutorCoverageTests(SharedDbFixture fx)
+        public JsonRpcExecutorCoverageTests(BeeTestFixture fx)
         {
             _fx = fx;
         }
@@ -136,7 +136,9 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         public void Execute_AnomalyEnabledFailure_WritesErrorAnomaly()
         {
             var writer = new CapturingAnomalyLogWriter();
-            var token = Guid.NewGuid();
+            // 植入 session 而非裸 Guid：裸權杖會讓 token 驗證走 rebuild 路徑讀 st_session，
+            // 把一個「驗 anomaly 記了哪些欄位」的測試變成需要資料庫容器。
+            var token = TestSessionFactory.CreateAccessToken(_fx);
             var executor = NewAuditExecutor(writer, EnabledOptions(), new StubSessionInfoService(NewSession()), token);
 
             var response = executor.Execute(UnknownActionRequest());

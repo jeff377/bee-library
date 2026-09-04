@@ -10,26 +10,35 @@ namespace Bee.Api.Client.UnitTests
     /// <summary>
     /// 針對 <see cref="ClientDefineAccess"/> 的 async 型別化存取、快取與例外傳遞測試。
     /// 以 local <see cref="SystemApiConnector"/> 建構，需要 <c>ApiClientInfo.LocalServiceProvider</c>
-    /// 由 <see cref="Bee.Tests.Shared.SharedDbFixture"/> 的 ctor 一次性 wire up。
+    /// 由 <see cref="Bee.Tests.Shared.BeeTestFixture"/> 的 ctor 一次性 wire up。
     /// </summary>
     /// <remarks>
-    /// fixture 必須是 <see cref="Bee.Tests.Shared.SharedDbFixture"/> 而非 <c>BeeTestFixture</c>：
-    /// 每個測試都以一個隨機 token 打本機 <c>GetDefine</c>，而該方法要求已驗證身分，因此 server 端
-    /// 會 session cache miss → 走 rebuild 路徑讀 <c>st_session</c>。只有 <c>SharedDbFixture</c> 會建
-    /// schema，用 <c>BeeTestFixture</c> 等於指望同行程內另一個測試類別先把表建好——那是競賽條件，
-    /// 曾在 CI 以 <c>Invalid object name 'st_session'</c> 現形。
+    /// <para>
+    /// 本類別**不碰資料庫**：定義全部來自檔案，token 以
+    /// <see cref="Bee.Tests.Shared.TestSessionFactory.CreateAccessToken"/> 取得，
+    /// 它把 SessionInfo 直接寫進 session 快取，server 端讀得到就不必查 <c>st_session</c>。
+    /// </para>
+    /// <para>
+    /// NOTE: 先前每個測試都拿裸 <c>Guid.NewGuid()</c> 打本機 <c>GetDefine</c>，而該方法要求已驗證
+    /// 身分，於是 server 端 session cache miss → 走 rebuild 路徑讀 <c>st_session</c>。當時的修法是
+    /// 掛 <c>SharedDbFixture</c> 讓它有表可讀 —— 那讓一組「驗定義檔存取與快取」的測試變成需要
+    /// 資料庫容器。正解是根本不要產生那個相依。
+    /// </para>
     /// </remarks>
-    public class ClientDefineAccessTests : IClassFixture<Bee.Tests.Shared.SharedDbFixture>
+    public class ClientDefineAccessTests : IClassFixture<Bee.Tests.Shared.BeeTestFixture>
     {
-        public ClientDefineAccessTests(Bee.Tests.Shared.SharedDbFixture _)
+        private readonly Bee.Tests.Shared.BeeTestFixture _fx;
+
+        public ClientDefineAccessTests(Bee.Tests.Shared.BeeTestFixture fx)
         {
-            // fixture 僅用於觸發 wire up 與 schema 建立；測試方法直接用 process-wide 的
-            // ApiClientInfo.LocalServiceProvider。
+            // fixture 用於觸發 ApiClientInfo.LocalServiceProvider 的 wire up，並作為植入
+            // session 的目標；測試方法本身走 process-wide 的 LocalServiceProvider。
+            _fx = fx;
         }
 
-        private static ClientDefineAccess CreateAccess()
+        private ClientDefineAccess CreateAccess()
         {
-            var connector = new SystemApiConnector(Guid.NewGuid());
+            var connector = new SystemApiConnector(Bee.Tests.Shared.TestSessionFactory.CreateAccessToken(_fx));
             return new ClientDefineAccess(connector);
         }
 
