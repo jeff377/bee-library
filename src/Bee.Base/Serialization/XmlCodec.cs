@@ -17,21 +17,14 @@ namespace Bee.Base.Serialization
             if (value == null)
                 return string.Empty;
 
-            // Pre-serialization operations
-            SerializationLifecycle.NotifyBefore(value);
+            // The scope clears the serialize state even when the serializer throws; leaving it set
+            // is permanent, and these values are often process-wide cached definitions.
+            using var scope = SerializationLifecycle.BeginSerialize(value);
 
-            // Serialize and write to string
-            string xml = string.Empty;
-            using (Utf8StringWriter writer = new Utf8StringWriter())
-            {
-                var serializer = XmlSerializerCache.Get(value.GetType());
-                serializer.Serialize(writer, value);
-                xml = writer.ToString();
-            }
-
-            // Post-serialization operations
-            SerializationLifecycle.NotifyAfter(value);
-            return xml;
+            using Utf8StringWriter writer = new Utf8StringWriter();
+            var serializer = XmlSerializerCache.Get(value.GetType());
+            serializer.Serialize(writer, value);
+            return writer.ToString();
         }
 
         /// <summary>

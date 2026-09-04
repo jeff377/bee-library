@@ -104,16 +104,12 @@ namespace Bee.Base.Serialization
         /// <param name="writeIndented">Whether the output is indented for human reading.</param>
         private static string SerializeCore(object value, bool ignoreDefaultValue, bool ignoreNullValue, bool writeIndented)
         {
-            // Pre-serialization operations
-            SerializationLifecycle.NotifyBefore(value);
+            // See SerializationLifecycle.BeginSerialize: the state must be cleared even when the
+            // serializer throws, or the value stays marked as serializing for the rest of the process.
+            using var scope = SerializationLifecycle.BeginSerialize(value);
 
-            // Serialize to JSON string
             var options = GetJsonSerializerOptions(ignoreDefaultValue, ignoreNullValue, writeIndented);
-            string json = JsonSerializer.Serialize(value, value?.GetType() ?? typeof(object), options);
-
-            // Post-serialization operations
-            SerializationLifecycle.NotifyAfter(value);
-            return json;
+            return JsonSerializer.Serialize(value, value?.GetType() ?? typeof(object), options);
         }
 
         /// <summary>
