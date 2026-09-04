@@ -75,12 +75,39 @@ namespace Bee.Db.Providers.MySql
         }
 
         /// <summary>
-        /// Escapes a string value for use inside a <c>'...'</c> literal by doubling single quotes.
+        /// Escapes a string value for use inside a <c>'...'</c> literal.
         /// </summary>
         /// <param name="value">The string value to escape.</param>
+        /// <remarks>
+        /// <para>
+        /// WARNING: MySQL is the one dialect here where doubling the quote is not enough. Unlike SQL
+        /// Server, Oracle, SQLite and PostgreSQL under its default <c>standard_conforming_strings</c>,
+        /// MySQL treats <c>\</c> as an escape character inside a string literal. Doubling only the
+        /// quote leaves the backslash live, so it consumes the quote that follows it and the literal
+        /// runs on into whatever comes next.
+        /// </para>
+        /// <para>
+        /// This is not only an injection surface. A caption or description that merely <b>ends with a
+        /// backslash</b> — a Windows path in a field comment, say — breaks the generated DDL outright.
+        /// Measured against MySQL 8: <c>ends with backslash \</c> produced a syntax error, and
+        /// <c>a\' , (SELECT 1) , '</c> escaped the literal entirely.
+        /// </para>
+        /// <para>
+        /// The backslash is replaced first. With only these two replacements the order happens not to
+        /// matter, but escaping the escape character before anything else is the ordering that stays
+        /// correct if another sequence is ever added.
+        /// </para>
+        /// <para>
+        /// IMPORTANT: this assumes the server's default <c>sql_mode</c>, which does not include
+        /// <c>NO_BACKSLASH_ESCAPES</c>. A deployment that enables that mode makes the backslash an
+        /// ordinary character, and comments and default values written through here would carry
+        /// doubled backslashes. The function has no connection and so cannot read the mode; the same
+        /// assumption is already made by the PostgreSQL dialect for <c>standard_conforming_strings</c>.
+        /// </para>
+        /// </remarks>
         public static string EscapeSqlString(string value)
         {
-            return value.Replace("'", "''");
+            return value.Replace("\\", "\\\\").Replace("'", "''");
         }
 
         /// <summary>
