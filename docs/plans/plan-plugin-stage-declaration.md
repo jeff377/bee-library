@@ -1,6 +1,6 @@
 # 計畫：業務 plugin 設定檔標記時點（重啟 ADR-035 決策三）
 
-**狀態：📝 擬定中（2026-09-05）—— 四項決策全數定案，可動工；尚未動 `src/`**
+**狀態：✅ 已完成（2026-09-05）—— 三階段全數落地，掛在 4.29.0（版號檔尚未 bump、tag 未推）**
 
 ## 背景
 
@@ -254,9 +254,9 @@ PluginStage { None = 0, BeforeSave = 1, AfterSave = 2, BeforeDelete = 3, AfterDe
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 定義層：`PluginStage` 列舉、`PluginItem.Stage`、查詢簽章換成帶時點的繫結、`CustomizeOverlay` 跟著換；XML round-trip 測試 | 📝 待做 |
-| 2 | Business 層：移除 `FormPluginStage` 改用定義層列舉、兩道對帳閘門、`EnsureInstances` 改按需建構、`pluginNeedsSnapshot` 改吃宣告 | 📝 待做 |
-| 3 | 文件：ADR-035 決策三改寫、雙語公開文件、CHANGELOG（破壞性變更） | 📝 待做 |
+| 1 | 定義層：`PluginStage` 列舉、`PluginItem.Stage`、查詢簽章換成帶時點的繫結、`CustomizeOverlay` 跟著換；XML round-trip 測試 | ✅ 已完成（2026-09-05） |
+| 2 | Business 層：移除 `FormPluginStage` 改用定義層列舉、兩道對帳閘門、`EnsureInstances` 改按需建構、`pluginNeedsSnapshot` 改吃宣告 | ✅ 已完成（2026-09-05） |
+| 3 | 文件：ADR-035 決策三改寫、雙語公開文件、CHANGELOG（破壞性變更） | ✅ 已完成（2026-09-05） |
 
 > 為什麼不把階段 1 單獨發版：階段 1 做完的中間狀態是「XML 多一個沒人讀的屬性」，
 > 下游收不到任何好處，只是多一次 commit。三階段應在同一版落地。
@@ -350,3 +350,47 @@ PluginStage { None = 0, BeforeSave = 1, AfterSave = 2, BeforeDelete = 3, AfterDe
 「設定檔只列型別，一次操作一個實例」，描述的正是現行設計 —— 而本變更會同時翻掉那個標題的兩半。
 這不構成不做的理由，只是決策時要知道那篇會成為**一份「當時的設計」紀錄**。
 文章本身在另一個 private repo，本案不觸碰它。
+
+## 落地紀錄（2026-09-05）
+
+三階段同一次 commit 落地，掛在 **4.29.0**（`Version.props` 未改、tag 未推——版號由維護者決定）。
+
+### 與 plan 的差異
+
+- 查詢方法定名為 **`GetPluginBindings`**（`PluginSettings` 與 `CustomizeOverlay` 各一），
+  回傳 `IReadOnlyList<PluginBinding>`。
+- 另外新增 **`Bee.Business.Form.FormPluginBinding`**（`readonly record struct(Type, PluginStage)`）
+  —— plan 只說 `Create` 要「同時收型別與宣告時點」，沒定形狀。用具名型別而非 `ValueTuple`：
+  repo 的公開 API 沒有 ValueTuple 先例，且 `Create` 的可讀性靠它。
+- **`FormPluginChain.Create` 多收 `progId`**：plan 指定的兩則錯誤訊息都含 progId，而 chain 本來
+  就是 per-progId 的。
+- **`ValidatePluginType` 改為呼叫 `Create` 再把 `InvalidOperationException` 包成
+  `UserMessageException`**（plan 未寫細節）。好處是兩道閘門共用同一份對帳邏輯與訊息，
+  不會各自漂移——「這個方法接受的定義，resolver 一定載得起來」。
+
+### 未驗證項目的查證結果
+
+1. **`PluginStage` / `PluginBinding` 撞名** —— 無。repo 內無同名 namespace，非 BCL namespace 末段，
+   不撞 Avalonia / WPF 型別。`TreatWarningsAsErrors` 下 CA1724 未報，等於由 analyzer 確認過。
+2. **`XmlSerializer` 對缺少 enum 型 `XmlAttribute` 的行為** —— **確實落到列舉的 0 值**。
+   已釘成永久測試 `Deserialize_MissingStageAttribute_YieldsNone`（`PluginSettingsTests`），
+   `None = 0` 的設計因此有機制守著。
+3. **`ValidatePluginType` 的呼叫端** —— 見上「與 plan 的差異」。
+4. **`ActivatorUtilities` 注入行為** —— 按需建構後不變。新增
+   `Run_ConstructsWithInjectedDependencies` 釘住「三個定位參數之外的相依仍由容器解析」。
+5. **per-operation 一實例測試** —— 已改寫，未原封保留。單元層換成
+   `Run_ConstructsOnlyThePluginsOfTheStageBeingRun`（按需建構）與
+   `Run_DifferentOperations_DoNotShareInstances`（不跨呼叫共用）；整合層那個
+   `Save_BothStages_RunInOrderOnOneInstance` 改寫為
+   `Save_TwoStages_RunInPipelineOrderAsSeparateInstances`，斷言兩個時點依管線順序執行、
+   且是**兩個實例**。三個原本覆寫兩個時點的測試 plugin（`TracingPlugin` /
+   `SnapshotProbePlugin` / `RuleOffSnapshotProbePlugin`）拆成各自單一時點的類別，
+   共用記錄改放靜態容器。
+
+### 驗證
+
+- `dotnet build Bee.Library.slnx -c Release`：0 error 0 warning。
+- `tools/` / `samples/` / `apps/Bee.Northwind`（iOS head 需 `DEVELOPER_DIR` 指到側裝的對應
+  Xcode）三個 solution 皆建置成功。
+- 全部 16 個測試專案綠燈。
+- `./check-public-docs.sh` 與 `./check-xmldoc-refs.sh` 皆通過。

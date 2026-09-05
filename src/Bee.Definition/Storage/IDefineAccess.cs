@@ -98,7 +98,7 @@ namespace Bee.Definition.Storage
         /// layers add up per progId, and a consumer needs the chain of the one program it is
         /// running, not a merge of every program. It reads this base copy, asks
         /// <see cref="ICustomizeDefineReader"/> for the tenant copy, and combines them for its progId with
-        /// <see cref="Bee.Definition.Customization.CustomizeOverlay.GetPluginTypes"/> — the same routine a client would run, so both
+        /// <see cref="Bee.Definition.Customization.CustomizeOverlay.GetPluginBindings"/> — the same routine a client would run, so both
         /// ends agree.
         /// </remarks>
         PluginSettings GetPluginSettings() => (PluginSettings)GetDefine(DefineType.PluginSettings);

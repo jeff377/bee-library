@@ -25,7 +25,7 @@ Thirteen definition types under `DefinePath` drive the whole application. See [D
 | **Expression engine** | DynamicExpresso evaluates computed fields and rules; `IExpressionEvaluator` keeps the engine swappable. See [Expressions and Rules](expression-rules.md) |
 | **Master-detail** | Child tables linked through `sys_master_rowid`, written together in a single `Save` |
 | **Lookup relations** | A field declares its relation target and field mappings; the picker query and value propagation come for free |
-| **PluginSettings** | Which business plugins are attached to each `progId`, executed in declaration order |
+| **PluginSettings** | Which business plugins are attached to each `progId`, each declaring the one stage it runs at, executed in declaration order |
 
 ## 2. Data Access
 
@@ -56,7 +56,7 @@ See [End-to-End Development Cookbook](development-cookbook.md) and [API ↔ BO C
 | **`FormBusinessObject`** | Default CRUD surface: `GetList`, `GetData`, `GetNewData`, `Save`, `Delete`, `GetLookup` |
 | **`IBusinessObjectFactory`** | Resolves a business object by `progId`, falling back to the framework default when none is registered |
 | **ExecFunc** | Generic dispatch for host-defined methods called by name, with an anonymous variant for flows such as self-registration |
-| **`FormBusinessPlugin`** | Hook points around the save and delete pipeline, chained in declaration order |
+| **`FormBusinessPlugin`** | Hook points around the save and delete pipeline; one class binds to one stage, chained in declaration order |
 | **GlobalEvents** | Framework-level event hooks for cross-cutting host behaviour |
 
 ## 4. API and Transport

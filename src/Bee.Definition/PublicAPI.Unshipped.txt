@@ -1,1 +1,27 @@
 #nullable enable
+Bee.Definition.Settings.PluginBinding
+Bee.Definition.Settings.PluginBinding.PluginBinding() -> void
+Bee.Definition.Settings.PluginBinding.PluginBinding(string! Type, Bee.Definition.Settings.PluginStage Stage) -> void
+Bee.Definition.Settings.PluginBinding.Deconstruct(out string! Type, out Bee.Definition.Settings.PluginStage Stage) -> void
+Bee.Definition.Settings.PluginBinding.Equals(Bee.Definition.Settings.PluginBinding other) -> bool
+Bee.Definition.Settings.PluginBinding.Stage.get -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginBinding.Stage.init -> void
+Bee.Definition.Settings.PluginBinding.Type.get -> string!
+Bee.Definition.Settings.PluginBinding.Type.init -> void
+Bee.Definition.Settings.PluginItem.PluginItem(string! type, Bee.Definition.Settings.PluginStage stage) -> void
+Bee.Definition.Settings.PluginItem.Stage.get -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginItem.Stage.set -> void
+Bee.Definition.Settings.PluginSettings.GetPluginBindings(string! progId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Settings.PluginBinding>!
+Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginStage.AfterDelete = 4 -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginStage.AfterSave = 2 -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginStage.BeforeDelete = 3 -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginStage.BeforeSave = 1 -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginStage.None = 0 -> Bee.Definition.Settings.PluginStage
+static Bee.Definition.Customization.CustomizeOverlay.GetPluginBindings(Bee.Definition.Settings.PluginSettings? customize, Bee.Definition.Settings.PluginSettings? base, string! progId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Settings.PluginBinding>!
+static Bee.Definition.Settings.PluginItemCollectionExtensions.Add(this Bee.Definition.Settings.PluginItemCollection? collection, string! type, Bee.Definition.Settings.PluginStage stage) -> Bee.Definition.Settings.PluginItem!
+override Bee.Definition.Settings.PluginBinding.GetHashCode() -> int
+static Bee.Definition.Settings.PluginBinding.operator !=(Bee.Definition.Settings.PluginBinding left, Bee.Definition.Settings.PluginBinding right) -> bool
+static Bee.Definition.Settings.PluginBinding.operator ==(Bee.Definition.Settings.PluginBinding left, Bee.Definition.Settings.PluginBinding right) -> bool
+~override Bee.Definition.Settings.PluginBinding.Equals(object obj) -> bool
+~override Bee.Definition.Settings.PluginBinding.ToString() -> string

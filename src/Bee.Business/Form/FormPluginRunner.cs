@@ -1,4 +1,5 @@
 using Bee.Definition;
+using Bee.Definition.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.Business.Form
@@ -8,15 +9,19 @@ namespace Bee.Business.Form
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>This is where the one-instance-per-operation guarantee lives.</b> Plugins are constructed
-    /// on first use and reused for every later stage of the same call, so a plugin overriding both
-    /// <c>BeforeSave</c> and <c>AfterSave</c> can carry state between them in an instance field.
-    /// Constructing per stage instead would silently drop that state — with no compile error — so
-    /// the behaviour is covered by tests rather than left to inspection.
+    /// Plugins are constructed on demand: a plugin is created the first time the stage it is bound
+    /// to runs, and not at all otherwise. A save therefore never constructs a delete-stage plugin.
+    /// This is safe precisely because a plugin binds to exactly one stage — there is no later stage
+    /// that would have to find the same object.
     /// </para>
     /// <para>
-    /// A chain that binds no plugin, or none implementing the stage being run, costs a single
-    /// branch: nothing is constructed and the pipeline is untouched.
+    /// Instances are per operation and never shared between calls, so a plugin needs no locking.
+    /// What it cannot do is carry state to another stage: that is a second class, with no shared
+    /// field between them, and anything the later stage needs it must read or recompute.
+    /// </para>
+    /// <para>
+    /// A chain that binds no plugin, or none at the stage being run, costs a single branch: nothing
+    /// is constructed and the pipeline is untouched.
     /// </para>
     /// </remarks>
     public sealed class FormPluginRunner
@@ -25,7 +30,7 @@ namespace Bee.Business.Form
         private readonly IBeeContext _ctx;
         private readonly Guid _accessToken;
         private readonly string _progId;
-        private FormBusinessPlugin[]? _instances;
+        private FormBusinessPlugin?[]? _instances;
 
         /// <summary>
         /// Initializes a new <see cref="FormPluginRunner"/>.
@@ -46,67 +51,56 @@ namespace Bee.Business.Form
         public FormPluginChain Chain => _chain;
 
         /// <summary>
-        /// Runs every plugin implementing <see cref="FormPluginStage.BeforeSave"/>, in order.
+        /// Runs every plugin bound to <see cref="PluginStage.BeforeSave"/>, in order.
         /// </summary>
         /// <param name="context">The save context.</param>
         public void RunBeforeSave(SaveContext context)
-            => Run(FormPluginStage.BeforeSave, plugin => plugin.BeforeSave(context));
+            => Run(PluginStage.BeforeSave, plugin => plugin.BeforeSave(context));
 
         /// <summary>
-        /// Runs every plugin implementing <see cref="FormPluginStage.AfterSave"/>, in order.
+        /// Runs every plugin bound to <see cref="PluginStage.AfterSave"/>, in order.
         /// </summary>
         /// <param name="context">The save context.</param>
         public void RunAfterSave(SaveContext context)
-            => Run(FormPluginStage.AfterSave, plugin => plugin.AfterSave(context));
+            => Run(PluginStage.AfterSave, plugin => plugin.AfterSave(context));
 
         /// <summary>
-        /// Runs every plugin implementing <see cref="FormPluginStage.BeforeDelete"/>, in order.
+        /// Runs every plugin bound to <see cref="PluginStage.BeforeDelete"/>, in order.
         /// </summary>
         /// <param name="context">The delete context.</param>
         public void RunBeforeDelete(DeleteContext context)
-            => Run(FormPluginStage.BeforeDelete, plugin => plugin.BeforeDelete(context));
+            => Run(PluginStage.BeforeDelete, plugin => plugin.BeforeDelete(context));
 
         /// <summary>
-        /// Runs every plugin implementing <see cref="FormPluginStage.AfterDelete"/>, in order.
+        /// Runs every plugin bound to <see cref="PluginStage.AfterDelete"/>, in order.
         /// </summary>
         /// <param name="context">The delete context.</param>
         public void RunAfterDelete(DeleteContext context)
-            => Run(FormPluginStage.AfterDelete, plugin => plugin.AfterDelete(context));
+            => Run(PluginStage.AfterDelete, plugin => plugin.AfterDelete(context));
 
-        private void Run(FormPluginStage stage, Action<FormBusinessPlugin> invoke)
+        private void Run(PluginStage stage, Action<FormBusinessPlugin> invoke)
         {
-            if (_chain.IsEmpty || !_chain.HasStage(stage)) { return; }
+            if (_chain.IsEmpty) { return; }
 
             var entries = _chain.Entries;
-            var instances = EnsureInstances();
             for (int i = 0; i < entries.Length; i++)
             {
-                if (entries[i].Stages.Contains(stage))
-                    invoke(instances[i]);
+                if (entries[i].Stage == stage)
+                    invoke(Instance(i));
             }
         }
 
         /// <summary>
-        /// Constructs the whole chain on first use. All of it, not just the stage being run: the
-        /// point of one instance per operation is that a later stage finds the same object, which
-        /// only holds if construction is tied to the operation rather than to a stage.
+        /// Returns the instance for one entry, constructing it the first time its stage runs.
         /// </summary>
-        private FormBusinessPlugin[] EnsureInstances()
+        private FormBusinessPlugin Instance(int index)
         {
-            if (_instances != null) { return _instances; }
+            _instances ??= new FormBusinessPlugin?[_chain.Entries.Length];
 
-            var entries = _chain.Entries;
-            var instances = new FormBusinessPlugin[entries.Length];
-            for (int i = 0; i < entries.Length; i++)
-            {
-                // ActivatorUtilities so a plugin may declare its own injected dependencies beyond
-                // the three positional arguments, the same way a custom repository can.
-                instances[i] = (FormBusinessPlugin)ActivatorUtilities.CreateInstance(
-                    _ctx.Services, entries[i].Type, _ctx, _accessToken, _progId);
-            }
-
-            _instances = instances;
-            return instances;
+            // ActivatorUtilities so a plugin may declare its own injected dependencies beyond the
+            // three positional arguments, the same way a custom repository can.
+            return _instances[index] ??= (FormBusinessPlugin)ActivatorUtilities.CreateInstance(
+                _ctx.Services, _chain.Entries[index].Type, _ctx, _accessToken, _progId);
         }
     }
 }

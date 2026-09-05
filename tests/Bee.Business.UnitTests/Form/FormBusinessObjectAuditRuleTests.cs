@@ -181,12 +181,13 @@ namespace Bee.Business.UnitTests.Form
             var writer = new CapturingAuditLogWriter();
             var rowId = Guid.NewGuid();
             string runId = Guid.NewGuid().ToString("N")[..8];
-            RuleOffSnapshotProbePlugin.Reset();
+            RuleOffDeleteProbe.Reset();
 
             InsertRow(ctx, rowId, $"P{runId}", "規則關閉待刪");
 
-            var resolver = new FixedChainResolver(
-                FormPluginChain.Create([typeof(RuleOffSnapshotProbePlugin)]));
+            var resolver = new FixedChainResolver(FormPluginChain.Create("Order",
+                [new FormPluginBinding(typeof(RuleOffBeforeDeleteProbePlugin), PluginStage.BeforeDelete),
+                 new FormPluginBinding(typeof(RuleOffAfterDeleteProbePlugin), PluginStage.AfterDelete)]));
 
             ctx.CreateBoWithSession(CreateSessionToken(), resolver,
                     Overrides(writer, Rule(AuditRuleMode.Off, AuditRuleMode.Off),
@@ -194,27 +195,27 @@ namespace Bee.Business.UnitTests.Form
                 .Delete(new DeleteArgs { RowId = rowId });
 
             Assert.Empty(writer.Entries);
-            Assert.True(RuleOffSnapshotProbePlugin.BeforeDeleteSawSnapshot);
-            Assert.True(RuleOffSnapshotProbePlugin.AfterDeleteSawSnapshot);
-            Assert.Equal("規則關閉待刪", RuleOffSnapshotProbePlugin.DeletedName);
+            Assert.True(RuleOffDeleteProbe.BeforeDeleteSawSnapshot);
+            Assert.True(RuleOffDeleteProbe.AfterDeleteSawSnapshot);
+            Assert.Equal("規則關閉待刪", RuleOffDeleteProbe.DeletedName);
         }
 
         /// <summary>
-        /// 記錄 delete 各階段有沒有拿到 Snapshot。
+        /// 兩個 delete 時點探針共用的記錄。
         /// </summary>
         /// <remarks>
-        /// 刻意不共用 <c>FormBusinessObjectPluginIntegrationTests</c> 那個同型探針：
-        /// plugin 的狀態是 <c>static</c>，而 xUnit 不同 test class 平行執行，
-        /// 共用就會互相覆寫。每個 test class 自帶一份才安全。
+        /// 一個 plugin 只掛一個時點，兩個時點因此是兩個類別；記錄放在共用的靜態容器，
+        /// 而不是 instance field ——後者跨時點已不再成立。
+        /// <para>
+        /// 刻意不共用 <c>FormBusinessObjectPluginIntegrationTests</c> 那組同型探針：
+        /// 狀態是 <c>static</c>，而 xUnit 不同 test class 平行執行，共用就會互相覆寫。
+        /// </para>
         /// </remarks>
-        public sealed class RuleOffSnapshotProbePlugin : FormBusinessPlugin
+        public static class RuleOffDeleteProbe
         {
-            public RuleOffSnapshotProbePlugin(IBeeContext ctx, Guid accessToken, string progId)
-                : base(ctx, accessToken, progId) { }
-
-            public static bool BeforeDeleteSawSnapshot { get; private set; }
-            public static bool AfterDeleteSawSnapshot { get; private set; }
-            public static string DeletedName { get; private set; } = string.Empty;
+            public static bool BeforeDeleteSawSnapshot { get; set; }
+            public static bool AfterDeleteSawSnapshot { get; set; }
+            public static string DeletedName { get; set; } = string.Empty;
 
             public static void Reset()
             {
@@ -222,16 +223,28 @@ namespace Bee.Business.UnitTests.Form
                 AfterDeleteSawSnapshot = false;
                 DeletedName = string.Empty;
             }
+        }
+
+        public sealed class RuleOffBeforeDeleteProbePlugin : FormBusinessPlugin
+        {
+            public RuleOffBeforeDeleteProbePlugin(IBeeContext ctx, Guid accessToken, string progId)
+                : base(ctx, accessToken, progId) { }
 
             public override void BeforeDelete(DeleteContext context)
-                => BeforeDeleteSawSnapshot = context.Snapshot != null;
+                => RuleOffDeleteProbe.BeforeDeleteSawSnapshot = context.Snapshot != null;
+        }
+
+        public sealed class RuleOffAfterDeleteProbePlugin : FormBusinessPlugin
+        {
+            public RuleOffAfterDeleteProbePlugin(IBeeContext ctx, Guid accessToken, string progId)
+                : base(ctx, accessToken, progId) { }
 
             public override void AfterDelete(DeleteContext context)
             {
-                AfterDeleteSawSnapshot = context.Snapshot != null;
+                RuleOffDeleteProbe.AfterDeleteSawSnapshot = context.Snapshot != null;
                 var table = context.Snapshot?.Tables[CrudTestContext.ProgId];
                 if (table is { Rows.Count: > 0 })
-                    DeletedName = table.Rows[0][SysFields.Name]?.ToString() ?? string.Empty;
+                    RuleOffDeleteProbe.DeletedName = table.Rows[0][SysFields.Name]?.ToString() ?? string.Empty;
             }
         }
 

@@ -19,7 +19,7 @@ namespace Bee.Business.Form
     /// </para>
     /// <para>
     /// Chains are cached by <c>(customizationCode, progId)</c>, which is also what makes the
-    /// override-detection reflection a one-off. When either layer's <see cref="PluginSettings"/>
+    /// declaration-versus-override check a one-off. When either layer's <see cref="PluginSettings"/>
     /// instance changes — a file-watcher reload, detected by reference inequality — the cache is
     /// reset on the next call.
     /// </para>
@@ -118,13 +118,16 @@ namespace Bee.Business.Form
         {
             // How the two layers combine is decided by CustomizeOverlay — plugins concatenate,
             // base first, which is the one granularity there that adds rather than chooses.
-            var typeNames = CustomizeOverlay.GetPluginTypes(custSettings, baseSettings, progId);
-            if (typeNames.Count == 0) { return FormPluginChain.Empty; }
+            var declared = CustomizeOverlay.GetPluginBindings(custSettings, baseSettings, progId);
+            if (declared.Count == 0) { return FormPluginChain.Empty; }
 
-            var types = new List<Type>(typeNames.Count);
-            foreach (var typeName in typeNames)
-                types.Add(LoadPluginType(progId, typeName));
-            return FormPluginChain.Create(types);
+            // The declared stage travels with the type all the way into the chain, which then
+            // refuses the whole chain if the class and the file disagree. This gate is the one that
+            // covers hand-authored files: the packaged layer has no maintenance API at all.
+            var resolved = new List<FormPluginBinding>(declared.Count);
+            foreach (var binding in declared)
+                resolved.Add(new FormPluginBinding(LoadPluginType(progId, binding.Type), binding.Stage));
+            return FormPluginChain.Create(progId, resolved);
         }
 
         private static Type LoadPluginType(string progId, string typeName)

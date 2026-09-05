@@ -25,20 +25,26 @@ namespace Bee.Business.UnitTests
         private static string NotAPluginFqn =>
             $"{typeof(NotAPlugin).FullName}, {typeof(NotAPlugin).Assembly.GetName().Name}";
 
-        private static PluginSettings Build(string progId, params string[] types)
+        private static PluginSettings Build(string progId, params (string Type, PluginStage Stage)[] plugins)
         {
             var settings = new PluginSettings();
             var program = settings.Items!.Add(progId);
-            foreach (var type in types)
-                program.Plugins!.Add(type);
+            foreach (var (type, stage) in plugins)
+                program.Plugins!.Add(type, stage);
             return settings;
         }
+
+        /// <summary><see cref="SamplePlugin"/> 覆寫 BeforeSave，宣告與覆寫相符。</summary>
+        private static (string, PluginStage) Sample => (SamplePluginFqn, PluginStage.BeforeSave);
+
+        /// <summary><see cref="OtherPlugin"/> 覆寫 AfterSave，宣告與覆寫相符。</summary>
+        private static (string, PluginStage) Other => (OtherPluginFqn, PluginStage.AfterSave);
 
         [Fact]
         [DisplayName("套裝層的鏈解析為對應型別")]
         public void Resolve_BaseOnly_ReturnsBaseChain()
         {
-            var access = new StubDefineAccess(Build("Order", SamplePluginFqn));
+            var access = new StubDefineAccess(Build("Order", Sample));
             var resolver = new PluginSettingsResolver(access);
 
             Assert.Equal([typeof(SamplePlugin)], resolver.Resolve("", "Order").Types);
@@ -48,8 +54,8 @@ namespace Bee.Business.UnitTests
         [DisplayName("兩層相加：套裝在前、客製在後")]
         public void Resolve_BothLayers_ConcatenatesBaseThenCustomize()
         {
-            var access = new StubDefineAccess(Build("Order", SamplePluginFqn));
-            var reader = new StubCustomizeReader { Settings = Build("Order", OtherPluginFqn) };
+            var access = new StubDefineAccess(Build("Order", Sample));
+            var reader = new StubCustomizeReader { Settings = Build("Order", Other) };
             var resolver = new PluginSettingsResolver(access, reader);
 
             Assert.Equal([typeof(SamplePlugin), typeof(OtherPlugin)],
@@ -79,7 +85,7 @@ namespace Bee.Business.UnitTests
             Assert.NotNull(chain);
             Assert.True(chain.IsEmpty);
             Assert.Empty(chain.Types);
-            Assert.False(chain.HasStage(FormPluginStage.BeforeSave));
+            Assert.False(chain.HasStage(PluginStage.BeforeSave));
         }
 
         [Fact]
@@ -106,7 +112,7 @@ namespace Bee.Business.UnitTests
         public void Resolve_BaseMissing_StillResolvesCustomize()
         {
             var access = new StubDefineAccess(null);
-            var reader = new StubCustomizeReader { Settings = Build("Order", SamplePluginFqn) };
+            var reader = new StubCustomizeReader { Settings = Build("Order", Sample) };
             var resolver = new PluginSettingsResolver(access, reader);
 
             Assert.Equal([typeof(SamplePlugin)], resolver.Resolve("acme", "Order").Types);
@@ -116,7 +122,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("型別載不到時拋例外——plugin 是刻意加上的，靜默略過等於客製沒生效")]
         public void Resolve_UnloadableType_Throws()
         {
-            var access = new StubDefineAccess(Build("Order", "Nope.Missing, Nope"));
+            var access = new StubDefineAccess(Build("Order", ("Nope.Missing, Nope", PluginStage.BeforeSave)));
             var resolver = new PluginSettingsResolver(access);
 
             var ex = Assert.Throws<InvalidOperationException>(() => resolver.Resolve("", "Order"));
@@ -127,7 +133,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("型別不繼承 FormBusinessPlugin 時拋例外")]
         public void Resolve_TypeNotAPlugin_Throws()
         {
-            var access = new StubDefineAccess(Build("Order", NotAPluginFqn));
+            var access = new StubDefineAccess(Build("Order", (NotAPluginFqn, PluginStage.BeforeSave)));
             var resolver = new PluginSettingsResolver(access);
 
             var ex = Assert.Throws<InvalidOperationException>(() => resolver.Resolve("", "Order"));
@@ -135,11 +141,33 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
+        [DisplayName("★宣告的時點與類別覆寫的不符時拋例外——手寫檔沒有維護 API 把關，這道是唯一的閘門")]
+        public void Resolve_DeclaredStageDisagreesWithOverride_Throws()
+        {
+            var access = new StubDefineAccess(Build("Order", (SamplePluginFqn, PluginStage.AfterDelete)));
+            var resolver = new PluginSettingsResolver(access);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => resolver.Resolve("", "Order"));
+            Assert.Contains("overrides BeforeSave", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        [DisplayName("★手寫檔漏了 Stage 屬性時拋例外，訊息說得出「你沒宣告」")]
+        public void Resolve_NoStageDeclared_Throws()
+        {
+            var access = new StubDefineAccess(Build("Order", (SamplePluginFqn, PluginStage.None)));
+            var resolver = new PluginSettingsResolver(access);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => resolver.Resolve("", "Order"));
+            Assert.Contains("with no Stage", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
         [DisplayName("cache 以 (customizeId, progId) 隔離：不同租戶互不干擾")]
         public void Resolve_DifferentCustomizeIds_Isolated()
         {
-            var access = new StubDefineAccess(Build("Order", SamplePluginFqn));
-            var reader = new StubCustomizeReader { Settings = Build("Order", OtherPluginFqn) };
+            var access = new StubDefineAccess(Build("Order", Sample));
+            var reader = new StubCustomizeReader { Settings = Build("Order", Other) };
             var resolver = new PluginSettingsResolver(access, reader);
 
             var acme = resolver.Resolve("acme", "Order");
@@ -154,11 +182,11 @@ namespace Bee.Business.UnitTests
         [DisplayName("定義實例更換（file-watcher 重載）後 chain cache 重建")]
         public void Resolve_SettingsInstanceChanged_RebuildsChain()
         {
-            var access = new StubDefineAccess(Build("Order", SamplePluginFqn));
+            var access = new StubDefineAccess(Build("Order", Sample));
             var resolver = new PluginSettingsResolver(access);
             Assert.Equal([typeof(SamplePlugin)], resolver.Resolve("", "Order").Types);
 
-            access.Current = Build("Order", SamplePluginFqn, OtherPluginFqn);
+            access.Current = Build("Order", Sample, Other);
 
             Assert.Equal([typeof(SamplePlugin), typeof(OtherPlugin)], resolver.Resolve("", "Order").Types);
         }

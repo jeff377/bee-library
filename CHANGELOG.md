@@ -4,6 +4,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.29.0]
+
+> `PluginSettings.xml` named types and nothing else — which stage a plugin ran at came from reflection over the class, so the file could not answer the one question anyone opens it to ask. [ADR-035](docs/adr/adr-035-business-logic-plugin.md) accepted that cost on the promise of a maintenance tool that would compute and display the stages; the tool was never built, leaving the readability cost as a net loss. The stage now lives in the file, and one plugin binds to exactly one stage. What that gives up is named plainly, because ADR-035 called it the mechanism's only real advantage: a plugin can no longer carry state from `BeforeSave` to `AfterSave` in an instance field, since those are now two classes. Reflection stays as the check rather than the source — a class must override exactly the stage its binding declares, and any disagreement refuses to load.
+
+📄 Full notes and design context: [docs/changelogs/4.29.0.md](docs/changelogs/4.29.0.md)
+
+### Breaking Changes
+
+- `Bee.Definition`: `PluginItem` gains a required `Stage` attribute, and a plugin binds to exactly one stage. `PluginItem(string type)` becomes `PluginItem(string type, PluginStage stage)` with no overload kept, and `PluginItemCollectionExtensions.Add` likewise. `PluginSettings.GetPluginTypes` and `CustomizeOverlay.GetPluginTypes` become `GetPluginBindings`, returning `IReadOnlyList<PluginBinding>` — value copies of type and stage, not the cached `PluginItem` instances.
+- `Bee.Business`: `FormPluginStage` is removed. The declaration type has to live where `PluginItem` does, so `Bee.Definition.Settings.PluginStage` replaces it as the single enum; reusing the old name in the new namespace would give `CS0104` in any consumer using both namespaces. `FormPluginChain.Create` takes the progId and `IReadOnlyList<FormPluginBinding>`; `HasStage` and `TypesForStage` take `PluginStage`.
+- Binary compatibility is broken and accepted: business plugins have no consumer — the format shipped in 4.17.0, no definition file in this repository uses it, and nothing outside `src/` reads `PluginSettings`. No migration guidance ships, because there is nothing to migrate.
+
+### Changed
+
+- `Bee.Business`: the declaration and the class are reconciled when a chain is built, and any disagreement throws — overriding nothing, overriding more than one stage, declaring no `Stage`, or declaring one the class does not override. The message names the stages the class actually overrides. Two gates enforce it: the maintenance API at save time, and `PluginSettingsResolver` at resolve time — the only gate a hand-authored file ever passes, since the packaged layer has no maintenance API. The consequence is a new coupling: changing which stage a class overrides now means changing the XML too.
+- `Bee.Business`: `FormPluginRunner` constructs a plugin the first time its own stage runs, rather than building the whole chain on first use. A save therefore never constructs a delete-stage plugin. Instances stay per operation and are never shared between calls; construction still goes through `ActivatorUtilities`.
+- `Bee.Definition`: `PluginStage.None = 0` is the sentinel for a binding that declares no stage, rejected by both gates. A missing XML attribute deserializes to the enum's zero value with no error, and reserving zero is what lets the message say "you declared no `Stage`".
+
+### Documentation
+
+- [ADR-035](docs/adr/adr-035-business-logic-plugin.md)'s decision three is rewritten rather than superseded: this is a different answer to the same decision, and the other five are untouched. The rewrite records what was given up and that the readability compensation was never implemented — the direct reason for the change. [Tenant customization](docs/customization.md) and the [End-to-End Development Cookbook](docs/development-cookbook.md) are updated in both languages.
+
 ## [4.28.0]
 
 > This release is the outcome of a systematic framework review, and it found one shape of defect over and over: **a protection mechanism whose real coverage is narrower than its apparent coverage, with nothing to say so.** The record-scope check on a form save was skipped entirely when the payload carried only detail rows. Audit-log queries fell open across every tenant when no company had been entered. On a fresh deployment the cache-notify baseline sat hours in the future, silently stopping cache invalidation until the wall clock caught up. A stored password whose hash segment was empty verified against any input. Alongside the fixes, the mechanisms that were supposed to notice are now themselves under test: six gates that claimed to check something and did not, an analyzer release history that had been empty since the analyzers first shipped — so the rule that catches a silently retired rule could never fire — and 38 tests that were reaching a database by accident. `System.CheckPackageUpdate` and `System.GetPackage` are removed outright: extension points with a consumer on neither path.

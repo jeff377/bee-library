@@ -37,14 +37,17 @@ namespace Bee.Business.UnitTests
             return new SystemBusinessObject(ctx, TestSessionFactory.CreateAccessToken(_fx), SysProgIds.System, isLocalCall);
         }
 
-        private static string XmlFor(params string[] types)
+        private static string XmlFor(params (string Type, PluginStage Stage)[] plugins)
         {
             var settings = new PluginSettings();
             var program = settings.Items!.Add("Order");
-            foreach (var type in types)
-                program.Plugins!.Add(type);
+            foreach (var (type, stage) in plugins)
+                program.Plugins!.Add(type, stage);
             return XmlCodec.Serialize(settings);
         }
+
+        /// <summary><see cref="SamplePlugin"/> 覆寫 BeforeSave，宣告與覆寫相符。</summary>
+        private static (string, PluginStage) Sample => (SamplePluginFqn, PluginStage.BeforeSave);
 
         [Fact]
         [DisplayName("遠端呼叫被拒——attribute 之外的第二道防線")]
@@ -56,7 +59,7 @@ namespace Bee.Business.UnitTests
                 bo.SaveCustomizePluginSettings(new SaveCustomizePluginSettingsArgs
                 {
                     CustomizeId = "acme",
-                    Xml = XmlFor(SamplePluginFqn),
+                    Xml = XmlFor(Sample),
                 }));
         }
 
@@ -90,12 +93,13 @@ namespace Bee.Business.UnitTests
             var result = bo.SaveCustomizePluginSettings(new SaveCustomizePluginSettingsArgs
             {
                 CustomizeId = "acme",
-                Xml = XmlFor(SamplePluginFqn),
+                Xml = XmlFor(Sample),
             });
 
             Assert.Equal(1, result.PluginCount);
             Assert.Equal("acme", writer.LastCustomizeId);
-            Assert.Equal([SamplePluginFqn], writer.LastSettings!.GetPluginTypes("Order"));
+            Assert.Equal([new PluginBinding(SamplePluginFqn, PluginStage.BeforeSave)],
+                writer.LastSettings!.GetPluginBindings("Order"));
         }
 
         [Fact]
@@ -113,7 +117,7 @@ namespace Bee.Business.UnitTests
 
             Assert.Equal(0, result.PluginCount);
             Assert.NotNull(writer.LastSettings);
-            Assert.Empty(writer.LastSettings!.GetPluginTypes("Order"));
+            Assert.Empty(writer.LastSettings!.GetPluginBindings("Order"));
         }
 
         [Fact]
@@ -127,7 +131,7 @@ namespace Bee.Business.UnitTests
                 bo.SaveCustomizePluginSettings(new SaveCustomizePluginSettingsArgs
                 {
                     CustomizeId = "acme",
-                    Xml = XmlFor("Nope.Missing, Nope"),
+                    Xml = XmlFor(("Nope.Missing, Nope", PluginStage.BeforeSave)),
                 }));
 
             Assert.Contains("Nope.Missing, Nope", ex.Message, StringComparison.Ordinal);
@@ -145,7 +149,7 @@ namespace Bee.Business.UnitTests
                 bo.SaveCustomizePluginSettings(new SaveCustomizePluginSettingsArgs
                 {
                     CustomizeId = "acme",
-                    Xml = XmlFor(NoStagePluginFqn),
+                    Xml = XmlFor((NoStagePluginFqn, PluginStage.BeforeSave)),
                 }));
 
             Assert.Contains("overrides no stage", ex.Message, StringComparison.Ordinal);
@@ -163,7 +167,7 @@ namespace Bee.Business.UnitTests
                 bo.SaveCustomizePluginSettings(new SaveCustomizePluginSettingsArgs
                 {
                     CustomizeId = "acme",
-                    Xml = XmlFor(SamplePluginFqn, "Nope.Missing, Nope"),
+                    Xml = XmlFor(Sample, ("Nope.Missing, Nope", PluginStage.BeforeSave)),
                 }));
 
             Assert.Null(writer.LastSettings);
@@ -199,13 +203,14 @@ namespace Bee.Business.UnitTests
         public void GetCustomizePluginSettings_WithOverride_RoundTrips()
         {
             var stored = new PluginSettings();
-            stored.Items!.Add("Order").Plugins!.Add(SamplePluginFqn);
+            stored.Items!.Add("Order").Plugins!.Add(SamplePluginFqn, PluginStage.BeforeSave);
             var bo = CreateBo(new SpyWriter(), new SpyReader { Settings = stored });
 
             var result = bo.GetCustomizePluginSettings(new GetCustomizePluginSettingsArgs { CustomizeId = "acme" });
 
             var restored = XmlCodec.Deserialize<PluginSettings>(result.Xml)!;
-            Assert.Equal([SamplePluginFqn], restored.GetPluginTypes("Order"));
+            Assert.Equal([new PluginBinding(SamplePluginFqn, PluginStage.BeforeSave)],
+                restored.GetPluginBindings("Order"));
         }
 
         // ---- Test doubles ----

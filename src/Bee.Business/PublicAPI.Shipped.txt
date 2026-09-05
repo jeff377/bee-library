@@ -209,21 +209,14 @@ Bee.Business.Form.FormBusinessPlugin.FormBusinessPlugin(Bee.Definition.IBeeConte
 Bee.Business.Form.FormBusinessPlugin.ProgId.get -> string!
 Bee.Business.Form.FormPluginChain
 Bee.Business.Form.FormPluginChain.CreateRunner(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId) -> Bee.Business.Form.FormPluginRunner!
-Bee.Business.Form.FormPluginChain.HasStage(Bee.Business.Form.FormPluginStage stage) -> bool
 Bee.Business.Form.FormPluginChain.IsEmpty.get -> bool
 Bee.Business.Form.FormPluginChain.Types.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
-Bee.Business.Form.FormPluginChain.TypesForStage(Bee.Business.Form.FormPluginStage stage) -> System.Collections.Generic.IReadOnlyList<System.Type!>!
 Bee.Business.Form.FormPluginRunner
 Bee.Business.Form.FormPluginRunner.Chain.get -> Bee.Business.Form.FormPluginChain!
 Bee.Business.Form.FormPluginRunner.RunAfterDelete(Bee.Business.Form.DeleteContext! context) -> void
 Bee.Business.Form.FormPluginRunner.RunAfterSave(Bee.Business.Form.SaveContext! context) -> void
 Bee.Business.Form.FormPluginRunner.RunBeforeDelete(Bee.Business.Form.DeleteContext! context) -> void
 Bee.Business.Form.FormPluginRunner.RunBeforeSave(Bee.Business.Form.SaveContext! context) -> void
-Bee.Business.Form.FormPluginStage
-Bee.Business.Form.FormPluginStage.AfterDelete = 3 -> Bee.Business.Form.FormPluginStage
-Bee.Business.Form.FormPluginStage.AfterSave = 1 -> Bee.Business.Form.FormPluginStage
-Bee.Business.Form.FormPluginStage.BeforeDelete = 2 -> Bee.Business.Form.FormPluginStage
-Bee.Business.Form.FormPluginStage.BeforeSave = 0 -> Bee.Business.Form.FormPluginStage
 Bee.Business.Form.FormRuleProcessor
 Bee.Business.Form.FormRuleProcessor.ApplyBeforeDelete(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! snapshot, string! timeZoneId = "") -> void
 Bee.Business.Form.FormRuleProcessor.ApplyBeforeSave(Bee.Definition.Forms.FormSchema! schema, System.Data.DataSet! dataSet, Bee.Definition.RoundingContext! roundingContext, string! timeZoneId = "") -> void
@@ -622,7 +615,6 @@ static Bee.Business.BusinessObjectFactoryExtensions.CreateFormBO(this Bee.Defini
 static Bee.Business.BusinessObjectFactoryExtensions.CreateSystemBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall) -> Bee.Business.System.ISystemBusinessObject!
 static Bee.Business.ExecFuncHandlerExtensions.InvokeExecFunc(this Bee.Business.IExecFuncHandler! handler, Bee.Definition.Security.ApiAccessRequirement currentRequirement, Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 static Bee.Business.ExecFuncHandlerExtensions.InvokeExecFunc(this Bee.Business.IExecFuncHandler! handler, Bee.Definition.Security.ApiAccessRequirement currentRequirement, bool isLocalCall, Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
-static Bee.Business.Form.FormPluginChain.Create(System.Collections.Generic.IReadOnlyList<System.Type!>! types) -> Bee.Business.Form.FormPluginChain!
 static Bee.Business.Form.FormPluginChain.Empty.get -> Bee.Business.Form.FormPluginChain!
 static Bee.Business.Providers.DerivedApiEncryptionKeyProvider.FromMasterKey(byte[]! masterKey) -> Bee.Business.Providers.DerivedApiEncryptionKeyProvider!
 static Bee.Business.ReservedProgIdBinding.operator !=(Bee.Business.ReservedProgIdBinding? left, Bee.Business.ReservedProgIdBinding? right) -> bool

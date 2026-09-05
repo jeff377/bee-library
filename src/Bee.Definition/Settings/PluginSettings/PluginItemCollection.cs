@@ -44,10 +44,11 @@ namespace Bee.Definition.Settings
         /// </summary>
         /// <param name="collection">The collection to add to.</param>
         /// <param name="type">The assembly-qualified type name of the plugin.</param>
-        public static PluginItem Add(this PluginItemCollection? collection, string type)
+        /// <param name="stage">The pipeline stage this plugin runs at.</param>
+        public static PluginItem Add(this PluginItemCollection? collection, string type, PluginStage stage)
         {
             ArgumentNullException.ThrowIfNull(collection);
-            var item = new PluginItem(type);
+            var item = new PluginItem(type, stage);
             collection.Add(item);
             return item;
         }

@@ -1,22 +1,25 @@
 using System.Reflection;
 using Bee.Definition;
+using Bee.Definition.Settings;
 
 namespace Bee.Business.Form
 {
     /// <summary>
-    /// The resolved, ordered plugin chain of one program: which types run, and which stages each of
-    /// them actually implements.
+    /// The resolved, ordered plugin chain of one program: which types run, and at which stage each
+    /// of them runs.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Built once per <c>(customizationCode, progId)</c> and cached, so the reflection that decides
-    /// "does this type override <c>AfterSave</c>" is paid once rather than per call. It holds no
-    /// instances — those are per operation, and come from <see cref="CreateRunner"/>.
+    /// Built once per <c>(customizationCode, progId)</c> and cached, so the reflection that checks
+    /// each type against its declaration is paid once rather than per call. It holds no instances —
+    /// those are per operation, and come from <see cref="CreateRunner"/>.
     /// </para>
     /// <para>
-    /// Knowing the stages up front does two jobs. It keeps a stage from walking plugins that would
-    /// do nothing, and it answers "which plugins run at which point" for a maintenance tool —
-    /// something the definition file cannot show, because it names types without naming stages.
+    /// The stage comes from the definition file, which is what lets the file be read for what runs
+    /// where. Reflection has not gone away, but it is now the <b>check</b> rather than the source:
+    /// a type must override exactly the one stage its binding declares, and any disagreement
+    /// refuses to build the chain. Nothing runs at a stage the file does not name, and nothing the
+    /// file names is silently absent.
     /// </para>
     /// </remarks>
     public sealed class FormPluginChain
@@ -32,17 +35,27 @@ namespace Bee.Business.Form
         }
 
         /// <summary>
-        /// Builds a chain from the resolved plugin types, in execution order.
+        /// Builds a chain from the resolved bindings, in execution order, rejecting any binding
+        /// whose declared stage is not exactly what the type overrides.
         /// </summary>
-        /// <param name="types">The plugin types, already validated as deriving from <see cref="FormBusinessPlugin"/>.</param>
-        public static FormPluginChain Create(IReadOnlyList<Type> types)
+        /// <param name="progId">The program identifier, for error messages.</param>
+        /// <param name="bindings">The bindings, with types already validated as deriving from <see cref="FormBusinessPlugin"/>.</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when a type overrides no stage, overrides more than one, or overrides a stage
+        /// other than the one declared. The message names the stages the type actually overrides,
+        /// so the fix is in the message rather than left to be worked out.
+        /// </exception>
+        public static FormPluginChain Create(string progId, IReadOnlyList<FormPluginBinding> bindings)
         {
-            ArgumentNullException.ThrowIfNull(types);
-            if (types.Count == 0) { return Empty; }
+            ArgumentNullException.ThrowIfNull(bindings);
+            if (bindings.Count == 0) { return Empty; }
 
-            var entries = new Entry[types.Count];
-            for (int i = 0; i < types.Count; i++)
-                entries[i] = new Entry(types[i], OverriddenStages(types[i]));
+            var entries = new Entry[bindings.Count];
+            for (int i = 0; i < bindings.Count; i++)
+            {
+                var binding = bindings[i];
+                entries[i] = new Entry(binding.Type, Reconcile(progId, binding));
+            }
             return new FormPluginChain(entries);
         }
 
@@ -53,19 +66,19 @@ namespace Bee.Business.Form
         public bool IsEmpty => _entries.Length == 0;
 
         /// <summary>
-        /// Gets whether any plugin in the chain implements the given stage.
+        /// Gets whether any plugin in the chain runs at the given stage.
         /// </summary>
         /// <param name="stage">The pipeline stage.</param>
-        public bool HasStage(FormPluginStage stage)
-            => Array.Exists(_entries, e => e.Stages.Contains(stage));
+        public bool HasStage(PluginStage stage)
+            => Array.Exists(_entries, e => e.Stage == stage);
 
         /// <summary>
-        /// Gets the plugin types that implement the given stage, in execution order. Intended for
-        /// maintenance tooling that has to show what actually runs where.
+        /// Gets the plugin types that run at the given stage, in execution order. Intended for
+        /// maintenance tooling that has to show what runs where.
         /// </summary>
         /// <param name="stage">The pipeline stage.</param>
-        public IReadOnlyList<Type> TypesForStage(FormPluginStage stage)
-            => _entries.Where(e => e.Stages.Contains(stage)).Select(e => e.Type).ToArray();
+        public IReadOnlyList<Type> TypesForStage(PluginStage stage)
+            => _entries.Where(e => e.Stage == stage).Select(e => e.Type).ToArray();
 
         /// <summary>
         /// Creates the per-operation runner that instantiates the plugins and dispatches the stages.
@@ -82,16 +95,65 @@ namespace Bee.Business.Form
         internal Entry[] Entries => _entries;
 
         /// <summary>
+        /// Checks one binding's declared stage against what the type overrides, returning the
+        /// agreed stage.
+        /// </summary>
+        private static PluginStage Reconcile(string progId, FormPluginBinding binding)
+        {
+            var overridden = OverriddenStages(binding.Type);
+            string typeName = DisplayName(binding.Type);
+
+            if (overridden.Length == 0)
+            {
+                throw new InvalidOperationException(
+                    $"Program '{progId}' declares plugin '{typeName}', which overrides no stage and would never run.");
+            }
+
+            if (overridden.Length > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Program '{progId}' declares plugin '{typeName}', which overrides " +
+                    $"{string.Join(" and ", overridden)}. A plugin binds to exactly one stage — " +
+                    "split it into one class per stage.");
+            }
+
+            var actual = overridden[0];
+
+            if (binding.Stage == PluginStage.None)
+            {
+                throw new InvalidOperationException(
+                    $"Program '{progId}' declares plugin '{typeName}' with no Stage. " +
+                    $"The type overrides {actual} — declare Stage=\"{actual}\".");
+            }
+
+            if (binding.Stage != actual)
+            {
+                throw new InvalidOperationException(
+                    $"Program '{progId}' declares plugin '{typeName}' as Stage=\"{binding.Stage}\", " +
+                    $"but the type overrides {actual}. Declare Stage=\"{actual}\", or move the override.");
+            }
+
+            return actual;
+        }
+
+        /// <summary>
+        /// Renders a type the way the definition file names it, so the message points at the text
+        /// the author has to edit rather than at a fully qualified assembly identity.
+        /// </summary>
+        private static string DisplayName(Type type)
+            => $"{type.FullName}, {type.Assembly.GetName().Name}";
+
+        /// <summary>
         /// Determines which stages a plugin type overrides, by checking whether each virtual method
         /// is still the one declared on <see cref="FormBusinessPlugin"/>.
         /// </summary>
-        private static FormPluginStage[] OverriddenStages(Type type)
+        private static PluginStage[] OverriddenStages(Type type)
         {
-            var stages = new List<FormPluginStage>(4);
-            if (Overrides(type, nameof(FormBusinessPlugin.BeforeSave))) { stages.Add(FormPluginStage.BeforeSave); }
-            if (Overrides(type, nameof(FormBusinessPlugin.AfterSave))) { stages.Add(FormPluginStage.AfterSave); }
-            if (Overrides(type, nameof(FormBusinessPlugin.BeforeDelete))) { stages.Add(FormPluginStage.BeforeDelete); }
-            if (Overrides(type, nameof(FormBusinessPlugin.AfterDelete))) { stages.Add(FormPluginStage.AfterDelete); }
+            var stages = new List<PluginStage>(4);
+            if (Overrides(type, nameof(FormBusinessPlugin.BeforeSave))) { stages.Add(PluginStage.BeforeSave); }
+            if (Overrides(type, nameof(FormBusinessPlugin.AfterSave))) { stages.Add(PluginStage.AfterSave); }
+            if (Overrides(type, nameof(FormBusinessPlugin.BeforeDelete))) { stages.Add(PluginStage.BeforeDelete); }
+            if (Overrides(type, nameof(FormBusinessPlugin.AfterDelete))) { stages.Add(PluginStage.AfterDelete); }
             return [.. stages];
         }
 
@@ -105,18 +167,18 @@ namespace Bee.Business.Form
             return method != null && method.DeclaringType != typeof(FormBusinessPlugin);
         }
 
-        /// <summary>One plugin: its type and the stages it implements.</summary>
+        /// <summary>One plugin: its type and the single stage it runs at.</summary>
         internal readonly struct Entry
         {
-            public Entry(Type type, FormPluginStage[] stages)
+            public Entry(Type type, PluginStage stage)
             {
                 Type = type;
-                Stages = stages;
+                Stage = stage;
             }
 
             public Type Type { get; }
 
-            public FormPluginStage[] Stages { get; }
+            public PluginStage Stage { get; }
         }
     }
 }

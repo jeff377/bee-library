@@ -142,19 +142,27 @@ notification afterwards — bind a plugin instead of replacing the business obje
   <Items>
     <ProgramPluginItem ProgId="Order">
       <Plugins>
-        <PluginItem Type="Acme.Erp.CreditLimitPlugin, Acme.Erp" />
+        <PluginItem Type="Acme.Erp.CreditLimitPlugin, Acme.Erp" Stage="BeforeSave" />
+        <PluginItem Type="Acme.Erp.OrderSyncPlugin, Acme.Erp"   Stage="AfterSave" />
       </Plugins>
     </ProgramPluginItem>
   </Items>
 </PluginSettings>
 ```
 
+**Each binding names one stage, and the class must override exactly that stage.** A check before
+saving and a notification afterwards are therefore two classes, not one class overriding two
+methods — which is also what makes the file readable for what runs where. The declaration and the
+class are reconciled when the chain is built, so **changing which stage a class overrides means
+changing this file too**; a disagreement refuses to load rather than running something the file
+does not name.
+
 Plugins are the one artifact where the two layers **add up**: the base chain runs first, then the
 tenant's. A tenant therefore cannot suppress a packaged plugin — to remove packaged behaviour,
 subclass the business object and override the step.
 
 See [Business Plugins](development-cookbook.md) in the cookbook for the four stages, the
-one-instance-per-operation guarantee, and where side effects that reach other systems belong.
+per-operation lifetime, and where side effects that reach other systems belong.
 
 ## Read-only, except for plugins
 

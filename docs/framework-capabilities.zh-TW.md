@@ -25,7 +25,7 @@
 | **運算式引擎** | DynamicExpresso 求值計算欄與規則；`IExpressionEvaluator` 讓引擎可替換。見[運算式與規則](expression-rules.zh-TW.md) |
 | **主從結構** | 子表以 `sys_master_rowid` 串接，單次 `Save` 一併寫入 |
 | **Lookup 關聯** | 欄位宣告關聯目標與欄位對映後，開窗查詢與帶值即自動成立 |
-| **PluginSettings** | 每個 `progId` 掛哪些業務 plugin，依宣告順序執行 |
+| **PluginSettings** | 每個 `progId` 掛哪些業務 plugin，各自宣告所掛的那一個時點，依宣告順序執行 |
 
 ## 2. 資料存取
 
@@ -56,7 +56,7 @@
 | **`FormBusinessObject`** | 預設 CRUD 表面：`GetList`、`GetData`、`GetNewData`、`Save`、`Delete`、`GetLookup` |
 | **`IBusinessObjectFactory`** | 依 `progId` 解析商業物件，未註冊時退回框架預設 |
 | **ExecFunc** | 依名稱呼叫 host 自訂方法的通用 dispatch，另有匿名版供註冊之類的流程 |
-| **`FormBusinessPlugin`** | 存檔與刪除管線上的掛載點，依宣告順序串成鏈 |
+| **`FormBusinessPlugin`** | 存檔與刪除管線上的掛載點；一個類別掛一個時點，依宣告順序串成鏈 |
 | **GlobalEvents** | 框架層事件掛勾，供 host 接橫切行為 |
 
 ## 4. API 與傳輸

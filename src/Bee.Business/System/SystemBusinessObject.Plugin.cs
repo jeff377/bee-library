@@ -140,11 +140,11 @@ namespace Bee.Business.System
         }
 
         /// <summary>
-        /// Validates every bound type and returns how many bindings there are.
+        /// Validates every binding and returns how many there are.
         /// </summary>
         /// <exception cref="UserMessageException">
         /// Thrown for a type that will not load, does not derive from <see cref="FormBusinessPlugin"/>,
-        /// or overrides no stage at all.
+        /// or does not override exactly the one stage its binding declares.
         /// </exception>
         private static int ValidatePluginBindings(PluginSettings settings)
         {
@@ -153,14 +153,14 @@ namespace Bee.Business.System
             {
                 foreach (var plugin in program.Plugins ?? [])
                 {
-                    ValidatePluginType(program.ProgId, plugin.Type);
+                    ValidatePluginType(program.ProgId, plugin.Type, plugin.Stage);
                     count++;
                 }
             }
             return count;
         }
 
-        private static void ValidatePluginType(string progId, string typeName)
+        private static void ValidatePluginType(string progId, string typeName, PluginStage stage)
         {
             if (StringUtilities.IsEmpty(typeName))
                 throw new UserMessageException($"Program '{progId}' declares a plugin with no type name.");
@@ -188,13 +188,19 @@ namespace Bee.Business.System
                     $"Program '{progId}' declares plugin '{typeName}', which does not derive from {nameof(FormBusinessPlugin)}.");
             }
 
-            // A plugin overriding nothing is bound but can never run. Accepting it would leave the
+            // The declared stage has to be exactly what the class overrides. Building the chain is
+            // how that is checked, so this gate and the resolver's cannot drift apart: a definition
+            // this method accepts is one the resolver can load. Accepting a mismatch would leave the
             // author believing their customization is in place while nothing happens at runtime.
-            var chain = FormPluginChain.Create([type]);
-            if (!Enum.GetValues<FormPluginStage>().Any(chain.HasStage))
+            try
             {
-                throw new UserMessageException(
-                    $"Program '{progId}' declares plugin '{typeName}', which overrides no stage and would never run.");
+                FormPluginChain.Create(progId, [new FormPluginBinding(type, stage)]);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // The chain's message already names the stages the class actually overrides, which
+                // is the fix; it only has to reach the editor as a user-facing message.
+                throw new UserMessageException(ex.Message, ex);
             }
         }
     }

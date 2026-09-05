@@ -8,15 +8,19 @@ namespace Bee.Business.Form
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Override only the stages the customization needs; the rest do nothing. A plugin is bound to
-    /// a progId in <see cref="Bee.Definition.Settings.PluginSettings"/>, which names the type and nothing else — the stages come
-    /// from what the class overrides, so one requirement that spans several stages stays one class.
+    /// <b>One class, one stage.</b> A plugin is bound to a progId in
+    /// <see cref="Bee.Definition.Settings.PluginSettings"/>, and each binding names both the type
+    /// and the one stage it runs at. The class must override exactly that stage and no other; any
+    /// disagreement between the two refuses to load. A requirement spanning several stages is
+    /// therefore several classes — the stages differ in kind (a check before saving, a side effect
+    /// after it), and the file is readable for what runs where.
     /// </para>
     /// <para>
-    /// <b>One instance per operation.</b> A single <c>Save</c> (or <c>Delete</c>) constructs the
-    /// plugin once and reuses it for every stage of that call, so state computed in
-    /// <see cref="BeforeSave"/> can be read in <see cref="AfterSave"/> through an instance field.
-    /// Instances are never shared between calls, so no locking is needed.
+    /// <b>One instance per operation, and no state carried between stages.</b> A single
+    /// <c>Save</c> (or <c>Delete</c>) constructs the plugin at most once, and instances are never
+    /// shared between calls, so no locking is needed. Because a plugin has only one stage, there is
+    /// no later stage of the same call to hand state to: what an <c>After</c> class needs it must
+    /// read or recompute for itself.
     /// </para>
     /// <para>
     /// <b>Every stage runs outside the database transaction.</b> The transaction opens and commits

@@ -422,7 +422,8 @@ framework's or a custom subclass's.
 
 #### Writing one
 
-Derive from `FormBusinessPlugin` and override only the stages you need.
+Derive from `FormBusinessPlugin` and override the one stage the plugin runs at. **A plugin binds to
+exactly one stage** — a requirement spanning two of them is two classes.
 
 ```csharp
 public class CreditLimitPlugin : FormBusinessPlugin
@@ -458,12 +459,16 @@ what the caller receives.
 **Every stage runs outside the database transaction**, which covers `DoSave` / `DoDelete` alone.
 See "BO Extension Points and the Transaction Boundary" above for what follows from that.
 
-#### One instance per operation
+#### One class, one stage
 
-A single `Save` (or `Delete`) constructs each plugin once and reuses it for every stage of that
-call, so state computed in `BeforeSave` can be read in `AfterSave` through an instance field. That
-is why one requirement spanning two stages stays one class. Instances are never shared between
-calls, so no locking is needed.
+A class must override exactly the stage its binding declares — no more, no fewer. "Check before
+saving, then act afterwards" is therefore two classes, and **there is no shared state between
+them**: what the `After` class needs it has to read or recompute. That is the price of a definition
+file you can read for what runs where.
+
+Plugins are constructed on demand — a plugin is created the first time its own stage runs, and not
+at all otherwise, so a save never constructs a delete-stage plugin. Instances are per operation and
+never shared between calls, so no locking is needed.
 
 #### Binding them
 
@@ -475,16 +480,19 @@ Plugins are bound per progId, per tenant, in `{CustomizePath}/{customizeId}/Plug
   <Items>
     <ProgramPluginItem ProgId="Order">
       <Plugins>
-        <PluginItem Type="MyErp.Plugins.CreditLimitPlugin, MyErp.Plugins" />
-        <PluginItem Type="MyErp.Plugins.OrderSyncPlugin, MyErp.Plugins" />
+        <PluginItem Type="MyErp.Plugins.CreditLimitPlugin, MyErp.Plugins" Stage="BeforeSave" />
+        <PluginItem Type="MyErp.Plugins.OrderSyncPlugin, MyErp.Plugins"   Stage="AfterSave" />
       </Plugins>
     </ProgramPluginItem>
   </Items>
 </PluginSettings>
 ```
 
-The file names types and not stages, so a definition alone does not show which plugin runs where.
-`FormPluginChain.TypesForStage` answers that, for maintenance tooling to display.
+`Stage` is required, and it is checked against the class when the chain is built: the class must
+override that stage and no other. **Changing which stage a class overrides therefore means changing
+this file as well** — otherwise the next resolution throws, naming the stage the class actually
+overrides. The alternative would be running a stage the file does not name, which is the thing the
+declaration exists to prevent.
 
 A base-layer file at `{DefinePath}/PluginSettings.xml` is also read, and the two **add up**: the
 base chain runs first, then the tenant's. A tenant therefore cannot suppress a packaged plugin —
@@ -493,8 +501,8 @@ to remove packaged behaviour, subclass the business object and override the step
 Maintain the tenant file through `SystemBO.GetCustomizePluginSettings` /
 `SaveCustomizePluginSettings`. Both are `LocalOnly`: these bindings decide which code runs inside
 the save and delete pipelines, so the maintenance tool runs on the host, in-process. Saving
-validates every bound type — it must load, derive from `FormBusinessPlugin`, and override at least
-one stage — and one bad entry rejects the whole definition.
+validates every binding — the type must load, derive from `FormBusinessPlugin`, and override exactly
+the stage the binding declares — and one bad entry rejects the whole definition.
 
 #### Failure, and side effects that reach other systems
 

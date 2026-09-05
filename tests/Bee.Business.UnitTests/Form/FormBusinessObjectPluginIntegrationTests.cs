@@ -3,6 +3,7 @@ using Bee.Base.Exceptions;
 using Bee.Business.Form;
 using Bee.Definition;
 using Bee.Definition.Database;
+using Bee.Definition.Settings;
 using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests.Form
@@ -38,7 +39,7 @@ namespace Bee.Business.UnitTests.Form
                 master.Rows[0]["sys_id"] = $"S{runId}";
                 master.Rows[0][SysFields.Name] = "原始名稱";
 
-                ctx.CreateBo(Resolver<RenamingPlugin>()).Save(new SaveArgs { DataSet = dataSet });
+                ctx.CreateBo(Resolver<RenamingPlugin>(PluginStage.BeforeSave)).Save(new SaveArgs { DataSet = dataSet });
 
                 // BeforeSave 在持久化之前，所以改動要看得見。
                 var reloaded = ctx.CreateBo().GetData(new GetDataArgs { RowId = rowId });
@@ -66,7 +67,7 @@ namespace Bee.Business.UnitTests.Form
             master.Rows[0][SysFields.Name] = "不該被存進去";
 
             var ex = Assert.Throws<UserMessageException>(() =>
-                ctx.CreateBo(Resolver<RejectingPlugin>()).Save(new SaveArgs { DataSet = dataSet }));
+                ctx.CreateBo(Resolver<RejectingPlugin>(PluginStage.BeforeSave)).Save(new SaveArgs { DataSet = dataSet }));
             Assert.Equal("擋下這筆。", ex.Message);
 
             // BeforeSave 在持久化之前中止，所以什麼都不該落地。
@@ -74,13 +75,13 @@ namespace Bee.Business.UnitTests.Form
         }
 
         [DbFact(DatabaseType.SQLite)]
-        [DisplayName("SQLite：一次 Save 內 BeforeSave 與 AfterSave 依序執行且共用同一實例")]
-        public void Save_BothStages_RunInOrderOnOneInstance()
+        [DisplayName("SQLite：一次 Save 內兩個時點依管線順序執行，各自是獨立的實例")]
+        public void Save_TwoStages_RunInPipelineOrderAsSeparateInstances()
         {
             var ctx = new CrudTestContext(_fx, DatabaseType.SQLite);
             var rowId = Guid.NewGuid();
             string runId = Guid.NewGuid().ToString("N")[..8];
-            TracingPlugin.Reset();
+            TracingProbe.Reset();
 
             try
             {
@@ -90,11 +91,15 @@ namespace Bee.Business.UnitTests.Form
                 master.Rows[0]["sys_id"] = $"S{runId}";
                 master.Rows[0][SysFields.Name] = "順序驗證";
 
-                ctx.CreateBo(Resolver<TracingPlugin>()).Save(new SaveArgs { DataSet = dataSet });
+                ctx.CreateBo(Resolver(
+                        new FormPluginBinding(typeof(BeforeSaveTracingPlugin), PluginStage.BeforeSave),
+                        new FormPluginBinding(typeof(AfterSaveTracingPlugin), PluginStage.AfterSave)))
+                    .Save(new SaveArgs { DataSet = dataSet });
 
-                // AfterSave 讀得到 BeforeSave 寫進 instance field 的值 → 同一個實例。
-                Assert.Equal(["BeforeSave", "AfterSave(saw=BeforeSave)"], TracingPlugin.Calls);
-                Assert.Equal(1, TracingPlugin.ConstructedCount);
+                // 兩個時點都跑了，且順序由管線決定。一個 plugin 一個時點，所以這是兩個類別、
+                // 兩個實例——跨時點沒有共用的 instance field 可傳遞狀態。
+                Assert.Equal(["BeforeSave", "AfterSave"], TracingProbe.Calls);
+                Assert.Equal(2, TracingProbe.ConstructedCount);
             }
             finally
             {
@@ -109,7 +114,7 @@ namespace Bee.Business.UnitTests.Form
             var ctx = new CrudTestContext(_fx, DatabaseType.SQLite);
             var rowId = Guid.NewGuid();
             string runId = Guid.NewGuid().ToString("N")[..8];
-            TracingPlugin.Reset();
+            TracingProbe.Reset();
 
             try
             {
@@ -119,9 +124,9 @@ namespace Bee.Business.UnitTests.Form
                 master.Rows[0]["sys_id"] = $"S{runId}";
                 master.Rows[0][SysFields.Name] = "重讀驗證";
 
-                ctx.CreateBo(Resolver<TracingPlugin>()).Save(new SaveArgs { DataSet = dataSet });
+                ctx.CreateBo(Resolver<AfterSaveTracingPlugin>(PluginStage.AfterSave)).Save(new SaveArgs { DataSet = dataSet });
 
-                Assert.True(TracingPlugin.AfterSaveHadRefreshedDataSet);
+                Assert.True(TracingProbe.AfterSaveHadRefreshedDataSet);
             }
             finally
             {
@@ -144,7 +149,7 @@ namespace Bee.Business.UnitTests.Form
             var ctx = new CrudTestContext(_fx, DatabaseType.SQLite);
             var rowId = Guid.NewGuid();
             string runId = Guid.NewGuid().ToString("N")[..8];
-            SnapshotProbePlugin.Reset();
+            DeleteProbe.Reset();
 
             var dataSet = ctx.Repository.GetNewData();
             var master = dataSet.Tables[CrudTestContext.ProgId]!;
@@ -153,11 +158,14 @@ namespace Bee.Business.UnitTests.Form
             master.Rows[0][SysFields.Name] = "待刪除";
             ctx.CreateBo().Save(new SaveArgs { DataSet = dataSet });
 
-            ctx.CreateBo(Resolver<SnapshotProbePlugin>()).Delete(new DeleteArgs { RowId = rowId });
+            ctx.CreateBo(Resolver(
+                    new FormPluginBinding(typeof(BeforeDeleteProbePlugin), PluginStage.BeforeDelete),
+                    new FormPluginBinding(typeof(AfterDeleteProbePlugin), PluginStage.AfterDelete)))
+                .Delete(new DeleteArgs { RowId = rowId });
 
-            Assert.True(SnapshotProbePlugin.BeforeDeleteSawSnapshot);
-            Assert.True(SnapshotProbePlugin.AfterDeleteSawSnapshot);
-            Assert.Equal("待刪除", SnapshotProbePlugin.DeletedName);
+            Assert.True(DeleteProbe.BeforeDeleteSawSnapshot);
+            Assert.True(DeleteProbe.AfterDeleteSawSnapshot);
+            Assert.Equal("待刪除", DeleteProbe.DeletedName);
         }
 
         // ---- Helpers ----
@@ -167,8 +175,11 @@ namespace Bee.Business.UnitTests.Form
             try { ctx.Repository.Delete(rowId); } catch (InvalidOperationException) { /* best effort */ }
         }
 
-        private static FixedChainResolver Resolver<T>() where T : FormBusinessPlugin
-            => new FixedChainResolver(FormPluginChain.Create([typeof(T)]));
+        private static FixedChainResolver Resolver<T>(PluginStage stage) where T : FormBusinessPlugin
+            => Resolver(new FormPluginBinding(typeof(T), stage));
+
+        private static FixedChainResolver Resolver(params FormPluginBinding[] bindings)
+            => new FixedChainResolver(FormPluginChain.Create(CrudTestContext.ProgId, bindings));
 
         private sealed class FixedChainResolver : IFormPluginResolver
         {
@@ -197,19 +208,12 @@ namespace Bee.Business.UnitTests.Form
                 => throw new UserMessageException("擋下這筆。");
         }
 
-        public sealed class TracingPlugin : FormBusinessPlugin
+        /// <summary>兩個 save 時點探針共用的記錄。</summary>
+        public static class TracingProbe
         {
-            private string _fromBeforeSave = string.Empty;
-
-            public TracingPlugin(IBeeContext ctx, Guid accessToken, string progId)
-                : base(ctx, accessToken, progId)
-            {
-                ConstructedCount++;
-            }
-
             public static List<string> Calls { get; } = [];
-            public static int ConstructedCount { get; private set; }
-            public static bool AfterSaveHadRefreshedDataSet { get; private set; }
+            public static int ConstructedCount { get; set; }
+            public static bool AfterSaveHadRefreshedDataSet { get; set; }
 
             public static void Reset()
             {
@@ -217,28 +221,43 @@ namespace Bee.Business.UnitTests.Form
                 ConstructedCount = 0;
                 AfterSaveHadRefreshedDataSet = false;
             }
+        }
 
-            public override void BeforeSave(SaveContext context)
+        public sealed class BeforeSaveTracingPlugin : FormBusinessPlugin
+        {
+            public BeforeSaveTracingPlugin(IBeeContext ctx, Guid accessToken, string progId)
+                : base(ctx, accessToken, progId)
             {
-                _fromBeforeSave = "BeforeSave";
-                Calls.Add("BeforeSave");
+                TracingProbe.ConstructedCount++;
+            }
+
+            public override void BeforeSave(SaveContext context) => TracingProbe.Calls.Add("BeforeSave");
+        }
+
+        public sealed class AfterSaveTracingPlugin : FormBusinessPlugin
+        {
+            public AfterSaveTracingPlugin(IBeeContext ctx, Guid accessToken, string progId)
+                : base(ctx, accessToken, progId)
+            {
+                TracingProbe.ConstructedCount++;
             }
 
             public override void AfterSave(SaveContext context)
             {
-                AfterSaveHadRefreshedDataSet = context.RefreshedDataSet != null;
-                Calls.Add($"AfterSave(saw={_fromBeforeSave})");
+                TracingProbe.AfterSaveHadRefreshedDataSet = context.RefreshedDataSet != null;
+                TracingProbe.Calls.Add("AfterSave");
             }
         }
 
-        public sealed class SnapshotProbePlugin : FormBusinessPlugin
+        /// <summary>
+        /// 兩個 delete 時點探針共用的記錄。一個 plugin 只掛一個時點，所以兩個時點是兩個類別，
+        /// 而它們之間沒有可共用的 instance field。
+        /// </summary>
+        public static class DeleteProbe
         {
-            public SnapshotProbePlugin(IBeeContext ctx, Guid accessToken, string progId)
-                : base(ctx, accessToken, progId) { }
-
-            public static bool BeforeDeleteSawSnapshot { get; private set; }
-            public static bool AfterDeleteSawSnapshot { get; private set; }
-            public static string DeletedName { get; private set; } = string.Empty;
+            public static bool BeforeDeleteSawSnapshot { get; set; }
+            public static bool AfterDeleteSawSnapshot { get; set; }
+            public static string DeletedName { get; set; } = string.Empty;
 
             public static void Reset()
             {
@@ -246,16 +265,28 @@ namespace Bee.Business.UnitTests.Form
                 AfterDeleteSawSnapshot = false;
                 DeletedName = string.Empty;
             }
+        }
+
+        public sealed class BeforeDeleteProbePlugin : FormBusinessPlugin
+        {
+            public BeforeDeleteProbePlugin(IBeeContext ctx, Guid accessToken, string progId)
+                : base(ctx, accessToken, progId) { }
 
             public override void BeforeDelete(DeleteContext context)
-                => BeforeDeleteSawSnapshot = context.Snapshot != null;
+                => DeleteProbe.BeforeDeleteSawSnapshot = context.Snapshot != null;
+        }
+
+        public sealed class AfterDeleteProbePlugin : FormBusinessPlugin
+        {
+            public AfterDeleteProbePlugin(IBeeContext ctx, Guid accessToken, string progId)
+                : base(ctx, accessToken, progId) { }
 
             public override void AfterDelete(DeleteContext context)
             {
-                AfterDeleteSawSnapshot = context.Snapshot != null;
+                DeleteProbe.AfterDeleteSawSnapshot = context.Snapshot != null;
                 var table = context.Snapshot?.Tables[CrudTestContext.ProgId];
                 if (table is { Rows.Count: > 0 })
-                    DeletedName = table.Rows[0][SysFields.Name]?.ToString() ?? string.Empty;
+                    DeleteProbe.DeletedName = table.Rows[0][SysFields.Name]?.ToString() ?? string.Empty;
             }
         }
     }

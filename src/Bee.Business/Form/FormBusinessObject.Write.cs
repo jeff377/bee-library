@@ -211,8 +211,8 @@ namespace Bee.Business.Form
             // out would make the snapshot's presence depend on the change-audit switch, so the same
             // plugin would work in one deployment and see null in another.
             bool auditChange = ChangeAuditEnabled();
-            bool pluginNeedsSnapshot = plugins.Chain.HasStage(FormPluginStage.BeforeDelete)
-                || plugins.Chain.HasStage(FormPluginStage.AfterDelete);
+            bool pluginNeedsSnapshot = plugins.Chain.HasStage(PluginStage.BeforeDelete)
+                || plugins.Chain.HasStage(PluginStage.AfterDelete);
             if (auditChange || pluginNeedsSnapshot || HasBeforeDeleteRules(schema))
                 context.Snapshot = repository.GetData(args.RowId, scopeFilter);
 

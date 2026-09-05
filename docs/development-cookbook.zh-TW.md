@@ -407,7 +407,8 @@ statement 加入同一個批次——見下一節。
 
 #### 怎麼寫
 
-繼承 `FormBusinessPlugin`,只 override 需要的時點。
+繼承 `FormBusinessPlugin`，override 這個 plugin 要跑的那**一個**時點。
+**一個 plugin 只掛一個時點** —— 橫跨兩個時點的需求就是兩個類別。
 
 ```csharp
 public class CreditLimitPlugin : FormBusinessPlugin
@@ -441,11 +442,15 @@ public class CreditLimitPlugin : FormBusinessPlugin
 **四個時點全部在資料庫交易之外**,交易只涵蓋 `DoSave` / `DoDelete`。後果見上方
 「BO 擴充點與交易邊界」。
 
-#### 每次操作一個實例
+#### 一個類別一個時點
 
-一次 `Save`(或 `Delete`)只建構每個 plugin 一次,該次呼叫的所有時點共用它,因此
-`BeforeSave` 算出的東西可以放 instance field 給 `AfterSave` 用——這正是「一個需求橫跨兩個時點
-仍是一個類別」的原因。實例不會跨呼叫共用,所以不需要考慮鎖。
+類別必須恰好覆寫繫結宣告的那一個時點 —— 不多也不少。「存檔前檢查、存檔後動作」因此是兩個類別，
+而且**兩者之間沒有共享狀態**：`After` 那個類別需要的東西必須自己重讀或重算。
+這是「設定檔看得出誰跑在哪個時點」的代價。
+
+plugin 按需建構 —— 一個 plugin 只在它自己那個時點第一次執行時才被建出來，否則完全不建，
+所以一次 Save 不會建構只掛 delete 時點的 plugin。實例是每次操作各自的、不跨呼叫共用，
+所以不需要考慮鎖。
 
 #### 怎麼綁
 
@@ -457,24 +462,26 @@ plugin 依 progId、依租戶綁在 `{CustomizePath}/{customizeId}/PluginSetting
   <Items>
     <ProgramPluginItem ProgId="Order">
       <Plugins>
-        <PluginItem Type="MyErp.Plugins.CreditLimitPlugin, MyErp.Plugins" />
-        <PluginItem Type="MyErp.Plugins.OrderSyncPlugin, MyErp.Plugins" />
+        <PluginItem Type="MyErp.Plugins.CreditLimitPlugin, MyErp.Plugins" Stage="BeforeSave" />
+        <PluginItem Type="MyErp.Plugins.OrderSyncPlugin, MyErp.Plugins"   Stage="AfterSave" />
       </Plugins>
     </ProgramPluginItem>
   </Items>
 </PluginSettings>
 ```
 
-設定檔只列型別、不列時點,所以光看檔案不知道哪個 plugin 在哪個時點跑;
-`FormPluginChain.TypesForStage` 回答這件事,供維護工具顯示。
+`Stage` 是必填的，而且建鏈時會與類別對帳：類別必須覆寫那個時點、且不覆寫其他時點。
+**因此改變類別覆寫的時點時，必須連帶改這份檔案** —— 否則下一次解析就會拋例外，
+訊息會指出類別實際覆寫的是哪一個。另一種做法是跑一個設定檔沒寫的時點，
+而那正是這個宣告存在的目的所要避免的。
 
 套裝層的 `{DefinePath}/PluginSettings.xml` 同樣會被讀取,兩層**相加**:套裝鏈先跑、租戶鏈後跑。
 因此租戶**無法停用**套裝的 plugin——要拿掉套裝行為,請繼承 BO 覆寫該子方法。
 
 租戶檔透過 `SystemBO.GetCustomizePluginSettings` / `SaveCustomizePluginSettings` 維護。兩者皆為
 `LocalOnly`:這些綁定決定「哪些程式碼會在存檔與刪除流程裡執行」,所以維護工具跑在主機上、
-in-process。儲存時會逐一驗證每個綁定型別——必須可載入、繼承 `FormBusinessPlugin`、且至少
-override 一個時點——一筆不合格就整份拒存。
+in-process。儲存時會逐一驗證每筆繫結——型別必須可載入、繼承 `FormBusinessPlugin`、
+且恰好覆寫該筆繫結宣告的那一個時點——一筆不合格就整份拒存。
 
 #### 失敗,以及送往其他系統的副作用
 

@@ -99,15 +99,20 @@ namespace Bee.Definition.Settings
         }
 
         /// <summary>
-        /// Returns the plugin type names bound to a progId, in declaration order; an empty array
-        /// when the program declares none.
+        /// Returns the plugin bindings of a progId, in declaration order; an empty array when the
+        /// program declares none.
         /// </summary>
         /// <param name="progId">The program identifier.</param>
-        public IReadOnlyList<string> GetPluginTypes(string progId)
+        /// <remarks>
+        /// Value copies rather than the <see cref="PluginItem"/> instances: this settings object is
+        /// held in a process-wide cache, and handing out its items would let a caller mutate what
+        /// every session reads.
+        /// </remarks>
+        public IReadOnlyList<PluginBinding> GetPluginBindings(string progId)
         {
             var item = Items?.GetOrDefault(progId);
             if (item?.Plugins == null || item.Plugins.Count == 0) { return []; }
-            return item.Plugins.Select(plugin => plugin.Type).ToArray();
+            return item.Plugins.Select(plugin => new PluginBinding(plugin.Type, plugin.Stage)).ToArray();
         }
     }
 }

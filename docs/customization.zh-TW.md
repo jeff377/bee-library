@@ -128,17 +128,23 @@ namespace 就是表單的 `ProgId`。三種 sub-key 涵蓋一張表單：
   <Items>
     <ProgramPluginItem ProgId="Order">
       <Plugins>
-        <PluginItem Type="Acme.Erp.CreditLimitPlugin, Acme.Erp" />
+        <PluginItem Type="Acme.Erp.CreditLimitPlugin, Acme.Erp" Stage="BeforeSave" />
+        <PluginItem Type="Acme.Erp.OrderSyncPlugin, Acme.Erp"   Stage="AfterSave" />
       </Plugins>
     </ProgramPluginItem>
   </Items>
 </PluginSettings>
 ```
 
+**一筆繫結宣告一個時點，而類別必須恰好覆寫那一個時點。** 因此「存檔前檢查」與「存檔後通知」
+是兩個類別，不是一個類別覆寫兩個方法——這也正是設定檔看得出「誰跑在哪個時點」的原因。
+建鏈時會把宣告與類別對帳，所以**改變類別覆寫的時點時必須連帶改這份檔案**；
+不一致會直接拒絕載入，而不是跑一個設定檔沒寫的時點。
+
 plugin 是唯一「兩層**相加**」的產物：套裝鏈先跑、租戶鏈後跑。因此租戶**無法停用**套裝的
 plugin——要拿掉套裝行為，請繼承 BO 覆寫該子方法。
 
-四個時點、每次操作一個實例的保證、以及「送往其他系統的副作用該寫在哪」，見開發指引的
+四個時點、每次操作的生命週期、以及「送往其他系統的副作用該寫在哪」，見開發指引的
 [業務 plugin](development-cookbook.zh-TW.md)。
 
 ## 除了 plugin 之外都是唯讀

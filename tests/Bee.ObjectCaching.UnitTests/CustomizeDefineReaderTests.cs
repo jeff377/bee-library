@@ -57,7 +57,7 @@ namespace Bee.ObjectCaching.UnitTests
         {
             var paths = new CustomizeOnlyPathOptions(_root, customizeId);
             var settings = new PluginSettings();
-            settings.Items!.Add(progId).Plugins!.Add(pluginType);
+            settings.Items!.Add(progId).Plugins!.Add(pluginType, PluginStage.BeforeSave);
             XmlCodec.SerializeToFile(settings, paths.GetPluginSettingsFilePath());
         }
 
@@ -168,7 +168,8 @@ namespace Bee.ObjectCaching.UnitTests
             var settings = reader.GetCustomizePluginSettings(_customizeId);
 
             Assert.NotNull(settings);
-            Assert.Equal("Cust.CreditLimit, Cust", Assert.Single(settings!.GetPluginTypes("Order")));
+            Assert.Equal(new PluginBinding("Cust.CreditLimit, Cust", PluginStage.BeforeSave),
+                Assert.Single(settings!.GetPluginBindings("Order")));
         }
 
         [Fact]
@@ -191,9 +192,9 @@ namespace Bee.ObjectCaching.UnitTests
             var reader = CreateReader();
 
             Assert.Equal("A.OnlyForA, A",
-                Assert.Single(reader.GetCustomizePluginSettings(custA)!.GetPluginTypes("Order")));
+                Assert.Single(reader.GetCustomizePluginSettings(custA)!.GetPluginBindings("Order")).Type);
             Assert.Equal("B.OnlyForB, B",
-                Assert.Single(reader.GetCustomizePluginSettings(custB)!.GetPluginTypes("Order")));
+                Assert.Single(reader.GetCustomizePluginSettings(custB)!.GetPluginBindings("Order")).Type);
         }
 
         [Fact]

@@ -102,10 +102,10 @@ namespace Bee.Db.UnitTests
 
             // --- PluginSettings (optional singleton: missing returns null; then round-trips) ---
             var plugins = new PluginSettings();
-            plugins.Items!.Add("Order").Plugins!.Add("Pkg.Audit, Pkg");
+            plugins.Items!.Add("Order").Plugins!.Add("Pkg.Audit, Pkg", PluginStage.AfterSave);
             storage.SavePluginSettings(plugins);
-            Assert.Equal("Pkg.Audit, Pkg",
-                Assert.Single(storage.GetPluginSettings()!.GetPluginTypes("Order")));
+            Assert.Equal(new PluginBinding("Pkg.Audit, Pkg", PluginStage.AfterSave),
+                Assert.Single(storage.GetPluginSettings()!.GetPluginBindings("Order")));
             Assert.True(CacheVersion(databaseType, "PluginSettings:*") >= 1);
         }
 
@@ -207,18 +207,18 @@ namespace Bee.Db.UnitTests
             Assert.Null(storage.GetCustomizePluginSettings(customizeId));
 
             var basePlugins = new PluginSettings();
-            basePlugins.Items!.Add("Order").Plugins!.Add("Pkg.Audit, Pkg");
+            basePlugins.Items!.Add("Order").Plugins!.Add("Pkg.Audit, Pkg", PluginStage.AfterSave);
             storage.SavePluginSettings(basePlugins);
 
             var tenantPlugins = new PluginSettings();
-            tenantPlugins.Items!.Add("Order").Plugins!.Add("Cust.CreditLimit, Cust");
+            tenantPlugins.Items!.Add("Order").Plugins!.Add("Cust.CreditLimit, Cust", PluginStage.BeforeSave);
             SeedCustomizeRow(databaseType, "PluginSettings", customizeId, "*",
                 XmlCodec.Serialize(tenantPlugins));
 
-            Assert.Equal("Cust.CreditLimit, Cust",
-                Assert.Single(storage.GetCustomizePluginSettings(customizeId)!.GetPluginTypes("Order")));
-            Assert.Equal("Pkg.Audit, Pkg",
-                Assert.Single(storage.GetPluginSettings()!.GetPluginTypes("Order")));
+            Assert.Equal(new PluginBinding("Cust.CreditLimit, Cust", PluginStage.BeforeSave),
+                Assert.Single(storage.GetCustomizePluginSettings(customizeId)!.GetPluginBindings("Order")));
+            Assert.Equal(new PluginBinding("Pkg.Audit, Pkg", PluginStage.AfterSave),
+                Assert.Single(storage.GetPluginSettings()!.GetPluginBindings("Order")));
             // A different tenant has no override.
             Assert.Null(storage.GetCustomizePluginSettings("other_" + Guid.NewGuid().ToString("N")));
         }

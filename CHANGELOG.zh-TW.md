@@ -4,6 +4,28 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.29.0]
+
+> `PluginSettings.xml` 只列型別——plugin 跑在哪個時點來自對類別的反射，於是這份檔案答不出任何人打開它想問的那一個問題。[ADR-035](docs/adr/adr-035-business-logic-plugin.md) 當初接受這個代價，靠的是「由維護工具算出並顯示各時點」這個補償；那個工具從未被做出來，可讀性代價一直是淨損失。現在時點寫在設定檔裡，而且一個 plugin 只掛一個時點。**放棄了什麼直說**，因為 ADR-035 自己稱它是該機制的唯一實質優勢：plugin 不能再用 instance field 把狀態從 `BeforeSave` 帶到 `AfterSave`，因為那現在是兩個類別。反射沒有退場，但降為驗證器——類別必須恰好覆寫繫結宣告的那一個時點，任何不一致一律拒絕載入。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.29.0.zh-TW.md](docs/changelogs/4.29.0.zh-TW.md)
+
+### 破壞性變更
+
+- `Bee.Definition`：`PluginItem` 新增必填的 `Stage` 屬性，一個 plugin 只掛一個時點。`PluginItem(string type)` 改為 `PluginItem(string type, PluginStage stage)` 且不留舊多載，`PluginItemCollectionExtensions.Add` 同理。`PluginSettings.GetPluginTypes` 與 `CustomizeOverlay.GetPluginTypes` 改名為 `GetPluginBindings`，回傳 `IReadOnlyList<PluginBinding>`——型別與時點的值複本，而不是快取中的 `PluginItem` 實例。
+- `Bee.Business`：移除 `FormPluginStage`。宣告用的型別必須與 `PluginItem` 同層，因此改由 `Bee.Definition.Settings.PluginStage` 作為唯一列舉；沿用舊名放到新命名空間會在同時 using 兩邊的消費端造成 `CS0104`。`FormPluginChain.Create` 改收 progId 與 `IReadOnlyList<FormPluginBinding>`；`HasStage` 與 `TypesForStage` 改收 `PluginStage`。
+- 二進位相容性不相容，且可接受：業務 plugin 沒有消費者——格式自 4.17.0 出貨，本 repo 內沒有任何定義檔在用，`src/` 之外也沒有任何東西讀 `PluginSettings`。不附遷移指引，因為沒有東西要遷移。
+
+### 變更
+
+- `Bee.Business`：建鏈時會把宣告與類別對帳，任何不一致一律拋——什麼都沒覆寫、覆寫超過一個時點、沒宣告 `Stage`、或宣告了一個它沒覆寫的時點。訊息會列出類別實際覆寫的時點。兩道閘門執行它：儲存時的維護 API，以及解析時的 `PluginSettingsResolver`——後者是**手寫檔**唯一會經過的閘門，因為套裝層沒有維護 API。連帶產生一個新的耦合：改變類別覆寫的時點，現在必須連帶改 XML。
+- `Bee.Business`：`FormPluginRunner` 改為在 plugin 自己那個時點第一次執行時才建構它，不再第一次用到就建整條鏈。因此一次 Save 不會建構只掛 delete 時點的 plugin。實例仍是每次操作各自的、不跨呼叫共用；建構仍走 `ActivatorUtilities`。
+- `Bee.Definition`：`PluginStage.None = 0` 是「繫結未宣告時點」的哨兵，兩道閘門一律拒絕。XML 少一個屬性會靜靜拿到列舉的 0 值而不報錯，把 0 值留給「沒宣告」，訊息才說得出「你沒宣告 `Stage`」。
+
+### 文件
+
+- [ADR-035](docs/adr/adr-035-business-logic-plugin.md) 的決策三**改寫**而非被取代：這次改的是同一個決策的答案，其餘五個不受影響。改寫記下了放棄了什麼，以及可讀性的補償措施從未實作——那正是改變決策的直接原因。[租戶客製化](docs/customization.zh-TW.md)與[端到端開發指引](docs/development-cookbook.zh-TW.md)雙語同步更新。
+
 ## [4.28.0]
 
 > 本版是一次系統性框架健檢的產出，而它反覆撞見同一種形狀的缺陷：**一道防護機制的實際涵蓋範圍比它看起來的窄，而沒有任何東西會說出這件事。** 表單存檔的記錄範圍檢查，在 payload 只帶明細列時整個被跳過。稽核記錄查詢在尚未進入公司時對所有租戶敞開。全新部署的 cache-notify 基準落在數小時之後的未來，快取失效機制靜默停擺，直到牆鐘追上為止。雜湊段為空的儲存密碼，對任何輸入都驗證通過。除了修正之外，那些「本來該發現」的機制自己也被納入把關：六道宣稱有檢查而實際沒有的閘門、一份自 analyzer 首次出貨起就一行都沒有的出貨紀錄（於是「抓到規則被悄悄退役」的那條規則永遠不可能觸發），以及 38 筆意外相依到資料庫的測試。`System.CheckPackageUpdate` 與 `System.GetPackage` 整串移除：兩條路徑都沒有消費者的擴充點。

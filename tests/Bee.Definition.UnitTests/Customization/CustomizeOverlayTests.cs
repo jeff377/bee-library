@@ -13,12 +13,16 @@ namespace Bee.Definition.UnitTests.Customization
     /// </summary>
     public class CustomizeOverlayTests
     {
-        private static readonly string[] s_pkgChain = ["Pkg.Audit, Pkg", "Pkg.Numbering, Pkg"];
-        private static readonly string[] s_custChain = ["Cust.CreditLimit, Cust"];
-        private static readonly string[] s_concatenated =
-            ["Pkg.Audit, Pkg", "Pkg.Numbering, Pkg", "Cust.CreditLimit, Cust"];
-        private static readonly string[] s_pkgAuditOnly = ["Pkg.Audit, Pkg"];
-        private static readonly string[] s_custDedupeOnly = ["Cust.Dedupe, Cust"];
+        private static readonly PluginBinding[] s_pkgChain =
+            [new("Pkg.Audit, Pkg", PluginStage.AfterSave), new("Pkg.Numbering, Pkg", PluginStage.BeforeSave)];
+        private static readonly PluginBinding[] s_custChain =
+            [new("Cust.CreditLimit, Cust", PluginStage.BeforeSave)];
+        private static readonly PluginBinding[] s_concatenated =
+            [.. s_pkgChain, .. s_custChain];
+        private static readonly PluginBinding[] s_pkgAuditOnly =
+            [new("Pkg.Audit, Pkg", PluginStage.AfterSave)];
+        private static readonly PluginBinding[] s_custDedupeOnly =
+            [new("Cust.Dedupe, Cust", PluginStage.BeforeSave)];
 
         // ---- 語系文字：per key ----
 
@@ -271,42 +275,42 @@ namespace Bee.Definition.UnitTests.Customization
 
         [Fact]
         [DisplayName("plugin：兩層皆有時相加，套裝在前、客製在後")]
-        public void GetPluginTypes_BothLayers_ConcatenatesBaseThenCustomize()
+        public void GetPluginBindings_BothLayers_ConcatenatesBaseThenCustomize()
         {
             var @base = Plugins(("Order", s_pkgChain));
             var cust = Plugins(("Order", s_custChain));
 
-            Assert.Equal(s_concatenated, CustomizeOverlay.GetPluginTypes(cust, @base, "Order"));
+            Assert.Equal(s_concatenated, CustomizeOverlay.GetPluginBindings(cust, @base, "Order"));
         }
 
         [Fact]
         [DisplayName("plugin：只有一層宣告時回該層的鏈")]
-        public void GetPluginTypes_SingleLayer_ReturnsThatChain()
+        public void GetPluginBindings_SingleLayer_ReturnsThatChain()
         {
             var @base = Plugins(("Order", s_pkgAuditOnly));
             var cust = Plugins(("Customer", s_custDedupeOnly));
 
-            Assert.Equal(s_pkgAuditOnly, CustomizeOverlay.GetPluginTypes(cust, @base, "Order"));
-            Assert.Equal(s_custDedupeOnly, CustomizeOverlay.GetPluginTypes(cust, @base, "Customer"));
+            Assert.Equal(s_pkgAuditOnly, CustomizeOverlay.GetPluginBindings(cust, @base, "Order"));
+            Assert.Equal(s_custDedupeOnly, CustomizeOverlay.GetPluginBindings(cust, @base, "Customer"));
         }
 
         [Fact]
         [DisplayName("plugin：兩層皆無該 progId 或皆為 null 時回空集合")]
-        public void GetPluginTypes_BothMiss_ReturnsEmpty()
+        public void GetPluginBindings_BothMiss_ReturnsEmpty()
         {
-            Assert.Empty(CustomizeOverlay.GetPluginTypes(Plugins(), Plugins(), "Nope"));
-            Assert.Empty(CustomizeOverlay.GetPluginTypes(null, null, "Order"));
+            Assert.Empty(CustomizeOverlay.GetPluginBindings(Plugins(), Plugins(), "Nope"));
+            Assert.Empty(CustomizeOverlay.GetPluginBindings(null, null, "Order"));
         }
 
         [Fact]
         [DisplayName("plugin：客製無法停用套裝的 plugin——沒有 tombstone，相加是唯一語意")]
-        public void GetPluginTypes_CustomizeCannotSuppressBase()
+        public void GetPluginBindings_CustomizeCannotSuppressBase()
         {
             var @base = Plugins(("Order", s_pkgAuditOnly));
             var cust = Plugins(("Order", []));
 
             // 客製宣告了該 progId 但鏈為空，套裝的 plugin 仍然在。
-            Assert.Equal(s_pkgAuditOnly, CustomizeOverlay.GetPluginTypes(cust, @base, "Order"));
+            Assert.Equal(s_pkgAuditOnly, CustomizeOverlay.GetPluginBindings(cust, @base, "Order"));
         }
 
         // ---- FormLayout：整檔取代 ----
@@ -387,14 +391,14 @@ namespace Bee.Definition.UnitTests.Customization
             return resource;
         }
 
-        private static PluginSettings Plugins(params (string ProgId, string[] Types)[] items)
+        private static PluginSettings Plugins(params (string ProgId, PluginBinding[] Bindings)[] items)
         {
             var settings = new PluginSettings();
-            foreach (var (progId, types) in items)
+            foreach (var (progId, bindings) in items)
             {
                 var program = settings.Items!.Add(progId);
-                foreach (var type in types)
-                    program.Plugins!.Add(type);
+                foreach (var binding in bindings)
+                    program.Plugins!.Add(binding.Type, binding.Stage);
             }
             return settings;
         }

@@ -132,9 +132,8 @@ namespace Bee.Definition.Customization
             => StringUtilities.IsEmpty(customize) ? @base : customize;
 
         /// <summary>
-        /// Returns the plugin type names bound to a progId: the base chain first, then the
-        /// customization chain. This is the one granularity here that <b>adds</b> rather than
-        /// chooses.
+        /// Returns the plugin bindings of a progId: the base chain first, then the customization
+        /// chain. This is the one granularity here that <b>adds</b> rather than chooses.
         /// </summary>
         /// <param name="customize">The customization settings, or <c>null</c> when the tenant provides none.</param>
         /// <param name="base">The base settings, or <c>null</c> when the deployment defines none.</param>
@@ -159,14 +158,14 @@ namespace Bee.Definition.Customization
         /// already rejects a repeat.
         /// </para>
         /// </remarks>
-        public static IReadOnlyList<string> GetPluginTypes(PluginSettings? customize, PluginSettings? @base, string progId)
+        public static IReadOnlyList<PluginBinding> GetPluginBindings(PluginSettings? customize, PluginSettings? @base, string progId)
         {
-            var baseTypes = @base?.GetPluginTypes(progId) ?? [];
-            var customizeTypes = customize?.GetPluginTypes(progId) ?? [];
+            var baseBindings = @base?.GetPluginBindings(progId) ?? [];
+            var customizeBindings = customize?.GetPluginBindings(progId) ?? [];
 
-            if (customizeTypes.Count == 0) { return baseTypes; }
-            if (baseTypes.Count == 0) { return customizeTypes; }
-            return [.. baseTypes, .. customizeTypes];
+            if (customizeBindings.Count == 0) { return baseBindings; }
+            if (baseBindings.Count == 0) { return customizeBindings; }
+            return [.. baseBindings, .. customizeBindings];
         }
 
         /// <summary>

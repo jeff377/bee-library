@@ -2,12 +2,17 @@
 
 ## 狀態
 
-**已採納（Accepted，2026-08-06）** —— 決策已執行。`PluginSettings` 定義型別、`FormBusinessPlugin`
-基底與四個掛載點、兩層相加的疊加語意、以及客製層的第一條寫入路徑皆已落地。
+**已採納（Accepted，2026-08-06）；決策三於 2026-09-05 修訂** —— 決策已執行。`PluginSettings`
+定義型別、`FormBusinessPlugin` 基底與四個掛載點、兩層相加的疊加語意、以及客製層的第一條寫入路徑
+皆已落地。
 
 本 ADR 記錄六個長效決策：**掛載而非取代**、**掛載點的封閉集合與新增判準**、**宣告粒度與
 per-operation 生命週期**、**兩層相加且無移除語意**、**失敗處理的兩種不對稱**、
 **與規則引擎的分界**。
+
+決策三原為「設定檔只列型別，時點由類別自己 override」，2026-09-05 改為
+**「設定檔明寫時點，一個 plugin 一個時點」**。修訂的內容、被主動放棄的東西、
+以及改變決策的直接原因，全部寫在該節內。
 
 ## 背景
 
@@ -71,43 +76,76 @@ Save / Delete 兩條管線內。
 掛載點是公開契約：**加是非破壞性的、減是破壞性的**。因此預設偏少，由真實需求推著擴充，
 而不是先開好一整排等人來用。
 
-## 決策三：設定檔只列型別，時點由類別自己 override
+## 決策三：設定檔明寫時點，一個 plugin 一個時點
+
+> **本節於 2026-09-05 修訂。** 原決策是「設定檔只列型別，時點由類別自己 override」，
+> 並否決了「設定檔明寫時點」的方案。下面連同**放棄了什麼**與**為什麼改**一起記錄。
 
 ```xml
 <PluginSettings>
   <Items>
     <ProgramPluginItem ProgId="Order">
       <Plugins>
-        <PluginItem Type="Acme.Plugins.CreditLimitCheck, Acme.Plugins" />
+        <PluginItem Type="Acme.Plugins.CreditLimitCheck, Acme.Plugins" Stage="BeforeSave" />
+        <PluginItem Type="Acme.Plugins.OrderSync, Acme.Plugins"        Stage="AfterSave" />
       </Plugins>
     </ProgramPluginItem>
   </Items>
 </PluginSettings>
 ```
 
-`PluginItem` 的 key 是**型別名**——同一個 program 重複宣告同一型別在載入時就被拒絕，
-不會靜默跑兩次。
+一筆繫結宣告一個時點，而類別必須**恰好覆寫那一個**時點。`PluginItem` 的 key 仍是**型別名**
+——一個類別只掛一個時點，同一型別在一個 program 內因此永遠只出現一次，不需要複合鍵；
+重複宣告同一型別在載入時就被拒絕。
 
-### 否決的替代方案：設定檔明寫「時點 × 型別」
+### 為何是「一個類別一個時點」而非「一個類別多個時點」
 
-該方案的設定檔可讀性與儲存時的驗證精確度都比較好。否決它的理由是：**它會逼一個業務需求拆成
-兩個類別**。而「檢查（BeforeSave）＋ 後續動作（AfterSave）」在 ERP 客製裡是常態而非例外，
-拆開後兩段之間沒有共享狀態的地方。
+**責任單一。** 兩個時點的作用本質不同：`BeforeSave` 是存檔前的檢查／調整，`AfterSave` 是存檔後
+的副作用。把兩件性質不同的事塞進同一個類別，是為了共用一個 instance field 而犧牲類別的單一職責。
 
-### 因此 per-operation 生命週期是這個選擇的成立條件
+這是**設計裁示，不是型別簽章的強制**。四個時點的簽章是 `BeforeSave(SaveContext)` /
+`AfterSave(SaveContext)` / `BeforeDelete(DeleteContext)` / `AfterDelete(DeleteContext)`
+——參數型別只在 Save 管線與 Delete 管線之間不同，**管線內部相同**。所以「同一個類別同時做
+`BeforeSave` 與 `AfterSave`」在型別上完全做得到；不這樣做是選擇。
 
-plugin 實例為 **per-operation**：Save / Delete 各建構一次，該次呼叫的所有時點**共用同一實例**，
-跨時點的狀態靠 instance field 傳遞。
+### 放棄了什麼：per-operation 的跨時點狀態共享
 
-這是本方案相對於「時點 × 型別」的**唯一實質優勢**。若改成每個時點各建一次，本方案就只剩
-「設定檔少打幾行」，不值得為此放棄對方的可讀性。runner 延遲建構，但一建就建整條鏈——
-per-operation 的保證是「後面的時點找到同一個物件」，只有把建構綁在**操作**而非**時點**上才成立。
+原決策把 per-operation 生命週期當成「只列型別」的成立條件，並稱跨時點共用同一實例是該方案
+相對於「時點 × 型別」的**唯一實質優勢**。**本次修訂主動放棄它。**
 
-### 可讀性代價以工具中和
+「檢查（`BeforeSave`）＋ 後續動作（`AfterSave`）」現在必須寫成兩個類別，兩者之間**沒有共享狀態
+的地方**，`AfterSave` 需要的資料要重讀或重算。原決策把這件事看成「一個需求被迫拆成兩個類別」
+（損失）；本次修訂把它看成「兩件不同的事本來就該是兩個類別」（正確化）。
+差別不在事實，而在那個 instance field 值不值得用單一職責去換 —— 原本判值得，現在判不值得。
 
-從 XML 看不出哪個 plugin 跑在哪個時點。解法不是改設定檔結構，而是由載入時的反射
-（比對 `MethodInfo.DeclaringType`）算出各時點的執行清單——一份資料兩個用途：過濾無效呼叫，
-以及供維護工具顯示執行順序。Dynamics 365 的 registration tool 也是用工具而非設定檔結構解這個問題。
+實例仍是 **per-operation**：Save / Delete 各自建構、不跨呼叫共用，因此不需要考慮鎖。
+但它**不再承載跨時點的保證**，而且改為**按需建構**——一個 plugin 只在它自己那個時點第一次執行時
+才被建出來。舊設計「一建就建整條鏈」的理由（後面的時點要找到同一個物件）已不存在，
+一次 Save 因此不會建構只掛 delete 時點的 plugin。
+
+### 改變決策的直接原因：可讀性代價的補償措施從未落地
+
+原決策承認「從 XML 看不出哪個 plugin 跑在哪個時點」，並回答：解法不是改設定檔結構，而是由
+反射算出各時點的執行清單，**供維護工具顯示執行順序**。
+
+那個維護工具從未存在。`FormPluginChain.TypesForStage` 的生產端呼叫者為零，全樹也查無任何
+`PluginSettings` 的消費者。可讀性代價因此一直是淨損失，而補償只停在紙上。
+
+### 反射沒有退場，降為驗證器
+
+時點資訊現在存在兩處：類別覆寫了什麼、XML 宣告了什麼。**兩者必須相等，不符一律拒絕載入**，
+且訊息會指出類別實際覆寫的是哪一個。相等成立時，「照宣告跑」與「照反射跑」是同一件事，
+執行語意零變更；不符時大聲失敗，不存在「覆寫了卻沒宣告 → 靜默不跑」。
+
+兩道閘門互補：儲存時由 `SystemBusinessObject` 的維護 API 擋（編輯者當場知道），
+解析時由 `PluginSettingsResolver` 擋（**手寫檔**沒有維護 API，套裝層 `{DefinePath}/PluginSettings.xml`
+與外部使用者永遠不經過它）。chain 以 `(customizeId, progId)` 快取，反射本來就只算一次，
+對帳是零額外成本。
+
+### 誠實的代價：改 plugin 類別要連帶改 XML
+
+原本替 plugin 換一個覆寫的時點，重新部署組件就自動生效。之後同一件事會在下次解析時**拋例外**，
+直到 XML 跟上。這是新增的耦合，換到的是「設定檔說什麼就跑什麼」。
 
 ## 決策四：兩層相加，且不提供移除語意
 
@@ -155,9 +193,10 @@ plugin 型別載不到時**直接拋**。
 不對稱是刻意的：binding 指名的是「這個程式就是這個型別」，退回仍是**能跑的程式**；
 plugin 是作者刻意加上的，略過等於**客製沒生效**——靜默漏掉一段信用額度檢查，比拒絕存檔更糟。
 
-同理，`PluginSettings` 的寫入 API 在**存檔前逐一驗證**每個型別可載入、繼承 `FormBusinessPlugin`、
-且至少 override 一個時點，一筆不合格整份拒存。驗證放在寫入端的用意是：編輯的人**當場**知道打錯
-字，而不是幾週後某張單據存不了。什麼時點都沒 override 的 plugin 掛了等於沒掛，屬設定錯誤。
+同理，`PluginSettings` 的寫入 API 在**存檔前逐一驗證**每筆繫結：型別可載入、繼承
+`FormBusinessPlugin`、且**恰好覆寫該筆繫結宣告的那一個時點**，一筆不合格整份拒存。驗證放在
+寫入端的用意是：編輯的人**當場**知道打錯字，而不是幾週後某張單據存不了。什麼時點都沒 override
+的 plugin 掛了等於沒掛，覆寫了兩個時點則違反「一個 plugin 一個時點」，兩者皆屬設定錯誤。
 
 ## 決策六：與規則引擎（ADR-028）的分界
 
@@ -198,11 +237,11 @@ plugin 是作者刻意加上的，略過等於**客製沒生效**——靜默漏
 ### 主要型別
 
 - `src/Bee.Definition/Settings/PluginSettings/` —— `PluginSettings` / `ProgramPluginItem` /
-  `PluginItem` 與兩個集合型別
+  `PluginItem` / `PluginStage` / `PluginBinding` 與兩個集合型別
 - `src/Bee.Business/Form/FormBusinessPlugin.cs` —— 基底與四個虛擬空實作
 - `src/Bee.Business/Form/FormPluginChain.cs` / `FormPluginRunner.cs` /
   `PluginSettingsResolver.cs` —— 解析、鏈與執行
-- `src/Bee.Definition/Customization/CustomizeOverlay.cs` —— `GetPluginTypes`（唯一的相加疊加）
+- `src/Bee.Definition/Customization/CustomizeOverlay.cs` —— `GetPluginBindings`（唯一的相加疊加）
 - `src/Bee.Definition/Storage/ICustomizeDefineWriter.cs` —— 客製層寫入路徑
 
 ### 相關文件
