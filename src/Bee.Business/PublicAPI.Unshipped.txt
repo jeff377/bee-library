@@ -1,18 +1,1 @@
 #nullable enable
-Bee.Business.Form.FormPluginBinding
-Bee.Business.Form.FormPluginBinding.Deconstruct(out System.Type! Type, out Bee.Definition.Settings.PluginStage Stage) -> void
-Bee.Business.Form.FormPluginBinding.Equals(Bee.Business.Form.FormPluginBinding other) -> bool
-Bee.Business.Form.FormPluginBinding.FormPluginBinding() -> void
-Bee.Business.Form.FormPluginBinding.FormPluginBinding(System.Type! Type, Bee.Definition.Settings.PluginStage Stage) -> void
-Bee.Business.Form.FormPluginBinding.Stage.get -> Bee.Definition.Settings.PluginStage
-Bee.Business.Form.FormPluginBinding.Stage.init -> void
-Bee.Business.Form.FormPluginBinding.Type.get -> System.Type!
-Bee.Business.Form.FormPluginBinding.Type.init -> void
-Bee.Business.Form.FormPluginChain.HasStage(Bee.Definition.Settings.PluginStage stage) -> bool
-Bee.Business.Form.FormPluginChain.TypesForStage(Bee.Definition.Settings.PluginStage stage) -> System.Collections.Generic.IReadOnlyList<System.Type!>!
-override Bee.Business.Form.FormPluginBinding.GetHashCode() -> int
-static Bee.Business.Form.FormPluginBinding.operator !=(Bee.Business.Form.FormPluginBinding left, Bee.Business.Form.FormPluginBinding right) -> bool
-static Bee.Business.Form.FormPluginBinding.operator ==(Bee.Business.Form.FormPluginBinding left, Bee.Business.Form.FormPluginBinding right) -> bool
-static Bee.Business.Form.FormPluginChain.Create(string! progId, System.Collections.Generic.IReadOnlyList<Bee.Business.Form.FormPluginBinding>! bindings) -> Bee.Business.Form.FormPluginChain!
-~override Bee.Business.Form.FormPluginBinding.Equals(object obj) -> bool
-~override Bee.Business.Form.FormPluginBinding.ToString() -> string

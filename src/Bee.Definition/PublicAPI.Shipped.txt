@@ -1492,8 +1492,20 @@ Bee.Definition.Settings.PermissionRuleCollection
 Bee.Definition.Settings.PermissionRuleCollection.PermissionRuleCollection() -> void
 Bee.Definition.Settings.PermissionRuleCollection.PermissionRuleCollection(Bee.Definition.Settings.PermissionModel! model) -> void
 Bee.Definition.Settings.PermissionRuleCollectionExtensions
+Bee.Definition.Settings.PluginBinding
+Bee.Definition.Settings.PluginBinding.Deconstruct(out string! Type, out Bee.Definition.Settings.PluginStage Stage) -> void
+Bee.Definition.Settings.PluginBinding.Equals(Bee.Definition.Settings.PluginBinding other) -> bool
+Bee.Definition.Settings.PluginBinding.PluginBinding() -> void
+Bee.Definition.Settings.PluginBinding.PluginBinding(string! Type, Bee.Definition.Settings.PluginStage Stage) -> void
+Bee.Definition.Settings.PluginBinding.Stage.get -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginBinding.Stage.init -> void
+Bee.Definition.Settings.PluginBinding.Type.get -> string!
+Bee.Definition.Settings.PluginBinding.Type.init -> void
 Bee.Definition.Settings.PluginItem
 Bee.Definition.Settings.PluginItem.PluginItem() -> void
+Bee.Definition.Settings.PluginItem.PluginItem(string! type, Bee.Definition.Settings.PluginStage stage) -> void
+Bee.Definition.Settings.PluginItem.Stage.get -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginItem.Stage.set -> void
 Bee.Definition.Settings.PluginItem.Type.get -> string!
 Bee.Definition.Settings.PluginItem.Type.set -> void
 Bee.Definition.Settings.PluginItemCollection
@@ -1501,12 +1513,19 @@ Bee.Definition.Settings.PluginItemCollection.PluginItemCollection() -> void
 Bee.Definition.Settings.PluginItemCollection.PluginItemCollection(Bee.Definition.Settings.ProgramPluginItem! item) -> void
 Bee.Definition.Settings.PluginItemCollectionExtensions
 Bee.Definition.Settings.PluginSettings
+Bee.Definition.Settings.PluginSettings.GetPluginBindings(string! progId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Settings.PluginBinding>!
 Bee.Definition.Settings.PluginSettings.Items.get -> Bee.Definition.Settings.ProgramPluginItemCollection?
 Bee.Definition.Settings.PluginSettings.ObjectFilePath.get -> string!
 Bee.Definition.Settings.PluginSettings.PluginSettings() -> void
 Bee.Definition.Settings.PluginSettings.SerializeState.get -> Bee.Base.Serialization.SerializeState
 Bee.Definition.Settings.PluginSettings.SetObjectFilePath(string! filePath) -> void
 Bee.Definition.Settings.PluginSettings.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
+Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginStage.AfterDelete = 4 -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginStage.AfterSave = 2 -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginStage.BeforeDelete = 3 -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginStage.BeforeSave = 1 -> Bee.Definition.Settings.PluginStage
+Bee.Definition.Settings.PluginStage.None = 0 -> Bee.Definition.Settings.PluginStage
 Bee.Definition.Settings.ProgramItem
 Bee.Definition.Settings.ProgramItem.BusinessObject.get -> string!
 Bee.Definition.Settings.ProgramItem.BusinessObject.set -> void
@@ -1910,6 +1929,7 @@ override Bee.Definition.Settings.MenuFolder.ToString() -> string!
 override Bee.Definition.Settings.PermissionModel.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
 override Bee.Definition.Settings.PermissionModel.ToString() -> string!
 override Bee.Definition.Settings.PermissionRule.ToString() -> string!
+override Bee.Definition.Settings.PluginBinding.GetHashCode() -> int
 override Bee.Definition.Settings.PluginItem.ToString() -> string!
 override Bee.Definition.Settings.ProgramItem.ToString() -> string!
 override Bee.Definition.Settings.ProgramPluginItem.SetSerializeState(Bee.Base.Serialization.SerializeState serializeState) -> void
@@ -1925,6 +1945,7 @@ static Bee.Definition.Collections.ParameterCollectionExtensions.Add(this Bee.Def
 static Bee.Definition.Collections.PropertyCollectionExtensions.Add(this Bee.Definition.Collections.PropertyCollection? collection, string! name, string! value) -> void
 static Bee.Definition.Customization.CustomizeOverlay.FindProgramItem(Bee.Definition.Settings.ProgramSettings? customize, Bee.Definition.Settings.ProgramSettings? base, string! progId) -> Bee.Definition.Settings.ProgramItem?
 static Bee.Definition.Customization.CustomizeOverlay.GetLangEnum(Bee.Definition.Language.LanguageResource? customize, Bee.Definition.Language.LanguageResource? base, string! enumName) -> Bee.Definition.Language.LanguageEnum?
+static Bee.Definition.Customization.CustomizeOverlay.GetPluginBindings(Bee.Definition.Settings.PluginSettings? customize, Bee.Definition.Settings.PluginSettings? base, string! progId) -> System.Collections.Generic.IReadOnlyList<Bee.Definition.Settings.PluginBinding>!
 static Bee.Definition.Customization.CustomizeOverlay.PickFormLayout(Bee.Definition.Layouts.FormLayout? customize, Bee.Definition.Layouts.FormLayout? base) -> Bee.Definition.Layouts.FormLayout?
 static Bee.Definition.Customization.CustomizeOverlay.PickMenuSettings(Bee.Definition.Settings.MenuSettings? customize, Bee.Definition.Settings.MenuSettings? base) -> Bee.Definition.Settings.MenuSettings?
 static Bee.Definition.Customization.CustomizeOverlay.TryGetLangText(Bee.Definition.Language.LanguageResource? customize, Bee.Definition.Language.LanguageResource? base, string! subKey, out string! text) -> bool
@@ -2012,6 +2033,9 @@ static Bee.Definition.Settings.MenuNodeCollectionExtensions.AddFolder(this Bee.D
 static Bee.Definition.Settings.PermissionBindingValidator.Validate(System.Collections.Generic.IEnumerable<Bee.Definition.Forms.FormSchema!>! schemas, Bee.Definition.Settings.PermissionModels! models) -> System.Collections.Generic.IReadOnlyList<string!>!
 static Bee.Definition.Settings.PermissionModelCollectionExtensions.Add(this Bee.Definition.Settings.PermissionModelCollection? collection, string! modelId, string! displayName) -> Bee.Definition.Settings.PermissionModel!
 static Bee.Definition.Settings.PermissionRuleCollectionExtensions.Add(this Bee.Definition.Settings.PermissionRuleCollection? collection, Bee.Definition.Settings.PermissionAction action, Bee.Definition.Settings.ScopeStrategy scope = Bee.Definition.Settings.ScopeStrategy.Inherit) -> Bee.Definition.Settings.PermissionRule!
+static Bee.Definition.Settings.PluginBinding.operator !=(Bee.Definition.Settings.PluginBinding left, Bee.Definition.Settings.PluginBinding right) -> bool
+static Bee.Definition.Settings.PluginBinding.operator ==(Bee.Definition.Settings.PluginBinding left, Bee.Definition.Settings.PluginBinding right) -> bool
+static Bee.Definition.Settings.PluginItemCollectionExtensions.Add(this Bee.Definition.Settings.PluginItemCollection? collection, string! type, Bee.Definition.Settings.PluginStage stage) -> Bee.Definition.Settings.PluginItem!
 static Bee.Definition.Settings.ProgramItemCollectionExtensions.Add(this Bee.Definition.Settings.ProgramItemCollection? collection, string! progId, string! displayName) -> Bee.Definition.Settings.ProgramItem!
 static Bee.Definition.Settings.ProgramPluginItemCollectionExtensions.Add(this Bee.Definition.Settings.ProgramPluginItemCollection? collection, string! progId) -> Bee.Definition.Settings.ProgramPluginItem!
 static Bee.Definition.Settings.ProgramSettingsFormat.EnsureCurrentFormat(string! xml, string! source) -> void
@@ -2030,5 +2054,7 @@ virtual Bee.Definition.PathOptions.GetPluginSettingsFilePath() -> string!
 virtual Bee.Definition.PathOptions.GetProgramSettingsFilePath() -> string!
 ~override Bee.Definition.Logging.AuditColumn.Equals(object obj) -> bool
 ~override Bee.Definition.Logging.AuditColumn.ToString() -> string
+~override Bee.Definition.Settings.PluginBinding.Equals(object obj) -> bool
+~override Bee.Definition.Settings.PluginBinding.ToString() -> string
 ~override Bee.Definition.Storage.DefineChangeSource.Equals(object obj) -> bool
 ~override Bee.Definition.Storage.DefineChangeSource.ToString() -> string

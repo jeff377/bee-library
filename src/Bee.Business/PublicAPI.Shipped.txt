@@ -207,10 +207,21 @@ Bee.Business.Form.FormBusinessPlugin.AccessToken.get -> System.Guid
 Bee.Business.Form.FormBusinessPlugin.Context.get -> Bee.Definition.IBeeContext!
 Bee.Business.Form.FormBusinessPlugin.FormBusinessPlugin(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId) -> void
 Bee.Business.Form.FormBusinessPlugin.ProgId.get -> string!
+Bee.Business.Form.FormPluginBinding
+Bee.Business.Form.FormPluginBinding.Deconstruct(out System.Type! Type, out Bee.Definition.Settings.PluginStage Stage) -> void
+Bee.Business.Form.FormPluginBinding.Equals(Bee.Business.Form.FormPluginBinding other) -> bool
+Bee.Business.Form.FormPluginBinding.FormPluginBinding() -> void
+Bee.Business.Form.FormPluginBinding.FormPluginBinding(System.Type! Type, Bee.Definition.Settings.PluginStage Stage) -> void
+Bee.Business.Form.FormPluginBinding.Stage.get -> Bee.Definition.Settings.PluginStage
+Bee.Business.Form.FormPluginBinding.Stage.init -> void
+Bee.Business.Form.FormPluginBinding.Type.get -> System.Type!
+Bee.Business.Form.FormPluginBinding.Type.init -> void
 Bee.Business.Form.FormPluginChain
 Bee.Business.Form.FormPluginChain.CreateRunner(Bee.Definition.IBeeContext! ctx, System.Guid accessToken, string! progId) -> Bee.Business.Form.FormPluginRunner!
+Bee.Business.Form.FormPluginChain.HasStage(Bee.Definition.Settings.PluginStage stage) -> bool
 Bee.Business.Form.FormPluginChain.IsEmpty.get -> bool
 Bee.Business.Form.FormPluginChain.Types.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Bee.Business.Form.FormPluginChain.TypesForStage(Bee.Definition.Settings.PluginStage stage) -> System.Collections.Generic.IReadOnlyList<System.Type!>!
 Bee.Business.Form.FormPluginRunner
 Bee.Business.Form.FormPluginRunner.Chain.get -> Bee.Business.Form.FormPluginChain!
 Bee.Business.Form.FormPluginRunner.RunAfterDelete(Bee.Business.Form.DeleteContext! context) -> void
@@ -603,6 +614,7 @@ override Bee.Business.AuditLog.AuditRuleBusinessObject.DoAfterDelete(Bee.Busines
 override Bee.Business.AuditLog.AuditRuleBusinessObject.DoAfterSave(Bee.Business.Form.SaveContext! context) -> void
 override Bee.Business.Form.FormBusinessObject.DoExecFunc(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 override Bee.Business.Form.FormBusinessObject.DoExecFuncAnonymous(Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
+override Bee.Business.Form.FormPluginBinding.GetHashCode() -> int
 override Bee.Business.ReservedProgIdBinding.Equals(object? obj) -> bool
 override Bee.Business.ReservedProgIdBinding.GetHashCode() -> int
 override Bee.Business.ReservedProgIdBinding.ToString() -> string!
@@ -615,6 +627,9 @@ static Bee.Business.BusinessObjectFactoryExtensions.CreateFormBO(this Bee.Defini
 static Bee.Business.BusinessObjectFactoryExtensions.CreateSystemBO(this Bee.Definition.IBusinessObjectFactory! factory, System.Guid accessToken, bool isLocalCall) -> Bee.Business.System.ISystemBusinessObject!
 static Bee.Business.ExecFuncHandlerExtensions.InvokeExecFunc(this Bee.Business.IExecFuncHandler! handler, Bee.Definition.Security.ApiAccessRequirement currentRequirement, Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
 static Bee.Business.ExecFuncHandlerExtensions.InvokeExecFunc(this Bee.Business.IExecFuncHandler! handler, Bee.Definition.Security.ApiAccessRequirement currentRequirement, bool isLocalCall, Bee.Business.ExecFuncArgs! args, Bee.Business.ExecFuncResult! result) -> void
+static Bee.Business.Form.FormPluginBinding.operator !=(Bee.Business.Form.FormPluginBinding left, Bee.Business.Form.FormPluginBinding right) -> bool
+static Bee.Business.Form.FormPluginBinding.operator ==(Bee.Business.Form.FormPluginBinding left, Bee.Business.Form.FormPluginBinding right) -> bool
+static Bee.Business.Form.FormPluginChain.Create(string! progId, System.Collections.Generic.IReadOnlyList<Bee.Business.Form.FormPluginBinding>! bindings) -> Bee.Business.Form.FormPluginChain!
 static Bee.Business.Form.FormPluginChain.Empty.get -> Bee.Business.Form.FormPluginChain!
 static Bee.Business.Providers.DerivedApiEncryptionKeyProvider.FromMasterKey(byte[]! masterKey) -> Bee.Business.Providers.DerivedApiEncryptionKeyProvider!
 static Bee.Business.ReservedProgIdBinding.operator !=(Bee.Business.ReservedProgIdBinding? left, Bee.Business.ReservedProgIdBinding? right) -> bool
@@ -675,3 +690,5 @@ virtual Bee.Business.System.SystemBusinessObject.SaveDefine(Bee.Business.System.
 virtual Bee.Business.System.SystemBusinessObject.SetApiKeyEnabled(Bee.Business.System.SetApiKeyEnabledArgs! args) -> Bee.Business.System.SetApiKeyEnabledResult!
 virtual Bee.Business.System.SystemBusinessObject.SetApiKeyExpiry(Bee.Business.System.SetApiKeyExpiryArgs! args) -> Bee.Business.System.SetApiKeyExpiryResult!
 virtual Bee.Business.System.SystemBusinessObject.SetDeploymentAdmin(Bee.Business.System.SetDeploymentAdminArgs! args) -> Bee.Business.System.SetDeploymentAdminResult!
+~override Bee.Business.Form.FormPluginBinding.Equals(object obj) -> bool
+~override Bee.Business.Form.FormPluginBinding.ToString() -> string
