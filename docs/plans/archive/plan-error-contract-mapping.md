@@ -130,7 +130,7 @@ return (InternalError, SysInfo.IsDebugMode ? ex.Message : "Internal server error
 **漂移二：`Unauthorized`（-32001）零產生者，且公開文件寫的是錯的。**
 認證失敗實際走 `ApiAuthorizationValidator` 回 `JsonRpcErrorCode.InvalidRequest`（-32600）
 ＋ HTTP 401（`ApiServiceController:66`）。但
-[`docs/jsonrpc-frontend-integration.zh-TW.md`](../jsonrpc-frontend-integration.zh-TW.md)
+[`docs/jsonrpc-frontend-integration.zh-TW.md`](../../jsonrpc-frontend-integration.zh-TW.md)
 的錯誤碼表寫著「`-32001` `Unauthorized` Token 缺、無效、過期 → 重新登入」。
 照文件寫 client 的人會去接一個永遠不會出現的碼。
 
@@ -183,7 +183,7 @@ return (InternalError, SysInfo.IsDebugMode ? ex.Message : "Internal server error
 現在由型別系統保證的東西，換成由「別動這個順序」的註解保證。
 
 **代價 B：對外部使用者是 source-breaking，而且是編譯錯誤。**
-[`docs/development-constraints.zh-TW.md`](../development-constraints.zh-TW.md) 現在教的 catch 順序是：
+[`docs/development-constraints.zh-TW.md`](../../development-constraints.zh-TW.md) 現在教的 catch 順序是：
 
 ```csharp
 catch (UserMessageException ex) { ShowMessage(ex.Message); }
@@ -198,7 +198,7 @@ catch (Exception ex)            { LogError(ex); }
 **代價 C：二進位破壞性變更。**
 改公開型別的基底類別會動到 public API surface，四個型別都在
 `src/Bee.Base/PublicAPI.Shipped.txt`（第 112–124 行）。而 `Bee.Base` 是**所有專案的相依**
-（見 [`.claude/rules/dependency-boundary.md`](../../.claude/rules/dependency-boundary.md)）。
+（見 [`.claude/rules/dependency-boundary.md`](../../../.claude/rules/dependency-boundary.md)）。
 需處理 `PublicAPI` 檔、判版號、依 `releasing.md` 與 `commit-verification.md` 明寫相容性判定。
 
 ### 2.4 判定
@@ -234,7 +234,7 @@ catch (Exception ex)            { LogError(ex); }
 ### 階段 1：鎖住現況（不改對映語意）
 
 1. **新增 `ErrorContractDriftTests`**（形狀參考
-   [`tests/Bee.Api.Core.UnitTests/WireContractDriftTests.cs`](../../tests/Bee.Api.Core.UnitTests/WireContractDriftTests.cs)）：
+   [`tests/Bee.Api.Core.UnitTests/WireContractDriftTests.cs`](../../../tests/Bee.Api.Core.UnitTests/WireContractDriftTests.cs)）：
    - 對 `JsonRpcErrorCode` 每個成員斷言「有伺服端產生者」或「在刻意不重建的白名單上」，二者必居其一。
    - 對每個「有具名重建分支」的碼，斷言 `MapException` 反過來也給得出同一個碼（round-trip）。
    - 比照 `WireContractDriftTests` 的做法，**加一條反萎縮斷言**（釘住具體成員），
@@ -270,16 +270,16 @@ catch (Exception ex)            { LogError(ex); }
 | 檔案 | 動作 |
 |------|------|
 | `tests/Bee.Api.Core.UnitTests/ErrorContractDriftTests.cs` | 新增 |
-| [`src/Bee.Api.Client/Connectors/ApiConnector.cs`](../../src/Bee.Api.Client/Connectors/ApiConnector.cs) | 補 `ReplayRejected` 分支＋更新 `FinalizeResponse` 的 remarks |
+| [`src/Bee.Api.Client/Connectors/ApiConnector.cs`](../../../src/Bee.Api.Client/Connectors/ApiConnector.cs) | 補 `ReplayRejected` 分支＋更新 `FinalizeResponse` 的 remarks |
 | `tests/Bee.Api.Client.UnitTests/Connectors/ApiConnectorFinalizeResponseTests.cs` | 補一則 `ReplayRejected` 測試 |
-| [`docs/jsonrpc-frontend-integration.md`](../jsonrpc-frontend-integration.md) ／ `.zh-TW.md` | 錯誤碼表修正（雙語同步） |
+| [`docs/jsonrpc-frontend-integration.md`](../../jsonrpc-frontend-integration.md) ／ `.zh-TW.md` | 錯誤碼表修正（雙語同步） |
 
 **階段 2**
 
 | 檔案 | 動作 |
 |------|------|
 | `src/Bee.Api.Core/JsonRpc/JsonRpcErrorContract.cs` | 新增 |
-| [`src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs`](../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs) | `MapException` 改查表 |
+| [`src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs`](../../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs) | `MapException` 改查表 |
 | `src/Bee.Api.Client/Connectors/ApiConnector.cs` | `FinalizeResponse` 改查表 |
 | `src/Bee.Api.Core/PublicAPI.Unshipped.txt` | 登錄型別若為 public 則需申報 |
 
@@ -320,7 +320,7 @@ catch (Exception ex)            { LogError(ex); }
 
 ### 6.1 與連載文章的關係
 
-[`docs/blogs/ithome-2026-ironman/day-18-error-contract.md`](../blogs/ithome-2026-ironman/day-18-error-contract.md)
+[`docs/blogs/ithome-2026-ironman/day-18-error-contract.md`](../../blogs/ithome-2026-ironman/day-18-error-contract.md)
 （2026-09-03 發）描述的正是現行的四個 `if` 與「兩端的對映是一組必須同步、而沒有任何機制保證同步的清單」。
 本計畫階段 2 落地後，那段描述會變成**歷史**。
 

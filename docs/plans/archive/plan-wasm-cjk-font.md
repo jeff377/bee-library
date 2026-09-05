@@ -31,7 +31,7 @@ PingFang、Android 有 Noto CJK。瀏覽器沙箱裡沒有系統字型可借，A
 | Desktop / iOS | — | 正常（系統字型 fallback） |
 
 語系來自 `CultureInfo.CurrentUICulture.Name`
-（[NorthwindDefinitions.ResolveLang](../../apps/Bee.Northwind/Bee.Northwind.UI/Controls/NorthwindDefinitions.cs)），
+（[NorthwindDefinitions.ResolveLang](../../../apps/Bee.Northwind/Bee.Northwind.UI/Controls/NorthwindDefinitions.cs)），
 瀏覽器語系為中文時即載入 `Define/Language/zh-TW`。
 
 ## 需要多少字
@@ -87,7 +87,7 @@ Noto CJK），中文顯示完全正常，仍跟隨系統語系並看得到 zh-TW
 
 ## 實作結果
 
-- [Program.cs](../../apps/Bee.Northwind/Bee.Northwind.Browser/Program.cs) 一行 culture 釘選 +
+- [Program.cs](../../../apps/Bee.Northwind/Bee.Northwind.Browser/Program.cs) 一行 culture 釘選 +
   說明為何如此（含「其他 head 不受影響」）
 - 未新增任何資產、未改 csproj、bundle 大小不變
 

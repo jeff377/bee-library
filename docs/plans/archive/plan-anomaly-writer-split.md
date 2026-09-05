@@ -19,7 +19,7 @@
 - **業務稽核軌跡**：誰在什麼時候對哪一筆做了什麼（登入、異動、檢視）
 - **執行異常記錄**：哪一次執行偏離了正常（API 層與 DB 層的 Error / Timeout / Slow / 大量列數 / 金鑰被拒）
 
-而 [adr-040](../adr/adr-040-audit-trail-taxonomy.md) 決策二自己就把後者判成 observability：
+而 [adr-040](../../adr/adr-040-audit-trail-taxonomy.md) 決策二自己就把後者判成 observability：
 「系統 / 錯誤本質是 observability（維運 / 除錯），歸 `ILogWriter` / host `ILogger`⋯**與業務稽核分離**」。
 實作把兩者合在同一個介面上，是因為**寫入管線共用**（有上限佇列、批次、退路檔案、log 資料庫的
 `DbAccess` 不做偵測），不是因為它們回答同一種問題。
@@ -129,10 +129,10 @@ INSERT 依名稱組出來；`AuditLoggingTests` 唯一碰到 names 的那支斷�
 同一個實例註冊到兩個介面；`AnomalyEnabled == false` 時 `IAnomalyLogWriter` 註冊
 `NullAuditLogWriter`。
 
-⚠️⚠️ **[`BeeFrameworkServiceCollectionExtensions.cs:140`](../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs) 的
+⚠️⚠️ **[`BeeFrameworkServiceCollectionExtensions.cs:140`](../../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs) 的
 `audit.AnomalyEnabled ? () => sp.GetService<…>() : null` 這個三元式必須留著，只換型別名。**
 
-理由是熱路徑：[`DbAccess.Anomaly.cs`](../../src/Bee.Db/DbAccess.Anomaly.cs) 的
+理由是熱路徑：[`DbAccess.Anomaly.cs`](../../../src/Bee.Db/DbAccess.Anomaly.cs) 的
 `RunWithAnomalyDetection` 短路條件是 **`_anomalyWriter == null`**。若因為「反正有 NullWriter 了」
 而把 gate 拿掉、無條件傳 factory，`_anomalyWriter` 會變成非 null 的 no-op，
 **每一次 DB 命令都多開一個 `Stopwatch` 並繞 try/catch 分支**，寫出去的東西再被丟掉。
@@ -235,10 +235,10 @@ Justification 寫明「這對多載不是新 API，兩個一直共存，且第�
 
 | 文件 | 改了什麼 |
 |---|---|
-| [adr-040](../adr/adr-040-audit-trail-taxonomy.md) | 補**決策七**：寫入介面依決策二的分界拆成兩個。含四列處置表（介面／記錄型別／寫入管線／開關）、**單向保護的警語**、who／company 為何不下放、以及「讀取側未納入本次」 |
-| [`terminology.md`](../terminology.md) / [`.zh-TW`](../terminology.zh-TW.md) | 新增 `IAnomalyLogWriter`、`AnomalyEntry` 兩列；`IAuditLogWriter` 的說明收窄到「登入／異動／檢視」；`NullAuditLogWriter` 改述為同時服務兩個介面 |
-| [`framework-reserved-names.md`](../framework-reserved-names.md) / [`.zh-TW`](../framework-reserved-names.zh-TW.md) | §1.3 標題加「與異常」，引言前置一段點明五張表是兩類、各走哪個介面、以及 `st_log_anomaly_db` 連觸發者都沒有 |
-| [`database-settings-guide.md`](../database-settings-guide.md) / [`.zh-TW`](../database-settings-guide.zh-TW.md) | 兩處「五張＝稽核表」改為「稽核軌跡 ＋ 執行異常記錄」 |
+| [adr-040](../../adr/adr-040-audit-trail-taxonomy.md) | 補**決策七**：寫入介面依決策二的分界拆成兩個。含四列處置表（介面／記錄型別／寫入管線／開關）、**單向保護的警語**、who／company 為何不下放、以及「讀取側未納入本次」 |
+| [`terminology.md`](../../terminology.md) / [`.zh-TW`](../../terminology.zh-TW.md) | 新增 `IAnomalyLogWriter`、`AnomalyEntry` 兩列；`IAuditLogWriter` 的說明收窄到「登入／異動／檢視」；`NullAuditLogWriter` 改述為同時服務兩個介面 |
+| [`framework-reserved-names.md`](../../framework-reserved-names.md) / [`.zh-TW`](../../framework-reserved-names.zh-TW.md) | §1.3 標題加「與異常」，引言前置一段點明五張表是兩類、各走哪個介面、以及 `st_log_anomaly_db` 連觸發者都沒有 |
+| [`database-settings-guide.md`](../../database-settings-guide.md) / [`.zh-TW`](../../database-settings-guide.zh-TW.md) | 兩處「五張＝稽核表」改為「稽核軌跡 ＋ 執行異常記錄」 |
 | `CHANGELOG.md` / `.zh-TW.md` | 新增 `## [4.24.0]` 一節：破壞性 2、新增 2、變更 1、升級指引。雙語各 6 條、章節與行位逐條對齊 |
 
 ### 順手修掉的一筆文件漂移
@@ -306,10 +306,10 @@ Justification 寫明「這對多載不是新 API，兩個一直共存，且第�
 
 | 位置 | 要改什麼 |
 |---|---|
-| [adr-040](../adr/adr-040-audit-trail-taxonomy.md) | 補一節「寫入介面依此分界拆成兩個」。決策二本來就說了兩者性質不同，這次是讓型別跟上。**一併寫明 D1-a 的單向保護** |
-| [`docs/terminology.md`](../terminology.md) / [`.zh-TW`](../terminology.zh-TW.md) | 新增 `IAnomalyLogWriter` 與 `AnomalyEntry` 兩列（雙語同步） |
-| [`docs/framework-reserved-names.md`](../framework-reserved-names.md) / [`.zh-TW`](../framework-reserved-names.zh-TW.md) | §1.3 標題是「Log 資料庫（資料軌跡）」而五張表其實分兩類，可順手把兩類的分界寫進那段引言 |
-| [`docs/database-settings-guide.md`](../database-settings-guide.md) / [`.zh-TW`](../database-settings-guide.zh-TW.md) | 兩處把五張一律稱作「框架 opt-in 的稽核表」，與拆分後的分界不符 |
+| [adr-040](../../adr/adr-040-audit-trail-taxonomy.md) | 補一節「寫入介面依此分界拆成兩個」。決策二本來就說了兩者性質不同，這次是讓型別跟上。**一併寫明 D1-a 的單向保護** |
+| [`docs/terminology.md`](../../terminology.md) / [`.zh-TW`](../../terminology.zh-TW.md) | 新增 `IAnomalyLogWriter` 與 `AnomalyEntry` 兩列（雙語同步） |
+| [`docs/framework-reserved-names.md`](../../framework-reserved-names.md) / [`.zh-TW`](../../framework-reserved-names.zh-TW.md) | §1.3 標題是「Log 資料庫（資料軌跡）」而五張表其實分兩類，可順手把兩類的分界寫進那段引言 |
+| [`docs/database-settings-guide.md`](../../database-settings-guide.md) / [`.zh-TW`](../../database-settings-guide.zh-TW.md) | 兩處把五張一律稱作「框架 opt-in 的稽核表」，與拆分後的分界不符 |
 | `CHANGELOG` | 破壞性變更逐項列出（**三支建構子換參數型別**）。⚠️ **不要寫「`IAuditLogWriter` 語意收窄」** —— 見 D1-a，它的型別表面沒變 |
 
 ⚠️⚠️ **有一個外部死線：2026-09-10。**

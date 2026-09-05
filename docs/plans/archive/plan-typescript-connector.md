@@ -2,7 +2,7 @@
 
 **狀態：✅ 已完成（2026-09-03）**
 
-> 設計決策與理由已升格為 [adr-044](../adr/adr-044-payload-codec-negotiation.md)（長效紀錄）。
+> 設計決策與理由已升格為 [adr-044](../../adr/adr-044-payload-codec-negotiation.md)（長效紀錄）。
 > 本文件保留執行過程與階段進度。
 
 | 階段 | 範圍 | 狀態 |
@@ -24,8 +24,8 @@
 
 | 環節 | 框架實作 | 瀏覽器對應 |
 |------|---------|-----------|
-| RSA 交握 | 2048-bit、SPKI PEM 公鑰、OAEP-SHA256（[RsaCryptor.cs](../../src/Bee.Base/Security/RsaCryptor.cs)） | `crypto.subtle.importKey('spki', …)` + `RSA-OAEP` / SHA-256 |
-| 對稱加密 | AES-256-CBC + PKCS7（[AesCbcHmacCryptor.cs](../../src/Bee.Base/Security/AesCbcHmacCryptor.cs)） | `AES-CBC`，PKCS7 由 Web Crypto 自動處理 |
+| RSA 交握 | 2048-bit、SPKI PEM 公鑰、OAEP-SHA256（[RsaCryptor.cs](../../../src/Bee.Base/Security/RsaCryptor.cs)） | `crypto.subtle.importKey('spki', …)` + `RSA-OAEP` / SHA-256 |
+| 對稱加密 | AES-256-CBC + PKCS7（[AesCbcHmacCryptor.cs](../../../src/Bee.Base/Security/AesCbcHmacCryptor.cs)） | `AES-CBC`，PKCS7 由 Web Crypto 自動處理 |
 | 完整性 | HMAC-SHA256，覆蓋 IV + 密文 | `HMAC` / SHA-256 |
 | 位元組佈局 | `[int32 ivLen][iv][int32 cipherLen][cipher][hmac32]`，little-endian | `DataView` |
 | 壓縮 | gzip | `DecompressionStream('gzip')` |
@@ -36,7 +36,7 @@
 ### 障礙：body 是自訂契約的 MessagePack
 
 `Encrypted` = AES(gzip(MessagePack(obj)))，而該 MessagePack 是
-[src/Bee.Api.Core/MessagePack/](../../src/Bee.Api.Core/MessagePack/) 下 30 餘支逐 key 對位的
+[src/Bee.Api.Core/MessagePack/](../../../src/Bee.Api.Core/MessagePack/) 下 30 餘支逐 key 對位的
 **手寫 formatter**。在 TS 重建鏡像等於建立第二個權威來源，且**沒有任何機制會發現它漂掉**——
 `WireContractDriftTests` 只擋得住 .NET 那一端。這是結構性風險，不是靠紀律能守住的：複寫的部分每次都會漂，而編譯器不看它、測試不跑它、CI 不驗它。
 
@@ -50,7 +50,7 @@
 | D. BFF 代理 | 前端打自家 BFF，BFF 內部用 .NET connector | 保留選項——見「什麼情況該改走 BFF」 |
 
 方案 C 把「跨語言長期漂移風險」換成「一次性的框架改動」。`IApiPayloadSerializer` 這個接縫
-本來就是為此存在的：[ApiPayloadOptionsFactory](../../src/Bee.Api.Core/Transformers/ApiPayloadOptionsFactory.cs)
+本來就是為此存在的：[ApiPayloadOptionsFactory](../../../src/Bee.Api.Core/Transformers/ApiPayloadOptionsFactory.cs)
 的 switch 目前只有 `messagepack` 一個 case。
 
 ### 什麼情況該改走 BFF（方案 D）
@@ -59,7 +59,7 @@
 
 JS 直連時 `X-Api-Key` 必然出現在前端，而它在框架裡是**應用身分**、不是連通性檢查——
 `System.Login` 刻意保留它的要求，就是為了記錄「哪個應用嘗試登入」
-（見 [ApiAuthorizationValidator.cs](../../src/Bee.Api.Core/Authorization/ApiAuthorizationValidator.cs)
+（見 [ApiAuthorizationValidator.cs](../../../src/Bee.Api.Core/Authorization/ApiAuthorizationValidator.cs)
 的 `s_noApiKeyMethods` 註解）。若該身分不可公開，本計畫救不了，得走 BFF。
 
 另需明確：瀏覽器端的 payload 加密防的是**傳輸路徑上的中介**（反向代理、WAF、log），
@@ -82,7 +82,7 @@ JS 直連時 `X-Api-Key` 必然出現在前端，而它在框架裡是**應用�
 
 `ApiPayload` 明文 envelope 增設 `codec` 欄位（預設 `messagepack`），
 server 依 request 宣告解碼，並以**同一 codec** 回應——與現行 `format` 的處理方式一致
-（[JsonRpcExecutor.cs](../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs) 用同一個 `format` 組回應）。
+（[JsonRpcExecutor.cs](../../../src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs) 用同一個 `format` 組回應）。
 
 不放 HTTP header 的理由：local provider 沒有 header，放 envelope 兩種 transport 一致。
 
@@ -93,17 +93,17 @@ server 依 request 宣告解碼，並以**同一 codec** 回應——與現行 `
 
 1. **`object` 型別成員的判別式封套（核心風險）**
    MessagePack 端以 `WireValueCode` 判別碼保住型別
-   （[WireValueFormatter.cs](../../src/Bee.Api.Core/MessagePack/WireValueFormatter.cs)），
+   （[WireValueFormatter.cs](../../../src/Bee.Api.Core/MessagePack/WireValueFormatter.cs)），
    JSON 沒有等價機制：`decimal 1.0` 與 `double 1.0` 在 JSON 都是 `1.0`，
    `Guid` / `DateTime` / `String` 都是字串。
    - **DataSet / DataTable 不受影響**——cell 值可由 column metadata 還原，
-     [DataTableJsonConverter](../../src/Bee.Base/Serialization/DataTableJsonConverter.cs) 已在做。
+     [DataTableJsonConverter](../../../src/Bee.Base/Serialization/DataTableJsonConverter.cs) 已在做。
    - **無 metadata 的 object 成員**（`Parameter.Value`、`FilterCondition.Value`）**必須**
      加判別式封套，沿用 `WireValueCode` 的既有編號（那些編號已是 wire 格式的一部分，不得重編）。
 2. **型別白名單**
    `WireTypeWhitelist` 對 `TypeName` 的既有檢查照舊。judgement point 在上一項的封套：
    凡從 wire 讀到型別判別碼就必須過白名單，等同
-   [SafeMessagePackSerializerOptions](../../src/Bee.Api.Core/MessagePack/SafeMessagePackSerializerOptions.cs)
+   [SafeMessagePackSerializerOptions](../../../src/Bee.Api.Core/MessagePack/SafeMessagePackSerializerOptions.cs)
    在 MessagePack 那端做的事。
 3. **`MaxDepth` 顯式設定**
    不依賴 System.Text.Json 預設值，比照 MessagePack 端對不可信輸入的處理。
@@ -121,7 +121,7 @@ TS 端仍須維護 assembly-qualified name 字串表（`"Bee.Api.Core.Messages.F
 
 JSON body 對此比 MessagePack 更敏感：MessagePack 寫入時轉 UTC，JSON 則寫出 offset 由讀方
 在自己的時區重新套用（可能落到別天）——見
-[DateTimeWireGuard.cs](../../src/Bee.Api.Core/JsonRpc/DateTimeWireGuard.cs) 的 remarks。
+[DateTimeWireGuard.cs](../../../src/Bee.Api.Core/JsonRpc/DateTimeWireGuard.cs) 的 remarks。
 **漏了會靜默偏移，不會報錯。**
 
 ## 階段細節
@@ -320,9 +320,9 @@ GitHub API 的 60 次/小時上限，症狀卻是「某個隨機樣本檔 403」
 TS 套件的 demo 是該套件的門面，跟著套件走；後端則指示開發者起 `samples/QuickStart.Server`，
 bee-library 因此維持純 dotnet、TS repo 維持純 npm。
 
-**與既有 JS 支援的關係**：本計畫**不取代** [adr-014](../adr/adr-014-jsonrpc-plain-public-default.md)
+**與既有 JS 支援的關係**：本計畫**不取代** [adr-014](../../adr/adr-014-jsonrpc-plain-public-default.md)
 的 Plain 路徑，它仍是 JS 前端的預設。兩條路徑的分工與 ADR-014 三條拒絕理由的逐條對照，
-見 [adr-044](../adr/adr-044-payload-codec-negotiation.md)。
+見 [adr-044](../../adr/adr-044-payload-codec-negotiation.md)。
 
 **版本對應**：TS 套件有自己的發佈節奏，不硬跟 bee-library 的版號走，但必須說得出它對應
 哪一版的 wire。最輕的做法是在套件內記一個相容的 fixture 版本，CI 以該 tag 的

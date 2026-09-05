@@ -14,9 +14,9 @@
 
 稽核的「異動」與「檢視」兩軸目前只有部署層的全域開關，**開了就對所有表單生效**：
 
-- [`FormBusinessObject.ChangeAuditEnabled()`](../../src/Bee.Business/Form/FormBusinessObject.Audit.cs) —— 只看
+- [`FormBusinessObject.ChangeAuditEnabled()`](../../../src/Bee.Business/Form/FormBusinessObject.Audit.cs) —— 只看
   `AuditLogOptions is { Enabled: true, ChangeEnabled: true }`
-- [`FormBusinessObject.AccessAuditEnabled()`](../../src/Bee.Business/Form/FormBusinessObject.Audit.cs) —— 只看
+- [`FormBusinessObject.AccessAuditEnabled()`](../../../src/Bee.Business/Form/FormBusinessObject.Audit.cs) —— 只看
   `AuditLogOptions is { Enabled: true, AccessEnabled: true }`
 - `WriteChangeAudit` 的 `IsSensitive` **硬寫 `false`**，敏感度無從表達
   （`SystemBusinessObject.WriteDeploymentAudit` 則硬寫 `true`）
@@ -25,11 +25,11 @@
 
 ### 這是既有待辦，不是新需求
 
-[ADR-027](../adr/adr-027-audit-trail.md) 的〈待辦〉第一條就寫著：
+[ADR-027](../../adr/adr-027-audit-trail.md) 的〈待辦〉第一條就寫著：
 
 > per-form 稽核規則（Odoo `auditlog.rule` 式的 admin 執行期選單，涵蓋異動 + 檢視；目前全記所有表單）
 
-[ADR-040](../adr/adr-040-audit-trail-taxonomy.md) 決策四對檢視記錄訂了三條，其中兩條**尚未實作**：
+[ADR-040](../../adr/adr-040-audit-trail-taxonomy.md) 決策四對檢視記錄訂了三條，其中兩條**尚未實作**：
 
 | 決策四要求 | 現況 |
 |-----------|------|
@@ -138,7 +138,7 @@ Enabled = true, 規則 = Inherit / 無規則列 → 依 ChangeEnabled / AccessEn
 Document Object 與業務單據的實際形狀**。埋點在 `FormBusinessObject`，單位天然就是 ProgId。
 
 > **代價**：per-ProgId 無法「只記主檔、不記明細」——DiffGram 一次把 master + detail
-> 存成一列（[ADR-027](../adr/adr-027-audit-trail.md) D5）。有此需求要等表／欄層顆粒度。
+> 存成一列（[ADR-027](../../adr/adr-027-audit-trail.md) D5）。有此需求要等表／欄層顆粒度。
 
 ### 明確不抄 Odoo 的部分
 
@@ -153,7 +153,7 @@ Document Object 與業務單據的實際形狀**。埋點在 `FormBusinessObject
 - **欄位層敏感度**（ADR-040 決策四的完整形態）—— 要動 DiffGram 過濾邏輯，範圍另計。
 - **動作層開關**（`GetData` / `Save` / `Delete` 分別）—— 檢視目前只在 `GetData` 埋一個點，動作層現階段無實際差別。
 - **使用者過濾**（Odoo `user_ids` / `users_to_exclude_ids`）—— 尚無需求。
-- **`SystemBusinessObject` 的部署層稽核** —— 依 [`DeploymentAuditEnabled()`](../../src/Bee.Business/System/SystemBusinessObject.Audit.cs)
+- **`SystemBusinessObject` 的部署層稽核** —— 依 [`DeploymentAuditEnabled()`](../../../src/Bee.Business/System/SystemBusinessObject.Audit.cs)
   的既有註解，那條刻意只受 `Enabled` 管、且刻意不可個別關閉，本計畫不動它。
 
 ## 資料模型
@@ -197,7 +197,7 @@ Document Object 與業務單據的實際形狀**。埋點在 `FormBusinessObject
 |------|------|
 | `sys_no` / `sys_rowid` / `sys_id` / `sys_name` | 框架標準四件組，比照 `st_role` / `st_api_key` |
 | **`sys_id` = ProgId**，`Length=50` | 對齊 `st_log_change.prog_id` 的長度。`uk_{0}` 唯一索引即 Odoo `unique(model_id)` 的等價物——**一張表單一筆規則** |
-| `change_mode` / `access_mode` | `AuditRuleMode` 以 `(int)` 持久化，比照 [`ChangeAuditEntry`](../../src/Bee.Definition/Logging/ChangeAuditEntry.cs) 的 `change_kind`。`DefaultValue="0"` = `Inherit` |
+| `change_mode` / `access_mode` | `AuditRuleMode` 以 `(int)` 持久化，比照 [`ChangeAuditEntry`](../../../src/Bee.Definition/Logging/ChangeAuditEntry.cs) 的 `change_kind`。`DefaultValue="0"` = `Inherit` |
 | `is_sensitive` | 型別與預設值直接對齊 `st_log_change.is_sensitive` |
 | `remark` | **不帶 `sys_` 前綴**——`st_api_key` 的 `contact` / `enabled` / `key_type` 都是不帶前綴的領域欄，`sys_` 只留給那五個框架欄。內容是「**為何要記這張表單**」，合規舉證時比規則本身有用 |
 | `sys_insert_time` | 比照 `st_role` / `st_api_key` |
@@ -214,7 +214,7 @@ Document Object 與業務單據的實際形狀**。埋點在 `FormBusinessObject
 
 #### `remark` 的 `AllowNull="true"` 是刻意的例外
 
-這違反 [`rules/database.md`](../../.claude/rules/database.md) 的預設（文字欄一律 NOT NULL），
+這違反 [`rules/database.md`](../../../.claude/rules/database.md) 的預設（文字欄一律 NOT NULL），
 但屬該規則**第 4 點明列的例外**：Oracle 的 `''` == `NULL`，
 `VARCHAR2(n) DEFAULT '' NOT NULL` 自相矛盾，fresh CREATE 下省略該欄的 INSERT 會 `ORA-01400`。
 `remark` 正是典型的「常態值為空」欄，而 `Oracle` 在 `DatabaseType` 中存在。
@@ -233,10 +233,10 @@ CompanyAuditRules    一家公司的規則快照
                      內含 Dictionary<string, AuditRule>(StringComparer.Ordinal)
 ```
 
-`Ordinal` 比照 [`CompanyRolePermissions`](../../src/Bee.Definition/Identity/CompanyRolePermissions.cs)
-的三個內部字典，符合 [`code-style.md`](../../.claude/rules/code-style.md)「識別碼型字串一律 Ordinal」。
+`Ordinal` 比照 [`CompanyRolePermissions`](../../../src/Bee.Definition/Identity/CompanyRolePermissions.cs)
+的三個內部字典，符合 [`code-style.md`](../../../.claude/rules/code-style.md)「識別碼型字串一律 Ordinal」。
 
-`CompanyAuditRules` 是**快取共用實例**，依 [`rules/definition.md`](../../.claude/rules/definition.md)
+`CompanyAuditRules` 是**快取共用實例**，依 [`rules/definition.md`](../../../.claude/rules/definition.md)
 的不可異動規則，建立後不得於 runtime mutate。
 
 #### 快取單位是 per-company，不是 per-ProgId
@@ -310,7 +310,7 @@ per-form 決議：
 
 > ⚠️ `FormBusinessObject.Write.cs` 的 `ChangeAuditEnabled()` 呼叫**已在正確位置**
 > （`Save` 前擷取 DiffGram、`Delete` 前決定是否載入 snapshot），本階段不移動這些呼叫點。
-> 但要注意 [`FormBusinessObject.Write.cs`](../../src/Bee.Business/Form/FormBusinessObject.Write.cs)
+> 但要注意 [`FormBusinessObject.Write.cs`](../../../src/Bee.Business/Form/FormBusinessObject.Write.cs)
 > 的 delete snapshot 是 `auditChange || pluginNeedsSnapshot || HasBeforeDeleteRules(schema)` 的
 > 聯集——**per-form 關掉異動記錄不得讓 plugin 看不到 snapshot**，該處註解已寫明此約束，勿破壞。
 
@@ -321,7 +321,7 @@ per-form 決議：
    `Language/{zh-TW,en-US}/AuditRule.Language.xml`。`CategoryId` = `company`。
    可用 `bee-scaffold-from-formschema` skill 由 FormSchema 反推其餘三類。
 2. **保留 ProgId** —— `SysProgIds` 新增常數（暫定 `AuditRule`），並登記進
-   [框架保留命名](../framework-reserved-names.zh-TW.md) §2。
+   [框架保留命名](../../framework-reserved-names.zh-TW.md) §2。
 3. **權限** —— 表單的 `PermissionModelId` 指向專屬模型；稽核政策的維護權限
    **不應與一般業務表單同級**。
 4. **cache-notify 失效** —— 自訂 `AuditRuleBusinessObject : FormBusinessObject`，
@@ -329,7 +329,7 @@ per-form 決議：
    - 本機立即 `IAuditRuleService.Remove(companyId)`
    - 跨節點 bump common 的 `st_cache_notify` 列 `CompanyAuditRules:{companyId}`
 
-> **這裡有一個必須明講的取捨。** [`ICacheNotifyService.Touch`](../../src/Bee.Db/CacheNotify/ICacheNotifyService.cs)
+> **這裡有一個必須明講的取捨。** [`ICacheNotifyService.Touch`](../../../src/Bee.Db/CacheNotify/ICacheNotifyService.cs)
 > 的 XML doc 要求 bump 與資料變更**同一個 `DbTransaction`**，而 `IDataFormRepository.Save`
 > 把交易完全收在自己內部、`DoAfterSave` 拿不到 handle——所以這裡的 bump 落在 commit **之後**、
 > 獨立交易。
@@ -341,7 +341,7 @@ per-form 決議：
 > 代價不成比例。
 >
 > 跨庫本身**不是**新問題：資料在公司資料庫、notify 列在 common，這正是
-> [`RolePermissionService`](../../src/Bee.ObjectCaching/Services/RolePermissionService.cs)
+> [`RolePermissionService`](../../../src/Bee.ObjectCaching/Services/RolePermissionService.cs)
 > 已經寫進契約的既有模式（`CacheNotifyOptions.DatabaseId` 預設 `common`，poller 只看這一個庫）。
 
 5. **政策變更本身要留痕** —— `st_audit_rule` 走標準 `Save` 路徑，其異動**會被異動記錄記到**。
@@ -352,11 +352,11 @@ per-form 決議：
 
 | 項目 | 狀態 |
 |------|------|
-| **[ADR-041](../adr/adr-041-per-form-audit-rule.md)** —— 新立，收斂七項決策與「明確不納入」清單 | ✅ |
+| **[ADR-041](../../adr/adr-041-per-form-audit-rule.md)** —— 新立，收斂七項決策與「明確不納入」清單 | ✅ |
 | **ADR-027** —— 〈待辦〉第一條結案，指向 ADR-041 | ✅ |
 | **ADR-040** —— 決策四補記實作進度，明列欄位層敏感度與動作層維度**未做** | ✅ |
-| **[框架保留命名](../framework-reserved-names.zh-TW.md)** —— §1.2 加表、§2 加 progId，雙語 | ✅（階段 2 一併完成） |
-| **[術語表](../terminology.zh-TW.md)** —— 四個新公開型別，雙語 | ✅ |
+| **[框架保留命名](../../framework-reserved-names.zh-TW.md)** —— §1.2 加表、§2 加 progId，雙語 | ✅（階段 2 一併完成） |
+| **[術語表](../../terminology.zh-TW.md)** —— 四個新公開型別，雙語 | ✅ |
 | **CHANGELOG** | ⏸️ **刻意延後至發版** |
 | **`docs/development-constraints.md`** | ❌ **判定不適用** |
 
@@ -373,7 +373,7 @@ per-form 決議：
 **資料庫相依快取**（經 `ICacheDataSourceProvider`），不走 `IDefineAccess`。
 既有的 `CompanyRolePermissions` / `DepartmentTree` 同樣不在該清單裡，
 只補 `CompanyAuditRules` 反而不一致。本次的防護因此落在
-[`CompanyAuditRules`](../../src/Bee.Definition/Logging/CompanyAuditRules.cs) 的
+[`CompanyAuditRules`](../../../src/Bee.Definition/Logging/CompanyAuditRules.cs) 的
 XML doc `WARNING` 上。
 
 > **順帶發現的既有缺口（已另案補齊）**：該章原本完全沒有涵蓋 DB 相依快取，
@@ -394,7 +394,7 @@ XML doc `WARNING` 上。
 
 ## 測試
 
-依 [`rules/testing.md`](../../.claude/rules/testing.md)，碰 DB 一律 `SharedDbFixture` + `[DbFact]`：
+依 [`rules/testing.md`](../../../.claude/rules/testing.md)，碰 DB 一律 `SharedDbFixture` + `[DbFact]`：
 
 階段 1 已完成（✅ 標示者）：
 
@@ -426,7 +426,7 @@ XML doc `WARNING` 上。
 
 ## 相關
 
-- [ADR-027：資料軌跡 / 稽核日誌](../adr/adr-027-audit-trail.md) —— 本計畫結案其〈待辦〉第一條
-- [ADR-040：稽核軌跡的分類軸與寫入策略](../adr/adr-040-audit-trail-taxonomy.md) —— 決策四是本計畫的規格來源
-- [ADR-017：DB cache 失效](../adr/adr-017-db-cache-invalidation.md) —— 階段 2 失效鏈的機制
-- [框架保留命名](../framework-reserved-names.zh-TW.md) —— 新表與新 ProgId 的登記處
+- [ADR-027：資料軌跡 / 稽核日誌](../../adr/adr-027-audit-trail.md) —— 本計畫結案其〈待辦〉第一條
+- [ADR-040：稽核軌跡的分類軸與寫入策略](../../adr/adr-040-audit-trail-taxonomy.md) —— 決策四是本計畫的規格來源
+- [ADR-017：DB cache 失效](../../adr/adr-017-db-cache-invalidation.md) —— 階段 2 失效鏈的機制
+- [框架保留命名](../../framework-reserved-names.zh-TW.md) —— 新表與新 ProgId 的登記處

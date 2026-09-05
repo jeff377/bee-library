@@ -28,8 +28,8 @@
 
 **已有的**
 
-- `AesCbcHmacCryptor` — payload 完整性（[AesCbcHmacCryptor.cs](../../src/Bee.Base/Security/AesCbcHmacCryptor.cs)）
-- `ApiAccessValidator` — AccessToken 驗證 + 加密等級強制（[ApiAccessValidator.cs](../../src/Bee.Api.Core/Validator/ApiAccessValidator.cs)）
+- `AesCbcHmacCryptor` — payload 完整性（[AesCbcHmacCryptor.cs](../../../src/Bee.Base/Security/AesCbcHmacCryptor.cs)）
+- `ApiAccessValidator` — AccessToken 驗證 + 加密等級強制（[ApiAccessValidator.cs](../../../src/Bee.Api.Core/Validator/ApiAccessValidator.cs)）
 - `SessionInfoCache` — process-wide 記憶體快取，key 為 accessToken，每次驗證本來就會取
 - 一次性 session（`CreateSessionArgs.OneTime`）
 - anomaly log 管線，已有 `AnomalyKind.Unauthorized` 這類「呼叫被拒」的先例
@@ -44,7 +44,7 @@
 ### D1：frame header 放進加密封套，不放 `ApiPayload` 欄位
 
 **這推翻了初期的直覺方案。** `ApiPayload` 的 `Format` / `TypeName` 是**明文信封**，
-只有 `Value` 被加密（見 [ApiPayloadConverter.cs](../../src/Bee.Api.Core/JsonRpc/ApiPayloadConverter.cs)
+只有 `Value` 被加密（見 [ApiPayloadConverter.cs](../../../src/Bee.Api.Core/JsonRpc/ApiPayloadConverter.cs)
 的 `TransformTo`）。在 `ApiPayload` 上新增 `Timestamp` / `Sequence` 屬性，這兩個值會落在
 明文層、不受 HMAC 保護，攻擊者可以任意改寫——等於沒防。
 
@@ -122,7 +122,7 @@ connector 各自從 0 遞增，同一 token 就會送出重複序號，第二個
 
 **D1 的 version 位元組解決不了這一刻的問題**——舊 client 送的封包根本沒有那個 byte，
 新 server 讀第一個 byte 會讀到 body 的內容。而框架目前**沒有任何 client / server 版本
-協商機制**（[ApiConnectValidator](../../src/Bee.Api.Client/ApiConnectValidator.cs) 只驗
+協商機制**（[ApiConnectValidator](../../../src/Bee.Api.Client/ApiConnectValidator.cs) 只驗
 端點型態），所以無法靠協商繞過。
 
 **不可用明文 flag 標示「本封包有無 frame」**：那是典型的降級攻擊面，攻擊者把 flag 改掉，
@@ -145,7 +145,7 @@ connector 各自從 0 遞增，同一 token 就會送出重複序號，第二個
 **v1 固定 17 bytes**：`version(1) | timestamp(8, Unix ms, big-endian) | sequence(8, big-endian)`。
 
 **位置在壓縮之後、加密之前。** `IApiPayloadTransformer.Encode` 已包含 Serialize + Compress
-（見 [ApiPayloadTransformer.cs](../../src/Bee.Api.Core/Transformers/ApiPayloadTransformer.cs)），
+（見 [ApiPayloadTransformer.cs](../../../src/Bee.Api.Core/Transformers/ApiPayloadTransformer.cs)），
 frame 前置於 `Encode` 的輸出。因此接收端解密後可直接讀 frame，剝離後才 `Decode`。
 
 **伺服器不偵測 frame 是否存在**——依 D8，設定要求 frame 就一律把前 17 bytes 當 frame 讀。
@@ -180,7 +180,7 @@ response 方向的 frame 目前是純開銷（17 bytes），但也預留了日�
 
 **序號可以從 0 開始，不需要時間成分。** 曾考慮 Snowflake 式（高位塞 Unix ms）以應付
 client 重啟後序號重來，查證後不需要：`ApiSessionContext.ApiEncryptionKey` 只活在記憶體
-（[ApiSessionContext.cs](../../src/Bee.Api.Client/ApiSessionContext.cs)），client 重啟
+（[ApiSessionContext.cs](../../../src/Bee.Api.Client/ApiSessionContext.cs)），client 重啟
 必然重新登入換到新 accessToken，而視窗是 per-token，新 token 即全新視窗。
 
 ### D10：序號不解決重試，冪等鍵才解——這是行為變化
@@ -194,7 +194,7 @@ client 重啟後序號重來，查證後不需要：`ApiSessionContext.ApiEncryp
 **冪等鍵不納入本計畫範圍**，但因此必須明講：開啟序號檢查後，逾時重送會失敗而非重試成功。
 
 查證結果：框架目前**沒有自動重試**——`RemoteApiProvider` 直接呼叫 `HttpUtilities.PostAsync`，
-用戶端沒有 retry 迴圈或 Polly（[RemoteApiProvider.cs](../../src/Bee.Api.Client/Providers/RemoteApiProvider.cs)），
+用戶端沒有 retry 迴圈或 Polly（[RemoteApiProvider.cs](../../../src/Bee.Api.Client/Providers/RemoteApiProvider.cs)），
 所以開啟 anti-replay 不會打壞既有框架行為。但**應用層自己包的重試迴圈、以及使用者手動
 「重新送出」都會踩到**，須寫入 D8 的升級指引。
 
@@ -244,7 +244,7 @@ JS 呼叫端該走哪條路，需要獨立評估，不應綁在本計畫的交�
 不在本計畫範圍內擴大處理。
 
 **日後若重啟提升議題**，還有一個相容風險要一併處理：`ApiConnector` 在沒有傳輸金鑰時會把
-`Encrypted` 自動降級為 `Encoded`（[ApiConnector.cs](../../src/Bee.Api.Client/Connectors/ApiConnector.cs)），
+`Encrypted` 自動降級為 `Encoded`（[ApiConnector.cs](../../../src/Bee.Api.Client/Connectors/ApiConnector.cs)），
 因此提升後任何未建立傳輸金鑰的部署，`Save` / `Delete` 會直接失敗。`IsLocalCall` 則不受影響
 （`ValidateAccess` 對 local 呼叫直接 return，不檢查格式）。
 
@@ -307,7 +307,7 @@ JS 呼叫端該走哪條路，需要獨立評估，不應綁在本計畫的交�
 - `AnomalyKind.Replay`（= 7），於 `JsonRpcExecutor.LogApiFailureAnomaly` 分類。
   整合點選在既有的失敗記錄路徑而非新開一條——比照 `Unauthorized` 那種 transport 層寫入
   並不適用，重放拒絕是 executor 內部丟出的例外。
-- [ADR-042](../adr/adr-042-api-replay-protection.md) —— 七項決策 + 三項明確不納入
+- [ADR-042](../../adr/adr-042-api-replay-protection.md) —— 七項決策 + 三項明確不納入
 - `docs/development-constraints.md` / `.zh-TW.md` —— 新增「API 重放防護限制」四條
 - `src/Bee.Api.Core/README.md` / `.zh-TW.md` —— 新增「重放防護」小節
 - 1 個測試（重放拒絕記為 `Replay` 而非 `Error`）

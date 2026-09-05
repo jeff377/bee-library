@@ -45,7 +45,7 @@ FormBusinessObject.ResolveAuditRule()
   → SELECT ... FROM st_company WHERE sys_id='NORTHWIND' AND enabled=1
 ```
 
-**關鍵在倒數第二步**：[`CacheDataSourceProvider.GetCompanyAuditRules`](../../src/Bee.Business/Providers/CacheDataSourceProvider.cs)
+**關鍵在倒數第二步**：[`CacheDataSourceProvider.GetCompanyAuditRules`](../../../src/Bee.Business/Providers/CacheDataSourceProvider.cs)
 解析公司走的是 `ICompanyRepository`（資料表），**不是**案例替換掉的 `ICompanyInfoService`。
 而案例的 `st_company` 是空的 —— 實測 `apps/Bee.Northwind/Bee.Northwind.Server/northwind.db`：
 
@@ -69,7 +69,7 @@ FormBusinessObject.ResolveAuditRule()
 
 ### 錯誤 2：session 重建會掉公司，而應用層補不了
 
-[`NorthwindSystemBusinessObject.Login`](../../apps/Bee.Northwind/Bee.Northwind.Server/NorthwindSystemBusinessObject.cs)
+[`NorthwindSystemBusinessObject.Login`](../../../apps/Bee.Northwind/Bee.Northwind.Server/NorthwindSystemBusinessObject.cs)
 只寫**快取**：
 
 ```csharp
@@ -90,11 +90,11 @@ value that cannot be derived, so a rebuild that missed it would silently drop th
 "no company".」*
 
 案例正是那個 rebuild 掉公司的情形。快取被逐出或伺服器重啟之後，
-[`CacheDataSourceProvider.GetSessionInfo`](../../src/Bee.Business/Providers/CacheDataSourceProvider.cs)
+[`CacheDataSourceProvider.GetSessionInfo`](../../../src/Bee.Business/Providers/CacheDataSourceProvider.cs)
 從 `st_session.session_user_xml` 讀回的種子 `CompanyId` 是 `null`，
 `if (StringUtilities.IsNotEmpty(seed.CompanyId))` 不成立 → 跳過 `Bind` →
 回來一個沒有公司的 session → 下一次任何 `CategoryId="company"` 表單在
-[`RepositoryDatabaseRouter`](../../src/Bee.Repository/RepositoryDatabaseRouter.cs)
+[`RepositoryDatabaseRouter`](../../../src/Bee.Repository/RepositoryDatabaseRouter.cs)
 擲 `CompanyNotEnteredException`。徵狀：**demo 重啟後，前端還握著 token，
 但每一張表單都開不起來，直到重新登入。**
 
@@ -121,7 +121,7 @@ value that cannot be derived, so a rebuild that missed it would silently drop th
 （`NorthwindSchemaSeeder.FrameworkTableSchemaPrefixes`），框架隨附的
 `TableSchema/company/st_role*.xml` 從未被複製過。實測 `northwind.db` 裡一張都沒有。
 
-而 [`RolePermissionRepository`](../../src/Bee.Repository/System/RolePermissionRepository.cs)
+而 [`RolePermissionRepository`](../../../src/Bee.Repository/System/RolePermissionRepository.cs)
 的 `GetRoleGrants` / `GetUserRoles` **沒有 schema 探測保護**（`AuditRuleRepository.GetRules`
 有，會回 `[]`），直接 `SELECT ... FROM st_role_grant`。
 
@@ -154,7 +154,7 @@ value that cannot be derived, so a rebuild that missed it would silently drop th
 
 ### 階段 2：前端（一個檔、約四行）
 
-[`LoginViewModel.LoginAsync`](../../apps/Bee.Northwind/Bee.Northwind.UI/ViewModels/LoginViewModel.cs)
+[`LoginViewModel.LoginAsync`](../../../apps/Bee.Northwind/Bee.Northwind.UI/ViewModels/LoginViewModel.cs)
 在 `ClientInfo.ApplyLoginResult(response)` 之後補：
 
 ```csharp
@@ -188,7 +188,7 @@ ClientInfo.ApplyEnterCompanyResult(company);
 
 | 疑慮 | 查證結果 |
 |------|---------|
-| 角色為空會不會讓表單開不起來 | **不會。** 伺服端 [`FormBusinessObject.Permission`](../../src/Bee.Business/Form/FormBusinessObject.Permission.cs) 在 `PermissionModelId` 為空時整段 no-op；前端 [`ElementCapabilityResolver.Can`](../../src/Bee.UI.Core/Permissions/ElementCapabilityResolver.cs) 同樣 `modelId` 為空即回 `true`。案例八張表單一張都沒宣告 `PermissionModelId`（新增的 `AuditRule` 也刻意拿掉了）。 |
+| 角色為空會不會讓表單開不起來 | **不會。** 伺服端 [`FormBusinessObject.Permission`](../../../src/Bee.Business/Form/FormBusinessObject.Permission.cs) 在 `PermissionModelId` 為空時整段 no-op；前端 [`ElementCapabilityResolver.Can`](../../../src/Bee.UI.Core/Permissions/ElementCapabilityResolver.cs) 同樣 `modelId` 為空即回 `true`。案例八張表單一張都沒宣告 `PermissionModelId`（新增的 `AuditRule` 也刻意拿掉了）。 |
 | `Capabilities` 從 `null` 變成空字典會不會讓 UI 全降級 | **不會**，理由同上（空 `modelId` 先短路）。 |
 | 欄位軸（`SensitiveCategory`）會不會被降級 | **不會。** 案例 Define 底下 `SensitiveCategory` 出現 **0 次**。 |
 | `CustomizeId` 會不會斷 | **不會**，但**必須 seed `customize_id`**。改動後由 `SessionCompanyBinder` 從 `CompanyInfo` 抄，語意與現在完全相同，只是來源從硬編碼換成資料表。 |
@@ -208,7 +208,7 @@ ClientInfo.ApplyEnterCompanyResult(company);
 沿用會得到 `AccessToken is required or invalid`，讀起來像 session 出問題而不是變數過期。
 
 第一版就是這樣寫的，由第五節的探針抓出來。已在
-[`LoginViewModel`](../../apps/Bee.Northwind/Bee.Northwind.UI/ViewModels/LoginViewModel.cs)
+[`LoginViewModel`](../../../apps/Bee.Northwind/Bee.Northwind.UI/ViewModels/LoginViewModel.cs)
 留下 WARNING 註解。
 
 ---
@@ -270,4 +270,4 @@ ClientInfo.ApplyEnterCompanyResult(company);
 
 - [plan-per-form-audit-rule.md](plan-per-form-audit-rule.md) —— 稽核規則本體（標記已完成，
   但如第二節所述，它在唯一一個實際部署上沒有生效）
-- [adr-041](../adr/adr-041-per-form-audit-rule.md) —— per-form 稽核規則的決策紀錄
+- [adr-041](../../adr/adr-041-per-form-audit-rule.md) —— per-form 稽核規則的決策紀錄

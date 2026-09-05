@@ -1,6 +1,6 @@
 # 計畫：業務 plugin 設定檔標記時點（重啟 ADR-035 決策三）
 
-**狀態：✅ 已完成（2026-09-05）—— 三階段全數落地，掛在 4.29.0（版號檔尚未 bump、tag 未推）**
+**狀態：✅ 已完成（2026-09-05）—— 三階段全數落地，隨 4.29.0 發佈**
 
 ## 背景
 
@@ -9,7 +9,7 @@
 > 我認為在設定檔中要標記時點，這樣比較明確。直接看 xml 就知道有那些時間有外掛。
 
 這**不是補一個漏掉的功能**，而是重啟
-[adr-035](../adr/adr-035-business-logic-plugin.md) 的**決策三：設定檔只列型別，時點由類別自己
+[adr-035](../../adr/adr-035-business-logic-plugin.md) 的**決策三：設定檔只列型別，時點由類別自己
 override**。該節明文否決了「設定檔明寫『時點 × 型別』」，並且承認被否決的方案
 「設定檔可讀性與儲存時的驗證精確度都比較好」。
 
@@ -58,7 +58,7 @@ ADR 當初把這件事看成「一個需求被迫拆成兩個類別」（損失�
 
 ### 設定檔一筆繫結只有一個屬性
 
-[`PluginItem.cs`](../../src/Bee.Definition/Settings/PluginSettings/PluginItem.cs) 只有一個
+[`PluginItem.cs`](../../../src/Bee.Definition/Settings/PluginSettings/PluginItem.cs) 只有一個
 `[XmlAttribute] public string Type`，而它就是 `base.Key`；基底 `KeyCollectionItem` 的每個成員都是
 `[XmlIgnore, JsonIgnore]`。實際序列化輸出：
 
@@ -76,13 +76,13 @@ ADR 當初把這件事看成「一個需求被迫拆成兩個類別」（損失�
 
 ### 時點的唯一來源是執行期反射
 
-[`FormPluginChain.OverriddenStages`](../../src/Bee.Business/Form/FormPluginChain.cs) 以
+[`FormPluginChain.OverriddenStages`](../../../src/Bee.Business/Form/FormPluginChain.cs) 以
 `method.DeclaringType != typeof(FormBusinessPlugin)` 判四個方法各自有沒有被覆寫。
 `FormPluginStage` 這個型別住在 **`Bee.Business`**，在 `Bee.Definition` 裡零命中。
 
 ### 反射結果有一個 IO 決策直接吃它
 
-[`FormBusinessObject.Write.cs:214`](../../src/Bee.Business/Form/FormBusinessObject.Write.cs)：
+[`FormBusinessObject.Write.cs:214`](../../../src/Bee.Business/Form/FormBusinessObject.Write.cs)：
 `pluginNeedsSnapshot` 用 `Chain.HasStage(BeforeDelete/AfterDelete)` 決定刪除前要不要多讀一次資料。
 時點資訊錯了不只是「跑錯 plugin」，而是「plugin 拿到 `null` snapshot」。
 
@@ -188,7 +188,7 @@ Business 端改用定義層那一個。**
 
 ## `EnsureInstances` 應改為按需建構
 
-[`FormPluginRunner.EnsureInstances`](../../src/Bee.Business/Form/FormPluginRunner.cs)
+[`FormPluginRunner.EnsureInstances`](../../../src/Bee.Business/Form/FormPluginRunner.cs)
 目前**一建就建整條鏈**，包含只掛 Delete 時點的 plugin ——
 在舊設計下這是必要的（同實例要跨時點被找到），新設計下**純屬浪費**：
 一個實例只會被一個時點呼叫，Save 操作沒有理由建構 Delete-only 的 plugin。
@@ -265,7 +265,7 @@ PluginStage { None = 0, BeforeSave = 1, AfterSave = 2, BeforeDelete = 3, AfterDe
 
 - 新增 `Settings/PluginSettings/PluginStage.cs`：純列舉（**非 `[Flags]`**），
   `None = 0` 起頭（理由見上節），其後 `BeforeSave / AfterSave / BeforeDelete / AfterDelete`。
-- [`PluginItem.cs`](../../src/Bee.Definition/Settings/PluginSettings/PluginItem.cs)
+- [`PluginItem.cs`](../../../src/Bee.Definition/Settings/PluginSettings/PluginItem.cs)
   加 `[XmlAttribute] public PluginStage Stage { get; set; }`。
   既有 `PluginItem(string type)` **直接改成** `PluginItem(string type, PluginStage stage)`，
   不留多載 —— 既然無消費者就沒有二進位相容負擔，而留著舊那支等於留一個
@@ -273,13 +273,13 @@ PluginStage { None = 0, BeforeSave = 1, AfterSave = 2, BeforeDelete = 3, AfterDe
   **公開的無參數建構子必須保留**（`XmlSerializer` 的 reflection-only 路徑要用）。
 - `PluginItemCollectionExtensions.Add` 同理**直接換簽章**，不留舊多載。
   （擴充方法不受「集合只能有一個 public instance `Add`」的限制 —— 那條只管 instance 方法。）
-- [`PluginSettings.GetPluginTypes(progId)`](../../src/Bee.Definition/Settings/PluginSettings/PluginSettings.cs)
+- [`PluginSettings.GetPluginTypes(progId)`](../../../src/Bee.Definition/Settings/PluginSettings/PluginSettings.cs)
   目前回 `IReadOnlyList<string>`，資訊量不足 → 換成回傳型別與時點的成對結果。
   引入 `readonly record struct PluginBinding(string Type, PluginStage Stage)`
   （**不要**直接回 `PluginItem`：那是 cache 內的實例，交出去等於開放 mutate，
   違反 `rules/definition.md` 的 cache 不可異動）。
   依 `code-style.md`「消除純 facade」，舊的 `GetPluginTypes` **移除**而非留成 1-line wrapper。
-- [`CustomizeOverlay.GetPluginTypes`](../../src/Bee.Definition/Customization/CustomizeOverlay.cs)
+- [`CustomizeOverlay.GetPluginTypes`](../../../src/Bee.Definition/Customization/CustomizeOverlay.cs)
   同步換型別；兩層相加語意、base 在前、無移除語意**皆不變**。
 - `PublicAPI.Unshipped.txt`：新增成員入列；被移除／換簽章的成員從 `Shipped` 移除。
   **commit message 仍須說明二進位相容性判定** —— 判定結論是「不相容但可接受，因為無消費者」，
@@ -291,18 +291,18 @@ PluginStage { None = 0, BeforeSave = 1, AfterSave = 2, BeforeDelete = 3, AfterDe
 ### 階段 2 —— `src/Bee.Business`
 
 - **移除** `Form/FormPluginStage.cs`，全檔改用 `Bee.Definition.Settings.PluginStage`。
-- [`FormPluginChain`](../../src/Bee.Business/Form/FormPluginChain.cs)：
+- [`FormPluginChain`](../../../src/Bee.Business/Form/FormPluginChain.cs)：
   `Entry` 由 `Stages[]` 改為單一 `Stage`；`Create` 改為同時收型別與宣告時點，於建構時對帳
   （覆寫數 ≠ 1 或 ≠ 宣告值即拋，訊息列出實際覆寫了哪些）。
   `HasStage` 化簡為相等比較。`TypesForStage` 保留（0 caller，但屬框架公開 API，
   且不是 BCL wrapper —— `code-style.md` 的保留條件）。
-- [`FormPluginRunner`](../../src/Bee.Business/Form/FormPluginRunner.cs)：
+- [`FormPluginRunner`](../../../src/Bee.Business/Form/FormPluginRunner.cs)：
   `EnsureInstances` 改按需建構（見上節）；類別註解整段改寫。
-- [`PluginSettingsResolver.BuildChain`](../../src/Bee.Business/Form/PluginSettingsResolver.cs)：
+- [`PluginSettingsResolver.BuildChain`](../../../src/Bee.Business/Form/PluginSettingsResolver.cs)：
   把宣告一路帶到 `FormPluginChain.Create`；缺 `Stage` 的舊格式拋出自我遷移訊息。
-- [`SystemBusinessObject.ValidatePluginType`](../../src/Bee.Business/System/SystemBusinessObject.Plugin.cs)：
+- [`SystemBusinessObject.ValidatePluginType`](../../../src/Bee.Business/System/SystemBusinessObject.Plugin.cs)：
   現行的「至少覆寫一個時點」升級為「恰好覆寫一個，且等於宣告」；`ValidatePluginBindings` 傳入宣告。
-- [`FormBusinessObject.Write.cs:214`](../../src/Bee.Business/Form/FormBusinessObject.Write.cs)
+- [`FormBusinessObject.Write.cs:214`](../../../src/Bee.Business/Form/FormBusinessObject.Write.cs)
   `pluginNeedsSnapshot`：介面不變（仍問 `Chain.HasStage`），語意來源改為宣告。
   對帳成立時值等同今日，**該處無行為變更**。
 - 測試：宣告與覆寫不符（多、少、錯）皆拋；
@@ -311,7 +311,7 @@ PluginStage { None = 0, BeforeSave = 1, AfterSave = 2, BeforeDelete = 3, AfterDe
 
 ### 階段 3 —— 文件
 
-- [adr-035](../adr/adr-035-business-logic-plugin.md) 決策三改寫（見上節）。
+- [adr-035](../../adr/adr-035-business-logic-plugin.md) 決策三改寫（見上節）。
 - 公開文件雙語同步（`rules/public-docs.md`）：
   `docs/customization.md` / `.zh-TW.md`（XML 範例在 143 / 129 行附近）、
   `docs/development-cookbook.md` / `.zh-TW.md`（470 / 452 行附近）、

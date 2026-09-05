@@ -24,7 +24,7 @@ flake 又重現不出來，判定維持觀察）。
 方法：10 個平行唯讀子代理分面向全量掃描 → 交叉去重 → P0/P1 主代理複驗（含執行期 probe 與實測）。
 
 - 基準版本：**v4.27.0**（`Version.props`），HEAD `93ef5713`
-- 上輪體檢：2026-08-11（[plan-framework-review-2026-08-11.md](archive/plan-framework-review-2026-08-11.md)，基準 v4.19.0、HEAD `227daa70`）
+- 上輪體檢：2026-08-11（[plan-framework-review-2026-08-11.md](plan-framework-review-2026-08-11.md)，基準 v4.19.0、HEAD `227daa70`）
 - 期間變更：**165 commits**（自 `227daa70`；自 `v4.19.0` tag 起為 177，tag 與上輪體檢 HEAD 之間有 12 個），
   `src/` 312 檔異動（+8,487 / −4,107），新增 64 檔 / 刪除 15 檔，跨 8 個 minor，**11 筆破壞性變更**
 - 佐證：clean Release build **0 警告 / 0 錯誤**；`./test.sh` 16 個測試專案、**5,827 通過 / 1 略過（RSA）**，
