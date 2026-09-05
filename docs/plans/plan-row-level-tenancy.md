@@ -9,8 +9,8 @@
 | 3 | 強制過濾：repository 綁定公司，讀寫一律注入條件；INSERT 蓋章 | 📝 待做 |
 | 4 | AnyCode 破口收斂、既有部署遷移、文件 | 📝 待做 |
 
-> 承接 [plan-session-persistence.md](archive/plan-session-persistence.md)。該 plan 已完成，`st_session`
-> 的 `CompanyId` 目前存在 `session_user_xml` 內；階段 1 把它提升為獨立欄位並改用本 plan 的命名。
+> `st_session` 的 `CompanyId` 目前存在 `session_user_xml` 內（`SessionInfo` 持久化機制，2026-07-30 落地）；
+> 階段 1 把它提升為獨立欄位並改用本 plan 的命名。
 
 ## 背景與目標
 

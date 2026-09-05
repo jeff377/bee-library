@@ -20,7 +20,7 @@ namespace Bee.Api.Core.UnitTests.Contracts
     /// 兩個 serializer 策略對齊 bee wire 真實路徑:MessagePack 走 <see cref="MessagePackCodec"/>
     /// （含 SafeMessagePackSerializerOptions + 自訂 formatter + resolver 鏈）、JSON 走
     /// <see cref="JsonCodec"/>（含 DataSet/DataTable converter、camelCase、enum-as-string、
-    /// IObjectSerialize 生命週期 hook）。計畫見 docs/plans/plan-api-contract-serialization-tests.md。
+    /// IObjectSerialize 生命週期 hook）。
     /// </remarks>
     public class ApiContractSerializationTests
     {

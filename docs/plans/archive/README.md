@@ -11,6 +11,7 @@
 
 > **保留期限**：封存滿一個月的 plan 會被清除，git 歷史仍可追溯。
 > 2026-08-20 首次清理，移除 20 份 2026-07-20 以前完成者。
+> 2026-09-06 第二次清理，移除 28 份 2026-08-06 以前完成者。
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
@@ -26,6 +27,7 @@
 | [異常日誌寫入介面自稽核軌跡拆出](plan-anomaly-writer-split.md) | 2026-08-24 | 依 [adr-040](../../adr/adr-040-audit-trail-taxonomy.md) 決策二的分界（稽核 vs observability）把寫入介面拆成兩個：`AnomalyEntry` 基底 + `IAnomalyLogWriter`。破壞性變更刻意全押在同一階段——純加法那半的中間狀態沒有價值 |
 | [CI 依條件決定跑哪些資料庫測試](plan-ci-db-scope.md) | 2026-08-21 | 日常 push 只起 SQL Server + SQLite（精簡模式，跳過 Sonar），四種資料庫全跑需 commit message 帶 `[all-db]` 或手動 dispatch。實測 479 → **195 秒**（省 59%）——四種資料庫的測試合計只花 77 秒，四個容器起來卻要 104 秒，成本在容器啟動而非測試本身。**明確不採用**依變更路徑自動判定：判定規則會與實際相依關係漂移，且誤判方向是「該跑卻沒跑」的靜默失效 |
 | [FormLayout 收回設計階段，移除執行階段自動推導](plan-formlayout-design-time-only.md) | 2026-08-20 | 版面改為設計階段產出並存檔，執行階段不再由 `FormSchema` 推導；移除 `FormSchema.GetFormLayout`、產生器轉公開 API、`FormView.Layout` 與 DefineEditor 產生入口。隨 4.23.0 發佈，決策見 [ADR-039](../../adr/adr-039-formlayout-design-time-only.md) |
+| [定義編輯器：把宣告式 metadata 接回來](plan-definition-editor.md) | 2026-08-17（已拆分） | **本 plan 未執行即被拆為兩份獨立 plan**——TreeView 吃 `TreeNodeAttribute`、PropertyGrid 吃 `PropertyDescriptor`，兩者無共用程式碼，拆開可並行。後續進度見上層索引的 `plan-tree-view-builder.md` 與 `plan-property-grid-control.md` |
 | [Northwind 案例走進客製覆蓋層](plan-northwind-customize-layer.md) | 2026-08-18 | 案例（`apps/Bee.Northwind`）首次接上客製覆蓋層：租戶客製語系資源改寫訂單表單的客戶欄標題，另加一份整份取代的 Order `FormLayout` 示範疊加粒度。**框架端不動**——`CustomizeOverlay` / `CustomizeDefineReader` 機制本就完好，缺的只有案例接線。獨立 repo `bee-northwind-avalonia` 之後另一輪同步 |
 | [框架全面體檢（2026-08-07）](plan-framework-review-2026-08-07.md) | 2026-08-16（過期封存） | 十一面向唯讀體檢（基準 v4.17.0）。P0 / P3 全數落地，P1 / P2 部分完成；**未結的 P1 / P2 / P4 項目隨基準版本推進而過期，不再由本 plan 追蹤**，現象是否仍成立須重新確認。續輪見同目錄的 2026-08-11 體檢；移交的 D-3 / D-5 由 [plan-property-grid-control.md](../plan-property-grid-control.md) 與 [plan-tree-view-builder.md](../plan-tree-view-builder.md) 承接 |
 | [XML doc 漂移全 repo 盤點與修正](plan-xmldoc-drift-audit.md) | 2026-08-15 | 對 `src/**/*.cs` 的 991 檔／26,263 行 `///` 做四類全掃，修掉 10 筆 A 級實質錯誤（其中 8 筆是清點數字漂掉）與 1 筆過期敘述。落地兩道閘門：`check-xmldoc-refs.sh` 掃 `<c>` 懸空識別字，`code-style.md` 加上「散文提到自家型別一律用 `<see cref>`」與「不寫程式碼構件的清點數字」 |
@@ -39,31 +41,3 @@
 | [修復行動端（iOS）AOT 下的 MessagePack wire 路徑](plan-mobile-aot-wire.md) | 2026-08-10 | wire 型別全面脫離 contractless 改顯式註冊、`object` 成員改判別式封套；`DynamicCodeSupport=false` 納入回歸閘門（ADR-037） |
 | [解除 Bee.Definition 對 MessagePack 的相依](plan-definition-messagepack-decoupling.md) | 2026-08-09 | 定義層移除全部標註與 `PackageReference`，wire 綁定改由 `Bee.Api.Core` 的手寫 formatter 承擔（ADR-036） |
 | [盤點 `IObjectSerialize*` 家族並移除孤兒介面](plan-serialization-interface-cleanup.md) | 2026-08-09 | 移除 `IObjectSerializeProcess` 與隨之失效的 `SerializeFormat`；`IObjectSerializeEmpty` 盤點後推翻原訂移除，改補設計意圖 XML doc |
-| [業務邏輯 plugin](plan-customization-plugin.md) | 2026-08-06 | `PluginSettings.xml`：四個掛載點、每次操作一個實例、兩層相加；`LocalOnly` 維護 API 與客製層第一條寫入路徑 |
-| [BO 擴充點的交易邊界契約](plan-bo-transaction-contract.md) | 2026-08-05 | 明訂只有 `Do*` 在交易中；裁決其他 BO 方法不拆三段、交易不上提到 BO 層 |
-| [客製 BO 與 Repository 類別](plan-customization-business.md) | 2026-08-05 | `ProgramItem` 改屬性級繼承（只換 BO 不再打掉套裝 Repository）；解析失敗改為降級 + log |
-| [ProgramSettings 型別註冊表化與 Repository 取得機制統一](plan-progid-type-registry.md) | 2026-08-04 | 選單分離為 `MenuSettings`、BO 解析全面 ProgId 化、三個工廠合併為 `IRepositoryFactory` |
-| [部署層管理員（不綁公司的營運權限）](plan-deployment-admin.md) | 2026-08-03 | `IDeploymentAuthorizationService`：不屬於任何公司的資產的授權路徑 |
-| [API Key 存放機制與預設驗證強化](plan-api-key-store.md) | 2026-08-03 | `st_api_key` + 兩段式金鑰 + 雜湊存放；呼叫端識別落進稽核、生命週期與輪替 |
-| [客製化共同前置](plan-customization-foundation.md) | 2026-08-01 | 三類客製的共同基礎：消費端接線、`CustomizePath` 設定、客製快取失效訊號 |
-| [Layout 客製化](plan-customization-layout.md) | 2026-08-01 | `FormLayout` 整檔取代；實作中翻案（L7）改由用戶端 `FormDefinitionLoader` 組裝 |
-| [語系客製化](plan-customization-language.md) | 2026-08-01 | 語系資源 per-key 疊加；四個伺服端消費端接上 `SessionInfo.CustomizeId` |
-| [docs 根目錄文件重編排](plan-docs-reorganization.md) | 2026-07-31 | 索引改旅程分層，新增 getting-started 與定義檔全景（雙語） |
-| [開發流程強化](plan-dev-workflow-hardening.md) | 2026-07-31 | commit 前驗證 hook；`plan-workflow` → `dev-workflow` plugin 改名 |
-| [Bee.Analyzers — 框架慣例編譯期化](plan-bee-analyzers.md) | 2026-07-30 | 22 條 Roslyn 規則（定義檔跨檔一致性 / 序列化 / C# 慣例） |
-| [修復 Bee.Northwind 登入中斷](plan-northwind-session-tables.md) | 2026-07-30 | common 表資料驅動 + 啟動 fail-fast + debug 例外透傳 |
-| [SessionInfo 持久化與重建](plan-session-persistence.md) | 2026-07-30 | `st_session` 種子、四個寫入點、快取失效後重建 |
-| [Database 快取改經 `ICacheDataSourceProvider` 自載](plan-cache-createinstance-db-loading.md) | 2026-07-29 | 三個 DB 快取的自載接縫 |
-| [框架體檢與分級重構](plan-framework-review-2026-07-28.md) | 2026-07-28 | 九面向唯讀審查與 P0–P4 重構計畫 |
-| [UI 專案收斂為 Avalonia + Blazor.Server 雙軌](plan-ui-consolidation.md) | 2026-07-28 | 移除 `Bee.UI.Maui` 與 `Bee.Web.Blazor.Wasm` |
-| [`FieldDbType.Time` 純時刻型別](plan-time-semantics.md) | 2026-07-27 | 時刻語意與 wire 貫通 |
-| [DateTime 時區處理機制](plan-datetime-timezone.md) | 2026-07-26 | UTC 存放、connector 雙向轉換、`st_user.time_zone` |
-| [日曆日語意的顯式標記](plan-date-semantics.md) | 2026-07-25 | `FieldDbType.Date` 貫通 wire、`DateOnly` |
-| [Bee.Definition 職責拆分](plan-bee-definition-split.md) | 2026-07-24 | Storage IO / Security 實作外移 |
-| [快取失效模型統一](plan-cache-invalidation-model.md) | 2026-07-24 | 檔案相依 + DB 相依皆進 `CacheItemPolicy` |
-| [DataSet 欄名全小寫](plan-dataset-lowercase-columns.md) | 2026-07-24 | 定義 / 資料 / UI 三者一致（ADR-029） |
-| [Avalonia 行動端 Release AOT / Trim 修正](plan-mobile-release-trim-safe.md) | 2026-07-24 | `ILLink.Descriptors.xml` 內嵌 |
-| [plan 工作流可攜化](plan-workflow-portability.md) | 2026-07-24 | 抽 skill → `plan-workflow` plugin |
-| [Bee.Api.Contracts 命名空間按 BO 軸對齊](plan-contracts-namespace-align.md) | 2026-07-23 | 合約介面命名空間 |
-| [MessagePack 合約改採 property-name key](plan-messagepack-name-based-keys.md) | 2026-07-22 | `keyAsPropertyName`（ADR-030，wire breaking） |
-| [API 合約三棲序列化單元測試](plan-api-contract-serialization-tests.md) | 2026-07-22 | MessagePack + JSON round-trip |
