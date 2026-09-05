@@ -98,7 +98,7 @@ namespace Bee.Db.UnitTests
             }
         }
 
-        // ---------- quoted-lowercase end-to-end coverage (per docs/plans/plan-oracle-integration-tests.md) ----------
+        // ---------- quoted-lowercase end-to-end coverage ----------
 
         [DbFact(DatabaseType.Oracle)]
         [DisplayName("FormSchema 驅動的 INSERT/SELECT/UPDATE/DELETE 應在 quoted-lowercase 表上正確運作")]

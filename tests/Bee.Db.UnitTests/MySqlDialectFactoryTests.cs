@@ -16,10 +16,9 @@ namespace Bee.Db.UnitTests
     /// builder/integration tests can resolve them via the registries.
     /// </summary>
     /// <remarks>
-    /// Phase A: only the factory wiring is validated here; the actual builder
-    /// implementations are stubs that throw <see cref="NotImplementedException"/>
-    /// and will be filled in by follow-up commits — see
-    /// docs/plans/plan-mysql-support.md.
+    /// Only the factory wiring is validated here — that each create-builder method
+    /// returns the MySQL-specific implementation. The builders' own SQL output is
+    /// covered by their respective test classes.
     /// </remarks>
     public class MySqlDialectFactoryTests : IClassFixture<SharedDbFixture>
     {

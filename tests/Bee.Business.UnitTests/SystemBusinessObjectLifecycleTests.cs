@@ -12,8 +12,7 @@ namespace Bee.Business.UnitTests
     /// <summary>
     /// SystemBO session lifecycle 全流程整合測試。串接 Login → EnterCompany(A) →
     /// EnterCompany(B) → LeaveCompany → EnterCompany(A) → Logout，驗證跨四個方法的
-    /// session state transition 一致性，並涵蓋 plan-system-bo-session-lifecycle.md
-    /// 列出的合法 / 非法路徑。
+    /// session state transition 一致性，合法與非法路徑各自成案。
     /// </summary>
     public class SystemBusinessObjectLifecycleTests : IClassFixture<SharedDbFixture>
     {

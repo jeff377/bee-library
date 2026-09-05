@@ -11,12 +11,6 @@ namespace Bee.Db.Providers.MySql
     /// <summary>
     /// <see cref="IDialectFactory"/> implementation for MySQL 8.0+.
     /// </summary>
-    /// <remarks>
-    /// Skeleton: factory wiring is in place; the create-builder methods produce stub
-    /// builders that throw <see cref="NotImplementedException"/>. Full implementation of
-    /// the CREATE / ALTER / Rebuild / Form / SchemaProvider builders lands in follow-up
-    /// commits.
-    /// </remarks>
     public class MySqlDialectFactory : IDialectFactory
     {
         /// <inheritdoc />

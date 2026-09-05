@@ -19,7 +19,7 @@ namespace Bee.Api.Core.UnitTests
         /// 刻意不以 <c>[Key]</c> 是否存在作為閘門 —— adr-030 的 name-based key 遷移後，
         /// 絕大多數型別改用 <c>[MessagePackObject(keyAsPropertyName: true)]</c>，屬性上不再有
         /// <c>[Key]</c>；若以此為閘門，比對迴圈會一次都不執行，整個 helper 會退化成只剩
-        /// <c>Assert.NotNull</c> 的假綠燈（見 docs/plans/plan-framework-review.md P0-2）。
+        /// <c>Assert.NotNull</c> 的假綠燈。
         /// </remarks>
         public static void TestMessagePackSerialization<T>(T obj)
         {

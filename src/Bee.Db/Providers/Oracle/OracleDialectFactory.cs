@@ -11,12 +11,6 @@ namespace Bee.Db.Providers.Oracle
     /// <summary>
     /// <see cref="IDialectFactory"/> implementation for Oracle 19c+.
     /// </summary>
-    /// <remarks>
-    /// Skeleton: factory wiring is in place; the create-builder methods produce stub
-    /// builders that throw <see cref="NotImplementedException"/>. Full implementation of
-    /// the CREATE / ALTER / Rebuild / Form / SchemaProvider builders lands in follow-up
-    /// commits.
-    /// </remarks>
     public class OracleDialectFactory : IDialectFactory
     {
         /// <inheritdoc />

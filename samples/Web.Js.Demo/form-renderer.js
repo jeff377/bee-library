@@ -4,7 +4,7 @@
 // container. Supports binding DataSet -> form and collecting form -> DataSet
 // with RowState management.
 //
-// Scope (per plan-web-js-demo-formdef-rendering.md):
+// Scope:
 //   - Master sections rendered via CSS Grid using LayoutField.rowSpan/columnSpan
 //   - Detail tables rendered read-only (no row add/edit/delete)
 //   - Control types: TextEdit / DateEdit / YearMonthEdit / CheckEdit / MemoEdit /

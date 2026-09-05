@@ -202,7 +202,6 @@ skill 完成後輸出建議的 commit message，**不** 自動 commit：
 feat(samples): 新增 {Sample.Name} —— {一句話描述}
 
 - 引用 Bee.X / Bee.Y
-- 對應 plan-samples-structure.md 第 P? 階段（如有對應）
 - 後端：{QuickStart.Server / in-process}
 - auth：{demo/demo / 匿名}
 ```

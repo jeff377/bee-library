@@ -34,16 +34,13 @@
     1. **/Providers/**
        Bee.Db.Providers 每個 DB（SqlServer/PostgreSql/Sqlite/MySql/Oracle）必須
        各自實作 SQL dialect、元數據查詢、schema 操作，本質上就是對稱重複，無法
-       以共用基底消除。詳見 docs/plans/plan-symmetric-types-refactor.md。
+       以共用基底消除。
 
-    2. src/Bee.Web.Blazor.*/Components/**、src/Bee.Web.Blazor.*/DataObjects/**、
-       src/Bee.UI.Maui/DataObjects/**
-       Blazor Server / Blazor Wasm / MAUI 三套 UI 元件庫的執行環境根本不同
-       （SignalR vs Browser .NET vs Native），plan-blazor-web-integration §
-       「決策：兩套元件庫各自獨立維護，不共用 UI 元件」與 plan-maui-integration
-       §「同樣 schema/contract，UI 與 connector 來源不同」明確規範各自獨立。
-       FormDataObject / FormPage / DynamicForm / DynamicGrid / BeeLoginPanel /
-       BeeAccessTokenProvider 皆為刻意鏡像，CPD 重複行為預期行為。
+    2. src/Bee.Web.Blazor.*/Components/**、src/Bee.Web.Blazor.*/DataObjects/**
+       原始理由是 Blazor Server / Blazor Wasm / MAUI 三套 UI 元件庫刻意鏡像
+       （執行環境不同，不共用元件）。**Wasm 與 MAUI 已於 UI 收斂時移除**，
+       只剩 Blazor.Server 一套，鏡像對象不存在 —— 這條排除現已無依據，
+       待一次完整模式掃描確認拿掉後不會冒出既有重複，再行移除。
   -->
-  <Property Name="sonar.cpd.exclusions">**/Providers/**,src/Bee.Web.Blazor.*/Components/**,src/Bee.Web.Blazor.*/DataObjects/**,src/Bee.UI.Maui/DataObjects/**</Property>
+  <Property Name="sonar.cpd.exclusions">**/Providers/**,src/Bee.Web.Blazor.*/Components/**,src/Bee.Web.Blazor.*/DataObjects/**</Property>
 </SonarQubeAnalysisProperties>
