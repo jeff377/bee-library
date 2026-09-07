@@ -28,7 +28,11 @@
     // over 1,000 rows and one over 100,000 are different measurements. Set enabled to false to
     // measure against a database that is already populated.
     "enabled": true,
-    "rowCount": 1000
+    "rowCount": 1000,
+    // Rows are planted per table independently: relation columns get generated values rather
+    // than keys resolved against another table. Enough for read scenarios; a scenario needing a
+    // master and its details to line up has to seed them itself.
+    "tables": ["ft_customer"]
   },
   // Empty means: walk up from the executable and use apps/Bee.Northwind/Define — the most
   // complete definition set in this repository. It is copied to a temporary directory and the

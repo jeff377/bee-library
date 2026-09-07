@@ -17,8 +17,19 @@ namespace Bee.LoadTests.Configuration
         public bool Enabled { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets how many rows to plant into each business table.
+        /// Gets or sets how many rows to plant into each listed table.
         /// </summary>
         public int RowCount { get; set; } = 1000;
+
+        /// <summary>
+        /// Gets or sets the tables to plant rows into, named as they appear in the definitions.
+        /// </summary>
+        /// <remarks>
+        /// NOTE: rows are planted independently per table — relation columns get generated values
+        /// rather than keys resolved against another table. That is enough for read scenarios,
+        /// which measure the query rather than what the rows mean; a scenario that needs a
+        /// master and its details to line up has to seed them itself.
+        /// </remarks>
+        public List<string> Tables { get; set; } = ["ft_customer"];
     }
 }

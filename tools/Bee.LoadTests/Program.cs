@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using Bee.Api.Core.JsonRpc;
 using Bee.Db;
@@ -126,6 +127,26 @@ namespace Bee.LoadTests
 
             var tables = SchemaPreparer.EnsureTables(defineAccess, connectionManager);
             Console.WriteLine($"Tables       : {tables} built or confirmed");
+
+            if (options.Seed.Enabled)
+            {
+                var dbAccessFactory = host.Services.GetRequiredService<IDbAccessFactory>();
+                var dbAccess = dbAccessFactory.Create(options.Database.CategoryId);
+
+                foreach (var table in options.Seed.Tables)
+                {
+                    var started = Stopwatch.GetTimestamp();
+                    var inserted = DataSeeder.EnsureRows(
+                        defineAccess, dbAccess, options.Database.CategoryId,
+                        table, options.Seed.RowCount);
+                    var elapsed = Stopwatch.GetElapsedTime(started);
+                    var total = DataSeeder.CountRows(dbAccess, table);
+
+                    Console.WriteLine(inserted == 0
+                        ? $"Seed         : {table} already holds {total} row(s)"
+                        : $"Seed         : {table} +{inserted} row(s) in {elapsed.TotalSeconds:F1}s (now {total})");
+                }
+            }
 
             Console.WriteLine();
             Console.WriteLine("Schema is ready.");
