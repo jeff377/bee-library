@@ -21,6 +21,7 @@
 | **bee-serialization** | 物件三棲序列化（XML 持久化 + JSON/MessagePack wire）設計指引 |
 | **bee-framework-review** | 框架全面體檢方法論（多面向唯讀審查 + 分級重構計畫） |
 | **bee-sample-add** | 為 samples/ 加一個新示範專案 |
+| **bee-load-test** | 用 `tools/Bee.LoadTests` 跑壓測並判讀結果（前置檢查、Local / Remote、數字什麼時候不能信） |
 
 > **`bee-jsonrpc-backend` 是 host bootstrap / 空 controller / 登入三件套 / client 呼叫的
 > 單一權威來源**（樣板在其 `references/`）。`bee-app-scaffold` 建立在它之上，只補
