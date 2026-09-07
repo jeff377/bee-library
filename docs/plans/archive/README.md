@@ -15,6 +15,7 @@
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [建立框架壓測設施](plan-load-testing.md) | 2026-09-07 | repo 原本沒有任何壓測設施。建 `tools/Bee.LoadTests`（NBomber 6.x 是商業授權，不合 public MIT repo，故驅動程式自寫、零壓測框架相依）。三階段全數落地：Local 層四場景（Login / GetList / GetData / Save）、Remote 層與 Local 對照量出傳輸層成本（p50 差 0.2–0.5ms）、報告三層輸出並強制帶中繼資料。過程中攔下一個安靜的破壞：壓測原本會寫進單元測試自己的資料庫（測試 harness 建的 catalog 就叫 common / company），加 `loadtest_` 前綴隔離。操作規範見 [load-testing.md](../../repo-ops/load-testing.md)，執行紀律見 `bee-load-test` skill |
 | [業務 plugin 設定檔標記時點](plan-plugin-stage-declaration.md) | 2026-09-05 | 重啟 [adr-035](../../adr/adr-035-business-logic-plugin.md) 決策三：`PluginSettings.xml` 的每一筆繫結一個時點（`Stage="BeforeSave"`），直接看 XML 就知道哪些時點有外掛。舊格式（只列型別、時點由類別 override）直接拒；`FormPluginStage` 下移改名為 `Bee.Definition.Settings.PluginStage`；反射降為驗證器。代價是放棄 ADR 自稱「唯一實質優勢」的 per-operation 跨時點狀態共享。破壞性變更，隨 4.29.0 發佈 |
 | [框架全面體檢（2026-09-04）](plan-framework-review.md) | 2026-09-04 | 十一面向唯讀體檢（基準 v4.27.0）。P0–P4 條目全數處理（71 項已修，`T-2` / `CON-6` 查證後撤回），每項修正都經負向驗證或真環境實測。**五處刻意開著並各自記明理由**（`Z-13` / `Z-15` / `A-5`+`A-3` / `DEP-1` / `T-6`）。過程中查出報告本身數處有誤，逐筆更正也是產出的一部分。方法論新得一條：**plan 完成不等於文件完成** |
 | [T-8：71 筆「`[Fact]` 卻需要資料庫」的分類](plan-db-dependent-tests.md) | 2026-09-04 | 承接體檢的 T-7 / T-8。窮盡掃描（不帶 `--settings`）得 71 個 case，逐筆問「這個測試的主題需要資料庫嗎」：A 類 38 個 case 拆掉相依（每個環境都跑得起來，淨賺），B 類 33 個依建議維持現狀 |

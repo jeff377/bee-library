@@ -81,6 +81,6 @@ dotnet run --project tools/Bee.LoadTests -c Release -- run --mode Remote --endpo
 
 ## 相關
 
-- `docs/plans/plan-load-testing.md` —— 設計決策與推導過程（階段性文件）
+- `docs/plans/archive/plan-load-testing.md` —— 設計決策與推導過程（已封存的階段性文件，記載當時的打算而非現行行為）
 - `tools/Bee.LoadTests/loadtest.sample.json` —— 設定項的權威來源
 - `.claude/rules/testing.md` —— 單元測試規範（與本檔無關，勿混用）

@@ -23,7 +23,7 @@ repo 目前**沒有任何壓測設施** —— 沒有 BenchmarkDotNet / NBomber 
 
 ### 1. 通用 HTTP 壓測工具打不到真實路徑
 
-端點是單一 `POST /api`（[ApiServiceController](../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)），
+端點是單一 `POST /api`（[ApiServiceController](../../../src/Bee.Api.AspNetCore/Controllers/ApiServiceController.cs)），
 method 藏在 JSON-RPC body 裡。真正的問題在 body：`PayloadFormat` 為 `Encoded` / `Encrypted` 時，
 body 由請求宣告的 codec 決定拼寫，**未宣告即 MessagePack**（adr-044）。
 
@@ -31,13 +31,13 @@ k6 / JMeter / bombardier 產不出 MessagePack payload，只能餵事先錄好�
 改用 `Plain` 測，量到的就不是生產路徑（少了序列化 → 壓縮 → 加密整條管線）。
 
 → **壓測 client 必須是 .NET，走 `Bee.Api.Client` 的
-[`ApiConnector`](../../src/Bee.Api.Client/Connectors/ApiConnector.cs)**，
+[`ApiConnector`](../../../src/Bee.Api.Client/Connectors/ApiConnector.cs)**，
 才會跟真實客戶端走同一條 payload pipeline。**驅動程式自己寫，不引入壓測框架**——理由見下節。
 
 ### 2. `ApiSessionContext.Ambient` 是 process 單例，多 VU 必須各自持有
 
 `ApiSessionContext.Ambient` 是 `static` 唯一實例
-（[ApiSessionContext.cs](../../src/Bee.Api.Client/ApiSessionContext.cs)）。
+（[ApiSessionContext.cs](../../../src/Bee.Api.Client/ApiSessionContext.cs)）。
 不帶 session 參數的 `ApiConnector` 建構子一律綁到它。
 
 多個 VU 各自登入時若都走預設建構子，**後一次登入的傳輸金鑰會覆蓋前面所有 VU 的**。
@@ -50,7 +50,7 @@ k6 / JMeter / bombardier 產不出 MessagePack payload，只能餵事先錄好�
 ### 3. 兩層要分開量
 
 `LocalApiProvider`（in-process 分派）與 `RemoteApiProvider`（HTTP）是
-[`IJsonRpcProvider`](../../src/Bee.Api.Client/Providers/IJsonRpcProvider.cs) 的兩個實作。
+[`IJsonRpcProvider`](../../../src/Bee.Api.Client/Providers/IJsonRpcProvider.cs) 的兩個實作。
 
 - **Local** 量的是 BO + Repository + DB 這一段
 - **Remote** 量的是整條，含 HTTP、序列化、壓縮、加密
@@ -76,7 +76,7 @@ provider 之間行為差異夠大（這正是 `NormalizeDbType` 存在的理由�
 
 1. 它有全域寫入鎖，併發寫量到的是假性瓶頸。
 2. 框架自己把它**定位在「檔案式單機與嵌入式情境」**
-   （[src/Bee.Db/README.zh-TW.md](../../src/Bee.Db/README.zh-TW.md)），
+   （[src/Bee.Db/README.zh-TW.md](../../../src/Bee.Db/README.zh-TW.md)），
    不是伺服端選項；repo 內引用它的只有 `samples/Bee.Samples.Shared` 與
    `apps/Bee.Northwind/Bee.Northwind.Server` 這兩個 demo 用途。**這是主要理由。**
 
@@ -86,7 +86,7 @@ provider 之間行為差異夠大（這正是 `NormalizeDbType` 存在的理由�
 > **不要用「SQLite 走不同程式碼路徑」當理由。** 它獨有的差異
 > （ALTER 一律 rebuild、無 `COMMENT ON`、type affinity）集中在 **DDL / schema 層**，
 > 而壓測打的是 **DML 熱路徑**——在那條路徑上 SQLite 是被**刻意拉齊**的：
-> [`SqliteProviderFactory`](../../src/Bee.Db/Providers/Sqlite/SqliteProviderFactory.cs)
+> [`SqliteProviderFactory`](../../../src/Bee.Db/Providers/Sqlite/SqliteProviderFactory.cs)
 > 補上 `Microsoft.Data.Sqlite` 缺的 `DbDataAdapter`，讓它與其他 provider 共用同一條
 > adapter-based 讀寫路徑。排除 SQLite 的理由是**它不是伺服端選項**，不是路徑不同。
 
@@ -146,7 +146,7 @@ bee-library 是 **public 的 MIT repo**。把壓測建立在商業授權套件�
 需同步註冊到 `Bee.Tools.slnx`（不是 `Bee.Library.slnx`）。
 
 **場景**（方法名取自
-[`FormApiConnector`](../../src/Bee.Api.Client/Connectors/FormApiConnector.cs)）：
+[`FormApiConnector`](../../../src/Bee.Api.Client/Connectors/FormApiConnector.cs)）：
 
 | 場景 | 打什麼 | 為何需要 |
 |------|--------|---------|
@@ -173,7 +173,7 @@ bee-library 是 **public 的 MIT repo**。把壓測建立在商業授權套件�
 
 1. 穩態下命中率是不是接近全中？沒有的話，是哪個 slot 一直 miss？
 2. 併發同時 miss 同一把 key 時，
-   [`CacheSingleFlight`](../../src/Bee.ObjectCaching/CacheSingleFlight.cs)
+   [`CacheSingleFlight`](../../../src/Bee.ObjectCaching/CacheSingleFlight.cs)
    有沒有把它們收斂成單次建立？
 
 第 2 點特別值得壓 —— 它是**併發專屬行為**，單元測試不容易涵蓋到真實併發下的表現，
@@ -184,7 +184,7 @@ bee-library 是 **public 的 MIT repo**。把壓測建立在商業授權套件�
 
 **做法已定案：包一層 `ICacheProvider` decorator，框架零改動。**
 
-[`CacheInfo.Provider`](../../src/Bee.ObjectCaching/CacheInfo.cs) 是 public 可設定的
+[`CacheInfo.Provider`](../../../src/Bee.ObjectCaching/CacheInfo.cs) 是 public 可設定的
 static 屬性（預設 `MemoryCacheProvider`，且本來就支援從設定檔換成其他實作）——
 **它本身就是框架設計好的替換點**，壓測啟動時包一層即可：
 
@@ -192,7 +192,7 @@ static 屬性（預設 `MemoryCacheProvider`，且本來就支援從設定檔換
 CacheInfo.Provider = new CountingCacheProvider(CacheInfo.Provider);
 ```
 
-[`ICacheProvider`](../../src/Bee.ObjectCaching/Providers/ICacheProvider.cs) 只有五個方法，
+[`ICacheProvider`](../../../src/Bee.ObjectCaching/Providers/ICacheProvider.cs) 只有五個方法，
 decorator 很薄。它能回答本節開頭的兩個問題：
 
 - **命中率** —— `Get` 回 `null` 即 miss，計數相除即得。
@@ -202,7 +202,7 @@ decorator 很薄。它能回答本節開頭的兩個問題：
   這是直接證據，不是推論。
 
 **已知盲點**：decorator 只看得到 provider 層，看不到 provider 之上的 negative-cache
-short-circuit（[KeyObjectCache.cs:109](../../src/Bee.ObjectCaching/KeyObjectCache.cs)）。
+short-circuit（[KeyObjectCache.cs:109](../../../src/Bee.ObjectCaching/KeyObjectCache.cs)）。
 那條路徑根本不會下到 provider，所以它的命中不會被計入。取數時要知道分母是什麼。
 
 **與「禁止修改 production static」規則的關係**：`.claude/rules/testing.md` 第 3 條禁止測試
@@ -236,7 +236,7 @@ short-circuit（[KeyObjectCache.cs:109](../../src/Bee.ObjectCaching/KeyObjectCac
 `apps/Bee.Northwind/Bee.Northwind.Server` 起的 host 打。
 
 `ApiProtectionLevel` 至少跑 `Public` 與 `Encrypted` 各一輪
-（[ApiProtectionLevel.cs](../../src/Bee.Definition/Security/ApiProtectionLevel.cs)），
+（[ApiProtectionLevel.cs](../../../src/Bee.Definition/Security/ApiProtectionLevel.cs)），
 加密的 CPU 成本才顯示得出來。`LocalOnly` 不適用於這一層。
 
 **驗收**：能講出「HTTP + 序列化佔多少、加密再加多少」，而不只是一個總數。
@@ -247,7 +247,7 @@ short-circuit（[KeyObjectCache.cs:109](../../src/Bee.ObjectCaching/KeyObjectCac
 而壓測的價值恰恰來自「換參數再跑一次」。
 
 **設定檔為主、命令列可覆寫**最常調的幾個（`--vu` / `--duration` / `--config`）。
-解析方式沿用 [`Bee.Cli`](../../tools/Bee.Cli/Program.cs) 的既有慣例：**手寫 args 解析、
+解析方式沿用 [`Bee.Cli`](../../../tools/Bee.Cli/Program.cs) 的既有慣例：**手寫 args 解析、
 不引入 `System.CommandLine`**，與上一節一致。設定檔用 JSON
 （`System.Text.Json` 是 BCL）。
 
