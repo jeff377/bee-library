@@ -92,24 +92,10 @@ namespace Bee.LoadTests.Bootstrap
         {
             ArgumentNullException.ThrowIfNull(options);
 
-            var sourceDefinePath = string.IsNullOrWhiteSpace(options.DefinePath)
-                ? LocateDefaultDefinePath()
-                : options.DefinePath;
             var connectionString = DefineWorkspace.ResolveConnectionString(options.Database.Provider);
-
-            var workspace = DefineWorkspace.CreateFrom(sourceDefinePath, options, connectionString);
+            var workspace = CreateWorkspace(options);
             try
             {
-                DbProviderRegistrar.Register(options.Database.Provider);
-
-                var paths = new PathOptions { DefinePath = workspace.DefinePath };
-                var settings = SystemSettingsLoader.Load(paths);
-
-                SysInfo.Initialize(settings.CommonConfiguration);
-                ApiServiceOptions.Initialize(
-                    settings.CommonConfiguration.ApiPayloadOptions,
-                    settings.CommonConfiguration.IsDebugMode);
-
                 var services = new ServiceCollection();
 
                 // AddBeeFramework registers services that ctor-inject ILogger<T>; the audit sink is
@@ -119,10 +105,8 @@ namespace Bee.LoadTests.Bootstrap
                 // show up in the numbers as latency that a production host, writing elsewhere,
                 // would not have.
                 services.AddLogging();
-                // autoCreateMasterKey generates a key when BEE_MASTER_KEY is unset, so a run needs
-                // no key material of its own and none is hard-coded here.
-                services.AddBeeFramework(
-                    settings.BackendConfiguration, paths, autoCreateMasterKey: true);
+                ConfigureFramework(services, options, workspace);
+
                 var provider = services.BuildServiceProvider();
 
                 ApiClientInfo.LocalServiceProvider = provider;
@@ -153,6 +137,56 @@ namespace Bee.LoadTests.Bootstrap
             ApiClientInfo.LocalServiceProvider = null;
             _services.Dispose();
             _workspace.Dispose();
+        }
+
+        /// <summary>
+        /// Applies the framework's startup sequence to a service collection.
+        /// </summary>
+        /// <param name="services">The collection to register into.</param>
+        /// <param name="options">The run configuration.</param>
+        /// <param name="workspace">The prepared definition workspace.</param>
+        /// <remarks>
+        /// Shared with the self-hosted server so both sides of a Remote run start the framework
+        /// exactly the same way. If they diverged, the difference between a Local and a Remote
+        /// measurement would no longer be only the transport.
+        /// </remarks>
+        public static void ConfigureFramework(
+            IServiceCollection services, LoadTestOptions options, DefineWorkspace workspace)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(options);
+            ArgumentNullException.ThrowIfNull(workspace);
+
+            DbProviderRegistrar.Register(options.Database.Provider);
+
+            var paths = new PathOptions { DefinePath = workspace.DefinePath };
+            var settings = SystemSettingsLoader.Load(paths);
+
+            SysInfo.Initialize(settings.CommonConfiguration);
+            ApiServiceOptions.Initialize(
+                settings.CommonConfiguration.ApiPayloadOptions,
+                settings.CommonConfiguration.IsDebugMode);
+
+            // autoCreateMasterKey generates a key when BEE_MASTER_KEY is unset, so a run needs no
+            // key material of its own and none is hard-coded here.
+            services.AddBeeFramework(settings.BackendConfiguration, paths, autoCreateMasterKey: true);
+        }
+
+        /// <summary>
+        /// Prepares the definition workspace for a run, resolving the source and connection string.
+        /// </summary>
+        /// <param name="options">The run configuration.</param>
+        /// <returns>The prepared workspace; dispose it to remove the temporary copy.</returns>
+        public static DefineWorkspace CreateWorkspace(LoadTestOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            var sourceDefinePath = string.IsNullOrWhiteSpace(options.DefinePath)
+                ? LocateDefaultDefinePath()
+                : options.DefinePath;
+            var connectionString = DefineWorkspace.ResolveConnectionString(options.Database.Provider);
+
+            return DefineWorkspace.CreateFrom(sourceDefinePath, options, connectionString);
         }
 
         /// <summary>

@@ -23,7 +23,8 @@ namespace Bee.LoadTests.UnitTests
 
         private static RunReport CreateReport(
             IReadOnlyDictionary<string, long>? errors = null,
-            IReadOnlyDictionary<string, string>? samples = null)
+            IReadOnlyDictionary<string, string>? samples = null,
+            string mode = "Local")
         {
             var result = new ScenarioResult(
                 "GetList",
@@ -37,7 +38,7 @@ namespace Bee.LoadTests.UnitTests
             {
                 Version = "4.29.0+abc123",
                 Provider = "SQLServer",
-                Mode = "Local",
+                Mode = mode,
                 ProtectionLevel = "Encrypted",
                 OperatingSystem = "TestOS",
                 ProcessorCount = 8,
@@ -145,6 +146,39 @@ namespace Bee.LoadTests.UnitTests
             var cache = document.RootElement.GetProperty("Cache");
             Assert.Equal(10, cache.GetProperty("Reads").GetInt64());
             Assert.Equal(0.9, cache.GetProperty("HitRate").GetDouble(), 3);
+        }
+
+        [Fact]
+        [DisplayName("Remote 模式標示快取未被觀測，而非回報 0% 命中率")]
+        public void WriteMarkdown_RemoteMode_MarksCacheNotObserved()
+        {
+            var text = Write(CreateReport(mode: "Remote"), ".md");
+
+            // Reporting a 0% hit rate here would be a lie: the counters simply cannot see the
+            // server's cache from this process.
+            Assert.Contains("Not observed", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("| Hit rate |", text, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        [DisplayName("Local 模式照常輸出快取數字")]
+        public void WriteMarkdown_LocalMode_IncludesCacheTable()
+        {
+            var text = Write(CreateReport(), ".md");
+
+            Assert.Contains("| Hit rate |", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("Not observed", text, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        [DisplayName("JSON 帶 CacheObserved 旗標，供程式判讀")]
+        public void WriteJson_CarriesCacheObservedFlag()
+        {
+            using var local = JsonDocument.Parse(Write(CreateReport(), ".json"));
+            Assert.True(local.RootElement.GetProperty("CacheObserved").GetBoolean());
+
+            using var remote = JsonDocument.Parse(Write(CreateReport(mode: "Remote"), ".json"));
+            Assert.False(remote.RootElement.GetProperty("CacheObserved").GetBoolean());
         }
 
         [Fact]

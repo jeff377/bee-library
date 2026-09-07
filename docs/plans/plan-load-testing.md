@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 建 `tools/Bee.LoadTests` 專案骨架 + Local 層（in-process）場景，含快取計數 decorator | ✅ 已完成（2026-09-07） |
-| 2 | 加上 Remote 層（HTTP），Local/Remote 對照量出傳輸層成本 | 📝 待做 |
+| 2 | 加上 Remote 層（HTTP），Local/Remote 對照量出傳輸層成本 | ✅ 已完成（2026-09-07） |
 | 3 | 報告輸出（console / Markdown / JSON）與取數規範，寫進 `docs/repo-ops/` | 🚧 進行中 —— 三層輸出已完成並帶齊中繼資料；取數規範文件未寫 |
 
 ## 背景

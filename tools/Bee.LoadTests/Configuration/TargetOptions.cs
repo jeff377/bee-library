@@ -30,5 +30,16 @@ namespace Bee.LoadTests.Configuration
         /// the server reads as MessagePack.
         /// </summary>
         public string Codec { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the value sent in the <c>X-Api-Key</c> header on remote calls.
+        /// </summary>
+        /// <remarks>
+        /// A deployment with no enabled API key checks the header for presence only, so any
+        /// non-empty value gets a run moving; the default is a label rather than a secret. Point a
+        /// run at a deployment that does have keys enabled and this has to carry a real one, which
+        /// is why it is configuration rather than a constant.
+        /// </remarks>
+        public string ApiKey { get; set; } = "loadtest";
     }
 }

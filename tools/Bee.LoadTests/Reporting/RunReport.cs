@@ -40,6 +40,17 @@ namespace Bee.LoadTests.Reporting
         public IReadOnlyList<double> Percentiles { get; }
 
         /// <summary>
+        /// Gets whether the cache counters describe the measured backend.
+        /// </summary>
+        /// <remarks>
+        /// IMPORTANT: they do not in a Remote run. The counting provider is installed in this
+        /// process, and the cache being exercised lives in the server's — so the counters read
+        /// zero, which a reader would otherwise take as a 0% hit rate rather than as "not
+        /// observed here".
+        /// </remarks>
+        public bool CacheObserved => string.Equals(Metadata.Mode, "Local", StringComparison.Ordinal);
+
+        /// <summary>
         /// Gets whether any scenario recorded an error.
         /// </summary>
         public bool HasErrors => Scenarios.Any(scenario => scenario.ErrorCount > 0);

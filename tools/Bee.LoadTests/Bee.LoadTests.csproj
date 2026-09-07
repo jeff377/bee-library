@@ -22,14 +22,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Both package references here exist for the same reason, and neither is an exception to
-         the "no load-testing framework" rule: in Local mode this project is the host, and a host
-         has to supply what the framework leaves to it. Bee.Db references no ADO.NET driver
-         because choosing one is the host's decision. -->
+    <!-- The only package reference, and not an exception to the "no load-testing framework" rule:
+         in Local mode this project is the host, and Bee.Db references no ADO.NET driver because
+         choosing one is the host's decision. Logging comes from the ASP.NET Core framework
+         reference below, which a bare ServiceCollection also draws on for AddLogging. -->
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
-    <!-- AddBeeFramework registers services that ctor-inject ILogger<T>. An ASP.NET Core host gets
-         logging from WebApplicationBuilder; a bare ServiceCollection has to add it. -->
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The 'serve' command hosts the JSON-RPC endpoint so a Remote run has something to measure
+         against; every host in this repository is SQLite-only, which a load test excludes. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\..\src\Bee.Api.AspNetCore\Bee.Api.AspNetCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

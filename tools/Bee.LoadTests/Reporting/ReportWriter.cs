@@ -110,16 +110,28 @@ namespace Bee.LoadTests.Reporting
 
             text.AppendLine("## Cache");
             text.AppendLine();
-            text.AppendLine("| Metric | Value |");
-            text.AppendLine("|---|---:|");
-            AppendRow(text, "Reads", report.Cache.Reads.ToString(CultureInfo.InvariantCulture));
-            AppendRow(text, "Hit rate", report.Cache.HitRate.ToString("P1", CultureInfo.InvariantCulture));
-            AppendRow(text, "Writes", report.Cache.Writes.ToString(CultureInfo.InvariantCulture));
-            text.AppendLine();
-            text.AppendLine(
-                "Writes are creations that reached the provider. Concurrent misses on one key are " +
-                "collapsed above it, so a write count far below the virtual user count is that " +
-                "collapsing working.");
+
+            if (!report.CacheObserved)
+            {
+                text.AppendLine(
+                    "Not observed. The counting provider runs in the driver's process, and a " +
+                    "Remote run exercises the cache in the server's — the counters below would " +
+                    "read zero, which is absence of measurement rather than a zero hit rate. Run " +
+                    "in Local mode to measure cache behaviour.");
+            }
+            else
+            {
+                text.AppendLine("| Metric | Value |");
+                text.AppendLine("|---|---:|");
+                AppendRow(text, "Reads", report.Cache.Reads.ToString(CultureInfo.InvariantCulture));
+                AppendRow(text, "Hit rate", report.Cache.HitRate.ToString("P1", CultureInfo.InvariantCulture));
+                AppendRow(text, "Writes", report.Cache.Writes.ToString(CultureInfo.InvariantCulture));
+                text.AppendLine();
+                text.AppendLine(
+                    "Writes are creations that reached the provider. Concurrent misses on one key " +
+                    "are collapsed above it, so a write count far below the virtual user count is " +
+                    "that collapsing working.");
+            }
 
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
             File.WriteAllText(path, text.ToString());
@@ -138,6 +150,7 @@ namespace Bee.LoadTests.Reporting
             var document = new
             {
                 report.Metadata,
+                CacheObserved = report.CacheObserved,
                 Cache = new
                 {
                     report.Cache.Reads,

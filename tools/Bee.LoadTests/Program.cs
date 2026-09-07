@@ -2,7 +2,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using Bee.Api.Core.JsonRpc;
+using Bee.Api.Client;
 using Bee.Db;
+using Bee.Definition.Security;
 using Bee.Db.Manager;
 using Bee.Definition.Storage;
 using Bee.LoadTests.Bootstrap;
@@ -10,6 +12,7 @@ using Bee.LoadTests.Configuration;
 using Bee.LoadTests.Reporting;
 using Bee.LoadTests.Running;
 using Bee.LoadTests.Scenarios;
+using Bee.LoadTests.Serving;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.LoadTests
@@ -48,6 +51,7 @@ namespace Bee.LoadTests
                     "verify" => Verify(args.AsSpan(1).ToArray()),
                     "prepare" => Prepare(args.AsSpan(1).ToArray()),
                     "run" => RunAsync(args.AsSpan(1).ToArray()).GetAwaiter().GetResult(),
+                    "serve" => Serve(args.AsSpan(1).ToArray()),
                     _ => UnknownCommand(args[0]),
                 };
             }
@@ -194,6 +198,13 @@ namespace Bee.LoadTests
                 Console.WriteLine($"Dropped      : {string.Join(", ", host.DroppedBindings)}");
             }
 
+            if (options.Target.Mode == TargetMode.Remote)
+            {
+                // Sent as X-Api-Key on every remote call; the server rejects a request without it
+                // before any of this reaches a business object.
+                ApiClientInfo.ApiKey = options.Target.ApiKey;
+            }
+
             var pool = new VirtualUserPool(options.Auth,
                 options.Target.Mode == TargetMode.Remote ? options.Target.Endpoint : null);
 
@@ -225,6 +236,18 @@ namespace Bee.LoadTests
             WriteReports(report, options.Report);
 
             return results.Any(result => result.SuccessCount == 0) ? ExitFailure : ExitSuccess;
+        }
+
+        private static int Serve(string[] args)
+        {
+            var options = LoadConfiguration(args);
+            options.Validate();
+
+            var url = ReadOption(args, "--url") ?? "http://localhost:5199";
+
+            Console.WriteLine($"Provider     : {options.Database.Provider}");
+            LoadTestServer.RunAsync(options, url).GetAwaiter().GetResult();
+            return ExitSuccess;
         }
 
         private static IReadOnlyList<Guid> CollectRowIds(LoadTestHost host, LoadTestOptions options)
@@ -299,9 +322,10 @@ namespace Bee.LoadTests
             }
 
             Console.WriteLine();
-            Console.WriteLine(
-                $"Cache        : {report.Cache.Reads} reads, {report.Cache.HitRate:P1} hit rate, " +
-                $"{report.Cache.Writes} writes");
+            Console.WriteLine(report.CacheObserved
+                ? $"Cache        : {report.Cache.Reads} reads, {report.Cache.HitRate:P1} hit rate, " +
+                  $"{report.Cache.Writes} writes"
+                : "Cache        : not observed (the cache being exercised is in the server process)");
             Console.WriteLine($"Rows seeded  : {report.Metadata.SeededRows} per table");
         }
 
@@ -337,6 +361,19 @@ namespace Bee.LoadTests
 
             var warmup = ReadOption(args, "--warmup");
             if (warmup is not null) { options.Load.WarmupSeconds = int.Parse(warmup, CultureInfo.InvariantCulture); }
+
+            var mode = ReadOption(args, "--mode");
+            if (mode is not null) { options.Target.Mode = Enum.Parse<TargetMode>(mode, ignoreCase: true); }
+
+            var endpoint = ReadOption(args, "--endpoint");
+            if (endpoint is not null) { options.Target.Endpoint = endpoint; }
+
+            var protection = ReadOption(args, "--protection");
+            if (protection is not null)
+            {
+                options.Target.ProtectionLevel =
+                    Enum.Parse<ApiProtectionLevel>(protection, ignoreCase: true);
+            }
         }
 
         private static LoadTestOptions LoadConfiguration(string[] args)
@@ -408,6 +445,7 @@ namespace Bee.LoadTests
             writer.WriteLine("  verify           Start the backend, resolve its services, tear it down.");
             writer.WriteLine("  prepare          Create the databases and tables a run measures against.");
             writer.WriteLine("  run              Run the load test and report the result.");
+            writer.WriteLine("  serve            Host the JSON-RPC endpoint for a Remote run.");
             writer.WriteLine("  --help, -h       Show this help.");
             writer.WriteLine("  --version, -v    Show the version.");
             writer.WriteLine();
@@ -416,6 +454,10 @@ namespace Bee.LoadTests
             writer.WriteLine("  --vu <n>         Override the virtual user count.");
             writer.WriteLine("  --duration <s>   Override the measured window, in seconds.");
             writer.WriteLine("  --warmup <s>     Override the warm-up window, in seconds.");
+            writer.WriteLine("  --url <url>      Listen address for 'serve'. Default http://localhost:5199.");
+            writer.WriteLine("  --mode <m>       Local or Remote.");
+            writer.WriteLine("  --endpoint <url> Server to measure in Remote mode.");
+            writer.WriteLine("  --protection <p> Public, Encoded or Encrypted.");
             writer.WriteLine();
             writer.WriteLine("The connection string comes from BEE_TEST_CONNSTR_<PROVIDER>, the same");
             writer.WriteLine("variable ./test.sh uses. Run 'prepare' once before the first 'run'.");
