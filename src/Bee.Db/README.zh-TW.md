@@ -59,7 +59,7 @@
 - **無 `COMMENT ON`**：SQLite 不持久化 `DisplayName` / `Caption`；`SqliteCreateTableCommandBuilder` silent no-op，`SqliteTableSchemaProvider` 讀回時這兩個欄位永遠為空字串。應用層應從 FormSchema XML 讀取 captions。
 - **TYPE AFFINITY 而非嚴格型別**：宣告型別字串如 `VARCHAR(50)` / `NUMERIC(18,2)` 仍照寫，SQLite 依 affinity 規則對應。`SqliteTableSchemaProvider` 從 `PRAGMA table_info` 反向解析。
 - **沒有 schema 概念**：所有表在 `main` 資料庫，identifier 直接 unqualified（仍會用 `"..."` quote）。
-- **`UpdateDataTable` 不可用**：`Microsoft.Data.Sqlite.SqliteFactory` 不提供 `DbDataAdapter` 實作，因此基於 `DbDataAdapter.Update()` 的批次回寫 API（`DbAccess.UpdateDataTable`）無法在 SQLite 上執行。讀取（`Execute(...)` 回 `DataTable`）已透過 `DbDataReader` + `DataTable.Load` fallback 支援。
+- **`DbDataAdapter` 由框架補上**：`Microsoft.Data.Sqlite.SqliteFactory` 不提供 `DbDataAdapter` 實作。框架的 `SqliteProviderFactory` 包裝器補上自製的 `SqliteDataAdapter`，因此**註冊該包裝器後（見上方註冊範例），`DbAccess.UpdateDataTable` 與其他 provider 一樣可用**——SQLite 走的是同一條 adapter-based 讀寫路徑，不需要任何特製的 fallback。直接註冊原生 `SqliteFactory.Instance` 才會失去這個能力。
 - **PK 索引名稱**：SQLite 自動建的 PK 索引是 `sqlite_autoindex_*`；`SqliteTableSchemaProvider` 將其正規化為框架慣例 `pk_{table}` 以利 `TableSchemaComparer` 比對。
 - **驅動套件**：使用 [`Microsoft.Data.Sqlite`](https://learn.microsoft.com/dotnet/standard/data/sqlite/)；連線字串建議採 in-memory shared cache `Data Source=file:bee_test_sqlite?mode=memory&cache=shared` 用於測試，或 `Data Source={path}.db` 用於檔案式部署。
 
