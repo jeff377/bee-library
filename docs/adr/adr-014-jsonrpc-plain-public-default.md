@@ -9,6 +9,10 @@
 一條「JS 前端需要應用層加密時」的路徑，並逐條回應本 ADR〈為何不為 JS 前端做「JS 版加密
 管線」〉的評估。
 
+⚠️ **更正於 2026-09-07** —— 本 ADR 通篇的「預設」指的是**開發者的預設選擇**，不是框架的 fallback。
+`ApiProtectionLevel` 是 `[ApiAccessControl]` 的必填參數，框架沒有任何預設值，**也沒有「不設定」
+這個狀態**。〈三項核心要點〉第 3 點原有一句與此相反的敘述，已於同日更正，詳見該處。
+
 ## 背景
 
 Bee.NET 在 v4.5 階段已為三類前端 host 完成連線抽象（[ADR-013](adr-013-frontend-api-connection-strategy.md)）：桌面端走 `Bee.UI.Core` static singleton、Blazor Server / WASM 走 `Bee.Web.*` 與 DI。三者共用 `Bee.Api.Client` 通訊層，但都假設客戶端是 .NET runtime — RSA key exchange + AES-CBC-HMAC + MessagePack 序列化 + gzip 壓縮的完整 payload pipeline。
@@ -59,7 +63,16 @@ v4.6 階段出現新的前端類型：**純 JavaScript（React / Vue / Angular /
 
 3. **`Encrypted` 仍是合法選項，但需要明確標註**
 
-   未來 BO 方法的設計者必須**主動評估**哪些方法需要 `Encrypted`（如密碼修改、加密金鑰生成），不再 by-default 全標。`ProtectionLevel` 不設定時 server 取既定預設（`Public`）。這把「需要應用層加密」從**全域預設**降為**個案決策**。
+   未來 BO 方法的設計者必須**主動評估**哪些方法需要 `Encrypted`（如密碼修改、加密金鑰生成），不再 by-default 全標。這把「需要應用層加密」從**全域預設**降為**個案決策**。
+
+   > ⚠️ **更正（2026-09-07）**：本項原有一句「`ProtectionLevel` 不設定時 server 取既定預設
+   > （`Public`）」，**與實作相反，而且從未成立**。本 ADR 採納當天（`aa843f71`，2026-05-26）
+   > `ApiAccessValidator.ValidateAccess` 就已對找不到宣告的方法擲 `UnauthorizedAccessException`
+   > （其 remarks 自陳 “is denied, not treated as unrestricted”），而 `ApiAccessControlAttribute`
+   > 的 `protectionLevel` 當天也已是必填參數。**現況**：沒有 `[ApiAccessControl]` 蓋到的方法一律
+   > 拒絕，建置期另有 `BEE3001` 把這種方法指出來（`TreatWarningsAsErrors` 之下即編譯失敗）。
+   > 原句已移除而非保留為紀錄 —— 它不是決策，是一句夾在決策項裡的機制描述，且與本項的決策
+   > （必須主動評估）方向相反，等於給了一條不必評估的退路。
 
 ## 理由
 
