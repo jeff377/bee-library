@@ -10,7 +10,7 @@
 
 | 計畫 | 狀態 | 說明 |
 |------|------|------|
-| [建立框架壓測設施](plan-load-testing.md) | 📝 擬定中（2026-09-07） | repo 目前完全沒有壓測設施；建 `tools/Bee.LoadTests`（NBomber），分 3 階段（Local 層／Remote 層與保護等級對照／取數規範）。先立了五個框架形狀帶來的約束，其中 `ApiSessionContext.Ambient` 是 process 單例、多 VU 共用會讓傳輸金鑰互相覆蓋，最易誤判成框架 bug。定義類只壓讀取、要量的是快取命中與 single-flight 收斂——快取本身沒有命中統計，改以 `CacheInfo.Provider` 包一層 decorator 取得（框架零改動）。**壓測完全不跑 SQLite**（它是單機／嵌入式定位，且走框架自己包的 provider 路徑——量一條 production 不會走的路徑沒有意義）。**刻意不進 CI** |
+| [建立框架壓測設施](plan-load-testing.md) | 📝 擬定中（2026-09-07） | repo 目前完全沒有壓測設施；建 `tools/Bee.LoadTests`（**零外部套件、驅動程式自己寫**——NBomber 6.x 是商業授權，組織使用需付費，不合 public MIT repo），分 3 階段（Local 層／Remote 層與保護等級對照／取數規範）。先立了五個框架形狀帶來的約束，其中 `ApiSessionContext.Ambient` 是 process 單例、多 VU 共用會讓傳輸金鑰互相覆蓋，最易誤判成框架 bug。定義類只壓讀取、要量的是快取命中與 single-flight 收斂——快取本身沒有命中統計，改以 `CacheInfo.Provider` 包一層 decorator 取得（框架零改動）。**壓測完全不跑 SQLite**（它是單機／嵌入式定位、不是伺服端選項）。壓測參數與報告皆由 JSON 設定檔驅動（命令列可覆寫，手寫解析沿用 Bee.Cli 慣例），報告輸出 console / Markdown / JSON 三層並強制帶環境中繼資料與錯誤數。**刻意不進 CI** |
 | [捨入政策可設定化](plan-rounding-mode.md) | 📝 擬定中（2026-09-01） | 明細計算欄的捨入模式（`MidpointRounding` / 方向）由硬編改為可設定；**階段 0 是「要不要做」的決策點**——現況全 `src/` 只有兩處 `Math.Round`、production 呼叫點僅計算欄一處，若判定 `AwayFromZero` 足夠即可只補文件結案。與多幣別加總無關（round-then-sum 之下對合計再捨是 no-op） |
 | [PropertyGridControl：用宣告式 metadata 驅動屬性編輯](plan-property-grid-control.md) | 📝 擬定中（2026-08-17） | 交付吃 `System.ComponentModel` 標註（`[Description]` / `[Category]` / `[Browsable]` / `[TypeConverter]`）的 Avalonia PropertyGrid 控件；分 2 階段。承接 2026-08-07 體檢移交的 D-3 / D-5，與 TreeView 那份可並行 |
 | [TreeViewBuilder：用 `[TreeNode]` 標註驅動結構樹](plan-tree-view-builder.md) | 📝 擬定中（2026-08-17） | 把無人消費的 `[TreeNode]` / `[TreeNodeIgnore]` 標註接回實際的 TreeView；分 5 階段（建樹核心／Avalonia builder／命令 provider／拖曳／在地化）。承接 2026-08-07 體檢移交的 D-3 / D-5，與 PropertyGrid 那份可並行 |

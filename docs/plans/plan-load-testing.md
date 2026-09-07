@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | 建 `tools/Bee.LoadTests` 專案骨架 + Local 層（in-process）場景，含快取計數 decorator | 📝 待做 |
 | 2 | 加上 Remote 層（HTTP），Local/Remote 對照量出傳輸層成本 | 📝 待做 |
-| 3 | 取數規範與結果記錄格式，寫進 `docs/repo-ops/` | 📝 待做 |
+| 3 | 報告輸出（console / Markdown / JSON）與取數規範，寫進 `docs/repo-ops/` | 📝 待做 |
 
 ## 背景
 
@@ -32,7 +32,7 @@ k6 / JMeter / bombardier 產不出 MessagePack payload，只能餵事先錄好�
 
 → **壓測 client 必須是 .NET，走 `Bee.Api.Client` 的
 [`ApiConnector`](../../src/Bee.Api.Client/Connectors/ApiConnector.cs)**，
-才會跟真實客戶端走同一條 payload pipeline。工具用 **NBomber**（.NET 原生 load testing framework）。
+才會跟真實客戶端走同一條 payload pipeline。**驅動程式自己寫，不引入壓測框架**——理由見下節。
 
 ### 2. `ApiSessionContext.Ambient` 是 process 單例，多 VU 必須各自持有
 
@@ -65,7 +65,7 @@ cache 是 process-wide 的：FormSchema、CompanyInfo、權限、DepartmentTree 
 第一次請求才載入，之後全命中（見 `.claude/rules/definition.md`）。
 冷啟動那幾秒會把 p95 / p99 整個拉歪。
 
-→ 正式取數前先跑一輪並**丟棄**。NBomber 的 warm-up 期設定要顯式寫出來，不用預設值。
+→ 正式取數前先跑一輪並**丟棄**，且 warm-up 時長要顯式寫在設定裡、不用隱含預設。
 
 ### 5. 結論綁 DB provider，且**完全不跑 SQLite**
 
@@ -89,6 +89,49 @@ provider 之間行為差異夠大（這正是 `NormalizeDbType` 存在的理由�
 > [`SqliteProviderFactory`](../../src/Bee.Db/Providers/Sqlite/SqliteProviderFactory.cs)
 > 補上 `Microsoft.Data.Sqlite` 缺的 `DbDataAdapter`，讓它與其他 provider 共用同一條
 > adapter-based 讀寫路徑。排除 SQLite 的理由是**它不是伺服端選項**，不是路徑不同。
+
+## 外部套件：零
+
+**`tools/Bee.LoadTests` 不引用任何外部套件**，只以 `ProjectReference` 取用 repo 內的
+`Bee.Api.Client` 等組件。並行排程與統計自己寫。
+
+### 為什麼不用 NBomber
+
+它是這類任務的第一順位人選，但**授權不合這個 repo**：NBomber 自 6.x 起是
+**商業/專有授權** —— 個人與 hobby 專案免費，**任何組織（公司、非營利、政府）使用都需要
+購買 Commercial Subscription 並取得 Activation Key**（2026-09-07 查 nuget.org 的
+授權頁確認）。
+
+bee-library 是 **public 的 MIT repo**。把壓測建立在商業授權套件上，等於任何 clone 下來
+想跑壓測的組織都得先買授權 —— 而這份 plan 的產出正是要當成「框架建議的壓測方法」，
+建議一個帶授權負擔的工具並不合適。
+
+### 其他評估過的選項
+
+| 選項 | 授權 | 為何不用 |
+|------|------|---------|
+| BenchmarkDotNet | MIT | 是**微基準**工具，量單次呼叫的統計分佈，不是併發負載；不合用途 |
+| k6 / JMeter | 開源 | 產不出 MessagePack payload（約束 1），打不到真實路徑 |
+| dotnet/crank | MIT | 偏基礎設施級，為了本 plan 的範圍設定成本過高 |
+
+### 自己寫需要多少東西
+
+範圍比想像的窄，因為 client 已經現成（`ApiConnector`），只缺「排程 + 計時 + 統計」：
+
+- **並行驅動** —— N 個 worker 各自跑迴圈，各持有自己的 `ApiSessionContext`（約束 2）
+- **warm-up 隔離** —— 兩段計時，第一段的樣本丟棄
+- **統計** —— 收集每次的耗時，排序後取 p50 / p95 / p99，加總算 RPS
+
+沒有外部相依，純 BCL（`Task`、`Stopwatch`、`Array.Sort`）就夠。`tools/Directory.Build.props`
+本來就設 `IsPackable=false`，這個專案不會發布。
+
+### 自己寫要自己注意的一件事：封閉模型的偏誤
+
+「N 個 worker 做完一次再做下一次」是**封閉模型**：系統變慢時送出速率會自動降低，
+因此它**不會**暴露出開放模型（固定到達率）能看到的尾延遲惡化。
+
+這不是必須修掉的缺陷 —— ERP 的真實使用者確實是等回應才做下一個動作，封閉模型反而貼近實情。
+但**取數時要知道自己量的是哪一種**，並記進結果（階段 3）。要看飽和點時再加開放模型的驅動方式。
 
 ## 階段 1：專案骨架 + Local 層
 
@@ -194,13 +237,123 @@ short-circuit（[KeyObjectCache.cs:109](../../src/Bee.ObjectCaching/KeyObjectCac
 
 **驗收**：能講出「HTTP + 序列化佔多少、加密再加多少」，而不只是一個總數。
 
-## 階段 3：取數規範
+## 設定：參數與報告都由設定檔驅動
 
-寫進 `docs/repo-ops/`（維運文件，不是公開文件）：
+**壓測參數不寫死在程式碼裡** —— 換一次負載強度就要改 code 重編譯，會讓人懶得多跑幾組，
+而壓測的價值恰恰來自「換參數再跑一次」。
 
-- 取數前置條件（哪個 provider、哪台機器、warm-up 多久、VU 數）
-- 結果記錄格式
-- 明確排除項：**不進 CI**
+**設定檔為主、命令列可覆寫**最常調的幾個（`--vu` / `--duration` / `--config`）。
+解析方式沿用 [`Bee.Cli`](../../tools/Bee.Cli/Program.cs) 的既有慣例：**手寫 args 解析、
+不引入 `System.CommandLine`**，與「外部套件：零」一致。設定檔用 JSON
+（`System.Text.Json` 是 BCL）。
+
+```jsonc
+{
+  "target": {
+    "mode": "Remote",                    // Local（in-process）| Remote（HTTP）
+    "endpoint": "http://localhost:5000/api",
+    "protectionLevel": "Encrypted",      // Public | Encoded | Encrypted
+    "codec": "messagepack"
+  },
+  "database": {
+    "provider": "SqlServer",             // 不接受 SQLite（約束 5）
+    "categoryId": "company"
+  },
+  "load": {
+    "virtualUsers": 50,
+    "warmupSeconds": 30,
+    "durationSeconds": 120,
+    "model": "Closed"                    // Closed | Open
+  },
+  "auth": {
+    "tokenStrategy": "PerUser",          // PerUser | Shared（見階段 1 的 token 策略）
+    "userPoolSize": 50
+  },
+  "scenarios": [
+    { "name": "Login",    "enabled": true,  "weight": 1 },
+    { "name": "GetList",  "enabled": true,  "weight": 5 },
+    { "name": "GetData",  "enabled": true,  "weight": 5 },
+    { "name": "Save",     "enabled": true,  "weight": 1 },
+    { "name": "DefineRead", "enabled": true, "weight": 3 }
+  ],
+  "report": {
+    "console": true,
+    "markdown": true,
+    "json": true,
+    "outputDirectory": "artifacts/loadtest",
+    "percentiles": [50, 95, 99]
+  }
+}
+```
+
+**連線字串不進設定檔** —— 走既有的 `BEE_TEST_CONNSTR_{DBTYPE}` 環境變數慣例
+（與 `./test.sh` 相同）。設定檔會被貼進 issue 或報告裡，機密不該在其中
+（見 `.claude/rules/security.md`）。
+
+一份 `loadtest.sample.json` 入版控當範例；實際使用的設定檔不入版控。
+
+**設定內容原樣寫進報告的中繼資料區** —— 報告要能自證是用什麼參數跑出來的，
+否則兩份報告放在一起無法比較。
+
+## 階段 3：報告與取數規範
+
+### 報告：三層輸出
+
+| 輸出 | 給誰 | 位置 |
+|------|------|------|
+| Console 摘要 | 跑的人當下看 | stdout |
+| Markdown 報告 | 人讀、貼進 issue / 文件 | `artifacts/loadtest/<時間戳>.md` |
+| JSON | 程式讀，供日後比較 | `artifacts/loadtest/<時間戳>.json` |
+
+`artifacts/` 已在 `.gitignore` 內，所以**報告預設不入版控** —— 探索性的跑動佔多數，
+不值得每次都留。**要保留的那幾份手動複製到 `docs/repo-ops/`**（維運文件，非公開文件）。
+
+`System.Text.Json` 是 BCL，JSON 那層不會引入外部套件（呼應「外部套件：零」）。
+
+### 報告一定要帶的中繼資料
+
+**沒有這些，數字不能解讀，報告等於廢紙。** 這是報告設計裡唯一不可妥協的部分：
+
+- **時間**：執行日期時間
+- **版本**：框架版號（`Version.props`）、git commit
+- **環境**：provider + DB 版本、OS、CPU 核數、RAM
+- **模式**：Local / Remote、`ApiProtectionLevel`、body codec
+- **負載參數**：VU 數、warm-up 時長、正式期時長、**封閉或開放模型**
+- **結果**：p50 / p95 / p99 / max、RPS、錯誤數與錯誤類型分佈
+- **快取**：命中率、`Set` 次數（single-flight 收斂證據）
+
+錯誤數**必須一起報**：一份延遲很漂亮但半數請求失敗的報告，只看延遲會得到相反的結論。
+
+### 報告樣板
+
+```markdown
+# 壓測報告 2026-09-07 14:30
+
+| 項目 | 值 |
+|------|-----|
+| 框架版本 | 4.29.0 (commit 112af43c) |
+| 環境 | SQL Server 2022 / macOS 15.6 / 10 core / 32 GB |
+| 模式 | Remote, Encrypted, MessagePack |
+| 負載 | 50 VU, warm-up 30s, 量測 120s, 封閉模型 |
+
+## 結果
+
+| 場景 | p50 | p95 | p99 | max | RPS | 錯誤 |
+|------|-----|-----|-----|-----|-----|------|
+| Login | … | … | … | … | … | 0 |
+
+## 快取
+
+| 指標 | 值 |
+|------|-----|
+| 命中率 | … |
+| Set 次數 / VU 數 | … / 50（single-flight 收斂則遠小於 VU 數） |
+```
+
+### 取數規範
+
+寫進 `docs/repo-ops/`：取數前置條件（哪個 provider、哪台機器、warm-up 多久、VU 數）、
+報告保留原則、以及明確排除項 —— **不進 CI**。
 
 ### 為什麼不進 CI
 
@@ -222,3 +375,6 @@ short-circuit（[KeyObjectCache.cs:109](../../src/Bee.ObjectCaching/KeyObjectCac
   與端到端壓測的目的、工具、取數方式都不同。要做另開 plan。
 - **調優** —— 本 plan 只建立「量得準」的能力，不承諾改善任何數字。
   量出瓶頸後要不要調、怎麼調，是後續決策。
+- **跨次比較與回歸偵測** —— 自動比對本次與 baseline、超標就報警，需要固定的 baseline
+  檔與入版控策略。JSON 輸出已為它預留，但本 plan 只做到「產出可比較的資料」，
+  不做比較機制本身。
