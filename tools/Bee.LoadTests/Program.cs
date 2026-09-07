@@ -41,6 +41,7 @@ namespace Bee.LoadTests
                     "--version" or "-v" => PrintVersion(),
                     "--help" or "-h" or "help" => Help(Console.Out),
                     "verify" => Verify(args.AsSpan(1).ToArray()),
+                    "prepare" => Prepare(args.AsSpan(1).ToArray()),
                     _ => UnknownCommand(args[0]),
                 };
             }
@@ -105,6 +106,29 @@ namespace Bee.LoadTests
 
             Console.WriteLine();
             Console.WriteLine("Backend started and torn down successfully.");
+            return ExitSuccess;
+        }
+
+        private static int Prepare(string[] args)
+        {
+            var options = LoadConfiguration(args);
+            options.Validate();
+
+            Console.WriteLine($"Provider     : {options.Database.Provider}");
+            Console.WriteLine($"Databases    : {options.Database.DatabaseNamePrefix}<category>");
+
+            using var host = LoadTestHost.Start(options);
+            var defineAccess = host.Services.GetRequiredService<IDefineAccess>();
+            var connectionManager = host.Services.GetRequiredService<IDbConnectionManager>();
+
+            SchemaPreparer.EnsureDatabases(options, defineAccess, host.ConnectionStringTemplate);
+            Console.WriteLine("Databases    : ensured");
+
+            var tables = SchemaPreparer.EnsureTables(defineAccess, connectionManager);
+            Console.WriteLine($"Tables       : {tables} built or confirmed");
+
+            Console.WriteLine();
+            Console.WriteLine("Schema is ready.");
             return ExitSuccess;
         }
 
@@ -175,6 +199,7 @@ namespace Bee.LoadTests
             writer.WriteLine();
             writer.WriteLine("Commands:");
             writer.WriteLine("  verify           Start the backend, resolve its services, tear it down.");
+            writer.WriteLine("  prepare          Create the databases and tables a run measures against.");
             writer.WriteLine("  --help, -h       Show this help.");
             writer.WriteLine("  --version, -v    Show the version.");
             writer.WriteLine();

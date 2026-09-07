@@ -145,8 +145,13 @@ namespace Bee.LoadTests.Bootstrap
                 // {@DbName} lets one connection string serve every category, which is how the
                 // test harness expresses its connection strings; a string without the placeholder
                 // is left as-is and every category shares one database.
+                //
+                // IMPORTANT: the substituted name carries the configured prefix. The harness
+                // creates catalogs named after the bare categories, so substituting the category
+                // alone would point a run at the unit tests' own databases.
                 item.ConnectionString = connectionString.Replace(
-                    "{@DbName}", item.CategoryId, StringComparison.Ordinal);
+                    "{@DbName}", options.Database.ResolveDatabaseName(item.CategoryId),
+                    StringComparison.Ordinal);
                 item.DisplayName = $"Load test ({options.Database.Provider}, {item.CategoryId})";
             }
 

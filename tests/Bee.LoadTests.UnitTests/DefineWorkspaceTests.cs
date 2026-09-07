@@ -84,16 +84,46 @@ namespace Bee.LoadTests.UnitTests
         }
 
         [Fact]
-        [DisplayName("連線字串的 {@DbName} 置換為各自的 CategoryId")]
+        [DisplayName("連線字串的 {@DbName} 置換為帶前綴的資料庫名")]
         public void CreateFrom_SubstitutesDbNamePlaceholder()
         {
             using var workspace = DefineWorkspace.CreateFrom(_source, CreateOptions(), ConnectionString);
 
             var settings = ReadDatabaseSettings(workspace);
-            Assert.Equal("Server=localhost;Database=common;",
+            Assert.Equal("Server=localhost;Database=loadtest_common;",
                 settings.Items!["common"]!.ConnectionString);
-            Assert.Equal("Server=localhost;Database=company;",
+            Assert.Equal("Server=localhost;Database=loadtest_company;",
                 settings.Items!["company"]!.ConnectionString);
+        }
+
+        [Fact]
+        [DisplayName("置換結果不得等於裸 CategoryId —— 那是單元測試自己的資料庫")]
+        public void CreateFrom_NeverTargetsTheBareCategoryDatabase()
+        {
+            using var workspace = DefineWorkspace.CreateFrom(_source, CreateOptions(), ConnectionString);
+
+            var settings = ReadDatabaseSettings(workspace);
+
+            // The test harness creates catalogs named after the bare categories. A run that
+            // resolved to one of those would seed rows into the databases the unit tests depend
+            // on, and the damage would surface later, elsewhere, as unrelated test failures.
+            Assert.All(settings.Items!, item =>
+                Assert.DoesNotContain($"Database={item.CategoryId};", item.ConnectionString,
+                    StringComparison.Ordinal));
+        }
+
+        [Fact]
+        [DisplayName("自訂前綴會被沿用")]
+        public void CreateFrom_HonoursCustomPrefix()
+        {
+            var options = CreateOptions();
+            options.Database.DatabaseNamePrefix = "perf_";
+
+            using var workspace = DefineWorkspace.CreateFrom(_source, options, ConnectionString);
+
+            var settings = ReadDatabaseSettings(workspace);
+            Assert.Equal("Server=localhost;Database=perf_common;",
+                settings.Items!["common"]!.ConnectionString);
         }
 
         [Fact]

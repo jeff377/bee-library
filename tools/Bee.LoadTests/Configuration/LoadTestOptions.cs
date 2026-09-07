@@ -138,6 +138,25 @@ namespace Bee.LoadTests.Configuration
                 }
             }
 
+            if (string.IsNullOrWhiteSpace(Database.DatabaseNamePrefix))
+            {
+                throw new InvalidOperationException(
+                    "database.databaseNamePrefix cannot be empty: without it a run would target " +
+                    "the databases the unit tests use.");
+            }
+
+            foreach (var character in Database.DatabaseNamePrefix)
+            {
+                // The prefix ends up in a CREATE DATABASE statement, where the name cannot be a
+                // parameter. Restricting the alphabet is what makes that concatenation safe.
+                if (!char.IsAsciiLetterOrDigit(character) && character != '_')
+                {
+                    throw new InvalidOperationException(
+                        "database.databaseNamePrefix may contain only ASCII letters, digits and " +
+                        $"underscore; found '{character}'.");
+                }
+            }
+
             if (Seed.Enabled && Seed.RowCount <= 0)
             {
                 throw new InvalidOperationException(

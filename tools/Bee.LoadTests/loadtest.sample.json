@@ -10,7 +10,11 @@
   "database": {
     // SQLite is rejected: it is an embedded engine, not a server-side option.
     "provider": "SQLServer",
-    "categoryId": "company"
+    "categoryId": "company",
+    // Keeps a run out of the unit tests' own databases: the test harness creates catalogs named
+    // after the bare categories (common, company, log) from this same connection string.
+    // Letters, digits and underscore only — the name reaches a CREATE DATABASE statement.
+    "databaseNamePrefix": "loadtest_"
   },
   "load": {
     "virtualUsers": 10,

@@ -45,13 +45,22 @@ namespace Bee.LoadTests.Bootstrap
             DefineWorkspace workspace,
             ServiceProvider services,
             CountingCacheProvider cacheCounters,
-            ICacheProvider originalCacheProvider)
+            ICacheProvider originalCacheProvider,
+            string connectionStringTemplate)
         {
             _workspace = workspace;
             _services = services;
             _originalCacheProvider = originalCacheProvider;
             CacheCounters = cacheCounters;
+            ConnectionStringTemplate = connectionStringTemplate;
         }
+
+        /// <summary>
+        /// Gets the connection string as configured, with the <c>{@DbName}</c> placeholder still
+        /// in place. Creating a database needs to connect to the engine's admin database, which
+        /// means substituting a different name than the one the run itself uses.
+        /// </summary>
+        public string ConnectionStringTemplate { get; }
 
         /// <summary>
         /// Gets the counting wrapper installed around the framework's cache provider.
@@ -112,7 +121,7 @@ namespace Bee.LoadTests.Bootstrap
                 var counters = new CountingCacheProvider(original);
                 CacheInfo.Provider = counters;
 
-                return new LoadTestHost(workspace, provider, counters, original);
+                return new LoadTestHost(workspace, provider, counters, original, connectionString);
             }
             catch
             {

@@ -156,6 +156,40 @@ namespace Bee.LoadTests.UnitTests
         }
 
         [Fact]
+        [DisplayName("驗證：資料庫名稱前綴不可為空")]
+        public void Validate_EmptyDatabaseNamePrefix_Throws()
+        {
+            var options = CreateValid();
+            options.Database.DatabaseNamePrefix = "";
+
+            var ex = Assert.Throws<InvalidOperationException>(options.Validate);
+            Assert.Contains("unit tests", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData("load test_")]
+        [InlineData("load-test_")]
+        [InlineData("load];DROP DATABASE x--")]
+        [DisplayName("驗證：前綴只接受字母數字底線（名稱會進入 DDL）")]
+        public void Validate_UnsafeDatabaseNamePrefix_Throws(string prefix)
+        {
+            var options = CreateValid();
+            options.Database.DatabaseNamePrefix = prefix;
+
+            Assert.Throws<InvalidOperationException>(options.Validate);
+        }
+
+        [Fact]
+        [DisplayName("資料庫名稱由前綴加上 CategoryId 組成")]
+        public void ResolveDatabaseName_PrependsPrefix()
+        {
+            var database = new DatabaseOptions { DatabaseNamePrefix = "loadtest_" };
+
+            Assert.Equal("loadtest_company", database.ResolveDatabaseName("company"));
+            Assert.Equal("loadtest_common", database.ResolveDatabaseName("common"));
+        }
+
+        [Fact]
         [DisplayName("範例設定檔可被解析且通過驗證")]
         public void SampleConfiguration_ParsesAndValidates()
         {
