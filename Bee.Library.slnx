@@ -34,6 +34,7 @@
     <Project Path="tests/Bee.Business.UnitTests/Bee.Business.UnitTests.csproj" />
     <Project Path="tests/Bee.Db.UnitTests/Bee.Db.UnitTests.csproj" />
     <Project Path="tests/Bee.Definition.UnitTests/Bee.Definition.UnitTests.csproj" />
+    <Project Path="tests/Bee.LoadTests.UnitTests/Bee.LoadTests.UnitTests.csproj" />
     <Project Path="tests/Bee.Expressions.UnitTests/Bee.Expressions.UnitTests.csproj" />
     <Project Path="tests/Bee.Hosting.UnitTests/Bee.Hosting.UnitTests.csproj" />
     <Project Path="tests/Bee.ObjectCaching.UnitTests/Bee.ObjectCaching.UnitTests.csproj" />

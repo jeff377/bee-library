@@ -1,0 +1,40 @@
+{
+  // Copy this file, edit the copy, and pass it with --config. The connection string is NOT
+  // here on purpose: it comes from BEE_TEST_CONNSTR_{DBTYPE}, the same variable ./test.sh uses.
+  "target": {
+    "mode": "Local",
+    "endpoint": "",
+    "protectionLevel": "Encrypted",
+    "codec": ""
+  },
+  "database": {
+    // SQLite is rejected: it is an embedded engine, not a server-side option.
+    "provider": "SQLServer",
+    "categoryId": "company"
+  },
+  "load": {
+    "virtualUsers": 10,
+    "warmupSeconds": 30,
+    "durationSeconds": 120,
+    // Closed mirrors how a user of a business application behaves; Open finds the saturation point.
+    "model": "Closed"
+  },
+  "auth": {
+    "tokenStrategy": "PerUser",
+    "userPoolSize": 10
+  },
+  "scenarios": [
+    { "name": "Login", "enabled": true, "weight": 1 },
+    { "name": "GetList", "enabled": true, "weight": 5 },
+    { "name": "GetData", "enabled": true, "weight": 5 },
+    { "name": "Save", "enabled": true, "weight": 1 },
+    { "name": "DefineRead", "enabled": true, "weight": 3 }
+  ],
+  "report": {
+    "console": true,
+    "markdown": true,
+    "json": true,
+    "outputDirectory": "artifacts/loadtest",
+    "percentiles": [50, 95, 99]
+  }
+}

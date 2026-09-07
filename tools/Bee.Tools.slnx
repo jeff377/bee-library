@@ -5,6 +5,7 @@
   <Folder Name="/tools/">
     <Project Path="DefineEditor/Bee.DefineEditor.csproj" />
     <Project Path="Bee.Cli/Bee.Cli.csproj" />
+    <Project Path="Bee.LoadTests/Bee.LoadTests.csproj" />
   </Folder>
   <Folder Name="/ref-src/">
     <Project Path="../src/Bee.Definition/Bee.Definition.csproj" />

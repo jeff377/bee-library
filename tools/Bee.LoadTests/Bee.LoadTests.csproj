@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Bee.LoadTests</RootNamespace>
+    <!--
+      No PackageReference by design. NBomber 6.x is commercially licensed (organisations
+      need a paid subscription and an activation key), which does not fit a public MIT
+      repository whose load-testing method is meant to be usable by anyone who clones it.
+      Scheduling, timing and percentile statistics are written here against the BCL.
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Copied to output so a run can start from it, and so the test project can assert
+         that the shipped sample actually parses and validates. -->
+    <Content Include="loadtest.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Bee.Definition\Bee.Definition.csproj" />
+    <ProjectReference Include="..\..\src\Bee.ObjectCaching\Bee.ObjectCaching.csproj" />
+  </ItemGroup>
+
+</Project>

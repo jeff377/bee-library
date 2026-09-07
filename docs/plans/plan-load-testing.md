@@ -90,10 +90,14 @@ provider 之間行為差異夠大（這正是 `NormalizeDbType` 存在的理由�
 > 補上 `Microsoft.Data.Sqlite` 缺的 `DbDataAdapter`，讓它與其他 provider 共用同一條
 > adapter-based 讀寫路徑。排除 SQLite 的理由是**它不是伺服端選項**，不是路徑不同。
 
-## 外部套件：零
+## 外部套件：不引入壓測框架
 
-**`tools/Bee.LoadTests` 不引用任何外部套件**，只以 `ProjectReference` 取用 repo 內的
-`Bee.Api.Client` 等組件。並行排程與統計自己寫。
+**不引用任何壓測框架**，只以 `ProjectReference` 取用 repo 內的 `Bee.Api.Client` 等組件。
+並行排程與統計自己寫。
+
+**唯一的例外是 ADO.NET driver**（`Microsoft.Data.SqlClient` 等）。`Bee.Db` 本身刻意不引用
+任何 driver —— 那是 host 的責任，而壓測工具在 Local 模式下**就是** host。這不是破例，
+是承擔 host 本來就該承擔的東西：每個要跑起來的 backend 都得引一個。
 
 ### 為什麼不用 NBomber
 
@@ -244,7 +248,7 @@ short-circuit（[KeyObjectCache.cs:109](../../src/Bee.ObjectCaching/KeyObjectCac
 
 **設定檔為主、命令列可覆寫**最常調的幾個（`--vu` / `--duration` / `--config`）。
 解析方式沿用 [`Bee.Cli`](../../tools/Bee.Cli/Program.cs) 的既有慣例：**手寫 args 解析、
-不引入 `System.CommandLine`**，與「外部套件：零」一致。設定檔用 JSON
+不引入 `System.CommandLine`**，與上一節一致。設定檔用 JSON
 （`System.Text.Json` 是 BCL）。
 
 ```jsonc
@@ -308,7 +312,7 @@ short-circuit（[KeyObjectCache.cs:109](../../src/Bee.ObjectCaching/KeyObjectCac
 `artifacts/` 已在 `.gitignore` 內，所以**報告預設不入版控** —— 探索性的跑動佔多數，
 不值得每次都留。**要保留的那幾份手動複製到 `docs/repo-ops/`**（維運文件，非公開文件）。
 
-`System.Text.Json` 是 BCL，JSON 那層不會引入外部套件（呼應「外部套件：零」）。
+`System.Text.Json` 是 BCL，JSON 那層不會引入外部套件。
 
 ### 報告一定要帶的中繼資料
 
