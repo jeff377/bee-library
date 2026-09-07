@@ -19,6 +19,17 @@
     // Closed mirrors how a user of a business application behaves; Open finds the saturation point.
     "model": "Closed"
   },
+  "seed": {
+    // Row count changes the answer, so it is configuration rather than a constant: a list query
+    // over 1,000 rows and one over 100,000 are different measurements. Set enabled to false to
+    // measure against a database that is already populated.
+    "enabled": true,
+    "rowCount": 1000
+  },
+  // Empty means: walk up from the executable and use apps/Bee.Northwind/Define — the most
+  // complete definition set in this repository. It is copied to a temporary directory and the
+  // copy is adjusted (provider, debug mode, audit background writer), never the source.
+  "definePath": "",
   "auth": {
     "tokenStrategy": "PerUser",
     "userPoolSize": 10

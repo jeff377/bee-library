@@ -43,6 +43,20 @@ namespace Bee.LoadTests.Configuration
         public AuthOptions Auth { get; set; } = new();
 
         /// <summary>
+        /// Gets or sets how much data to plant before measuring.
+        /// </summary>
+        public SeedOptions Seed { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the directory holding the definition files. Empty means the driver walks
+        /// up from the executable looking for the Northwind definitions in the checkout — that set
+        /// is used because it is the most complete one here: nine form schemas, a master-detail
+        /// pair, and all three database categories. The files are copied to a temporary directory
+        /// before use, so nothing under the source tree is written to.
+        /// </summary>
+        public string DefinePath { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the scenarios in the run.
         /// </summary>
         public List<ScenarioOptions> Scenarios { get; set; } = [];
@@ -122,6 +136,12 @@ namespace Bee.LoadTests.Configuration
                     throw new InvalidOperationException(
                         $"Scenario '{scenario.Name}' is enabled, so its weight must be greater than zero.");
                 }
+            }
+
+            if (Seed.Enabled && Seed.RowCount <= 0)
+            {
+                throw new InvalidOperationException(
+                    "seed.rowCount must be greater than zero when seeding is enabled.");
             }
 
             if (Report.Percentiles.Length == 0)
