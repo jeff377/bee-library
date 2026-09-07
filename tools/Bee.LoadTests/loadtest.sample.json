@@ -45,7 +45,8 @@
   // Only the scenarios listed here run. An unknown name is rejected rather than skipped: a run
   // quietly missing a scenario would still produce a report that looks complete.
   "scenarios": [
-    { "name": "Login", "enabled": true, "weight": 1 }
+    { "name": "Login", "enabled": true, "weight": 1 },
+    { "name": "GetList", "enabled": true, "weight": 5, "progId": "Customer", "pageSize": 50 }
   ],
   "report": {
     "console": true,

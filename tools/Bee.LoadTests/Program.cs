@@ -193,8 +193,10 @@ namespace Bee.LoadTests
                 Console.WriteLine($"Dropped      : {string.Join(", ", host.DroppedBindings)}");
             }
 
+            var pool = new VirtualUserPool(options.Auth,
+                options.Target.Mode == TargetMode.Remote ? options.Target.Endpoint : null);
             var scenarios = enabled
-                .Select(scenario => CreateScenario(scenario.Name, options))
+                .Select(scenario => CreateScenario(scenario, options, pool))
                 .ToArray();
 
             Console.WriteLine($"Scenarios    : {string.Join(", ", scenarios.Select(s => s.Name))}");
@@ -209,17 +211,19 @@ namespace Bee.LoadTests
             return results.Any(result => result.SuccessCount == 0) ? ExitFailure : ExitSuccess;
         }
 
-        private static IScenario CreateScenario(string name, LoadTestOptions options)
+        private static IScenario CreateScenario(
+            ScenarioOptions scenario, LoadTestOptions options, VirtualUserPool pool)
         {
             var endpoint = options.Target.Mode == TargetMode.Remote ? options.Target.Endpoint : null;
 
-            return name switch
+            return scenario.Name switch
             {
                 "Login" => new LoginScenario(options.Auth, endpoint),
+                "GetList" => new GetListScenario(pool, scenario.ProgId, scenario.PageSize),
                 _ => throw new InvalidOperationException(
-                    $"Unknown scenario '{name}'. A misspelled name is rejected rather than " +
-                    "skipped, because a run silently missing a scenario would still produce a " +
-                    "report that looks complete.")
+                    $"Unknown scenario '{scenario.Name}'. A misspelled name is rejected rather " +
+                    "than skipped, because a run silently missing a scenario would still produce " +
+                    "a report that looks complete.")
             };
         }
 
