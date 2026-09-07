@@ -196,8 +196,15 @@ namespace Bee.LoadTests
 
             var pool = new VirtualUserPool(options.Auth,
                 options.Target.Mode == TargetMode.Remote ? options.Target.Endpoint : null);
+
+            // Keys for the read-by-key scenario are collected up front. Doing it inside the
+            // scenario would fold the lookup into every sample.
+            var rowIds = enabled.Any(scenario => scenario.Name is "GetData" or "Save")
+                ? CollectRowIds(host, options)
+                : [];
+
             var scenarios = enabled
-                .Select(scenario => CreateScenario(scenario, options, pool))
+                .Select(scenario => CreateScenario(scenario, options, pool, rowIds))
                 .ToArray();
 
             Console.WriteLine($"Scenarios    : {string.Join(", ", scenarios.Select(s => s.Name))}");
@@ -220,8 +227,26 @@ namespace Bee.LoadTests
             return results.Any(result => result.SuccessCount == 0) ? ExitFailure : ExitSuccess;
         }
 
+        private static IReadOnlyList<Guid> CollectRowIds(LoadTestHost host, LoadTestOptions options)
+        {
+            var table = options.Seed.Tables.FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(table))
+            {
+                throw new InvalidOperationException(
+                    "The GetData and Save scenarios work by key, but seed.tables is empty so " +
+                    "there is no table to take keys from.");
+            }
+
+            var dbAccess = host.Services.GetRequiredService<IDbAccessFactory>()
+                .Create(options.Database.CategoryId);
+            return DataSeeder.ReadRowIds(dbAccess, table, count: 100);
+        }
+
         private static IScenario CreateScenario(
-            ScenarioOptions scenario, LoadTestOptions options, VirtualUserPool pool)
+            ScenarioOptions scenario,
+            LoadTestOptions options,
+            VirtualUserPool pool,
+            IReadOnlyList<Guid> rowIds)
         {
             var endpoint = options.Target.Mode == TargetMode.Remote ? options.Target.Endpoint : null;
 
@@ -229,6 +254,8 @@ namespace Bee.LoadTests
             {
                 "Login" => new LoginScenario(options.Auth, endpoint),
                 "GetList" => new GetListScenario(pool, scenario.ProgId, scenario.PageSize),
+                "GetData" => new GetDataScenario(pool, scenario.ProgId, rowIds),
+                "Save" => new SaveScenario(pool, scenario.ProgId, rowIds),
                 _ => throw new InvalidOperationException(
                     $"Unknown scenario '{scenario.Name}'. A misspelled name is rejected rather " +
                     "than skipped, because a run silently missing a scenario would still produce " +

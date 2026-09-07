@@ -95,6 +95,32 @@ namespace Bee.LoadTests.Bootstrap
         }
 
         /// <summary>
+        /// Reads a sample of row keys from a table, for scenarios that read by key.
+        /// </summary>
+        /// <param name="dbAccess">Database access.</param>
+        /// <param name="tableName">The table name, from a definition file.</param>
+        /// <param name="count">How many keys to take.</param>
+        /// <returns>The keys found, which may be fewer than requested.</returns>
+        public static IReadOnlyList<Guid> ReadRowIds(DbAccess dbAccess, string tableName, int count)
+        {
+            ArgumentNullException.ThrowIfNull(dbAccess);
+            ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
+
+            var spec = new DbCommandSpec(DbCommandKind.DataTable,
+                $"SELECT sys_rowid FROM {tableName}");
+            var table = dbAccess.Execute(spec).Table;
+            if (table is null) { return []; }
+
+            var rowIds = new List<Guid>(Math.Min(count, table.Rows.Count));
+            foreach (System.Data.DataRow row in table.Rows)
+            {
+                if (rowIds.Count >= count) { break; }
+                if (row[0] is Guid guid) { rowIds.Add(guid); }
+            }
+            return rowIds;
+        }
+
+        /// <summary>
         /// Produces a deterministic value for a field at a given row index.
         /// </summary>
         /// <param name="field">The column definition.</param>

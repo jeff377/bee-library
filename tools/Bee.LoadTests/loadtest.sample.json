@@ -46,7 +46,9 @@
   // quietly missing a scenario would still produce a report that looks complete.
   "scenarios": [
     { "name": "Login", "enabled": true, "weight": 1 },
-    { "name": "GetList", "enabled": true, "weight": 5, "progId": "Customer", "pageSize": 50 }
+    { "name": "GetList", "enabled": true, "weight": 5, "progId": "Customer", "pageSize": 50 },
+    { "name": "GetData", "enabled": true, "weight": 5, "progId": "Customer" },
+    { "name": "Save", "enabled": true, "weight": 1, "progId": "Customer" }
   ],
   "report": {
     "console": true,
