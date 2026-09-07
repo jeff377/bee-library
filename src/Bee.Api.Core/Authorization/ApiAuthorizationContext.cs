@@ -1,4 +1,4 @@
-﻿using Bee.Definition.Security;
+using Bee.Definition.Security;
 
 namespace Bee.Api.Core.Authorization
 {

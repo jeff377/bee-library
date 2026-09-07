@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using Bee.Base.Security;
 
 namespace Bee.Api.Core.Transformers

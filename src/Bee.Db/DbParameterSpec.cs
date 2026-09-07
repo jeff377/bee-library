@@ -1,4 +1,4 @@
-﻿using Bee.Base.Collections;
+using Bee.Base.Collections;
 using System.Data;
 using System.Data.Common;
 

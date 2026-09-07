@@ -1,4 +1,4 @@
-﻿using Bee.Base.Attributes;
+using Bee.Base.Attributes;
 using System.ComponentModel;
 
 namespace Bee.Definition.Logging

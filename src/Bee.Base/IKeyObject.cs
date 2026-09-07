@@ -1,4 +1,4 @@
-﻿namespace Bee.Base
+namespace Bee.Base
 {
     /// <summary>
     /// Interface for objects of the same type that have a key value.

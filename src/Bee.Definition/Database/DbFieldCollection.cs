@@ -1,4 +1,4 @@
-﻿using Bee.Base.Attributes;
+using Bee.Base.Attributes;
 using Bee.Base.Data;
 using Bee.Base.Collections;
 

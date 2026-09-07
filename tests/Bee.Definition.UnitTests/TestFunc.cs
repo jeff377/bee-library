@@ -1,4 +1,4 @@
-﻿namespace Bee.Definition.UnitTests
+namespace Bee.Definition.UnitTests
 {
     /// <summary>
     /// 測試用的自訂方法。

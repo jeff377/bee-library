@@ -1,4 +1,4 @@
-﻿namespace Bee.Db.Dml
+namespace Bee.Db.Dml
 {
     /// <summary>
     /// Represents the field source mappings and table JOIN relationships required for a SQL query.

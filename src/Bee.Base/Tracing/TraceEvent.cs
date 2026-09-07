@@ -1,4 +1,4 @@
-﻿namespace Bee.Base.Tracing
+namespace Bee.Base.Tracing
 {
     /// <summary>
     /// Represents a complete trace event including start time, elapsed time, status, and description.

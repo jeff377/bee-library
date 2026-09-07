@@ -1,4 +1,4 @@
-﻿namespace Bee.Base.Serialization
+namespace Bee.Base.Serialization
 {
     /// <summary>
     /// Base marker interface for serializable objects; used by serialization extension methods.

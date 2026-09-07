@@ -1,4 +1,4 @@
-﻿namespace Bee.Definition.Filters
+namespace Bee.Definition.Filters
 {
     /// <summary>
     /// A single-field filter condition (e.g., Name LIKE '%Lee%', Age &gt; 18).

@@ -1,4 +1,4 @@
-﻿namespace Bee.Db.Dml
+namespace Bee.Db.Dml
 {
     /// <summary>
     /// Defines the interface for a parameter collector used by query builders to generate named parameters.

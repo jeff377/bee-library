@@ -1,4 +1,4 @@
-﻿namespace Bee.Base.Collections
+namespace Bee.Base.Collections
 {
     /// <summary>
     /// A case-insensitive (ordinal) string collection that does not allow duplicate entries.

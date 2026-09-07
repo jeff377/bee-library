@@ -1,4 +1,4 @@
-﻿namespace Bee.Base
+namespace Bee.Base
 {
     /// <summary>
     /// Interface for providing configuration values for <see cref="SysInfo"/>.

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Bee.Base.Attributes;
 
 namespace Bee.Definition.Settings

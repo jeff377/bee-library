@@ -1,4 +1,4 @@
-﻿namespace Bee.Base.Tracing
+namespace Bee.Base.Tracing
 {
     /// <summary>
     /// Interface for writing trace output, responsible for sending <see cref="TraceEvent"/> instances to various destinations

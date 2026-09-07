@@ -1,4 +1,4 @@
-﻿namespace Bee.Base.Collections
+namespace Bee.Base.Collections
 {
     /// <summary>
     /// Interface for strongly-typed collection items.

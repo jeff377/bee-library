@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using Bee.Base.Data;
 
 namespace Bee.Api.Core.MessagePack

@@ -1,4 +1,4 @@
-﻿using Bee.Api.Core.MessagePack;
+using Bee.Api.Core.MessagePack;
 
 namespace Bee.Api.Core.Transformers
 {

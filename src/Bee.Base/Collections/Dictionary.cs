@@ -1,4 +1,4 @@
-﻿namespace Bee.Base.Collections
+namespace Bee.Base.Collections
 {
     /// <summary>
     /// A key-value collection with case-insensitive (ordinal) string keys.

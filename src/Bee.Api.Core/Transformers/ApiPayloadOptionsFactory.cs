@@ -1,4 +1,4 @@
-﻿namespace Bee.Api.Core.Transformers
+namespace Bee.Api.Core.Transformers
 {
     /// <summary>
     /// Factory class that creates API payload encoding components based on configuration values.

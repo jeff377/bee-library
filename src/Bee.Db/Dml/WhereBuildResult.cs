@@ -1,4 +1,4 @@
-﻿namespace Bee.Db.Dml
+namespace Bee.Db.Dml
 {
     /// <summary>
     /// Represents the result of building a WHERE clause.

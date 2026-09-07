@@ -1,4 +1,4 @@
-﻿namespace Bee.Base.Serialization
+namespace Bee.Base.Serialization
 {
     /// <summary>
     /// Interface for objects that support serialization to a file.

@@ -1,4 +1,4 @@
-﻿namespace Bee.Db
+namespace Bee.Db
 {
     /// <summary>
     /// Represents the output of a batch command execution.

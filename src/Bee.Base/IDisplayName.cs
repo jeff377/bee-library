@@ -1,4 +1,4 @@
-﻿namespace Bee.Base
+namespace Bee.Base
 {
     /// <summary>
     /// Interface for objects that have a display name.
