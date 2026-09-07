@@ -22,7 +22,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The only package reference here, and it is not an exception to the "no packages" rule:
+         Bee.Db references no ADO.NET driver because that is the host's decision, and in Local
+         mode this project IS the host. Every backend that runs has to reference one. -->
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Bee.Api.Client\Bee.Api.Client.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Db\Bee.Db.csproj" />
     <ProjectReference Include="..\..\src\Bee.Definition\Bee.Definition.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Hosting\Bee.Hosting.csproj" />
     <ProjectReference Include="..\..\src\Bee.ObjectCaching\Bee.ObjectCaching.csproj" />
   </ItemGroup>
 
