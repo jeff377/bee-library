@@ -22,10 +22,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The only package reference here, and it is not an exception to the "no packages" rule:
-         Bee.Db references no ADO.NET driver because that is the host's decision, and in Local
-         mode this project IS the host. Every backend that runs has to reference one. -->
+    <!-- Both package references here exist for the same reason, and neither is an exception to
+         the "no load-testing framework" rule: in Local mode this project is the host, and a host
+         has to supply what the framework leaves to it. Bee.Db references no ADO.NET driver
+         because choosing one is the host's decision. -->
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
+    <!-- AddBeeFramework registers services that ctor-inject ILogger<T>. An ASP.NET Core host gets
+         logging from WebApplicationBuilder; a bare ServiceCollection has to add it. -->
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>

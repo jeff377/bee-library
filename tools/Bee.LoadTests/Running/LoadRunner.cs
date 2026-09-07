@@ -100,6 +100,7 @@ namespace Bee.LoadTests.Running
         {
             var samples = new ConcurrentDictionary<string, ConcurrentBag<double>>(StringComparer.Ordinal);
             var errors = new ConcurrentDictionary<string, ConcurrentDictionary<string, long>>(StringComparer.Ordinal);
+            var errorSamples = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>(StringComparer.Ordinal);
 
             using var windowCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             windowCts.CancelAfter(window);
@@ -112,7 +113,7 @@ namespace Bee.LoadTests.Running
             {
                 var virtualUserIndex = index;
                 workers[index] = Task.Run(
-                    () => WorkerAsync(virtualUserIndex, schedule, samples, errors, collect, token),
+                    () => WorkerAsync(virtualUserIndex, schedule, samples, errors, errorSamples, collect, token),
                     CancellationToken.None);
             }
 
@@ -130,6 +131,9 @@ namespace Bee.LoadTests.Running
                 var scenarioErrors = errors.TryGetValue(scenario.Name, out var map)
                     ? map.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal)
                     : [];
+                var scenarioSampleMessages = errorSamples.TryGetValue(scenario.Name, out var sampleMap)
+                    ? sampleMap.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal)
+                    : [];
 
                 if (scenarioSamples.Length == 0 && scenarioErrors.Count == 0) { continue; }
 
@@ -138,6 +142,7 @@ namespace Bee.LoadTests.Running
                     LatencyStatistics.FromMilliseconds(scenarioSamples),
                     scenarioSamples.Length,
                     scenarioErrors,
+                    scenarioSampleMessages,
                     elapsed));
             }
             return results;
@@ -148,6 +153,7 @@ namespace Bee.LoadTests.Running
             IScenario[] schedule,
             ConcurrentDictionary<string, ConcurrentBag<double>> samples,
             ConcurrentDictionary<string, ConcurrentDictionary<string, long>> errors,
+            ConcurrentDictionary<string, ConcurrentDictionary<string, string>> errorSamples,
             bool collect,
             CancellationToken token)
         {
@@ -187,6 +193,11 @@ namespace Bee.LoadTests.Running
                         var byType = errors.GetOrAdd(scenario.Name,
                             _ => new ConcurrentDictionary<string, long>(StringComparer.Ordinal));
                         byType.AddOrUpdate(ex.GetType().Name, 1, (_, count) => count + 1);
+
+                        errorSamples
+                            .GetOrAdd(scenario.Name,
+                                _ => new ConcurrentDictionary<string, string>(StringComparer.Ordinal))
+                            .TryAdd(ex.GetType().Name, ex.Message);
                     }
                 }
 

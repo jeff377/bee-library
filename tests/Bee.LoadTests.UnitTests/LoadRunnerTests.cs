@@ -129,13 +129,16 @@ namespace Bee.LoadTests.UnitTests
         public async Task RunAsync_RecordsErrorsWithoutStopping()
         {
             var results = await LoadRunner.RunAsync(
-                Load(), [new ThrowingScenario("A", new TimeoutException())],
+                Load(), [new ThrowingScenario("A", new TimeoutException("boom"))],
                 new Dictionary<string, int>(StringComparer.Ordinal));
 
             var result = Assert.Single(results);
             Assert.Equal(0, result.SuccessCount);
             Assert.True(result.ErrorCount > 0);
             Assert.Equal(result.ErrorCount, result.Errors[nameof(TimeoutException)]);
+
+            // A type name alone is not diagnosable; the report keeps one message per type.
+            Assert.Equal("boom", result.ErrorSamples[nameof(TimeoutException)]);
         }
 
         [Fact]

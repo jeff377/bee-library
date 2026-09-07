@@ -8,6 +8,7 @@ using Bee.LoadTests.Configuration;
 using Bee.ObjectCaching;
 using Bee.ObjectCaching.Providers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Bee.LoadTests.Bootstrap
 {
@@ -110,6 +111,14 @@ namespace Bee.LoadTests.Bootstrap
                     settings.CommonConfiguration.IsDebugMode);
 
                 var services = new ServiceCollection();
+
+                // AddBeeFramework registers services that ctor-inject ILogger<T>; the audit sink is
+                // the one that fails first. An ASP.NET Core host gets logging from
+                // WebApplicationBuilder, which is why the other bootstraps in this repository never
+                // hit this. No provider is added on purpose: log I/O during a measured window would
+                // show up in the numbers as latency that a production host, writing elsewhere,
+                // would not have.
+                services.AddLogging();
                 // autoCreateMasterKey generates a key when BEE_MASTER_KEY is unset, so a run needs
                 // no key material of its own and none is hard-coded here.
                 services.AddBeeFramework(

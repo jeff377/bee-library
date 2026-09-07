@@ -20,12 +20,14 @@ namespace Bee.LoadTests.Running
             LatencyStatistics latencies,
             long successCount,
             IReadOnlyDictionary<string, long> errors,
+            IReadOnlyDictionary<string, string> errorSamples,
             TimeSpan duration)
         {
             Name = name;
             Latencies = latencies;
             SuccessCount = successCount;
             Errors = errors;
+            ErrorSamples = errorSamples;
             Duration = duration;
         }
 
@@ -46,6 +48,16 @@ namespace Bee.LoadTests.Running
         /// half the calls failed fast looks excellent measured on latency alone.
         /// </remarks>
         public IReadOnlyDictionary<string, long> Errors { get; }
+
+        /// <summary>
+        /// Gets one example message per error type.
+        /// </summary>
+        /// <remarks>
+        /// A type name alone does not say what went wrong: a run reporting only
+        /// <c>UserMessageException</c> gives the reader nothing to act on. One message per type is
+        /// enough to diagnose without turning the report into a log.
+        /// </remarks>
+        public IReadOnlyDictionary<string, string> ErrorSamples { get; }
 
         /// <summary>Gets the measured window.</summary>
         public TimeSpan Duration { get; }
