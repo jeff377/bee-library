@@ -78,6 +78,11 @@ namespace Bee.LoadTests.Bootstrap
         public string DefinePath => _workspace.DefinePath;
 
         /// <summary>
+        /// Gets the program bindings dropped because their assembly could not be loaded.
+        /// </summary>
+        public IReadOnlyList<string> DroppedBindings => _workspace.DroppedBindings;
+
+        /// <summary>
         /// Brings up the backend for a run.
         /// </summary>
         /// <param name="options">The run configuration; must already have passed validation.</param>

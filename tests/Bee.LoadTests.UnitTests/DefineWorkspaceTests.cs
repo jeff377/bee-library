@@ -47,6 +47,22 @@ namespace Bee.LoadTests.UnitTests
             XmlCodec.SerializeToFile(databaseSettings,
                 Path.Combine(_source, "DatabaseSettings.xml"));
 
+            var programSettings = new ProgramSettings();
+            programSettings.Items!.Add(new ProgramItem
+            {
+                ProgId = "Order",
+                BusinessObject = "Some.Missing.OrderBO, Some.Missing.Assembly",
+                Repository = "Some.Missing.OrderRepository, Some.Missing.Assembly"
+            });
+            programSettings.Items!.Add(new ProgramItem
+            {
+                ProgId = "Resolvable",
+                BusinessObject = typeof(string).AssemblyQualifiedName!
+            });
+            programSettings.Items!.Add(new ProgramItem { ProgId = "Plain" });
+            XmlCodec.SerializeToFile(programSettings,
+                Path.Combine(_source, "ProgramSettings.xml"));
+
             var systemSettings = new SystemSettings();
             systemSettings.CommonConfiguration.IsDebugMode = true;
             systemSettings.BackendConfiguration.AuditLogOptions.UseBackgroundWriter = false;
@@ -195,6 +211,55 @@ namespace Bee.LoadTests.UnitTests
         }
 
         [Fact]
+        [DisplayName("載不到組件的 BO/Repository 綁定被清掉，退回框架實作")]
+        public void CreateFrom_DropsUnresolvableBindings()
+        {
+            using var workspace = DefineWorkspace.CreateFrom(_source, CreateOptions(), ConnectionString);
+
+            var settings = XmlCodec.DeserializeFromFile<ProgramSettings>(
+                Path.Combine(workspace.DefinePath, "ProgramSettings.xml"))!;
+
+            Assert.Equal(string.Empty, settings.Items!["Order"]!.BusinessObject);
+            Assert.Equal(string.Empty, settings.Items!["Order"]!.Repository);
+        }
+
+        [Fact]
+        [DisplayName("可解析的綁定保留，不會被一併清掉")]
+        public void CreateFrom_KeepsResolvableBindings()
+        {
+            using var workspace = DefineWorkspace.CreateFrom(_source, CreateOptions(), ConnectionString);
+
+            var settings = XmlCodec.DeserializeFromFile<ProgramSettings>(
+                Path.Combine(workspace.DefinePath, "ProgramSettings.xml"))!;
+
+            Assert.Equal(typeof(string).AssemblyQualifiedName,
+                settings.Items!["Resolvable"]!.BusinessObject);
+        }
+
+        [Fact]
+        [DisplayName("被清掉的綁定會被列出，不是靜默發生")]
+        public void CreateFrom_ReportsDroppedBindings()
+        {
+            using var workspace = DefineWorkspace.CreateFrom(_source, CreateOptions(), ConnectionString);
+
+            Assert.Contains("Order.BusinessObject", workspace.DroppedBindings);
+            Assert.Contains("Order.Repository", workspace.DroppedBindings);
+            Assert.DoesNotContain("Resolvable.BusinessObject", workspace.DroppedBindings);
+            Assert.DoesNotContain("Plain.BusinessObject", workspace.DroppedBindings);
+        }
+
+        [Fact]
+        [DisplayName("沒有 ProgramSettings.xml 時不擲例外")]
+        public void CreateFrom_WithoutProgramSettings_DoesNotThrow()
+        {
+            File.Delete(Path.Combine(_source, "ProgramSettings.xml"));
+
+            using var workspace = DefineWorkspace.CreateFrom(_source, CreateOptions(), ConnectionString);
+
+            Assert.Empty(workspace.DroppedBindings);
+        }
+
+        [Fact]
         [DisplayName("實際的 Northwind 定義檔可被複製並改寫為非 SQLite")]
         public void CreateFrom_RealNorthwindDefinitions_RewritesEveryCategory()
         {
@@ -217,6 +282,11 @@ namespace Bee.LoadTests.UnitTests
                 Path.Combine(workspace.DefinePath, "SystemSettings.xml"))!;
             Assert.False(system.CommonConfiguration.IsDebugMode);
             Assert.True(system.BackendConfiguration.AuditLogOptions.UseBackgroundWriter);
+
+            // Order binds to the demo server assembly, which this process does not reference; the
+            // binding has to be dropped so the program falls back to the framework's own
+            // implementation rather than failing to resolve at call time.
+            Assert.Contains("Order.BusinessObject", workspace.DroppedBindings);
 
             // The definitions the scenarios need must survive the copy.
             Assert.True(File.Exists(Path.Combine(

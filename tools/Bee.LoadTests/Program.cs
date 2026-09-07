@@ -70,6 +70,12 @@ namespace Bee.LoadTests
             using var host = LoadTestHost.Start(options);
 
             Console.WriteLine($"Definitions  : {host.DefinePath}");
+            if (host.DroppedBindings.Count > 0)
+            {
+                Console.WriteLine(
+                    $"Dropped      : {string.Join(", ", host.DroppedBindings)} " +
+                    "(assembly not loadable; falls back to the framework implementation)");
+            }
 
             // Resolving these proves the chain a Local call actually walks: the executor is what
             // LocalApiProvider reaches for, and it is useless without definitions and database
