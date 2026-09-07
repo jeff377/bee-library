@@ -7,6 +7,7 @@ using Bee.Db.Manager;
 using Bee.Definition.Storage;
 using Bee.LoadTests.Bootstrap;
 using Bee.LoadTests.Configuration;
+using Bee.LoadTests.Reporting;
 using Bee.LoadTests.Running;
 using Bee.LoadTests.Scenarios;
 using Microsoft.Extensions.DependencyInjection;
@@ -207,7 +208,15 @@ namespace Bee.LoadTests
                 options.Load, scenarios, weights,
                 onWarmupComplete: host.CacheCounters.Reset).ConfigureAwait(false);
 
-            PrintResults(results, host, options);
+            var report = new RunReport(
+                RunMetadata.Capture(options, host.DroppedBindings),
+                results,
+                host.CacheCounters.Snapshot(),
+                options.Report.Percentiles);
+
+            if (options.Report.Console) { PrintResults(report); }
+            WriteReports(report, options.Report);
+
             return results.Any(result => result.SuccessCount == 0) ? ExitFailure : ExitSuccess;
         }
 
@@ -227,24 +236,29 @@ namespace Bee.LoadTests
             };
         }
 
-        private static void PrintResults(
-            IReadOnlyList<ScenarioResult> results, LoadTestHost host, LoadTestOptions options)
+        private static void PrintResults(RunReport report)
         {
             Console.WriteLine();
-            Console.WriteLine($"{"Scenario",-16}{"calls",8}{"errors",8}{"rps",10}{"p50",10}{"p95",10}{"p99",10}{"max",10}");
-
-            foreach (var result in results)
+            Console.Write($"{"Scenario",-16}{"calls",8}{"errors",8}{"rps",10}");
+            foreach (var percentile in report.Percentiles)
             {
-                Console.WriteLine(
+                Console.Write($"{"p" + percentile.ToString("0.##", CultureInfo.InvariantCulture),10}");
+            }
+            Console.WriteLine($"{"max",10}");
+
+            foreach (var result in report.Scenarios)
+            {
+                Console.Write(
                     $"{result.Name,-16}{result.SuccessCount,8}{result.ErrorCount,8}" +
-                    $"{result.RequestsPerSecond,10:F1}" +
-                    $"{result.Latencies.Percentile(50),10:F1}" +
-                    $"{result.Latencies.Percentile(95),10:F1}" +
-                    $"{result.Latencies.Percentile(99),10:F1}" +
-                    $"{result.Latencies.Max,10:F1}");
+                    $"{result.RequestsPerSecond,10:F1}");
+                foreach (var percentile in report.Percentiles)
+                {
+                    Console.Write($"{result.Latencies.Percentile(percentile),10:F1}");
+                }
+                Console.WriteLine($"{result.Latencies.Max,10:F1}");
             }
 
-            foreach (var result in results.Where(r => r.ErrorCount > 0))
+            foreach (var result in report.Scenarios.Where(r => r.ErrorCount > 0))
             {
                 Console.WriteLine();
                 Console.WriteLine($"Errors in {result.Name}:");
@@ -257,12 +271,33 @@ namespace Bee.LoadTests
                 }
             }
 
-            var counters = host.CacheCounters.Snapshot();
             Console.WriteLine();
             Console.WriteLine(
-                $"Cache        : {counters.Reads} reads, {counters.HitRate:P1} hit rate, " +
-                $"{counters.Writes} writes");
-            Console.WriteLine($"Rows seeded  : {options.Seed.RowCount} per table");
+                $"Cache        : {report.Cache.Reads} reads, {report.Cache.HitRate:P1} hit rate, " +
+                $"{report.Cache.Writes} writes");
+            Console.WriteLine($"Rows seeded  : {report.Metadata.SeededRows} per table");
+        }
+
+        private static void WriteReports(RunReport report, ReportOptions options)
+        {
+            if (!options.Markdown && !options.Json) { return; }
+
+            var stem = Path.Combine(options.OutputDirectory, report.Metadata.ToFileStem());
+            Console.WriteLine();
+
+            if (options.Markdown)
+            {
+                var path = stem + ".md";
+                ReportWriter.WriteMarkdown(report, path);
+                Console.WriteLine($"Report       : {Path.GetFullPath(path)}");
+            }
+
+            if (options.Json)
+            {
+                var path = stem + ".json";
+                ReportWriter.WriteJson(report, path);
+                Console.WriteLine($"Report       : {Path.GetFullPath(path)}");
+            }
         }
 
         private static void ApplyOverrides(LoadTestOptions options, string[] args)

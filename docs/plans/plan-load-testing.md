@@ -1,12 +1,12 @@
 # 計畫：建立框架壓測設施
 
-**狀態：📝 擬定中（2026-09-07）**
+**狀態：🚧 進行中（2026-09-07）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 建 `tools/Bee.LoadTests` 專案骨架 + Local 層（in-process）場景，含快取計數 decorator | 📝 待做 |
+| 1 | 建 `tools/Bee.LoadTests` 專案骨架 + Local 層（in-process）場景，含快取計數 decorator | 🚧 進行中 —— 骨架、bootstrap、建表 seed、Login / GetList 場景、驅動迴圈已可實跑；GetData / Save 場景未做 |
 | 2 | 加上 Remote 層（HTTP），Local/Remote 對照量出傳輸層成本 | 📝 待做 |
-| 3 | 報告輸出（console / Markdown / JSON）與取數規範，寫進 `docs/repo-ops/` | 📝 待做 |
+| 3 | 報告輸出（console / Markdown / JSON）與取數規範，寫進 `docs/repo-ops/` | 🚧 進行中 —— 三層輸出已完成並帶齊中繼資料；取數規範文件未寫 |
 
 ## 背景
 
