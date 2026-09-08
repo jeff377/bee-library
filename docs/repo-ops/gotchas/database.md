@@ -232,6 +232,28 @@ FormSchema 驅動的結果表另在 `MarkFromSchema` 就地把宣告為 Guid 卻
 **殘留**：`FormDataGuard`、各 UI head 的 grid（`GridControl.Cells`、`DynamicGrid`、`ListView`）
 仍是裸 `is Guid`。經 `MarkFromSchema` 的資料沒問題，其他來源未查證。
 
+## SQLite：日期欄讀回來是 `string`，`is DateTime` 一律判 false（已修，但有殘留）
+
+**症狀**：`ApiKeyRepository.GetEnabledById` 在 SQLite 上把有到期時間的金鑰讀成
+`ExpiredAt = null` —— 沒有例外、沒有警告，只是**到期時間憑空消失**，於是
+`ApiKeyInfo.IsExpired` 永遠回 false，已過期的金鑰照樣通行。
+
+**根因**：SQLite 沒有日期型別，欄位以 TEXT 存放，`Microsoft.Data.Sqlite` 在沒有 schema
+可依循的臨機查詢下把它交回成 `string`。`expiredAt is DateTime dt ? dt : null` 於是走 else。
+與上一則的 Oracle `RAW(16)` 是同一個形狀的錯誤：**驅動交回的 CLR 型別不是宣告型別，
+而裸 `is T` 把「型別不符」和「值不存在」壓成同一個答案**。
+
+**正解**：轉型走 `ValueUtilities.CDateTime(object?)`（回 `DateTime?`，認 `DBNull`、
+空字串與可剖析的字串）。FormSchema 驅動的路徑不受影響 —— `MarkFromSchema` 已依宣告型別
+把欄位正規化過；受害的一律是**自己拼 SQL、自己讀 DataRow** 的 framework repository。
+
+**為何拖到現在才發現**：`ApiKeyRepository` 走 `DbScope.Common`，而測試 fixture 把
+`common` 綁在 SQL Server —— 那幾支 `[DbFact(DatabaseType.SQLite)]` 實際跑的是 SQL Server。
+盤點與修法見 `ProviderScopedRouter`（`tests/Bee.Tests.Shared/`）。
+
+**殘留**：其他自己拼 SQL 讀日期欄的地方未逐一查證。看到裸 `is DateTime` 就該問一句
+「這個值在 SQLite 上是什麼型別」。
+
 ## Oracle：壓測工具與單元測試共用同一個 schema，會互相破壞
 
 **症狀**：跑過 `dotnet run --project tools/Bee.LoadTests -- prepare --provider Oracle` 之後，

@@ -3,7 +3,6 @@ using Bee.Base.Data;
 using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Definition;
-using Bee.Definition.Database;
 using Bee.Definition.Security;
 using Bee.Repository.Abstractions.System;
 
@@ -46,7 +45,7 @@ namespace Bee.Repository.System
         {
             if (StringUtilities.IsEmpty(sysId)) { return null; }
 
-            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DatabaseId).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colId = dbType.QuoteIdentifier(SysIdColumn);
             string colName = dbType.QuoteIdentifier(SysNameColumn);
@@ -66,7 +65,6 @@ namespace Bee.Repository.System
             if (table.IsEmpty()) { return null; }
 
             var row = table.Rows[0];
-            object expiredAt = row[ExpiredAtColumn];
             return new ApiKeyInfo
             {
                 SysId = ValueUtilities.CStr(row[SysIdColumn]),
@@ -75,8 +73,11 @@ namespace Bee.Repository.System
                 KeyType = (ApiKeyType)ValueUtilities.CInt(row[KeyTypeColumn], (int)ApiKeyType.Internal),
                 Contact = ValueUtilities.CStr(row[ContactColumn]),
                 // `expired_at` is a naive column holding UTC (ADR-032 D1), matching the
-                // `DateTime.UtcNow` the validator compares it against.
-                ExpiredAt = expiredAt is DateTime dt ? dt : null,
+                // `DateTime.UtcNow` the validator compares it against. Coerced rather than
+                // pattern-matched because SQLite has no date type and hands the column back as
+                // text; an `is DateTime` test there yields null, and a key with an expiry then
+                // reads back as one that never expires.
+                ExpiredAt = ValueUtilities.CDateTime(row[ExpiredAtColumn]),
             };
         }
 
@@ -89,9 +90,9 @@ namespace Bee.Repository.System
         /// </remarks>
         public ApiKeyGateState GetGateState()
         {
-            var connInfo = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common);
+            var connInfo = Context.ConnectionManager.GetConnectionInfo(DatabaseId);
             var schemaProvider = DbDialectRegistry.Get(connInfo.DatabaseType)
-                .CreateTableSchemaProvider(DbCategoryIds.Common, Context.ConnectionManager);
+                .CreateTableSchemaProvider(DatabaseId, Context.ConnectionManager);
             if (schemaProvider.GetTableSchema(TableName) == null)
             {
                 return new ApiKeyGateState { InForce = false };
@@ -105,7 +106,7 @@ namespace Bee.Repository.System
         {
             if (StringUtilities.IsEmpty(sysId)) { return false; }
 
-            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DatabaseId).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colId = dbType.QuoteIdentifier(SysIdColumn);
 
@@ -128,7 +129,7 @@ namespace Bee.Repository.System
         {
             ArgumentNullException.ThrowIfNull(apiKey);
 
-            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DatabaseId).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
             string colId = dbType.QuoteIdentifier(SysIdColumn);
@@ -151,7 +152,7 @@ namespace Bee.Repository.System
                 Guid.NewGuid(), apiKey.SysId, apiKey.SysName, apiKey.HashedKey, (int)apiKey.KeyType,
                 apiKey.Contact, true, expiredAt, DateTime.UtcNow);
 
-            using var connection = Context.ConnectionManager.CreateConnection(DbCategoryIds.Common);
+            using var connection = Context.ConnectionManager.CreateConnection(DatabaseId);
             connection.Open();
             using var transaction = connection.BeginTransaction();
 
@@ -168,7 +169,7 @@ namespace Bee.Repository.System
         /// <inheritdoc/>
         public IReadOnlyList<ApiKeySummary> GetList()
         {
-            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DatabaseId).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colId = dbType.QuoteIdentifier(SysIdColumn);
             string colName = dbType.QuoteIdentifier(SysNameColumn);
@@ -189,8 +190,6 @@ namespace Bee.Repository.System
             var list = new List<ApiKeySummary>();
             foreach (global::System.Data.DataRow row in result.Table!.Rows)
             {
-                object expiredAt = row[ExpiredAtColumn];
-                object issuedAt = row["sys_insert_time"];
                 list.Add(new ApiKeySummary
                 {
                     SysId = ValueUtilities.CStr(row[SysIdColumn]),
@@ -198,8 +197,8 @@ namespace Bee.Repository.System
                     KeyType = (ApiKeyType)ValueUtilities.CInt(row[KeyTypeColumn], (int)ApiKeyType.Internal),
                     Contact = ValueUtilities.CStr(row[ContactColumn]),
                     Enabled = ValueUtilities.CBool(row[EnabledColumn]),
-                    ExpiredAt = expiredAt is DateTime expiry ? expiry : null,
-                    IssuedAt = issuedAt is DateTime issued ? issued : null,
+                    ExpiredAt = ValueUtilities.CDateTime(row[ExpiredAtColumn]),
+                    IssuedAt = ValueUtilities.CDateTime(row["sys_insert_time"]),
                 });
             }
             return list;
@@ -235,7 +234,7 @@ namespace Bee.Repository.System
         {
             if (StringUtilities.IsEmpty(sysId)) { return false; }
 
-            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DatabaseId).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colId = dbType.QuoteIdentifier(SysIdColumn);
             string col = dbType.QuoteIdentifier(columnName);
@@ -243,7 +242,7 @@ namespace Bee.Repository.System
             string sql = $"UPDATE {tbl} SET {col} = {{0}} WHERE {colId} = {{1}}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, value, sysId);
 
-            using var connection = Context.ConnectionManager.CreateConnection(DbCategoryIds.Common);
+            using var connection = Context.ConnectionManager.CreateConnection(DatabaseId);
             connection.Open();
             using var transaction = connection.BeginTransaction();
 
@@ -283,7 +282,7 @@ namespace Bee.Repository.System
         /// </summary>
         private int CountEnabled()
         {
-            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DatabaseId).DatabaseType;
             string tbl = dbType.QuoteIdentifier(TableName);
             string colEnabled = dbType.QuoteIdentifier(EnabledColumn);
 

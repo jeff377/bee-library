@@ -3,7 +3,6 @@ using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Db;
 using Bee.Definition;
-using Bee.Definition.Database;
 using Bee.Definition.Identity;
 using Bee.Repository.Abstractions.System;
 
@@ -37,7 +36,7 @@ namespace Bee.Repository.System
         /// <param name="companyId">The company business id.</param>
         public CompanyInfo? GetById(string companyId)
         {
-            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DatabaseId).DatabaseType;
             string tbl = dbType.QuoteIdentifier("st_company");
             string colId = dbType.QuoteIdentifier("sys_id");
             string colName = dbType.QuoteIdentifier("sys_name");

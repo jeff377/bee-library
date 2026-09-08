@@ -1,7 +1,6 @@
 using Bee.Base;
 using Bee.Db;
 using Bee.Definition;
-using Bee.Definition.Database;
 using Bee.Repository.Abstractions.System;
 
 namespace Bee.Repository.System
@@ -34,7 +33,7 @@ namespace Bee.Repository.System
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(companyId))
                 return false;
 
-            var dbType = Context.ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
+            var dbType = Context.ConnectionManager.GetConnectionInfo(DatabaseId).DatabaseType;
             string ucTbl = dbType.QuoteIdentifier("st_user_company");
             string userTbl = dbType.QuoteIdentifier("st_user");
             string companyTbl = dbType.QuoteIdentifier("st_company");
