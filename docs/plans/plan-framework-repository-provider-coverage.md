@@ -179,14 +179,39 @@ BO 層 21 支的閘門由 `SQLite` 改為 `SQLServer`，數量不變。
 
 - D 類 12 支（宣告了 DB 卻從不連線）本次不動，見上方盤點。
 - BO 層那 21 支維持單一 provider；要不要擴成四家，另案依風險判斷。
-- `Bee.Api.AspNetCore.UnitTests` 有 2 支在**本機**失敗（`ExecFunc_Hello_ReturnsNotNull`、
-  `ApiKeyGateControllerTests.Post_NoValidatorRegistered_UsesPresenceCheck`，
-  皆為預期 `ContentResult` 實得 `ObjectResult`）。以 `git stash` 在乾淨的 `1c60bcf1` 上重跑
-  仍紅，與本計畫無關；但**完整模式 CI 上這個組件 33/33 全綠**（run 34183769320），
-  所以它是 macOS 本機環境特有的失敗，不是 main 壞了。另案查明環境差異。
+- `Bee.Api.AspNetCore.UnitTests` 那 2 支本機失敗**已由另一個 session 修好並查明真因**，
+  見下方「本次留下的髒資料」。
 
 ### CI 驗證
 
 完整模式 run 34183769320 全綠（`Resolve database scope` → 四家 DB + SonarCloud + Mobile AOT gate）。
 `Bee.Repository.UnitTests` 在 CI 上同樣是 **219 筆、零 skip**——新增的 Oracle / PostgreSQL / MySQL
 三軸確實在 CI 上執行了，不是被 env var 閘門跳過。
+
+## 本次留下的髒資料（已查明，記在這裡免得再被誤讀）
+
+改寫 `ApiKeyRepositoryTests` 的過程中，某一次中間狀態的測試執行把 **7 列啟用中的
+`rt-*` 金鑰**留在本機持久容器 `sql2025` 的 `common.st_api_key`（`sys_insert_time`
+皆為 `2026-09-08T03:03:25~26Z`，`SysName` 為 `Round-trip app` / `No expiry app` /
+`Gate app` / `Exists app`）——insert 與 delete 一度指向不同資料庫，`finally` 的清理
+因此清在別的引擎上。**HEAD 不再洩漏**：在 HEAD 上單跑 `ApiKeyRepositoryTests`
+10 支全過、列數仍是 7、沒有新增。
+
+那 7 列讓 `ApiKeyGate` 在本機**永久** in force，於是
+`Bee.Api.AspNetCore.UnitTests` 的兩支測試送出的 `"valid-api-key"` 因不符金鑰格式被判
+`ApiKeyStatus.Invalid` → 401，症狀是「預期 `ContentResult` 實得 `ObjectResult`」，
+完全不指向真因。
+
+**本機紅 / CI 綠的成因是容器生命週期，不是核心數。** `build-ci.yml` 用 `services:` +
+`docker run`，每次都是全新容器、`st_api_key` 恆為空，閘門從不 in force。本機是持久容器。
+
+這也是為什麼**用 `git stash` 判定「既有的紅」是無效的推論**：stash 只還原受版控的檔案，
+資料庫殘留列不會跟著回到那個時間點。當時應該把「本機紅」與「既有紅」分開陳述，
+並在下結論前先查資料庫狀態。
+
+> 修法由另一個 session 落在測試側（`src/` 一字未改）：`ApiKeyGateControllerTests` 改為
+> **無條件**註冊 `IApiKeyValidator` override（含 `null`）——原本 `validator: null` 時不加
+> override，於是落到 `AddBeeFramework` 註冊的真 `ApiKeyValidator`，
+> `Post_NoValidatorRegistered_UsesPresenceCheck` **從來沒走過它命名的那條路徑**；
+> `ApiAspNetCoreTests` 加 `UnconfiguredApiKeyValidator` 固定回 `NotConfigured`。
+> 驗證方式值得記住：**在 7 列殘留仍然存在的情況下** 33/33 過，這才證明它不再依賴環境狀態。
