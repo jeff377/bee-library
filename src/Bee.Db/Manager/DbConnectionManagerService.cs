@@ -54,7 +54,9 @@ namespace Bee.Db.Manager
             if (string.IsNullOrWhiteSpace(databaseId))
                 throw new ArgumentNullException(nameof(databaseId), "Database ID cannot be null or empty.");
 
-            return _cache.GetOrAdd(databaseId, CreateConnectionInfo);
+            var __info = _cache.GetOrAdd(databaseId, CreateConnectionInfo);
+            BeeDbProbe.Record(databaseId, __info.DatabaseType);
+            return __info;
         }
 
         private DbConnectionInfo CreateConnectionInfo(string databaseId)
@@ -139,5 +141,34 @@ namespace Bee.Db.Manager
 
         /// <inheritdoc/>
         public int Count => _cache.Count;
+    }
+
+    // TEMPORARY INSTRUMENTATION - revert before commit.
+    internal static class BeeDbProbe
+    {
+        private static readonly string? s_file = Environment.GetEnvironmentVariable("BEE_DBPROBE_FILE");
+        private static readonly object s_lock = new();
+
+        internal static void Record(string databaseId, Bee.Definition.Database.DatabaseType dbType)
+        {
+            if (string.IsNullOrEmpty(s_file)) return;
+            string test = "?";
+            var st = new System.Diagnostics.StackTrace(false);
+            for (int i = st.FrameCount - 1; i >= 0; i--)
+            {
+                var m = st.GetFrame(i)?.GetMethod();
+                var t = m?.DeclaringType;
+                var asm = t?.Assembly.GetName().Name;
+                if (asm != null && asm.EndsWith(".UnitTests", StringComparison.Ordinal))
+                {
+                    test = t!.FullName + "." + m!.Name;
+                    break;
+                }
+            }
+            lock (s_lock)
+            {
+                System.IO.File.AppendAllText(s_file, test + "\t" + databaseId + "\t" + dbType + "\n");
+            }
+        }
     }
 }

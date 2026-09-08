@@ -64,14 +64,18 @@ namespace Bee.LoadTests.UnitTests
         [DisplayName("資料表沒有列時不擲例外")]
         public void Touch_WithoutRows_DoesNotThrow()
         {
-            SaveScenario.Touch(CreateDataSet(withRow: false), 1);
+            var exception = Record.Exception(() => SaveScenario.Touch(CreateDataSet(withRow: false), 1));
+
+            Assert.Null(exception);
         }
 
         [Fact]
         [DisplayName("空 DataSet 不擲例外")]
         public void Touch_EmptyDataSet_DoesNotThrow()
         {
-            SaveScenario.Touch(new DataSet(), 1);
+            var exception = Record.Exception(() => SaveScenario.Touch(new DataSet(), 1));
+
+            Assert.Null(exception);
         }
 
         [Fact]
