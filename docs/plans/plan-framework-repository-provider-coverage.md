@@ -179,6 +179,14 @@ BO 層 21 支的閘門由 `SQLite` 改為 `SQLServer`，數量不變。
 
 - D 類 12 支（宣告了 DB 卻從不連線）本次不動，見上方盤點。
 - BO 層那 21 支維持單一 provider；要不要擴成四家，另案依風險判斷。
-- `Bee.Api.AspNetCore.UnitTests` 有 2 支失敗（`ExecFunc_Hello_ReturnsNotNull`、
+- `Bee.Api.AspNetCore.UnitTests` 有 2 支在**本機**失敗（`ExecFunc_Hello_ReturnsNotNull`、
   `ApiKeyGateControllerTests.Post_NoValidatorRegistered_UsesPresenceCheck`，
-  皆為 `ContentResult` 實得 `ObjectResult`）。**在乾淨的 `main` 上即為紅**，與本計畫無關，另案處理。
+  皆為預期 `ContentResult` 實得 `ObjectResult`）。以 `git stash` 在乾淨的 `1c60bcf1` 上重跑
+  仍紅，與本計畫無關；但**完整模式 CI 上這個組件 33/33 全綠**（run 34183769320），
+  所以它是 macOS 本機環境特有的失敗，不是 main 壞了。另案查明環境差異。
+
+### CI 驗證
+
+完整模式 run 34183769320 全綠（`Resolve database scope` → 四家 DB + SonarCloud + Mobile AOT gate）。
+`Bee.Repository.UnitTests` 在 CI 上同樣是 **219 筆、零 skip**——新增的 Oracle / PostgreSQL / MySQL
+三軸確實在 CI 上執行了，不是被 env var 閘門跳過。
