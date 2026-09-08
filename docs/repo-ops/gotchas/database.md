@@ -265,7 +265,12 @@ FormSchema 驅動的結果表另在 `MarkFromSchema` 就地把宣告為 Guid 卻
 （見 `.runsettings` 的註解）。壓測用 `apps/Bee.Northwind/Define` 的 `st_user`
 （`password` 長度 200），單元測試用 `tests/Define` 的（長度 40），互相覆蓋。
 
-**繞法**（尚無正解）：跑完壓測後把 schema 復原再跑單元測試 ——
+**正解（2026-09-08 起）**：改用**專屬 schema**，不要再讓兩邊共用。工具現在會擋下無法
+以資料庫名隔離的連線字串，補救方式是設 `BEE_LOADTEST_CONNSTR_ORACLE` 指向一個保留給
+壓測的 user——建立步驟見 [`docs/repo-ops/load-testing.md`](../load-testing.md)。
+
+**下面那段復原 SQL 只在「已經踩到」時用**（也就是專屬 schema 之前跑過壓測的機器）。
+它會逐條刪掉 `loadtest_user_%` 與 `loadtest` 公司列，並把 `st_user.password` 改回 40 ——
 
 ```sql
 delete from st_user_company where company_rowid in (select sys_rowid from st_company where sys_id='loadtest');
@@ -276,7 +281,33 @@ alter table st_user modify (password varchar2(40 char));
 ```
 
 `loadtest_user_%` 那幾列必須先刪 —— 它們的密碼雜湊有 79 字元，不刪就 `ORA-01441`。
-之後要再壓測只需重跑 `prepare`。
+之後要再壓測只需重跑 `prepare`（指向專屬 schema）。
+
+> **這段 SQL 執行過會留下痕跡，而且看起來不像人做的。** 它只刪帳號、不刪
+> `ft_customer`，所以事後看到的是「十萬列壓測資料還在，但植入它們的帳號不見了」——
+> 很容易被誤讀成測試套件把帳號清掉了。實際上 `tests/` 沒有任何 `DELETE` / `TRUNCATE` /
+> `DROP` 做得到這件事。判別法：**看 `st_user.password` 的長度**，40 表示這段跑過
+> （壓測定義是 200）。
+
+## 深分頁：`OFFSET` 的成本隨頁碼成長，四家都躲不掉
+
+**症狀**：同一張表、同一個 `pageSize`，翻到後面的頁明顯變慢，而第一頁再怎麼加資料量都不動。
+
+**根因**：頁碼式分頁靠 `OFFSET`，引擎必須走過並丟棄偏移量之前的每一列。這是 offset 分頁的
+固有行為，**不是框架的 dialect 實作有問題** —— 換一家 provider 不會解決。
+
+**實測**（`ft_customer` 100,000 列、`pageSize` 50、深頁自第 1,900 頁起即 `OFFSET 94,950`、
+20 VU、Local + Encrypted、macOS 開發機）：四家的深頁 p50 都比淺頁高一個數量級以上，
+SQL Server / PostgreSQL / MySQL 落在 15～19 倍，Oracle 更高。**絕對值不可跨 provider 比**
+（各容器設定不同），倍數關係才是重點。逐項數字與量測條件見
+`docs/plans/plan-paging-and-oracle-getlist.md`。
+
+**決定**：**不處理**（2026-09-08）。ERP 畫面都有篩選、結果集通常在數十頁內，不值得為此
+換掉跳頁能力。keyset pagination 能讓成本與偏移量無關，代價是使用者不能直接跳到第 500 頁 ——
+那是產品決策，不是技術決策。`PagingOptions.Page` 的 XML doc 已標明這件事。
+
+**遇到真的需要深翻的畫面時**：先想能不能用篩選把結果集縮小，那通常才是使用者真正要的；
+真的需要「一路翻到底」（例如匯出），再回頭評估 keyset。
 
 ## 跨 DB seed 的雜項
 

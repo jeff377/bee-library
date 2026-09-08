@@ -19,6 +19,16 @@ namespace Bee.Definition.Paging
         /// <summary>
         /// Gets or sets the 1-based page index. Values below 1 are clamped to 1 on the server.
         /// </summary>
+        /// <remarks>
+        /// Cost grows with the page index. Page-based paging is served by <c>OFFSET</c>, so
+        /// reaching a high page means the engine walks and discards every row before it. A page
+        /// deep into a large result set therefore costs materially more than the first one, and
+        /// the gap widens as the table grows while the first page's cost stays flat. This is
+        /// inherent to offset paging rather than particular to one engine, so switching database
+        /// provider does not avoid it. A screen that lets a user reach arbitrary page numbers
+        /// over a large result set is usually better served by narrowing the result with a
+        /// filter than by paging deeper.
+        /// </remarks>
         public int Page { get; set; } = 1;
 
         /// <summary>

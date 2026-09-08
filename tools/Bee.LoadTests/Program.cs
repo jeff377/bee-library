@@ -221,6 +221,18 @@ namespace Bee.LoadTests
                 .ToArray();
 
             Console.WriteLine($"Scenarios    : {string.Join(", ", scenarios.Select(s => s.Name))}");
+
+            // Sign-in happens here rather than on first use so that a failed one stops the run and
+            // says so, instead of being counted against whichever scenario asked for the session.
+            // The test is on the scenario objects rather than on their names: a new scenario that
+            // takes the pool is then covered without anyone remembering to add it to a list, and
+            // the worst a wrong answer costs is an unnecessary sign-in.
+            if (scenarios.Any(scenario => scenario is not LoginScenario))
+            {
+                await pool.SignInAllAsync(options.Load.VirtualUsers).ConfigureAwait(false);
+                Console.WriteLine($"Sign-in      : {options.Load.VirtualUsers} virtual user(s) ready");
+            }
+
             Console.WriteLine();
             Console.WriteLine("Running...");
 
