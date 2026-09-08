@@ -262,6 +262,25 @@ grep -rn 'DisableTestParallelization *= *true' tests/ --include='*.cs'
 辨識法：測試直接拿 `Guid.NewGuid()` 當 access token（而非
 `TestSessionFactory.CreateAccessToken(fx)`，後者會把 SessionInfo 寫進 cache 因而永不觸及 DB）。
 
+**第三條路徑：走 controller 的請求一律會碰 `st_api_key`。**
+`ApiServiceController.ValidateApiKey` → `ApiKeyValidator.Validate` → `ApiKeyGate.GetState()`
+是一條 read-through，miss 時開 common 連線讀 `st_api_key`。`AddBeeFramework` **一律**註冊真的
+`ApiKeyValidator`，所以這條與 access token 無關 —— 只要測試是打 controller，它就會走。
+
+**而且 `SharedDbFixture` 只解一半。** 表建好之後，閘門是否 in force 取決於**該表當下有沒有
+啟用金鑰**，那不是任何測試的保證：`ApiKeyRepositoryTests` 會往同一個 common 資料庫寫金鑰，
+本機持久容器還會讓殘留列跨回合留著。閘門 in force 時，任何不符金鑰格式的標頭都成為
+`ApiKeyStatus.Invalid` → 401。**主題不是金鑰閘門的測試，要把 `IApiKeyValidator` 覆寫成測試
+自己給的實例**（`TestOverrideServiceProvider` 接受 `null` 實例並短路內層 provider，那是抵達
+「未註冊 validator」分支的唯一方法），別倚賴那張表剛好是空的。
+
+> 這條的症狀完全不指向真因，且方向與本節其餘各條**相反**：CI 每次都是全新容器、`st_api_key`
+> 恆為空，所以是**本機紅、CI 綠**。2026-09-08 `Bee.Api.AspNetCore.UnitTests` 兩支即此
+> —— 表徵是 `Assert.IsType<ContentResult>` 實得 `ObjectResult`，看起來像 MVC 版本差異。
+> 其中 `Post_NoValidatorRegistered_UsesPresenceCheck` 更是**從未走過它命名的那條路徑**：
+> 它只在 validator 非 null 時才加 override，於是永遠落到真的 `ApiKeyValidator`。
+> 驗收標準是**在啟用金鑰仍留在表裡的情況下**測試依然全綠 —— 先清資料庫再跑證明不了解耦。
+
 **別靠靜態 grep 判定範圍。** 觸發面比想像廣：不只 `IAccessTokenValidator`，任何
 `SessionInfoService.Get(未快取 token)` 都算 —— 含 BO 內部的 `GetLangText` /
 `GetCurrentCustomizeId` / 查目前公司。**用窮盡掃描，不要用推理代替執行**：drop 掉

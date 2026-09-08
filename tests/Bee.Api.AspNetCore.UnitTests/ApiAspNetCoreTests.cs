@@ -4,6 +4,7 @@ using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.Messages.System;
 using Bee.Base.Serialization;
 using Bee.Definition;
+using Bee.Definition.Security;
 using Bee.Tests.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,16 +15,24 @@ using Bee.Api.Core.Messages;
 namespace Bee.Api.AspNetCore.UnitTests
 {
         /// <remarks>
-    /// 用 <c>SharedDbFixture</c> 而非 <c>BeeTestFixture</c>：走 controller 的每個請求都會經過
-    /// <c>ValidateApiKey</c> → <c>ApiKeyValidator.Validate</c> → <c>ApiKeyGate.GetState()</c>，
-    /// 那條 read-through 會開 common 連線讀 <c>st_api_key</c>。<c>AddBeeFramework</c> 一律註冊
-    /// 真的 <c>ApiKeyValidator</c>，所以這與 access token 無關 —— 這是 <c>rules/testing.md</c>
-    /// 未列出的第三條觸發路徑。
+    /// 用 <c>SharedDbFixture</c> 而非 <c>BeeTestFixture</c>：走 controller 的請求會讓 executor
+    /// 碰 common 資料庫，<c>BeeTestFixture</c> 不建 schema。
     /// <para>
-    /// 症狀完全不指向真因：失敗會被 controller 吃掉轉成 <c>ApiKeyStatus.Invalid</c> → 401，
-    /// 看起來像「預期 200 拿到 401」。先前之所以是綠的，靠的是 CI 的建 DB 步驟或本機持久容器
-    /// 先把 DB 建好，加上 <c>st_api_key</c> 不存在時剛好被 <c>GetTableSchema(...) == null</c> 擋掉
-    /// —— 三個都不是這兩個測試自己的保證。
+    /// 本類別驗的是 JSON-RPC 執行本身，金鑰閘門不是它的主題，因此
+    /// <see cref="IApiKeyValidator"/> 固定為 <see cref="UnconfiguredApiKeyValidator"/>，
+    /// <b>不讀實體金鑰存放處</b>。先前能過只是因為 <c>st_api_key</c> 剛好是空的 ——
+    /// 而那不是本類別的任何保證：只要該表存在一列啟用金鑰，閘門就 in force，
+    /// <c>"valid-api-key"</c> 不符金鑰格式便成為 <c>ApiKeyStatus.Invalid</c> → 401。
+    /// 症狀完全不指向真因，看起來像「預期 200 拿到 401」。
+    /// </para>
+    /// <para>
+    /// 那一列從哪來有兩條路，本機紅 / CI 綠的成因是<b>前者</b>：
+    /// (1) <b>殘留</b> —— 本機是持久容器，列會跨測試回合留著；CI 每次都是全新容器，
+    /// 該表恆為空，所以同一份程式碼在 CI 上一直是綠的。
+    /// (2) <b>平行寫入</b> —— <c>ApiKeyRepositoryTests</c> 會往同一個 common 資料庫寫啟用金鑰，
+    /// 正常會在 <c>finally</c> 清掉，但與本專案平行執行時仍有窗口。
+    /// （<c>21642741</c> 之後只剩 <c>Insert_ThenGet_SqlServer</c> 一支落在 SQL Server，
+    /// 其餘已改打各自 provider，窗口變窄但沒有消失。）
     /// </para>
     /// </remarks>
     public class ApiAspNetCoreTests : IClassFixture<SharedDbFixture>
@@ -51,6 +60,16 @@ namespace Bee.Api.AspNetCore.UnitTests
             public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
             public Microsoft.Extensions.FileProviders.IFileProvider ContentRootFileProvider { get; set; }
                 = new Microsoft.Extensions.FileProviders.NullFileProvider();
+        }
+
+        /// <summary>
+        /// 固定回報「此部署尚未發放金鑰」，讓本類別的變動維度只剩 JSON-RPC 執行本身。
+        /// 這正是先前依賴實體 <c>st_api_key</c> 為空才成立的狀態，只是現在由測試自己保證。
+        /// </summary>
+        private sealed class UnconfiguredApiKeyValidator : IApiKeyValidator
+        {
+            public ApiKeyValidationResult Validate(string? apiKey)
+                => new(ApiKeyStatus.NotConfigured);
         }
 
         /// <summary>
@@ -96,7 +115,8 @@ namespace Bee.Api.AspNetCore.UnitTests
                 // per-class fixture 的 IServiceProvider 之上補上一個 IHostEnvironment fake。
                 RequestServices = new TestOverrideServiceProvider(
                     _fx.Provider,
-                    (typeof(IHostEnvironment), new TestHostEnvironment()))
+                    (typeof(IHostEnvironment), new TestHostEnvironment()),
+                    (typeof(IApiKeyValidator), new UnconfiguredApiKeyValidator()))
             };
             const string apiKey = "valid-api-key";
             var authorization = $"Bearer {accessToken}";

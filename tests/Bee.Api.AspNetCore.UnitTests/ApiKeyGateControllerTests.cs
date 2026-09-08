@@ -17,16 +17,20 @@ namespace Bee.Api.AspNetCore.UnitTests
     /// 而不是被當成「此部署尚未發放金鑰」而放行。
     /// </summary>
         /// <remarks>
-    /// 用 <c>SharedDbFixture</c> 而非 <c>BeeTestFixture</c>：走 controller 的每個請求都會經過
-    /// <c>ValidateApiKey</c> → <c>ApiKeyValidator.Validate</c> → <c>ApiKeyGate.GetState()</c>，
-    /// 那條 read-through 會開 common 連線讀 <c>st_api_key</c>。<c>AddBeeFramework</c> 一律註冊
-    /// 真的 <c>ApiKeyValidator</c>，所以這與 access token 無關 —— 這是 <c>rules/testing.md</c>
-    /// 未列出的第三條觸發路徑。
+    /// 用 <c>SharedDbFixture</c> 而非 <c>BeeTestFixture</c>：這些請求走到 executor 後仍會碰
+    /// common 資料庫，<c>BeeTestFixture</c> 不建 schema。
     /// <para>
-    /// 症狀完全不指向真因：失敗會被 controller 吃掉轉成 <c>ApiKeyStatus.Invalid</c> → 401，
-    /// 看起來像「預期 200 拿到 401」。先前之所以是綠的，靠的是 CI 的建 DB 步驟或本機持久容器
-    /// 先把 DB 建好，加上 <c>st_api_key</c> 不存在時剛好被 <c>GetTableSchema(...) == null</c> 擋掉
-    /// —— 三個都不是這兩個測試自己的保證。
+    /// 金鑰驗證這一維由每個測試自己指定的 <see cref="IApiKeyValidator"/> 決定，
+    /// <b>不讀實體金鑰存放處</b>。這是刻意的：一旦讓本類別去讀 <c>st_api_key</c>，
+    /// 閘門是否 in force 就取決於該表當下有沒有列，而那不是本類別的任何保證。
+    /// 症狀還完全不指向真因：閘門 in force 時任何非金鑰格式的標頭都成為
+    /// <c>ApiKeyStatus.Invalid</c> → 401，看起來像「預期 200 拿到 401」。
+    /// </para>
+    /// <para>
+    /// 那一列從哪來有兩條路，本機紅 / CI 綠的成因是<b>前者</b>：
+    /// (1) <b>殘留</b> —— 本機是持久容器，列會跨測試回合留著；CI 每次都是全新容器，
+    /// 該表恆為空。(2) <b>平行寫入</b> —— <c>ApiKeyRepositoryTests</c> 會往同一個 common
+    /// 資料庫寫啟用金鑰，正常會在 <c>finally</c> 清掉，但與本專案平行執行時仍有窗口。
     /// </para>
     /// </remarks>
     public class ApiKeyGateControllerTests : IClassFixture<SharedDbFixture>
@@ -74,18 +78,22 @@ namespace Bee.Api.AspNetCore.UnitTests
                 Id = Guid.NewGuid().ToString(),
             };
 
-            var overrides = new List<(Type, object?)>
+            // IMPORTANT: register the IApiKeyValidator override unconditionally, `null` included.
+            // TestOverrideServiceProvider honours a null instance by short-circuiting the inner
+            // provider, and that is the only way to reach the no-validator path: AddBeeFramework
+            // always registers a real ApiKeyValidator, so adding the override only when non-null
+            // let the lookup fall through to it. Post_NoValidatorRegistered_UsesPresenceCheck then
+            // exercised the live key store rather than the compatibility path it names, and its
+            // verdict depended on whether the shared common database happened to hold an enabled key.
+            var overrides = new (Type, object?)[]
             {
                 (typeof(IHostEnvironment), new TestHostEnvironment()),
+                (typeof(IApiKeyValidator), validator),
             };
-            if (validator != null)
-            {
-                overrides.Add((typeof(IApiKeyValidator), validator));
-            }
 
             var context = new DefaultHttpContext
             {
-                RequestServices = new TestOverrideServiceProvider(_fx.Provider, overrides.ToArray()),
+                RequestServices = new TestOverrideServiceProvider(_fx.Provider, overrides),
             };
             context.Request.Headers["X-Api-Key"] = apiKey;
             context.Request.Headers.Authorization = "Bearer " + accessToken;
