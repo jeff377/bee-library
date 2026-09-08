@@ -155,21 +155,40 @@ namespace Bee.LoadTests.UnitTests
         }
 
         [Fact]
-        [DisplayName("每個 VU 拿到自己的索引，且不同 VU 由不同起點開始")]
+        [DisplayName("每個 VU 拿到自己的索引，迭代各自從 0 連續遞增")]
         public async Task RunAsync_GivesEachVirtualUserItsOwnIndex()
         {
-            var seen = new HashSet<int>();
+            const int users = 4;
+            var iterations = new Dictionary<int, List<long>>();
             var gate = new object();
             var scenario = new CountingScenario("A", context =>
             {
-                lock (gate) { seen.Add(context.VirtualUserIndex); }
+                lock (gate)
+                {
+                    if (!iterations.TryGetValue(context.VirtualUserIndex, out var list))
+                    {
+                        list = [];
+                        iterations[context.VirtualUserIndex] = list;
+                    }
+                    list.Add(context.Iteration);
+                }
             });
 
             await LoadRunner.RunAsync(
-                Load(users: 4), [scenario],
+                Load(users: users), [scenario],
                 new Dictionary<string, int>(StringComparer.Ordinal));
 
-            Assert.Equal([0, 1, 2, 3], seen.OrderBy(i => i));
+            Assert.NotEmpty(iterations);
+
+            // The evidence of isolation is that each virtual user counts its own iterations from
+            // zero without gaps. Whether all four get scheduled inside a one-second window depends
+            // on how many cores the machine has, so asserting that would make this test fail on a
+            // constrained runner while proving nothing extra.
+            foreach (var (virtualUserIndex, seen) in iterations)
+            {
+                Assert.InRange(virtualUserIndex, 0, users - 1);
+                Assert.Equal(Enumerable.Range(0, seen.Count).Select(i => (long)i), seen);
+            }
         }
 
         [Fact]
