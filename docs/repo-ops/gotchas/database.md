@@ -325,8 +325,9 @@ Oracle 那列另有兩個保留：倍數逐輪遞增而非上下震盪（前三�
 
 ### 別家 ERP 怎麼處理（2026-09-08 查證）
 
-查這個是為了確認「不處理」不是偷懶。結論是**兩家都沒有用 keyset**，而真正迴避掉問題的那家
-是在 **UI 層**解的，不是在框架層。
+查這個是為了確認「不處理」不是偷懶。結論：**兩家的主線都是 offset**，keyset 只出現在
+SAP CAP 的一個選配功能裡、而且是為了**一致性**而非效能；真正迴避掉深翻的是 **UI 層**的設計，
+不是框架層的演算法。
 
 **Odoo —— 跟我們現在完全一樣。** 它是與本框架最接近的類比（ORM + 泛用列表視圖 + 任意跳頁）：
 
@@ -335,32 +336,65 @@ Oracle 那列另有兩個保留：倍數逐輪遞增而非上下震盪（前三�
 - 它的 pager（`addons/web/static/src/core/pager/pager.js`）**不只有上下頁** —— 點一下數字
   可輸入 `min[,max]` 範圍，parse 後 clamp 進 offset，等於允許直接跳到任意深度。
 
-**SAP —— 靠設計不讓使用者走到那裡。** 分兩層，重點在上面那層：
+**SAP —— 靠設計不讓使用者走到那裡，而不是靠 keyset。** 分三層看：
 
-- **UI 層**：SAPUI5 文件寫明 responsive table 一次不超過 200 筆、更多要用 growing 功能並
-  「make sure the user can filter the data」。Fiori elements 的 list report 預設是 growing
-  table（`More` 按鈕），**只能往下追加、沒有頁碼**，主互動是頂部的 filter bar。
-- **API 層**：OData 的 `$skiptoken` 設計上是伺服端發、客戶端原樣帶回的**不透明續傳權杖**
-  （相對於客戶端自算的 `$skip`）。但 SAP Gateway 只是把它交給服務實作，語意由實作決定，
-  而流傳最廣的 ABAP 範例是把它當數字用（`LV_INDEX_START = LV_SKIPTOKEN`）——
-  **穿著 cursor 外衣的 offset**。
+- **UI 層**：SAPUI5 文件寫明 responsive table 一次不超過 200 筆、更多（上限 1000）要用
+  growing 功能並「make sure the user can filter the data」。Fiori elements 的 list report
+  預設是 growing table（`More` 按鈕），**只能往下追加、沒有頁碼**，主互動是頂部的 filter bar。
+- **RAP（ABAP，OData V4）的查詢 API 是 offset 制**。`IF_RAP_QUERY_PAGING` 給的是
+  `get_page_size()` 與 **`get_offset()`**，SAP 自家 openSAP 教材的範例就是
+  `DATA(top) = io_request->get_paging( )->get_page_size( ).` /
+  `DATA(skip) = io_request->get_paging( )->get_offset( ).`，再對應 SQL 的
+  `UP TO n ROWS` 與 `OFFSET`。RAP 確實會在客戶端沒有妥當分頁時補一個帶 `$skiptoken` 的
+  next link（未給 `$top` 時預設截到 100 筆、`$top` 上限硬性 5000），但那是**框架的封頂機制**，
+  底下的 API 仍然只給得出 offset。
+- **而 UI5 客戶端根本就送 `$skip` / `$top`**。openui5#3487 有人主張這是「server side paging
+  not properly implemented」，UI5 維護者的回覆是：OData 是無狀態協定，規格要求的是
+  `$top` 搭配穩定排序（`$orderby` 未給時服務端必須自行施加穩定順序），server-driven paging
+  的用途不是引入狀態。**議題以 completed 關閉。** 所以 Fiori 的 grid table 把捲軸拖到深處，
+  送出的就是一個大的 `$skip`。
+
+**SAP 真正有 keyset 的地方是 CAP，而且是選配。** CAP 的 **Reliable Pagination**
+（`cds.query.limit.reliablePaging`，Java 為 `.enabled`）**以「該頁最後一列的值」產生 skip token**
+—— 這是貨真價實的 keyset。但三件事要一起看：
+
+1. **預設關閉**，且僅限 OData V4 端點。
+2. **它解的是一致性，不是深頁延遲** —— 官方說法是數字型 skip token「can result in duplicate or
+   missing rows if the entity set is modified between the calls」。
+3. **限制不小**：`$orderby` 不能用函式／算術運算式的結果、元素必須是簡單型別、若有 `$select`
+   則所有 `$orderby` 元素都得包含在內、不支援複雜的結果集串接。
 
 順帶一提，SAP 自家的 ABAP 關鍵字文件講 `SELECT ... OFFSET` 時只寫「必須搭配 `ORDER BY`」
 與嚴格語法檢查，**沒有提效能**。
 
-**對本條的意義**：成熟 ERP 對「深翻很慢」的答案是**不要讓使用者走到那裡**，而不是讓
-`OFFSET` 變快。上一段那句「先想能不能用篩選把結果集縮小」在 SAP 是硬性 UI 準則，不是建議。
-真要做 UI 的話，growing / `More` 比頁碼跳轉更貼近這個結論，且**不需要動 `PagingOptions`**。
+**對本條的意義（兩點）**：
+
+**其一**，成熟 ERP 對「深翻很慢」的答案是**不要讓使用者走到那裡**，而不是讓 `OFFSET` 變快。
+上一段那句「先想能不能用篩選把結果集縮小」在 SAP 是硬性 UI 準則，不是建議。真要做 UI 的話，
+growing / `More` 比頁碼跳轉更貼近這個結論，且**不需要動 `PagingOptions`**。
+
+**其二，也是更值得記的：業界做 keyset 的動機是「一致性」，不是「深頁變快」。**
+CAP 與 Microsoft 的 ASP.NET OData 都明講，換掉數字 offset 是為了避免資料在兩次呼叫之間被改動
+而造成重複列或漏列。**那跟我們量的是不同的問題** —— 我們階段 B 只評估了延遲。
+若日後要重啟這個決定，**一致性會是比延遲更強的理由**，而且本框架有同樣的曝險：
+`PagingOptions.IncludeTotalCount` 預設 `false`、靠 `PageSize + 1` 探測 `HasMore`，
+那個設計對「翻頁期間資料被改」一樣沒有保護。**這一點目前沒有測過，也沒有結論。**
 
 **若日後真的要走 keyset**，`$skiptoken` 那個形狀值得抄：**由伺服端在回應裡發不透明續傳權杖**，
 呼叫端原樣帶回。這樣底層從 offset 換成 keyset 時 wire contract 不必跟著改 ——
 而現行 `PagingOptions` 是頁碼制，換過去就是破壞性變更。
 
 > **查證邊界，別把這段當定論**：Odoo 那三點是讀 17.0 的原始碼確認的（程式碼會搬家，
-> 對到新版本前先確認路徑還在）；SAP 的 UI 準則與 ABAP 文件是官方來源；
-> 但**「`$skiptoken` 實際被當 offset 用」的依據是社群教學與範例，不是 SAP 官方框架文件**，
-> 而且它本來就是 per-service 的實作決定、不存在單一答案。
-> **SAP 較新的 RAP / OData V4 managed runtime 沒查**，那層可能不同。
+> 對到新版本前先確認路徑還在）；SAP 的 UI 準則、CAP 的 Reliable Pagination、RAP 的
+> `get_offset()` 與 openSAP 範例、UI5 維護者在 openui5#3487 的回覆，都是官方或 SAP 自家來源。
+>
+> **這段修正過一次**：先前寫「`$skiptoken` 實際被當 offset 用」時引的是社群教學，
+> 而且差點把一段描述**誤植給 SAP** —— 「skiptoken 由 orderby 值加上最後一列的鍵組成」
+> 那個說法出自 **Microsoft 的 ASP.NET OData WebAPI**（而且連它都是 per-route 選配，
+> 預設仍用 `$skip`），不是 SAP。查框架行為時**先確認那句話的主詞是誰**。
+>
+> 仍未查：SAP Gateway（OData V2）各服務自訂的 `$skiptoken` 語意 —— 那本來就是
+> per-service 的實作決定，不存在單一答案。
 
 ## 跨 DB seed 的雜項
 
