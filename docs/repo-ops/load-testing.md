@@ -20,6 +20,31 @@
    該變數存在時優先採用，且不做這項檢查（等於操作者明講「這個歸壓測寫」）。
 3. **`prepare` 跑過一次**：建立壓測專屬資料庫、建表、植入帳號與資料。
 
+### Oracle：先開一個專用 schema
+
+其他四家靠 `{@DbName}` 換資料庫名就能隔離，Oracle 不行——它的連線字串指的是服務。
+隔離只能靠**另一個 user/schema**，因此得先手動開一個（需要 `CREATE USER` 權限）：
+
+```bash
+docker exec -i oracle23ai sqlplus -S 'sys/<ORACLE_PWD>@localhost:1521/FREEPDB1 as sysdba' <<'SQL'
+create user loadtest identified by <password>;
+grant connect, resource to loadtest;
+alter user loadtest quota unlimited on users;
+exit
+SQL
+```
+
+`<ORACLE_PWD>` 是容器的 `ORACLE_PWD` 環境變數（`docker inspect` 讀得到），本檔不複寫。
+建好之後把 `BEE_LOADTEST_CONNSTR_ORACLE` 指過去，`prepare` 就會把 25 張表與植入資料
+全部建在那裡，不碰 `testuser`：
+
+```bash
+export BEE_LOADTEST_CONNSTR_ORACLE='Data Source=localhost:1521/FREEPDB1;User Id=loadtest;Password=<password>;'
+```
+
+跑完值得回頭確認隔離真的成立（`testuser` 的 `ft_customer` 應停在單元測試的種子列數）——
+**這一步不是形式**：先前正是因為沒驗證這條路徑，壓測把十萬列寫進了 `testuser`。
+
 ```bash
 export BEE_TEST_CONNSTR_SQLSERVER='...'
 dotnet run --project tools/Bee.LoadTests -c Release -- prepare
@@ -77,11 +102,11 @@ dotnet run --project tools/Bee.LoadTests -c Release -- run --mode Remote --endpo
 
 ## 已知限制
 
-判讀報告時需要知道的三件事：
+判讀報告時需要知道的幾件事：
 
 | 限制 | 影響 |
 |------|------|
-| **Oracle 需要專用 schema** | 它的連線字串沒有 `{@DbName}`，`loadtest_` 前綴無從施力，所以預設會被拒絕。要跑 Oracle 得先備妥一個專用 schema 並以 `BEE_LOADTEST_CONNSTR_ORACLE` 指向它。 |
+| **Oracle 需要專用 schema** | 它的連線字串沒有 `{@DbName}`，`loadtest_` 前綴無從施力，所以預設會被拒絕。要跑 Oracle 得先備妥一個專用 schema 並以 `BEE_LOADTEST_CONNSTR_ORACLE` 指向它，做法見上方「Oracle：先開一個專用 schema」。 |
 | **Remote run 量不到快取** | 計數 provider 在驅動程式的 process，被操作的快取在伺服端。報告會標示 `Not observed`，JSON 帶 `CacheObserved: false`。要量快取行為得用 Local 模式。 |
 | **`Order` 的 BO 綁定會被清掉** | 那組定義把 `Order` 綁到 demo 伺服端組件，驅動程式不引用它（引用等於把應用的商業邏輯摺進「量框架」的數字）。該程式因此退回框架自身實作，報告的 `Dropped bindings` 會列出。 |
 | **植入的關聯欄位不是真外鍵** | 每張表獨立植入，關聯欄拿到的是生成值。對讀取場景足夠——量的是查詢本身；需要主檔與明細對得起來的場景得自己植入。 |
