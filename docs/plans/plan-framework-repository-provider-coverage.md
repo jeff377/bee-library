@@ -128,7 +128,7 @@ BO 層 21 支不擴成四家 provider：它們測的是 common scope 的 BO 行�
   跑過 `prepare --provider Oracle` 之後單元測試 fixture 會整組失敗於
   `Change narrows a column`。復原步驟見 [../repo-ops/gotchas/database.md](../repo-ops/gotchas/database.md)。
 - 測試規範見 [../../tests/CLAUDE.md](../../tests/CLAUDE.md)。
-- 本計畫的成因背景見 [plan-paging-and-oracle-getlist.md](plan-paging-and-oracle-getlist.md)
+- 本計畫的成因背景見 [plan-paging-and-oracle-getlist.md](archive/plan-paging-and-oracle-getlist.md)（已封存）
   的「仍未處理（不在本次範圍）」。
 - 改動觸及跨 provider 的測試矩陣，push 前應建議跑完整模式 CI（`[all-db]`）。
 

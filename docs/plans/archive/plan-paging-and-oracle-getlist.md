@@ -78,9 +78,9 @@ VU pool 快取了 faulted task（見階段 D）。診斷時應先確認前置步
 落地兩件事，皆已完成：
 
 - 這組數字與其成因記進
-  [`docs/repo-ops/gotchas/database.md`](../repo-ops/gotchas/database.md)，
+  [`docs/repo-ops/gotchas/database.md`](../../repo-ops/gotchas/database.md)，
   下次有人問「為什麼翻到後面變慢」時查得到。
-- [`PagingOptions.Page`](../../src/Bee.Definition/Paging/PagingOptions.cs) 的 XML doc
+- [`PagingOptions.Page`](../../../src/Bee.Definition/Paging/PagingOptions.cs) 的 XML doc
   補上「成本隨頁碼成長」，讓呼叫端在 IntelliSense 就看得到，而不必先量過才知道。
 
 **這個決定是可逆的**：選項 2 / 3 日後仍可實作，本次沒有做任何會擋住它們的事。
@@ -90,7 +90,7 @@ VU pool 快取了 faulted task（見階段 D）。診斷時應先確認前置步
 | 選項 | 做法 | 代價 |
 |------|------|------|
 | **1. 不處理** | 記進 `docs/repo-ops/gotchas/database.md`，讓下次有人問時查得到這組數字 | 深翻的畫面就是慢；成本為零 |
-| **2. Keyset pagination** | 以上一頁最後一筆的鍵當游標（`WHERE key > @last`），成本與偏移量無關 | 動到 [`PagingOptions`](../../src/Bee.Definition/Paging/PagingOptions.cs)、wire contract 與所有 UI head；且**不支援跳頁**，是產品行為的改變 |
+| **2. Keyset pagination** | 以上一頁最後一筆的鍵當游標（`WHERE key > @last`），成本與偏移量無關 | 動到 [`PagingOptions`](../../../src/Bee.Definition/Paging/PagingOptions.cs)、wire contract 與所有 UI head；且**不支援跳頁**，是產品行為的改變 |
 | **3. 混合** | 淺頁維持 `OFFSET`，超過門檻改走 keyset | 兩套路徑要維護，門檻是另一個要調的參數 |
 
 選項 2 的「不支援跳頁」是關鍵取捨：keyset 換得的效能，代價是使用者不能直接跳到第 500 頁。
@@ -133,7 +133,7 @@ VU pool 快取了 faulted task（見階段 D）。診斷時應先確認前置步
 Oracle 容器裡新開了 `loadtest` user，`BEE_LOADTEST_CONNSTR_ORACLE` 指向它。
 `prepare` 之後 25 張表與 100,000 列都建在 `loadtest`，`testuser` 的 `ft_customer`
 仍停在 10 列——隔離這次有驗證。建立步驟寫進了
-[`docs/repo-ops/load-testing.md`](../repo-ops/load-testing.md)，本檔不複寫。
+[`docs/repo-ops/load-testing.md`](../../repo-ops/load-testing.md)，本檔不複寫。
 
 ### 污染盤點與清理（已完成）
 
