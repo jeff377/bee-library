@@ -1,4 +1,7 @@
 using Bee.Db.Manager;
+using Bee.Db.Providers.MySql;
+using Bee.Db.Providers.Oracle;
+using Bee.Db.Providers.PostgreSql;
 using Bee.Db.Providers.SqlServer;
 using Bee.Definition.Database;
 
@@ -35,6 +38,25 @@ namespace Bee.LoadTests.Bootstrap
                     DbProviderRegistry.Register(
                         DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
                     DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory());
+                    break;
+
+                case DatabaseType.PostgreSQL:
+                    DbProviderRegistry.Register(
+                        DatabaseType.PostgreSQL, Npgsql.NpgsqlFactory.Instance);
+                    DbDialectRegistry.Register(DatabaseType.PostgreSQL, new PgDialectFactory());
+                    break;
+
+                case DatabaseType.MySQL:
+                    DbProviderRegistry.Register(
+                        DatabaseType.MySQL, MySqlConnector.MySqlConnectorFactory.Instance);
+                    DbDialectRegistry.Register(DatabaseType.MySQL, new MySqlDialectFactory());
+                    break;
+
+                case DatabaseType.Oracle:
+                    DbProviderRegistry.Register(
+                        DatabaseType.Oracle,
+                        Oracle.ManagedDataAccess.Client.OracleClientFactory.Instance);
+                    DbDialectRegistry.Register(DatabaseType.Oracle, new OracleDialectFactory());
                     break;
 
                 default:

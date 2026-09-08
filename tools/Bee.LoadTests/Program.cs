@@ -4,6 +4,7 @@ using System.Reflection;
 using Bee.Api.Core.JsonRpc;
 using Bee.Api.Client;
 using Bee.Db;
+using Bee.Definition.Database;
 using Bee.Definition.Security;
 using Bee.Db.Manager;
 using Bee.Definition.Storage;
@@ -128,6 +129,7 @@ namespace Bee.LoadTests
         private static int Prepare(string[] args)
         {
             var options = LoadConfiguration(args);
+            ApplyOverrides(options, args);
             options.Validate();
 
             Console.WriteLine($"Provider     : {options.Database.Provider}");
@@ -363,6 +365,12 @@ namespace Bee.LoadTests
             var warmup = ReadOption(args, "--warmup");
             if (warmup is not null) { options.Load.WarmupSeconds = int.Parse(warmup, CultureInfo.InvariantCulture); }
 
+            var provider = ReadOption(args, "--provider");
+            if (provider is not null)
+            {
+                options.Database.Provider = Enum.Parse<DatabaseType>(provider, ignoreCase: true);
+            }
+
             var mode = ReadOption(args, "--mode");
             if (mode is not null) { options.Target.Mode = Enum.Parse<TargetMode>(mode, ignoreCase: true); }
 
@@ -457,6 +465,7 @@ namespace Bee.LoadTests
             writer.WriteLine("  --warmup <s>     Override the warm-up window, in seconds.");
             writer.WriteLine("  --url <url>      Listen address for 'serve'. Default http://localhost:5199.");
             writer.WriteLine("  --mode <m>       Local or Remote.");
+            writer.WriteLine("  --provider <p>   Database engine (SQLServer, PostgreSQL, MySQL, Oracle).");
             writer.WriteLine("  --endpoint <url> Server to measure in Remote mode.");
             writer.WriteLine("  --protection <p> Public, Encoded or Encrypted.");
             writer.WriteLine();

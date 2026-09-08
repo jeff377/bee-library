@@ -121,6 +121,23 @@ namespace Bee.LoadTests.Bootstrap
         private static void CreateDatabaseIfMissing(
             DatabaseType provider, DbConnection connection, string databaseName)
         {
+            if (provider == DatabaseType.PostgreSQL)
+            {
+                // PostgreSQL accepts neither IF NOT EXISTS on CREATE DATABASE nor the statement
+                // inside a transaction block, so existence is probed separately first.
+                using (var probe = connection.CreateCommand())
+                {
+                    probe.CommandText =
+                        $"SELECT 1 FROM pg_database WHERE datname = '{databaseName}'";
+                    if (probe.ExecuteScalar() is not null) { return; }
+                }
+
+                using var create = connection.CreateCommand();
+                create.CommandText = $"CREATE DATABASE \"{databaseName}\"";
+                create.ExecuteNonQuery();
+                return;
+            }
+
             using var command = connection.CreateCommand();
             command.CommandText = provider switch
             {

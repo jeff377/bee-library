@@ -10,29 +10,25 @@ namespace Bee.LoadTests.UnitTests
     /// <remarks>
     /// Only the rejection path is covered. Registering a provider mutates the process-wide
     /// <c>DbProviderRegistry</c>, and a test that does so would leak into every other test in the
-    /// assembly; the successful path is exercised by actually starting a host instead.
+    /// assembly; the successful path is exercised by actually starting a host instead — which is
+    /// also why SQLServer, PostgreSQL, MySQL and Oracle cannot be asserted here now that each has
+    /// a driver.
     /// </remarks>
     public class DbProviderRegistrarTests
     {
-        [Theory]
-        [InlineData(DatabaseType.PostgreSQL)]
-        [InlineData(DatabaseType.MySQL)]
-        [InlineData(DatabaseType.Oracle)]
-        [DisplayName("未引用 driver 的 provider 擲出說明補救步驟的例外")]
-        public void Register_ProviderWithoutDriver_ThrowsWithRemediation(DatabaseType provider)
+        [Fact]
+        [DisplayName("SQLite 被拒，且訊息說明補救步驟")]
+        public void Register_Sqlite_ThrowsWithRemediation()
         {
-            var ex = Assert.Throws<NotSupportedException>(() => DbProviderRegistrar.Register(provider));
+            // With all four server-side engines now carrying a driver, SQLite is the only value
+            // that reaches the rejection path — which is correct: it is not a load-test target.
+            // Configuration validation already rejects it earlier; this is the second layer.
+            var ex = Assert.Throws<NotSupportedException>(
+                () => DbProviderRegistrar.Register(DatabaseType.SQLite));
 
-            Assert.Contains(provider.ToString(), ex.Message, StringComparison.Ordinal);
+            Assert.Contains("SQLite", ex.Message, StringComparison.Ordinal);
             Assert.Contains("DbProviderRegistrar", ex.Message, StringComparison.Ordinal);
         }
 
-        [Fact]
-        [DisplayName("SQLite 同樣被拒，且在設定驗證階段就已擋下")]
-        public void Register_Sqlite_Throws()
-        {
-            Assert.Throws<NotSupportedException>(
-                () => DbProviderRegistrar.Register(DatabaseType.SQLite));
-        }
     }
 }
