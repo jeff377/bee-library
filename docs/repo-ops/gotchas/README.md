@@ -11,7 +11,7 @@
 
 | 檔案 | 涵蓋 |
 |------|------|
-| [database.md](database.md) | Oracle `''`=NULL / 位置綁定 / `RAW(16)` 讀成 `byte[]`、MySQL TEXT/UUID、SQLite GUID 大小寫、decimal scale、datetime2 參數層 |
+| [database.md](database.md) | Oracle `''`=NULL / 位置綁定 / `RAW(16)` 讀成 `byte[]`、MySQL TEXT/UUID、SQLite GUID 大小寫、decimal scale、datetime2 參數層、深分頁 `OFFSET` 成本（含 Odoo / SAP 對照）、壓測與單元測試共用 schema |
 | [serialization-and-expressions.md](serialization-and-expressions.md) | MessagePack ctor 順序與 wire 事實、運算式引擎兩雷、AOT 實測結論 |
 | [avalonia-controls.md](avalonia-controls.md) | Avalonia 控件實證雷（DataGrid、唯讀外觀、事件、並行） |
 | [mobile-trim-aot.md](mobile-trim-aot.md) | 行動端 trim / AOT：決策樹推導、reflection-only 重現法保真度、build 與驗證命令配方 |

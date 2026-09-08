@@ -323,6 +323,45 @@ Oracle 那列另有兩個保留：倍數逐輪遞增而非上下震盪（前三�
 **遇到真的需要深翻的畫面時**：先想能不能用篩選把結果集縮小，那通常才是使用者真正要的；
 真的需要「一路翻到底」（例如匯出），再回頭評估 keyset。
 
+### 別家 ERP 怎麼處理（2026-09-08 查證）
+
+查這個是為了確認「不處理」不是偷懶。結論是**兩家都沒有用 keyset**，而真正迴避掉問題的那家
+是在 **UI 層**解的，不是在框架層。
+
+**Odoo —— 跟我們現在完全一樣。** 它是與本框架最接近的類比（ORM + 泛用列表視圖 + 任意跳頁）：
+
+- `odoo/tools/query.py` 的 `select()` 尾端就是 `LIMIT %s` + `OFFSET %s`，`models.py` 的
+  `_read_group` 同樣；該檔與 `models.py` 都 grep 不到 keyset / cursor / seek。
+- 它的 pager（`addons/web/static/src/core/pager/pager.js`）**不只有上下頁** —— 點一下數字
+  可輸入 `min[,max]` 範圍，parse 後 clamp 進 offset，等於允許直接跳到任意深度。
+
+**SAP —— 靠設計不讓使用者走到那裡。** 分兩層，重點在上面那層：
+
+- **UI 層**：SAPUI5 文件寫明 responsive table 一次不超過 200 筆、更多要用 growing 功能並
+  「make sure the user can filter the data」。Fiori elements 的 list report 預設是 growing
+  table（`More` 按鈕），**只能往下追加、沒有頁碼**，主互動是頂部的 filter bar。
+- **API 層**：OData 的 `$skiptoken` 設計上是伺服端發、客戶端原樣帶回的**不透明續傳權杖**
+  （相對於客戶端自算的 `$skip`）。但 SAP Gateway 只是把它交給服務實作，語意由實作決定，
+  而流傳最廣的 ABAP 範例是把它當數字用（`LV_INDEX_START = LV_SKIPTOKEN`）——
+  **穿著 cursor 外衣的 offset**。
+
+順帶一提，SAP 自家的 ABAP 關鍵字文件講 `SELECT ... OFFSET` 時只寫「必須搭配 `ORDER BY`」
+與嚴格語法檢查，**沒有提效能**。
+
+**對本條的意義**：成熟 ERP 對「深翻很慢」的答案是**不要讓使用者走到那裡**，而不是讓
+`OFFSET` 變快。上一段那句「先想能不能用篩選把結果集縮小」在 SAP 是硬性 UI 準則，不是建議。
+真要做 UI 的話，growing / `More` 比頁碼跳轉更貼近這個結論，且**不需要動 `PagingOptions`**。
+
+**若日後真的要走 keyset**，`$skiptoken` 那個形狀值得抄：**由伺服端在回應裡發不透明續傳權杖**，
+呼叫端原樣帶回。這樣底層從 offset 換成 keyset 時 wire contract 不必跟著改 ——
+而現行 `PagingOptions` 是頁碼制，換過去就是破壞性變更。
+
+> **查證邊界，別把這段當定論**：Odoo 那三點是讀 17.0 的原始碼確認的（程式碼會搬家，
+> 對到新版本前先確認路徑還在）；SAP 的 UI 準則與 ABAP 文件是官方來源；
+> 但**「`$skiptoken` 實際被當 offset 用」的依據是社群教學與範例，不是 SAP 官方框架文件**，
+> 而且它本來就是 per-service 的實作決定、不存在單一答案。
+> **SAP 較新的 RAP / OData V4 managed runtime 沒查**，那層可能不同。
+
 ## 跨 DB seed 的雜項
 
 - 識別符一律 `dbType.QuoteIdentifier(...)`——**Oracle 會把它大寫**（`"FT_CATEGORY"`），其餘保留原樣。
