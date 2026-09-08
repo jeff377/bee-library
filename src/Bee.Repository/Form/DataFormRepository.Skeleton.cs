@@ -50,12 +50,64 @@ namespace Bee.Repository.Form
         /// A provider reports a calendar-day column as `DateTime`, indistinguishable from an instant.
         /// Marking here keeps a table read from SQL describing itself the same way as one built from
         /// the schema by <see cref="BuildEmptyDataTable"/>, whose `AddColumn` calls mark as they build.
+        /// <para>
+        /// Guid columns are converted rather than only marked, because Oracle has no UUID type: the
+        /// framework maps <see cref="FieldDbType.Guid"/> to <c>RAW(16)</c>, which reads back as
+        /// <see cref="byte"/>[]. Left alone, a table from Oracle would declare a column Guid while
+        /// holding byte arrays, and every consumer that reads the value — the client-side row guard,
+        /// the grids in each UI head, a caller's own `is Guid` test — would take the else branch on
+        /// that one provider.
+        /// </para>
         /// </remarks>
         private static DataTable? MarkFromSchema(DataTable? table, FormTable? formTable)
         {
             if (table != null && formTable != null)
+            {
                 formTable.ApplyFieldDbTypes(table);
+                NormalizeGuidColumns(table);
+            }
             return table;
+        }
+
+        /// <summary>
+        /// Rewrites columns the schema declares as <see cref="FieldDbType.Guid"/> but that the
+        /// provider materialised as <see cref="byte"/>[] into real <see cref="Guid"/> columns.
+        /// </summary>
+        /// <remarks>
+        /// The byte order is the one <see cref="Guid.ToByteArray()"/> produced on the way in — see
+        /// <c>DbCommandSpec.NormalizeParameterValue</c> — so the matching constructor round-trips it.
+        /// A DataColumn's type is immutable once it holds data, hence the replace-and-copy.
+        /// <see cref="DataTable.AcceptChanges"/> at the end is safe because every caller of
+        /// <see cref="MarkFromSchema"/> passes a table just filled from a SELECT: the rows are
+        /// Unchanged on arrival and must stay that way, and writing the copied values marks them
+        /// Modified.
+        /// </remarks>
+        private static void NormalizeGuidColumns(DataTable table)
+        {
+            var pending = table.Columns.Cast<DataColumn>()
+                .Where(c => c.DataType == typeof(byte[])
+                         && c.GetDeclaredFieldDbType() == FieldDbType.Guid)
+                .ToList();
+            if (pending.Count == 0) return;
+
+            foreach (var column in pending)
+            {
+                var name = column.ColumnName;
+                var ordinal = column.Ordinal;
+                var values = table.Rows.Cast<DataRow>()
+                    .Select(row => row[column] is byte[] { Length: 16 } bytes ? new Guid(bytes) : (object)DBNull.Value)
+                    .ToList();
+
+                table.Columns.Remove(column);
+                var replacement = table.Columns.Add(name, typeof(Guid));
+                replacement.ApplyFieldDbType(FieldDbType.Guid);
+                replacement.SetOrdinal(ordinal);
+
+                for (int i = 0; i < values.Count; i++)
+                    table.Rows[i][replacement] = values[i];
+            }
+
+            table.AcceptChanges();
         }
 
         private static DataTable BuildEmptyDataTable(FormTable formTable)

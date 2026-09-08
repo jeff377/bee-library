@@ -1,8 +1,10 @@
 using Bee.Base;
 using Bee.Base.Collections;
 using Bee.Base.Data;
+using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using Bee.Definition.Database;
@@ -15,6 +17,10 @@ namespace Bee.Db
     public class DbCommandSpec : CollectionItem
     {
         private const int DefaultTimeout = 30;  // Default timeout in seconds
+        private const string BindByNamePropertyName = "BindByName";
+        // Null is a cached answer too: a provider whose command type has no BindByName is looked
+        // up once, not once per command.
+        private static readonly ConcurrentDictionary<Type, PropertyInfo?> s_bindByNameCache = new();
         // Pre-compiled placeholder regex: {key}; supports {{key}} as an escape (outputs {key})
         private static readonly Regex s_placeholderRegex =
             new Regex(@"\{(?<key>[^\}]+)\}|\{\{(?<escaped>[^\}]+)\}\}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
@@ -152,7 +158,40 @@ namespace Bee.Db
                 cmd.Parameters.Add(CreateParameter(cmd, databaseType, parameterPrefix, spec));
             }
 
+            ApplyOracleBindByName(databaseType, cmd);
+
             return cmd;
+        }
+
+        // Oracle.ManagedDataAccess binds parameters by their position in the collection unless
+        // `OracleCommand.BindByName` is set, so `:p1` resolves to the first parameter added rather
+        // than to the parameter of that name. Every other provider this framework supports binds
+        // by name, which is what the `{0}` / `{Name}` placeholder API promises: a caller may write
+        // the placeholders in any order and may use one twice. Under positional binding those two
+        // shapes silently bind the wrong value to the wrong column — the failure that broke every
+        // FormSchema-driven request on Oracle, because sign-in's `UPDATE st_session` sets two
+        // columns before matching on the access token and so sent a DateTime where a RAW(16) was
+        // expected (ORA-00932).
+        //
+        // Set here rather than worked around per statement: the alternative is every author of
+        // every SQL string remembering an Oracle-only ordering rule that nothing checks. It is
+        // applied to text commands only — for CommandType.StoredProcedure, BindByName would match
+        // parameter names against the procedure's declared argument names, a different contract
+        // than the positional one callers of that path have today.
+        //
+        // Reflection because Bee.Db takes no reference to any ADO.NET driver: the provider factory
+        // is registered by the host, and adding Oracle.ManagedDataAccess here would put an Oracle
+        // dependency in every consumer's package graph. The property lookup is cached per command
+        // type, so the cost after the first command of a run is a dictionary read.
+        private static void ApplyOracleBindByName(DatabaseType databaseType, DbCommand cmd)
+        {
+            if (databaseType != DatabaseType.Oracle || cmd.CommandType != CommandType.Text) return;
+
+            var property = s_bindByNameCache.GetOrAdd(cmd.GetType(), static type =>
+                type.GetProperty(BindByNamePropertyName, BindingFlags.Public | BindingFlags.Instance));
+
+            if (property is { CanWrite: true } && property.PropertyType == typeof(bool))
+                property.SetValue(cmd, true);
         }
 
         /// <summary>

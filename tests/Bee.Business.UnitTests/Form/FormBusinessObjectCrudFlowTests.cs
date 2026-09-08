@@ -35,6 +35,16 @@ namespace Bee.Business.UnitTests.Form
         public void LoadAndSaveFlow_Sqlite()
             => RunLoadAndSaveFlow(DatabaseType.SQLite);
 
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle:新增存檔流程 GetNewData → 填欄位 → Save → GetData 應比對相符")]
+        public void NewAndSaveFlow_Oracle()
+            => RunNewAndSaveFlow(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle:修改存檔流程 GetData → 修改 → Save → GetData 應比對相符")]
+        public void LoadAndSaveFlow_Oracle()
+            => RunLoadAndSaveFlow(DatabaseType.Oracle);
+
         private void RunNewAndSaveFlow(DatabaseType dbType)
         {
             var ctx = new CrudTestContext(_fx, dbType);

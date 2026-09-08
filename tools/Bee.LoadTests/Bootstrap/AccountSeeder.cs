@@ -1,4 +1,5 @@
 using System.Globalization;
+using Bee.Base;
 using Bee.Base.Security;
 using Bee.Db;
 using Bee.LoadTests.Configuration;
@@ -117,8 +118,11 @@ namespace Bee.LoadTests.Bootstrap
         {
             var spec = new DbCommandSpec(DbCommandKind.Scalar,
                 $"SELECT sys_rowid FROM {tableName} WHERE sys_id = {{0}}", sysId);
+            // Not `is Guid`: Oracle maps a Guid column to RAW(16) and reads it back as byte[],
+            // so the direct type test finds nothing and every existing row looks absent — which
+            // made a second `prepare` re-insert the company and the account pool.
             var value = dbAccess.Execute(spec).Scalar;
-            return value is Guid guid ? guid : Guid.Empty;
+            return value is null ? Guid.Empty : ValueUtilities.CGuid(value);
         }
     }
 }

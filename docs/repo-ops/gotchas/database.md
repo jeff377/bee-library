@@ -195,6 +195,67 @@ pre-1753 仍拋 `SqlDateTimeOverflow`。
 **通則**：凡「參數層跨 provider 型別調整」一律走 `NormalizeDbType` 做 provider-gated 改寫，
 別動全域 `Infer`。DateTime 參數的 driver 行為 provider 間差異極大。
 
+## Oracle：參數以「位置」綁定，佔位符寫錯順序就綁到別的欄位（已修）
+
+**症狀**：Oracle 上 `ORA-00932: 表示式 (:1) 為 TIMESTAMP 資料類型, 與預期的資料類型 BINARY 不相容`。
+其餘四家同一句 SQL 完全正常。壓測時的外顯是「`GetList` 100% 失敗」，但錯的不是 `GetList`
+—— 那句 SELECT 一個 bind 變數都沒有，是登入路徑先炸、VU pool 快取了 faulted task。
+
+**根因**：`Oracle.ManagedDataAccess` 的 `OracleCommand.BindByName` 預設 `false`
+——SQL 裡第 n 個 bind 變數拿到參數集合的第 n 筆，**與名稱無關**。
+其餘四家一律以名稱綁定，而 `{0}` / `{Name}` 佔位符 API 的語意就是以名稱對應。
+`SessionRepository.UpdateSession` 的佔位符順序是 `{1} {2} {0}`，於是
+`DateTime` 被送進 `access_token`（`RAW(16)`）。
+
+**為什麼型別相容時更可怕**：兩個都是字串欄的錯位**不會有任何錯誤**，只會寫錯欄位。
+`ORA-00932` 是運氣好才炸出來的。
+
+**正解**：`DbCommandSpec.CreateCommand` 對 Oracle 的 text command 設 `BindByName = true`
+（反射設定，`Bee.Db` 不參考任何 ADO.NET driver）。**不要逐句改寫 SQL 遷就位置綁定**
+——那要求每個寫 SQL 的人記住一條沒有機制檢查的 Oracle 專屬規則。
+閘門是 `tests/Bee.Db.UnitTests/ParameterBindingOrderTests.cs`（五家 provider 各兩支）。
+
+## Oracle：`RAW(16)` 讀回來是 `byte[]`，`is Guid` 一律判 false（已修，但有殘留）
+
+**症狀**：`Cannot coerce value of type 'System.Byte[]' into Guid`（`GetData` / `Save`）；
+或更安靜的版本 —— 查得到列、拿得到值，但每個 `is Guid` 分支都走 else，於是
+「既有資料看起來不存在」（壓測工具的 `ResolveRowId` 因此讓第二次 `prepare` 重插而撞唯一鍵）。
+
+**根因**：Oracle 沒有 UUID 型別，`FieldDbType.Guid` 對映 `RAW(16)`。**寫入端早就處理了**
+（`DbCommandSpec.NormalizeParameterValue` 轉 `byte[]`），讀取端各自為政。
+
+**正解**：轉型一律走 `ValueUtilities.CGuid(object)` —— 它**本來就認 16-byte 陣列**。
+`DataFormRepository` 會漏是因為自帶了一份平行實作（`TryCoerceToGuid`）。
+FormSchema 驅動的結果表另在 `MarkFromSchema` 就地把宣告為 Guid 卻裝 `byte[]` 的欄位換成
+真正的 Guid 欄位 —— 否則消費端拿到的是「宣告 Guid、實際 byte[]」的 DataTable。
+
+**殘留**：`FormDataGuard`、各 UI head 的 grid（`GridControl.Cells`、`DynamicGrid`、`ListView`）
+仍是裸 `is Guid`。經 `MarkFromSchema` 的資料沒問題，其他來源未查證。
+
+## Oracle：壓測工具與單元測試共用同一個 schema，會互相破壞
+
+**症狀**：跑過 `dotnet run --project tools/Bee.LoadTests -- prepare --provider Oracle` 之後，
+單元測試 fixture 整組失敗於
+`InvalidOperationException: Change narrows a column (AlterFieldChange)`
+（`InvalidOperationException` 不是 `DbException`，`RunStep` 不攔，整個 Oracle setup 中止）。
+
+**根因**：`databaseNamePrefix` 對 Oracle 無效 —— 五張表全在單一 `testuser` schema 下
+（見 `.runsettings` 的註解）。壓測用 `apps/Bee.Northwind/Define` 的 `st_user`
+（`password` 長度 200），單元測試用 `tests/Define` 的（長度 40），互相覆蓋。
+
+**繞法**（尚無正解）：跑完壓測後把 schema 復原再跑單元測試 ——
+
+```sql
+delete from st_user_company where company_rowid in (select sys_rowid from st_company where sys_id='loadtest');
+delete from st_company where sys_id='loadtest';
+delete from st_user where sys_id like 'loadtest_user_%';
+commit;
+alter table st_user modify (password varchar2(40 char));
+```
+
+`loadtest_user_%` 那幾列必須先刪 —— 它們的密碼雜湊有 79 字元，不刪就 `ORA-01441`。
+之後要再壓測只需重跑 `prepare`。
+
 ## 跨 DB seed 的雜項
 
 - 識別符一律 `dbType.QuoteIdentifier(...)`——**Oracle 會把它大寫**（`"FT_CATEGORY"`），其餘保留原樣。

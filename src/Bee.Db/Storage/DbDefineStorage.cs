@@ -410,8 +410,9 @@ namespace Bee.Db.Storage
                     $"WHEN MATCHED THEN UPDATE SET t.{cnt} = s.{cnt}, t.{upd} = {now} " +
                     $"WHEN NOT MATCHED THEN INSERT ({type}, {cust}, {key}, {cnt}, {upd}) VALUES (s.{type}, s.{cust}, s.{key}, s.{cnt}, {now});",
 
-                // Oracle: positional binding by default — carry every param through USING so none is
-                // referenced twice (reusing a placeholder would expect an extra positional bind).
+                // Oracle: same USING shape as SQL Server, so each param is written once. Binding is
+                // by name (`DbCommandSpec.CreateCommand` sets `BindByName`), so this is a matter of
+                // the statement reading the same way on both engines, not a binding requirement.
                 DatabaseType.Oracle =>
                     $"MERGE INTO {tbl} t USING (SELECT {{0}} AS {type}, {{1}} AS {cust}, {{2}} AS {key}, {{3}} AS {cnt} FROM dual) s " +
                     $"ON (t.{type} = s.{type} AND t.{cust} = s.{cust} AND t.{key} = s.{key}) " +

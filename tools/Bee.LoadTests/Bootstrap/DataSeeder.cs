@@ -1,4 +1,5 @@
 using System.Globalization;
+using Bee.Base;
 using Bee.Base.Data;
 using Bee.Db;
 using Bee.Definition.Database;
@@ -115,7 +116,11 @@ namespace Bee.LoadTests.Bootstrap
             foreach (System.Data.DataRow row in table.Rows)
             {
                 if (rowIds.Count >= count) { break; }
-                if (row[0] is Guid guid) { rowIds.Add(guid); }
+                // Coerced rather than type-tested: Oracle returns RAW(16) as byte[], and a
+                // direct `is Guid` collected nothing there — the run then aborted with
+                // "No keys were collected" before any scenario ran.
+                var rowId = ValueUtilities.CGuid(row[0]);
+                if (rowId != Guid.Empty) { rowIds.Add(rowId); }
             }
             return rowIds;
         }

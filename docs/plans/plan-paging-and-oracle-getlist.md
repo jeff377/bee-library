@@ -1,10 +1,10 @@
 # 計畫：深分頁成本與 Oracle GetList 失效
 
-**狀態：📝 擬定中（2026-09-08）**
+**狀態：🚧 進行中（2026-09-08）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| A | Oracle 的 `GetList` 失效（ORA-00932）—— 功能問題 | 📝 待做 |
+| A | Oracle 的 `GetList` 失效（ORA-00932）—— 功能問題 | ✅ 已完成（2026-09-08） |
 | B | 深分頁（`OFFSET`）成本 —— 效能問題 | 📝 待決策 |
 
 兩者互相獨立，優先序不同：**A 是壞的，B 是慢的**。A 應先處理，B 需要先決定值不值得動。
@@ -40,21 +40,70 @@ debug 才取得的。
 
 這是測試矩陣的缺口，不是個別測試漏寫：那條路徑在 Oracle 上從未被驗證過。
 
-### 待查
+### 查證結果
 
-- `:1` 是哪個參數。`ORA-00932` 指參數被推斷為 `TIMESTAMP` 而欄位期望 `BINARY`(RAW)，
-  依 `.claude/rules/database.md`，Oracle 的 `Guid → Binary` 轉換在
-  [`DbCommandSpec.NormalizeDbType`](../../src/Bee.Db/DbCommandSpec.cs)；需確認查詢路徑
-  是否走到它，或參數在別處就被推斷成別的型別。
-- 是否只影響 `GetList`，還是 `GetData` / `Save` 同樣失效（本次場景設定只跑了兩個 list 場景）。
-- 是否與壓測植入的資料有關（`DataSeeder` 對 `Guid` 欄寫入 `Guid`、對 `DateTime` 欄寫入
-  `DateTime`）——但 seed 本身在 Oracle 上成功，且查詢才失敗，指向查詢側。
+**不在 `GetList` 的 SELECT 上，也與型別推斷無關。** 壓測的 list 場景不帶 filter，
+產生的 SELECT 一個 bind 變數都沒有；`GetList` 之所以 100% 失敗，是因為
+`VirtualUserPool` 的登入在第一次就擲例外並把 faulted task 快取起來，之後每個 iteration
+都立刻重擲同一個例外（5 秒內 115 萬筆「錯誤」即為此，不是 115 萬次資料庫往返）。
 
-### 建議範圍
+真因有兩個，彼此獨立：
 
-1. 先以一支針對 Oracle 的 `DataFormRepository.GetList` 測試重現（**先讓它紅**）。
-2. 修正型別推斷。
-3. **把 FormSchema 驅動的查詢路徑納入 Oracle 測試矩陣** —— 否則修好了也擋不住下次。
+#### A1：Oracle 預設以「位置」而非「名稱」綁定參數
+
+`Oracle.ManagedDataAccess` 的 `OracleCommand.BindByName` 預設為 `false`，
+於是 SQL 裡第 n 個 bind 變數拿到的是**參數集合的第 n 筆**，與名稱無關。
+其餘四家都以名稱綁定 —— 而 `{0}` / `{Name}` 佔位符 API 的語意正是以名稱對應
+（`DbAccessTests` 早就有 `"Update st_user Set note={1} Where sys_id = {0}"` 這種寫法）。
+
+登入時 [`SessionRepository.UpdateSession`](../../src/Bee.Repository/System/SessionRepository.cs)
+先設兩個欄位再以 access token 比對，佔位符順序是 `{1} {2} {0}`；在位置綁定下
+`DateTime` 被送進 `access_token`（`RAW(16)`）欄位，即 `ORA-00932`。
+
+**修法**：[`DbCommandSpec.CreateCommand`](../../src/Bee.Db/DbCommandSpec.cs) 對 Oracle 的
+text command 設 `BindByName = true`（以反射設定，因為 `Bee.Db` 不參考任何 ADO.NET driver）。
+逐句改寫 SQL 不是解 —— 那要求每個寫 SQL 的人都記得一條沒有任何機制檢查的 Oracle 專屬規則。
+
+#### A2：Oracle 的 `RAW(16)` 讀回來是 `byte[]`，不是 `Guid`
+
+Oracle 沒有 UUID 型別，框架把 `FieldDbType.Guid` 對映為 `RAW(16)`。寫入端早已處理
+（`DbCommandSpec.NormalizeParameterValue` 轉 `byte[]`），**讀取端沒有**：
+
+- `DataFormRepository.TryCoerceToGuid` 只認 `Guid` 與 `string`，於是 `GetData` / `Save`
+  在 Oracle 上擲 `Cannot coerce value of type 'System.Byte[]' into Guid`。
+- 更廣的一層是回傳的 `DataTable` 本身：`sys_rowid` 欄位宣告為 Guid、實際裝 `byte[]`，
+  每個以 `is Guid` 判斷的消費端（`FormDataGuard`、各 UI head 的 grid）都會在 Oracle 上走錯分支。
+
+**修法**：`MarkFromSchema` 就地把「schema 宣告為 Guid、provider 卻給 `byte[]`」的欄位
+換成真正的 Guid 欄位，`TryCoerceToGuid` 同步補上 `byte[]` 分支。
+`ValueUtilities.CGuid(object)` **本來就處理了 `byte[]`** —— 會漏是因為
+`DataFormRepository` 自帶了一份平行實作。
+
+### 已完成的事
+
+1. 以 [`ParameterBindingOrderTests`](../../tests/Bee.Db.UnitTests/ParameterBindingOrderTests.cs)
+   在五家 provider 上覆蓋佔位符的綁定合約（非遞增順序、同一佔位符出現兩次），
+   Oracle 那支在修正前擲出與壓測完全相同的 `ORA-00932`。
+2. 修正 A1 與 A2。
+3. **把 FormSchema 驅動的路徑納入 Oracle 測試矩陣**：`GetList`（含分頁與 fallback sort）、
+   `GetData`、`Save`、`Delete`、CRUD flow，另加兩支明確斷言 `sys_rowid` 欄位型別為 `Guid` 的測試。
+4. 修正壓測工具本身兩處同樣的 `is Guid` 誤判（`AccountSeeder.ResolveRowId`、
+   `DataSeeder.ReadRowIds`）—— 前者讓第二次 `prepare` 重插既有帳號而違反唯一鍵，
+   後者讓 Oracle 收不到任何 rowId、`GetData` / `Save` 場景直接無法啟動。
+
+驗證：Oracle 上 Login / GetList / GetData / Save 四個場景 0 錯誤。
+
+### 仍未處理（不在本次範圍）
+
+- **框架軸 repository 的 Oracle 覆蓋是名義上的。** `DbScope.Common` 固定解析為
+  databaseId `"common"`，而測試 fixture 把 `"common"` 註冊成 SQL Server；
+  `UserRepositoryTests` / `ApiKeyRepositoryTests` 上的 `[DbFact(DatabaseType.Oracle)]`
+  實際打的是 SQL Server（`RunRoundTrip(DatabaseType _)` 直接丟棄該參數即為徵狀）。
+  這也是 A1 藏了這麼久的原因之一。
+- **壓測工具在 Oracle 上無法與單元測試隔離。** `databaseNamePrefix` 對 Oracle 無效
+  （單一 `testuser` schema 容納所有 category），因此 `prepare --provider Oracle` 會把
+  Northwind 的 `st_user`（`password` 長度 200）套到單元測試共用的表上，之後單元測試
+  fixture 會以 `Change narrows a column` 整組失敗。
 
 ## 階段 B：深分頁的 `OFFSET` 成本
 

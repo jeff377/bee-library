@@ -216,6 +216,78 @@ namespace Bee.Business.UnitTests.Form
         public void GetList_SqlServer_PagedWithoutTotalCount()
             => RunPagedWithoutTotalCount(DatabaseType.SQLServer);
 
+        // -------- Oracle --------
+        // The FormSchema-driven query path had no Oracle coverage at all until 4.27.x; the
+        // framework repositories were exercised on Oracle but this path never was, and it was
+        // broken on Oracle the whole time. These mirror the SQL Server cases above.
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：GetList 指定明確 SelectFields 應只回傳該欄位且含關聯欄位")]
+        public void GetList_Oracle_ExplicitSelectFields()
+            => RunExplicitSelectFields(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：GetList 同時套用 Filter 與 Sort 應回傳對應列數與順序")]
+        public void GetList_Oracle_FilterAndSort()
+            => RunFilterAndSort(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：GetList 套用 dept_rowid IN（scope 形狀）應只回該部門列且不報 remap 錯")]
+        public void GetList_Oracle_InFilterOnDeptField()
+            => RunInFilterOnDeptField(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：GetList 分頁含 IncludeTotalCount 應回傳正確 TotalCount/HasMore")]
+        public void GetList_Oracle_PagedWithTotalCount()
+            => RunPagedWithTotalCount(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：GetList 分頁不含 IncludeTotalCount 應 probe 推算 HasMore 且 TotalCount=null")]
+        public void GetList_Oracle_PagedWithoutTotalCount()
+            => RunPagedWithoutTotalCount(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：GetList 分頁 SortFields=null 應 fallback sys_no ASC")]
+        public void GetList_Oracle_SortFallbackToSysNo()
+            => RunSortFallbackToSysNo(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：GetList 無 Filter 無 Sort 的分頁查詢（壓測場景形狀）應成功")]
+        public void GetList_Oracle_PagedWithoutFilter()
+            => RunPagedWithoutFilter(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：GetList 回傳的 sys_rowid 欄位應為 Guid 型別，而非 RAW(16) 的 byte[]")]
+        public void GetList_Oracle_RowIdColumnIsGuid()
+        {
+            var ctx = new TestContext(_fx, DatabaseType.Oracle);
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            var employeeRowId = Guid.NewGuid();
+            try
+            {
+                InsertEmployee(ctx, employeeRowId, $"E{runId}", "員工甲", Guid.Empty);
+
+                var result = ctx.CreateBo().GetList(new GetListArgs
+                {
+                    SelectFields = "sys_rowid,sys_id",
+                    Filter = FilterCondition.Equal("sys_rowid", employeeRowId),
+                });
+
+                Assert.NotNull(result.Table);
+                Assert.Equal(typeof(Guid), result.Table!.Columns["sys_rowid"]!.DataType);
+                Assert.Equal(employeeRowId, result.Table.Rows[0]["sys_rowid"]);
+            }
+            finally
+            {
+                TryDelete(ctx, "Employee", employeeRowId);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：GetList 無 Filter 無 Sort 的分頁查詢（壓測場景形狀）應成功")]
+        public void GetList_SqlServer_PagedWithoutFilter()
+            => RunPagedWithoutFilter(DatabaseType.SQLServer);
+
         private void RunExplicitSelectFields(DatabaseType dbType)
         {
             var ctx = new TestContext(_fx, dbType);
@@ -479,6 +551,32 @@ namespace Bee.Business.UnitTests.Form
                 Assert.Equal(2, page2.Table!.Rows.Count);
                 Assert.Equal($"P{runId}-2", page2.Table.Rows[0]["sys_id"]);
                 Assert.Equal($"P{runId}-3", page2.Table.Rows[1]["sys_id"]);
+            }
+            finally
+            {
+                foreach (var id in rowIds) TryDelete(ctx, "Employee", id);
+            }
+        }
+
+        // The load-test shape: paging with neither a filter nor an explicit sort, so the SELECT
+        // carries no bind variables at all and the Repository supplies the `sys_no` fallback sort.
+        private void RunPagedWithoutFilter(DatabaseType dbType)
+        {
+            var ctx = new TestContext(_fx, dbType);
+            var (rowIds, _, _) = SeedFivePagingRows(ctx);
+            try
+            {
+                var result = ctx.CreateBo().GetList(new GetListArgs
+                {
+                    SelectFields = "sys_id,sys_name",
+                    Paging = new PagingOptions { Page = 1, PageSize = 3, IncludeTotalCount = true },
+                });
+
+                Assert.NotNull(result.Table);
+                // Rows are whatever the shared table holds, so only the page shape is asserted.
+                Assert.True(result.Table!.Rows.Count <= 3);
+                Assert.NotNull(result.Paging);
+                Assert.True(result.Paging!.TotalCount >= 5);
             }
             finally
             {

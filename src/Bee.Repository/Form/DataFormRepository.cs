@@ -381,11 +381,12 @@ namespace Bee.Repository.Form
 
         /// <summary>
         /// Coerces a value loaded from a <see cref="DataRow"/> column into a
-        /// <see cref="Guid"/>. SQLite (and the legacy <c>System.Data.SQLite</c>)
-        /// stores GUID values as TEXT and surfaces them as strings; other
-        /// providers return native <see cref="Guid"/> instances. This helper
-        /// hides that distinction so repository callers never need to
-        /// branch on the underlying provider.
+        /// <see cref="Guid"/>. Providers disagree on how a GUID comes back: SQL Server,
+        /// PostgreSQL and MySQL return a native <see cref="Guid"/>, SQLite (and the legacy
+        /// <c>System.Data.SQLite</c>) stores it as TEXT and surfaces a string, and Oracle has no
+        /// UUID type at all — the framework maps it to <c>RAW(16)</c>, which reads back as
+        /// <see cref="byte"/>[]. This helper hides that distinction so repository callers never
+        /// need to branch on the underlying provider.
         /// </summary>
         private static Guid CoerceToGuid(object value)
         {
@@ -394,12 +395,23 @@ namespace Bee.Repository.Form
                     $"Cannot coerce value of type '{value?.GetType().FullName ?? "null"}' into Guid.");
         }
 
+        /// <remarks>
+        /// Accepts the same shapes as <see cref="Bee.Base.ValueUtilities.CGuid(object)"/>, the
+        /// framework-wide converter, and differs from it only in the answer for a value that is
+        /// no kind of Guid: null here, <see cref="Guid.Empty"/> there. That distinction is what
+        /// <see cref="ExtractMasterRowId"/> uses to skip a row rather than read it as unset.
+        /// Keep the accepted shapes in step with that method.
+        /// </remarks>
         private static Guid? TryCoerceToGuid(object? value)
         {
             return value switch
             {
                 Guid g => g,
                 string s when Guid.TryParse(s, out var parsed) => parsed,
+                // Oracle RAW(16). The byte order is whatever `Guid.ToByteArray` produced on the
+                // way in (see `DbCommandSpec.NormalizeParameterValue`), so the matching
+                // constructor is what round-trips it — not a re-ordered read.
+                byte[] { Length: 16 } bytes => new Guid(bytes),
                 _ => null,
             };
         }

@@ -63,6 +63,21 @@ namespace Bee.Business.UnitTests.Form
         public void Save_Sqlite_NoChanges_IsNoOp()
             => RunSaveNoChangesIsNoOp(DatabaseType.SQLite);
 
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle:Save 帶 Added row 應 INSERT 並回傳 refreshed DataSet")]
+        public void Save_Oracle_AddedRow_Inserts()
+            => RunSaveAddedRow(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle:Save 帶 Modified row 應 UPDATE 並回傳 refreshed DataSet")]
+        public void Save_Oracle_ModifiedRow_Updates()
+            => RunSaveModifiedRow(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle:Save 帶 Deleted row 應 DELETE")]
+        public void Save_Oracle_DeletedRow_Deletes()
+            => RunSaveDeletedRow(DatabaseType.Oracle);
+
         private void RunSaveAddedRow(DatabaseType dbType)
         {
             var ctx = new CrudTestContext(_fx, dbType);

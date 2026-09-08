@@ -45,6 +45,45 @@ namespace Bee.Business.UnitTests.Form
         public void GetData_Sqlite_NonExistentRowId_ReturnsNull()
             => RunNonExistentRowReturnsNull(DatabaseType.SQLite);
 
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle:GetData 應回傳已存在 Employee 並維持 DataSetName / Master TableName 慣例")]
+        public void GetData_Oracle_ReturnsExistingRow()
+            => RunReturnsExistingRow(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle:GetData 對不存在的 RowId 應回傳 null")]
+        public void GetData_Oracle_NonExistentRowId_ReturnsNull()
+            => RunNonExistentRowReturnsNull(DatabaseType.Oracle);
+
+        // Oracle has no UUID type: sys_rowid is RAW(16) and ADO.NET hands it back as byte[].
+        // Asserted on the column type rather than only on the value, because a table that
+        // declares a column Guid while holding byte arrays reads correctly right here and fails
+        // in every consumer that branches on the runtime type.
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle:GetData 回傳的 sys_rowid 欄位應為 Guid 型別，而非 RAW(16) 的 byte[]")]
+        public void GetData_Oracle_RowIdColumnIsGuid()
+        {
+            var ctx = new CrudTestContext(_fx, DatabaseType.Oracle);
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            var employeeRowId = Guid.NewGuid();
+            try
+            {
+                InsertEmployee(ctx, employeeRowId, $"E{runId}", "員工甲", Guid.Empty);
+
+                var master = ctx.CreateBo()
+                    .GetData(new GetDataArgs { RowId = employeeRowId })
+                    .DataSet!.Tables[CrudTestContext.ProgId]!;
+
+                Assert.Equal(typeof(Guid), master.Columns[SysFields.RowId]!.DataType);
+                Assert.Equal(employeeRowId, master.Rows[0][SysFields.RowId]);
+                Assert.Equal(DataRowState.Unchanged, master.Rows[0].RowState);
+            }
+            finally
+            {
+                TryDelete(ctx, employeeRowId);
+            }
+        }
+
         private void RunReturnsExistingRow(DatabaseType dbType)
         {
             var ctx = new CrudTestContext(_fx, dbType);

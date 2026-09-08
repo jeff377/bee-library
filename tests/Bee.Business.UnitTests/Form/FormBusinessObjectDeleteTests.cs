@@ -44,6 +44,11 @@ namespace Bee.Business.UnitTests.Form
         public void Delete_Sqlite_NonExistentRow_ReturnsZero()
             => RunDeleteNonExistentRow(DatabaseType.SQLite);
 
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle:Delete 已存在的 Employee 應回傳 RowsAffected=1 並從 DB 移除")]
+        public void Delete_Oracle_ExistingRow_Removes()
+            => RunDeleteExistingRow(DatabaseType.Oracle);
+
         private void RunDeleteExistingRow(DatabaseType dbType)
         {
             var ctx = new CrudTestContext(_fx, dbType);
