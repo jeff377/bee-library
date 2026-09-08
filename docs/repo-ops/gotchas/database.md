@@ -325,8 +325,17 @@ Oracle 那列另有兩個保留：倍數逐輪遞增而非上下震盪（前三�
 
 ### 別家 ERP 怎麼處理（2026-09-08 查證）
 
-查這個是為了確認「不處理」不是偷懶。結論：**兩家的主線都是 offset**，keyset 只出現在
-SAP CAP 的一個選配功能裡、而且是為了**一致性**而非效能；真正迴避掉深翻的是 **UI 層**的設計，
+查這個是為了確認「不處理」不是偷懶。**四家的預設全是 offset**：
+
+| | 預設 | 有 keyset 可選嗎 |
+|---|---|---|
+| Odoo | offset | **沒有**（`query.py` 裡不存在這個概念） |
+| SAP RAP | offset | **沒有**（`IF_RAP_QUERY_PAGING` 只給得出 offset） |
+| SAP CAP | offset | 有，**服務端** opt-in（`reliablePaging`） |
+| Microsoft ASP.NET OData | offset（文件原話 "By default, we will use `$skip`"） | 有，**per-route** opt-in |
+
+Odoo 與 RAP 甚至不是「預設」——**沒有第二個選項**。有 keyset 的那兩個都是 opt-in，
+而且動機都是一致性、不是深頁延遲（見下）。真正迴避掉深翻的是 **UI 層**的設計，
 不是框架層的演算法。
 
 **Odoo —— 跟我們現在完全一樣。** 它是與本框架最接近的類比（ORM + 泛用列表視圖 + 任意跳頁）：
@@ -354,7 +363,21 @@ SAP CAP 的一個選配功能裡、而且是為了**一致性**而非效能；�
   的用途不是引入狀態。**議題以 completed 關閉。** 所以 Fiori 的 grid table 把捲軸拖到深處，
   送出的就是一個大的 `$skip`。
 
-**SAP 真正有 keyset 的地方是 CAP，而且是選配。** CAP 的 **Reliable Pagination**
+> **「呼叫端選哪一種」是誤讀，這裡分清楚。** 有兩個軸常被混在一起：
+>
+> | 軸 | 選項 | 誰決定 |
+> |---|---|---|
+> | **A. 誰算分頁邊界** | client-driven（自己送 `$skip`/`$top`）vs server-driven（跟著 `@odata.nextLink`） | **呼叫端** |
+> | **B. 伺服端怎麼接續** | offset 算術 vs keyset 述詞 | **服務端設定** |
+>
+> 「兩種分頁」講的是軸 B，而呼叫端能選的是軸 A。**RAP 的軸 B 根本沒有選項** —— 兩條路都通到
+> 同一個 `get_offset()`，是同一種穿了兩件外套。CAP 的軸 B 有選項，但開關在服務端，
+> 客戶端無法要求「這次給我 keyset」。
+>
+> 另外，`get_offset()` 是**服務實作者**在自己的 `select()` 裡拿到的參數，不是呼叫端呼叫的方法；
+> 呼叫端那邊只有 URL 與 query option。
+
+**SAP 真正有 keyset 的地方是 CAP，而且是服務端選配。** CAP 的 **Reliable Pagination**
 （`cds.query.limit.reliablePaging`，Java 為 `.enabled`）**以「該頁最後一列的值」產生 skip token**
 —— 這是貨真價實的 keyset。但三件事要一起看：
 
@@ -366,6 +389,21 @@ SAP CAP 的一個選配功能裡、而且是為了**一致性**而非效能；�
 
 順帶一提，SAP 自家的 ABAP 關鍵字文件講 `SELECT ... OFFSET` 時只寫「必須搭配 `ORDER BY`」
 與嚴格語法檢查，**沒有提效能**。
+
+> **RAP 與 CAP 不是同一套東西的兩個版本，是兩個 stack 的兩套獨立實作** —— 這才是它們對分頁
+> 給出不同答案的原因，不是 SAP 改了主意。RAP 是 **ABAP**，跑在 ABAP Platform（S/4HANA 內或
+> BTP ABAP Environment），用來現代化既有 ABAP 邏輯與直接存取核心資料；CAP 是
+> **Node.js / Java**，跑在 BTP，用於全新雲端應用與跨系統整合。兩者都產 OData 服務、
+> 都驅動 Fiori elements 前端。
+>
+> 結構上的差別看得到：CAP 的 generic service provider **自己組查詢**，所以 keyset 可以是一個
+> runtime 開關；RAP 的 unmanaged query 是把 `top` / `skip` **交給服務實作者自己寫 SELECT**，
+> 框架沒有介入的位置。**但這個因果只是合理讀法、不是查證過的說明** —— RAP 另有 managed
+> 情境是框架全包的，那條路徑沒查。
+>
+> **命名陷阱**：兩邊都講「CDS」，但 **ABAP CDS**（ABAP Dictionary 裡的 DDL）與
+> **CAP CDS / CDL**（`.cds` 檔，編譯成 CSN）**是兩種不同的語言**，只共用名字與概念血統。
+> 查資料看到「CDS view」先確認講的是哪一邊。
 
 **對本條的意義（兩點）**：
 
@@ -393,8 +431,14 @@ CAP 與 Microsoft 的 ASP.NET OData 都明講，換掉數字 offset 是為了避
 > 那個說法出自 **Microsoft 的 ASP.NET OData WebAPI**（而且連它都是 per-route 選配，
 > 預設仍用 `$skip`），不是 SAP。查框架行為時**先確認那句話的主詞是誰**。
 >
-> 仍未查：SAP Gateway（OData V2）各服務自訂的 `$skiptoken` 語意 —— 那本來就是
-> per-service 的實作決定，不存在單一答案。
+> **RAP vs CAP 那段的技術欄位**（語言、runtime、建模語言、兩種 CDS 的分別）有 capire 與
+> ABAP 官方文件支撐，但**「什麼時候該選哪個」主要來自社群整理** —— 找不到 SAP 官方的單一
+> 決策文件（最接近的是 SAP 自家人寫的 community 部落格，該站一律回 403，沒讀到原文）。
+>
+> 仍未查三件事：SAP Gateway（OData V2）各服務自訂的 `$skiptoken` 語意（本來就是 per-service
+> 的實作決定，不存在單一答案）；RAP 的 **managed** 情境（框架全包那條路徑）；
+> 以及 **CAP 開著 `reliablePaging` 時，客戶端仍送 `$skip` 會怎樣** ——
+> 官方文件只說「nextLink 的值客戶端不得解讀或更改」，對這點隻字未提。
 
 ## 跨 DB seed 的雜項
 
