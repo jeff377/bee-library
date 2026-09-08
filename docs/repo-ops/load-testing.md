@@ -12,6 +12,12 @@
 
 1. **資料庫容器**在跑（`./test.sh` 用的那組，容器名見 `test.sh` 檔頭）。
 2. **連線字串**以 `BEE_TEST_CONNSTR_{DBTYPE}` 提供，與 `./test.sh` 同一個變數。
+
+   **例外：連線字串必須帶 `{@DbName}`**，那是 `loadtest_` 前綴唯一的施力點。沒有它的
+   連線字串（Oracle 的指的是服務而非資料庫）會讓每個 category 都解析到該字串已經指定的
+   那個地方——也就是單元測試自己的 schema，而 run 會在裡面建表寫資料。這種情況會被直接
+   拒絕，補救方式是另設 `BEE_LOADTEST_CONNSTR_{DBTYPE}` 指向一個保留給壓測的 schema；
+   該變數存在時優先採用，且不做這項檢查（等於操作者明講「這個歸壓測寫」）。
 3. **`prepare` 跑過一次**：建立壓測專屬資料庫、建表、植入帳號與資料。
 
 ```bash
@@ -75,6 +81,7 @@ dotnet run --project tools/Bee.LoadTests -c Release -- run --mode Remote --endpo
 
 | 限制 | 影響 |
 |------|------|
+| **Oracle 需要專用 schema** | 它的連線字串沒有 `{@DbName}`，`loadtest_` 前綴無從施力，所以預設會被拒絕。要跑 Oracle 得先備妥一個專用 schema 並以 `BEE_LOADTEST_CONNSTR_ORACLE` 指向它。 |
 | **Remote run 量不到快取** | 計數 provider 在驅動程式的 process，被操作的快取在伺服端。報告會標示 `Not observed`，JSON 帶 `CacheObserved: false`。要量快取行為得用 Local 模式。 |
 | **`Order` 的 BO 綁定會被清掉** | 那組定義把 `Order` 綁到 demo 伺服端組件，驅動程式不引用它（引用等於把應用的商業邏輯摺進「量框架」的數字）。該程式因此退回框架自身實作，報告的 `Dropped bindings` 會列出。 |
 | **植入的關聯欄位不是真外鍵** | 每張表獨立植入，關聯欄拿到的是生成值。對讀取場景足夠——量的是查詢本身；需要主檔與明細對得起來的場景得自己植入。 |

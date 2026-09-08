@@ -98,21 +98,68 @@ namespace Bee.LoadTests.Bootstrap
         /// <param name="provider">The database engine.</param>
         /// <returns>The connection string.</returns>
         /// <remarks>
-        /// The variable name follows the same convention <c>test.sh</c> uses, so a machine already
-        /// set up to run the test suite needs no further configuration.
+        /// <para>
+        /// A load-test-specific variable is preferred; falling back to the one <c>test.sh</c> uses
+        /// means a machine already set up for the test suite needs no further configuration.
+        /// </para>
+        /// <para>
+        /// IMPORTANT: the fallback is only safe when the connection string carries the
+        /// <c>{@DbName}</c> placeholder, because that is what the <c>loadtest_</c> prefix
+        /// substitutes into. Without it every category resolves to the one database the string
+        /// names — the same one the unit tests use — and the run writes into it. See
+        /// <see cref="GuardIsolation"/>.
+        /// </para>
         /// </remarks>
         public static string ResolveConnectionString(DatabaseType provider)
         {
+            var dedicated = Environment.GetEnvironmentVariable(
+                GetDedicatedConnectionStringVariable(provider));
+            if (!string.IsNullOrWhiteSpace(dedicated))
+            {
+                // An explicitly dedicated connection string is the operator saying "this one is
+                // mine to write to", so no isolation check applies.
+                return dedicated;
+            }
+
             var variable = GetConnectionStringVariable(provider);
             var value = Environment.GetEnvironmentVariable(variable);
             if (string.IsNullOrWhiteSpace(value))
             {
                 throw new InvalidOperationException(
-                    $"Environment variable '{variable}' is not set, so there is no {provider} " +
-                    "database to measure. Set it the way ./test.sh does, or point the run at a " +
-                    "provider whose variable is set.");
+                    $"Neither '{GetDedicatedConnectionStringVariable(provider)}' nor '{variable}' " +
+                    $"is set, so there is no {provider} database to measure. Set the latter the " +
+                    "way ./test.sh does, or point the run at a provider whose variable is set.");
             }
+
+            GuardIsolation(provider, value, variable);
             return value;
+        }
+
+        /// <summary>
+        /// Rejects a shared connection string that cannot be isolated by database name.
+        /// </summary>
+        /// <param name="provider">The database engine.</param>
+        /// <param name="connectionString">The connection string being considered.</param>
+        /// <param name="variable">The variable it came from, for the message.</param>
+        /// <remarks>
+        /// IMPORTANT: this exists because the prefix is not a universal isolation mechanism. It
+        /// works by substituting <c>{@DbName}</c>; a connection string without that placeholder —
+        /// Oracle's, which names a service rather than a database, is the case in this repository —
+        /// pins every category to whatever the string already points at. When that value came from
+        /// the test suite's own variable, the run would create tables and write rows into the
+        /// schema the unit tests depend on, and nothing about the run would say so.
+        /// </remarks>
+        internal static void GuardIsolation(
+            DatabaseType provider, string connectionString, string variable)
+        {
+            if (connectionString.Contains("{@DbName}", StringComparison.Ordinal)) { return; }
+
+            throw new InvalidOperationException(
+                $"'{variable}' has no {{@DbName}} placeholder, so the load test cannot isolate " +
+                $"itself from the test suite on {provider}: every category would resolve to the " +
+                "database that string already names, and the run would write into it. " +
+                $"Set '{GetDedicatedConnectionStringVariable(provider)}' to a connection string " +
+                "for a schema reserved for load testing, and only that one will be used.");
         }
 
         /// <summary>
@@ -122,6 +169,15 @@ namespace Bee.LoadTests.Bootstrap
         /// <returns>The variable name.</returns>
         public static string GetConnectionStringVariable(DatabaseType provider)
             => "BEE_TEST_CONNSTR_" + provider.ToString().ToUpperInvariant();
+
+        /// <summary>
+        /// Gets the environment variable name holding a connection string reserved for load
+        /// testing, which takes precedence over the test suite's own.
+        /// </summary>
+        /// <param name="provider">The database engine.</param>
+        /// <returns>The variable name.</returns>
+        public static string GetDedicatedConnectionStringVariable(DatabaseType provider)
+            => "BEE_LOADTEST_CONNSTR_" + provider.ToString().ToUpperInvariant();
 
         /// <summary>
         /// Deletes the temporary copy.

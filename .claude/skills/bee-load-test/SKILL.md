@@ -99,6 +99,7 @@ p99 宣稱「系統在這個負載下沒問題」。
 | 場景全數失敗且訊息指向 DI 解析 | backend 起不來，先跑 `verify` 隔離問題 |
 | `Unknown scenario 'X'` | 設定檔場景名打錯。**這是刻意不跳過的**——靜默略過會產出看起來完整的報告 |
 | 容器沒起來 | 見前置檢查；**不要改測試或原始碼讓它「過」** |
+| `has no {@DbName} placeholder` | 該 provider 的連線字串無法用資料庫名隔離，壓測會寫進單元測試的 schema，故直接拒絕。**不要繞過**——照訊息設 `BEE_LOADTEST_CONNSTR_*` 指向專用 schema |
 
 `verify` 指令會起 backend、解析服務、讀一份 FormSchema 再拆掉，用來把
 「backend 有問題」與「場景有問題」分開。

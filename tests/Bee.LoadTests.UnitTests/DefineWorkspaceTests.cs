@@ -310,6 +310,45 @@ namespace Bee.LoadTests.UnitTests
                 $"'{AppContext.BaseDirectory}'.");
         }
 
+        [Fact]
+        [DisplayName("連線字串帶 {@DbName} 時通過隔離檢查")]
+        public void GuardIsolation_WithPlaceholder_Passes()
+        {
+            DefineWorkspace.GuardIsolation(
+                DatabaseType.SQLServer,
+                "Data Source=localhost;Initial Catalog={@DbName};",
+                "BEE_TEST_CONNSTR_SQLSERVER");
+        }
+
+        [Fact]
+        [DisplayName("連線字串無 {@DbName} 時拒絕，因為前綴無從施力")]
+        public void GuardIsolation_WithoutPlaceholder_Throws()
+        {
+            // Oracle's connection string names a service, not a database, so the loadtest_ prefix
+            // has nothing to substitute into — every category would resolve to whatever the string
+            // already points at, which for the test suite's own variable is the schema the unit
+            // tests depend on.
+            var ex = Assert.Throws<InvalidOperationException>(() => DefineWorkspace.GuardIsolation(
+                DatabaseType.Oracle,
+                "Data Source=localhost:1521/FREEPDB1;User Id=testuser;",
+                "BEE_TEST_CONNSTR_ORACLE"));
+
+            Assert.Contains("BEE_LOADTEST_CONNSTR_ORACLE", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData(DatabaseType.SQLServer, "BEE_LOADTEST_CONNSTR_SQLSERVER")]
+        [InlineData(DatabaseType.Oracle, "BEE_LOADTEST_CONNSTR_ORACLE")]
+        [DisplayName("專用連線字串變數的命名與測試套件的分開")]
+        public void GetDedicatedConnectionStringVariable_IsDistinctFromTestSuite(
+            DatabaseType provider, string expected)
+        {
+            Assert.Equal(expected, DefineWorkspace.GetDedicatedConnectionStringVariable(provider));
+            Assert.NotEqual(
+                DefineWorkspace.GetConnectionStringVariable(provider),
+                DefineWorkspace.GetDedicatedConnectionStringVariable(provider));
+        }
+
         [Theory]
         [InlineData(DatabaseType.SQLServer, "BEE_TEST_CONNSTR_SQLSERVER")]
         [InlineData(DatabaseType.PostgreSQL, "BEE_TEST_CONNSTR_POSTGRESQL")]
