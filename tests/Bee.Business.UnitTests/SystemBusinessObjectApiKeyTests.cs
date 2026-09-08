@@ -21,6 +21,9 @@ namespace Bee.Business.UnitTests
     /// <remarks>
     /// 每個測試用唯一 <c>sys_id</c> 並在 finally 清理——實體資料庫由多個平行測試行程共用。
     /// 需要使用者列的測試一律自建（見 <see cref="TestUsers"/>），不動 seed 使用者 '001'。
+    /// 這些 BO 走 <c>DbScope.Common</c>，測試 fixture 把 <c>common</c> 綁在 SQL Server，
+    /// 因此閘門必須是 <c>SQLServer</c>：先前標成 <c>SQLite</c> 時，跳過與否看的是
+    /// <c>BEE_TEST_CONNSTR_SQLITE</c>，實際跑的卻是 SQL Server。
     /// </remarks>
     public class SystemBusinessObjectApiKeyTests : IClassFixture<SharedDbFixture>
     {
@@ -51,7 +54,7 @@ namespace Bee.Business.UnitTests
                 .Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql, sysId));
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateApiKey 應回傳兩段式明文金鑰，且其 secret 對得上儲存的雜湊")]
         public void CreateApiKey_ReturnsPlaintextKeyMatchingStoredHash()
         {
@@ -85,7 +88,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateApiKey 對同一 sys_id 第二次應以可讀訊息拒絕，而非 unique index 錯誤")]
         public void CreateApiKey_DuplicateSysId_ThrowsUserMessage()
         {
@@ -165,7 +168,7 @@ namespace Bee.Business.UnitTests
                 bo.CreateApiKey(new CreateApiKeyArgs { SysId = NewSysId(), SysName = "App" }));
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateApiKey 遠端呼叫且為部署層管理員時應發放金鑰")]
         public void CreateApiKey_RemoteDeploymentAdmin_IssuesKey()
         {
@@ -196,7 +199,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateApiKey 遠端呼叫時，僅『已登入』的一般使用者仍應被拒")]
         public void CreateApiKey_RemoteAuthenticatedUserWithoutFlag_ThrowsUnauthorized()
         {
@@ -217,7 +220,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateApiKey 本機呼叫免管理員，維持首把金鑰的 bootstrap 路徑")]
         public void CreateApiKey_LocalCallWithoutAdmin_IssuesKey()
         {

@@ -24,6 +24,9 @@ namespace Bee.Business.UnitTests
     /// </summary>
     /// <remarks>
     /// 每個測試用唯一 <c>sys_id</c> 並在 finally 清理——實體資料庫由多個平行測試行程共用。
+    /// 這些 BO 走 <c>DbScope.Common</c>，測試 fixture 把 <c>common</c> 綁在 SQL Server，
+    /// 因此閘門必須是 <c>SQLServer</c>：先前標成 <c>SQLite</c> 時，跳過與否看的是
+    /// <c>BEE_TEST_CONNSTR_SQLITE</c>，實際跑的卻是 SQL Server。
     /// </remarks>
     public class SystemBusinessObjectApiKeyLifecycleTests : IClassFixture<SharedDbFixture>
     {
@@ -64,7 +67,7 @@ namespace Bee.Business.UnitTests
                 .Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql, sysId));
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ListApiKeys 應列出已發放的金鑰，且不帶任何憑證素材")]
         public void ListApiKeys_ReturnsSummaryWithoutCredentialMaterial()
         {
@@ -87,7 +90,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ListApiKeys 應包含已停用的金鑰")]
         public void ListApiKeys_IncludesDisabledKeys()
         {
@@ -108,7 +111,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SetApiKeyEnabled 停用後金鑰應立即失效，不等快取過期")]
         public void SetApiKeyEnabled_Disable_RevokesImmediately()
         {
@@ -129,7 +132,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SetApiKeyEnabled 重新啟用後金鑰應再度可用")]
         public void SetApiKeyEnabled_Reenable_RestoresKey()
         {
@@ -149,7 +152,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SetApiKeyExpiry 應寫入到期時間，並可再清除")]
         public void SetApiKeyExpiry_SetsThenClears()
         {
@@ -171,7 +174,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SetApiKeyExpiry 接受已過去的時間——那是退役既有金鑰的正當手段")]
         public void SetApiKeyExpiry_PastExpiry_Accepted()
         {
@@ -193,7 +196,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SetApiKeyEnabled 於查無金鑰時應以可讀訊息拒絕")]
         public void SetApiKeyEnabled_UnknownKey_ThrowsUserMessage()
         {
@@ -203,7 +206,7 @@ namespace Bee.Business.UnitTests
             Assert.Contains("no-such-key", ex.Message, StringComparison.Ordinal);
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SetApiKeyExpiry 於查無金鑰時應以可讀訊息拒絕")]
         public void SetApiKeyExpiry_UnknownKey_ThrowsUserMessage()
         {
@@ -242,7 +245,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("停用與設到期都應留下部署層稽核，且帶得出前後值")]
         public void LifecycleActions_WriteDeploymentAudit()
         {

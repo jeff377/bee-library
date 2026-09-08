@@ -15,8 +15,13 @@ namespace Bee.Repository.UnitTests
         private readonly SharedDbFixture _fx;
         public UserRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
-        private UserRepository CreateRepo()
-            => new UserRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
+        private UserRepository CreateRepo(DatabaseType databaseType)
+            => new UserRepository(
+                TestRepositoryContext.Create(
+                    _fx.GetRequiredService<IDbConnectionManager>(),
+                    router: new ProviderScopedRouter(databaseType)),
+                Guid.Empty,
+                string.Empty);
 
         [Fact]
         [DisplayName("建構子傳入 null connectionManager 應拋出 ArgumentNullException")]
@@ -37,9 +42,9 @@ namespace Bee.Repository.UnitTests
             Assert.Equal(Guid.Empty, result);
         }
 
-        private void RunRoundTrip(DatabaseType _)
+        private void RunRoundTrip(DatabaseType databaseType)
         {
-            var repo = CreateRepo();
+            var repo = CreateRepo(databaseType);
 
             // seed user "001" 由 SharedDbFixture 預先建立
             var rowId = repo.GetRowIdBySysId("001");

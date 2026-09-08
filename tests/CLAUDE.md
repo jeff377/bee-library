@@ -86,6 +86,40 @@
 **適用**：純資料庫相依（查詢、schema、Repository/BO）。
 **不適用**：純邏輯／序列化測試 —— 有 bug 應直接修復，不應跳過。
 
+### Common / Log scope 的 repository：`[DbFact]` 之外還要換 router
+
+`RepositoryDatabaseRouter` 把 `DbScope.Common` / `DbScope.Log` 解析成固定的 `common` / `log`，
+而 fixture 把 `common` 綁在 **SQL Server**。因此
+`SessionRepository`、`UserRepository`、`CompanyRepository`、`UserCompanyRepository`、
+`ApiKeyRepository`、`DatabaseRepository` 這類宣告 Common scope 的 repository，
+**光加 `[DbFact(DatabaseType.Oracle)]` 跑的還是 SQL Server** —— attribute 只剩 env var 閘門的作用。
+
+正解：建 repository 時把 router 換成 `ProviderScopedRouter`（`tests/Bee.Tests.Shared/`）。
+
+```csharp
+private UserRepository CreateRepo(DatabaseType databaseType)
+    => new UserRepository(
+        TestRepositoryContext.Create(
+            _fx.GetRequiredService<IDbConnectionManager>(),
+            router: new ProviderScopedRouter(databaseType)),
+        Guid.Empty, string.Empty);
+```
+
+**兩個辨識訊號**（看到就是這個問題）：
+
+- `private void RunXxx(DatabaseType _)` —— 參數收下就丟棄，等於宣告「本測試不看 provider」。
+- arrange 用 `TestDbConventions.GetDatabaseId(dbType, ...)` 寫進該 provider 的 DB，
+  act 卻用不帶 dbType 的 `CreateRepo()`。這種**空轉通過**比沒測還糟：斷言恆成立，
+  把被驗的邏輯整條拿掉也照樣綠。
+
+BO 層（`SystemBusinessObject*`）繞不過 router —— 它由 DI 提供。那些測試主體是 common scope，
+一家 provider 足夠，**閘門就標 `SQLServer`**，不要標 `SQLite` 讓跳過條件與實跑對象分家。
+
+> 2026-09-08 的執行期盤點：73 個宣告 `[DbFact]` 的 test class 有 20 個打錯資料庫，
+> 其中 50 支完全沒碰到宣告的那家、8 支是空轉通過。改對之後當場浮出兩個框架缺陷
+> （Common scope repository 依 `DbCategoryIds.Common` 而非自身 `DatabaseId` 決定 SQL 方言、
+> SQLite 日期欄被 `is DateTime` 判掉），詳見 `docs/repo-ops/gotchas/database.md`。
+
 ### 需要本機服務：`[LocalOnlyFact]` / `[LocalOnlyTheory]`
 
 檢查環境變數 `CI`；**`CI=true`（GitHub Actions 預設）時自動跳過**。

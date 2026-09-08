@@ -22,26 +22,29 @@ namespace Bee.Repository.UnitTests
         private readonly SharedDbFixture _fx;
         public ApiKeyRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
-        private ApiKeyRepository CreateRepo()
-            => new ApiKeyRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
+        private ApiKeyRepository CreateRepo(DatabaseType databaseType)
+            => new ApiKeyRepository(
+                TestRepositoryContext.Create(
+                    _fx.GetRequiredService<IDbConnectionManager>(),
+                    router: new ProviderScopedRouter(databaseType)),
+                Guid.Empty,
+                string.Empty);
 
         private static string NewSysId() => "rt-" + Guid.NewGuid().ToString("N");
 
-        private void DeleteKey(string sysId)
+        private void DeleteKey(DatabaseType databaseType, string sysId)
         {
-            var connectionManager = _fx.GetRequiredService<IDbConnectionManager>();
-            var dbType = connectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
-            string sql = $"DELETE FROM {dbType.QuoteIdentifier("st_api_key")} " +
-                         $"WHERE {dbType.QuoteIdentifier("sys_id")} = {{0}}";
-            new DbAccess(DbCategoryIds.Common, connectionManager)
+            string sql = $"DELETE FROM {databaseType.QuoteIdentifier("st_api_key")} " +
+                         $"WHERE {databaseType.QuoteIdentifier("sys_id")} = {{0}}";
+            _fx.NewDbAccess(TestDbConventions.GetDatabaseId(databaseType, DbCategoryIds.Common))
                 .Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql, sysId));
         }
 
         #region Insert + GetEnabledById round-trip
 
-        private void RunRoundTrip(DatabaseType _)
+        private void RunRoundTrip(DatabaseType databaseType)
         {
-            var repo = CreateRepo();
+            var repo = CreateRepo(databaseType);
             string sysId = NewSysId();
             string secret = ApiKeyFormat.CreateSecret();
             var expiredAt = new DateTime(2099, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -71,7 +74,7 @@ namespace Bee.Repository.UnitTests
             }
             finally
             {
-                DeleteKey(sysId);
+                DeleteKey(databaseType, sysId);
             }
         }
 
@@ -101,7 +104,8 @@ namespace Bee.Repository.UnitTests
         [DisplayName("Insert 未指定到期時間時 GetEnabledById 應回 null 到期時間")]
         public void Insert_WithoutExpiry_ReadsBackNull()
         {
-            var repo = CreateRepo();
+            const DatabaseType databaseType = DatabaseType.SQLite;
+            var repo = CreateRepo(databaseType);
             string sysId = NewSysId();
             try
             {
@@ -120,7 +124,7 @@ namespace Bee.Repository.UnitTests
             }
             finally
             {
-                DeleteKey(sysId);
+                DeleteKey(databaseType, sysId);
             }
         }
 
@@ -128,14 +132,15 @@ namespace Bee.Repository.UnitTests
         [DisplayName("GetEnabledById 於 sys_id 查無時應回傳 null")]
         public void GetEnabledById_UnknownSysId_ReturnsNull()
         {
-            Assert.Null(CreateRepo().GetEnabledById(NewSysId()));
+            Assert.Null(CreateRepo(DatabaseType.SQLite).GetEnabledById(NewSysId()));
         }
 
         [DbFact(DatabaseType.SQLite)]
         [DisplayName("Exists 應在寫入後為 true、清理後為 false")]
         public void Exists_ReflectsRowPresence()
         {
-            var repo = CreateRepo();
+            const DatabaseType databaseType = DatabaseType.SQLite;
+            var repo = CreateRepo(databaseType);
             string sysId = NewSysId();
             try
             {
@@ -152,7 +157,7 @@ namespace Bee.Repository.UnitTests
             }
             finally
             {
-                DeleteKey(sysId);
+                DeleteKey(databaseType, sysId);
             }
         }
 
@@ -160,7 +165,8 @@ namespace Bee.Repository.UnitTests
         [DisplayName("GetGateState 於存在啟用金鑰時應為 in force（發第一把金鑰即關上閘門）")]
         public void GetGateState_WithEnabledKey_IsInForce()
         {
-            var repo = CreateRepo();
+            const DatabaseType databaseType = DatabaseType.SQLite;
+            var repo = CreateRepo(databaseType);
             string sysId = NewSysId();
             try
             {
@@ -177,7 +183,7 @@ namespace Bee.Repository.UnitTests
             }
             finally
             {
-                DeleteKey(sysId);
+                DeleteKey(databaseType, sysId);
             }
         }
 
@@ -185,7 +191,7 @@ namespace Bee.Repository.UnitTests
         [DisplayName("GetGateState 於表存在時不應擲例外（表存在與否走 schema provider 判定）")]
         public void GetGateState_TableExists_DoesNotThrow()
         {
-            var exception = Record.Exception(() => CreateRepo().GetGateState());
+            var exception = Record.Exception(() => CreateRepo(DatabaseType.SQLite).GetGateState());
 
             Assert.Null(exception);
         }

@@ -17,6 +17,9 @@ namespace Bee.Business.UnitTests
     /// <remarks>
     /// 每個測試建自己的使用者列並在 finally 刪除，不動 seed 使用者 '001'——實體資料庫由多個
     /// 平行測試行程共用（見 <see cref="TestUsers"/>）。
+    /// 這些 BO 走 <c>DbScope.Common</c>，測試 fixture 把 <c>common</c> 綁在 SQL Server，
+    /// 因此閘門必須是 <c>SQLServer</c>：先前標成 <c>SQLite</c> 時，跳過與否看的是
+    /// <c>BEE_TEST_CONNSTR_SQLITE</c>，實際跑的卻是 SQL Server。
     /// </remarks>
     public class SystemBusinessObjectDeploymentAdminTests : IClassFixture<SharedDbFixture>
     {
@@ -33,7 +36,7 @@ namespace Bee.Business.UnitTests
         private Repository.Abstractions.System.IUserRepository Repo
             => _fx.GetRequiredService<IRepositoryFactory>().Create<IUserRepository>();
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SetDeploymentAdmin 應把旗標寫進 st_user，且可再撤銷")]
         public void SetDeploymentAdmin_GrantsThenRevokes()
         {
@@ -65,7 +68,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SetDeploymentAdmin 於查無使用者時應以可讀訊息拒絕")]
         public void SetDeploymentAdmin_UnknownUser_ThrowsUserMessage()
         {

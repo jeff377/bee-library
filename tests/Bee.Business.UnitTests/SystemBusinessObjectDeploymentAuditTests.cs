@@ -17,6 +17,11 @@ namespace Bee.Business.UnitTests
     /// <see cref="SystemBusinessObject.CreateApiKey"/>）的稽核留痕：寫進變更軸、標為敏感、
     /// 帶得出前後值，且金鑰的祕密段與雜湊絕不進日誌。
     /// </summary>
+    /// <remarks>
+    /// 這些 BO 走 <c>DbScope.Common</c>，測試 fixture 把 <c>common</c> 綁在 SQL Server，
+    /// 因此閘門必須是 <c>SQLServer</c>：先前標成 <c>SQLite</c> 時，跳過與否看的是
+    /// <c>BEE_TEST_CONNSTR_SQLITE</c>，實際跑的卻是 SQL Server。
+    /// </remarks>
     public class SystemBusinessObjectDeploymentAuditTests : IClassFixture<SharedDbFixture>
     {
         private readonly SharedDbFixture _fx;
@@ -47,7 +52,7 @@ namespace Bee.Business.UnitTests
             return Assert.IsType<ChangeAuditEntry>(entry);
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SetDeploymentAdmin 應留下標為敏感的稽核，且帶得出 false → true 的方向")]
         public void SetDeploymentAdmin_Grant_WritesSensitiveAuditWithDirection()
         {
@@ -78,7 +83,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SetDeploymentAdmin 撤銷時稽核應帶得出 true → false 的方向")]
         public void SetDeploymentAdmin_Revoke_WritesOppositeDirection()
         {
@@ -101,7 +106,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateApiKey 應留下稽核，且明文祕密與雜湊都不進日誌")]
         public void CreateApiKey_WritesAuditWithoutSecretOrHash()
         {
@@ -134,7 +139,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("關閉資料變更稽核不影響部署層作業的留痕")]
         public void SetDeploymentAdmin_ChangeAuditDisabled_StillWrites()
         {
@@ -154,7 +159,7 @@ namespace Bee.Business.UnitTests
             }
         }
 
-        [DbFact(DatabaseType.SQLite)]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("關閉全域稽核時部署層作業不留痕")]
         public void SetDeploymentAdmin_AuditDisabled_WritesNothing()
         {

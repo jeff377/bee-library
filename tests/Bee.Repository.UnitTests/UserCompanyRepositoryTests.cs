@@ -17,14 +17,19 @@ namespace Bee.Repository.UnitTests
         private readonly SharedDbFixture _fx;
         public UserCompanyRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
-        private UserCompanyRepository CreateRepo()
-            => new UserCompanyRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
+        private UserCompanyRepository CreateRepo(DatabaseType databaseType)
+            => new UserCompanyRepository(
+                TestRepositoryContext.Create(
+                    _fx.GetRequiredService<IDbConnectionManager>(),
+                    router: new ProviderScopedRouter(databaseType)),
+                Guid.Empty,
+                string.Empty);
 
         #region HasAccess — Granted + Enabled
 
-        private void RunHasAccessGranted(DatabaseType _)
+        private void RunHasAccessGranted(DatabaseType databaseType)
         {
-            var repo = CreateRepo();
+            var repo = CreateRepo(databaseType);
             Assert.True(repo.HasAccess("001", "C001"));
         }
 
@@ -52,9 +57,9 @@ namespace Bee.Repository.UnitTests
 
         #region HasAccess — Not Granted (nonexistent company)
 
-        private void RunHasAccessNotGranted(DatabaseType _)
+        private void RunHasAccessNotGranted(DatabaseType databaseType)
         {
-            var repo = CreateRepo();
+            var repo = CreateRepo(databaseType);
             Assert.False(repo.HasAccess("001", "__nonexistent_company_xyz__"));
         }
 
@@ -85,7 +90,7 @@ namespace Bee.Repository.UnitTests
         private void RunHasAccessDisabledCompany(DatabaseType dbType)
         {
             // Seed: 建 disabled company + 對照 user '001' → 該公司；HasAccess 應為 false。
-            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(dbType));
+            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(dbType, DbCategoryIds.Common));
             var companyId = string.Concat("DIS_", Guid.NewGuid().ToString("N").AsSpan(0, 6));
             var companyRowId = Guid.NewGuid();
             var linkRowId = Guid.NewGuid();
@@ -135,7 +140,7 @@ namespace Bee.Repository.UnitTests
 
             try
             {
-                var repo = CreateRepo();
+                var repo = CreateRepo(dbType);
                 Assert.False(repo.HasAccess("001", companyId));
             }
             finally

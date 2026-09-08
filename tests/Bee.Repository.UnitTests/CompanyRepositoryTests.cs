@@ -16,14 +16,19 @@ namespace Bee.Repository.UnitTests
         private readonly SharedDbFixture _fx;
         public CompanyRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
-        private CompanyRepository CreateRepo()
-            => new CompanyRepository(TestRepositoryContext.Create(_fx.GetRequiredService<IDbConnectionManager>()), Guid.Empty, string.Empty);
+        private CompanyRepository CreateRepo(DatabaseType databaseType)
+            => new CompanyRepository(
+                TestRepositoryContext.Create(
+                    _fx.GetRequiredService<IDbConnectionManager>(),
+                    router: new ProviderScopedRouter(databaseType)),
+                Guid.Empty,
+                string.Empty);
 
         #region GetById — Enabled (seed company 'C001')
 
-        private void RunGetByIdEnabled(DatabaseType _)
+        private void RunGetByIdEnabled(DatabaseType databaseType)
         {
-            var repo = CreateRepo();
+            var repo = CreateRepo(databaseType);
             var result = repo.GetById("C001");
             Assert.NotNull(result);
             Assert.Equal("C001", result.CompanyId);
@@ -68,9 +73,9 @@ namespace Bee.Repository.UnitTests
 
         #region GetById — NonExistent
 
-        private void RunGetByIdNotFound(DatabaseType _)
+        private void RunGetByIdNotFound(DatabaseType databaseType)
         {
-            var repo = CreateRepo();
+            var repo = CreateRepo(databaseType);
             var result = repo.GetById("__nonexistent_company_xyz__");
             Assert.Null(result);
         }
@@ -103,7 +108,7 @@ namespace Bee.Repository.UnitTests
         {
             // 建一筆 disabled company；查詢應回 null。本 sub-test 透過原生 SQL 寫 seed
             // 以避免依賴尚未實作的 admin API。company id 用隨機後綴避免 5 DB 殘留汙染。
-            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(dbType));
+            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(dbType, DbCategoryIds.Common));
             var companyId = string.Concat("DISABLED_", Guid.NewGuid().ToString("N").AsSpan(0, 8));
             string tbl = dbType.QuoteIdentifier("st_company");
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
@@ -133,7 +138,7 @@ namespace Bee.Repository.UnitTests
 
             try
             {
-                var repo = CreateRepo();
+                var repo = CreateRepo(dbType);
                 var result = repo.GetById(companyId);
                 Assert.Null(result);
             }
