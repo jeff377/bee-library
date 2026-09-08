@@ -276,7 +276,8 @@ namespace Bee.LoadTests
             return scenario.Name switch
             {
                 "Login" => new LoginScenario(options.Auth, endpoint),
-                "GetList" => new GetListScenario(pool, scenario.ProgId, scenario.PageSize),
+                "GetList" or "GetListDeep" => new GetListScenario(
+                    pool, scenario.Name, scenario.ProgId, scenario.PageSize, scenario.StartPage),
                 "GetData" => new GetDataScenario(pool, scenario.ProgId, rowIds),
                 "Save" => new SaveScenario(pool, scenario.ProgId, rowIds),
                 _ => throw new InvalidOperationException(

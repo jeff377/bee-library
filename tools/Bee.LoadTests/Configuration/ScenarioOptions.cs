@@ -28,6 +28,18 @@ namespace Bee.LoadTests.Configuration
         public string ProgId { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the first page a list scenario requests; it then walks ten pages from
+        /// there.
+        /// </summary>
+        /// <remarks>
+        /// A deep page is what exposes the cost of <c>OFFSET</c>: reaching page 1,000 means the
+        /// engine walks and discards everything before it, and that cost grows with the offset
+        /// while a first-page query's does not. Configure one scenario near the start and another
+        /// near the end of the table to see the difference in a single run.
+        /// </remarks>
+        public int StartPage { get; set; } = 1;
+
+        /// <summary>
         /// Gets or sets the page size for list queries.
         /// </summary>
         /// <remarks>
