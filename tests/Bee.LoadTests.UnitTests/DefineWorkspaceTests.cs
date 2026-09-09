@@ -314,10 +314,14 @@ namespace Bee.LoadTests.UnitTests
         [DisplayName("連線字串帶 {@DbName} 時通過隔離檢查")]
         public void GuardIsolation_WithPlaceholder_Passes()
         {
-            DefineWorkspace.GuardIsolation(
+            // S2699: verifying "does not throw" needs the exception captured and asserted on —
+            // a bare call asserts nothing (tests/CLAUDE.md).
+            var exception = Record.Exception(() => DefineWorkspace.GuardIsolation(
                 DatabaseType.SQLServer,
                 "Data Source=localhost;Initial Catalog={@DbName};",
-                "BEE_TEST_CONNSTR_SQLSERVER");
+                "BEE_TEST_CONNSTR_SQLSERVER"));
+
+            Assert.Null(exception);
         }
 
         [Fact]
