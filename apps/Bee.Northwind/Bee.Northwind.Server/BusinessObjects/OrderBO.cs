@@ -40,8 +40,12 @@ public sealed class OrderBO : FormBusinessObject
     /// <param name="ctx">The per-call context.</param>
     /// <param name="accessToken">The access token.</param>
     /// <param name="progId">The program identifier (expected to be "Order").</param>
-    /// <param name="isLocalCall">Whether the call originates from a local source.</param>
-    public OrderBO(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+    /// <param name="isLocalCall">
+    /// Whether the call originates from a local source. Defaults to <see langword="false"/>, matching
+    /// <see cref="FormBusinessObject"/>: constructing a business object directly is the one path that
+    /// bypasses the API access validator, so it is the path least in need of being trusted by default.
+    /// </param>
+    public OrderBO(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = false)
         : base(ctx, accessToken, progId, isLocalCall)
     {
     }
