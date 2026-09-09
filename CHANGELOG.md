@@ -4,6 +4,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.30.0]
+
+> This release is about two shapes of **a claim that does not match the implementation**. The first lives in prose: two ADRs described the audit-detail payload as something you could "restore into a DataSet and display directly", while the bare DiffGram the write side emitted yields *zero tables* when read back into a fresh `DataSet` — the benefit was never delivered, the read side had to hand-roll a parser, and nothing could have noticed: compilers do not read prose, and the tests exercised the read side's own path. The second lives in test coverage: the framework repositories' multi-provider tests nominally covered five engines and in fact all ran against SQL Server. Correcting that surfaced two defects on the spot, one of which let **expired API keys pass silently on SQLite**. Oracle is a third thread — parameters bound by position rather than by name, so every `FormSchema`-driven request failed on that engine, while the symptom read as "GetList fails 100% of the time" when what was actually broken was login.
+
+📄 Full notes and design context: [docs/changelogs/4.30.0.md](docs/changelogs/4.30.0.md)
+
+### Security
+
+- `Bee.Repository`: on SQLite an API key with an expiry read back as `ExpiredAt = null` and `IsExpired` permanently `false` — **an expired key kept working, silently**. SQLite has no date type, the driver hands back a `string` for an ad-hoc query, and the read side used a bare `expiredAt is DateTime`, collapsing "wrong type" and "no value" into the same answer. It now goes through `ValueUtilities.CDateTime`.
+
+### Fixed
+
+- `Bee.Db`: Oracle now binds parameters **by name**. `Oracle.ManagedDataAccess` defaults `BindByName` to `false`, so the nth bind variable in the SQL takes the nth entry of the parameter collection regardless of name — while the framework's `{0}` / `{Name}` placeholders mean name correspondence. Fixed in `DbCommandSpec.CreateCommand`, set through reflection because `Bee.Db` references no ADO.NET driver.
+- `Bee.Db` / `Bee.Repository`: Oracle maps `FieldDbType.Guid` to `RAW(16)`, which reads back as `byte[]`. The write side already handled it and the read side did not, so `GetData` / `Save` threw on coercion and the returned `DataTable` declared `Guid` while holding `byte[]`.
+- `Bee.Repository`: Common-scope repositories took their dialect from a hard-coded `DbCategoryIds.Common` while executing the command against their own `DatabaseId`. The two are always equal in a real deployment (the framework requires `Id == CategoryId` for common), so no shipped deployment misbehaved; the dialect now always comes from `DatabaseId`.
+
+### Changed
+
+- `Bee.Business`: `st_log_change.changes_xml` now stores a DataSet DiffGram **with an inline XSD**, wrapped in an `AuditChanges` element. The payload carries its own field structure, so it rebuilds into a real `DataSet` from its own schema. **No stored row is migrated**: the two shapes are told apart by their root element, the older one is still read by the framework, and no sunset is set. Public API and wire shape are unchanged; **code outside the framework that parses this column directly needs to handle both shapes**. See [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md), section eight.
+
+### Added
+
+- `tools/Bee.LoadTests`: a load-testing tool covering Local (in-process) and Remote modes across four database providers, with Login / GetList / GetData / Save and deep-paging scenarios, emitting Markdown and JSON reports. Non-shipping tool.
+
+### Documentation
+
+- `Bee.Definition`: `PagingOptions.Page` gains a remark that cost grows with the page index — deep pages are inherently more expensive under `OFFSET` paging, and switching database provider does not avoid it. This records a trade-off that was **measured and then deliberately left alone**; the reasoning is in the detail file.
+- `build`: `Microsoft.SourceLink.GitHub` moves to `10.0.303`, avoiding CVE-2026-62900 in `Microsoft.Build.Tasks.Git`. SourceLink is a `PrivateAssets="All"` build-time dependency that does not ship with the packages, so **consumers are unaffected**.
+
 ## [4.29.0]
 
 > `PluginSettings.xml` named types and nothing else — which stage a plugin ran at came from reflection over the class, so the file could not answer the one question anyone opens it to ask. [ADR-035](docs/adr/adr-035-business-logic-plugin.md) accepted that cost on the promise of a maintenance tool that would compute and display the stages; the tool was never built, leaving the readability cost as a net loss. The stage now lives in the file, and one plugin binds to exactly one stage. What that gives up is named plainly, because ADR-035 called it the mechanism's only real advantage: a plugin can no longer carry state from `BeforeSave` to `AfterSave` in an instance field, since those are now two classes. Reflection stays as the check rather than the source — a class must override exactly the stage its binding declares, and any disagreement refuses to load.

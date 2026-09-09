@@ -102,7 +102,7 @@
 四個候選中選了框架原生的一條：DataSet 的 `GetChanges()` + DiffGram 本來就同時保留新舊值，
 一次涵蓋 master + detail、多列多欄，不必自訂 diff 演算法，讀取時還原成 DataSet 即可直接顯示。
 
-> 「還原成 DataSet」這半在當初的實作中**並不成立**，直到 4.29.0 補上內嵌 schema 才成真。
+> 「還原成 DataSet」這半在當初的實作中**並不成立**，直到 4.30.0 補上內嵌 schema 才成真。
 > 原委與兩種 payload 並存的規則見下方「八、payload 帶內嵌 schema」。
 
 代價是欄位級無法直接以 SQL 查詢統計（需解析 XML）。查詢需求由**表頭的實體欄位**
@@ -201,7 +201,7 @@ BCL 方法，因此 `XmlSerializer` 產出的 payload 與此等價。不走它�
 **正面**：
 
 - 稽核軌跡與技術 observability 分屬兩套管線，各自的保留期與量體策略互不干擾。
-- 異動記錄零自訂 diff 邏輯（差異由 `GetChanges()` 產生），且自 4.29.0 起能還原成 DataSet 直接呈現。
+- 異動記錄零自訂 diff 邏輯（差異由 `GetChanges()` 產生），且自 4.30.0 起能還原成 DataSet 直接呈現。
 - 檢視記錄的預設關閉讓「開啟稽核」不會意外變成效能事故。
 
 **負面 / 成本**：

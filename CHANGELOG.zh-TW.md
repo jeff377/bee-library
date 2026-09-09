@@ -4,6 +4,35 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.30.0]
+
+> 本版的主軸是**宣稱與實作對不上**的兩種型態。其一在散文裡：稽核明細的 payload 被兩份 ADR 描述成「讀取時還原成 DataSet 即可直接顯示」，而寫入端輸出的裸 DiffGram 用全新 `DataSet` 讀回會得到零張表——那項好處從未兌現，讀取端只能自己手寫 parser，而編譯器不看散文、測試驗的是讀取端自己那條路，沒有任何機制會發現。其二在測試覆蓋：framework repository 的多 provider 測試名義上覆蓋五家，實際全部打在 SQL Server；把覆蓋改對之後當場現形兩個缺陷，其中一個讓 SQLite 上**已過期的 API 金鑰無聲通行**。Oracle 則是第三條線——參數預設按位置而非名稱綁定，使 `FormSchema` 驅動的請求在該引擎上全數失敗，而外顯是「GetList 100% 失敗」，真正壞掉的是登入。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.30.0.zh-TW.md](docs/changelogs/4.30.0.zh-TW.md)
+
+### 安全性
+
+- `Bee.Repository`：SQLite 上有到期時間的 API 金鑰被讀成 `ExpiredAt = null`、`IsExpired` 恆為 `false`——**已過期的金鑰照樣通行，且無聲**。SQLite 沒有日期型別，驅動在臨機查詢下交回 `string`，而讀取端以裸 `expiredAt is DateTime` 判斷，把「型別不符」與「值不存在」壓成同一個答案。改走 `ValueUtilities.CDateTime`。
+
+### 修正
+
+- `Bee.Db`：Oracle 改以**名稱**綁定參數。`Oracle.ManagedDataAccess` 的 `BindByName` 預設 `false`，SQL 裡第 n 個 bind 變數拿到參數集合的第 n 筆、與名稱無關，而框架 `{0}` / `{Name}` 佔位符的語意就是名稱對應。修在 `DbCommandSpec.CreateCommand`，以反射設定（`Bee.Db` 不參考任何 ADO.NET driver）。
+- `Bee.Db` / `Bee.Repository`：Oracle 的 `FieldDbType.Guid` 對映 `RAW(16)`、讀回是 `byte[]`，寫入端早已處理而讀取端沒有，`GetData` / `Save` 因此擲型別轉換例外，且回傳的 `DataTable` 宣告 `Guid` 卻裝 `byte[]`。
+- `Bee.Repository`：Common scope 的 repository 取方言時用寫死的 `DbCategoryIds.Common`，指令卻對自身 `DatabaseId` 執行。正式部署下兩者恆等（框架強制 common 的 `Id == CategoryId`），故既有部署無行為缺陷；改為一律取自 `DatabaseId`。
+
+### 變更
+
+- `Bee.Business`：`st_log_change.changes_xml` 改存**帶內嵌 XSD** 的 DataSet DiffGram，外層元素為 `AuditChanges`。payload 自帶欄位結構，因此可用它自己的 schema 重建成真正的 `DataSet`。**既有資料一列都不遷移**：新舊格式以 root 元素分派，舊格式仍由框架讀取且不設落日期限。公開 API 與 wire 形狀均未變更；**自行直接解析該欄位的外部程式需同時支援兩種形狀**。詳見 [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 第八節。
+
+### 新增
+
+- `tools/Bee.LoadTests`：壓測工具，支援 Local（in-process）與 Remote 兩種模式、四家資料庫 provider，涵蓋 Login / GetList / GetData / Save 與深分頁場景，輸出 Markdown 與 JSON 報告。non-shipping tool。
+
+### 文件
+
+- `Bee.Definition`：`PagingOptions.Page` 的 XML doc 補上「成本隨頁碼成長」——`OFFSET` 分頁下深頁必然較貴，且與資料庫引擎無關。此為**經量測後決定不處理**的取捨，理由記於明細檔。
+- `build`：`Microsoft.SourceLink.GitHub` 升至 `10.0.303`，避開 `Microsoft.Build.Tasks.Git` 的 CVE-2026-62900。SourceLink 為 `PrivateAssets="All"` 的建置期相依、不隨套件出貨，**消費端不受影響**。
+
 ## [4.29.0]
 
 > `PluginSettings.xml` 只列型別——plugin 跑在哪個時點來自對類別的反射，於是這份檔案答不出任何人打開它想問的那一個問題。[ADR-035](docs/adr/adr-035-business-logic-plugin.md) 當初接受這個代價，靠的是「由維護工具算出並顯示各時點」這個補償；那個工具從未被做出來，可讀性代價一直是淨損失。現在時點寫在設定檔裡，而且一個 plugin 只掛一個時點。**放棄了什麼直說**，因為 ADR-035 自己稱它是該機制的唯一實質優勢：plugin 不能再用 instance field 把狀態從 `BeforeSave` 帶到 `AfterSave`，因為那現在是兩個類別。反射沒有退場，但降為驗證器——類別必須恰好覆寫繫結宣告的那一個時點，任何不一致一律拒絕載入。
