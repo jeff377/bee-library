@@ -1,13 +1,15 @@
 using System.Data;
 using System.Globalization;
+using System.Text;
+using System.Xml;
 using Bee.Base;
 using Bee.Definition;
 
 namespace Bee.Business.AuditLog
 {
     /// <summary>
-    /// Builds the <c>st_log_change.changes_xml</c> payload — a schemaless DataSet DiffGram carrying
-    /// both the current and the original values, which is what
+    /// Builds the <c>st_log_change.changes_xml</c> payload — an inline XSD followed by a DataSet
+    /// DiffGram carrying both the current and the original values, which is what
     /// <see cref="ChangeDiffGramReader"/> reads back.
     /// </summary>
     /// <remarks>
@@ -21,15 +23,41 @@ namespace Bee.Business.AuditLog
     internal static class AuditDiffGram
     {
         /// <summary>
-        /// Serialises a changed DataSet to a DiffGram, which carries both the current and the
-        /// original (before) values. Plain <c>WriteXml</c> would only write current values.
+        /// The payload's outermost element. It wraps the inline XSD and the DiffGram, which XML
+        /// permits only under a single root, and doubles as the discriminator
+        /// <see cref="ChangeDiffGramReader"/> dispatches on — the four payload shapes the reader
+        /// accepts all carry a different root name.
+        /// </summary>
+        public const string RootElementName = "AuditChanges";
+
+        /// <summary>
+        /// Serialises a changed DataSet to an inline XSD followed by a DiffGram. The DiffGram carries
+        /// both the current and the original (before) values — plain <c>WriteXml</c> would only write
+        /// current values — and the schema is what lets the reader rebuild a real
+        /// <see cref="DataSet"/> from the payload alone.
         /// </summary>
         /// <param name="changes">The change set, as returned by <c>DataSet.GetChanges()</c>.</param>
+        /// <remarks>
+        /// IMPORTANT: the schema must be written through the same <see cref="XmlWriter"/> as the
+        /// DiffGram rather than by serialising the DataSet whole. <c>XmlSerializer</c> produces a
+        /// byte-equivalent payload — <see cref="DataSet"/> implements <c>IXmlSerializable</c> and its
+        /// <c>WriteXml</c> is these same two calls — but reaching it through <c>XmlSerializer</c>
+        /// would put the audit path back on the reflection route that ADR-025 covers, for no gain.
+        /// </remarks>
         public static string Serialize(DataSet changes)
         {
-            using var writer = new StringWriter(CultureInfo.InvariantCulture);
-            changes.WriteXml(writer, XmlWriteMode.DiffGram);
-            return writer.ToString();
+            var builder = new StringBuilder();
+            // Indented on purpose: audit payloads are read by hand when investigating a change, and
+            // the size this costs is not a constraint for the log database.
+            var settings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true };
+            using (var writer = XmlWriter.Create(builder, settings))
+            {
+                writer.WriteStartElement(RootElementName);
+                changes.WriteXmlSchema(writer);
+                changes.WriteXml(writer, XmlWriteMode.DiffGram);
+                writer.WriteEndElement();
+            }
+            return builder.ToString();
         }
 
         /// <summary>

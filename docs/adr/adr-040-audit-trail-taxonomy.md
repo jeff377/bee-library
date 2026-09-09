@@ -102,6 +102,9 @@
 四個候選中選了框架原生的一條：DataSet 的 `GetChanges()` + DiffGram 本來就同時保留新舊值，
 一次涵蓋 master + detail、多列多欄，不必自訂 diff 演算法，讀取時還原成 DataSet 即可直接顯示。
 
+> 「還原成 DataSet」這半在當初的實作中**並不成立**，直到 4.29.0 補上內嵌 schema 才成真。
+> 原委與兩種 payload 並存的規則見下方「八、payload 帶內嵌 schema」。
+
 代價是欄位級無法直接以 SQL 查詢統計（需解析 XML）。查詢需求由**表頭的實體欄位**
 （who／when／prog_id／row_key…）承擔；只有在真的需要「跨紀錄的欄位級統計」時，
 才對指定表加開選配的 EAV 模式。等同 Odoo auditlog 的 fast（預設）／ full（選配）兩檔位。
@@ -150,6 +153,36 @@
 `AuditLog` 的授權。合規稽核與維運排錯在 ERP 是兩種角色，把讀取權限拆開價值更高，
 但那是權限模型的題目、不是寫入介面的題目，另案處理。
 
+### 八、payload 帶內嵌 schema（2026-09-09 補）
+
+決策五說 DiffGram 的好處之一是「讀取時還原成 DataSet 即可直接顯示」，但寫入端當時輸出的是
+**無 schema 的裸 DiffGram**，而 `DataSet.ReadXml` 對這種 payload 用全新 `DataSet` 讀回會得到
+**零張表**——實測六種 `XmlReadMode` 皆同。讀取端因此只能改以 `XDocument` 自行解析、
+靠 `diffgr:id` 配對 before 列。也就是說**該項好處從未兌現**，而沒有任何機制會發現：
+編譯器不看散文，測試驗的是讀取端自己那條路。
+
+改法是寫入端在 DiffGram 前加寫一份內嵌 XSD，兩者包在單一外層元素 `AuditChanges` 內
+（`DataSet.WriteXmlSchema` + `DataSet.WriteXml`，見 `src/Bee.Business/AuditLog/AuditDiffGram.cs`）。
+如此 payload 自帶欄位結構，可用它自己的 schema 重建成真正的 `DataSet`，
+變更明細改由比對 `DataRowVersion.Original` 與 `Current` 得出。
+
+| 面向 | 決定 |
+|------|------|
+| 新舊並存 | 兩種 payload 以 **root 元素**分派（新格式 `AuditChanges`、舊格式 `diffgr:diffgram`、最小刪除標記 `DeletedRow`），互斥且不需版本欄位 |
+| 既有資料 | **一列都不遷移**，舊格式由 `SchemalessDiffGramReader` 繼續讀，**不設落日期限** |
+| 體積 | schema 是固定成本（Northwind 訂單那組 26 欄／2 表約 +4.2 KB／列），與資料量無關；異動記錄寫進獨立的 `log` 資料庫，不壓到業務庫 |
+| 值的字串化 | 一律 `XmlConvert`，與舊格式的 XML 原文逐字一致且 culture 無關；用 `ToString()` 會讓同一筆異動因儲存格式不同而顯示不同 |
+
+**刻意不做的三件事**：不追宣告型別（`Date` vs `DateTime`）——`FormSchema` 才是欄位結構的
+權威來源，payload 不該再複寫一份；不改 `RecordFieldChange`，因此**沒有 wire 形狀變更**；
+不動資料庫層面。
+
+**為何不用 `XmlSerializer`。** `DataSet` 實作 `IXmlSerializable`，其 `WriteXml` 就是上述兩支
+BCL 方法，因此 `XmlSerializer` 產出的 payload 與此等價。不走它是為了讓
+[ADR-025](adr-025-define-types-aot-xmlserializer-compat.md) 的反射路徑疑慮永久不必再論證。
+附帶查證：`changes_xml` 的讀取端只存在於伺服端（`Bee.Business` 不被任何行動／WASM head 引用），
+且 `changes_xml` 從不上 wire——client 收到的是已攤平的 `RecordFieldChange`。
+
 ## 理由
 
 **為什麼照抄兩套 ERP 的分類而不自創。** 稽核分類的成本不在寫程式，而在事後發現切錯了——
@@ -168,7 +201,7 @@
 **正面**：
 
 - 稽核軌跡與技術 observability 分屬兩套管線，各自的保留期與量體策略互不干擾。
-- 異動記錄零自訂 diff 邏輯，且能還原成 DataSet 直接呈現。
+- 異動記錄零自訂 diff 邏輯（差異由 `GetChanges()` 產生），且自 4.29.0 起能還原成 DataSet 直接呈現。
 - 檢視記錄的預設關閉讓「開啟稽核」不會意外變成效能事故。
 
 **負面 / 成本**：

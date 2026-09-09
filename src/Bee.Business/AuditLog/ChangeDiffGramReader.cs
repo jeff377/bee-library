@@ -1,3 +1,5 @@
+using System.Data;
+using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
 using Bee.Api.Contracts.AuditLog;
@@ -7,31 +9,67 @@ using Bee.Definition.Logging;
 namespace Bee.Business.AuditLog
 {
     /// <summary>
-    /// Restores an <c>st_log_change.changes_xml</c> payload — a schemaless DataSet DiffGram written by
-    /// the Save/Delete audit path — into a flat list of field-level before/after changes.
+    /// Restores an <c>st_log_change.changes_xml</c> payload into a flat list of field-level
+    /// before/after changes.
     /// </summary>
     /// <remarks>
-    /// The DiffGram is parsed directly with <see cref="XDocument"/> rather than
-    /// <c>DataSet.ReadXml</c>: the write side emits a DiffGram <b>without</b> an inline schema, which
-    /// <c>ReadXml</c> cannot reconstruct into a fresh <c>DataSet</c> (it yields zero tables). Direct
-    /// XML parsing also keeps the restore off the
-    /// <c>XmlSerializer</c> reflection path, so it is unaffected by the trim / AOT concerns of ADR-025.
+    /// <para>
+    /// Two payload shapes are stored, and both must stay readable: the current one written by
+    /// <see cref="AuditDiffGram.Serialize"/> (an inline XSD followed by a DiffGram) and the schemaless
+    /// DiffGram written before the schema was added. They are told apart by their root element, which
+    /// differs for every shape the reader accepts, so no version column is needed and no stored row
+    /// has to be migrated.
+    /// </para>
+    /// <para>
+    /// The current shape carries its own schema, so it rebuilds into a real <see cref="DataSet"/> and
+    /// the change detail comes from walking <see cref="DataRowVersion.Original"/> against
+    /// <see cref="DataRowVersion.Current"/>. The schema comes from the payload, never from today's
+    /// definitions, so a row stays readable after its form's fields have changed — the same property
+    /// <see cref="SchemalessDiffGramReader"/> gets by reading element names directly.
+    /// </para>
     /// </remarks>
     internal static class ChangeDiffGramReader
     {
-        private const string DiffgrNs = "urn:schemas-microsoft-com:xml-diffgram-v1";
-
         /// <summary>
-        /// Parses a DiffGram payload into field-level changes. Returns an empty list when the payload is
+        /// Parses a change payload into field-level changes. Returns an empty list when the payload is
         /// blank, malformed, or a minimal (non-DiffGram) delete marker — the caller still records the
         /// change event from the log row header even when no field detail is available.
         /// </summary>
-        /// <param name="changesXml">The raw <c>changes_xml</c> DiffGram.</param>
+        /// <param name="changesXml">The raw <c>changes_xml</c> payload.</param>
         public static List<RecordFieldChange> Read(string? changesXml)
         {
-            var result = new List<RecordFieldChange>();
-            if (string.IsNullOrWhiteSpace(changesXml)) { return result; }
+            if (string.IsNullOrWhiteSpace(changesXml)) { return []; }
 
+            // Dispatch on the root element alone, so only the branch that is actually taken pays to
+            // parse the payload. Anything that is not the current shape — the schemaless DiffGram, the
+            // minimal delete marker, corrupt XML — goes to the schemaless reader, which returns an
+            // empty list for the last two. That is its long-standing behaviour.
+            return IsSchemaBound(changesXml)
+                ? ReadSchemaBound(changesXml)
+                : ReadSchemaless(changesXml);
+        }
+
+        /// <summary>
+        /// Peeks at the root element to tell the current payload shape from every other one.
+        /// </summary>
+        private static bool IsSchemaBound(string changesXml)
+        {
+            try
+            {
+                using var stringReader = new StringReader(changesXml);
+                using var reader = XmlReader.Create(stringReader, HardenedSettings());
+                return reader.MoveToContent() == XmlNodeType.Element
+                    && reader.NamespaceURI.Length == 0
+                    && string.Equals(reader.LocalName, AuditDiffGram.RootElementName, StringComparison.Ordinal);
+            }
+            catch (XmlException)
+            {
+                return false;
+            }
+        }
+
+        private static List<RecordFieldChange> ReadSchemaless(string changesXml)
+        {
             XDocument doc;
             try
             {
@@ -39,130 +77,169 @@ namespace Bee.Business.AuditLog
             }
             catch (XmlException)
             {
-                // A non-DiffGram payload (e.g. the minimal delete marker) or corrupt XML carries no
-                // restorable field detail; the event header still stands on its own.
+                // Corrupt XML carries no restorable field detail; the event header still stands alone.
+                return [];
+            }
+            return doc.Root == null ? [] : SchemalessDiffGramReader.Read(doc.Root);
+        }
+
+        /// <summary>
+        /// Rebuilds the payload into a <see cref="DataSet"/> using its own inline schema, then emits
+        /// one entry per changed field.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: read the payload with one forward-only reader over the whole document, mirroring
+        /// how <see cref="AuditDiffGram.Serialize"/> writes it. Handing
+        /// <c>DataSet.ReadXml</c> a sub-tree reader taken from an already-parsed document
+        /// (<c>XElement.CreateReader()</c>) fails on the indented payload the writer produces:
+        /// <c>ReadXmlDiffgram</c> walks off the end of the sub-tree and throws
+        /// <see cref="ArgumentException"/> about an empty local name. Minified input hides the
+        /// problem, so a test that only covers minified payloads will not catch a regression here.
+        /// </remarks>
+        private static List<RecordFieldChange> ReadSchemaBound(string changesXml)
+        {
+            var result = new List<RecordFieldChange>();
+
+            using var dataSet = new DataSet { Locale = CultureInfo.InvariantCulture };
+            try
+            {
+                using var stringReader = new StringReader(changesXml);
+                using var reader = XmlReader.Create(stringReader, HardenedSettings());
+                reader.MoveToContent();
+                // Step into the wrapper, then skip the whitespace the indented payload puts between
+                // the wrapper and the inline schema, so the reader sits on the schema element.
+                reader.ReadStartElement();
+                if (reader.MoveToContent() != XmlNodeType.Element) { return result; }
+
+                dataSet.ReadXmlSchema(reader);
+                // A change set holds only the rows that changed, so a key or relation the schema
+                // declares may legitimately have no counterpart here. Enforcing would reject a
+                // payload that is perfectly valid as a record of what changed.
+                dataSet.EnforceConstraints = false;
+                dataSet.ReadXml(reader, XmlReadMode.DiffGram);
+            }
+            catch (XmlException)
+            {
+                return result;
+            }
+            catch (DataException)
+            {
+                // A schema the payload's own rows do not satisfy is damage, not a readable change set.
                 return result;
             }
 
-            var root = doc.Root;
-            if (root == null) { return result; }
-
-            XNamespace diff = DiffgrNs;
-            var dataBlock = root.Elements().FirstOrDefault(e => e.Name.Namespace != diff);
-            var beforeBlock = root.Elements(diff + "before").FirstOrDefault();
-
-            var beforeById = IndexBeforeRows(beforeBlock, diff);
-            var matchedBeforeIds = new HashSet<string>(StringComparer.Ordinal);
-
-            if (dataBlock != null)
+            foreach (DataTable table in dataSet.Tables)
             {
-                foreach (var row in dataBlock.Elements())
+                foreach (DataRow row in table.Rows)
                 {
-                    AppendCurrentRow(result, diff, row, beforeById, matchedBeforeIds);
+                    AppendRow(result, table, row);
                 }
             }
-
-            AppendUnmatchedDeletes(result, beforeById, matchedBeforeIds);
             return result;
         }
 
-        /// <summary>
-        /// Indexes the before-image rows by their <c>diffgr:id</c> so modified rows can be paired with
-        /// their originals and any unpaired before-row can be recognised as a delete.
-        /// </summary>
-        private static Dictionary<string, XElement> IndexBeforeRows(XElement? beforeBlock, XNamespace diff)
+        private static void AppendRow(List<RecordFieldChange> result, DataTable table, DataRow row)
         {
-            var beforeById = new Dictionary<string, XElement>(StringComparer.Ordinal);
-            if (beforeBlock != null)
+            switch (row.RowState)
             {
-                foreach (var row in beforeBlock.Elements())
-                {
-                    var id = row.Attribute(diff + "id")?.Value;
-                    if (id != null) { beforeById[id] = row; }
-                }
+                case DataRowState.Added:
+                    AppendSingleVersion(result, table, row, DataRowVersion.Current, ChangeKind.Insert);
+                    break;
+                case DataRowState.Deleted:
+                    AppendSingleVersion(result, table, row, DataRowVersion.Original, ChangeKind.Delete);
+                    break;
+                case DataRowState.Modified:
+                    AppendModified(result, table, row);
+                    break;
+                default:
+                    // Unchanged / Detached rows carry no change detail. GetChanges does not produce
+                    // them, so this is defensive rather than expected.
+                    break;
             }
-            return beforeById;
         }
 
         /// <summary>
-        /// Emits the before-image of every before-row that has no matching current row — those rows are
-        /// deletes.
+        /// Emits every non-key column of a row that exists in only one version — an insert (current
+        /// values, no old value) or a delete (original values, no new value).
         /// </summary>
-        private static void AppendUnmatchedDeletes(List<RecordFieldChange> result,
-            Dictionary<string, XElement> beforeById, HashSet<string> matchedBeforeIds)
+        private static void AppendSingleVersion(List<RecordFieldChange> result, DataTable table, DataRow row,
+            DataRowVersion version, ChangeKind kind)
         {
-            foreach (var pair in beforeById)
+            var rowKey = GetRowKey(table, row, version);
+            foreach (DataColumn column in table.Columns)
             {
-                if (matchedBeforeIds.Contains(pair.Key)) { continue; }
-                var row = pair.Value;
-                var before = ReadColumns(row);
-                var rowKey = GetRowKey(before);
-                foreach (var column in before)
-                {
-                    if (IsRowKeyColumn(column.Key)) { continue; }
-                    result.Add(Field(row.Name.LocalName, rowKey, ChangeKind.Delete, column.Key, column.Value, null));
-                }
+                if (IsRowKeyColumn(column.ColumnName)) { continue; }
+                var value = ToText(row[column, version]);
+                result.Add(kind == ChangeKind.Insert
+                    ? Field(table.TableName, rowKey, kind, column.ColumnName, null, value)
+                    : Field(table.TableName, rowKey, kind, column.ColumnName, value, null));
             }
         }
 
-        private static void AppendCurrentRow(List<RecordFieldChange> result, XNamespace diff, XElement row,
-            Dictionary<string, XElement> beforeById, HashSet<string> matchedBeforeIds)
+        /// <summary>
+        /// Emits only the columns whose value actually changed, comparing the row's two versions.
+        /// </summary>
+        private static void AppendModified(List<RecordFieldChange> result, DataTable table, DataRow row)
         {
-            var tableName = row.Name.LocalName;
-            var hasChanges = row.Attribute(diff + "hasChanges")?.Value;
-            var current = ReadColumns(row);
-            var rowKey = GetRowKey(current);
-
-            if (string.Equals(hasChanges, "inserted", StringComparison.Ordinal))
+            var rowKey = GetRowKey(table, row, DataRowVersion.Current);
+            foreach (DataColumn column in table.Columns)
             {
-                foreach (var column in current)
-                {
-                    if (IsRowKeyColumn(column.Key)) { continue; }
-                    result.Add(Field(tableName, rowKey, ChangeKind.Insert, column.Key, null, column.Value));
-                }
-                return;
-            }
-
-            // Modified: pair with the before-image (via diffgr:id) and emit only columns that differ.
-            var before = new Dictionary<string, string?>(StringComparer.Ordinal);
-            var id = row.Attribute(diff + "id")?.Value;
-            if (id != null && beforeById.TryGetValue(id, out var beforeRow))
-            {
-                matchedBeforeIds.Add(id);
-                before = ReadColumns(beforeRow);
-            }
-
-            // Union the column names so a value set to (or from) null — where the DiffGram omits the
-            // element on one side — is still captured.
-            var names = new HashSet<string>(before.Keys, StringComparer.Ordinal);
-            names.UnionWith(current.Keys);
-            foreach (var name in names)
-            {
-                if (IsRowKeyColumn(name)) { continue; }
-                before.TryGetValue(name, out var oldValue);
-                current.TryGetValue(name, out var newValue);
+                if (IsRowKeyColumn(column.ColumnName)) { continue; }
+                var oldValue = ToText(row[column, DataRowVersion.Original]);
+                var newValue = ToText(row[column, DataRowVersion.Current]);
                 if (!string.Equals(oldValue, newValue, StringComparison.Ordinal))
                 {
-                    result.Add(Field(tableName, rowKey, ChangeKind.Update, name, oldValue, newValue));
+                    result.Add(Field(table.TableName, rowKey, ChangeKind.Update, column.ColumnName, oldValue, newValue));
                 }
             }
         }
 
-        private static Dictionary<string, string?> ReadColumns(XElement row)
-        {
-            var columns = new Dictionary<string, string?>(StringComparer.Ordinal);
-            foreach (var column in row.Elements())
-            {
-                columns[column.Name.LocalName] = column.Value;
-            }
-            return columns;
-        }
-
-        private static string? GetRowKey(Dictionary<string, string?> columns)
-            => columns.TryGetValue(SysFields.RowId, out var value) ? value : null;
+        private static string? GetRowKey(DataTable table, DataRow row, DataRowVersion version)
+            => table.Columns.Contains(SysFields.RowId) ? ToText(row[SysFields.RowId, version]) : null;
 
         private static bool IsRowKeyColumn(string columnName)
             => string.Equals(columnName, SysFields.RowId, StringComparison.Ordinal);
+
+        /// <summary>
+        /// Renders a restored value the way the DiffGram spelled it, so a change reads identically
+        /// whichever payload shape it was stored in.
+        /// </summary>
+        /// <remarks>
+        /// IMPORTANT: use <see cref="XmlConvert"/>, not <c>ToString()</c> or
+        /// <c>ValueUtilities.CStr</c>. Those are culture-sensitive, which would both diverge from the
+        /// schemaless reader (which returns the payload's own XML text) and make a stored value render
+        /// differently on a server whose culture happens to differ — the very thing the write side
+        /// avoids by building its tables with an invariant locale.
+        /// <para>
+        /// NOTE: agreement with the schemaless reader on <see cref="DateTime"/> columns also depends on
+        /// <c>Bee.Base.Data.DataTableExtensions.AddColumn</c> setting
+        /// <see cref="DataSetDateTime.Unspecified"/>. A <see cref="DataTable"/> built by hand defaults
+        /// to <c>UnspecifiedLocal</c>, whose DiffGram carries a timezone offset that the restored value
+        /// does not — so the two shapes would disagree on that column.
+        /// </para>
+        /// </remarks>
+        private static string? ToText(object? value)
+        {
+            if (value == null || value == DBNull.Value) { return null; }
+            return value switch
+            {
+                string text => text,
+                DateTime dateTime => XmlConvert.ToString(dateTime, XmlDateTimeSerializationMode.RoundtripKind),
+                DateTimeOffset dateTimeOffset => XmlConvert.ToString(dateTimeOffset),
+                decimal number => XmlConvert.ToString(number),
+                bool flag => XmlConvert.ToString(flag),
+                Guid guid => XmlConvert.ToString(guid),
+                int number => XmlConvert.ToString(number),
+                long number => XmlConvert.ToString(number),
+                short number => XmlConvert.ToString(number),
+                byte number => XmlConvert.ToString(number),
+                double number => XmlConvert.ToString(number),
+                float number => XmlConvert.ToString(number),
+                TimeSpan span => XmlConvert.ToString(span),
+                byte[] bytes => Convert.ToBase64String(bytes),
+                _ => Convert.ToString(value, CultureInfo.InvariantCulture),
+            };
+        }
 
         private static RecordFieldChange Field(string tableName, string? rowKey, ChangeKind rowState,
             string fieldName, string? oldValue, string? newValue)
@@ -176,12 +253,17 @@ namespace Bee.Business.AuditLog
                 NewValue = newValue,
             };
 
+        /// <summary>
+        /// Hardens against XXE (scanning.md): no DTD, no external entity resolution. Every reader over
+        /// a stored payload is built from this, including the one handed to <c>DataSet.ReadXml</c>.
+        /// </summary>
+        private static XmlReaderSettings HardenedSettings()
+            => new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null };
+
         private static XDocument LoadHardened(string xml)
         {
-            // Harden against XXE (scanning.md): no DTD, no external entity resolution.
-            var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null };
             using var stringReader = new StringReader(xml);
-            using var reader = XmlReader.Create(stringReader, settings);
+            using var reader = XmlReader.Create(stringReader, HardenedSettings());
             return XDocument.Load(reader);
         }
     }
