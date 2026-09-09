@@ -1,13 +1,13 @@
 # 計畫：Bee.Northwind 同步至 bee-northwind-avalonia（框架 4.30.0）
 
-**狀態：🚧 進行中（2026-09-10）**
+**狀態：✅ 已完成（2026-09-10）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 0 | 「順帶發現」兩項（`OrderBO` 的 `isLocalCall` 預設值、空目錄）於 bee-library 端處理 | 🚧 進行中 |
-| 1 | 五個 csproj 的框架版號 4.27.0 → 4.30.0（就地改，不覆蓋檔案） | 📝 待做 |
-| 2 | 雙語 README 修正一段**已經失效**的敘述（`FormLayout` 自動產生） | 📝 待做 |
-| 3 | 六個 head 對 NuGet 4.30.0 build + Desktop 冒煙，通過後 commit + push | 📝 待做 |
+| 0 | 「順帶發現」兩項（`OrderBO` 的 `isLocalCall` 預設值、空目錄）於 bee-library 端處理 | ✅ 已完成（2026-09-10）：commit `a042f9c5` |
+| 1 | 框架版號 4.27.0 → 4.30.0（兩個 csproj、六筆參考） | ✅ 已完成（2026-09-10） |
+| 2 | 雙語 README 修正一段**已經失效**的敘述（`FormLayout` 自動產生） | ✅ 已完成（2026-09-10） |
+| 3 | 六個 head build ✅ / Desktop 冒煙 ⛔ 工具鏈受阻 / commit + push | ✅ 已完成（2026-09-10）：commit `9c6259c` 推上 `bee-northwind-avalonia` 的 `main` |
 
 > 使用者已確認（2026-09-10）：照計畫做、冒煙**只跑 Desktop**、「順帶發現」兩項一併處理。
 
@@ -107,6 +107,64 @@ Bee.Northwind.{Desktop,Browser,Android,iOS}/  （依實際引用）
 `xcode-select`**，也不要用 `-p:ValidateXcodeVersion=false` 硬建。
 （詳見 `.claude/rules/apple-mobile-trim.md`；上次就是因為沒帶 `DEVELOPER_DIR` 而誤報成建不起來。）
 
+## 執行結果
+
+### 階段 1：實際是兩個 csproj、六筆參考（計畫寫「五個 csproj」有誤）
+
+只有 `Bee.Northwind.Server`（5 筆）與 `Bee.Northwind.UI`（1 筆）直接引用 `Bee.*`；
+Desktop / Browser / Android / iOS 四個 head 都是經 `ProjectReference` 指向 UI。
+
+analyzer 接線完好（`Bee.Definition` 直接參考 + `BeeDefinitionFilesGlob` 都在）。
+csproj 註解另記載了一件本計畫寫錯的事：**該直接參考自 4.22.0 起已非必要**
+——targets 那時已由 `build/` 移到 `buildTransitive/`。留著無害，計畫「必須保住」的說法過強。
+
+### 階段 3：六個 head 全綠
+
+| head | 結果 |
+|------|------|
+| Server / UI / Desktop / Browser / Android | ✅ 0 警告 0 錯誤 |
+| iOS | ✅ 0 錯誤，**21 個警告** |
+
+**iOS 的警告是既有的，不是本次造成的**：全部是 `IL2026` / `IL2057`，即 trim 分析器對
+`DataSet` / `DataTable` XML 序列化與 `ViewLocator` 反射的固有告警。對照組是 bee-library
+自己的 iOS head —— 同樣 0 錯誤但 **67 個警告**（更多，因為 ProjectReference 的分析面比
+已 trim 的 NuGet 套件大）。**計畫寫的「0 警告」對 iOS head 是訂錯了門檻**，該 head 從來
+沒有、也不會是 0 警告。
+
+iOS 如計畫預告的撞到 Xcode 版本（需 26.5、`xcode-select` 指著 26.6），
+以 `DEVELOPER_DIR=/Applications/Xcode-26.5.0.app/Contents/Developer` 指過去即通過，
+未動全域設定。
+
+### ⛔ 階段 3：Desktop 冒煙無法執行（平台限制，與本次同步無關）
+
+`.smoke.yaml` 以 `dotnet Bee.Northwind.Desktop/…/Bee.Northwind.Desktop.dll` 啟動 app
+（Avalonia 桌面端在 macOS 沒有 `.app` bundle）。app 確實跑起來、視窗標題為 `Bee.Northwind`，
+但 **macOS 只看到一個沒有 bundle identifier 的 `dotnet` 進程**：
+
+- `request_access` 對 `Bee.Northwind.Desktop` / `dotnet` 皆回 `notInstalled`，對話框根本沒顯示。
+- 已安裝清單裡只有 iOS 端的 `com.bee.northwind`，桌面端沒有可授權的識別碼。
+- 退而求其次的全螢幕控制也不行：`request_full_control` 回
+  `No applications are granted for this session`，而 display-scope 的 frontmost 閘門
+  仍會要求該進程在允許清單內。
+
+**這正是 `demo-smoke` skill 檔頭「知道的雷」列的那一條**（「以 `dotnet <dll>` 啟動時進程名是
+`dotnet`」），只是那裡談的是 teardown 取名，沒談到它會讓 app 完全無法被授權。
+
+**沒有以別的方式假裝驗過**：曾試以 `curl` 直打 `System.Ping` 取代，但手搓的請求不符
+client 的信封格式（回 `NullReferenceException`），**那個錯誤不能歸因於伺服器**，
+因此不採計為任何證據。
+
+> 附帶一提，「格式不符的請求回 NRE 而非結構化錯誤」本身可能值得看一眼，但我無法在不重現
+> 真正 client 協定的前提下斷定，屬 bee-library 的另案觀察，不列為本次發現。
+
+**處置（使用者裁定，2026-09-10）**：以建置驗證交付，不補冒煙。判斷依據是本次的風險面
+——應用內容零落差、破壞性變更曝險經逐項掃描為零、六個 head 全數建置通過。
+**這代表本版沒有任何執行期證據**，若日後 Northwind 出現只在執行期才顯現的問題，
+這一輪是第一個要回頭看的地方。
+
+要讓冒煙日後可跑，路徑是把 Desktop 打包成 `.app` bundle（見 `avalonia-macos-bundle` skill）
+並改寫 `.smoke.yaml` 的 `launch`。那會改變 demo 的啟動方式，屬另案。
+
 ## 順帶發現（不屬本次同步，供判斷是否另案）
 
 ### 1. `OrderBO` 的 `isLocalCall` 預設值保留了 4.28.0 刻意改掉的行為
@@ -128,8 +186,10 @@ public OrderBO(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCal
 
 git 不追蹤空目錄，所以它只存在於本機工作區。若非刻意保留，可直接刪。
 
-## 待確認
+## 裁定（2026-09-10）
 
-1. 接受本計畫範圍嗎？（重點是：**沒有應用內容要搬**，只有版號、一段 README 與驗證）
-2. 階段 3 的冒煙要跑到什麼程度 —— Desktop 一輪即可，還是六個 head 都要實跑？
-3. 「順帶發現」的兩項要不要納入本次，或另案處理？
+| 問題 | 裁定 |
+|------|------|
+| 計畫範圍 | 接受 |
+| 冒煙程度 | 只跑 Desktop —— 後因工具鏈限制無法執行，改以建置驗證交付 |
+| 「順帶發現」兩項 | 一併處理（`OrderBO` 兩邊同步、空目錄刪除） |
