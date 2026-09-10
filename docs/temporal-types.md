@@ -186,7 +186,9 @@ The examples below are the real serializer output for these three values:
 ### XML — `DataSet` persistence
 
 The declared type is written into the XSD as an `msprop` annotation, so it survives a
-write/read round trip:
+write/read round trip. `DataSet.ReadXml` restores the annotation as the member name in string form
+rather than as a `FieldDbType` value; `GetDeclaredFieldDbType` and `ResolveFieldDbType` accept both
+forms, so read the marker through them rather than from `ExtendedProperties` directly:
 
 ```xml
 <xs:element name="hire_date"  msdata:DateTimeMode="Unspecified" msprop:Bee.FieldDbType="Date"     type="xs:dateTime" />

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Data;
 using System.Text.Json;
+using System.Xml;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
 
@@ -13,11 +14,29 @@ namespace Bee.Base.UnitTests.Data
     /// </summary>
     public class DataColumnExtensionsTests
     {
+        // 刻意寫死字面值：這個 key 會以 msprop 名稱落進持久化的 XML，改名就讀不回既有檔案。
+        private const string MarkerKey = "Bee.FieldDbType";
+
         private static JsonSerializerOptions Options()
         {
             var opts = new JsonSerializerOptions();
             opts.Converters.Add(new DataTableJsonConverter());
             return opts;
+        }
+
+        private static DataSet XmlRoundTrip(DataTable table)
+        {
+            using var source = new DataSet("ds");
+            source.Tables.Add(table);
+            using var writer = new StringWriter();
+            source.WriteXml(writer, XmlWriteMode.WriteSchema);
+
+            var restored = new DataSet();
+            using var stringReader = new StringReader(writer.ToString());
+            using var reader = XmlReader.Create(stringReader,
+                new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
+            restored.ReadXml(reader, XmlReadMode.ReadSchema);
+            return restored;
         }
 
         [Fact]
@@ -154,6 +173,41 @@ namespace Bee.Base.UnitTests.Data
             // 全部依賴 DataType 為 DateTime，改成 DateOnly 會打斷這些既有路徑。
             Assert.Equal(typeof(DateTime), restored!.Columns["order_date"]!.DataType);
             Assert.Equal(new DateTime(2026, 7, 25, 0, 0, 0, DateTimeKind.Unspecified), restored.Rows[0]["order_date"]);
+        }
+
+        [Fact]
+        [DisplayName("DataSet XML round-trip 應還原 Date / DateTime / Time 標記")]
+        public void XmlRoundTrip_PreservesTemporalMarkers()
+        {
+            var table = new DataTable("t");
+            table.AddColumn("hire_date", FieldDbType.Date);
+            table.AddColumn("created_at", FieldDbType.DateTime);
+            table.AddColumn("work_start", FieldDbType.Time);
+
+            using var restored = XmlRoundTrip(table);
+            var columns = restored.Tables["t"]!.Columns;
+
+            // ReadXml 讀回的標記是字串而非列舉值，Date 欄若沒被解析就會退回反推成 DateTime。
+            Assert.Equal(FieldDbType.Date, columns["hire_date"]!.ResolveFieldDbType());
+            Assert.Equal(FieldDbType.DateTime, columns["created_at"]!.ResolveFieldDbType());
+            Assert.Equal(FieldDbType.Time, columns["work_start"]!.ResolveFieldDbType());
+        }
+
+        [Theory]
+        [InlineData("date")]
+        [InlineData(" Date")]
+        [InlineData("99")]
+        [InlineData("3")]
+        [InlineData("Date, String")]
+        [InlineData("NotAType")]
+        [DisplayName("標記字串不是精確的成員名稱時應視為未標記，退回由 CLR 型別反推")]
+        public void GetDeclaredFieldDbType_StringNotExactMemberName_TreatedAsNoMarker(string marker)
+        {
+            var column = new DataColumn("d", typeof(DateTime));
+            column.ExtendedProperties[MarkerKey] = marker;
+
+            Assert.Null(column.GetDeclaredFieldDbType());
+            Assert.Equal(FieldDbType.DateTime, column.ResolveFieldDbType());
         }
 
         [Fact]

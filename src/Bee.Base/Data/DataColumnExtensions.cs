@@ -42,10 +42,34 @@ namespace Bee.Base.Data
         /// or <see langword="null"/> when the column carries no record.
         /// </summary>
         /// <param name="column">The target column.</param>
+        /// <remarks>
+        /// The record is normally a <see cref="FieldDbType"/> value. A column restored by
+        /// <see cref="DataSet.ReadXml(System.Xml.XmlReader, XmlReadMode)"/> carries it as the member name
+        /// in string form instead, because the XSD annotation is written and read back as text, so that
+        /// form is accepted too. Any other value, including a string that is not exactly a member name,
+        /// is treated as no record.
+        /// </remarks>
         public static FieldDbType? GetDeclaredFieldDbType(this DataColumn column)
         {
             ArgumentNullException.ThrowIfNull(column);
-            return column.ExtendedProperties[FieldDbTypeKey] as FieldDbType?;
+            return column.ExtendedProperties[FieldDbTypeKey] switch
+            {
+                FieldDbType dbType => dbType,
+                string name => ParseMemberName(name),
+                _ => null,
+            };
+        }
+
+        private static FieldDbType? ParseMemberName(string name)
+        {
+            // `Enum.TryParse` also accepts numeric strings, comma-separated lists and surrounding
+            // whitespace. The framework writes the annotation as the member name, so a value that does
+            // not name a defined member and spell it back identically is not a record it wrote.
+            return Enum.TryParse(name, out FieldDbType parsed)
+                && Enum.IsDefined(parsed)
+                && string.Equals(parsed.ToString(), name, StringComparison.Ordinal)
+                ? parsed
+                : null;
         }
 
         /// <summary>

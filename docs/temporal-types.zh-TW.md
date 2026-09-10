@@ -175,7 +175,9 @@ DateTime created = ValueUtilities.CDateTime(row["created_at"], DateTime.MinValue
 
 ### XML —— `DataSet` 持久化
 
-宣告型別會寫入 XSD 的 `msprop` 註記，因此能在寫入／讀回的往返中存活：
+宣告型別會寫入 XSD 的 `msprop` 註記，因此能在寫入／讀回的往返中存活。`DataSet.ReadXml`
+讀回的註記是成員名稱的**字串**，而不是 `FieldDbType` 值；`GetDeclaredFieldDbType` 與
+`ResolveFieldDbType` 兩種形式都接受，因此請透過它們讀取標記，不要直接讀 `ExtendedProperties`：
 
 ```xml
 <xs:element name="hire_date"  msdata:DateTimeMode="Unspecified" msprop:Bee.FieldDbType="Date"     type="xs:dateTime" />

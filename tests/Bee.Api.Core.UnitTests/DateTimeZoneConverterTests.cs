@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Data;
+using System.Xml;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base.Data;
 
@@ -58,6 +59,27 @@ namespace Bee.Api.Core.UnitTests
         {
             var converted = DateTimeZoneConverter.UtcToUser(BuildTableWithRow(), Taipei);
 
+            Assert.NotNull(converted);
+            Assert.Equal(new DateTime(2026, 1, 1, 0, 0, 0), (DateTime)converted.Rows[0]["order_date"]);
+        }
+
+        [Fact]
+        [DisplayName("經 DataSet XML 讀回的 Date 欄位同樣絕不轉換")]
+        public void UtcToUser_XmlRestoredCalendarDayColumn_LeftUntouched()
+        {
+            using var source = new DataSet("ds");
+            source.Tables.Add(BuildTableWithRow());
+            using var writer = new StringWriter();
+            source.WriteXml(writer, XmlWriteMode.WriteSchema);
+            using var restored = new DataSet();
+            using var stringReader = new StringReader(writer.ToString());
+            using var reader = XmlReader.Create(stringReader,
+                new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
+            restored.ReadXml(reader, XmlReadMode.ReadSchema);
+
+            var converted = DateTimeZoneConverter.UtcToUser(restored.Tables["orders"]!, Taipei);
+
+            // 讀回的標記是字串；沒被解析的話 Date 欄會被當成時間點平移到台北時間。
             Assert.NotNull(converted);
             Assert.Equal(new DateTime(2026, 1, 1, 0, 0, 0), (DateTime)converted.Rows[0]["order_date"]);
         }
