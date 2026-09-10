@@ -88,8 +88,8 @@ namespace Bee.LoadTests.UnitTests
         {
             var field = Field(FieldDbType.Boolean, "is_active");
 
-            Assert.Equal(true, DataSeeder.CreateValue(field, 0));
-            Assert.Equal(false, DataSeeder.CreateValue(field, 1));
+            Assert.True(Assert.IsType<bool>(DataSeeder.CreateValue(field, 0)));
+            Assert.False(Assert.IsType<bool>(DataSeeder.CreateValue(field, 1)));
         }
 
         [Fact]
