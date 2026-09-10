@@ -5,9 +5,9 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 0 | 設計裁定 | ✅ 已完成（2026-09-10） |
-| 1 | 框架：`NumberFormatResolver` 空本幣拋例外 + 測試 + 種子 + 範例 + 文件 | 🚧 實作與驗證完成，待 commit / push |
-| 2 | `apps/Bee.Northwind`（bee-library 內副本）：本幣 USD + 幣別主檔 + 既有 db 回填 | 🚧 實作與驗證完成，待 commit / push |
-| 3 | 案例 repo `bee-northwind-avalonia` 同步 | 🚧 已同步、建置通過，待 commit / push |
+| 1 | 框架：`NumberFormatResolver` 空本幣拋例外 + 測試 + 種子 + 範例 + 文件 | ✅ 已完成（2026-09-10）：commit `31f832ce`（`[all-db]`） |
+| 2 | `apps/Bee.Northwind`（bee-library 內副本）：本幣 USD + 幣別主檔 + 既有 db 回填；Order layout 補 `NumberKind` | 🚧 本幣部分隨 `31f832ce` 推送；layout 修正待推送 |
+| 3 | 案例 repo `bee-northwind-avalonia` 同步 | ✅ 已完成（2026-09-10）：commit `f3c0f3a`（本幣）＋ layout 修正 |
 | 4 | 回報 Day 26 那一邊三項事實 | 📝 待做 |
 
 ## 背景
@@ -193,3 +193,24 @@ the framework default of two decimals*），這次是**破壞性的行為變更*
 
 → 對 Day 26 第 3 點的影響：resolver 解析出的是 **2 位**（伺服端存檔捨入依 schema 的 `NumberKind`，不看 layout），
 但**讀者在案例畫面上看不到 `252.00`**。
+
+### 處置：案例 layout 補 `NumberKind`（使用者裁定，2026-09-10）
+
+兩份 `Order.FormLayout.xml`（`Define/` 與 `Customize/northwind-demo/`，客製 layout 整份取代、不合併，故兩份都改）：
+
+| 欄位 | 補上的屬性 | 為何這樣就夠 |
+|------|-----------|-------------|
+| 明細 `amount`（`LayoutColumn`） | `NumberKind="Amount"` | grid 顯示文字一律走 `FormatCellForColumn`，不看 `ControlType`；幣別分支由 `CurrencySettings` + `DefaultCurrencyCode` 解析 |
+| 表頭 `total_amount`（`LayoutField`） | `NumberKind="Amount"`、`ControlType="NumericEdit"` | `LayoutField.ControlType` 預設 `TextEdit`，`FieldEditorFactory` 只有 `NumericEdit` 會套數值格式 |
+
+**與原本約定範圍的差異：`unit_price` 沒有補。** grid 對非幣別種類（`UnitPrice` 屬公司來源）只回傳 `column.NumberFormat`，
+而手寫 layout 沒有 bake 過的格式，單補 `NumberKind` 畫面不會變——補了反而看起來像有作用。
+
+**執行期實證**（Browser head，檢視 10248）：明細 `amount` 顯示 `252.00` / `100.00`，表頭 `total_amount` 顯示 `352.00`。
+Server 與案例 repo 的 Server 專案建置皆 0 警告 0 錯誤，server log 無錯誤。
+
+**仍未格式化的地方**（刻意不動，已知）：
+
+- 清單的 Total Amount 欄仍是 `352`——清單 layout 由 schema 產生，而 schema 的 `total_amount` 沒有 `NumberKind`。
+- `unit_price` 仍是 `21`（理由見上）。
+- 根本解是框架在執行期把 schema 的 `NumberKind` / `NumberFormat` 補進手寫 layout；屬框架另案，本 plan 不處理。

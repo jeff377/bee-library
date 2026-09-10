@@ -10,7 +10,7 @@
         <LayoutField FieldName="shipper_rowid" Caption="Shipper" ControlType="ButtonEdit" DisplayFields="ref_shipper_id,ref_shipper_name" />
         <LayoutField FieldName="freight" Caption="Freight" />
         <LayoutField FieldName="status" Caption="Status" ControlType="DropDownEdit" />
-        <LayoutField FieldName="total_amount" Caption="Total Amount" ReadOnly="true" />
+        <LayoutField FieldName="total_amount" Caption="Total Amount" ControlType="NumericEdit" ReadOnly="true" NumberKind="Amount" />
       </Fields>
     </LayoutSection>
   </Sections>
@@ -21,7 +21,7 @@
         <LayoutColumn FieldName="quantity" Caption="Quantity" />
         <LayoutColumn FieldName="unit_price" Caption="Unit Price" />
         <LayoutColumn FieldName="discount" Caption="Discount" />
-        <LayoutColumn FieldName="amount" Caption="Amount" ReadOnly="true" />
+        <LayoutColumn FieldName="amount" Caption="Amount" ReadOnly="true" NumberKind="Amount" />
         <LayoutColumn FieldName="sys_rowid" Caption="Row ID" Visible="false" />
         <LayoutColumn FieldName="sys_master_rowid" Caption="Master Row ID" Visible="false" />
       </Columns>
