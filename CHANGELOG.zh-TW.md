@@ -4,6 +4,49 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.31.0]
+
+> 本版把三條**靜默的退路換成出聲的失敗**。公司沒有本幣時，金額一律捨到框架預設的兩位——那個位數不是該公司任何幣別選的，而下游沒有任何東西分辨得出來。`RepositoryFactory` 的型別解析交給必填的 `IRepositoryTypeResolver`：若給一個只看基底註冊表的預設值，漏註冊時每個租戶的 Repository 覆寫會整批失效，而每個請求照樣成功。Hosting 層則不再丟掉點名「缺哪個服務」的那段訊息——它過去以一個毫不相干的「找不到建構子」浮現。**兩項破壞性變更依 pre-stable 政策以 minor 發佈。**
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.31.0.zh-TW.md](docs/changelogs/4.31.0.zh-TW.md)
+
+### 破壞性變更
+
+- `Bee.Definition`：公司的 `DefaultCurrency` 改為必填。金額沒有參照幣別、而上下文中的公司也沒有本幣時，`NumberFormatResolver` 擲 `InvalidOperationException`，不再退回兩位；沒有公司上下文時仍退框架預設。二進位相容。詳見 [ADR-026](docs/adr/adr-026-numeric-semantics-rounding.md) 修訂紀錄。
+- `Bee.Repository`：`RepositoryFactory` 改收必填的 `IRepositoryTypeResolver`，取代 `customizeReader` / `sessionInfoService`，並移除 protected 的 `ResolveFormRepositoryType`；預設實作為 `ProgramSettingsRepositoryTypeResolver`。原始碼與二進位皆破壞；經 `AddBeeFramework` 建構工廠的部署不受影響。
+
+### 修正
+
+- `Bee.Hosting`：`CreateConfigurableService` 不再吞掉相依注入的建構失敗。型別沒有 public 無參數建構子時，浮出的是點名缺少服務的原始例外，而不是 `MissingMethodException`。
+- `apps/Bee.Northwind`：`OrderBO` 不再把 `isLocalCall` 覆寫為 `true`，回到 4.28.0 刻意改定的框架預設 `false`。
+- `apps/Bee.Northwind`：訂單表單的 `amount` 與 `total_amount` 以兩位小數顯示。手寫的 `FormLayout` 沒有 `NumberKind`，而框架只在產生 layout 時才從 `FormSchema` 帶入。
+
+### 變更
+
+- `apps/Bee.Northwind`：示範公司本幣為 `USD`，並部署 `Define/CurrencySettings.xml`；既有的 `northwind.db` 於啟動時回填。
+- `tools/Bee.LoadTests`：`serve` 的監聽位址改由設定鍵 `TargetOptions.ServeUrl` 提供，內插進 `CREATE DATABASE` 的資料庫名改在內插處就地驗證。non-shipping tool。
+
+### 升級指引
+
+經 `AddBeeFramework` 建構工廠的部署不需要改程式碼。兩種情形要檢查：
+
+```sql
+-- 1. 升級前，每家公司都要有本幣。
+--    幣別請依各公司實際情況填寫；框架不代為選擇。
+UPDATE st_company SET default_currency = 'USD'
+ WHERE default_currency = '' OR default_currency IS NULL;
+```
+
+```csharp
+// 2. 直接建構 RepositoryFactory：
+- new RepositoryFactory(services, defineAccess, dbAccessFactory, connectionManager, router,
+-     cacheNotify, customizeReader, sessionInfoService);
++ new RepositoryFactory(services, defineAccess, dbAccessFactory, connectionManager, router,
++     new ProgramSettingsRepositoryTypeResolver(defineAccess, customizeReader, sessionInfoService),
++     cacheNotify);
+// 漏傳 customizeReader / sessionInfoService，租戶的 Repository 覆寫會關閉而不報錯。
+```
+
 ## [4.30.0]
 
 > 本版的主軸是**宣稱與實作對不上**的兩種型態。其一在散文裡：稽核明細的 payload 被兩份 ADR 描述成「讀取時還原成 DataSet 即可直接顯示」，而寫入端輸出的裸 DiffGram 用全新 `DataSet` 讀回會得到零張表——那項好處從未兌現，讀取端只能自己手寫 parser，而編譯器不看散文、測試驗的是讀取端自己那條路，沒有任何機制會發現。其二在測試覆蓋：framework repository 的多 provider 測試名義上覆蓋五家，實際全部打在 SQL Server；把覆蓋改對之後當場現形兩個缺陷，其中一個讓 SQLite 上**已過期的 API 金鑰無聲通行**。Oracle 則是第三條線——參數預設按位置而非名稱綁定，使 `FormSchema` 驅動的請求在該引擎上全數失敗，而外顯是「GetList 100% 失敗」，真正壞掉的是登入。

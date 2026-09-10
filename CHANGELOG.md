@@ -4,6 +4,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.31.0]
+
+> This release replaces three **silent fallbacks with loud failures**. A company with no default currency had its amounts rounded to the framework default of two decimals — a figure no currency of that company chose, and nothing downstream could tell. `RepositoryFactory` hands its type resolution to a required `IRepositoryTypeResolver`, because an optional one with a registry-only default would let a missed registration disable every tenant's repository overrides while every request still succeeded. And the hosting layer stops discarding the message that names the missing service, which used to surface as an unrelated "constructor not found". **Both breaking changes ship as a minor under the pre-stable policy.**
+
+📄 Full notes and design context: [docs/changelogs/4.31.0.md](docs/changelogs/4.31.0.md)
+
+### Breaking Changes
+
+- `Bee.Definition`: a company's `DefaultCurrency` is required. When an amount has no reference currency and the company in context carries none, `NumberFormatResolver` throws `InvalidOperationException` instead of falling back to two decimals; with no company context it still falls back. Binary compatible. See [ADR-026](docs/adr/adr-026-numeric-semantics-rounding.md), revision record.
+- `Bee.Repository`: `RepositoryFactory` takes a required `IRepositoryTypeResolver` in place of `customizeReader` / `sessionInfoService`, and the protected `ResolveFormRepositoryType` is removed; `ProgramSettingsRepositoryTypeResolver` is the default implementation. Source- and binary-breaking; deployments that build the factory through `AddBeeFramework` are unaffected.
+
+### Fixed
+
+- `Bee.Hosting`: `CreateConfigurableService` no longer swallows the dependency-injection failure. A type without a public parameterless constructor now surfaces the original exception naming the missing service, instead of `MissingMethodException`.
+- `apps/Bee.Northwind`: `OrderBO` no longer overrides `isLocalCall` to `true`, restoring the framework default of `false` that 4.28.0 chose deliberately.
+- `apps/Bee.Northwind`: the order form shows `amount` and `total_amount` with two decimals. The hand-written `FormLayout` carried no `NumberKind`, and the framework copies it from the `FormSchema` only when a layout is generated.
+
+### Changed
+
+- `apps/Bee.Northwind`: the demo company's default currency is `USD`, and `Define/CurrencySettings.xml` is deployed. An existing `northwind.db` is backfilled at startup.
+- `tools/Bee.LoadTests`: the `serve` listen address moves to the `TargetOptions.ServeUrl` setting, and the database name interpolated into `CREATE DATABASE` is validated where it is interpolated. Non-shipping tool.
+
+### Upgrade notes
+
+Deployments that build the factory through `AddBeeFramework` need no code change. Two cases to check:
+
+```sql
+-- 1. Every company needs a default currency before upgrading.
+--    Choose the right code for each company; the framework does not pick one.
+UPDATE st_company SET default_currency = 'USD'
+ WHERE default_currency = '' OR default_currency IS NULL;
+```
+
+```csharp
+// 2. Constructing RepositoryFactory directly:
+- new RepositoryFactory(services, defineAccess, dbAccessFactory, connectionManager, router,
+-     cacheNotify, customizeReader, sessionInfoService);
++ new RepositoryFactory(services, defineAccess, dbAccessFactory, connectionManager, router,
++     new ProgramSettingsRepositoryTypeResolver(defineAccess, customizeReader, sessionInfoService),
++     cacheNotify);
+// Leaving out customizeReader / sessionInfoService turns tenant repository overrides off without an error.
+```
+
 ## [4.30.0]
 
 > This release is about two shapes of **a claim that does not match the implementation**. The first lives in prose: two ADRs described the audit-detail payload as something you could "restore into a DataSet and display directly", while the bare DiffGram the write side emitted yields *zero tables* when read back into a fresh `DataSet` — the benefit was never delivered, the read side had to hand-roll a parser, and nothing could have noticed: compilers do not read prose, and the tests exercised the read side's own path. The second lives in test coverage: the framework repositories' multi-provider tests nominally covered five engines and in fact all ran against SQL Server. Correcting that surfaced two defects on the spot, one of which let **expired API keys pass silently on SQLite**. Oracle is a third thread — parameters bound by position rather than by name, so every `FormSchema`-driven request failed on that engine, while the symptom read as "GetList fails 100% of the time" when what was actually broken was login.
