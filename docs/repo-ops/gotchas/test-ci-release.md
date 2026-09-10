@@ -20,9 +20,10 @@
 所以「本機 `dotnet build Bee.Library.slnx` + `./test.sh` 全綠」**不代表它們還能編譯**，CI 也不會
 替你發現。
 
-**唯一的例外是 `tools/Bee.LoadTests`**：它的單元測試專案在 slnx 內，並以 `ProjectReference`
-指向它，所以它跟著被建、也跟著被 analyzer 與 SonarScanner 看到。別把這個例外推廣到
-`tools/` 其餘專案。
+**`tools/Bee.LoadTests` 是「編譯」這一項的例外**：它的單元測試專案在 slnx 內並以
+`ProjectReference` 指向它，所以它跟著被建，編不過會當場紅。**但這個例外只到編譯為止**
+——SonarCloud 仍然看不到它的原始碼，理由見本檔〈Sonar 查出來的 0，可能是「沒看」而不是
+「乾淨」〉。別把它推廣到 `tools/` 其餘專案，那些連建都不會建。
 
 **實例**：刪除 `BackendComponents.EnterpriseObjectService` 後，`tools/DefineEditor` 的 axaml 綁定
 殘留造成 AVLN2000——本機與 CI 兩邊都是綠的，直到手動建 `tools/Bee.Tools.slnx` 才爆。
@@ -120,41 +121,64 @@ dotnet test tests/<Proj>/<Proj>.csproj -c Release --settings .runsettings \
 **正解**：對 `*Attribute` 型別用 `grep -rn "TypeName"`（不加 `Attribute` 後綴、不加尾界）。
 同理適用於任何有語法糖簡寫的型別。
 
-## S2077 認不認你的白名單，取決於 guard 放在哪
+## Sonar 查出來的 0，可能是「沒看」而不是「乾淨」
 
-**症狀**：值明明已經白名單化過，S2077（SQL 注入）仍然掛著。看起來像只能到 SonarCloud UI
-標 False Positive 的那一類。
+**症狀**：修完某條 Sonar 規則，用 `/api/issues/search?rules=csharpsquid:SXXXX` 查回 0，
+就判定清乾淨了。實際上那個檔案從來不在 SonarCloud 的分析範圍內，**回 0 與程式碼無關**。
 
-**根因**：taint analysis 跟著資料流走。guard 放在**呼叫端**、被保護的字串再傳進另一個方法
-才拼進 SQL，掃描器接不起「那道 guard」與「這次拼接」的關係；guard 放在**拼接所在的方法裡、
-緊鄰被保護的那行**，它就接得起來。程式在兩種擺法下一樣安全，差的只是掃描器看不看得見。
+**根因**：SonarCloud 實際只看 `src/` 與 `tests/`。2026-09-10 實測：全專案 1,760 個被分析的
+檔案裡，`tools/` 只佔 **2 個**，而且都不是 C#（`tools/scripts/gen-public-api.py`、
+`tools/DefineEditor/publish.sh`，靠一般檔案偵測進來）。**`tools/**/*.cs` 一個都沒有** ——
+即使 `tools/Bee.LoadTests` 確實會經由 `tests/Bee.LoadTests.UnitTests` 的 `ProjectReference`
+被建起來。**機制沒查清楚**（SonarScanner 理應攔得到傳遞建置的專案），此處只記可重現的事實。
 
-**正解**：guard 放拼接處，不放呼叫端。
+**正解**：宣稱某條規則清乾淨之前，先確認那個檔案在不在分析範圍內。
 
-**實例**（2026-09-10，`tools/Bee.LoadTests/Bootstrap/SchemaPreparer.cs`，commit `2e80fafb`）：
-`GuardDatabaseName` 原本由 `EnsureDatabases` 呼叫，名稱再傳給 `CreateDatabaseIfMissing` 拼進
-三處 `CREATE DATABASE`。把呼叫搬進 `CreateDatabaseIfMissing` 第一行後，那幾筆 S2077 歸零。
+```bash
+curl -s "https://sonarcloud.io/api/components/tree?component=jeff377_bee-library&qualifiers=FIL,UTS&ps=500" \
+  | python3 -c "import sys,json;[print(c['path']) for c in json.load(sys.stdin)['components']]"
+```
 
-> **這條的因果是推論，不是 A/B 實測。** 那次 commit 同時做了三件事（搬 guard、把 PostgreSQL
-> 的存在性 probe 參數化、給 guard 補長度上限），而三處 `CREATE DATABASE` 的拼接本身一字未改
-> —— 能影響到它們的就只有搬 guard 與補長度上限。要真的確認，得單獨把 guard 搬回呼叫端再掃一次，
-> 當時沒做。**擺法本身無論如何都該照正解**，理由見下。
+回應會分頁（`ps` 上限 500），檔案數超過就要翻頁再合併。
 
-**別把這條讀成「怎麼哄掃描器」。** 搬動的第一個理由是給人看的：讀者站在拼接那行，要看得出
-是什麼在保護它，不必回頭追呼叫端。掃描器認帳是附帶效果——它要的跟人類讀者要的是同一件事。
-反過來說，**為了讓 S2077 消失而讓程式更難讀，就是走錯了**，那種情形走
-`.claude/rules/sonarcloud.md` 的人工判讀流程。
+**順帶一提，分支 A/B 讀不到**：這個組織方案不給讀非 main 分支的資料，
+`?branch=<name>` 一律回 `Organization is not allowed to access data from non main branches`。
+想比對兩種寫法就別繞 CI，走下面的本機重現。
 
-**先分辨識別碼與值，再決定用哪一招。** 「改成參數化」對識別碼不成立：資料庫名、表名、欄名
-都是識別碼，`CREATE DATABASE @name` 在任何引擎都是語法錯誤。**識別碼只能白名單化後拼接，
-值才該參數化**，而同一個方法裡兩者常常並存——上述 PostgreSQL 分支的
-`SELECT 1 FROM pg_database WHERE datname = @name` 就是對值查詢，那一處是真的參數化掉了。
+### 本機重現 Sonar 規則（也涵蓋 CI 看不到的 `tools/`）
 
-**為什麼是在發版那天才浮出來**：SonarAnalyzer 只在**完整模式**的 CI 跑（判準見
-`.claude/rules/testing.md`），精簡模式與本機 strict build 都不含它。`SchemaPreparer` 建於
-2026-09-07，2026-09-09 的 4.30.0 發版是它之後第一次帶 `[all-db]` 的 run，這批就是那次掃出來的
-——中間的綠燈一次也沒看過這些規則。**「push 了很多次都綠」對 Sonar 規則沒有任何意義**：
-新加的程式碼會一路潛伏到下一次完整模式，而完整模式多久跑一次，取決於有沒有人記得帶標記。
+```bash
+dotnet add <專案>.csproj package SonarAnalyzer.CSharp
+dotnet build <專案>.csproj -c Release --no-incremental -p:TreatWarningsAsErrors=false
+# 讀完 warning 後把 PackageReference 移掉
+```
+
+比等完整模式 CI 快得多，而且是唯一能對 `tools/` 下 C# 跑 Sonar 規則的方法。
+
+### 被這個方法推翻的一條：guard 放哪跟 S2077 無關
+
+本檔一度寫過「把白名單化的 guard 從呼叫端搬到拼接處，S2077 就會被認掉」。
+**2026-09-10 用上述本機 analyzer 做 A/B（除 guard 位置外 diff 為 0 行）證明那是錯的**：
+兩種擺法照樣報 S2077，只差行號。當初看到的「歸零」正是上面那個假綠燈造成的錯覺。
+
+**guard 該放拼接處的理由仍然完全成立，但那是給人看的**——讀者站在拼接那行，要看得出是什麼
+在保護它。**別再宣稱它能讓掃描器閉嘴。**
+
+### 仍成立的部分：識別碼與值要分開處理
+
+「改成參數化」對識別碼不成立：資料庫名、表名、欄名都是識別碼，`CREATE DATABASE @name`
+在任何引擎都是語法錯誤。**識別碼只能白名單化後拼接，值才該參數化**，而兩者常在同一個方法裡
+並存。同一次 A/B 量到的效果（`SchemaPreparer.cs`，SonarAnalyzer 10.34.0）：
+
+| 位置 | commit `2e80fafb` 之前 | 之後 |
+|------|------|------|
+| PostgreSQL 存在性 probe（**值** → 改參數化） | S2077 | **消失** |
+| PostgreSQL `CREATE DATABASE`（**識別碼** → 只能白名單化） | S2077 | **仍在**（`SchemaPreparer.cs:169`） |
+| `Program.cs` 的 serve 位址（S1075 → 抽進設定） | S1075 | **消失** |
+
+**參數化會讓 S2077 消失，白名單化不會。** 識別碼那一類註定留著，處置照
+`.claude/rules/sonarcloud.md` 的人工判讀——只是在 `tools/` 這裡連標 False Positive 的地方
+都沒有，因為 SonarCloud 看不到它。
 
 ## 新增 src 套件時最容易漏的一步
 
