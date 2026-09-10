@@ -1,13 +1,13 @@
+using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.DefineEditor.Models;
 
 namespace Bee.DefineEditor.Services;
 
 /// <summary>
-/// Static checks over a <see cref="FormSchema"/>. Phase 3 covers the three
-/// classes called out in the plan: required-field presence, duplicate field
-/// names within a table, and relation/lookup ProgIds that do not exist in the
-/// surrounding solution.
+/// Static checks over a <see cref="FormSchema"/>: required-field presence, duplicate table and
+/// field names, relation and lookup mappings and ProgIds that do not exist in the surrounding
+/// solution, list item values, and the unit binding of quantity and weight fields.
 /// </summary>
 public static class FormSchemaValidator
 {
@@ -74,7 +74,37 @@ public static class FormSchemaValidator
             ValidateRelation(issues, field, fieldPath, progIdSet, table);
             ValidateLookup(issues, field, fieldPath, progIdSet, table);
             ValidateListItems(issues, field, fieldPath);
+            ValidateUnitBinding(issues, field, fieldPath, table);
         }
+    }
+
+    /// <summary>
+    /// A quantity or weight field must bind a <see cref="FormField.UnitField"/> that names a field of the
+    /// same table. At runtime <c>FormExpressionCalculator</c> reads the unit from the row being computed,
+    /// keyed by the declared field name with case-sensitive matching, so a unit field on another table or
+    /// with different casing resolves as an empty unit code.
+    /// </summary>
+    private static void ValidateUnitBinding(
+        List<ValidationIssue> issues,
+        FormField field,
+        string fieldPath,
+        FormTable owningTable)
+    {
+        if (NumberKindProfile.GetDecimalsSource(field.NumberKind) != DecimalsSource.Unit) return;
+
+        var path = $"{fieldPath}.UnitField";
+        if (string.IsNullOrWhiteSpace(field.UnitField))
+        {
+            issues.Add(new(ValidationSeverity.Error, path,
+                $"A {field.NumberKind} field requires a UnitField."));
+            return;
+        }
+
+        var existsOnTable = (owningTable.Fields ?? Enumerable.Empty<FormField>())
+            .Any(f => string.Equals(f.FieldName, field.UnitField, StringComparison.Ordinal));
+        if (!existsOnTable)
+            issues.Add(new(ValidationSeverity.Error, path,
+                $"UnitField '{field.UnitField}' does not match a field on '{owningTable.TableName}' (field names are case-sensitive here)."));
     }
 
     private static void ValidateRelation(

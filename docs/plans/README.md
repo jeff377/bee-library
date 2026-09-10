@@ -10,7 +10,7 @@
 
 | 計畫 | 狀態 | 說明 |
 |------|------|------|
-| [數量／重量欄必須綁定 `UnitField`](plan-unit-field-required.md) | 🚧 進行中（2026-09-11） | 標成數量／重量的欄位必須綁 `UnitField`（不需要單位的用一般數值），執行期對齊多幣別作法、公司不再決定數量位數。**階段 0（裁定）與階段 1（框架）已完成**，階段 2（DefineEditor 設計期檢查）待動工。外部對照見 `docs/repo-ops/uom-decimals-prior-art.md` |
+| [數量／重量欄必須綁定 `UnitField`](plan-unit-field-required.md) | ✅ 已完成（2026-09-11） | 標成數量／重量的欄位必須綁 `UnitField`（不需要單位的用一般數值），執行期對齊多幣別作法、公司不再決定數量位數。三個階段皆已完成：裁定、框架、DefineEditor 設計期檢查。外部對照見 `docs/repo-ops/uom-decimals-prior-art.md` |
 | [捨入政策可設定化](plan-rounding-mode.md) | 📝 擬定中（2026-09-01） | 明細計算欄的捨入模式（`MidpointRounding` / 方向）由硬編改為可設定；**階段 0 是「要不要做」的決策點**——現況全 `src/` 只有兩處 `Math.Round`、production 呼叫點僅計算欄一處，若判定 `AwayFromZero` 足夠即可只補文件結案。與多幣別加總無關（round-then-sum 之下對合計再捨是 no-op） |
 | [PropertyGridControl：用宣告式 metadata 驅動屬性編輯](plan-property-grid-control.md) | 📝 擬定中（2026-08-17） | 交付吃 `System.ComponentModel` 標註（`[Description]` / `[Category]` / `[Browsable]` / `[TypeConverter]`）的 Avalonia PropertyGrid 控件；分 2 階段。承接 2026-08-07 體檢移交的 D-3 / D-5，與 TreeView 那份可並行 |
 | [TreeViewBuilder：用 `[TreeNode]` 標註驅動結構樹](plan-tree-view-builder.md) | 📝 擬定中（2026-08-17） | 把無人消費的 `[TreeNode]` / `[TreeNodeIgnore]` 標註接回實際的 TreeView；分 5 階段（建樹核心／Avalonia builder／命令 provider／拖曳／在地化）。承接 2026-08-07 體檢移交的 D-3 / D-5，與 PropertyGrid 那份可並行 |

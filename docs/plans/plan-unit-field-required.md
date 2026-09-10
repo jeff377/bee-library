@@ -1,12 +1,12 @@
 # 計畫：數量／重量欄必須綁定 `UnitField`
 
-**狀態：🚧 進行中（2026-09-11）**
+**狀態：✅ 已完成（2026-09-11）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 0 | 設計裁定（D1–D6） | ✅ 已完成（2026-09-11） |
 | 1 | 框架：解析器、計算器、`Bake` + 測試 + 範例 + 文件 | ✅ 已完成（2026-09-11） |
-| 2 | DefineEditor 設計期檢查（`FormSchemaValidator`） | 📝 待做 |
+| 2 | DefineEditor 設計期檢查（`FormSchemaValidator`） | ✅ 已完成（2026-09-11） |
 
 ## 背景
 
@@ -233,6 +233,51 @@ B 與 E 傳進 `ResolveDecimals` 的 `refCode` 都是空的，解析器分不出
 - `UnitField` 指名的欄不在**同一張** `FormTable` → `Error`。這是現行實作的限制（`ResolveRefCode` 只讀同一列的變數），不是設計原則。
 
 測試位置比照既有 validator 測試（動工前先確認 DefineEditor 的測試專案）。
+
+## 階段 2 執行結果（2026-09-11）
+
+### 與上方原文不同之處
+
+- **測試位置**：原文寫「比照既有 validator 測試」，但 DefineEditor 原本沒有任何測試專案。經使用者同意新建
+  `tests/Bee.DefineEditor.UnitTests`（比照 `Bee.Cli.UnitTests`）並登錄到 `Bee.Library.slnx`，順帶讓 DefineEditor 進入 CI 建置
+  （改動前所有 workflow 都不建置它）。
+- **欄名比對用 Ordinal**：`FormExpressionCalculator.ResolveRefCode` 以宣告欄名、`StringComparer.Ordinal` 查單位欄，
+  大小寫不同會被當成空單位代碼。因此 `UnitField` 是否存在的檢查用 Ordinal，不沿用同檔其餘檢查的 `OrdinalIgnoreCase`。
+
+### 整合時踩到的問題
+
+新測試專案第一次以 `Bee.Library.slnx` 建置時，DefineEditor 報 `CS1061`：`AppBuilder` 沒有 `WithDeveloperTools`。
+
+- **根因**：MSBuild 建 solution 時，對不在 solution 內的 `ProjectReference` 預設拿掉 `Configuration`，被參考的專案退回
+  Debug 編譯；restore 則以 Release 評估，DefineEditor 只在 Debug 帶入的 `AvaloniaUI.DiagnosticsSupport` 沒有編譯資產，
+  `#if DEBUG` 裡的呼叫就編不過。
+- **證據**：失敗那次寫入的是 `tools/DefineEditor/obj/Debug`，同時段 `obj/Release` 沒有更新。
+- **修法**：新測試專案設 `ShouldUnsetParentConfigurationAndPlatform=false`（csproj 內附註解）。修正後以 CI 同一條
+  `dotnet build Bee.Library.slnx --configuration Release --no-incremental` 建置成功，DefineEditor 改寫 `obj/Release`。
+
+**連帶發現（未處理）**：
+
+- `Bee.Cli.UnitTests`、`Bee.LoadTests.UnitTests` 帶進來的 `Bee.Cli`、`Bee.LoadTests` 在 library solution 裡同樣以 Debug 編譯
+  （`./test.sh` 以 Release 建置時，更新的是兩者的 `obj/Debug`）。它們沒有依組態切換的套件，所以沒出錯。
+  `docs/repo-ops/gotchas/test-ci-release.md` 記錄的「SonarCloud 沒分析到 `tools/**/*.cs`，機制不明」或許與此有關，**未查證**。
+- `build-ci.yml` 的 `paths` 不含 `tools/**`：只改 DefineEditor 的 commit 仍不觸發 CI。
+
+### 範圍對帳
+
+與宣告一致：`tools/DefineEditor/Services/FormSchemaValidator.cs`、`tests/Bee.DefineEditor.UnitTests/`（csproj 與測試檔）、
+`Bee.Library.slnx`，以及本 plan 與 `docs/plans/README.md`。`FormSchemaValidator` 的 class summary 原本寫「three classes」
+這個清點數字並提到 plan，一併改為列出檢查項目名稱。
+
+### 平行路徑
+
+DefineEditor 與 `Bee.Cli` 內沒有其他檢查 `FormSchema` 的地方（另一個 `DatabaseSettingsValidator` 不碰欄位）。
+
+### 建置與測試
+
+- `Bee.Library.slnx`（`--no-incremental`，同 CI）與 `tools/Bee.Tools.slnx`：Release 0 警告 0 錯誤。
+- `./test.sh` 全套：18 個測試專案全數通過（含新增的 `Bee.DefineEditor.UnitTests` 10 筆）；唯一略過的
+  `Login_WithRsaKeyPair_ReturnsDecryptableSessionKey` 為既有標記。
+- 新測試逐筆確認實際執行。「不報錯」與「報錯」兩類測試共用同一個篩選條件，後者抓得到錯誤，排除篩選條件本身失效而空轉。
 
 ## 不在範圍
 
