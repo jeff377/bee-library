@@ -15,7 +15,7 @@
 | [serialization-and-expressions.md](serialization-and-expressions.md) | MessagePack ctor 順序與 wire 事實、運算式引擎兩雷、AOT 實測結論 |
 | [avalonia-controls.md](avalonia-controls.md) | Avalonia 控件實證雷（DataGrid、唯讀外觀、事件、並行） |
 | [mobile-trim-aot.md](mobile-trim-aot.md) | 行動端 trim / AOT：決策樹推導、reflection-only 重現法保真度、build 與驗證命令配方、**iOS 建置警告的判讀（永遠不是 0 警告）** |
-| [test-ci-release.md](test-ci-release.md) | 測試 fixture 缺口、CI path filter 的驗證死角、發佈與體檢流程雷 |
+| [test-ci-release.md](test-ci-release.md) | 測試 fixture 缺口、CI path filter 的驗證死角、**S2077 的白名單要放在拼接處才被認**、發佈與體檢流程雷 |
 | [northwind-heads.md](northwind-heads.md) | Northwind 四 head 工具鏈（含 iOS 的 Xcode 版本綁定）、獨立 repo 同步流程與該 repo 的 CI |
 | [definition-and-customization.md](definition-and-customization.md) | 客製範圍的兩種數法（同一個漏連踩三次）、覆蓋層粒度、`FormSchema` 中樞圖的兩種衍生 |
 
