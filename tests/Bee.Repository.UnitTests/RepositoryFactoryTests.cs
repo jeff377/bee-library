@@ -19,12 +19,17 @@ namespace Bee.Repository.UnitTests
         public RepositoryFactoryTests(SharedDbFixture fx) { _fx = fx; }
 
         private RepositoryFactory CreateFactory()
-            => new(
+        {
+            var defineAccess = _fx.GetRequiredService<Definition.Storage.IDefineAccess>();
+            // 不帶客製讀取與 session：與改寫前一樣只看基底註冊表，也不會為了未快取的 token 去讀 st_session。
+            return new(
                 _fx.Provider,
-                _fx.GetRequiredService<Definition.Storage.IDefineAccess>(),
+                defineAccess,
                 _fx.GetRequiredService<Db.IDbAccessFactory>(),
                 _fx.GetRequiredService<Db.Manager.IDbConnectionManager>(),
-                new StubRouter());
+                new StubRouter(),
+                new ProgramSettingsRepositoryTypeResolver(defineAccess));
+        }
 
         /// <summary>
         /// 沿用正式路由對 Common / Log 的固定規則，Company 直接回測試代號。

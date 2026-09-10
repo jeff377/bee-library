@@ -1,8 +1,5 @@
 using System.ComponentModel;
-using System.Data.Common;
 using Bee.Base;
-using Bee.Db;
-using Bee.Db.Manager;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
@@ -11,30 +8,30 @@ using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
-using Bee.Repository.Abstractions;
-using Bee.Repository.Abstractions.Form;
 using Bee.Repository.Factories;
 using Bee.Repository.Form;
-using Bee.Tests.Shared;
 
 namespace Bee.Repository.UnitTests
 {
     /// <summary>
-    /// <c>ProgramItem.Repository</c> 的四條解析路徑（有值 / 無值 / 型別載不到 / 型別非衍生）
-    /// 與租戶客製 overlay 的取代行為。
+    /// <see cref="ProgramSettingsRepositoryTypeResolver"/>：<c>ProgramItem.Repository</c> 的四條解析路徑
+    /// （有值 / 無值 / 型別載不到 / 型別非衍生）與租戶客製 overlay 的取代行為。
     /// </summary>
     /// <remarks>
-    /// 全以 stub 相依隔離，不需要資料庫：本檔驗的是「註冊表說什麼 → 工廠建出什麼」，
-    /// 建出來的 repository 有沒有連上 DB 不在範圍內。
+    /// 這些測試原本以工廠為對象（<c>ProgramItemRepositoryBindingTests</c>），為了建工廠得備妥
+    /// 資料庫存取、連線、路由三個永遠不會被呼叫的 stub。解析抽成獨立型別後直接測它。
+    /// 例外訊息的斷言原封搬過來；型別斷言從「建出的實例是某型別」改成「解析出的型別是某型別」，
+    /// 因為受測對象現在回傳的是 <see cref="Type"/>。工廠依解析結果建出實例、帶上 progId 的那一半
+    /// 見 <see cref="RepositoryFactoryGuardTests"/>。
     /// </remarks>
-    public class ProgramItemRepositoryBindingTests
+    public class ProgramSettingsRepositoryTypeResolverTests
     {
         private const string ProgId = "Employee";
         private const string CustomizeId = "acme";
 
         #region Stubs 與測試用 repository
 
-        /// <summary>綁定成功時應建出的自訂 repository。</summary>
+        /// <summary>綁定成功時應解析出的自訂 repository。</summary>
         public class CustomEmployeeRepository : DataFormRepository
         {
             public CustomEmployeeRepository(IRepositoryContext ctx, Guid accessToken, string progId)
@@ -43,7 +40,7 @@ namespace Bee.Repository.UnitTests
             }
         }
 
-        /// <summary>租戶客製層應建出的 repository，用來證明客製項整筆取代基底項。</summary>
+        /// <summary>租戶客製層應解析出的 repository，用來證明客製項整筆取代基底項。</summary>
         public class TenantEmployeeRepository : DataFormRepository
         {
             public TenantEmployeeRepository(IRepositoryContext ctx, Guid accessToken, string progId)
@@ -61,12 +58,11 @@ namespace Bee.Repository.UnitTests
         {
             public ProgramSettings? Programs { get; set; }
 
-            public FormSchema GetFormSchema(string progId) => new() { CategoryId = DbCategoryIds.Common };
-
             public ProgramSettings GetProgramSettings()
                 => Programs ?? throw new FileNotFoundException("ProgramSettings.xml");
 
-            public DatabaseSettings GetDatabaseSettings() => new();
+            public FormSchema GetFormSchema(string progId) => throw new NotImplementedException();
+            public DatabaseSettings GetDatabaseSettings() => throw new NotImplementedException();
             public object GetDefine(DefineType defineType, string[]? keys = null) => throw new NotImplementedException();
             public void SaveDefine(DefineType defineType, object defineObject, string[]? keys = null) => throw new NotImplementedException();
             public SystemSettings GetSystemSettings() => throw new NotImplementedException();
@@ -82,26 +78,6 @@ namespace Bee.Repository.UnitTests
             public void SaveFormLayout(FormLayout formLayout) => throw new NotImplementedException();
             public LanguageResource GetLanguage(string lang, string ns) => throw new NotImplementedException();
             public void SaveLanguage(LanguageResource resource) => throw new NotImplementedException();
-        }
-
-        private sealed class StubDbAccessFactory : IDbAccessFactory
-        {
-            public DbAccess Create(string databaseId) => throw new NotImplementedException();
-        }
-
-        private sealed class StubConnectionManager : IDbConnectionManager
-        {
-            public DbConnectionInfo GetConnectionInfo(string databaseId) => throw new NotImplementedException();
-            public DbConnection CreateConnection(string databaseId) => throw new NotImplementedException();
-            public bool Remove(string databaseId) => false;
-            public void Clear() { }
-            public bool Contains(string databaseId) => false;
-            public int Count => 0;
-        }
-
-        private sealed class StubRouter : IRepositoryDatabaseRouter
-        {
-            public string Resolve(DbScope scope, Guid accessToken) => DbCategoryIds.Common;
         }
 
         /// <summary>只認得一組 (customizeId → ProgramSettings)。</summary>
@@ -156,76 +132,74 @@ namespace Bee.Repository.UnitTests
 
         private static string TypeNameOf<T>() => $"{typeof(T).FullName}, {typeof(T).Assembly.GetName().Name}";
 
-        private static RepositoryFactory CreateFactory(
+        private static ProgramSettingsRepositoryTypeResolver CreateResolver(
             ProgramSettings? programs,
             ICustomizeDefineReader? customizeReader = null,
             ISessionInfoService? sessionInfoService = null)
-            => new(
-                TestRepositoryContext.CreateServices(),
-                new StubDefineAccess { Programs = programs },
-                new StubDbAccessFactory(),
-                new StubConnectionManager(),
-                new StubRouter(),
-                cacheNotify: null,
-                customizeReader: customizeReader,
-                sessionInfoService: sessionInfoService);
+            => new(new StubDefineAccess { Programs = programs }, customizeReader, sessionInfoService);
 
         #endregion
 
         [Fact]
-        [DisplayName("Repository 有值應建出註冊的型別")]
-        public void CreateFormRepository_BoundRepository_ReturnsRegisteredType()
+        [DisplayName("建構子傳入 null defineAccess 應拋 ArgumentNullException")]
+        public void Constructor_NullDefineAccess_ThrowsArgumentNullException()
         {
-            var factory = CreateFactory(Registry(TypeNameOf<CustomEmployeeRepository>()));
+            Assert.Throws<ArgumentNullException>(() => new ProgramSettingsRepositoryTypeResolver(null!));
+        }
 
-            var repository = factory.CreateFormRepository<IDataFormRepository>(Guid.Empty, ProgId);
+        [Fact]
+        [DisplayName("Repository 有值應建出註冊的型別")]
+        public void Resolve_BoundRepository_ReturnsRegisteredType()
+        {
+            var resolver = CreateResolver(Registry(TypeNameOf<CustomEmployeeRepository>()));
 
-            var typed = Assert.IsType<CustomEmployeeRepository>(repository);
-            Assert.Equal(ProgId, typed.ProgId);
+            var type = resolver.Resolve(Guid.Empty, ProgId);
+
+            Assert.Equal(typeof(CustomEmployeeRepository), type);
         }
 
         [Fact]
         [DisplayName("Repository 留空應沿用框架預設 DataFormRepository")]
-        public void CreateFormRepository_EmptyRepository_FallsBackToDefault()
+        public void Resolve_EmptyRepository_FallsBackToDefault()
         {
-            var factory = CreateFactory(Registry(repositoryTypeName: null));
+            var resolver = CreateResolver(Registry(repositoryTypeName: null));
 
-            var repository = factory.CreateFormRepository<IDataFormRepository>(Guid.Empty, ProgId);
+            var type = resolver.Resolve(Guid.Empty, ProgId);
 
-            Assert.IsType<DataFormRepository>(repository);
+            Assert.Equal(typeof(DataFormRepository), type);
         }
 
         [Fact]
         [DisplayName("註冊表根本沒有這個 progId 時應沿用框架預設，不視為錯誤")]
-        public void CreateFormRepository_ProgIdNotRegistered_FallsBackToDefault()
+        public void Resolve_ProgIdNotRegistered_FallsBackToDefault()
         {
-            var factory = CreateFactory(new ProgramSettings());
+            var resolver = CreateResolver(new ProgramSettings());
 
-            var repository = factory.CreateFormRepository<IDataFormRepository>(Guid.Empty, "Department");
+            var type = resolver.Resolve(Guid.Empty, "Department");
 
-            Assert.IsType<DataFormRepository>(repository);
+            Assert.Equal(typeof(DataFormRepository), type);
         }
 
         [Fact]
         [DisplayName("沒有 ProgramSettings.xml 時應沿用框架預設，不視為錯誤")]
-        public void CreateFormRepository_NoRegistryFile_FallsBackToDefault()
+        public void Resolve_NoRegistryFile_FallsBackToDefault()
         {
-            var factory = CreateFactory(programs: null);
+            var resolver = CreateResolver(programs: null);
 
-            var repository = factory.CreateFormRepository<IDataFormRepository>(Guid.Empty, ProgId);
+            var type = resolver.Resolve(Guid.Empty, ProgId);
 
-            Assert.IsType<DataFormRepository>(repository);
+            Assert.Equal(typeof(DataFormRepository), type);
         }
 
         [Fact]
         [DisplayName("Repository 型別載不到應直接拋，訊息指名 progId 與型別名")]
-        public void CreateFormRepository_UnloadableType_ThrowsNamingBoth()
+        public void Resolve_UnloadableType_ThrowsNamingBoth()
         {
             const string TypeName = "Nowhere.NoSuchRepository, Nowhere.Assembly";
-            var factory = CreateFactory(Registry(TypeName));
+            var resolver = CreateResolver(Registry(TypeName));
 
             var ex = Assert.Throws<InvalidOperationException>(
-                () => factory.CreateFormRepository<IDataFormRepository>(Guid.Empty, ProgId));
+                () => resolver.Resolve(Guid.Empty, ProgId));
 
             Assert.Contains(ProgId, ex.Message, StringComparison.Ordinal);
             Assert.Contains(TypeName, ex.Message, StringComparison.Ordinal);
@@ -233,13 +207,13 @@ namespace Bee.Repository.UnitTests
 
         [Fact]
         [DisplayName("Repository 型別非 DataFormRepository 衍生應直接拋，訊息指名 progId 與型別名")]
-        public void CreateFormRepository_NotDerivedFromDataFormRepository_ThrowsNamingBoth()
+        public void Resolve_NotDerivedFromDataFormRepository_ThrowsNamingBoth()
         {
             string typeName = TypeNameOf<NotARepository>();
-            var factory = CreateFactory(Registry(typeName));
+            var resolver = CreateResolver(Registry(typeName));
 
             var ex = Assert.Throws<InvalidOperationException>(
-                () => factory.CreateFormRepository<IDataFormRepository>(Guid.Empty, ProgId));
+                () => resolver.Resolve(Guid.Empty, ProgId));
 
             Assert.Contains(ProgId, ex.Message, StringComparison.Ordinal);
             Assert.Contains(typeName, ex.Message, StringComparison.Ordinal);
@@ -248,47 +222,47 @@ namespace Bee.Repository.UnitTests
 
         [Fact]
         [DisplayName("租戶客製層宣告該 progId 時應整筆取代基底層的綁定")]
-        public void CreateFormRepository_CustomizationDeclaresProgId_ReplacesBaseBinding()
+        public void Resolve_CustomizationDeclaresProgId_ReplacesBaseBinding()
         {
             var token = Guid.NewGuid();
-            var factory = CreateFactory(
+            var resolver = CreateResolver(
                 Registry(TypeNameOf<CustomEmployeeRepository>()),
                 new StubCustomizeReader(CustomizeId, Registry(TypeNameOf<TenantEmployeeRepository>())),
                 new StubSessionInfoService(token, CustomizeId));
 
-            var repository = factory.CreateFormRepository<IDataFormRepository>(token, ProgId);
+            var type = resolver.Resolve(token, ProgId);
 
-            Assert.IsType<TenantEmployeeRepository>(repository);
+            Assert.Equal(typeof(TenantEmployeeRepository), type);
         }
 
         [Fact]
         [DisplayName("session 無客製代號時應解析基底層綁定")]
-        public void CreateFormRepository_SessionWithoutCustomizeId_UsesBaseBinding()
+        public void Resolve_SessionWithoutCustomizeId_UsesBaseBinding()
         {
             var token = Guid.NewGuid();
-            var factory = CreateFactory(
+            var resolver = CreateResolver(
                 Registry(TypeNameOf<CustomEmployeeRepository>()),
                 new StubCustomizeReader(CustomizeId, Registry(TypeNameOf<TenantEmployeeRepository>())),
                 new StubSessionInfoService(token, customizeId: string.Empty));
 
-            var repository = factory.CreateFormRepository<IDataFormRepository>(token, ProgId);
+            var type = resolver.Resolve(token, ProgId);
 
-            Assert.IsType<CustomEmployeeRepository>(repository);
+            Assert.Equal(typeof(CustomEmployeeRepository), type);
         }
 
         [Fact]
         [DisplayName("客製層未宣告該 progId 時應落回基底層綁定")]
-        public void CreateFormRepository_CustomizationSilentOnProgId_FallsBackToBase()
+        public void Resolve_CustomizationSilentOnProgId_FallsBackToBase()
         {
             var token = Guid.NewGuid();
-            var factory = CreateFactory(
+            var resolver = CreateResolver(
                 Registry(TypeNameOf<CustomEmployeeRepository>()),
                 new StubCustomizeReader(CustomizeId, new ProgramSettings()),
                 new StubSessionInfoService(token, CustomizeId));
 
-            var repository = factory.CreateFormRepository<IDataFormRepository>(token, ProgId);
+            var type = resolver.Resolve(token, ProgId);
 
-            Assert.IsType<CustomEmployeeRepository>(repository);
+            Assert.Equal(typeof(CustomEmployeeRepository), type);
         }
     }
 }

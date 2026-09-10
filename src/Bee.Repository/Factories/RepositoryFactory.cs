@@ -3,10 +3,7 @@ using Bee.Db;
 using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
 using Bee.Definition;
-using Bee.Definition.Customization;
 using Bee.Definition.Database;
-using Bee.Definition.Identity;
-using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.AuditLog;
@@ -24,12 +21,15 @@ namespace Bee.Repository.Factories
     /// Default <see cref="IRepositoryFactory"/>: builds every repository, on both axes, from one
     /// shared <see cref="IRepositoryContext"/>.
     /// </summary>
+    /// <remarks>
+    /// Which type a progId is bound to is not decided here but by the
+    /// <see cref="IRepositoryTypeResolver"/> this factory is given; the factory only builds it.
+    /// </remarks>
     public class RepositoryFactory : IRepositoryFactory
     {
         private readonly RepositoryContext _ctx;
         private readonly IServiceProvider _services;
-        private readonly ICustomizeDefineReader? _customizeReader;
-        private readonly ISessionInfoService? _sessionInfoService;
+        private readonly IRepositoryTypeResolver _typeResolver;
 
         /// <summary>
         /// The framework axis, as data. These repositories have fixed types and no progId, so the
@@ -60,22 +60,25 @@ namespace Bee.Repository.Factories
         /// <param name="dbAccessFactory">The database access factory.</param>
         /// <param name="connectionManager">The connection manager.</param>
         /// <param name="router">Resolves a logical scope to a physical database id.</param>
+        /// <param name="typeResolver">Decides which repository type a progId is bound to.</param>
         /// <param name="cacheNotify">Cross-process cache invalidation channel; <c>null</c> when the host does not poll it.</param>
-        /// <param name="customizeReader">The customization-override reader; <c>null</c> disables the overlay, so every progId resolves against the base registry.</param>
-        /// <param name="sessionInfoService">Reads the session's customization code; <c>null</c> has the same effect as a host with no sessions — the base registry applies.</param>
+        /// <remarks>
+        /// <paramref name="typeResolver"/> is required rather than defaulting to a resolver that
+        /// reads the base registry only. With such a default, a host that forgot to register a
+        /// resolver would still start, and every tenant's repository override would be ignored
+        /// without any request ever failing.
+        /// </remarks>
         public RepositoryFactory(
             IServiceProvider services,
             IDefineAccess defineAccess,
             IDbAccessFactory dbAccessFactory,
             IDbConnectionManager connectionManager,
             IRepositoryDatabaseRouter router,
-            ICacheNotifyService? cacheNotify = null,
-            ICustomizeDefineReader? customizeReader = null,
-            ISessionInfoService? sessionInfoService = null)
+            IRepositoryTypeResolver typeResolver,
+            ICacheNotifyService? cacheNotify = null)
         {
             _services = services ?? throw new ArgumentNullException(nameof(services));
-            _customizeReader = customizeReader;
-            _sessionInfoService = sessionInfoService;
+            _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
             _ctx = new RepositoryContext
             {
                 DefineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess)),
@@ -103,130 +106,36 @@ namespace Bee.Repository.Factories
         }
 
         /// <summary>
-        /// Builds the repository bound to a progId. Overridable so a host can take over the whole
-        /// resolution without reimplementing the framework axis alongside it.
+        /// Builds the repository bound to a progId.
         /// </summary>
+        /// <remarks>
+        /// Overridable so a host can take over construction. A host that only wants to change
+        /// which type a progId is bound to registers an <see cref="IRepositoryTypeResolver"/>
+        /// instead and leaves this alone.
+        /// </remarks>
         /// <param name="accessToken">The current request's access token.</param>
         /// <param name="progId">The program identifier.</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the resolver returns a type that does not derive from <see cref="DataFormRepository"/>.
+        /// </exception>
         protected virtual IDataFormRepository CreateFormRepositoryCore(Guid accessToken, string progId)
         {
-            var type = ResolveFormRepositoryType(accessToken, progId);
-            return type == typeof(DataFormRepository)
-                ? new DataFormRepository(_ctx, accessToken, progId)
-                : (IDataFormRepository)ActivatorUtilities.CreateInstance(_services, type, _ctx, accessToken, progId);
-        }
+            var type = _typeResolver.Resolve(accessToken, progId);
+            if (type == typeof(DataFormRepository))
+                return new DataFormRepository(_ctx, accessToken, progId);
 
-        /// <summary>
-        /// Resolves the repository type registered for a progId in <see cref="ProgramSettings"/>, applying
-        /// the tenant customization overlay.
-        /// </summary>
-        /// <param name="accessToken">The current request's access token, used only to read the session's customization code.</param>
-        /// <param name="progId">The program identifier.</param>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown when the registry names a type that will not load, or one that does not derive
-        /// from <see cref="DataFormRepository"/>.
-        /// </exception>
-        /// <remarks>
-        /// <para>
-        /// <b>Every failure throws</b>, the same policy the business-object axis applies to a
-        /// declared binding. A name that will not load would otherwise send this program's reads
-        /// and writes through the framework's own SQL after an author replaced that logic on
-        /// purpose; a fallback would not avert the failure, only postpone it to a point where the
-        /// data is already wrong. An <b>empty</b> <c>Repository</c> is not a failure — it declares
-        /// nothing, and the framework's own repository serves the schema-driven CRUD.
-        /// </para>
-        /// <para>
-        /// Unlike the business-object resolver this holds no type cache, so a definition reload
-        /// takes effect on the next call with no invalidation machinery. What that costs is one
-        /// <see cref="AssemblyLoader.GetType(string)"/> per creation, and its expensive half — the
-        /// assembly load — is already cached inside <see cref="AssemblyLoader"/>.
-        /// </para>
-        /// </remarks>
-        protected Type ResolveFormRepositoryType(Guid accessToken, string progId)
-        {
-            var item = FindProgramItem(accessToken, progId);
-            if (item == null || StringUtilities.IsEmpty(item.Repository))
-                return typeof(DataFormRepository);
-
-            Type? type;
-            try
-            {
-                type = AssemblyLoader.GetType(item.Repository);
-            }
-            catch (Exception ex) when (ex is FileNotFoundException or FileLoadException or BadImageFormatException)
-            {
-                throw UnloadableRepository(progId, item.Repository, ex);
-            }
-
-            if (type == null)
-                throw UnloadableRepository(progId, item.Repository, inner: null);
-
+            // The default resolver already refuses such a type with a message naming the registry
+            // entry. This check is for every other resolver, which is the only place the contract
+            // documented on IRepositoryTypeResolver is actually enforced.
             if (!typeof(DataFormRepository).IsAssignableFrom(type))
             {
                 throw new InvalidOperationException(
-                    $"ProgramSettings binds progId '{progId}' to repository '{item.Repository}', " +
-                    $"which does not derive from {typeof(DataFormRepository).FullName}. " +
-                    "A form repository must extend the framework's own so the CRUD surface stays intact.");
+                    $"{_typeResolver.GetType().FullName} resolved progId '{progId}' to '{type.FullName}', " +
+                    $"which does not derive from {typeof(DataFormRepository).FullName}.");
             }
 
-            return type;
+            return (IDataFormRepository)ActivatorUtilities.CreateInstance(_services, type, _ctx, accessToken, progId);
         }
-
-        /// <summary>
-        /// Reads the registry entry for a progId, letting a tenant customization override the
-        /// bindings it names while the rest keep their base values — the same per-progId,
-        /// per-property granularity the business-object axis uses, through the same
-        /// <see cref="CustomizeOverlay"/> a client runs, so both ends agree.
-        /// </summary>
-        /// <remarks>
-        /// The per-property part matters most here: a customization that replaces only
-        /// <c>BusinessObject</c> must not silently return this program's data access to the generic
-        /// repository, which is what a whole-entry replacement would do — an empty
-        /// <c>Repository</c> is a legal "use the default" and would never be reported as an error.
-        /// </remarks>
-        /// <param name="accessToken">The current request's access token.</param>
-        /// <param name="progId">The program identifier.</param>
-        private ProgramItem? FindProgramItem(Guid accessToken, string progId)
-        {
-            ProgramSettings? baseSettings;
-            try
-            {
-                baseSettings = _ctx.DefineAccess.GetProgramSettings();
-            }
-            catch (FileNotFoundException)
-            {
-                // No ProgramSettings.xml means no progId is bound to anything; a customization entry
-                // may still apply below. Same tolerance as the business-object resolver, so a host
-                // can adopt the binding feature without shipping a base registry first.
-                baseSettings = null;
-            }
-
-            string customizeId = GetCustomizeId(accessToken);
-            ProgramSettings? custSettings = null;
-            if (StringUtilities.IsNotEmpty(customizeId) && _customizeReader is not null)
-                custSettings = _customizeReader.GetCustomizeProgramSettings(customizeId);
-
-            return CustomizeOverlay.FindProgramItem(custSettings, baseSettings, progId);
-        }
-
-        /// <summary>
-        /// Reads the session's tenant customization code. The session is the only accepted source:
-        /// the code selects which tenant's definition files are read, so honouring a caller-supplied
-        /// value would be a cross-tenant read.
-        /// </summary>
-        /// <param name="accessToken">The access token identifying the session.</param>
-        private string GetCustomizeId(Guid accessToken)
-        {
-            if (accessToken == Guid.Empty || _sessionInfoService == null)
-                return string.Empty;
-            return _sessionInfoService.Get(accessToken)?.CustomizeId ?? string.Empty;
-        }
-
-        private static InvalidOperationException UnloadableRepository(string progId, string typeName, Exception? inner)
-            => new(
-                $"ProgramSettings binds progId '{progId}' to repository '{typeName}', which cannot be loaded. " +
-                "Fix the assembly-qualified type name, or clear the attribute to use the framework default.",
-                inner);
 
         /// <inheritdoc/>
         public T Create<T>(Guid accessToken = default) where T : class

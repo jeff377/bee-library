@@ -60,6 +60,6 @@
 Bee.Repository/
   AuditLog/   # AuditLogRepository（讀）、AuditLogWriteRepository（寫）
   Form/       # DataFormRepository
-  Factories/   # RepositoryFactory
+  Factories/   # RepositoryFactory、IRepositoryTypeResolver、ProgramSettingsRepositoryTypeResolver
   System/     # SessionRepository、DatabaseRepository
 ```

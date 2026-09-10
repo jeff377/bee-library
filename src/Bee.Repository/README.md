@@ -61,6 +61,6 @@
 Bee.Repository/
   AuditLog/   # AuditLogRepository (read), AuditLogWriteRepository (write)
   Form/       # DataFormRepository
-  Factories/   # RepositoryFactory
+  Factories/   # RepositoryFactory, IRepositoryTypeResolver, ProgramSettingsRepositoryTypeResolver
   System/     # SessionRepository, DatabaseRepository
 ```

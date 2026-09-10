@@ -1,1 +1,9 @@
 #nullable enable
+Bee.Repository.Factories.IRepositoryTypeResolver
+Bee.Repository.Factories.IRepositoryTypeResolver.Resolve(System.Guid accessToken, string! progId) -> System.Type!
+Bee.Repository.Factories.ProgramSettingsRepositoryTypeResolver
+Bee.Repository.Factories.ProgramSettingsRepositoryTypeResolver.ProgramSettingsRepositoryTypeResolver(Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Definition.Storage.ICustomizeDefineReader? customizeReader = null, Bee.Definition.Identity.ISessionInfoService? sessionInfoService = null) -> void
+Bee.Repository.Factories.ProgramSettingsRepositoryTypeResolver.Resolve(System.Guid accessToken, string! progId) -> System.Type!
+Bee.Repository.Factories.RepositoryFactory.RepositoryFactory(System.IServiceProvider! services, Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Db.IDbAccessFactory! dbAccessFactory, Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Repository.Abstractions.IRepositoryDatabaseRouter! router, Bee.Repository.Factories.IRepositoryTypeResolver! typeResolver, Bee.Db.CacheNotify.ICacheNotifyService? cacheNotify = null) -> void
+*REMOVED*Bee.Repository.Factories.RepositoryFactory.RepositoryFactory(System.IServiceProvider! services, Bee.Definition.Storage.IDefineAccess! defineAccess, Bee.Db.IDbAccessFactory! dbAccessFactory, Bee.Db.Manager.IDbConnectionManager! connectionManager, Bee.Repository.Abstractions.IRepositoryDatabaseRouter! router, Bee.Db.CacheNotify.ICacheNotifyService? cacheNotify = null, Bee.Definition.Storage.ICustomizeDefineReader? customizeReader = null, Bee.Definition.Identity.ISessionInfoService? sessionInfoService = null) -> void
+*REMOVED*Bee.Repository.Factories.RepositoryFactory.ResolveFormRepositoryType(System.Guid accessToken, string! progId) -> System.Type!

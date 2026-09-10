@@ -18,8 +18,10 @@ using Bee.Tests.Shared;
 namespace Bee.Repository.UnitTests
 {
     /// <summary>
-    /// <see cref="RepositoryFactory"/> 建構子的相依防護，以及 progId 軸解析定義錯誤時的失敗語意。
-    /// 以 stub 相依隔離，不需要資料庫；兩軸的正常解析路徑見 <see cref="RepositoryFactoryTests"/>。
+    /// <see cref="RepositoryFactory"/> 建構子的相依防護、progId 軸解析定義錯誤時的失敗語意，
+    /// 以及工廠與 <see cref="IRepositoryTypeResolver"/> 之間的委派契約。
+    /// 以 stub 相依隔離，不需要資料庫；兩軸的正常解析路徑見 <see cref="RepositoryFactoryTests"/>，
+    /// 註冊表綁定本身的解析見 <see cref="ProgramSettingsRepositoryTypeResolverTests"/>。
     /// </summary>
     public class RepositoryFactoryGuardTests
     {
@@ -38,7 +40,7 @@ namespace Bee.Repository.UnitTests
             public void SaveDatabaseSettings(DatabaseSettings settings) => throw new NotImplementedException();
             // 本檔不驗註冊表綁定，一律回報「沒有 ProgramSettings.xml」——這是正式
             // IDefineAccess 在檔案不存在時的行為，工廠據此落回框架預設 repository。
-            // 綁定本身的解析見 ProgramItemRepositoryBindingTests。
+            // 綁定本身的解析見 ProgramSettingsRepositoryTypeResolverTests。
             public ProgramSettings GetProgramSettings() => throw new FileNotFoundException("ProgramSettings.xml");
             public void SaveProgramSettings(ProgramSettings settings) => throw new NotImplementedException();
             public DbCategorySettings GetDbCategorySettings() => throw new NotImplementedException();
@@ -72,17 +74,52 @@ namespace Bee.Repository.UnitTests
             public string Resolve(DbScope scope, Guid accessToken) => DbCategoryIds.Common;
         }
 
+        /// <summary>固定回傳指定型別，並記下工廠傳進來的引數。</summary>
+        private sealed class StubTypeResolver(Type type) : IRepositoryTypeResolver
+        {
+            public Guid? ReceivedAccessToken { get; private set; }
+            public string? ReceivedProgId { get; private set; }
+
+            public Type Resolve(Guid accessToken, string progId)
+            {
+                ReceivedAccessToken = accessToken;
+                ReceivedProgId = progId;
+                return type;
+            }
+        }
+
+        /// <summary>resolver 綁定的自訂 repository。</summary>
+        public class BoundRepository : DataFormRepository
+        {
+            public BoundRepository(IRepositoryContext ctx, Guid accessToken, string progId)
+                : base(ctx, accessToken, progId)
+            {
+            }
+        }
+
+        /// <summary>不衍生自 <see cref="DataFormRepository"/>，用來驗證工廠端的契約檢查。</summary>
+        public class NotARepository
+        {
+        }
+
         private static RepositoryFactory CreateFactory(
             StubDefineAccess? defineAccess = null,
             IDbAccessFactory? dbAccessFactory = null,
             IDbConnectionManager? connectionManager = null,
-            IRepositoryDatabaseRouter? router = null)
-            => new(
+            IRepositoryDatabaseRouter? router = null,
+            IRepositoryTypeResolver? typeResolver = null)
+        {
+            var define = defineAccess ?? new StubDefineAccess();
+            return new(
                 TestRepositoryContext.CreateServices(),
-                defineAccess ?? new StubDefineAccess(),
+                define,
                 dbAccessFactory ?? new StubDbAccessFactory(),
                 connectionManager ?? new StubConnectionManager(),
-                router ?? new StubRouter());
+                router ?? new StubRouter(),
+                typeResolver ?? new ProgramSettingsRepositoryTypeResolver(define));
+        }
+
+        private static StubTypeResolver DefaultResolver() => new(typeof(DataFormRepository));
 
         #endregion
 
@@ -92,7 +129,7 @@ namespace Bee.Repository.UnitTests
         {
             Assert.Throws<ArgumentNullException>(() => new RepositoryFactory(
                 TestRepositoryContext.CreateServices(), null!, new StubDbAccessFactory(),
-                new StubConnectionManager(), new StubRouter()));
+                new StubConnectionManager(), new StubRouter(), DefaultResolver()));
         }
 
         [Fact]
@@ -101,7 +138,7 @@ namespace Bee.Repository.UnitTests
         {
             Assert.Throws<ArgumentNullException>(() => new RepositoryFactory(
                 TestRepositoryContext.CreateServices(), new StubDefineAccess(), null!,
-                new StubConnectionManager(), new StubRouter()));
+                new StubConnectionManager(), new StubRouter(), DefaultResolver()));
         }
 
         [Fact]
@@ -110,7 +147,7 @@ namespace Bee.Repository.UnitTests
         {
             Assert.Throws<ArgumentNullException>(() => new RepositoryFactory(
                 TestRepositoryContext.CreateServices(), new StubDefineAccess(), new StubDbAccessFactory(),
-                null!, new StubRouter()));
+                null!, new StubRouter(), DefaultResolver()));
         }
 
         [Fact]
@@ -119,7 +156,58 @@ namespace Bee.Repository.UnitTests
         {
             Assert.Throws<ArgumentNullException>(() => new RepositoryFactory(
                 TestRepositoryContext.CreateServices(), new StubDefineAccess(), new StubDbAccessFactory(),
-                new StubConnectionManager(), null!));
+                new StubConnectionManager(), null!, DefaultResolver()));
+        }
+
+        [Fact]
+        [DisplayName("RepositoryFactory 建構子傳入 null typeResolver 應拋 ArgumentNullException")]
+        public void RepositoryFactory_NullTypeResolver_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new RepositoryFactory(
+                TestRepositoryContext.CreateServices(), new StubDefineAccess(), new StubDbAccessFactory(),
+                new StubConnectionManager(), new StubRouter(), null!));
+        }
+
+        [Fact]
+        [DisplayName("工廠應依 resolver 給的型別建出實例，並帶上 progId")]
+        public void CreateFormRepository_ResolverBindsCustomType_BuildsThatTypeWithProgId()
+        {
+            var factory = CreateFactory(typeResolver: new StubTypeResolver(typeof(BoundRepository)));
+
+            var repository = factory.CreateFormRepository<IDataFormRepository>(Guid.NewGuid(), "Employee");
+
+            var typed = Assert.IsType<BoundRepository>(repository);
+            Assert.Equal("Employee", typed.ProgId);
+        }
+
+        [Fact]
+        [DisplayName("工廠應把呼叫端的 accessToken 與 progId 原樣交給 resolver（租戶客製靠 token 找 session）")]
+        public void CreateFormRepository_ForwardsAccessTokenAndProgIdToResolver()
+        {
+            // token 若沒傳到 resolver，客製代號就讀不到、租戶的 Repository 覆寫整批失效，
+            // 而每個請求照樣成功 —— 預設路徑的測試全都看不出來。
+            var resolver = DefaultResolver();
+            var factory = CreateFactory(typeResolver: resolver);
+            var token = Guid.NewGuid();
+
+            factory.CreateFormRepository<IDataFormRepository>(token, "Employee");
+
+            Assert.Equal(token, resolver.ReceivedAccessToken);
+            Assert.Equal("Employee", resolver.ReceivedProgId);
+        }
+
+        [Fact]
+        [DisplayName("resolver 回傳非 DataFormRepository 衍生型別時，工廠應拋並指名 progId 與型別")]
+        public void CreateFormRepository_ResolverReturnsNonRepositoryType_ThrowsNamingProgIdAndType()
+        {
+            var factory = CreateFactory(typeResolver: new StubTypeResolver(typeof(NotARepository)));
+
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => factory.CreateFormRepository<IDataFormRepository>(Guid.NewGuid(), "Employee"));
+
+            Assert.Contains("Employee", ex.Message, StringComparison.Ordinal);
+            Assert.Contains(typeof(NotARepository).FullName!, ex.Message, StringComparison.Ordinal);
+            Assert.Contains(nameof(DataFormRepository), ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]

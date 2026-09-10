@@ -14,6 +14,7 @@ using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
+using Bee.Repository.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -219,12 +220,17 @@ namespace Bee.Hosting.UnitTests
         }
 
         [Fact]
-        [DisplayName("容器建出的 RepositoryFactory 應接到客製 overlay 所需的兩個選用相依")]
+        [DisplayName("容器建出的 RepositoryFactory 應經由 resolver 接到客製 overlay 所需的兩個選用相依")]
         public void AddBeeFramework_RepositoryFactory_ReceivesCustomizationDependencies()
         {
-            // 這兩個相依是選用參數（預設 null），ActivatorUtilities 沒填就是靜默停用租戶客製
+            // 這兩個相依是選用參數（預設 null），沒填就是靜默停用租戶客製
             // ——progId 一律解析基底綁定，而且不會有任何其他症狀。行為上看不出來，只能直接
             // 檢查欄位；這正是本測試存在的理由。
+            //
+            // 它們原本在工廠身上，型別解析抽成 IRepositoryTypeResolver 之後搬到 resolver。
+            // 風險沒有跟著消失：resolver 的建構子一樣是選用參數，Hosting 註冊時少傳一個就重現
+            // 同一個無聲回歸。所以這裡驗兩件事——工廠拿到的就是容器註冊的那個 resolver，
+            // 而那個 resolver 兩個相依都有接上。
             string tempDir = Path.Combine(Path.GetTempPath(), $"bee-fw-repocust-{Guid.NewGuid():N}");
             Directory.CreateDirectory(tempDir);
             try
@@ -237,9 +243,11 @@ namespace Bee.Hosting.UnitTests
 
                 using var sp = services.BuildServiceProvider();
                 var factory = sp.GetRequiredService<IRepositoryFactory>();
+                var resolver = PrivateField(factory, "_typeResolver");
 
-                Assert.NotNull(PrivateField(factory, "_customizeReader"));
-                Assert.NotNull(PrivateField(factory, "_sessionInfoService"));
+                Assert.Same(sp.GetRequiredService<IRepositoryTypeResolver>(), resolver);
+                Assert.NotNull(PrivateField(resolver!, "_customizeReader"));
+                Assert.NotNull(PrivateField(resolver!, "_sessionInfoService"));
             }
             finally
             {

@@ -1,16 +1,5 @@
 {
-  "issues": {
-    "AZ_NCHqSpeBoELKE-jSS": {
-      "rule": "csharpsquid:S107",
-      "severity": "MAJOR",
-      "component": "src/Bee.Repository/Factories/RepositoryFactory.cs",
-      "line": 65,
-      "message": "Constructor has 8 parameters, which is greater than the 7 authorized.",
-      "reason": "RepositoryFactory 的建構子是 public API surface：5 個必要相依 + 3 個 optional（cacheNotify / customizeReader / sessionInfoService，各有預設值，正是為了讓多數呼叫端只傳 5 個）。收斂成 options 物件是破壞性變更。/sonar-fix 規則禁止觸碰 public API 簽章，故不自動修正；日後若要處理須配合 PublicAPI.Unshipped.txt 與二進位相容性判定另立變更。",
-      "attempts": 0,
-      "lastAttempt": "2026-08-06"
-    }
-  },
+  "issues": {},
   "files": {},
   "humanReview": {
     "AZ_0uLZNLC6lOXNwWSNe": {

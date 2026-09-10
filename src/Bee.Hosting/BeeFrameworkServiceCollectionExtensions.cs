@@ -26,6 +26,7 @@ using Bee.Repository;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.AuditLog;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -256,6 +257,15 @@ namespace Bee.Hosting
 
             // 9. Repository factory — one registration for every repository, on both axes.
             services.AddSingleton<IRepositoryDatabaseRouter, RepositoryDatabaseRouter>();
+            //    progId → repository type with the tenant customization overlay, the counterpart of
+            //    IBoTypeResolver above. Both overlay services are resolved as required. Were either
+            //    registration dropped, an optional lookup would leave every tenant's repository
+            //    override ignored while every request still succeeded.
+            services.AddSingleton<IRepositoryTypeResolver>(sp =>
+                new ProgramSettingsRepositoryTypeResolver(
+                    sp.GetRequiredService<IDefineAccess>(),
+                    sp.GetRequiredService<ICustomizeDefineReader>(),
+                    sp.GetRequiredService<ISessionInfoService>()));
             services.AddSingleton<IRepositoryFactory>(sp =>
                 CreateConfigurableService<IRepositoryFactory>(sp,
                     components.RepositoryFactory, BackendDefaultTypes.RepositoryFactory));
