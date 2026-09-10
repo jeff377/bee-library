@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Data;
 using System.Globalization;
 using System.Text.Json;
@@ -124,34 +125,41 @@ namespace Bee.Api.Core.Json
         }
 
         /// <summary>
+        /// Maps a runtime type to its discriminator. A table rather than a chain of comparisons:
+        /// this is the inverse of the reader's switch on the discriminator, and the two are only
+        /// checkable against each other when both read as lists.
+        /// </summary>
+        private static readonly FrozenDictionary<Type, int> s_codesByType = new Dictionary<Type, int>
+        {
+            [typeof(bool)] = WireValueCode.Boolean,
+            [typeof(byte)] = WireValueCode.Byte,
+            [typeof(sbyte)] = WireValueCode.SByte,
+            [typeof(short)] = WireValueCode.Int16,
+            [typeof(ushort)] = WireValueCode.UInt16,
+            [typeof(int)] = WireValueCode.Int32,
+            [typeof(uint)] = WireValueCode.UInt32,
+            [typeof(long)] = WireValueCode.Int64,
+            [typeof(ulong)] = WireValueCode.UInt64,
+            [typeof(float)] = WireValueCode.Single,
+            [typeof(double)] = WireValueCode.Double,
+            [typeof(decimal)] = WireValueCode.Decimal,
+            [typeof(string)] = WireValueCode.String,
+            [typeof(DateTime)] = WireValueCode.DateTime,
+            [typeof(DateTimeOffset)] = WireValueCode.DateTimeOffset,
+            [typeof(TimeSpan)] = WireValueCode.TimeSpan,
+            [typeof(DateOnly)] = WireValueCode.DateOnly,
+            [typeof(Guid)] = WireValueCode.Guid,
+            [typeof(byte[])] = WireValueCode.ByteArray,
+            [typeof(DBNull)] = WireValueCode.DBNull,
+            [typeof(DataTable)] = WireValueCode.DataTable,
+            [typeof(object[])] = WireValueCode.ObjectArray,
+        }.ToFrozenDictionary();
+
+        /// <summary>
         /// Maps a runtime type to its discriminator, or null when the type takes the escape hatch.
         /// </summary>
         private static int? ResolveCode(Type type)
-        {
-            if (type == typeof(bool)) return WireValueCode.Boolean;
-            if (type == typeof(byte)) return WireValueCode.Byte;
-            if (type == typeof(sbyte)) return WireValueCode.SByte;
-            if (type == typeof(short)) return WireValueCode.Int16;
-            if (type == typeof(ushort)) return WireValueCode.UInt16;
-            if (type == typeof(int)) return WireValueCode.Int32;
-            if (type == typeof(uint)) return WireValueCode.UInt32;
-            if (type == typeof(long)) return WireValueCode.Int64;
-            if (type == typeof(ulong)) return WireValueCode.UInt64;
-            if (type == typeof(float)) return WireValueCode.Single;
-            if (type == typeof(double)) return WireValueCode.Double;
-            if (type == typeof(decimal)) return WireValueCode.Decimal;
-            if (type == typeof(string)) return WireValueCode.String;
-            if (type == typeof(DateTime)) return WireValueCode.DateTime;
-            if (type == typeof(DateTimeOffset)) return WireValueCode.DateTimeOffset;
-            if (type == typeof(TimeSpan)) return WireValueCode.TimeSpan;
-            if (type == typeof(DateOnly)) return WireValueCode.DateOnly;
-            if (type == typeof(Guid)) return WireValueCode.Guid;
-            if (type == typeof(byte[])) return WireValueCode.ByteArray;
-            if (type == typeof(DBNull)) return WireValueCode.DBNull;
-            if (type == typeof(DataTable)) return WireValueCode.DataTable;
-            if (type == typeof(object[])) return WireValueCode.ObjectArray;
-            return null;
-        }
+            => s_codesByType.TryGetValue(type, out var code) ? code : null;
 
         private static void WriteKnownValue(Utf8JsonWriter writer, int code, object value, JsonSerializerOptions options)
         {

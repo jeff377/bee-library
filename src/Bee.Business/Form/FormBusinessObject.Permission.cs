@@ -3,6 +3,7 @@ using Bee.Base;
 using Bee.Base.Exceptions;
 using Bee.Definition;
 using Bee.Definition.Filters;
+using Bee.Definition.Forms;
 using Bee.Definition.Identity;
 using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.Form;
@@ -119,38 +120,90 @@ namespace Bee.Business.Form
 
             var masterTable = dataSet.Tables[masterTableName]!;
             bool hasRowId = masterTable.Columns.Contains(SysFields.RowId);
-            var savedMasterRowIds = new HashSet<Guid>();
 
-            // Resolve the scope filter only once an Update/Delete row is found, and at most once per
-            // action — an insert-only save resolves nothing; N same-action rows reuse one filter.
+            var savedMasterRowIds = CollectMasterRowIds(masterTable, hasRowId);
+            EnforceMasterRowScope(masterTable, hasRowId, schema, repository);
+
+            EnforceDetailOwnership(dataSet, masterTableName, savedMasterRowIds, schema.PermissionModelId);
+        }
+
+        /// <summary>
+        /// Collects the master rowids this payload carries, for the detail-ownership check.
+        /// </summary>
+        /// <param name="masterTable">The master table in the payload.</param>
+        /// <param name="hasRowId">Whether the table carries a rowid column at all.</param>
+        /// <returns>Every non-empty rowid in the table.</returns>
+        /// <remarks>
+        /// Every state is collected, Added included: the details of a brand-new master reference
+        /// the rowid this payload is inserting. That is a wider net than the scope enforcement
+        /// next door, which only looks at rows the caller is changing — the two loops are separate
+        /// because they disagree about which rows matter.
+        /// </remarks>
+        private static HashSet<Guid> CollectMasterRowIds(DataTable masterTable, bool hasRowId)
+        {
+            var rowIds = new HashSet<Guid>();
+            foreach (DataRow row in masterTable.Rows)
+            {
+                var rowId = RowIdOf(row, hasRowId);
+                if (rowId != Guid.Empty) { rowIds.Add(rowId); }
+            }
+            return rowIds;
+        }
+
+        /// <summary>
+        /// Verifies that every master row this save changes is inside the caller's record scope.
+        /// </summary>
+        /// <param name="masterTable">The master table in the payload.</param>
+        /// <param name="hasRowId">Whether the table carries a rowid column at all.</param>
+        /// <param name="schema">The form schema, for the permission model.</param>
+        /// <param name="repository">The repository used for the authoritative in-scope check.</param>
+        /// <exception cref="ForbiddenException">A changed row is outside the caller's scope.</exception>
+        private void EnforceMasterRowScope(
+            DataTable masterTable, bool hasRowId, FormSchema schema, IDataFormRepository repository)
+        {
+            // Resolve the scope filter only once an Update/Delete row is found, and at most once
+            // per action. An insert-only save resolves nothing, and N rows of the same action reuse
+            // one filter — which is what the memoisation buys.
             IScopeResolver? resolver = null;
             var scopeByAction = new Dictionary<PermissionAction, FilterNode?>();
 
+            FilterNode? ScopeFilterFor(PermissionAction action)
+            {
+                if (scopeByAction.TryGetValue(action, out var cached)) { return cached; }
+
+                resolver ??= Services.GetRequiredService<IScopeResolver>();
+                var resolved = resolver.ResolveFilter(AccessToken, schema.PermissionModelId, action, schema);
+                scopeByAction[action] = resolved;
+                return resolved;
+            }
+
             foreach (DataRow row in masterTable.Rows)
             {
-                var version = row.RowState == DataRowState.Deleted ? DataRowVersion.Original : DataRowVersion.Default;
-                var rowId = hasRowId ? ValueUtilities.CGuid(row[SysFields.RowId, version]) : Guid.Empty;
-
-                // Collected for every state, Added included: the details of a brand-new master
-                // reference the rowid this payload is inserting.
-                if (rowId != Guid.Empty) { savedMasterRowIds.Add(rowId); }
-
                 var action = WriteScopeActionForRowState(row.RowState);
                 if (action == PermissionAction.None) { continue; }
 
-                if (!scopeByAction.TryGetValue(action, out var scopeFilter))
-                {
-                    resolver ??= Services.GetRequiredService<IScopeResolver>();
-                    scopeFilter = resolver.ResolveFilter(AccessToken, schema.PermissionModelId, action, schema);
-                    scopeByAction[action] = scopeFilter;
-                }
+                var scopeFilter = ScopeFilterFor(action);
                 if (scopeFilter == null) { continue; }
 
-                if (!repository.ExistsInScope(rowId, scopeFilter))
+                if (!repository.ExistsInScope(RowIdOf(row, hasRowId), scopeFilter))
                     throw new ForbiddenException($"Record out of scope for '{action}' on model '{schema.PermissionModelId}'.");
             }
+        }
 
-            EnforceDetailOwnership(dataSet, masterTableName, savedMasterRowIds, schema.PermissionModelId);
+        /// <summary>
+        /// Reads a row's rowid from the version the repository would write.
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <param name="hasRowId">Whether the table carries a rowid column at all.</param>
+        /// <returns>The rowid, or <see cref="Guid.Empty"/> when there is no column to read.</returns>
+        private static Guid RowIdOf(DataRow row, bool hasRowId)
+        {
+            if (!hasRowId) { return Guid.Empty; }
+
+            var version = row.RowState == DataRowState.Deleted
+                ? DataRowVersion.Original
+                : DataRowVersion.Default;
+            return ValueUtilities.CGuid(row[SysFields.RowId, version]);
         }
 
         /// <summary>
@@ -194,18 +247,31 @@ namespace Bee.Business.Form
                 if (StringUtilities.IsEquals(table.TableName, masterTableName)) { continue; }
                 if (!table.Columns.Contains(SysFields.MasterRowId)) { continue; }
 
-                foreach (DataRow row in table.Rows)
+                EnforceTableOwnership(table, savedMasterRowIds, modelId);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that every owner referenced by one detail table is a master row this save carries.
+        /// </summary>
+        /// <param name="table">The detail table, already known to carry a master-rowid column.</param>
+        /// <param name="savedMasterRowIds">The master rowids present in this payload.</param>
+        /// <param name="modelId">The permission model, for the error message.</param>
+        /// <exception cref="ForbiddenException">A row points at a master this save does not carry.</exception>
+        private static void EnforceTableOwnership(
+            DataTable table, HashSet<Guid> savedMasterRowIds, string modelId)
+        {
+            foreach (DataRow row in table.Rows)
+            {
+                foreach (var version in WrittenVersions(row.RowState))
                 {
-                    foreach (var version in WrittenVersions(row.RowState))
+                    var owner = ValueUtilities.CGuid(row[SysFields.MasterRowId, version]);
+                    if (owner == Guid.Empty) { continue; }
+                    if (!savedMasterRowIds.Contains(owner))
                     {
-                        var owner = ValueUtilities.CGuid(row[SysFields.MasterRowId, version]);
-                        if (owner == Guid.Empty) { continue; }
-                        if (!savedMasterRowIds.Contains(owner))
-                        {
-                            throw new ForbiddenException(
-                                $"Detail row in '{table.TableName}' belongs to a record this save does not " +
-                                $"carry; record scope on model '{modelId}' cannot be confirmed for it.");
-                        }
+                        throw new ForbiddenException(
+                            $"Detail row in '{table.TableName}' belongs to a record this save does not " +
+                            $"carry; record scope on model '{modelId}' cannot be confirmed for it.");
                     }
                 }
             }

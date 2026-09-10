@@ -182,58 +182,8 @@ namespace Bee.Hosting
                 services.AddHostedService<ExpiredSessionCleanupService>();
             }
 
-            // 6d. Log writing. Opt-in: when disabled every consumer gets the no-op writer, so both
-            //     IAuditLogWriter and IAnomalyLogWriter are always injectable with zero behavioural
-            //     change. When enabled, the background writer batches to the log database; hosts
-            //     without an IHost (e.g. in-process local) set UseBackgroundWriter=false for
-            //     synchronous writes.
-            //
-            //     One instance serves both interfaces — the queue, the batch drain and the
-            //     saturation fallback are identical for an audit record and an anomaly record.
-            //     Registering the concrete type first is what makes the two resolutions share it.
-            //     The anomaly half has its own switch: a deployment can keep the audit trail on
-            //     while leaving anomaly recording off, which is why it is registered separately
-            //     rather than aliased onto the audit registration.
-            services.AddSingleton(configuration.AuditLogOptions);
-            bool anomalyEnabled = configuration.AuditLogOptions is { Enabled: true, AnomalyEnabled: true };
-            if (configuration.AuditLogOptions.Enabled)
-            {
-                // Built through the factory, not by the container: every repository now takes
-                // (IRepositoryContext, Guid, string), and the container can supply none of those
-                // three. Registering the concrete type directly would resolve at first use, not
-                // at registration — and only in a host that has audit logging on.
-                services.AddSingleton<IAuditLogWriteRepository>(sp =>
-                    sp.GetRequiredService<IRepositoryFactory>().Create<IAuditLogWriteRepository>());
-                services.AddSingleton<IAuditLogSink, AuditLogDbSink>();
-                if (configuration.AuditLogOptions.UseBackgroundWriter)
-                {
-                    services.AddSingleton<AuditLogWriterService>();
-                    services.AddSingleton<IAuditLogWriter>(sp => sp.GetRequiredService<AuditLogWriterService>());
-                    services.AddHostedService(sp => sp.GetRequiredService<AuditLogWriterService>());
-                    if (anomalyEnabled)
-                    {
-                        services.AddSingleton<IAnomalyLogWriter>(sp => sp.GetRequiredService<AuditLogWriterService>());
-                    }
-                }
-                else
-                {
-                    services.AddSingleton<SynchronousAuditLogWriter>();
-                    services.AddSingleton<IAuditLogWriter>(sp => sp.GetRequiredService<SynchronousAuditLogWriter>());
-                    if (anomalyEnabled)
-                    {
-                        services.AddSingleton<IAnomalyLogWriter>(sp => sp.GetRequiredService<SynchronousAuditLogWriter>());
-                    }
-                }
-            }
-            else
-            {
-                services.AddSingleton<IAuditLogWriter>(NullAuditLogWriter.Instance);
-            }
-
-            if (!anomalyEnabled)
-            {
-                services.AddSingleton<IAnomalyLogWriter>(NullAuditLogWriter.Instance);
-            }
+            // 6d. Log writing. Opt-in; both writer interfaces stay injectable either way.
+            RegisterAuditLogWriters(services, configuration.AuditLogOptions);
 
             // 5. Replaceable core services. Lifetimes default to Singleton in Phase 4 —
             //    no consumer requires per-request scope today, and registering as Scoped
@@ -368,6 +318,69 @@ namespace Bee.Hosting
             services.AddTransient<JsonRpcExecutor>();
 
             return services;
+        }
+
+        /// <summary>
+        /// Registers <see cref="IAuditLogWriter"/> and <see cref="IAnomalyLogWriter"/> for the
+        /// supplied options.
+        /// </summary>
+        /// <param name="services">The service collection.</param>
+        /// <param name="options">The audit-log section of the backend configuration.</param>
+        /// <remarks>
+        /// <para>
+        /// Opt-in: when disabled every consumer gets the no-op writer, so both interfaces are
+        /// always injectable with zero behavioural change. When enabled, the background writer
+        /// batches to the log database; hosts without an IHost (e.g. in-process local) set
+        /// <c>UseBackgroundWriter=false</c> for synchronous writes.
+        /// </para>
+        /// <para>
+        /// One instance serves both interfaces — the queue, the batch drain and the saturation
+        /// fallback are identical for an audit record and an anomaly record. Registering the
+        /// concrete type first is what makes the two resolutions share it. The anomaly half has
+        /// its own switch: a deployment can keep the audit trail on while leaving anomaly
+        /// recording off, which is why it is registered separately rather than aliased onto the
+        /// audit registration.
+        /// </para>
+        /// </remarks>
+        private static void RegisterAuditLogWriters(IServiceCollection services, AuditLogOptions options)
+        {
+            services.AddSingleton(options);
+
+            bool anomalyEnabled = options is { Enabled: true, AnomalyEnabled: true };
+            if (!anomalyEnabled) { services.AddSingleton<IAnomalyLogWriter>(NullAuditLogWriter.Instance); }
+
+            if (!options.Enabled)
+            {
+                services.AddSingleton<IAuditLogWriter>(NullAuditLogWriter.Instance);
+                return;
+            }
+
+            // Built through the factory, not by the container: every repository now takes
+            // (IRepositoryContext, Guid, string), and the container can supply none of those
+            // three. Registering the concrete type directly would resolve at first use, not
+            // at registration — and only in a host that has audit logging on.
+            services.AddSingleton<IAuditLogWriteRepository>(sp =>
+                sp.GetRequiredService<IRepositoryFactory>().Create<IAuditLogWriteRepository>());
+            services.AddSingleton<IAuditLogSink, AuditLogDbSink>();
+
+            if (options.UseBackgroundWriter)
+            {
+                services.AddSingleton<AuditLogWriterService>();
+                services.AddSingleton<IAuditLogWriter>(sp => sp.GetRequiredService<AuditLogWriterService>());
+                services.AddHostedService(sp => sp.GetRequiredService<AuditLogWriterService>());
+                if (anomalyEnabled)
+                {
+                    services.AddSingleton<IAnomalyLogWriter>(sp => sp.GetRequiredService<AuditLogWriterService>());
+                }
+                return;
+            }
+
+            services.AddSingleton<SynchronousAuditLogWriter>();
+            services.AddSingleton<IAuditLogWriter>(sp => sp.GetRequiredService<SynchronousAuditLogWriter>());
+            if (anomalyEnabled)
+            {
+                services.AddSingleton<IAnomalyLogWriter>(sp => sp.GetRequiredService<SynchronousAuditLogWriter>());
+            }
         }
     }
 }
