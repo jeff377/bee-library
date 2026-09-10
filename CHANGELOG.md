@@ -4,6 +4,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.32.0]
+
+> Quantities and weights now take their decimal places only from their unit. A field marked `Quantity` or `Weight` must bind a `UnitField`, and the company no longer supplies those decimals: a company has a home currency to fall back to, but no default unit. This lines the unit side up with how amounts already resolve by currency. **Both breaking changes ship as a minor under the pre-stable policy.**
+
+📄 Full notes and design context: [docs/changelogs/4.32.0.md](docs/changelogs/4.32.0.md)
+
+### Breaking Changes
+
+- `Bee.Definition`: a `Quantity`/`Weight` field must bind a `UnitField`. `FormExpressionCalculator` throws `InvalidOperationException` when it rounds a computed quantity or weight field that has none; display and `Bake` do not throw. Binary compatible. See [ADR-026](docs/adr/adr-026-numeric-semantics-rounding.md), revision record.
+- `Bee.Definition`: quantity and weight decimals no longer come from the company. `RoundByKind` returns the value unchanged when the unit code is empty (the company overload, having no unit code, always does); an unknown unit code or a missing unit master resolves to the framework default (`Quantity` 0, `Weight` 3); `Quantity`/`Weight` entries in `CompanyInfo.NumberFormats` have no effect; `NumberFormatApplier.Bake` no longer bakes quantity or weight fields. Binary compatible.
+
+### Added
+
+- `tools/DefineEditor`: `FormSchemaValidator` reports an error for a quantity or weight field with no `UnitField`, or whose `UnitField` does not name a field of the same table with the same casing. Non-shipping tool.
+
+### Changed
+
+- `samples/Avalonia.DemoCenter`: the number-format demo binds its quantity and weight columns to unit fields and resolves their decimals per row.
+
+### Upgrade notes
+
+Schemas with no `Quantity` or `Weight` field need no change. Two cases to check; `Quantity`/`Weight` entries in a company's number formats simply stop taking effect.
+
+```xml
+<!-- 1. Every Quantity/Weight field binds a unit field of the same table.
+        A count whose unit is implied is a plain numeric field: drop NumberKind instead. -->
+- <FormField FieldName="qty" Caption="Quantity" DbType="Decimal" NumberKind="Quantity" />
++ <FormField FieldName="qty" Caption="Quantity" DbType="Decimal" NumberKind="Quantity" UnitField="qty_uom" />
+```
+
+```csharp
+// 2. Rounding a quantity or weight detail in code: pass the row's unit code.
+//    The company overload has no unit code and now returns the value unchanged.
+- var qty = NumberFormatResolver.RoundByKind(value, NumberKind.Quantity, company);
++ var qty = NumberFormatResolver.RoundByKind(value, NumberKind.Quantity, ctx, unitCode);
+```
+
 ## [4.31.0]
 
 > This release replaces three **silent fallbacks with loud failures**. A company with no default currency had its amounts rounded to the framework default of two decimals — a figure no currency of that company chose, and nothing downstream could tell. `RepositoryFactory` hands its type resolution to a required `IRepositoryTypeResolver`, because an optional one with a registry-only default would let a missed registration disable every tenant's repository overrides while every request still succeeded. And the hosting layer stops discarding the message that names the missing service, which used to surface as an unrelated "constructor not found". **Both breaking changes ship as a minor under the pre-stable policy.**

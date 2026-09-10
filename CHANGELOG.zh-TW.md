@@ -4,6 +4,43 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.32.0]
+
+> 數量與重量的小數位數改為只看單位。標成 `Quantity` 或 `Weight` 的欄位必須綁定 `UnitField`，公司不再提供這兩類的位數：公司有本幣可以退，但沒有預設單位。這讓單位那一側對齊金額依幣別解析的作法。**兩項破壞性變更依 pre-stable 政策以 minor 發佈。**
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.32.0.zh-TW.md](docs/changelogs/4.32.0.zh-TW.md)
+
+### 破壞性變更
+
+- `Bee.Definition`：`Quantity`／`Weight` 欄必須綁定 `UnitField`。`FormExpressionCalculator` 捨入沒有 `UnitField` 的數量或重量計算欄時擲 `InvalidOperationException`；顯示與 `Bake` 不擲。二進位相容。詳見 [ADR-026](docs/adr/adr-026-numeric-semantics-rounding.md) 修訂紀錄。
+- `Bee.Definition`：數量與重量的位數不再來自公司。單位代碼為空時 `RoundByKind` 原值返回（公司多載沒有單位代碼，一律如此）；單位代碼不在主檔或未部署單位主檔時退框架預設（`Quantity` 0、`Weight` 3）；`CompanyInfo.NumberFormats` 裡的 `Quantity`／`Weight` 項不再生效；`NumberFormatApplier.Bake` 不再 bake 數量與重量欄。二進位相容。
+
+### 新增
+
+- `tools/DefineEditor`：`FormSchemaValidator` 對沒有 `UnitField` 的數量或重量欄，以及 `UnitField` 不是同一張表、同樣大小寫的欄時報錯。non-shipping tool。
+
+### 變更
+
+- `samples/Avalonia.DemoCenter`：數值格式範例的數量與重量欄改綁單位欄，逐列依單位解析位數。
+
+### 升級指引
+
+沒有 `Quantity` 或 `Weight` 欄的 schema 不需要改。兩種情形要檢查；公司位數表裡的 `Quantity`／`Weight` 項則是直接不再生效。
+
+```xml
+<!-- 1. 每個 Quantity／Weight 欄都綁定同一張表的單位欄。
+        單位隱含在語意裡的計數請改用一般數值：拿掉 NumberKind。 -->
+- <FormField FieldName="qty" Caption="Quantity" DbType="Decimal" NumberKind="Quantity" />
++ <FormField FieldName="qty" Caption="Quantity" DbType="Decimal" NumberKind="Quantity" UnitField="qty_uom" />
+```
+
+```csharp
+// 2. 在程式碼中捨入數量或重量明細：傳入該列的單位代碼。
+//    公司多載沒有單位代碼，現在會原值返回。
+- var qty = NumberFormatResolver.RoundByKind(value, NumberKind.Quantity, company);
++ var qty = NumberFormatResolver.RoundByKind(value, NumberKind.Quantity, ctx, unitCode);
+```
+
 ## [4.31.0]
 
 > 本版把三條**靜默的退路換成出聲的失敗**。公司沒有本幣時，金額一律捨到框架預設的兩位——那個位數不是該公司任何幣別選的，而下游沒有任何東西分辨得出來。`RepositoryFactory` 的型別解析交給必填的 `IRepositoryTypeResolver`：若給一個只看基底註冊表的預設值，漏註冊時每個租戶的 Repository 覆寫會整批失效，而每個請求照樣成功。Hosting 層則不再丟掉點名「缺哪個服務」的那段訊息——它過去以一個毫不相干的「找不到建構子」浮現。**兩項破壞性變更依 pre-stable 政策以 minor 發佈。**
