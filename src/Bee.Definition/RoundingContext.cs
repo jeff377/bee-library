@@ -17,6 +17,11 @@ namespace Bee.Definition
         /// framework defaults for company-sourced kinds and to the framework currency fallback for
         /// amounts with no resolvable currency).
         /// </summary>
+        /// <remarks>
+        /// A company supplied here must carry a <see cref="CompanyInfo.DefaultCurrency"/>:
+        /// <see cref="NumberFormatResolver"/> throws when it resolves an amount with no reference currency
+        /// against a company without one. The framework-default fallback applies only when this is <c>null</c>.
+        /// </remarks>
         public CompanyInfo? Company { get; init; }
 
         /// <summary>

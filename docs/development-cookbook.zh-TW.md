@@ -605,7 +605,7 @@ var filter = new FilterGroup(LogicalOperator.And)
 
 `Amount` 的小數位跟隨**幣別**而非公司（JPY = 0、USD = 2、BHD = 3 —— 類似 SAP TCURX）。幣別主檔為系統層級定義 **`CurrencySettings`**（`DefineType.CurrencySettings`，精選的 ISO 4217 表；每個 `CurrencyItem` 帶有一個 `Rounding` 自然最小單位，小數位由此導出）。它透過一般的 `GetDefine` 通道送達 client；主檔缺漏也沒關係 —— 金額此時回退至框架預設 2。
 
-每個金額欄位透過 `FormField.CurrencyField` 綁定一個**幣別 key 欄位**（SAP CUKY）；主單據幣別位於 `FormSchema.CurrencyField`（慣例為 `sys_currency`）。金額幣別的解析優先序為：**明確的 `CurrencyField` → 主檔 `sys_currency` → 公司 `DefaultCurrency` → 框架 2**。明細金額欄位讀取主列的幣別。交付時，`Bake` **不烘焙** `Amount` 格式（其小數位依執行時的幣別值而定 —— UI 逐列解析）；改為把有效的幣別參照欄位標記到每個金額欄位上，讓 UI 知道要監看哪個欄位。
+每個金額欄位透過 `FormField.CurrencyField` 綁定一個**幣別 key 欄位**（SAP CUKY）；主單據幣別位於 `FormSchema.CurrencyField`（慣例為 `sys_currency`）。金額幣別的解析優先序為：**明確的 `CurrencyField` → 主檔 `sys_currency` → 公司 `DefaultCurrency`**。公司本幣為必填 —— 公司沒有本幣時，解析器會擲 `InvalidOperationException` 而不是自行猜測；只有完全沒有公司上下文時（例如尚未進入公司），金額才回退至框架預設 2。明細金額欄位讀取主列的幣別。交付時，`Bake` **不烘焙** `Amount` 格式（其小數位依執行時的幣別值而定 —— UI 逐列解析）；改為把有效的幣別參照欄位標記到每個金額欄位上，讓 UI 知道要監看哪個欄位。
 
 伺服器端捨入使用帶 `RoundingContext`（`Company` + `CurrencySettings`）的幣別感知多載：
 

@@ -85,7 +85,7 @@ namespace Avalonia.DemoCenter.Modules.Grids
 
         private static CompanyInfo CompanyWithOverrides()
         {
-            var company = new CompanyInfo { CompanyId = "B", CompanyName = "公司 B" };
+            var company = new CompanyInfo { CompanyId = "B", CompanyName = "公司 B", DefaultCurrency = "USD" };
             company.NumberFormats.Add(new NumberFormatItem(NumberKind.UnitPrice, 2));
             company.NumberFormats.Add(new NumberFormatItem(NumberKind.Percent, 4));
             company.NumberFormats.Add(new NumberFormatItem(NumberKind.Quantity, 2));

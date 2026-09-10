@@ -286,7 +286,7 @@ namespace Bee.Api.Client.UnitTests.Customization
                 "number_formats_xml, default_currency, cash_rounding_xml, allowed_currencies_xml, enabled, sys_insert_time) " +
                 "VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, 1, GETUTCDATE())",
                 rowId, companyId, "客製化端到端測試公司", s_companyDbId, customizeId,
-                string.Empty, string.Empty, string.Empty, string.Empty);
+                string.Empty, "USD", string.Empty, string.Empty);
             Common().Execute(insert);
             return rowId;
         }

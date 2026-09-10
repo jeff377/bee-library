@@ -41,10 +41,10 @@ namespace Bee.Repository.UnitTests
             // Seed ships no number_formats_xml, so the override table reads back empty and every
             // kind falls back to the framework default.
             Assert.Empty(result.NumberFormats);
-            // Seed ships no default_currency / cash_rounding_xml / allowed_currencies_xml either, so
-            // the local currency reads back empty and both currency tables read back empty across
+            // A company must carry a default currency, so the seed writes USD. It ships no
+            // cash_rounding_xml / allowed_currencies_xml, so both currency tables read back empty across
             // all dialects (the empty-string columns deserialize to empty collections).
-            Assert.Equal(string.Empty, result.DefaultCurrency);
+            Assert.Equal("USD", result.DefaultCurrency);
             Assert.Empty(result.CashRounding);
             Assert.Empty(result.AllowedCurrencies);
         }
@@ -127,13 +127,13 @@ namespace Bee.Repository.UnitTests
                            : "SYSTIMESTAMP";
             string disabledLiteral = dbType == DatabaseType.PostgreSQL ? "FALSE" : "0";
 
-            // number_formats_xml / cash_rounding_xml / allowed_currencies_xml are NOT NULL Text columns
-            // and default_currency is NOT NULL String; MySQL TEXT columns can't carry a DEFAULT, so the
-            // values must be supplied explicitly (empty strings) rather than relying on a DB-side default.
+            // number_formats_xml / cash_rounding_xml / allowed_currencies_xml are NOT NULL Text columns;
+            // MySQL TEXT columns can't carry a DEFAULT, so they must be supplied explicitly (empty strings)
+            // rather than relying on a DB-side default. default_currency gets USD, as every company must.
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
                 $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colDbId}, {colNumFmt}, {colDefCur}, {colCashRnd}, {colAllowCur}, {colEnabled}, {colInsTime}) " +
                 $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {{5}}, {{6}}, {{7}}, {disabledLiteral}, {nowExpr})",
-                Guid.NewGuid(), companyId, "停用測試公司", "common", string.Empty, string.Empty, string.Empty, string.Empty);
+                Guid.NewGuid(), companyId, "停用測試公司", "common", string.Empty, "USD", string.Empty, string.Empty);
             dbAccess.Execute(insert);
 
             try

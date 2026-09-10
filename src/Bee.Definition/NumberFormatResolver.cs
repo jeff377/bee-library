@@ -10,6 +10,12 @@ namespace Bee.Definition
     /// company and system-fixed kinds resolve as in the core increment. A reference kind with no
     /// resolvable code (or no master deployed) falls back to the company decimals.
     /// </summary>
+    /// <remarks>
+    /// An amount with no reference currency resolves by the company's
+    /// <see cref="CompanyInfo.DefaultCurrency"/>, which is required: when a company is present but
+    /// carries no default currency, the resolving members throw <see cref="InvalidOperationException"/>
+    /// instead of falling back. Only a call with no company context falls back to framework defaults.
+    /// </remarks>
     public static class NumberFormatResolver
     {
         // ----- Reference-aware (multi-currency) API -----
@@ -18,12 +24,16 @@ namespace Bee.Definition
         /// Resolves the decimal places for the kind. For <see cref="DecimalsSource.Currency"/> amounts,
         /// the decimals come from the currency master keyed by <paramref name="refCode"/> (the amount's
         /// current currency); an empty <paramref name="refCode"/> falls back to the company's default
-        /// currency, then to framework defaults. System-fixed kinds always use the framework default;
-        /// company and unit-fallback kinds use the company override table.
+        /// currency, and only with no company context to framework defaults. System-fixed kinds always
+        /// use the framework default; company and unit-fallback kinds use the company override table.
         /// </summary>
         /// <param name="kind">The number kind.</param>
         /// <param name="ctx">The resolution context (company + currency master).</param>
         /// <param name="refCode">The reference currency code for amount fields; ignored for other kinds.</param>
+        /// <exception cref="InvalidOperationException">
+        /// <paramref name="kind"/> is an amount, <paramref name="refCode"/> is empty, and the company in
+        /// <paramref name="ctx"/> has no default currency.
+        /// </exception>
         public static int ResolveDecimals(NumberKind kind, RoundingContext ctx, string? refCode = null)
         {
             ArgumentNullException.ThrowIfNull(ctx);
@@ -35,9 +45,9 @@ namespace Bee.Definition
             if (source == DecimalsSource.Currency)
             {
                 // Resolve the effective currency: the explicit reference code, else the company's
-                // default (home) currency. When neither resolves — or no currency master is deployed —
+                // default (home) currency. With no company context — or no currency master deployed —
                 // fall back to the company table (Amount is normally absent there → framework default 2).
-                string code = !string.IsNullOrEmpty(refCode) ? refCode : (ctx.Company?.DefaultCurrency ?? string.Empty);
+                string code = !string.IsNullOrEmpty(refCode) ? refCode : ResolveCompanyCurrency(ctx.Company);
                 if (ctx.CurrencySettings != null && !string.IsNullOrEmpty(code))
                     return ctx.CurrencySettings.GetDecimals(code);
                 return ctx.Company?.GetDecimals(kind) ?? NumberKindProfile.GetDefaultDecimals(kind);
@@ -57,12 +67,34 @@ namespace Bee.Definition
         }
 
         /// <summary>
+        /// Gets the company's default currency for an amount with no reference currency, or an empty
+        /// string when there is no company context.
+        /// </summary>
+        /// <param name="company">The current company, or <c>null</c>.</param>
+        /// <exception cref="InvalidOperationException">The company has no default currency.</exception>
+        private static string ResolveCompanyCurrency(CompanyInfo? company)
+        {
+            if (company == null) { return string.Empty; }
+
+            // IMPORTANT: a company without a default currency is a configuration error, not a reason to
+            // fall back. Falling back would round its amounts to decimals that no currency of that
+            // company chose, and nothing downstream would notice.
+            if (string.IsNullOrWhiteSpace(company.DefaultCurrency))
+                throw new InvalidOperationException($"Company '{company.CompanyId}' has no default currency configured.");
+
+            return company.DefaultCurrency;
+        }
+
+        /// <summary>
         /// Resolves the decimal places for the kind using company/framework sources only (no currency
         /// reference). Amounts fall back to the company default currency when a currency master is set,
         /// otherwise to framework defaults.
         /// </summary>
         /// <param name="kind">The number kind.</param>
         /// <param name="company">The current company, or <c>null</c> when there is no company context.</param>
+        /// <exception cref="InvalidOperationException">
+        /// <paramref name="kind"/> is an amount and <paramref name="company"/> has no default currency.
+        /// </exception>
         public static int ResolveDecimals(NumberKind kind, CompanyInfo? company)
         {
             return ResolveDecimals(kind, RoundingContext.ForCompany(company), null);
@@ -75,6 +107,10 @@ namespace Bee.Definition
         /// <param name="kind">The number kind.</param>
         /// <param name="ctx">The resolution context.</param>
         /// <param name="refCode">The reference currency code for amount fields; ignored for other kinds.</param>
+        /// <exception cref="InvalidOperationException">
+        /// <paramref name="kind"/> is an amount, <paramref name="refCode"/> is empty, and the company in
+        /// <paramref name="ctx"/> has no default currency.
+        /// </exception>
         public static string ResolveFormat(NumberKind kind, RoundingContext ctx, string? refCode = null)
         {
             return NumberKindProfile.BuildFormatString(kind, ResolveDecimals(kind, ctx, refCode));
@@ -85,6 +121,9 @@ namespace Bee.Definition
         /// </summary>
         /// <param name="kind">The number kind.</param>
         /// <param name="company">The current company, or <c>null</c> when there is no company context.</param>
+        /// <exception cref="InvalidOperationException">
+        /// <paramref name="kind"/> is an amount and <paramref name="company"/> has no default currency.
+        /// </exception>
         public static string ResolveFormat(NumberKind kind, CompanyInfo? company)
         {
             return NumberKindProfile.BuildFormatString(kind, ResolveDecimals(kind, company));
@@ -102,6 +141,10 @@ namespace Bee.Definition
         /// <param name="kind">The number kind.</param>
         /// <param name="ctx">The resolution context.</param>
         /// <param name="refCode">The reference currency code for amount fields; ignored for other kinds.</param>
+        /// <exception cref="InvalidOperationException">
+        /// <paramref name="kind"/> is an amount, <paramref name="refCode"/> is empty, and the company in
+        /// <paramref name="ctx"/> has no default currency.
+        /// </exception>
         public static decimal RoundByKind(decimal value, NumberKind kind, RoundingContext ctx, string? refCode = null)
         {
             if (NumberKindProfile.GetRoundingPolicy(kind) == RoundingPolicy.Preserve)
@@ -117,6 +160,9 @@ namespace Bee.Definition
         /// <param name="value">The value to round.</param>
         /// <param name="kind">The number kind.</param>
         /// <param name="company">The current company, or <c>null</c> when there is no company context.</param>
+        /// <exception cref="InvalidOperationException">
+        /// <paramref name="kind"/> is an amount and <paramref name="company"/> has no default currency.
+        /// </exception>
         public static decimal RoundByKind(decimal value, NumberKind kind, CompanyInfo? company)
         {
             return RoundByKind(value, kind, RoundingContext.ForCompany(company), null);

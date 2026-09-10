@@ -52,6 +52,16 @@ public static class NorthwindCredentials
     public const string CustomizeId = "northwind-demo";
 
     /// <summary>
+    /// The demo company's default currency, seeded into <c>st_company.default_currency</c>.
+    /// </summary>
+    /// <remarks>
+    /// A company must carry one. The order form's <c>amount</c> binds no currency field, so its
+    /// decimals resolve from this code through <c>Define/CurrencySettings.xml</c>; with the value
+    /// empty the framework throws on that resolution instead of guessing.
+    /// </remarks>
+    public const string DefaultCurrency = "USD";
+
+    /// <summary>
     /// The logical <c>DatabaseSettings</c> id backing the demo company — the
     /// <c>CompanyInfo.CompanyDatabaseId</c> the router resolves company scope to.
     /// </summary>

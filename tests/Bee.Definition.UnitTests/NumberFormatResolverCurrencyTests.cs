@@ -63,6 +63,56 @@ namespace Bee.Definition.UnitTests
             Assert.Equal(2, NumberFormatResolver.ResolveDecimals(NumberKind.Amount, ctx, "USD"));
         }
 
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [DisplayName("ResolveDecimals 有公司但本幣空白、refCode 空時擲 InvalidOperationException")]
+        public void ResolveDecimals_CompanyDefaultCurrencyBlank_Throws(string defaultCurrency)
+        {
+            var ctx = Ctx(new CompanyInfo { CompanyId = "C001", DefaultCurrency = defaultCurrency });
+
+            Assert.Throws<InvalidOperationException>(
+                () => NumberFormatResolver.ResolveDecimals(NumberKind.Amount, ctx, null));
+        }
+
+        [Fact]
+        [DisplayName("ResolveDecimals 公司本幣空白時，即使未部署幣別主檔也擲例外")]
+        public void ResolveDecimals_CompanyDefaultCurrencyBlank_NoCurrencyMaster_Throws()
+        {
+            var ctx = new RoundingContext { Company = new CompanyInfo { CompanyId = "C001" }, CurrencySettings = null };
+
+            Assert.Throws<InvalidOperationException>(
+                () => NumberFormatResolver.ResolveDecimals(NumberKind.Amount, ctx, null));
+        }
+
+        [Fact]
+        [DisplayName("ResolveDecimals 公司本幣空白但有 refCode 時依 refCode 解析，不擲例外")]
+        public void ResolveDecimals_CompanyDefaultCurrencyBlank_WithRefCode_ResolvesByRefCode()
+        {
+            var ctx = Ctx(new CompanyInfo { CompanyId = "C001" });
+
+            Assert.Equal(0, NumberFormatResolver.ResolveDecimals(NumberKind.Amount, ctx, "JPY"));
+        }
+
+        [Fact]
+        [DisplayName("ResolveDecimals 公司本幣空白時解析非金額種類不受影響")]
+        public void ResolveDecimals_CompanyDefaultCurrencyBlank_NonAmountKind_UsesCompanyDecimals()
+        {
+            var ctx = Ctx(new CompanyInfo { CompanyId = "C001" });
+
+            Assert.Equal(2, NumberFormatResolver.ResolveDecimals(NumberKind.Percent, ctx, null));
+        }
+
+        [Fact]
+        [DisplayName("RoundByKind 公司多載：金額遇本幣空白的公司擲 InvalidOperationException")]
+        public void RoundByKind_CompanyOverload_CompanyDefaultCurrencyBlank_Throws()
+        {
+            var company = new CompanyInfo { CompanyId = "C001" };
+
+            Assert.Throws<InvalidOperationException>(
+                () => NumberFormatResolver.RoundByKind(12.345m, NumberKind.Amount, company));
+        }
+
         [Fact]
         [DisplayName("RoundByKind 金額依幣別捨入（USD 2 位 / JPY 0 位）")]
         public void RoundByKind_Amount_ByCurrency()

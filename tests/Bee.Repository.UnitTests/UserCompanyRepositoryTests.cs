@@ -117,13 +117,13 @@ namespace Bee.Repository.UnitTests
                            : "SYSTIMESTAMP";
             string disabledLiteral = dbType == DatabaseType.PostgreSQL ? "FALSE" : "0";
 
-            // number_formats_xml / cash_rounding_xml / allowed_currencies_xml are NOT NULL Text columns
-            // and default_currency is NOT NULL String; MySQL TEXT columns can't carry a DEFAULT, so the
-            // values must be supplied explicitly (empty strings) rather than relying on a DB-side default.
+            // number_formats_xml / cash_rounding_xml / allowed_currencies_xml are NOT NULL Text columns;
+            // MySQL TEXT columns can't carry a DEFAULT, so they must be supplied explicitly (empty strings)
+            // rather than relying on a DB-side default. default_currency gets USD, as every company must.
             var insertCompany = new DbCommandSpec(DbCommandKind.NonQuery,
                 $"INSERT INTO {tblCompany} ({colRowId}, {colSysId}, {colName}, {colDbId}, {colNumFmt}, {colDefCur}, {colCashRnd}, {colAllowCur}, {colEnabled}, {colInsTime}) " +
                 $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {{5}}, {{6}}, {{7}}, {disabledLiteral}, {nowExpr})",
-                companyRowId, companyId, "停用公司", "common", string.Empty, string.Empty, string.Empty, string.Empty);
+                companyRowId, companyId, "停用公司", "common", string.Empty, "USD", string.Empty, string.Empty);
             dbAccess.Execute(insertCompany);
 
             // 取 user '001' rowid

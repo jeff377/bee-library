@@ -290,9 +290,10 @@ amt_local           NumberKind="Amount" CurrencyField="sys_local_currency"
 自動帶值有現成接縫：`FormBusinessObject.GetNewData` 或 `DefaultValueExpression` ——
 與本檔 `sys_date` 那節是同一個機制，兩者宜一併考慮（單據日期正是取匯率的依據）。
 
-**另有一處待釐清**：`CompanyInfo.DefaultCurrency` 的 XML doc 自稱
-*default (local/home) currency*，但實際只當位數解析的 fallback 用 —— **它是預設幣別，
-不是本位幣**。名稱與措辭暗示了一個框架其實沒有的概念，補換算時應一併釐清。
+**另有一處待釐清**：`CompanyInfo.DefaultCurrency` 自 2026-09-10 起為必填（有公司但本幣空白時，
+解析金額位數即擲例外），但實際仍只當位數解析的來源用、沒有任何換算語意 —— **它目前是預設幣別，
+還不是本位幣**。XML doc 的 *default (local/home) currency* 暗示了一個框架其實沒有的概念，
+補換算時應一併釐清。
 
 ### 第一題：匯率放哪一層 —— 資料層，不是定義層
 

@@ -116,6 +116,14 @@ namespace Bee.Tests.Shared
             var existing = LookupRowId(dbType, dbAccess, tbl, colRowId, colId, "C001");
             if (existing != Guid.Empty)
             {
+                // A company must carry a default currency, and a C001 inserted before that rule carries
+                // none. Backfill it the same idempotent way as the seed user above; Oracle stores '' as
+                // NULL, hence both arms of the predicate.
+                var backfill = new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"UPDATE {tbl} SET {colDefCur} = 'USD' " +
+                    $"WHERE {colId} = {{0}} AND ({colDefCur} IS NULL OR {colDefCur} = '')",
+                    "C001");
+                dbAccess.Execute(backfill);
                 Console.WriteLine($"SharedDatabaseState: {databaseId} seed company 'C001' already exists (rowid={existing})");
                 return existing;
             }
@@ -129,13 +137,13 @@ namespace Bee.Tests.Shared
             // 各方言 boolean literal：SQL Server/SQLite/MySQL/Oracle 用 1，PG 用 TRUE。
             string enabledLiteral = dbType == DatabaseType.PostgreSQL ? "TRUE" : "1";
             // number_formats_xml / cash_rounding_xml / allowed_currencies_xml are NOT NULL Text columns
-            // with no overrides here, and default_currency is a NOT NULL String column. MySQL TEXT
-            // columns cannot carry a DEFAULT, so every hand-written INSERT must supply these values
-            // explicitly (an empty string) rather than relying on a DB-side default.
+            // with no overrides here. MySQL TEXT columns cannot carry a DEFAULT, so every hand-written
+            // INSERT must supply them explicitly (an empty string) rather than relying on a DB-side
+            // default. default_currency gets USD, because a company must carry one.
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
                 $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colDbId}, {colNumFmt}, {colDefCur}, {colCashRnd}, {colAllowCur}, {colEnabled}, {colInsTime}) " +
                 $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {{5}}, {{6}}, {{7}}, {enabledLiteral}, {now})",
-                newRowId, "C001", "測試公司", companyDbId, string.Empty, string.Empty, string.Empty, string.Empty);
+                newRowId, "C001", "測試公司", companyDbId, string.Empty, "USD", string.Empty, string.Empty);
             return InsertOrAdopt(databaseId, "seed company 'C001'",
                 () =>
                 {

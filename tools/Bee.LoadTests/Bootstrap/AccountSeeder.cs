@@ -66,7 +66,7 @@ namespace Bee.LoadTests.Bootstrap
                 companyDatabaseId,
                 string.Empty,
                 string.Empty,
-                string.Empty,
+                "USD",
                 string.Empty,
                 string.Empty,
                 true));

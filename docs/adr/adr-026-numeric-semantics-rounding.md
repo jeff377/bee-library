@@ -70,6 +70,30 @@ ERP 數值（單價、成本、數量、重量、金額、百分比、匯率）�
 - **後續規範（新增數值欄時）**：宣告語意欄一律設 `NumberKind`；金額欄視需要綁 `CurrencyField`（原幣可省，走主檔 `sys_currency`）、數量/重量欄綁 `UnitField`；BO 計算一律 `decimal` 且走 `RoundByKind` round-then-sum，禁止全精度加總後才捨、禁止對 `Preserve` 類捨入。
 - **未做（未來項）**：匯率 factor（TCURF）、price unit（KPEIN）、header DIFF 捨入差吸收、Maui/Blazor `NumericEdit` 移植。
 
+## 修訂紀錄
+
+### 2026-09-10：公司本幣改為必填
+
+原決策允許公司本幣（`CompanyInfo.DefaultCurrency`）空白：金額沒有參照幣別時，D5 的遞補鏈一路退到框架預設 2 位，
+「相容性」一條也寫明「舊資料欄空即全退框架預設」。**現改為公司一定要有本幣**，空白屬設定錯誤。
+
+**改變的只有一條路徑**：金額欄沒有參照幣別（未綁 `CurrencyField`、主檔沒有 `sys_currency`，或該格仍空）、
+**且有公司上下文**時，`NumberFormatResolver` 改為擲 `InvalidOperationException`，不再退框架預設。
+**沒有公司上下文**（UI 進入公司前、`RoundingContext.ForCompany(null)`）仍退框架預設 2 位——那不是設定錯誤。
+檢查與是否部署幣別主檔無關。
+
+理由：
+
+- **退路換到的是靜默的錯誤位數。** 公司沒選本幣時退 2 位，看起來一切正常，但那個位數不是該公司任何幣別決定的，
+  本位幣金額（`home_amount`）也會一併以錯的位數捨入。
+- **失敗時點落在計算，不落在載入或進公司。** 框架本身不寫入 `st_company`（公司主檔由外部維護），寫入時沒有檢查的落點；
+  若在進公司時就擋，只讀公司名稱、不碰金額的呼叫也會跟著失敗。
+
+連帶：
+
+- 框架不代選預設幣別。`st_company.default_currency` 仍無資料庫預設值，由建立公司資料的一方寫入。
+- 既有部署中本幣空白的公司，升級後含金額計算的單據存檔與 UI 即時計算會擲例外，須先補值。
+
 ## 參考
 
 - cookbook：`docs/development-cookbook.md` §Numeric Semantics, Company Decimals, and Rounding（how-to 與 API 入口）

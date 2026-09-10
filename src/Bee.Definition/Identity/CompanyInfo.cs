@@ -83,10 +83,15 @@ namespace Bee.Definition.Identity
 
         /// <summary>
         /// Gets or sets the company's default (local/home) currency code — an ISO 4217 alpha-3 code
-        /// matching a <see cref="CurrencySettings"/> entry. Empty means unset (amounts with no resolvable
-        /// currency fall back to the framework default of two decimals). Loaded from the
-        /// <c>default_currency</c> column by <c>CompanyRepository</c>.
+        /// matching a <see cref="CurrencySettings"/> entry. Loaded from the <c>default_currency</c> column
+        /// by <c>CompanyRepository</c>.
         /// </summary>
+        /// <remarks>
+        /// Required. An empty value is a configuration error, but it is not rejected when the company is
+        /// loaded or entered: <see cref="NumberFormatResolver"/> throws <see cref="InvalidOperationException"/>
+        /// when it resolves an amount with no reference currency for this company. The property still
+        /// defaults to an empty string so the serializers can round-trip an unset value.
+        /// </remarks>
         public string DefaultCurrency { get; set; } = string.Empty;
 
         /// <summary>

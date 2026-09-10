@@ -248,11 +248,25 @@ public static class NorthwindSchemaSeeder
     /// <c>DbType="Text"</c>, and MySQL does not allow a DEFAULT on TEXT — the framework therefore
     /// emits no default for them, and a hand-written INSERT that omits them fails on that provider.
     /// </para>
+    /// <para>
+    /// <c>default_currency</c> carries <see cref="NorthwindCredentials.DefaultCurrency"/>, because a
+    /// company must have one. An existing database seeded before that rule is converged in place.
+    /// </para>
     /// </remarks>
     private static void SeedDemoCompany(DbAccess dbAccess)
     {
         var countSpec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT COUNT(*) FROM st_company");
-        if (Convert.ToInt32(dbAccess.Execute(countSpec).Scalar, CultureInfo.InvariantCulture) > 0) { return; }
+        if (Convert.ToInt32(dbAccess.Execute(countSpec).Scalar, CultureInfo.InvariantCulture) > 0)
+        {
+            // A northwind.db seeded before the demo company carried a default currency still has an
+            // empty one, and saving an order would then fail when the amount is rounded. Converge it
+            // here rather than asking the visitor to delete the database.
+            dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                "UPDATE st_company SET default_currency = {0} WHERE sys_id = {1} AND default_currency = ''",
+                NorthwindCredentials.DefaultCurrency,
+                NorthwindCredentials.CompanyId));
+            return;
+        }
 
         const string sql =
             "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, customize_id, " +
@@ -266,7 +280,7 @@ public static class NorthwindSchemaSeeder
             NorthwindCredentials.CompanyDatabaseId,
             NorthwindCredentials.CustomizeId,
             string.Empty,
-            string.Empty,
+            NorthwindCredentials.DefaultCurrency,
             string.Empty,
             string.Empty,
             true));
