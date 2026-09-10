@@ -190,6 +190,25 @@ namespace Bee.LoadTests.UnitTests
         }
 
         [Fact]
+        [DisplayName("serve 監聽位址未設定時採用 loopback 預設埠")]
+        public void ResolveServeUrl_NotConfigured_UsesLoopbackDefaultPort()
+        {
+            var target = new TargetOptions();
+
+            Assert.Equal(
+                $"http://localhost:{TargetOptions.DefaultServePort}", target.ResolveServeUrl());
+        }
+
+        [Fact]
+        [DisplayName("serve 監聽位址已設定時原樣採用")]
+        public void ResolveServeUrl_Configured_UsesConfiguredValue()
+        {
+            var target = new TargetOptions { ServeUrl = "http://0.0.0.0:8080" };
+
+            Assert.Equal("http://0.0.0.0:8080", target.ResolveServeUrl());
+        }
+
+        [Fact]
         [DisplayName("範例設定檔可被解析且通過驗證")]
         public void SampleConfiguration_ParsesAndValidates()
         {

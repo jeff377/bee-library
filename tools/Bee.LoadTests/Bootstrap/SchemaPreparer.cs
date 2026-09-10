@@ -17,6 +17,11 @@ namespace Bee.LoadTests.Bootstrap
     public static class SchemaPreparer
     {
         /// <summary>
+        /// The longest database name <see cref="GuardDatabaseName"/> accepts.
+        /// </summary>
+        private const int MaxDatabaseNameLength = 63;
+
+        /// <summary>
         /// Creates each category's physical database when it does not already exist.
         /// </summary>
         /// <param name="options">The run configuration.</param>
@@ -46,7 +51,6 @@ namespace Bee.LoadTests.Bootstrap
                 if (category.Tables is null || category.Tables.Count == 0) { continue; }
 
                 var databaseName = options.Database.ResolveDatabaseName(category.Id);
-                GuardDatabaseName(databaseName);
 
                 using var connection = factory.CreateConnection()!;
                 connection.ConnectionString = adminConnectionString;
@@ -94,10 +98,20 @@ namespace Bee.LoadTests.Bootstrap
         /// A database name cannot be a command parameter, so it is concatenated. The prefix is
         /// already restricted by configuration validation; this repeats the check over the whole
         /// resolved name, because the category half comes from a definition file rather than from
-        /// the configuration that was validated.
+        /// the configuration that was validated. Restricting the alphabet is what makes the
+        /// concatenation in <see cref="CreateDatabaseIfMissing"/> safe, so the call sits there
+        /// rather than at the caller.
         /// </remarks>
         private static void GuardDatabaseName(string databaseName)
         {
+            // 63 is PostgreSQL's limit, the shortest of the three engines handled here.
+            if (databaseName.Length is 0 or > MaxDatabaseNameLength)
+            {
+                throw new InvalidOperationException(
+                    $"Refusing to create a database named '{databaseName}': a name that reaches " +
+                    $"DDL must be between 1 and {MaxDatabaseNameLength} characters long.");
+            }
+
             foreach (var character in databaseName)
             {
                 if (!char.IsAsciiLetterOrDigit(character) && character != '_')
@@ -118,17 +132,36 @@ namespace Bee.LoadTests.Bootstrap
             _ => string.Empty
         };
 
+        /// <summary>
+        /// Issues the provider's create-if-absent statement for one database.
+        /// </summary>
+        /// <param name="provider">The database engine.</param>
+        /// <param name="connection">An open connection to the engine's admin database.</param>
+        /// <param name="databaseName">The database to create.</param>
+        /// <remarks>
+        /// IMPORTANT: the name is concatenated into the DDL rather than bound as a parameter, and
+        /// it has to be. A database name is an identifier, and no SQL engine accepts a bind
+        /// parameter in place of one — <c>CREATE DATABASE @name</c> is a syntax error everywhere.
+        /// What makes the concatenation safe is <see cref="GuardDatabaseName"/>, called first, on
+        /// the same value that reaches every branch below. The PostgreSQL existence probe is a
+        /// query over a value rather than an identifier, so that one is parameterised.
+        /// </remarks>
         private static void CreateDatabaseIfMissing(
             DatabaseType provider, DbConnection connection, string databaseName)
         {
+            GuardDatabaseName(databaseName);
+
             if (provider == DatabaseType.PostgreSQL)
             {
                 // PostgreSQL accepts neither IF NOT EXISTS on CREATE DATABASE nor the statement
                 // inside a transaction block, so existence is probed separately first.
                 using (var probe = connection.CreateCommand())
                 {
-                    probe.CommandText =
-                        $"SELECT 1 FROM pg_database WHERE datname = '{databaseName}'";
+                    probe.CommandText = "SELECT 1 FROM pg_database WHERE datname = @name";
+                    var parameter = probe.CreateParameter();
+                    parameter.ParameterName = "@name";
+                    parameter.Value = databaseName;
+                    probe.Parameters.Add(parameter);
                     if (probe.ExecuteScalar() is not null) { return; }
                 }
 

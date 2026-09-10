@@ -257,7 +257,7 @@ namespace Bee.LoadTests
             var options = LoadConfiguration(args);
             options.Validate();
 
-            var url = ReadOption(args, "--url") ?? "http://localhost:5199";
+            var url = ReadOption(args, "--url") ?? options.Target.ResolveServeUrl();
 
             Console.WriteLine($"Provider     : {options.Database.Provider}");
             LoadTestServer.RunAsync(options, url).GetAwaiter().GetResult();
@@ -475,7 +475,7 @@ namespace Bee.LoadTests
             writer.WriteLine("  --vu <n>         Override the virtual user count.");
             writer.WriteLine("  --duration <s>   Override the measured window, in seconds.");
             writer.WriteLine("  --warmup <s>     Override the warm-up window, in seconds.");
-            writer.WriteLine("  --url <url>      Listen address for 'serve'. Default http://localhost:5199.");
+            writer.WriteLine("  --url <url>      Listen address for 'serve'. Overrides target.serveUrl.");
             writer.WriteLine("  --mode <m>       Local or Remote.");
             writer.WriteLine("  --provider <p>   Database engine (SQLServer, PostgreSQL, MySQL, Oracle).");
             writer.WriteLine("  --endpoint <url> Server to measure in Remote mode.");
