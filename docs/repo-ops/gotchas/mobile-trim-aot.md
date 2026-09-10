@@ -191,7 +191,93 @@ Mono 上必然相同；泛型具現類的失敗則未必。
 
 ---
 
-## 四、盤點手法
+## 四、建置警告的判讀：iOS head 永遠不是 0 警告
+
+### 現況數字（2026-09-10 實測）
+
+| 建置 | 參考型式 | MSBuild 回報 |
+|------|---------|-------------|
+| `apps/Bee.Northwind.iOS`（本 repo） | ProjectReference | 0 錯誤、**67 警告** |
+| `bee-northwind-avalonia` 的 iOS head | PackageReference 4.30.0 | 0 錯誤、**21 警告** |
+
+21 警告的組成：**13 × `IL2104`、7 × `IL2026`、1 × `IL2057`**。
+
+### ⚠️ 這兩個數字不可互相比較
+
+**21 < 67 不代表獨立 repo 的問題比較少。** `TrimmerSingleWarn` 預設為 `true`，會把
+「同一個組件產生的所有 trim 警告」收斂成**一則 `IL2104`**。把它關掉再建同一份獨立 repo：
+
+```bash
+dotnet build <iOS 專案> -c Release -p:TrimmerSingleWarn=false
+```
+
+實測展開後是 **116 × `IL2026` + 62 × `IL2070` + 34 × `IL2075` + …**，
+**遠多於**本 repo 的 67。兩邊的組件閉包**逐一相同**（`Bee.Api.Client` / `Api.Contracts` /
+`Api.Core` / `Base` / `Definition` / `Expressions` / `UI.Avalonia` / `UI.Core`），
+差的只是收斂程度。
+
+> 2026-09-10 曾把「對照組 67 > 21」當成「本次改動沒有新增警告」的證據 —— **那條推論無效**，
+> 因為兩個數字量的根本不是同一件事。有效的證據是下一節的閉包比對。
+
+### 警告的實際來源
+
+`IL2104` 點名的 13 個組件：`Bee.Base`、`Bee.Definition`、`Bee.Api.Core`、`Bee.Api.Client`、
+`Bee.UI.Core`、`Bee.UI.Avalonia`、`Avalonia.Controls.DataGrid`、`Avalonia.DesignerSupport`、
+`DynamicExpresso.Core`、`MessagePack`、`MessagePack.Annotations`、`System.Private.CoreLib`、
+`System.Private.Xml`。它只是「這個組件有 trim 警告」的彙總，本身不指向任何一行程式碼。
+
+7 個 `IL2026`（呼叫到標了 `RequiresUnreferencedCode` 的成員）裡，**6 個是 BCL 自己的程式碼**：
+
+```
+System.Data.DataSet.IXmlSerializable.{GetSchema, ReadXml, WriteXml}
+System.Data.DataTable.IXmlSerializable.{GetSchema, ReadXml, WriteXml}
+```
+
+`DataSet` / `DataTable` 實作 `IXmlSerializable`，其實作內部走反射式 XML 序列化，微軟自己
+在那些成員上標了 `RequiresUnreferencedCode`。因為 `DataSet` 是框架的跨層 DTO、會經
+`Bee.Api.Core` 的 MessagePack formatter 上 wire，trimmer 看得到這些介面實作可達就照實報。
+第 7 個是 `DefaultValueAttribute(Type, String)`，它用 `TypeConverter`，同樣不 trim-safe。
+
+唯一的 `IL2057` 是 `Bee.Northwind.UI.ViewLocator.Build(Object)` —— Avalonia 標準的
+ViewLocator 模式：把 ViewModel 型別名字串換成 View 型別名再 `Type.GetType`。字串是算出來的，
+trimmer 無法保證那個 View 型別不被砍。
+
+### 這不是缺陷，但要知道為什麼
+
+這些是 trimmer 的**靜態分析告警**，不等於執行期會壞。`XmlSerializer` 在 Apple Release trim
+下的失效已於 2026-06-27 以 `src/Bee.Definition/ILLink.Descriptors.xml` 解決並實測驗證
+（見第一節）—— descriptor 已經把該保的型別 root 住了，而 trimmer 不會因為 descriptor 保了
+型別就收回警告。
+
+**因此：不要把「0 警告」訂為 iOS head 的驗收門檻。** 它從來不是、也不會是 0 警告。
+（2026-09-10 的 Northwind 同步計畫就這樣訂錯過一次，發現後更正。）
+
+### 一個會誤導的巧合
+
+警告清單裡有一則：
+
+```
+IL2026: System.Data.DataSet.IXmlSerializable.GetSchema():
+        Using member 'System.Data.DataSet.WriteXmlSchema(DataSet, XmlWriter)'
+```
+
+`WriteXmlSchema` 正是 4.30.0 起 `Bee.Business.AuditLog.AuditDiffGram` 用來寫稽核 payload
+的方法，看起來像是那次改動引進的。**不是。** 它是 BCL 內部 `IXmlSerializable.GetSchema()`
+自己呼叫的，而且出現在一個**連 `Bee.Business` 都不在閉包裡**的 head 上。
+
+**判別法（比數警告數量可靠得多）**：疑似某次改動引進 trim 警告時，先查那個組件在不在
+該 head 的閉包裡：
+
+```bash
+grep -o '"Bee\.[A-Za-z.]*"' <iOS 專案>/obj/project.assets.json | sort -u
+ls <iOS 專案>/bin/Release/net10.0-ios/*/Bee.*.dll | xargs -n1 basename | sort -u
+```
+
+不在閉包裡，因果就到此為止，不必再往下查。
+
+---
+
+## 五、盤點手法
 
 盤點全定義層有無「集合屬性型別形狀」問題的做法（一次掃完，不要逐檔看）：
 反射列出所有 `CollectionBase<>` / `KeyCollectionBase<>` 屬性，篩出
@@ -202,7 +288,7 @@ Mono 上必然相同；泛型具現類的失敗則未必。
 
 ---
 
-## 五、歷史
+## 六、歷史
 
 原本記於 `.claude/rules/maui.md`。`src/Bee.UI.Maui` 於 2026-07-28 移除
 （Avalonia 已覆蓋 iOS/Android），但這套 trim / AOT 知識**不隨之失效**——
