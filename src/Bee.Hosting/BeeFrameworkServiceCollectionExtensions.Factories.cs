@@ -84,7 +84,8 @@ namespace Bee.Hosting
         /// <summary>
         /// Creates a configurable service whose implementation type is read from configuration.
         /// Tries DI-aware construction first (ctor params resolved from <paramref name="sp"/>);
-        /// falls back to parameterless construction via <see cref="AssemblyLoader"/>.
+        /// falls back to parameterless construction only when the type declares a public
+        /// parameterless ctor.
         /// </summary>
         private static T CreateConfigurableService<T>(IServiceProvider sp, string? configured, string fallback)
             where T : class
@@ -93,17 +94,20 @@ namespace Bee.Hosting
             var type = AssemblyLoader.GetType(typeName)
                 ?? throw new InvalidOperationException($"Type '{typeName}' not found for service '{typeof(T).Name}'.");
 
-            // Try DI-aware construction first — ActivatorUtilities resolves any ctor parameters
-            // from the service provider. Falls back to AssemblyLoader.CreateInstance for legacy
-            // parameterless ctors.
+            // The fallback exists for legacy parameterless implementations. A type without such a
+            // ctor has nothing to fall back to, so the filter lets the ActivatorUtilities exception
+            // propagate untouched. Its message names the constructor parameter DI could not resolve,
+            // which is the only actionable clue when a registration is missing; retrying would
+            // replace it with a bare `MissingMethodException`. The propagation is covered by
+            // `CreateConfigurableService_UnregisteredCtorDependency_ExceptionNamesMissingService`.
             try
             {
                 return (T)ActivatorUtilities.CreateInstance(sp, type);
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException ex) when (type.GetConstructor(Type.EmptyTypes) != null)
             {
-                return (AssemblyLoader.CreateInstance(typeName) as T)
-                    ?? throw new InvalidOperationException($"Failed to construct {typeof(T).Name}: {typeName}");
+                return (Activator.CreateInstance(type) as T)
+                    ?? throw new InvalidOperationException($"Failed to construct {typeof(T).Name}: {typeName}", ex);
             }
         }
 

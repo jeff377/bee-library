@@ -4,6 +4,7 @@ using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Language;
 using Bee.Definition.Layouts;
+using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,8 +62,82 @@ namespace Bee.Hosting.UnitTests
         public void SaveLanguage(LanguageResource resource) { }
     }
 
+    // Never registered in the container, so a ctor asking for it cannot be satisfied by DI.
+    public interface IUnregisteredTestDependency
+    {
+        string Name { get; }
+    }
+
+    // Stub whose only ctor needs an unregistered service — exercises CreateConfigurableService
+    // when DI-aware construction fails and there is no parameterless ctor to fall back to.
+    public sealed class UnresolvableDependencyTokenValidatorStub : IAccessTokenValidator
+    {
+        public UnresolvableDependencyTokenValidatorStub(IUnregisteredTestDependency dependency) { }
+        public bool Validate(Guid accessToken) => false;
+    }
+
+    // Stub with only a parameterless ctor — the legacy implementation shape CreateConfigurableService
+    // still has to construct.
+    public sealed class ParameterlessTokenValidatorStub : IAccessTokenValidator
+    {
+        public bool Validate(Guid accessToken) => false;
+    }
+
     public class BeeFrameworkFallbackCtorTests
     {
+        [Fact]
+        [DisplayName("CreateConfigurableService 遇建構子相依未註冊時，例外訊息應指出缺少的服務型別")]
+        public void CreateConfigurableService_UnregisteredCtorDependency_ExceptionNamesMissingService()
+        {
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-fw-unresolved-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                using var sp = BuildProviderWithAccessTokenValidator(
+                    "Bee.Hosting.UnitTests.UnresolvableDependencyTokenValidatorStub, Bee.Hosting.UnitTests", tempDir);
+
+                var ex = Assert.Throws<InvalidOperationException>(() => sp.GetRequiredService<IAccessTokenValidator>());
+
+                Assert.Contains(nameof(IUnregisteredTestDependency), ex.Message, StringComparison.Ordinal);
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { }
+            }
+        }
+
+        [Fact]
+        [DisplayName("CreateConfigurableService 應支援僅有無參數建構子的實作")]
+        public void CreateConfigurableService_ParameterlessCtor_CreatesCorrectType()
+        {
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-fw-pless-svc-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                using var sp = BuildProviderWithAccessTokenValidator(
+                    "Bee.Hosting.UnitTests.ParameterlessTokenValidatorStub, Bee.Hosting.UnitTests", tempDir);
+
+                Assert.IsType<ParameterlessTokenValidatorStub>(sp.GetRequiredService<IAccessTokenValidator>());
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { }
+            }
+        }
+
+        private static ServiceProvider BuildProviderWithAccessTokenValidator(string typeName, string tempDir)
+        {
+            var configuration = new BackendConfiguration();
+            configuration.Components.AccessTokenValidator = typeName;
+
+            var services = new ServiceCollection();
+            services.AddBeeFramework(
+                configuration,
+                new PathOptions { DefinePath = tempDir },
+                autoCreateMasterKey: true);
+            return services.BuildServiceProvider();
+        }
+
         [Fact]
         [DisplayName("ResolveDefineAccess 應支援僅有 (IDefineStorage, PathOptions) 建構子的 IDefineAccess 實作")]
         public void ResolveDefineAccess_TwoArgCtor_CreatesCorrectType()
