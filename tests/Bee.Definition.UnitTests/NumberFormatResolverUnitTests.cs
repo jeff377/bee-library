@@ -5,8 +5,8 @@ using Bee.Definition.Settings;
 namespace Bee.Definition.UnitTests
 {
     /// <summary>
-    /// NumberFormatResolver 計量單位：數量/重量依 UNIT 欄單位解析位數、同單位 round-then-sum、
-    /// 無單位退公司位數。
+    /// NumberFormatResolver 計量單位：數量/重量依 UNIT 欄單位解析位數、同單位 round-then-sum；
+    /// 無單位碼不捨入、單位碼不在主檔或無主檔時退框架預設，公司位數一律不參與。
     /// </summary>
     public class NumberFormatResolverUnitTests
     {
@@ -19,6 +19,13 @@ namespace Bee.Definition.UnitTests
 
         private static RoundingContext Ctx(CompanyInfo? company = null) =>
             new() { Company = company, UnitSettings = Units() };
+
+        private static CompanyInfo CompanyWithOverride(NumberKind kind, int decimals)
+        {
+            var company = new CompanyInfo { CompanyId = "C001" };
+            company.NumberFormats.Add(new NumberFormatItem(kind, decimals));
+            return company;
+        }
 
         [Theory]
         [InlineData(NumberKind.Quantity, "PCS", 0)]
@@ -40,15 +47,28 @@ namespace Bee.Definition.UnitTests
             Assert.Equal(expected, NumberFormatResolver.ResolveFormat(NumberKind.Quantity, Ctx(), code));
         }
 
-        [Fact]
-        [DisplayName("ResolveDecimals 無單位碼時退公司位數（Quantity 公司設 2）")]
-        public void ResolveDecimals_NoUnit_FallsBackToCompany()
+        [Theory]
+        [InlineData(NumberKind.Quantity, 0)]
+        [InlineData(NumberKind.Weight, 3)]
+        [DisplayName("ResolveDecimals 無單位碼時回框架預設，公司覆寫不參與")]
+        public void ResolveDecimals_NoUnit_IgnoresCompanyOverride(NumberKind kind, int expected)
         {
-            var company = new CompanyInfo { CompanyId = "C001" };
-            company.NumberFormats.Add(new NumberFormatItem(NumberKind.Quantity, 2));
+            var ctx = Ctx(CompanyWithOverride(kind, 5));
 
-            // 空 refCode → 退公司 Quantity 覆寫 2 位
-            Assert.Equal(2, NumberFormatResolver.ResolveDecimals(NumberKind.Quantity, Ctx(company), null));
+            Assert.Equal(expected, NumberFormatResolver.ResolveDecimals(kind, ctx, null));
+        }
+
+        [Theory]
+        [InlineData(NumberKind.Quantity, null)]
+        [InlineData(NumberKind.Quantity, "")]
+        [InlineData(NumberKind.Weight, null)]
+        [InlineData(NumberKind.Weight, "")]
+        [DisplayName("RoundByKind 列單位碼空時原值返回（不捨入），即使公司設了覆寫")]
+        public void RoundByKind_NoUnit_ReturnsValueUnchanged(NumberKind kind, string? unitCode)
+        {
+            var ctx = Ctx(CompanyWithOverride(kind, 0));
+
+            Assert.Equal(1.23456m, NumberFormatResolver.RoundByKind(1.23456m, kind, ctx, unitCode));
         }
 
         [Fact]
@@ -62,10 +82,47 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
-        [DisplayName("ResolveDecimals 未知單位碼回單位 fallback 0")]
-        public void ResolveDecimals_UnknownUnit_ReturnsUnitFallback()
+        [DisplayName("ResolveDecimals 無單位主檔時公司覆寫不參與（Quantity 公司設 2 → 框架 0）")]
+        public void ResolveDecimals_NoUnitMaster_IgnoresCompanyOverride()
         {
-            Assert.Equal(0, NumberFormatResolver.ResolveDecimals(NumberKind.Weight, Ctx(), "XXX"));
+            var ctx = new RoundingContext { Company = CompanyWithOverride(NumberKind.Quantity, 2), UnitSettings = null };
+
+            Assert.Equal(0, NumberFormatResolver.ResolveDecimals(NumberKind.Quantity, ctx, "KG"));
+        }
+
+        [Theory]
+        [InlineData(NumberKind.Quantity, 0)]
+        [InlineData(NumberKind.Weight, 3)]
+        [DisplayName("ResolveDecimals 單位碼不在主檔時退框架預設（Quantity 0、Weight 3）")]
+        public void ResolveDecimals_UnknownUnit_FrameworkDefault(NumberKind kind, int expected)
+        {
+            Assert.Equal(expected, NumberFormatResolver.ResolveDecimals(kind, Ctx(), "XXX"));
+        }
+
+        [Fact]
+        [DisplayName("RoundByKind 單位碼不在主檔時依框架預設捨入（Weight 3 位、Quantity 0 位）")]
+        public void RoundByKind_UnknownUnit_RoundsToFrameworkDefault()
+        {
+            Assert.Equal(1.235m, NumberFormatResolver.RoundByKind(1.2345m, NumberKind.Weight, Ctx(), "XXX"));
+            Assert.Equal(2m, NumberFormatResolver.RoundByKind(1.5m, NumberKind.Quantity, Ctx(), "XXX"));
+        }
+
+        [Fact]
+        [DisplayName("ResolveDecimals 公司多載：數量回框架預設，公司覆寫不參與")]
+        public void ResolveDecimals_CompanyOverload_Quantity_FrameworkDefault()
+        {
+            var company = CompanyWithOverride(NumberKind.Quantity, 2);
+
+            Assert.Equal(0, NumberFormatResolver.ResolveDecimals(NumberKind.Quantity, company));
+        }
+
+        [Fact]
+        [DisplayName("RoundByKind 公司多載：數量沒有單位碼 → 原值返回")]
+        public void RoundByKind_CompanyOverload_Quantity_ReturnsValueUnchanged()
+        {
+            var company = CompanyWithOverride(NumberKind.Quantity, 0);
+
+            Assert.Equal(1.5m, NumberFormatResolver.RoundByKind(1.5m, NumberKind.Quantity, company));
         }
 
         [Fact]

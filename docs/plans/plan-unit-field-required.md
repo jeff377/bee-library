@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 0 | 設計裁定（D1–D6） | ✅ 已完成（2026-09-11） |
-| 1 | 框架：解析器、計算器、`Bake` + 測試 + 範例 + 文件 | 📝 待做 |
+| 1 | 框架：解析器、計算器、`Bake` + 測試 + 範例 + 文件 | ✅ 已完成（2026-09-11） |
 | 2 | DefineEditor 設計期檢查（`FormSchemaValidator`） | 📝 待做 |
 
 ## 背景
@@ -186,6 +186,43 @@ B 與 E 傳進 `ResolveDecimals` 的 `refCode` 都是空的，解析器分不出
 - `dotnet build --configuration Release`（`Bee.Library.slnx`、含 DemoCenter 的 `Bee.Samples.slnx`、`Bee.Tools.slnx`）＋ `./test.sh` 全部。
 - 沒有 SQL 或 provider 異動，精簡模式 CI 即可；push 前照規則詢問是否 `[all-db]`。
 - commit 帶 pathspec；message 標 `!`，寫明「行為破壞、二進位相容、PublicAPI 無異動」（沒有簽章變更）。
+
+## 階段 1 執行結果（2026-09-11）
+
+### 範圍對帳
+
+實際改動與 1a–1g 宣告一致，多出一檔：
+
+- `src/Bee.Api.Client/Definitions/FormDefinitionLoader.cs`：呼叫 `Bake` 那段註解寫「綁了幣別或單位的欄位才不 bake」，
+  改後所有數量／重量欄都不 bake，註解同步。只改註解。
+
+另有兩處在宣告檔案內、但 1a–1g 沒有逐條列出：
+
+- `FormExpressionCalculator.ApplyFieldExpressions`／`ApplyComputedRow` 補 `<exception cref="InvalidOperationException">`。
+- cookbook〈Two rules that are easy to get wrong〉的 round-then-sum 那句原本教「以公司多載 `RoundByKind(value, kind, company)` 捨明細」，
+  改後該多載對數量／重量原值返回，改為「金額與數量／重量用帶參照代碼的多載」；〈Units of measure〉那段一併更正
+  `AmountColumnSummary` 的描述（Grid 沒有內建頁尾，由宿主接上）。
+
+### 平行路徑
+
+- 其他 head：全 `src/`、`tools/`、`apps/` 只有 `Bee.Db` 的 `DbDefineStorage` 與 `Bee.Api.Core` 的 wire 契約碰到 `UnitSettings`，
+  都只負責存取與序列化，沒有自行解析位數。
+- `UnitSettings.GetDecimals` 改完後在 `src/` 已無呼叫端；屬框架公開 API，保留。
+- 其餘提到 `UnitSettings` 的公開文件（`caching`、`definition-files-overview`、`development-constraints`、
+  `framework-capabilities`、`terminology`，雙語）沒有「退公司位數」的描述，不需改。
+
+### 建置與測試
+
+- `Bee.Library.slnx`、`samples/Bee.Samples.slnx`、`tools/Bee.Tools.slnx`：Release 0 警告 0 錯誤。
+- `./test.sh` 全套（四個 DB 容器皆在跑）：17 個測試專案全數通過；唯一略過的
+  `Login_WithRsaKeyPair_ReturnsDecryptableSessionKey` 為既有標記，與本次無關。
+- 新增與改寫的解析器、`Bake`、計算器測試以 filter 單獨確認實際執行並通過。
+- `./check-public-docs.sh`：只有規則已列的已知誤報。
+
+### 相容性與未驗證項
+
+- PublicAPI 無異動（沒有簽章變更）；行為破壞、二進位相容。
+- DemoCenter 的 `NumberFormatModule` 只確認建置通過，**沒有啟動畫面驗證**。
 
 ## 階段 2：DefineEditor 設計期檢查
 

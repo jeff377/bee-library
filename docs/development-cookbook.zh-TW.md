@@ -582,22 +582,20 @@ var filter = new FilterGroup(LogicalOperator.And)
 
 | `NumberKind` | 捨入策略 | 小數位來源 | 框架預設 | 用途 |
 |-------------|---------|-----------|:-------:|-----|
-| `Quantity` / `Weight` | `Round` | `Unit`（回退至公司） | 0 / 3 | 數量、重量 |
+| `Quantity` / `Weight` | `Round` | `Unit`（必須綁 `UnitField`） | 0 / 3 | 數量、重量 |
 | `Amount` | `Round` | `Currency`（回退至公司） | 2 | 金額、稅額、合計 |
 | `Percent` | `Round` | `Company` | 2 | 百分比 |
 | `UnitPrice` / `Cost` | `Preserve` | `Company`（僅顯示用） | 4 | 單價、成本 |
 | `ExchangeRate` | `Preserve` | `SystemFixed` | 5 | 匯率 |
 
-> `Currency` 來源由多幣別增量（見下）解析；`Unit` 來源在單位（unit-of-measure）增量取代該回退之前，仍回退至公司覆寫表。列舉與上表不變。
-
 ### 兩條容易寫錯的規則
 
-- **Round-then-sum（ERP 不變量）。** 對 `Round` 類 kind，合計必須等於**已個別捨入的明細之和**，絕不是全精度加總後才在最後捨入一次。每筆明細先以 `NumberFormatResolver.RoundByKind(value, kind, company)` 捨入 —— 金額則用幣別感知的 `RoundByKind(value, kind, ctx, refCode)`（見下）—— 再把已捨入的值相加。這保證 `Σ 明細 == 合計`。
+- **Round-then-sum（ERP 不變量）。** 對 `Round` 類 kind，合計必須等於**已個別捨入的明細之和**，絕不是全精度加總後才在最後捨入一次。每筆明細先以 `NumberFormatResolver.RoundByKind(value, kind, company)` 捨入 —— 金額與數量／重量則用參照感知的 `RoundByKind(value, kind, ctx, refCode)`，並傳入其幣別或單位代碼（見下）—— 再把已捨入的值相加。這保證 `Σ 明細 == 合計`。
 - **`Preserve` 絕不寫入捨入後的值。** `UnitPrice` / `Cost` / `ExchangeRate` 以輸入精度儲存；其小數位僅供顯示。`RoundByKind` 對這些值原樣返回。對來源值捨入會把誤差注入下游 —— 不要這麼做。（就 API 匯入而言，唯一的硬邊界是 DB scale；見 [ADR-026](adr/adr-026-numeric-semantics-rounding.md) 中的持久化邊界決策 D6。）
 
 ### 顯示格式於交付時烘焙（bake）
 
-`SystemBusinessObject.LoadAndLocalizeSchema` 複製（clone）快取的 `FormSchema` 並呼叫 `NumberFormatApplier.Bake(clone, company)`，對每個沒有明確格式的 `NumberKind` 欄位設定 `FormField.NumberFormat`（例如 `"N2"`、`"P4"`、`"N5"`）。作者自行提供的 `NumberFormat` 永遠優先。快取的 schema 絕不被異動 —— 烘焙只在每次呼叫的 clone 上執行（見該方法的不可變性註解）。
+定義 API 照原樣供應 `FormSchema`，烘焙由消費端負責：在 .NET 各 head 中，由 `FormDefinitionLoader.GetLocalizedSchemaAsync`（`Bee.Api.Client`）複製（clone）快取的 schema 並呼叫 `NumberFormatApplier.Bake(clone, company)`，對每個來源為公司或系統、且沒有明確格式的 `NumberKind` 欄位設定 `FormField.NumberFormat`（例如 `"N2"`、`"P4"`、`"N5"`）。金額與數量／重量不烘焙，而是逐列依其幣別或單位解析。作者自行提供的 `NumberFormat` 永遠優先。快取的 schema 絕不被異動 —— 烘焙只在每次呼叫的 clone 上執行（見該方法的 remarks）。
 
 由於格式是從 session 公司的小數位解析而來，同一份 schema 交付給兩家公司可能帶有不同格式（例如 `Percent` 為 `P2` vs `P4`）。`SystemFixed` 類 kind（`ExchangeRate`）忽略任何公司覆寫，永遠使用框架預設。
 
@@ -619,7 +617,16 @@ var filter = new FilterGroup(LogicalOperator.And)
 
 `Quantity` / `Weight` 的小數位跟隨**計量單位**而非公司（KG = 3、PCS = 0 —— 類似 SAP T006），與金額對幣別完全平行。單位主檔為系統層級定義 **`UnitSettings`**（`DefineType.UnitSettings`，精選表；每個 `UnitItem` 直接儲存其 `Decimals`）。它透過一般的 `GetDefine` 通道送達 client；主檔缺漏則回退至框架預設。
 
-每個數量／重量欄位透過 `FormField.UnitField` 綁定一個**單位欄位**（SAP UNIT）（沒有主檔層級的單位 —— 單位是逐列的）。解析優先序為：**綁定的 `UnitField` 值 → 公司小數位 → 框架預設**。交付時，`Bake` 不烘焙綁定 `UnitField` 的欄位（執行時依單位）；未綁定的數量／重量欄位回退至公司小數位並被烘焙。伺服器端捨入使用帶有攜帶 `UnitSettings` 之 `RoundingContext` 的 `RoundByKind(value, kind, ctx, unitCode)`；round-then-sum 逐單位成立（混合單位的欄不存在有意義的合計）。Grid 與 `NumericEdit` 以與幣別相同的方式逐格／逐列解析單位（`AmountColumnSummary` 就像處理混合幣別一樣，對混合單位的頁尾合計設限）。
+每個數量／重量欄位**必須**透過 `FormField.UnitField` 綁定一個**單位欄位**（SAP UNIT）（沒有主檔層級的單位 —— 單位是逐列的，單位欄從同一列讀取）。不需要單位的數值（例如單位隱含在語意裡的件數）是一般數值欄位，不標 `NumberKind`。`NumberFormatResolver` 不會從公司取這些小數位：公司有本幣可以回退，但沒有預設單位。
+
+| 情況 | `RoundByKind(value, kind, ctx, unitCode)` |
+|------|------|
+| 單位代碼在 `UnitSettings` 中找得到 | 捨入至該單位的小數位 |
+| 該列的單位代碼為空 | 原值返回，不捨入 |
+| 單位代碼不在 `UnitSettings` 中，或未部署單位主檔 | 捨入至該 kind 的框架預設 |
+| 數量／重量計算欄沒有 `UnitField` | `FormExpressionCalculator` 擲 `InvalidOperationException` |
+
+`Bake` 從不烘焙數量／重量欄位。伺服器端捨入傳入攜帶 `UnitSettings` 的 `RoundingContext`；round-then-sum 逐單位成立（混合單位的欄不存在有意義的合計）。Grid 與 `NumericEdit` 以與幣別相同的方式逐格／逐列解析單位。`AmountColumnSummary` 可以為混合單位的頁尾合計設限，但 Grid 本身沒有頁尾 —— 由宿主自行接上（見 DemoCenter 的 `MultiUnitModule`）。
 
 ### DB 儲存精度是容量上限，不是顯示／計算設定
 

@@ -6,7 +6,7 @@ namespace Bee.Definition.Settings
 {
     /// <summary>
     /// System-level unit-of-measure master (SAP T006-style): a curated table of <see cref="UnitItem"/>
-    /// carrying each unit's display decimals. Unit decimals are system-wide and independent of company;
+    /// carrying each unit's decimals. Unit decimals are system-wide and independent of company;
     /// quantities and weights bind a unit field and resolve their decimals from the bound unit's value.
     /// Persisted as a singleton define through <see cref="Bee.Definition.Storage.IDefineStorage"/> (file or DB) and shipped to the
     /// client so the UI can resolve quantity/weight decimals at runtime.
@@ -21,7 +21,7 @@ namespace Bee.Definition.Settings
     [XmlRoot("UnitSettings")]
     public class UnitSettings : CollectionBase<UnitItem>
     {
-        /// <summary>The fallback decimals used when a unit code is not found.</summary>
+        /// <summary>The decimals <see cref="GetDecimals"/> returns when a unit code is not found.</summary>
         public const int FallbackDecimals = 0;
 
         /// <summary>
@@ -42,9 +42,13 @@ namespace Bee.Definition.Settings
         }
 
         /// <summary>
-        /// Gets the display decimal places for the specified unit code, or <see cref="FallbackDecimals"/>
+        /// Gets the decimal places for the specified unit code, or <see cref="FallbackDecimals"/>
         /// (<c>0</c>) when the code is not defined.
         /// </summary>
+        /// <remarks>
+        /// This is a plain table lookup. <see cref="NumberFormatResolver"/> does not use this fallback: for
+        /// a code that is not defined it applies the framework default of the quantity or weight kind.
+        /// </remarks>
         /// <param name="code">The unit code.</param>
         public int GetDecimals(string code)
         {

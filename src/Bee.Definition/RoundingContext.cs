@@ -32,7 +32,8 @@ namespace Bee.Definition
 
         /// <summary>
         /// Gets the system unit-of-measure master, or <c>null</c> when no unit master is deployed
-        /// (quantities/weights then fall back to the company decimals).
+        /// (quantities/weights then use the framework default for their kind; they never use the company
+        /// decimals).
         /// </summary>
         public UnitSettings? UnitSettings { get; init; }
 

@@ -605,22 +605,20 @@ Numeric fields declare a semantic **`NumberKind`** on `FormField` (propagated to
 
 | `NumberKind` | Rounding policy | Decimals source | Framework default | Use |
 |-------------|-----------------|-----------------|:-----------------:|-----|
-| `Quantity` / `Weight` | `Round` | `Unit` (falls back to company) | 0 / 3 | quantities, weights |
+| `Quantity` / `Weight` | `Round` | `Unit` (a `UnitField` is required) | 0 / 3 | quantities, weights |
 | `Amount` | `Round` | `Currency` (falls back to company) | 2 | amounts, tax, totals |
 | `Percent` | `Round` | `Company` | 2 | percentages |
 | `UnitPrice` / `Cost` | `Preserve` | `Company` (display-only) | 4 | prices, costs |
 | `ExchangeRate` | `Preserve` | `SystemFixed` | 5 | exchange rates |
 
-> The `Currency` source is resolved by the multi-currency increment (below); the `Unit` source still falls back to the company override table until the unit-of-measure increment replaces that fallback. The enum and the table above do not change.
-
 ### Two rules that are easy to get wrong
 
-- **Round-then-sum (ERP invariant).** For `Round` kinds, a total must equal the **sum of already-rounded details**, never a full-precision sum rounded once at the end. Round each detail with `NumberFormatResolver.RoundByKind(value, kind, company)` — or the currency-aware `RoundByKind(value, kind, ctx, refCode)` for amounts (below) — then add the rounded values. This guarantees `Σ details == total`.
+- **Round-then-sum (ERP invariant).** For `Round` kinds, a total must equal the **sum of already-rounded details**, never a full-precision sum rounded once at the end. Round each detail with `NumberFormatResolver.RoundByKind(value, kind, company)` — or the reference-aware `RoundByKind(value, kind, ctx, refCode)` for amounts and for quantities/weights, passing their currency or unit code (below) — then add the rounded values. This guarantees `Σ details == total`.
 - **Preserve never writes a rounded value.** `UnitPrice` / `Cost` / `ExchangeRate` are stored at input precision; their decimals are display-only. `RoundByKind` returns these values unchanged. Rounding a source value injects error downstream — do not do it. (For API import, the only hard boundary is DB scale; see the persistence-boundary decision D6 in [ADR-026](adr/adr-026-numeric-semantics-rounding.md).)
 
 ### Display format is baked at delivery
 
-`SystemBusinessObject.LoadAndLocalizeSchema` clones the cached `FormSchema` and calls `NumberFormatApplier.Bake(clone, company)`, which sets `FormField.NumberFormat` (e.g. `"N2"`, `"P4"`, `"N5"`) on every `NumberKind` field that has no explicit format. An author-supplied `NumberFormat` always wins. The cached schema is never mutated — baking runs on the per-call clone only (see the immutability note on that method).
+The definition APIs serve a `FormSchema` exactly as stored, so baking is the consuming side's job: in the .NET heads, `FormDefinitionLoader.GetLocalizedSchemaAsync` (`Bee.Api.Client`) clones the cached schema and calls `NumberFormatApplier.Bake(clone, company)`, which sets `FormField.NumberFormat` (e.g. `"N2"`, `"P4"`, `"N5"`) on every company- or system-sourced `NumberKind` field that has no explicit format. Amounts and quantities/weights are not baked; they resolve per row from their currency or unit. An author-supplied `NumberFormat` always wins. The cached schema is never mutated — baking runs on the per-call clone only (see the remarks on that method).
 
 Because the format is resolved from the session company's decimals, the same schema delivered to two companies can carry different formats (e.g. `Percent` at `P2` vs `P4`). `SystemFixed` kinds (`ExchangeRate`) ignore any company override and always use the framework default.
 
@@ -642,7 +640,16 @@ The currency decimals are **system-wide** (in `CurrencySettings`); only the **ca
 
 `Quantity` / `Weight` decimals follow the **unit of measure**, not the company (KG = 3, PCS = 0 — like SAP T006), exactly parallel to amounts and currency. The unit master is the system-level define **`UnitSettings`** (`DefineType.UnitSettings`, curated table; each `UnitItem` stores its `Decimals` directly). It ships to the client through the ordinary `GetDefine` channel; a missing master falls back to the framework default.
 
-Each quantity/weight field binds a **unit field** (SAP UNIT) via `FormField.UnitField` (there is no master-level unit — units are per row). The resolution priority is: **bound `UnitField` value → company decimals → framework default**. At delivery, `Bake` does not bake fields that bind a `UnitField` (runtime by unit); unbound quantity/weight fields fall back to the company decimals and are baked. Server-side rounding uses `RoundByKind(value, kind, ctx, unitCode)` with a `RoundingContext` carrying `UnitSettings`; round-then-sum holds per unit (a mixed-unit column has no meaningful total). The grid and `NumericEdit` resolve the unit per cell/row the same way as currency (`AmountColumnSummary` gates a mixed-unit footer total just like mixed currency).
+Each quantity/weight field **must** bind a **unit field** (SAP UNIT) via `FormField.UnitField` (there is no master-level unit — units are per row, and the unit field is read from the same row). A value that needs no unit — a count whose unit is implied — is a plain numeric field with no `NumberKind`. `NumberFormatResolver` never takes these decimals from the company: a company has a home currency to fall back to, but no default unit.
+
+| Case | `RoundByKind(value, kind, ctx, unitCode)` |
+|------|------|
+| The unit code is found in `UnitSettings` | Rounds to that unit's decimals |
+| The row's unit code is empty | Returns the value unchanged |
+| The unit code is not in `UnitSettings`, or no unit master is deployed | Rounds to the framework default for the kind |
+| A computed quantity/weight field has no `UnitField` | `FormExpressionCalculator` throws `InvalidOperationException` |
+
+`Bake` never bakes quantity/weight fields. Server-side rounding passes a `RoundingContext` carrying `UnitSettings`; round-then-sum holds per unit (a mixed-unit column has no meaningful total). The grid and `NumericEdit` resolve the unit per cell/row the same way as currency. `AmountColumnSummary` can gate a footer total that mixes units, but the grid has no footer of its own — the host wires it (see the DemoCenter `MultiUnitModule`).
 
 ### DB storage precision is a capacity ceiling, not a display/calc setting
 

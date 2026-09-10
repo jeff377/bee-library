@@ -66,8 +66,9 @@ namespace Bee.Definition.Identity
         /// <summary>
         /// Gets or sets the company-level decimal-places override table. Empty means every kind uses
         /// the framework default. Loaded from the <c>number_formats_xml</c> column by
-        /// <c>CompanyRepository</c>; carries Percent and UnitPrice/Cost display decimals plus the
-        /// Quantity/Weight fallback when no unit is bound.
+        /// <c>CompanyRepository</c>; carries Percent and UnitPrice/Cost display decimals. Quantity and
+        /// Weight entries have no effect: <see cref="NumberFormatResolver"/> resolves those kinds from
+        /// their unit, never from the company.
         /// </summary>
         public CompanyNumberFormats NumberFormats { get; set; } = [];
 

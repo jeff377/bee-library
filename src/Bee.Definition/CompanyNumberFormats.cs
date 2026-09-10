@@ -5,9 +5,9 @@ namespace Bee.Definition
 {
     /// <summary>
     /// A company-level table of <see cref="NumberKind"/> decimal-places overrides. Carries the
-    /// Percent and UnitPrice/Cost display decimals plus the Quantity/Weight fallback used when no
-    /// unit is bound. Amount (currency), ExchangeRate (system-fixed), and unit-bound Quantity/Weight
-    /// are resolved elsewhere and are not stored here.
+    /// Percent and UnitPrice/Cost display decimals. Amount (currency) and ExchangeRate (system-fixed)
+    /// are resolved elsewhere and are not stored here. Quantity/Weight entries have no effect:
+    /// <see cref="NumberFormatResolver"/> resolves those kinds from their unit, never from the company.
     /// </summary>
     /// <remarks>
     /// Uses <see cref="CollectionBase{T}"/> (not a keyed collection) so the table travels

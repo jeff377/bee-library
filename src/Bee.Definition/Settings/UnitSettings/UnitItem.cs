@@ -29,7 +29,7 @@ namespace Bee.Definition.Settings
         /// it — both went away with the attributes.
         /// </remarks>
         /// <param name="code">The unit code (the key), for example <c>KG</c> or <c>PCS</c>.</param>
-        /// <param name="decimals">The display decimal places for this unit.</param>
+        /// <param name="decimals">The decimal places for this unit.</param>
         /// <param name="dimension">The dimension grouping (optional), for example <c>weight</c>.</param>
         /// <param name="name">The display name.</param>
         public UnitItem(string code, int decimals, string dimension = "", string name = "")
@@ -48,8 +48,9 @@ namespace Bee.Definition.Settings
         public string Code { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the display decimal places for this unit (SAP T006 <c>ANDEC</c>; for example
-        /// <c>KG</c> = 3, <c>PCS</c> = 0).
+        /// Gets or sets the decimal places for this unit, used both to display and to round quantities
+        /// and weights in it (for example <c>KG</c> = 3, <c>PCS</c> = 0). SAP T006 keeps these apart as
+        /// <c>DECAN</c> (display) and <c>ANDEC</c> (rounding); this framework uses one value for both.
         /// </summary>
         [XmlAttribute]
         public int Decimals { get; set; }

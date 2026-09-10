@@ -7,14 +7,23 @@ namespace Bee.Definition
     /// <see cref="NumberKind"/>. Amounts (<see cref="DecimalsSource.Currency"/>) resolve their decimals
     /// from the currency master by the reference currency code, and quantities/weights
     /// (<see cref="DecimalsSource.Unit"/>) resolve from the unit master by the reference unit code;
-    /// company and system-fixed kinds resolve as in the core increment. A reference kind with no
-    /// resolvable code (or no master deployed) falls back to the company decimals.
+    /// company and system-fixed kinds resolve as in the core increment. An amount with no currency
+    /// master deployed falls back to the company decimals; a quantity or weight never uses the company.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// An amount with no reference currency resolves by the company's
     /// <see cref="CompanyInfo.DefaultCurrency"/>, which is required: when a company is present but
     /// carries no default currency, the resolving members throw <see cref="InvalidOperationException"/>
     /// instead of falling back. Only a call with no company context falls back to framework defaults.
+    /// </para>
+    /// <para>
+    /// A quantity or weight takes its decimals only from its unit, because a company has a home currency
+    /// but no default unit. A unit code that is not in the unit master, or a missing master, resolves to
+    /// the framework default for the kind. An empty unit code also resolves to that default for display,
+    /// but <see cref="RoundByKind(decimal, NumberKind, RoundingContext, string?)"/> returns the value
+    /// unchanged instead of rounding it to a decimal count that no unit chose.
+    /// </para>
     /// </remarks>
     public static class NumberFormatResolver
     {
@@ -24,12 +33,18 @@ namespace Bee.Definition
         /// Resolves the decimal places for the kind. For <see cref="DecimalsSource.Currency"/> amounts,
         /// the decimals come from the currency master keyed by <paramref name="refCode"/> (the amount's
         /// current currency); an empty <paramref name="refCode"/> falls back to the company's default
-        /// currency, and only with no company context to framework defaults. System-fixed kinds always
-        /// use the framework default; company and unit-fallback kinds use the company override table.
+        /// currency, and only with no company context to framework defaults. For
+        /// <see cref="DecimalsSource.Unit"/> quantities and weights, the decimals come from the unit master
+        /// keyed by <paramref name="refCode"/>; an empty or unknown code, or a missing master, yields the
+        /// framework default. System-fixed kinds always use the framework default; company kinds use the
+        /// company override table.
         /// </summary>
         /// <param name="kind">The number kind.</param>
-        /// <param name="ctx">The resolution context (company + currency master).</param>
-        /// <param name="refCode">The reference currency code for amount fields; ignored for other kinds.</param>
+        /// <param name="ctx">The resolution context (company, currency master, and unit master).</param>
+        /// <param name="refCode">
+        /// The reference code: the currency code for amounts, the unit code for quantities and weights;
+        /// ignored for other kinds.
+        /// </param>
         /// <exception cref="InvalidOperationException">
         /// <paramref name="kind"/> is an amount, <paramref name="refCode"/> is empty, and the company in
         /// <paramref name="ctx"/> has no default currency.
@@ -55,11 +70,10 @@ namespace Bee.Definition
 
             if (source == DecimalsSource.Unit)
             {
-                // Quantities/weights resolve from the bound unit; with no unit code (or no unit master)
-                // they fall back to the company decimals (else the framework default).
-                if (ctx.UnitSettings != null && !string.IsNullOrEmpty(refCode))
-                    return ctx.UnitSettings.GetDecimals(refCode);
-                return ctx.Company?.GetDecimals(kind) ?? NumberKindProfile.GetDefaultDecimals(kind);
+                // Never the company: a company has a home currency to fall back to, but no default unit.
+                // An empty or unknown code, or no unit master, leaves only the kind's framework default.
+                var unit = string.IsNullOrEmpty(refCode) ? null : ctx.UnitSettings?.Find(refCode);
+                return unit?.Decimals ?? NumberKindProfile.GetDefaultDecimals(kind);
             }
 
             // Company source.
@@ -67,9 +81,10 @@ namespace Bee.Definition
         }
 
         /// <summary>
-        /// Resolves the decimal places for the kind using company/framework sources only (no currency
-        /// reference). Amounts fall back to the company default currency when a currency master is set,
-        /// otherwise to framework defaults.
+        /// Resolves the decimal places for the kind using company/framework sources only (no reference
+        /// code). Amounts fall back to the company default currency when a currency master is set,
+        /// otherwise to framework defaults. Quantities and weights have no unit code here, so they use the
+        /// framework default.
         /// </summary>
         /// <param name="kind">The number kind.</param>
         /// <param name="company">The current company, or <c>null</c> when there is no company context.</param>
@@ -87,7 +102,10 @@ namespace Bee.Definition
         /// </summary>
         /// <param name="kind">The number kind.</param>
         /// <param name="ctx">The resolution context.</param>
-        /// <param name="refCode">The reference currency code for amount fields; ignored for other kinds.</param>
+        /// <param name="refCode">
+        /// The reference code: the currency code for amounts, the unit code for quantities and weights;
+        /// ignored for other kinds.
+        /// </param>
         /// <exception cref="InvalidOperationException">
         /// <paramref name="kind"/> is an amount, <paramref name="refCode"/> is empty, and the company in
         /// <paramref name="ctx"/> has no default currency.
@@ -99,6 +117,7 @@ namespace Bee.Definition
 
         /// <summary>
         /// Resolves the .NET display format string for the kind using company/framework sources only.
+        /// Quantities and weights have no unit code here, so they use the framework default.
         /// </summary>
         /// <param name="kind">The number kind.</param>
         /// <param name="company">The current company, or <c>null</c> when there is no company context.</param>
@@ -118,10 +137,17 @@ namespace Bee.Definition
         /// already-rounded values so the total equals the sum of details. Never sum at full precision
         /// and round once at the end.
         /// </summary>
+        /// <remarks>
+        /// A quantity or weight with an empty <paramref name="refCode"/> is returned unchanged: its unit is
+        /// not known yet, and rounding it would discard digits that the eventual unit may keep.
+        /// </remarks>
         /// <param name="value">The value to round.</param>
         /// <param name="kind">The number kind.</param>
         /// <param name="ctx">The resolution context.</param>
-        /// <param name="refCode">The reference currency code for amount fields; ignored for other kinds.</param>
+        /// <param name="refCode">
+        /// The reference code: the currency code for amounts, the unit code for quantities and weights;
+        /// ignored for other kinds.
+        /// </param>
         /// <exception cref="InvalidOperationException">
         /// <paramref name="kind"/> is an amount, <paramref name="refCode"/> is empty, and the company in
         /// <paramref name="ctx"/> has no default currency.
@@ -131,12 +157,17 @@ namespace Bee.Definition
             if (NumberKindProfile.GetRoundingPolicy(kind) == RoundingPolicy.Preserve)
                 return value;
 
+            // No unit yet (for example an empty unit cell on a new line): keep full precision.
+            if (NumberKindProfile.GetDecimalsSource(kind) == DecimalsSource.Unit && string.IsNullOrEmpty(refCode))
+                return value;
+
             return Math.Round(value, ResolveDecimals(kind, ctx, refCode), MidpointRounding.AwayFromZero);
         }
 
         /// <summary>
-        /// Rounds a value using company/framework sources only (no currency reference). See
-        /// <see cref="RoundByKind(decimal, NumberKind, RoundingContext, string?)"/> for the policy.
+        /// Rounds a value using company/framework sources only (no reference code). See
+        /// <see cref="RoundByKind(decimal, NumberKind, RoundingContext, string?)"/> for the policy; a
+        /// quantity or weight is returned unchanged because there is no unit code.
         /// </summary>
         /// <param name="value">The value to round.</param>
         /// <param name="kind">The number kind.</param>

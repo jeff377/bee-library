@@ -87,8 +87,8 @@ namespace Bee.Api.Client.Definitions
             }
 
             // The server serves definitions exactly as stored, so the company's decimal places
-            // are applied here. Kinds bound to a currency or a unit are left for the UI to
-            // resolve per row. `Bake` skips those itself.
+            // are applied here. Amounts and quantities/weights are left for the UI to resolve per
+            // row from their currency or unit. `Bake` skips those itself.
             NumberFormatApplier.Bake(schema, CompanyAccessor?.Invoke());
             return schema;
         }

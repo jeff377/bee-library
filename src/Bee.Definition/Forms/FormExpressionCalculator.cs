@@ -94,6 +94,10 @@ namespace Bee.Definition.Forms
         /// <param name="dataSet">The data set to apply expressions to.</param>
         /// <param name="roundingContext">The rounding context for computed numeric fields.</param>
         /// <param name="timeZoneId">The user's IANA time zone id, seen by the <c>Today()</c> / <c>Now()</c> helpers; blank means UTC.</param>
+        /// <exception cref="InvalidOperationException">
+        /// A computed quantity or weight field has no <see cref="FormField.UnitField"/>, or a computed amount
+        /// resolves against a company with no default currency.
+        /// </exception>
         public void ApplyFieldExpressions(FormSchema schema, DataSet dataSet, RoundingContext roundingContext,
             string timeZoneId = "")
         {
@@ -205,6 +209,10 @@ namespace Bee.Definition.Forms
         /// <param name="roundingContext">The rounding context for computed numeric fields.</param>
         /// <returns>The names of the fields whose value changed (empty when nothing changed).</returns>
         /// <param name="timeZoneId">The user's IANA time zone id, seen by the <c>Today()</c> / <c>Now()</c> helpers; blank means UTC.</param>
+        /// <exception cref="InvalidOperationException">
+        /// A computed quantity or weight field has no <see cref="FormField.UnitField"/>, or a computed amount
+        /// resolves against a company with no default currency.
+        /// </exception>
         public IReadOnlyList<string> ApplyComputedRow(FormSchema schema, FormTable formTable, DataRow row,
             RoundingContext roundingContext, string timeZoneId = "")
         {
@@ -333,6 +341,7 @@ namespace Bee.Definition.Forms
 
                 if (result is decimal numeric)
                 {
+                    EnsureUnitBound(field, formTable);
                     result = NumberFormatResolver.RoundByKind(
                         numeric, field.NumberKind, roundingContext, ResolveRefCode(field, schema, variables));
                 }
@@ -346,6 +355,20 @@ namespace Bee.Definition.Forms
                 variables[field.FieldName] = result;
             }
             return changed;
+        }
+
+        /// <summary>
+        /// Throws when a quantity or weight field has no <see cref="FormField.UnitField"/>. Its decimals
+        /// come only from its unit, so rounding it without one would apply a decimal count that no unit
+        /// chose. A value that needs no unit should not carry either kind.
+        /// </summary>
+        private static void EnsureUnitBound(FormField field, FormTable formTable)
+        {
+            if (NumberKindProfile.GetDecimalsSource(field.NumberKind) != DecimalsSource.Unit) { return; }
+            if (StringUtilities.IsNotEmpty(field.UnitField)) { return; }
+
+            throw new InvalidOperationException(
+                $"Field '{formTable.TableName}.{field.FieldName}' is a {field.NumberKind} field but has no UnitField.");
         }
 
         /// <summary>

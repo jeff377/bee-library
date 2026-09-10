@@ -197,10 +197,17 @@ namespace Bee.Definition.Forms
 
         /// <summary>
         /// Gets or sets the name of the field that holds this quantity/weight field's unit-of-measure
-        /// code (a SAP UNIT reference). Applies to <see cref="Definition.NumberKind.Quantity"/> /
-        /// <see cref="Definition.NumberKind.Weight"/> fields: when set, the decimal places resolve from
-        /// that field's current unit. Empty falls back to the company decimals.
+        /// code (a SAP UNIT reference). Required for <see cref="Definition.NumberKind.Quantity"/> /
+        /// <see cref="Definition.NumberKind.Weight"/> fields, whose decimal places resolve only from that
+        /// field's current unit. A value that needs no unit should not carry either kind.
         /// </summary>
+        /// <remarks>
+        /// The unit field is read from the same row being computed, so it has to be a field of the same
+        /// table; a name that is not found there resolves as an empty unit code.
+        /// <see cref="FormExpressionCalculator"/> throws <see cref="InvalidOperationException"/> when it
+        /// rounds a computed quantity or weight field that leaves this empty. How an empty or unknown unit
+        /// code resolves is described on <see cref="NumberFormatResolver"/>.
+        /// </remarks>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
         [Description("Name of the field holding this quantity/weight field's unit code (SAP UNIT reference).")]

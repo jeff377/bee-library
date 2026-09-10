@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Data;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
+using Bee.Definition.Settings;
 using Bee.Expressions;
 
 namespace Bee.Definition.UnitTests.Forms
@@ -214,6 +215,92 @@ namespace Bee.Definition.UnitTests.Forms
 
             Assert.True(map.ContainsKey("PRICE"));
             Assert.True(map.ContainsKey("Qty"));
+        }
+
+        private static FormSchema BuildPackingSchema(NumberKind kind, string unitField)
+        {
+            var schema = new FormSchema("Packing", "Packing") { CategoryId = "company" };
+            var table = schema.Tables!.Add("Packing", "Packing");
+            table.Fields!.Add(new FormField("qty", "Qty", FieldDbType.Decimal));
+            table.Fields!.Add(new FormField("uom", "Uom", FieldDbType.String));
+            table.Fields!.Add(new FormField("packed", "Packed", FieldDbType.Decimal)
+            {
+                NumberKind = kind,
+                UnitField = unitField,
+                ValueExpression = "qty * 1.23456m",
+                ReadOnly = true,
+            });
+            return schema;
+        }
+
+        private static DataTable BuildPackingTable(decimal qty, string uom)
+        {
+            var table = new DataTable("Packing");
+            table.Columns.Add("qty", typeof(decimal));
+            table.Columns.Add("uom", typeof(string));
+            table.Columns.Add("packed", typeof(decimal));
+            var row = table.NewRow();
+            row["qty"] = qty;
+            row["uom"] = uom;
+            table.Rows.Add(row);
+            return table;
+        }
+
+        private static UnitSettings KilogramOnly() => [new UnitItem("KG", 3, "weight", "Kilogram")];
+
+        [Theory]
+        [InlineData(NumberKind.Quantity)]
+        [InlineData(NumberKind.Weight)]
+        [DisplayName("ApplyComputedRow：數量／重量計算欄未綁 UnitField → 擲 InvalidOperationException")]
+        public void ApplyComputedRow_UnitKindWithoutUnitField_Throws(NumberKind kind)
+        {
+            var schema = BuildPackingSchema(kind, unitField: string.Empty);
+            var table = BuildPackingTable(qty: 2m, uom: "KG");
+            var ctx = new RoundingContext { UnitSettings = KilogramOnly() };
+
+            Assert.Throws<InvalidOperationException>(() =>
+                _calculator.ApplyComputedRow(schema, schema.MasterTable!, table.Rows[0], ctx));
+        }
+
+        [Fact]
+        [DisplayName("ApplyComputedRow：未綁 UnitField 的數量輸入欄（非計算欄）不擲")]
+        public void ApplyComputedRow_UnboundQuantityInputField_DoesNotThrow()
+        {
+            // qty is a Quantity input field with no UnitField; only computed fields are checked.
+            var schema = BuildOrderSchema();
+            var table = BuildOrderTable(price: 10m, qty: 3m);
+
+            var ex = Record.Exception(() =>
+                _calculator.ApplyComputedRow(schema, schema.MasterTable!, table.Rows[0], new RoundingContext()));
+
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        [DisplayName("ApplyComputedRow：綁了單位但該列單位空 → 計算結果不捨入")]
+        public void ApplyComputedRow_EmptyRowUnit_NotRounded()
+        {
+            var schema = BuildPackingSchema(NumberKind.Weight, unitField: "uom");
+            var table = BuildPackingTable(qty: 2m, uom: string.Empty);
+            var ctx = new RoundingContext { UnitSettings = KilogramOnly() };
+
+            _calculator.ApplyComputedRow(schema, schema.MasterTable!, table.Rows[0], ctx);
+
+            Assert.Equal(2.46912m, table.Rows[0]["packed"]);
+        }
+
+        [Fact]
+        [DisplayName("ApplyComputedRow：綁了單位且該列單位為 KG → 依單位捨入至 3 位")]
+        public void ApplyComputedRow_RowUnit_RoundsByUnit()
+        {
+            var schema = BuildPackingSchema(NumberKind.Weight, unitField: "uom");
+            var table = BuildPackingTable(qty: 2m, uom: "KG");
+            var ctx = new RoundingContext { UnitSettings = KilogramOnly() };
+
+            _calculator.ApplyComputedRow(schema, schema.MasterTable!, table.Rows[0], ctx);
+
+            // 2 * 1.23456 = 2.46912 → KG 3 位 → 2.469
+            Assert.Equal(2.469m, table.Rows[0]["packed"]);
         }
     }
 }

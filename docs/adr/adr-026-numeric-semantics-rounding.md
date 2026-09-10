@@ -94,6 +94,37 @@ ERP 數值（單價、成本、數量、重量、金額、百分比、匯率）�
 - 框架不代選預設幣別。`st_company.default_currency` 仍無資料庫預設值，由建立公司資料的一方寫入。
 - 既有部署中本幣空白的公司，升級後含金額計算的單據存檔與 UI 即時計算會擲例外，須先補值。
 
+### 2026-09-11：數量／重量必須綁定計量單位
+
+原決策 D1 表格寫「計量單位（綁 `UnitField`；無則退公司）」，D5 也讓未綁單位的數量／重量欄於交付時 bake 公司位數。
+**現改為：標成 `Quantity`／`Weight` 的欄位必須綁 `UnitField`，公司不再決定數量與重量的位數。**
+不需要單位的數值（件數、箱數這類單位隱含在語意裡的計數）用一般數值，不標 `NumberKind`。
+
+理由：
+
+- **兩條遞補鏈原本退到不同的東西。** 金額的遞補鏈每一步拿到的都是一個幣別代碼，公司只決定「用哪個幣別」，
+  位數由系統層幣別主檔決定；數量的遞補鏈第二步卻是公司直接給位數。
+- **單位沒有「本幣」的對應物。** 公司會有本幣當預設幣別，但不會有預設單位——同一張訂單可以同時賣 PCS 與 KG。
+  金額的遞補鏈能對齊到單位的只有「一定要綁定」那一段。
+- SAP 的 ABAP Dictionary 同樣要求 `QUAN` 型別的欄位指定參照的單位欄；不帶單位的數值用 `DEC`。
+
+執行期行為對齊多幣別，只在單位沒有對應物的地方分開：
+
+| 情況 | 數量／重量 | 對照金額 |
+|------|-----------|---------|
+| 未綁 `UnitField` | `FormExpressionCalculator` 捨入計算欄時擲 `InvalidOperationException`；顯示與 bake 不擲 | 公司沒有本幣時同樣是計算時擲、顯示不擲 |
+| 綁了但該列單位代碼空 | `RoundByKind` 原值返回，不捨入 | 金額退到表頭幣別、再退公司本幣；單位沒有可退的對象，拿不到位數就不丟資訊 |
+| 單位代碼不在單位主檔 | 退框架預設（Quantity 0／Weight 3） | 幣別退 0.01 |
+| 沒有部署單位主檔 | 退框架預設，不經公司 | 幣別會先查公司位數表 |
+
+連帶：
+
+- `NumberFormatApplier.Bake` 對所有 `Quantity`／`Weight` 欄一律不 bake，與金額一致。
+- 公司位數表（`CompanyInfo.NumberFormats`）裡的 `Quantity`／`Weight` 項不再生效。
+- 公司多載 `RoundByKind(value, kind, company)` 沒有單位代碼，對數量／重量原值返回；明細捨入要改用帶單位代碼的多載。
+- 原決策 D5 寫「於 `SystemBusinessObject.LoadAndLocalizeSchema` 的 per-call clone 上 bake」已不成立：
+  定義 API 照原樣供應 schema，bake 由消費端做（.NET 各 head 在 `Bee.Api.Client` 的 `FormDefinitionLoader`）。
+
 ## 參考
 
 - cookbook：`docs/development-cookbook.md` §Numeric Semantics, Company Decimals, and Rounding（how-to 與 API 入口）

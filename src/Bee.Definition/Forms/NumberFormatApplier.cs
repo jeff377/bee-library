@@ -47,9 +47,10 @@ namespace Bee.Definition.Forms
         /// <see cref="FormField.CurrencyField"/> inherits the master document currency field
         /// (<see cref="FormSchema.CurrencyField"/>) so every amount carries a concrete currency
         /// reference for the UI to resolve against. Likewise, <see cref="DecimalsSource.Unit"/>
-        /// quantities/weights that bind a <see cref="FormField.UnitField"/> are not baked (runtime by
-        /// unit); unbound ones fall back to the company decimals and are baked. Company and system-fixed
-        /// kinds are baked here.
+        /// quantities/weights are never baked: their decimals come from each row's unit at runtime, never
+        /// from the company. A quantity or weight without a <see cref="FormField.UnitField"/> is a schema
+        /// error that <see cref="FormExpressionCalculator"/> rejects when it rounds one; baking leaves such
+        /// a field unformatted. Company and system-fixed kinds are baked here.
         /// </remarks>
         /// <param name="schema">The schema to bake (mutated in place — pass a clone).</param>
         /// <param name="company">The current company, or <c>null</c> to use framework defaults.</param>
@@ -73,10 +74,9 @@ namespace Bee.Definition.Forms
                     continue;
                 }
 
-                // Quantities/weights bound to a unit field are runtime-resolved by unit — do not bake.
-                // Without a bound unit, they fall back to the company decimals and are baked here.
-                if (source == DecimalsSource.Unit && StringUtilities.IsNotEmpty(field.UnitField))
-                    continue;
+                // Quantities/weights resolve by each row's unit at runtime, and the company never supplies
+                // their decimals, so there is nothing to bake.
+                if (source == DecimalsSource.Unit) { continue; }
 
                 field.NumberFormat = NumberFormatResolver.ResolveFormat(field.NumberKind, company);
             }
