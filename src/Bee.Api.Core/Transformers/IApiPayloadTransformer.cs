@@ -14,14 +14,6 @@ namespace Bee.Api.Core.Transformers
         byte[] Encode(object payload, Type type);
 
         /// <summary>
-        /// Decompresses and deserializes the processed data back to the original object.
-        /// </summary>
-        /// <param name="payload">The processed data (typically a byte array).</param>
-        /// <param name="type">The target object type.</param>
-        /// <returns>The restored original data object.</returns>
-        object? Decode(object payload, Type type);
-
-        /// <summary>
         /// Serializes and compresses the specified object using an explicitly chosen serializer.
         /// </summary>
         /// <param name="payload">The raw data object to process.</param>
@@ -40,6 +32,14 @@ namespace Bee.Api.Core.Transformers
         byte[] Encode(object payload, Type type, IApiPayloadSerializer serializer)
             => throw new NotSupportedException(
                 $"{GetType().FullName} does not support per-request codec selection. Implement the three-argument Encode overload to serve clients that negotiate one.");
+
+        /// <summary>
+        /// Decompresses and deserializes the processed data back to the original object.
+        /// </summary>
+        /// <param name="payload">The processed data (typically a byte array).</param>
+        /// <param name="type">The target object type.</param>
+        /// <returns>The restored original data object.</returns>
+        object? Decode(object payload, Type type);
 
         /// <summary>
         /// Decompresses and deserializes the processed data using an explicitly chosen serializer.

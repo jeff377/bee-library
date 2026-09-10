@@ -228,14 +228,22 @@ namespace Bee.Api.Core.JsonRpc
         {
             if (stopwatch == null) { return; }
             stopwatch.Stop();
-            // A replay rejection is filed under its own kind: unlike an Error it says nothing is
-            // broken, and a run of them points at a drifted client clock or a caller resending
-            // captured packets — neither of which is visible once folded into generic errors.
-            var kind = rootEx is ReplayRejectedException ? AnomalyKind.Replay
-                : IsTimeout(rootEx) ? AnomalyKind.Timeout
-                : AnomalyKind.Error;
-            WriteApiAnomaly(method, kind, stopwatch.ElapsedMilliseconds,
+            WriteApiAnomaly(method, ClassifyFailure(rootEx), stopwatch.ElapsedMilliseconds,
                 errorType: rootEx.GetType().Name, errorMessage: SanitizeMessage(rootEx.Message));
+        }
+
+        /// <summary>Decides which anomaly kind a failed call is filed under.</summary>
+        /// <param name="rootEx">The unwrapped exception that ended the call.</param>
+        /// <returns>The anomaly kind to record.</returns>
+        /// <remarks>
+        /// A replay rejection gets its own kind: unlike an Error it says nothing is broken, and a
+        /// run of them points at a drifted client clock or a caller resending captured packets —
+        /// neither of which is visible once folded into generic errors.
+        /// </remarks>
+        private static AnomalyKind ClassifyFailure(Exception rootEx)
+        {
+            if (rootEx is ReplayRejectedException) { return AnomalyKind.Replay; }
+            return IsTimeout(rootEx) ? AnomalyKind.Timeout : AnomalyKind.Error;
         }
 
         private void WriteApiAnomaly(string method, AnomalyKind kind, long elapsedMs,

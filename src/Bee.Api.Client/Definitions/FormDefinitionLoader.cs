@@ -86,9 +86,9 @@ namespace Bee.Api.Client.Definitions
                 new FormSchemaLocalizer(languageService).Localize(schema, lang);
             }
 
-            // The server serves definitions exactly as stored, so the company's decimal places are
-            // applied here. Currency- and unit-bound kinds are left for the UI to resolve per row;
-            // `Bake` skips those itself.
+            // The server serves definitions exactly as stored, so the company's decimal places
+            // are applied here. Kinds bound to a currency or a unit are left for the UI to
+            // resolve per row. `Bake` skips those itself.
             NumberFormatApplier.Bake(schema, CompanyAccessor?.Invoke());
             return schema;
         }

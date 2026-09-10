@@ -18,12 +18,22 @@ SRC_EXT=(--include="*.cs" --include="*.axaml" --include="*.razor"
          --include="*.sh" --include="*.yml" --include="*.yaml" --include="*.json")
 
 # docs/repo-ops 是維運文件、不是公開文件，引用 plan 合法，故排除
+# 這三個 helper 一律回 0：它們是過濾器，`grep -v` 濾光全部時會回 1，那不是錯誤。
 exclude_md() {
   grep -v "^docs/plans/" | grep -v "^docs/internal/" | grep -v "^docs/blogs/" | grep -v "^docs/repo-ops/"
+  return 0
 }
-exclude_build() { grep -v "/obj/" | grep -v "/bin/"; }
 
-section() { printf '\n=== (%s) %s ===\n' "$1" "$2"; }
+exclude_build() {
+  grep -v "/obj/" | grep -v "/bin/"
+  return 0
+}
+
+section() {
+  local number="$1" title="$2"
+  printf '\n=== (%s) %s ===\n' "$number" "$title"
+  return 0
+}
 
 section 1 "markdown — 路徑 / 連結型引用"
 grep -rn --include="*.md" -e "plans/" -e "](plan-" "${MD_ROOTS[@]}" 2>/dev/null | exclude_md
@@ -73,7 +83,7 @@ grep -rnoE "plan-[a-z0-9]+(-[a-z0-9.]+)+\.md" . \
     --exclude-dir=archive 2>/dev/null \
   | while IFS= read -r hit; do
       name="${hit##*:}"
-      [ -e "docs/plans/$name" ] || [ -e "docs/plans/archive/$name" ] || echo "$hit"
+      [[ -e "docs/plans/$name" ]] || [[ -e "docs/plans/archive/$name" ]] || echo "$hit"
     done | sort -u
 
 echo

@@ -40,7 +40,7 @@ namespace Bee.Api.Core.UnitTests
         /// <summary>
         /// 把 payload 管線設回框架預設，並回傳可還原原狀的 disposable。
         /// </summary>
-        private static IDisposable UseDefaultPipeline()
+        private static Restore UseDefaultPipeline()
         {
             var serializer = ApiServiceOptions.PayloadSerializer;
             var compressor = ApiServiceOptions.PayloadCompressor;

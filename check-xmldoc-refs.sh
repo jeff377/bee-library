@@ -16,6 +16,10 @@
 set -uo pipefail
 cd "$(dirname "$0")"
 
+# find 的排除樣式，四處共用。
+readonly BIN_PATH_GLOB='*/bin/*'
+readonly OBJ_PATH_GLOB='*/obj/*'
+
 # 刻意不受檢的識別字。新增時**必須註明歸類**，否則這份清單會退化成消音器。
 ALLOWLIST=(
   # --- 外部套件 / BCL 型別（不在本 solution 內宣告）---
@@ -55,7 +59,7 @@ is_allowed() {
 # 判定法用 `tr -d '\000'` 後與原檔比對：shell 變數存不住 NUL，所以不能靠 grep 樣式去找它。
 NUL_HITS=$(
   find src tests tools apps samples -name '*.cs' \
-       -not -path '*/bin/*' -not -path '*/obj/*' 2>/dev/null \
+       -not -path "$BIN_PATH_GLOB" -not -path "$OBJ_PATH_GLOB" 2>/dev/null \
   | while IFS= read -r f; do
       tr -d '\000' < "$f" | cmp -s - "$f" || echo "$f"
     done
@@ -71,7 +75,7 @@ fi
 CODE=$(mktemp)
 trap 'rm -f "$CODE"' EXIT
 find src tests tools apps samples -name '*.cs' \
-     -not -path '*/bin/*' -not -path '*/obj/*' -print0 2>/dev/null \
+     -not -path "$BIN_PATH_GLOB" -not -path "$OBJ_PATH_GLOB" -print0 2>/dev/null \
   | xargs -0 grep -hv '^[[:space:]]*///' > "$CODE"
 
 status=0
@@ -83,7 +87,7 @@ while IFS= read -r id; do
   grep -rn --include='*.cs' --exclude-dir=bin --exclude-dir=obj "<c>${id}</c>" src \
     | sed 's/^/    /'
 done < <(
-  find src -name '*.cs' -not -path '*/bin/*' -not -path '*/obj/*' -print0 \
+  find src -name '*.cs' -not -path "$BIN_PATH_GLOB" -not -path "$OBJ_PATH_GLOB" -print0 \
     | xargs -0 grep -ho '<c>[A-Z][A-Za-z0-9_]*</c>' \
     | sed 's|<c>\(.*\)</c>|\1|' | sort -u
 )
@@ -119,7 +123,7 @@ while IFS= read -r line; do
   cref_status=1
   echo "該用 <see cref> 卻用了 <c>：${id}  (${file})"
 done < <(
-  for f in $(find src -name '*.cs' -not -path '*/bin/*' -not -path '*/obj/*'); do
+  for f in $(find src -name '*.cs' -not -path "$BIN_PATH_GLOB" -not -path "$OBJ_PATH_GLOB"); do
     proj=$(echo "$f" | cut -d/ -f2)
     grep -h '^[[:space:]]*///' "$f" | grep -o '<c>[A-Za-z_][A-Za-z0-9_.]*</c>' \
       | sed 's|<c>\(.*\)</c>|\1|' \

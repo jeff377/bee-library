@@ -119,17 +119,15 @@ namespace Bee.Api.Core.JsonRpc
         {
             ArgumentNullException.ThrowIfNull(exception);
 
-            foreach (var mapping in s_mappings)
+            var mapping = Array.Find(s_mappings, m => m.ExceptionType.IsInstanceOfType(exception));
+            if (mapping is null)
             {
-                if (mapping.ExceptionType.IsInstanceOfType(exception))
-                {
-                    code = mapping.Code;
-                    return true;
-                }
+                code = default;
+                return false;
             }
 
-            code = default;
-            return false;
+            code = mapping.Code;
+            return true;
         }
 
         /// <summary>

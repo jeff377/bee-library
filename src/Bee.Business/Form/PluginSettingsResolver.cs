@@ -135,8 +135,9 @@ namespace Bee.Business.Form
             Type? type;
             try
             {
-                // AssemblyLoader.LoadAssembly throws when the assembly cannot be located;
-                // AssemblyLoader.GetType returns null when it loads but the type is absent.
+                // `AssemblyLoader.LoadAssembly` throws when the assembly cannot be located.
+                // When it loads but the type is absent, `AssemblyLoader.GetType` returns null
+                // instead of throwing, so both outcomes have to be handled here.
                 type = AssemblyLoader.GetType(typeName);
             }
             catch (Exception ex) when (ex is FileNotFoundException or FileLoadException or BadImageFormatException)

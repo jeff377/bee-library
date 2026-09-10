@@ -26,7 +26,7 @@ namespace Bee.Business.UnitTests.Form
         private const string CompanyId = "AUDITFORM";
 
         private readonly SharedDbFixture _fx;
-        private readonly IDataFormRepository _repository;
+        private readonly DataFormRepository _repository;
 
         public AuditRuleFormTests(SharedDbFixture fx)
         {

@@ -23,7 +23,7 @@ namespace Bee.Api.Core.UnitTests
         /// 把 payload 管線設回框架預設（messagepack / gzip / aes-cbc-hmac），並回傳可還原原狀的
         /// disposable。json codec 本身不需要啟用——兩種 codec 恆可用。
         /// </summary>
-        private static IDisposable UseDefaultPipeline()
+        private static Restore UseDefaultPipeline()
         {
             var originalSerializer = ApiServiceOptions.PayloadSerializer;
             var originalCompressor = ApiServiceOptions.PayloadCompressor;

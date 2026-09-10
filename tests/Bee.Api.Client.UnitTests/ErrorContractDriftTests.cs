@@ -79,14 +79,35 @@ namespace Bee.Api.Client.UnitTests
             typeof(FormatException),
         ];
 
-        public static IEnumerable<object[]> ReconstructedCodes =>
-            s_reconstructedCodes.Select(pair => new object[] { pair.Code, pair.ExceptionType });
+        public static TheoryData<JsonRpcErrorCode, Type> ReconstructedCodes
+        {
+            get
+            {
+                var data = new TheoryData<JsonRpcErrorCode, Type>();
+                foreach (var pair in s_reconstructedCodes) { data.Add(pair.Code, pair.ExceptionType); }
+                return data;
+            }
+        }
 
-        public static IEnumerable<object[]> TransportOnlyCodes =>
-            s_transportOnlyCodes.Select(code => new object[] { code });
+        public static TheoryData<JsonRpcErrorCode> TransportOnlyCodes
+        {
+            get
+            {
+                var data = new TheoryData<JsonRpcErrorCode>();
+                foreach (var code in s_transportOnlyCodes) { data.Add(code); }
+                return data;
+            }
+        }
 
-        public static IEnumerable<object[]> UserMessageWhitelist =>
-            s_userMessageWhitelist.Select(type => new object[] { type });
+        public static TheoryData<Type> UserMessageWhitelist
+        {
+            get
+            {
+                var data = new TheoryData<Type>();
+                foreach (var type in s_userMessageWhitelist) { data.Add(type); }
+                return data;
+            }
+        }
 
         [Fact]
         [DisplayName("每個 JsonRpcErrorCode 成員都必須被分類且只分類一次（新增成員不得默默略過）")]

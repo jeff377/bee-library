@@ -15,13 +15,22 @@ namespace Bee.Base.UnitTests.Serialization
     /// </remarks>
     public class DataTableJsonFidelityTests
     {
-        private static DataTable RoundTrip(DataTable source)
+        // 共用一個實例：JsonSerializerOptions 建構成本高，且首次序列化後即凍結，
+        // 這五個測試要的組態完全相同。
+        private static readonly JsonSerializerOptions s_options = CreateOptions();
+
+        private static JsonSerializerOptions CreateOptions()
         {
             var options = new JsonSerializerOptions();
             options.Converters.Add(new DataTableJsonConverter());
+            return options;
+        }
 
-            var json = JsonSerializer.Serialize(source, options);
-            return JsonSerializer.Deserialize<DataTable>(json, options)!;
+        private static DataTable RoundTrip(DataTable source)
+        {
+
+            var json = JsonSerializer.Serialize(source, s_options);
+            return JsonSerializer.Deserialize<DataTable>(json, s_options)!;
         }
 
         [Theory]
@@ -86,16 +95,14 @@ namespace Bee.Base.UnitTests.Serialization
             table.Columns.Add("amount", typeof(decimal));
             table.Rows.Add(expected);
 
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DataTableJsonConverter());
-            var json = JsonSerializer.Serialize(table, options);
+            var json = JsonSerializer.Serialize(table, s_options);
 
             // 形狀本身就是契約的一部分：裸數字對 JavaScript 讀取端是 double，
             // 在客戶端程式碼看到值之前就已經失真。
             Assert.Contains($"\"amount\": \"{literal}\"".Replace(" ", string.Empty),
                 json.Replace(" ", string.Empty), StringComparison.Ordinal);
 
-            var restored = JsonSerializer.Deserialize<DataTable>(json, options)!;
+            var restored = JsonSerializer.Deserialize<DataTable>(json, s_options)!;
             Assert.Equal(expected, Assert.IsType<decimal>(restored.Rows[0]["amount"]));
         }
 
@@ -110,14 +117,12 @@ namespace Bee.Base.UnitTests.Serialization
             table.Columns.Add("bigint", typeof(long));
             table.Rows.Add(expected);
 
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DataTableJsonConverter());
-            var json = JsonSerializer.Serialize(table, options);
+            var json = JsonSerializer.Serialize(table, s_options);
 
             Assert.Contains($"\"bigint\":\"{expected.ToString(CultureInfo.InvariantCulture)}\"",
                 json.Replace(" ", string.Empty), StringComparison.Ordinal);
 
-            var restored = JsonSerializer.Deserialize<DataTable>(json, options)!;
+            var restored = JsonSerializer.Deserialize<DataTable>(json, s_options)!;
             Assert.Equal(expected, Assert.IsType<long>(restored.Rows[0]["bigint"]));
         }
 
@@ -138,9 +143,7 @@ namespace Bee.Base.UnitTests.Serialization
                 }
                 """;
 
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DataTableJsonConverter());
-            var restored = JsonSerializer.Deserialize<DataTable>(json, options)!;
+            var restored = JsonSerializer.Deserialize<DataTable>(json, s_options)!;
 
             Assert.Equal(12.5m, Assert.IsType<decimal>(restored.Rows[0]["amount"]));
         }
@@ -161,12 +164,10 @@ namespace Bee.Base.UnitTests.Serialization
                 }
                 """;
 
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DataTableJsonConverter());
 
             // 解析不出來就把字串原樣往下傳，由 DataRow 對真正的欄位型別報錯 ——
             // 在這裡吞掉會把壞掉的 payload 變成一個看起來正常的 0。
-            var ex = Record.Exception(() => JsonSerializer.Deserialize<DataTable>(json, options));
+            var ex = Record.Exception(() => JsonSerializer.Deserialize<DataTable>(json, s_options));
             Assert.NotNull(ex);
         }
 }

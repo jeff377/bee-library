@@ -64,7 +64,7 @@ namespace Bee.Business.UnitTests.Contracts
 
             // 斷言用 ExpectedBaseType 而非 DefaultType：部署可以在註冊表把保留字綁到自己的子類，
             // 那是合法的，而不論綁到哪一個，它都必須滿足該 progId 的基底約束。
-            Assert.IsAssignableFrom(binding!.ExpectedBaseType, bo);
+            Assert.IsType(binding!.ExpectedBaseType, bo, exactMatch: false);
         }
 
         [Theory]
@@ -74,7 +74,7 @@ namespace Bee.Business.UnitTests.Contracts
         {
             var bo = Factory.CreateBusinessObject(TestSessionFactory.CreateAccessToken(_fx), progId, isLocalCall: false);
 
-            var businessObject = Assert.IsAssignableFrom<BusinessObject>(bo);
+            var businessObject = Assert.IsType<BusinessObject>(bo, exactMatch: false);
             Assert.False(businessObject.IsLocalCall);
         }
 

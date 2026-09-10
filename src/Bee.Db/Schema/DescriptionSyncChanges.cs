@@ -27,15 +27,15 @@ namespace Bee.Db.Schema
             if (!includeAddedColumns)
                 return list;
 
-            foreach (var add in diff.Changes.OfType<AddFieldChange>())
+            foreach (var field in diff.Changes.OfType<AddFieldChange>().Select(add => add.Field))
             {
-                if (StringUtilities.IsEmpty(add.Field.Caption))
+                if (StringUtilities.IsEmpty(field.Caption))
                     continue;
                 list.Add(new DescriptionChange
                 {
                     Level = DescriptionLevel.Column,
-                    FieldName = add.Field.FieldName,
-                    NewValue = add.Field.Caption,
+                    FieldName = field.FieldName,
+                    NewValue = field.Caption,
                     // The column is being created by this very plan, so no description can exist yet.
                     IsNew = true,
                 });
