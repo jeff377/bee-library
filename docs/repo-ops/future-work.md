@@ -195,6 +195,35 @@ dotnet test tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj -c Releas
 
 分類軸與各項的定位見 [ADR-040](../adr/adr-040-audit-trail-taxonomy.md)。
 
+## 把 `tools/` 納入 SonarCloud 的分析範圍
+
+**構想（2026-09-10 修 `Bee.LoadTests` 的弱掃發現時挖出來）**：SonarCloud 目前實際只分析
+`src/` 與 `tests/`。全專案 1,760 個被分析的檔案裡 `tools/` 只佔 2 個，而且都不是 C#
+（一支 `.py`、一支 `.sh`，靠一般檔案偵測進來）。**`tools/**/*.cs` 一個都沒有。**
+
+**為什麼值得做**：不是為了數字好看，而是因為**那裡的 0 會被誤讀成乾淨**。這次就踩了 ——
+用 `/api/issues/search` 查 `tools/Bee.LoadTests` 的規則回 0，判定修好了，實際上那個檔案
+根本不在分析範圍，回 0 與程式碼無關。要不是為了驗另一件事去查 `components/tree`，
+這個誤判會就這樣留著。症狀與查法見
+[gotchas/test-ci-release.md](gotchas/test-ci-release.md) 的〈Sonar 查出來的 0，可能是
+「沒看」而不是「乾淨」〉。
+
+**先要查清楚的**：**機制還不明**。`tools/Bee.LoadTests` 確實會經由
+`tests/Bee.LoadTests.UnitTests` 的 `ProjectReference` 被建起來，SonarScanner for .NET
+理應攔得到傳遞建置的專案，但結果就是沒有。啟動時第一步是查為什麼——
+可能是 scanner 的 project scope、可能是 `Build (for Sonar coverage)` 那步的
+`--no-incremental` 沒重建到傳遞專案（前一步 strict build 已經建過）。
+**別跳過這步直接改設定**，不知道原因就改，改完也不知道是不是真的生效。
+
+**要等什麼**：不急。`tools/` 不出貨（`IsPackable=false`），弱掃漏看的風險低於 `src/`。
+但**每次宣稱「某條 Sonar 規則在 `tools/` 清乾淨了」都是假的**，在納進來之前，
+那種宣稱一律要先跑 gotchas 那份本機重現（暫時加 `SonarAnalyzer.CSharp` 建一次）才算數。
+
+**已知會一起浮出來的**：至少 `SchemaPreparer.cs:169` 的 S2077（PostgreSQL 的
+`CREATE DATABASE`，資料庫名是識別碼、無法參數化）。納進來之後它會是一筆需要人工判讀、
+標 False Positive 的 issue，不是要修的缺陷。**現在刻意不加 `#pragma` 抑制** ——
+在掃描器看不到它的期間，抑制只是讓程式碼變難讀，換不到任何東西。
+
 ## 匯率主檔與自動帶值：多幣別唯二的缺口
 
 **構想（2026-09-01 使用者追問多幣別設計時盤點出來）**：補上**公司層的匯率主檔**，
