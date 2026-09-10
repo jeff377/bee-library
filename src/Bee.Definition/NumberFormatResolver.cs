@@ -67,25 +67,6 @@ namespace Bee.Definition
         }
 
         /// <summary>
-        /// Gets the company's default currency for an amount with no reference currency, or an empty
-        /// string when there is no company context.
-        /// </summary>
-        /// <param name="company">The current company, or <c>null</c>.</param>
-        /// <exception cref="InvalidOperationException">The company has no default currency.</exception>
-        private static string ResolveCompanyCurrency(CompanyInfo? company)
-        {
-            if (company == null) { return string.Empty; }
-
-            // IMPORTANT: a company without a default currency is a configuration error, not a reason to
-            // fall back. Falling back would round its amounts to decimals that no currency of that
-            // company chose, and nothing downstream would notice.
-            if (string.IsNullOrWhiteSpace(company.DefaultCurrency))
-                throw new InvalidOperationException($"Company '{company.CompanyId}' has no default currency configured.");
-
-            return company.DefaultCurrency;
-        }
-
-        /// <summary>
         /// Resolves the decimal places for the kind using company/framework sources only (no currency
         /// reference). Amounts fall back to the company default currency when a currency master is set,
         /// otherwise to framework defaults.
@@ -203,6 +184,25 @@ namespace Bee.Definition
             if (ctx.Company != null && ctx.CurrencySettings != null)
                 return ctx.Company.GetCashRounding(currencyCode, ctx.CurrencySettings);
             return ctx.CurrencySettings?.GetRounding(currencyCode) ?? Settings.CurrencySettings.FallbackRounding;
+        }
+
+        /// <summary>
+        /// Gets the company's default currency for an amount with no reference currency, or an empty
+        /// string when there is no company context.
+        /// </summary>
+        /// <param name="company">The current company, or <c>null</c>.</param>
+        /// <exception cref="InvalidOperationException">The company has no default currency.</exception>
+        private static string ResolveCompanyCurrency(CompanyInfo? company)
+        {
+            if (company == null) { return string.Empty; }
+
+            // IMPORTANT: a company without a default currency is a configuration error, not a reason to
+            // fall back. Falling back would round its amounts to decimals that no currency of that
+            // company chose, and nothing downstream would notice.
+            if (string.IsNullOrWhiteSpace(company.DefaultCurrency))
+                throw new InvalidOperationException($"Company '{company.CompanyId}' has no default currency configured.");
+
+            return company.DefaultCurrency;
         }
     }
 }

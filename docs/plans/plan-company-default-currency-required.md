@@ -1,14 +1,14 @@
 # 計畫：公司本幣（`CompanyInfo.DefaultCurrency`）改為必填
 
-**狀態：🚧 進行中（2026-09-10）**
+**狀態：✅ 已完成（2026-09-10）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 0 | 設計裁定 | ✅ 已完成（2026-09-10） |
 | 1 | 框架：`NumberFormatResolver` 空本幣拋例外 + 測試 + 種子 + 範例 + 文件 | ✅ 已完成（2026-09-10）：commit `31f832ce`（`[all-db]`） |
-| 2 | `apps/Bee.Northwind`（bee-library 內副本）：本幣 USD + 幣別主檔 + 既有 db 回填；Order layout 補 `NumberKind` | 🚧 本幣部分隨 `31f832ce` 推送；layout 修正待推送 |
-| 3 | 案例 repo `bee-northwind-avalonia` 同步 | ✅ 已完成（2026-09-10）：commit `f3c0f3a`（本幣）＋ layout 修正 |
-| 4 | 回報 Day 26 那一邊三項事實 | 📝 待做 |
+| 2 | `apps/Bee.Northwind`（bee-library 內副本）：本幣 USD + 幣別主檔 + 既有 db 回填；Order layout 補 `NumberKind` | ✅ 已完成（2026-09-10）：commit `31f832ce`（本幣）＋ `911689e3`（layout） |
+| 3 | 案例 repo `bee-northwind-avalonia` 同步 | ✅ 已完成（2026-09-10）：commit `f3c0f3a`（本幣）＋ `2bcca81`（layout） |
+| 4 | 回報 Day 26 那一邊三項事實 | ✅ 已完成（2026-09-10） |
 
 ## 背景
 
@@ -175,6 +175,14 @@ the framework default of two decimals*），這次是**破壞性的行為變更*
 - 案例 repo（NuGet 4.30.0）：同樣帶 `DEVELOPER_DIR`，0 警告 0 錯誤。
 - `./test.sh` 全套（四個 DB 容器皆在跑）：17 個測試專案全數通過；唯一略過的
   `Login_WithRsaKeyPair_ReturnsDecryptableSessionKey` 為既有標記，與本次無關。新增測試以 filter 單獨確認 7 筆（含既有遞補測試）通過。
+
+### CI（`31f832ce`，`[all-db]`，run 34489662130）
+
+- 完整模式（四種資料庫 + SonarCloud）通過。
+- Sonar 對本次改動報了一筆：`NumberFormatResolver.cs` 的私有 helper 插在兩個 `ResolveDecimals` 多載之間，
+  違反「同名多載要相鄰」→ 後續 commit 把 `ResolveCompanyCurrency` 移到類別尾端（零行為變更）。
+  其餘 annotation 都在 `tools/Bee.Cli`、`tools/Bee.LoadTests/Bootstrap/SchemaPreparer.cs`，不在本次改動的檔案。
+- `911689e3` 沒有觸發 CI：`build-ci.yml` 的 `paths` 只含 `src/`、`tests/` 等，`apps/` 與 `docs/` 的改動不跑，屬預期。
 
 ### 執行期驗證（Browser head，取代受阻的 Desktop 冒煙）
 
