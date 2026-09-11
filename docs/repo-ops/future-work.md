@@ -401,3 +401,84 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 **要等什麼**：沒有技術上的前置條件，純粹是產品方向的排序問題。
 
 **啟動時第一步**：先答第 1 題，再寫 plan。
+
+## 開放共同維護：改名另開新框架於 GitHub organization
+
+**構想（2026-09-11 使用者評估未來開放共同維護時提出）**：不把 `jeff377/bee-library` 轉移出去，
+而是**以當時最新版為起點，在 organization 下另開一個改名的新框架**，命名空間全換。
+舊 repo 與已發佈的 `Bee.*` 套件原地保留、凍結。
+
+### 為什麼要改名，而不只是搬家
+
+`Bee` 這個名字在各平台都擠：
+
+- **NuGet 前綴保留不到**：審核條件要求前綴至少四個字元、且不是常見單字
+  （[ID Prefix Reservation](https://learn.microsoft.com/en-us/nuget/nuget-org/id-prefix-reservation)），
+  `Bee` 兩條都不符。另有其他 owner 發佈 `Bee.*` 套件，其中 `etherna` 的 `Bee.Net.*`
+  在搜尋時與 Bee.NET 容易混淆。
+- **GitHub 好名字被占**：`beenet`、`bee-net`、`beedotnet`、`bee-framework` 皆已被他人使用（2026-09-11 查詢）。
+
+保留舊 repo 讓整件事變單純：**不需轉移 GitHub repo、不需移轉 NuGet owner、不需搬 SonarCloud 專案**，
+文章連結與 README badge 維持有效。
+
+### 命名條件
+
+名字要表達 Bee.NET 的本意：**標準化、模組化、機制化，以此有效率地組成大系統**。
+
+1. **先確認字義表達本意，再查平台可用性。** 2026-09-11 那輪一度反過來做，推薦出 Combwise，
+   事後才發現字典意思是「像梳子那樣梳直」—— 順序反了就會這樣。
+2. **NuGet 前綴審核**：至少四個字元、非常見單字、能識別出 owner。
+3. **平台可用**：GitHub org（可加後綴，如 `AvaloniaUI`、`abpframework` 的做法）、
+   NuGet 組織帳號名（與個人帳號共用命名空間，email 也須全站唯一）、NuGet 上無人使用該前綴、npm。
+4. **不撞名**：BCL 命名空間末段（CA1724）、UI 框架常見型別名、同領域的既有產品。
+5. **發佈前另做商標檢索**：智慧財產局第 9／42 類；要國際化則加查 USPTO／EUIPO。
+
+### 評估過的候選（2026-09-11 查詢結果，啟動時須重查）
+
+| 候選 | 結論 | 理由 |
+|------|------|------|
+| **Polhem** | 目前首選 | 瑞典工程師 Christopher Polhem（1661–1751）。「機械字母」以一套木製基本機構模型教工程師組合出各種機器；Stjärnsund 的水力自動化工廠以可互換零件生產時鐘與掛鎖。標準化、模組化、機制化三者都對得上。NuGet 無 `Polhem.` 套件、npm 可用、GitHub 需加後綴。缺點是瑞典以外辨識度低、無中文文化連結 |
+| 畢昇（Bi Sheng） | 意象可取，名字不適合 | 活字印刷是最精準的比喻，但辨識度低、英文難念，GitHub 與 npm 已被占 |
+| 魯班（Luban） | 不採用 | 意義貼切，但 NuGet 已有他人的 `Luban.*` 套件，中文科技產品也大量使用 |
+| 孔明（Kongming／Zhuge Liang） | 不採用 | 形象是謀略而非標準化；API 領域有 Kong（API Gateway）會混淆 |
+| Hex 系列（六角） | 不採用，六角適合當 logo | 會被讀成六角架構（Ports & Adapters）；.NET 已有 `Hexalith` 微服務框架；短名全被占 |
+| Combwise | 撤回 | 字典意思是「像梳子那樣梳直」，`comb` 的蜂巢義排第三，英文讀者讀不出本意 |
+| Melliform | 撤回 | 字義是「蜂蜜加 form」，沒抓到本意 |
+| Cellwise／Formcell | 避開 | 前者有同名軟體產品；後者撞 Formlabs Form Cell 與 SAP Fiori 的 `FormCell` 型別 |
+
+### 改名時編譯器抓不到的地方
+
+命名空間與套件 ID 是機械式替換，真正的風險在字串裡：
+
+- **定義檔的組件限定型別名稱**：ProgramSettings 的
+  `BusinessObject="Bee.Business.AuditLog.LogBusinessObject, Bee.Business"` 這類寫法，
+  消費端自己的 Define 檔也有，漏改要到執行期才壞。
+- **wire 內容帶 .NET 型別名稱**：`wire-fixtures/` 裡的
+  `"type": "Bee.Definition.Collections.Parameter, Bee.Definition"`。這是跨語言合約，
+  `bee-connector-js` 要一併改名另開。
+- **寫死的組件名字串**：`src/Bee.Base/SysInfo.cs`。
+- **環境變數與代號**：`BEE_MASTER_KEY`（部署環境依賴它）、`BEE_TEST_CONNSTR_*`、`BEE1001`／`BEE9001` 這類診斷代號。
+
+### 要一併決定的
+
+1. **新 repo 帶完整 git 歷史。** 規則與 gotchas 引用的 commit hash 要在新 repo 查得到；
+   ADR 裡寫成完整 URL 的連結仍指向舊 repo，不受影響。
+2. **舊框架怎麼凍結。** README 指向新框架、GitHub 設為 archive、NuGet 標 deprecated 並填替代套件
+   （等新框架首版發佈後才有東西可指）。分出去之後不雙邊修。
+3. **型別名稱字串要不要做相容解析。** Odoo 改名時保留過舊套件名的相容匯入；
+   本框架的使用者目前多為自有 repo，不做也說得過去，但要明確決定，不能是漏掉。
+4. **開放共同維護才會浮現的缺口**，與改名無關、搬到哪都一樣要處理：
+   - 跨專案共用規則（code-style、scanning 等）放在使用者層 `~/.claude/rules/`，協作者讀不到，須搬進 repo。
+   - 「本機可驗證就直接推 main」的工作流改為 PR + branch protection。
+   - `.github/workflows/auto-merge.yml` 寫死只認 `jeff377`。
+   - 缺 CODEOWNERS 與 CONTRIBUTING。
+   - 發版權限：誰持有 NuGet key、誰能推 tag。
+5. **`dev-workflow` plugin 不隨框架搬**（與框架無直接關係，且各開發者習慣不同）。
+   專案層 `.claude/settings.json` 對它的宣告移到個人層；`.claude/CLAUDE.md` 裡指向 `plan-write` 的慣例，
+   要判斷哪些屬於 repo 本身而該留在 repo 內。
+
+**要等什麼**：出現明確的共同維護者人選。名字不必急著定——舊 repo 保留、文章不受影響，
+改名成本不會隨時間明顯增加。**GitHub org 不要先用 `bee-dotnet` 占**，等新名字定案再占。
+
+**啟動時第一步**：定名 → 重跑平台可用性與商標檢索 → **立刻**建 GitHub org 與 NuGet 組織帳號占名
+（`bee-net` 就是 2026 年初被人占走的）→ 寫 plan。
