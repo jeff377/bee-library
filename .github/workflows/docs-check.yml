@@ -26,3 +26,7 @@ jobs:
 
     - name: Check markdown relative links
       run: ./check-md-links.sh
+
+    # 源文件改了而譯本沒重新蓋章、缺譯、語言切換列不符時失敗。語言清單與政策在腳本檔頭。
+    - name: Check translation sync
+      run: ./check-docs-i18n.sh

@@ -1,3 +1,4 @@
+<!-- source: zh-TW/database-naming-conventions.md blob: be69052758d8141b3dedf366c39b21c55e06269a -->
 # Database Naming Conventions
 
 [繁體中文](../zh-TW/database-naming-conventions.md) · [← Docs Index](README.md)

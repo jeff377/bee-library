@@ -1,3 +1,4 @@
+<!-- source: zh-TW/caching.md blob: a81891ece20e665b049a3ef653084a9399529282 -->
 # Caching
 
 [繁體中文](../zh-TW/caching.md) · [← Docs Index](README.md)

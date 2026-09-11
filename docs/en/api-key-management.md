@@ -1,3 +1,4 @@
+<!-- source: zh-TW/api-key-management.md blob: e6de6c29d7b95d3e5b6257523330c2c618460f44 -->
 # API Key Management
 
 [繁體中文](../zh-TW/api-key-management.md) · [← Docs Index](README.md)

@@ -1,3 +1,4 @@
+<!-- source: zh-TW/database-settings-guide.md blob: f79684be8a84899b9b111bb8e5c2a7e69ab51193 -->
 # DatabaseSettings & DbCategorySettings Guide
 
 [繁體中文](../zh-TW/database-settings-guide.md) · [← Docs Index](README.md)

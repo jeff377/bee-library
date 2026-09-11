@@ -1,3 +1,4 @@
+<!-- source: zh-TW/customization.md blob: e5014efaadf7556372a9345a5c7c363e3c46b38a -->
 # Tenant Customization
 
 [繁體中文](../zh-TW/customization.md) · [← Docs Index](README.md)

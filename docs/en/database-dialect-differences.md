@@ -1,3 +1,4 @@
+<!-- source: zh-TW/database-dialect-differences.md blob: 472c6536d9fa2f57c35a4868e4870a58e434b6e4 -->
 # Database Dialect Differences (DDL)
 
 [繁體中文](../zh-TW/database-dialect-differences.md) · [← Docs Index](README.md)

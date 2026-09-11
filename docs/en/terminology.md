@@ -1,3 +1,4 @@
+<!-- source: zh-TW/terminology.md blob: d64d5b2b73ca905872f2fc8eef9faa0c2905df9a -->
 # BeeNET Framework Terminology Reference (English ↔ Chinese)
 
 [繁體中文](../zh-TW/terminology.md) · [← Docs Index](README.md)

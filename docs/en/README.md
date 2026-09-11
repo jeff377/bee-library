@@ -1,8 +1,11 @@
+<!-- source: zh-TW/README.md blob: abfd4bf617371f00c2e2d6e6bb4dbf98a87e459a -->
 # Bee.NET Documentation
 
 [繁體中文](../zh-TW/README.md)
 
 The `docs/` folder contains the public-facing developer documentation for the Bee.NET framework. Every document listed below exists in English and Traditional Chinese under the same file name: `docs/en/` holds the English versions and `docs/zh-TW/` the Traditional Chinese ones. Traditional Chinese is the source; other languages are translations of it.
+
+The first line of every translation is an HTML comment recording which version of the source it was translated from (the source file's git blob hash). When the source changes and the translation is not re-checked and its comment updated, [`check-docs-i18n.sh`](../../check-docs-i18n.sh) reports the translation as stale. Whether a stale translation fails CI or is only reported depends on the language; that policy lives in the script's header.
 
 The listing is ordered by **where you are in the journey**, not by subject. Each entry is tagged with its **kind** (Tutorial / Concept / Guide / Reference) and its **length** (Short < 150 lines, Medium 150–350, Long > 350) so you can judge the commitment before opening it. If you would rather browse by subject, see [Find by Topic](#find-by-topic) at the bottom.
 

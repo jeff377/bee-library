@@ -1,3 +1,4 @@
+<!-- source: zh-TW/architecture-overview.md blob: afb3fc4b979fa9ff858350a12bc26cb6869c0986 -->
 # BeeNET Framework Architecture Overview
 
 [繁體中文](../zh-TW/architecture-overview.md) · [← Docs Index](README.md)

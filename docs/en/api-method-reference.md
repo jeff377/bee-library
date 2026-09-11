@@ -1,3 +1,4 @@
+<!-- source: zh-TW/api-method-reference.md blob: 7694216460ad5727ada8463de3706e44a8e6964a -->
 # API Method Reference
 
 [繁體中文](../zh-TW/api-method-reference.md) · [← Docs Index](README.md)

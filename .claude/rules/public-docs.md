@@ -58,9 +58,21 @@ plan 是**階段性**文件：實作過程中會改、完成後會封存，且**
 `docs/plans/` 內部（plan ↔ plan、plan → ADR / 原始碼 / 公開文件）、`.claude/` 內部不受此限。
 限制只在「公開 → plan」這個方向。
 
-### 4. 雙語同步
+### 4. 多語同步
 
-公開文件有雙語版時（`docs/` 下為 `docs/zh-TW/xxx.md` / `docs/en/xxx.md`，其餘位置為 `xxx.zh-TW.md` / `xxx.md`），任何修改**兩份都要改**，包含依本規範移除 plan 引用。
+**`docs/` 下**：`docs/zh-TW/` 是源文件，其他語言資料夾都是譯本。語言清單與各語言的政策（strict / partial）
+只寫在 `check-docs-i18n.sh` 檔頭，本檔不複寫。執行機制是該腳本，由 CI 的 Docs Check 在每次 push 時跑。
+
+- 改了源文件，push 前要把對應譯本對照更新，再以 `./check-docs-i18n.sh --stamp <譯本路徑>` 重新蓋章。
+  沒蓋章的話腳本會判定過期，strict 語言會讓 CI 紅。源文件與譯本可以分成不同 commit，
+  但要一起 push —— CI 看的是 push 後的 HEAD。
+- **蓋章等於宣告「已經對照源文件更新過」**，腳本不會、也無法驗證翻譯內容。沒對照就蓋章，等於把這道檢查關掉。
+- 語言切換列一律由 `./check-docs-i18n.sh --fix-switch` 產生，不手改。
+
+**`docs/` 以外**（各處的 `README.md` / `README.zh-TW.md`、根目錄與 `docs/changelogs/` 的 changelog）：
+沒有這套機制，修改時兩份都要改。
+
+依本規範移除 plan 引用時，同樣每種語言都要改。
 
 ## 落地檢查
 

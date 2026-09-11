@@ -1,3 +1,4 @@
+<!-- source: zh-TW/framework-capabilities.md blob: cbecfffe437e7863998cc6779cc3b7fdccad8164 -->
 # Framework Capabilities
 
 [繁體中文](../zh-TW/framework-capabilities.md) · [← Docs Index](README.md)

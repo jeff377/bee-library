@@ -25,6 +25,7 @@ dotnet build <project>.csproj --configuration Release --no-restore
 ./test.sh tests/<Project>.UnitTests/<Project>.UnitTests.csproj
 ./check-public-docs.sh                       # 公開文件不得引用 docs/plans/
 ./check-md-links.sh                          # markdown 相對連結必須指得到檔案
+./check-docs-i18n.sh                         # 譯本檔頭、過期、缺譯與語言切換列（--stamp / --fix-switch）
 dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nupkgs
 ```
 

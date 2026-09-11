@@ -1,3 +1,4 @@
+<!-- source: zh-TW/analyzer-rules.md blob: ad2a7cdca721ed02e1641dd3338ec5a64f0dade9 -->
 # Analyzer Rules
 
 [繁體中文](../zh-TW/analyzer-rules.md) · [← Docs Index](README.md)

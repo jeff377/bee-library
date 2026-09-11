@@ -1,3 +1,4 @@
+<!-- source: zh-TW/database-schema-upgrade.md blob: 5cd7aee0e199ead60d1d2423fde04bc9fec258ae -->
 # Database Schema Upgrade Guide
 
 [繁體中文](../zh-TW/database-schema-upgrade.md) · [← Docs Index](README.md)

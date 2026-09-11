@@ -1,3 +1,4 @@
+<!-- source: zh-TW/getting-started.md blob: 58273881caf0639d13017c439ce2562f3dafc5f2 -->
 # Getting Started
 
 [繁體中文](../zh-TW/getting-started.md) · [← Docs Index](README.md)

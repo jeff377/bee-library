@@ -1,3 +1,4 @@
+<!-- source: zh-TW/temporal-types.md blob: 3cdcc1c178de0297d9037ee652b7683c2de25875 -->
 # Temporal Types: `Date`, `DateTime` and `Time`
 
 [繁體中文](../zh-TW/temporal-types.md) · [← Docs Index](README.md)

@@ -1,3 +1,4 @@
+<!-- source: zh-TW/permission-authorization.md blob: 816123e4806ae06087a7b048166917ae283a943e -->
 # Permission & Authorization Guide
 
 [繁體中文](../zh-TW/permission-authorization.md) · [← Docs Index](README.md)

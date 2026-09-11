@@ -3,18 +3,21 @@
 本 repo 以 Claude Code `PreToolUse` hook 在 agent 執行 `git commit` **之前**強制驗證。
 宣告於 `.claude/settings.json`，實作於 `.claude/hooks/pre-commit-verify.sh`。
 
-> **兩項檢查為何不對稱、為何 `--no-incremental`、為何必須 fail open、
+> **各項檢查為何不對稱、為何 `--no-incremental`、為何必須 fail open、
 > 「其他 repo」的 cwd 如何判定 —— 全部寫在腳本檔頭。** 要細節就讀那支，本檔不複寫。
 
-## agent 要知道的四件事
+## agent 要知道的事
 
 1. **clean Release build 失敗會擋下 commit**（exit 2）。搭配 `TreatWarningsAsErrors=true`，
    任何警告即失敗。實測約 5 秒。
 2. **`PublicAPI.Unshipped.txt` 有異動時只提示、不擋**，但**必須在 commit message 或回覆中
    說明相容性判定** —— analyzer 擋得住「未申報」，擋不住「已申報但二進位不相容」
    （例如對既有 public 建構子加 optional 參數）。這個提示的作用就是把該判定從靜默轉為必須正視。
-3. **不要為了讓 hook 通過而修改測試或原始碼** —— 那正是本 hook 要防的事情本身。
-4. **`git --no-verify` 對它無效**（那是 git 自身 hook 的旗標）。它掛在 Claude Code 的工具呼叫上，
+3. **`check-docs-i18n.sh` 有輸出時只提示、不擋** —— 源文件與譯本分開 commit 是合理的，
+   真正的把關是 CI 的 Docs Check。看到提示就在 push 前把譯本對照更新並 `--stamp`，
+   別讓 main 上的 CI 紅了才處理。
+4. **不要為了讓 hook 通過而修改測試或原始碼** —— 那正是本 hook 要防的事情本身。
+5. **`git --no-verify` 對它無效**（那是 git 自身 hook 的旗標）。它掛在 Claude Code 的工具呼叫上，
    不是 `.git/hooks/`，所以**使用者在自己終端機直接 commit 不受影響**。
 
 ## 為什麼是 hook 而不是規則條文

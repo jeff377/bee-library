@@ -2,7 +2,7 @@
 #
 # PreToolUse hook: verify the tree before any `git commit` reaches the shell.
 #
-# Two checks, deliberately asymmetric:
+# Three checks, deliberately asymmetric:
 #   1. Clean Release build  -> BLOCKS the commit (exit 2). `--no-incremental` is the
 #      whole point: an incremental build can hide a warning that a full build reports,
 #      which is how a "build is clean" claim has been wrong before.
@@ -10,6 +10,10 @@
 #      enabled repo-wide, so an *undeclared* API change is already a build error and is
 #      caught by check 1. The gap it cannot see is a change that was declared in
 #      Unshipped.txt — that turns the build green while the break is still real.
+#   3. `check-docs-i18n.sh` output -> WARNS only. A source edit and its translation may
+#      legitimately land in separate commits, so blocking here would be wrong; the Docs
+#      Check workflow is the gate. The value is hearing about it before a push to main
+#      turns CI red, rather than after.
 #
 # WARNING: this hook must fail open. Anything it cannot parse, locate, or run exits 0
 # and lets the commit through. A verification hook that wedges the repo is worse than
@@ -79,20 +83,40 @@ fi
 # ---------------------------------------------------------------------------
 # Check 2 — public API surface changes. Advisory only.
 # ---------------------------------------------------------------------------
+notice=""
+
 api_files=$(git diff HEAD --name-only -- '*PublicAPI.Unshipped.txt' 2>/dev/null)
-[[ -n "$api_files" ]] || exit 0
+if [[ -n "$api_files" ]]; then
+    api_diff=$(git diff HEAD -- '*PublicAPI.Unshipped.txt' 2>/dev/null \
+               | grep -E '^[+-][^+-]' | head -40)
 
-api_diff=$(git diff HEAD -- '*PublicAPI.Unshipped.txt' 2>/dev/null \
-           | grep -E '^[+-][^+-]' | head -40)
+    notice=$(printf '%s\n' \
+        "PublicAPI.Unshipped.txt 有異動（未阻擋，需明確判定相容性）：" \
+        "" \
+        "$api_diff" \
+        "" \
+        "分析器只保證變更『已申報』，不保證變更『相容』。對既有 public 成員增加" \
+        "optional 參數、更動簽章或型別，即使申報後 build 轉綠，仍是二進位不相容。" \
+        "請於 commit message 或回覆中說明相容性判定。")
+fi
 
-notice=$(printf '%s\n' \
-    "PublicAPI.Unshipped.txt 有異動（未阻擋，需明確判定相容性）：" \
-    "" \
-    "$api_diff" \
-    "" \
-    "分析器只保證變更『已申報』，不保證變更『相容』。對既有 public 成員增加" \
-    "optional 參數、更動簽章或型別，即使申報後 build 轉綠，仍是二進位不相容。" \
-    "請於 commit message 或回覆中說明相容性判定。")
+# ---------------------------------------------------------------------------
+# Check 3 — translation sync of docs/<lang>/. Advisory only.
+# ---------------------------------------------------------------------------
+if [[ -x ./check-docs-i18n.sh ]]; then
+    i18n_out=$(./check-docs-i18n.sh 2>&1 | head -30)
+    if [[ -n "$i18n_out" ]]; then
+        i18n_notice=$(printf '%s\n' \
+            "譯本同步檢查有輸出（未阻擋；push 後 CI 的 Docs Check 會擋其中的「錯誤」項）：" \
+            "" \
+            "$i18n_out" \
+            "" \
+            "源文件與譯本可以分開 commit，但要一起 push。修法寫在各行訊息裡。")
+        notice="${notice:+$notice$'\n\n'}$i18n_notice"
+    fi
+fi
+
+[[ -n "$notice" ]] || exit 0
 
 printf '%s\n' "$notice" >&2
 
