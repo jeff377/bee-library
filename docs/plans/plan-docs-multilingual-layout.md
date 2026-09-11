@@ -1,10 +1,10 @@
 # 計畫：公開文件改為語言資料夾結構，並建立譯本同步機制
 
-**狀態：📝 擬定中**
+**狀態：🚧 進行中（2026-09-11）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 相對連結檢查腳本，並先清掉既有死連結 | 📝 待做 |
+| 1 | 相對連結檢查腳本，並先清掉既有死連結 | ✅ 已完成（2026-09-11） |
 | 2 | 搬成 `docs/<lang>/`，改寫全 repo 的引用 | 📝 待做 |
 | 3 | 譯本同步機制：譯本檔頭、檢查腳本、CI | 📝 待做 |
 | 4 | 部落格草稿與鐵人賽寫作工作檔的路徑修正 | 📝 待做 |
@@ -181,7 +181,8 @@ docs/
 
 執行位置：
 
-- [build-ci.yml](../../.github/workflows/build-ci.yml) 早期加一個 step。只用 bash 和 git，幾秒內跑完，精簡與完整兩種模式都跑。
+- [docs-check.yml](../../.github/workflows/docs-check.yml) 加一個 step，與 `check-md-links.sh` 放同一個 workflow。
+  不放 build-ci.yml：它有 paths 過濾，只改文件的 push 不會觸發（階段 1 實作時發現）。
 - `.claude/CLAUDE.md` 的常用命令列入。
 
 ### 初次蓋章
@@ -229,7 +230,7 @@ GitHub 對搬走的檔案不會轉址，`blob/main/docs/x.md` 這種外部連結
 
 | 項目 | 建議 | 理由 |
 |------|------|------|
-| `check-md-links.sh` 是否掛 CI | 掛 | 只用 bash，幾秒完成；連結是否正確本來就沒有其他機制在把關 |
+| `check-md-links.sh` 是否掛 CI | 已掛（2026-09-11），放在獨立的 `docs-check.yml`，不設 paths 過濾 | build-ci.yml 的 paths 過濾會漏掉只改文件的 push；連結也會因為非 .md 的目標檔改名而失效 |
 | `check-docs-i18n.sh` 是否也掛 commit 前 hook | hook 只提示，由 CI 擋 | 直接改 main 的工作流下，CI 紅是事後才知道，hook 提示可以提早；但分兩個 commit 翻譯是合理情境，不該擋 commit |
 | 舊路徑是否留轉址用的 stub 檔 | 不留 | stub 會讓「根目錄同層很亂」原樣回來，而且 stub 本身又是一份會漂的指標 |
 

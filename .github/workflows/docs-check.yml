@@ -1,0 +1,28 @@
+name: Docs Check
+
+# 刻意獨立於 build-ci.yml，也刻意不設 paths 過濾：
+# - build-ci.yml 有 paths 過濾，只改文件的 push 不會觸發它，而那正是最需要檢查連結的時候。
+# - 連結會因為「被指向的檔案」改名或刪除而失效，那個檔案不一定是 .md（plan 與 README 會連到 src/ 的原始碼）。
+# 檢查腳本只用 bash、git、awk，不需要 .NET，幾秒內跑完。
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+    - name: Check markdown relative links
+      run: ./check-md-links.sh
