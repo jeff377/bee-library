@@ -1,8 +1,10 @@
 using System.ComponentModel;
+using System.Data;
 using Bee.Base.Exceptions;
 using Bee.Business.Form;
 using Bee.Definition;
 using Bee.Definition.Database;
+using Bee.Definition.Logging;
 using Bee.Definition.Settings;
 using Bee.Tests.Shared;
 
@@ -166,9 +168,56 @@ namespace Bee.Business.UnitTests.Form
             Assert.True(DeleteProbe.BeforeDeleteSawSnapshot);
             Assert.True(DeleteProbe.AfterDeleteSawSnapshot);
             Assert.Equal("待刪除", DeleteProbe.DeletedName);
+            Assert.Equal(DataRowState.Unchanged, DeleteProbe.AfterDeleteRowState);
+        }
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：★稽核開啟時 AfterDelete 拿到的 Snapshot 仍是未經修改的原單，讀得到欄位值")]
+        public void Delete_AfterDeletePlugin_ReadsSnapshotWithAuditEnabled()
+        {
+            // 與上一支互補：刪除稽核會拿同一份 Snapshot 產生 payload。它若改動列狀態，
+            // AfterDelete 以預設版本讀欄位就會擲 DeletedRowInaccessibleException，
+            // 而同一個外掛在稽核關閉的部署上卻正常——外掛看到的內容不得取決於稽核開關。
+            var ctx = new CrudTestContext(_fx, DatabaseType.SQLite);
+            var writer = new CapturingAuditLogWriter();
+            var rowId = Guid.NewGuid();
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            DeleteProbe.Reset();
+
+            var dataSet = ctx.Repository.GetNewData();
+            var master = dataSet.Tables[CrudTestContext.ProgId]!;
+            master.Rows[0][SysFields.RowId] = rowId;
+            master.Rows[0]["sys_id"] = $"S{runId}";
+            master.Rows[0][SysFields.Name] = "稽核開啟待刪除";
+            ctx.CreateBo().Save(new SaveArgs { DataSet = dataSet });
+
+            try
+            {
+                ctx.CreateBoWithOverrides(
+                        (typeof(AuditLogOptions), new AuditLogOptions { Enabled = true, ChangeEnabled = true }),
+                        (typeof(IAuditLogWriter), writer),
+                        (typeof(IFormPluginResolver), Resolver<AfterDeleteProbePlugin>(PluginStage.AfterDelete)))
+                    .Delete(new DeleteArgs { RowId = rowId });
+
+                // 先確認稽核確實寫了，否則這支會在稽核沒開的情況下空轉通過。
+                Assert.IsType<ChangeAuditEntry>(Assert.Single(writer.Entries));
+                Assert.Equal(DataRowState.Unchanged, DeleteProbe.AfterDeleteRowState);
+                Assert.Equal("稽核開啟待刪除", DeleteProbe.DeletedName);
+            }
+            finally
+            {
+                DeleteRow(ctx, rowId);
+            }
         }
 
         // ---- Helpers ----
+
+        private sealed class CapturingAuditLogWriter : IAuditLogWriter
+        {
+            public List<AuditEntry> Entries { get; } = [];
+
+            public void Write(AuditEntry entry) => Entries.Add(entry);
+        }
 
         private static void DeleteRow(CrudTestContext ctx, Guid rowId)
         {
@@ -258,12 +307,14 @@ namespace Bee.Business.UnitTests.Form
             public static bool BeforeDeleteSawSnapshot { get; set; }
             public static bool AfterDeleteSawSnapshot { get; set; }
             public static string DeletedName { get; set; } = string.Empty;
+            public static DataRowState? AfterDeleteRowState { get; set; }
 
             public static void Reset()
             {
                 BeforeDeleteSawSnapshot = false;
                 AfterDeleteSawSnapshot = false;
                 DeletedName = string.Empty;
+                AfterDeleteRowState = null;
             }
         }
 
@@ -286,7 +337,11 @@ namespace Bee.Business.UnitTests.Form
                 DeleteProbe.AfterDeleteSawSnapshot = context.Snapshot != null;
                 var table = context.Snapshot?.Tables[CrudTestContext.ProgId];
                 if (table is { Rows.Count: > 0 })
+                {
+                    // Recorded before the read below, which throws on a row marked deleted.
+                    DeleteProbe.AfterDeleteRowState = table.Rows[0].RowState;
                     DeleteProbe.DeletedName = table.Rows[0][SysFields.Name]?.ToString() ?? string.Empty;
+                }
             }
         }
     }

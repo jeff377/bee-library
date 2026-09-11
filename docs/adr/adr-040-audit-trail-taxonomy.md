@@ -178,7 +178,7 @@
 
 | 面向 | 決定 |
 |------|------|
-| 新舊並存 | 兩種 payload 以 **root 元素**分派（新格式 `AuditChanges`、舊格式 `diffgr:diffgram`、最小刪除標記 `DeletedRow`），互斥且不需版本欄位 |
+| 新舊並存 | 各種 payload 以 **root 元素**分派（新格式 `AuditChanges`、舊格式 `diffgr:diffgram`、最小刪除標記 `DeletedRow`、刪除原單 `AuditDeletedRecord`——見第十節），互斥且不需版本欄位 |
 | 既有資料 | **一列都不遷移**，舊格式由 `SchemalessDiffGramReader` 繼續讀，**不設落日期限** |
 | 體積 | schema 是固定成本（Northwind 訂單那組 26 欄／2 表約 +4.2 KB／列），與資料量無關；異動記錄寫進獨立的 `log` 資料庫，不壓到業務庫 |
 | 值的字串化 | 一律 `XmlConvert`，與舊格式的 XML 原文逐字一致且 culture 無關；用 `ToString()` 會讓同一筆異動因儲存格式不同而顯示不同 |
@@ -229,6 +229,29 @@ BCL 方法，因此 `XmlSerializer` 產出的 payload 與此等價。不走它�
 **也不需要為 `DateOnly` / `TimeOnly` 做特別處理。** Date 欄以 `DateTime`、Time 欄以字串存在 `DataSet` 中，
 值與欄位標記都能完整還原。日期欄只顯示日期、時間點欄換算時區，屬顯示層依 `FormSchema` 欄位型別處理的事，
 與第八節「不追宣告型別」一致。
+
+### 十、刪除記錄存完整原單，不再把列標成 Deleted（2026-09-11 補）
+
+`Form.Delete` 的實際刪除是 `DELETE … WHERE sys_rowid = …`（明細以 `sys_master_rowid` 為條件），
+不經過 DataSet。稽核要記的是**刪掉的那張單長什麼樣子**——刪除沒有欄位異動。
+
+原本的寫法卻把刪除前原單的每一列 `row.Delete()` 標成 Deleted，再 `GetChanges()` 寫成 DiffGram，
+讓刪除內容落在 `diffgr:before` 區塊。也就是把「一張被刪掉的單」偽裝成「每一列都被刪除的變更集」，
+只為了沿用 Save 那條 payload 形狀。
+
+這個偽裝有實際代價：標記作用在 `DeleteContext.Snapshot` 本身，而 `DoAfterDelete` 與 AfterDelete
+外掛拿到的正是同一份。**稽核開啟時，外掛以預設版本讀欄位會擲 `DeletedRowInaccessibleException`；
+稽核關閉時同樣的寫法正常**——同一個外掛能不能用，竟取決於稽核開關。
+
+| 面向 | 決定 |
+|------|------|
+| payload | root `AuditDeletedRecord`，內含 XSD 與 DiffGram。原單原樣寫出、不 `GetChanges()`，列維持 Unchanged，沒有 before 區塊 |
+| 字元處理 | 與 `AuditChanges` 共用同一組 writer 設定，第八節的字元處理照樣生效 |
+| 讀取 | 每一列以現值產出 `Delete` 欄位（舊值為原值），輸出與舊的刪除記錄逐筆相同，由 `DeletedRecordPayloadTests` 釘住 |
+| `Snapshot` | 稽核只讀不改，AfterDelete 看到的列狀態與稽核開關無關，由 `Delete_AfterDeletePlugin_ReadsSnapshotWithAuditEnabled` 釘住 |
+| 既有資料 | **一列都不遷移**。4.30.0 起標成 Deleted 的刪除記錄照讀 |
+| Save 路徑 | 不變：用戶端送來的 DataSet 帶真實列狀態，整單刪除也仍是變更集 |
+| 降版 | 舊版讀取端不認得新 root，會把 `xs:schema` 當成資料，讀出一筆無意義欄位；資料本身完整，回到新版即可正常讀出 |
 
 ## 理由
 

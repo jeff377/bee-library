@@ -49,8 +49,14 @@ namespace Bee.Business.Form
 
         /// <summary>
         /// Gets or sets the pre-delete snapshot of the record (master + details). Loaded once and
-        /// shared by the change audit and any <c>BeforeDelete</c> rules; null when neither needs it.
+        /// shared by the <c>BeforeDelete</c> rules, the delete-stage plugins and the change audit;
+        /// null when none of them needs it.
         /// </summary>
+        /// <remarks>
+        /// The change audit reads the snapshot without modifying it, so its rows are still in their
+        /// loaded, unchanged state when <see cref="FormBusinessObject.DoAfterDelete"/> and the
+        /// after-delete plugins run, whether or not change auditing is enabled.
+        /// </remarks>
         public DataSet? Snapshot { get; set; }
 
         /// <summary>

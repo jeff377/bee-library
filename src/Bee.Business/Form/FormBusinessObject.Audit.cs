@@ -63,41 +63,23 @@ namespace Bee.Business.Form
         }
 
         /// <summary>
-        /// Writes the delete audit. When the pre-delete <paramref name="snapshot"/> is available its
-        /// rows are marked deleted and serialised as a DiffGram before-image (full deleted content);
-        /// otherwise the deleted key alone is recorded.
+        /// Writes the delete audit. When the pre-delete <paramref name="snapshot"/> is available it is
+        /// recorded whole — master and details as they were loaded; otherwise the deleted key alone is
+        /// recorded.
         /// </summary>
         private void WriteDeleteAudit(DataSet? snapshot, Guid rowId)
         {
             var masterTableName = DefineAccess.GetFormSchema(ProgId).MasterTable?.TableName ?? string.Empty;
             var rowKey = rowId.ToString();
 
-            string xml = MinimalDeleteXml(masterTableName, rowKey);
-            if (snapshot != null && HasAnyRows(snapshot))
-            {
-                MarkAllRowsDeleted(snapshot);
-                using var changes = snapshot.GetChanges();
-                if (changes != null)
-                    xml = AuditDiffGram.Serialize(changes);
-            }
+            // IMPORTANT: the snapshot is only read here. The same instance reaches `DoAfterDelete` and
+            // the after-delete plugins next, and they must see the record as loaded whether or not
+            // change auditing is on. `Delete_AfterDeletePlugin_ReadsSnapshotWithAuditEnabled` pins this.
+            string xml = snapshot != null && HasAnyRows(snapshot)
+                ? AuditDiffGram.SerializeDeletedRecord(snapshot)
+                : MinimalDeleteXml(masterTableName, rowKey);
 
             WriteChangeAudit(ChangeKind.Delete, rowKey, xml, masterTableName, ProgId + ".Delete");
-        }
-
-        /// <summary>Marks every row in every table as deleted so <c>GetChanges</c> yields the before-image.</summary>
-        private static void MarkAllRowsDeleted(DataSet dataSet)
-        {
-            foreach (DataTable table in dataSet.Tables)
-            {
-                // Iterate backwards: Delete() on an Added row removes it immediately; loaded rows are
-                // Unchanged so this is defensive.
-                for (int i = table.Rows.Count - 1; i >= 0; i--)
-                {
-                    var row = table.Rows[i];
-                    if (row.RowState != DataRowState.Deleted)
-                        row.Delete();
-                }
-            }
         }
 
         private static bool HasAnyRows(DataSet dataSet)

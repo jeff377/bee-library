@@ -46,7 +46,7 @@ The `st_` prefix means "framework-owned table". It is **orthogonal to which data
 | Table | Purpose |
 |-------|---------|
 | `st_log_login` | Login events (success / failure / lockout / logout). |
-| `st_log_change` | Data-change records — one row per Save / Delete carrying a DataSet DiffGram before/after payload. |
+| `st_log_change` | Data-change records — one row per Save / Delete. A Save carries a DataSet DiffGram of the changed rows with their before/after values; a Delete carries the complete pre-delete record. |
 | `st_log_access` | Record-view access records (who viewed which record). |
 | `st_log_anomaly_api` | API-layer anomalies (Error / Timeout / Slow) — which action deviated. |
 | `st_log_anomaly_db` | DB-layer anomalies (Error / Timeout / Slow / large-row) — which database + command deviated. |

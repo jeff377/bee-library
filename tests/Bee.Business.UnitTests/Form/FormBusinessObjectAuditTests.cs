@@ -172,6 +172,8 @@ namespace Bee.Business.UnitTests.Form
                 Assert.Equal($"{CrudTestContext.ProgId}.Delete", entry.Source);
                 // 前影像取得到才有「刪掉了什麼」；只剩鍵值的 minimal XML 不含欄位值。
                 Assert.Contains("稽核待刪", entry.ChangesXml, StringComparison.Ordinal);
+                // 刪除存的是原單本身，不是把列標成 Deleted 的變更集。
+                Assert.StartsWith("<" + AuditDiffGram.DeletedRecordRootElementName + ">", entry.ChangesXml, StringComparison.Ordinal);
             }
             finally
             {

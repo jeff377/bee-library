@@ -46,7 +46,7 @@
 | 表名 | 用途 |
 |------|------|
 | `st_log_login` | 登入事件（成功 / 失敗 / 鎖定 / 登出）。 |
-| `st_log_change` | 異動記錄——一次 Save / Delete 一列，`changes_xml` 承載 DataSet DiffGram 新舊值。 |
+| `st_log_change` | 異動記錄——一次 Save / Delete 一列。Save 的 `changes_xml` 承載異動列的 DataSet DiffGram 新舊值；Delete 則存刪除前的完整原單。 |
 | `st_log_access` | 檢視記錄（誰看了哪筆記錄）。 |
 | `st_log_anomaly_api` | API 層異常（Error / Timeout / Slow）——哪個動作偏離正常。 |
 | `st_log_anomaly_db` | DB 層異常（Error / Timeout / Slow / 大量列數）——哪個資料庫 + 指令偏離正常。 |

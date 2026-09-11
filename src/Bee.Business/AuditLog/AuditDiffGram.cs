@@ -9,8 +9,8 @@ namespace Bee.Business.AuditLog
 {
     /// <summary>
     /// Builds the <c>st_log_change.changes_xml</c> payload — an inline XSD followed by a DataSet
-    /// DiffGram carrying both the current and the original values, which is what
-    /// <see cref="ChangeDiffGramReader"/> reads back.
+    /// DiffGram, which is what <see cref="ChangeDiffGramReader"/> reads back. A change set carries both
+    /// the current and the original values; a deleted record is written as it was loaded.
     /// </summary>
     /// <remarks>
     /// The form path already holds a real <c>DataSet</c> and only needs
@@ -25,10 +25,17 @@ namespace Bee.Business.AuditLog
         /// <summary>
         /// The payload's outermost element. It wraps the inline XSD and the DiffGram, which XML
         /// permits only under a single root, and doubles as the discriminator
-        /// <see cref="ChangeDiffGramReader"/> dispatches on — the four payload shapes the reader
-        /// accepts all carry a different root name.
+        /// <see cref="ChangeDiffGramReader"/> dispatches on — every payload shape the reader accepts
+        /// carries a different root name.
         /// </summary>
         public const string RootElementName = "AuditChanges";
+
+        /// <summary>
+        /// The outermost element of a deleted record's payload, written by
+        /// <see cref="SerializeDeletedRecord"/>. It plays the same discriminator role as
+        /// <see cref="RootElementName"/>.
+        /// </summary>
+        public const string DeletedRecordRootElementName = "AuditDeletedRecord";
 
         /// <summary>
         /// Serialises a changed DataSet to an inline XSD followed by a DiffGram. The DiffGram carries
@@ -58,7 +65,34 @@ namespace Bee.Business.AuditLog
         /// <c>AuditDiffGramCharacterTests</c> pins each of these.
         /// </para>
         /// </remarks>
-        public static string Serialize(DataSet changes)
+        public static string Serialize(DataSet changes) => Write(RootElementName, changes);
+
+        /// <summary>
+        /// Serialises the complete pre-delete record — master and details as they were loaded — to an
+        /// inline XSD followed by a DiffGram, under <see cref="DeletedRecordRootElementName"/>.
+        /// </summary>
+        /// <param name="record">The record as loaded before the delete; its rows are unchanged.</param>
+        /// <remarks>
+        /// <para>
+        /// A delete changes no field, so the record is written as it stands rather than turned into a
+        /// change set, and the DiffGram carries no before block. Earlier versions marked every row
+        /// deleted first so the content landed in that block. Those stored rows stay readable, and the
+        /// reader emits the same field list for both shapes; <c>DeletedRecordPayloadTests</c> pins that.
+        /// </para>
+        /// <para>
+        /// The record is only read here. The same instance reaches <c>DoAfterDelete</c> and the
+        /// after-delete plugins next, which is why marking its rows deleted was a defect and not just
+        /// a question of shape. The character handling described on <see cref="Serialize(DataSet)"/>
+        /// applies unchanged.
+        /// </para>
+        /// </remarks>
+        public static string SerializeDeletedRecord(DataSet record) => Write(DeletedRecordRootElementName, record);
+
+        /// <summary>
+        /// Writes <paramref name="dataSet"/> as an inline XSD followed by a DiffGram under the given
+        /// root element. Shared by both payload shapes so they cannot drift apart in their settings.
+        /// </summary>
+        private static string Write(string rootElementName, DataSet dataSet)
         {
             var builder = new StringBuilder();
             var settings = new XmlWriterSettings
@@ -72,9 +106,9 @@ namespace Bee.Business.AuditLog
             };
             using (var writer = new LoneSurrogateReplacingXmlWriter(XmlWriter.Create(builder, settings)))
             {
-                writer.WriteStartElement(RootElementName);
-                changes.WriteXmlSchema(writer);
-                changes.WriteXml(writer, XmlWriteMode.DiffGram);
+                writer.WriteStartElement(rootElementName);
+                dataSet.WriteXmlSchema(writer);
+                dataSet.WriteXml(writer, XmlWriteMode.DiffGram);
                 writer.WriteEndElement();
             }
             return builder.ToString();

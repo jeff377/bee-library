@@ -14,11 +14,12 @@ namespace Bee.Business.AuditLog
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Two payload shapes are stored, and both must stay readable: the current one written by
-    /// <see cref="AuditDiffGram.Serialize"/> (an inline XSD followed by a DiffGram) and the schemaless
-    /// DiffGram written before the schema was added. They are told apart by their root element, which
-    /// differs for every shape the reader accepts, so no version column is needed and no stored row
-    /// has to be migrated.
+    /// Every stored payload shape must stay readable: a change set written by
+    /// <see cref="AuditDiffGram.Serialize"/> and a deleted record written by
+    /// <see cref="AuditDiffGram.SerializeDeletedRecord"/> (both an inline XSD followed by a DiffGram),
+    /// the schemaless DiffGram written before the schema was added, and the minimal delete marker.
+    /// They are told apart by their root element, which differs for every shape the reader accepts,
+    /// so no version column is needed and no stored row has to be migrated.
     /// </para>
     /// <para>
     /// The current shape carries its own schema, so it rebuilds into a real <see cref="DataSet"/> and
@@ -41,30 +42,34 @@ namespace Bee.Business.AuditLog
             if (string.IsNullOrWhiteSpace(changesXml)) { return []; }
 
             // Dispatch on the root element alone, so only the branch that is actually taken pays to
-            // parse the payload. Anything that is not the current shape — the schemaless DiffGram, the
-            // minimal delete marker, corrupt XML — goes to the schemaless reader, which returns an
+            // parse the payload. Anything that is not a schema-bound shape — the schemaless DiffGram,
+            // the minimal delete marker, corrupt XML — goes to the schemaless reader, which returns an
             // empty list for the last two. That is its long-standing behaviour.
-            return IsSchemaBound(changesXml)
-                ? ReadSchemaBound(changesXml)
-                : ReadSchemaless(changesXml);
+            return PeekRootElementName(changesXml) switch
+            {
+                AuditDiffGram.RootElementName => ReadSchemaBound(changesXml, asDeletedRecord: false),
+                AuditDiffGram.DeletedRecordRootElementName => ReadSchemaBound(changesXml, asDeletedRecord: true),
+                _ => ReadSchemaless(changesXml),
+            };
         }
 
         /// <summary>
-        /// Peeks at the root element to tell the current payload shape from every other one.
+        /// Peeks at the name of the root element, which is what tells the payload shapes apart.
+        /// Returns <c>null</c> for a namespaced root or for input that does not parse.
         /// </summary>
-        private static bool IsSchemaBound(string changesXml)
+        private static string? PeekRootElementName(string changesXml)
         {
             try
             {
                 using var stringReader = new StringReader(changesXml);
                 using var reader = XmlReader.Create(stringReader, HardenedSettings());
-                return reader.MoveToContent() == XmlNodeType.Element
-                    && reader.NamespaceURI.Length == 0
-                    && string.Equals(reader.LocalName, AuditDiffGram.RootElementName, StringComparison.Ordinal);
+                return reader.MoveToContent() == XmlNodeType.Element && reader.NamespaceURI.Length == 0
+                    ? reader.LocalName
+                    : null;
             }
             catch (XmlException)
             {
-                return false;
+                return null;
             }
         }
 
@@ -85,8 +90,13 @@ namespace Bee.Business.AuditLog
 
         /// <summary>
         /// Rebuilds the payload into a <see cref="DataSet"/> using its own inline schema, then emits
-        /// one entry per changed field.
+        /// one entry per changed field — or, for a deleted record, one delete entry per field.
         /// </summary>
+        /// <param name="changesXml">The raw payload.</param>
+        /// <param name="asDeletedRecord">
+        /// Whether the payload is a deleted record. Its rows were written as loaded, so they read back
+        /// unchanged and are all deleted content regardless of their row state.
+        /// </param>
         /// <remarks>
         /// WARNING: read the payload with one forward-only reader over the whole document, mirroring
         /// how <see cref="AuditDiffGram.Serialize"/> writes it. Handing
@@ -96,7 +106,7 @@ namespace Bee.Business.AuditLog
         /// <see cref="ArgumentException"/> about an empty local name. Minified input hides the
         /// problem, so a test that only covers minified payloads will not catch a regression here.
         /// </remarks>
-        private static List<RecordFieldChange> ReadSchemaBound(string changesXml)
+        private static List<RecordFieldChange> ReadSchemaBound(string changesXml, bool asDeletedRecord)
         {
             var result = new List<RecordFieldChange>();
 
@@ -132,7 +142,14 @@ namespace Bee.Business.AuditLog
             {
                 foreach (DataRow row in table.Rows)
                 {
-                    AppendRow(result, table, row);
+                    if (asDeletedRecord)
+                    {
+                        AppendSingleVersion(result, table, row, DataRowVersion.Current, ChangeKind.Delete);
+                    }
+                    else
+                    {
+                        AppendRow(result, table, row);
+                    }
                 }
             }
             return result;
