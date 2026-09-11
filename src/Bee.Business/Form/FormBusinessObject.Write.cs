@@ -41,6 +41,12 @@ namespace Bee.Business.Form
         /// more than persistence and require a transaction API at this layer; the framework accepts
         /// the gap instead.
         /// </para>
+        /// <para>
+        /// When the entry cannot be recorded, the failure is logged at error level and the call
+        /// still succeeds, running <c>DoAfterSave</c> and the <c>AfterSave</c> plugins as usual. The
+        /// record is already committed at that point, and an error would tell the caller that the
+        /// save failed when it did not.
+        /// </para>
         /// </remarks>
         /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated,
@@ -84,8 +90,11 @@ namespace Bee.Business.Form
 
             DoSave(context);
 
-            if (auditChange && changes != null)
-                WriteChangeAudit(changeKind, rowKey, AuditDiffGram.Serialize(changes), masterTableName, ProgId + ".Save");
+            if (auditChange && changes is { } changeSet)
+            {
+                WriteAuditBestEffort("Save", rowKey, () =>
+                    WriteChangeAudit(changeKind, rowKey, AuditDiffGram.Serialize(changeSet), masterTableName, ProgId + ".Save"));
+            }
 
             DoAfterSave(context);
             plugins.RunAfterSave(context);
@@ -184,6 +193,7 @@ namespace Bee.Business.Form
         /// Same shape as <see cref="Save(SaveArgs)"/>: <c>DoBeforeDelete</c> and
         /// <c>DoAfterDelete</c> run outside the database transaction, <c>DoDelete</c> inside it, and
         /// the delete audit is written between <c>DoDelete</c> and <c>DoAfterDelete</c> — outside.
+        /// A failed audit write is handled as on <c>Save</c>: logged, not surfaced to the caller.
         /// Customise by overriding one of those three rather than this method, which carries the
         /// authorization and record-scope resolution.
         /// </remarks>
@@ -223,7 +233,10 @@ namespace Bee.Business.Form
             DoDelete(context);
 
             if (auditChange && context.RowsAffected > 0)
-                WriteDeleteAudit(context.Snapshot, args.RowId);
+            {
+                WriteAuditBestEffort("Delete", args.RowId.ToString(), () =>
+                    WriteDeleteAudit(context.Snapshot, args.RowId));
+            }
 
             DoAfterDelete(context);
             plugins.RunAfterDelete(context);

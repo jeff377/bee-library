@@ -65,14 +65,17 @@ namespace Bee.Business.System
 
             if (auditing)
             {
-                string rowKey = repository.GetRowIdBySysId(args.UserId).ToString();
-                // The affected user is the row key; the business id rides along as context so the
-                // entry names someone rather than only a row identifier.
-                string changes = AuditDiffGram.ForFieldUpdate(UserTableName, rowKey,
-                    ProtectedFields.DeploymentAdmin, before, args.IsDeploymentAdmin,
-                    [(SysFields.Id, args.UserId)]);
-                WriteDeploymentAudit(UserTableName, rowKey, ChangeKind.Update, changes,
-                    SystemActions.SetDeploymentAdmin);
+                WriteAuditBestEffort(SystemActions.SetDeploymentAdmin, args.UserId, () =>
+                {
+                    string rowKey = repository.GetRowIdBySysId(args.UserId).ToString();
+                    // The affected user is the row key; the business id rides along as context so the
+                    // entry names someone rather than only a row identifier.
+                    string changes = AuditDiffGram.ForFieldUpdate(UserTableName, rowKey,
+                        ProtectedFields.DeploymentAdmin, before, args.IsDeploymentAdmin,
+                        [(SysFields.Id, args.UserId)]);
+                    WriteDeploymentAudit(UserTableName, rowKey, ChangeKind.Update, changes,
+                        SystemActions.SetDeploymentAdmin);
+                });
             }
 
             return new SetDeploymentAdminResult

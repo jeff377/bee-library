@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Data;
 using Bee.Business.AuditLog;
 using Bee.Business.Form;
+using Bee.Business.UnitTests.Fakes;
 using Bee.Db.Dml;
 using Bee.Definition;
 using Bee.Definition.Database;
@@ -9,6 +10,7 @@ using Bee.Definition.Filters;
 using Bee.Definition.Logging;
 using Bee.Definition.Settings;
 using Bee.Tests.Shared;
+using Microsoft.Extensions.Logging;
 
 namespace Bee.Business.UnitTests.Form
 {
@@ -34,8 +36,36 @@ namespace Bee.Business.UnitTests.Form
             public void Write(AuditEntry entry) => Entries.Add(entry);
         }
 
+        /// <summary>模擬 log 資料庫或自訂寫入端故障。</summary>
+        private sealed class ThrowingAuditLogWriter : IAuditLogWriter
+        {
+            public void Write(AuditEntry entry) => throw new InvalidOperationException("Audit sink unavailable.");
+        }
+
+        /// <summary>記下 commit 之後的擴充點有沒有跑到。</summary>
+        private sealed class AfterStepProbeBo : FormBusinessObject
+        {
+            public AfterStepProbeBo(IBeeContext ctx) : base(ctx, Guid.NewGuid(), CrudTestContext.ProgId) { }
+
+            public bool AfterSaveRan { get; private set; }
+
+            public bool AfterDeleteRan { get; private set; }
+
+            protected override void DoAfterSave(SaveContext context)
+            {
+                base.DoAfterSave(context);
+                AfterSaveRan = true;
+            }
+
+            protected override void DoAfterDelete(DeleteContext context)
+            {
+                base.DoAfterDelete(context);
+                AfterDeleteRan = true;
+            }
+        }
+
         private static (Type, object?)[] AuditOverrides(
-            CapturingAuditLogWriter writer, bool enabled = true,
+            IAuditLogWriter writer, bool enabled = true,
             bool changeEnabled = true, bool accessEnabled = true)
             =>
             [
@@ -249,6 +279,126 @@ namespace Bee.Business.UnitTests.Form
                     .Delete(new DeleteArgs { RowId = rowId });
 
                 Assert.Empty(writer.Entries);
+            }
+            finally
+            {
+                TryDelete(ctx, rowId);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("欄位值含 XML 不允許的控制字元時 Save 仍成功，且稽核讀得回原值")]
+        public void Save_ValueWithControlCharacter_WritesReadableAudit()
+        {
+            var ctx = new CrudTestContext(_fx, DatabaseType.SQLite);
+            var writer = new CapturingAuditLogWriter();
+            var rowId = Guid.NewGuid();
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            const string pasted = "貼上\u0001的值";
+
+            try
+            {
+                InsertEmployee(ctx, rowId, $"C{runId}", "控制字元原值");
+
+                var loaded = ctx.CreateBo().GetData(new GetDataArgs { RowId = rowId }).DataSet!;
+                loaded.Tables[CrudTestContext.ProgId]!.Rows[0][SysFields.Name] = pasted;
+
+                ctx.CreateBoWithOverrides(AuditOverrides(writer))
+                    .Save(new SaveArgs { DataSet = loaded });
+
+                var entry = SingleChange(writer);
+                var field = Assert.Single(ChangeDiffGramReader.Read(entry.ChangesXml), f => f.FieldName == SysFields.Name);
+                Assert.Equal(pasted, field.NewValue);
+            }
+            finally
+            {
+                TryDelete(ctx, rowId);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("被刪資料含 XML 不允許的控制字元時 Delete 仍成功，且前影像讀得回原值")]
+        public void Delete_ValueWithControlCharacter_WritesReadableAudit()
+        {
+            var ctx = new CrudTestContext(_fx, DatabaseType.SQLite);
+            var writer = new CapturingAuditLogWriter();
+            var rowId = Guid.NewGuid();
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            const string stored = "待刪\u0001資料";
+
+            try
+            {
+                InsertEmployee(ctx, rowId, $"E{runId}", stored);
+
+                ctx.CreateBoWithOverrides(AuditOverrides(writer))
+                    .Delete(new DeleteArgs { RowId = rowId });
+
+                var entry = SingleChange(writer);
+                var field = Assert.Single(ChangeDiffGramReader.Read(entry.ChangesXml),
+                    f => f.FieldName == SysFields.Name && f.RowState == ChangeKind.Delete);
+                Assert.Equal(stored, field.OldValue);
+            }
+            finally
+            {
+                TryDelete(ctx, rowId);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("★稽核寫入失敗時，已 commit 的 Save 不得回傳失敗，AfterSave 照跑並記下錯誤 log")]
+        public void Save_AuditWriteFails_CompletesAndLogsError()
+        {
+            var ctx = new CrudTestContext(_fx, DatabaseType.SQLite);
+            var loggers = new RecordingLoggerFactory();
+            var rowId = Guid.NewGuid();
+            string runId = Guid.NewGuid().ToString("N")[..8];
+
+            try
+            {
+                var dataSet = ctx.Repository.GetNewData();
+                var master = dataSet.Tables[CrudTestContext.ProgId]!;
+                master.Rows[0][SysFields.RowId] = rowId;
+                master.Rows[0]["sys_id"] = $"F{runId}";
+                master.Rows[0][SysFields.Name] = "稽核失敗仍存檔";
+
+                var bo = new AfterStepProbeBo(ctx.CreateContextWithOverrides(
+                    [.. AuditOverrides(new ThrowingAuditLogWriter()), (typeof(ILoggerFactory), loggers)]));
+                bo.Save(new SaveArgs { DataSet = dataSet });
+
+                Assert.True(bo.AfterSaveRan);
+                Assert.NotNull(ctx.CreateBo().GetData(new GetDataArgs { RowId = rowId }).DataSet);
+                var error = Assert.Single(loggers.Entries, e => e.Level == LogLevel.Error);
+                Assert.IsType<InvalidOperationException>(error.Exception);
+                Assert.Contains(rowId.ToString(), error.Message, StringComparison.OrdinalIgnoreCase);
+            }
+            finally
+            {
+                TryDelete(ctx, rowId);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("★稽核寫入失敗時，已 commit 的 Delete 不得回傳失敗，AfterDelete 照跑並記下錯誤 log")]
+        public void Delete_AuditWriteFails_CompletesAndLogsError()
+        {
+            var ctx = new CrudTestContext(_fx, DatabaseType.SQLite);
+            var loggers = new RecordingLoggerFactory();
+            var rowId = Guid.NewGuid();
+            string runId = Guid.NewGuid().ToString("N")[..8];
+
+            try
+            {
+                InsertEmployee(ctx, rowId, $"G{runId}", "稽核失敗仍刪除");
+
+                var bo = new AfterStepProbeBo(ctx.CreateContextWithOverrides(
+                    [.. AuditOverrides(new ThrowingAuditLogWriter()), (typeof(ILoggerFactory), loggers)]));
+                var result = bo.Delete(new DeleteArgs { RowId = rowId });
+
+                Assert.Equal(1, result.RowsAffected);
+                Assert.True(bo.AfterDeleteRan);
+                var error = Assert.Single(loggers.Entries, e => e.Level == LogLevel.Error);
+                Assert.IsType<InvalidOperationException>(error.Exception);
+                Assert.Contains(rowId.ToString(), error.Message, StringComparison.OrdinalIgnoreCase);
             }
             finally
             {

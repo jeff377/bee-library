@@ -8,6 +8,7 @@ using Bee.Definition.Storage;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.Form;
+using Microsoft.Extensions.Logging;
 
 namespace Bee.Business
 {
@@ -265,6 +266,58 @@ namespace Bee.Business
             if (!string.IsNullOrEmpty(companyId))
                 companyName = Services.GetService<ICompanyInfoService>()?.Get(companyId)?.CompanyName;
             return (session?.UserId, session?.UserName, companyId, companyName);
+        }
+
+        /// <summary>
+        /// Runs the audit step that follows an already persisted write, so that its failure is
+        /// logged instead of becoming a failure of the write.
+        /// </summary>
+        /// <param name="operation">The audited operation, logged after the program id.</param>
+        /// <param name="subject">
+        /// The key of the record the entry describes, logged so the missing entry can be traced. Never
+        /// a field value: those may be sensitive, and the log is not the audit database.
+        /// </param>
+        /// <param name="writeAudit">Builds the payload and hands the entry to the audit writer.</param>
+        /// <remarks>
+        /// <para>
+        /// Callers run this after their write has committed. An exception escaping it would report a
+        /// failure for data that is already persisted, and skip the after-save or after-delete
+        /// extension points and plugins that should run. Recording the entry is best-effort, as
+        /// ADR-040 decides for the audit trail, and a gap is reported at error level.
+        /// </para>
+        /// <para>
+        /// The catch is deliberately unfiltered. The entry goes to
+        /// <see cref="Bee.Definition.Logging.IAuditLogWriter"/>, a public DI seam whose implementation
+        /// may throw anything, and building it reads session, company and definition data. Failing a
+        /// committed write over its audit entry is never the better outcome — the same reasoning that
+        /// leaves the background writer's drain unfiltered. <see cref="OperationCanceledException"/>
+        /// is left to the caller.
+        /// </para>
+        /// <para>
+        /// With no <see cref="ILoggerFactory"/> registered the failure has nowhere to be reported. The
+        /// framework's background writer (<c>AuditLogWriterService</c>) requires a logger in its
+        /// constructor, so that only arises with a custom <see cref="Bee.Definition.Logging.IAuditLogWriter"/>.
+        /// </para>
+        /// </remarks>
+        private protected void WriteAuditBestEffort(string operation, string? subject, Action writeAudit)
+        {
+            try
+            {
+                writeAudit();
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Services.GetService<ILoggerFactory>()?
+                    .CreateLogger(GetType())
+                    .LogError(ex,
+                        "The audit entry for '{ProgId}.{Operation}' on '{Subject}' could not be written. " +
+                        "The operation itself has already been committed and is not rolled back.",
+                        ProgId, operation, subject);
+            }
         }
 
         /// <summary>

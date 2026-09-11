@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Base.Security;
 using Bee.Business.AuditLog;
 using Bee.Business.System;
+using Bee.Business.UnitTests.Fakes;
 using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Definition;
@@ -9,6 +10,7 @@ using Bee.Definition.Database;
 using Bee.Definition.Logging;
 using Bee.Definition.Settings;
 using Bee.Tests.Shared;
+using Microsoft.Extensions.Logging;
 
 namespace Bee.Business.UnitTests
 {
@@ -40,9 +42,19 @@ namespace Bee.Business.UnitTests
             bool enabled = true, bool changeEnabled = true)
         {
             writer = new CapturingAuditLogWriter();
+            return CreateBo(writer, loggers: null, enabled, changeEnabled);
+        }
+
+        /// <summary>
+        /// 建立一個 BO，稽核寫入端與 logger 由呼叫端指定。
+        /// </summary>
+        private SystemBusinessObject CreateBo(IAuditLogWriter writer, ILoggerFactory? loggers,
+            bool enabled = true, bool changeEnabled = true)
+        {
             var ctx = TestBeeContext.CreateWithOverrides(_fx,
                 (typeof(AuditLogOptions), new AuditLogOptions { Enabled = enabled, ChangeEnabled = changeEnabled }),
-                (typeof(IAuditLogWriter), writer));
+                (typeof(IAuditLogWriter), writer),
+                (typeof(ILoggerFactory), loggers));
             return new SystemBusinessObject(ctx, Guid.Empty, SysProgIds.System, isLocalCall: true);
         }
 
@@ -178,6 +190,74 @@ namespace Bee.Business.UnitTests
             }
         }
 
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("應用程式名稱含 XML 不允許的控制字元時 CreateApiKey 仍成功，且稽核讀得回原值")]
+        public void CreateApiKey_NameWithControlCharacter_WritesReadableAudit()
+        {
+            string sysId = "audit-" + Guid.NewGuid().ToString("N");
+            const string name = "Pasted\u0001app";
+            try
+            {
+                var bo = CreateBo(out var writer);
+
+                var result = bo.CreateApiKey(new CreateApiKeyArgs { SysId = sysId, SysName = name });
+
+                Assert.False(string.IsNullOrEmpty(result.ApiKey));
+                var fields = ChangeDiffGramReader.Read(SingleChange(writer).ChangesXml);
+                Assert.Contains(fields, f => f.FieldName == SysFields.Name && f.NewValue == name);
+            }
+            finally
+            {
+                DeleteKey(sysId);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("★稽核寫入失敗時 CreateApiKey 仍須交回金鑰——金鑰已寫入，拿不到祕密段就等於作廢——並記下錯誤 log")]
+        public void CreateApiKey_AuditWriteFails_StillReturnsKeyAndLogsError()
+        {
+            string sysId = "audit-" + Guid.NewGuid().ToString("N");
+            var loggers = new RecordingLoggerFactory();
+            try
+            {
+                var bo = CreateBo(new ThrowingAuditLogWriter(), loggers);
+
+                var result = bo.CreateApiKey(new CreateApiKeyArgs { SysId = sysId, SysName = "Audit sink down" });
+
+                Assert.True(ApiKeyFormat.TryParse(result.ApiKey, out string parsedId, out _));
+                Assert.Equal(sysId, parsedId);
+                var error = Assert.Single(loggers.Entries, e => e.Level == LogLevel.Error);
+                Assert.IsType<InvalidOperationException>(error.Exception);
+                Assert.Contains(sysId, error.Message, StringComparison.Ordinal);
+            }
+            finally
+            {
+                DeleteKey(sysId);
+            }
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("稽核寫入失敗時 SetDeploymentAdmin 的變更仍生效，並記下錯誤 log")]
+        public void SetDeploymentAdmin_AuditWriteFails_StillAppliesAndLogsError()
+        {
+            string userId = TestUsers.Create(ConnectionManager, "audit-sinkdown");
+            var loggers = new RecordingLoggerFactory();
+            try
+            {
+                var bo = CreateBo(new ThrowingAuditLogWriter(), loggers);
+
+                var result = bo.SetDeploymentAdmin(new SetDeploymentAdminArgs { UserId = userId, IsDeploymentAdmin = true });
+
+                Assert.True(result.IsDeploymentAdmin);
+                var error = Assert.Single(loggers.Entries, e => e.Level == LogLevel.Error);
+                Assert.IsType<InvalidOperationException>(error.Exception);
+            }
+            finally
+            {
+                TestUsers.Delete(ConnectionManager, userId);
+            }
+        }
+
         private void DeleteKey(string sysId)
         {
             var dbType = ConnectionManager.GetConnectionInfo(DbCategoryIds.Common).DatabaseType;
@@ -192,6 +272,11 @@ namespace Bee.Business.UnitTests
             public List<AuditEntry> Entries { get; } = [];
 
             public void Write(AuditEntry entry) => Entries.Add(entry);
+        }
+
+        private sealed class ThrowingAuditLogWriter : IAuditLogWriter
+        {
+            public void Write(AuditEntry entry) => throw new InvalidOperationException("Audit sink unavailable.");
         }
     }
 }

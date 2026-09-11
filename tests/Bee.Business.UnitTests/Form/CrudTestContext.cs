@@ -1,6 +1,7 @@
 using Bee.Business.Form;
 using Bee.Db;
 using Bee.Db.Manager;
+using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Storage;
@@ -70,14 +71,20 @@ namespace Bee.Business.UnitTests.Form
         /// <c>AuditLogOptions</c> and capture what <c>IAuditLogWriter</c> receives.
         /// </summary>
         public FormBusinessObject CreateBoWithOverrides(params (Type ServiceType, object? Instance)[] overrides)
+            => new FormBusinessObject(CreateContextWithOverrides(overrides), Guid.NewGuid(), ProgId);
+
+        /// <summary>
+        /// Builds the context <see cref="CreateBoWithOverrides"/> uses, for tests that construct a
+        /// <see cref="FormBusinessObject"/> subclass of their own.
+        /// </summary>
+        public IBeeContext CreateContextWithOverrides(params (Type ServiceType, object? Instance)[] overrides)
         {
             var all = new List<(Type, object?)>
             {
                 (typeof(IRepositoryFactory), new StubFactory(_repository))
             };
             all.AddRange(overrides);
-            return new FormBusinessObject(
-                TestBeeContext.CreateWithOverrides(_fx, [.. all]), Guid.NewGuid(), ProgId);
+            return TestBeeContext.CreateWithOverrides(_fx, [.. all]);
         }
 
         /// <summary>

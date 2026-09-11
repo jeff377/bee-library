@@ -257,8 +257,15 @@ namespace Bee.Business.AuditLog
         /// Hardens against XXE (scanning.md): no DTD, no external entity resolution. Every reader over
         /// a stored payload is built from this, including the one handed to <c>DataSet.ReadXml</c>.
         /// </summary>
+        /// <remarks>
+        /// IMPORTANT: <see cref="XmlReaderSettings.CheckCharacters"/> is off because
+        /// <see cref="AuditDiffGram.Serialize"/> writes characters XML 1.0 forbids as character
+        /// references rather than failing a committed save over them. With the check on, such a
+        /// payload reads as corrupt and restores no field detail. The XXE hardening is carried by the
+        /// DTD and resolver settings and does not depend on this one.
+        /// </remarks>
         private static XmlReaderSettings HardenedSettings()
-            => new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null };
+            => new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, CheckCharacters = false };
 
         private static XDocument LoadHardened(string xml)
         {

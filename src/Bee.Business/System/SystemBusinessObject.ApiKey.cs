@@ -83,22 +83,27 @@ namespace Bee.Business.System
 
             if (DeploymentAuditEnabled())
             {
-                // WARNING: the secret and its hash are absent from this list and must stay absent.
-                // The log database is a separate store with its own (usually wider) readership, and
-                // an audit row that carried the hash would put an offline-crackable credential
-                // somewhere the credential itself never goes.
-                string changes = AuditDiffGram.ForInsert(ApiKeyTableName,
-                [
-                    (SysFields.Id, args.SysId),
-                    (SysFields.Name, args.SysName),
-                    ("key_type", args.KeyType),
-                    ("contact", args.Contact ?? string.Empty),
-                    ("expired_at", args.ExpiredAt),
-                ]);
-                // The key's sys_id stands in for a row id: it is this row's identity, it is not a
-                // secret, and the repository surfaces no row id to record instead.
-                WriteDeploymentAudit(ApiKeyTableName, args.SysId, ChangeKind.Insert, changes,
-                    SystemActions.CreateApiKey);
+                // Best-effort matters most here: the key is already stored, and an exception from the
+                // audit step would withhold the only copy of its secret, leaving a key nobody can use.
+                WriteAuditBestEffort(SystemActions.CreateApiKey, args.SysId, () =>
+                {
+                    // WARNING: the secret and its hash are absent from this list and must stay absent.
+                    // The log database is a separate store with its own (usually wider) readership, and
+                    // an audit row that carried the hash would put an offline-crackable credential
+                    // somewhere the credential itself never goes.
+                    string changes = AuditDiffGram.ForInsert(ApiKeyTableName,
+                    [
+                        (SysFields.Id, args.SysId),
+                        (SysFields.Name, args.SysName),
+                        ("key_type", args.KeyType),
+                        ("contact", args.Contact ?? string.Empty),
+                        ("expired_at", args.ExpiredAt),
+                    ]);
+                    // The key's sys_id stands in for a row id: it is this row's identity, it is not a
+                    // secret, and the repository surfaces no row id to record instead.
+                    WriteDeploymentAudit(ApiKeyTableName, args.SysId, ChangeKind.Insert, changes,
+                        SystemActions.CreateApiKey);
+                });
             }
 
             return new CreateApiKeyResult
@@ -163,10 +168,11 @@ namespace Bee.Business.System
 
             if (auditing)
             {
-                WriteDeploymentAudit(ApiKeyTableName, args.SysId, ChangeKind.Update,
-                    AuditDiffGram.ForFieldUpdate(ApiKeyTableName, args.SysId, "enabled", before, args.Enabled,
-                        [(SysFields.Id, args.SysId)]),
-                    SystemActions.SetApiKeyEnabled);
+                WriteAuditBestEffort(SystemActions.SetApiKeyEnabled, args.SysId, () =>
+                    WriteDeploymentAudit(ApiKeyTableName, args.SysId, ChangeKind.Update,
+                        AuditDiffGram.ForFieldUpdate(ApiKeyTableName, args.SysId, "enabled", before, args.Enabled,
+                            [(SysFields.Id, args.SysId)]),
+                        SystemActions.SetApiKeyEnabled));
             }
 
             if (!args.Enabled)
@@ -235,10 +241,11 @@ namespace Bee.Business.System
 
             if (auditing)
             {
-                WriteDeploymentAudit(ApiKeyTableName, args.SysId, ChangeKind.Update,
-                    AuditDiffGram.ForFieldUpdate(ApiKeyTableName, args.SysId, "expired_at", before, args.ExpiredAt,
-                        [(SysFields.Id, args.SysId)]),
-                    SystemActions.SetApiKeyExpiry);
+                WriteAuditBestEffort(SystemActions.SetApiKeyExpiry, args.SysId, () =>
+                    WriteDeploymentAudit(ApiKeyTableName, args.SysId, ChangeKind.Update,
+                        AuditDiffGram.ForFieldUpdate(ApiKeyTableName, args.SysId, "expired_at", before, args.ExpiredAt,
+                            [(SysFields.Id, args.SysId)]),
+                        SystemActions.SetApiKeyExpiry));
             }
 
             return new SetApiKeyExpiryResult { SysId = args.SysId, ExpiredAt = args.ExpiredAt };

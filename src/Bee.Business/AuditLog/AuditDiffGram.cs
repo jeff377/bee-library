@@ -38,19 +38,39 @@ namespace Bee.Business.AuditLog
         /// </summary>
         /// <param name="changes">The change set, as returned by <c>DataSet.GetChanges()</c>.</param>
         /// <remarks>
+        /// <para>
         /// IMPORTANT: the schema must be written through the same <see cref="XmlWriter"/> as the
         /// DiffGram rather than by serialising the DataSet whole. <c>XmlSerializer</c> produces a
         /// byte-equivalent payload — <see cref="DataSet"/> implements <c>IXmlSerializable</c> and its
         /// <c>WriteXml</c> is these same two calls — but reaching it through <c>XmlSerializer</c>
         /// would put the audit path back on the reflection route that ADR-025 covers, for no gain.
+        /// </para>
+        /// <para>
+        /// IMPORTANT: a value is whatever was typed or pasted into a field, and callers serialise
+        /// after the change has been committed, so no string may make this method throw. Three
+        /// settings keep the values intact. With <see cref="XmlWriterSettings.CheckCharacters"/> off,
+        /// characters XML 1.0 forbids (the C0 controls other than tab, LF and CR, and U+FFFE / U+FFFF)
+        /// are written as character references such as <c>&amp;#x1;</c> instead of throwing, and
+        /// <see cref="ChangeDiffGramReader"/> turns the same check off to read them back.
+        /// <see cref="NewLineHandling.Entitize"/> writes CR as <c>&amp;#xD;</c>, which XML end-of-line
+        /// handling would otherwise fold into LF when the payload is read. An unpaired surrogate has
+        /// no XML form at all, so <see cref="LoneSurrogateReplacingXmlWriter"/> turns it into U+FFFD.
+        /// <c>AuditDiffGramCharacterTests</c> pins each of these.
+        /// </para>
         /// </remarks>
         public static string Serialize(DataSet changes)
         {
             var builder = new StringBuilder();
-            // Indented on purpose: audit payloads are read by hand when investigating a change, and
-            // the size this costs is not a constraint for the log database.
-            var settings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true };
-            using (var writer = XmlWriter.Create(builder, settings))
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true,
+                // Indented on purpose: audit payloads are read by hand when investigating a change,
+                // and the size this costs is not a constraint for the log database.
+                Indent = true,
+                CheckCharacters = false,
+                NewLineHandling = NewLineHandling.Entitize,
+            };
+            using (var writer = new LoneSurrogateReplacingXmlWriter(XmlWriter.Create(builder, settings)))
             {
                 writer.WriteStartElement(RootElementName);
                 changes.WriteXmlSchema(writer);

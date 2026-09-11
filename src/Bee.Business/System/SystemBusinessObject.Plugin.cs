@@ -98,10 +98,13 @@ namespace Bee.Business.System
             {
                 // The customization code is the row key: it is what the change is about, and the
                 // stored artifact has no row of its own to point at.
-                string changes = AuditDiffGram.ForInsert(PluginSettingsArtifact,
-                    [(nameof(args.CustomizeId), args.CustomizeId), (nameof(SaveCustomizePluginSettingsResult.PluginCount), pluginCount)]);
-                WriteDeploymentAudit(PluginSettingsArtifact, args.CustomizeId, ChangeKind.Update, changes,
-                    SystemActions.SaveCustomizePluginSettings);
+                WriteAuditBestEffort(SystemActions.SaveCustomizePluginSettings, args.CustomizeId, () =>
+                {
+                    string changes = AuditDiffGram.ForInsert(PluginSettingsArtifact,
+                        [(nameof(args.CustomizeId), args.CustomizeId), (nameof(SaveCustomizePluginSettingsResult.PluginCount), pluginCount)]);
+                    WriteDeploymentAudit(PluginSettingsArtifact, args.CustomizeId, ChangeKind.Update, changes,
+                        SystemActions.SaveCustomizePluginSettings);
+                });
             }
 
             return new SaveCustomizePluginSettingsResult { PluginCount = pluginCount };
