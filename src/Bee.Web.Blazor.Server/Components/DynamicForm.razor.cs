@@ -1,4 +1,5 @@
 using System.Globalization;
+using Bee.Base;
 using Bee.Definition.Collections;
 using Bee.Definition.Layouts;
 using Bee.Web.Blazor.Server.DataObjects;
@@ -62,6 +63,24 @@ namespace Bee.Web.Blazor.Server.Components
             return string.Create(
                 CultureInfo.InvariantCulture,
                 $"display:grid;grid-template-columns:repeat({columns},minmax(0,1fr));gap:8px");
+        }
+
+        private static void SetTimeField(FormDataObject dataObject, string fieldName, string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                // An emptied box is an explicit "unset". Midnight is a legal value, so the empty
+                // string is how an unfilled time of day is stored.
+                dataObject.SetField(fieldName, string.Empty);
+                return;
+            }
+
+            // Input that does not parse keeps the stored value, matching the desktop `TimeEdit`, so a
+            // stray keystroke does not erase data. It is not passed on to `SetField` either, because the
+            // time column coercion throws `FormatException` for it inside the event handler.
+            string normalized = ValueUtilities.CTimeString(input);
+            if (normalized.Length > 0)
+                dataObject.SetField(fieldName, normalized);
         }
 
         private static string BuildFieldStyle(LayoutField field)
