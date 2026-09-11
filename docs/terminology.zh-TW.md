@@ -28,6 +28,7 @@
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
+| Enterprise Information System | 企業資訊系統 | BeeNET 的目標系統：以表單為基礎的企業資訊系統，例如 ERP、CRM、HRM。英文同義詞為 line-of-business (LOB) application |
 | Definition-Driven Architecture | 定義導向架構 | BeeNET 核心架構模式，以結構定義統一驅動 UI、資料庫與業務邏輯 |
 | Single Source of Truth | 唯一定義來源 | `FormSchema` 作為系統唯一結構規格，避免三層重複實作 |
 | `progId` | 程式識別碼 | 一支功能程式的唯一識別字串，也是型別註冊表的鍵：`ProgramSettings.xml` 以它綁定 BO 與 Repository，JSON-RPC 的 `method` 為 `progId.action`。模型沿自 COM+ 的 ProgID（登錄檔以機碼對映元件型別），見 [ADR-034](adr/adr-034-progid-type-registry.md)。C# 屬性與 XML 屬性上寫作 `ProgId`。框架保留的 progId 見[框架保留命名](framework-reserved-names.zh-TW.md) |
@@ -330,7 +331,7 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `ListView` | 清單檢視 | Avalonia `UserControl`，ERP 畫面的清單側：載入列、處理選取與捲動，透過 `GridControl` 渲染列 |
+| `ListView` | 清單檢視 | Avalonia `UserControl`，表單畫面的清單側：載入列、處理選取與捲動，透過 `GridControl` 渲染列 |
 | `GridControl` | 表格控件 | `ContentControl` 組合式控件（工具列 + 內部 `DataGrid`，以 `InnerGrid` 公開）、由 `LayoutGrid` 驅動；實作 `IBindTableControl`；cell 顯示走 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>`（ADR-020），編輯依 `GridEditMode`（ADR-021） |
 | Field editors（`TextEdit` / `MemoEdit` / `ButtonEdit` / `DateEdit` / `YearMonthEdit` / `DropDownEdit` / `CheckEdit`） | 欄位編輯器 | 繼承原生控件（`StyleKeyOverride` 沿用主題）、各綁定 `FormDataObject` 一個欄位；自動套用 `FormField` metadata（MaxLength / ListItems） |
 | `FormScope` | 表單作用域 | 可繼承的 attached properties（`DataObject` / `FormMode`）：容器設一次，子孫編輯器憑 `FieldName` 自動綁定 |

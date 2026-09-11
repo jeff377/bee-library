@@ -16,7 +16,7 @@ using Bee.UI.Core;
 namespace Bee.UI.Avalonia.Views
 {
     /// <summary>
-    /// Single-record surface — the editor half of the ERP list/record split, paired with
+    /// Single-record surface — the editor half of the list/record split, paired with
     /// <see cref="ListView"/>. A record is one complete master + detail unit loaded through
     /// the form's <c>GetData</c> round-trip. The view renders the record from its
     /// <see cref="Layout"/> (master sections + detail grids) and carries

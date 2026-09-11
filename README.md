@@ -17,7 +17,7 @@ All packages target **`net10.0`**.
 ## ✨ Features
 
 - **Definition-Driven Architecture**: `FormSchema` serves as the single source of truth, automatically deriving UI layout (`FormLayout`), database schema (`TableSchema`), and validation rules — define once, sync everywhere.
-- **N-Tier + Clean Architecture + MVVM**: Clear separation of presentation, API, business logic (BO), and data access layers, borrowing the best concepts from each pattern for ERP scenarios.
+- **N-Tier + Clean Architecture + MVVM**: Clear separation of presentation, API, business logic (BO), and data access layers, borrowing the best concepts from each pattern for enterprise information systems.
 - **Cross-platform compatibility**: All packages target `net10.0` for modern .NET runtime support.
 - **Multi-database support**: Built-in dialects for SQL Server, PostgreSQL, SQLite, MySQL, and Oracle; host applications register only what they use.
 - **Modular components**: Decoupled libraries for core utilities, data, caching, business logic, and API hosting.

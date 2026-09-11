@@ -613,7 +613,7 @@ Numeric fields declare a semantic **`NumberKind`** on `FormField` (propagated to
 
 ### Two rules that are easy to get wrong
 
-- **Round-then-sum (ERP invariant).** For `Round` kinds, a total must equal the **sum of already-rounded details**, never a full-precision sum rounded once at the end. Round each detail with `NumberFormatResolver.RoundByKind(value, kind, company)` — or the reference-aware `RoundByKind(value, kind, ctx, refCode)` for amounts and for quantities/weights, passing their currency or unit code (below) — then add the rounded values. This guarantees `Σ details == total`.
+- **Round-then-sum (total invariant).** For `Round` kinds, a total must equal the **sum of already-rounded details**, never a full-precision sum rounded once at the end. Round each detail with `NumberFormatResolver.RoundByKind(value, kind, company)` — or the reference-aware `RoundByKind(value, kind, ctx, refCode)` for amounts and for quantities/weights, passing their currency or unit code (below) — then add the rounded values. This guarantees `Σ details == total`.
 - **Preserve never writes a rounded value.** `UnitPrice` / `Cost` / `ExchangeRate` are stored at input precision; their decimals are display-only. `RoundByKind` returns these values unchanged. Rounding a source value injects error downstream — do not do it. (For API import, the only hard boundary is DB scale; see the persistence-boundary decision D6 in [ADR-026](adr/adr-026-numeric-semantics-rounding.md).)
 
 ### Display format is baked at delivery

@@ -17,7 +17,7 @@ Bee.NET Framework 是一套採用 **N-Tier + Clean Architecture + MVVM** 混合�
 ## ✨ 特色
 
 - **定義導向架構（Definition-Driven Architecture）**：以 `FormSchema` 作為系統唯一定義來源，自動推導 UI 配置（`FormLayout`）、資料表結構（`TableSchema`）與驗證規則，定義一處即全層同步。
-- **N-Tier + Clean Architecture + MVVM**：支援表現層、API 層、業務邏輯層（BO）與資料存取層的清晰分離，針對 ERP 場景從各模式取用最適合的概念。
+- **N-Tier + Clean Architecture + MVVM**：支援表現層、API 層、業務邏輯層（BO）與資料存取層的清晰分離，針對企業資訊系統從各模式取用最適合的概念。
 - **跨平台支援**：所有套件採用 `net10.0`，支援現代 .NET 執行環境。
 - **多資料庫支援**：內建 SQL Server、PostgreSQL、SQLite、MySQL、Oracle 五種 dialect，由 host 應用程式按需註冊。
 - **模組化組件**：根據職責切分為多個元件，靈活組合、降低耦合。

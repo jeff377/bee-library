@@ -4,7 +4,7 @@ namespace Bee.Base
 {
     /// <summary>
     /// Framework-level string utilities. The framework's design philosophy is to encapsulate
-    /// ERP-context defaults (case-insensitive comparison, <see cref="CultureInfo.InvariantCulture"/>
+    /// business-application defaults (case-insensitive comparison, <see cref="CultureInfo.InvariantCulture"/>
     /// formatting, null-safe handling) inside these helpers so call sites do not have to
     /// pass <see cref="StringComparison"/> or <see cref="CultureInfo"/> repeatedly. Pass the
     /// optional <c>ignoreCase</c> parameter only when the call site needs different behavior.
@@ -64,7 +64,7 @@ namespace Bee.Base
         /// <summary>
         /// Formats a string using the specified arguments. The framework enforces
         /// <see cref="CultureInfo.InvariantCulture"/> to avoid locale-dependent formatting issues
-        /// (e.g. decimal separator differences) in ERP / database / serialization contexts.
+        /// (e.g. decimal separator differences) in business / database / serialization contexts.
         /// </summary>
         /// <param name="format">The format string.</param>
         /// <param name="args">An array of arguments.</param>
@@ -77,7 +77,7 @@ namespace Bee.Base
 
         /// <summary>
         /// Determines whether two strings are equal using ordinal comparison. Defaults to
-        /// case-insensitive — the framework convention for ERP identifiers and business logic.
+        /// case-insensitive — the framework convention for identifiers and business logic.
         /// </summary>
         /// <remarks>
         /// Ordinal (culture-independent) comparison is intentional. These strings are identifiers

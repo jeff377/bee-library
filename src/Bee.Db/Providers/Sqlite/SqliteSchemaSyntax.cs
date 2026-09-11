@@ -91,7 +91,7 @@ namespace Bee.Db.Providers.Sqlite
         /// <remarks>
         /// Text columns (<see cref="FieldDbType.String"/>, <see cref="FieldDbType.Text"/>) are
         /// emitted with <c>COLLATE NOCASE</c> so string comparisons (<c>=</c>, <c>LIKE</c>,
-        /// <c>ORDER BY</c>) are case-insensitive by default — matches the ERP expectation that
+        /// <c>ORDER BY</c>) are case-insensitive by default — matches the business-application expectation that
         /// <c>WHERE name = 'jeff'</c> hits a row stored as <c>Jeff</c>. Note SQLite's
         /// <c>NOCASE</c> only folds ASCII A–Z; non-ASCII characters remain case-sensitive.
         /// <see cref="FieldDbType.Guid"/> columns get the same collation: SQLite stores a GUID
@@ -114,7 +114,7 @@ namespace Bee.Db.Providers.Sqlite
 
         /// <summary>
         /// Returns true if the field should use <c>COLLATE NOCASE</c> for case-insensitive
-        /// comparison: text fields (the ERP default) and GUID fields (logically
+        /// comparison: text fields (the framework default) and GUID fields (logically
         /// case-insensitive, but stored by SQLite as case-sensitive TEXT).
         /// </summary>
         /// <param name="dbType">The field data type.</param>

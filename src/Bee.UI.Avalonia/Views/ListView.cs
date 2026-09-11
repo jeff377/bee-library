@@ -16,7 +16,7 @@ namespace Bee.UI.Avalonia.Views
 {
     /// <summary>
     /// Read-only browser for every record of a form (the master list). Pairs with
-    /// <see cref="FormView"/> following the ERP convention of keeping list browsing and
+    /// <see cref="FormView"/> following the business-application convention of keeping list browsing and
     /// record viewing/editing on separate surfaces: <see cref="ListView"/> loads the list
     /// and raises <see cref="ViewRequested"/> / <see cref="EditRequested"/> /
     /// <see cref="AddRequested"/>, leaving the host to swap in the record surface. Delete is

@@ -5,7 +5,7 @@ namespace Bee.Base
     /// out-parameter split (<see cref="SplitLeft"/> / <see cref="SplitRight"/>) and
     /// conditional prefix / suffix removal (<see cref="LeftCut"/> / <see cref="RightCut"/> /
     /// <see cref="LeftRightCut"/>). All comparisons default to case-insensitive (the framework
-    /// convention for ERP business logic).
+    /// convention for business logic).
     /// </summary>
     public static class StringExtensions
     {

@@ -28,6 +28,7 @@ This document provides a standard term reference for technical writing, ensuring
 
 | English | 中文 | Description |
 |---------|------|-------------|
+| Enterprise Information System | 企業資訊系統 | The kind of system BeeNET targets: form-based enterprise information systems such as ERP, CRM, and HRM. Synonym: line-of-business (LOB) application |
 | Definition-Driven Architecture | 定義導向架構 | BeeNET's core architectural pattern, using structural definitions to uniformly drive UI, database, and business logic |
 | Single Source of Truth | 唯一定義來源 | `FormSchema` as the system's only structural specification, avoiding duplicate implementations across three layers |
 | `progId` | 程式識別碼 | A functional program's unique identifier string, and the key of the type registry: `ProgramSettings.xml` binds a BO and a repository to it, and the JSON-RPC `method` is `progId.action`. The model follows COM+'s ProgID (a registry key mapping to a component type) — see [ADR-034](adr/adr-034-progid-type-registry.md). Spelled `ProgId` as a C# property and as an XML attribute. For the ones the framework reserves, see [Framework-Reserved Names](framework-reserved-names.md) |
@@ -332,7 +333,7 @@ The BeeNET framework automatically maintains the following system fields in all 
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `ListView` | 清單檢視 | Avalonia `UserControl` for the list side of an ERP screen: loads rows, handles selection and scrolling, renders them through a `GridControl` |
+| `ListView` | 清單檢視 | Avalonia `UserControl` for the list side of a form screen: loads rows, handles selection and scrolling, renders them through a `GridControl` |
 | `GridControl` | 表格控件 | `ContentControl` composite (toolbar + inner `DataGrid` exposed as `InnerGrid`) driven by a `LayoutGrid`; implements `IBindTableControl`; cell rendering goes through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` (ADR-020) and editing follows `GridEditMode` (ADR-021) |
 | Field editors（`TextEdit` / `MemoEdit` / `ButtonEdit` / `DateEdit` / `YearMonthEdit` / `DropDownEdit` / `CheckEdit`） | 欄位編輯器 | Native-control subclasses (`StyleKeyOverride` keeps the theme) bound to one `FormDataObject` field; auto-apply `FormField` metadata (MaxLength / ListItems) |
 | `FormScope` | 表單作用域 | Attached inherited properties (`DataObject` / `FormMode`): set once on a container and descendant editors with a `FieldName` bind themselves |

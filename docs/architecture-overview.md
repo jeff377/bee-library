@@ -2,7 +2,7 @@
 
 [繁體中文](architecture-overview.zh-TW.md) · [← Docs Index](README.md)
 
-> Definition-Driven Architecture: design philosophy and practical patterns for ERP systems
+> Definition-Driven Architecture: design philosophy and practical patterns for enterprise information systems
 
 ---
 
@@ -25,7 +25,7 @@
 
 ## 1. Core Architecture Philosophy
 
-BeeNET adopts a **Definition-Driven Architecture**, using `FormSchema` as the system's single source of truth to uniformly drive UI, database schema, and business logic. This addresses the core pain points of traditional ERP development: specifications scattered across three layers, redundant implementations, and difficulty in maintenance.
+BeeNET adopts a **Definition-Driven Architecture**, using `FormSchema` as the system's single source of truth to uniformly drive UI, database schema, and business logic. This addresses the core pain points of traditional enterprise information system development: specifications scattered across three layers, redundant implementations, and difficulty in maintenance.
 
 **Design Principles:**
 
@@ -33,7 +33,7 @@ BeeNET adopts a **Definition-Driven Architecture**, using `FormSchema` as the sy
 - **Use structural definitions to drive cross-layer automation** (UI / DB / Logic)
 - **Make definitions the primary development interface**, not code
 
-### Pain Points of Traditional ERP Development
+### Pain Points of Traditional Enterprise Information System Development
 
 | Pain Point | Description |
 |------------|-------------|
@@ -41,19 +41,21 @@ BeeNET adopts a **Definition-Driven Architecture**, using `FormSchema` as the sy
 | Scattered business logic | Different modules maintained by different engineers result in inconsistent styles and duplicated efforts |
 | Customizations hard to standardize | Custom logic cannot be standardized, accumulating into unmanageable technical debt |
 
+BeeNET is designed with ERP as its complexity benchmark: form count, master-detail structure, numeric precision, and multi-company support are all sized to ERP requirements.
+
 ### Applicability Boundaries
 
 | Suitable | Not Suitable |
 |----------|--------------|
 | Form-centric data applications (master/detail, auditing, validation) | High-concurrency, event-intensive systems (e-commerce, social media, gaming) |
 | Multi-endpoint unified backend (Web / App / WinForms) | High-frequency microservice scenarios |
-| Enterprise internal management systems (HR, finance, procurement, warehouse, CRM) | |
+| Enterprise information systems (ERP, CRM, HRM — e.g. finance, procurement, warehouse, HR) | |
 
 ---
 
 ## 2. Architecture Pattern Positioning
 
-BeeNET adopts a **N-Tier + Clean Architecture + MVVM** hybrid pattern, borrowing the most suitable concepts from each pattern for ERP scenarios.
+BeeNET adopts a **N-Tier + Clean Architecture + MVVM** hybrid pattern, borrowing the most suitable concepts from each pattern for enterprise information systems.
 
 ### Pattern Adoption Comparison
 
@@ -72,7 +74,7 @@ BeeNET **replaces strongly-typed Entities with DataSet**, which brings:
 - FormSchema dynamically describes structure; adding a field requires no code changes
 - Cross-layer transfer without mapping, eliminating unnecessary conversion layers
 
-This is **pragmatic clean architecture** -- preserving dependency direction and separation of responsibilities while eliminating the unnecessary Entity modeling cost in ERP scenarios.
+This is **pragmatic clean architecture** -- preserving dependency direction and separation of responsibilities while eliminating the unnecessary Entity modeling cost in form-centric applications.
 
 ---
 
@@ -141,12 +143,12 @@ The overlay is **two independent read-only layers, never merged**: the base pack
 
 | | XAML | FormLayout |
 |--|--|--|
-| Purpose | General-purpose UI description language | Designed specifically for standardized ERP forms |
+| Purpose | General-purpose UI description language | Designed specifically for standardized business forms |
 | Complexity | High; must handle all UI scenarios | Low; only describes Master / Detail / Field structure |
 | Cross-platform | Primarily WPF / MAUI / Avalonia | Unified across Web / Desktop / App |
 | Generation | Hand-written | Auto-derived from FormSchema, then fine-tuned |
 
-### Standardized ERP Layout Pattern
+### Standardized Form Layout Pattern
 
 ```
 +------------------------------------+
@@ -195,7 +197,7 @@ BeeNET uses ADO.NET `DataSet` as the cross-layer Data Transfer Object (DTO), rat
 
 | Characteristic | Description |
 |----------------|-------------|
-| **Natural Master-Detail shape** | A form's master and detail tables travel as sibling `DataTable`s in one DataSet, which is the shape nearly all ERP forms take. The framework does not build `DataRelation`s to link them: a detail row carries `sys_master_rowid` pointing at the master row's `sys_rowid`, and the FormSchema declares which table is the master (see `src/Bee.Repository/Form/DataFormRepository.cs` and `src/Bee.Definition/Forms/FormRowDefaults.cs`) |
+| **Natural Master-Detail shape** | A form's master and detail tables travel as sibling `DataTable`s in one DataSet, which is the shape nearly all business forms take. The framework does not build `DataRelation`s to link them: a detail row carries `sys_master_rowid` pointing at the master row's `sys_rowid`, and the FormSchema declares which table is the master (see `src/Bee.Repository/Form/DataFormRepository.cs` and `src/Bee.Definition/Forms/FormRowDefaults.cs`) |
 | **Self-describing structure** | DataSet carries its own schema; no additional type definitions needed during transfer |
 | **Multi-table transport** | A single DataSet can carry a master table plus multiple detail tables, transferring an entire transaction's data at once |
 | **Cross-layer consistency** | UI layer, BO layer, and Repository layer share the same object; no mapping required |
@@ -272,7 +274,7 @@ Repository adopts a **dual-track parallel** design, choosing the appropriate imp
 
 ### Why This Division
 
-ERP CRUD operations are highly homogeneous; nearly all forms follow:
+Business-form CRUD operations are highly homogeneous; nearly all forms follow:
 
 ```
 Validate required -> Validate format -> Validate relationships -> INSERT / UPDATE / DELETE
@@ -411,12 +413,12 @@ Common patterns discovered during each AnyCode customization can be distilled ba
 
 | Decision Point | Choice | Rationale |
 |----------------|--------|-----------|
-| **DTO type** | ADO.NET DataSet | ERP Master-Detail structure; cross-layer consistency without mapping |
+| **DTO type** | ADO.NET DataSet | Form Master-Detail structure; cross-layer consistency without mapping |
 | **Domain core** | FormSchema (not Entity) | Vast number of ERP forms; dynamic definitions are superior to modeling each one individually |
 | **Logic layer** | BO (independent of data) | Clean Arch Use Case; does not depend on DB implementation details |
 | **CRUD SQL** | Dynamically generated from FormSchema | Define once; adding fields auto-syncs |
-| **Complex queries/batch** | AnyCode Repository | ERP reports/batch require full control; the framework should not constrain complex scenarios |
-| **UI definition** | FormLayout (not XAML) | Designed for standardized ERP layouts; constrained structure, more concise syntax |
+| **Complex queries/batch** | AnyCode Repository | Reports/batch require full control; the framework should not constrain complex scenarios |
+| **UI definition** | FormLayout (not XAML) | Designed for standardized form layouts; constrained structure, more concise syntax |
 | **DB maintenance** | TableSchema derivation + adjustable | Auto-sync with definitions; DBA can still independently optimize indexes and types |
-| **Architecture hybrid** | N-Tier + Clean Arch + MVVM | Borrowing the most suitable concepts for ERP from each; not forcing pure theoretical application |
+| **Architecture hybrid** | N-Tier + Clean Arch + MVVM | Borrowing the most suitable concepts for enterprise information systems from each; not forcing pure theoretical application |
 | **Audit trail** | Opt-in `st_log_*` tables via `IAuditLogWriter` (`AuditLogOptions`) | Five-axis data trail — login / change (DiffGram before-after) / access / API+DB anomaly; background, best-effort, self-sufficient (denormalised) log rows |

@@ -590,7 +590,7 @@ var filter = new FilterGroup(LogicalOperator.And)
 
 ### 兩條容易寫錯的規則
 
-- **Round-then-sum（ERP 不變量）。** 對 `Round` 類 kind，合計必須等於**已個別捨入的明細之和**，絕不是全精度加總後才在最後捨入一次。每筆明細先以 `NumberFormatResolver.RoundByKind(value, kind, company)` 捨入 —— 金額與數量／重量則用參照感知的 `RoundByKind(value, kind, ctx, refCode)`，並傳入其幣別或單位代碼（見下）—— 再把已捨入的值相加。這保證 `Σ 明細 == 合計`。
+- **Round-then-sum（合計不變量）。** 對 `Round` 類 kind，合計必須等於**已個別捨入的明細之和**，絕不是全精度加總後才在最後捨入一次。每筆明細先以 `NumberFormatResolver.RoundByKind(value, kind, company)` 捨入 —— 金額與數量／重量則用參照感知的 `RoundByKind(value, kind, ctx, refCode)`，並傳入其幣別或單位代碼（見下）—— 再把已捨入的值相加。這保證 `Σ 明細 == 合計`。
 - **`Preserve` 絕不寫入捨入後的值。** `UnitPrice` / `Cost` / `ExchangeRate` 以輸入精度儲存；其小數位僅供顯示。`RoundByKind` 對這些值原樣返回。對來源值捨入會把誤差注入下游 —— 不要這麼做。（就 API 匯入而言，唯一的硬邊界是 DB scale；見 [ADR-026](adr/adr-026-numeric-semantics-rounding.md) 中的持久化邊界決策 D6。）
 
 ### 顯示格式於交付時烘焙（bake）

@@ -2,7 +2,7 @@
 
 [English](architecture-overview.md) · [← 文件索引](README.zh-TW.md)
 
-> 定義導向架構（Definition-Driven Architecture）在 ERP 系統中的設計理念與實踐模式
+> 定義導向架構（Definition-Driven Architecture）在企業資訊系統中的設計理念與實踐模式
 
 ---
 
@@ -25,7 +25,7 @@
 
 ## 1. 架構核心理念
 
-BeeNET 採用**定義導向架構（Definition-Driven Architecture）**，以 `FormSchema` 作為系統的唯一定義來源（Single Source of Truth），統一驅動 UI、資料庫結構與業務邏輯，解決傳統 ERP 開發中規格分散三層、重複實作、難以維護的核心痛點。
+BeeNET 採用**定義導向架構（Definition-Driven Architecture）**，以 `FormSchema` 作為系統的唯一定義來源（Single Source of Truth），統一驅動 UI、資料庫結構與業務邏輯，解決傳統企業資訊系統開發中規格分散三層、重複實作、難以維護的核心痛點。
 
 **設計精神：**
 
@@ -33,7 +33,7 @@ BeeNET 採用**定義導向架構（Definition-Driven Architecture）**，以 `F
 - **以結構定義驅動跨層自動化**（UI / DB / Logic）
 - **讓定義成為主要的開發介面**，而非程式碼
 
-### 傳統 ERP 開發的痛點
+### 傳統企業資訊系統開發的痛點
 
 | 痛點 | 說明 |
 |------|------|
@@ -41,19 +41,21 @@ BeeNET 採用**定義導向架構（Definition-Driven Architecture）**，以 `F
 | 業務邏輯分散 | 不同模組由不同工程師維護，風格不一、重複開發 |
 | 客製化難回饋 | 客製邏輯無法標準化，累積成難以治理的技術債 |
 
+BeeNET 以 ERP 作為複雜度基準來設計：表單數量、主從明細、數值精度與多公司這幾個面向，都以 ERP 的需求為準。
+
 ### 適用邊界
 
 | 適用 | 不適用 |
 |------|--------|
 | 表單中心資料應用（主/明細、稽核、驗證） | 高併發、事件密集系統（電商、社群、遊戲） |
 | 多端統一後台（Web / App / WinForms） | 高頻微服務場景 |
-| 企業內部管理系統（HR、財務、採購、倉儲、CRM） | |
+| 企業資訊系統（ERP、CRM、HRM，例如財務、採購、倉儲、人資） | |
 
 ---
 
 ## 2. 架構模式定位
 
-BeeNET 採用 **N-Tier + Clean Architecture + MVVM** 的混合模式，從各模式取用最適合 ERP 場景的概念。
+BeeNET 採用 **N-Tier + Clean Architecture + MVVM** 的混合模式，從各模式取用最適合企業資訊系統的概念。
 
 ### 各模式取用對照
 
@@ -72,7 +74,7 @@ BeeNET 以 **DataSet 取代強型別 Entity**，帶來：
 - FormSchema 動態描述結構，新增欄位不需改程式碼
 - 跨層傳遞無需 mapping，減少不必要的轉換層
 
-這是 **pragmatic clean architecture**——保留依賴方向與職責隔離，省去 ERP 場景中不必要的 Entity 建模成本。
+這是 **pragmatic clean architecture**——保留依賴方向與職責隔離，省去表單場景中不必要的 Entity 建模成本。
 
 ---
 
@@ -140,12 +142,12 @@ FormSchema 更新
 
 | | XAML | FormLayout |
 |--|--|--|
-| 目的 | 通用 UI 描述語言 | 專為 ERP 制式表單設計 |
+| 目的 | 通用 UI 描述語言 | 專為制式業務表單設計 |
 | 複雜度 | 高，需處理所有 UI 場景 | 低，只描述 Master / Detail / Field 結構 |
 | 跨端 | 主要 WPF / MAUI / Avalonia | Web / Desktop / App 統一 |
 | 產生方式 | 手寫 | 從 FormSchema 自動推導，再微調 |
 
-### ERP 制式版面模式
+### 制式表單版面模式
 
 ```
 ┌────────────────────────────────────┐
@@ -194,7 +196,7 @@ BeeNET 使用 ADO.NET `DataSet` 作為跨層的資料傳輸物件（DTO），而
 
 | 特性 | 說明 |
 |------|------|
-| **天然貼合 Master-Detail 形態** | 表單的主表與明細表以並列的 `DataTable` 裝在同一個 DataSet，ERP 表單幾乎都是這種形態。框架**不建立 `DataRelation`** 來串接兩者：明細列以 `sys_master_rowid` 指向主檔列的 `sys_rowid`，由 FormSchema 宣告哪一張是主檔（見 `src/Bee.Repository/Form/DataFormRepository.cs` 與 `src/Bee.Definition/Forms/FormRowDefaults.cs`） |
+| **天然貼合 Master-Detail 形態** | 表單的主表與明細表以並列的 `DataTable` 裝在同一個 DataSet，業務表單幾乎都是這種形態。框架**不建立 `DataRelation`** 來串接兩者：明細列以 `sys_master_rowid` 指向主檔列的 `sys_rowid`，由 FormSchema 宣告哪一張是主檔（見 `src/Bee.Repository/Form/DataFormRepository.cs` 與 `src/Bee.Definition/Forms/FormRowDefaults.cs`） |
 | **自描述結構** | DataSet 本身含 schema，傳輸時不需額外型別定義 |
 | **多表同時攜帶** | 一個 DataSet 可帶主表 + 多個明細表，一次傳遞整筆作業資料 |
 | **跨層一致** | UI 層、BO 層、Repository 層共用同一物件，不需 mapping |
@@ -271,7 +273,7 @@ Repository 採用**雙軌並行**設計，依作業性質選擇適合的實作�
 
 ### 為什麼這樣劃分
 
-ERP 的 CRUD 高度同質化，幾乎所有表單都是：
+業務表單的 CRUD 高度同質化，幾乎所有表單都是：
 
 ```
 驗證必填 → 驗證格式 → 驗證關聯 → INSERT / UPDATE / DELETE
@@ -407,12 +409,12 @@ flowchart LR
 
 | 決策點 | 選擇 | 理由 |
 |--------|------|------|
-| **DTO 型別** | ADO.NET DataSet | ERP Master-Detail 結構；跨層一致不需 mapping |
+| **DTO 型別** | ADO.NET DataSet | 表單的 Master-Detail 結構；跨層一致不需 mapping |
 | **Domain 核心** | FormSchema（而非 Entity） | ERP 表單數量龐大，動態定義優於逐一建模 |
 | **邏輯層** | BO（獨立於資料） | Clean Arch Use Case；不依賴 DB 實作細節 |
 | **CRUD SQL** | FormSchema 動態產生 | 定義一處，欄位新增自動同步 |
-| **複雜查詢/批次** | AnyCode Repository | ERP 報表/批次需完整自控；框架不應限制複雜場景 |
-| **介面定義** | FormLayout（非 XAML） | 專為 ERP 制式版面；結構收斂，語法更簡潔 |
+| **複雜查詢/批次** | AnyCode Repository | 報表/批次需完整自控；框架不應限制複雜場景 |
+| **介面定義** | FormLayout（非 XAML） | 專為制式表單版面；結構收斂，語法更簡潔 |
 | **DB 維護** | TableSchema 推導 + 可調整 | 自動同步定義；DBA 仍可獨立最佳化索引與型別 |
-| **架構混合** | N-Tier + Clean Arch + MVVM | 各取最適合 ERP 的概念；不強迫純理論套用 |
+| **架構混合** | N-Tier + Clean Arch + MVVM | 各取最適合企業資訊系統的概念；不強迫純理論套用 |
 | **稽核軌跡** | opt-in `st_log_*` 表，經 `IAuditLogWriter`（`AuditLogOptions`） | 五軸資料軌跡——登入／異動（DiffGram 新舊值）／檢視／API+DB 異常；背景、best-effort、自足（去正規化）的 log 列 |

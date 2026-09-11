@@ -46,7 +46,7 @@ ORM (Object-Relational Mapping) addresses the impedance mismatch between **OOP o
 
 ### 2.2 Why This Approach
 
-The high churn of ERP systems makes compile-time binding (ORM) costly:
+The high churn of enterprise information systems makes compile-time binding (ORM) costly:
 
 - **Dynamic fields**: fields appear or hide based on role / permission / company; strongly-typed classes need extensive conditional branching.
 - **Customization**: the same form may carry different fields for different customers; class variants explode.
@@ -234,7 +234,7 @@ Only `FormSchema` definitions actually referenced are joined — unused relation
 ### 6.1 Use It For
 
 - `FormSchema`-driven CRUD operations (NoCode / LowCode tracks)
-- ERP dynamic fields, customization, multi-tenancy
+- Systems that need dynamic fields, customization, or multi-tenancy
 - UI list / filter / sort scenarios (directly configured by `FormSchema`)
 - Environments requiring hot updates of field or relation definitions
 

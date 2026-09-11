@@ -4,7 +4,7 @@ using System.Globalization;
 namespace Bee.Base
 {
     /// <summary>
-    /// Framework-level value utilities. Encapsulates ERP-context defaults
+    /// Framework-level value utilities. Encapsulates business-application defaults
     /// (<see cref="CultureInfo.InvariantCulture"/> formatting, ROC date parsing,
     /// null/DBNull-safe handling) inside these helpers so call sites do not have to
     /// pass <see cref="CultureInfo"/> or <see cref="NumberStyles"/> repeatedly. Provides
