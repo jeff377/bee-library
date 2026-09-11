@@ -157,6 +157,14 @@ grep -r "ProgId.*=.*\"<NewSample>\"" samples/ 2>/dev/null
 </Project>
 ```
 
+### Step 6：README
+
+依下面樣板寫 `samples/<Sample.Name>/README.md`：
+
+```markdown
+# {Sample.DisplayName}
+
+{一句話說 sample 想證明什麼，例：「Console 透過 JSON-RPC 呼叫遠端 BO」}
 
 ## 前置條件
 
