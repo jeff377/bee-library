@@ -1,5 +1,6 @@
 using System.Data;
 using System.Globalization;
+using Bee.Base;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
 
@@ -91,6 +92,16 @@ namespace Bee.Api.Client
         /// <param name="value">The edited string, which may be <c>null</c> or empty.</param>
         /// <param name="column">The target column, whose <see cref="DataColumn.DataType"/> drives the conversion.</param>
         /// <returns>A value assignable to <paramref name="column"/>; never <c>null</c>.</returns>
+        /// <remarks>
+        /// A column whose declared type is <see cref="FieldDbType.Time"/> is written in the fixed-width
+        /// <c>HH:mm</c> storage form, so <c>"8:30"</c> becomes <c>"08:30"</c>. The fixed width is what lets
+        /// the column sort and range-scan chronologically. A value assigned to a <see cref="DataRow"/>
+        /// directly does not pass through this method and is not normalised.
+        /// </remarks>
+        /// <exception cref="FormatException">
+        /// The column's declared type is <see cref="FieldDbType.Time"/> and <paramref name="value"/> is not a
+        /// valid time of day.
+        /// </exception>
         public static object ToColumnValue(string? value, DataColumn column)
         {
             ArgumentNullException.ThrowIfNull(column);
@@ -111,6 +122,9 @@ namespace Bee.Api.Client
                 return GetEmptyValue(column.DataType);
             }
 
+            if (column.GetDeclaredFieldDbType() == FieldDbType.Time)
+                return ToTimeOfDayValue(value);
+
             var targetType = column.DataType;
             if (targetType == typeof(string))
                 return value;
@@ -122,6 +136,17 @@ namespace Bee.Api.Client
                 return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal);
 
             return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+        }
+
+        private static string ToTimeOfDayValue(string value)
+        {
+            // Throwing rather than returning the empty string keeps a typo from erasing the stored value.
+            // The in-grid editor catches `FormatException` and keeps the last valid value, which is the
+            // same outcome the standalone time editor gives.
+            string normalized = ValueUtilities.CTimeString(value);
+            if (normalized.Length == 0)
+                throw new FormatException($"'{value}' is not a valid time of day. Expected H:mm or HH:mm.");
+            return normalized;
         }
 
         /// <summary>

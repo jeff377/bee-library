@@ -38,7 +38,9 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         public void Bind_DisplaysFixedWidthForm()
         {
             var dataObject = BuildDataObject();
-            dataObject.SetField("work_start", "8:30");
+            // Assigned to the row directly: `SetField` already normalises, which would let this pass
+            // without the editor doing any normalising of its own.
+            dataObject.MasterRow!["work_start"] = "8:30";
 
             var editor = new TimeEdit();
             editor.Bind(dataObject, StartField());

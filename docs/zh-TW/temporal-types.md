@@ -74,7 +74,15 @@
 SELECT * FROM ft_shift WHERE work_start BETWEEN '08:00' AND '17:00' ORDER BY work_start
 ```
 
-凡經 `ToFieldValue` 或時刻編輯控件寫入的值框架都會正規化，唯一可能破壞此保證的是自寫的 `INSERT`。
+由 UI 寫入的值會正規化（`"8:30"` 存成 `"08:30"`）：時刻編輯控件、Avalonia `GridControl` 的儲存格與
+`FormDataObject.SetField` 都經過 `FormValueBinding.ToColumnValue` 這一個實作。
+**伺服器端不會再正規化一次**，資料庫存的就是 `DataSet` 裡的值，因此下列寫入不在此保證內，
+需自行以 `ValueUtilities.CTimeString` 正規化：
+
+- 直接指派 `DataRow`（`row["work_start"] = "8:30"`）。
+- 沒有宣告型別標記的欄位 —— 框架建立的 `DataTable` 都帶著（見第 4 節），自行 `Columns.Add` 建立的沒有。
+- 非 .NET 客戶端送出的資料。
+- 自寫的 `INSERT` / `UPDATE`。
 
 ## 4. `DataSet` 層
 

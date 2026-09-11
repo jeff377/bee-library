@@ -539,6 +539,32 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
+        [DisplayName("時刻欄 cell editor 寫回時正規化為定寬 HH:mm，無效輸入保留原值")]
+        public void BuildCellEditor_TimeColumn_NormalizesAndIgnoresInvalid()
+        {
+            var table = new DataTable("Shifts");
+            table.AddColumn("work_start", FieldDbType.Time);
+            table.Rows.Add("08:00");
+            var grid = new GridControl();
+            grid.Bind(new LayoutGrid("Shifts", "Shifts"), table);
+
+            var method = typeof(GridControl).GetMethod(
+                "BuildCellEditor", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+            var editor = Assert.IsType<TextBox>(method!.Invoke(
+                grid, new object?[] { table.DefaultView[0], new LayoutColumn("work_start", "Start", ControlType.TimeEdit) }));
+
+            // The grid has no dedicated time editor, so fixed width must come from the shared write path.
+            editor.Text = "8:30";
+            editor.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
+            Assert.Equal("08:30", table.Rows[0]["work_start"]);
+
+            editor.Text = "25:00";
+            editor.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
+            Assert.Equal("08:30", table.Rows[0]["work_start"]);
+        }
+
+        [Fact]
         [DisplayName("CheckEdit cell editor 以 CheckBox 寫回布林")]
         public void BuildCellEditor_CheckEditor_WritesBoolean()
         {

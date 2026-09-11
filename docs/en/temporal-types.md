@@ -1,4 +1,4 @@
-<!-- source: zh-TW/temporal-types.md blob: 3cdcc1c178de0297d9037ee652b7683c2de25875 -->
+<!-- source: zh-TW/temporal-types.md blob: 85875eef8da3f4d2d71e60d2cc460e84f2f66283 -->
 # Temporal Types: `Date`, `DateTime` and `Time`
 
 [繁體中文](../zh-TW/temporal-types.md) · [← Docs Index](README.md)
@@ -80,8 +80,17 @@ All three sort and range-scan correctly in SQL. For `Time` this works because va
 SELECT * FROM ft_shift WHERE work_start BETWEEN '08:00' AND '17:00' ORDER BY work_start
 ```
 
-The framework normalises every value written through `ToFieldValue` or the time editor, so a
-hand-written `INSERT` is the only way to break that guarantee.
+Values written from the UI are normalised (`"8:30"` is stored as `"08:30"`): the time editor, a cell
+in the Avalonia `GridControl` and `FormDataObject.SetField` all go through the single implementation
+in `FormValueBinding.ToColumnValue`. **The server does not normalise again** — the database stores
+whatever the `DataSet` holds — so the following writes fall outside that guarantee and must normalise
+with `ValueUtilities.CTimeString` themselves:
+
+- Assigning a `DataRow` directly (`row["work_start"] = "8:30"`).
+- A column with no declared-type marker. Every `DataTable` the framework builds carries one (see §4);
+  a table built with `Columns.Add` does not.
+- Data sent by a non-.NET client.
+- A hand-written `INSERT` or `UPDATE`.
 
 ## 4. `DataSet` layer
 

@@ -81,6 +81,50 @@ namespace Bee.Api.Client.UnitTests.FormData
                 FormValueBinding.ToColumnValue("2026-09-04T13:05:00", Column(typeof(DateTime), allowDBNull: true)));
         }
 
+        private static DataColumn TimeColumn()
+        {
+            var table = new DataTable("t");
+            return table.AddColumn("c", FieldDbType.Time);
+        }
+
+        [Theory]
+        [InlineData("8:30", "08:30")]
+        [InlineData("08:30", "08:30")]
+        [InlineData("0:05", "00:05")]
+        [DisplayName("時刻欄寫入時正規化為定寬 HH:mm")]
+        public void ToColumnValue_TimeColumn_NormalizesToFixedWidth(string value, string expected)
+        {
+            // 定寬才讓字典序等於時序；"8:30" 原樣存入會排在 "10:00" 之後。
+            Assert.Equal(expected, FormValueBinding.ToColumnValue(value, TimeColumn()));
+        }
+
+        [Theory]
+        [InlineData("25:00")]
+        [InlineData("08:99")]
+        [InlineData("8:")]
+        [InlineData("abc")]
+        [DisplayName("時刻欄遇到無法解析的輸入擲 FormatException，不原樣寫入也不清空")]
+        public void ToColumnValue_TimeColumnInvalidInput_ThrowsFormatException(string value)
+        {
+            // 表格儲存格靠這個例外保留前一個有效值；回空字串會讓打錯一個字就清掉資料。
+            Assert.Throws<FormatException>(() => FormValueBinding.ToColumnValue(value, TimeColumn()));
+        }
+
+        [Fact]
+        [DisplayName("清空時刻欄寫回空字串（未填），不是 00:00")]
+        public void ToColumnValue_TimeColumnEmpty_ReturnsUnset()
+        {
+            Assert.Equal(string.Empty, FormValueBinding.ToColumnValue(string.Empty, TimeColumn()));
+        }
+
+        [Fact]
+        [DisplayName("未帶宣告型別標記的字串欄不做時刻正規化")]
+        public void ToColumnValue_UnmarkedStringColumn_DoesNotNormalizeTime()
+        {
+            // 判斷依據是欄位的 FieldDbType 標記，不是值長得像時刻。
+            Assert.Equal("8:30", FormValueBinding.ToColumnValue("8:30", Column(typeof(string), allowDBNull: true)));
+        }
+
         [Fact]
         [DisplayName("純日期以 yyyy-MM-dd 呈現，帶時間才加 T 時分秒")]
         public void ToBindingString_DateTime_UsesIso8601ByPrecision()
