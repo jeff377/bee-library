@@ -114,7 +114,7 @@ grep -r "ProgId.*=.*\"<NewSample>\"" samples/ 2>/dev/null
 
 ### Step 3：起骨架
 
-
+**Avalonia sample**：先建 UI 專案與所需的平台 head，再回到本流程加 Bee 整合。
 **其他**：直接寫 csproj + 程式碼，照下面樣板：
 
 #### `samples/<Sample.Name>/<Sample.Name>.csproj` 樣板
@@ -155,6 +155,80 @@ grep -r "ProgId.*=.*\"<NewSample>\"" samples/ 2>/dev/null
     <ProjectReference Include="..\Bee.Samples.Shared\Bee.Samples.Shared.csproj" />
   </ItemGroup>
 </Project>
+```
+
+### Step 4：Program.cs 樣板
+
+#### Console 樣板（auth=否）
+
+參考 `samples/QuickStart.Console/Program.cs`：先設 `ApiClientInfo.ApiKey`，再 `new SystemApiConnector(endpoint, Guid.Empty)` + `PingAsync()`，並以 `new FormApiConnector(endpoint, Guid.Empty, "Echo")` 的 `ExecuteAsync<T>("Echo", request, PayloadFormat.Plain)` 呼叫 Echo BO。
+
+#### Console 樣板（auth=是）
+
+`ClientInfo` 在 `Bee.UI.Core`，csproj 除了上面 Console 樣板的 `Bee.Api.Client`，還要加 `<ProjectReference Include="..\..\src\Bee.UI.Core\Bee.UI.Core.csproj" />`。
+
+```csharp
+using Bee.Api.Client;
+using Bee.UI.Core;
+
+namespace {Sample.Name};
+
+internal static class Program
+{
+    public static async Task<int> Main(string[] args)
+    {
+        ApiClientInfo.ApiKey = "{sample-key}";
+        await ClientInfo.InitializeAsync("http://localhost:5050/api"); // QuickStart.Server
+
+        var login = await ClientInfo.SystemApiConnector.LoginAsync("demo", "demo");
+        ClientInfo.ApplyLoginResult(login);
+
+        // ... do authenticated work via ClientInfo.SystemApiConnector / CreateFormApiConnector
+        return 0;
+    }
+}
+```
+
+#### Blazor Server 樣板
+
+參考 `samples/Blazor.Server.Demo/Program.cs`：
+
+```csharp
+using Bee.Samples.Shared;
+using Bee.Web.Blazor.Server.DependencyInjection;
+using {Sample.Name}.Components;
+
+namespace {Sample.Name};
+
+internal static class Program
+{
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        // Must run before AddBeeBlazor so the Local provider has services to resolve.
+        builder.AddBeeBackend();
+        builder.Services.AddBeeBlazor(options => options.UseLocalProvider());
+        builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+        var app = builder.Build();
+        app.UseBeeBackend();
+        app.UseStaticFiles();
+        app.UseAntiforgery();
+        app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+        app.Run();
+    }
+}
+```
+
+### Step 5：slnx 整合
+
+編輯 `samples/Bee.Samples.slnx`，在對應 folder 加：
+
+```xml
+<Folder Name="/{Family}/">
+  ...
+  <Project Path="{Sample.Name}/{Sample.Name}.csproj" />
+</Folder>
 ```
 
 ### Step 6：README
