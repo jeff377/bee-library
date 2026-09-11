@@ -126,7 +126,7 @@ csproj 註解另記載了一件本計畫寫錯的事：**該直接參考自 4.22
 | iOS | ✅ 0 錯誤，**21 個警告** |
 
 **iOS 的警告是既有的，不是本次造成的**（完整判讀與數字不可比較的理由已收進
-[gotchas/mobile-trim-aot.md](../repo-ops/gotchas/mobile-trim-aot.md) 第四節）：全部是 `IL2026` / `IL2057`，即 trim 分析器對
+[gotchas/mobile-trim-aot.md](../../repo-ops/gotchas/mobile-trim-aot.md) 第四節）：全部是 `IL2026` / `IL2057`，即 trim 分析器對
 `DataSet` / `DataTable` XML 序列化與 `ViewLocator` 反射的固有告警。對照組是 bee-library
 自己的 iOS head —— 同樣 0 錯誤但 **67 個警告**（更多，因為 ProjectReference 的分析面比
 已 trim 的 NuGet 套件大）。**計畫寫的「0 警告」對 iOS head 是訂錯了門檻**，該 head 從來

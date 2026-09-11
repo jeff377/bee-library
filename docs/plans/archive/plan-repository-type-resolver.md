@@ -7,10 +7,10 @@
 2026-09-10 清 SonarCloud 的最後一筆 open issue：
 
 - **`csharpsquid:S107`**（Constructor has 8 parameters, which is greater than the 7 authorized）
-  [`src/Bee.Repository/Factories/RepositoryFactory.cs:66`](../../src/Bee.Repository/Factories/RepositoryFactory.cs)
+  [`src/Bee.Repository/Factories/RepositoryFactory.cs:66`](../../../src/Bee.Repository/Factories/RepositoryFactory.cs)
 
 2026-08-06 的 `/sonar-fix` 已把它記進
-[`docs/.sonar-fix-state/skip.json`](../.sonar-fix-state/skip.json)，理由是「public API 簽章、
+[`docs/.sonar-fix-state/skip.json`](../../.sonar-fix-state/skip.json)，理由是「public API 簽章、
 收斂成 options 物件是破壞性變更」。那個判斷**只回答了「能不能自動修」**，沒回答「該不該修」，
 本 plan 補上後者。
 
@@ -32,7 +32,7 @@ public RepositoryFactory(
 
 1. **有真實接縫，不是為了壓數字硬拆。** 第 7、8 個參數連同 `ResolveFormRepositoryType` /
    `FindProgramItem` / `GetCustomizeId` 三個成員，是「progId → repository 型別（含租戶客製
-   overlay）」這件事——也就是 BO 軸 [`IBoTypeResolver`](../../src/Bee.Business/IBoTypeResolver.cs)
+   overlay）」這件事——也就是 BO 軸 [`IBoTypeResolver`](../../../src/Bee.Business/IBoTypeResolver.cs)
    在 repository 軸的**對應物，被 inline 在工廠裡**。抽出去之後工廠剩 7 個參數。
 2. **但任何能真正關掉 S107 的做法都是破壞性變更**，已實測（見下）：加多載關不掉。
    已由使用者決定接受，見文末「已決定」。
@@ -43,7 +43,7 @@ public RepositoryFactory(
 ### 加多載關不掉 S107，也不會改變正式環境走的路徑
 
 `RepositoryFactory` 由 `CreateConfigurableService` 以 `ActivatorUtilities.CreateInstance(sp, type)`
-建構（[`BeeFrameworkServiceCollectionExtensions.Factories.cs`](../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.Factories.cs)）。
+建構（[`BeeFrameworkServiceCollectionExtensions.Factories.cs`](../../../src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.Factories.cs)）。
 以 `Microsoft.Extensions.DependencyInjection` 10.0.0 實測兩個建構子並存時會挑哪支：
 
 | 情境 | `ActivatorUtilities` / 容器挑中 |
@@ -80,7 +80,7 @@ public RepositoryFactory(
 ### 候選一（不採用）：前 5 個參數 → 已存在的 `RepositoryContext`
 
 建構子的確把 `defineAccess` / `dbAccessFactory` / `connectionManager` / `router` / `cacheNotify`
-原封不動組成 [`RepositoryContext`](../../src/Bee.Repository/RepositoryContext.cs)，
+原封不動組成 [`RepositoryContext`](../../../src/Bee.Repository/RepositoryContext.cs)，
 名字現成。但：
 
 - 那是**參數打包**，不是職責分離——工廠照樣要這些東西，只是換個袋子裝。
@@ -277,7 +277,7 @@ services.AddSingleton<IRepositoryTypeResolver>(sp =>
 2. `./test.sh`（全部；`Bee.Repository` 動到 → 依 `testing.md` 建議完整模式）。
 3. 上表兩個變異測試。
 4. 本機加 `SonarAnalyzer.CSharp` 確認 S107 消失、兩個新檔零警告，然後移除暫時參考
-   （見 [`docs/repo-ops/gotchas/test-ci-release.md`](../repo-ops/gotchas/test-ci-release.md)）。
+   （見 [`docs/repo-ops/gotchas/test-ci-release.md`](../../repo-ops/gotchas/test-ci-release.md)）。
 5. `./check-public-docs.sh`（README 有改）。
 6. commit type 用 `refactor(repository)!:`，讓 `/dev-workflow:changelog-draft` 歸入「破壞性變更」；
    message 寫明相容性判定。push 前依 `testing.md` 問 CI 模式——觸及 `src/Bee.Repository/**`，**建議 `[all-db]`**。

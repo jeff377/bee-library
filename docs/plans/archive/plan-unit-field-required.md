@@ -10,7 +10,7 @@
 
 ## 背景
 
-起因是 [uom-decimals-prior-art.md](../repo-ops/uom-decimals-prior-art.md) 的層級比較：
+起因是 [uom-decimals-prior-art.md](../../repo-ops/uom-decimals-prior-art.md) 的層級比較：
 SAP 與 Odoo 都沒有「公司層的單位位數」，Bee.NET 卻在數量欄沒綁單位時退到公司位數。
 
 ### 兩條遞補鏈退到的東西不一樣
@@ -58,11 +58,11 @@ SAP 與 Odoo 都沒有「公司層的單位位數」，Bee.NET 卻在數量欄�
 | **D** 綁、主檔沒部署 | 公司位數 → 框架預設 ⇒ **框架預設** | 不 bake（不變） | 欄級 `NumberFormat` → 原值（不變） |
 | **E** 沒綁 | 公司位數 → 框架預設 ⇒ **計算欄擲例外** | bake 公司位數 ⇒ **不 bake** | baked 格式 ⇒ **原值** |
 
-依據：[`NumberFormatResolver.ResolveDecimals`](../../src/Bee.Definition/NumberFormatResolver.cs) 的
-`DecimalsSource.Unit` 分支、[`FormExpressionCalculator.ResolveRefCode`](../../src/Bee.Definition/Forms/FormExpressionCalculator.cs)
-（只讀**同一列**的變數）、[`NumberFormatApplier.Bake`](../../src/Bee.Definition/Forms/NumberFormatApplier.cs)、
-[`UnitSettings.GetDecimals`](../../src/Bee.Definition/Settings/UnitSettings/UnitSettings.cs)、
-[`GridControl.ResolveCellNumberFormat`](../../src/Bee.UI.Avalonia/Controls/GridControl.Cells.cs)（單位分支在代碼空時不解析）。
+依據：[`NumberFormatResolver.ResolveDecimals`](../../../src/Bee.Definition/NumberFormatResolver.cs) 的
+`DecimalsSource.Unit` 分支、[`FormExpressionCalculator.ResolveRefCode`](../../../src/Bee.Definition/Forms/FormExpressionCalculator.cs)
+（只讀**同一列**的變數）、[`NumberFormatApplier.Bake`](../../../src/Bee.Definition/Forms/NumberFormatApplier.cs)、
+[`UnitSettings.GetDecimals`](../../../src/Bee.Definition/Settings/UnitSettings/UnitSettings.cs)、
+[`GridControl.ResolveCellNumberFormat`](../../../src/Bee.UI.Avalonia/Controls/GridControl.Cells.cs)（單位分支在代碼空時不解析）。
 
 ### 幣別側的對照依據
 
@@ -72,12 +72,12 @@ SAP 與 Odoo 都沒有「公司層的單位位數」，Bee.NET 卻在數量欄�
 | 代碼不在主檔 | `CurrencySettings.FallbackRounding`（0.01）→ 2 位 | `CurrencySettings.GetRounding` |
 | 主檔沒部署 | 伺服端退公司位數表 → 框架 2；前端顯示用欄級格式（金額不 bake → 原值） | `NumberFormatResolver.ResolveDecimals`、`GridControl.ResolveCellNumberFormat` |
 | 公司沒本幣 | 計算時擲；顯示不擲（UI 的 `RoundingContext` 不帶 `Company`，改傳 `DefaultCurrencyCode`） | `NumberFormatResolver.ResolveCompanyCurrency`、`FormView.Build` |
-| 載入期／設計期檢查 | 無：`FormSchemaCache.CreateInstance` 讀到即回傳；`FormSchemaValidator` 不看 `CurrencyField` | [`FormSchemaCache`](../../src/Bee.ObjectCaching/Define/FormSchemaCache.cs)、[`FormSchemaValidator`](../../tools/DefineEditor/Services/FormSchemaValidator.cs) |
+| 載入期／設計期檢查 | 無：`FormSchemaCache.CreateInstance` 讀到即回傳；`FormSchemaValidator` 不看 `CurrencyField` | [`FormSchemaCache`](../../../src/Bee.ObjectCaching/Define/FormSchemaCache.cs)、[`FormSchemaValidator`](../../../tools/DefineEditor/Services/FormSchemaValidator.cs) |
 
 ### `Bake` 只在前端
 
 `NumberFormatApplier.Bake` 全 `src/` 唯一的呼叫端是
-[`FormDefinitionLoader.GetLocalizedSchemaAsync`](../../src/Bee.Api.Client/Definitions/FormDefinitionLoader.cs)，
+[`FormDefinitionLoader.GetLocalizedSchemaAsync`](../../../src/Bee.Api.Client/Definitions/FormDefinitionLoader.cs)，
 註解寫明伺服端照原樣供應定義。ADR-026 D5 與 cookbook〈Display format is baked at delivery〉寫的
 「`SystemBusinessObject.LoadAndLocalizeSchema` 於伺服端 bake」**已過時**，修 ADR 時一併更正。
 
@@ -91,9 +91,9 @@ B 與 E 傳進 `ResolveDecimals` 的 `refCode` 都是空的，解析器分不出
 - **XML 定義檔**（全 repo，不含 `docs/blogs/`）：沒有任何 `NumberKind="Quantity"` 或 `"Weight"`。
   Northwind 的 `quantity` 是 `Integer`、未標 `NumberKind` → **`apps/` 與案例 repo 不受影響**。
 - **非測試程式**：
-  - [`NumberFormatModule`](../../samples/Avalonia.DemoCenter/Modules/Grids/NumberFormatModule.cs)：
+  - [`NumberFormatModule`](../../../samples/Avalonia.DemoCenter/Modules/Grids/NumberFormatModule.cs)：
     `quantity`、`gross_weight` 未綁單位（重量的單位寫在標題「重量(kg)」裡），公司 B 設了 `Quantity` 覆寫。**要改。**
-  - [`MultiUnitModule`](../../samples/Avalonia.DemoCenter/Modules/Grids/MultiUnitModule.cs)：已綁 `qty_uom`，不受影響。
+  - [`MultiUnitModule`](../../../samples/Avalonia.DemoCenter/Modules/Grids/MultiUnitModule.cs)：已綁 `qty_uom`，不受影響。
 
 ### 既有測試（逐檔核對過）
 
@@ -170,7 +170,7 @@ B 與 E 傳進 `ResolveDecimals` 的 `refCode` 都是空的，解析器分不出
 
 | 文件 | 改動 |
 |------|------|
-| [ADR-026](../adr/adr-026-numeric-semantics-rounding.md) | `## 修訂紀錄` 新增 `### 2026-09-xx：數量／重量必須綁定計量單位`：原則、D1–D5、與幣別對照的理由（公司有本幣、沒有預設單位）。原 D1 表格「無則退公司」保留為歷史，由修訂段說明已不成立。**連帶更正**：D5 寫的伺服端 bake 已移到前端 `FormDefinitionLoader` |
+| [ADR-026](../../adr/adr-026-numeric-semantics-rounding.md) | `## 修訂紀錄` 新增 `### 2026-09-xx：數量／重量必須綁定計量單位`：原則、D1–D5、與幣別對照的理由（公司有本幣、沒有預設單位）。原 D1 表格「無則退公司」保留為歷史，由修訂段說明已不成立。**連帶更正**：D5 寫的伺服端 bake 已移到前端 `FormDefinitionLoader` |
 | `docs/development-cookbook.md` / `.zh-TW.md` | 英文 614、623、643–645 行附近，中文 591、620–622 行與〈交付時 bake〉那段：遞補鏈改寫、刪掉 614／591 那句過期說明、bake 位置更正。**兩份同步** |
 
 跑 `./check-public-docs.sh`。CHANGELOG 於發版時由 `/dev-workflow:changelog-draft` 帶出，**必須列「升級須知」**：
@@ -226,7 +226,7 @@ B 與 E 傳進 `ResolveDecimals` 的 `refCode` 都是空的，解析器分不出
 
 ## 階段 2：DefineEditor 設計期檢查
 
-[`FormSchemaValidator.ValidateFields`](../../tools/DefineEditor/Services/FormSchemaValidator.cs) 比照
+[`FormSchemaValidator.ValidateFields`](../../../tools/DefineEditor/Services/FormSchemaValidator.cs) 比照
 `ValidateRelation` 的寫法，新增一個檢查：
 
 - `NumberKind` 為 `Quantity`／`Weight` 且 `UnitField` 空 → `Error`。
@@ -285,7 +285,7 @@ DefineEditor 與 `Bee.Cli` 內沒有其他檢查 `FormSchema` 的地方（另一
 - **單位換算／基準單位**（prior-art 第 5 點）。
 - **幣別側的同形狀問題**：`CurrencyField` 參照是否存在沒有設計期檢查。
 - **選單位後不一定重算**：相依圖只看運算式引用的欄，單位欄通常不在裡面。D2 改為不捨入後，這個風險從「捨錯位數」變成「選完單位後仍是未捨入的值」，存檔前的伺服端計算會以當時的單位重算。
-- [plan-rounding-mode.md](plan-rounding-mode.md) 階段 2（數量／重量的方向政策）：同樣會改 `NumberFormatResolver`。
+- [plan-rounding-mode.md](../plan-rounding-mode.md) 階段 2（數量／重量的方向政策）：同樣會改 `NumberFormatResolver`。
   兩份都要做的話，**先落本 plan**（它改的是遞補鏈），方向政策再疊上去。
 
 ## 與鐵人賽的關係

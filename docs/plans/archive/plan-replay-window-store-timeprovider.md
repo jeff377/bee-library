@@ -8,18 +8,18 @@
 本 plan 處理其中一筆：
 
 - **`csharpsquid:S2925`（Do not use `Thread.Sleep()` in a test）**，全 repo 唯一一筆：
-  [`tests/Bee.Api.Core.UnitTests/JsonRpc/MemoryReplayWindowStoreTests.cs:94`](../../tests/Bee.Api.Core.UnitTests/JsonRpc/MemoryReplayWindowStoreTests.cs)
+  [`tests/Bee.Api.Core.UnitTests/JsonRpc/MemoryReplayWindowStoreTests.cs:94`](../../../tests/Bee.Api.Core.UnitTests/JsonRpc/MemoryReplayWindowStoreTests.cs)
   的 `SweepIfDue_IdleEntries_AreEvicted`，用 `Thread.Sleep(30)` 等淘汰期過去。
 - 另一筆 `S107`（`RepositoryFactory` 建構子 8 參數）不在本 plan 範圍。
 
-受測型別 [`src/Bee.Api.Core/JsonRpc/MemoryReplayWindowStore.cs`](../../src/Bee.Api.Core/JsonRpc/MemoryReplayWindowStore.cs)
+受測型別 [`src/Bee.Api.Core/JsonRpc/MemoryReplayWindowStore.cs`](../../../src/Bee.Api.Core/JsonRpc/MemoryReplayWindowStore.cs)
 直接讀 `Environment.TickCount64` 三處（`GetOrAdd` L33、`SweepIfDue` L45、`Entry` 建構子 L82），
 淘汰期由 `ApiServiceOptions.WireFrameTimestampTolerance × 2` 推導（L40）。
 
 > **提醒**：SonarAnalyzer **只在完整模式 CI 跑**（commit message 帶 `[all-db]` 或手動
 > dispatch `db_scope=all`），精簡模式與本機 strict build 都不含它。本機重現要暫時加
 > `SonarAnalyzer.CSharp` 的 `PackageReference`，見
-> [`docs/repo-ops/gotchas/test-ci-release.md`](../repo-ops/gotchas/test-ci-release.md)。
+> [`docs/repo-ops/gotchas/test-ci-release.md`](../../repo-ops/gotchas/test-ci-release.md)。
 
 ## 先排除三個方向
 
@@ -64,7 +64,7 @@
 3. **「使用中的 session 永不被淘汰」。** `GetOrAdd` 命中既有 token 時會刷新 `LastTouchedMs`，
    所以一個持續有流量的 session 不論行程跑多久都不該被掃掉。這條**目前零測試**，而它與
    已修過的 CON-5 是**同一類 bug**：淘汰掉使用中的 window，等於該 session 的重放防護靜默重置
-   （見 [`docs/changelogs/4.28.0.zh-TW.md`](../changelogs/4.28.0.zh-TW.md)）。這是安全控制，
+   （見 [`docs/changelogs/4.28.0.zh-TW.md`](../../changelogs/4.28.0.zh-TW.md)）。這是安全控制，
    值得有閘門。
 4. **sweep 先於 GetOrAdd 的順序。** `GetOrAdd` 是先 `SweepIfDue()` 再取 entry，因此本次要拿的
    token 是在 sweep **之後**才蓋時間戳，不可能被自己這一次呼叫掃掉。fake clock 下可直接驗。
@@ -110,7 +110,7 @@ fake clock 下不必再壓 tolerance —— 直接 `Advance` 十分鐘即可，�
   對它毫無意義，等於在契約上塞進一個只有記憶體實作用得到的參數。
 - `IReplayWindowStore` 已在 `PublicAPI.Shipped.txt`（L55-56）且**有外部實作者**
   （介面存在的理由就是讓多節點部署換掉它，見
-  [`docs/adr/adr-042-api-replay-protection.md`](../adr/adr-042-api-replay-protection.md)）。
+  [`docs/adr/adr-042-api-replay-protection.md`](../../adr/adr-042-api-replay-protection.md)）。
   改介面是破壞性變更。
 
 **結論：接縫只開在 `MemoryReplayWindowStore` 自己身上。**
@@ -216,7 +216,7 @@ fake clock 下不必再壓 tolerance —— 直接 `Advance` 十分鐘即可，�
 5. `dotnet build --configuration Release`（strict，警告即失敗）。
 6. `./test.sh tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj`。
 7. **本機確認 S2925 已消失**：依
-   [`docs/repo-ops/gotchas/test-ci-release.md`](../repo-ops/gotchas/test-ci-release.md)
+   [`docs/repo-ops/gotchas/test-ci-release.md`](../../repo-ops/gotchas/test-ci-release.md)
    暫時加 `SonarAnalyzer.CSharp` 的 `PackageReference` 建一次，確認後**移除**該暫時參考。
 8. commit。**push 前先問使用者要不要跑完整模式**（`.claude/rules/testing.md`）：
    本次改動不碰 DB / SQL 產生邏輯，正確性用精簡模式即足；但 **SonarAnalyzer 只在完整模式跑**，
@@ -240,11 +240,11 @@ fake clock 下不必再壓 tolerance —— 直接 `Advance` 十分鐘即可，�
 
 ## 相關
 
-- [`src/Bee.Api.Core/JsonRpc/MemoryReplayWindowStore.cs`](../../src/Bee.Api.Core/JsonRpc/MemoryReplayWindowStore.cs)
-- [`src/Bee.Api.Core/JsonRpc/IReplayWindowStore.cs`](../../src/Bee.Api.Core/JsonRpc/IReplayWindowStore.cs)
-- [`docs/adr/adr-042-api-replay-protection.md`](../adr/adr-042-api-replay-protection.md)
-- [`docs/changelogs/4.28.0.zh-TW.md`](../changelogs/4.28.0.zh-TW.md) —— `Entry.LastTouchedMs` 那筆修正
-- [`docs/repo-ops/gotchas/test-ci-release.md`](../repo-ops/gotchas/test-ci-release.md) —— 本機重現 SonarAnalyzer
+- [`src/Bee.Api.Core/JsonRpc/MemoryReplayWindowStore.cs`](../../../src/Bee.Api.Core/JsonRpc/MemoryReplayWindowStore.cs)
+- [`src/Bee.Api.Core/JsonRpc/IReplayWindowStore.cs`](../../../src/Bee.Api.Core/JsonRpc/IReplayWindowStore.cs)
+- [`docs/adr/adr-042-api-replay-protection.md`](../../adr/adr-042-api-replay-protection.md)
+- [`docs/changelogs/4.28.0.zh-TW.md`](../../changelogs/4.28.0.zh-TW.md) —— `Entry.LastTouchedMs` 那筆修正
+- [`docs/repo-ops/gotchas/test-ci-release.md`](../../repo-ops/gotchas/test-ci-release.md) —— 本機重現 SonarAnalyzer
 
 ## 執行結果（2026-09-10）
 

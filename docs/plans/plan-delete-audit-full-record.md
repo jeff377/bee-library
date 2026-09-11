@@ -216,8 +216,8 @@ switch 處理，新增的屬性不會自動被涵蓋，必須一起接上：
 
 ## 相關 plan
 
-- [plan-audit-changes-xml-schema.md](plan-audit-changes-xml-schema.md)：4.30.0 補上內嵌 schema，root 分派的由來
-- [plan-audit-changes-json-payload.md](plan-audit-changes-json-payload.md)：評估改存 JSON，結論維持 XML
+- [plan-audit-changes-xml-schema.md](archive/plan-audit-changes-xml-schema.md)：4.30.0 補上內嵌 schema，root 分派的由來
+- [plan-audit-changes-json-payload.md](archive/plan-audit-changes-json-payload.md)：評估改存 JSON，結論維持 XML
 
 ## 驗證
 

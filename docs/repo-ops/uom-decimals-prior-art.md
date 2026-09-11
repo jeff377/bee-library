@@ -122,7 +122,7 @@ commit `eb10bc0c` 與 cookbook 都寫明 per-row。SAP 的 `UNIT` 參照、Odoo 
   - 維持現狀，但把理由補進 ADR-026。
 
   **2026-09-11 使用者傾向第一項**（理由：綁定 `UnitField` 與多幣別作法一致），已另擬
-  [plan-unit-field-required.md](../plans/plan-unit-field-required.md) 評估。
+  [plan-unit-field-required.md](../plans/archive/plan-unit-field-required.md) 評估。
 - **物料層的空缺是範圍問題，不是層級放錯**：框架沒有產品主檔，換算與倍數捨入若要做，接縫會落在
   應用層。ADR-026「未做」清單目前沒提到它（上方第 5 點）。
 

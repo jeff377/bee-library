@@ -126,9 +126,9 @@ BO 層 21 支不擴成四家 provider：它們測的是 common scope 的 BO 行�
 - 四個 DB 容器要在跑（`./test.sh` 那組），連線字串在 `.runsettings`。
 - **Oracle 環境**：`tools/Bee.LoadTests` 與單元測試共用同一個 `testuser` schema，
   跑過 `prepare --provider Oracle` 之後單元測試 fixture 會整組失敗於
-  `Change narrows a column`。復原步驟見 [../repo-ops/gotchas/database.md](../repo-ops/gotchas/database.md)。
-- 測試規範見 [../../tests/CLAUDE.md](../../tests/CLAUDE.md)。
-- 本計畫的成因背景見 [plan-paging-and-oracle-getlist.md](archive/plan-paging-and-oracle-getlist.md)（已封存）
+  `Change narrows a column`。復原步驟見 [../repo-ops/gotchas/database.md](../../repo-ops/gotchas/database.md)。
+- 測試規範見 [../../tests/CLAUDE.md](../../../tests/CLAUDE.md)。
+- 本計畫的成因背景見 [plan-paging-and-oracle-getlist.md](plan-paging-and-oracle-getlist.md)（已封存）
   的「仍未處理（不在本次範圍）」。
 - 改動觸及跨 provider 的測試矩陣，push 前應建議跑完整模式 CI（`[all-db]`）。
 
@@ -156,7 +156,7 @@ cache-notify 表，本來就在 common，而該 repository 是 null scope、沒�
 `ExpiredAt = null`，`ApiKeyInfo.IsExpired` 永遠為 false——**已過期的金鑰照樣通行，且無聲**。
 改走 `ValueUtilities.CDateTime(object?)`。這與 `c53bc0e3` 修掉的 Oracle `RAW(16)` / `is Guid`
 是同一個形狀：驅動交回的 CLR 型別不是宣告型別，而裸 `is T` 把「型別不符」與「值不存在」
-壓成同一個答案。兩則都記進 [../repo-ops/gotchas/database.md](../repo-ops/gotchas/database.md)。
+壓成同一個答案。兩則都記進 [../repo-ops/gotchas/database.md](../../repo-ops/gotchas/database.md)。
 
 ### 階段 4 的驗證
 

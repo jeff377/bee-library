@@ -39,16 +39,16 @@ DiffGram**，欄位結構在寫入當下就丟掉了。「正確作法應該保�
 
 | 面向 | 實作 |
 |------|------|
-| 寫入（表單路徑） | [`AuditDiffGram.Serialize(DataSet)`](../../src/Bee.Business/AuditLog/AuditDiffGram.cs) → `WriteXml(writer, XmlWriteMode.DiffGram)` |
+| 寫入（表單路徑） | [`AuditDiffGram.Serialize(DataSet)`](../../../src/Bee.Business/AuditLog/AuditDiffGram.cs) → `WriteXml(writer, XmlWriteMode.DiffGram)` |
 | 寫入（部署層路徑） | 同檔的 `ForFieldUpdate` / `ForInsert`，現場合成最小 `DataSet`（欄位一律 `typeof(string)`） |
 | 刪除且無 snapshot | `MinimalDeleteXml` → `<DeletedRow table="…" sys_rowid="…" />` |
-| 讀取 | [`ChangeDiffGramReader.Read`](../../src/Bee.Business/AuditLog/ChangeDiffGramReader.cs)，**不用** `DataSet.ReadXml`，以 `XDocument` 自解、靠 `diffgr:id` 配對 before 列 |
+| 讀取 | [`ChangeDiffGramReader.Read`](../../../src/Bee.Business/AuditLog/ChangeDiffGramReader.cs)，**不用** `DataSet.ReadXml`，以 `XDocument` 自解、靠 `diffgr:id` 配對 before 列 |
 | 消費端 | `LogBusinessObject.GetChangeDetail` → `List<RecordFieldChange>`（`OldValue` / `NewValue` 皆 `string?`） |
 
 ## 前提查證：trim / AOT 不成立
 
 這是唯一可能否決本案的項目——`ChangeDiffGramReader` 的 remarks 自陳改用 `XDocument`
-有一半理由是避開 `XmlSerializer` 反射路徑（[adr-025](../adr/adr-025-define-types-aot-xmlserializer-compat.md)）。
+有一半理由是避開 `XmlSerializer` 反射路徑（[adr-025](../../adr/adr-025-define-types-aot-xmlserializer-compat.md)）。
 **兩層都不成立**，故本案可行。
 
 ### 第一層：讀取端只跑在伺服端

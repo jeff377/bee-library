@@ -24,14 +24,14 @@ the framework default of two decimals*），這次是**破壞性的行為變更*
 | D3 | 案例 | 本幣 `USD`，並部署 `Define/CurrencySettings.xml` |
 | D4 | 版號 | 4.31.0 minor；commit 標 `!`；PublicAPI 無異動 |
 
-> D1 的背景：框架內沒有任何 `st_company` 寫入者（[`CompanyInfoService.cs:18`](../../src/Bee.ObjectCaching/Services/CompanyInfoService.cs) 明寫公司主檔由外部維護），
+> D1 的背景：框架內沒有任何 `st_company` 寫入者（[`CompanyInfoService.cs:18`](../../../src/Bee.ObjectCaching/Services/CompanyInfoService.cs) 明寫公司主檔由外部維護），
 > 所以「寫入時檢查」在框架內沒有落點；binder / repository 層的檢查方案不採用。
 
 ## 現況與影響面（已實測，HEAD `325edfbd`）
 
 ### 例外會在哪裡浮現
 
-檢查放在 [`NumberFormatResolver.ResolveDecimals`](../../src/Bee.Definition/NumberFormatResolver.cs) 的 `DecimalsSource.Currency` 分支：
+檢查放在 [`NumberFormatResolver.ResolveDecimals`](../../../src/Bee.Definition/NumberFormatResolver.cs) 的 `DecimalsSource.Currency` 分支：
 `refCode` 為空、`ctx.Company != null`、`Company.DefaultCurrency` 為空白（`IsNullOrWhiteSpace`）時擲出。
 **不論有沒有部署幣別主檔都檢查**——那是公司設定錯誤，與主檔是否存在無關。
 
@@ -60,12 +60,12 @@ the framework default of two decimals*），這次是**破壞性的行為變更*
 
 ### 會壞掉、必須一起改的非測試程式
 
-- [`samples/Avalonia.DemoCenter/Modules/Grids/NumberFormatModule.cs:88`](../../samples/Avalonia.DemoCenter/Modules/Grids/NumberFormatModule.cs)：
+- [`samples/Avalonia.DemoCenter/Modules/Grids/NumberFormatModule.cs:88`](../../../samples/Avalonia.DemoCenter/Modules/Grids/NumberFormatModule.cs)：
   「公司 B」沒有本幣，而 `NumericColumns` 含 `amount`，切到公司 B 時 `ResolveFormat(Amount, company)` 會拋例外。
 
 ### 幣別主檔的部署現況
 
-- 框架只在 [`Defaults/CurrencySettings.xml`](../../src/Bee.Definition/Defaults/CurrencySettings.xml) 附 scaffold（含 USD、TWD），runtime 不會退回讀它。
+- 框架只在 [`Defaults/CurrencySettings.xml`](../../../src/Bee.Definition/Defaults/CurrencySettings.xml) 附 scaffold（含 USD、TWD），runtime 不會退回讀它。
 - Northwind 的 `DefinePath` 就是原始碼的 `Define/`（`NorthwindBackend.ResolveDefinePath` 往上找 `SystemSettings.xml`）；
   `Defaults.MaterializeTo` 的篩選器**只鋪框架 TableSchema**。兩份 Northwind 都找不到 `CurrencySettings.xml` → **目前沒有主檔**。
 - 沒有主檔時 resolver **完全不看公司本幣**，直接退公司位數表 → 框架 2。這是 D3 要部署主檔的理由。
@@ -101,7 +101,7 @@ the framework default of two decimals*），這次是**破壞性的行為變更*
 
 | 位置 | 改動 |
 |------|------|
-| [`SharedDatabaseState.Seed.cs:136`](../../tests/Bee.Tests.Shared/SharedDatabaseState.Seed.cs)（C001） | 插入 `USD` |
+| [`SharedDatabaseState.Seed.cs:136`](../../../tests/Bee.Tests.Shared/SharedDatabaseState.Seed.cs)（C001） | 插入 `USD` |
 | 同檔 `:119` 已存在分支 | 補冪等回填 `… SET default_currency = 'USD' WHERE sys_id = 'C001' AND (default_currency = '' OR default_currency IS NULL)`。**這是種子的一部分**：本機持久容器的 C001 已經存在、永遠走這條，不回填的話 `CompanyRepositoryTests:47` 會「本機紅、CI 綠」。Oracle 的 `''` 等於 `NULL`，兩個條件都要 |
 | `CompanyRepositoryTests.cs:47` | 斷言改為 `USD` |
 | `SystemBusinessObjectLifecycleTests.cs:92`、`SystemBusinessObjectEnterCompanyTests.cs:37/:48`、`TenantCustomizationEndToEndTests.cs:285`、`CompanyRepositoryTests.cs:134`、`UserCompanyRepositoryTests.cs:124` | 插入改給 `USD`。**不是為了讓測試過**（這些測試碰不到金額欄），是讓測試資料符合「公司一定有本幣」 |
@@ -115,7 +115,7 @@ the framework default of two decimals*），這次是**破壞性的行為變更*
 
 | 文件 | 改動 |
 |------|------|
-| [`adr-026`](../adr/adr-026-numeric-semantics-rounding.md) | 比照 ADR-034 加 `## 修訂紀錄` / `### 2026-09-xx：公司本幣改為必填`：決策、拋例外的時點與理由、「沒有公司上下文仍退框架預設」這條不變；原決策第 68 行「舊資料欄空即全退框架預設」保留為歷史，由修訂段說明已不成立 |
+| [`adr-026`](../../adr/adr-026-numeric-semantics-rounding.md) | 比照 ADR-034 加 `## 修訂紀錄` / `### 2026-09-xx：公司本幣改為必填`：決策、拋例外的時點與理由、「沒有公司上下文仍退框架預設」這條不變；原決策第 68 行「舊資料欄空即全退框架預設」保留為歷史，由修訂段說明已不成立 |
 | `docs/development-cookbook.md` / `.zh-TW.md`（631 / 608 行附近） | 遞補鏈旁補一句：公司本幣為必填、空白時解析金額會擲例外；「→ 框架 2」只適用於沒有公司上下文。**兩份同步** |
 | `docs/repo-ops/future-work.md:293` | 「預設幣別 vs 本位幣」那段改寫現況：已必填，但換算語意仍未補 |
 

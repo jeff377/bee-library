@@ -10,7 +10,7 @@
 2. `DataSet.WriteXml(XmlWriteMode.WriteSchema)` **確實寫出** `msprop:Bee.FieldDbType="Date"` 等註記。
 3. `DataSet.ReadXml(XmlReadMode.ReadSchema)` 讀回後，`DataColumn.ExtendedProperties["Bee.FieldDbType"]`
    的值是 **`string`**，不是 `FieldDbType`。
-4. [`DataColumnExtensions.GetDeclaredFieldDbType`](../../src/Bee.Base/Data/DataColumnExtensions.cs)
+4. [`DataColumnExtensions.GetDeclaredFieldDbType`](../../../src/Bee.Base/Data/DataColumnExtensions.cs)
    做的是 `as FieldDbType?`，字串轉不過去 → 回 `null` → `ResolveFieldDbType` 退回
    `DbTypeConverter.ToFieldDbType(column.DataType)` 反推：
    - `Date` 欄 → `DateTime`
@@ -22,11 +22,11 @@ JSON（`DataTableJsonConverter`）與 MessagePack（`SerializableDataTable`）�
 
 ## 與現行文件的落差
 
-公開文件 [`docs/temporal-types.md`](../temporal-types.md) §6「XML — `DataSet` persistence」寫
-「so it survives a write/read round trip」，[`docs/temporal-types.zh-TW.md`](../temporal-types.zh-TW.md)
+公開文件 [`docs/temporal-types.md`](../../temporal-types.md) §6「XML — `DataSet` persistence」寫
+「so it survives a write/read round trip」，[`docs/temporal-types.zh-TW.md`](../../temporal-types.zh-TW.md)
 同段寫「因此能在寫入／讀回的往返中存活」。**寫得出來是真的，讀回來被採用不是。**
 
-[ADR-031](../adr/adr-031-calendar-day-column-semantics.md)「後果」段已把 `ExtendedProperties`
+[ADR-031](../../adr/adr-031-calendar-day-column-semantics.md)「後果」段已把 `ExtendedProperties`
 在複製路徑上的保留行為列為「需持續留意」，本問題就是其中一種漏失，症狀也跟 ADR 預告的一樣
 （靜默退回反推 CLR 型別）。
 
@@ -35,7 +35,7 @@ JSON（`DataTableJsonConverter`）與 MessagePack（`SerializableDataTable`）�
 **框架內部：目前沒有路徑受影響。**
 
 - 框架內唯一的 `DataSet` XML 讀回點是稽核日誌
-  [`ChangeDiffGramReader.ReadSchemaBound`](../../src/Bee.Business/AuditLog/ChangeDiffGramReader.cs)
+  [`ChangeDiffGramReader.ReadSchemaBound`](../../../src/Bee.Business/AuditLog/ChangeDiffGramReader.cs)
   （`ReadXmlSchema` + `ReadXml(DiffGram)`），它以 `ToText` 把值轉成文字，不呼叫
   `ResolveFieldDbType` / `GetDeclaredFieldDbType`。
 - `GetDeclaredFieldDbType` 的另一個直接呼叫端 `DataFormRepository.Skeleton`（判斷 `Guid` 標記）
@@ -93,4 +93,4 @@ JSON（`DataTableJsonConverter`）與 MessagePack（`SerializableDataTable`）�
 `string`，`DbTypeConverter.ToFieldDbType(typeof(string))` 回 `String`；
 `TimeOfDayValueTests.AddColumn_Time_IsStringColumnCarryingTheMarker` 的註解也寫明沒有標記就會以
 `String` 讀回。實際上 `Time` 與 `Date` 一樣靠標記保留語意。
-[ADR-033](../adr/adr-033-time-of-day-semantics.md) 第 129 行附近有類似說法。
+[ADR-033](../../adr/adr-033-time-of-day-semantics.md) 第 129 行附近有類似說法。
