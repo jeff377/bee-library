@@ -126,4 +126,4 @@ git ls-files -z --cached --others --exclude-standard -- '*.md' ':!docs/plans/arc
     }
 
     END { exit bad }
-  '
+  ' || exit 1
