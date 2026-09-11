@@ -6,8 +6,8 @@ using Bee.Definition.Filters;
 namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
-    /// Enforces the two wire invariants of ADR-032 D6 on a payload value: DateTime columns must use
-    /// <see cref="DataSetDateTime.Unspecified"/>, and loose DateTime values must not carry
+    /// Enforces the ADR-032 D6 wire checks on a payload value: DateTime columns must use
+    /// <see cref="DataSetDateTime.Unspecified"/>, and DateTime values in a filter tree must not carry
     /// <see cref="DateTimeKind.Local"/>.
     /// </summary>
     /// <remarks>
@@ -32,6 +32,12 @@ namespace Bee.Api.Core.JsonRpc
     /// This runs at the Connector boundary rather than at a serializer entry point on purpose:
     /// in-process calls (<c>LocalApiProvider</c> with <c>Plain</c>) never serialize,
     /// so a serializer-level guard would leave that path unguarded.
+    ///
+    /// IMPORTANT: validate a request before <see cref="PayloadZoneConverter.ToUtc"/>, not after it.
+    /// The conversion rewrites every filter value to <see cref="DateTimeKind.Unspecified"/>, so a
+    /// check placed afterwards passes every <see cref="DateTimeKind.Local"/> value whenever the user
+    /// has a time zone — which is every signed-in call. <c>ApiConnectorDateTimeGuardTests</c> in
+    /// <c>Bee.Api.Client.UnitTests</c> covers that ordering.
     /// </remarks>
     public static class DateTimeWireGuard
     {

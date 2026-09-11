@@ -9,6 +9,9 @@
 > 唯一未執行的驗證：行動端 / WASM 的**實機**時區可用性。各 head 已釘住
 > `InvariantGlobalization=false` 與 `InvariantTimezone=false`，但那是設定護欄而非驗證——
 > 缺 tz 資料的失敗是裝置上的執行期例外，桌面建置與測試都攔不到。
+>
+> **修訂**：D9 於 2026-09-04 撤回「刻意不 UTC 化」，改為與寫入端同源；D6 於 2026-09-12 補上
+> 「請求方向的 guard 在時區換算之前」，並把 DTO 屬性那條從不變式改標為撰寫紀律。
 
 ## 背景
 
@@ -22,7 +25,7 @@
 | 基準 | 位置 |
 |------|------|
 | **UTC** | `SessionRepository`、`AccessTokenValidator`、`AuditEntry.LogTimeUtc`、`LoginAttemptTracker`、`PingResult.ServerTime` |
-| **DB server clock** | cache-notify 的 `sys_update_time`（`getdate()` / `LOCALTIMESTAMP` 為 server local，但 SQLite `CURRENT_TIMESTAMP` 是 UTC） |
+| **DB server clock** | cache-notify 的 `sys_update_time`（`getdate()` / `LOCALTIMESTAMP` 為 server local，但 SQLite `CURRENT_TIMESTAMP` 是 UTC）——此列為決策當時的盤點，現已統一為 UTC，見 D9 |
 | **Local** | 業務資料預設值、trace、定義檔 `CreateTime` |
 
 兩個推論：既有資料若要遷移**必須逐欄判斷**（`st_session` 已是 UTC，一律轉會轉錯）；
@@ -150,21 +153,26 @@ MessagePack 與 JSON 都只搬運數值。轉換責任全在伺服端與用戶�
 
 ### D6：時間表示紀律與 wire guard
 
-依載體分成兩條不變式，**守的是不同東西，缺一不可**：
+依載體分成三條規則，**守的是不同東西**，而執行機制並不相同：
 
-| 載體 | 不變式 |
-|------|--------|
-| `DataSet` / `DataTable` | 所有 `DateTime` 欄位的 **`DataColumn.DateTimeMode` 必須是 `Unspecified`** |
-| 強型別 DTO 屬性 | `DateTime` 的 **`Kind` 不得為 `Local`** |
+| 載體 | 規則 | 執行機制 |
+|------|------|---------|
+| `DataSet` / `DataTable` | 所有 `DateTime` 欄位的 **`DataColumn.DateTimeMode` 必須是 `Unspecified`** | `DateTimeWireGuard` |
+| `FilterCondition.Value` / `SecondValue` | `DateTime` 的 **`Kind` 不得為 `Local`** | `DateTimeWireGuard` |
+| 強型別 DTO 屬性 | `DateTime` 應為 UTC，**`Kind` 不應為 `Local`** | **無**——撰寫紀律，guard 不檢查 DTO 屬性 |
 
 `DataSet` 那條不查 `Kind`：儲存格的 `Kind` 由 `DateTimeMode` 決定，查值恆得 `Unspecified`、
 查了等於沒查；真正決定「XML 寫出會不會帶偏移」的是 `DateTimeMode`。
 `AddColumn` 已設 `Unspecified`，破口在 `DbDataAdapter.Fill` / `DataSet.ReadXml` 等
 會落回 .NET 預設 `UnspecifiedLocal` 的路徑。
 
-DTO 那條查 `Kind`：沒有 `DataColumn` 的正規化緩衝，`Local` 在**兩條 wire 上都會位移數值**
+過濾條件值與 DTO 屬性的規則都針對 `Kind`：沒有 `DataColumn` 的正規化緩衝，`Local` 在**兩條 wire 上都會位移數值**
 （MessagePack 於寫出端、JSON 於讀取端）。`Local` 極易誤入——`DateTime.Now`、`DateTime.Today`、
 UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
+
+DTO 屬性不由 guard 檢查：guard 依訊息型別逐一比對載體，不走訪物件圖，新增帶 `DateTime` 的訊息
+不會自動被涵蓋。現行請求端帶 `DateTime` 的 DTO 屬性，都以屬性名（`FromUtc` / `ToUtc`）或參數文件
+（「The UTC expiry」）載明基準，**正確性靠呼叫端遵守，沒有執行期檢查**。
 
 - **guard 為 fail fast：debug 與 release 都擲例外**，不做「修正後放行」。
   兩種修法都會靜默產生錯資料：`SpecifyKind(Unspecified)` 保留牆上時間、丟掉時區資訊
@@ -172,6 +180,10 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
   `ToUniversalTime()` 則依**裝置 OS 時區**換算，而 D4 已否決裝置時區作為權威來源。
   `Kind=Local` 進 wire 是**框架自身的程式錯誤**，不是外部輸入的資料狀況。
 - **guard 掛在 Connector 進出點**，理由同 D4（in-process 無序列化邊界）。
+- **請求方向的 guard 必須在 D4 的時區換算之前執行**，驗的是呼叫端交來的原值。換算會先把過濾條件值
+  `SpecifyKind(Unspecified)` 再依使用者時區換算——那正是上一條否決的「修正後放行」。排在換算之後，
+  只要有使用者時區（即每一次登入後的呼叫），`Local` 值就一律通過。
+  由 `ApiConnectorDateTimeGuardTests` 驗證這個先後順序。
 - **guard 永遠開啟，不受任何部署設定影響。**
 - DB 讀出的時間點值統一 `SpecifyKind(Utc)`；日曆日欄位維持 `Unspecified`。
   > 實作後查證，此條在本 repo 幾乎沒有落點：`DataSet` 儲存格的 `Kind` 由 `DataColumn` 抹為
@@ -260,13 +272,33 @@ UI 控件產出的值、`ToLocalTime()` 的結果，`Kind` 全都是 `Local`。
 `DbParameterSpecCollection` 都是為 NOT NULL 欄位補值，屬**資料完整性後備**而非使用者讀到的
 值，故以 UTC 產生。使用者看得到的新列預設值走 `FormRowDefaults`，該處收時區引數。
 
-### D9：cache-notify 刻意不 UTC 化
+### D9：cache-notify 的時間基準與寫入端同源，一律 UTC（2026-09-04 修訂）
 
-`sys_update_time` 的 high-water mark **只與自己比較**，UTC 化無實質效益。
+`sys_update_time` 的 high-water mark 只與自己比較，但「自己」有兩個來源：每一列的值由寫入端戳記，
+空表時的起始游標則由讀取端向資料庫取「現在」。**兩者必須是同一個基準。**
 
-> **前提條件（不可省略）**：各 provider 的時間函式基準不同——`getdate()` / `LOCALTIMESTAMP`
-> 為 server local，而 **SQLite `CURRENT_TIMESTAMP` 是 UTC**。此處刻意不統一；
-> 日後若有人「順手統一」，會踩到這個差異。
+因此兩端從同一處取值——`IDialectFactory.GetDefaultValueExpression(FieldDbType.DateTime)`，
+也就是 D9b 那張表，全為 UTC：
+
+| 端 | 位置 |
+|----|------|
+| 寫入 | 欄位 `DEFAULT`、`CacheNotifyService` 的 UPSERT |
+| 讀取 | `CacheNotifyReader` 的空表 baseline |
+
+執行它的是 `CacheNotifyBaselineBasisTests`：驗 baseline 的表達式與寫入端完全相同，並在
+SQL Server / PostgreSQL / MySQL / Oracle 實跑該語句，驗回傳值貼近 UTC。
+
+> **原決策為「刻意不 UTC 化」，已撤回。** 原文認為 high-water mark 只與自己比較、UTC 化無實質效益，
+> 並警告日後統一會踩到各 provider 時間函式基準不同的差異。
+>
+> 撤回的原因：寫入端從一開始就讀欄位 `DEFAULT` 的方言運算式，D9b 把它改為 UTC 時寫入端跟著變成 UTC；
+> 讀取端的 baseline 卻自帶一份回傳伺服器本地時間的方言表（`getdate()` / `LOCALTIMESTAMP` /
+> `CURRENT_TIMESTAMP(6)`），沒有跟著改。在時區超前 UTC 的伺服器上，全新部署（空表）的第一個游標
+> 落在未來，之後每次增量查詢都撈不到列——**快取失效靜默停擺，直到牆鐘追上**，UTC+8 就是八小時。
+> Oracle 的 `LOCALTIMESTAMP` 取的是用戶端 session 時區，基準甚至隨執行輪詢的機器而變。
+> 本機容器與 CI runner 都跑 UTC，兩式在那裡剛好相等，所以一直沒被發現。
+>
+> 教訓與原警告相反：危險的不是「統一」，是**兩份必須一致的方言對照表**。讀取端因此不再持有自己的一份。
 
 ### D9b：資料庫端的欄位 `DEFAULT` 也必須是 UTC
 
@@ -346,6 +378,8 @@ D1 對「`FieldDbType.DateTime` 欄位存 UTC」是**強制條件**，而 SQL �
 
 - **`Kind=Local` 混入 wire** 是最脆弱的一環。guard 為 fail fast 後失敗模式從「靜默錯資料」
   變為「當場例外」，但 guard 本身被移除或繞過的風險仍在，測試優先級最高。
+  實例：時區換算接上 Connector 時，guard 被包在換算之後，登入後的過濾條件從此攔不到 `Local`。
+  guard 自己的單元測試全綠——它們只驗 guard，看不到它在呼叫路徑上的位置（2026-09-12 修正）。
 - **日曆日誤轉**：標記方案不能保證欄位一定有標記——BO 自寫 SQL 未以 `SetDateColumns` 宣告的
   日曆日欄位仍會被當時間點轉換（ADR-031 已載明此殘餘破口與 BO 作者的標記責任）。
 - **`TimeZoneInfo.FindSystemTimeZoneById` 在 WASM / iOS / Android 未經驗證**。

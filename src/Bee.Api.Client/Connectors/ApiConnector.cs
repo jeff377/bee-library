@@ -131,6 +131,14 @@ namespace Bee.Api.Client.Connectors
                 // response converts back into it. The swap is undone before returning so the caller's
                 // own request object is left exactly as it was handed over.
                 var timeZoneId = UserTimeZoneId;
+
+                // Guard the caller's own value before the zone conversion (ADR-032 D6). Conversion
+                // rewrites filter values to Kind=Unspecified, so a guard placed after it would pass
+                // every Kind=Local value on any signed-in call. It also sits ahead of every transform
+                // because in-process calls skip serialization, making this the one point both
+                // transports pass through.
+                DateTimeWireGuard.Validate(value);
+
                 T result;
                 using (PayloadZoneConverter.ToUtc(value, timeZoneId))
                 {
@@ -181,9 +189,6 @@ namespace Bee.Api.Client.Connectors
             string progId, string action, object value, PayloadFormat format)
         {
             var request = CreateRequest(progId, action, value);
-            // Guard before any transform: in-process calls skip serialization entirely, so this is
-            // the only point both transports pass through (ADR-032 D6).
-            DateTimeWireGuard.Validate(value);
             TraceRequest(request);
             var actualFormat = TransformRequestPayload(request, format);
             return (request, actualFormat);

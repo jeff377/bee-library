@@ -8,11 +8,11 @@ namespace Bee.Api.Client.UnitTests.Connectors
 {
     /// <summary>
     /// 以假的 <see cref="IJsonRpcProvider"/> 驅動 <see cref="ApiConnector"/> 走完一次呼叫，
-    /// 讓測試能觀察 <c>FinalizeResponse</c> 的實際行為，而不需要真的 server。
+    /// 讓測試能觀察請求送出前與回應收到後的實際行為，而不需要真的 server。
     /// </summary>
     /// <remarks>
-    /// <c>FinalizeResponse</c> 是 private，刻意不以反射直接呼叫：測試要驗的是
-    /// 「呼叫端拿到某個錯誤碼時會得到什麼例外」這個對外行為，走完整條呼叫路徑才驗得到。
+    /// <c>FinalizeResponse</c> 與 <c>PrepareRequest</c> 都是 private，刻意不以反射直接呼叫：
+    /// 測試要驗的是呼叫端看得到的行為，而步驟之間的先後順序只有走完整條呼叫路徑才驗得到。
     /// </remarks>
     internal static class ApiConnectorTestHost
     {
@@ -22,6 +22,8 @@ namespace Bee.Api.Client.UnitTests.Connectors
         private sealed class TestApiConnector : ApiConnector
         {
             public TestApiConnector(Guid accessToken) : base(accessToken) { }
+
+            public TestApiConnector(Guid accessToken, ApiSessionContext session) : base(accessToken, session) { }
 
             public new Task<T> ExecuteAsync<T>(string progId, string action, object value, PayloadFormat format)
                 => base.ExecuteAsync<T>(progId, action, value, format);
@@ -36,9 +38,12 @@ namespace Bee.Api.Client.UnitTests.Connectors
                 => Task.FromResult(ResponseFactory(request));
         }
 
-        private static TestApiConnector CreateConnector(IJsonRpcProvider provider)
+        private static TestApiConnector CreateConnector(IJsonRpcProvider provider, ApiSessionContext? session = null)
         {
-            var connector = new TestApiConnector(Guid.NewGuid());
+            // A dedicated session keeps tests off ApiSessionContext.Ambient, which is process-wide.
+            var connector = session == null
+                ? new TestApiConnector(Guid.NewGuid())
+                : new TestApiConnector(Guid.NewGuid(), session);
             var prop = typeof(ApiConnector).GetProperty(nameof(ApiConnector.Provider),
                 BindingFlags.Public | BindingFlags.Instance)!;
             prop.SetValue(connector, provider);
@@ -70,6 +75,18 @@ namespace Bee.Api.Client.UnitTests.Connectors
         {
             return CreateConnector(new FakeJsonRpcProvider()).ExecuteAsync<string>(
                 TestProgId, TestAction, new object(), PayloadFormat.Plain);
+        }
+
+        /// <summary>
+        /// 以指定的使用者時區送出一次請求，server 以成功結果回應（預設值 "ok"）。
+        /// </summary>
+        /// <param name="value">請求的 payload 值。</param>
+        /// <param name="userTimeZoneId">使用者的 IANA 時區 id；空字串代表尚未登入、不做時區換算。</param>
+        public static Task<string> ExecuteAsUserAsync(object value, string userTimeZoneId)
+        {
+            var session = new ApiSessionContext { UserTimeZoneId = userTimeZoneId };
+            return CreateConnector(new FakeJsonRpcProvider(), session).ExecuteAsync<string>(
+                TestProgId, TestAction, value, PayloadFormat.Plain);
         }
     }
 }
