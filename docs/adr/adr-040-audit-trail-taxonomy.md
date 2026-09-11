@@ -194,6 +194,42 @@ BCL 方法，因此 `XmlSerializer` 產出的 payload 與此等價。不走它�
 附帶查證：`changes_xml` 的讀取端只存在於伺服端（`Bee.Business` 不被任何行動／WASM head 引用），
 且 `changes_xml` 從不上 wire——client 收到的是已攤平的 `RecordFieldChange`。
 
+### 九、payload 維持 XML，不改用 JSON（2026-09-11 補）
+
+評估過改用傳輸序列化既有的 `DataSetJsonConverter` / `DataTableJsonConverter` 儲存 payload。
+以 Northwind 訂單（主檔 16 欄、明細 10 欄），以及「每種 `FieldDbType` 一欄、含極值與 DBNull」的表實測：
+
+| 指標 | JSON 相對現行 XML |
+|---|---|
+| 體積 | 54%～70%；與不縮排的 XML 比為 67%～82%，差距有一部分來自縮排 |
+| 序列化時間 | 24%～30% |
+| 還原時間 | 37%～82%（修改列越多差距越小） |
+| 還原度 | 全部 `FieldDbType`（含新增／修改／刪除、多語系）兩者皆完整還原，讀取端產出的欄位異動清單逐筆相同 |
+
+效能數字量於第八節補上不允許字元的處理之前；該補強對一般資料的 payload 逐字不變（實測），體積與還原度數字不受影響。
+
+**決定維持 XML。** 理由如下：
+
+- **還原度等價。** 異動記錄的查看需求是「哪些欄位從什麼值改成什麼值」，兩種格式在這點上等價。
+  第八節補上不允許字元的處理後，實測 CR、CRLF、控制字元、NUL 在 XML 往返中皆讀回原值，
+  落單 surrogate 兩種格式都換成 U+FFFD。
+- **效能差距不構成理由。** 異動記錄一次只寫入或讀取單筆表單資料，序列化差距在每次數十到一百多微秒的量級。
+- **體積差距不構成理由。** 異動記錄寫進與業務庫分離的 `log` 資料庫。框架目前固定寫入單一 `log` 資料庫，
+  量體增長時可由部署端以分庫或封存緩解。
+- **做法已長期驗證。** 維護者在既有系統中以 `DataSet` XML 記錄異動已使用十年以上。
+
+改用 JSON 反而要付出：
+
+- 以 UTF-8 原字儲存 BMP 以外的字元（emoji、CJK 擴充 B 區）時，System.Text.Json 的內建編碼器都會跳脫，
+  需要自訂 `JavaScriptEncoder`，而它必須覆寫的方法是指標簽章，得開啟 unsafe 程式碼；
+- 持久化資料從此依賴 wire 的 JSON 形狀，改動 wire 會牽動既有稽核列能否讀回；
+- JSON 只支援 `FieldDbType` 對應的 CLR 型別（`TimeSpan`、`DateTimeOffset` 擲例外，`double`、`char` 讀回後型別改變）；
+- 讀取端再多一種格式分支，而既有兩種 XML 格式仍須永久可讀。
+
+**也不需要為 `DateOnly` / `TimeOnly` 做特別處理。** Date 欄以 `DateTime`、Time 欄以字串存在 `DataSet` 中，
+值與欄位標記都能完整還原。日期欄只顯示日期、時間點欄換算時區，屬顯示層依 `FormSchema` 欄位型別處理的事，
+與第八節「不追宣告型別」一致。
+
 ## 理由
 
 **為什麼照抄兩套 ERP 的分類而不自創。** 稽核分類的成本不在寫程式，而在事後發現切錯了——
