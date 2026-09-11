@@ -15,6 +15,7 @@
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [刪除的異動記錄改存完整原單，異動明細以 DataSet 回傳](plan-delete-audit-full-record.md) | 2026-09-11 | 刪除稽核改存完整原單（新 root `AuditDeletedRecord`，列不再標成 Deleted），修正稽核開啟時 AfterDelete 外掛讀欄位擲 `DeletedRowInaccessibleException`；`GetChangeDetail` 回應新增新增／修改／刪除共用的 `DataSet` 屬性，wire 合約與 `bee-connector-js` 同步。決策記入 [adr-040](../../adr/adr-040-audit-trail-taxonomy.md) 第十節。已知未處理：`Fields` 的時間字串維持 UTC，`DataSet` 則換算成使用者時區 |
 | [數量／重量欄必須綁定 `UnitField`](plan-unit-field-required.md) | 2026-09-11 | 標成數量／重量的欄位必須綁 `UnitField`（不需要單位的用一般數值），執行期對齊多幣別作法、公司不再決定數量位數。三個階段皆已完成：裁定、框架、DefineEditor 設計期檢查。外部對照見 [uom-decimals-prior-art.md](../../repo-ops/uom-decimals-prior-art.md) |
 | [`DataSet` XML 往返後 `FieldDbType` 標記讀回不被採用](plan-fielddbtype-marker-xml-roundtrip.md) | 2026-09-11 | XML 寫得出 `Bee.FieldDbType` 標記，但讀回是字串，`GetDeclaredFieldDbType` 的 `as FieldDbType?` 轉不過去而退回反推：`Date` 欄被當成時間點做時區平移、`Time` 欄變成 `String`。JSON 與 MessagePack 路徑本來就不受影響。採方向 B 修實作：getter 同時接受字串形式（`Enum.TryParse` 加 `IsDefined`，擋下數字字串），不回寫。鐵人賽 Day 27、Day 30 以修正前行為為事實，改稿交由文章 session |
 | [`st_log_change` 異動 payload 改存 JSON 的評估](plan-audit-changes-json-payload.md) | 2026-09-11 | 階段 0 實測體積、`DataSet` 還原度與效能後，**決定維持 XML、不實作**：查看需求在兩種格式下等價，JSON 的體積與效能優勢換不回自訂編碼器、`AllowUnsafeBlocks`、持久化依賴 wire 格式與讀取端多一個分支的代價。XML 路徑唯一的實際缺口（控制字元與 NUL 讓序列化擲例外）另案修正。決策記入 [adr-040](../../adr/adr-040-audit-trail-taxonomy.md) 第九節 |

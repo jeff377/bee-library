@@ -11,25 +11,25 @@
 
 ### 目前 `Form.Delete` 的流程
 
-依 [FormBusinessObject.Write.cs](../../src/Bee.Business/Form/FormBusinessObject.Write.cs) 的 `Delete`：
+依 [FormBusinessObject.Write.cs](../../../src/Bee.Business/Form/FormBusinessObject.Write.cs) 的 `Delete`：
 
 1. 檢查刪除權限、解析記錄範圍過濾條件。
 2. 稽核開啟、或有 BeforeDelete / AfterDelete 外掛、或有 BeforeDelete 規則時，以
    `repository.GetData(rowId, scopeFilter)` 載入**刪除前的原單**（主檔 + 明細），放進
    `context.Snapshot`。`GetData` 最後呼叫 `AcceptChanges()`，所有列都是 Unchanged。
 3. `DoBeforeDelete`（BeforeDelete 規則）與 BeforeDelete 外掛。
-4. `DoDelete` → [DataFormRepository.Delete](../../src/Bee.Repository/Form/DataFormRepository.cs)：
+4. `DoDelete` → [DataFormRepository.Delete](../../../src/Bee.Repository/Form/DataFormRepository.cs)：
    同一個交易內 `DELETE 明細 WHERE sys_master_rowid = rowId`，再 `DELETE 主檔 WHERE sys_rowid = rowId`。
    **不使用 DataSet**。
-5. 稽核開啟且確實刪到資料時，[FormBusinessObject.Audit.cs](../../src/Bee.Business/Form/FormBusinessObject.Audit.cs)
+5. 稽核開啟且確實刪到資料時，[FormBusinessObject.Audit.cs](../../../src/Bee.Business/Form/FormBusinessObject.Audit.cs)
    的 `WriteDeleteAudit`：`MarkAllRowsDeleted(snapshot)` 對**每一列呼叫 `row.Delete()`**，再
    `GetChanges()` → `AuditDiffGram.Serialize`，全部資料落在 DiffGram 的 `diffgr:before` 區塊。
    沒有原單時只記 `<DeletedRow table=… sys_rowid=… />`。
 6. `DoAfterDelete` 與 AfterDelete 外掛，拿到的是**同一個** `context.Snapshot`。
 
-讀取端 [ChangeDiffGramReader](../../src/Bee.Business/AuditLog/ChangeDiffGramReader.cs) 依列狀態還原：
+讀取端 [ChangeDiffGramReader](../../../src/Bee.Business/AuditLog/ChangeDiffGramReader.cs) 依列狀態還原：
 Deleted 列每欄一筆 `ChangeKind.Delete`（`OldValue` 為原值），Unchanged 列略過。
-[LogBusinessObject.GetChangeDetail](../../src/Bee.Business/AuditLog/LogBusinessObject.cs) 只回傳這份攤平的欄位清單
+[LogBusinessObject.GetChangeDetail](../../../src/Bee.Business/AuditLog/LogBusinessObject.cs) 只回傳這份攤平的欄位清單
 （`Fields`），呼叫端看不到主檔與明細的結構。
 
 ### 問題
@@ -216,8 +216,8 @@ switch 處理，新增的屬性不會自動被涵蓋，必須一起接上：
 
 ## 相關 plan
 
-- [plan-audit-changes-xml-schema.md](archive/plan-audit-changes-xml-schema.md)：4.30.0 補上內嵌 schema，root 分派的由來
-- [plan-audit-changes-json-payload.md](archive/plan-audit-changes-json-payload.md)：評估改存 JSON，結論維持 XML
+- [plan-audit-changes-xml-schema.md](plan-audit-changes-xml-schema.md)：4.30.0 補上內嵌 schema，root 分派的由來
+- [plan-audit-changes-json-payload.md](plan-audit-changes-json-payload.md)：評估改存 JSON，結論維持 XML
 
 ## 驗證
 
