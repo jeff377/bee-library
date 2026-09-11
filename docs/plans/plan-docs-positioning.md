@@ -1,6 +1,6 @@
 # 計畫：公開文件的定位由 ERP 改為以表單為基礎的企業資訊系統
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-09-11）**
 
 ## 背景
 
@@ -156,13 +156,20 @@ en 比 zh-TW 多出的對外出口（XML doc、GitHub About 與 topics）用同�
 7. **GitHub About 與 topics**：repo 內的修改 push 之後，把要執行的 `gh repo edit` 指令完整列給使用者，確認後才執行。
    執行後以 `gh repo view --json description,repositoryTopics` 驗證。
 
-## 待確認
+## GitHub 出口的定案（2026-09-11 執行）
 
-| 項目 | 建議 | 理由 |
-|------|------|------|
-| About 文字 | "Bee.NET — A modular, definition-driven .NET framework for enterprise information systems such as ERP, CRM, and HRM. N-Tier + Clean Architecture + MVVM." | 用語與詞條一致；About 是外部讀者的第一眼，列出三類系統，讓讀者一眼看出不限 ERP |
-| 新增的 topics | `crm`、`hrm`、`line-of-business` | 與詞條的例子和同義詞對齊；`erp` 保留 |
-| `clear-architecture` 順手改成 `clean-architecture` | 改 | 這是拼錯的 topic，About 本文寫的是 Clean Architecture。不屬於定位修正，但同一個出口、同一次 `gh repo edit` 就能改掉 |
+| 項目 | 結果 |
+|------|------|
+| About 文字 | "Bee.NET — A modular, definition-driven .NET framework for enterprise information systems such as ERP, CRM, and HRM. N-Tier + Clean Architecture + MVVM." |
+| topics | 新增 `crm`、`hrm`；`erp` 保留。原本建議的 `line-of-business` 未採用 |
+| `clear-architecture` | 拼錯的 topic，改成 `clean-architecture` |
+
+## 執行備註
+
+- 第 6 步的 changelog：repo 的 CHANGELOG 沒有 Unreleased 區塊，逐版內容在發版時由 commit 整理。
+  這筆定位修正交由發版時的 changelog 草稿收錄（commit `7c152e05`，類別 `docs`）。
+- 範圍外的殘留：`src/Bee.Definition/Identity/CompanyRolePermissions.cs` 方法內註解「in an ERP」不是公開文件，未改；
+  `samples/README` 的「真實 ERP 業務情境（銷售單、進貨單）」屬於 C 類，保留。
 
 ## 與多語系 plan 的先後
 
