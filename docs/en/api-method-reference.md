@@ -1,6 +1,6 @@
 # API Method Reference
 
-[繁體中文](api-method-reference.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/api-method-reference.md) · [← Docs Index](README.md)
 
 This is the single-page reference of every public BO method exposed through
 `JsonRpcExecutor`, grouped by BO axis. Each row lists the method's wire-level
@@ -19,8 +19,8 @@ This is the single-page reference of every public BO method exposed through
 | Column | Meaning |
 |--------|---------|
 | **Method** | The JSON-RPC `method` field — `progId.action`. Listed action constants live in `SystemActions` / `FormActions` / `LogActions`. |
-| **Protection** | `[ApiAccessControl]` first arg. The values and what each one means are on `ApiProtectionLevel` — see [`src/Bee.Definition/Security/ApiProtectionLevel.cs`](../src/Bee.Definition/Security/ApiProtectionLevel.cs). Note the table below uses `LocalOnly` as well as the transport levels. |
-| **Auth** | `[ApiAccessControl]` second arg — see [`src/Bee.Definition/Security/ApiAccessRequirement.cs`](../src/Bee.Definition/Security/ApiAccessRequirement.cs). |
+| **Protection** | `[ApiAccessControl]` first arg. The values and what each one means are on `ApiProtectionLevel` — see [`src/Bee.Definition/Security/ApiProtectionLevel.cs`](../../src/Bee.Definition/Security/ApiProtectionLevel.cs). Note the table below uses `LocalOnly` as well as the transport levels. |
+| **Auth** | `[ApiAccessControl]` second arg — see [`src/Bee.Definition/Security/ApiAccessRequirement.cs`](../../src/Bee.Definition/Security/ApiAccessRequirement.cs). |
 | **Purpose** | One-line summary; see XML doc on the BO method for full detail. |
 
 ### Replay protection
@@ -148,4 +148,4 @@ When the corresponding `AuditLogOptions` category is enabled (opt-in, off by def
 
 - [API Contract & BO Parameter Design](api-bo-contract-design.md) — Layered design rationale for Contract / Args / Result
 - [Permission & Authorization](permission-authorization.md) — what each `[ApiAccessControl]` requirement means at run time
-- [ADR-004](adr/adr-004-messagepack-payload.md) and [ADR-044](adr/adr-044-payload-codec-negotiation.md) — the payload pipeline and per-request codec negotiation
+- [ADR-004](../adr/adr-004-messagepack-payload.md) and [ADR-044](../adr/adr-044-payload-codec-negotiation.md) — the payload pipeline and per-request codec negotiation

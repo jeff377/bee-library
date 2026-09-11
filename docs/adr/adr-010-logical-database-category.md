@@ -236,4 +236,4 @@ P1 落地 `CompanyInfo` 時原本含 `LogDatabaseId` 欄位，預期某些公司
 
 - [ADR-005：FormSchema 定義驅動架構](adr-005-formschema-driven.md)
 - [ADR-012：Session 公司情境模型](adr-012-session-company-context.md) — `DbScope.Company` 路由依賴的 session 模型
-- [DatabaseSettings 與 DbCategorySettings 指引](../database-settings-guide.zh-TW.md) — 結構與運作細節
+- [DatabaseSettings 與 DbCategorySettings 指引](../zh-TW/database-settings-guide.md) — 結構與運作細節

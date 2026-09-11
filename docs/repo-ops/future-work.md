@@ -24,7 +24,7 @@
 
 **要先答的四個問題**：
 
-1. `sys_*` 是框架保留名（`docs/framework-reserved-names.zh-TW.md`），新增一個等於擴充保留字表，
+1. `sys_*` 是框架保留名（`docs/zh-TW/framework-reserved-names.md`），新增一個等於擴充保留字表，
    既有應用可能已用此欄名。
 2. **要真正分開語意，就得讓沒標 `sys_date` 的 `Date` 欄位不再自動填今天 —— 那是破壞性行為變更**，
    要走版號與 CHANGELOG。不改的話 `sys_date` 只是別名，什麼都沒解決。

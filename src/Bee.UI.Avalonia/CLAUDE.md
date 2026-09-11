@@ -30,7 +30,7 @@ FormView/ListView View 層 + lookup 開窗機制**）的**參考設計**。
 - UI 家族已收斂為 **Avalonia + Blazor.Server 雙軌**（`Bee.UI.Maui` / `Bee.Web.Blazor.Wasm` 已移除），
   **「移植到其他 UI 家族」只剩 Blazor.Server 一個對象**。
 - **不要為了消除 Avalonia 與 Blazor.Server 的重複（如 `FormDataObject`）而讓 Blazor 依賴
-  `Bee.UI.Core`** —— `docs/dependency-map.md` 明文以「是否消費 `Bee.UI.Core` 抽象」判別
+  `Bee.UI.Core`** —— `docs/en/dependency-map.md` 明文以「是否消費 `Bee.UI.Core` 抽象」判別
   `Bee.UI.*` family，讓 Blazor 依賴它會牴觸判別基礎本身。已採做法是雙向註解。
 
 ## 控件行為的驗收基準

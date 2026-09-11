@@ -199,4 +199,4 @@ private IOrderRepository Repository() => CreateFormRepository<IOrderRepository>(
 - [ADR-007](adr-007-convention-based-type-resolution.md) —— 約定式型別解析
 - [ADR-016](adr-016-multitenant-customization-overlay.md) —— 多租戶客製 overlay，本 ADR 的 per-progId 取代沿用其機制
 - [ADR-010](adr-010-logical-database-category.md) —— 邏輯資料庫分類，決定表單軌 Repository 的路由目標
-- [定義檔總覽](../definition-files-overview.zh-TW.md) —— 兩份定義檔的使用說明
+- [定義檔總覽](../zh-TW/definition-files-overview.md) —— 兩份定義檔的使用說明

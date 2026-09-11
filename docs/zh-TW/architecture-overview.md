@@ -1,6 +1,6 @@
 # BeeNET 框架架構總覽
 
-[English](architecture-overview.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/architecture-overview.md) · [← 文件索引](README.md)
 
 > 定義導向架構（Definition-Driven Architecture）在企業資訊系統中的設計理念與實踐模式
 
@@ -130,7 +130,7 @@ FormSchema 更新
 
 針對多租戶部署，BeeNET 在 base 定義之上加一層 **per-租戶唯讀客製化覆蓋**。`CustomizeId`（由 `SessionInfo.CustomizeId` 取得，於 `EnterCompany` 時自公司記錄載入）驅動覆蓋層，**僅服務 Language / FormLayout / ProgramSettings / MenuSettings 四類**——`FormSchema` / `TableSchema` / 設定維持全租戶共用，使資料庫結構不會逐租戶分歧。
 
-此覆蓋為**兩層獨立唯讀、永不合併**：base 套裝快取絕不異動，疊加在消費端以 key / progId / 整檔粒度擇一。`CustomizeId` 為空時短路至純 base，與單租戶部署逐位元一致。見 [ADR-016](adr/adr-016-multitenant-customization-overlay.md)。
+此覆蓋為**兩層獨立唯讀、永不合併**：base 套裝快取絕不異動，疊加在消費端以 key / progId / 整檔粒度擇一。`CustomizeId` 為空時短路至純 base，與單租戶部署逐位元一致。見 [ADR-016](../adr/adr-016-multitenant-customization-overlay.md)。
 
 ---
 
@@ -247,7 +247,7 @@ public class SalesOrderBO : BusinessObject
 
 ### Session 生命週期與資料庫範疇
 
-BO 方法的執行被兩階段 session lifecycle 框住（見 [ADR-012](adr/adr-012-session-company-context.md)）：
+BO 方法的執行被兩階段 session lifecycle 框住（見 [ADR-012](../adr/adr-012-session-company-context.md)）：
 
 ```
 Login(account, password)   ──→  已登入（SessionInfo.CompanyId = null）
@@ -268,7 +268,7 @@ Repository 採用**雙軌並行**設計，依作業性質選擇適合的實作�
 
 | 軌道 | 適用作業 | SQL 來源 | 特性 |
 |------|----------|----------|------|
-| **FormSchema 驅動**（[詳見](formschema-data-access.zh-TW.md)） | CRUD（新增、修改、刪除） | FormSchema 動態產生 | 定義一處，自動同步；無需手寫 SQL |
+| **FormSchema 驅動**（[詳見](formschema-data-access.md)） | CRUD（新增、修改、刪除） | FormSchema 動態產生 | 定義一處，自動同步；無需手寫 SQL |
 | **AnyCode** | 報表、分析查詢、批次作業 | BO 自行撰寫 | 完全自控；複雜 JOIN、彙總、效能調校 |
 
 ### 為什麼這樣劃分
@@ -401,7 +401,7 @@ flowchart LR
 > Provider 註冊由 host 應用程式明示完成：對每個實際使用的資料庫，呼叫
 > `DbProviderRegistry.Register(...)` 與 `DbDialectRegistry.Register(...)`。
 > `Bee.Db` 本身不引用任何 ADO.NET driver。註冊範例見
-> [`src/Bee.Db/README.zh-TW.md`](../src/Bee.Db/README.zh-TW.md)。
+> [`src/Bee.Db/README.zh-TW.md`](../../src/Bee.Db/README.zh-TW.md)。
 
 ---
 

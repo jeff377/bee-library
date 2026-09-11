@@ -6,7 +6,7 @@
 
 ## 背景
 
-框架採用 API/BO 兩層分離的型別設計（見 [API 合約與 BO 參數設計原則](../api-bo-contract-design.md)）：
+框架採用 API/BO 兩層分離的型別設計（見 [API 合約與 BO 參數設計原則](../en/api-bo-contract-design.md)）：
 
 - **BO 層**：`{Action}Args` / `{Action}Result`（純 POCO）
 - **API 層**：`{Action}Request` / `{Action}Response`（含 MessagePack 序列化屬性）
@@ -85,9 +85,9 @@ BO 回傳：{Action}Result   ──反射搜尋 Bee.Api.Core 組件──▶   A
 ### 文件
 
 - 本 ADR
-- 更新 [API 合約與 BO 參數設計原則](../api-bo-contract-design.md) 移除手動註冊步驟
-- 更新 [端到端開發指引](../development-cookbook.md) 說明 `ApiOutputConverter` 的角色
-- 更新 [開發限制與反模式](../development-constraints.md) 的 API 契約段落
+- 更新 [API 合約與 BO 參數設計原則](../en/api-bo-contract-design.md) 移除手動註冊步驟
+- 更新 [端到端開發指引](../en/development-cookbook.md) 說明 `ApiOutputConverter` 的角色
+- 更新 [開發限制與反模式](../en/development-constraints.md) 的 API 契約段落
 
 ### 對開發人員的意義
 

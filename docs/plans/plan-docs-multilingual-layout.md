@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 相對連結檢查腳本，並先清掉既有死連結 | ✅ 已完成（2026-09-11） |
-| 2 | 搬成 `docs/<lang>/`，改寫全 repo 的引用 | 📝 待做 |
+| 2 | 搬成 `docs/<lang>/`，改寫全 repo 的引用 | ✅ 已完成（2026-09-11） |
 | 3 | 譯本同步機制：譯本檔頭、檢查腳本、CI | 📝 待做 |
 | 4 | 部落格草稿與鐵人賽寫作工作檔的路徑修正 | 📝 待做 |
 
@@ -127,6 +127,20 @@ docs/
   grep -rnE "docs/[a-z0-9-]+(\.zh-TW)?\.md" . --exclude-dir=.git --exclude-dir=bin --exclude-dir=obj --exclude-dir=archive --exclude-dir=node_modules --exclude-dir=blogs --exclude-dir=internal
   ```
 - Release build 通過，`Bee.Business.UnitTests` 與 `Bee.Api.AspNetCore.UnitTests` 全綠。
+
+### 執行結果（2026-09-11）
+
+- 52 份文件以純 rename 單獨 commit（全部 R100），連結與引用在下一個 commit 改寫，兩個 commit 一起 push。
+- 改寫用一次性腳本分兩種處理：markdown 連結依搬移前位置解析、查搬移表、從新位置重算相對路徑；裸路徑 `docs/NAME(.zh-TW).md` 直接換成 `docs/<lang>/NAME.md`。
+- 上方「受影響檔案」清單不完整，另外改到的有：
+  - `src/**/*.cs` 的 XML doc 與註解：`Bee.Db` 的 MySQL／Oracle provider、`Bee.Definition`、`Bee.Business`、`Bee.Hosting`。
+  - 定義檔註解：`src/Bee.Definition/Defaults/DatabaseSettings.xml`、`apps/Bee.Northwind/Define/FormSchema/Order.FormSchema.xml`。
+  - `src/Bee.UI.Avalonia/CLAUDE.md`、`docs/repo-ops/`、`plan-rounding-mode.md`。
+  - zh-TW 文件的連結顯示文字（`[xxx.zh-TW.md](…)` 去掉後綴），以及兩份 ADR 裡顯示舊檔名的連結文字。
+- grep 驗證的殘留，刻意保留：
+  - `check-md-links.sh` 檔頭的 `docs/x.md` 是示範用的佔位名。
+  - adr-005 提到的 `docs/formmap.zh-TW.md` 早已不存在，屬 ADR 的歷史敘述。
+  - changelog 以純文字提到的 `docs/analyzer-rules`、`docs/README` 屬紀錄，不是連結。
 
 ## 階段 3：譯本同步機制
 

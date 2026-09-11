@@ -7,7 +7,7 @@
 ## 架構定位
 
 - **層級**：Composition root（DI 註冊）
-- **在相依圖中的位置**：見[專案相依性全景圖](../../docs/dependency-map.zh-TW.md)。**此處不逐一列出** —— 權威來源是 csproj，而散落在每份套件 README 的散文拷貝會漂且無人察覺。它們確實漂了：`Bee.Hosting` 抽出後，有四份 README 的下游數個月都沒把它補上。
+- **在相依圖中的位置**：見[專案相依性全景圖](../../docs/zh-TW/dependency-map.md)。**此處不逐一列出** —— 權威來源是 csproj，而散落在每份套件 README 的散文拷貝會漂且無人察覺。它們確實漂了：`Bee.Hosting` 抽出後，有四份 README 的下游數個月都沒把它補上。
 - 亦由非 ASP.NET Core 宿主消費：WinForms / WPF / Console / Worker Service / 整合測試。
 
 組合根橫跨各層本就是其職責，故「API 層不得引用 Repository 層」的限制不適用於此套件。真正適用的限制是

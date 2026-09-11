@@ -121,6 +121,6 @@ Save                                     → server 回傳 refreshed DataSet
 
 ## 相關文件
 
-- 整合指引：[docs/jsonrpc-frontend-integration.zh-TW.md](../../docs/jsonrpc-frontend-integration.zh-TW.md)
+- 整合指引：[docs/zh-TW/jsonrpc-frontend-integration.md](../../docs/zh-TW/jsonrpc-frontend-integration.md)
 - 後端 host：[samples/QuickStart.Server](../QuickStart.Server/)
 - Demo 帳密：[samples/Bee.Samples.Shared/DemoCredentials.cs](../Bee.Samples.Shared/DemoCredentials.cs)

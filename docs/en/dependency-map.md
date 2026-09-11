@@ -1,6 +1,6 @@
 # Project Dependency Map
 
-[繁體中文](dependency-map.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/dependency-map.md) · [← Docs Index](README.md)
 
 This document visualizes the dependencies among the `src/` projects of the Bee.NET framework.
 The diagram covers the runtime packages; `Bee.Analyzers` is left out because nothing references it
@@ -106,7 +106,7 @@ graph BT
 | Bee.Api.Contracts / Bee.Api.Client / Bee.Repository.Abstractions / Bee.UI.Core | *(none)* |
 
 > `Bee.Api.Core`'s MessagePack reference is the only transport-format package in the framework, and
-> keeping it the only one is the point of [ADR-036](adr/adr-036-wire-serialization-externalized.md).
+> keeping it the only one is the point of [ADR-036](../adr/adr-036-wire-serialization-externalized.md).
 > Build-time-only references (`PrivateAssets="all"`: SourceLink, the public API analyzers, the
 > repository's own analyzers) are omitted — they reach no consumer.
 
@@ -131,14 +131,14 @@ Also under `tools/` but not on NuGet:
 ## Architectural Notes
 
 - **Bee.Base** is the lowest-level foundation package with no internal dependencies.
-- **Bee.Expressions** holds `DynamicExpressoEvaluator`, the DynamicExpresso-backed implementation of the expression engine. The *abstraction* — `IExpressionEvaluator`, `ExpressionPolicy`, `ExpressionEvaluationException` — lives in `Bee.Base.Expressions`, so `Bee.Definition` (the `FormExpressionCalculator`) and `Bee.Business` (the rule processor) consume the engine without taking a dependency on DynamicExpresso; only the composition roots that pick an implementation (`Bee.Hosting` for DI registration, `Bee.UI.Avalonia` for client-side live preview) reference this package. That split keeps the definition layer free of third-party packages while a field computed on the client still matches what the server writes on save. See [adr-028](adr/adr-028-expression-rule-engine.md) and [adr-038](adr/adr-038-definition-dependency-boundary.md).
+- **Bee.Expressions** holds `DynamicExpressoEvaluator`, the DynamicExpresso-backed implementation of the expression engine. The *abstraction* — `IExpressionEvaluator`, `ExpressionPolicy`, `ExpressionEvaluationException` — lives in `Bee.Base.Expressions`, so `Bee.Definition` (the `FormExpressionCalculator`) and `Bee.Business` (the rule processor) consume the engine without taking a dependency on DynamicExpresso; only the composition roots that pick an implementation (`Bee.Hosting` for DI registration, `Bee.UI.Avalonia` for client-side live preview) reference this package. That split keeps the definition layer free of third-party packages while a field computed on the client still matches what the server writes on save. See [adr-028](../adr/adr-028-expression-rule-engine.md) and [adr-038](../adr/adr-038-definition-dependency-boundary.md).
 - **Bee.Definition** is the most depended-on project, with 7 direct dependents (Contracts, Db, RepoAbs, Caching, Business, Api.Core, UI.Avalonia).
 - **Bee.Api.Contracts** is a shared contract/abstraction layer, not an application-level API project. Despite the "API" name, both `Bee.Business` and `Bee.Api.Core` depend on it (`Business → Contracts`, `Core → Contracts`), so it sits *below* them — the diagram groups it under **Shared Contracts** rather than the API application layer.
 - **Bee.Hosting** is the composition root: it consolidates the backend services (`Bee.Api.Core`, `Bee.Business`, `Bee.Db`, `Bee.Repository`, `Bee.ObjectCaching`) behind a single `AddBeeFramework` extension on `IServiceCollection`, with no ASP.NET Core dependency. Non-web hosts (WinForms, Console, Worker Service) reference it directly. It is shown in its own **Composition Root** group rather than under API: reaching across every layer is what a composition root does, so the "API layer must not reference the Repository layer" constraint does not apply to it. What *does* apply is that it holds no data access of its own — statements live in `Bee.Db` / `Bee.Repository`, and Hosting keeps only the hosted-service shells and DI wiring.
 - **Bee.Api.AspNetCore** is the ASP.NET Core integration layer (`UseBeeFramework` middleware + `ApiServiceController`); it pulls in `Bee.Hosting` transitively, so web hosts get DI registration plus middleware in one package reference.
 - Both the client (Bee.Api.Client) and the server (Bee.Api.AspNetCore) share protocol logic via **Bee.Api.Core**, ensuring consistent serialization and encryption behavior.
 - **Bee.UI.Core** is the cross-platform UI common layer (`ClientInfo` / `IEndpointStorage` / `IUIViewService` / `VersionInfo`), shared by every native-UI family (currently Avalonia, which covers desktop / iOS / Android / WASM from one project; future WinForms / WPF) for client-side connection state and endpoint persistence. It contains no platform-specific UI code and depends only on `Bee.Api.Client`.
-- **Bee.UI.Avalonia** is the Avalonia desktop control library (Windows / macOS / Linux). Ships FormSchema-driven controls (`FormView` for a single record, `ListView` for the list, `GridControl` for grids, plus a field-editor family with `FormScope` ambient binding, all backed by `FormDataObject`) plus a file-backed `FileEndpointStorage` over a single `net10.0` TFM. Lower bound is `Avalonia 12.0.0` + `Avalonia.Controls.DataGrid 12.0.0` (latest stable for DataGrid); hosts may bring a newer `Avalonia 12.0.x` transitively. See [adr-020](adr/adr-020-avalonia-datagrid-binding-strategy.md) for the DataGrid binding strategy and [adr-021](adr/adr-021-avalonia-datagrid-editing-strategy.md) for the editing strategy.
+- **Bee.UI.Avalonia** is the Avalonia desktop control library (Windows / macOS / Linux). Ships FormSchema-driven controls (`FormView` for a single record, `ListView` for the list, `GridControl` for grids, plus a field-editor family with `FormScope` ambient binding, all backed by `FormDataObject`) plus a file-backed `FileEndpointStorage` over a single `net10.0` TFM. Lower bound is `Avalonia 12.0.0` + `Avalonia.Controls.DataGrid 12.0.0` (latest stable for DataGrid); hosts may bring a newer `Avalonia 12.0.x` transitively. See [adr-020](../adr/adr-020-avalonia-datagrid-binding-strategy.md) for the DataGrid binding strategy and [adr-021](../adr/adr-021-avalonia-datagrid-editing-strategy.md) for the editing strategy.
 - **`Bee.UI.*` family criterion**: whether the package consumes the `Bee.UI.Core` abstractions (`ClientInfo` / `IEndpointStorage` / `IUIViewService`, etc.).
   - Consumes → `Bee.UI.*` (current: `Bee.UI.Core`, `Bee.UI.Avalonia`; future: `Bee.UI.WinForms`, `Bee.UI.Wpf`, etc.)
   - Does not consume, has its own state management → independent family prefix (e.g. `Bee.Web.Blazor.*`: a Blazor circuit has no file IO and no dialog service concept, so an independent path is appropriate).

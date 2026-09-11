@@ -284,7 +284,7 @@ namespace Bee.Definition.Forms
         /// <remarks>
         /// Cached <see cref="FormSchema"/> instances returned by
         /// <see cref="Storage.IDefineAccess.GetFormSchema"/> are shared across
-        /// every session in the process — see <c>docs/development-constraints.md</c>
+        /// every session in the process — see <c>docs/en/development-constraints.md</c>
         /// § <i>Cached Data Immutability After Init</i>. Mutating without
         /// cloning first leaks state across sessions and races under concurrency.
         /// </remarks>

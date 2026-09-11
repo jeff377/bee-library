@@ -1,10 +1,10 @@
 # 運算式與規則（欄位運算與存檔/刪除前驗證）
 
-[English](expression-rules.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/expression-rules.md) · [← 文件索引](README.md)
 
 用**宣告式運算式**在 `FormSchema` 定義檔裡做欄位運算與驗證，取代手寫 BO 程式碼。客戶/顧問於設計期即可自訂，不需改程式、重編、重佈。
 
-設計背景與決策見 [ADR-028](adr/adr-028-expression-rule-engine.md)。
+設計背景與決策見 [ADR-028](../adr/adr-028-expression-rule-engine.md)。
 
 ## 三種能力
 
@@ -22,7 +22,7 @@
 - **運算子**：C# 語法子集（`+ - * /`、`> >= < <= == !=`、`&& || !`、三元 `? :`、字串 `==`）。
 - **可用函式/型別**（沙箱白名單）：`Math`（`Math.Round`、`Math.Abs`…）、`Today()`、`Now()`、`UtcNow()`、`IsNullOrEmpty(s)`、`IsNullOrWhiteSpace(s)`、`Guid`（如 `customer_rowid != Guid.Empty`）。
 
-  **時間函式的語意**（見 [ADR-032](adr/adr-032-datetime-timezone.md)）：
+  **時間函式的語意**（見 [ADR-032](../adr/adr-032-datetime-timezone.md)）：
 
   | 函式 | 回傳 | 基準 |
   |------|------|------|
@@ -48,7 +48,7 @@
 ```
 
 - 存檔前對 `Added` / `Modified` 列重算（`Unchanged` 列不動，避免誤標為已異動）。
-- **捨入**：數值結果依欄位 `NumberKind` 捨入（`Amount`→2 位、`Quantity`→0、`UnitPrice`→保留精度…，公司/幣別/單位可調；見 [ADR-026](adr/adr-026-numeric-semantics-rounding.md)）。故明細先各自捨入、加總才不會對不上帳（round-then-sum）。
+- **捨入**：數值結果依欄位 `NumberKind` 捨入（`Amount`→2 位、`Quantity`→0、`UnitPrice`→保留精度…，公司/幣別/單位可調；見 [ADR-026](../adr/adr-026-numeric-semantics-rounding.md)）。故明細先各自捨入、加總才不會對不上帳（round-then-sum）。
 - 計算欄通常搭配 `ReadOnly="true"`。
 - 同列多個計算欄可相依：**依宣告順序**求值，後面的看得到前面剛算好的值。
 

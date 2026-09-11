@@ -9,8 +9,8 @@ namespace Bee.Api.AspNetCore.UnitTests
     /// </summary>
     /// <remarks>
     /// <para>
-    /// 這四條是本框架分層宣稱的核心（見 <c>docs/development-constraints.md</c> 與
-    /// <c>docs/dependency-map.md</c>），先前<b>只靠每輪體檢時人／代理重掃</b>來確認 ——
+    /// 這四條是本框架分層宣稱的核心（見 <c>docs/en/development-constraints.md</c> 與
+    /// <c>docs/en/dependency-map.md</c>），先前<b>只靠每輪體檢時人／代理重掃</b>來確認 ——
     /// 而 ADR-038 那一條邊反而有兩道閘門守著。體檢一年跑幾次，違規進 main 到被發現之間
     /// 是好幾週。
     /// </para>
@@ -124,8 +124,8 @@ namespace Bee.Api.AspNetCore.UnitTests
             Assert.False(
                 closure.Contains(forbidden),
                 $"{root} 的傳遞相依閉包出現 {forbidden}，違反分層硬約束。" +
-                $"若這是刻意的架構變更，請同步修改 docs/development-constraints.md 與 " +
-                "docs/dependency-map.md，並在此列出理由後移除該條目。");
+                $"若這是刻意的架構變更，請同步修改 docs/en/development-constraints.md 與 " +
+                "docs/en/dependency-map.md，並在此列出理由後移除該條目。");
         }
 
         [Fact]

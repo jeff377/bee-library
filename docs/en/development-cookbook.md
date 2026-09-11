@@ -1,6 +1,6 @@
 # End-to-End Development Cookbook
 
-[繁體中文](development-cookbook.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/development-cookbook.md) · [← Docs Index](README.md)
 
 > This document explains the core development flow of the Bee.NET framework, helping developers (and AI coding tools) understand the full chain from definition to API.
 
@@ -146,8 +146,8 @@ Client receives → LoginResponse (API Type, MessagePack)
 ### Key Components
 
 - **ApiInputConverter**: maps API Request property values to BO Args (matched by property name) and handles `JsonElement` from HTTP input
-- **ApiOutputConverter**: after execution, automatically maps BO `{Action}Result` to `{Action}Response` via reflection; results cached in `ConcurrentDictionary` (see [ADR-007](adr/adr-007-convention-based-type-resolution.md))
-- The wire body is written by the codec the request declares (`messagepack` or `json`); it plays no part in output mapping. See [ADR-044](adr/adr-044-payload-codec-negotiation.md).
+- **ApiOutputConverter**: after execution, automatically maps BO `{Action}Result` to `{Action}Response` via reflection; results cached in `ConcurrentDictionary` (see [ADR-007](../adr/adr-007-convention-based-type-resolution.md))
+- The wire body is written by the codec the request declares (`messagepack` or `json`); it plays no part in output mapping. See [ADR-044](../adr/adr-044-payload-codec-negotiation.md).
 
 ## ExecFunc Custom Function Pattern
 
@@ -299,7 +299,7 @@ var repo = new MonthlySalesReportRepo(Services.GetRequiredService<IDbAccessFacto
 | `Log` | Fixed `"log"` | No (Login / Logout etc. can write audit log pre-EnterCompany) |
 | `Company` | `SessionInfo.CompanyId` → `CompanyInfo.CompanyDatabaseId` | Yes — throws `UnauthorizedAccessException` / `CompanyNotEntered` if not ready |
 
-See [ADR-010 §「後續延伸：執行時路由」](adr/adr-010-logical-database-category.md) for the routing design and [ADR-012](adr/adr-012-session-company-context.md) for the session lifecycle that drives `DbScope.Company`.
+See [ADR-010 §「後續延伸：執行時路由」](../adr/adr-010-logical-database-category.md) for the routing design and [ADR-012](../adr/adr-012-session-company-context.md) for the session lifecycle that drives `DbScope.Company`.
 
 ### Customising the BO for a ProgId
 
@@ -601,7 +601,7 @@ Available comparison operators: `Equal`, `Like`, `Contains`, `StartsWith`, `Betw
 
 ## Numeric Semantics, Company Decimals, and Rounding
 
-Numeric fields declare a semantic **`NumberKind`** on `FormField` (propagated to `LayoutFieldBase`). The kind drives three things — the display format, whether the value is rounded on write, and where the decimal places come from. The members, framework defaults, and the design rationale (why round-then-sum, why amounts resolve at runtime, why DB scale is orthogonal) are the signed-off contract in [ADR-026](adr/adr-026-numeric-semantics-rounding.md).
+Numeric fields declare a semantic **`NumberKind`** on `FormField` (propagated to `LayoutFieldBase`). The kind drives three things — the display format, whether the value is rounded on write, and where the decimal places come from. The members, framework defaults, and the design rationale (why round-then-sum, why amounts resolve at runtime, why DB scale is orthogonal) are the signed-off contract in [ADR-026](../adr/adr-026-numeric-semantics-rounding.md).
 
 | `NumberKind` | Rounding policy | Decimals source | Framework default | Use |
 |-------------|-----------------|-----------------|:-----------------:|-----|
@@ -614,7 +614,7 @@ Numeric fields declare a semantic **`NumberKind`** on `FormField` (propagated to
 ### Two rules that are easy to get wrong
 
 - **Round-then-sum (total invariant).** For `Round` kinds, a total must equal the **sum of already-rounded details**, never a full-precision sum rounded once at the end. Round each detail with `NumberFormatResolver.RoundByKind(value, kind, company)` — or the reference-aware `RoundByKind(value, kind, ctx, refCode)` for amounts and for quantities/weights, passing their currency or unit code (below) — then add the rounded values. This guarantees `Σ details == total`.
-- **Preserve never writes a rounded value.** `UnitPrice` / `Cost` / `ExchangeRate` are stored at input precision; their decimals are display-only. `RoundByKind` returns these values unchanged. Rounding a source value injects error downstream — do not do it. (For API import, the only hard boundary is DB scale; see the persistence-boundary decision D6 in [ADR-026](adr/adr-026-numeric-semantics-rounding.md).)
+- **Preserve never writes a rounded value.** `UnitPrice` / `Cost` / `ExchangeRate` are stored at input precision; their decimals are display-only. `RoundByKind` returns these values unchanged. Rounding a source value injects error downstream — do not do it. (For API import, the only hard boundary is DB scale; see the persistence-boundary decision D6 in [ADR-026](../adr/adr-026-numeric-semantics-rounding.md).)
 
 ### Display format is baked at delivery
 
@@ -657,7 +657,7 @@ Numeric columns use `Decimal` with a single framework-wide high scale (e.g. `Sca
 
 ## Cross-Process Cache Invalidation
 
-In-process caches (`Bee.ObjectCaching`) are evicted immediately on the writing process (`SaveX → Remove()`). To propagate an invalidation to **other processes / nodes** — required for multi-node deployments and for caches backed by the database (e.g. `CompanyInfo`, or definitions under `DbDefineStorage`) — use the database-backed notification mechanism. Design rationale is in [ADR-017](adr/adr-017-db-cache-invalidation.md) and the mechanism in full is in [Caching](caching.md); this section covers practical usage.
+In-process caches (`Bee.ObjectCaching`) are evicted immediately on the writing process (`SaveX → Remove()`). To propagate an invalidation to **other processes / nodes** — required for multi-node deployments and for caches backed by the database (e.g. `CompanyInfo`, or definitions under `DbDefineStorage`) — use the database-backed notification mechanism. Design rationale is in [ADR-017](../adr/adr-017-db-cache-invalidation.md) and the mechanism in full is in [Caching](caching.md); this section covers practical usage.
 
 ### Making a cache invalidatable — nothing to do
 
@@ -698,11 +698,11 @@ Conventions for the `"group:entity"` key:
 | `MarginSeconds` | `5` | Overlap look-back covering long-transaction boundary cases. |
 | `DatabaseId` | `common` | Database whose `st_cache_notify` is polled. |
 
-> The mechanism uses the **database server clock only** (never the app clock) and never converts time zones, so it is correct regardless of host time zone. Set the database server to **UTC** so stored `sys_update_time` values are UTC (see [ADR-017](adr/adr-017-db-cache-invalidation.md)).
+> The mechanism uses the **database server clock only** (never the app clock) and never converts time zones, so it is correct regardless of host time zone. Set the database server to **UTC** so stored `sys_update_time` values are UTC (see [ADR-017](../adr/adr-017-db-cache-invalidation.md)).
 
 ## Frontend API Connection Patterns
 
-Bee.NET supports three categories of frontend hosts, each consuming the API in a structurally different way. For the design rationale see [ADR-013](adr/adr-013-frontend-api-connection-strategy.md); this section covers the **practical usage** for each category.
+Bee.NET supports three categories of frontend hosts, each consuming the API in a structurally different way. For the design rationale see [ADR-013](../adr/adr-013-frontend-api-connection-strategy.md); this section covers the **practical usage** for each category.
 
 ### Decision Tree
 
@@ -859,9 +859,9 @@ public static void Main(string[] args)
 }
 ```
 
-`FormView` resolves `Schema` / `FormConnector` / `AccessToken` from `ClientInfo` when the host only sets `ProgId`. `GridControl` (a `ContentControl` composite exposing an inner `DataGrid` as `InnerGrid`) renders cells through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch (not `Binding "[FieldName]"`) — see [ADR-020](adr/adr-020-avalonia-datagrid-binding-strategy.md) for why — and offers two editing models through `GridEditMode` (`InCell` cell editing / `EditForm` popup row editing); see [ADR-021](adr/adr-021-avalonia-datagrid-editing-strategy.md). Field editors bind ambiently: set `FormScope.DataObject` once on a container and every descendant editor with a `FieldName` wires itself.
+`FormView` resolves `Schema` / `FormConnector` / `AccessToken` from `ClientInfo` when the host only sets `ProgId`. `GridControl` (a `ContentControl` composite exposing an inner `DataGrid` as `InnerGrid`) renders cells through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch (not `Binding "[FieldName]"`) — see [ADR-020](../adr/adr-020-avalonia-datagrid-binding-strategy.md) for why — and offers two editing models through `GridEditMode` (`InCell` cell editing / `EditForm` popup row editing); see [ADR-021](../adr/adr-021-avalonia-datagrid-editing-strategy.md). Field editors bind ambiently: set `FormScope.DataObject` once on a container and every descendant editor with a `FieldName` wires itself.
 
-Worked examples: [`apps/Bee.Northwind`](../apps/Bee.Northwind/README.md) (full CRUD flow, four heads) and [`samples/Avalonia.DemoCenter`](../samples/Avalonia.DemoCenter/README.md) (control demo center).
+Worked examples: [`apps/Bee.Northwind`](../../apps/Bee.Northwind/README.md) (full CRUD flow, four heads) and [`samples/Avalonia.DemoCenter`](../../samples/Avalonia.DemoCenter/README.md) (control demo center).
 
 ### Quick Reference
 
@@ -870,4 +870,4 @@ Worked examples: [`apps/Bee.Northwind`](../apps/Bee.Northwind/README.md) (full C
 | Desktop (Avalonia, or your own WinForms / WPF host) | `ClientInfo` static | **1 user / process** (`ClientInfo._accessToken` static) | Local file + `IEndpointStorage` | Local or Remote | `ClientInfo.InitializeAsync` at startup |
 | Blazor Server | DI scope | **N users / process** (per SignalR circuit) | appsettings / startup injection | Local or Remote | `AddBeeFramework` + `AddBeeBlazor` |
 
-> ⚠️ **Do not use `Bee.UI.Core.ClientInfo` in Blazor environments.** Its `_accessToken` is a `private static Guid` — only **one** AccessToken per process. In Blazor Server, where one process serves N concurrent user circuits, a later login overwrites the prior user's token, causing cross-user data leakage. See [ADR-013](adr/adr-013-frontend-api-connection-strategy.md).
+> ⚠️ **Do not use `Bee.UI.Core.ClientInfo` in Blazor environments.** Its `_accessToken` is a `private static Guid` — only **one** AccessToken per process. In Blazor Server, where one process serves N concurrent user circuits, a later login overwrites the prior user's token, causing cross-user data leakage. See [ADR-013](../adr/adr-013-frontend-api-connection-strategy.md).

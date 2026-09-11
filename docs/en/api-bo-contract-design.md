@@ -1,6 +1,6 @@
 # API Contract and BO Parameter Design Principles
 
-[繁體中文](api-bo-contract-design.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/api-bo-contract-design.md) · [← Docs Index](README.md)
 
 This document describes the design architecture and usage of API Contracts (Request / Response) and BO Parameters (Args / Result) in the Bee.NET framework, intended for developers extending API methods or implementing BO logic.
 
@@ -87,13 +87,13 @@ Where the wire binding lives instead:
 
 This is why the attributes are gone: keeping them would have put a transport package on the dependency
 surface of every consumer of the definition layer. See
-[ADR-036](adr/adr-036-wire-serialization-externalized.md).
+[ADR-036](../adr/adr-036-wire-serialization-externalized.md).
 
 > **Framework repository only.** `WireContract`, `WireContracts` and `MessagePackCodec` are `internal`,
 > so an application outside this repository cannot register a formatter for a message type of its own.
 > Such a type reaches the MessagePack wire only through the reflection-based resolver — which works on
 > desktop and server, and throws on a runtime without dynamic code. Declaring `codec: json` per request
-> ([ADR-044](adr/adr-044-payload-codec-negotiation.md)) avoids the question entirely.
+> ([ADR-044](../adr/adr-044-payload-codec-negotiation.md)) avoids the question entirely.
 
 > **Polymorphic hierarchies** (`FilterNode` and its subtypes) need more than a member list, so they have a dedicated hand-written formatter — `FilterNodeFormatter` — that writes a discriminator alongside the members. Same file family, same registration; only the formatter is bespoke.
 
@@ -260,7 +260,7 @@ Convention:
 
 For example, `PingResult` is automatically mapped to `PingResponse`. Reflection results are cached per BO type so each type is resolved only once.
 
-> The convention is enforced: any BO result type that does not follow `{Action}Result` / `{Action}Response` naming cannot be auto-converted. See [ADR-007](adr/adr-007-convention-based-type-resolution.md) for background.
+> The convention is enforced: any BO result type that does not follow `{Action}Result` / `{Action}Response` naming cannot be auto-converted. See [ADR-007](../adr/adr-007-convention-based-type-resolution.md) for background.
 
 ### ExecFunc Pattern
 
@@ -290,7 +290,7 @@ Using `GetOrder` as an example:
 4. **Update client Connector** (if needed)
    - Add a corresponding method using `GetOrderRequest` / `GetOrderResponse`
 
-> No manual registration is required. Response mapping is resolved automatically by naming convention (see [ADR-007](adr/adr-007-convention-based-type-resolution.md)).
+> No manual registration is required. Response mapping is resolved automatically by naming convention (see [ADR-007](../adr/adr-007-convention-based-type-resolution.md)).
 
 ---
 

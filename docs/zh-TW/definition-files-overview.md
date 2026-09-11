@@ -1,6 +1,6 @@
 # 定義檔全景
 
-[English](definition-files-overview.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/definition-files-overview.md) · [← 文件索引](README.md)
 
 > 所有定義檔的全景圖：各自管什麼、彼此怎麼串、改了哪個會影響哪一層。本頁是導引層 —— 每一項都連向深入說明它的文件。
 
@@ -14,19 +14,19 @@ Bee.NET 是定義驅動的：`DefinePath` 下的 XML 不是外掛在應用上的
 
 | 定義 | `DefinePath` 下的路徑 | 管什麼 | 深入閱讀 |
 |------|---------------------|--------|---------|
-| **FormSchema** | `FormSchema/{progId}.FormSchema.xml` | 定義中樞：欄位、型別、關聯、主從結構、計算欄與規則 | [架構總覽](architecture-overview.zh-TW.md) |
-| **TableSchema** | `TableSchema/{categoryId}/{tableName}.TableSchema.xml` | 實體資料表：欄位、型別、長度、可空性、索引 | [Schema 升級](database-schema-upgrade.zh-TW.md) |
-| **FormLayout** | `FormLayout/{layoutId}.FormLayout.xml` | 表單在畫面上如何排版。於設計階段產出——執行階段渲染這份檔案，缺檔即失敗 | [架構總覽](architecture-overview.zh-TW.md) |
+| **FormSchema** | `FormSchema/{progId}.FormSchema.xml` | 定義中樞：欄位、型別、關聯、主從結構、計算欄與規則 | [架構總覽](architecture-overview.md) |
+| **TableSchema** | `TableSchema/{categoryId}/{tableName}.TableSchema.xml` | 實體資料表：欄位、型別、長度、可空性、索引 | [Schema 升級](database-schema-upgrade.md) |
+| **FormLayout** | `FormLayout/{layoutId}.FormLayout.xml` | 表單在畫面上如何排版。於設計階段產出——執行階段渲染這份檔案，缺檔即失敗 | [架構總覽](architecture-overview.md) |
 | **Language** | `Language/{lang}/{namespace}.Language.xml` | 在地化標題與列舉項目，每個 namespace × 語言一檔 | — |
-| **SystemSettings** | `SystemSettings.xml` | 行程層級設定：主金鑰來源、payload 選項、debug 模式 | [端到端開發指引](development-cookbook.zh-TW.md) |
-| **DatabaseSettings** | `DatabaseSettings.xml` | 實體資料庫與其連線字串 | [資料庫設定指引](database-settings-guide.zh-TW.md) |
-| **DbCategorySettings** | `DbCategorySettings.xml` | 各資料表屬於哪個邏輯分類、該分類由哪個資料庫承載 | [資料庫設定指引](database-settings-guide.zh-TW.md) |
+| **SystemSettings** | `SystemSettings.xml` | 行程層級設定：主金鑰來源、payload 選項、debug 模式 | [端到端開發指引](development-cookbook.md) |
+| **DatabaseSettings** | `DatabaseSettings.xml` | 實體資料庫與其連線字串 | [資料庫設定指引](database-settings-guide.md) |
+| **DbCategorySettings** | `DbCategorySettings.xml` | 各資料表屬於哪個邏輯分類、該分類由哪個資料庫承載 | [資料庫設定指引](database-settings-guide.md) |
 | **ProgramSettings** | `ProgramSettings.xml` | 型別註冊表：progId → 綁定其上的商業物件與 Repository。僅供 server 端 | — |
 | **MenuSettings** | `MenuSettings.xml` | 導覽選單：分組、排序、標題與可見性，每個項目指向一個 progId | — |
-| **PermissionModels** | `PermissionModels.xml` | 權限模型 registry：模型、動作與 record scope 策略 | [權限與授權](permission-authorization.zh-TW.md) |
-| **CurrencySettings** | `CurrencySettings.xml` | 幣別主檔：各幣別小數位與自然最小單位 | [端到端開發指引](development-cookbook.zh-TW.md) |
-| **UnitSettings** | `UnitSettings.xml` | 計量單位主檔：各單位顯示小數位 | [端到端開發指引](development-cookbook.zh-TW.md) |
-| **PluginSettings** | `PluginSettings.xml` | 業務 plugin 綁定：每個 progId 掛哪些 plugin、依宣告順序執行 | [租戶客製化](customization.zh-TW.md) |
+| **PermissionModels** | `PermissionModels.xml` | 權限模型 registry：模型、動作與 record scope 策略 | [權限與授權](permission-authorization.md) |
+| **CurrencySettings** | `CurrencySettings.xml` | 幣別主檔：各幣別小數位與自然最小單位 | [端到端開發指引](development-cookbook.md) |
+| **UnitSettings** | `UnitSettings.xml` | 計量單位主檔：各單位顯示小數位 | [端到端開發指引](development-cookbook.md) |
+| **PluginSettings** | `PluginSettings.xml` | 業務 plugin 綁定：每個 progId 掛哪些 plugin、依宣告順序執行 | [租戶客製化](customization.md) |
 
 ## 2. FormSchema 是中樞
 
@@ -46,9 +46,9 @@ Bee.NET 是定義驅動的：`DefinePath` 下的 XML 不是外掛在應用上的
         長什麼樣          存在哪裡 · 怎麼進出        什麼才合法
 ```
 
-- **對資料庫**：框架在執行期依 FormSchema 產生 SQL —— 沒有 ORM、沒有產生的 entity 類別。見 [FormSchema 驅動的資料庫存取](formschema-data-access.zh-TW.md)。
+- **對資料庫**：框架在執行期依 FormSchema 產生 SQL —— 沒有 ORM、沒有產生的 entity 類別。見 [FormSchema 驅動的資料庫存取](formschema-data-access.md)。
 - **對 UI**：`FormLayout` 排列 FormSchema 宣告的欄位；控件直接讀欄位的 metadata（最大長度、清單項目、唯讀、關聯 → lookup）。
-- **對驗證**：計算欄與 `FormRule` 就寫在 FormSchema 內。見 [運算式與規則](expression-rules.zh-TW.md)。
+- **對驗證**：計算欄與 `FormRule` 就寫在 FormSchema 內。見 [運算式與規則](expression-rules.md)。
 
 實務結果是：**一般 CRUD 不需要任何程式碼**。一份 FormSchema、對應的 TableSchema、一筆 `DbCategorySettings` 登錄與一個 `ProgramSettings` 項目，就是一張能用的表單。
 
@@ -69,7 +69,7 @@ DbCategorySettings.xml      ──▶ 資料表 → 分類 → 資料庫的解�
    （common / company / log）
 ```
 
-`SystemSettings` 必須最先載入，因為它指名的主金鑰正是用來解密 `DatabaseSettings` 內連線字串的東西。完整順序見[端到端開發指引 § 框架初始化順序](development-cookbook.zh-TW.md)；違反順序會壞在哪裡見[開發限制與反模式](development-constraints.zh-TW.md)。
+`SystemSettings` 必須最先載入，因為它指名的主金鑰正是用來解密 `DatabaseSettings` 內連線字串的東西。完整順序見[端到端開發指引 § 框架初始化順序](development-cookbook.md)；違反順序會壞在哪裡見[開發限制與反模式](development-constraints.md)。
 
 ### CategoryId 是 scope 選擇器，不是自由字串
 
@@ -81,7 +81,7 @@ DbCategorySettings.xml      ──▶ 資料表 → 分類 → 資料庫的解�
 | `company` | 各公司獨立資料 —— **所有業務表都屬於這裡**，應用的組織表亦然 |
 | `log` | 日誌與稽核表 |
 
-表前綴（`st_` / `ft_`）表示這張表**歸誰所有**，分類表示**資料落在哪裡**。兩者是**正交**的軸。見[資料庫設定指引](database-settings-guide.zh-TW.md)與[框架保留命名](framework-reserved-names.zh-TW.md)。
+表前綴（`st_` / `ft_`）表示這張表**歸誰所有**，分類表示**資料落在哪裡**。兩者是**正交**的軸。見[資料庫設定指引](database-settings-guide.md)與[框架保留命名](framework-reserved-names.md)。
 
 ## 4. ProgramSettings 是型別註冊表
 
@@ -139,7 +139,7 @@ progId 就是鍵，因此全域唯一性由結構本身保證，重複項在載�
   因此 shell 追蹤目前開啟的節點要用 `Id` 而非 `ProgId`。
 - **資料夾可任意巢狀**，其存在只為分組。
 - **`Visible` 是設計期開關，不是權限。** 它對每個使用者都一樣；逐使用者的可見性屬
-  [權限與授權](permission-authorization.zh-TW.md) 的職責。**client 目前對選單不做任何權限過濾。**
+  [權限與授權](permission-authorization.md) 的職責。**client 目前對選單不做任何權限過濾。**
 - **`Caption` 的多語**走 `LanguageResource` 的 `Menu` namespace，sub-key 為
   `Folder.{id}.Caption` / `Entry.{id}.Caption` —— 以 `Id` 而非 `ProgId` 為鍵，因為同一支程式
   可能以不同標題出現在多處。
@@ -153,12 +153,12 @@ progId 就是鍵，因此全域唯一性由結構本身保證，重複項在載�
 
 | 你改了 | 還要一併更新 |
 |--------|------------|
-| 在 **FormSchema** 加欄位 | 對應 **TableSchema** 的欄位，然後執行 [schema 升級](database-schema-upgrade.zh-TW.md)；要顯示就加進 **FormLayout**；標題加進 **Language** |
+| 在 **FormSchema** 加欄位 | 對應 **TableSchema** 的欄位，然後執行 [schema 升級](database-schema-upgrade.md)；要顯示就加進 **FormLayout**；標題加進 **Language** |
 | 新增**一張表單** | **FormSchema** + **TableSchema** + **DbCategorySettings** 的資料表登錄 + **ProgramSettings** 的一個 `ProgramItem` + **MenuSettings** 的一個 `MenuEntry` |
 | 新增**一張資料表** | 它的 **TableSchema** 必須放在與 `DbCategorySettings` 分類相符的 `TableSchema/{categoryId}/` 資料夾 —— 資料夾名**就是**分類 |
 | 新增**一個資料庫** | 先加 **DatabaseSettings** 項目，再於 **DbCategorySettings** 把分類指過去 |
 | 改**幣別或單位精度** | **CurrencySettings** / **UnitSettings**；欄位層級的捨入依 `NumberKind`，不是原始欄位型別 |
-| 新增**受權限控管的動作** | **PermissionModels**，接著是相關的 `FormField.ScopeRole` —— 見[權限與授權](permission-authorization.zh-TW.md) |
+| 新增**受權限控管的動作** | **PermissionModels**，接著是相關的 `FormField.ScopeRole` —— 見[權限與授權](permission-authorization.md) |
 
 ## 6. `DefinePath` 與 `Defaults/` scaffold
 
@@ -173,15 +173,15 @@ progId 就是鍵，因此全域唯一性由結構本身保證，重複項在載�
 
 透過 `IDefineAccess.GetX(...)` 取得的一切都是**行程層級的快取共用實例**，每個 session 拿到同一個 reference。在 runtime 上直接 mutate 會跨 session 洩漏。要改請先 clone；要持久化請走 `IDefineAccess.SaveX(...)`，它會寫入 storage 並使該快取失效。
 
-完整規則見[開發限制與反模式 § 定義資料 init 後不可異動](development-constraints.zh-TW.md)。
+完整規則見[開發限制與反模式 § 定義資料 init 後不可異動](development-constraints.md)。
 
 ### 儲存體可抽換
 
-上述檔案佈局是預設實作（`FileDefineStorage`）。定義也可存放於資料庫 —— 見 [ADR-018](adr/adr-018-db-define-storage.md)。兩種情況下 `IDefineAccess` 都是同一套介面，變的只是背後的儲存體。
+上述檔案佈局是預設實作（`FileDefineStorage`）。定義也可存放於資料庫 —— 見 [ADR-018](../adr/adr-018-db-define-storage.md)。兩種情況下 `IDefineAccess` 都是同一套介面，變的只是背後的儲存體。
 
 ## 7. `CustomizePath` 與租戶客製覆蓋層
 
-`DefinePath` 放的是所有租戶共用的 base 定義。`CustomizePath` 是可選的第二個根目錄，讓單一公司在**不分叉 base** 的前提下覆蓋其中一部分 —— 設計背景見 [ADR-016](adr/adr-016-multitenant-customization-overlay.md)。
+`DefinePath` 放的是所有租戶共用的 base 定義。`CustomizePath` 是可選的第二個根目錄，讓單一公司在**不分叉 base** 的前提下覆蓋其中一部分 —— 設計背景見 [ADR-016](../adr/adr-016-multitenant-customization-overlay.md)。
 
 ### 怎麼打開
 
@@ -259,9 +259,9 @@ repository 就這樣消失，且不會有任何回報。若要**刻意**讓某�
 
 | 你想 | 讀 |
 |------|-----|
-| 看這些拼圖如何組成架構 | [架構總覽](architecture-overview.zh-TW.md) |
-| 走完整條「定義 → API」流程 | [端到端開發指引](development-cookbook.zh-TW.md) |
-| 理解 FormSchema 如何產生 SQL | [FormSchema 驅動的資料庫存取](formschema-data-access.zh-TW.md) |
-| 以宣告方式做欄位運算與驗證 | [運算式與規則](expression-rules.zh-TW.md) |
-| 知道哪些命名歸框架所有 | [框架保留命名](framework-reserved-names.zh-TW.md) |
-| 設定資料庫與分類 | [資料庫設定指引](database-settings-guide.zh-TW.md) |
+| 看這些拼圖如何組成架構 | [架構總覽](architecture-overview.md) |
+| 走完整條「定義 → API」流程 | [端到端開發指引](development-cookbook.md) |
+| 理解 FormSchema 如何產生 SQL | [FormSchema 驅動的資料庫存取](formschema-data-access.md) |
+| 以宣告方式做欄位運算與驗證 | [運算式與規則](expression-rules.md) |
+| 知道哪些命名歸框架所有 | [框架保留命名](framework-reserved-names.md) |
+| 設定資料庫與分類 | [資料庫設定指引](database-settings-guide.md) |

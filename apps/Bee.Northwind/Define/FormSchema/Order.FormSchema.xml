@@ -69,7 +69,7 @@
       </Fields>
     </FormTable>
   </Tables>
-  <!-- Declarative validation rules evaluated before save (see docs/expression-rules.md).
+  <!-- Declarative validation rules evaluated before save (see docs/en/expression-rules.md).
        The line amount above is a computed field (ValueExpression); these rules replace the
        per-row required-field checks OrderBO used to enforce in code. Aggregate checks (at
        least one detail line, the master total) and the status-transition guard that needs the

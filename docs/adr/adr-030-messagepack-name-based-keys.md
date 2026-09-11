@@ -114,7 +114,7 @@
 - `[ADR-004]` 「Schema Evolution：`[Key]` 支援欄位新增/移除」一節改為指向本 ADR 的 name-based 策略。
 - 90 個 `[MessagePackObject]` 型別轉 `keyAsPropertyName: true`、移除整數 `[Key(n)]`；opt-out membership 稽核補 `[IgnoreMember]`。
 - 集合容器型別（`MessagePackKeyCollectionBase<T>` 的 `ItemsForSerialization` proxy、`CollectionBaseFormatter<T>` 註冊為 array 的型別）個別處理，僅轉其 item 型別。
-- 公開文件 `docs/api-bo-contract-design.md`（雙語）更新 wire 鍵描述。
+- 公開文件 `docs/en/api-bo-contract-design.md`（雙語）更新 wire 鍵描述。
 - （條件式）導入 MessagePack source generator 與 `[GeneratedMessagePackResolver]`。
 
 **回歸守衛**：`tests/Bee.Api.Core.UnitTests/Contracts/ApiContractSerializationTests.cs`（反射掃全合約、MessagePack + JSON 雙格式 round-trip 保真）為主要 regression guard —— 注意其只驗「同格式 round-trip 保真」，**不驗跨版本 wire 相容**（新舊 wire 本就不相容，屬預期的 breaking）。

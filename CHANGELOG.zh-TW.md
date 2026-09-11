@@ -133,7 +133,7 @@ UPDATE st_company SET default_currency = 'USD'
 
 ### 文件
 
-- [ADR-035](docs/adr/adr-035-business-logic-plugin.md) 的決策三**改寫**而非被取代：這次改的是同一個決策的答案，其餘五個不受影響。改寫記下了放棄了什麼，以及可讀性的補償措施從未實作——那正是改變決策的直接原因。[租戶客製化](docs/customization.zh-TW.md)與[端到端開發指引](docs/development-cookbook.zh-TW.md)雙語同步更新。
+- [ADR-035](docs/adr/adr-035-business-logic-plugin.md) 的決策三**改寫**而非被取代：這次改的是同一個決策的答案，其餘五個不受影響。改寫記下了放棄了什麼，以及可讀性的補償措施從未實作——那正是改變決策的直接原因。[租戶客製化](docs/zh-TW/customization.md)與[端到端開發指引](docs/zh-TW/development-cookbook.md)雙語同步更新。
 
 ## [4.28.0]
 
@@ -341,7 +341,7 @@ ApiServiceOptions.RequireWireFrame = true;
 
 ### 變更
 
-- 文件：[ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 補決策七（含「保護是單向的」這個容易讀反的地方）、[框架保留命名](docs/framework-reserved-names.zh-TW.md) §1.3 點明五張 log 表其實是兩類、[資料庫設定指引](docs/database-settings-guide.zh-TW.md) 兩處不再把五張一律稱作稽核表、[術語表](docs/terminology.zh-TW.md) 補兩個新型別並補上 `AnomalyKind` 漏列的 `Unauthorized`。
+- 文件：[ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 補決策七（含「保護是單向的」這個容易讀反的地方）、[框架保留命名](docs/zh-TW/framework-reserved-names.md) §1.3 點明五張 log 表其實是兩類、[資料庫設定指引](docs/zh-TW/database-settings-guide.md) 兩處不再把五張一律稱作稽核表、[術語表](docs/zh-TW/terminology.md) 補兩個新型別並補上 `AnomalyKind` 漏列的 `Unauthorized`。
 
 ### 升級指引
 
@@ -377,7 +377,7 @@ ApiServiceOptions.RequireWireFrame = true;
 
 ### 變更
 
-- 文件：[框架保留命名](docs/framework-reserved-names.zh-TW.md) §1 明訂 `st_*` 系統表為必備的執行階段設施，且覆寫框架行為不等於豁免其背後的資料表。五處講法相反的敘述一併修正，包括 `SystemBusinessObject.ApplyUserLocale` 的 remarks——原文「there is no row to read」講的是缺列，讀起來卻像「連表都不用有」。
+- 文件：[框架保留命名](docs/zh-TW/framework-reserved-names.md) §1 明訂 `st_*` 系統表為必備的執行階段設施，且覆寫框架行為不等於豁免其背後的資料表。五處講法相反的敘述一併修正，包括 `SystemBusinessObject.ApplyUserLocale` 的 remarks——原文「there is no row to read」講的是缺列，讀起來卻像「連表都不用有」。
 
 ### 升級指引
 
@@ -501,7 +501,7 @@ ApiServiceOptions.RequireWireFrame = true;
 - `Bee.Base`：`Bee.Base.Expressions` —— evaluator 抽象、政策輔助方法與例外型別。`Bee.Expressions` 只剩 `DynamicExpressoEvaluator`。
 - `Bee.Definition`：`LanguageEnum.Entries` 補上 setter（見下方行動端修正）。
 - `Bee.Business`：`LoginAttemptTracker.MaxTrackedAccounts` 與 `DefaultMaxTrackedAccounts`，供宿主自訂上限。
-- 建置期診斷 **BEE9001**（`Bee.Base` / `Bee.Definition` 的相依邊界）與 **BEE9002**（三個版號屬性必須同步）。[Analyzer 規則](docs/analyzer-rules.zh-TW.md)
+- 建置期診斷 **BEE9001**（`Bee.Base` / `Bee.Definition` 的相依邊界）與 **BEE9002**（三個版號屬性必須同步）。[Analyzer 規則](docs/zh-TW/analyzer-rules.md)
 
 ### 修正
 
@@ -535,7 +535,7 @@ server 與 client 一起部署 —— 見上方 wire 說明。任何會建構 `F
 - `Bee.Definition`：移除 `Collections.MessagePackCollectionBase<T>`、`MessagePackCollectionItem`、`MessagePackKeyCollectionBase<T>`、`MessagePackKeyCollectionItem` —— 改用 `Bee.Base.Collections` 的對應型別，兩者除標註外完全相同。
 - `Bee.Definition`：移除 `Serialization.SafeTypelessFormatter`；typeless 白名單遷入 `Bee.Api.Core` 並改為 internal。
 - `Bee.Base`：移除 `IObjectSerializeProcess`、`SerializeFormat` 與 `SerializationLifecycle.NotifyAfterDeserialize` —— 該介面 production 無實作者，兩個歷史用途皆已被刻意遷走。
-- `Bee.Analyzers`：**BEE4001**–**BEE4004** 退役，它們把關的標註機制已不存在。[Analyzer 規則](docs/analyzer-rules.zh-TW.md)
+- `Bee.Analyzers`：**BEE4001**–**BEE4004** 退役，它們把關的標註機制已不存在。[Analyzer 規則](docs/zh-TW/analyzer-rules.md)
 
 ### 變更
 
@@ -580,7 +580,7 @@ Server 與 client 需一併部署 —— 見上方 wire 說明。
 ### 新增
 
 - `Bee.Business`：`ExecFuncAccessControlAttribute.LocalOnly`，以及帶 `isLocalCall` 的 `InvokeExecFunc` 多載（舊多載保留，視同遠端呼叫）。
-- `Bee.Analyzers`：**BEE3003**——`IExecFuncHandler` 實作上的 public 方法必須宣告 `[ExecFuncAccessControl]`。[analyzer 規則](docs/analyzer-rules.zh-TW.md)
+- `Bee.Analyzers`：**BEE3003**——`IExecFuncHandler` 實作上的 public 方法必須宣告 `[ExecFuncAccessControl]`。[analyzer 規則](docs/zh-TW/analyzer-rules.md)
 - `Bee.Db`：`DbParameterSpecCollectionExtensions`。
 - `Bee.Api.Contracts` / `Bee.Db`：序列化 analyzer（BEE4002–4006）現在會跑這兩個專案，先前對它們完全靜默。
 
@@ -624,7 +624,7 @@ Server 與 client 需一併部署 —— 見上方 wire 說明。
 - `Bee.Business`：新增 `SystemBO.GetCustomizePluginSettings` / `SaveCustomizePluginSettings`（`LocalOnly`），**寫入前逐一驗證**型別可載入、繼承 `FormBusinessPlugin`、且至少 override 一個時點。
 - `Bee.Definition`：新增 `ICustomizeDefineWriter` 與 `CustomizeDefineWriter`——客製層的第一條寫入路徑，寫完即 evict 該租戶 cache slot。
 - `Bee.Business`：`BusinessObject` 新增 `protected IBeeContext Context`。
-- 新增[租戶客製化指引](docs/customization.zh-TW.md)（雙語）：五種客製的決策表、語系與 Layout 的 how-to、以及不能客製什麼與為什麼。
+- 新增[租戶客製化指引](docs/zh-TW/customization.md)（雙語）：五種客製的決策表、語系與 Layout 的 how-to、以及不能客製什麼與為什麼。
 
 ### 變更
 
@@ -644,16 +644,16 @@ Server 與 client 需一併部署 —— 見上方 wire 說明。
 
 ### 新增
 
-- `Bee.Definition`：隨套件提供 Roslyn analyzer，把 22 條框架慣例變成建置期診斷——定義檔合法性、wire 合約形狀、BO 存取控制。見 [Analyzer 規則](docs/analyzer-rules.zh-TW.md)。
+- `Bee.Definition`：隨套件提供 Roslyn analyzer，把 22 條框架慣例變成建置期診斷——定義檔合法性、wire 合約形狀、BO 存取控制。見 [Analyzer 規則](docs/zh-TW/analyzer-rules.md)。
 - `Bee.Definition`：新增 `MenuSettings` 定義型別，承接導覽選單（巢狀 `MenuFolder` / `MenuEntry`、全樹唯一 `Id`、設計期 `Visible`）。
 - `Bee.Definition`：`ProgramItem.Repository`，與 `BusinessObject` 並列，把 progId 綁定到它的 Repository。
 - `Bee.Repository.Abstractions`：新增 `IRepositoryFactory`，以兩個泛型軸成為所有 Repository 的唯一入口。
 - Session 撐得過快取逐出、行程重啟與多節點路由：登入寫入重建種子至 `st_session`，角色 / 客製代碼 / record scope 於每次重建重算。
-- 應用程式身分：API 金鑰存於 `st_api_key`、由 `IApiKeyValidator` 驗證、經 `IDeploymentAuthorizationService` 管理。見 [API 金鑰管理](docs/api-key-management.zh-TW.md)。
+- 應用程式身分：API 金鑰存於 `st_api_key`、由 `IApiKeyValidator` 驗證、經 `IDeploymentAuthorizationService` 管理。見 [API 金鑰管理](docs/zh-TW/api-key-management.md)。
 - `Bee.Api.Client`：新增 `FormDefinitionLoader`，把原始定義組裝成執行階段的 schema 與 layout。
 - `Bee.Business`：新增 `DerivedApiEncryptionKeyProvider`（現為預設）、`SessionCompanyBinder`、`BusinessObject.CreateFormRepository<T>()`。
 - `Bee.Definition`：新增 `st_user.culture`、`BackendConfiguration.DefaultLanguage` / `SessionCleanupOptions`；`Bee.Hosting`：新增 `ExpiredSessionCleanupService`。
-- `Bee.Expressions`：運算式沙箱新增 `UtcNow()`，與 `Today()`、`Now()` 並列。見[運算式規則](docs/expression-rules.zh-TW.md)。
+- `Bee.Expressions`：運算式沙箱新增 `UtcNow()`，與 `Today()`、`Now()` 並列。見[運算式規則](docs/zh-TW/expression-rules.md)。
 
 ### 變更 —— 破壞性（編譯期可發現）
 
@@ -932,11 +932,11 @@ MessagePack wire 格式變更不需改程式碼,但 client 與 server 必須跑�
 
 ### 破壞性變更
 
-- 框架組織表 `ft_department` / `ft_employee` 改名為 `st_department` / `st_employee`；已落地部署需自行 `RENAME TABLE`——範例見 [資料表結構升級指南 §框架表改名](docs/database-schema-upgrade.zh-TW.md)。FormSchema progId、C# 型別名、欄位名皆未變動。
+- 框架組織表 `ft_department` / `ft_employee` 改名為 `st_department` / `st_employee`；已落地部署需自行 `RENAME TABLE`——範例見 [資料表結構升級指南 §框架表改名](docs/zh-TW/database-schema-upgrade.md)。FormSchema progId、C# 型別名、欄位名皆未變動。
 
 ### 新增
 
-- `docs/framework-reserved-names.md`（雙語）：框架保留命名 registry（`st_*` 系統表、保留 `progId`）。
+- `docs/en/framework-reserved-names.md`（雙語）：框架保留命名 registry（`st_*` 系統表、保留 `progId`）。
 - `Bee.Definition`：框架預設定義檔（11 個 `st_*` `TableSchema` XML、`Department` / `Employee` 的 `FormSchema` / `FormLayout` / `Language`、精簡 `DbCategorySettings.xml`、`SystemSettings.xml` template、空殼 `DatabaseSettings.xml`）改以 embedded resource 形式 ship，naming 為 `Bee.Definition.Defaults/{相對路徑}`。
 - `Bee.Definition.Defaults` API：`Defaults.MaterializeTo(path, options)`（skip-existing）、`Defaults.ListEmbedded()`、`Defaults.OpenEmbedded(relativePath)`；runtime `IDefineStorage` 不變。
 - `TestProcessBootstrap.SharedDefinePath`：process-wide 合併後 define 目錄；`BeeTestFixture` 預設 `DefinePath` 改指向此處。
@@ -986,7 +986,7 @@ MessagePack wire 格式變更不需改程式碼,但 client 與 server 必須跑�
 ### 新增
 
 - `Bee.Business`：`SystemBO.GetFormSchema` / `GetFormLayout` — JSON-native 取得方法，回傳 `FormSchema` / `FormLayout`；`.NET` 對應 `SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync`；皆為 `Public + Authenticated`。對應決策：[ADR-014](docs/adr/adr-014-jsonrpc-plain-public-default.md)。
-- `docs`：新增中英雙語 [`docs/jsonrpc-frontend-integration.md`](docs/jsonrpc-frontend-integration.md) — wire format、headers、認證流程、可呼叫方法清單、`JsonRpcErrorCode` 對應表、TypeScript wrapper。
+- `docs`：新增中英雙語 [`docs/en/jsonrpc-frontend-integration.md`](docs/en/jsonrpc-frontend-integration.md) — wire format、headers、認證流程、可呼叫方法清單、`JsonRpcErrorCode` 對應表、TypeScript wrapper。
 
 ### 變更
 

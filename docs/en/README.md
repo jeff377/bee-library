@@ -1,8 +1,8 @@
 # Bee.NET Documentation
 
-[繁體中文](README.zh-TW.md)
+[繁體中文](../zh-TW/README.md)
 
-This directory contains the public-facing developer documentation for the Bee.NET framework. Every document listed below is bilingual (English + Traditional Chinese); the English version is the primary file (`xxx.md`) and the Traditional Chinese version is `xxx.zh-TW.md`.
+The `docs/` folder contains the public-facing developer documentation for the Bee.NET framework. Every document listed below exists in English and Traditional Chinese under the same file name: `docs/en/` holds the English versions and `docs/zh-TW/` the Traditional Chinese ones. Traditional Chinese is the source; other languages are translations of it.
 
 The listing is ordered by **where you are in the journey**, not by subject. Each entry is tagged with its **kind** (Tutorial / Concept / Guide / Reference) and its **length** (Short < 150 lines, Medium 150–350, Long > 350) so you can judge the commitment before opening it. If you would rather browse by subject, see [Find by Topic](#find-by-topic) at the bottom.
 
@@ -52,8 +52,8 @@ How to actually do a thing.
 | [Permission & Authorization](permission-authorization.md) | Guide | Medium | The two-layer authorization model (action gate + record scope): PermissionModels, `FormField.ScopeRole`, the role/grant tables, read filtering and authoritative write-side re-query — plus the separate deployment-level axis for installation-wide assets |
 | [API Key Management](api-key-management.md) | Guide | Short | What an API key identifies (the calling application, not the user), how the gate turns itself on, who may manage keys, and the rotation procedure |
 | [JSON-RPC Frontend Integration](jsonrpc-frontend-integration.md) | Guide | Long | Calling the JSON-RPC API from a JavaScript / TypeScript frontend with no .NET on the client: wire format, auth flow, TypeScript wrapper |
-| [Wire Contract](../wire-contracts/README.md) | Reference | Short | The TypeScript contract generated from the message types — what a non-.NET client codes against |
-| [Wire Fixtures](../wire-fixtures/README.md) | Reference | Short | Golden body samples for every wire message, to check a client implementation against |
+| [Wire Contract](../../wire-contracts/README.md) | Reference | Short | The TypeScript contract generated from the message types — what a non-.NET client codes against |
+| [Wire Fixtures](../../wire-fixtures/README.md) | Reference | Short | Golden body samples for every wire message, to check a client implementation against |
 | [DatabaseSettings & DbCategorySettings Guide](database-settings-guide.md) | Guide | Long | Structure, access patterns and runtime behaviour of the two database-related settings files |
 | [Database Schema Upgrade](database-schema-upgrade.md) | Guide | Medium | Synchronising definition changes to a live database: the diff → plan → execute pipeline, ALTER vs rebuild, dry runs |
 
@@ -78,8 +78,8 @@ Look things up while you work.
 
 | Folder | Description |
 |--------|-------------|
-| [`adr/`](adr/README.md) | Architecture Decision Records — the primary source for *why* a design is the way it is. The index lists every ADR with its status (accepted / superseded) |
-| [`changelogs/`](changelogs/) | Per-version change detail behind the root `CHANGELOG.md` |
+| [`adr/`](../adr/README.md) | Architecture Decision Records — the primary source for *why* a design is the way it is. The index lists every ADR with its status (accepted / superseded) |
+| [`changelogs/`](../changelogs/) | Per-version change detail behind the root `CHANGELOG.md` |
 
 ---
 

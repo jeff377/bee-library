@@ -65,10 +65,10 @@ Bee.NET 原本只有**身分驗證**（[ADR-012](adr-012-session-company-context
 - ✅ **讀寫對稱、安全邊界在後端**：寫入端用權威 re-query，不信任 payload。
 - ✅ **與 form/table 解耦**：一個 model 多個 progId 共用一次授權。
 - ⚠️ **快照語意**：`Roles` / employee / dept 在已進公司的 session 是快照，配置中途變動不即時反映（可接受；需即時可加重進公司刷新或 cache-notify）。
-- ⚠️ **fail-closed 邊界**：scope 需要的欄缺失或身分為空 → 不匹配任何列（安全預設）。`PermissionBindingValidator` 可提前檢出這類定義缺失，但**框架不自動執行**，需宿主自行接（見[使用者指南](../permission-authorization.zh-TW.md#定義驗證由宿主呼叫)）。
-- ✅ **前端 capability（element 細粒度降級）已實作（2026-07-03）**：層一／層二仍在後端方法層權威 enforce、不靠前端。權限可視為**三維度 × 兩把關點**——**動作**維度在後端權威 gate、同時投影到前端決定工具列命令／按鈕狀態；**列**維度僅後端；新增**欄**維度（`FormField.SensitiveCategory` → well-known 分類 model，依 Read/Update 隱藏／唯讀）僅前端。capability 快照搭 `EnterCompany` 回傳（`EnterCompanyResponse.Capabilities`）、快取於 `ClientInfo.Capabilities`、由 `Bee.UI.Core.Permissions.ElementCapabilityResolver` 解析。前端**純 UX、非資料邊界**（後端未遮罩敏感欄值）。詳見[使用者指南](../permission-authorization.zh-TW.md)第二部分。
+- ⚠️ **fail-closed 邊界**：scope 需要的欄缺失或身分為空 → 不匹配任何列（安全預設）。`PermissionBindingValidator` 可提前檢出這類定義缺失，但**框架不自動執行**，需宿主自行接（見[使用者指南](../zh-TW/permission-authorization.md#定義驗證由宿主呼叫)）。
+- ✅ **前端 capability（element 細粒度降級）已實作（2026-07-03）**：層一／層二仍在後端方法層權威 enforce、不靠前端。權限可視為**三維度 × 兩把關點**——**動作**維度在後端權威 gate、同時投影到前端決定工具列命令／按鈕狀態；**列**維度僅後端；新增**欄**維度（`FormField.SensitiveCategory` → well-known 分類 model，依 Read/Update 隱藏／唯讀）僅前端。capability 快照搭 `EnterCompany` 回傳（`EnterCompanyResponse.Capabilities`）、快取於 `ClientInfo.Capabilities`、由 `Bee.UI.Core.Permissions.ElementCapabilityResolver` 解析。前端**純 UX、非資料邊界**（後端未遮罩敏感欄值）。詳見[使用者指南](../zh-TW/permission-authorization.md)第二部分。
 
 ## 參考
 
 - 相關 ADR：[ADR-005（FormSchema 驅動）](adr-005-formschema-driven.md)、[ADR-010（邏輯 DB 分類）](adr-010-logical-database-category.md)、[ADR-012（Session 公司情境）](adr-012-session-company-context.md)、[ADR-017（DB 快取失效）](adr-017-db-cache-invalidation.md)
-- 使用者指南：[permission-authorization.zh-TW.md](../permission-authorization.zh-TW.md)
+- 使用者指南：[zh-TW/permission-authorization.md](../zh-TW/permission-authorization.md)

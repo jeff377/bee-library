@@ -1,10 +1,10 @@
 # Getting Started
 
-[繁體中文](getting-started.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/getting-started.md) · [← Docs Index](README.md)
 
 > Build your first Bee.NET backend from an empty folder: install the packages, materialise a `DefinePath`, wire the DI container, publish the JSON-RPC endpoint, add one business object, and call it from a client.
 
-This walkthrough builds **your own project**. If you would rather see the framework running before writing anything, the repository's [`samples/`](../samples/README.md) folder has ready-to-run demos — `QuickStart.Server` + `QuickStart.Console` are the two this page mirrors.
+This walkthrough builds **your own project**. If you would rather see the framework running before writing anything, the repository's [`samples/`](../../samples/README.md) folder has ready-to-run demos — `QuickStart.Server` + `QuickStart.Console` are the two this page mirrors.
 
 Each step links to the document that covers it in depth. Everything shown here is the minimum that runs; nothing is repeated from those documents.
 
@@ -194,7 +194,7 @@ The same entry can also bind a dedicated repository through the `Repository` att
 attributes are independent.
 
 The framework self-registers missing reserved progIds at startup, so this file is created
-automatically when absent. See [ADR-034](adr/adr-034-progid-type-registry.md).
+automatically when absent. See [ADR-034](../adr/adr-034-progid-type-registry.md).
 
 → Naming rules for `Args` / `Result` and the three-tier contract separation: [API ↔ BO Contract Design](api-bo-contract-design.md). Which methods belong on an interface: [Development Constraints](development-constraints.md).
 
@@ -241,4 +241,4 @@ That is the actual point of the framework, and it starts here → [Definition Fi
 | Add authentication and permissions | [Permission & Authorization](permission-authorization.md) |
 | Push definition changes to a live database | [Database Schema Upgrade](database-schema-upgrade.md) |
 
-A working end-to-end version of everything above lives in [`samples/QuickStart.Server`](../samples/QuickStart.Server/README.md) and [`samples/QuickStart.Console`](../samples/QuickStart.Console/README.md). For a full application built almost entirely from definitions, see [`apps/Bee.Northwind`](../apps/Bee.Northwind/README.md).
+A working end-to-end version of everything above lives in [`samples/QuickStart.Server`](../../samples/QuickStart.Server/README.md) and [`samples/QuickStart.Console`](../../samples/QuickStart.Console/README.md). For a full application built almost entirely from definitions, see [`apps/Bee.Northwind`](../../apps/Bee.Northwind/README.md).

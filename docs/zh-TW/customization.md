@@ -1,6 +1,6 @@
 # 租戶客製化
 
-[English](customization.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/customization.md) · [← 文件索引](README.md)
 
 > 同一套部署，讓某一家公司得到不同的行為——不同的欄位標題、不同的版面、存檔前多一道檢查
 > ——而不必分岔套裝的定義檔或程式碼。
@@ -115,8 +115,8 @@ namespace 就是表單的 `ProgId`。三種 sub-key 涵蓋一張表單：
 請顯式指名該型別，而不是把屬性清空。
 
 寫子類本身是一般開發工作——見開發指引的
-[客製化 ProgId 對應的 BO](development-cookbook.zh-TW.md)，以及
-[BO 擴充點與交易邊界](development-cookbook.zh-TW.md)（該覆寫哪一段、哪一段在資料庫交易中）。
+[客製化 ProgId 對應的 BO](development-cookbook.md)，以及
+[BO 擴充點與交易邊界](development-cookbook.md)（該覆寫哪一段、哪一段在資料庫交易中）。
 
 ## 業務 plugin：加一個步驟
 
@@ -145,7 +145,7 @@ plugin 是唯一「兩層**相加**」的產物：套裝鏈先跑、租戶鏈後
 plugin——要拿掉套裝行為，請繼承 BO 覆寫該子方法。
 
 四個時點、每次操作的生命週期、以及「送往其他系統的副作用該寫在哪」，見開發指引的
-[業務 plugin](development-cookbook.zh-TW.md)。
+[業務 plugin](development-cookbook.md)。
 
 ## 除了 plugin 之外都是唯讀
 
@@ -164,7 +164,7 @@ plugin 綁定。
 
 **`FormSchema` 與 `TableSchema` 永久排除。** 兩者同時驅動資料庫結構與驗證規則，不只驅動 UI；
 逐租戶分歧會讓實體 schema 裂開。這是裁決不是缺口——見
-[ADR-016](adr/adr-016-multitenant-customization-overlay.md)。
+[ADR-016](../adr/adr-016-multitenant-customization-overlay.md)。
 
 值得先納入規劃的推論：**租戶不能多一個欄位**。它能有的是既有欄位的不同標題、一張藏起該欄位的
 表單、一個對該欄位處理方式不同的 BO，或一個負責填它的 plugin。若某租戶真的需要自己的資料，
@@ -177,7 +177,7 @@ plugin 綁定。
 
 | 想了解 | 讀 |
 |---|---|
-| 覆蓋層機制：完整路徑、各型別的疊加粒度、`customizeId` 怎麼解析 | [定義檔總覽](definition-files-overview.zh-TW.md) 第 7 節 |
-| 怎麼寫客製 BO、Repository 或 plugin | [端到端開發指引](development-cookbook.zh-TW.md) |
-| 為什麼這樣設計 | [ADR-016](adr/adr-016-multitenant-customization-overlay.md) |
-| 維護 API 的存取控制 | [API 方法總覽](api-method-reference.zh-TW.md) |
+| 覆蓋層機制：完整路徑、各型別的疊加粒度、`customizeId` 怎麼解析 | [定義檔總覽](definition-files-overview.md) 第 7 節 |
+| 怎麼寫客製 BO、Repository 或 plugin | [端到端開發指引](development-cookbook.md) |
+| 為什麼這樣設計 | [ADR-016](../adr/adr-016-multitenant-customization-overlay.md) |
+| 維護 API 的存取控制 | [API 方法總覽](api-method-reference.md) |

@@ -1,10 +1,10 @@
 # 快速上手
 
-[English](getting-started.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/getting-started.md) · [← 文件索引](README.md)
 
 > 從一個空資料夾建出第一個 Bee.NET 後端：安裝套件、備妥 `DefinePath`、接好 DI 容器、發布 JSON-RPC 端點、加一個商業物件，再由用戶端呼叫。
 
-本文帶你建**自己的專案**。若你只想先看框架跑起來、還不想動手寫，repo 的 [`samples/`](../samples/README.zh-TW.md) 有可直接執行的範例 —— `QuickStart.Server` + `QuickStart.Console` 正是本頁對應的那組。
+本文帶你建**自己的專案**。若你只想先看框架跑起來、還不想動手寫，repo 的 [`samples/`](../../samples/README.zh-TW.md) 有可直接執行的範例 —— `QuickStart.Server` + `QuickStart.Console` 正是本頁對應的那組。
 
 每個步驟都連向深入說明該主題的文件。本頁只給最小可跑的內容，不重複那些文件已寫的東西。
 
@@ -42,7 +42,7 @@ dotnet bee defines materialize --path ./Define
 - **`SystemSettings.xml`** —— 設定 `MasterKeySource`。預設值 `Environment` 會從 `BEE_MASTER_KEY` 讀取金鑰。
 - **`DatabaseSettings.xml`** —— 填入連線字串。
 
-→ 每個定義檔各管什麼：[定義檔全景](definition-files-overview.zh-TW.md)。完整檔案清單與使用端擴充規則：[框架保留命名](framework-reserved-names.zh-TW.md)。
+→ 每個定義檔各管什麼：[定義檔全景](definition-files-overview.md)。完整檔案清單與使用端擴充規則：[框架保留命名](framework-reserved-names.md)。
 
 ## 3. 註冊資料庫方言
 
@@ -117,7 +117,7 @@ app.Run();
 
 **順序是硬性的。** `SystemSettingsLoader.Load` 必須早於 `SysInfo.Initialize`，後者必須早於 `AddBeeFramework`。`UseBeeFramework` 不註冊任何 middleware 或端點 —— 它只做啟動檢查。
 
-→ 啟動流程圖與 `AddBeeFramework` 註冊了什麼：[端到端開發指引 § 框架初始化順序](development-cookbook.zh-TW.md)。順序背後的限制：[開發限制與反模式 § 初始化順序限制](development-constraints.zh-TW.md)。
+→ 啟動流程圖與 `AddBeeFramework` 註冊了什麼：[端到端開發指引 § 框架初始化順序](development-cookbook.md)。順序背後的限制：[開發限制與反模式 § 初始化順序限制](development-constraints.md)。
 
 ## 5. 發布 JSON-RPC 端點
 
@@ -192,9 +192,9 @@ progId 與型別的綁定寫在 `ProgramSettings.xml` —— 它是全框架的�
 Repository，兩個屬性彼此獨立。
 
 框架啟動時會自行補寫缺少的保留字 progId，所以這個檔案不存在時會被自動建立。
-詳見 [ADR-034](adr/adr-034-progid-type-registry.md)。
+詳見 [ADR-034](../adr/adr-034-progid-type-registry.md)。
 
-→ `Args` / `Result` 的命名規則與契約三層分離：[API ↔ BO 契約設計](api-bo-contract-design.zh-TW.md)。哪些方法該放介面：[開發限制與反模式](development-constraints.zh-TW.md)。
+→ `Args` / `Result` 的命名規則與契約三層分離：[API ↔ BO 契約設計](api-bo-contract-design.md)。哪些方法該放介面：[開發限制與反模式](development-constraints.md)。
 
 ## 7. 由用戶端呼叫
 
@@ -218,13 +218,13 @@ var result = await connector.ExecuteAsync<EchoResponse>(
 
 `PayloadFormat.Plain` 對應上面宣告的 `Public` + `Anonymous`。任何受保護的方法都需先 `Login`，由它發出 access token 與 RSA 握手。
 
-→ 前端無 .NET、以 JavaScript / TypeScript 呼叫：[JSON-RPC 前端整合指引](jsonrpc-frontend-integration.zh-TW.md)。所有對外方法與其存取控制：[API 方法參考](api-method-reference.zh-TW.md)。
+→ 前端無 .NET、以 JavaScript / TypeScript 呼叫：[JSON-RPC 前端整合指引](jsonrpc-frontend-integration.md)。所有對外方法與其存取控制：[API 方法參考](api-method-reference.md)。
 
 ## 8. 改用「定義」取代寫程式
 
 上面的 Echo 物件是刻意手寫的 —— 它只是「證明管線通了」的最小單位。**一般 CRUD 完全不需要商業物件**：宣告一份 `FormSchema` 加上對應的 `TableSchema`，框架就會從定義產生 SQL、清單與存檔路徑。
 
-這才是框架真正的重點，起點在此 → [定義檔全景](definition-files-overview.zh-TW.md)，接著 [架構總覽](architecture-overview.zh-TW.md)。
+這才是框架真正的重點，起點在此 → [定義檔全景](definition-files-overview.md)，接著 [架構總覽](architecture-overview.md)。
 
 ---
 
@@ -232,11 +232,11 @@ var result = await connector.ExecuteAsync<EchoResponse>(
 
 | 你想 | 讀 |
 |------|-----|
-| 先理解設計再往下走 | [架構總覽](architecture-overview.zh-TW.md) |
-| 知道每個定義檔在管什麼 | [定義檔全景](definition-files-overview.zh-TW.md) |
-| 走完整條「定義 → API」流程 | [端到端開發指引](development-cookbook.zh-TW.md) |
-| 不寫程式就完成欄位運算與驗證 | [運算式與規則](expression-rules.zh-TW.md) |
-| 加上認證與權限 | [權限與授權指南](permission-authorization.zh-TW.md) |
-| 把定義變更推送到線上資料庫 | [資料庫 Schema 升級](database-schema-upgrade.zh-TW.md) |
+| 先理解設計再往下走 | [架構總覽](architecture-overview.md) |
+| 知道每個定義檔在管什麼 | [定義檔全景](definition-files-overview.md) |
+| 走完整條「定義 → API」流程 | [端到端開發指引](development-cookbook.md) |
+| 不寫程式就完成欄位運算與驗證 | [運算式與規則](expression-rules.md) |
+| 加上認證與權限 | [權限與授權指南](permission-authorization.md) |
+| 把定義變更推送到線上資料庫 | [資料庫 Schema 升級](database-schema-upgrade.md) |
 
-上述內容的完整可執行版本在 [`samples/QuickStart.Server`](../samples/QuickStart.Server/README.zh-TW.md) 與 [`samples/QuickStart.Console`](../samples/QuickStart.Console/README.zh-TW.md)。若想看幾乎全以定義建成的完整應用，見 [`apps/Bee.Northwind`](../apps/Bee.Northwind/README.zh-TW.md)。
+上述內容的完整可執行版本在 [`samples/QuickStart.Server`](../../samples/QuickStart.Server/README.zh-TW.md) 與 [`samples/QuickStart.Console`](../../samples/QuickStart.Console/README.zh-TW.md)。若想看幾乎全以定義建成的完整應用，見 [`apps/Bee.Northwind`](../../apps/Bee.Northwind/README.zh-TW.md)。

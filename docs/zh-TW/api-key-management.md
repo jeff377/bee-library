@@ -1,6 +1,6 @@
 # API 金鑰管理
 
-[English](api-key-management.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/api-key-management.md) · [← 文件索引](README.md)
 
 API 金鑰回答的是**哪個應用程式在呼叫**。它不是使用者鑑別 —— 那由 Bearer access token 負責，
 金鑰本身不授予任何資料存取權。兩者在每次遠端呼叫並行：`X-Api-Key` 說明**什麼**在呼叫，
@@ -51,7 +51,7 @@ Console.WriteLine(response.ApiKey);    // "acme-portal.<secret>"
 - **行程內（本機）呼叫免管理員。** 這是 bootstrap 路徑：尚無管理員的部署仍必須能在主機上
   鑄出第一把金鑰。
 
-部署層模型與第一位管理員的指派方式，見[權限與授權指南第三部分](permission-authorization.zh-TW.md)。
+部署層模型與第一位管理員的指派方式，見[權限與授權指南第三部分](permission-authorization.md)。
 
 ## 4. 輪替金鑰
 
@@ -100,6 +100,6 @@ Console.WriteLine(response.ApiKey);    // "acme-portal.<secret>"
 
 ## 延伸閱讀
 
-- [權限與授權指南](permission-authorization.zh-TW.md) —— 部署層授權模型
-- [API 方法參考](api-method-reference.zh-TW.md) —— 各金鑰管理方法與其保護等級
-- [框架保留命名](framework-reserved-names.zh-TW.md) —— `st_api_key` 與其他框架表
+- [權限與授權指南](permission-authorization.md) —— 部署層授權模型
+- [API 方法參考](api-method-reference.md) —— 各金鑰管理方法與其保護等級
+- [框架保留命名](framework-reserved-names.md) —— `st_api_key` 與其他框架表

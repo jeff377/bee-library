@@ -90,7 +90,7 @@ Bee.NET 的租戶概念原本只到**資料庫層**（[ADR-012](adr-012-session-
    >
    > 疊加演算法其後集中於 `CustomizeOverlay`（`Bee.Definition.Customization`），
    > 為 server 與 client 共用的純決策元件（無 storage / session / DI 相依），
-   > 不再由兩端各自推導。使用面的完整說明見[租戶客製化](../customization.zh-TW.md)。
+   > 不再由兩端各自推導。使用面的完整說明見[租戶客製化](../zh-TW/customization.md)。
 
 3. **`CustomizeId` 為獨立代碼，非等同 `CompanyId`**
 

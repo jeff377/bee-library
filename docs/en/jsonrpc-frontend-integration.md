@@ -1,12 +1,12 @@
 # JSON-RPC Frontend Integration Guide
 
-[繁體中文](jsonrpc-frontend-integration.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/jsonrpc-frontend-integration.md) · [← Docs Index](README.md)
 
 How to call the Bee.NET JSON-RPC backend from a JavaScript / TypeScript frontend
 (React, Vue, Angular, Svelte, or vanilla) **without any .NET on the client**.
 
 The whole thing fits in ~150 lines of plain JS. See the working sample at
-[`samples/Web.Js.Demo/`](../samples/Web.Js.Demo/README.md) — this guide explains
+[`samples/Web.Js.Demo/`](../../samples/Web.Js.Demo/README.md) — this guide explains
 *why* it works.
 
 ---
@@ -27,13 +27,13 @@ frontend is JS, this guide is the path.
 
 Payload encryption is **not** a .NET-only capability. A JS client that wants
 `Encoded` or `Encrypted` declares `"codec": "json"` on the payload envelope and the
-server answers with the same codec — that is what [ADR-044](adr/adr-044-payload-codec-negotiation.md)
+server answers with the same codec — that is what [ADR-044](../adr/adr-044-payload-codec-negotiation.md)
 exists for. The cross-language artefacts for that path are
-[`wire-contracts/`](../wire-contracts/README.md) (a TypeScript contract generated from
-the message types) and [`wire-fixtures/`](../wire-fixtures/README.md) (golden body
+[`wire-contracts/`](../../wire-contracts/README.md) (a TypeScript contract generated from
+the message types) and [`wire-fixtures/`](../../wire-fixtures/README.md) (golden body
 samples to check an implementation against).
 
-See [ADR-013: Frontend API connection strategy](adr/adr-013-frontend-api-connection-strategy.md)
+See [ADR-013: Frontend API connection strategy](../adr/adr-013-frontend-api-connection-strategy.md)
 for the broader policy.
 
 ---
@@ -65,7 +65,7 @@ Authorization: Bearer <access-token>     // omit for anonymous methods
 ```
 
 - `method` — `<ProgId>.<Action>`, dispatched to the BO by reflection
-- `params.format` — `0` (`PayloadFormat.Plain`) for the plain path this guide covers. It is **not** restricted to that: since [ADR-044](adr/adr-044-payload-codec-negotiation.md) a JS client can also use `Encoded` / `Encrypted` by declaring `"codec": "json"` on the envelope, which needs only JSON, gzip, AES-CBC-HMAC and RSA — all available in the browser
+- `params.format` — `0` (`PayloadFormat.Plain`) for the plain path this guide covers. It is **not** restricted to that: since [ADR-044](../adr/adr-044-payload-codec-negotiation.md) a JS client can also use `Encoded` / `Encrypted` by declaring `"codec": "json"` on the envelope, which needs only JSON, gzip, AES-CBC-HMAC and RSA — all available in the browser
 - `params.value` — your args object, with **camelCase or PascalCase property names**
   (server deserializes case-insensitive)
 - `id` — any client-chosen identifier echoed back in the response
@@ -123,7 +123,7 @@ Plain format does not need it:
 
 You may send `params.type` if you want (it's ignored on Plain); leaving it out
 keeps payloads smaller. Regression coverage:
-[`JsonRpcExecutorTests.Ping_PlainWith*`](../tests/Bee.Api.Core.UnitTests/JsonRpcExecutorTests.cs)
+[`JsonRpcExecutorTests.Ping_PlainWith*`](../../tests/Bee.Api.Core.UnitTests/JsonRpcExecutorTests.cs)
 asserts omitted, empty, and bogus `type` values all succeed.
 
 ---
@@ -137,7 +137,7 @@ asserts omitted, empty, and bogus `type` values all succeed.
 | `Authorization` | Yes for authenticated methods | `Bearer <accessToken>` | The GUID from `System.Login`'s response |
 
 CORS must be configured on the host. The demo backend opens an `AllowAnyOrigin`
-policy in [`samples/QuickStart.Server/Program.cs`](../samples/QuickStart.Server/Program.cs);
+policy in [`samples/QuickStart.Server/Program.cs`](../../samples/QuickStart.Server/Program.cs);
 production hosts must restrict origins explicitly.
 
 ---
@@ -170,7 +170,7 @@ require `EnterCompany`; methods bound to company-scoped tables will throw
 ## Available methods
 
 The complete catalog (with `[ApiAccessControl]` per method) lives at
-[`docs/api-method-reference.md`](api-method-reference.md). Summary:
+[`docs/en/api-method-reference.md`](api-method-reference.md). Summary:
 
 | Category | Methods |
 |----------|---------|
@@ -209,7 +209,7 @@ Method names are **case-sensitive** — `system.ping` will not dispatch.
 
 ## Error handling
 
-`response.error.code` maps to [`JsonRpcErrorCode`](../src/Bee.Api.Core/JsonRpc/JsonRpcErrorCode.cs):
+`response.error.code` maps to [`JsonRpcErrorCode`](../../src/Bee.Api.Core/JsonRpc/JsonRpcErrorCode.cs):
 
 | Code | Name | Meaning | Typical action |
 |------|------|---------|----------------|
@@ -233,7 +233,7 @@ internally and show a generic "request failed" instead.
 
 ## TypeScript wrapper
 
-Drop-in TypeScript port of [`samples/Web.Js.Demo/bee-api-client.js`](../samples/Web.Js.Demo/bee-api-client.js)
+Drop-in TypeScript port of [`samples/Web.Js.Demo/bee-api-client.js`](../../samples/Web.Js.Demo/bee-api-client.js)
 for TS projects. Standalone, no framework — bring your own state management.
 
 ```typescript
@@ -299,7 +299,7 @@ export interface DataTableColumn {
    * through the browser timezone.
    * 'DateTime' is an instant and is always UTC on the wire: convert it for display, and
    * convert back to UTC before sending it.
-   * See docs/temporal-types.md and docs/datetime-timezone.md.
+   * See docs/en/temporal-types.md and docs/en/datetime-timezone.md.
    */
   type: string;
   allowNull: boolean;
@@ -417,8 +417,8 @@ them by hand.
 
 ## See also
 
-- [`samples/Web.Js.Demo/README.md`](../samples/Web.Js.Demo/README.md) — runnable demo of every method above
-- [`docs/api-method-reference.md`](api-method-reference.md) — full method catalog with `[ApiAccessControl]` per method
-- [`docs/adr/adr-013-frontend-api-connection-strategy.md`](adr/adr-013-frontend-api-connection-strategy.md) — broader frontend connection policy
-- [`src/Bee.Api.Core/README.md`](../src/Bee.Api.Core/README.md) — server-side dispatch internals
-- [`src/Bee.Api.Client/README.md`](../src/Bee.Api.Client/README.md) — the .NET client this guide is the JS counterpart to
+- [`samples/Web.Js.Demo/README.md`](../../samples/Web.Js.Demo/README.md) — runnable demo of every method above
+- [`docs/en/api-method-reference.md`](api-method-reference.md) — full method catalog with `[ApiAccessControl]` per method
+- [`docs/adr/adr-013-frontend-api-connection-strategy.md`](../adr/adr-013-frontend-api-connection-strategy.md) — broader frontend connection policy
+- [`src/Bee.Api.Core/README.md`](../../src/Bee.Api.Core/README.md) — server-side dispatch internals
+- [`src/Bee.Api.Client/README.md`](../../src/Bee.Api.Client/README.md) — the .NET client this guide is the JS counterpart to

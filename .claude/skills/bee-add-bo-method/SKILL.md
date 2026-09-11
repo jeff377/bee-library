@@ -482,7 +482,7 @@ public class <Axis>BusinessObject<Action>Tests : IClassFixture<SharedDbFixture>
 - [ ] Release build 0w/0e + 測試通過
 
 **P4 Surface 同步**（與 P2 / P3 任一同 commit）：
-- [ ] 更新 `docs/api-method-reference.md` + `docs/api-method-reference.zh-TW.md` 對應軸的表格新增 / 修改該方法
+- [ ] 更新 `docs/en/api-method-reference.md` + `docs/zh-TW/api-method-reference.md` 對應軸的表格新增 / 修改該方法
 - [ ] 更新 `tests/Bee.Business.UnitTests/BoApiSurfaceTests.cs` 的 `ExpectedSurface` baseline（新增、移除、或 `[ApiAccessControl]` 改動都要動）
 - [ ] BoApiSurfaceTests 通過（驗證 baseline 與實際反射結果同步）
 
@@ -507,5 +507,5 @@ public class <Axis>BusinessObject<Action>Tests : IClassFixture<SharedDbFixture>
 | BO 整合測試樣板 | `tests/Bee.Business.UnitTests/Form/FormBusinessObjectGetListTests.cs` |
 | Wire round-trip 樣板 | `tests/Bee.Api.Core.UnitTests/Form/GetListMessagePackTests.cs` |
 | Executor dispatch 樣板 | `tests/Bee.Api.Core.UnitTests/Form/GetListJsonRpcRoundTripTests.cs` |
-| API method 單頁總覽 | `docs/api-method-reference.md`（每加新方法須同步） |
+| API method 單頁總覽 | `docs/en/api-method-reference.md`（每加新方法須同步） |
 | Surface audit 測試 | `tests/Bee.Business.UnitTests/BoApiSurfaceTests.cs` |

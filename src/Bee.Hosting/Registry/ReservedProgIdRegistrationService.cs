@@ -96,7 +96,7 @@ namespace Bee.Hosting.Registry
             if (missing.Count == 0) { return; }
 
             // Never mutate the instance handed back by the cache: it is shared process-wide, and
-            // definitions are immutable after init (docs/development-constraints.md). Build a fresh
+            // definitions are immutable after init (docs/en/development-constraints.md). Build a fresh
             // one, which SaveProgramSettings then persists and whose cache slot it invalidates.
             var updated = new ProgramSettings();
             foreach (var item in registry.Items ?? [])

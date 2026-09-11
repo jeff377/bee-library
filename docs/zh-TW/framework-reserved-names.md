@@ -1,11 +1,11 @@
 # 框架保留命名
 
-[English](framework-reserved-names.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/framework-reserved-names.md) · [← 文件索引](README.md)
 
 > 列出 **bee-library** 框架所擁有的命名：哪些 `st_*` 系統表存在、框架保留了哪些 `progId`。
 >
-> - 命名**規則**（`st_` vs `ft_` 前綴、欄位／索引慣例）見 [資料庫命名規範](database-naming-conventions.zh-TW.md)。
-> - 完整 **API 方法參考**（action 簽章、`[ApiAccessControl]`、用途）見 [API 方法參考](api-method-reference.zh-TW.md)。
+> - 命名**規則**（`st_` vs `ft_` 前綴、欄位／索引慣例）見 [資料庫命名規範](database-naming-conventions.md)。
+> - 完整 **API 方法參考**（action 簽章、`[ApiAccessControl]`、用途）見 [API 方法參考](api-method-reference.md)。
 > - 本文件是「**哪些具體名稱**被框架保留」的唯一來源。擴充或整合框架時，請勿與此處列出的任何名稱衝突。
 
 ---
@@ -26,18 +26,18 @@
 | `st_session` | Session / Access Token。 |
 | `st_api_key` | 已發放的 API 金鑰（`X-Api-Key`）：應用識別，以雜湊存放。 |
 | `st_define` | DB-backed 定義儲存（FormSchema / TableSchema 等，非 XML 檔案版本）。 |
-| `st_cache_notify` | 跨節點 cache 失效通道（[ADR-017](adr/adr-017-db-cache-invalidation.md)）。 |
+| `st_cache_notify` | 跨節點 cache 失效通道（[ADR-017](../adr/adr-017-db-cache-invalidation.md)）。 |
 
 ### 1.2 公司資料庫（per-tenant）
 
 | 表名 | 用途 |
 |------|------|
-| `st_role` | 角色定義（[ADR-019](adr/adr-019-permission-authorization-model.md)）。 |
+| `st_role` | 角色定義（[ADR-019](../adr/adr-019-permission-authorization-model.md)）。 |
 | `st_role_grant` | 角色↔資源授權（per model / action）。 |
 | `st_user_role` | 使用者↔角色綁定。 |
 | `st_department` | 組織部門。 |
 | `st_employee` | 員工（連結 common DB 的 `st_user` 至 per-company 的組織位置）。 |
-| `st_audit_rule` | per-form 稽核規則（哪些表單要記異動／檢視，見 [ADR-027](adr/adr-027-audit-trail.md)）。 |
+| `st_audit_rule` | per-form 稽核規則（哪些表單要記異動／檢視，見 [ADR-027](../adr/adr-027-audit-trail.md)）。 |
 
 > `st_department` / `st_employee` 雖位於公司資料庫，但仍是 **框架所有**（record-scope 與組織樹功能所需），不是業務資料。Per-company 業務表請使用 `ft_` 前綴。
 
@@ -51,9 +51,9 @@
 | `st_log_anomaly_api` | API 層異常（Error / Timeout / Slow）——哪個動作偏離正常。 |
 | `st_log_anomaly_db` | DB 層異常（Error / Timeout / Slow / 大量列數）——哪個資料庫 + 指令偏離正常。 |
 
-> 這五張表是兩件不同的事共用一個資料庫。前三張是**稽核軌跡** —— 誰對哪一筆做了什麼，經 `IAuditLogWriter` 寫入。後兩張是**執行異常** —— 哪一次執行偏離了正常，經 `IAnomalyLogWriter` 寫入；它們是維運訊號而非業務紀錄，所以 `st_log_anomaly_db` 連觸發者都沒有。見 [ADR-040](adr/adr-040-audit-trail-taxonomy.md)。
+> 這五張表是兩件不同的事共用一個資料庫。前三張是**稽核軌跡** —— 誰對哪一筆做了什麼，經 `IAuditLogWriter` 寫入。後兩張是**執行異常** —— 哪一次執行偏離了正常，經 `IAnomalyLogWriter` 寫入；它們是維運訊號而非業務紀錄，所以 `st_log_anomaly_db` 連觸發者都沒有。見 [ADR-040](../adr/adr-040-audit-trail-taxonomy.md)。
 >
-> Log 表**預設關閉（opt-in）**且自足：去正規化觸發者的 user / company，查詢不需跨資料庫 join（log 資料庫實體分離）。log 資料庫可依年份分庫（`log_2024`、`log_2025`…），當年度可寫、歷史唯讀。設計理由見 [ADR-027](adr/adr-027-audit-trail.md)。
+> Log 表**預設關閉（opt-in）**且自足：去正規化觸發者的 user / company，查詢不需跨資料庫 join（log 資料庫實體分離）。log 資料庫可依年份分庫（`log_2024`、`log_2025`…），當年度可寫、歷史唯讀。設計理由見 [ADR-027](../adr/adr-027-audit-trail.md)。
 
 ---
 
@@ -64,7 +64,7 @@
 - **`System`**（formalize 為 `Bee.Definition.SysProgIds.System`）—— 系統層級 business object（`SystemBusinessObject`）的單例 entry point。所有與特定 form 無關的框架層級 action（登入、ping、取定義等）皆由此 dispatch。
 - **`AuditLog`**（formalize 為 `Bee.Definition.SysProgIds.AuditLog`）—— 稽核日誌 business object（`LogBusinessObject`）的單例 entry point：對 `st_log_*` 表的唯讀查詢。同時作為 gate 稽核讀取的權限模型 id。
 
-完整 action 清單見 [API 方法參考 §軸：System](api-method-reference.zh-TW.md)。
+完整 action 清單見 [API 方法參考 §軸：System](api-method-reference.md)。
 
 ### 2.2 框架預設 form
 
@@ -76,7 +76,7 @@
 | `Employee` | `st_employee` | 員工維護表單。 |
 | `AuditRule` | `st_audit_rule` | 稽核規則維護表單。**唯一宣告 `PermissionModelId` 的框架預設 form** —— 稽核政策是特權操作，enforcement 為 fail-closed，需先授權才能使用。 |
 
-每個 form progId 共通繼承的 FormBO action 清單見 [API 方法參考 §軸：Form](api-method-reference.zh-TW.md)。
+每個 form progId 共通繼承的 FormBO action 清單見 [API 方法參考 §軸：Form](api-method-reference.md)。
 
 ---
 
@@ -84,20 +84,20 @@
 
 擴充 bee-library 或在其上建立應用時：
 
-- **自家業務表用 `ft_` 前綴**，不要用 `st_`（保留給框架）。詳見 [資料庫命名規範](database-naming-conventions.zh-TW.md)。
+- **自家業務表用 `ft_` 前綴**，不要用 `st_`（保留給框架）。詳見 [資料庫命名規範](database-naming-conventions.md)。
 - **避開保留的 `progId`**——`System`、`AuditLog`、`Department`、`Employee` 已被框架使用。自家 progId 請取不同名稱；慣例為 `PascalCase`，常以模組縮寫前綴。
 - **要擴充框架表**（例如為 `st_employee` 加自訂欄位）：在應用程式的 `DefinePath` 中放一份同名 `.TableSchema.xml`。runtime 框架只讀 `DefinePath`，這份檔就是框架實際看到的唯一來源。框架內 embedded 預設 runtime 不會參與——只供下方 API 一次性匯出使用。
 - **取得 base XML 起手**——三種途徑，按一般偏好排序：
-    - **程式碼層 API**（canonical）：`Bee.Definition.Defaults.MaterializeTo("./Define")` 把所有 embedded 框架預設 XML 寫入指定目錄。預設 skip-existing，重複跑安全、不會覆蓋你的客製。詳見 [`src/Bee.Definition/Defaults.cs`](../src/Bee.Definition/Defaults.cs)。
+    - **程式碼層 API**（canonical）：`Bee.Definition.Defaults.MaterializeTo("./Define")` 把所有 embedded 框架預設 XML 寫入指定目錄。預設 skip-existing，重複跑安全、不會覆蓋你的客製。詳見 [`src/Bee.Definition/Defaults.cs`](../../src/Bee.Definition/Defaults.cs)。
     - **CLI**（CI / setup 腳本首選）：一次性安裝 `dotnet tool install -g Bee.Cli`（之後升版用 `dotnet tool update -g Bee.Cli`），後續 `dotnet bee defines materialize --path ./Define`——同一份 API 的 thin shell。`dotnet bee defines list` 列出所有 embedded 檔、`dotnet bee defines materialize --filter TableSchema/` 只 materialize 子集。
-    - **GitHub 瀏覽**：所有 embedded 預設都活在 repo 的 [`src/Bee.Definition/Defaults/`](../src/Bee.Definition/Defaults/)——打開你要的檔，內容複製到自家 `DefinePath`。
-- **框架升版若異動 `st_*` 表結構**，會在 [CHANGELOG](../CHANGELOG.zh-TW.md) 中標示為 breaking change。改名類異動需手動執行 `RENAME TABLE`——範例見 [資料表結構升級指南 §框架表改名](database-schema-upgrade.zh-TW.md)。
+    - **GitHub 瀏覽**：所有 embedded 預設都活在 repo 的 [`src/Bee.Definition/Defaults/`](../../src/Bee.Definition/Defaults/)——打開你要的檔，內容複製到自家 `DefinePath`。
+- **框架升版若異動 `st_*` 表結構**，會在 [CHANGELOG](../../CHANGELOG.zh-TW.md) 中標示為 breaking change。改名類異動需手動執行 `RENAME TABLE`——範例見 [資料表結構升級指南 §框架表改名](database-schema-upgrade.md)。
 
 ---
 
 ## 延伸閱讀
 
-- [資料庫命名規範](database-naming-conventions.zh-TW.md)——`st_` / `ft_` 區分背後的命名規則。
-- [API 方法參考](api-method-reference.zh-TW.md)——完整 BO 方法目錄。
-- [架構總覽](architecture-overview.zh-TW.md)——`st_*` 表在整體 N-tier + clean architecture 中的位置。
-- [ADR-019：權限授權模型](adr/adr-019-permission-authorization-model.md)——為何 `st_role` / `st_user_role` / `st_employee` 是框架所有。
+- [資料庫命名規範](database-naming-conventions.md)——`st_` / `ft_` 區分背後的命名規則。
+- [API 方法參考](api-method-reference.md)——完整 BO 方法目錄。
+- [架構總覽](architecture-overview.md)——`st_*` 表在整體 N-tier + clean architecture 中的位置。
+- [ADR-019：權限授權模型](../adr/adr-019-permission-authorization-model.md)——為何 `st_role` / `st_user_role` / `st_employee` 是框架所有。

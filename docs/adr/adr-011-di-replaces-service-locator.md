@@ -72,7 +72,7 @@ ADR-003（採用靜態 Service Locator）的前提已不再適用：
 6. app.UseBeeFramework()   // ASP.NET only — 啟動期檢查（API key gate 未生效時發警告）
 ```
 
-完整參考見 [docs/development-cookbook.md § Framework Initialization Order](../development-cookbook.md#framework-initialization-order)。
+完整參考見 [docs/en/development-cookbook.md § Framework Initialization Order](../en/development-cookbook.md#framework-initialization-order)。
 
 ### 測試基礎設施
 
@@ -84,5 +84,5 @@ ADR-003（採用靜態 Service Locator）的前提已不再適用：
 
 | 文件 | 內容 |
 |------|------|
-| [docs/development-cookbook.md](../development-cookbook.md) | DI 化後的初始化流程與請求管線 |
-| [docs/development-constraints.md](../development-constraints.md) | 初始化順序限制（DI 模型） |
+| [docs/en/development-cookbook.md](../en/development-cookbook.md) | DI 化後的初始化流程與請求管線 |
+| [docs/en/development-constraints.md](../en/development-constraints.md) | 初始化順序限制（DI 模型） |

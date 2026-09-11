@@ -129,6 +129,6 @@ stage.
 
 ## Related
 
-- Integration guide: [docs/jsonrpc-frontend-integration.md](../../docs/jsonrpc-frontend-integration.md)
+- Integration guide: [docs/en/jsonrpc-frontend-integration.md](../../docs/en/jsonrpc-frontend-integration.md)
 - Backend host: [samples/QuickStart.Server](../QuickStart.Server/)
 - Demo credentials: [samples/Bee.Samples.Shared/DemoCredentials.cs](../Bee.Samples.Shared/DemoCredentials.cs)

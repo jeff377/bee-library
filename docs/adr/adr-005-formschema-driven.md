@@ -38,7 +38,7 @@
 - `Bee.Definition/Layouts/FormLayout.cs`：UI 維度的投影
 - `Bee.Db/Providers/SqlServer/SqlFormCommandBuilder.cs`：依據 FormSchema 自動產生 SQL
 - `Bee.Db/Dml/SelectCommandBuilder.cs`：組合 SELECT / FROM / WHERE / ORDER BY
-- 架構詳細說明於 `docs/architecture-overview.md`
+- 架構詳細說明於 `docs/en/architecture-overview.md`
 - 資料存取層的具體模式（FormMap）說明於 `docs/formmap.zh-TW.md`
   —— **該文件已隨下方後記所述的名稱取消一併移除**。
 
@@ -50,7 +50,7 @@
 
 2026-08-13 決定**取消它的模式名地位**：機制與文件內容不變，只是不再宣稱自己是一個具名模式。
 `terminology` 對照表已移除該詞條，文件現位於
-[`formschema-data-access.zh-TW.md`](../formschema-data-access.zh-TW.md)，
+[`zh-TW/formschema-data-access.md`](../zh-TW/formschema-data-access.md)，
 標題為「FormSchema 驅動的資料庫存取」。
 
 上文維持原用語，以保留當時的決策脈絡。

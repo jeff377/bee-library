@@ -25,7 +25,7 @@
 1. **通知表 `st_cache_notify`**（單表三欄，一個邏輯快取 key 一列、UPSERT）：
    - `cache_key`(PK) = `"群組:實體"` 慣例字串（如 `"OrgInfo:0001"`、`"FormSchema:Employee"`、單物件快取 `"SystemSettings:*"`）。
    - `cache_version`(bigint) = 每-key 單調自增版本號。
-   - `sys_update_time` = DB 伺服器時間，增量抓取游標（欄名 `sys_` 前綴因其為 `SysFields.UpdateTime` 系統欄；`cache_key`/`cache_version` 非系統欄不加前綴，見 [database-naming-conventions](../database-naming-conventions.md)）。
+   - `sys_update_time` = DB 伺服器時間，增量抓取游標（欄名 `sys_` 前綴因其為 `SysFields.UpdateTime` 系統欄；`cache_key`/`cache_version` 非系統欄不加前綴，見 [database-naming-conventions](../en/database-naming-conventions.md)）。
 
 2. **bump 原語 `ICacheNotifyService.Touch(cacheKey, transaction, databaseType)`**（置於 `Bee.Db`）：在**呼叫端傳入的同一 transaction** 內以單一 UPSERT 原子遞增 `cache_version`、刷新 `sys_update_time`。各方言用原生 UPSERT（PG/SQLite `ON CONFLICT`、MySQL `ON DUPLICATE KEY`、SQL Server / Oracle `MERGE`）。
 
@@ -107,7 +107,7 @@ ADR 記錄的是決策當下的設計，以下為後續實作的偏離，供讀�
 ## 相關文件
 
 - [ADR-009](adr-009-cache-implementation.md)：`Bee.ObjectCaching` 快取實作
-- 機制總覽：[快取機制](../caching.zh-TW.md)（本機制在整體快取層中的位置）
+- 機制總覽：[快取機制](../zh-TW/caching.md)（本機制在整體快取層中的位置）
 - [ADR-018](adr-018-db-define-storage.md)：定義儲存於資料庫（本機制的主要消費端之一）
-- 使用指引：[`development-cookbook.md`](../development-cookbook.md) §跨 process 快取失效
-- 命名慣例：[`database-naming-conventions.md`](../database-naming-conventions.md)
+- 使用指引：[`development-cookbook.md`](../en/development-cookbook.md) §跨 process 快取失效
+- 命名慣例：[`database-naming-conventions.md`](../en/database-naming-conventions.md)

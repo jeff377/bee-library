@@ -1,6 +1,6 @@
 # Temporal Types: `Date`, `DateTime` and `Time`
 
-[繁體中文](temporal-types.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/temporal-types.md) · [← Docs Index](README.md)
 
 The framework distinguishes three temporal semantics, and each one is carried differently at every
 layer — database column, `DataColumn`, CLR value, and all three serialization formats. This document
@@ -68,7 +68,7 @@ Two things worth knowing:
   their semantics disagree (MySQL's `TIME` is a *duration* spanning ±838 hours) and the .NET
   `DataSet` cannot carry the CLR types they return. A fixed-width string sidesteps all of it and
   stays readable in a raw `SELECT`. The full measurements are in
-  [ADR-033](adr/adr-033-time-of-day-semantics.md).
+  [ADR-033](../adr/adr-033-time-of-day-semantics.md).
 
 ### Sorting and range queries
 
@@ -316,11 +316,11 @@ field rather than deriving it from two times of day.**
 
 ## Related
 
-- [ADR-031](adr/adr-031-calendar-day-column-semantics.md) — why the calendar-day semantic needs an
+- [ADR-031](../adr/adr-031-calendar-day-column-semantics.md) — why the calendar-day semantic needs an
   explicit marker, the alternatives rejected, and the `DataColumn`/`DateOnly` measurements behind it.
-- [ADR-033](adr/adr-033-time-of-day-semantics.md) — why `Time` is a fixed-width string rather than
+- [ADR-033](../adr/adr-033-time-of-day-semantics.md) — why `Time` is a fixed-width string rather than
   a native database time type, with the measurements behind the decision.
 - [Time Zones](datetime-timezone.md) — UTC storage and conversion for instants.
-  [ADR-032](adr/adr-032-datetime-timezone.md).
+  [ADR-032](../adr/adr-032-datetime-timezone.md).
 - [Terminology](terminology.md) — the four-term vocabulary (calendar day / time of day / instant /
   duration).

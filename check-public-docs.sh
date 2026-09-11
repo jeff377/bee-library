@@ -5,7 +5,7 @@
 # (6) 防「指向外部讀者開不了的檔案」，(7) 防「指向已不存在的 plan」。
 # 每一道都是補出來的，對應過一批長期漏網；**不要自行縮減範圍或副檔名**。
 #
-# 預期輸出：(1) 只剩 docs/README.md / docs/README.zh-TW.md 對 plans/ 資料夾的性質說明；
+# 預期輸出：(1) 只剩 docs/en/README.md / docs/zh-TW/README.md 對 plans/ 資料夾的性質說明；
 #           (2)(4)(5)(6) 完全無輸出；(3)(7) 有已知誤報，須逐筆判讀（見規範文件的誤報表）。
 set -uo pipefail
 cd "$(dirname "$0")"

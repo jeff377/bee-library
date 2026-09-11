@@ -182,7 +182,7 @@ JS 走 `Plain` + HTTPS + Bearer Token 的雙重保護線，與 ADR-013 Family B�
 ## 相關連結
 
 - [ADR-013：前端 API 連線策略](adr-013-frontend-api-connection-strategy.md) — Family B（`Bee.Web.*`）的 HTTPS + Bearer Token 安全模型與本 ADR 一致
-- [JSON-RPC 前端整合指引](../jsonrpc-frontend-integration.md) — 對外公開的 JS / TS 開發者文件
+- [JSON-RPC 前端整合指引](../en/jsonrpc-frontend-integration.md) — 對外公開的 JS / TS 開發者文件
 - [Bee.Api.Core README](../../src/Bee.Api.Core/README.md) — `ApiAccessValidator` 等級判斷邏輯
 - `samples/Web.Js.Demo/` — 純 JS demo，端到端驗證 Plain 路徑完整 CRUD
 

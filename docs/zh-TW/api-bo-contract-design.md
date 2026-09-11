@@ -1,6 +1,6 @@
 # API 合約與 BO 參數設計原則
 
-[English](api-bo-contract-design.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/api-bo-contract-design.md) · [← 文件索引](README.md)
 
 本文件說明 Bee.NET 框架中 API 合約（Request / Response）與 BO 參數（Args / Result）的設計架構與使用方式，供開發人員在擴充 API 方法或撰寫 BO 邏輯時參考。
 
@@ -85,12 +85,12 @@ public class LoginResponse : ApiResponse, ILoginResponse
   wire 閉包與註冊對不上時 `WireContractDriftTests` 會讓建置失敗。
 
 標註之所以被拿掉，正是因為留著它們會把傳輸套件放進定義層每一個消費者的相依表面。
-見 [ADR-036](adr/adr-036-wire-serialization-externalized.md)。
+見 [ADR-036](../adr/adr-036-wire-serialization-externalized.md)。
 
 > **僅限框架 repository。** `WireContract`、`WireContracts` 與 `MessagePackCodec` 都是 `internal`，
 > 因此本 repository 之外的應用**無法**為自己的訊息型別註冊 formatter。那種型別只能經由反射式
 > resolver 上 MessagePack wire —— 桌面與伺服器可行，在沒有動態碼的執行環境會擲例外。
-> 逐請求宣告 `codec: json`（[ADR-044](adr/adr-044-payload-codec-negotiation.md)）可完全繞開這個問題。
+> 逐請求宣告 `codec: json`（[ADR-044](../adr/adr-044-payload-codec-negotiation.md)）可完全繞開這個問題。
 
 > **多型階層**（`FilterNode` 與其子型別）需要的不只是一份成員清單，因此有專屬的手寫 formatter —— `FilterNodeFormatter` —— 在成員旁邊寫入判別子。同一個檔案家族、同一套註冊方式，只有 formatter 是量身打造的。
 
@@ -252,7 +252,7 @@ public LoginResult Login(LoginArgs args) { ... }
 
 例如 `PingResult` 會自動對應到 `PingResponse`。反射結果以 BO 型別為 key 快取，每個型別只解析一次。
 
-> 此命名慣例為**強制規範**：凡不符合 `{Action}Result` / `{Action}Response` 命名的 BO 回傳型別都無法自動轉換。背景請參閱 [ADR-007](adr/adr-007-convention-based-type-resolution.md)。
+> 此命名慣例為**強制規範**：凡不符合 `{Action}Result` / `{Action}Response` 命名的 BO 回傳型別都無法自動轉換。背景請參閱 [ADR-007](../adr/adr-007-convention-based-type-resolution.md)。
 
 ### ExecFunc 模式
 
@@ -282,7 +282,7 @@ public LoginResult Login(LoginArgs args) { ... }
 4. **更新用戶端 Connector**（若需要）
    - 在 Connector 中新增對應方法，使用 `GetOrderRequest` / `GetOrderResponse`
 
-> 不需要任何手動註冊，回應映射由命名慣例自動推導（詳見 [ADR-007](adr/adr-007-convention-based-type-resolution.md)）。
+> 不需要任何手動註冊，回應映射由命名慣例自動推導（詳見 [ADR-007](../adr/adr-007-convention-based-type-resolution.md)）。
 
 ---
 

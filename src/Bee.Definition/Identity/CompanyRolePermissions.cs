@@ -14,7 +14,7 @@ namespace Bee.Definition.Identity
     /// session in the company receives the same reference, and this one carries authorization state,
     /// so a mutation grants or denies access in other sessions. The type exposes no setters, which
     /// makes the rule structural rather than a convention; keep it that way. See
-    /// <c>docs/development-constraints.md</c> § <i>Cached Data Immutability After Init</i>.
+    /// <c>docs/en/development-constraints.md</c> § <i>Cached Data Immutability After Init</i>.
     /// </remarks>
     public sealed class CompanyRolePermissions : IKeyObject
     {

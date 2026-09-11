@@ -1,6 +1,6 @@
 # DatabaseSettings 與 DbCategorySettings 指引
 
-[English](database-settings-guide.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/database-settings-guide.md) · [← 文件索引](README.md)
 
 > 本文件說明 Bee.NET 框架中兩個資料庫相關設定檔的結構、定位、存取方式與運作流程，協助開發者理解設定 → 連線 → 分類路由的完整串接。
 
@@ -67,7 +67,7 @@ DatabaseItem  CategoryId="log"      DbName=erp ──┘     st_company、st_use
                                                        ft_project、st_log_* 稽核表）
 ```
 
-> `st_log_*` = 框架 opt-in 的 log 表 —— 稽核軌跡（`st_log_login`、`st_log_change`、`st_log_access`）加上執行異常記錄（`st_log_anomaly_api`、`st_log_anomaly_db`）；後續情境圖以「log tables」略稱。見 [框架保留命名 §1.3](framework-reserved-names.zh-TW.md)。
+> `st_log_*` = 框架 opt-in 的 log 表 —— 稽核軌跡（`st_log_login`、`st_log_change`、`st_log_access`）加上執行異常記錄（`st_log_anomaly_api`、`st_log_anomaly_db`）；後續情境圖以「log tables」略稱。見 [框架保留命名 §1.3](framework-reserved-names.md)。
 
 **狀況 2：分散部署（三個實體資料庫，各對應一個邏輯分類）**
 
@@ -136,7 +136,7 @@ DatabaseItem  Id="log_company002"   CategoryId="log"      ──┴► company00
 
 ## 2. DatabaseSettings
 
-定義位置：[`src/Bee.Definition/Settings/DatabaseSettings/`](../src/Bee.Definition/Settings/DatabaseSettings/)
+定義位置：[`src/Bee.Definition/Settings/DatabaseSettings/`](../../src/Bee.Definition/Settings/DatabaseSettings/)
 
 ### 2.1 階層結構
 
@@ -215,13 +215,13 @@ DatabaseSettings
   - 讀取時（`DecryptInPlace`）：將 `enc:` 開頭的 Password 自動解密
 - **行為**：若 `ConfigEncryptionKey` 為空，跳過加解密（明文儲存，僅限開發環境）
 
-實作位置：[`DatabaseSettingsCryptor.cs`](../src/Bee.Definition/Settings/DatabaseSettings/DatabaseSettingsCryptor.cs) `EncryptInPlace` / `DecryptInPlace`。
+實作位置：[`DatabaseSettingsCryptor.cs`](../../src/Bee.Definition/Settings/DatabaseSettings/DatabaseSettingsCryptor.cs) `EncryptInPlace` / `DecryptInPlace`。
 
 ---
 
 ## 3. DbCategorySettings
 
-定義位置：[`src/Bee.Definition/Settings/DbCategorySettings/`](../src/Bee.Definition/Settings/DbCategorySettings/)
+定義位置：[`src/Bee.Definition/Settings/DbCategorySettings/`](../../src/Bee.Definition/Settings/DbCategorySettings/)
 
 ### 3.1 階層結構
 
@@ -260,9 +260,9 @@ DbCategorySettings
 | `company` | 公司資料庫 — 業務資料、各公司獨立 | `st_department`、`st_employee`、`ft_project` |
 | `log` | 日誌資料庫 — 寫入頻繁的稽核軌跡與執行異常記錄 | `st_log_login`、`st_log_change`、`st_log_access`、`st_log_anomaly_api`、`st_log_anomaly_db`（opt-in）＋ 應用自訂 |
 
-> 各分類下框架擁有的完整表清單，見 [框架保留命名](framework-reserved-names.zh-TW.md)。
+> 各分類下框架擁有的完整表清單，見 [框架保留命名](framework-reserved-names.md)。
 
-**`common` 為框架硬性契約**：必須存在且 `DatabaseItem.Id == CategoryId == "common"`（由 `services.AddBeeFramework` 啟動時驗證；SessionRepository 等系統服務以固定 `databaseId = "common"` 路由）。常數定義見 [`DbCategoryIds`](../src/Bee.Definition/Database/DbCategoryIds.cs)。
+**`common` 為框架硬性契約**：必須存在且 `DatabaseItem.Id == CategoryId == "common"`（由 `services.AddBeeFramework` 啟動時驗證；SessionRepository 等系統服務以固定 `databaseId = "common"` 路由）。常數定義見 [`DbCategoryIds`](../../src/Bee.Definition/Database/DbCategoryIds.cs)。
 
 `company` 與 `log` 兩類為框架預設提供的邏輯分類。框架在 `log` 分類提供 opt-in 的 `st_log_*` 稽核表（由 `AuditLogOptions` 控制、預設關閉）；單租戶只有在停用稽核時才可不部署 `log`，業務亦可自加 log 表或自訂分類（多租戶可加自訂分類）。自訂分類時，FormSchema 與 DatabaseItem 中的 `CategoryId` 必須對得上 `DbCategorySettings` 中宣告的分類 Id。
 
@@ -294,7 +294,7 @@ public class MyService(IDefineAccess defineAccess)
 
 ### 4.2 快取機制
 
-兩個 settings 由 DI 註冊的 [`ICacheContainer`](../src/Bee.ObjectCaching/ICacheContainer.cs)（預設實作 `CacheContainerService`）集中持有；持有者即快取物件本身，載入為 cache-miss 時 per-key 惰性載入（底層 `ObjectCache<T>` 於某個 key 首次被要求時呼叫 `CreateInstance()`）：
+兩個 settings 由 DI 註冊的 [`ICacheContainer`](../../src/Bee.ObjectCaching/ICacheContainer.cs)（預設實作 `CacheContainerService`）集中持有；持有者即快取物件本身，載入為 cache-miss 時 per-key 惰性載入（底層 `ObjectCache<T>` 於某個 key 首次被要求時呼叫 `CreateInstance()`）：
 
 | 快取 | 持有者 |
 |------|--------|
@@ -344,7 +344,7 @@ foreach (var table in company.Tables!) { ... }
 </FormSchema>
 ```
 
-落檔時由 [`CacheDefineAccess.SaveFormSchema`](../src/Bee.ObjectCaching/CacheDefineAccess.cs) 強制檢查 `CategoryId` 非空（透過 [`TableSchemaGenerator.GetCategoryId`](../src/Bee.Definition/Database/TableSchemaGenerator.cs)），否則拋 `InvalidOperationException`。
+落檔時由 [`CacheDefineAccess.SaveFormSchema`](../../src/Bee.ObjectCaching/CacheDefineAccess.cs) 強制檢查 `CategoryId` 非空（透過 [`TableSchemaGenerator.GetCategoryId`](../../src/Bee.Definition/Database/TableSchemaGenerator.cs)），否則拋 `InvalidOperationException`。
 
 ### 5.2 TableSchema 落檔路徑
 
@@ -363,7 +363,7 @@ FormSchema 衍生的 TableSchema 依 CategoryId 分目錄存放：
               └── log/
 ```
 
-路徑解析：[`PathOptions.GetTableSchemaFilePath(categoryId, tableName)`](../src/Bee.Definition/PathOptions.cs)（DI ctor 注入）。
+路徑解析：[`PathOptions.GetTableSchemaFilePath(categoryId, tableName)`](../../src/Bee.Definition/PathOptions.cs)（DI ctor 注入）。
 
 ### 5.3 部署階段：實體 DB 的表清單推導
 
@@ -411,7 +411,7 @@ DatabaseItem item = dbSettingsProvider.GetItem(databaseId);
 
 無論底層是哪種狀況，業務端程式碼都是同一個入口 `IDatabaseSettingsProvider.GetItem(databaseId)`，差異只在「依當前情境推導 databaseId 字串」這一步。
 
-對於 bo repo（BO 層消費的 Repository），框架透過 `IRepositoryDatabaseRouter`（見 [ADR-010 §「後續延伸：執行時路由」](adr/adr-010-logical-database-category.md)）統一推導，BO 程式碼不需手寫：
+對於 bo repo（BO 層消費的 Repository），框架透過 `IRepositoryDatabaseRouter`（見 [ADR-010 §「後續延伸：執行時路由」](../adr/adr-010-logical-database-category.md)）統一推導，BO 程式碼不需手寫：
 
 | 來源 | databaseId 推導方式 |
 |------|---------------------|
@@ -512,8 +512,8 @@ CategoryId 與 DbCategorySettings 只在前述的設計階段（5.1–5.2）與�
 
 ## 相關文件
 
-- [架構總覽](architecture-overview.zh-TW.md) — Definition-Driven 架構全貌
-- [開發指引](development-cookbook.md) — 框架初始化順序與開發流程
-- [資料庫命名規範](database-naming-conventions.md) — 表名 / 欄位命名規則
-- [ADR-005：FormSchema 定義驅動架構](adr/adr-005-formschema-driven.md)
-- [ADR-010：邏輯資料庫分類設計](adr/adr-010-logical-database-category.md) — 為何引入 DbCategory 抽象層
+- [架構總覽](architecture-overview.md) — Definition-Driven 架構全貌
+- [開發指引](../en/development-cookbook.md) — 框架初始化順序與開發流程
+- [資料庫命名規範](../en/database-naming-conventions.md) — 表名 / 欄位命名規則
+- [ADR-005：FormSchema 定義驅動架構](../adr/adr-005-formschema-driven.md)
+- [ADR-010：邏輯資料庫分類設計](../adr/adr-010-logical-database-category.md) — 為何引入 DbCategory 抽象層

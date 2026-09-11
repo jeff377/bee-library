@@ -1,6 +1,6 @@
 # Development Constraints and Anti-Patterns
 
-[繁體中文](development-constraints.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/development-constraints.md) · [← Docs Index](README.md)
 
 > This document lists the framework's design constraints and forbidden practices, as a reference for AI coding tools to avoid generating code that violates framework conventions.
 > For authorization behaviour, see [Permission & Authorization](permission-authorization.md); the account-security constraints are in this document below.
@@ -202,7 +202,7 @@ When `CommonConfiguration.IsDebugMode` is enabled, the original message is passe
 - A code that declares an exception type → rebuilt as that type, carrying the original message verbatim (no prefix), so the caller can branch on the type
 - Every other code → `InvalidOperationException($"API error: {code} - {message}")`, preserving the protocol-level debugging info
 
-Which code maps to which exception type is declared once, in [`JsonRpcErrorContract`](../src/Bee.Api.Core/JsonRpc/JsonRpcErrorContract.cs) — both ends read that single declaration, so this document does not keep a second copy of the table. See [ADR-043](adr/adr-043-error-contract-single-registry.md) for the reasoning.
+Which code maps to which exception type is declared once, in [`JsonRpcErrorContract`](../../src/Bee.Api.Core/JsonRpc/JsonRpcErrorContract.cs) — both ends read that single declaration, so this document does not keep a second copy of the table. See [ADR-043](../adr/adr-043-error-contract-single-registry.md) for the reasoning.
 
 Recommended client-side catch order:
 
@@ -269,11 +269,11 @@ dynamic code off and an unregistered type fails there outright. Adding a message
 definition type reachable from one, or a new closed generic instantiation (`List<T>`,
 `Dictionary<K,V>`, `T?`, an enum) means adding a registration. The drift tests walk the same type
 closure and fail the build when one is missing. See
-[ADR-037](adr/adr-037-wire-explicit-registration.md).
+[ADR-037](../adr/adr-037-wire-explicit-registration.md).
 
 ### API Contract Naming Convention (Mandatory)
 
-API Request / Response and BO Args / Result types must follow naming conventions so that `ApiOutputConverter` can automatically map BO return values to API types (see [ADR-007](adr/adr-007-convention-based-type-resolution.md)):
+API Request / Response and BO Args / Result types must follow naming conventions so that `ApiOutputConverter` can automatically map BO return values to API types (see [ADR-007](../adr/adr-007-convention-based-type-resolution.md)):
 
 | Layer | Input | Output |
 |-------|-------|--------|
@@ -282,7 +282,7 @@ API Request / Response and BO Args / Result types must follow naming conventions
 | Contract (`Bee.Api.Contracts`) | `I{Action}Request` | `I{Action}Response` |
 
 - Types deviating from the naming convention will not be auto-converted; BO return values will pass through to the client and cause type errors
-- Response mapping needs **no manual registration**: it is resolved by the naming convention above. The registry that once required `Register` calls is gone, and so is the Typeless serialization it whitelisted for — see [ADR-007](adr/adr-007-convention-based-type-resolution.md) and [ADR-037](adr/adr-037-wire-explicit-registration.md)
+- Response mapping needs **no manual registration**: it is resolved by the naming convention above. The registry that once required `Register` calls is gone, and so is the Typeless serialization it whitelisted for — see [ADR-007](../adr/adr-007-convention-based-type-resolution.md) and [ADR-037](../adr/adr-037-wire-explicit-registration.md)
 
 ## Account Security Constraints
 
@@ -312,7 +312,7 @@ from it. Three constraints follow:
 
 With `ApiServiceOptions.RequireWireFrame` enabled, Encoded and Encrypted requests carry a wire
 frame (timestamp + sequence number) inside the encrypted envelope. See
-[ADR-042](adr/adr-042-api-replay-protection.md) for the reasoning. Four constraints follow:
+[ADR-042](../adr/adr-042-api-replay-protection.md) for the reasoning. Four constraints follow:
 
 - **Both ends must be set to the same value.** Whether a frame is present is a deployment-level
   fact and is never read from the packet — were the server to "detect" it, an attacker could turn

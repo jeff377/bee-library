@@ -1,9 +1,9 @@
 # 資料庫 Schema 升級指引
 
-[English](database-schema-upgrade.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/database-schema-upgrade.md) · [← 文件索引](README.md)
 
 > 本文件說明 Bee.NET 應用如何維護資料庫資料表結構：定義變更後如何同步到實際資料庫、底層採用何種升級策略、以及維運上的注意事項。
-> 命名規範請參閱 [資料庫命名規範](database-naming-conventions.md)，定義驅動的整體理念請參閱 [ADR-005 FormSchema-Driven](adr/adr-005-formschema-driven.md)。
+> 命名規範請參閱 [資料庫命名規範](../en/database-naming-conventions.md)，定義驅動的整體理念請參閱 [ADR-005 FormSchema-Driven](../adr/adr-005-formschema-driven.md)。
 
 ## 1. 核心觀念
 
@@ -43,11 +43,11 @@ public class MyService(IRepositoryFactory repoFactory)
 
 回傳值代表「是否實際執行了升級」：`false` 表示 DB 與 define 已一致，無變更。
 
-> 介面定義在 [IDatabaseRepository](../src/Bee.Repository.Abstractions/System/IDatabaseRepository.cs)，預設實作於 [DatabaseRepository](../src/Bee.Repository/System/DatabaseRepository.cs)。
+> 介面定義在 [IDatabaseRepository](../../src/Bee.Repository.Abstractions/System/IDatabaseRepository.cs)，預設實作於 [DatabaseRepository](../../src/Bee.Repository/System/DatabaseRepository.cs)。
 
 ### 2.2 進階用法：`TableSchemaBuilder`
 
-需要更細的控制（dry-run、`UpgradeOptions`、結構化 diff）時，直接使用底層的 [TableSchemaBuilder](../src/Bee.Db/Schema/TableSchemaBuilder.cs)：
+需要更細的控制（dry-run、`UpgradeOptions`、結構化 diff）時，直接使用底層的 [TableSchemaBuilder](../../src/Bee.Db/Schema/TableSchemaBuilder.cs)：
 
 ```csharp
 // 透過 DI 取得 defineAccess 與 connectionManager（例如在 BO / Service ctor 注入）
@@ -94,7 +94,7 @@ bool upgraded = builder.Execute("company", "st_employee", new UpgradeOptions
 
 ### TableSchemaDiff（結構化變更）
 
-[TableSchemaDiff](../src/Bee.Db/Schema/TableSchemaDiff.cs) 是 provider 無關的中介結果，列出每一筆 `ITableChange`：
+[TableSchemaDiff](../../src/Bee.Db/Schema/TableSchemaDiff.cs) 是 provider 無關的中介結果，列出每一筆 `ITableChange`：
 
 | Change 型別 | 對應變更 |
 |-------------|----------|
@@ -108,7 +108,7 @@ bool upgraded = builder.Execute("company", "st_employee", new UpgradeOptions
 
 ### UpgradePlan（執行計畫）
 
-[UpgradePlan](../src/Bee.Db/Schema/UpgradePlan.cs) 含 `Mode`（`NoChange` / `Create` / `Alter` / `Rebuild`）、`Stages`（分階段 SQL）與 `Warnings`。可直接列印 SQL：
+[UpgradePlan](../../src/Bee.Db/Schema/UpgradePlan.cs) 含 `Mode`（`NoChange` / `Create` / `Alter` / `Rebuild`）、`Stages`（分階段 SQL）與 `Warnings`。可直接列印 SQL：
 
 ```csharp
 var diff = builder.CompareToDiff("company", "st_employee");
@@ -326,15 +326,15 @@ ALTER TABLE ft_employee   RENAME TO st_employee;
 ## 11. 參考
 
 ### 原始檔
-- [TableSchemaBuilder](../src/Bee.Db/Schema/TableSchemaBuilder.cs) — 對外入口
-- [TableUpgradeOrchestrator](../src/Bee.Db/Schema/TableUpgradeOrchestrator.cs) — Plan / Execute
-- [TableSchemaDiff](../src/Bee.Db/Schema/TableSchemaDiff.cs) / [UpgradePlan](../src/Bee.Db/Schema/UpgradePlan.cs)
-- [UpgradeOptions](../src/Bee.Db/Schema/UpgradeOptions.cs)
-- [DbField.OriginalFieldName](../src/Bee.Definition/Database/DbField.cs)
+- [TableSchemaBuilder](../../src/Bee.Db/Schema/TableSchemaBuilder.cs) — 對外入口
+- [TableUpgradeOrchestrator](../../src/Bee.Db/Schema/TableUpgradeOrchestrator.cs) — Plan / Execute
+- [TableSchemaDiff](../../src/Bee.Db/Schema/TableSchemaDiff.cs) / [UpgradePlan](../../src/Bee.Db/Schema/UpgradePlan.cs)
+- [UpgradeOptions](../../src/Bee.Db/Schema/UpgradeOptions.cs)
+- [DbField.OriginalFieldName](../../src/Bee.Definition/Database/DbField.cs)
 
 ### 相關文件
-- [資料庫命名規範](database-naming-conventions.md)
-- [架構總覽](architecture-overview.zh-TW.md)
-- [開發指引](development-cookbook.md)
-- [開發限制](development-constraints.md)
-- [ADR-005：FormSchema-Driven](adr/adr-005-formschema-driven.md)
+- [資料庫命名規範](../en/database-naming-conventions.md)
+- [架構總覽](architecture-overview.md)
+- [開發指引](../en/development-cookbook.md)
+- [開發限制](../en/development-constraints.md)
+- [ADR-005：FormSchema-Driven](../adr/adr-005-formschema-driven.md)

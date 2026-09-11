@@ -6,13 +6,13 @@
 
 [ADR-016](adr-016-multitenant-customization-overlay.md) 立下客製層的**整檔取代**語意，
 「`FormLayout` 是畫面的權威來源」則是該語意的推論，明文寫在
-[定義檔全景](../definition-files-overview.zh-TW.md)（commit `53025c34`）。
+[定義檔全景](../zh-TW/definition-files-overview.md)（commit `53025c34`）。
 本 ADR 補齊該推論在**缺檔情境**下的行為；ADR-016 的雙層唯讀疊加語意不變。
 
 ## 背景
 
 `FormLayout` 是 `FormSchema` 在 UI 維度的投影，描述表單的視覺配置。框架早已確立
-**「`FormLayout` 是畫面上有什麼的權威來源」**（[定義檔全景](../definition-files-overview.zh-TW.md)）：
+**「`FormLayout` 是畫面上有什麼的權威來源」**（[定義檔全景](../zh-TW/definition-files-overview.md)）：
 客製層採整檔取代，因此 base schema 新增欄位**不會**自動出現在已客製的租戶畫面上——
 租戶看到什麼，由租戶那份版面檔說了算。
 

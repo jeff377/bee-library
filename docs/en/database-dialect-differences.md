@@ -1,6 +1,6 @@
 # Database Dialect Differences (DDL)
 
-[繁體中文](database-dialect-differences.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/database-dialect-differences.md) · [← Docs Index](README.md)
 
 Bee.NET generates DDL (CREATE TABLE / ALTER TABLE) from a single `TableSchema` definition and hides the per-database differences behind dialect adapters under `src/Bee.Db/Providers/<Dialect>/`. Application developers usually never see these differences — the framework's own CRUD, seeding, and schema-upgrade paths handle them uniformly.
 
@@ -9,7 +9,7 @@ This document consolidates the DDL rules and **exceptions** that *do* leak throu
 > Related, more focused documents:
 > - [database-naming-conventions.md](database-naming-conventions.md) §5 — identifier case sensitivity and quoting.
 > - [database-schema-upgrade.md](database-schema-upgrade.md) §4 — ALTER-vs-rebuild decision and per-dialect ALTER capabilities.
-> - [src/Bee.Db/README.md](../src/Bee.Db/README.md) — SQLite limitations and the Oracle identifier strategy.
+> - [src/Bee.Db/README.md](../../src/Bee.Db/README.md) — SQLite limitations and the Oracle identifier strategy.
 
 ---
 
@@ -17,7 +17,7 @@ This document consolidates the DDL rules and **exceptions** that *do* leak throu
 
 This is a deliberate framework design decision, so it is stated first because it drives most of the exceptions below.
 
-`DbField.AllowNull` **defaults to `false`** ([DbField.cs](../src/Bee.Definition/Database/DbField.cs)). The rule is:
+`DbField.AllowNull` **defaults to `false`** ([DbField.cs](../../src/Bee.Definition/Database/DbField.cs)). The rule is:
 
 | Column category | Nullability | Default value |
 |-----------------|-------------|---------------|
@@ -59,7 +59,7 @@ Notes:
 - **Temporal defaults are all UTC-returning.** Framework time columns are stored in UTC (see
   [Time Zones](datetime-timezone.md)), and a `DEFAULT` is the path that actually writes when the
   SQL does not name the column: a hand-written INSERT that omits it, and `ALTER TABLE ADD COLUMN`
-  backfilling existing rows. See D9b in [ADR-032](adr/adr-032-datetime-timezone.md).
+  backfilling existing rows. See D9b in [ADR-032](../adr/adr-032-datetime-timezone.md).
 - **MySQL** wraps function-call defaults in parentheses (`(UUID())`, `(CURRENT_DATE)`) because MySQL only allows non-literal defaults in the parenthesised *expression* form.
 - **SQLite** has no native UUID generator; `hex(randomblob(16))` is a unique-but-not-strictly-v4 surrogate, sufficient for framework-managed defaults.
 - **Boolean literals**: the framework's canonical form is `"1"` / `"0"`. PostgreSQL rejects those for a `BOOLEAN` column, so the PG dialect translates them to `TRUE` / `FALSE` at the SQL-emission boundary. All other dialects accept `1` / `0`.
@@ -74,7 +74,7 @@ These are the rules most likely to cause a "works on 4 databases, fails on the 5
 
 Oracle has no concept of a non-null empty string — `''` **is** `NULL`. So `VARCHAR2(n) DEFAULT '' NOT NULL` is self-contradictory (`DEFAULT ''` means `DEFAULT NULL`, which conflicts with `NOT NULL`).
 
-**How the framework handles it** ([OracleSchemaSyntax.cs](../src/Bee.Db/Providers/Oracle/OracleSchemaSyntax.cs)):
+**How the framework handles it** ([OracleSchemaSyntax.cs](../../src/Bee.Db/Providers/Oracle/OracleSchemaSyntax.cs)):
 
 - `String` / `Text` columns are emitted **nullable** (no `NOT NULL`, no `DEFAULT ''`) on Oracle only.
 - The "text is never null" contract is upheld at the C# layer: `ValueUtilities.CStr(null)` returns `""`, so callers still only ever see an empty string.
@@ -84,7 +84,7 @@ Oracle has no concept of a non-null empty string — `''` **is** `NULL`. So `VAR
 
 ### 3.2 MySQL: `TEXT` / `BLOB` cannot have a `DEFAULT`
 
-MySQL forbids a `DEFAULT` clause on `TEXT` / `BLOB` columns. So a `Text` column with `AllowNull=false` is emitted as `TEXT NOT NULL` **with no default** ([MySqlSchemaSyntax.cs](../src/Bee.Db/Providers/MySql/MySqlSchemaSyntax.cs)) — the column stays `NOT NULL`, but there is no DB-side fallback value.
+MySQL forbids a `DEFAULT` clause on `TEXT` / `BLOB` columns. So a `Text` column with `AllowNull=false` is emitted as `TEXT NOT NULL` **with no default** ([MySqlSchemaSyntax.cs](../../src/Bee.Db/Providers/MySql/MySqlSchemaSyntax.cs)) — the column stays `NOT NULL`, but there is no DB-side fallback value.
 
 **Consequence for hand-written SQL:** any `INSERT` that **omits** a `NOT NULL` `Text` column fails **only on MySQL** in strict mode with:
 
@@ -153,5 +153,5 @@ When a schema upgrade changes a column, some changes can be done with `ALTER`, o
 
 - Dialect implementations: `src/Bee.Db/Providers/<Dialect>/<Dialect>SchemaSyntax.cs`, `…TableSchemaProvider.cs`.
 - Dialect-neutral ALTER-vs-rebuild and narrowing rules, shared by all five providers: `src/Bee.Db/Schema/AlterCompatibilityRules.cs` (SQLite overrides only `GetKindForTypeChange`, in `src/Bee.Db/Providers/Sqlite/SqliteAlterCompatibilityRules.cs`).
-- Column model: [DbField.cs](../src/Bee.Definition/Database/DbField.cs).
-- Related docs: [database-naming-conventions.md](database-naming-conventions.md), [database-schema-upgrade.md](database-schema-upgrade.md), [src/Bee.Db/README.md](../src/Bee.Db/README.md).
+- Column model: [DbField.cs](../../src/Bee.Definition/Database/DbField.cs).
+- Related docs: [database-naming-conventions.md](database-naming-conventions.md), [database-schema-upgrade.md](database-schema-upgrade.md), [src/Bee.Db/README.md](../../src/Bee.Db/README.md).

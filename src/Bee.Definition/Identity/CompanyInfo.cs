@@ -19,7 +19,7 @@ namespace Bee.Definition.Identity
     /// session in the company receives the same reference, and <see cref="CompanyDatabaseId"/>
     /// selects which database that company's repositories read and write, so a mutation redirects
     /// other sessions' data access. The setters exist for the serializers, not for callers. See
-    /// <c>docs/development-constraints.md</c> § <i>Cached Data Immutability After Init</i>.
+    /// <c>docs/en/development-constraints.md</c> § <i>Cached Data Immutability After Init</i>.
     /// </para>
     /// </remarks>
     public class CompanyInfo : IKeyObject

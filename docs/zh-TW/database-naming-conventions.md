@@ -1,11 +1,11 @@
 # 資料庫命名規範  
 
-[English](database-naming-conventions.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/database-naming-conventions.md) · [← 文件索引](README.md)
 
 本文件定義資料庫表結構及系統欄位的命名規則，適用於所有資料庫物件設計。  
 統一命名風格可避免跨資料庫時產生大小寫與語意不一致問題，並提升可維護性。  
 
-> 想知道框架實際擁有哪些 `st_*` 表？見 [框架保留命名](framework-reserved-names.zh-TW.md)。
+> 想知道框架實際擁有哪些 `st_*` 表？見 [框架保留命名](framework-reserved-names.md)。
 
 ---
 
@@ -15,7 +15,7 @@
 - **避免** 使用 PascalCase 或 camelCase，因為部分資料庫（例如 PostgreSQL、Oracle）在有引號時會區分大小寫。  
 - 所有 **資料表** 與 **欄位名稱** 均使用 **小寫字母**。  
 - 系統層級表（例如設定、登入、稽核等）以 `st_` 開頭。  
-- 稽核軌跡／日誌表以 `st_log_*` 命名（例如 `st_log_login`、`st_log_change`），屬 `log` 分類——見 [框架保留命名 §1.3](framework-reserved-names.zh-TW.md)。  
+- 稽核軌跡／日誌表以 `st_log_*` 命名（例如 `st_log_login`、`st_log_change`），屬 `log` 分類——見 [框架保留命名 §1.3](framework-reserved-names.md)。  
 - 業務／表單層級表以 `ft_` 開頭。  
 
 ---
@@ -155,7 +155,7 @@ Oracle 是 outlier：framework 在 emit DDL/DML 時將識別符 `.ToUpperInvaria
 | **定義** | `FormField.FieldName`、`DbField.FieldName`、`TableSchema` 欄位 | 小寫 `snake_case` |
 | **資料（實體）** | 資料庫表欄位 | 小寫 `snake_case`（§1–2） |
 | **資料（記憶體）** | `DataSet` / `DataTable` 的 `DataColumn.ColumnName` | 小寫 `snake_case` |
-| **運算式** | `FormField.ValueExpression` / `FormRule.Condition` 內的識別字（見 [expression-rules.zh-TW.md](expression-rules.zh-TW.md)） | 精確的宣告 `FieldName`（小寫） |
+| **運算式** | `FormField.ValueExpression` / `FormRule.Condition` 內的識別字（見 [expression-rules.md](expression-rules.md)） | 精確的宣告 `FieldName`（小寫） |
 | **UI** | 欄位編輯器／表格欄的繫結 key | 小寫 `snake_case` |
 
 ### 為何全系統只用一種大小寫
@@ -168,7 +168,7 @@ Oracle 是 outlier：framework 在 emit DDL/DML 時將識別符 `.ToUpperInvaria
 
 框架**曾長年將記憶體中的 `DataSet` 欄名存為大寫**——這個正規化最初是為了配合某個區分大小寫的 UI 繫結路徑（讀取資料庫時、以及 `DataTableExtensions.AddColumn` 內把欄名轉大寫）。它會洩漏到 wire，因此舊的 JSON / MessagePack 封包（及據此撰寫的 client）使用大寫 key，如 `SYS_ROWID`。
 
-依 **[ADR-029](adr/adr-029-lowercase-field-names.md)**，記憶體 `DataSet` 欄名**現已正規化為小寫**（`DataTableExtensions.AddColumn` 與 `LowercaseColumnNames`，於 `DbAccess` 讀取邊界套用），使所有層——以及 wire——一律呈現單一小寫欄名。此為**破壞性 wire 變更**：JSON / MessagePack payload key 現為小寫（如 `sys_rowid`），第一方 client 已同步更新。
+依 **[ADR-029](../adr/adr-029-lowercase-field-names.md)**，記憶體 `DataSet` 欄名**現已正規化為小寫**（`DataTableExtensions.AddColumn` 與 `LowercaseColumnNames`，於 `DbAccess` 讀取邊界套用），使所有層——以及 wire——一律呈現單一小寫欄名。此為**破壞性 wire 變更**：JSON / MessagePack payload key 現為小寫（如 `sys_rowid`），第一方 client 已同步更新。
 
 由於框架內所有欄名比對皆大小寫無關（`DataColumnCollection` 查找；運算式引擎以 `FormField.FieldName` 綁定），透過 C# 堆疊讀取舊的大寫封包仍可運作；只有區分大小寫的外部消費端（例如 JS/TS client 以字面 key 讀 `row.current.SYS_ROWID`）需改用小寫 key。
 

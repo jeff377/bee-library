@@ -56,7 +56,7 @@
 共通最小欄位模型：`who`（user）／ `when`（UTC）／ `what`（物件＋key＋欄位，或動作名）／
 `where`（method／channel／IP／session）／ `before-after`（僅異動）／ `result`。
 
-> 實際表名與欄位以 [框架保留命名](../framework-reserved-names.zh-TW.md) §1 與原始碼為準，
+> 實際表名與欄位以 [框架保留命名](../zh-TW/framework-reserved-names.md) §1 與原始碼為準，
 > 本 ADR 不複寫。
 
 ### 二、「執行記錄全記」取消，改為異常記錄
@@ -286,7 +286,7 @@ BCL 方法，因此 `XmlSerializer` 產出的 payload 與此等價。不走它�
 ## 參考
 
 - 保留與分區（依年分庫、append-only、hash-chain）的設計方向見
-  [資料庫設定指引](../database-settings-guide.zh-TW.md) 的多資料庫情境。
+  [資料庫設定指引](../zh-TW/database-settings-guide.md) 的多資料庫情境。
 - 相關 ADR：[ADR-017](adr-017-db-cache-invalidation.md)、
   [ADR-018](adr-018-db-define-storage.md)、
   [ADR-019](adr-019-permission-authorization-model.md)。

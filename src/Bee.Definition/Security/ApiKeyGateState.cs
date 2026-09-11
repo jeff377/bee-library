@@ -21,7 +21,7 @@ namespace Bee.Definition.Security
     /// WARNING: this is a cache-shared instance. It must not be mutated after it is loaded — the
     /// whole deployment reads the same reference, so flipping <see cref="InForce"/> on it opens or
     /// closes the gate for every caller at once. The setter exists for the serializers, not for
-    /// callers. See <c>docs/development-constraints.md</c> § <i>Cached Data Immutability After
+    /// callers. See <c>docs/en/development-constraints.md</c> § <i>Cached Data Immutability After
     /// Init</i>.
     /// </para>
     /// </remarks>

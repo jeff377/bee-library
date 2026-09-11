@@ -10,8 +10,8 @@
 | 文件 | 當時寫的 | 漏了什麼 |
 |------|---------|---------|
 | `docs/adr/adr-016-*.md` 的 2026-08-06 修訂表 | 「現行**五類**」 | `MenuSettings` 整個不在表上 |
-| `docs/customization.md` / `.zh-TW.md` 的「該用哪一種」表 | 五列 | 同上 |
-| `docs/definition-files-overview.md` / `.zh-TW.md` §7 | 「**四種型別**，三種粒度」 | `PluginSettings`，也就是唯一「相加」的那種粒度 |
+| `docs/en/customization.md` / `.zh-TW.md` 的「該用哪一種」表 | 五列 | 同上 |
+| `docs/en/definition-files-overview.md` / `.zh-TW.md` §7 | 「**四種型別**，三種粒度」 | `PluginSettings`，也就是唯一「相加」的那種粒度 |
 
 三處漏的**不是同一項**，所以交叉比對也對不出來：前兩處漏 `MenuSettings`，第三處漏
 `PluginSettings`。

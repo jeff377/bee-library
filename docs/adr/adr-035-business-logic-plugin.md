@@ -246,8 +246,8 @@ plugin 是作者刻意加上的，略過等於**客製沒生效**——靜默漏
 
 ### 相關文件
 
-- [租戶客製化](../customization.zh-TW.md) —— 五種機制的決策表與 how-to
-- [端到端開發指引](../development-cookbook.zh-TW.md) —— 「業務 plugin」一節
+- [租戶客製化](../zh-TW/customization.md) —— 五種機制的決策表與 how-to
+- [端到端開發指引](../zh-TW/development-cookbook.md) —— 「業務 plugin」一節
 - [ADR-016](adr-016-multitenant-customization-overlay.md) —— 客製化覆蓋層
 - [ADR-028](adr-028-expression-rule-engine.md) —— 運算式與規則引擎
 - [ADR-034](adr-034-progid-type-registry.md) —— ProgId 型別註冊表

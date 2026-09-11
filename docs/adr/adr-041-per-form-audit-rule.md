@@ -161,7 +161,7 @@ Technical Features 之後）。enforcement 為 **fail-closed**：模型未授權
   升級前的既有部署沒有這張表，讀不到就拋例外會讓每一次 Save 都失敗，
   這是本設計唯一的真實回歸風險，已於五種 provider 分別驗證。
 - **升級路徑**：欄位層敏感度與動作層開關都是 additive 的，日後要加不必迴避本設計。
-- **相關**：表與 progId 登記見 [框架保留命名](../framework-reserved-names.zh-TW.md)；
+- **相關**：表與 progId 登記見 [框架保留命名](../zh-TW/framework-reserved-names.md)；
   分類軸見 [ADR-040](adr-040-audit-trail-taxonomy.md)；
   跨節點失效機制見 [ADR-017](adr-017-db-cache-invalidation.md)；
   權限模型見 [ADR-019](adr-019-permission-authorization-model.md)。

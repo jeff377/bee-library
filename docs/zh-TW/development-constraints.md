@@ -1,9 +1,9 @@
 # 開發限制與反模式
 
-[English](development-constraints.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/development-constraints.md) · [← 文件索引](README.md)
 
 > 本文件列出框架的設計限制與禁止事項，供 AI Coding 工具參考，避免產生違反框架慣例的程式碼。
-> 授權行為請參閱[權限與授權](permission-authorization.zh-TW.md)；帳號安全限制在本文件下方。
+> 授權行為請參閱[權限與授權](permission-authorization.md)；帳號安全限制在本文件下方。
 
 ## 初始化順序限制
 
@@ -15,7 +15,7 @@
 4. `services.AddBeeFramework(settings.BackendConfiguration, paths)` — 註冊框架服務（擴充方法來自 `Bee.Hosting`）
 5. `services.BuildServiceProvider()` 後 `app.UseBeeFramework()`（僅 ASP.NET Core 宿主；非 web 宿主則把產出的 `IServiceProvider` 設給 `ApiClientInfo.LocalServiceProvider` 啟用近端模式）
 
-完整參考見 [development-cookbook.zh-TW.md § 框架初始化順序](development-cookbook.zh-TW.md#框架初始化順序)。
+完整參考見 [development-cookbook.zh-TW.md § 框架初始化順序](development-cookbook.md#框架初始化順序)。
 
 ### 違反後果
 
@@ -192,7 +192,7 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 - 有宣告例外型別的 code → 重建為該型別，帶原訊息、無前綴，呼叫端可依型別分支
 - 其餘 code → 拋出 `InvalidOperationException($"API error: {code} - {message}")`，保留協定層除錯資訊
 
-哪個 code 對應哪個例外型別，**權威來源是 [`JsonRpcErrorContract`](../src/Bee.Api.Core/JsonRpc/JsonRpcErrorContract.cs)**——伺服端與呼叫端都從那一份宣告消費，本文不複寫一份對照表。設計理由見 [ADR-043](adr/adr-043-error-contract-single-registry.md)。
+哪個 code 對應哪個例外型別，**權威來源是 [`JsonRpcErrorContract`](../../src/Bee.Api.Core/JsonRpc/JsonRpcErrorContract.cs)**——伺服端與呼叫端都從那一份宣告消費，本文不複寫一份對照表。設計理由見 [ADR-043](../adr/adr-043-error-contract-single-registry.md)。
 
 Client 端建議的 catch 順序：
 
@@ -238,7 +238,7 @@ catch (Exception ex)
 - FormSchema 在執行時期為**唯讀**，不可動態新增欄位
 - `IFormCommandBuilder`（位於 `Bee.Db.Dml`）為 CRUD 命令建構契約，5 DB providers 各自實作（`SqlFormCommandBuilder` / `PgFormCommandBuilder` / `MySqlFormCommandBuilder` / `OracleFormCommandBuilder` / `SqliteFormCommandBuilder`），無共同基底類別
 - TableSchema 手動調整的部分（精度、索引、預設值）在 FormSchema 更新時會被保留
-- `FormTable.DbTableName`：可選欄位；若為空，使用 `FormTable.TableName` 作為實體表名。命名應遵循 [`資料庫命名規範`](database-naming-conventions.md)（lowercase + snake_case）
+- `FormTable.DbTableName`：可選欄位；若為空，使用 `FormTable.TableName` 作為實體表名。命名應遵循 [`資料庫命名規範`](../en/database-naming-conventions.md)（lowercase + snake_case）
 
 ## 型別安全限制
 
@@ -256,11 +256,11 @@ catch (Exception ex)
 不是承載機制：.NET for iOS 關閉動態碼，未註冊的型別在那裡直接失敗。新增訊息合約、
 新增其可達的定義層型別、或引入新的封閉泛型具現（`List<T>`、`Dictionary<K,V>`、`T?`、列舉）
 時都必須補上註冊。漂移測試會走同一條型別閉包，漏補即建置失敗。
-詳見 [ADR-037](adr/adr-037-wire-explicit-registration.md)。
+詳見 [ADR-037](../adr/adr-037-wire-explicit-registration.md)。
 
 ### API 契約命名慣例（強制）
 
-API Request/Response 與 BO Args/Result 型別必須遵守命名慣例，`ApiOutputConverter` 才能自動將 BO 回傳值對應到 API 型別（詳見 [ADR-007](adr/adr-007-convention-based-type-resolution.md)）：
+API Request/Response 與 BO Args/Result 型別必須遵守命名慣例，`ApiOutputConverter` 才能自動將 BO 回傳值對應到 API 型別（詳見 [ADR-007](../adr/adr-007-convention-based-type-resolution.md)）：
 
 | 層級 | 輸入 | 輸出 |
 |------|------|------|
@@ -269,7 +269,7 @@ API Request/Response 與 BO Args/Result 型別必須遵守命名慣例，`ApiOut
 | Contract（`Bee.Api.Contracts`） | `I{Action}Request` | `I{Action}Response` |
 
 - 偏離命名慣例的型別將無法自動轉換，BO 回傳值會直接流至用戶端造成型別錯誤
-- 回應映射**不需任何手動註冊**，由上表的命名慣例解析。當年需要 `Register` 的那個註冊表已移除，它所白名單的 Typeless 序列化也已移除 —— 見 [ADR-007](adr/adr-007-convention-based-type-resolution.md) 與 [ADR-037](adr/adr-037-wire-explicit-registration.md)
+- 回應映射**不需任何手動註冊**，由上表的命名慣例解析。當年需要 `Register` 的那個註冊表已移除，它所白名單的 Typeless 序列化也已移除 —— 見 [ADR-007](../adr/adr-007-convention-based-type-resolution.md) 與 [ADR-037](../adr/adr-037-wire-explicit-registration.md)
 
 ## 帳號安全限制
 
@@ -294,7 +294,7 @@ API Request/Response 與 BO Args/Result 型別必須遵守命名慣例，`ApiOut
 ## API 重放防護限制
 
 啟用 `ApiServiceOptions.RequireWireFrame` 後，Encoded 與 Encrypted 的請求會在加密封套內夾帶
-一段 wire frame（時間戳 + 序號）。設計背景見 [ADR-042](adr/adr-042-api-replay-protection.md)。
+一段 wire frame（時間戳 + 序號）。設計背景見 [ADR-042](../adr/adr-042-api-replay-protection.md)。
 由此衍生四項限制：
 
 - **兩端必須設成同一個值。** frame 的有無是部署層級的事實，不由封包自述——伺服器若「偵測」

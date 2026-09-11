@@ -1,14 +1,14 @@
 # 時區處理
 
-[English](datetime-timezone.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/datetime-timezone.md) · [← 文件索引](README.md)
 
 資料庫的每個時間點都以 UTC 儲存，每位使用者看到的則是自己時區的時間。轉換只發生在一個地方
 ——用戶端的 API connector——因此你的 Business Object 與 UI 程式碼都不需要自己換算。
 
 本文說明框架替你做了什麼、有哪兩種情況需要你動手，以及如何設定使用者時區。
 
-> 設計理由與背後的實測：[ADR-032](adr/adr-032-datetime-timezone.md)。
-> 日曆日與時間點的語意區別，以及另外兩種時間型別：[時間型別總覽](temporal-types.zh-TW.md)。
+> 設計理由與背後的實測：[ADR-032](../adr/adr-032-datetime-timezone.md)。
+> 日曆日與時間點的語意區別，以及另外兩種時間型別：[時間型別總覽](temporal-types.md)。
 
 ---
 
@@ -47,7 +47,7 @@ UI 新增的列會以使用者自己的今天填入預設值——在紐約登�
 var command = new DbCommandSpec(DbCommandKind.DataTable, sql) { DateColumns = { "invoice_date" } };
 ```
 
-這與[時間型別總覽 §4](temporal-types.zh-TW.md) 描述的是同一件事，時區不需要額外宣告。
+這與[時間型別總覽 §4](temporal-types.md) 描述的是同一件事，時區不需要額外宣告。
 
 ### 過濾條件的值
 
@@ -66,7 +66,7 @@ FilterCondition.Equal("created_at", someDateTime);     // 時間點——送出�
 這些用戶端沒有 connector 代勞，兩個方向都要自己處理：顯示 `DateTime` 值時由 UTC 換算，送出前
 換回 UTC。`Date` 值則必須原樣傳遞——尤其別讓 `new Date(...)` 用瀏覽器時區重新解讀它。
 欄位型別會隨 payload 一起送達，用戶端不需額外取 metadata 就能分辨兩者，見
-[jsonrpc-frontend-integration.zh-TW.md](jsonrpc-frontend-integration.zh-TW.md)。
+[jsonrpc-frontend-integration.md](jsonrpc-frontend-integration.md)。
 
 ## 4. 設定使用者時區
 
@@ -86,10 +86,10 @@ FilterCondition.Equal("created_at", someDateTime);     // 時間點——送出�
 
 日期在框架中一律以 `DateOnly` 表達，**唯一例外是 `DataSet` 儲存格**——`DataColumn` 只能承載
 `DateTime`，框架會在該邊界替你轉換。運算式的 `Today()` 回傳依使用者時區的 `DateOnly`，
-`UtcNow()` 則明示 UTC。完整函式清單見[運算式規則](expression-rules.zh-TW.md)。
+`UtcNow()` 則明示 UTC。完整函式清單見[運算式規則](expression-rules.md)。
 
 ## 相關文件
 
-- [時間型別總覽：`Date`、`DateTime`、`Time`](temporal-types.zh-TW.md) —— 跨層對照參考：
+- [時間型別總覽：`Date`、`DateTime`、`Time`](temporal-types.md) —— 跨層對照參考：
   三種語意如何選擇，以及各自在每一層的承載方式。
-- [ADR-032](adr/adr-032-datetime-timezone.md) —— 決策本身與背後的實測數據。
+- [ADR-032](../adr/adr-032-datetime-timezone.md) —— 決策本身與背後的實測數據。

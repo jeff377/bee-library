@@ -162,7 +162,7 @@ midpoint 政策是**法人所在法域的會計政策**，不隨貨幣而變（�
    「為何金額與數量的捨入政策不共用同一個設定」、以及「為何開放設定而不換預設」。
    **選項 A 只做這一項**，此時 ADR 收斂為記錄既有決策
    （`adr-043-commercial-rounding-default.md`）。
-2. `docs/development-cookbook.md` / `.zh-TW.md` §Numeric Semantics 補設定入口（雙語同步）。
+2. `docs/en/development-cookbook.md` / `.zh-TW.md` §Numeric Semantics 補設定入口（雙語同步）。
 3. `.claude/rules/database.md` 的「四捨五入類 → `AwayFromZero`」條文改為
    「預設 `AwayFromZero`，可由公司政策／欄位方向覆寫」。
 

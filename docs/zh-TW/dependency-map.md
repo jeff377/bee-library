@@ -1,6 +1,6 @@
 # 專案相依性全景圖
 
-[English](dependency-map.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/dependency-map.md) · [← 文件索引](README.md)
 
 本文件以視覺化方式呈現 Bee.NET 框架中 `src/` 專案之間的相依關係。
 圖中涵蓋的是執行期套件；`Bee.Analyzers` 不列入，因為執行期沒有任何專案參考它 ——
@@ -105,7 +105,7 @@ graph BT
 | Bee.Api.Contracts / Bee.Api.Client / Bee.Repository.Abstractions / Bee.UI.Core | *(none)* |
 
 > `Bee.Api.Core` 的 MessagePack 是框架內**唯一**的傳輸格式套件，而讓它維持唯一正是
-> [ADR-036](adr/adr-036-wire-serialization-externalized.md) 的用意。僅建置期的參考
+> [ADR-036](../adr/adr-036-wire-serialization-externalized.md) 的用意。僅建置期的參考
 > （`PrivateAssets="all"`：SourceLink、公開 API 分析器、本 repo 自己的 analyzer）
 > 不列入 —— 它們不會流到任何消費者。
 
@@ -129,14 +129,14 @@ graph BT
 ## 架構要點
 
 - **Bee.Base** 為最底層基礎套件，無任何內部相依性。
-- **Bee.Expressions** 只承載 `DynamicExpressoEvaluator`——運算式引擎以 DynamicExpresso 為底的實作。**抽象**（`IExpressionEvaluator`、`ExpressionPolicy`、`ExpressionEvaluationException`）位於 `Bee.Base.Expressions`，因此 `Bee.Definition`（`FormExpressionCalculator`）與 `Bee.Business`（規則處理器）消費引擎時不會相依 DynamicExpresso；只有決定用哪個實作的組裝層（`Bee.Hosting` 的 DI 註冊、`Bee.UI.Avalonia` 的前端即時預覽）才引用本套件。這個分界讓定義層不帶第三方套件，同時維持前端算值與後端存檔一致。見 [adr-028](adr/adr-028-expression-rule-engine.md) 與 [adr-038](adr/adr-038-definition-dependency-boundary.md)。
+- **Bee.Expressions** 只承載 `DynamicExpressoEvaluator`——運算式引擎以 DynamicExpresso 為底的實作。**抽象**（`IExpressionEvaluator`、`ExpressionPolicy`、`ExpressionEvaluationException`）位於 `Bee.Base.Expressions`，因此 `Bee.Definition`（`FormExpressionCalculator`）與 `Bee.Business`（規則處理器）消費引擎時不會相依 DynamicExpresso；只有決定用哪個實作的組裝層（`Bee.Hosting` 的 DI 註冊、`Bee.UI.Avalonia` 的前端即時預覽）才引用本套件。這個分界讓定義層不帶第三方套件，同時維持前端算值與後端存檔一致。見 [adr-028](../adr/adr-028-expression-rule-engine.md) 與 [adr-038](../adr/adr-038-definition-dependency-boundary.md)。
 - **Bee.Definition** 為被依賴次數最多的專案，共有 7 個直接相依者（Contracts、Db、RepoAbs、Caching、Business、Api.Core、UI.Avalonia）。
 - **Bee.Api.Contracts** 是共用契約／抽象層，並非應用層級的 API 專案。雖名為「API」，但 `Bee.Business` 與 `Bee.Api.Core` 都相依於它（`Business → Contracts`、`Core → Contracts`），故其位置在兩者**之下** —— 圖上歸入 **共用契約層**，而非 API 應用層。
 - **Bee.Hosting** 為 composition root：將後端服務（`Bee.Api.Core`、`Bee.Business`、`Bee.Db`、`Bee.Repository`、`Bee.ObjectCaching`）整合於一個 `IServiceCollection.AddBeeFramework` 擴充入口，不依賴 ASP.NET Core。非 web 宿主（WinForms、Console、Worker Service）直接引用此套件。圖上獨立列為 **組合根** 而非歸入 API 層：橫跨各層本就是組合根的職責，故「API 層不得直接引用 Repository 層」的限制不適用於它。真正適用的限制是**它不得自帶資料存取** —— SQL 語句歸 `Bee.Db` / `Bee.Repository`，Hosting 只留 hosted service 外殼與 DI 接線。
 - **Bee.Api.AspNetCore** 為 ASP.NET Core 整合層（`UseBeeFramework` middleware 與 `ApiServiceController`），透過遞移引用 `Bee.Hosting`，使 web 宿主一次引用即取得 DI 註冊與 middleware。
 - 用戶端（Bee.Api.Client）與伺服器端（Bee.Api.AspNetCore）皆透過 **Bee.Api.Core** 共享協定邏輯，確保序列化與加解密行為一致。
 - **Bee.UI.Core** 為跨平台 UI 共通層（`ClientInfo` / `IEndpointStorage` / `IUIViewService` / `VersionInfo`），供所有 native UI family（目前為 Avalonia，以單一專案涵蓋桌面 / iOS / Android / WASM；未來 WinForms / WPF）共用 client-side 連線狀態與 endpoint 持久化邏輯；不含任何平台專屬 UI 程式碼，只依 `Bee.Api.Client`。
-- **Bee.UI.Avalonia** 為 Avalonia 桌面控制項套件（Windows / macOS / Linux）。內含 FormSchema 驅動控制項（`FormView` 單筆、`ListView` 清單、`GridControl` 表格，加上一組 field editor 與 `FormScope` ambient 綁定，皆以 `FormDataObject` 為資料中樞）與檔案後端 `FileEndpointStorage`，單一 `net10.0` TFM。下限版本鎖在 `Avalonia 12.0.0` + `Avalonia.Controls.DataGrid 12.0.0`（後者目前 stable 最高就是 12.0.0），host 可以透過 transitive 帶更新的 12.0.x。DataGrid 為何不走 `Binding "[FieldName]"` 詳見 [adr-020](adr/adr-020-avalonia-datagrid-binding-strategy.md)，編輯策略詳見 [adr-021](adr/adr-021-avalonia-datagrid-editing-strategy.md)。
+- **Bee.UI.Avalonia** 為 Avalonia 桌面控制項套件（Windows / macOS / Linux）。內含 FormSchema 驅動控制項（`FormView` 單筆、`ListView` 清單、`GridControl` 表格，加上一組 field editor 與 `FormScope` ambient 綁定，皆以 `FormDataObject` 為資料中樞）與檔案後端 `FileEndpointStorage`，單一 `net10.0` TFM。下限版本鎖在 `Avalonia 12.0.0` + `Avalonia.Controls.DataGrid 12.0.0`（後者目前 stable 最高就是 12.0.0），host 可以透過 transitive 帶更新的 12.0.x。DataGrid 為何不走 `Binding "[FieldName]"` 詳見 [adr-020](../adr/adr-020-avalonia-datagrid-binding-strategy.md)，編輯策略詳見 [adr-021](../adr/adr-021-avalonia-datagrid-editing-strategy.md)。
 - **`Bee.UI.*` family 判別準則**：是否消費 `Bee.UI.Core` 抽象（`ClientInfo` / `IEndpointStorage` / `IUIViewService` 等）。
   - 消費 → 歸 `Bee.UI.*`（目前：`Bee.UI.Core`、`Bee.UI.Avalonia`；未來：`Bee.UI.WinForms`、`Bee.UI.Wpf` 等同理）
   - 不消費，自有狀態管理 → 走獨立 family prefix（如 `Bee.Web.Blazor.*`：Blazor circuit 無檔案 IO 與 dialog service 概念，獨立路線合理）

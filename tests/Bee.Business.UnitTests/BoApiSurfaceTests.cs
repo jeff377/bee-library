@@ -23,7 +23,7 @@ namespace Bee.Business.UnitTests
     ///   security level.</description></item>
     /// <item><description>Update the <see cref="s_expectedSurface"/> baseline
     ///   below to match the new API surface.</description></item>
-    /// <item><description>Update <c>docs/api-method-reference.md</c>
+    /// <item><description>Update <c>docs/en/api-method-reference.md</c>
     ///   (and the zh-TW counterpart) so the human-facing reference does not
     ///   drift from the code.</description></item>
     /// </list>
@@ -100,7 +100,7 @@ namespace Bee.Business.UnitTests
         };
 
         [Fact]
-        [DisplayName("BO API 公開介面應與 baseline + docs/api-method-reference.md 同步")]
+        [DisplayName("BO API 公開介面應與 baseline + docs/en/api-method-reference.md 同步")]
         public void PublicApiSurface_MatchesBaseline()
         {
             var actual = ScanBusinessAssembly();
@@ -114,7 +114,7 @@ namespace Bee.Business.UnitTests
         }
 
         /// <summary>
-        /// baseline 的每一列都必須出現在雙語的 <c>docs/api-method-reference</c>，反之亦然。
+        /// baseline 的每一列都必須出現在雙語的 <c>docs/{lang}/api-method-reference.md</c>，反之亦然。
         /// </summary>
         /// <remarks>
         /// <para>
@@ -129,12 +129,12 @@ namespace Bee.Business.UnitTests
         /// </para>
         /// </remarks>
         [Theory]
-        [InlineData("api-method-reference.md")]
-        [InlineData("api-method-reference.zh-TW.md")]
-        [DisplayName("BO API baseline 應與 docs/api-method-reference 雙語逐項一致")]
-        public void Baseline_MatchesPublicMethodReference(string fileName)
+        [InlineData("en")]
+        [InlineData("zh-TW")]
+        [DisplayName("BO API baseline 應與 docs/{lang}/api-method-reference.md 雙語逐項一致")]
+        public void Baseline_MatchesPublicMethodReference(string lang)
         {
-            string path = Path.Combine(FindRepoRoot(), "docs", fileName);
+            string path = Path.Combine(FindRepoRoot(), "docs", lang, "api-method-reference.md");
             Assert.True(File.Exists(path), $"找不到 {path}。");
 
             var documented = new HashSet<string>(StringComparer.Ordinal);
@@ -153,7 +153,7 @@ namespace Bee.Business.UnitTests
 
             Assert.True(
                 missing.Count == 0 && extra.Count == 0,
-                $"{fileName} 與 baseline 不同步。\n文件缺少：\n  {string.Join("\n  ", missing)}\n" +
+                $"docs/{lang}/api-method-reference.md 與 baseline 不同步。\n文件缺少：\n  {string.Join("\n  ", missing)}\n" +
                 $"文件多出（或欄位值不符）：\n  {string.Join("\n  ", extra)}");
         }
 
@@ -166,12 +166,12 @@ namespace Bee.Business.UnitTests
         /// 而把它硬塞進表格會讓四十列各多寫一次 <c>None</c>。
         /// </remarks>
         [Theory]
-        [InlineData("api-method-reference.md")]
-        [InlineData("api-method-reference.zh-TW.md")]
-        [DisplayName("宣告重放防護的方法應與 docs/api-method-reference 的清單一致")]
-        public void ReplayProtectedMethods_MatchPublicMethodReference(string fileName)
+        [InlineData("en")]
+        [InlineData("zh-TW")]
+        [DisplayName("宣告重放防護的方法應與 docs/{lang}/api-method-reference.md 的清單一致")]
+        public void ReplayProtectedMethods_MatchPublicMethodReference(string lang)
         {
-            string text = File.ReadAllText(Path.Combine(FindRepoRoot(), "docs", fileName));
+            string text = File.ReadAllText(Path.Combine(FindRepoRoot(), "docs", lang, "api-method-reference.md"));
 
             var expected = s_expectedSurface
                 .Where(e => e.ReplayProtection == ApiReplayProtection.UniqueSequence)

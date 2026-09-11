@@ -13,7 +13,7 @@
 - **早期 UI 控制項資料繫結** 區分大小寫。框架當時的解法是把記憶體 `DataSet` 欄名一律正規化為**大寫**（讀取資料庫後 `UppercaseColumnNames()`、以及 `DataTableExtensions.AddColumn` 內 `ToUpper()`），讓繫結一致。
 - **運算式引擎（ADR-028）** 的識別字區分大小寫（DynamicExpresso）。`FormExpressionCalculator.BuildVariables` 一度以大寫 `DataColumn.ColumnName` 當變數 key，但運算式引用的是宣告的小寫欄名（如 `quantity`）→ `UnknownIdentifierException`；伺服器存檔時未處理即成 JSON-RPC `-32000`。
 
-這兩次是**同一類問題**：大小寫敏感的名稱比對，遇上「同一欄名在不同層有不同大小寫」。資料庫命名規範（見 `docs/database-naming-conventions.md` §1–2）本就要求全小寫 `snake_case`，`FormField.FieldName` 慣例上也是小寫；不一致的只有「記憶體 `DataSet` 欄名存大寫」這個歷史正規化，而它還會透過序列化洩漏到 wire。
+這兩次是**同一類問題**：大小寫敏感的名稱比對，遇上「同一欄名在不同層有不同大小寫」。資料庫命名規範（見 `docs/en/database-naming-conventions.md` §1–2）本就要求全小寫 `snake_case`，`FormField.FieldName` 慣例上也是小寫；不一致的只有「記憶體 `DataSet` 欄名存大寫」這個歷史正規化，而它還會透過序列化洩漏到 wire。
 
 ## 考慮過的選項
 
@@ -53,4 +53,4 @@
 ## 相關
 
 - ADR-028（自訂運算式與規則引擎）——大小寫敏感比對第二次咬人的來源。
-- `docs/database-naming-conventions.md` §1–2、§6——欄名小寫規範與跨層一致性。
+- `docs/en/database-naming-conventions.md` §1–2、§6——欄名小寫規範與跨層一致性。

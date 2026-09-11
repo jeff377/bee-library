@@ -1,6 +1,6 @@
 # Framework Capabilities
 
-[繁體中文](framework-capabilities.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/framework-capabilities.md) · [← Docs Index](README.md)
 
 > A single-page catalogue of the mechanisms Bee.NET provides out of the box, grouped by area. Each row is one sentence — enough to know whether the framework already covers a need, and where to read further.
 >

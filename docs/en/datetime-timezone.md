@@ -1,6 +1,6 @@
 # Time Zones
 
-[繁體中文](datetime-timezone.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/datetime-timezone.md) · [← Docs Index](README.md)
 
 The database stores every instant in UTC; each user sees it in their own time zone. The conversion
 happens in one place — the API connector on the client — so neither your business objects nor your
@@ -9,7 +9,7 @@ UI code performs it.
 This document covers what the framework does for you, the two cases where you have to act, and how to
 configure a user's zone.
 
-> Design rationale and the measurements behind it: [ADR-032](adr/adr-032-datetime-timezone.md).
+> Design rationale and the measurements behind it: [ADR-032](../adr/adr-032-datetime-timezone.md).
 > Calendar-day versus instant semantics, and the other two temporal types:
 > [Temporal Types](temporal-types.md).
 
@@ -108,4 +108,4 @@ outright. See [Expression Rules](expression-rules.md) for the full function list
 
 - [Temporal Types: `Date`, `DateTime` and `Time`](temporal-types.md) — the cross-layer reference:
   choosing between the three semantics, and how each is carried at every layer.
-- [ADR-032](adr/adr-032-datetime-timezone.md) — the decision itself, with the measurements behind it.
+- [ADR-032](../adr/adr-032-datetime-timezone.md) — the decision itself, with the measurements behind it.

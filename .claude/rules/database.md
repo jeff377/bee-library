@@ -13,7 +13,7 @@
 （record-scope 與組織樹功能所需）卻位於**公司資料庫**；權限的 `st_role` / `st_role_grant` /
 `st_user_role` 同理，`user_rowid` 跨 DB 邏輯指向 common 的 `st_user.sys_rowid`。
 「st_ 在 common、ft_ 在 company」只是常見組合，不是規則。權威清單見
-`docs/framework-reserved-names.zh-TW.md`。
+`docs/zh-TW/framework-reserved-names.md`。
 
 `FormSchema.CategoryId`（與 `DbCategory.Id`、`DatabaseItem.CategoryId`）**不是自由字串**：
 `FormRepositoryFactory.ParseCategoryId` 只認三值，其餘丟 `Unknown schema.CategoryId`。

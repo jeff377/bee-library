@@ -1,6 +1,6 @@
 # Permission & Authorization Guide
 
-[繁體中文](permission-authorization.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/permission-authorization.md) · [← Docs Index](README.md)
 
 Bee.NET permissions span **three dimensions**, applied at **two enforcement points** — the **back end** is the authoritative security boundary; the **front end** degrades UI elements as a UX affordance (never a security boundary):
 
@@ -12,7 +12,7 @@ Bee.NET permissions span **three dimensions**, applied at **two enforcement poin
 
 The **Action** dimension applies at *both* points: the back end enforces it at the method layer (the real boundary), and the front end mirrors it as command/button state so users are not offered actions they cannot perform. **Record** is back-end only. **Field** is front-end only — a UX affordance, not a data boundary (see the caveat in [section 10](#10-enabling-capability-in-a-host-app-opt-in)).
 
-Both back-end dimensions run entirely from in-memory snapshots at request time (the database is touched only when loading the caches, at login, on `EnterCompany`, or when configuration changes). Authorization is **orthogonal** to `ApiAccessControlAttribute` (which governs encryption level and whether login is required). See [ADR-019](adr/adr-019-permission-authorization-model.md) for the design rationale.
+Both back-end dimensions run entirely from in-memory snapshots at request time (the database is touched only when loading the caches, at login, on `EnterCompany`, or when configuration changes). Authorization is **orthogonal** to `ApiAccessControlAttribute` (which governs encryption level and whether login is required). See [ADR-019](../adr/adr-019-permission-authorization-model.md) for the design rationale.
 
 All three dimensions are **company-scoped**. Assets that belong to the installation rather than to any company — API keys, and whatever a deployment adds later — are governed by a separate, parallel decision described in **Part 3**.
 

@@ -1,9 +1,9 @@
 # Database Schema Upgrade Guide
 
-[繁體中文](database-schema-upgrade.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/database-schema-upgrade.md) · [← Docs Index](README.md)
 
 > This guide explains how a Bee.NET application maintains database table schemas: how definition changes are synchronized to the live database, the upgrade strategy used under the hood, and operational considerations.
-> For naming rules see [Database Naming Conventions](database-naming-conventions.md); for the underlying definition-driven philosophy see [ADR-005 FormSchema-Driven](adr/adr-005-formschema-driven.md).
+> For naming rules see [Database Naming Conventions](database-naming-conventions.md); for the underlying definition-driven philosophy see [ADR-005 FormSchema-Driven](../adr/adr-005-formschema-driven.md).
 
 ## 1. Core Concepts
 
@@ -43,11 +43,11 @@ public class MyService(IRepositoryFactory repoFactory)
 
 The return value indicates whether an upgrade was actually performed: `false` means the database already matches the definition and nothing needed to change.
 
-> The interface is defined in [IDatabaseRepository](../src/Bee.Repository.Abstractions/System/IDatabaseRepository.cs); the default implementation is [DatabaseRepository](../src/Bee.Repository/System/DatabaseRepository.cs).
+> The interface is defined in [IDatabaseRepository](../../src/Bee.Repository.Abstractions/System/IDatabaseRepository.cs); the default implementation is [DatabaseRepository](../../src/Bee.Repository/System/DatabaseRepository.cs).
 
 ### 2.2 Advanced Use: `TableSchemaBuilder`
 
-When you need finer control (dry-run, `UpgradeOptions`, structured diff), drop down to [TableSchemaBuilder](../src/Bee.Db/Schema/TableSchemaBuilder.cs):
+When you need finer control (dry-run, `UpgradeOptions`, structured diff), drop down to [TableSchemaBuilder](../../src/Bee.Db/Schema/TableSchemaBuilder.cs):
 
 ```csharp
 // Resolve defineAccess and connectionManager via DI (e.g. inject in BO / Service ctor)
@@ -94,7 +94,7 @@ Internally the upgrade is split into three stages, each callable in isolation:
 
 ### TableSchemaDiff (Structured Changes)
 
-[TableSchemaDiff](../src/Bee.Db/Schema/TableSchemaDiff.cs) is a provider-agnostic intermediate result listing each `ITableChange`:
+[TableSchemaDiff](../../src/Bee.Db/Schema/TableSchemaDiff.cs) is a provider-agnostic intermediate result listing each `ITableChange`:
 
 | Change Type | Meaning |
 |-------------|---------|
@@ -108,7 +108,7 @@ It also carries `DescriptionChanges` (table / column description drift). Descrip
 
 ### UpgradePlan (Execution Plan)
 
-[UpgradePlan](../src/Bee.Db/Schema/UpgradePlan.cs) holds the `Mode` (`NoChange` / `Create` / `Alter` / `Rebuild`), the `Stages` (staged SQL), and `Warnings`. You can print the SQL directly:
+[UpgradePlan](../../src/Bee.Db/Schema/UpgradePlan.cs) holds the `Mode` (`NoChange` / `Create` / `Alter` / `Rebuild`), the `Stages` (staged SQL), and `Warnings`. You can print the SQL directly:
 
 ```csharp
 var diff = builder.CompareToDiff("company", "st_employee");
@@ -327,15 +327,15 @@ Indexes / foreign keys named after the old table prefix (e.g. `pk_ft_employee`) 
 ## 11. References
 
 ### Source files
-- [TableSchemaBuilder](../src/Bee.Db/Schema/TableSchemaBuilder.cs) — public entry point
-- [TableUpgradeOrchestrator](../src/Bee.Db/Schema/TableUpgradeOrchestrator.cs) — Plan / Execute
-- [TableSchemaDiff](../src/Bee.Db/Schema/TableSchemaDiff.cs) / [UpgradePlan](../src/Bee.Db/Schema/UpgradePlan.cs)
-- [UpgradeOptions](../src/Bee.Db/Schema/UpgradeOptions.cs)
-- [DbField.OriginalFieldName](../src/Bee.Definition/Database/DbField.cs)
+- [TableSchemaBuilder](../../src/Bee.Db/Schema/TableSchemaBuilder.cs) — public entry point
+- [TableUpgradeOrchestrator](../../src/Bee.Db/Schema/TableUpgradeOrchestrator.cs) — Plan / Execute
+- [TableSchemaDiff](../../src/Bee.Db/Schema/TableSchemaDiff.cs) / [UpgradePlan](../../src/Bee.Db/Schema/UpgradePlan.cs)
+- [UpgradeOptions](../../src/Bee.Db/Schema/UpgradeOptions.cs)
+- [DbField.OriginalFieldName](../../src/Bee.Definition/Database/DbField.cs)
 
 ### Related documents
 - [Database Naming Conventions](database-naming-conventions.md)
 - [Architecture Overview](architecture-overview.md)
 - [Development Cookbook](development-cookbook.md)
 - [Development Constraints](development-constraints.md)
-- [ADR-005: FormSchema-Driven](adr/adr-005-formschema-driven.md)
+- [ADR-005: FormSchema-Driven](../adr/adr-005-formschema-driven.md)

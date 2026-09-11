@@ -19,7 +19,7 @@
 | **資料庫相依快取**（CompanyInfo、CompanyRolePermissions、DepartmentTree、CompanyAuditRules、ApiKeyInfo、ApiKeyGateState） | `ICacheDataSourceProvider` | 共用 cache-notify 表（**沒有** `SaveX`） |
 
 `SessionInfo` 是例外（本來就 per-session，cache key 即 access token）。
-**完整型別清單只在 `docs/development-constraints.md`，本檔不複寫**。
+**完整型別清單只在 `docs/en/development-constraints.md`，本檔不複寫**。
 
 - 需要 per-session 變動 → 先 `cached.Clone()` 再 mutate。
 - 定義資料的持久化變更走 `IDefineAccess.SaveX(...)`（寫 storage + invalidate cache slot）；
@@ -32,4 +32,4 @@
 - code review 看到「對 cache 取出的 instance 直接 mutate」或拿 `XmlCodec.Serialize(cached)`
   當克隆，必須擋下。
 
-完整規範見 `docs/development-constraints.md` § Cached Data Immutability After Init。
+完整規範見 `docs/en/development-constraints.md` § Cached Data Immutability After Init。

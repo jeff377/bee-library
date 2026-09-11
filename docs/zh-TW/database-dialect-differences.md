@@ -1,15 +1,15 @@
 # 資料庫方言差異（DDL）
 
-[English](database-dialect-differences.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/database-dialect-differences.md) · [← 文件索引](README.md)
 
 Bee.NET 由單一份 `TableSchema` 定義產生 DDL（CREATE TABLE / ALTER TABLE），並把各資料庫的差異封裝在 `src/Bee.Db/Providers/<Dialect>/` 底下的方言 adapter 內。應用開發者通常感覺不到這些差異——框架自身的 CRUD、seed 與 schema 升級路徑都已統一處理。
 
 本文件彙整「當你手動撰寫 schema 定義或 hand-written SQL（例如測試 helper 的 `INSERT`、migration 腳本）時**會外露**」的 DDL 規則與**例外**。涵蓋五個支援的引擎：**SQL Server、PostgreSQL、MySQL、Oracle、SQLite**。
 
 > 相關、聚焦於單一主題的文件：
-> - [database-naming-conventions.zh-TW.md](database-naming-conventions.zh-TW.md) §5 — 識別符大小寫敏感性與引號方式。
-> - [database-schema-upgrade.zh-TW.md](database-schema-upgrade.zh-TW.md) §4 — ALTER vs 重建的決策與各方言 ALTER 能力。
-> - [src/Bee.Db/README.zh-TW.md](../src/Bee.Db/README.zh-TW.md) — SQLite 限制與 Oracle 識別符策略。
+> - [database-naming-conventions.md](database-naming-conventions.md) §5 — 識別符大小寫敏感性與引號方式。
+> - [database-schema-upgrade.md](database-schema-upgrade.md) §4 — ALTER vs 重建的決策與各方言 ALTER 能力。
+> - [src/Bee.Db/README.zh-TW.md](../../src/Bee.Db/README.zh-TW.md) — SQLite 限制與 Oracle 識別符策略。
 
 ---
 
@@ -17,7 +17,7 @@ Bee.NET 由單一份 `TableSchema` 定義產生 DDL（CREATE TABLE / ALTER TABLE
 
 這是框架刻意的設計決策，放在最前面說明，因為它是底下多數例外的根源。
 
-`DbField.AllowNull` **預設為 `false`**（[DbField.cs](../src/Bee.Definition/Database/DbField.cs)）。規則如下：
+`DbField.AllowNull` **預設為 `false`**（[DbField.cs](../../src/Bee.Definition/Database/DbField.cs)）。規則如下：
 
 | 欄位類別 | 是否可為 null | 預設值 |
 |---------|-------------|-------|
@@ -57,9 +57,9 @@ Bee.NET 由單一份 `TableSchema` 定義產生 DDL（CREATE TABLE / ALTER TABLE
 備註：
 
 - **時間類預設值一律採 UTC 形式**。框架的時間欄位以 UTC 儲存（見
-  [時區處理](datetime-timezone.zh-TW.md)），而 `DEFAULT` 正是「SQL 未指定該欄位值」時實際寫入
+  [時區處理](datetime-timezone.md)），而 `DEFAULT` 正是「SQL 未指定該欄位值」時實際寫入
   資料的路徑：呼叫端自寫 INSERT 而省略該欄，以及 `ALTER TABLE ADD COLUMN` 對既有列的回填。
-  詳見 [ADR-032](adr/adr-032-datetime-timezone.md) 的 D9b。
+  詳見 [ADR-032](../adr/adr-032-datetime-timezone.md) 的 D9b。
 - **MySQL** 的函式型預設值需用括號包成*運算式*形式（`(UUID())`、`(CURRENT_DATE)`），因為 MySQL 只允許非字面值的預設值以括號運算式呈現。
 - **SQLite** 無原生 UUID 產生器；`hex(randomblob(16))` 是「唯一但非嚴格 v4」的替代，對框架託管的預設值已足夠。
 - **Boolean 字面值**：框架的標準形式是 `"1"` / `"0"`。PostgreSQL 的 `BOOLEAN` 欄不接受這兩者，故 PG 方言在輸出 SQL 的邊界將其轉為 `TRUE` / `FALSE`。其他方言皆接受 `1` / `0`。
@@ -74,7 +74,7 @@ Bee.NET 由單一份 `TableSchema` 定義產生 DDL（CREATE TABLE / ALTER TABLE
 
 Oracle 沒有「非 null 的空字串」——`''` **就是** `NULL`。所以 `VARCHAR2(n) DEFAULT '' NOT NULL` 是自相矛盾的（`DEFAULT ''` 即 `DEFAULT NULL`，與 `NOT NULL` 衝突）。
 
-**框架的處理方式**（[OracleSchemaSyntax.cs](../src/Bee.Db/Providers/Oracle/OracleSchemaSyntax.cs)）：
+**框架的處理方式**（[OracleSchemaSyntax.cs](../../src/Bee.Db/Providers/Oracle/OracleSchemaSyntax.cs)）：
 
 - 僅在 Oracle 上，`String` / `Text` 欄位建為 **nullable**（不加 `NOT NULL`、不加 `DEFAULT ''`）。
 - 「文字永不為 null」的契約在 C# 層守住：`ValueUtilities.CStr(null)` 回傳 `""`，故使用端仍只會看到空字串。
@@ -84,7 +84,7 @@ Oracle 沒有「非 null 的空字串」——`''` **就是** `NULL`。所以 `V
 
 ### 3.2 MySQL：`TEXT` / `BLOB` 不能有 `DEFAULT`
 
-MySQL 禁止 `TEXT` / `BLOB` 欄位帶 `DEFAULT` 子句。因此 `AllowNull=false` 的 `Text` 欄位會輸出成 `TEXT NOT NULL` 且**無預設值**（[MySqlSchemaSyntax.cs](../src/Bee.Db/Providers/MySql/MySqlSchemaSyntax.cs)）——欄位維持 `NOT NULL`，但沒有 DB 端的 fallback 值。
+MySQL 禁止 `TEXT` / `BLOB` 欄位帶 `DEFAULT` 子句。因此 `AllowNull=false` 的 `Text` 欄位會輸出成 `TEXT NOT NULL` 且**無預設值**（[MySqlSchemaSyntax.cs](../../src/Bee.Db/Providers/MySql/MySqlSchemaSyntax.cs)）——欄位維持 `NOT NULL`，但沒有 DB 端的 fallback 值。
 
 **對 hand-written SQL 的後果：** 任何**省略**某個 `NOT NULL` `Text` 欄位的 `INSERT`，在 strict mode 下**只有 MySQL** 會失敗：
 
@@ -110,7 +110,7 @@ Field 'x' doesn't have a default value
 | Oracle | `"NAME"`（`"` → `""`） | **quoted 大寫**——Oracle 保留字範圍很廣（`COMMENT`、`SIZE`、`LEVEL`、`SESSION`…），故所有識別符都加引號；adapter 折成大寫以對齊 Oracle 原生 unquoted 行為，讀回時再正規化回小寫 |
 | SQLite | `"name"`（`"` → `""`） | quoted 小寫；文字欄加 `COLLATE NOCASE` 做大小寫不敏感比對 |
 
-完整的大小寫敏感性對照（識別符折疊 vs 資料比對）見 [database-naming-conventions.zh-TW.md](database-naming-conventions.zh-TW.md) §5。
+完整的大小寫敏感性對照（識別符折疊 vs 資料比對）見 [database-naming-conventions.md](database-naming-conventions.md) §5。
 
 ---
 
@@ -130,7 +130,7 @@ Field 'x' doesn't have a default value
 
 ## 6. ALTER vs 重建資料表
 
-當 schema 升級變更某欄位時，部分變更可用 `ALTER` 完成，其餘需重建資料表（建新表 + 複製 + 交換）。決策與各方言能力見 [database-schema-upgrade.zh-TW.md](database-schema-upgrade.zh-TW.md) §4。重點：
+當 schema 升級變更某欄位時，部分變更可用 `ALTER` 完成，其餘需重建資料表（建新表 + 複製 + 交換）。決策與各方言能力見 [database-schema-upgrade.md](database-schema-upgrade.md) §4。重點：
 
 - **SQLite** 的 `ALTER` 只支援 `ADD COLUMN` / `RENAME COLUMN` / `DROP COLUMN`；其他（改型別、改 nullability、改約束）都需重建。
 - **SQL Server** 在跨型別族變更與切換 AutoIncrement 時重建。
@@ -153,5 +153,5 @@ Field 'x' doesn't have a default value
 
 - 方言實作：`src/Bee.Db/Providers/<Dialect>/<Dialect>SchemaSyntax.cs`、`…TableSchemaProvider.cs`。
 - 五家 provider 共用的方言無關規則（ALTER vs rebuild、narrowing 判定）：`src/Bee.Db/Schema/AlterCompatibilityRules.cs`（SQLite 僅覆寫 `GetKindForTypeChange`，位於 `src/Bee.Db/Providers/Sqlite/SqliteAlterCompatibilityRules.cs`）。
-- 欄位模型：[DbField.cs](../src/Bee.Definition/Database/DbField.cs)。
-- 相關文件：[database-naming-conventions.zh-TW.md](database-naming-conventions.zh-TW.md)、[database-schema-upgrade.zh-TW.md](database-schema-upgrade.zh-TW.md)、[src/Bee.Db/README.zh-TW.md](../src/Bee.Db/README.zh-TW.md)。
+- 欄位模型：[DbField.cs](../../src/Bee.Definition/Database/DbField.cs)。
+- 相關文件：[database-naming-conventions.md](database-naming-conventions.md)、[database-schema-upgrade.md](database-schema-upgrade.md)、[src/Bee.Db/README.zh-TW.md](../../src/Bee.Db/README.zh-TW.md)。

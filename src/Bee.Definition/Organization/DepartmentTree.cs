@@ -20,7 +20,7 @@ namespace Bee.Definition.Organization
     /// session in the company receives the same reference, and the tree drives record-scope
     /// authorization, so a mutation changes what other sessions may read. The setters exist for the
     /// serializers, not for callers: treat an instance handed to you by the cache as frozen. See
-    /// <c>docs/development-constraints.md</c> § <i>Cached Data Immutability After Init</i>.
+    /// <c>docs/en/development-constraints.md</c> § <i>Cached Data Immutability After Init</i>.
     /// </para>
     /// </remarks>
     public class DepartmentTree : IKeyObject

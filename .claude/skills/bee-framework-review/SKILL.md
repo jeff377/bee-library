@@ -75,7 +75,7 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 ## 各面向檢查清單(派給代理時貼這些)
 
 ### 1+2. 架構分層與相依
-- 讀 `docs/dependency-map.md`、`docs/architecture-overview.md`、`docs/development-constraints.md` 建基準。
+- 讀 `docs/en/dependency-map.md`、`docs/en/architecture-overview.md`、`docs/en/development-constraints.md` 建基準。
 - 逐一擷取各 `.csproj` 的 `<ProjectReference>`,畫實際相依圖,拓樸排序驗**無循環**。
 - 硬約束驗證:BO(`Bee.Business`)**無** `Bee.Db` 參照;後端(AspNetCore/Hosting/Business/Repository/Db)**無** `Bee.Api.Client` 參照(注意 `Bee.Web.Blazor.Server` 是前端 RCL,參照 Api.Client 屬正確);Repository 抽象(`Bee.Repository.Abstractions`)未被繞過;`Bee.Api.Contracts` 未被實作污染。
 - 找:上帝專案(職責過載 vs 職責廣度 —— 行數大不等於該拆,看內聚)、Domain Core 夾帶基礎設施職責、文件相依圖 vs 實際 csproj 的落差。
@@ -131,7 +131,7 @@ description: 對 bee-library 框架做「全面體檢」的可重複方法論 �
 
 ### 9. 文件漂移(規範源:`.claude/rules/public-docs.md`)
 
-範圍是**公開文件**(寫給 NuGet 套件使用者看的):repo 根 `README*` / `CHANGELOG*`、`docs/` 根目錄全部 `.md`、
+範圍是**公開文件**(寫給 NuGet 套件使用者看的):repo 根 `README*` / `CHANGELOG*`、`docs/README.md` 與 `docs/<lang>/` 下全部 `.md`、
 `docs/adr/`、`docs/changelogs/`、以及**所有位置**的 `README.md` / `README.zh-TW.md`(`src/` `samples/` `apps/` `tools/`)。
 `docs/plans/`、`docs/repo-ops/`、`docs/internal/`、`.claude/` 不是公開文件。
 
@@ -315,7 +315,7 @@ MD5 0、裸手動 `Dispose` 0、`throw ex;` 0、S2699 0、fixture 污染 0、牆
 | `TreeNodeIgnoreAttribute`(連同 `TreeNodeAttribute`/`IDisplayName`,71 處標註) | 改判為「未接線的設計」,移交 `plan-tree-view-builder.md` |
 | `IDefineField` | `DbField` 實作它;屬未被消費的抽象而非死碼 |
 | `IElementCapabilityResolver` | 實作 `ElementCapabilityResolver.Default` 有 5 處生產呼叫(`LayoutCapabilityApplier` / `ListView.Commands` / `FormView` / DemoCenter ×3) |
-| `CheckPackageUpdate` / `GetPackage` 全棧(12 檔) | base 擲 `NotSupportedException` 的刻意擴充點,已列入 `docs/api-method-reference` 與 `jsonrpc-frontend-integration` |
+| `CheckPackageUpdate` / `GetPackage` 全棧(12 檔) | base 擲 `NotSupportedException` 的刻意擴充點,已列入 `docs/<lang>/api-method-reference` 與 `jsonrpc-frontend-integration` |
 | `IUIViewService` 縫 | 2026-08-07 裁決保留:雖然四個 head 全走 `InitializeAsync(string)`、production 零實作,但它是有文件的宿主擴充點(cookbook 教學步驟 / terminology 詞條 / adr-013 論據 / dependency-map 的 family 判別準則) |
 | `PermissionBindingValidator` | 2026-08-07 裁決:程式碼保留,改為修正文件 —— 三處公開文件原本宣稱它在載入期生效,已改為「宿主自行呼叫的驗證 API」 |
 | `DateTimeExtensions.GetYearMonth` | 零生產呼叫端,但 BCL 無「當月一日」等價方法、非純 wrapper,依 code-style「0-caller 框架公開 API 保留」 |
@@ -334,5 +334,5 @@ MD5 0、裸手動 `Dispose` 0、`throw ex;` 0、S2699 0、fixture 污染 0、牆
 `Bee.Analyzers` 的 BEE4001–4006 序列化規則、**BEE3003**(ExecFunc 存取控制,2026-08-07 新增)。
 
 **下輪最高槓桿的單一改善**:`BoApiSurfaceTests` 擴成「baseline 每項都能在
-`docs/api-method-reference.md` 找到,且每個 action 常數都解析得到 BO 方法」——
+`docs/en/api-method-reference.md` 找到,且每個 action 常數都解析得到 BO 方法」——
 一個測試同時關閉「壞掉的公開 API」「文件漏列」「四層半成品」三類問題。

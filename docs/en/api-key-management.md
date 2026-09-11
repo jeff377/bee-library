@@ -1,6 +1,6 @@
 # API Key Management
 
-[繁體中文](api-key-management.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/api-key-management.md) · [← Docs Index](README.md)
 
 An API key answers **which application is calling**. It is not user authentication — that stays with
 the Bearer access token, and no key grants any data access on its own. The two travel together on

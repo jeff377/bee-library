@@ -22,7 +22,7 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 - **相依**：由建置期閘門 **BEE9001** 鎖定在一份明確的允許清單上。加在這裡的任何東西都會被框架的
   每一個消費者繼承，因此放寬清單是一個刻意的決策，記錄於
   [ADR-038](../../docs/adr/adr-038-definition-dependency-boundary.md)。目前的相依圖見
-  [相依關係圖](../../docs/dependency-map.zh-TW.md) —— 本檔不複寫一份，因為第二份就是第二個要維護對的東西。
+  [相依關係圖](../../docs/zh-TW/dependency-map.md) —— 本檔不複寫一份，因為第二份就是第二個要維護對的東西。
 
 ## 目標框架
 

@@ -1,10 +1,10 @@
 # Expressions and Rules (Field Computation and Pre-Save / Pre-Delete Validation)
 
-[繁體中文](expression-rules.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/expression-rules.md) · [← Docs Index](README.md)
 
 Use **declarative expressions** inside the `FormSchema` definition file for field computation and validation, instead of hand-written business object code. Customers and consultants can customise the behaviour at design time — no code change, no rebuild, no redeployment.
 
-For the background and the decision itself, see [ADR-028](adr/adr-028-expression-rule-engine.md).
+For the background and the decision itself, see [ADR-028](../adr/adr-028-expression-rule-engine.md).
 
 ## Three Capabilities
 
@@ -22,7 +22,7 @@ For the background and the decision itself, see [ADR-028](adr/adr-028-expression
 - **Operators**: a subset of C# syntax (`+ - * /`, `> >= < <= == !=`, `&& || !`, the ternary `? :`, and string `==`).
 - **Available functions and types** (sandbox allowlist): `Math` (`Math.Round`, `Math.Abs`, …), `Today()`, `Now()`, `UtcNow()`, `IsNullOrEmpty(s)`, `IsNullOrWhiteSpace(s)`, and `Guid` (e.g. `customer_rowid != Guid.Empty`).
 
-  **Semantics of the time functions** (see [ADR-032](adr/adr-032-datetime-timezone.md)):
+  **Semantics of the time functions** (see [ADR-032](../adr/adr-032-datetime-timezone.md)):
 
   | Function | Returns | Basis |
   |----------|---------|-------|
@@ -45,7 +45,7 @@ For the background and the decision itself, see [ADR-028](adr/adr-028-expression
 ```
 
 - Recomputed before save for `Added` / `Modified` rows. `Unchanged` rows are left alone, so they are never falsely marked as modified.
-- **Rounding** follows the field's `NumberKind` (`Amount` → 2 decimals, `Quantity` → 0, `UnitPrice` → full precision, …; adjustable per company / currency / unit — see [ADR-026](adr/adr-026-numeric-semantics-rounding.md)). Detail rows are therefore each rounded first and only then summed (round-then-sum), so the total always reconciles.
+- **Rounding** follows the field's `NumberKind` (`Amount` → 2 decimals, `Quantity` → 0, `UnitPrice` → full precision, …; adjustable per company / currency / unit — see [ADR-026](../adr/adr-026-numeric-semantics-rounding.md)). Detail rows are therefore each rounded first and only then summed (round-then-sum), so the total always reconciles.
 - Computed fields are usually paired with `ReadOnly="true"`.
 - Several computed fields on the same row may depend on each other: evaluation follows **declaration order**, so a later expression sees the values just computed by earlier ones.
 

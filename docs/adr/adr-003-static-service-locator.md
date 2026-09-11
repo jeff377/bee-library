@@ -31,7 +31,7 @@
 
 - **測試困難**：靜態狀態難以在測試間隔離，需要額外的 reset 機制。
 - **隱含相依**：呼叫端的相依關係不在建構子中明確宣告，閱讀程式碼時不容易看出。
-- **初始化順序敏感**：必須嚴格遵守初始化順序（見 `docs/development-constraints.md`），違反會在執行時期才發現。
+- **初始化順序敏感**：必須嚴格遵守初始化順序（見 `docs/en/development-constraints.md`），違反會在執行時期才發現。
 - **不符合現代 .NET 慣例**：新的 .NET 專案普遍採用 DI。
 
 ## 影響
@@ -41,4 +41,4 @@
 - `CacheFunc`（Bee.ObjectCaching）：快取操作的全域 Facade
 - `ApiServiceOptions`（Bee.Api.Core）：API 序列化/壓縮/加密元件的全域配置
 - `ApiClientInfo`（Bee.Api.Client）：用戶端連線配置的全域入口
-- 初始化順序記錄於 `docs/development-constraints.md` 和 `docs/development-cookbook.md`
+- 初始化順序記錄於 `docs/en/development-constraints.md` 和 `docs/en/development-cookbook.md`

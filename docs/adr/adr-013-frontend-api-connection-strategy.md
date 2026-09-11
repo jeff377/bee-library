@@ -108,8 +108,8 @@ Web / Blazor 環境結構性不同,**不該勉強套用**。
 
 ## 相關連結
 
-- 依賴關係視覺化:`docs/dependency-map.md`
-- 各前端的實際操作範例:`docs/development-cookbook.md` §「Frontend API Connection Patterns」
+- 依賴關係視覺化:`docs/en/dependency-map.md`
+- 各前端的實際操作範例:`docs/en/development-cookbook.md` §「Frontend API Connection Patterns」
 - 後端 DI 取代靜態 Service Locator(影響 Blazor host 註冊方式):[ADR-011](adr-011-di-replaces-service-locator.md)
 
 ## 不在範圍

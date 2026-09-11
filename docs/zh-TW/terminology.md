@@ -1,6 +1,6 @@
 # BeeNET 框架專有名詞中英文對照表
 
-[English](terminology.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/terminology.md) · [← 文件索引](README.md)
 
 本文件為技術文件撰寫的標準用語參考，確保中英文名稱一致。
 
@@ -31,7 +31,7 @@
 | Enterprise Information System | 企業資訊系統 | BeeNET 的目標系統：以表單為基礎的企業資訊系統，例如 ERP、CRM、HRM。英文同義詞為 line-of-business (LOB) application |
 | Definition-Driven Architecture | 定義導向架構 | BeeNET 核心架構模式，以結構定義統一驅動 UI、資料庫與業務邏輯 |
 | Single Source of Truth | 唯一定義來源 | `FormSchema` 作為系統唯一結構規格，避免三層重複實作 |
-| `progId` | 程式識別碼 | 一支功能程式的唯一識別字串，也是型別註冊表的鍵：`ProgramSettings.xml` 以它綁定 BO 與 Repository，JSON-RPC 的 `method` 為 `progId.action`。模型沿自 COM+ 的 ProgID（登錄檔以機碼對映元件型別），見 [ADR-034](adr/adr-034-progid-type-registry.md)。C# 屬性與 XML 屬性上寫作 `ProgId`。框架保留的 progId 見[框架保留命名](framework-reserved-names.zh-TW.md) |
+| `progId` | 程式識別碼 | 一支功能程式的唯一識別字串，也是型別註冊表的鍵：`ProgramSettings.xml` 以它綁定 BO 與 Repository，JSON-RPC 的 `method` 為 `progId.action`。模型沿自 COM+ 的 ProgID（登錄檔以機碼對映元件型別），見 [ADR-034](../adr/adr-034-progid-type-registry.md)。C# 屬性與 XML 屬性上寫作 `ProgId`。框架保留的 progId 見[框架保留命名](framework-reserved-names.md) |
 | NoCode | 零程式碼 | 定義於設計階段完全由 `FormSchema` 產生，無需撰寫程式碼 |
 | LowCode | 低程式碼 | 以 `FormSchema` 為基礎，搭配少量覆寫擴充行為 |
 | AnyCode | 全程式碼 | 完全由開發者自行實作，不受 `FormSchema` 驅動 |
@@ -244,8 +244,8 @@
 判別法：問「這個值需不需要知道是哪一天？」需要就是時間點；不需要而問的是「幾點」就是時刻；
 問的是「多久」則是時距。
 
-跨層對照見[時間型別總覽](temporal-types.zh-TW.md)；
-時間點如何儲存與換算見[時區處理](datetime-timezone.zh-TW.md)。
+跨層對照見[時間型別總覽](temporal-types.md)；
+時間點如何儲存與換算見[時區處理](datetime-timezone.md)。
 
 
 ### 查詢與篩選

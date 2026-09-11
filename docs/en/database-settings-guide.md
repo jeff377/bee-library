@@ -1,6 +1,6 @@
 # DatabaseSettings & DbCategorySettings Guide
 
-[繁體中文](database-settings-guide.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/database-settings-guide.md) · [← Docs Index](README.md)
 
 > This document explains the structure, positioning, access patterns, and runtime behavior of the two database-related settings files in the Bee.NET framework, helping developers understand the full chain of settings → connection → category routing.
 
@@ -136,7 +136,7 @@ Key principle: **Logical categories and physical deployment are two independent 
 
 ## 2. DatabaseSettings
 
-Definition location: [`src/Bee.Definition/Settings/DatabaseSettings/`](../src/Bee.Definition/Settings/DatabaseSettings/)
+Definition location: [`src/Bee.Definition/Settings/DatabaseSettings/`](../../src/Bee.Definition/Settings/DatabaseSettings/)
 
 ### 2.1 Structure
 
@@ -215,13 +215,13 @@ Example:
   - On load (`DecryptInPlace`): Passwords starting with `enc:` are decrypted automatically
 - **Behavior**: if `ConfigEncryptionKey` is empty, encryption / decryption is skipped (plaintext storage, development environments only)
 
-Implementation: [`DatabaseSettingsCryptor.cs`](../src/Bee.Definition/Settings/DatabaseSettings/DatabaseSettingsCryptor.cs) — `EncryptInPlace` / `DecryptInPlace`.
+Implementation: [`DatabaseSettingsCryptor.cs`](../../src/Bee.Definition/Settings/DatabaseSettings/DatabaseSettingsCryptor.cs) — `EncryptInPlace` / `DecryptInPlace`.
 
 ---
 
 ## 3. DbCategorySettings
 
-Definition location: [`src/Bee.Definition/Settings/DbCategorySettings/`](../src/Bee.Definition/Settings/DbCategorySettings/)
+Definition location: [`src/Bee.Definition/Settings/DbCategorySettings/`](../../src/Bee.Definition/Settings/DbCategorySettings/)
 
 ### 3.1 Structure
 
@@ -262,7 +262,7 @@ The framework uses three default logical categories:
 
 > For the canonical list of framework-owned tables in each category, see [Framework-Reserved Names](framework-reserved-names.md).
 
-**`common` is a framework-mandated contract**: it must exist and `DatabaseItem.Id == CategoryId == "common"` (enforced at startup by `services.AddBeeFramework`; system services such as `SessionRepository` route through the fixed `databaseId = "common"`). See the [`DbCategoryIds`](../src/Bee.Definition/Database/DbCategoryIds.cs) constants.
+**`common` is a framework-mandated contract**: it must exist and `DatabaseItem.Id == CategoryId == "common"` (enforced at startup by `services.AddBeeFramework`; system services such as `SessionRepository` route through the fixed `databaseId = "common"`). See the [`DbCategoryIds`](../../src/Bee.Definition/Database/DbCategoryIds.cs) constants.
 
 `company` and `log` are default logical categories provided by the framework. The framework ships opt-in `st_log_*` audit tables in the `log` category (off by default via `AuditLogOptions`); a single-tenant setup may skip `log` only when auditing stays disabled, and the business may add its own log tables or custom categories (multi-tenant setups may add custom categories). For custom categories, the `CategoryId` in FormSchema and DatabaseItem must match a category id declared in `DbCategorySettings`.
 
@@ -294,7 +294,7 @@ public class MyService(IDefineAccess defineAccess)
 
 ### 4.2 Caching
 
-Both settings are held centrally by the DI-registered [`ICacheContainer`](../src/Bee.ObjectCaching/ICacheContainer.cs) (default implementation `CacheContainerService`). The holders are the cache objects themselves; loading is lazy per key on a cache miss (the underlying `ObjectCache<T>` calls `CreateInstance()` the first time a key is requested):
+Both settings are held centrally by the DI-registered [`ICacheContainer`](../../src/Bee.ObjectCaching/ICacheContainer.cs) (default implementation `CacheContainerService`). The holders are the cache objects themselves; loading is lazy per key on a cache miss (the underlying `ObjectCache<T>` calls `CreateInstance()` the first time a key is requested):
 
 | Cache | Holder |
 |-------|--------|
@@ -344,7 +344,7 @@ Every FormSchema must declare its category:
 </FormSchema>
 ```
 
-When persisting, [`CacheDefineAccess.SaveFormSchema`](../src/Bee.ObjectCaching/CacheDefineAccess.cs) enforces that `CategoryId` is non-empty (via [`TableSchemaGenerator.GetCategoryId`](../src/Bee.Definition/Database/TableSchemaGenerator.cs)); otherwise it throws `InvalidOperationException`.
+When persisting, [`CacheDefineAccess.SaveFormSchema`](../../src/Bee.ObjectCaching/CacheDefineAccess.cs) enforces that `CategoryId` is non-empty (via [`TableSchemaGenerator.GetCategoryId`](../../src/Bee.Definition/Database/TableSchemaGenerator.cs)); otherwise it throws `InvalidOperationException`.
 
 ### 5.2 TableSchema Output Path
 
@@ -363,7 +363,7 @@ TableSchemas derived from FormSchemas are stored in directories grouped by Categ
               └── log/
 ```
 
-Path resolution: [`PathOptions.GetTableSchemaFilePath(categoryId, tableName)`](../src/Bee.Definition/PathOptions.cs) (DI ctor injected).
+Path resolution: [`PathOptions.GetTableSchemaFilePath(categoryId, tableName)`](../../src/Bee.Definition/PathOptions.cs) (DI ctor injected).
 
 ### 5.3 Deployment Phase: Deriving the Table List for Each Physical DB
 
@@ -411,7 +411,7 @@ Application code chooses `databaseId` based on "which logical category the data 
 
 Regardless of the underlying scenario, the application always uses the same entry `IDatabaseSettingsProvider.GetItem(databaseId)`; the only difference is "how to derive the databaseId string from the current context".
 
-For bo repos (the BO-layer Repositories) the framework provides `IRepositoryDatabaseRouter` (see [ADR-010 §「後續延伸：執行時路由」](adr/adr-010-logical-database-category.md)) so that BO code does not have to derive the databaseId by hand:
+For bo repos (the BO-layer Repositories) the framework provides `IRepositoryDatabaseRouter` (see [ADR-010 §「後續延伸：執行時路由」](../adr/adr-010-logical-database-category.md)) so that BO code does not have to derive the databaseId by hand:
 
 | Source | How the databaseId is derived |
 |--------|------------------------------|
@@ -515,5 +515,5 @@ Both settings files are located at the root of `PathOptions.DefinePath`:
 - [Architecture Overview](architecture-overview.md) — Definition-Driven architecture overview
 - [Development Cookbook](development-cookbook.md) — framework initialization and development flow
 - [Database Naming Conventions](database-naming-conventions.md) — table / column naming rules
-- [ADR-005: FormSchema-Driven Architecture](adr/adr-005-formschema-driven.md)
-- [ADR-010: Logical Database Category](adr/adr-010-logical-database-category.md) — why DbCategory was introduced
+- [ADR-005: FormSchema-Driven Architecture](../adr/adr-005-formschema-driven.md)
+- [ADR-010: Logical Database Category](../adr/adr-010-logical-database-category.md) — why DbCategory was introduced

@@ -1,6 +1,6 @@
 # Definition Files Overview
 
-[繁體中文](definition-files-overview.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/definition-files-overview.md) · [← Docs Index](README.md)
 
 > The map of every definition file: what each one owns, how they connect, and what changing one affects. This page is the orientation layer — each entry links to the document that covers it in depth.
 
@@ -189,11 +189,11 @@ See [Development Constraints § Cached Data Immutability After Init](development
 
 ### Storage is pluggable
 
-The file layout above is the default (`FileDefineStorage`). Definitions can also live in a database — see [ADR-018](adr/adr-018-db-define-storage.md). `IDefineAccess` is the same either way; only the backing store changes.
+The file layout above is the default (`FileDefineStorage`). Definitions can also live in a database — see [ADR-018](../adr/adr-018-db-define-storage.md). `IDefineAccess` is the same either way; only the backing store changes.
 
 ## 7. `CustomizePath` and the Tenant Customization Overlay
 
-`DefinePath` holds the base definitions every tenant shares. `CustomizePath` is the optional second root that lets one company override parts of them without forking the base — see [ADR-016](adr/adr-016-multitenant-customization-overlay.md) for the design.
+`DefinePath` holds the base definitions every tenant shares. `CustomizePath` is the optional second root that lets one company override parts of them without forking the base — see [ADR-016](../adr/adr-016-multitenant-customization-overlay.md) for the design.
 
 ### Turning it on
 

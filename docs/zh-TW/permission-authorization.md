@@ -1,6 +1,6 @@
 # 權限與授權指南
 
-[English](permission-authorization.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/permission-authorization.md) · [← 文件索引](README.md)
 
 Bee.NET 的權限分為**三個維度**，套用於**兩個把關點**——**後端**是權威安全邊界；**前端**把 UI 元素降級為 UX 輔助（永不作為安全邊界）：
 
@@ -12,7 +12,7 @@ Bee.NET 的權限分為**三個維度**，套用於**兩個把關點**——**�
 
 **動作維度在*兩個*把關點都套用**：後端在方法層 enforce（真正的邊界），前端則把它反映成命令／按鈕狀態，讓使用者不會被提供他做不到的動作。**列權限僅在後端**。**欄權限僅在前端**——是 UX 輔助、非資料邊界（見[第 10 節](#10-在-host-app-啟用-capabilityopt-in)警語）。
 
-兩個後端維度皆於請求時完全走記憶體快照（DB 只在載入快取、登入、`EnterCompany`、改配置時碰）。授權與 `ApiAccessControlAttribute`（管加密等級與是否需登入）**正交**。設計理由見 [ADR-019](adr/adr-019-permission-authorization-model.md)。
+兩個後端維度皆於請求時完全走記憶體快照（DB 只在載入快取、登入、`EnterCompany`、改配置時碰）。授權與 `ApiAccessControlAttribute`（管加密等級與是否需登入）**正交**。設計理由見 [ADR-019](../adr/adr-019-permission-authorization-model.md)。
 
 三個維度全部**以公司為範圍**。屬於整個部署、不屬於任何公司的資產 —— API 金鑰，以及部署端日後新增的其他項目 —— 由另一條平行判定管轄，見**第三部分**。
 
@@ -268,7 +268,7 @@ API 金鑰的稽核列記錄金鑰的 id、名稱、類型、聯絡人與到期�
 ## 14. 既有部署的升級
 
 1. **欄位會自動加上。** `st_user.deployment_admin` 由框架的 schema 升級機制補上（`ALTER … ADD`），既有列取預設值、*不是*管理員。不需手動 DDL。
-2. **除非你覆寫過該表的定義。** 框架 runtime 只從你的 `DefinePath` 讀取表定義。若部署端自帶 `st_user.TableSchema.xml`，必須自行補上該欄 —— 框架內嵌的預設檔不會被參考。（見[框架保留名稱 §3](framework-reserved-names.zh-TW.md#3-消費者命名守則)。）
+2. **除非你覆寫過該表的定義。** 框架 runtime 只從你的 `DefinePath` 讀取表定義。若部署端自帶 `st_user.TableSchema.xml`，必須自行補上該欄 —— 框架內嵌的預設檔不會被參考。（見[框架保留名稱 §3](framework-reserved-names.md#3-消費者命名守則)。）
 3. **在主機上指派第一位管理員**，以行程內呼叫 `SetDeploymentAdmin`。在那之前沒有任何遠端呼叫者鑄得出 API 金鑰，而本機呼叫的行為與升級前完全相同。
 
 ---

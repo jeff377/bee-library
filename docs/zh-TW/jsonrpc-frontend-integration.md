@@ -1,12 +1,12 @@
 # JSON-RPC 前端整合指引
 
-[English](jsonrpc-frontend-integration.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/jsonrpc-frontend-integration.md) · [← 文件索引](README.md)
 
 如何從 JavaScript / TypeScript 前端（React、Vue、Angular、Svelte、vanilla）
 呼叫 Bee.NET 的 JSON-RPC 後端，**client 端完全不需要 .NET**。
 
 整套大約 150 行純 JS。可跑的範例在
-[`samples/Web.Js.Demo/`](../samples/Web.Js.Demo/README.zh-TW.md)，
+[`samples/Web.Js.Demo/`](../../samples/Web.Js.Demo/README.zh-TW.md)，
 本文檔解釋它「為什麼這樣寫」。
 
 ---
@@ -26,12 +26,12 @@ MessagePack 效能、payload 加密。如果前端是 JS，走本指引。
 
 payload 加密**不是 .NET 專屬能力**。JS 用戶端要用 `Encoded` 或 `Encrypted`，
 只需在 payload 信封宣告 `"codec": "json"`，伺服端會以同一個 codec 回應 ——
-那正是 [ADR-044](adr/adr-044-payload-codec-negotiation.md) 存在的理由。
-這條路徑的跨語言素材是 [`wire-contracts/`](../wire-contracts/README.md)
-（由訊息型別產生的 TypeScript 合約）與 [`wire-fixtures/`](../wire-fixtures/README.md)
+那正是 [ADR-044](../adr/adr-044-payload-codec-negotiation.md) 存在的理由。
+這條路徑的跨語言素材是 [`wire-contracts/`](../../wire-contracts/README.md)
+（由訊息型別產生的 TypeScript 合約）與 [`wire-fixtures/`](../../wire-fixtures/README.md)
 （可拿來對照自家實作的 golden body 樣本）。
 
-整體策略見 [ADR-013：前端 API 連線策略](adr/adr-013-frontend-api-connection-strategy.md)。
+整體策略見 [ADR-013：前端 API 連線策略](../adr/adr-013-frontend-api-connection-strategy.md)。
 
 ---
 
@@ -62,7 +62,7 @@ Authorization: Bearer <access-token>     // anonymous 方法可省略
 ```
 
 - `method` — `<ProgId>.<Action>`，server 用 reflection 派遣到對應 BO
-- `params.format` — 本指引涵蓋的 plain 路徑用 `0`（`PayloadFormat.Plain`）。**並非只能如此**：自 [ADR-044](adr/adr-044-payload-codec-negotiation.md) 起，JS 用戶端只要在信封宣告 `"codec": "json"` 就能走 `Encoded` / `Encrypted`，所需的 JSON、gzip、AES-CBC-HMAC 與 RSA 瀏覽器全都有
+- `params.format` — 本指引涵蓋的 plain 路徑用 `0`（`PayloadFormat.Plain`）。**並非只能如此**：自 [ADR-044](../adr/adr-044-payload-codec-negotiation.md) 起，JS 用戶端只要在信封宣告 `"codec": "json"` 就能走 `Encoded` / `Encrypted`，所需的 JSON、gzip、AES-CBC-HMAC 與 RSA 瀏覽器全都有
 - `params.value` — args 物件，**camelCase 或 PascalCase 屬性名都可以**
   （server 反序列化 case-insensitive）
 - `id` — client 任選的識別字串，response 會原樣回傳
@@ -119,7 +119,7 @@ Plain 格式不需要：
   自訂 `JsonConverter` inline 處理 discriminator，不依賴外層 `type`
 
 你想送 `params.type` 也可以（Plain 路徑會忽略），省略則 payload 較小。
-回歸保障：[`JsonRpcExecutorTests.Ping_PlainWith*`](../tests/Bee.Api.Core.UnitTests/JsonRpcExecutorTests.cs)
+回歸保障：[`JsonRpcExecutorTests.Ping_PlainWith*`](../../tests/Bee.Api.Core.UnitTests/JsonRpcExecutorTests.cs)
 驗證了省略 / 空字串 / 帶錯誤型別字串三種情境都會成功。
 
 ---
@@ -133,7 +133,7 @@ Plain 格式不需要：
 | `Authorization` | Authenticated 方法必要 | `Bearer <accessToken>` | 從 `System.Login` 拿到的 GUID |
 
 Host 必須設好 CORS。Demo 後端在
-[`samples/QuickStart.Server/Program.cs`](../samples/QuickStart.Server/Program.cs)
+[`samples/QuickStart.Server/Program.cs`](../../samples/QuickStart.Server/Program.cs)
 開了 `AllowAnyOrigin` 政策；production host 必須明確限制 origin。
 
 ---
@@ -164,7 +164,7 @@ Token 是 `Guid` 字串。Token 有效期限預設 1 小時；過期後 backend 
 ## 可呼叫的方法
 
 完整方法清單（含每方法 `[ApiAccessControl]` 設定）見
-[`docs/api-method-reference.zh-TW.md`](api-method-reference.zh-TW.md)。
+[`docs/zh-TW/api-method-reference.md`](api-method-reference.md)。
 摘要：
 
 | 類別 | 方法 |
@@ -199,7 +199,7 @@ JS 路徑有三個 JSON-native 姊妹方法：
 
 ## 錯誤處理
 
-`response.error.code` 對應 [`JsonRpcErrorCode`](../src/Bee.Api.Core/JsonRpc/JsonRpcErrorCode.cs)：
+`response.error.code` 對應 [`JsonRpcErrorCode`](../../src/Bee.Api.Core/JsonRpc/JsonRpcErrorCode.cs)：
 
 | Code | Name | 意義 | 對應動作 |
 |------|------|------|---------|
@@ -222,7 +222,7 @@ User-facing 範圍（特別是 `-32099`）的 `message` 可以原樣顯示給終
 
 ## TypeScript wrapper
 
-[`samples/Web.Js.Demo/bee-api-client.js`](../samples/Web.Js.Demo/bee-api-client.js)
+[`samples/Web.Js.Demo/bee-api-client.js`](../../samples/Web.Js.Demo/bee-api-client.js)
 的 TypeScript 版本，可直接複製到 TS 專案。獨立檔案、無框架依賴，
 state 管理請自行接（Zustand / Redux / Context 都可）。
 
@@ -287,7 +287,7 @@ export interface DataTableColumn {
    * 宣告的 FieldDbType，例如 'String' | 'Date' | 'DateTime' | 'Decimal' | 'Guid'。
    * 'Date' 表示日曆日——不顯示時刻，且不要透過瀏覽器時區位移。
    * 'DateTime' 為時間點，wire 上一律是 UTC：顯示前需自行換算，送回時需換回 UTC。
-   * 見 docs/temporal-types.zh-TW.md 與 docs/datetime-timezone.zh-TW.md。
+   * 見 docs/zh-TW/temporal-types.md 與 docs/zh-TW/datetime-timezone.md。
    */
   type: string;
   allowNull: boolean;
@@ -404,8 +404,8 @@ export const formApi = (progId: string) => ({
 
 ## 相關連結
 
-- [`samples/Web.Js.Demo/README.zh-TW.md`](../samples/Web.Js.Demo/README.zh-TW.md) — 上述所有方法的可跑 demo
-- [`docs/api-method-reference.zh-TW.md`](api-method-reference.zh-TW.md) — 完整方法清單含每方法 `[ApiAccessControl]` 設定
-- [`docs/adr/adr-013-frontend-api-connection-strategy.md`](adr/adr-013-frontend-api-connection-strategy.md) — 前端連線策略全景
-- [`src/Bee.Api.Core/README.md`](../src/Bee.Api.Core/README.md) — server 端派遣內部細節
-- [`src/Bee.Api.Client/README.md`](../src/Bee.Api.Client/README.md) — 本指引對應的 .NET client
+- [`samples/Web.Js.Demo/README.zh-TW.md`](../../samples/Web.Js.Demo/README.zh-TW.md) — 上述所有方法的可跑 demo
+- [`docs/zh-TW/api-method-reference.md`](api-method-reference.md) — 完整方法清單含每方法 `[ApiAccessControl]` 設定
+- [`docs/adr/adr-013-frontend-api-connection-strategy.md`](../adr/adr-013-frontend-api-connection-strategy.md) — 前端連線策略全景
+- [`src/Bee.Api.Core/README.md`](../../src/Bee.Api.Core/README.md) — server 端派遣內部細節
+- [`src/Bee.Api.Client/README.md`](../../src/Bee.Api.Client/README.md) — 本指引對應的 .NET client

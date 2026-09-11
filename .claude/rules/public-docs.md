@@ -8,7 +8,7 @@
 | 範圍 | 內容 |
 |------|------|
 | repo 根目錄 | `README.md` / `README.zh-TW.md`、`CHANGELOG.md` / `CHANGELOG.zh-TW.md` |
-| `docs/` 根目錄 | 所有 `.md`（架構總覽、API 參考、資料庫指引、術語表、開發指引與限制…，含 `docs/README.md` 索引） |
+| `docs/README.md` 與 `docs/<lang>/` | 語言入口頁，以及各語言資料夾下所有 `.md`（架構總覽、API 參考、資料庫指引、術語表、開發指引與限制…，含各語言的 `README.md` 索引） |
 | `docs/adr/` | 全部 ADR —— 長效決策紀錄，外部讀者理解「為何這樣設計」的主要來源 |
 | `docs/changelogs/` | 全部逐版變更說明（根 `CHANGELOG.md` 的分版明細） |
 | **所有** `README.md` / `README.zh-TW.md` | 不分位置：`src/*/`、`samples/*/`、`apps/*/`、`tools/*/` 皆是 |
@@ -60,7 +60,7 @@ plan 是**階段性**文件：實作過程中會改、完成後會封存，且**
 
 ### 4. 雙語同步
 
-公開文件有雙語版時（`xxx.md` / `xxx.zh-TW.md`），任何修改**兩份都要改**，包含依本規範移除 plan 引用。
+公開文件有雙語版時（`docs/` 下為 `docs/zh-TW/xxx.md` / `docs/en/xxx.md`，其餘位置為 `xxx.zh-TW.md` / `xxx.md`），任何修改**兩份都要改**，包含依本規範移除 plan 引用。
 
 ## 落地檢查
 
@@ -71,7 +71,7 @@ plan 是**階段性**文件：實作過程中會改、完成後會封存，且**
 ```
 
 
-預期輸出：(1) 只剩 `docs/README.md` / `docs/README.zh-TW.md` 對 `plans/` 資料夾的**性質說明**
+預期輸出：(1) 只剩 `docs/en/README.md` / `docs/zh-TW/README.md` 對 `plans/` 資料夾的**性質說明**
 （不是連結，且已標明「階段性工作文件、非參考資料」）；(2)(4)(5)(6) 完全無輸出。
 
 > `docs/repo-ops/` 已排除——依上表它是**維運文件、不是公開文件**，引用 plan 完全合法。
@@ -80,7 +80,7 @@ plan 是**階段性**文件：實作過程中會改、完成後會封存，且**
 
 | 誤報樣態 | 例子 | 為何不算違規 |
 |---------|------|------------|
-| `plan` 是 API / 型別名 | `docs/database-schema-upgrade*.md` 的 `Orchestrator.Plan(diff)`、`UpgradePlan`、`plan.Warnings` | 指程式碼識別符，與 `docs/plans/` 無關 |
+| `plan` 是 API / 型別名 | `docs/*/database-schema-upgrade.md` 的 `Orchestrator.Plan(diff)`、`UpgradePlan`、`plan.Warnings` | 指程式碼識別符，與 `docs/plans/` 無關 |
 | 指向**尚不存在**的未來規劃 | adr-012 / adr-015 / adr-023 的「另立 plan」「另開 plan」「由獨立 plan 評估」 | 語意等同「另案處理」，沒指向任何可讀文件 |
 
 判別法：**這句話指得到一份現在讀得到的 plan 檔嗎？** 指得到才是違規。

@@ -1,6 +1,6 @@
 # Analyzer Rules
 
-[繁體中文](analyzer-rules.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/analyzer-rules.md) · [← Docs Index](README.md)
 
 Bee.NET ships Roslyn analyzers that turn framework conventions into build diagnostics. They are
 registered automatically by `Bee.Definition`: adding that package is all it takes, with no additional
@@ -80,7 +80,7 @@ has one home. BEE9001 and BEE9002 live in `src/Directory.Build.targets` and are 
 a consumer project cannot trigger them. BEE9003 ships in the package and is opt-in; see
 [Checking what the glob matched](#checking-what-the-glob-matched). BEE9001 exists because anything
 added to the assemblies at the bottom of the dependency graph is inherited by every consumer of the
-framework ([ADR-038](adr/adr-038-definition-dependency-boundary.md)). Which assemblies are locked is
+framework ([ADR-038](../adr/adr-038-definition-dependency-boundary.md)). Which assemblies are locked is
 not listed here — `src/Directory.Build.targets` declares them and nothing would catch this copy
 drifting; it already did, staying at two after a third was added; BEE9002 exists because a release that
 bumps only `Version` ships packages whose assemblies still claim the previous version, and a

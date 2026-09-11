@@ -201,7 +201,7 @@ commit 觸發 publish，`--skip-duplicate` 讓已發佈的跳過、只補推新�
 
 **同時要同步**（雙語文件必須兩份都改）：
 
-- `docs/dependency-map.md` + `.zh-TW.md`：mermaid 加節點 + 相依邊、外部套件表加一列、
+- `docs/en/dependency-map.md` + `.zh-TW.md`：mermaid 加節點 + 相依邊、外部套件表加一列、
   Architectural Notes、開頭「N 個 src/ 專案」數字 +1。
 - `README.md` + `.zh-TW.md`：Shared / Backend / Frontend 套件表擇一加一列。
 - `.claude/CLAUDE.md`：「N 個專案」數字 +1。

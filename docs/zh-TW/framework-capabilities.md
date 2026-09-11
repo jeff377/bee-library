@@ -1,6 +1,6 @@
 # 框架機制清單
 
-[English](framework-capabilities.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/framework-capabilities.md) · [← 文件索引](README.md)
 
 > 單頁列出 Bee.NET 開箱即提供的機制，依領域分組。每一列一句話 —— 足以判斷「這件事框架是不是已經做掉了」，以及要往哪裡讀下去。
 >
@@ -10,7 +10,7 @@
 
 ## 1. 定義層
 
-`DefinePath` 下的 13 種定義檔驅動整個應用。見[定義檔全景](definition-files-overview.zh-TW.md)與[架構總覽](architecture-overview.zh-TW.md)。
+`DefinePath` 下的 13 種定義檔驅動整個應用。見[定義檔全景](definition-files-overview.md)與[架構總覽](architecture-overview.md)。
 
 | 機制 | 提供什麼 |
 |------|---------|
@@ -22,14 +22,14 @@
 | **MenuSettings** | 導覽選單：分組、排序、標題與可見性，每個項目指向一個 `progId` |
 | **啟動三件組** | SystemSettings → DatabaseSettings → DbCategorySettings，順序固定 —— 前者指名的主金鑰正是用來解密後者連線字串的東西 |
 | **FormRule** | 宣告式的存檔前 / 刪除前驗證，直接寫在 FormSchema 內 |
-| **運算式引擎** | DynamicExpresso 求值計算欄與規則；`IExpressionEvaluator` 讓引擎可替換。見[運算式與規則](expression-rules.zh-TW.md) |
+| **運算式引擎** | DynamicExpresso 求值計算欄與規則；`IExpressionEvaluator` 讓引擎可替換。見[運算式與規則](expression-rules.md) |
 | **主從結構** | 子表以 `sys_master_rowid` 串接，單次 `Save` 一併寫入 |
 | **Lookup 關聯** | 欄位宣告關聯目標與欄位對映後，開窗查詢與帶值即自動成立 |
 | **PluginSettings** | 每個 `progId` 掛哪些業務 plugin，各自宣告所掛的那一個時點，依宣告順序執行 |
 
 ## 2. 資料存取
 
-見 [FormSchema 驅動的資料庫存取](formschema-data-access.zh-TW.md)、[資料庫設定指引](database-settings-guide.zh-TW.md)與[資料庫方言差異](database-dialect-differences.zh-TW.md)。
+見 [FormSchema 驅動的資料庫存取](formschema-data-access.md)、[資料庫設定指引](database-settings-guide.md)與[資料庫方言差異](database-dialect-differences.md)。
 
 | 機制 | 提供什麼 |
 |------|---------|
@@ -39,7 +39,7 @@
 | **五種方言** | SQL Server、PostgreSQL、MySQL、Oracle、SQLite，各有自己的 DDL 與參數規則 |
 | **分類路由** | `common` / `company` / `log` 三種 scope 決定資料表落在哪個實體資料庫 |
 | **連線字串加密** | 連線字串以加密形式存於 DatabaseSettings，以主金鑰解密 |
-| **Schema 升級** | diff → plan → execute 管線，自動判定 ALTER 或重建，支援乾跑。見 [Schema 升級](database-schema-upgrade.zh-TW.md) |
+| **Schema 升級** | diff → plan → execute 管線，自動判定 ALTER 或重建，支援乾跑。見 [Schema 升級](database-schema-upgrade.md) |
 | **分頁 / 排序 / 篩選** | `PagingInfo`、`SortField`，以及支援 AND / OR 巢狀群組的 `FilterNode` 條件樹 |
 | **數值捨入政策** | round-then-sum：每筆明細先捨到欄位位數再加總，確保明細加總恆等於總合 |
 | **連線範圍** | `DbConnectionScope` 管理一個工作單元內的連線與交易生命週期 |
@@ -48,7 +48,7 @@
 
 ## 3. 商業邏輯層
 
-見[端到端開發指引](development-cookbook.zh-TW.md)與 [API ↔ BO 契約設計](api-bo-contract-design.zh-TW.md)。
+見[端到端開發指引](development-cookbook.md)與 [API ↔ BO 契約設計](api-bo-contract-design.md)。
 
 | 機制 | 提供什麼 |
 |------|---------|
@@ -61,7 +61,7 @@
 
 ## 4. API 與傳輸
 
-見 [JSON-RPC 前端整合指引](jsonrpc-frontend-integration.zh-TW.md)與 [API 方法參考](api-method-reference.zh-TW.md)。
+見 [JSON-RPC 前端整合指引](jsonrpc-frontend-integration.md)與 [API 方法參考](api-method-reference.md)。
 
 | 機制 | 提供什麼 |
 |------|---------|
@@ -72,7 +72,7 @@
 | **連線型態** | 同一份 client 程式可對 in-process 後端或遠端 HTTP 後端執行，呼叫端不需改動 |
 | **三層契約** | 契約介面、wire DTO、BO Args / Result，三者皆可由 action 名推導 |
 | **Wire 契約註冊** | wire 型別顯式註冊 MessagePack formatter，因此在沒有動態碼的 runtime（iOS AOT）上同樣可用 |
-| **wire 邊界時區轉換** | 轉換發生在 payload 邊界，儲存端維持 UTC。見[時區處理](datetime-timezone.zh-TW.md) |
+| **wire 邊界時區轉換** | 轉換發生在 payload 邊界，儲存端維持 UTC。見[時區處理](datetime-timezone.md) |
 | **JS 前端表面** | 非 .NET 前端走 Plain JSON，並有 `GetFormSchema` / `GetFormLayout` / `GetLanguage` 的 typed 版本 |
 
 ## 5. Session 與認證
@@ -83,7 +83,7 @@
 | **Login** | 驗證憑證，回傳 access token 與動態 API 加密金鑰 |
 | **CreateSession** | 為指定使用者發行 token 而**不驗憑證**，供受信任的背景作業使用；僅限本機呼叫 |
 | **登入失敗追蹤** | `ILoginAttemptTracker` 累計失敗次數，供 host 實作鎖定策略 |
-| **API 金鑰** | 識別的是呼叫的應用程式而非使用者：只存雜湊、明文僅回傳一次、可停用或設到期。見 [API 金鑰管理](api-key-management.zh-TW.md) |
+| **API 金鑰** | 識別的是呼叫的應用程式而非使用者：只存雜湊、明文僅回傳一次、可停用或設到期。見 [API 金鑰管理](api-key-management.md) |
 | **部署層管理員** | 管理整個部署資產的管理員旗標，與任何公司權限各自授予、互不蘊含 |
 
 ## 6. 安全與加密
@@ -100,7 +100,7 @@
 
 ## 7. 權限與授權
 
-見[權限與授權指南](permission-authorization.zh-TW.md)。
+見[權限與授權指南](permission-authorization.md)。
 
 | 機制 | 提供什麼 |
 |------|---------|
@@ -112,7 +112,7 @@
 
 ## 8. 多租戶與客製化
 
-見[租戶客製化](customization.zh-TW.md)。
+見[租戶客製化](customization.md)。
 
 | 機制 | 提供什麼 |
 |------|---------|
@@ -129,7 +129,7 @@
 | **`FormSchemaLocalizer`** | 依 session 語系在地化表單名稱與欄位標題 |
 | **LanguageEnum** | 下拉清單背後的在地化列舉項目 |
 | **`BeeStringLocalizer`** | `IStringLocalizer` 實作，讓應用程式碼與 UI 直接取得在地化文字 |
-| **時區** | 一律以 UTC 儲存、在邊界轉換，並有 per-user 時區設定。見[時區處理](datetime-timezone.zh-TW.md) |
+| **時區** | 一律以 UTC 儲存、在邊界轉換，並有 per-user 時區設定。見[時區處理](datetime-timezone.md) |
 | **幣別與單位主檔** | `CurrencySettings` 與 `UnitSettings` 定義各幣別、各計量單位的小數位 |
 | **數字格式解析** | 各數值類別的小數位在公司層級解析，寫入與顯示時套用 |
 | **現金捨入** | 依幣別的自然最小單位捨入 |
@@ -151,7 +151,7 @@
 | **四類稽核流** | 登入事件、API 存取、資料變更（前後值 diffgram）、異常（API 與資料庫） |
 | **Log 商業物件** | 稽核流的查詢 API，同時提供明細列表與彙總 |
 | **Tracer** | 分層追蹤，具類別劃分與可插拔的 listener |
-| **Bee.Analyzers** | 隨套件發佈的建置期診斷，違反慣例即建置失敗。見 [Analyzer 規則](analyzer-rules.zh-TW.md) |
+| **Bee.Analyzers** | 隨套件發佈的建置期診斷，違反慣例即建置失敗。見 [Analyzer 規則](analyzer-rules.md) |
 | **UI 控件家族** | Avalonia（schema 驅動的原生控件子類、Grid、lookup 開窗）與 Blazor Server 雙軌 |
 | **`ClientDefineAccess`** | client 經 API 讀取定義並快取，完全不碰檔案系統 |
 | **Client 儲存接縫** | `IEndpointStorage` 與 `IApiKeyStorage` 讓各 head 以自己平台允許的方式持久化端點與金鑰 |

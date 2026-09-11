@@ -276,7 +276,7 @@ namespace Bee.Db.Providers.Oracle
             // for them, since '' == NULL makes a non-null empty string inexpressible). The framework
             // definition still marks these AllowNull=false; report false here so TableSchemaComparer
             // sees the read-back schema as equal and does not emit a spurious ALTER ... NOT NULL on
-            // every upgrade. See `docs/database-dialect-differences.md` section 3.1.
+            // every upgrade. See `docs/en/database-dialect-differences.md` section 3.1.
             if (dbField.DbType == FieldDbType.String || dbField.DbType == FieldDbType.Text)
                 dbField.AllowNull = false;
 

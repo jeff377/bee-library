@@ -1,6 +1,6 @@
 # BeeNET Framework Architecture Overview
 
-[繁體中文](architecture-overview.zh-TW.md) · [← Docs Index](README.md)
+[繁體中文](../zh-TW/architecture-overview.md) · [← Docs Index](README.md)
 
 > Definition-Driven Architecture: design philosophy and practical patterns for enterprise information systems
 
@@ -131,7 +131,7 @@ This ensures that when FormSchema evolves, manually adjusted custom settings are
 
 For deployments serving multiple tenants, BeeNET adds a **per-tenant read-only customization overlay** on top of the base definitions. A `CustomizeId` (resolved from `SessionInfo.CustomizeId`, loaded from the company record at `EnterCompany`) drives an override layer for **Language / FormLayout / ProgramSettings / MenuSettings only** — `FormSchema` / `TableSchema` / settings stay tenant-agnostic so the database schema never diverges per tenant.
 
-The overlay is **two independent read-only layers, never merged**: the base package cache is never mutated, and lookups overlay per key / progId / whole-file at the consumer. An empty `CustomizeId` short-circuits to pure base, bit-for-bit identical to a single-tenant deployment. See [ADR-016](adr/adr-016-multitenant-customization-overlay.md).
+The overlay is **two independent read-only layers, never merged**: the base package cache is never mutated, and lookups overlay per key / progId / whole-file at the consumer. An empty `CustomizeId` short-circuits to pure base, bit-for-bit identical to a single-tenant deployment. See [ADR-016](../adr/adr-016-multitenant-customization-overlay.md).
 
 ---
 
@@ -248,7 +248,7 @@ A single BO can mix both Repository strategies; the caller does not need to know
 
 ### Session Lifecycle and Database Scope
 
-BO method execution is bracketed by a two-phase session lifecycle (see [ADR-012](adr/adr-012-session-company-context.md)):
+BO method execution is bracketed by a two-phase session lifecycle (see [ADR-012](../adr/adr-012-session-company-context.md)):
 
 ```
 Login(account, password)   ──→  Logged-in (SessionInfo.CompanyId = null)
@@ -404,7 +404,7 @@ Common patterns discovered during each AnyCode customization can be distilled ba
 > `DbProviderRegistry.Register(...)` and
 > `DbDialectRegistry.Register(...)` for each database it actually uses.
 > `Bee.Db` itself has zero ADO.NET driver dependencies. See
-> [`src/Bee.Db/README.md`](../src/Bee.Db/README.md) for the registration
+> [`src/Bee.Db/README.md`](../../src/Bee.Db/README.md) for the registration
 > code example.
 
 ---

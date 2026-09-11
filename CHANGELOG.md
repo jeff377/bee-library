@@ -133,7 +133,7 @@ UPDATE st_company SET default_currency = 'USD'
 
 ### Documentation
 
-- [ADR-035](docs/adr/adr-035-business-logic-plugin.md)'s decision three is rewritten rather than superseded: this is a different answer to the same decision, and the other five are untouched. The rewrite records what was given up and that the readability compensation was never implemented — the direct reason for the change. [Tenant customization](docs/customization.md) and the [End-to-End Development Cookbook](docs/development-cookbook.md) are updated in both languages.
+- [ADR-035](docs/adr/adr-035-business-logic-plugin.md)'s decision three is rewritten rather than superseded: this is a different answer to the same decision, and the other five are untouched. The rewrite records what was given up and that the readability compensation was never implemented — the direct reason for the change. [Tenant customization](docs/en/customization.md) and the [End-to-End Development Cookbook](docs/en/development-cookbook.md) are updated in both languages.
 
 ## [4.28.0]
 
@@ -341,7 +341,7 @@ Nothing to do. With `st_audit_rule` absent or empty every form inherits the depl
 
 ### Changed
 
-- Docs: [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) gains decision 7 (including the one-directional nature of the protection, which is easy to read backwards); [Framework-Reserved Names](docs/framework-reserved-names.md) §1.3 spells out that the five log tables are two different things; [Database Settings Guide](docs/database-settings-guide.md) no longer calls all five "audit tables" in either of the two places it did; [Terminology](docs/terminology.md) gains the two new types and the `Unauthorized` value that `AnomalyKind` was missing.
+- Docs: [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) gains decision 7 (including the one-directional nature of the protection, which is easy to read backwards); [Framework-Reserved Names](docs/en/framework-reserved-names.md) §1.3 spells out that the five log tables are two different things; [Database Settings Guide](docs/en/database-settings-guide.md) no longer calls all five "audit tables" in either of the two places it did; [Terminology](docs/en/terminology.md) gains the two new types and the `Unauthorized` value that `AnomalyKind` was missing.
 
 ### Upgrade notes
 
@@ -377,7 +377,7 @@ Most deployments are unaffected: all three constructor parameters are optional a
 
 ### Changed
 
-- Docs: [Framework-Reserved Names](docs/framework-reserved-names.md) §1 states that `st_*` system tables are required runtime infrastructure and that overriding a framework behaviour does not exempt a deployment from the tables behind it. Five places that said otherwise are corrected, including `SystemBusinessObject.ApplyUserLocale`'s remarks, whose "there is no row to read" read like "there need be no table".
+- Docs: [Framework-Reserved Names](docs/en/framework-reserved-names.md) §1 states that `st_*` system tables are required runtime infrastructure and that overriding a framework behaviour does not exempt a deployment from the tables behind it. Five places that said otherwise are corrected, including `SystemBusinessObject.ApplyUserLocale`'s remarks, whose "there is no row to read" read like "there need be no table".
 
 ### Upgrade
 
@@ -501,7 +501,7 @@ No coordinated deployment is required: the wire format and the customization ove
 - `Bee.Base`: `Bee.Base.Expressions` — the evaluator abstraction, its policy helpers and its exception type. `Bee.Expressions` keeps only `DynamicExpressoEvaluator`.
 - `Bee.Definition`: `LanguageEnum.Entries` gains a setter (see the mobile fix below).
 - `Bee.Business`: `LoginAttemptTracker.MaxTrackedAccounts` and `DefaultMaxTrackedAccounts`, for hosts that want a different bound.
-- Build-time diagnostics **BEE9001** (dependency boundary for `Bee.Base` / `Bee.Definition`) and **BEE9002** (the three version properties must stay in step). [Analyzer rules](docs/analyzer-rules.md)
+- Build-time diagnostics **BEE9001** (dependency boundary for `Bee.Base` / `Bee.Definition`) and **BEE9002** (the three version properties must stay in step). [Analyzer rules](docs/en/analyzer-rules.md)
 
 ### Fixed
 
@@ -535,7 +535,7 @@ Deploy server and clients together — see the wire note above. Rebuild any asse
 - `Bee.Definition`: `Collections.MessagePackCollectionBase<T>`, `MessagePackCollectionItem`, `MessagePackKeyCollectionBase<T>` and `MessagePackKeyCollectionItem` are removed — use the `Bee.Base.Collections` equivalents, which are the same types minus the attributes.
 - `Bee.Definition`: `Serialization.SafeTypelessFormatter` is removed; the typeless allow-list moves to `Bee.Api.Core` as an internal formatter.
 - `Bee.Base`: `IObjectSerializeProcess`, `SerializeFormat` and `SerializationLifecycle.NotifyAfterDeserialize` are removed — the interface had no production implementer and both of its historical uses were deliberately migrated away.
-- `Bee.Analyzers`: **BEE4001**–**BEE4004** are retired; the attribute mechanisms they policed no longer exist. [Analyzer rules](docs/analyzer-rules.md)
+- `Bee.Analyzers`: **BEE4001**–**BEE4004** are retired; the attribute mechanisms they policed no longer exist. [Analyzer rules](docs/en/analyzer-rules.md)
 
 ### Changed
 
@@ -580,7 +580,7 @@ Deploy server and clients together — see the wire note above.
 ### Added
 
 - `Bee.Business`: `ExecFuncAccessControlAttribute.LocalOnly`, plus an `InvokeExecFunc` overload taking `isLocalCall` (the original overload is kept and treated as remote).
-- `Bee.Analyzers`: **BEE3003** — a public method on an `IExecFuncHandler` implementation must declare `[ExecFuncAccessControl]`. [Analyzer rules](docs/analyzer-rules.md)
+- `Bee.Analyzers`: **BEE3003** — a public method on an `IExecFuncHandler` implementation must declare `[ExecFuncAccessControl]`. [Analyzer rules](docs/en/analyzer-rules.md)
 - `Bee.Db`: `DbParameterSpecCollectionExtensions`.
 - `Bee.Api.Contracts` / `Bee.Db`: the serialization analyzers (BEE4002–4006) now run on these projects; they were silent there before.
 
@@ -624,7 +624,7 @@ Deploy server and clients together — see the wire note above.
 - `Bee.Business`: new `SystemBO.GetCustomizePluginSettings` / `SaveCustomizePluginSettings` (`LocalOnly`), **validating every type before the write** — loadable, derives from `FormBusinessPlugin`, overrides at least one point.
 - `Bee.Definition`: new `ICustomizeDefineWriter` and `CustomizeDefineWriter` — the customization layer's first write path, evicting that tenant's cache slot on write.
 - `Bee.Business`: `BusinessObject` gains `protected IBeeContext Context`.
-- New [tenant customization guide](docs/customization.md) (bilingual): a decision table for the five mechanisms, how-tos for language and layout, and what cannot be customized and why.
+- New [tenant customization guide](docs/en/customization.md) (bilingual): a decision table for the five mechanisms, how-tos for language and layout, and what cannot be customized and why.
 
 ### Changed
 
@@ -644,16 +644,16 @@ Deploy server and clients together — see the wire note above.
 
 ### Added
 
-- `Bee.Definition`: Roslyn analyzers ship with the package and turn 22 framework conventions into build diagnostics — definition file validity, wire contract shape, business object access control. See [Analyzer Rules](docs/analyzer-rules.md).
+- `Bee.Definition`: Roslyn analyzers ship with the package and turn 22 framework conventions into build diagnostics — definition file validity, wire contract shape, business object access control. See [Analyzer Rules](docs/en/analyzer-rules.md).
 - `Bee.Definition`: `MenuSettings` — a new definition type owning the navigation menu (nested `MenuFolder` / `MenuEntry`, tree-unique `Id`, design-time `Visible`).
 - `Bee.Definition`: `ProgramItem.Repository` binds a progId to its repository, alongside `BusinessObject`.
 - `Bee.Repository.Abstractions`: `IRepositoryFactory` — one entry point for every repository, on two generic axes.
 - Sessions survive cache eviction, restart and multi-node routing: sign-in writes a rebuild seed to `st_session` and roles / customization / record-scope are recomputed on every rebuild.
-- Application identity: API keys stored in `st_api_key`, validated by `IApiKeyValidator`, managed behind `IDeploymentAuthorizationService`. See [API Key Management](docs/api-key-management.md).
+- Application identity: API keys stored in `st_api_key`, validated by `IApiKeyValidator`, managed behind `IDeploymentAuthorizationService`. See [API Key Management](docs/en/api-key-management.md).
 - `Bee.Api.Client`: `FormDefinitionLoader` assembles runtime schema and layout from raw definitions.
 - `Bee.Business`: `DerivedApiEncryptionKeyProvider` (now the default), `SessionCompanyBinder`, `BusinessObject.CreateFormRepository<T>()`.
 - `Bee.Definition`: `st_user.culture`, `BackendConfiguration.DefaultLanguage` / `SessionCleanupOptions`; `Bee.Hosting`: `ExpiredSessionCleanupService`.
-- `Bee.Expressions`: `UtcNow()` joins `Today()` and `Now()` in the expression sandbox. See [Expression Rules](docs/expression-rules.md).
+- `Bee.Expressions`: `UtcNow()` joins `Today()` and `Now()` in the expression sandbox. See [Expression Rules](docs/en/expression-rules.md).
 
 ### Changed — breaking (compile-time)
 
@@ -932,11 +932,11 @@ External JS/TS clients reading `DataSet` JSON by literal column key must switch 
 
 ### Breaking Changes
 
-- Framework organisation tables `ft_department` / `ft_employee` renamed to `st_department` / `st_employee`; deployments must `RENAME TABLE` — see [Table Schema Upgrade Guide §Renaming framework tables](docs/database-schema-upgrade.md). FormSchema progIds, C# type names, and field names unchanged.
+- Framework organisation tables `ft_department` / `ft_employee` renamed to `st_department` / `st_employee`; deployments must `RENAME TABLE` — see [Table Schema Upgrade Guide §Renaming framework tables](docs/en/database-schema-upgrade.md). FormSchema progIds, C# type names, and field names unchanged.
 
 ### Added
 
-- `docs/framework-reserved-names.md` (bilingual): registry of framework-reserved names (`st_*` system tables, reserved `progId`s).
+- `docs/en/framework-reserved-names.md` (bilingual): registry of framework-reserved names (`st_*` system tables, reserved `progId`s).
 - `Bee.Definition`: framework default define files (11 `st_*` `TableSchema` XMLs, `Department` / `Employee` `FormSchema` / `FormLayout` / `Language`, minimal `DbCategorySettings.xml`, `SystemSettings.xml` template, empty `DatabaseSettings.xml`) now ship as embedded resources under `Bee.Definition.Defaults/{relative-path}`.
 - `Bee.Definition.Defaults` API: `Defaults.MaterializeTo(path, options)` (skip-existing), `Defaults.ListEmbedded()`, `Defaults.OpenEmbedded(relativePath)`; runtime `IDefineStorage` untouched.
 - `TestProcessBootstrap.SharedDefinePath`: process-wide merged define directory; `BeeTestFixture` default `DefinePath` now points here.
@@ -986,7 +986,7 @@ External JS/TS clients reading `DataSet` JSON by literal column key must switch 
 ### Added
 
 - `Bee.Business`: `SystemBO.GetFormSchema` / `GetFormLayout` — JSON-native getters returning `FormSchema` / `FormLayout`; `.NET` adds `SystemApiConnector.GetFormSchemaAsync` / `GetFormLayoutAsync`; both `Public + Authenticated`. See [ADR-014](docs/adr/adr-014-jsonrpc-plain-public-default.md).
-- `docs`: new bilingual [`docs/jsonrpc-frontend-integration.md`](docs/jsonrpc-frontend-integration.md) — wire format, headers, auth flow, method catalog, `JsonRpcErrorCode` mapping, TypeScript wrapper.
+- `docs`: new bilingual [`docs/en/jsonrpc-frontend-integration.md`](docs/en/jsonrpc-frontend-integration.md) — wire format, headers, auth flow, method catalog, `JsonRpcErrorCode` mapping, TypeScript wrapper.
 
 ### Changed
 

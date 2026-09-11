@@ -6,7 +6,7 @@
     Bee.Base is a dependency of every project in the framework and Bee.Definition is the most
     depended-on project in it, so anything added here is inherited by every consumer of the
     framework — including consumers that only want to read definitions. (No dependent count here:
-    it drifts and nothing checks it. The csproj files are the authority; docs/dependency-map.md
+    it drifts and nothing checks it. The csproj files are the authority; docs/en/dependency-map.md
     renders them.) Bee.Api.Contracts is locked for the same reason:
     it sits in the transitive closure of every UI head. This target locks each of them to an explicit
     allowlist: adding a reference fails the build rather than silently widening the public

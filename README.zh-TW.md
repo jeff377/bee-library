@@ -22,17 +22,17 @@ Bee.NET Framework 是一套採用 **N-Tier + Clean Architecture + MVVM** 混合�
 - **多資料庫支援**：內建 SQL Server、PostgreSQL、SQLite、MySQL、Oracle 五種 dialect，由 host 應用程式按需註冊。
 - **模組化組件**：根據職責切分為多個元件，靈活組合、降低耦合。
 - **開發加速器**：透過可重用基底類別與 FormSchema 驅動的 CRUD，大幅減少重複程式碼。
-- **慣例於建置期把關**：Roslyn analyzer 隨套件自動註冊，把框架慣例——資料庫 scope 選擇、定義檔跨檔一致性、wire 合約形狀——變成同時指出原因與修法的建置期診斷。詳見 [Analyzer 規則](docs/analyzer-rules.zh-TW.md)。
+- **慣例於建置期把關**：Roslyn analyzer 隨套件自動註冊，把框架慣例——資料庫 scope 選擇、定義檔跨檔一致性、wire 合約形狀——變成同時指出原因與修法的建置期診斷。詳見 [Analyzer 規則](docs/zh-TW/analyzer-rules.md)。
 
 ## 📐 架構總覽
 
-關於 Bee.NET 的分層架構、資料流與設計決策，請參閱[架構總覽文件](docs/architecture-overview.zh-TW.md)。
+關於 Bee.NET 的分層架構、資料流與設計決策，請參閱[架構總覽文件](docs/zh-TW/architecture-overview.md)。
 
-關於 API 合約與 BO 參數的設計原則（Request/Response 與 Args/Result 的使用方式），請參閱 [API/BO 合約設計原則](docs/api-bo-contract-design.zh-TW.md)。所有對外公開 API 方法的清單（含每方法 `[ApiAccessControl]` 設定）見 [API 方法參考](docs/api-method-reference.zh-TW.md)。
+關於 API 合約與 BO 參數的設計原則（Request/Response 與 Args/Result 的使用方式），請參閱 [API/BO 合約設計原則](docs/zh-TW/api-bo-contract-design.md)。所有對外公開 API 方法的清單（含每方法 `[ApiAccessControl]` 設定）見 [API 方法參考](docs/zh-TW/api-method-reference.md)。
 
-從 JavaScript / TypeScript 前端（React、Vue、Angular、vanilla — 前端無 .NET）呼叫 JSON-RPC API，請參閱 [JSON-RPC 前端整合指引](docs/jsonrpc-frontend-integration.zh-TW.md)。
+從 JavaScript / TypeScript 前端（React、Vue、Angular、vanilla — 前端無 .NET）呼叫 JSON-RPC API，請參閱 [JSON-RPC 前端整合指引](docs/zh-TW/jsonrpc-frontend-integration.md)。
 
-完整開發者文件索引請見 [docs/README.zh-TW.md](docs/README.zh-TW.md)。
+完整開發者文件索引請見 [docs/zh-TW/README.md](docs/zh-TW/README.md)。
 
 ## 📦 組件說明
 
@@ -89,7 +89,7 @@ dotnet run
 
 Console 會列出 `System.Ping` 狀態與自訂 BO 回應的訊息。完整 demo 清單與每個 demo 對應到哪些 library 功能，見 [`samples/README.zh-TW.md`](samples/README.zh-TW.md)。
 
-想建自己的專案？[快速上手](docs/getting-started.zh-TW.md)從一個空資料夾走完同一件事 —— 套件、`DefinePath`、DI 接線、第一個商業物件，再由用戶端呼叫。
+想建自己的專案？[快速上手](docs/zh-TW/getting-started.md)從一個空資料夾走完同一件事 —— 套件、`DefinePath`、DI 接線、第一個商業物件，再由用戶端呼叫。
 
 ## 🐝 完整示範應用 — Bee.Northwind
 

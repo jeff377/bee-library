@@ -1,24 +1,24 @@
 # API 方法參考
 
-[English](api-method-reference.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/api-method-reference.md) · [← 文件索引](README.md)
 
 本文件為**單頁總覽**：列出所有透過 `JsonRpcExecutor` 對外公開的 BO 方法，
-依 BO 軸分組。每列標註該方法的 wire-level [合約介面](api-bo-contract-design.zh-TW.md)、
+依 BO 軸分組。每列標註該方法的 wire-level [合約介面](api-bo-contract-design.md)、
 BO 層 Args / Result 型別、`[ApiAccessControl]` 設定，與一行用途說明。
 
 > **真相來源。** 本參考由 `BoApiSurfaceTests`（位於
 > `tests/Bee.Business.UnitTests/`）與 BO 源碼即時對照。新增或修改方法時必須
 > 同步更新本文件與測試 baseline，否則 build 會失敗。
 
-> 想知道框架保留哪些 `progId`？見 [框架保留命名](framework-reserved-names.zh-TW.md)。
+> 想知道框架保留哪些 `progId`？見 [框架保留命名](framework-reserved-names.md)。
 
 ## 欄位說明
 
 | 欄位 | 意義 |
 |------|------|
 | **Method** | JSON-RPC `method` 欄位 — `progId.action`。對應 `SystemActions` / `FormActions` / `LogActions` 常數。 |
-| **Protection** | `[ApiAccessControl]` 第一參數。可用值與各自語意見 `ApiProtectionLevel` 的 XML doc（[`src/Bee.Definition/Security/ApiProtectionLevel.cs`](../src/Bee.Definition/Security/ApiProtectionLevel.cs)）。注意下表除了傳輸層級外也用到 `LocalOnly`。 |
-| **Auth** | `[ApiAccessControl]` 第二參數，見 [`src/Bee.Definition/Security/ApiAccessRequirement.cs`](../src/Bee.Definition/Security/ApiAccessRequirement.cs)。 |
+| **Protection** | `[ApiAccessControl]` 第一參數。可用值與各自語意見 `ApiProtectionLevel` 的 XML doc（[`src/Bee.Definition/Security/ApiProtectionLevel.cs`](../../src/Bee.Definition/Security/ApiProtectionLevel.cs)）。注意下表除了傳輸層級外也用到 `LocalOnly`。 |
+| **Auth** | `[ApiAccessControl]` 第二參數，見 [`src/Bee.Definition/Security/ApiAccessRequirement.cs`](../../src/Bee.Definition/Security/ApiAccessRequirement.cs)。 |
 | **用途** | 一行摘要；完整說明見對應 BO 方法的 XML doc。 |
 
 ### 重放防護
@@ -126,7 +126,7 @@ change 軸採**清單 / 明細**二段式：`GetChangeLog` 只回輕量事件**�
 
 ## 稽核副作用
 
-當對應的 `AuditLogOptions` 類別啟用時（opt-in，預設關閉），以下方法會 best-effort 寫一筆稽核記錄——寫 log 不影響方法結果。見 [框架保留命名 §1.3](framework-reserved-names.zh-TW.md)。
+當對應的 `AuditLogOptions` 類別啟用時（opt-in，預設關閉），以下方法會 best-effort 寫一筆稽核記錄——寫 log 不影響方法結果。見 [框架保留命名 §1.3](framework-reserved-names.md)。
 
 | 方法 | Log 表 | 記錄內容 |
 |------|--------|---------|
@@ -138,6 +138,6 @@ change 軸採**清單 / 明細**二段式：`GetChangeLog` 只回輕量事件**�
 
 ## 參考
 
-- [API 合約 & BO 參數設計](api-bo-contract-design.zh-TW.md) — Contract / Args / Result 分層設計原理
-- [權限與授權](permission-authorization.zh-TW.md) —— 各個 `[ApiAccessControl]` 要求在執行期的實際語意
-- [ADR-004](adr/adr-004-messagepack-payload.md) 與 [ADR-044](adr/adr-044-payload-codec-negotiation.md) —— payload 管線與逐請求 codec 協商
+- [API 合約 & BO 參數設計](api-bo-contract-design.md) — Contract / Args / Result 分層設計原理
+- [權限與授權](permission-authorization.md) —— 各個 `[ApiAccessControl]` 要求在執行期的實際語意
+- [ADR-004](../adr/adr-004-messagepack-payload.md) 與 [ADR-044](../adr/adr-044-payload-codec-negotiation.md) —— payload 管線與逐請求 codec 協商

@@ -127,7 +127,7 @@ ERP 數值（單價、成本、數量、重量、金額、百分比、匯率）�
 
 ## 參考
 
-- cookbook：`docs/development-cookbook.md` §Numeric Semantics, Company Decimals, and Rounding（how-to 與 API 入口）
+- cookbook：`docs/en/development-cookbook.md` §Numeric Semantics, Company Decimals, and Rounding（how-to 與 API 入口）
 - 相關 ADR：[ADR-005](adr-005-formschema-driven.md)（FormSchema 驅動）、[ADR-012](adr-012-session-company-context.md)（session 公司上下文）、[ADR-017](adr-017-db-cache-invalidation.md)（cache 失效）
 - 記憶：`erp-round-then-sum`、`db-param-scale-not-enforced`
 - SAP：ABAP CURR/QUAN 必綁 CUKY/UNIT、ALV `CFIELDNAME`、幣別小數 TCURX、單位小數 T006（ANDEC/DECAN）、逐行捨入/現金捨入 T001R

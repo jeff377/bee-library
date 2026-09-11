@@ -23,7 +23,7 @@ the old type names — and they stay here until that is done.
 - **Dependencies**: locked to an explicit allowlist by the **BEE9001** build gate. Anything added here
   is inherited by every consumer of the framework, so widening the allowlist is a deliberate decision
   recorded in [ADR-038](../../docs/adr/adr-038-definition-dependency-boundary.md). The current graph
-  lives in the [dependency map](../../docs/dependency-map.md) — this file does not restate it, because
+  lives in the [dependency map](../../docs/en/dependency-map.md) — this file does not restate it, because
   a second copy is a second thing to keep right.
 
 ## Target Framework

@@ -1,6 +1,6 @@
 # 時間型別總覽：`Date`、`DateTime`、`Time`
 
-[English](temporal-types.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/temporal-types.md) · [← 文件索引](README.md)
 
 框架區分三種時間語意，而每一種在各層 —— 資料庫欄位、`DataColumn`、CLR 值、三種序列化 ——
 的承載方式都不同。本文是跨層的單一對照參考；各語意的深入說明見文末連結。
@@ -59,11 +59,11 @@
 兩點值得知道：
 
 - **`DateTime` 以 UTC 存於不帶時區的欄位。** 沒有任何 provider 儲存位移量，轉換由框架在讀出時完成。
-  見[時區處理](datetime-timezone.zh-TW.md)。
+  見[時區處理](datetime-timezone.md)。
 - **`Time` 不使用資料庫原生時刻型別。** 除 Oracle 外每家都有，但它們的語意彼此不一致
   （MySQL 的 `TIME` 是**時距**，跨越 ±838 小時），且 .NET `DataSet` 承載不了它們回傳的 CLR 型別。
   定寬字串一次繞開全部問題，且在 raw `SELECT` 下仍可讀。完整實測見
-  [ADR-033](adr/adr-033-time-of-day-semantics.md)。
+  [ADR-033](../adr/adr-033-time-of-day-semantics.md)。
 
 ### 排序與範圍查詢
 
@@ -267,7 +267,7 @@ FilterCondition.Equal("work_start", "08:30");                      // string —
 | `DateTime` | **UTC** | 轉為 session 的時區 |
 | `Time` | 原值 | 原值 |
 
-細節（含自寫 SQL 與非 .NET 用戶端該做什麼）見[時區處理](datetime-timezone.zh-TW.md)。
+細節（含自寫 SQL 與非 .NET 用戶端該做什麼）見[時區處理](datetime-timezone.md)。
 
 ## 8. 三者都不是的東西：時距
 
@@ -299,10 +299,10 @@ FilterCondition.Equal("work_start", "08:30");                      // string —
 
 ## 相關文件
 
-- [ADR-031](adr/adr-031-calendar-day-column-semantics.md) —— 日曆日語意為何需要顯式標記、
+- [ADR-031](../adr/adr-031-calendar-day-column-semantics.md) —— 日曆日語意為何需要顯式標記、
   被否決的替代方案，以及背後的 `DataColumn`/`DateOnly` 實測數據。
-- [ADR-033](adr/adr-033-time-of-day-semantics.md) —— `Time` 為何採定寬字串而非資料庫原生時刻型別，
+- [ADR-033](../adr/adr-033-time-of-day-semantics.md) —— `Time` 為何採定寬字串而非資料庫原生時刻型別，
   含決策背後的實測數據。
-- [時區處理](datetime-timezone.zh-TW.md) —— 時間點的 UTC 儲存與轉換。
-  [ADR-032](adr/adr-032-datetime-timezone.md)。
-- [術語表](terminology.zh-TW.md) —— 日曆日 / 時刻 / 時間點 / 時距 四詞的定義。
+- [時區處理](datetime-timezone.md) —— 時間點的 UTC 儲存與轉換。
+  [ADR-032](../adr/adr-032-datetime-timezone.md)。
+- [術語表](terminology.md) —— 日曆日 / 時刻 / 時間點 / 時距 四詞的定義。

@@ -7,7 +7,7 @@
 ## 架構定位
 
 - **層級**：資料存取層（基礎設施）
-- **在相依圖中的位置**：見[專案相依性全景圖](../../docs/dependency-map.zh-TW.md)。**此處不逐一列出** —— 權威來源是 csproj，而散落在每份套件 README 的散文拷貝會漂且無人察覺。它們確實漂了：`Bee.Hosting` 抽出後，有四份 README 的下游數個月都沒把它補上。
+- **在相依圖中的位置**：見[專案相依性全景圖](../../docs/zh-TW/dependency-map.md)。**此處不逐一列出** —— 權威來源是 csproj，而散落在每份套件 README 的散文拷貝會漂且無人察覺。它們確實漂了：`Bee.Hosting` 抽出後，有四份 README 的下游數個月都沒把它補上。
 
 ## 目標框架
 
@@ -30,7 +30,7 @@
 
 ### 查詢組合
 
-> Bee.Db 由 **`FormSchema` 驅動**：以 `FormSchema` 為單位描述業務實體，由查詢上下文沿 `FormSchema` 鏈遞迴展開 JOIN，產生與 ORM 不同的「表單級關聯」資料存取體驗。詳見 [FormSchema 驅動的資料庫存取](../../docs/formschema-data-access.zh-TW.md)。
+> Bee.Db 由 **`FormSchema` 驅動**：以 `FormSchema` 為單位描述業務實體，由查詢上下文沿 `FormSchema` 鏈遞迴展開 JOIN，產生與 ORM 不同的「表單級關聯」資料存取體驗。詳見 [FormSchema 驅動的資料庫存取](../../docs/zh-TW/formschema-data-access.md)。
 
 - `SelectCommandBuilder` -- 根據 `FormSchema` 定義建構 SELECT 命令
 - `SelectBuilder` / `FromBuilder` / `WhereBuilder` / `SortBuilder` / `LimitBuilder` -- 可組合的建構器，分別負責 SELECT、FROM、WHERE、ORDER BY 與筆數限制子句
@@ -48,7 +48,7 @@
   - **PostgreSQL**（`Providers/PostgreSql/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、透過 `information_schema` + `pg_catalog` 進行結構描述探查
   - **SQLite**（`Providers/Sqlite/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE DDL、ALTER（限 ADD / RENAME COLUMN / Index）、其餘欄位修改一律走 REBUILD、透過 `sqlite_master` + `PRAGMA` 進行結構描述探查；定位於檔案式單機與嵌入式情境，請見下方限制清單
   - **MySQL**（`Providers/MySql/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、透過 `information_schema` 進行結構描述探查
-  - **Oracle**（`Providers/Oracle/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、透過 `USER_*` data dictionary view 進行結構描述探查。識別符一律以 quoted-UPPERCASE（`"ST_USER"`）形式 emit —— 與 Oracle 原生 unquoted-fold-to-UPPER 慣例對齊，同時保留 reserved word 欄位與特殊字元命名的可用性。Provider 在 read-back 邊界將識別符 lowercase 化，使 framework 上層（FormSchema、Repository、Business）對 5 個支援的資料庫維持一致的 lowercase 抽象。完整識別符策略見 [docs/database-naming-conventions.md §5.3](../../docs/database-naming-conventions.md)
+  - **Oracle**（`Providers/Oracle/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、透過 `USER_*` data dictionary view 進行結構描述探查。識別符一律以 quoted-UPPERCASE（`"ST_USER"`）形式 emit —— 與 Oracle 原生 unquoted-fold-to-UPPER 慣例對齊，同時保留 reserved word 欄位與特殊字元命名的可用性。Provider 在 read-back 邊界將識別符 lowercase 化，使 framework 上層（FormSchema、Repository、Business）對 5 個支援的資料庫維持一致的 lowercase 抽象。完整識別符策略見 [docs/en/database-naming-conventions.md §5.3](../../docs/en/database-naming-conventions.md)
 
 #### SQLite 已知限制
 

@@ -1,6 +1,6 @@
 # 快取機制
 
-[English](caching.md) · [← 文件索引](README.zh-TW.md)
+[English](../en/caching.md) · [← 文件索引](README.md)
 
 > 框架如何快取定義資料與資料庫相依資料，以及一筆條目何時失去效力
 
@@ -194,7 +194,7 @@ policy.ChangeNotifyKey        = changeSource.NotifyKey;   // 資料庫式 storag
   在 process B 會一直是舊的，直到它的 sliding 視窗過期。
 - 由資料表載入的資料（`CompanyInfo`、角色權限、部門樹）沒有檔案可監看，
   檔案監看這條免費信號用不上。
-- 一旦定義改存資料庫而非檔案（[ADR-018](adr/adr-018-db-define-storage.md)），
+- 一旦定義改存資料庫而非檔案（[ADR-018](../adr/adr-018-db-define-storage.md)），
   連定義也失去檔案監看信號。
 
 多節點部署不該依賴共用檔案系統，也不值得為此引進一套框架其他地方都用不到的訊息匯流排。
@@ -205,7 +205,7 @@ policy.ChangeNotifyKey        = changeSource.NotifyKey;   // 資料庫式 storag
 資料庫快取一律透過 `Bee.Definition` 的單一介面載入：
 
 宣告在
-[`src/Bee.Definition/ICacheDataSourceProvider.cs`](../src/Bee.Definition/ICacheDataSourceProvider.cs)，
+[`src/Bee.Definition/ICacheDataSourceProvider.cs`](../../src/Bee.Definition/ICacheDataSourceProvider.cs)，
 此處不複寫一份 —— 抄下來的簽章清單會漂，而這一份確實漂過：整整一個版本沒有
 `GetCompanyAuditRules`。下方的 **Database caches** 表格逐一列出每個快取對應的方法，
 那才是讀這份文件的人需要的部分。
@@ -258,7 +258,7 @@ MySQL 用 `ON DUPLICATE KEY`、SQL Server（加 `HOLDLOCK`）與 Oracle 用 `MER
 ### 6.4 四條不變式
 
 以下四點是這個設計要保證的性質。完整理由與被否決的替代方案見
-[ADR-017](adr/adr-017-db-cache-invalidation.md)。
+[ADR-017](../adr/adr-017-db-cache-invalidation.md)。
 
 1. **bump 必須與資料變更在同一 transaction 提交。** 否則 poller 可能在資料可見之前就看到通知，
    重載到舊值又把它標記為新鮮 —— 永久 stale。`Touch` 顯式收 `DbTransaction`，就是為了讓這件事
@@ -304,7 +304,7 @@ t=9.2  節點 B：某個請求讀取 FormSchema "Employee"。MemoryCache 評估�
 | notify key 看起來對，卻沒反應 | 實體那一段必須與該快取自己 `Remove` 所用的 key 完全一致，複合鍵含點的形式也要一樣 |
 
 寫入端的操作配方 —— 何時該 `Touch`、key 怎麼組、以及各項設定 —— 見
-[端到端開發指引 § 跨 process 快取失效](development-cookbook.zh-TW.md)。
+[端到端開發指引 § 跨 process 快取失效](development-cookbook.md)。
 
 ---
 
@@ -372,7 +372,7 @@ key 命名空間。正式環境的容器用空字串；測試 fixture 用唯一�
 `CacheContainerProvider.For(customizeId)` 會依需要，為每個客製化代碼建立一個**額外**的容器，
 背後是 `CustomizeOnlyStorage`，並以客製化代碼為前綴。這些容器只裝該租戶的覆蓋層 ——
 基底容器不會被這條路徑建立或碰觸，兩層由 `CustomizeOverlay` 而非快取本身合併。
-見[租戶客製化](customization.zh-TW.md)。
+見[租戶客製化](customization.md)。
 
 由於 cache-notify 的 poller 是**發布版本**而非驅逐條目，租戶容器自動參與跨 process 失效，
 無需任何註冊。
@@ -392,7 +392,7 @@ key 命名空間。正式環境的容器用空字串；測試 fixture 用唯一�
 `SessionInfo` 是刻意的例外：它本來就是 per-session。
 
 完整規則、具體違規樣態表與推導，見
-[開發限制與反模式 § 定義資料在 init 後的不可異動性](development-constraints.zh-TW.md)。
+[開發限制與反模式 § 定義資料在 init 後的不可異動性](development-constraints.md)。
 
 ---
 
@@ -441,12 +441,12 @@ key 命名空間。正式環境的容器用空字串；測試 fixture 用唯一�
 
 ## 12. 延伸閱讀
 
-- [ADR-009：快取實作](adr/adr-009-cache-implementation.md) —— 為何選
+- [ADR-009：快取實作](../adr/adr-009-cache-implementation.md) —— 為何選
   `Microsoft.Extensions.Caching.Memory` + `IChangeToken`，以及負向快取的後續延伸
-- [ADR-017：資料庫快取相依/失效機制](adr/adr-017-db-cache-invalidation.md) —— 通知表設計、
+- [ADR-017：資料庫快取相依/失效機制](../adr/adr-017-db-cache-invalidation.md) —— 通知表設計、
   其不變式，以及被否決的替代方案
-- [ADR-018：定義儲存於資料庫](adr/adr-018-db-define-storage.md) —— 定義側最主要的 cache-notify 消費端
-- [端到端開發指引](development-cookbook.zh-TW.md) —— § 跨 process 快取失效：寫入端配方與設定
-- [開發限制與反模式](development-constraints.zh-TW.md) —— 不可異動規則的完整條文
-- [租戶客製化](customization.zh-TW.md) —— 覆蓋層容器的使用方式
-- [Bee.ObjectCaching README](../src/Bee.ObjectCaching/README.zh-TW.md) —— 套件總覽與公開 API
+- [ADR-018：定義儲存於資料庫](../adr/adr-018-db-define-storage.md) —— 定義側最主要的 cache-notify 消費端
+- [端到端開發指引](development-cookbook.md) —— § 跨 process 快取失效：寫入端配方與設定
+- [開發限制與反模式](development-constraints.md) —— 不可異動規則的完整條文
+- [租戶客製化](customization.md) —— 覆蓋層容器的使用方式
+- [Bee.ObjectCaching README](../../src/Bee.ObjectCaching/README.zh-TW.md) —— 套件總覽與公開 API

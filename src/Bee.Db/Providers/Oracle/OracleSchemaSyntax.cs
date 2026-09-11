@@ -14,7 +14,7 @@ namespace Bee.Db.Providers.Oracle
     /// because Oracle has a wide reserved-word set (e.g. <c>COMMENT</c>, <c>SIZE</c>,
     /// <c>LEVEL</c>, <c>SESSION</c>); quoted identifiers also become case-sensitive, so the
     /// FormSchema convention is to use lowercase names. See
-    /// <c>docs/database-dialect-differences.md</c> §4.
+    /// <c>docs/en/database-dialect-differences.md</c> §4.
     /// </remarks>
     internal static class OracleSchemaSyntax
     {
@@ -89,7 +89,7 @@ namespace Bee.Db.Providers.Oracle
             // at the C# layer via `ValueUtilities.CStr(null)` returning an empty string. An explicit
             // non-empty default is still a valid non-null literal on a nullable column, so it is
             // preserved to keep the read-back schema diff stable.
-            // See `docs/database-dialect-differences.md` section 3.1.
+            // See `docs/en/database-dialect-differences.md` section 3.1.
             // A time of day is the same case: its unset value is the empty string, which Oracle
             // stores as NULL, so it is emitted nullable with the empty default dropped (ADR-033).
             if (field.DbType == FieldDbType.String || field.DbType == FieldDbType.Time)
@@ -172,7 +172,7 @@ namespace Bee.Db.Providers.Oracle
         /// Returns the effective Oracle nullability clause (<c>NULL</c> / <c>NOT NULL</c>) for a field.
         /// String/Text columns are always nullable regardless of the definition's <see cref="DbField.AllowNull"/>,
         /// since Oracle equates '' with NULL so a non-null empty string is inexpressible.
-        /// See <c>docs/database-dialect-differences.md</c> §3.1.
+        /// See <c>docs/en/database-dialect-differences.md</c> §3.1.
         /// </summary>
         /// <param name="field">The field definition.</param>
         public static string GetNullabilityClause(DbField field)

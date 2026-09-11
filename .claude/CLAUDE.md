@@ -66,7 +66,7 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 
 ## 架構參考
 
-實作任何功能或模組前，先讀 `docs/README.md` —— 公開文件的入口索引（架構總覽、開發指引與限制、
+實作任何功能或模組前，先讀 `docs/zh-TW/README.md` —— 公開文件的入口索引（架構總覽、開發指引與限制、
 資料庫、設計概念，皆雙語、分類列表），再依索引開對應文件。設計決策的背景見 `docs/adr/`；
 進行中 / 已完成的規劃見 `docs/plans/`（階段性文件，舊 plan 未必符合現行行為，勿當規格）；
 各套件細節見各 `src/` 專案的 `README.md`。

@@ -7,7 +7,7 @@
 ## Architecture Position
 
 - **Layer**: Data Access Layer (infrastructure)
-- **Position in the dependency graph**: see [Project Dependency Map](../../docs/dependency-map.md). Not enumerated here — the csproj files are the authority, and a prose copy in every package README drifts with nothing to catch it. These did: `Bee.Hosting` was missing as a dependent from four of them for months after it was extracted.
+- **Position in the dependency graph**: see [Project Dependency Map](../../docs/en/dependency-map.md). Not enumerated here — the csproj files are the authority, and a prose copy in every package README drifts with nothing to catch it. These did: `Bee.Hosting` was missing as a dependent from four of them for months after it was extracted.
 
 ## Target Framework
 
@@ -30,7 +30,7 @@
 
 ### Query Composition
 
-> Bee.Db is **`FormSchema`-driven**: `FormSchema` describes business entities, and the query context recursively walks `FormSchema` chains to expand JOINs — yielding a "form-level relation" data-access experience distinct from ORM. See [FormSchema-Driven Database Access](../../docs/formschema-data-access.md).
+> Bee.Db is **`FormSchema`-driven**: `FormSchema` describes business entities, and the query context recursively walks `FormSchema` chains to expand JOINs — yielding a "form-level relation" data-access experience distinct from ORM. See [FormSchema-Driven Database Access](../../docs/en/formschema-data-access.md).
 
 - `SelectCommandBuilder` -- builds SELECT commands from `FormSchema` definitions
 - `SelectBuilder` / `FromBuilder` / `WhereBuilder` / `SortBuilder` / `LimitBuilder` -- composable builders for the SELECT, FROM, WHERE, ORDER BY and row-limit clauses
@@ -48,7 +48,7 @@ The framework routes SQL generation and schema reading by `DatabaseType` through
   - **PostgreSQL** (`Providers/PostgreSql/`) -- full support: form SELECT / INSERT / UPDATE / DELETE, CREATE/ALTER/REBUILD DDL, schema introspection via `information_schema` + `pg_catalog`
   - **SQLite** (`Providers/Sqlite/`) -- full support: form SELECT / INSERT / UPDATE / DELETE, CREATE DDL, ALTER (limited to ADD / RENAME COLUMN / Index — every other column-level mutation falls back to REBUILD), schema introspection via `sqlite_master` + `PRAGMA`. Targeted at file-backed single-process and embedded scenarios; see the limitations list below
   - **MySQL** (`Providers/MySql/`) -- full support: form SELECT / INSERT / UPDATE / DELETE, CREATE/ALTER/REBUILD DDL, schema introspection via `information_schema`
-  - **Oracle** (`Providers/Oracle/`) -- full support: form SELECT / INSERT / UPDATE / DELETE, CREATE/ALTER/REBUILD DDL, schema introspection via `USER_*` data-dictionary views. Identifiers are emitted as quoted-UPPERCASE (`"ST_USER"`) — aligning with Oracle's natural unquoted-fold-to-UPPER convention while keeping reserved-word columns and special-character names safe. The provider lowercases identifiers at the read-back boundary so the rest of the framework (FormSchema, Repository, Business) sees a consistent lowercase abstraction across all 5 supported databases. See [docs/database-naming-conventions.md §5.3](../../docs/database-naming-conventions.md) for the full identifier strategy
+  - **Oracle** (`Providers/Oracle/`) -- full support: form SELECT / INSERT / UPDATE / DELETE, CREATE/ALTER/REBUILD DDL, schema introspection via `USER_*` data-dictionary views. Identifiers are emitted as quoted-UPPERCASE (`"ST_USER"`) — aligning with Oracle's natural unquoted-fold-to-UPPER convention while keeping reserved-word columns and special-character names safe. The provider lowercases identifiers at the read-back boundary so the rest of the framework (FormSchema, Repository, Business) sees a consistent lowercase abstraction across all 5 supported databases. See [docs/en/database-naming-conventions.md §5.3](../../docs/en/database-naming-conventions.md) for the full identifier strategy
 
 #### SQLite Known Limitations
 
