@@ -372,3 +372,32 @@ company-scope 資料庫相依快取那一族是現成 pattern，`bee-add-cache-o
 **啟動時第一步**：先寫一個 throw-away test 實跑上面那條純定義換算鏈（確認靜態推導成立），
 再定資料模型（第三題），然後依 `bee-add-cache-object` 開匯率快取物件。
 捨入政策本身另有 `docs/plans/plan-rounding-mode.md`。
+
+## BPM／Workflow：簽核流程與單據狀態轉換
+
+**構想（2026-09-11 討論公開文件定位時提出）**：框架目前的消費群是 ERP、CRM、HRM 這類以表單為基礎的資訊系統，
+BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。**此階段先不做**，這是使用者的決定。
+
+**起點：這一層目前不存在，而且是刻意留白的。**
+`PermissionAction` 的 XML doc 明寫，Approve、Post、Confirm 這類狀態轉換**刻意不放在動作軸上**，
+而是屬於「另一層 workflow 權限」（`src/Bee.Definition/Settings/Permission/PermissionAction.cs`）。
+那一層只被點名，還沒有介面也沒有實作。框架現在有的是表單那一半：表單定義、資料存取，以及
+兩層授權（動作 gate 加 record scope，見 [ADR-019](../adr/adr-019-permission-authorization-model.md)）。
+
+**落地之前的約束**：公開文件不寫「支援 BPM」，因為那會是沒有機制支撐的能力宣稱。
+公開文件的定位修正已經照這條排除 BPM（[plan-docs-positioning.md](../plans/plan-docs-positioning.md)）。
+**落地之後**，要回頭在公開文件的適用範圍補上 BPM。
+
+**要先答的問題**：
+
+1. **自建流程引擎，還是提供接縫去整合外部引擎？** 這題決定其餘三題的形狀。
+2. **狀態轉換權限怎麼跟現有兩層授權疊加？** `PermissionAction` 已經預留「另一層」，
+   但它和 action gate、record scope 的判定順序與組合方式都還沒定義。
+3. **單據狀態存在哪裡？** 如果是新的 `sys_*` 系統欄位，就等於擴充框架保留名，既有應用可能已經用了同名欄位。
+   這和本檔 `sys_date` 那一節是同一類問題。
+4. **和稽核軌跡的關係？** 狀態轉換本身就是一種稽核事件，要對照
+   [ADR-040](../adr/adr-040-audit-trail-taxonomy.md) 的分類軸決定它落在哪一類。
+
+**要等什麼**：沒有技術上的前置條件，純粹是產品方向的排序問題。
+
+**啟動時第一步**：先答第 1 題，再寫 plan。
