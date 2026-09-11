@@ -15,6 +15,8 @@
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [公開文件改為語言資料夾結構，並建立譯本同步機制](plan-docs-multilingual-layout.md) | 2026-09-11 | 公開文件由後綴區分改為 `docs/<lang>/`，繁中為源；新增 `check-md-links.sh` 與 `check-docs-i18n.sh`（譯本 blob 檔頭、過期、缺譯、語言切換列，`--stamp`／`--fix-switch`），掛在獨立的 Docs Check workflow，pre-commit hook 只提示。原階段 4（個人文件移出 `docs/`）拆為 `plan-personal-docs-directory` |
+| [公開文件的定位由 ERP 改為以表單為基礎的企業資訊系統](plan-docs-positioning.md) | 2026-09-11 | 定位用語改為「企業資訊系統」（術語表新增詞條，LOB 為英文同義詞）；ERP 保留為複雜度基準並在架構總覽寫明涵蓋面向，把 ERP 當目標系統代稱的寫法改成通用說法，XML doc 同步；GitHub About 與 topics 一併更新 |
 | [刪除的異動記錄改存完整原單，異動明細以 DataSet 回傳](plan-delete-audit-full-record.md) | 2026-09-11 | 刪除稽核改存完整原單（新 root `AuditDeletedRecord`，列不再標成 Deleted），修正稽核開啟時 AfterDelete 外掛讀欄位擲 `DeletedRowInaccessibleException`；`GetChangeDetail` 回應新增新增／修改／刪除共用的 `DataSet` 屬性，wire 合約與 `bee-connector-js` 同步。決策記入 [adr-040](../../adr/adr-040-audit-trail-taxonomy.md) 第十節。已知未處理：`Fields` 的時間字串維持 UTC，`DataSet` 則換算成使用者時區 |
 | [數量／重量欄必須綁定 `UnitField`](plan-unit-field-required.md) | 2026-09-11 | 標成數量／重量的欄位必須綁 `UnitField`（不需要單位的用一般數值），執行期對齊多幣別作法、公司不再決定數量位數。三個階段皆已完成：裁定、框架、DefineEditor 設計期檢查。外部對照見 [uom-decimals-prior-art.md](../../repo-ops/uom-decimals-prior-art.md) |
 | [`DataSet` XML 往返後 `FieldDbType` 標記讀回不被採用](plan-fielddbtype-marker-xml-roundtrip.md) | 2026-09-11 | XML 寫得出 `Bee.FieldDbType` 標記，但讀回是字串，`GetDeclaredFieldDbType` 的 `as FieldDbType?` 轉不過去而退回反推：`Date` 欄被當成時間點做時區平移、`Time` 欄變成 `String`。JSON 與 MessagePack 路徑本來就不受影響。採方向 B 修實作：getter 同時接受字串形式（`Enum.TryParse` 加 `IsDefined`，擋下數字字串），不回寫。鐵人賽 Day 27、Day 30 以修正前行為為事實，改稿交由文章 session |

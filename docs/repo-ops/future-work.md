@@ -385,7 +385,7 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 兩層授權（動作 gate 加 record scope，見 [ADR-019](../adr/adr-019-permission-authorization-model.md)）。
 
 **落地之前的約束**：公開文件不寫「支援 BPM」，因為那會是沒有機制支撐的能力宣稱。
-公開文件的定位修正已經照這條排除 BPM（[plan-docs-positioning.md](../plans/plan-docs-positioning.md)）。
+公開文件的定位修正已經照這條排除 BPM（[plan-docs-positioning.md](../plans/archive/plan-docs-positioning.md)）。
 **落地之後**，要回頭在公開文件的適用範圍補上 BPM。
 
 **要先答的問題**：

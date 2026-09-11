@@ -10,8 +10,7 @@
 
 | 計畫 | 狀態 | 說明 |
 |------|------|------|
-| [公開文件的定位由 ERP 改為以表單為基礎的企業資訊系統](plan-docs-positioning.md) | 📝 擬定中（2026-09-11） | 公開文件把 ERP 當成全部，改為 ERP／CRM／HRM 這類以表單為基礎的資訊系統；逐處分「定位宣稱／以 ERP 當母集合的理由／真正屬於 ERP 情境」三類判讀，BPM 不納入。**須在翻譯新語言之前完成**；待確認中英文正式用語 |
-| [公開文件改為語言資料夾結構，並建立譯本同步機制](plan-docs-multilingual-layout.md) | 📝 擬定中（2026-09-11） | `docs/` 公開文件改為 `docs/<lang>/`，繁中為權威來源；譯本以源文件 blob hash 檔頭判定過期，語言切換列改由腳本產生。分 4 階段。**另有一處待補**：`build-ci.yml` 只改文件時不會觸發，plan 原訂掛在它上面的兩道檢查需改掛別處 |
+| [個人文件移出 docs/，改放獨立的個人目錄](plan-personal-docs-directory.md) | 📝 擬定中（2026-09-11） | `docs/blogs/`、`docs/internal/` 移到 gitignored 的個人目錄並以 private repo 存放；非個人文件都留在 `docs/`。**延後至 2026 鐵人賽 Day 30 發佈完成後**；plan 是否也移入列為未來考慮。由多語系 plan 的原階段 4 拆出 |
 | [捨入政策可設定化](plan-rounding-mode.md) | 📝 擬定中（2026-09-01） | 明細計算欄的捨入模式（`MidpointRounding` / 方向）由硬編改為可設定；**階段 0 是「要不要做」的決策點**——現況全 `src/` 只有兩處 `Math.Round`、production 呼叫點僅計算欄一處，若判定 `AwayFromZero` 足夠即可只補文件結案。與多幣別加總無關（round-then-sum 之下對合計再捨是 no-op） |
 | [PropertyGridControl：用宣告式 metadata 驅動屬性編輯](plan-property-grid-control.md) | 📝 擬定中（2026-08-17） | 交付吃 `System.ComponentModel` 標註（`[Description]` / `[Category]` / `[Browsable]` / `[TypeConverter]`）的 Avalonia PropertyGrid 控件；分 2 階段。承接 2026-08-07 體檢移交的 D-3 / D-5，與 TreeView 那份可並行 |
 | [TreeViewBuilder：用 `[TreeNode]` 標註驅動結構樹](plan-tree-view-builder.md) | 📝 擬定中（2026-08-17） | 把無人消費的 `[TreeNode]` / `[TreeNodeIgnore]` 標註接回實際的 TreeView；分 5 階段（建樹核心／Avalonia builder／命令 provider／拖曳／在地化）。承接 2026-08-07 體檢移交的 D-3 / D-5，與 PropertyGrid 那份可並行 |

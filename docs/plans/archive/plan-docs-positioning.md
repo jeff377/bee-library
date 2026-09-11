@@ -42,7 +42,7 @@
 - `.claude/`、`docs/repo-ops/`：不是公開文件。
 - `docs/blogs/`：屬於另一個子 repo。
 - **BPM／Workflow**：屬於未來的發展方向，這次不寫進文件。
-  框架目前沒有流程引擎。[PermissionAction.cs](../../src/Bee.Definition/Settings/Permission/PermissionAction.cs) 的 XML doc 明寫，
+  框架目前沒有流程引擎。[PermissionAction.cs](../../../src/Bee.Definition/Settings/Permission/PermissionAction.cs) 的 XML doc 明寫，
   Approve、Post、Confirm 這類狀態轉換刻意不放在動作軸上，而是屬於另一層 workflow 權限，那一層還不存在。
   在那一層實作出來之前，公開文件都不提 BPM，免得寫出一個沒有機制支撐的宣稱。
 

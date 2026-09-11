@@ -1,13 +1,14 @@
 # 計畫：公開文件改為語言資料夾結構，並建立譯本同步機制
 
-**狀態：🚧 進行中（2026-09-11）**
+**狀態：✅ 已完成（2026-09-11）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 相對連結檢查腳本，並先清掉既有死連結 | ✅ 已完成（2026-09-11） |
 | 2 | 搬成 `docs/<lang>/`，改寫全 repo 的引用 | ✅ 已完成（2026-09-11） |
 | 3 | 譯本同步機制：譯本檔頭、檢查腳本、CI | ✅ 已完成（2026-09-11） |
-| 4 | 部落格草稿與鐵人賽寫作工作檔的路徑修正 | 📝 待做 |
+
+原階段 4（個人文件移出 `docs/`）已拆成 [plan-personal-docs-directory.md](plan-personal-docs-directory.md)，本 plan 不再追蹤。
 
 ## 背景
 
@@ -29,7 +30,7 @@
 5. **不搬的部分**：
    - `docs/changelogs/` 維持後綴。讀者依版號找，同一版的各語言排在一起才是對的排序。
      （已發佈的 GitHub Release 說明連結是 `blob/<tag>/…`，釘在 tag 上，
-     見 [nuget-publish.yml](../../.github/workflows/nuget-publish.yml)。所以搬不搬都不會斷，
+     見 [nuget-publish.yml](../../../.github/workflows/nuget-publish.yml)。所以搬不搬都不會斷，
      不搬的理由只有排序。）
    - `docs/adr/` 目前只有繁中，不動；日後要翻譯時再決定結構。
    - `src/`、`samples/`、`apps/`、`tools/` 各資料夾的 `README.md`，以及根目錄的 `README` 與 `CHANGELOG`，
@@ -54,13 +55,13 @@ docs/
 
 先做這一步的原因：階段 2 要改寫全 repo 大量連結，沒有檢查工具就無從確認改對了；而 repo 目前沒有任何 markdown 連結檢查。
 
-- 在根目錄新增 `check-md-links.sh`，與 [check-public-docs.sh](../../check-public-docs.sh) 並列。
+- 在根目錄新增 `check-md-links.sh`，與 [check-public-docs.sh](../../../check-public-docs.sh) 並列。
   - 掃描 markdown 的相對連結 `](path)` 與 `](path#anchor)`，排除 `http(s):`、`mailto:` 與純錨點。
   - 以該檔所在位置解析路徑，確認目標檔案或資料夾存在。
 - **掃描範圍**：全 repo 的 `.md`。
   - 排除 `bin/`、`obj/`、`node_modules/`。
   - 排除 `docs/plans/archive/`：凍結的歷史紀錄。
-  - 排除 `docs/internal/`、`docs/blogs/`：gitignored，部落格草稿在階段 4 處理。
+  - 排除 `docs/internal/`、`docs/blogs/`：gitignored，另見 [plan-personal-docs-directory.md](plan-personal-docs-directory.md)。
   - **active 的 `docs/plans/*.md` 要掃**：那些還會有人照著做。
 - **錨點先不驗**：中文與標點的 heading slug 規則各 renderer 不同，驗了誤報會很多。列為已知限制。
 - 搬移前先跑一次，既有的死連結以獨立 commit 修掉，讓階段 2 從零開始比對。
@@ -76,17 +77,17 @@ docs/
 2. **索引**：兩份索引各自搬入語言資料夾；新寫一份短的 `docs/README.md` 當語言入口頁。
 3. **改寫連結**（一次性腳本放在 scratchpad，不入版控）：
    - **語言內互連**：`zh-TW/` 內的 `caching.zh-TW.md` 改成 `caching.md`；`en/` 內不變。
-   - **語言切換列**：`[繁體中文](caching.zh-TW.md)` 改成 `[繁體中文](../zh-TW/caching.md)`，反向同理。
+   - **語言切換列**：`[繁體中文](caching.zh-TW.md)` 改成 `[繁體中文](../../zh-TW/caching.md)`，反向同理。
    - **指向 docs 子目錄與 repo 其他位置的連結**：深度加一層，例如 `adr/…` 改成 `../adr/…`、`../wire-contracts/` 改成 `../../wire-contracts/`。
    - **從 docs 外部指進來的連結**：見下方受影響檔案清單。
-4. **測試路徑**：[BoApiSurfaceTests.cs](../../tests/Bee.Business.UnitTests/BoApiSurfaceTests.cs) 的
+4. **測試路徑**：[BoApiSurfaceTests.cs](../../../tests/Bee.Business.UnitTests/BoApiSurfaceTests.cs) 的
    `Baseline_MatchesPublicMethodReference` 目前以 `InlineData` 傳檔名，再用 `Path.Combine(root, "docs", fileName)` 組路徑。
    改成傳語言（`"en"`、`"zh-TW"`），組成 `Path.Combine(root, "docs", lang, "api-method-reference.md")`。
    **不改這支，搬完測試就會紅。**
 5. **索引頁的說明句**：兩份索引開頭寫著「英文版為主檔 `xxx.md`、繁中為 `xxx.zh-TW.md`」，
    改寫成語言資料夾的說明，並註明繁中為源、其他為譯本。兩份一起改。
 6. **規則文字**：
-   - [public-docs.md](../../.claude/rules/public-docs.md)：
+   - [public-docs.md](../../../.claude/rules/public-docs.md)：
      - 「哪些是公開文件」表中的 `docs/` 根目錄那一列，改成 `docs/<lang>/`。
      - 「落地檢查」的預期輸出路徑一併更新。
      - §4 雙語同步先改路徑，最終版在階段 3 完成時改。
@@ -122,7 +123,7 @@ docs/
 
 - `./check-md-links.sh` 無輸出。
 - `./check-public-docs.sh` 的輸出與搬移前相同，只有路徑不同。
-- 以下 grep 除了本 plan 之外無輸出（`blogs`、`internal` 不入本 repo 版控，排除；`blogs` 由階段 4 處理）：
+- 以下 grep 除了本 plan 之外無輸出（`blogs`、`internal` 不入本 repo 版控，排除；`blogs` 另案處理）：
   ```bash
   grep -rnE "docs/[a-z0-9-]+(\.zh-TW)?\.md" . --exclude-dir=.git --exclude-dir=bin --exclude-dir=obj --exclude-dir=archive --exclude-dir=node_modules --exclude-dir=blogs --exclude-dir=internal
   ```
@@ -195,7 +196,7 @@ docs/
 
 執行位置：
 
-- [docs-check.yml](../../.github/workflows/docs-check.yml) 加一個 step，與 `check-md-links.sh` 放同一個 workflow。
+- [docs-check.yml](../../../.github/workflows/docs-check.yml) 加一個 step，與 `check-md-links.sh` 放同一個 workflow。
   不放 build-ci.yml：它有 paths 過濾，只改文件的 push 不會觸發（階段 1 實作時發現）。
 - `.claude/CLAUDE.md` 的常用命令列入。
 
@@ -232,22 +233,6 @@ docs/
    加語言時擴充術語欄，作為譯者的用語錨點。
    多語術語欄要放同一張表（單一來源），還是各語言各一份（讀者要看自己語言的說明欄），屆時再決定。
 4. 跑 `--fix-switch`，重寫**所有語言、所有文件**的語言切換列（不只索引頁）。
-
-## 階段 4：部落格草稿與鐵人賽寫作工作檔
-
-`docs/blogs/` 在 bee-library 中是 gitignored，本身是獨立的 private 子 repo。
-本階段的修改都要**在該子 repo 內另外 commit**，不會出現在 bee-library 的 diff 裡。
-
-GitHub 對搬走的檔案不會轉址，`blob/main/docs/x.md` 這種外部連結在搬移後會 404。
-
-- **鐵人賽文章沒有連到 docs**（2026-09-11 查 `docs/blogs/ithome-2026-ironman/`，含英文譯稿）：
-  文章中指向 repo 的網址都是 `src/` 下的原始碼或 repo 首頁，不受本次搬移影響。
-- **鐵人賽的寫作工作檔**有幾處以裸路徑提到 docs 文件，依性質分兩類：
-  - **現行指示**（`writing-rules.md`、`plan.md`）：寫作 session 會照著讀，改成新路徑。
-  - **紀錄**（`decision-log.md`、`day-notes.md`、`northwind-case-assessment.md`）：記的是當時讀了什麼，不改。
-- **根目錄的部落格草稿**（`docs/blogs/blog-*.md`，不屬鐵人賽）：有三處連到 `blob/main/docs/*.zh-TW.md`，
-  分別是 dependency-map、architecture-overview、api-bo-contract-design，改成新路徑。
-  若這幾篇已發佈到 HackMD，發佈版要手動改。
 
 ## 待確認
 
