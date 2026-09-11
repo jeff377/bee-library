@@ -1,11 +1,11 @@
 # 計畫：刪除的異動記錄改存完整原單，異動明細以 DataSet 回傳
 
-**狀態：🚧 進行中**
+**狀態：✅ 已完成（2026-09-11）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 儲存形狀：刪除稽核改存完整原單（不再標 Deleted）、讀取端新分支；修正 AfterDelete 讀不到欄位。無 wire 變更 | ✅ 已完成（2026-09-11） |
-| 2 | API：`GetChangeDetail` 回應新增三種事件共用的 `DataSet` 屬性；wire 合約、TypeScript 合約、`bee-connector-js` 同步 | 🚧 進行中 |
+| 2 | API：`GetChangeDetail` 回應新增三種事件共用的 `DataSet` 屬性；wire 合約、TypeScript 合約、`bee-connector-js` 同步 | ✅ 已完成（2026-09-11） |
 
 ## 背景
 
