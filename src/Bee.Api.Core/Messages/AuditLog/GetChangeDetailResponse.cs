@@ -1,3 +1,4 @@
+using System.Data;
 using Bee.Api.Contracts.AuditLog;
 using Bee.Definition.Logging;
 
@@ -5,7 +6,7 @@ namespace Bee.Api.Core.Messages.AuditLog
 {
     /// <summary>
     /// API response for the get-change-detail operation: one change event's header plus its restored
-    /// field-level before/after values.
+    /// field-level before/after values and the DataSet they were flattened from.
     /// </summary>
     public class GetChangeDetailResponse : ApiResponse, IGetChangeDetailResponse
     {
@@ -44,6 +45,9 @@ namespace Bee.Api.Core.Messages.AuditLog
 
         /// <inheritdoc/>
         IReadOnlyList<RecordFieldChange> IGetChangeDetailResponse.Fields => Fields;
+
+        /// <inheritdoc/>
+        public DataSet? DataSet { get; set; }
 
         // Add new fields starting from Key(110).
     }

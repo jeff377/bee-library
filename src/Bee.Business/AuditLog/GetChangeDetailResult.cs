@@ -1,3 +1,4 @@
+using System.Data;
 using Bee.Api.Contracts.AuditLog;
 using Bee.Definition.Logging;
 
@@ -43,5 +44,8 @@ namespace Bee.Business.AuditLog
 
         /// <inheritdoc/>
         IReadOnlyList<RecordFieldChange> IGetChangeDetailResponse.Fields => Fields;
+
+        /// <inheritdoc/>
+        public DataSet? DataSet { get; set; }
     }
 }

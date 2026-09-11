@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Data;
+using System.Text;
+using System.Xml;
 using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.Messages.AuditLog;
 using Bee.Business;
@@ -88,6 +90,47 @@ namespace Bee.Api.Core.UnitTests.AuditLog
             var result = Assert.IsType<GetChangeDetailResponse>(response.Result!.Value);
             Assert.Equal(sysRowId, result.SysRowId);
             Assert.Equal(ChangeKind.Insert, result.ChangeKind);
+            Assert.Null(result.DataSet);
+        }
+
+        [Fact]
+        [DisplayName("AuditLog.GetChangeDetail 經 executor 應把還原出的 DataSet 帶到 wire response")]
+        public void GetChangeDetail_ThroughJsonRpc_CarriesDataSet()
+        {
+            var sysRowId = Guid.NewGuid();
+            var repo = new StubAuditLogRepository(HeaderPage(0),
+                DetailRow(sysRowId, ChangeKind.Update, SchemaBoundChangePayload()));
+
+            var response = Dispatch(repo, LogActions.GetChangeDetail,
+                new GetChangeDetailRequest { SysRowId = sysRowId });
+
+            Assert.Null(response.Error);
+            var result = Assert.IsType<GetChangeDetailResponse>(response.Result!.Value);
+            Assert.NotNull(result.DataSet);
+            AuditLogMessagePackTests.AssertChangeDataSet(result.DataSet!);
+            Assert.Single(result.Fields);
+        }
+
+        /// <summary>
+        /// 手寫一份帶內嵌 schema 的變更集 payload。寫入端 <c>AuditDiffGram</c> 是 <c>Bee.Business</c>
+        /// 的 internal 型別，這個測試組件看不到，所以照它的形狀（外層元素 + XSD + DiffGram）直接寫出。
+        /// </summary>
+        private static string SchemaBoundChangePayload()
+        {
+            using var dataSet = AuditLogMessagePackTests.NewChangeDataSet();
+            using var changes = dataSet.GetChanges()!;
+            // GetChanges drops the unchanged row; put it back so the payload carries both states.
+            changes.Tables["Employee"]!.ImportRow(dataSet.Tables["Employee"]!.Rows[1]);
+            var builder = new StringBuilder();
+            using (var writer = XmlWriter.Create(builder,
+                new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true }))
+            {
+                writer.WriteStartElement("AuditChanges");
+                changes.WriteXmlSchema(writer);
+                changes.WriteXml(writer, XmlWriteMode.DiffGram);
+                writer.WriteEndElement();
+            }
+            return builder.ToString();
         }
 
         [Theory]
@@ -168,13 +211,16 @@ namespace Bee.Api.Core.UnitTests.AuditLog
             return new AuditLogPage { Table = t, Paging = new PagingInfo { Page = 1, PageSize = 50 } };
         }
 
+        // Empty (non-DiffGram) payload: the header still maps; Fields is empty.
         private static DataTable DetailRow(Guid sysRowId)
+            => DetailRow(sysRowId, ChangeKind.Insert, string.Empty);
+
+        private static DataTable DetailRow(Guid sysRowId, ChangeKind kind, string changesXml)
         {
             var t = HeaderTable(withChangesXml: true);
-            // Empty (non-DiffGram) payload: the header still maps; Fields is empty.
             t.Rows.Add(sysRowId, new DateTime(2026, 7, 8, 3, 0, 0, DateTimeKind.Utc),
                 "demo", "Demo User", "c1", "Company One", "Employee", "R-1",
-                (int)ChangeKind.Insert, false, "Employee.Save", string.Empty);
+                (int)kind, false, "Employee.Save", changesXml);
             return t;
         }
 

@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 儲存形狀：刪除稽核改存完整原單（不再標 Deleted）、讀取端新分支；修正 AfterDelete 讀不到欄位。無 wire 變更 | ✅ 已完成（2026-09-11） |
-| 2 | API：`GetChangeDetail` 回應新增三種事件共用的 `DataSet` 屬性；wire 合約、TypeScript 合約、`bee-connector-js` 同步 | 📝 待做 |
+| 2 | API：`GetChangeDetail` 回應新增三種事件共用的 `DataSet` 屬性；wire 合約、TypeScript 合約、`bee-connector-js` 同步 | 🚧 進行中 |
 
 ## 背景
 
@@ -122,6 +122,17 @@ Update 欄位**（`element` / `complexType`），不是空清單。資料本身�
 
 呼叫端依列狀態判讀：Added 是新增的值、Modified 同時帶新值與原值、Unchanged（刪除事件）與 Deleted
 （舊的刪除記錄、Save 路徑的整單刪除）是被刪掉的內容。事件種類仍由 `ChangeKind` 表達。
+
+**時區與 wire 守衛（實作時由平行路徑檢查補上）。** 帶 DataSet 的回應型別由兩處以「列舉具體型別」的
+switch 處理，新增的屬性不會自動被涵蓋，必須一起接上：
+
+- `src/Bee.Api.Core/JsonRpc/PayloadZoneConverter.cs`：回應時把 DataSet 的時間值換算成使用者時區，與
+  `GetDataResponse` 一致（漏接由 `PayloadZoneCoverageGuardTests` 擋下，實作中即由它發現）
+- `src/Bee.Api.Core/JsonRpc/DateTimeWireGuard.cs`：用戶端邊界檢查 DataSet 的 `DateTimeMode`
+
+> **已知不一致（不在本案範圍）**：`Fields` 的值是伺服端轉好的字串，時間欄維持 UTC 文字；`DataSet` 則經上述
+> 轉換成使用者時區。同一個回應裡兩者對時間欄的呈現不同。這在本案之前就存在於 `Fields`，要統一需另案決定
+> `Fields` 是否也依使用者時區呈現。
 
 **wire。** DataSet 已是既有 wire 型別（`GetDataResponse.DataSet` 同一條路徑），不新增 formatter，只需：
 

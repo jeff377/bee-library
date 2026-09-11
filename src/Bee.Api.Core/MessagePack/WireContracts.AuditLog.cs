@@ -48,6 +48,7 @@ namespace Bee.Api.Core.MessagePack
                 .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.IsSensitive), static x => x.IsSensitive, static (x, v) => x.IsSensitive = v)
                 .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.Source), static x => x.Source, static (x, v) => x.Source = v)
                 .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.Fields), static x => x.Fields, static (x, v) => x.Fields = v)
+                .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.DataSet), static x => x.DataSet, static (x, v) => x.DataSet = v)
                 .Build());
             list.Add(WireContract.For<Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest>()
                 .Member(nameof(Bee.Api.Core.Messages.AuditLog.GetChangeLogRequest.Parameters), static x => x.Parameters, static (x, v) => x.Parameters = v)

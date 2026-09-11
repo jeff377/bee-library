@@ -79,6 +79,9 @@ namespace Bee.Api.Core.JsonRpc
                 case ILogAggregateResponse response:
                     ValidateDataTable(response.Table);
                     return;
+                case IGetChangeDetailResponse response:
+                    ValidateDataSet(response.DataSet);
+                    return;
                 default:
                     return;
             }

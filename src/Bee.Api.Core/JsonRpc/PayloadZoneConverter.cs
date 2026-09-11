@@ -90,6 +90,9 @@ namespace Bee.Api.Core.JsonRpc
                 case LogAggregateResponse response:
                     response.Table = DateTimeZoneConverter.UtcToUser(response.Table, timeZoneId);
                     break;
+                case GetChangeDetailResponse response:
+                    response.DataSet = DateTimeZoneConverter.UtcToUser(response.DataSet, timeZoneId);
+                    break;
                 default:
                     break;
             }

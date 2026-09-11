@@ -68,7 +68,8 @@ namespace Bee.Business.AuditLog
         }
 
         /// <summary>
-        /// Gets one change event's restored field-level before/after detail, by its log row id.
+        /// Gets one change event's restored detail, by its log row id: the field-level before/after
+        /// values, and the DataSet they were flattened from.
         /// </summary>
         /// <param name="args">The input arguments carrying the event's <c>SysRowId</c>.</param>
         /// <remarks>
@@ -87,6 +88,7 @@ namespace Bee.Business.AuditLog
             var table = Repository().GetChangeById(args.SysRowId, CurrentCompanyId())
                 ?? throw new InvalidOperationException("Change record not found.");
             var row = table.Rows[0];
+            var (fields, dataSet) = ChangeDiffGramReader.ReadDetail(ReadNullableString(row["changes_xml"]));
 
             return new GetChangeDetailResult
             {
@@ -99,7 +101,8 @@ namespace Bee.Business.AuditLog
                 ChangeKind = (ChangeKind)ValueUtilities.CInt(row["change_kind"]),
                 IsSensitive = ValueUtilities.CBool(row["is_sensitive"]),
                 Source = ReadNullableString(row["source"]),
-                Fields = ChangeDiffGramReader.Read(ReadNullableString(row["changes_xml"])),
+                Fields = fields,
+                DataSet = dataSet,
             };
         }
 

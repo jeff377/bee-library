@@ -39,7 +39,26 @@ namespace Bee.Business.AuditLog
         /// <param name="changesXml">The raw <c>changes_xml</c> payload.</param>
         public static List<RecordFieldChange> Read(string? changesXml)
         {
-            if (string.IsNullOrWhiteSpace(changesXml)) { return []; }
+            var (fields, dataSet) = ReadDetail(changesXml);
+            dataSet?.Dispose();
+            return fields;
+        }
+
+        /// <summary>
+        /// Parses a change payload into its field-level changes and, when the payload carries its own
+        /// schema, the <see cref="DataSet"/> those changes were flattened from.
+        /// </summary>
+        /// <param name="changesXml">The raw <c>changes_xml</c> payload.</param>
+        /// <returns>
+        /// The field list, empty under the same conditions as <see cref="Read"/>, and the rebuilt
+        /// DataSet — <c>null</c> for the schemaless DiffGram, the minimal delete marker, and a blank
+        /// or damaged payload. A change set reads back with its added, modified and deleted rows; a
+        /// deleted record reads back unchanged, as it stood before the delete. The caller owns the
+        /// DataSet.
+        /// </returns>
+        public static (List<RecordFieldChange> Fields, DataSet? DataSet) ReadDetail(string? changesXml)
+        {
+            if (string.IsNullOrWhiteSpace(changesXml)) { return ([], null); }
 
             // Dispatch on the root element alone, so only the branch that is actually taken pays to
             // parse the payload. Anything that is not a schema-bound shape — the schemaless DiffGram,
@@ -49,7 +68,7 @@ namespace Bee.Business.AuditLog
             {
                 AuditDiffGram.RootElementName => ReadSchemaBound(changesXml, asDeletedRecord: false),
                 AuditDiffGram.DeletedRecordRootElementName => ReadSchemaBound(changesXml, asDeletedRecord: true),
-                _ => ReadSchemaless(changesXml),
+                _ => (ReadSchemaless(changesXml), null),
             };
         }
 
@@ -97,47 +116,12 @@ namespace Bee.Business.AuditLog
         /// Whether the payload is a deleted record. Its rows were written as loaded, so they read back
         /// unchanged and are all deleted content regardless of their row state.
         /// </param>
-        /// <remarks>
-        /// WARNING: read the payload with one forward-only reader over the whole document, mirroring
-        /// how <see cref="AuditDiffGram.Serialize"/> writes it. Handing
-        /// <c>DataSet.ReadXml</c> a sub-tree reader taken from an already-parsed document
-        /// (<c>XElement.CreateReader()</c>) fails on the indented payload the writer produces:
-        /// <c>ReadXmlDiffgram</c> walks off the end of the sub-tree and throws
-        /// <see cref="ArgumentException"/> about an empty local name. Minified input hides the
-        /// problem, so a test that only covers minified payloads will not catch a regression here.
-        /// </remarks>
-        private static List<RecordFieldChange> ReadSchemaBound(string changesXml, bool asDeletedRecord)
+        private static (List<RecordFieldChange> Fields, DataSet? DataSet) ReadSchemaBound(string changesXml, bool asDeletedRecord)
         {
+            var dataSet = LoadSchemaBound(changesXml);
+            if (dataSet == null) { return ([], null); }
+
             var result = new List<RecordFieldChange>();
-
-            using var dataSet = new DataSet { Locale = CultureInfo.InvariantCulture };
-            try
-            {
-                using var stringReader = new StringReader(changesXml);
-                using var reader = XmlReader.Create(stringReader, HardenedSettings());
-                reader.MoveToContent();
-                // Step into the wrapper, then skip the whitespace the indented payload puts between
-                // the wrapper and the inline schema, so the reader sits on the schema element.
-                reader.ReadStartElement();
-                if (reader.MoveToContent() != XmlNodeType.Element) { return result; }
-
-                dataSet.ReadXmlSchema(reader);
-                // A change set holds only the rows that changed, so a key or relation the schema
-                // declares may legitimately have no counterpart here. Enforcing would reject a
-                // payload that is perfectly valid as a record of what changed.
-                dataSet.EnforceConstraints = false;
-                dataSet.ReadXml(reader, XmlReadMode.DiffGram);
-            }
-            catch (XmlException)
-            {
-                return result;
-            }
-            catch (DataException)
-            {
-                // A schema the payload's own rows do not satisfy is damage, not a readable change set.
-                return result;
-            }
-
             foreach (DataTable table in dataSet.Tables)
             {
                 foreach (DataRow row in table.Rows)
@@ -152,7 +136,61 @@ namespace Bee.Business.AuditLog
                     }
                 }
             }
-            return result;
+            return (result, dataSet);
+        }
+
+        /// <summary>
+        /// Reads a schema-bound payload into a <see cref="DataSet"/>, or returns <c>null</c> when the
+        /// payload is empty inside its wrapper or damaged. The caller owns the returned DataSet.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: read the payload with one forward-only reader over the whole document, mirroring
+        /// how <see cref="AuditDiffGram.Serialize"/> writes it. Handing
+        /// <c>DataSet.ReadXml</c> a sub-tree reader taken from an already-parsed document
+        /// (<c>XElement.CreateReader()</c>) fails on the indented payload the writer produces:
+        /// <c>ReadXmlDiffgram</c> walks off the end of the sub-tree and throws
+        /// <see cref="ArgumentException"/> about an empty local name. Minified input hides the
+        /// problem, so a test that only covers minified payloads will not catch a regression here.
+        /// </remarks>
+        private static DataSet? LoadSchemaBound(string changesXml)
+        {
+            DataSet? dataSet = new DataSet { Locale = CultureInfo.InvariantCulture };
+            try
+            {
+                using var stringReader = new StringReader(changesXml);
+                using var reader = XmlReader.Create(stringReader, HardenedSettings());
+                reader.MoveToContent();
+                // Step into the wrapper, then skip the whitespace the indented payload puts between
+                // the wrapper and the inline schema, so the reader sits on the schema element.
+                reader.ReadStartElement();
+                if (reader.MoveToContent() != XmlNodeType.Element) { return null; }
+
+                dataSet.ReadXmlSchema(reader);
+                // A change set holds only the rows that changed, so a key or relation the schema
+                // declares may legitimately have no counterpart here. Enforcing would reject a
+                // payload that is perfectly valid as a record of what changed.
+                dataSet.EnforceConstraints = false;
+                dataSet.ReadXml(reader, XmlReadMode.DiffGram);
+
+                // Ownership passes to the caller; clearing the local keeps the finally block from
+                // disposing what is being returned.
+                var loaded = dataSet;
+                dataSet = null;
+                return loaded;
+            }
+            catch (XmlException)
+            {
+                return null;
+            }
+            catch (DataException)
+            {
+                // A schema the payload's own rows do not satisfy is damage, not a readable change set.
+                return null;
+            }
+            finally
+            {
+                dataSet?.Dispose();
+            }
         }
 
         private static void AppendRow(List<RecordFieldChange> result, DataTable table, DataRow row)

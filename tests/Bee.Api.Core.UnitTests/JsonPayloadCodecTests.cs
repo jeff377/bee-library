@@ -1,7 +1,9 @@
 using System.ComponentModel;
 using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.Messages;
+using Bee.Api.Core.Messages.AuditLog;
 using Bee.Api.Core.Transformers;
+using Bee.Api.Core.UnitTests.AuditLog;
 using Bee.Definition.Collections;
 using Bee.Definition.Settings;
 
@@ -66,6 +68,29 @@ namespace Bee.Api.Core.UnitTests
             var restored = Assert.IsType<Parameter>(payload.Value);
             Assert.Equal("greeting", restored.Name);
             Assert.Equal("hello", restored.Value);
+        }
+
+        [Fact]
+        [DisplayName("GetChangeDetailResponse 的 DataSet 經 json codec 來回應保留列狀態與原值")]
+        public void TransformTo_JsonCodec_ChangeDetailDataSet_PreservesRowStates()
+        {
+            using var _ = UseDefaultPipeline();
+            var payload = new JsonRpcParams
+            {
+                Codec = PayloadCodecNames.Json,
+                Value = new GetChangeDetailResponse
+                {
+                    SysRowId = Guid.NewGuid(),
+                    DataSet = AuditLogMessagePackTests.NewChangeDataSet(),
+                }
+            };
+
+            ApiPayloadConverter.TransformTo(payload, PayloadFormat.Encoded);
+            ApiPayloadConverter.RestoreFrom(payload, PayloadFormat.Encoded);
+
+            var restored = Assert.IsType<GetChangeDetailResponse>(payload.Value);
+            Assert.NotNull(restored.DataSet);
+            AuditLogMessagePackTests.AssertChangeDataSet(restored.DataSet!);
         }
 
         [Theory]

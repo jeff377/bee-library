@@ -1,1 +1,2 @@
 #nullable enable
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.DataSet.get -> System.Data.DataSet?

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Data;
 using Bee.Api.Core.JsonRpc;
+using Bee.Api.Core.Messages.AuditLog;
 using Bee.Api.Core.Messages.Form;
 using Bee.Base.Data;
 using Bee.Definition.Filters;
@@ -66,6 +67,17 @@ namespace Bee.Api.Core.UnitTests
             dataSet.Tables.Add(AdoNetShapedTable());
 
             Assert.Throws<InvalidOperationException>(() => DateTimeWireGuard.Validate(dataSet));
+        }
+
+        [Fact]
+        [DisplayName("GetChangeDetailResponse 帶違規 DataSet 時 guard 應擲例外")]
+        public void Validate_ChangeDetailResponseWithOffendingDataSet_Throws()
+        {
+            using var dataSet = new DataSet("s");
+            dataSet.Tables.Add(AdoNetShapedTable());
+            var response = new GetChangeDetailResponse { DataSet = dataSet };
+
+            Assert.Throws<InvalidOperationException>(() => DateTimeWireGuard.Validate(response));
         }
 
         [Fact]

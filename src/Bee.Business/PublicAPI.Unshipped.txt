@@ -1,1 +1,3 @@
 #nullable enable
+Bee.Business.AuditLog.GetChangeDetailResult.DataSet.get -> System.Data.DataSet?
+Bee.Business.AuditLog.GetChangeDetailResult.DataSet.set -> void

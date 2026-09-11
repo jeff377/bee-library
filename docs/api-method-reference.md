@@ -123,7 +123,7 @@ The change axis uses a **list / detail** split: `GetChangeLog` returns lightweig
 | Method | Protection | Auth | Purpose |
 |--------|------------|------|---------|
 | `GetChangeLog` | Encrypted | Authenticated | A filtered, paged list of `st_log_change` event headers (typed filter: time range / user / progId / rowKey / change-kind). Typical uses: a form's changes over a period (`ProgId` + time range), a user's changes over a period (`UserId` + time range), or one record's history (`ProgId` + `RowKey`). Returns a header `DataTable` + `PagingInfo`. |
-| `GetChangeDetail` | Encrypted | Authenticated | One change event's `changes_xml` DiffGram restored server-side into structured field-level before/after values, keyed by the event's `SysRowId`. |
+| `GetChangeDetail` | Encrypted | Authenticated | One change event's `changes_xml` restored server-side, keyed by the event's `SysRowId`: `Fields` holds structured field-level before/after values, and `DataSet` holds the change with its master and detail tables — added rows for an insert, modified rows with their original values for an update, the pre-delete record for a delete. `DataSet` is `null` for events recorded before the payload carried its own schema. |
 | `GetLoginLog` | Encrypted | Authenticated | Filtered, paged list of `st_log_login` event headers (time / user / event). Returns a header `DataTable` + `PagingInfo`. |
 | `GetAccessLog` | Encrypted | Authenticated | Filtered, paged list of `st_log_access` record-view headers (time / user / progId / rowKey). Returns a header `DataTable` + `PagingInfo`. |
 | `GetApiAnomalyLog` | Encrypted | Authenticated | Filtered, paged list of `st_log_anomaly_api` headers (time / user / method / anomaly-kind). Returns a header `DataTable` + `PagingInfo`. |

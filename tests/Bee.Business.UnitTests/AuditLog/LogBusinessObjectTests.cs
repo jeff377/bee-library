@@ -98,6 +98,35 @@ namespace Bee.Business.UnitTests.AuditLog
             Assert.Equal("Alice", field.OldValue);
             Assert.Equal("Alice Wang", field.NewValue);
             Assert.Equal(sysRowId, repo.LastDetailId);
+            // 這份 payload 是無 schema 的舊格式，重建不出 DataSet。
+            Assert.Null(result.DataSet);
+        }
+
+        [Fact]
+        [DisplayName("GetChangeDetail 對刪除事件應回傳刪除前的完整原單 DataSet，Fields 照舊")]
+        public void GetChangeDetail_DeletedRecord_ReturnsRecordDataSet()
+        {
+            var sysRowId = Guid.NewGuid();
+            var rowKey = Guid.NewGuid().ToString();
+            using var record = new DataSet("st_employee");
+            var table = record.Tables.Add("st_employee");
+            table.Columns.Add("sys_rowid", typeof(string));
+            table.Columns.Add("name", typeof(string));
+            table.Rows.Add(rowKey, "Alice");
+            record.AcceptChanges();
+            var xml = AuditDiffGram.SerializeDeletedRecord(record);
+            var repo = new StubAuditLogRepository(HeaderPage(0), DetailRow(sysRowId, rowKey, ChangeKind.Delete, xml));
+
+            var result = Bo(repo).GetChangeDetail(new GetChangeDetailArgs { SysRowId = sysRowId });
+
+            Assert.Equal(ChangeKind.Delete, result.ChangeKind);
+            Assert.NotNull(result.DataSet);
+            var row = Assert.Single(result.DataSet!.Tables["st_employee"]!.Rows.Cast<DataRow>());
+            Assert.Equal(DataRowState.Unchanged, row.RowState);
+            Assert.Equal("Alice", row["name"]);
+            var field = Assert.Single(result.Fields);
+            Assert.Equal(ChangeKind.Delete, field.RowState);
+            Assert.Equal("Alice", field.OldValue);
         }
 
         [Fact]

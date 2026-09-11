@@ -152,6 +152,48 @@ namespace Bee.Api.Core.UnitTests.AuditLog
         }
 
         [Fact]
+        [DisplayName("GetChangeDetailResponse 的 DataSet 應 round-trip 保留列狀態與原值")]
+        public void GetChangeDetailResponse_RoundTrip_PreservesDataSetRowStates()
+        {
+            var response = new GetChangeDetailResponse
+            {
+                SysRowId = Guid.NewGuid(),
+                ChangeKind = ChangeKind.Update,
+                DataSet = NewChangeDataSet(),
+            };
+
+            var restored = MessagePackCodec.Deserialize<GetChangeDetailResponse>(MessagePackCodec.Serialize(response));
+
+            Assert.NotNull(restored?.DataSet);
+            AssertChangeDataSet(restored!.DataSet!);
+        }
+
+        /// <summary>一列 Modified（原值 Alice → Alice Wang）、一列 Unchanged。</summary>
+        internal static DataSet NewChangeDataSet()
+        {
+            var dataSet = new DataSet("Employee");
+            var table = dataSet.Tables.Add("Employee");
+            table.Columns.Add("sys_rowid", typeof(string));
+            table.Columns.Add("name", typeof(string));
+            var modified = table.Rows.Add("R-1", "Alice");
+            table.Rows.Add("R-2", "Bob");
+            dataSet.AcceptChanges();
+            modified["name"] = "Alice Wang";
+            return dataSet;
+        }
+
+        internal static void AssertChangeDataSet(DataSet dataSet)
+        {
+            var rows = dataSet.Tables["Employee"]!.Rows;
+            Assert.Equal(2, rows.Count);
+            Assert.Equal(DataRowState.Modified, rows[0].RowState);
+            Assert.Equal("Alice", rows[0]["name", DataRowVersion.Original]);
+            Assert.Equal("Alice Wang", rows[0]["name", DataRowVersion.Current]);
+            Assert.Equal(DataRowState.Unchanged, rows[1].RowState);
+            Assert.Equal("Bob", rows[1]["name"]);
+        }
+
+        [Fact]
         [DisplayName("GetChangeDetailResponse 空 Fields 應 round-trip 且不 NRE")]
         public void GetChangeDetailResponse_EmptyFields_RoundTrip()
         {

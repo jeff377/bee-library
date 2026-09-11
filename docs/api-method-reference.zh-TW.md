@@ -115,7 +115,7 @@ change 軸採**清單 / 明細**二段式：`GetChangeLog` 只回輕量事件**�
 | 方法 | Protection | Auth | 用途 |
 |------|------------|------|------|
 | `GetChangeLog` | Encrypted | Authenticated | `st_log_change` 事件標頭清單，依 typed filter（時間範圍 / 使用者 / progId / rowKey / 異動類型）+ 分頁。典型用法：某表單某期間的異動（`ProgId` + 時間範圍）、某人某期間的異動（`UserId` + 時間範圍）、或單筆記錄歷程（`ProgId` + `RowKey`）。回傳標頭 `DataTable` + `PagingInfo`。 |
-| `GetChangeDetail` | Encrypted | Authenticated | 以事件 `SysRowId` 取單筆，將其 `changes_xml` DiffGram 由伺服器端還原為結構化的欄位級新舊值。 |
+| `GetChangeDetail` | Encrypted | Authenticated | 以事件 `SysRowId` 取單筆，將其 `changes_xml` 由伺服器端還原：`Fields` 為結構化的欄位級新舊值；`DataSet` 為含主檔與明細表的異動內容——新增為 Added 列、修改為帶原值的 Modified 列、刪除為刪除前的原單。payload 尚未帶內嵌 schema 時記錄的事件，`DataSet` 為 `null`。 |
 | `GetLoginLog` | Encrypted | Authenticated | `st_log_login` 事件標頭的過濾分頁清單（時間 / 使用者 / event）。回傳標頭 `DataTable` + `PagingInfo`。 |
 | `GetAccessLog` | Encrypted | Authenticated | `st_log_access` 檢視記錄標頭的過濾分頁清單（時間 / 使用者 / progId / rowKey）。回傳標頭 `DataTable` + `PagingInfo`。 |
 | `GetApiAnomalyLog` | Encrypted | Authenticated | `st_log_anomaly_api` 標頭的過濾分頁清單（時間 / 使用者 / method / anomaly-kind）。回傳標頭 `DataTable` + `PagingInfo`。 |
