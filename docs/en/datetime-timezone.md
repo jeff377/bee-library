@@ -1,4 +1,4 @@
-<!-- source: zh-TW/datetime-timezone.md blob: b1ce1b77c9a69db2eb364a4644c3887db440ff84 -->
+<!-- source: zh-TW/datetime-timezone.md blob: 73a57e9762b1d877f7f1c531dc397a2abd56e46a -->
 # Time Zones
 
 [繁體中文](../zh-TW/datetime-timezone.md) · [← Docs Index](README.md)
@@ -23,7 +23,7 @@ configure a user's zone.
 | Where is time converted? | In the client's `Connector`, both directions. Nowhere else. |
 | What does the database hold? | UTC, in ordinary columns with no time zone (`datetime2`, `timestamp`, `DATETIME`, `TIMESTAMP`). |
 | What travels on the wire? | UTC, in **both** directions. |
-| Which columns convert? | Those declared `FieldDbType.DateTime`. A `Date` column is a calendar day and never converts. |
+| Which columns convert? | Those whose CLR type is `DateTime` and that are not marked `Date`. A calendar-day column carrying the `Date` marker does not convert; an unmarked one is converted as an instant. See §3. |
 | Where does the user's zone come from? | `st_user.time_zone`, carried on the session — never the device's zone. |
 | Do my business objects need changing? | No, unless they write hand-rolled SQL that filters on a date. See §3. |
 

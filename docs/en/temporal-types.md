@@ -1,4 +1,4 @@
-<!-- source: zh-TW/temporal-types.md blob: 85875eef8da3f4d2d71e60d2cc460e84f2f66283 -->
+<!-- source: zh-TW/temporal-types.md blob: 231e3f278bb42a363b7a7b0444e370bfcdbf493e -->
 # Temporal Types: `Date`, `DateTime` and `Time`
 
 [繁體中文](../zh-TW/temporal-types.md) · [← Docs Index](README.md)
@@ -35,7 +35,7 @@ The test: **ask whether the value needs to know which day.**
 | How the semantic survives | `ExtendedProperties` marker | (default for the CLR type) | the CLR type itself |
 | Read it as | `CDateOnly` → `DateOnly?` | `CDateTime` → `DateTime?` | `CTimeOnly` → `TimeOnly?` |
 | Unset value | `DateTime.MinValue` → `DBNull` | `DateTime.MinValue` → `DBNull` | **empty string** |
-| Time-zone converted? | **Never** | **Yes** (UTC ↔ user zone) | **Never** |
+| Time-zone converted? | **No** — provided the column carries the marker (§4) | **Yes** (UTC ↔ user zone) | **Never** |
 | Default UI editor | `DateEdit` | `DateEdit` | `TimeEdit` |
 
 The one structural difference: `Date` and `DateTime` **share a CLR type**, so the calendar-day
@@ -87,8 +87,8 @@ whatever the `DataSet` holds — so the following writes fall outside that guara
 with `ValueUtilities.CTimeString` themselves:
 
 - Assigning a `DataRow` directly (`row["work_start"] = "8:30"`).
-- A column with no declared-type marker. Every `DataTable` the framework builds carries one (see §4);
-  a table built with `Columns.Add` does not.
+- A column with no `Time` marker — for example a time-of-day column read back by hand-written SQL
+  (`DateColumns` / `SetDateColumns` mark calendar days only). See the unmarked list in §4 for the rest.
 - Data sent by a non-.NET client.
 - A hand-written `INSERT` or `UPDATE`.
 
@@ -100,7 +100,7 @@ table.AddColumn("created_at", FieldDbType.DateTime);   // DataColumn.DataType ==
 table.AddColumn("work_start", FieldDbType.Time);       // DataColumn.DataType == typeof(string)
 ```
 
-Every `DataTable` the framework builds carries the declared type, recoverable with:
+When a column carries the declared-type marker, it is recoverable with:
 
 ```csharp
 FieldDbType declared = column.ResolveFieldDbType();      // Date / DateTime / Time
@@ -110,8 +110,34 @@ FieldDbType? marked  = column.GetDeclaredFieldDbType();  // null when the column
 `ResolveFieldDbType` falls back to inferring from `DataColumn.DataType` when a column is unmarked, so
 it is always safe to call — an unmarked `DateTime` column reads back as `FieldDbType.DateTime`.
 
-This is populated automatically for schema-driven queries (`GetList`, `GetData`, `GetNewData`) and
-anything built through `AddColumn(name, FieldDbType)`. Hand-written SQL is the one exception.
+Paths that currently carry the marker:
+
+- Columns built through `AddColumn(name, FieldDbType)` — the empty table `GetNewData` returns is built
+  this way.
+- Schema-driven queries (`GetList`, `GetData`): the result is marked afterwards with
+  `ApplyFieldDbTypes`, **covering only the fields the schema declares**.
+- Tables whose command declared `DbCommandSpec.DateColumns`, or that were marked afterwards with
+  `SetDateColumns` / `ApplyFieldDbTypes` (see the next section).
+- Tables rebuilt after travelling as JSON or MessagePack — every column is marked, but with **the type
+  the sending side declared**; see below.
+- Tables produced by `Copy`, `Clone`, `DataView.ToTable` or `Merge` keep the source columns' markers,
+  and `DataSet.ReadXml` restores them from XML that embeds its schema (see §6).
+
+Cases that carry no marker:
+
+- Results of hand-written SQL, unless declared as in the next section. Tables the framework itself
+  reads with hand-written SQL (the audit-log queries, for example) are no exception.
+- Columns in a schema-driven query that the schema does not declare (aggregates, expression columns).
+- Columns you create yourself with `Columns.Add` or `new DataColumn`.
+- Tables you read yourself with `DataTable.Load` or `DbDataAdapter.Fill`.
+- `DataSet.ReadXml` on XML without a schema — every column then comes back as `string`, not merely
+  unmarked.
+
+An unmarked column that goes over the wire is declared as the type inferred from its CLR type, and the
+receiving side marks the rebuilt column with that type. A calendar-day column left unmarked before
+sending therefore arrives **marked as `DateTime`**, not unmarked — the marker has to be applied before
+the table leaves the side that built it. A table from a non-.NET client works the same way: the marker
+follows the `type` the payload declares (a JSON column that omits `type` is taken as `String`).
 
 > **Do not write a `DateOnly` into a `DataTable`.** A calendar-day column is a `DateTime` column
 > carrying a marker, and `DataColumn` rejects a `DateOnly` outright — `DateOnly` does not implement
@@ -122,7 +148,7 @@ anything built through `AddColumn(name, FieldDbType)`. Hand-written SQL is the o
 ADO.NET reports a `date` column as `System.DateTime`, so a query the framework did not generate has
 nothing to recover the semantics from. The rule is:
 
-> **The framework marks the SQL it generates. You mark the SQL you write.**
+> **The framework marks schema-driven queries. You mark the SQL you write.**
 
 Two equivalent ways, sharing one implementation:
 
@@ -138,9 +164,14 @@ table.SetDateColumns("order_date", "due_date");
 ```
 
 Both match column names case-insensitively (result columns are canonicalized to lowercase), and both
-**throw on a name that matches no column** rather than skipping it — a typo that silently did nothing
-would reproduce the exact failure this mechanism exists to remove. Setting `DateColumns` on a command
-kind that returns no table throws for the same reason.
+**throw `ArgumentException` on a name that matches no column** rather than skipping it — a typo that
+silently did nothing would reproduce the exact failure this mechanism exists to remove. Setting
+`DateColumns` on a command kind that returns no table throws `InvalidOperationException` when the
+command is created, for the same reason.
+
+Both mark calendar days only. To mark a time-of-day column read back by hand-written SQL, use
+`table.ApplyFieldDbType(FieldDbType.Time, "work_start")` — an unmarked time-of-day column is not
+normalised when the UI writes to it (see §3).
 
 If you build the table from a `FormTable` you already have, replay the whole schema instead of naming
 columns one at a time:
@@ -154,9 +185,10 @@ formTable.ApplyFieldDbTypes(table);   // marks every column the schema declares
 Columns the schema does not cover are left alone (aggregates and expression columns are normal), and
 fields the query did not return are skipped (partial `SELECT`s are normal).
 
-**Forgetting to declare is the one failure mode this design keeps.** An unmarked calendar-day column
-looks like an instant to everything downstream — most consequentially to time-zone conversion, where
-it can shift across a day boundary.
+**The failure mode this design does not remove: a calendar-day column that carries no marker, or is
+marked `DateTime`.** It arises from forgetting to declare, from the unmarked paths listed above, and
+from crossing the wire while still unmarked. Such a column looks like an instant to everything
+downstream — most consequentially to time-zone conversion, where it can shift across a day boundary.
 
 ## 5. Code layer
 
@@ -170,7 +202,8 @@ TimeOnly? start   = ValueUtilities.CTimeOnly(row["work_start"]);
 DateTime created = ValueUtilities.CDateTime(row["created_at"], DateTime.MinValue);
 ```
 
-Two properties hold across the whole family:
+Two properties hold across `CDateTime`, `CDateOnly` and `CTimeOnly` (the other `Cxxx` methods, such as
+`CInt` and `CStr`, keep the default-value shape and are not part of this):
 
 - **The method name matches the return type**, so a call site tells you what it yields.
 - **The one-argument form returns a nullable.** Unset is then a case the compiler forces you to
@@ -182,21 +215,25 @@ the choice visible instead of hiding it in an omitted default argument.
 
 All three are **lenient about what they accept and strict about what they return**. `CTimeOnly`
 takes `"8:30"`, a `DateTime` or an in-range `TimeSpan`; `CDateTime` takes Gregorian and ROC date
-strings (`20150312`, `1040312`). Anything out of range or unrecognisable comes back `null` rather
-than a guess.
+strings (`20150312`, `1040312`), and also numeric strings that stop at the month or the year, filling
+the missing part with the first month or day (`201503` reads as 2015-03-01, `2015` as 2015-01-01).
+Anything out of range or unrecognisable comes back `null`.
 
 ## 6. Serialization
 
-All three formats are self-describing: the column's `FieldDbType` travels with the payload, so a
-consumer can tell a calendar day from an instant **without fetching the schema**.
+All three formats can describe themselves: the column's `FieldDbType` travels with the payload, so a
+consumer can tell a calendar day from an instant **without fetching the schema**. What travels is the
+type the column resolves to at serialization time, so this presumes calendar-day columns are marked
+before serializing (see §4); XML additionally has to be written with its schema.
 
 The examples below are the real serializer output for these three values:
 `hire_date = 2026-07-27`, `created_at = 2026-07-27 08:30:15.1234567`, `work_start = 08:30`.
 
 ### XML — `DataSet` persistence
 
-The declared type is written into the XSD as an `msprop` annotation, so it survives a
-write/read round trip. `DataSet.ReadXml` restores the annotation as the member name in string form
+Written with `XmlWriteMode.WriteSchema`, the declared type goes into the XSD as an `msprop` annotation,
+so it survives a write/read round trip; the DiffGram and `IgnoreSchema` modes carry no schema and do
+not keep it. `DataSet.ReadXml` restores the annotation as the member name in string form
 rather than as a `FieldDbType` value; `GetDeclaredFieldDbType` and `ResolveFieldDbType` accept both
 forms, so read the marker through them rather than from `ExtendedProperties` directly:
 
@@ -211,8 +248,11 @@ forms, so read the marker through them rather than from `ExtendedProperties` dir
 ```
 
 `DateTimeMode="Unspecified"` is what keeps a time-zone offset out of the XML. The .NET default for a
-fresh `DateTime` column is `UnspecifiedLocal`, which *does* write an offset — the framework sets
-`Unspecified` everywhere so a persisted `DataSet` cannot shift when read back elsewhere.
+fresh `DateTime` column is `UnspecifiedLocal`, which *does* write an offset. Tables the framework
+builds itself — columns from `AddColumn`, `DbAccess` query results, tables rebuilt from JSON or
+MessagePack — are set to `Unspecified`, so a persisted `DataSet` does not shift when read back
+elsewhere. A table you build with `Columns.Add` or `DataTable.Load` keeps the .NET default; call
+`NormalizeDateTimeMode` before persisting it as XML.
 
 Note the full 100-nanosecond precision survives.
 
@@ -285,6 +325,10 @@ filter.
 **Only `DateTime` is ever converted.** Calendar days and times of day are wall-clock values;
 shifting them by an offset produces a meaningless result — a birthday would move to the previous day
 and an 08:00 shift would start at 16:00 in another zone.
+
+What decides it is the column's resolved type: a column whose CLR type is `DateTime` is converted as
+an instant unless it is marked `Date`. **An unmarked calendar-day column is therefore converted** — see
+§4 for the paths that carry no marker. A time-of-day column is a `string` and never in scope.
 
 | | Stored | Shown |
 |---|--------|-------|

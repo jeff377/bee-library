@@ -32,7 +32,7 @@
 | 語意如何保留 | `ExtendedProperties` 標記 | （該 CLR 型別的預設語意） | CLR 型別本身 |
 | 讀取方式 | `CDateOnly` → `DateOnly?` | `CDateTime` → `DateTime?` | `CTimeOnly` → `TimeOnly?` |
 | 未填值 | `DateTime.MinValue` → `DBNull` | `DateTime.MinValue` → `DBNull` | **空字串** |
-| 會轉時區嗎？ | **絕不** | **會**（UTC ↔ 使用者時區） | **絕不** |
+| 會轉時區嗎？ | **不會** —— 前提是欄位帶著標記（§4） | **會**（UTC ↔ 使用者時區） | **絕不** |
 | 預設 UI 控件 | `DateEdit` | `DateEdit` | `TimeEdit` |
 
 唯一的結構性差異：`Date` 與 `DateTime` **共用 CLR 型別**，日曆日語意在值離開定義層的瞬間就會消失，
@@ -80,7 +80,8 @@ SELECT * FROM ft_shift WHERE work_start BETWEEN '08:00' AND '17:00' ORDER BY wor
 需自行以 `ValueUtilities.CTimeString` 正規化：
 
 - 直接指派 `DataRow`（`row["work_start"] = "8:30"`）。
-- 沒有宣告型別標記的欄位 —— 框架建立的 `DataTable` 都帶著（見第 4 節），自行 `Columns.Add` 建立的沒有。
+- 沒有 `Time` 標記的欄位 —— 例如自寫 SQL 查回的時刻欄（`DateColumns` / `SetDateColumns` 只標日曆日），
+  其餘情形見第 4 節的未標記清單。
 - 非 .NET 客戶端送出的資料。
 - 自寫的 `INSERT` / `UPDATE`。
 
@@ -92,7 +93,7 @@ table.AddColumn("created_at", FieldDbType.DateTime);   // DataColumn.DataType ==
 table.AddColumn("work_start", FieldDbType.Time);       // DataColumn.DataType == typeof(string)
 ```
 
-框架建立的每個 `DataTable` 都帶著宣告的型別，可用下列方式取回：
+欄位帶著宣告型別的標記時，可用下列方式取回：
 
 ```csharp
 FieldDbType declared = column.ResolveFieldDbType();      // Date / DateTime / Time
@@ -102,8 +103,28 @@ FieldDbType? marked  = column.GetDeclaredFieldDbType();  // 未標記時回傳 n
 `ResolveFieldDbType` 在欄位未標記時會回退為由 `DataColumn.DataType` 反推，因此隨時呼叫都安全
 —— 未標記的 `DateTime` 欄位讀出來就是 `FieldDbType.DateTime`。
 
-由 schema 驅動的查詢（`GetList`、`GetData`、`GetNewData`）與所有經
-`AddColumn(name, FieldDbType)` 建立的欄位都會自動帶上，自寫 SQL 是唯一的例外。
+目前會帶上標記的路徑：
+
+- 經 `AddColumn(name, FieldDbType)` 建立的欄位 —— `GetNewData` 回傳的空白表格即由此建立。
+- 由 schema 驅動的查詢（`GetList`、`GetData`）：查詢後以 `ApplyFieldDbTypes` 補標，
+  **只涵蓋 schema 宣告的欄位**。
+- 宣告了 `DbCommandSpec.DateColumns`，或事後以 `SetDateColumns` / `ApplyFieldDbTypes` 標記的表格（見下節）。
+- 經 JSON 或 MessagePack 傳輸後重建的表格 —— 每個欄位都會標，但標的是**送出端宣告的型別**，見下方說明。
+- `Copy`、`Clone`、`DataView.ToTable`、`Merge` 產生的表格保留來源欄位的標記；
+  `DataSet.ReadXml` 讀取內嵌 schema 的 XML 時也會還原（見第 6 節）。
+
+不帶標記的情形：
+
+- 自寫 SQL 的查詢結果，除非依下節宣告。框架自己以自寫 SQL 查詢的表格（例如稽核記錄查詢）也不例外。
+- schema 驅動的查詢中，schema 未宣告的欄位（彙總欄、運算式欄）。
+- 自行以 `Columns.Add` 或 `new DataColumn` 建立的欄位。
+- 自行以 `DataTable.Load` 或 `DbDataAdapter.Fill` 讀取的表格。
+- `DataSet.ReadXml` 讀取不含 schema 的 XML —— 此時每個欄位都成了 `string`，不只是沒有標記。
+
+未標記的欄位經傳輸送出時，宣告的是由 CLR 型別反推的型別，接收端重建時就標上那個型別。
+因此送出前沒有標記的日曆日欄位，到了另一端是**被標成 `DateTime`**，而不是未標記 ——
+標記必須在表格離開建立它的那一端之前補上。非 .NET 客戶端送來的表格同理：標記以 payload
+宣告的 `type` 為準（JSON 欄位省略 `type` 時視為 `String`）。
 
 > **不要把 `DateOnly` 寫回 `DataTable`。** 日曆日欄位是帶著標記的 `DateTime` 欄位，
 > `DataColumn` 會直接拒絕 `DateOnly` —— 它未實作 `IConvertible`，一般的轉換路徑根本不會執行。
@@ -114,7 +135,7 @@ FieldDbType? marked  = column.GetDeclaredFieldDbType();  // 未標記時回傳 n
 ADO.NET 把 `date` 欄位一律回報為 `System.DateTime`，因此非框架產生的查詢沒有任何可據以還原
 語意的來源。規則是：
 
-> **框架產生的 SQL 由框架標記；你自己寫的 SQL 由你標記。**
+> **schema 驅動的查詢由框架標記；你自己寫的 SQL 由你標記。**
 
 兩種等價寫法，共用同一份實作：
 
@@ -129,9 +150,12 @@ var table = dbAccess.Execute(spec).Table!;
 table.SetDateColumns("order_date", "due_date");
 ```
 
-兩者的欄名比對都**不區分大小寫**（結果欄名已正規化為小寫），且對**比對不到的欄名一律擲例外**
+兩者的欄名比對都**不區分大小寫**（結果欄名已正規化為小寫），且對**比對不到的欄名擲 `ArgumentException`**
 而非略過——打錯字時「看起來宣告了、實際沒作用」正是這個機制要消除的失敗模式。
-把 `DateColumns` 用在不回傳表格的 `DbCommandKind` 上同樣會擲例外，理由相同。
+把 `DateColumns` 用在不回傳表格的 `DbCommandKind` 上，建立命令時會擲 `InvalidOperationException`，理由相同。
+
+兩者都只標日曆日。自寫 SQL 查回的時刻欄要標記時，用 `table.ApplyFieldDbType(FieldDbType.Time, "work_start")`
+—— 沒有標記的時刻欄，UI 寫入時不會被正規化（見第 3 節）。
 
 若你手上已經有對應的 `FormTable`，可以直接重播整份 schema，不必逐欄列名：
 
@@ -144,7 +168,8 @@ formTable.ApplyFieldDbTypes(table);   // 標記 schema 宣告的每個欄位
 schema 未涵蓋的欄位會被略過（彙總欄、運算式欄屬常態），
 schema 宣告了但查詢未回傳的欄位也不會報錯（部分欄位查詢屬常態）。
 
-**忘了宣告是本設計保留下來的唯一失敗模式。** 未標記的日曆日欄位對下游而言就是時間點——
+**本設計沒有消除的失敗模式是：日曆日欄位沒有標記，或被標成 `DateTime`。** 成因包括忘了宣告、
+經由上面列出的未標記路徑產生，以及未標記時先經過傳輸。這樣的欄位對下游而言就是時間點——
 影響最大的是時區轉換，可能造成跨日偏移。
 
 ## 5. 程式碼層
@@ -159,7 +184,8 @@ TimeOnly? start   = ValueUtilities.CTimeOnly(row["work_start"]);
 DateTime created = ValueUtilities.CDateTime(row["created_at"], DateTime.MinValue);
 ```
 
-整個家族有兩個一致性質：
+`CDateTime`、`CDateOnly`、`CTimeOnly` 三者有兩個一致性質（其餘 `Cxxx` 方法如 `CInt`、`CStr`
+沿用預設值的形狀，不在此列）：
 
 - **方法名與回傳型別一致**，呼叫端不必回查即知拿到什麼。
 - **單參數多載一律回傳 nullable。** 未填因而是編譯器強制處理的情況，
@@ -170,20 +196,23 @@ DateTime created = ValueUtilities.CDateTime(row["created_at"], DateTime.MinValue
 而不是藏在被省略的預設參數裡。
 
 三者都**對輸入寬鬆、對輸出嚴格**。`CTimeOnly` 接受 `"8:30"`、`DateTime`、範圍內的 `TimeSpan`；
-`CDateTime` 接受西元與民國日期字串（`20150312`、`1040312`）。
-超出範圍或無法辨識的一律回 `null`，不做臆測。
+`CDateTime` 接受西元與民國日期字串（`20150312`、`1040312`），也接受只到年月或年的數字字串，
+缺的部分補為 1 月 / 1 日（`201503` 讀成 2015-03-01、`2015` 讀成 2015-01-01）。
+超出範圍或無法辨識的回 `null`。
 
 ## 6. 序列化
 
-三種格式都是自我描述的：欄位的 `FieldDbType` 隨 payload 一起傳遞，消費端**不必另取 schema**
-即可分辨日曆日與時間點。
+三種格式都能自我描述：欄位的 `FieldDbType` 隨 payload 一起傳遞，消費端**不必另取 schema**
+即可分辨日曆日與時間點。傳遞的是欄位序列化當下解析出的型別，因此前提是日曆日欄位在序列化前
+已帶標記（見第 4 節）；XML 另須以含 schema 的模式寫出。
 
 以下範例是這三個值的**實際序列化輸出**：
 `hire_date = 2026-07-27`、`created_at = 2026-07-27 08:30:15.1234567`、`work_start = 08:30`。
 
 ### XML —— `DataSet` 持久化
 
-宣告型別會寫入 XSD 的 `msprop` 註記，因此能在寫入／讀回的往返中存活。`DataSet.ReadXml`
+以 `XmlWriteMode.WriteSchema` 寫出時，宣告型別會寫入 XSD 的 `msprop` 註記，因此能在寫入／讀回的往返中存活；
+DiffGram 與 `IgnoreSchema` 模式不含 schema，標記不會保留。`DataSet.ReadXml`
 讀回的註記是成員名稱的**字串**，而不是 `FieldDbType` 值；`GetDeclaredFieldDbType` 與
 `ResolveFieldDbType` 兩種形式都接受，因此請透過它們讀取標記，不要直接讀 `ExtendedProperties`：
 
@@ -198,8 +227,10 @@ DateTime created = ValueUtilities.CDateTime(row["created_at"], DateTime.MinValue
 ```
 
 `DateTimeMode="Unspecified"` 正是讓 XML 不含時區位移的關鍵。.NET 對新建 `DateTime` 欄位的預設是
-`UnspecifiedLocal`，那**會**寫入位移量 —— 框架一律設為 `Unspecified`，
-使持久化的 `DataSet` 在他處讀回時不會偏移。
+`UnspecifiedLocal`，那**會**寫入位移量。框架自己建立的表格 —— `AddColumn` 建立的欄位、`DbAccess`
+的查詢結果、JSON 與 MessagePack 重建的表格 —— 都設為 `Unspecified`，使持久化的 `DataSet`
+在他處讀回時不會偏移。自行以 `Columns.Add` 或 `DataTable.Load` 建立的表格仍是 .NET 預設，
+持久化成 XML 前請先呼叫 `NormalizeDateTimeMode`。
 
 注意完整的 100 奈秒精度得以保留。
 
@@ -268,6 +299,9 @@ FilterCondition.Equal("work_start", "08:30");                      // string —
 
 **只有 `DateTime` 會被轉換。** 日曆日與時刻是牆上時間，套用位移量會得到無意義的結果 ——
 生日會移到前一天，08:00 的班別在另一個時區會變成 16:00 開始。
+
+判定看的是欄位解析出的型別：CLR 型別為 `DateTime` 的欄位，除非標記為 `Date`，否則都當成時間點轉換。
+因此**未標記的日曆日欄位會被轉換** —— 哪些路徑不帶標記見第 4 節。時刻欄是 `string`，不在轉換範圍內。
 
 | | 儲存 | 顯示 |
 |---|------|------|
