@@ -39,7 +39,7 @@
         </FormField>
         <FormField FieldName="is_sensitive" Caption="Sensitive" DbType="Boolean" ControlType="CheckEdit" />
         <FormField FieldName="remark" Caption="Remark" DbType="String" />
-        <FormField FieldName="sys_insert_time" Caption="Created At" DbType="DateTime" Visible="false" />
+        <FormField FieldName="sys_insert_time" Caption="Created At" DbType="DateTime" Visible="false" ReadOnly="true" />
       </Fields>
     </FormTable>
   </Tables>

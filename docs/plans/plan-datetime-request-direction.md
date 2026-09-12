@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | 伺服端 Save 入口正規化 DateTime 欄，框架自動戳記 `sys_insert_time` / `sys_update_time` | ✅ 已完成（2026-09-12） |
 | 2 | Connector 請求方向只轉過濾條件，DataSet 保留深拷貝但不轉換；移除 `AmbiguousInstantMemory` | ✅ 已完成（2026-09-12） |
-| 3 | 定義檔：系統時間戳記欄（`sys_insert_time` / `sys_update_time`）一律標 `ReadOnly`，並寫進 bee-add-form 慣例 | 📝 待做 |
+| 3 | 定義檔：系統時間戳記欄（`sys_insert_time` / `sys_update_time`）一律標 `ReadOnly`，並寫進 bee-add-form 慣例 | ✅ 已完成（2026-09-12） |
 | 4 | 文件：修訂 ADR-032，更新 datetime-timezone / temporal-types / expression-rules（zh-TW 源文件 + en 譯本） | 📝 待做 |
 
 ## 背景
@@ -15,7 +15,7 @@
 送出請求前使用者時區 → UTC。這個設計在請求方向留下一串需要逐一補洞的問題，最近三個 commit 都在補：
 
 - DST 回撥重疊時段，一個牆上時間對應兩個 UTC 值，讀進再存回會晚一小時。
-  d94f3239 以 `ConditionalWeakTable` 在 Connector 記住原 UTC 值（[AmbiguousInstantMemory.cs](../../src/Bee.Api.Core/JsonRpc/AmbiguousInstantMemory.cs)），
+  d94f3239 以 `ConditionalWeakTable` 在 Connector 記住原 UTC 值（`AmbiguousInstantMemory.cs`（階段 2 已移除）），
   但呼叫端自行複製 DataSet 時記憶就失效。
 - 用戶端運算式以 `UtcNow()` 填進 `DateTime` 儲存格，送出時被再轉一次（D12 殘餘風險）。
 - `DataColumn.DefaultValue` 凍結的時鐘讀數被送回伺服端（be673a00 已修）。
@@ -146,7 +146,7 @@
 
 1. [PayloadZoneConverter.ToUtc](../../src/Bee.Api.Core/JsonRpc/PayloadZoneConverter.cs)：`SaveRequest` 改為只做 `DataSet.Copy()` 並照舊以 swap 還原，不換算；`GetListRequest` 的過濾條件照舊轉換。
    方法名與 XML doc 要跟著改寫，它不再是「轉 UTC」而是「隔離呼叫端物件＋轉過濾條件」。
-2. 移除 [AmbiguousInstantMemory.cs](../../src/Bee.Api.Core/JsonRpc/AmbiguousInstantMemory.cs)，以及 `DateTimeZoneConverter` 裡只服務請求方向 `DataSet` 的 `CellShift` 分支。
+2. 移除 `AmbiguousInstantMemory.cs`（階段 2 已移除），以及 `DateTimeZoneConverter` 裡只服務請求方向 `DataSet` 的 `CellShift` 分支。
    `UserToUtc(DataSet)` / `UserToUtc(DataTable)` 一併移除。留著等於替新原則開後門；屬破壞性變更，
    PublicAPI 異動與相容性判定寫進 commit message，依 ADR-032 D11 目前沒有外部消費者。
 3. `SkipSpringForwardGap` 與 `ConvertFilterValue` 保留。
@@ -194,6 +194,14 @@
 把系統時間戳記欄列為必須唯讀的一類。
 
 不另設閘門測試：資料正確性由階段 1 的伺服端正規化保證，漏標 `ReadOnly` 只會讓使用者能在畫面上改一個存不進去的值，不會寫錯資料。
+
+### 實作註記（2026-09-12）
+
+- 查證：`FormField.ReadOnly` 只在 `LayoutColumnFactory` 產生版面時抄到 `LayoutField.ReadOnly`，執行期不合併
+  （`LayoutField.cs` 第 53 行一帶講的是 `AllowEditModes` 與 `ReadOnly` 的組合，不是合併 FormField），
+  所以已產生的 FormLayout 確實要手改。Blazor 的 `DynamicForm.razor` 依 `LayoutField.ReadOnly` 輸出
+  `readonly` / `disabled`，Avalonia 由 `GridControl` 等讀它，兩個 head 都照它唯讀。
+- `tests/Define` 沒有 AuditRule 的 FormLayout，只改 FormSchema。
 
 ## 階段 4：文件
 

@@ -11,7 +11,7 @@
         <LayoutField FieldName="access_mode" Caption="Access Log" />
         <LayoutField FieldName="is_sensitive" Caption="Sensitive" />
         <LayoutField FieldName="remark" Caption="Remark" />
-        <LayoutField FieldName="sys_insert_time" Caption="Created At" />
+        <LayoutField FieldName="sys_insert_time" Caption="Created At" ReadOnly="true" />
       </Fields>
     </LayoutSection>
   </Sections>

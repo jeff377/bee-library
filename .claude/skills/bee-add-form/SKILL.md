@@ -73,6 +73,11 @@ description: 在一個已接好的 Bee.NET app 上「加一張表單」的多檔
 ### 計算 / 唯讀欄
 `FormField.ReadOnly="true"` —— 計算欄或伺服器衍生欄（如 BO 算出的金額）標唯讀，主檔欄與明細 InCell 格皆呈現唯讀；產生 FormLayout 時會一併帶到 `LayoutField.ReadOnly`，不必在版面另外標一次。
 
+**系統時間戳記欄 `sys_insert_time` / `sys_update_time` 一律標 `ReadOnly="true"`。** 它們由框架在存檔時戳記，
+`FormBusinessObject.NormalizeDateTimes` 會蓋掉畫面送來的值，漏標只會讓使用者改一個存不進去的值。
+`ReadOnly` 只在**產生** FormLayout 的那一刻抄過去，執行期不會回頭合併 —— 已經產生的 FormLayout 要在對應的
+`LayoutField` 手動補上 `ReadOnly="true"`。
+
 ### 清單欄
 `ListFields="sys_id,sys_name,ref_xxx_name,..."` 控制清單檢視欄（顯示 `ref_*` 比 `*_rowid` 友善）。
 

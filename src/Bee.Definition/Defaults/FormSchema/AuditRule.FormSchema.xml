@@ -28,7 +28,7 @@
         <FormField FieldName="access_mode" Caption="檢視記錄" DbType="Integer" ControlType="DropDownEdit" LangEnumName="AuditRuleMode" />
         <FormField FieldName="is_sensitive" Caption="敏感資料" DbType="Boolean" ControlType="CheckEdit" />
         <FormField FieldName="remark" Caption="備註" DbType="String" />
-        <FormField FieldName="sys_insert_time" Caption="寫入時間" DbType="DateTime" Visible="false" />
+        <FormField FieldName="sys_insert_time" Caption="寫入時間" DbType="DateTime" Visible="false" ReadOnly="true" />
       </Fields>
     </FormTable>
   </Tables>
