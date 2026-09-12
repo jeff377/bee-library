@@ -1,4 +1,4 @@
-<!-- source: zh-TW/expression-rules.md blob: 1fb36bde19944b1dd09e7e6547dcb726975c7912 -->
+<!-- source: zh-TW/expression-rules.md blob: b093645fbd1c6df122cc9d0a16bc0018aa21b9cb -->
 # Expressions and Rules (Field Computation and Pre-Save / Pre-Delete Validation)
 
 [繁體中文](../zh-TW/expression-rules.md) · [← Docs Index](README.md)
@@ -33,7 +33,7 @@ For the background and the decision itself, see [ADR-028](../adr/adr-028-express
 
   `Today()` returns `DateOnly` rather than `DateTime` because a calendar day is always expressed as `DateOnly` in the framework. The `DataSet` cell is the sole exception, since a `DataColumn` can only carry a calendar day as `DateTime`. You may write `Today()` into either a `Date` or a `DateTime` field; the framework performs the conversion when writing the cell.
 
-  > **To write into or compare with a `DateTime` field, use `Now()`, not `UtcNow()`.** A client-side `DataSet` is held in the user's time zone, so a `UtcNow()` value is treated as a user-zone value and converted once more on submission. The framework neither does — nor can — determine that a given cell was filled by an expression.
+  > **To write into or compare with a `DateTime` field, use `Now()`, not `UtcNow()`.** A client-side `DataSet` is held in the user's time zone, so a `UtcNow()` value written during live preview shows up off by the user's offset. On save the server does not take `DateTime` values from the client — it evaluates the expression again or keeps the stored value — so the saved data is unaffected; what is wrong is the value on screen before saving.
 - **Forbidden**: reflection, IO, and loading arbitrary types. Any identifier outside the allowlist fails at parse time as a configuration error.
 - **Null handling**: an empty field (`DBNull`) is substituted with its type default (`0` for numbers, an empty string for text, `Guid.Empty`, …), so `unit_price * qty` evaluates to `0` on empty input rather than failing.
 

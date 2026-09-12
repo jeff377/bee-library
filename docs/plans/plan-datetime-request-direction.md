@@ -1,13 +1,13 @@
 # 計畫：DateTime 只接受伺服端寫入，DataSet 請求方向不轉換時區
 
-**狀態：🚧 進行中（2026-09-12）**
+**狀態：✅ 已完成（2026-09-12）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 伺服端 Save 入口正規化 DateTime 欄，框架自動戳記 `sys_insert_time` / `sys_update_time` | ✅ 已完成（2026-09-12） |
 | 2 | Connector 請求方向只轉過濾條件，DataSet 保留深拷貝但不轉換；移除 `AmbiguousInstantMemory` | ✅ 已完成（2026-09-12） |
 | 3 | 定義檔：系統時間戳記欄（`sys_insert_time` / `sys_update_time`）一律標 `ReadOnly`，並寫進 bee-add-form 慣例 | ✅ 已完成（2026-09-12） |
-| 4 | 文件：修訂 ADR-032，更新 datetime-timezone / temporal-types / expression-rules（zh-TW 源文件 + en 譯本） | 📝 待做 |
+| 4 | 文件：修訂 ADR-032，更新 datetime-timezone / temporal-types / expression-rules（zh-TW 源文件 + en 譯本） | ✅ 已完成（2026-09-12） |
 
 ## 背景
 
@@ -217,6 +217,16 @@
   - `docs/zh-TW/expression-rules.md` 第 38 行一帶的 `UtcNow()` 殘餘風險。
 - `./check-public-docs.sh`、`./check-md-links.sh` 通過。
 - 公開文件與 ADR **不得引用本 plan**，需要的結論寫進 ADR 本身。
+
+### 實作註記（2026-09-12）
+
+- ADR-032 新增**選項 5**（本方案，含雙向 UTC 的退場理由與另兩案不採納的原因）與 **D14**（Save 入口正規化、
+  不分呼叫來源、覆寫接縫、讀回找不到列、`Unchanged` 列的殘餘限制）；選項 3 標為被取代。
+- ADR 的 DST 條目註明 `DateTimeZoneDstSaveRoundTripTests` 在 SQLite 上驗不到（SQLite 讀回的時間欄是字串，
+  回應方向不轉換）。
+- **超出原範圍**：`docs/zh-TW/jsonrpc-frontend-integration.md` 與 en 譯本的 `DataTableColumn` TypeScript 註解
+  原寫「送回時需換回 UTC」，一併改為新語意。`wire-contracts/` 沒有這句，不影響 bee-connector-js。
+- `datetime-timezone.md` 新增「需要接受使用者輸入的 `DateTime`」一節，說明覆寫 `NormalizeDateTimes` 的做法。
 
 ## 補充決定（2026-09-12）
 

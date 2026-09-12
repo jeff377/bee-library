@@ -1,4 +1,4 @@
-<!-- source: zh-TW/jsonrpc-frontend-integration.md blob: f8723feb46c87aac2d973266e310fce60f18e940 -->
+<!-- source: zh-TW/jsonrpc-frontend-integration.md blob: c792954c6208a2fd6b4b0997c05f0d53563ef96f -->
 # JSON-RPC Frontend Integration Guide
 
 [繁體中文](../zh-TW/jsonrpc-frontend-integration.md) · [← Docs Index](README.md)
@@ -298,8 +298,9 @@ export interface DataTableColumn {
    * The declared FieldDbType, e.g. 'String' | 'Date' | 'DateTime' | 'Decimal' | 'Guid'.
    * 'Date' means a calendar day — render it without a time of day and do NOT shift it
    * through the browser timezone.
-   * 'DateTime' is an instant and is always UTC on the wire: convert it for display, and
-   * convert back to UTC before sending it.
+   * 'DateTime' is an instant and is always UTC in a response: convert it for display. A value
+   * sent back for saving needs no conversion, since the server does not use it; a filter value
+   * must be converted back to UTC before it is sent.
    * See docs/en/temporal-types.md and docs/en/datetime-timezone.md.
    */
   type: string;

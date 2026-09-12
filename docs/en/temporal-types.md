@@ -1,4 +1,4 @@
-<!-- source: zh-TW/temporal-types.md blob: 231e3f278bb42a363b7a7b0444e370bfcdbf493e -->
+<!-- source: zh-TW/temporal-types.md blob: 63db7c10e2b48aa5ed1fdcbda06e3c03064f3978 -->
 # Temporal Types: `Date`, `DateTime` and `Time`
 
 [繁體中文](../zh-TW/temporal-types.md) · [← Docs Index](README.md)
@@ -330,11 +330,11 @@ What decides it is the column's resolved type: a column whose CLR type is `DateT
 an instant unless it is marked `Date`. **An unmarked calendar-day column is therefore converted** — see
 §4 for the paths that carry no marker. A time-of-day column is a `string` and never in scope.
 
-| | Stored | Shown |
-|---|--------|-------|
-| `Date` | as written | as written |
-| `DateTime` | **UTC** | converted to the session's zone |
-| `Time` | as written | as written |
+| | Stored | Shown | Value a client saves |
+|---|--------|-------|------|
+| `Date` | as written | as written | written as sent |
+| `DateTime` | **UTC** | converted to the session's zone | **not used** — the server writes it |
+| `Time` | as written | as written | written as sent |
 
 Details, including what hand-written SQL and non-.NET clients must do:
 [Time Zones](datetime-timezone.md).

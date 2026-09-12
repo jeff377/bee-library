@@ -14,6 +14,10 @@
 > 「請求方向的 guard 在時區換算之前」，並把 DTO 屬性那條從不變式改標為撰寫紀律；D12 於 2026-09-12
 > 補上「『現在』的基準由 `DataSet` 所在的那一側決定」，更正原殘餘風險的敘述；D4 於 2026-09-12
 > 補上「DST 回撥重疊時段的儲存格由 Connector 記住原本的 UTC 值」。
+>
+> **2026-09-12 另一次較大的修訂**：請求方向不再轉換 `DataSet`，伺服端 `Save` 不採用用戶端送來的
+> `DateTime`（選項 5、D14）。D3 與 D4 開頭改為依方向與載體區分，同日稍早補上的重疊時段記憶隨之撤回；
+> D6、D12、D13 與「後果」的相關敘述一併修正。
 
 ## 背景
 
@@ -76,11 +80,17 @@ MessagePack 不保留 `Kind`（實測結論 1），偏移資訊無法存活。�
 一旦不一致（使用者出差、裝置時區與公司設定不同、session 時區未填），失敗模式是
 **使用者看到 09:00、輸入 09:00、存進去卻是別的時刻、重新載入後畫面跳掉**——靜默且資料損毀。
 
-### 3. 雙向 UTC（採納）
+### 3. 雙向 UTC（採納，2026-09-12 由選項 5 取代）
 
 只有單一時區來源，兩個方向必為反函數，round-trip 恆等。即使時區設錯，
 錯誤也只降級為「顯示偏移」而非資料錯亂。附帶效益：JS client 送 UTC 就是
 `date.toISOString()` 的原生行為。
+
+> **退場理由（2026-09-12）**：請求方向要把使用者時區的值換回 UTC，這個換算在三處都需要逐一補洞。
+> DST 回撥重疊時段一個牆上時間對應兩個 UTC 值，讀進再存回會晚一小時，只能在 Connector 以列實例為鍵
+> 記住原值，而呼叫端自行複製 `DataSet` 時記憶就失效；用戶端運算式以 `UtcNow()` 填進的值會被再轉一次；
+> `DataColumn.DefaultValue` 凍結的時鐘讀數被當成使用者時區值送回。三者的共同根源是伺服端採用了一個
+> 它無從確知基準的值，「反函數、round-trip 恆等」只在這些路徑都被補齊時才成立。
 
 ### 4. 欄位層 `DateTimeSemantics` 標記，提供第三種語意 `Local`（否決）
 
@@ -97,6 +107,23 @@ MessagePack 不保留 `Kind`（實測結論 1），偏移資訊無法存活。�
 3. **成本不成比例**。為此要動核心持久化 enum 或在每個 `DbField` 加屬性，
    換到一個解不了真實需求的語意。
 
+### 5. 回應方向轉換、伺服端不採用請求中的 `DateTime`（採納，2026-09-12）
+
+`DateTime` 只接受伺服端寫入的值。Connector 只把回應轉入使用者時區；存檔送出的 `DataSet` 不換算，
+伺服端在 `Save` 入口以伺服端讀數或資料庫原值覆蓋（D14）。請求方向唯一保留的換算是過濾條件，
+因為它只用於查詢、不落庫。
+
+與選項 2 的差別在於伺服端**不解讀**用戶端的 `DateTime`。選項 2 讓伺服端依 `SessionInfo.TimeZone`
+把用戶端的值換回 UTC 並採用，顯示時區與解讀時區成為兩個來源；本選項根本不採用那個值，也就沒有
+第二個來源。過濾條件仍由 Connector 換算、不交給伺服端，正是為了避開選項 2 的分岔：用戶端在登入時
+快取 session 時區，伺服端快取重建時會重讀使用者設定，兩者可能不一致。
+
+另外兩種讓伺服端不採用的做法不採納：在寫入層排除 `DateTime` 欄，會讓 BO、規則與 plugin 讀到使用者
+時區的值；由 Connector 在送出前清空，伺服端仍要讀回原值，稽核也會失去原值。
+
+代價是使用者無法直接編輯 `DateTime` 欄位，確有需要的 BO 覆寫正規化方法自行轉換（D14）。
+決策當時框架內沒有使用者輸入的 `DateTime` 欄位，業務上的時間欄都是 `Date`。
+
 ## 決策
 
 ### D1：DB 一律存 UTC，全 provider 用 naive 欄位
@@ -111,55 +138,80 @@ MySQL `DATETIME`、SQLite `TEXT`。時區轉換不交給資料庫。
 
 MessagePack 與 JSON 都只搬運數值。轉換責任全在伺服端與用戶端。
 
-### D3：wire 上的 `DateTime` 兩個方向都是 UTC
+### D3：伺服端資料路徑為 UTC；請求中的 `DateTime` 依載體而定（2026-09-12 修訂）
 
-伺服端送 UTC、用戶端也送 UTC。**伺服端在資料路徑上完全不做時區轉換**，直接讀寫 UTC。
+伺服端送 UTC。**伺服端在資料路徑上完全不做時區轉換**，直接讀寫 UTC。
+
+請求方向依載體而定（D4 的載體對照表）：過濾條件值、強型別 DTO 屬性與 `Parameters` 是 UTC；
+存檔送出的 `DataSet` 保留用戶端畫面上的值，**不保證是 UTC**，伺服端也不採用其中的 `DateTime`（D14）。
+
+> 原文為「wire 上的 `DateTime` 兩個方向都是 UTC，伺服端送 UTC、用戶端也送 UTC」，隨選項 5 修訂。
 
 ### D4：Connector 為唯一轉換點
 
 用戶端的時區轉換集中在 `Connector`（API 介接層），不由各 UI 層各自處理。
-收到回應時 UTC → 使用者時區；送出請求前 使用者時區 → UTC。
+
+#### 轉換方向的原則（2026-09-12 修訂）
+
+> **Connector 預設只轉回應方向，請求方向預設不轉。**
+>
+> - **回應方向**：`DataSet` / `DataTable` 的 `DateTime` 欄由 UTC 轉為使用者時區。
+> - **請求方向**：`DataSet` 的 `DateTime` 不轉換，伺服端也不採用用戶端的值（D14）。
+> - **例外（請求方向轉換）**：過濾條件的 `DateTime` 由使用者時區轉為 UTC。它只用於查詢、不會存進資料庫。
+> - **不在轉換範圍**：強型別 DTO 屬性與 `Parameters` 兩個方向都是 UTC，由呼叫端負責。
+
+以後出現新的請求方向轉換需求，比照過濾條件逐案加進例外清單，不回到預設雙向。
+
+**別把它讀成「`DataSet` 單向、其他雙向」。** 目前沒有任何載體是雙向轉換：過濾條件只出現在請求，
+強型別 DTO 兩個方向都不轉。日後接受使用者輸入的 `DateTime`，也是由 BO 在伺服端轉換（D14），
+不是 Connector 雙向。
+
+| 載體 | 回應（伺服端 → 用戶端） | 請求（用戶端 → 伺服端） |
+|------|------|------|
+| `DataSet` / `DataTable` 的 `DateTime` 欄 | UTC → 使用者時區 | **不轉換**（伺服端不採用） |
+| `FilterCondition.Value` / `SecondValue` | 不會出現在回應 | 使用者時區 → UTC |
+| 強型別 DTO 屬性（`ExpiredAt`、`FromUtc` / `ToUtc`、`ServerTime` 等） | 不轉換，一律 UTC | 不轉換，一律 UTC（呼叫端負責） |
+| `Parameters` | 不轉換 | 不轉換 |
+
+`DateOnly` 與 `TimeOnly` 在任何載體、任何方向都不轉換。
+
+> 原文為「收到回應時 UTC → 使用者時區；送出請求前 使用者時區 → UTC」，即選項 3 的雙向轉換。
+
+#### 細則
 
 - **判斷依據是隨 payload 同行的 `FieldDbType` 標記**（ADR-031）：`Date` 絕不轉、
   `DateTime` 一律視為時間點並轉換。**完全不需要 `FormSchema`**，報表 / AnyCode 等
   schema-less 場景同樣適用。
 - **強型別 DTO 的 `DateTime` 屬性一律維持 UTC，不轉**（`PingResult.ServerTime`、
   `SessionInfo.ExpiredAt`、`AuditEntry.LogTimeUtc` 等本就是系統時間戳）。
-- **`FilterCondition.Value` / `SecondValue` 必須套用相同轉換**，語意由值的 CLR 型別自我描述：
+- **`FilterCondition.Value` / `SecondValue` 由使用者時區轉為 UTC**（請求方向唯一的換算），語意由值的 CLR 型別自我描述：
   `DateOnly` 絕不轉、`DateTime` 視為時間點。遺漏的症狀是「查今天的單據」跨區少查到資料且不報錯。
-- **轉換掛在 Connector 進出點，不掛序列化入口**，且**轉換前必須深拷貝 `DataSet`**。
+- **轉換掛在 Connector 進出點，不掛序列化入口**，且**請求中的 `DataSet` 一律換成深拷貝**。
   in-process（`LocalApiProvider` + `PayloadFormat.Plain`）沒有序列化邊界、物件以參考傳遞——
-  掛序列化入口會整個繞過，就地轉換則會改到呼叫端自己那一份。
+  掛序列化入口會整個繞過。請求方向不換算 `DataSet` 之後仍要複製：伺服端 `Save` 會就地改寫收到的
+  `DataSet`（D14 的正規化，以及寫入後的 `AcceptChanges`），不複製就會改到呼叫端自己那一份。
+  執行它的是 `ApiConnectorRequestIsolationTests` 與 `PayloadZoneCoverageGuardTests`。
 - **`ApiMessageBase.Parameters` 不轉換**（每個 request / response 都帶的無型別參數袋）。
   袋內的值是 `object`，**沒有任何型別標記可分辨「時間點 / 日曆日 / 系統時間戳」**——
   全部轉換等於猜測，還會破壞呼叫端刻意放進去的 UTC 值。AnyCode 自訂方法若要傳時間點，
   請自行約定基準（建議一律 UTC）或改走帶 `FieldDbType` 標記的 `DataTable` 載體。
 - **一律忽略 `Kind`**，依 D3 視為 UTC（實測結論 3）。
-- **不存在的本地時刻（spring-forward 缺口）前推一個 DST 差**。日期選擇器無從得知某日
+- **過濾條件值落在不存在的本地時刻（spring-forward 缺口）時，前推一個 DST 差**。日期選擇器無從得知某日
   某個牆鐘時刻不存在，使用者選 02:30 是正常操作；`ConvertTimeToUtc` 對此擲
   `ArgumentException` 且會原樣穿透 JSON-RPC。故轉 UTC 前先把落在缺口內的值前推該次
   轉換的 delta（02:30 → 03:30），與 iOS / Android / Google 日曆等主流選擇器一致。
-- **回撥重疊時段（fall-back）的儲存格，由 Connector 記住原本的 UTC 值**（2026-09-12 補）。
-  重疊的那一小時裡，兩個 UTC 值對應同一個牆上時間（美東 2026-11-01 的 05:30Z 與 06:30Z 都是 01:30），
-  `ConvertTimeToUtc` 不擲例外，但只能確定性地解析為標準時間。這份資訊在回應轉入使用者時區的那一刻
-  就消失了，下游任何一層都找不回來：沒有處理時，只要列被修改存回——即使改的是別的欄位——
-  值落在較早那個 UTC 的欄位就靜默晚一小時。
+- **回撥重疊時段（fall-back）不需要 Connector 處理**（2026-09-12 修訂）。重疊的那一小時裡，兩個 UTC 值
+  對應同一個牆上時間（美東 2026-11-01 的 05:30Z 與 06:30Z 都是 01:30），這份資訊在回應轉入使用者時區的
+  那一刻就消失了。請求方向不換算 `DataSet` 之後，修改列的時間欄由伺服端以資料庫的原值覆蓋（D14），
+  讀進再存回不會晚一小時，也不依賴呼叫端有沒有複製 `DataSet`。過濾條件值落在重疊時段時，
+  `ConvertTimeToUtc` 解析為標準時間，那是牆上時間本身的歧義，與主流日曆一致。
 
-  因此回應方向對落在重疊時段的儲存格，以**交給呼叫端的那一列實例**為鍵記下原本的 UTC 值
-  （`ConditionalWeakTable`）；請求方向在該格仍是當初換算出的牆上時間時，送回記下的值。取捨如下：
+  執行它的是 `DateTimeZoneDstSaveRoundTripTests`：讀進、轉入使用者時區、改別的欄位、原樣存回，
+  再以 SQL 讀回資料庫的值。SQLite 讀回的時間欄是字串、回應方向不轉換它，那一家驗不到這條。
 
-  - **記在 Connector，不在寫入端**。資訊是在 Connector 遺失的，由它保存才符合本條「唯一轉換點」。
-    讓 UPDATE 略過「兩個版本相等」的時間欄雖然無狀態，卻等於把時區語意帶進資料存取層、要在每一家
-    provider 上各自成立，還依賴「Connector 會把兩個版本換算成同一個值」這條跨層的隱含約定——
-    換算方式一改，寫入端就靜默失效。
-  - **以列實例為鍵，不寫進資料本身**。表格的 `ExtendedProperties` 會隨 `Copy` / `Merge` / `GetChanges`
-    以同一個參考帶走：in-process 呼叫會把它送到伺服端，稽核 DiffGram 的 schema 也會以 `msprop` 寫出它。
-
-  殘餘限制：呼叫端自行複製或重建的列沒有記憶，重疊時刻解析為標準時間；使用者親手選的重疊時刻
-  同樣解析為標準時間，那是牆上時間本身的歧義，與主流日曆一致。
-  執行它的是 `DateTimeZoneConverterDstTests`、
-  `PayloadZoneConverterTests.ToUtc_SaveRequestFromConvertedResponse_KeepsAmbiguousInstant`，
-  以及對各家資料庫實跑「讀進、改別的欄位、存回」的 `DateTimeZoneDstSaveRoundTripTests`。
+  > 原條目（同日稍早補上）由 Connector 以**交給呼叫端的那一列實例**為鍵記住重疊時段儲存格原本的 UTC 值，
+  > 請求方向在該格仍是當初換算出的牆上時間時送回記下的值；呼叫端自行複製或重建的列沒有記憶。
+  > 隨選項 5 撤回。
 - **時區來源為 `SessionInfo.TimeZone`，不使用裝置 OS 時區。** 權威來源是伺服端使用者設定，
   換裝置 / 出差不影響資料語意。「跟隨裝置時區」可作為使用者可選設定，但不是預設。
 
@@ -186,7 +238,8 @@ MessagePack 與 JSON 都只搬運數值。轉換責任全在伺服端與用戶�
 `DataSet` 那條不查 `Kind`：儲存格的 `Kind` 由 `DateTimeMode` 決定，查值恆得 `Unspecified`、
 查了等於沒查；真正決定「XML 寫出會不會帶偏移」的是 `DateTimeMode`。
 `AddColumn` 已設 `Unspecified`，破口在 `DbDataAdapter.Fill` / `DataSet.ReadXml` 等
-會落回 .NET 預設 `UnspecifiedLocal` 的路徑。
+會落回 .NET 預設 `UnspecifiedLocal` 的路徑。請求方向不再換算 `DataSet` 之後，這條照樣檢查請求中的
+`DataSet`：它守的是序列化會不會寫出時區偏移，與要不要換算無關（2026-09-12）。
 
 過濾條件值與 DTO 屬性的規則都針對 `Kind`：沒有 `DataColumn` 的正規化緩衝，`Local` 在**兩條 wire 上都會位移數值**
 （MessagePack 於寫出端、JSON 於讀取端）。`Local` 極易誤入——`DateTime.Now`、`DateTime.Today`、
@@ -202,7 +255,7 @@ DTO 屬性不由 guard 檢查：guard 依訊息型別逐一比對載體，不走
   `ToUniversalTime()` 則依**裝置 OS 時區**換算，而 D4 已否決裝置時區作為權威來源。
   `Kind=Local` 進 wire 是**框架自身的程式錯誤**，不是外部輸入的資料狀況。
 - **guard 掛在 Connector 進出點**，理由同 D4（in-process 無序列化邊界）。
-- **請求方向的 guard 必須在 D4 的時區換算之前執行**，驗的是呼叫端交來的原值。換算會先把過濾條件值
+- **請求方向的 guard 必須在 D4 的過濾條件換算之前執行**，驗的是呼叫端交來的原值。換算會先把過濾條件值
   `SpecifyKind(Unspecified)` 再依使用者時區換算——那正是上一條否決的「修正後放行」。排在換算之後，
   只要有使用者時區（即每一次登入後的呼叫），`Local` 值就一律通過。
   由 `ApiConnectorDateTimeGuardTests` 驗證這個先後順序。
@@ -299,13 +352,14 @@ DTO 屬性不由 guard 檢查：guard 依訊息型別逐一比對載體，不走
 
 唯一不接時區的是 `FieldDbTypeExtensions.GetDefaultValue`——無使用者情境可傳，見 D13 的例外條款。
 
-> **殘餘風險（刻意接受）**：`UtcNow()` 不隨基準變動。用戶端求值的運算式若以 `UtcNow()` 填進 `DateTime`
-> 儲存格，送出時會被 Connector 當成使用者時區值再轉一次。此處不設 guard——Connector 無從得知某儲存格
-> 是運算式填的。要寫進 `DateTime` 儲存格或與之比較時，應使用 `Now()`。
+> **殘餘風險（刻意接受）**：`UtcNow()` 不隨基準變動。用戶端即時預覽以 `UtcNow()` 填進 `DateTime`
+> 儲存格時，畫面上的值差一個時差。存檔時伺服端不採用用戶端的 `DateTime`（D14），有運算式的欄位由伺服端
+> 重新求值或保留資料庫的值，所以不會寫錯資料；錯的是存檔前畫面上的值。要寫進 `DateTime` 儲存格或
+> 與之比較時，應使用 `Now()`。
 >
-> 此段原寫「以 `Now()` / `UtcNow()` 填進 `DateTime` 儲存格都會被再轉一次」，`Now()` 那一半是錯的：
-> 用戶端的 `Now()` 本來就是使用者時區的值，經 Connector 換算後正確。真正錯位的是伺服端的 `Now()`，
-> 已由上方的基準修正。
+> 此段原寫「送出時會被 Connector 當成使用者時區值再轉一次」，那是請求方向仍換算 `DataSet` 時的敘述，
+> 隨選項 5 修訂。更早的版本另寫「以 `Now()` 填進也會被再轉一次」，`Now()` 那一半是錯的：用戶端的
+> `Now()` 本來就是使用者時區的值；真正錯位的是伺服端的 `Now()`，已由上方的基準修正。
 
 ### D13：日期一律 `DateOnly`，`DataSet` 是唯一例外；時區一律以引數傳遞
 
@@ -343,6 +397,36 @@ DTO 屬性不由 guard 檢查：guard 依訊息型別逐一比對載體，不走
 
 > 這個後備只在命令未繫結資料列時生效。表單存檔走 `DbDataAdapter.Update`，adapter 以 `SourceColumn`
 > 的列值覆蓋參數值，所以列裡的 `DBNull` 仍會以 NULL 送進資料庫，由 NOT NULL 約束擋下。
+> `DateTime` 欄例外：表單存檔前 D14 的正規化已替新增列補上伺服端讀數，沒有預設值運算式的
+> NOT NULL `DateTime` 欄不會以 NULL 送出（2026-09-12）。
+
+### D14：`DateTime` 只接受伺服端寫入的值（2026-09-12）
+
+`FormBusinessObject.Save` 在授權與寫入範圍檢查之後、`DoBeforeSave` 之前呼叫 `protected virtual` 的
+`NormalizeDateTimes`，依 `FormSchema` 處理每張表的 `DateTime` 欄：
+
+| 列狀態 | 處理 |
+|------|------|
+| 新增 | `sys_insert_time`、`sys_update_time` 與沒有 `DefaultValueExpression` 的欄位填入存檔當下的 UTC 讀數（同一次存檔同一個讀數）；有運算式的欄位清空，交給 `ApplyFieldExpressions` 求值 |
+| 修改、刪除 | 以 `sys_rowid` 從資料庫讀回，兩個列版本都改成資料庫的值；修改列的 `sys_update_time` 再填入 UTC 讀數 |
+
+- **位置在規則之前**，所以之後的規則、plugin、稽核與寫入看到的都是 UTC，D3「伺服端資料路徑為 UTC」照樣成立。
+- **不分呼叫來源**：伺服端 BO 之間呼叫 `Save` 同樣不採用傳入的 `DateTime`。需要寫入 `DateTime` 的作業
+  覆寫正規化方法，或直接走 repository。
+- **接受使用者輸入的 `DateTime`**：覆寫 `NormalizeDateTimes`，先讀出傳入的值、呼叫基底實作，再依使用者時區
+  轉成 UTC 寫回。純 `FormSchema` 表單不支援；決策當時也沒有能保留時分的編輯器。
+- **讀回時找不到列**（已被同時刪除）擲 `UserMessageException`，在任何寫入之前中止。
+- **改寫 Original 要先擷取整列的兩個版本再 `RejectChanges`**，否則非時間欄的修改會被丟掉——與 D4 回應方向
+  換算修改列時是同一個陷阱。
+- **系統時間戳記欄在 `FormSchema` 一律標 `ReadOnly`**，否則使用者能在畫面上改一個存不進去的值。
+  漏標不會寫錯資料，因此不另設閘門。
+
+殘餘限制：`Unchanged` 列不正規化。它們不寫入、不進稽核，但 `ValidateRules` 會走訪所有非刪除列，plugin
+也看得到；存檔時一起送上來的 `Unchanged` 列，其 `DateTime` 欄是使用者時區的值。規則或 plugin 若要比較
+這些列的時間欄，拿到的基準是錯的。
+
+執行它的是 `FormBusinessObjectDateTimeNormalizationTests`：各家資料庫實跑新增、修改與刪除（含稽核 DiffGram）、
+讀回找不到列，以及覆寫接縫。
 
 ### D9：cache-notify 的時間基準與寫入端同源，一律 UTC（2026-09-04 修訂）
 
@@ -442,7 +526,7 @@ D1 對「`FieldDbType.DateTime` 欄位存 UTC」是**強制條件**，而 SQL �
 
 **正面**
 
-- 單一時區來源，兩個方向互為反函數，round-trip 恆等（DST 回撥重疊時段靠 Connector 記住原值，見 D4 與下方風險）；時區設錯只降級為顯示偏移。
+- 單一時區來源；存檔不採用用戶端的 `DateTime`，讀進再存回時時間值不變，不依賴換算是否可逆，DST 回撥重疊時段也不例外（D14）。時區設錯只降級為顯示偏移。
 - Connector 完全 schema-less，報表 / AnyCode 等無 schema 場景同樣安全。
 - 轉換路徑單一：同時區時退化為恆等轉換，不需為「有沒有跨區」維護兩套行為。
 
@@ -454,10 +538,10 @@ D1 對「`FieldDbType.DateTime` 欄位存 UTC」是**強制條件**，而 SQL �
   guard 自己的單元測試全綠——它們只驗 guard，看不到它在呼叫路徑上的位置（2026-09-12 修正）。
 - **日曆日誤轉**：標記方案不能保證欄位一定有標記——BO 自寫 SQL 未以 `SetDateColumns` 宣告的
   日曆日欄位仍會被當時間點轉換（ADR-031 已載明此殘餘破口與 BO 作者的標記責任）。
-- **DST 回撥重疊時段的恆等，依賴 Connector 記住的原值**（D4）。記憶以列實例為鍵，呼叫端若在讀進與
-  存回之間自行複製或重建 `DataSet`，未改動的重疊時刻會退回標準時間、存回時晚一小時，且沒有任何訊號。
-  目前框架內的 UI head 都直接沿用 Connector 交回的 `DataSet`；新增 head 或在既有 head 加入複製時，
-  要保住這一點。只影響有 DST 的時區，`Asia/Taipei` 不受影響。
+- **`DateTime` 欄位無法由使用者直接編輯**（D14）。新增接受使用者輸入的 `DateTime` 欄位時，
+  BO 必須覆寫正規化方法自行轉換，否則輸入的值會被靜默換成伺服端的值。
+- **`Unchanged` 列的 `DateTime` 欄是使用者時區的值**（D14 的殘餘限制），只影響在伺服端比較這些列
+  時間欄的規則與 plugin。
 - **`TimeZoneInfo.FindSystemTimeZoneById` 在 WASM / iOS / Android 未經驗證**。
   依賴 ICU 與 tz database，trim + AOT 下失敗形態是 `TimeZoneNotFoundException`，
   桌面完全不重現。

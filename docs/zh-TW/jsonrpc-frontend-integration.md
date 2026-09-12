@@ -286,7 +286,8 @@ export interface DataTableColumn {
   /**
    * 宣告的 FieldDbType，例如 'String' | 'Date' | 'DateTime' | 'Decimal' | 'Guid'。
    * 'Date' 表示日曆日——不顯示時刻，且不要透過瀏覽器時區位移。
-   * 'DateTime' 為時間點，wire 上一律是 UTC：顯示前需自行換算，送回時需換回 UTC。
+   * 'DateTime' 為時間點，回應裡一律是 UTC：顯示前需自行換算。存檔送出時不必換算，伺服端不採用其中的值；
+   * 過濾條件的值則要換回 UTC 再送出。
    * 見 docs/zh-TW/temporal-types.md 與 docs/zh-TW/datetime-timezone.md。
    */
   type: string;
