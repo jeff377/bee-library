@@ -450,7 +450,17 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
    - 「本機可驗證就直接推 main」的工作流改為 PR + branch protection。
    - `.github/workflows/auto-merge.yml` 寫死只認 `jeff377`。
    - 缺 CODEOWNERS 與 CONTRIBUTING。
+   - **語言政策**（2026-09-13 定案，polhem-oauth2 先行）：
+     - **共同維護的部分一律英文**：程式碼、XML doc、程式內註解、測試方法名稱與 `[DisplayName]`、
+       agent 設定（`.claude/`）、commit message、維運文件。
+     - **公開的 `.md` 文件維持中英雙語，ADR 也是**：讓共同開發者讀得懂決策。bee-library 的 `docs/adr/` 目前只有中文，
+       而且不在 `check-docs-i18n.sh` 的檢查範圍內，改名另開時要補英文版，並一併納入雙語檢查。
+     - bee-library 現行的中文 `[DisplayName]`、中文 `.claude/`、中文 commit 與維運文件，改名另開時都要改。
+     - 使用者層 `~/.claude/CLAUDE.md` 的「敘述文字全部繁體中文」必須由 repo 層設定明文覆寫。
    - 發版權限：誰持有 NuGet key、誰能推 tag。
+   - LICENSE 著作權人：bee-library 目前是 `Copyright (c) 2025 Bee.NET`，但 Bee.NET 不是法律主體。
+     polhem-oauth2 採 `Copyright (c) Polhem contributors`，不寫年份（2026-09-13 定案）。Polhem 同樣不是法律主體，這一列標示的是權利人群體；
+     沒有簽 CLA 時，每位貢獻者對自己的貢獻保有著作權。改名另開時比照這個做法決定，將來若成立法人再評估轉讓。
 5. **`dev-workflow` plugin 不隨框架搬**（與框架無直接關係，且各開發者習慣不同）。
    專案層 `.claude/settings.json` 對它的宣告移到個人層；`.claude/CLAUDE.md` 裡指向 `plan-write` 的慣例，
    要判斷哪些屬於 repo 本身而該留在 repo 內。
