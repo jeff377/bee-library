@@ -77,24 +77,20 @@ Day 29 的對帳表。**而鐵人賽發文後只有當日可改。**
 
 **目標**：讓部署端不必寫程式就能執行部署期作業。
 
-**為什麼需要**：`LocalOnly` 的方法只能在主機、行程內呼叫。能力都已交付，
-但缺一個「在主機上跑一下就好」的入口，否則部署端得自己在 host 行程內寫呼叫程式碼。
+**為什麼需要**：部署期作業在**還沒有部署層管理員**時只能在主機、行程內呼叫
+（`SetDeploymentAdmin` 更是一律 `LocalOnly`）。能力都已交付，但缺一個「在主機上跑一下就好」的入口，
+否則部署端得自己在 host 行程內寫呼叫程式碼。
 
 **目前的消費者**：
 
 | 作業 | 方法 | 現況 |
 |------|------|------|
-| 發放 API 金鑰 | `SystemBO.CreateApiKey` | 已交付，缺入口。2026-08-03 起遠端也走得通（須為部署層管理員），但**尚無管理員的部署仍只有本機這條路**——bootstrap 依舊需要入口 |
-| 指派部署層管理員 | `SystemBO.SetDeploymentAdmin` | 已交付，缺入口。**且它是該欄唯一的寫入口**——沒有工具就只能自己寫程式，或手動 `UPDATE st_user` |
-| 停用 / 列出金鑰 | 尚無 | 屬 API Key plan 的階段 3 |
+| 發放 API 金鑰 | `SystemBO.CreateApiKey` | 已交付，缺入口。遠端也走得通（須為部署層管理員），但**尚無管理員的部署仍只有本機這條路**——bootstrap 依舊需要入口 |
+| 列出、停用、設定到期 | `SystemBO.ListApiKeys` / `SetApiKeyEnabled` / `SetApiKeyExpiry` | 已交付，缺入口。授權與發放相同：本機呼叫直接放行，遠端須為部署層管理員 |
+| 指派部署層管理員 | `SystemBO.SetDeploymentAdmin` | 已交付，缺入口。`LocalOnly`，**且它是該欄唯一的寫入口**——沒有工具就只能自己寫程式，或手動 `UPDATE st_user` |
 
 `SetDeploymentAdmin` 這一列尤其尷尬：它是**首位管理員的唯一產生路徑**（設定檔 bootstrap 帳號
 已否決為永久後門），新部署接上框架後的第一件事就會撞到它。
-
-**現況限制**：框架目前**只有發放有程式路徑**。`IApiKeyRepository` 只有 `GetEnabledById` /
-`GetGateState` / `Exists` / `Insert`，停用只能直接下 `UPDATE st_api_key`——而直接改 DB 不會 bump
-`st_cache_notify`，其他行程最壞要等 `ApiKeyCache.AbsoluteMinutes`（60 分）才失效。
-停用 / 列出的 API 屬 API Key plan 的階段 3，本工具屆時才能做全套。
 
 **兩個候選落點**：
 
@@ -103,15 +99,13 @@ Day 29 的對帳表。**而鐵人賽發文後只有當日可改。**
 | `dotnet bee apikey ...` / `dotnet bee admin ...` | CLI 天然是部署期工具、可進腳本。但 `tools/Bee.Cli` 目前只宣告 `Bee.Definition`（傳遞閉包為 `Bee.Definition` + `Bee.Base`；ADR-038 後已不含 `Bee.Expressions`），要接 DB 得把 `Bee.Business` 與 repository 一起拉進來——**這是本項最主要的決策**，會讓 CLI 從「定義檔工具」變成「需要連得上資料庫的維運工具」 |
 | DefineEditor 加一個分頁 | 已是本機 Avalonia 工具、已有 DI 宿主。但它的定位是編輯定義檔，而金鑰與管理員旗標都在 DB 不在定義檔 |
 
-**第二個消費者如何改變權衡**：CLI 那一格的成本（把 `Bee.Business` 與 repository 拉進
+**消費者增加如何改變權衡**：CLI 那一格的成本（把 `Bee.Business` 與 repository 拉進
 `tools/Bee.Cli`）是**一次性**的，接上之後每個新的部署期作業都只是多一個子命令。原本為單一功能
-付這筆相依成本顯得重，現在有兩個消費者、且 API Key plan 階段 3 還會再加三個，攤提就合理得多。
+付這筆相依成本顯得重，現在發放、列出、停用、到期設定與指派管理員都已交付，攤提就合理得多。
 反過來說，DefineEditor 那一格的「定位不符」問題只會隨消費者增加而放大——它的分頁會逐漸變成
 一個與定義檔無關的維運面板。
 
-**要等什麼**：現有兩個消費者都不等任何東西（能力已交付），純粹是還沒排；
-停用 / 列出要等 API Key plan 的階段 3——該階段已於 2026-08-03 解除受阻（遠端管理表單所需的
-授權路徑已就緒），本工具屆時才能做全套。
+**要等什麼**：不等任何東西——上表的作業能力都已交付，純粹是還沒排。
 
 **啟動時第一步**：先決上表的落點與相依取捨，再寫 plan。
 
@@ -149,51 +143,6 @@ BO 程式碼處理複雜的，兩者各安其位。**租戶層只有「程式碼
 
 **啟動時第一步**：先蒐集實際的租戶客製案例，按「若有宣告式規則能否解決」分類——
 用真實分布決定第 1 題的線畫在哪，而不是憑想像設計語法。
-
-## 行動端 AOT：MessagePack wire 路徑的 reflection-only 失敗
-
-**已追查完畢並修復（2026-08-10）：是真實缺陷，不是模擬假象。**
-修復記於 [ADR-037](../adr/adr-037-wire-explicit-registration.md)，
-執行過程見 [plan-mobile-aot-wire.md](../plans/archive/plan-mobile-aot-wire.md)。
-已在五個環境驗證通過（閘門、NativeAOT、Mac Catalyst Release、iOS 模擬器 Release、
-iOS 裝置 full-AOT 編譯）；**僅餘 iOS 實機執行期未測**，屬低風險形式缺口。
-
-以下留結論摘要供索引。
-
-- **iOS head 的 wire 曾整條不通**：adr-036 移除全部 `[MessagePackObject]` 標註後，
-  wire 型別改由 contractless 承載，而 **contractless 沒有 reflection fallback**
-  （MessagePack 的 fallback 只涵蓋有標註的合約型別，NativeAOT 對照實驗證實）。
-- **「模擬」就是 iOS SDK 自己設的開關**：`Microsoft.iOS.Sdk` 對 iOS / tvOS / MacCatalyst
-  的每一種組態預設 `DynamicCodeSupport=false`，SDK 再映射成同一個
-  `RuntimeHostConfigurationOption`。**Android 沒有這一條，驗不到這半。**
-- **`InvalidProgramException` 確實是模擬特有的症狀**，但那只表示症狀失真——
-  同一批案例在 NativeAOT（真無動態碼）上照樣失敗。例外種類不可當診斷依據。
-- **adr-036 放大了缺陷而非縮小**：同一口徑下 37（v4.18.0）→ 185（v4.19.0）。
-- 既有缺陷另有一處早於 adr-036：typeless 通道對
-  `Decimal` / `Guid` / `DateTime` / `DateOnly` / `Byte[]` 不可用。
-
-重現只需一個命令列屬性，不需改 csproj：
-
-```bash
-dotnet test tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj -c Release --settings .runsettings -p:DynamicCodeSupport=false
-```
-
-判讀與重現法的完整規範已收進 `.claude/rules/apple-mobile-trim.md`
-與 `.claude/rules/serialization.md`。
-
-## per-form 稽核規則：讓管理員挑哪些表單要記錄
-
-異動記錄與檢視記錄目前都是**全記所有表單**。實務上不是每張表單都值得記——
-稽核價值集中在少數高敏感／高爭議的單據，其餘只是量體。
-
-構想是一份**執行期**規則（不是編譯期旗標、也不是改程式）：管理員指定哪些 ProgId
-要做異動／檢視記錄，可再細到 per-操作。對齊 Odoo 的 `auditlog.rule`——管理員在畫面上
-挑 model，不動一行程式碼。SAP 那邊的對照是 Change Documents 的開發期旗標與 RAL 的
-管理員設定，兩者一硬一軟，Odoo 的做法更接近這裡要的。
-
-**預設必須維持全記**，否則既有部署升版後會靜默少記——稽核少記比多記危險得多。
-
-分類軸與各項的定位見 [ADR-040](../adr/adr-040-audit-trail-taxonomy.md)。
 
 ## 把 `tools/` 納入 SonarCloud 的分析範圍
 

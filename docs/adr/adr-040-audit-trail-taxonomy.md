@@ -279,9 +279,8 @@ BCL 方法，因此 `XmlSerializer` 產出的 payload 與此等價。不走它�
 - 異動記錄的欄位級查詢需解析 XML，或改用選配的 EAV 檔位。
 - best-effort 寫入有漏失窗口。這是刻意接受的——需要零漏失時升級為 outbox。
 
-**未來增強**（尚未實作）：per-form 稽核規則——目前異動與檢視都是「全記所有表單」，
-未來可加一份執行期規則讓管理員選擇哪些 ProgId 要記錄，對齊 Odoo `auditlog.rule`。
-見 [future-work](../repo-ops/future-work.md)。
+**後續增強**：per-form 稽核規則已實作——管理員以一份執行期規則選擇哪些 ProgId 要做異動／檢視記錄，
+對齊 Odoo `auditlog.rule`，見 [ADR-041](adr-041-per-form-audit-rule.md)。
 
 ## 參考
 
