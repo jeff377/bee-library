@@ -1,11 +1,11 @@
 # 計畫：bee-oauth2 改名為 Polhem.OAuth2 並移至 polhem-dev
 
-**狀態：📝 擬定中（2026-09-13）**
+**狀態：🚧 進行中（2026-09-13）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1a | 建立 `polhem-dev/polhem-oauth2`：純改名、拿掉 `Bee.Base`、加密移植與測試、CI | 📝 待做 |
-| 1b | 導入 bee-library 現行程式碼風格設定，整理既有程式碼（英文化、例外、命名、Nullable、編碼） | 📝 待做 |
+| 1a | 本機建立 polhem-oauth2：純改名、拿掉 `Bee.Base`、加密移植與測試、CI、`.slnx` | ✅ 已完成（2026-09-13） |
+| 1b | 導入 bee-library 現行程式碼風格設定，整理既有程式碼（英文化、例外、命名、Nullable、編碼、SDK 格式）；完成後建立 repo 並推送 | 🚧 進行中 |
 | 2 | state 解密加強健壯性 | 📝 待做 |
 | 3 | JSON 改用 System.Text.Json | 📝 待做 |
 | 4 | 拿掉 WebView2，改用系統預設瀏覽器 + loopback 回呼；桌面流程併入核心，Desktop／WinForms 套件移除 | 📝 待做 |
@@ -75,6 +75,7 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | 程式碼風格 | 依 bee-library 現行設定導入，並整理既有程式碼（階段 1b） | 使用者決定。排在功能修改之前，後續新寫的程式碼一開始就受閘門把關 |
 | 語言政策 | **共同維護的部分一律英文**：程式碼、XML doc、程式內註解、測試方法名稱與 `[DisplayName]`、`.claude/`、commit message。**公開 `.md` 文件中英雙語**：`README.md` 英文為預設，`README.zh-TW.md` 為中文版。**ADR 同樣中英雙語** | Polhem 未來開放共同維護，共同開發者要讀得懂決策。與 bee-library 現行做法（中文 `[DisplayName]`、中文 commit、只有中文的 ADR）刻意不同 |
 | LICENSE 著作權人 | `Copyright (c) Polhem contributors`，不寫年份 | 使用者決定，符合開放共同維護的定位。Polhem 不是法律主體，細節見階段 1a |
+| 方案與專案格式 | 方案檔用 `.slnx`；所有專案一律 SDK 格式，WebForms sample 用 `MSBuild.SDK.SystemWeb` | 使用者決定。`.slnx` 只列專案與資料夾；全部改成 SDK 格式後，CI 可以直接建置整個方案 |
 
 ---
 
@@ -93,7 +94,7 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 ### 步驟
 
 1. **改名**
-   - 資料夾、sln、csproj：`Bee.OAuth2*` → `Polhem.OAuth2*`。
+   - 資料夾、方案檔、csproj：`Bee.OAuth2*` → `Polhem.OAuth2*`；方案檔改為 `.slnx`（另成一個 commit）。
    - 命名空間與 `using`，含 samples 與各專案 `README.md`。
    - samples 的 `ProjectReference` 路徑。
 2. **拿掉 `Bee.Base`**
@@ -120,15 +121,16 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
    - **階段 7 之前不設 `NUGET_API_KEY`**：誤推 tag 也發不出去。
 6. **零行為變更驗證**：把新樹的 `Polhem.OAuth2` 正規化回 `Bee.OAuth2` 後，與 `8042a72` 快照做 diff。
    預期只剩：`Bee.Base` 移除相關、中繼資料、圖示、LICENSE、新增的測試與 CI。**本機比對通過才建立 repo 並推送。**
-7. **建立 repo**：`polhem-dev/polhem-oauth2`，public。公開 repo 的 Actions 不計分鐘數，而 Windows runner 在私有 repo 以兩倍計。
-   初始 commit message 以英文撰寫，並註明來源 `jeff377/bee-oauth2@8042a72`。
+7. **初始 commit**：message 以英文撰寫，並註明來源 `jeff377/bee-oauth2@8042a72`。
+   建立 GitHub repo 與推送**延到 1b 完成後**（使用者決定，讓外界第一眼看到的就是整理過的程式碼），見 1b 最後一步。
 8. **future-work 同步**：「已占名」一節的「名字還沒正式定案」改為已定案（附日期），
    org profile 列的「刻意不提 Bee.NET」改寫為現行政策。
 
 ### 本機驗證範圍
 
 macOS 只建得起 netstandard2.0 核心、AspNetCore 與測試專案。net48、net8.0-windows 與舊式 WebForms／WinForms sample
-**以 windows-latest CI 為準**。之後動到這些專案的階段（1b、4、5）走分支 + PR，讓 CI 在合併前把關。
+**以 windows-latest CI 為準**。repo 要到 1b 完成後才建立，所以 1a 與 1b 對這些目標的驗證都等第一次推送；
+之後動到它們的階段（4、5）走分支 + PR，讓 CI 在合併前把關。
 
 ---
 
@@ -154,8 +156,13 @@ macOS 只建得起 netstandard2.0 核心、AspNetCore 與測試專案。net48、
 - 根目錄那份只為 CI 加速的 `Directory.Build.props`。
 - PublicAPI analyzer：等階段 7 首發時才導入。
 
-設定放在 `src/` 與 `tests/` 層，`samples/` 只受 `.editorconfig` 的格式規則約束，不受建置閘門影響
-（OAuthAspNet 與 OAuthWinForms 是舊式 csproj）。
+設定放在 `src/` 與 `tests/` 層；`samples/` 不受建置閘門影響，只受 `.editorconfig` 的格式規則約束。
+
+**所有 sample 改為 SDK 格式**：
+- OAuthWinForms（net48）改用 `Microsoft.NET.Sdk` 加 `UseWindowsForms`。
+- OAuthAspNet（net48 WebForms）改用社群維護的 `MSBuild.SDK.SystemWeb`，只用在 sample，不進入發佈的套件。
+- 兩者的 `packages.config` 改為 `PackageReference`，`Properties/AssemblyInfo.cs` 改由 SDK 產生。
+- 轉換後，`build-ci.yml` 改為直接建置 `Polhem.OAuth2.slnx`、不再手動列專案；發佈 workflow 的 restore 也不會再碰到舊式專案。
 
 ### 整理既有程式碼（2026-09-13 盤點）
 
@@ -195,6 +202,11 @@ Desktop 與 WinForms 兩個專案會在階段 4 刪除，本階段只做第 1 �
 
 build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意的改變要補測試：預期例外轉為失敗的 `AuthorizationResult`，
 非預期例外往外拋。
+
+### 建立 repo 並推送
+
+建立 `polhem-dev/polhem-oauth2`（public），推送 1a 與 1b 的 commit。公開 repo 的 Actions 不計分鐘數，而 Windows runner 在私有 repo 以兩倍計。
+第一次推送觸發的 Windows CI，同時是 net48 與 net8.0-windows 的第一次建置驗證；紅燈就在這一步修掉，不留給後面的階段。
 
 ---
 

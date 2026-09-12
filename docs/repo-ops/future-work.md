@@ -397,14 +397,15 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 
 ### 已占名（2026-09-12）
 
-名字還沒正式定案（商標檢索未做），但首選已隨 `d29e5fe8` 寫進公開 repo，因此先把名稱占下。
+**名稱已於 2026-09-13 定案**：polhem-oauth2 以此名公開，舊的 `Bee.OAuth2.*` 會指向它，Bee 與 Polhem 的關係因此公開。
+當初是因為首選已隨 `d29e5fe8` 寫進公開 repo，才先把名稱占下。
 `bee-net` 就是 2026 年初被人占走的。
 
 | 項目 | 名稱 | 狀態 |
 |------|------|------|
 | GitHub organization | `polhem-dev` | 已建立。`polhem` 本身是 2019 年建立的個人帳號，要不回來，故加後綴 |
 | NuGet 組織帳號 | `Polhem` | 已建立。組織 email 暫用個人信箱別名，有共同維護者時改成團隊收得到的地址 |
-| GitHub org profile（`.github` repo） | `polhem-dev/.github` | 已建立。只寫「準備中」與名稱由來，刻意不提 Bee.NET——名字未定案前不對外宣告兩者關係 |
+| GitHub org profile（`.github` repo） | `polhem-dev/.github` | 已建立。目前只寫「準備中」與名稱由來。名稱定案後已不再刻意避開 Bee.NET；Polhem.OAuth2 首發時要把它列上去 |
 | NuGet 前綴保留 `Polhem.` | — | 未申請，**刻意等發佈第一版後**。官方條件不要求先有套件，但三條審核條件中「不保留會造成混淆」在沒有套件與使用者時難以舉證。申請寄 account@nuget.org，註明 owner `Polhem`、前綴 `Polhem.*` 與 `Polhem` 本身、non-public；可引用既有 `Bee.*` 的發佈紀錄佐證身分。有申請人寄兩次都無回音的前例（NuGetGallery #7816），沒回應就隔幾週追問 |
 | npm 組織 | `@polhem` | 已建立。connector-js 改名另開後以 `@polhem/…` 發佈；scoped 名稱只有組織成員能發佈，不會被他人搶先註冊 |
 | 商標檢索 | — | 2026-09-12 做過初步檢索，軟體類別（第 9／42 類）無 POLHEM，見下方。**非法律意見**，發佈第一版前重查一次 |
