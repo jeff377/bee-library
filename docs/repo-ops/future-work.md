@@ -458,7 +458,19 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 | GitHub org profile（`.github` repo） | `polhem-dev/.github` | 已建立。只寫「準備中」與名稱由來，刻意不提 Bee.NET——名字未定案前不對外宣告兩者關係 |
 | NuGet 前綴保留 `Polhem.` | — | 未申請。實際發佈套件後寄 account@nuget.org 申請，審核會看套件的識別資訊 |
 | npm 組織 | — | 未建。connector-js 改名另開時再建 |
-| 商標檢索 | — | 未做。**發佈第一版之前必須完成** |
+| 商標檢索 | — | 2026-09-12 做過初步檢索，軟體類別（第 9／42 類）無 POLHEM，見下方。**非法律意見**，發佈第一版前重查一次 |
+
+**初步商標檢索（2026-09-12）**：
+
+| 資料庫 | 查法 | 結果 |
+|--------|------|------|
+| WIPO Global Brand Database（涵蓋 USPTO、EUIPO、瑞典 PRV 等） | 商標名稱含 `POLHEM` | 只有 **POLHEM INFRA**：瑞典 Polhem Infra Kommanditbolag 的歐盟註冊（2021-06-09），第 35、36 類（商業管理、金融），**非軟體類別** |
+| USPTO（直接查詢） | `polhem` 及近似字 | 無有效的 POLHEM；近似的 POLHAM 兩筆皆已放棄，POLHEMUS 一筆已放棄 |
+| 智慧財產局 | 文字近似 `POLHEM`，篩第 9、42 類 | 無 POLHEM；30 筆近似結果（POLEYA、PROHSM、POLICE 等）字形與讀音都有明顯差異，不少已到期消滅 |
+
+唯一需要留意的是 POLHEM INFRA：第 35 類含「企業經營管理」，與 ERP 的應用領域相鄰。
+框架本身是軟體（第 9／42 類），類別不重疊；但**不宜以商業管理服務的形式對外提供**，
+例如用 Polhem 名義銷售 ERP 導入顧問服務。
 
 檢索若不通過，換名時兩個組織一併刪除：GitHub org 可從組織設定刪除，NuGet 組織的刪除方式見
 [Organizations on NuGet.org](https://learn.microsoft.com/en-us/nuget/nuget-org/organizations-on-nuget-org)。
@@ -497,4 +509,5 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 **要等什麼**：出現明確的共同維護者人選。名稱已先占下，其餘不必急——舊 repo 保留、文章不受影響，
 改名成本不會隨時間明顯增加。
 
-**啟動時第一步**：做商標檢索。通過就寫 plan；不通過就回到候選表換名，並刪除已占的兩個組織。
+**啟動時第一步**：重跑一次商標檢索（初步結果會過期）。仍然乾淨就寫 plan；
+出現衝突就回到候選表換名，並刪除已占的兩個組織。
