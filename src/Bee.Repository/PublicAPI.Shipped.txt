@@ -36,6 +36,7 @@ Bee.Repository.Form.DataFormRepository.ExistsInScope(System.Guid rowId, Bee.Defi
 Bee.Repository.Form.DataFormRepository.GetData(System.Guid rowId, Bee.Definition.Filters.FilterNode? scopeFilter = null) -> System.Data.DataSet?
 Bee.Repository.Form.DataFormRepository.GetList(string! selectFields, Bee.Definition.Filters.FilterNode? filter, Bee.Definition.Sorting.SortFieldCollection? sortFields, Bee.Definition.Paging.PagingOptions? paging = null) -> Bee.Repository.Abstractions.Form.DataFormListResult!
 Bee.Repository.Form.DataFormRepository.GetNewData(string! timeZoneId = "") -> System.Data.DataSet!
+Bee.Repository.Form.DataFormRepository.GetRowsByRowId(string! tableName, string! selectFields, System.Collections.Generic.IReadOnlyCollection<System.Guid>! rowIds) -> System.Data.DataTable!
 Bee.Repository.Form.DataFormRepository.Save(System.Data.DataSet! dataSet) -> (System.Data.DataSet? Refreshed, System.Collections.Generic.Dictionary<string!, int>! AffectedRows)
 Bee.Repository.IRepositoryContext
 Bee.Repository.IRepositoryContext.CacheNotify.get -> Bee.Db.CacheNotify.ICacheNotifyService?

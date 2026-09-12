@@ -4,6 +4,61 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.33.0]
+
+> 存進資料庫的 `DateTime` 改由伺服端全權負責。`FormBusinessObject.Save` 不再採用呼叫端送來的 `DateTime`：新增列取伺服端的 UTC 讀數，既有列保留資料庫裡的值，`sys_insert_time` 與 `sys_update_time` 由框架戳記。有了這一層，Connector 不再把存檔的 `DataSet` 轉成 UTC，只轉過濾條件。運算式裡的「現在」依 `DataSet` 所在的那一側取基準；異動記錄改以 `DataSet` 回傳異動內容，也不再被過去會讓它失敗的值擊倒。**破壞性變更依 pre-stable 政策以 minor 發佈。**
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.33.0.zh-TW.md](docs/changelogs/4.33.0.zh-TW.md)
+
+### 破壞性變更
+
+- `Bee.Business`：`FormBusinessObject.Save` 不再採用呼叫端傳入的 `DateTime`。新增列取當次存檔的 UTC 讀數，修改與刪除列改為資料庫的值，`sys_insert_time`／`sys_update_time` 由框架戳記；要接受呼叫端的值請覆寫新的 `NormalizeDateTimes`。`Date` 欄不受影響。詳見 [ADR-032](docs/adr/adr-032-datetime-timezone.md) D14。
+- `Bee.Repository.Abstractions`：`IDataFormRepository` 新增 `GetRowsByRowId`。對直接實作者是原始碼與二進位破壞性變更；繼承 `DataFormRepository` 的型別不受影響。
+- `Bee.Api.Core`：請求方向不再轉換 `DataSet`，只轉過濾條件。移除 `DateTimeZoneConverter.UserToUtc(DataSet/DataTable)`，`PayloadZoneConverter.ToUtc` 改名為 `IsolateRequest`。原始碼與二進位皆破壞。詳見 [ADR-032](docs/adr/adr-032-datetime-timezone.md)。
+- `Bee.Base`／`Bee.Expressions`／`Bee.Definition`：`IExpressionEvaluator.Evaluate`、`DynamicExpressoEvaluator.Evaluate` 與 `FormRowDefaults.Apply`／`DefaultForDbType` 尾端加上 `DateTimeBasis basis = UserZone`；伺服端的 `Now()` 以 UTC 求值。原始碼相容、二進位不相容。詳見 [ADR-032](docs/adr/adr-032-datetime-timezone.md) D12。
+- `Bee.Base`：`AddColumn(name, FieldDbType)` 不再對 `Date`／`DateTime` 欄設時鐘 `DefaultValue`；未經 `FormRowDefaults` 的新列該欄為 `DBNull`。
+- `Bee.Api.Contracts`：`IGetChangeDetailResponse` 新增 `DataSet`。對外部實作者是原始碼與二進位破壞性變更。
+
+### 新增
+
+- `Bee.Api.Core`／`Bee.Business`：`GetChangeDetail` 回應新增含主檔與明細的 `DataSet`——新增為 `Added` 列、修改為帶原值的 `Modified` 列、刪除為刪除前的原單。`Fields` 照舊填入。詳見 [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md)。
+- `Bee.Base`：`DateTimeBasis` 與 `FrameworkClock.Now(string, DateTimeBasis)`。
+
+### 修正
+
+- `Bee.Api.Core`：時區換算修改列時保留其他欄位的修改；過去含 `DateTime` 欄的表單存檔時會丟掉它們。
+- `Bee.Repository`／`Bee.Definition`：`GetNewData` 的 `Date` 預設值為 session 時區的今天，用戶端新增的列不再沿用伺服端凍結的 UTC 讀數。
+- `Bee.Api.Client`：`DateTimeWireGuard` 移到時區換算之前，登入後以 `Kind=Local` 當過濾值會擲 `InvalidOperationException`，不再放行。
+- `Bee.Api.Client`：`FormValueBinding.ToColumnValue` 將 `Time` 欄寫成定寬 `HH:mm`；無法解析的輸入擲 `FormatException`。
+- `Bee.Web.Blazor.Server`：時刻輸入遇無法解析的輸入保留前一個有效值，不再清空欄位。
+- `Bee.Repository`：SQLite 表單讀回的 `Date`／`DateTime` 欄型別由 `string` 改為 `DateTime`，同程序呼叫與 Remote 一樣換算時區。
+- `Bee.Business`：稽核步驟失敗不再讓已 commit 的寫入回傳失敗，稽核 payload 可正確往返控制字元與換行。詳見 [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 第六、八節。
+- `Bee.Business`：刪除的異動記錄改存完整原單，不再把列標成 `Deleted`，稽核開啟時刪除後的掛勾與外掛也能讀 snapshot。早於 4.33.0 的讀取端讀不懂新的刪除記錄。詳見 [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) 第十節。
+- `Bee.Base`：`GetDeclaredFieldDbType` 接受 `DataSet.ReadXml` 還原的字串形式，XML 讀回的 `Date` 欄不再被當成時間點。
+- `Bee.Definition`：預設 `AuditRule` 的 `FormSchema` 與 `FormLayout` 將 `sys_insert_time` 標為唯讀。
+
+### 變更
+
+- 文件：公開文件搬入 `docs/en/` 與 `docs/zh-TW/`，以 `docs/README.md` 為入口頁；舊的 `docs/<name>.md` 路徑已不存在。
+- 套件：NuGet 套件圖示更換。
+- `apps/Bee.Northwind`：`AuditRule` 表單將 `sys_insert_time` 標為唯讀。
+
+### 升級指引
+
+先升級伺服端，或與用戶端一起升級：4.33.0 的用戶端不再把存檔的 `DateTime` 轉成 UTC，而 4.32.0 的伺服端會把它們當成 UTC 存入。讓使用者編輯 `DateTime` 欄的表單請覆寫 `NormalizeDateTimes`。直接實作者補上新成員：
+
+```csharp
+// IExpressionEvaluator (both Evaluate overloads)
+- ..., string timeZoneId = "")
++ ..., string timeZoneId = "", DateTimeBasis basis = DateTimeBasis.UserZone)
+
+// IDataFormRepository
++ DataTable GetRowsByRowId(string tableName, string selectFields, IReadOnlyCollection<Guid> rowIds)
+
+// IGetChangeDetailResponse
++ DataSet? DataSet { get; }
+```
+
 ## [4.32.0]
 
 > 數量與重量的小數位數改為只看單位。標成 `Quantity` 或 `Weight` 的欄位必須綁定 `UnitField`，公司不再提供這兩類的位數：公司有本幣可以退，但沒有預設單位。這讓單位那一側對齊金額依幣別解析的作法。**兩項破壞性變更依 pre-stable 政策以 minor 發佈。**

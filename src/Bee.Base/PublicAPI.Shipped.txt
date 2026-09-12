@@ -108,6 +108,9 @@ Bee.Base.DateInterval.Second = 9 -> Bee.Base.DateInterval
 Bee.Base.DateInterval.WeekOfYear = 5 -> Bee.Base.DateInterval
 Bee.Base.DateInterval.Weekday = 6 -> Bee.Base.DateInterval
 Bee.Base.DateInterval.Year = 0 -> Bee.Base.DateInterval
+Bee.Base.DateTimeBasis
+Bee.Base.DateTimeBasis.UserZone = 0 -> Bee.Base.DateTimeBasis
+Bee.Base.DateTimeBasis.Utc = 1 -> Bee.Base.DateTimeBasis
 Bee.Base.DateTimeExtensions
 Bee.Base.Exceptions.CompanyAccessDeniedException
 Bee.Base.Exceptions.CompanyAccessDeniedException.CompanyAccessDeniedException(string! message) -> void
@@ -129,6 +132,8 @@ Bee.Base.Expressions.ExpressionEvaluationException.ExpressionEvaluationException
 Bee.Base.Expressions.ExpressionEvaluationException.ExpressionEvaluationException(string! message, System.Exception! innerException) -> void
 Bee.Base.Expressions.ExpressionPolicy
 Bee.Base.Expressions.IExpressionEvaluator
+Bee.Base.Expressions.IExpressionEvaluator.Evaluate(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, System.Type! returnType, string! timeZoneId = "", Bee.Base.DateTimeBasis basis = Bee.Base.DateTimeBasis.UserZone) -> object?
+Bee.Base.Expressions.IExpressionEvaluator.Evaluate<T>(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, string! timeZoneId = "", Bee.Base.DateTimeBasis basis = Bee.Base.DateTimeBasis.UserZone) -> T
 Bee.Base.Expressions.IExpressionEvaluator.GetReferencedVariables(string! expression) -> System.Collections.Generic.IReadOnlyList<string!>!
 Bee.Base.FileUtilities
 Bee.Base.FrameworkClock
@@ -313,6 +318,7 @@ static Bee.Base.FileUtilities.FileWriteTextAtomic(string! filePath, string! cont
 static Bee.Base.FileUtilities.GetAssemblyPath() -> string!
 static Bee.Base.FileUtilities.IsLocalPath(string! input) -> bool
 static Bee.Base.FrameworkClock.Now(string! timeZoneId) -> System.DateTime
+static Bee.Base.FrameworkClock.Now(string! timeZoneId, Bee.Base.DateTimeBasis basis) -> System.DateTime
 static Bee.Base.FrameworkClock.Today(string! timeZoneId) -> System.DateOnly
 static Bee.Base.Security.AesCbcHmacCryptor.Decrypt(byte[]! encryptedData, byte[]! aesKey, byte[]! hmacKey) -> byte[]!
 static Bee.Base.Security.AesCbcHmacCryptor.Encrypt(byte[]! plainBytes, byte[]! aesKey, byte[]! hmacKey) -> byte[]!

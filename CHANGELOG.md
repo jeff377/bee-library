@@ -4,6 +4,61 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.33.0]
+
+> The server now owns every `DateTime` it saves. `FormBusinessObject.Save` no longer uses the `DateTime` values a caller sends: new rows get the server's UTC reading, existing rows keep what the database holds, and the framework stamps `sys_insert_time` and `sys_update_time`. With that in place the Connector stops converting a saved `DataSet` to UTC and converts only filter values. "Now" in expressions follows the side the `DataSet` lives on, and the audit trail returns a change as a `DataSet` and survives values it used to fail on. **The breaking changes ship as a minor under the pre-stable policy.**
+
+📄 Full notes and design context: [docs/changelogs/4.33.0.md](docs/changelogs/4.33.0.md)
+
+### Breaking Changes
+
+- `Bee.Business`: `FormBusinessObject.Save` no longer uses caller-supplied `DateTime` values. New rows get the save's UTC reading, modified and deleted rows get the stored value, and the framework stamps `sys_insert_time`/`sys_update_time`; override the new `NormalizeDateTimes` to accept a caller's value. `Date` fields are unaffected. See [ADR-032](docs/adr/adr-032-datetime-timezone.md) D14.
+- `Bee.Repository.Abstractions`: `IDataFormRepository` gains `GetRowsByRowId`. Source- and binary-breaking for direct implementers; types deriving from `DataFormRepository` are unaffected.
+- `Bee.Api.Core`: the request direction no longer converts a `DataSet`, only filter values. `DateTimeZoneConverter.UserToUtc(DataSet/DataTable)` is removed and `PayloadZoneConverter.ToUtc` is renamed `IsolateRequest`. Source- and binary-breaking. See [ADR-032](docs/adr/adr-032-datetime-timezone.md).
+- `Bee.Base` / `Bee.Expressions` / `Bee.Definition`: `IExpressionEvaluator.Evaluate`, `DynamicExpressoEvaluator.Evaluate` and `FormRowDefaults.Apply`/`DefaultForDbType` take a trailing `DateTimeBasis basis = UserZone`; server-side `Now()` evaluates in UTC. Source compatible, binary-breaking. See [ADR-032](docs/adr/adr-032-datetime-timezone.md) D12.
+- `Bee.Base`: `AddColumn(name, FieldDbType)` no longer sets a clock `DefaultValue` on `Date`/`DateTime` columns; a new row not passed through `FormRowDefaults` holds `DBNull` there.
+- `Bee.Api.Contracts`: `IGetChangeDetailResponse` gains `DataSet`. Source- and binary-breaking for external implementers.
+
+### Added
+
+- `Bee.Api.Core` / `Bee.Business`: `GetChangeDetail` responses carry a `DataSet` with the master and detail rows — `Added` for an insert, `Modified` with original values for an update, the pre-delete record for a delete. `Fields` is still filled. See [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md).
+- `Bee.Base`: `DateTimeBasis` and `FrameworkClock.Now(string, DateTimeBasis)`.
+
+### Fixed
+
+- `Bee.Api.Core`: time-zone conversion of a modified row keeps edits to its other columns; saving a form with a `DateTime` column used to discard them.
+- `Bee.Repository` / `Bee.Definition`: `GetNewData`'s `Date` default is today in the session's zone, and client-added rows no longer inherit the server's frozen UTC reading.
+- `Bee.Api.Client`: `DateTimeWireGuard` runs before time-zone conversion, so a `Kind=Local` filter value after login throws `InvalidOperationException` instead of passing.
+- `Bee.Api.Client`: `FormValueBinding.ToColumnValue` writes `Time` fields as fixed-width `HH:mm`; unparseable input throws `FormatException`.
+- `Bee.Web.Blazor.Server`: the time input keeps the previous valid value on unparseable input instead of clearing the field.
+- `Bee.Repository`: on SQLite, form reads return `Date`/`DateTime` columns as `DateTime` instead of `string`, so in-process calls convert time zones like remote ones.
+- `Bee.Business`: a failing audit step no longer turns a committed write into a failed call, and the audit payload round-trips control characters and line endings. See [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) sections 6 and 8.
+- `Bee.Business`: the delete audit stores the full original record instead of marking rows `Deleted`, so after-delete hooks and plugins can read the snapshot with auditing on. Readers older than 4.33.0 cannot parse new delete records. See [ADR-040](docs/adr/adr-040-audit-trail-taxonomy.md) section 10.
+- `Bee.Base`: `GetDeclaredFieldDbType` accepts the string form `DataSet.ReadXml` restores, so a `Date` column read back from XML is no longer treated as an instant.
+- `Bee.Definition`: the default `AuditRule` `FormSchema` and `FormLayout` mark `sys_insert_time` read-only.
+
+### Changed
+
+- Documentation: public docs move into `docs/en/` and `docs/zh-TW/` with `docs/README.md` as the entry page; the old `docs/<name>.md` paths no longer exist.
+- Packages: the NuGet package icon changes.
+- `apps/Bee.Northwind`: the `AuditRule` form marks `sys_insert_time` read-only.
+
+### Upgrade notes
+
+Upgrade the server before, or together with, its clients: a 4.33.0 client no longer converts saved `DateTime` values to UTC, and a 4.32.0 server would store them as if they were. Forms whose users edit a `DateTime` field override `NormalizeDateTimes`. Direct implementers add the new members:
+
+```csharp
+// IExpressionEvaluator (both Evaluate overloads)
+- ..., string timeZoneId = "")
++ ..., string timeZoneId = "", DateTimeBasis basis = DateTimeBasis.UserZone)
+
+// IDataFormRepository
++ DataTable GetRowsByRowId(string tableName, string selectFields, IReadOnlyCollection<Guid> rowIds)
+
+// IGetChangeDetailResponse
++ DataSet? DataSet { get; }
+```
+
 ## [4.32.0]
 
 > Quantities and weights now take their decimal places only from their unit. A field marked `Quantity` or `Weight` must bind a `UnitField`, and the company no longer supplies those decimals: a company has a home currency to fall back to, but no default unit. This lines the unit side up with how amounts already resolve by currency. **Both breaking changes ship as a minor under the pre-stable policy.**

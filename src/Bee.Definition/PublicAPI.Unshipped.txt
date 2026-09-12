@@ -1,3 +1,1 @@
 #nullable enable
-static Bee.Definition.Forms.FormRowDefaults.Apply(Bee.Definition.Forms.FormTable! formTable, System.Data.DataRow! row, object? masterRowId = null, string! timeZoneId = "", Bee.Base.DateTimeBasis basis = Bee.Base.DateTimeBasis.UserZone) -> void
-static Bee.Definition.Forms.FormRowDefaults.DefaultForDbType(Bee.Base.Data.FieldDbType dbType, string! timeZoneId = "", Bee.Base.DateTimeBasis basis = Bee.Base.DateTimeBasis.UserZone) -> object!

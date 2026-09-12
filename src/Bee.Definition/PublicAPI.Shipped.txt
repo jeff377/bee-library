@@ -1969,6 +1969,8 @@ static Bee.Definition.Filters.FilterGroup.All(params Bee.Definition.Filters.Filt
 static Bee.Definition.Filters.FilterGroup.Any(params Bee.Definition.Filters.FilterNode![]! nodes) -> Bee.Definition.Filters.FilterGroup!
 static Bee.Definition.Forms.FieldMappingCollectionExtensions.Add(this Bee.Definition.Forms.FieldMappingCollection? collection, string! sourceField, string! destinationField) -> Bee.Definition.Forms.FieldMapping!
 static Bee.Definition.Forms.FormFieldCollectionExtensions.Add(this Bee.Definition.Forms.FormFieldCollection? collection, string! fieldName, string! caption, Bee.Base.Data.FieldDbType dbType) -> Bee.Definition.Forms.FormField!
+static Bee.Definition.Forms.FormRowDefaults.Apply(Bee.Definition.Forms.FormTable! formTable, System.Data.DataRow! row, object? masterRowId = null, string! timeZoneId = "", Bee.Base.DateTimeBasis basis = Bee.Base.DateTimeBasis.UserZone) -> void
+static Bee.Definition.Forms.FormRowDefaults.DefaultForDbType(Bee.Base.Data.FieldDbType dbType, string! timeZoneId = "", Bee.Base.DateTimeBasis basis = Bee.Base.DateTimeBasis.UserZone) -> object!
 static Bee.Definition.Forms.FormRuleCollectionExtensions.Add(this Bee.Definition.Forms.FormRuleCollection? collection, string! ruleId, string! condition, string! message) -> Bee.Definition.Forms.FormRule!
 static Bee.Definition.Forms.FormTableCollectionExtensions.Add(this Bee.Definition.Forms.FormTableCollection? collection, string! tableName, string! displayName) -> Bee.Definition.Forms.FormTable!
 static Bee.Definition.Forms.FormTableExtensions.ApplyFieldDbTypes(this Bee.Definition.Forms.FormTable! formTable, System.Data.DataTable! table) -> void

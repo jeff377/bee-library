@@ -1,7 +1,1 @@
 #nullable enable
-Bee.Base.DateTimeBasis
-Bee.Base.DateTimeBasis.Utc = 1 -> Bee.Base.DateTimeBasis
-Bee.Base.DateTimeBasis.UserZone = 0 -> Bee.Base.DateTimeBasis
-Bee.Base.Expressions.IExpressionEvaluator.Evaluate(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, System.Type! returnType, string! timeZoneId = "", Bee.Base.DateTimeBasis basis = Bee.Base.DateTimeBasis.UserZone) -> object?
-Bee.Base.Expressions.IExpressionEvaluator.Evaluate<T>(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, string! timeZoneId = "", Bee.Base.DateTimeBasis basis = Bee.Base.DateTimeBasis.UserZone) -> T
-static Bee.Base.FrameworkClock.Now(string! timeZoneId, Bee.Base.DateTimeBasis basis) -> System.DateTime

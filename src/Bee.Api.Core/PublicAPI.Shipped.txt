@@ -187,6 +187,8 @@ Bee.Api.Core.Messages.AuditLog.GetChangeDetailRequest.SysRowId.set -> void
 Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse
 Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.ChangeKind.get -> Bee.Definition.Logging.ChangeKind
 Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.ChangeKind.set -> void
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.DataSet.get -> System.Data.DataSet?
+Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.DataSet.set -> void
 Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.Fields.get -> System.Collections.Generic.List<Bee.Api.Contracts.AuditLog.RecordFieldChange!>!
 Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.Fields.set -> void
 Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.GetChangeDetailResponse() -> void
@@ -666,15 +668,13 @@ static Bee.Api.Core.JsonRpc.ApiPayloadConverter.TransformTo(Bee.Api.Core.JsonRpc
 static Bee.Api.Core.JsonRpc.ApiPayloadFrame.Extract(byte[]! framed, out byte[]! body) -> Bee.Api.Core.JsonRpc.ApiPayloadFrame!
 static Bee.Api.Core.JsonRpc.DateTimeWireGuard.Validate(object? value) -> void
 static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.ConvertFilterValue(object? value, string! timeZoneId, bool toUtc) -> object?
-static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UserToUtc(System.Data.DataSet? dataSet, string! timeZoneId) -> System.Data.DataSet?
-static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UserToUtc(System.Data.DataTable? table, string! timeZoneId) -> System.Data.DataTable?
 static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UtcToUser(System.Data.DataSet? dataSet, string! timeZoneId) -> System.Data.DataSet?
 static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UtcToUser(System.Data.DataTable? table, string! timeZoneId) -> System.Data.DataTable?
 static Bee.Api.Core.JsonRpc.JsonRpcErrorContract.TryRebuild(int code, string! message, out System.Exception? exception) -> bool
 static Bee.Api.Core.JsonRpc.PayloadSwap.operator !=(Bee.Api.Core.JsonRpc.PayloadSwap left, Bee.Api.Core.JsonRpc.PayloadSwap right) -> bool
 static Bee.Api.Core.JsonRpc.PayloadSwap.operator ==(Bee.Api.Core.JsonRpc.PayloadSwap left, Bee.Api.Core.JsonRpc.PayloadSwap right) -> bool
+static Bee.Api.Core.JsonRpc.PayloadZoneConverter.IsolateRequest(object? payload, string! timeZoneId) -> Bee.Api.Core.JsonRpc.PayloadSwap
 static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUserZone(object? payload, string! timeZoneId) -> void
-static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUtc(object? payload, string! timeZoneId) -> Bee.Api.Core.JsonRpc.PayloadSwap
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateCompressor(string! name) -> Bee.Api.Core.Transformers.IApiPayloadCompressor!
 static Bee.Api.Core.Transformers.ApiPayloadOptionsFactory.CreateEncryptor(string! name, bool isDebugMode) -> Bee.Api.Core.Transformers.IApiPayloadEncryptor!
 static Bee.Api.Core.Validator.ApiAccessValidator.FindAccessControl(System.Reflection.MethodInfo! method) -> Bee.Definition.Attributes.ApiAccessControlAttribute?

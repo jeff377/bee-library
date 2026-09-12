@@ -101,6 +101,7 @@ Bee.Repository.Abstractions.Form.IDataFormRepository.ExistsInScope(System.Guid r
 Bee.Repository.Abstractions.Form.IDataFormRepository.GetData(System.Guid rowId, Bee.Definition.Filters.FilterNode? scopeFilter = null) -> System.Data.DataSet?
 Bee.Repository.Abstractions.Form.IDataFormRepository.GetList(string! selectFields, Bee.Definition.Filters.FilterNode? filter, Bee.Definition.Sorting.SortFieldCollection? sortFields, Bee.Definition.Paging.PagingOptions? paging = null) -> Bee.Repository.Abstractions.Form.DataFormListResult!
 Bee.Repository.Abstractions.Form.IDataFormRepository.GetNewData(string! timeZoneId = "") -> System.Data.DataSet!
+Bee.Repository.Abstractions.Form.IDataFormRepository.GetRowsByRowId(string! tableName, string! selectFields, System.Collections.Generic.IReadOnlyCollection<System.Guid>! rowIds) -> System.Data.DataTable!
 Bee.Repository.Abstractions.Form.IDataFormRepository.Save(System.Data.DataSet! dataSet) -> (System.Data.DataSet? Refreshed, System.Collections.Generic.Dictionary<string!, int>! AffectedRows)
 Bee.Repository.Abstractions.IRepositoryDatabaseRouter
 Bee.Repository.Abstractions.IRepositoryDatabaseRouter.Resolve(Bee.Definition.DbScope scope, System.Guid accessToken) -> string!

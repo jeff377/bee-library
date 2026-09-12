@@ -47,6 +47,8 @@ Bee.Business.AuditLog.GetChangeDetailArgs.SysRowId.set -> void
 Bee.Business.AuditLog.GetChangeDetailResult
 Bee.Business.AuditLog.GetChangeDetailResult.ChangeKind.get -> Bee.Definition.Logging.ChangeKind
 Bee.Business.AuditLog.GetChangeDetailResult.ChangeKind.set -> void
+Bee.Business.AuditLog.GetChangeDetailResult.DataSet.get -> System.Data.DataSet?
+Bee.Business.AuditLog.GetChangeDetailResult.DataSet.set -> void
 Bee.Business.AuditLog.GetChangeDetailResult.Fields.get -> System.Collections.Generic.List<Bee.Api.Contracts.AuditLog.RecordFieldChange!>!
 Bee.Business.AuditLog.GetChangeDetailResult.Fields.set -> void
 Bee.Business.AuditLog.GetChangeDetailResult.GetChangeDetailResult() -> void
@@ -661,6 +663,7 @@ virtual Bee.Business.Form.FormBusinessObject.GetList(Bee.Business.Form.GetListAr
 virtual Bee.Business.Form.FormBusinessObject.GetLookup(Bee.Business.Form.GetLookupArgs! args) -> Bee.Business.Form.GetLookupResult!
 virtual Bee.Business.Form.FormBusinessObject.GetLookupFilter() -> Bee.Definition.Filters.FilterNode?
 virtual Bee.Business.Form.FormBusinessObject.GetNewData(Bee.Business.Form.GetNewDataArgs! args) -> Bee.Business.Form.GetNewDataResult!
+virtual Bee.Business.Form.FormBusinessObject.NormalizeDateTimes(Bee.Business.Form.SaveContext! context) -> void
 virtual Bee.Business.Form.FormBusinessObject.Save(Bee.Business.Form.SaveArgs! args) -> Bee.Business.Form.SaveResult!
 virtual Bee.Business.Form.FormBusinessPlugin.AfterDelete(Bee.Business.Form.DeleteContext! context) -> void
 virtual Bee.Business.Form.FormBusinessPlugin.AfterSave(Bee.Business.Form.SaveContext! context) -> void

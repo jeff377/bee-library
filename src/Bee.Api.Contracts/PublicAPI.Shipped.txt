@@ -20,6 +20,7 @@ Bee.Api.Contracts.AuditLog.IGetChangeDetailRequest
 Bee.Api.Contracts.AuditLog.IGetChangeDetailRequest.SysRowId.get -> System.Guid
 Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse
 Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.ChangeKind.get -> Bee.Definition.Logging.ChangeKind
+Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.DataSet.get -> System.Data.DataSet?
 Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.Fields.get -> System.Collections.Generic.IReadOnlyList<Bee.Api.Contracts.AuditLog.RecordFieldChange!>!
 Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.IsSensitive.get -> bool
 Bee.Api.Contracts.AuditLog.IGetChangeDetailResponse.LogTime.get -> System.DateTime
