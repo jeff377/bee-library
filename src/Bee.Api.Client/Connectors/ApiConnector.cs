@@ -126,13 +126,14 @@ namespace Bee.Api.Client.Connectors
             var ctx = Tracer.Start(TraceLayers.ApiClient, string.Empty, name: $"ExecuteAsync.{progId}.{action}");
             try
             {
-                // The Connector is the only place time zones are applied (ADR-032 D4): the wire is UTC
-                // in both directions, so the request converts out of the user's zone here and the
-                // response converts back into it. The swap is undone before returning so the caller's
-                // own request object is left exactly as it was handed over.
+                // The Connector is the only place time zones are applied (ADR-032 D4). A response
+                // converts into the user's zone. A request converts only its filter values: a data set
+                // is copied but not converted, because the server does not take DateTime values from a
+                // save. The swap is undone before returning so the caller's own request object is left
+                // exactly as it was handed over.
                 var timeZoneId = UserTimeZoneId;
 
-                // Guard the caller's own value before the zone conversion (ADR-032 D6). Conversion
+                // Guard the caller's own value before the filter conversion (ADR-032 D6). Conversion
                 // rewrites filter values to Kind=Unspecified, so a guard placed after it would pass
                 // every Kind=Local value on any signed-in call. It also sits ahead of every transform
                 // because in-process calls skip serialization, making this the one point both
@@ -140,7 +141,7 @@ namespace Bee.Api.Client.Connectors
                 DateTimeWireGuard.Validate(value);
 
                 T result;
-                using (PayloadZoneConverter.ToUtc(value, timeZoneId))
+                using (PayloadZoneConverter.IsolateRequest(value, timeZoneId))
                 {
                     var (request, actualFormat) = PrepareRequest(progId, action, value, format);
 

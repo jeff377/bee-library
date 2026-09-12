@@ -7,8 +7,8 @@ using Bee.Base.Data;
 namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
-    /// <see cref="DateTimeZoneConverter"/> 測試：instant 欄位雙向轉換、日曆日欄位不動、
-    /// 列狀態與兩個版本（Current / Original）皆保留、來源不被就地修改。
+    /// <see cref="DateTimeZoneConverter"/> 測試：instant 欄位由 UTC 轉為使用者時區、日曆日欄位不動、
+    /// 列狀態與兩個版本（Current / Original）皆保留、來源不被就地修改，以及過濾條件值的換算。
     /// </summary>
     /// <remarks>
     /// 期望值一律由 <see cref="TimeZoneInfo"/> 動態推導，不寫死偏移量——測試在開發機
@@ -85,17 +85,6 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("雙向轉換為反函數，round-trip 恆等")]
-        public void UserToUtc_IsInverseOfUtcToUser()
-        {
-            var toUser = DateTimeZoneConverter.UtcToUser(BuildTableWithRow(), Taipei);
-            var backToUtc = DateTimeZoneConverter.UserToUtc(toUser, Taipei);
-
-            Assert.NotNull(backToUtc);
-            Assert.Equal(s_utc9Am, (DateTime)backToUtc.Rows[0]["created_at"]);
-        }
-
-        [Fact]
         [DisplayName("空白時區為 no-op，且原樣回傳同一參考")]
         public void BlankTimeZone_IsNoOp()
         {
@@ -136,19 +125,15 @@ namespace Bee.Api.Core.UnitTests
             Assert.Equal(ExpectedInTaipei(s_utc9Am), (DateTime)row["created_at", DataRowVersion.Original]);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [Fact]
         [DisplayName("Modified 列只改了非時間點欄位時，該欄的修改必須保留")]
-        public void Convert_ModifiedRowWithNonInstantEdit_KeepsTheEdit(bool toUtc)
+        public void Convert_ModifiedRowWithNonInstantEdit_KeepsTheEdit()
         {
             // 改寫 Original 要先 RejectChanges，而它會還原整列，不只時間點欄。
             var table = BuildTableWithRow();
             table.Rows[0]["remark"] = "edited";
 
-            var converted = toUtc
-                ? DateTimeZoneConverter.UserToUtc(table, Taipei)
-                : DateTimeZoneConverter.UtcToUser(table, Taipei);
+            var converted = DateTimeZoneConverter.UtcToUser(table, Taipei);
 
             Assert.NotNull(converted);
             var row = converted.Rows[0];
@@ -259,12 +244,11 @@ namespace Bee.Api.Core.UnitTests
             // D10 把「零成本」界定為複雜度而非執行成本：管線照跑，只是不改變值。
             // 這條釘住那個「不改變」，避免日後有人在轉換路徑加上會動到值的處理。
             var converted = DateTimeZoneConverter.UtcToUser(BuildTableWithRow(), "UTC");
-            var back = DateTimeZoneConverter.UserToUtc(converted, "UTC");
+            var filterValue = (DateTime)DateTimeZoneConverter.ConvertFilterValue(s_utc9Am, "UTC", toUtc: true)!;
 
             Assert.NotNull(converted);
-            Assert.NotNull(back);
             Assert.Equal(s_utc9Am.Ticks, ((DateTime)converted.Rows[0]["created_at"]).Ticks);
-            Assert.Equal(s_utc9Am.Ticks, ((DateTime)back.Rows[0]["created_at"]).Ticks);
+            Assert.Equal(s_utc9Am.Ticks, filterValue.Ticks);
         }
 
         [Fact]

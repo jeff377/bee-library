@@ -33,7 +33,7 @@ namespace Bee.Api.Core.JsonRpc
     /// in-process calls (<c>LocalApiProvider</c> with <c>Plain</c>) never serialize,
     /// so a serializer-level guard would leave that path unguarded.
     ///
-    /// IMPORTANT: validate a request before <see cref="PayloadZoneConverter.ToUtc"/>, not after it.
+    /// IMPORTANT: validate a request before <see cref="PayloadZoneConverter.IsolateRequest"/>, not after it.
     /// The conversion rewrites every filter value to <see cref="DateTimeKind.Unspecified"/>, so a
     /// check placed afterwards passes every <see cref="DateTimeKind.Local"/> value whenever the user
     /// has a time zone — which is every signed-in call. <c>ApiConnectorDateTimeGuardTests</c> in

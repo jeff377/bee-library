@@ -1,3 +1,7 @@
 #nullable enable
 Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.DataSet.get -> System.Data.DataSet?
 Bee.Api.Core.Messages.AuditLog.GetChangeDetailResponse.DataSet.set -> void
+static Bee.Api.Core.JsonRpc.PayloadZoneConverter.IsolateRequest(object? payload, string! timeZoneId) -> Bee.Api.Core.JsonRpc.PayloadSwap
+*REMOVED*static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UserToUtc(System.Data.DataSet? dataSet, string! timeZoneId) -> System.Data.DataSet?
+*REMOVED*static Bee.Api.Core.JsonRpc.DateTimeZoneConverter.UserToUtc(System.Data.DataTable? table, string! timeZoneId) -> System.Data.DataTable?
+*REMOVED*static Bee.Api.Core.JsonRpc.PayloadZoneConverter.ToUtc(object? payload, string! timeZoneId) -> Bee.Api.Core.JsonRpc.PayloadSwap

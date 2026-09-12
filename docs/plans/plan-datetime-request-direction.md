@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 伺服端 Save 入口正規化 DateTime 欄，框架自動戳記 `sys_insert_time` / `sys_update_time` | ✅ 已完成（2026-09-12） |
-| 2 | Connector 請求方向只轉過濾條件，DataSet 保留深拷貝但不轉換；移除 `AmbiguousInstantMemory` | 📝 待做 |
+| 2 | Connector 請求方向只轉過濾條件，DataSet 保留深拷貝但不轉換；移除 `AmbiguousInstantMemory` | ✅ 已完成（2026-09-12） |
 | 3 | 定義檔：系統時間戳記欄（`sys_insert_time` / `sys_update_time`）一律標 `ReadOnly`，並寫進 bee-add-form 慣例 | 📝 待做 |
 | 4 | 文件：修訂 ADR-032，更新 datetime-timezone / temporal-types / expression-rules（zh-TW 源文件 + en 譯本） | 📝 待做 |
 
@@ -164,6 +164,19 @@
 | `PayloadZoneConverterTests.ToUtc_SaveRequest_SwapsThenRestores` | 改為驗證「複製但不換算，且呼叫端物件不被改動」 |
 | `PayloadZoneCoverageGuardTests`、`ApiConnectorDateTimeGuardTests` | 依新範圍檢視 |
 | in-process 隔離 | 新增：`LocalApiProvider` 下伺服端正規化不會改到呼叫端的 `DataSet` |
+
+### 實作註記（2026-09-12）
+
+- `PayloadZoneConverter.ToUtc` 改名為 `IsolateRequest`（移除舊名，屬破壞性變更）。
+- **`SaveRequest` 的 `DataSet` 不論有沒有使用者時區都複製**；原本時區空白時整個跳過。階段 1 之後伺服端會就地改寫
+  存檔的 `DataSet`，in-process 呼叫時少了複製，改動會落到呼叫端手上那一份。過濾條件在時區空白時照舊不動。
+- in-process 隔離測試是 [ApiConnectorRequestIsolationTests](../../tests/Bee.Api.Client.UnitTests/Connectors/ApiConnectorRequestIsolationTests.cs)：
+  以假 provider 在「伺服端」就地改寫收到的物件（provider 不經序列化，形狀與 `LocalApiProvider` 相同），
+  沒有接真的 `LocalApiProvider` 與資料庫。
+- `PayloadZoneCoverageGuardTests` 改為依方向與載體分別斷言：回應轉換、請求的過濾條件轉換、請求的 `DataSet` 換成副本且不換算。
+- `ApiConnectorDateTimeGuardTests` 只涉及過濾條件，不需修改。
+- ADR-032 第 161 行還引用已移除的 `PayloadZoneConverterTests.ToUtc_SaveRequestFromConvertedResponse_KeepsAmbiguousInstant`，
+  依 plan 留到階段 4 一併改寫。
 
 ## 階段 3：定義檔
 

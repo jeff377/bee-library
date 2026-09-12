@@ -83,9 +83,29 @@ namespace Bee.Api.Client.UnitTests.Connectors
         /// <param name="value">請求的 payload 值。</param>
         /// <param name="userTimeZoneId">使用者的 IANA 時區 id；空字串代表尚未登入、不做時區換算。</param>
         public static Task<string> ExecuteAsUserAsync(object value, string userTimeZoneId)
+            => ExecuteAsUserAsync(value, userTimeZoneId, _ => { });
+
+        /// <summary>
+        /// 以指定的使用者時區送出一次請求，並在「伺服端」收到請求時執行 <paramref name="onServer"/>。
+        /// </summary>
+        /// <param name="value">請求的 payload 值。</param>
+        /// <param name="userTimeZoneId">使用者的 IANA 時區 id；空字串代表尚未登入、不做時區換算。</param>
+        /// <param name="onServer">
+        /// 在 provider 內對收到的請求執行的動作。provider 不經序列化，收到的就是 Connector 交出去的物件，
+        /// 與 in-process 呼叫的形狀相同。
+        /// </param>
+        public static Task<string> ExecuteAsUserAsync(object value, string userTimeZoneId, Action<JsonRpcRequest> onServer)
         {
             var session = new ApiSessionContext { UserTimeZoneId = userTimeZoneId };
-            return CreateConnector(new FakeJsonRpcProvider(), session).ExecuteAsync<string>(
+            var provider = new FakeJsonRpcProvider
+            {
+                ResponseFactory = req =>
+                {
+                    onServer(req);
+                    return new JsonRpcResponse(req) { Result = new JsonRpcResult { Value = "ok" } };
+                }
+            };
+            return CreateConnector(provider, session).ExecuteAsync<string>(
                 TestProgId, TestAction, value, PayloadFormat.Plain);
         }
     }

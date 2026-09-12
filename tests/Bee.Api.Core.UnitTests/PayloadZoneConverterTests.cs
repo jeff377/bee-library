@@ -8,8 +8,8 @@ using Bee.Definition.Filters;
 namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
-    /// <see cref="PayloadZoneConverter"/> 測試：請求／回應兩個方向的載體換置，
-    /// 以及請求方向必須還原呼叫端自己的物件。
+    /// <see cref="PayloadZoneConverter"/> 測試：回應方向轉入使用者時區；請求方向只轉過濾條件，
+    /// <c>DataSet</c> 複製但不轉換，且呼叫端自己的物件在呼叫後原封不動。
     /// </summary>
     public class PayloadZoneConverterTests
     {
@@ -40,32 +40,6 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("GetData 回應轉入使用者時區後，同一份 DataSet 改別的欄位存檔，重疊時刻應送回原本的 UTC 值")]
-        public void ToUtc_SaveRequestFromConvertedResponse_KeepsAmbiguousInstant()
-        {
-            // 記憶以回應副本的資料列實例為鍵；Connector 若在任一方向多複製一次，這條就會紅。
-            const string NewYork = "America/New_York";
-            var firstOccurrence = new DateTime(2026, 11, 1, 5, 30, 0, DateTimeKind.Unspecified);
-            var table = new DataTable("orders");
-            table.AddColumn("created_at", FieldDbType.DateTime);
-            table.AddColumn("remark", FieldDbType.String);
-            table.Rows.Add(firstOccurrence, "a");
-            table.AcceptChanges();
-            using var dataSet = new DataSet("s");
-            dataSet.Tables.Add(table);
-
-            var response = new GetDataResponse { DataSet = dataSet };
-            PayloadZoneConverter.ToUserZone(response, NewYork);
-            response.DataSet!.Tables["orders"]!.Rows[0]["remark"] = "edited";
-            var request = new SaveRequest { DataSet = response.DataSet };
-
-            using (PayloadZoneConverter.ToUtc(request, NewYork))
-            {
-                Assert.Equal(firstOccurrence, (DateTime)request.DataSet!.Tables["orders"]!.Rows[0]["created_at"]);
-            }
-        }
-
-        [Fact]
         [DisplayName("回應方向：GetListResponse.Table 轉為使用者時區")]
         public void ToUserZone_GetListResponse_ConvertsTable()
         {
@@ -89,8 +63,8 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("請求方向：送出期間 DataSet 為 UTC 副本，還原後呼叫端物件不變")]
-        public void ToUtc_SaveRequest_SwapsThenRestores()
+        [DisplayName("請求方向：送出期間 DataSet 是未換算的副本，伺服端改寫副本後呼叫端物件不變")]
+        public void IsolateRequest_SaveRequest_CopiesWithoutConvertingAndRestores()
         {
             var original = BuildDataSet();
             // 呼叫端手上的值以使用者時區呈現（Connector 收到回應時已轉過）。
@@ -99,10 +73,15 @@ namespace Bee.Api.Core.UnitTests
             original.AcceptChanges();
             var request = new SaveRequest { DataSet = original };
 
-            using (PayloadZoneConverter.ToUtc(request, Taipei))
+            using (PayloadZoneConverter.IsolateRequest(request, Taipei))
             {
                 Assert.NotSame(original, request.DataSet);
-                Assert.Equal(s_utc9Am, (DateTime)request.DataSet!.Tables["orders"]!.Rows[0]["created_at"]);
+                var sent = request.DataSet!.Tables["orders"]!.Rows[0];
+                Assert.Equal(userLocal, (DateTime)sent["created_at"]);
+
+                // in-process 下伺服端拿到的就是這個物件：它會改寫時間欄，寫入後再 AcceptChanges。
+                sent["created_at"] = s_utc9Am;
+                request.DataSet.AcceptChanges();
             }
 
             Assert.Same(original, request.DataSet);
@@ -110,8 +89,28 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
+        [DisplayName("請求方向：沒有使用者時區時 DataSet 仍然複製，過濾條件原樣送出")]
+        public void IsolateRequest_BlankTimeZone_CopiesDataSetAndLeavesFilter()
+        {
+            var original = BuildDataSet();
+            var saveRequest = new SaveRequest { DataSet = original };
+            using (PayloadZoneConverter.IsolateRequest(saveRequest, string.Empty))
+            {
+                Assert.NotSame(original, saveRequest.DataSet);
+            }
+            Assert.Same(original, saveRequest.DataSet);
+
+            var filter = FilterCondition.Equal("created_at", s_utc9Am);
+            var listRequest = new GetListRequest { Filter = filter };
+            using (PayloadZoneConverter.IsolateRequest(listRequest, string.Empty))
+            {
+                Assert.Same(filter, listRequest.Filter);
+            }
+        }
+
+        [Fact]
         [DisplayName("請求方向：filter 的 DateTime 值轉為 UTC，DateOnly 不動，且原樹不被修改")]
-        public void ToUtc_GetListRequest_ConvertsFilterWithoutMutatingSource()
+        public void IsolateRequest_GetListRequest_ConvertsFilterWithoutMutatingSource()
         {
             var userLocal = ExpectedInTaipei(s_utc9Am);
             var day = new DateOnly(2026, 1, 1);
@@ -120,7 +119,7 @@ namespace Bee.Api.Core.UnitTests
                 FilterCondition.Equal("order_date", day));
             var request = new GetListRequest { Filter = filter };
 
-            using (PayloadZoneConverter.ToUtc(request, Taipei))
+            using (PayloadZoneConverter.IsolateRequest(request, Taipei))
             {
                 var converted = (FilterGroup)request.Filter!;
                 Assert.Equal(s_utc9Am, ((FilterCondition)converted.Nodes[0]).Value);
@@ -132,19 +131,13 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("空白時區為 no-op，不做任何換置")]
-        public void BlankTimeZone_LeavesPayloadAlone()
+        [DisplayName("回應方向：空白時區為 no-op")]
+        public void ToUserZone_BlankTimeZone_LeavesPayloadAlone()
         {
-            var original = BuildDataSet();
-            var request = new SaveRequest { DataSet = original };
-
-            using (PayloadZoneConverter.ToUtc(request, string.Empty))
-            {
-                Assert.Same(original, request.DataSet);
-            }
-
             var response = new GetListResponse { Table = BuildTable() };
+
             PayloadZoneConverter.ToUserZone(response, string.Empty);
+
             Assert.Equal(s_utc9Am, (DateTime)response.Table!.Rows[0]["created_at"]);
         }
 
@@ -154,8 +147,8 @@ namespace Bee.Api.Core.UnitTests
         {
             Assert.Null(Record.Exception(() => PayloadZoneConverter.ToUserZone("plain", Taipei)));
             Assert.Null(Record.Exception(() => PayloadZoneConverter.ToUserZone(null, Taipei)));
-            using (PayloadZoneConverter.ToUtc(null, Taipei)) { }
-            using (PayloadZoneConverter.ToUtc("plain", Taipei)) { }
+            using (PayloadZoneConverter.IsolateRequest(null, Taipei)) { }
+            using (PayloadZoneConverter.IsolateRequest("plain", Taipei)) { }
         }
     }
 }
