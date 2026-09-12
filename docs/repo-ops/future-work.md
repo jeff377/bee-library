@@ -457,7 +457,7 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 | NuGet 組織帳號 | `Polhem` | 已建立。組織 email 暫用個人信箱別名，有共同維護者時改成團隊收得到的地址 |
 | GitHub org profile（`.github` repo） | `polhem-dev/.github` | 已建立。只寫「準備中」與名稱由來，刻意不提 Bee.NET——名字未定案前不對外宣告兩者關係 |
 | NuGet 前綴保留 `Polhem.` | — | 未申請。實際發佈套件後寄 account@nuget.org 申請，審核會看套件的識別資訊 |
-| npm 組織 | — | 未建。connector-js 改名另開時再建 |
+| npm 組織 | `@polhem` | 已建立。connector-js 改名另開後以 `@polhem/…` 發佈；scoped 名稱只有組織成員能發佈，不會被他人搶先註冊 |
 | 商標檢索 | — | 2026-09-12 做過初步檢索，軟體類別（第 9／42 類）無 POLHEM，見下方。**非法律意見**，發佈第一版前重查一次 |
 
 **初步商標檢索（2026-09-12）**：
