@@ -12,8 +12,8 @@
 >
 > **修訂**：D9 於 2026-09-04 撤回「刻意不 UTC 化」，改為與寫入端同源；D6 於 2026-09-12 補上
 > 「請求方向的 guard 在時區換算之前」，並把 DTO 屬性那條從不變式改標為撰寫紀律；D12 於 2026-09-12
-> 補上「『現在』的基準由 `DataSet` 所在的那一側決定」，更正原殘餘風險的敘述，並在「負面 / 風險」
-> 記下 DST 回撥重疊時段的讀寫非恆等。
+> 補上「『現在』的基準由 `DataSet` 所在的那一側決定」，更正原殘餘風險的敘述；D4 於 2026-09-12
+> 補上「DST 回撥重疊時段的儲存格由 Connector 記住原本的 UTC 值」。
 
 ## 背景
 
@@ -139,8 +139,27 @@ MessagePack 與 JSON 都只搬運數值。轉換責任全在伺服端與用戶�
   某個牆鐘時刻不存在，使用者選 02:30 是正常操作；`ConvertTimeToUtc` 對此擲
   `ArgumentException` 且會原樣穿透 JSON-RPC。故轉 UTC 前先把落在缺口內的值前推該次
   轉換的 delta（02:30 → 03:30），與 iOS / Android / Google 日曆等主流選擇器一致。
-  反向的 fall-back 重疊時刻不會擲例外——`ConvertTimeToUtc` 會確定性地解析為標準時間。
-  但確定性不等於恆等，讀進再存回會位移，見「負面 / 風險」。
+- **回撥重疊時段（fall-back）的儲存格，由 Connector 記住原本的 UTC 值**（2026-09-12 補）。
+  重疊的那一小時裡，兩個 UTC 值對應同一個牆上時間（美東 2026-11-01 的 05:30Z 與 06:30Z 都是 01:30），
+  `ConvertTimeToUtc` 不擲例外，但只能確定性地解析為標準時間。這份資訊在回應轉入使用者時區的那一刻
+  就消失了，下游任何一層都找不回來：沒有處理時，只要列被修改存回——即使改的是別的欄位——
+  值落在較早那個 UTC 的欄位就靜默晚一小時。
+
+  因此回應方向對落在重疊時段的儲存格，以**交給呼叫端的那一列實例**為鍵記下原本的 UTC 值
+  （`ConditionalWeakTable`）；請求方向在該格仍是當初換算出的牆上時間時，送回記下的值。取捨如下：
+
+  - **記在 Connector，不在寫入端**。資訊是在 Connector 遺失的，由它保存才符合本條「唯一轉換點」。
+    讓 UPDATE 略過「兩個版本相等」的時間欄雖然無狀態，卻等於把時區語意帶進資料存取層、要在每一家
+    provider 上各自成立，還依賴「Connector 會把兩個版本換算成同一個值」這條跨層的隱含約定——
+    換算方式一改，寫入端就靜默失效。
+  - **以列實例為鍵，不寫進資料本身**。表格的 `ExtendedProperties` 會隨 `Copy` / `Merge` / `GetChanges`
+    以同一個參考帶走：in-process 呼叫會把它送到伺服端，稽核 DiffGram 的 schema 也會以 `msprop` 寫出它。
+
+  殘餘限制：呼叫端自行複製或重建的列沒有記憶，重疊時刻解析為標準時間；使用者親手選的重疊時刻
+  同樣解析為標準時間，那是牆上時間本身的歧義，與主流日曆一致。
+  執行它的是 `DateTimeZoneConverterDstTests`、
+  `PayloadZoneConverterTests.ToUtc_SaveRequestFromConvertedResponse_KeepsAmbiguousInstant`，
+  以及對各家資料庫實跑「讀進、改別的欄位、存回」的 `DateTimeZoneDstSaveRoundTripTests`。
 - **時區來源為 `SessionInfo.TimeZone`，不使用裝置 OS 時區。** 權威來源是伺服端使用者設定，
   換裝置 / 出差不影響資料語意。「跟隨裝置時區」可作為使用者可選設定，但不是預設。
 
@@ -423,7 +442,7 @@ D1 對「`FieldDbType.DateTime` 欄位存 UTC」是**強制條件**，而 SQL �
 
 **正面**
 
-- 單一時區來源，兩個方向互為反函數，round-trip 恆等（DST 回撥重疊時段除外，見下）；時區設錯只降級為顯示偏移。
+- 單一時區來源，兩個方向互為反函數，round-trip 恆等（DST 回撥重疊時段靠 Connector 記住原值，見 D4 與下方風險）；時區設錯只降級為顯示偏移。
 - Connector 完全 schema-less，報表 / AnyCode 等無 schema 場景同樣安全。
 - 轉換路徑單一：同時區時退化為恆等轉換，不需為「有沒有跨區」維護兩套行為。
 
@@ -435,11 +454,10 @@ D1 對「`FieldDbType.DateTime` 欄位存 UTC」是**強制條件**，而 SQL �
   guard 自己的單元測試全綠——它們只驗 guard，看不到它在呼叫路徑上的位置（2026-09-12 修正）。
 - **日曆日誤轉**：標記方案不能保證欄位一定有標記——BO 自寫 SQL 未以 `SetDateColumns` 宣告的
   日曆日欄位仍會被當時間點轉換（ADR-031 已載明此殘餘破口與 BO 作者的標記責任）。
-- **DST 回撥重疊時段，讀進再存回不是恆等（尚未處理）**。使用者時區的牆上時間不帶偏移，秋季回撥
-  那一小時對應兩個 UTC 值（例：美東 2026-11-01 的 05:30Z 與 06:30Z），經 `UtcToUser` 都成為 01:30，
-  `UserToUtc` 再一律解析為標準時間的 06:30Z。而 `TableSchemaCommandBuilder.BuildUpdateCommand` 以
-  Current 值寫回所有非鍵欄位，所以值落在較早那個 UTC 的欄位，只要所在的列被修改存回——即使改的是
-  別的欄位——就會靜默晚一小時。只影響有 DST 的時區，`Asia/Taipei` 不受影響。
+- **DST 回撥重疊時段的恆等，依賴 Connector 記住的原值**（D4）。記憶以列實例為鍵，呼叫端若在讀進與
+  存回之間自行複製或重建 `DataSet`，未改動的重疊時刻會退回標準時間、存回時晚一小時，且沒有任何訊號。
+  目前框架內的 UI head 都直接沿用 Connector 交回的 `DataSet`；新增 head 或在既有 head 加入複製時，
+  要保住這一點。只影響有 DST 的時區，`Asia/Taipei` 不受影響。
 - **`TimeZoneInfo.FindSystemTimeZoneById` 在 WASM / iOS / Android 未經驗證**。
   依賴 ICU 與 tz database，trim + AOT 下失敗形態是 `TimeZoneNotFoundException`，
   桌面完全不重現。
