@@ -1,5 +1,4 @@
 using System.Data;
-using System.Globalization;
 using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Exceptions;
@@ -21,17 +20,6 @@ namespace Bee.Business.Form
     /// </remarks>
     internal static class SaveDateTimeNormalizer
     {
-        /// <summary>
-        /// The text form a SQLite column holds an instant in.
-        /// </summary>
-        /// <remarks>
-        /// NOTE: SQLite has no date type, so a table read back from it carries its instant columns as
-        /// <see cref="string"/>. A value written into such a column must use the form the SQLite driver
-        /// itself writes a <see cref="DateTime"/> parameter in, or text comparison and ordering in SQL
-        /// break. A cast through the column's culture would produce a locale-dependent form.
-        /// </remarks>
-        private const string SqliteInstantFormat = "yyyy-MM-dd HH:mm:ss.FFFFFFF";
-
         /// <summary>
         /// Normalizes every <see cref="FieldDbType.DateTime"/> field the schema declares.
         /// </summary>
@@ -99,7 +87,7 @@ namespace Bee.Business.Form
                 {
                     row[column] = !IsTimestamp(field) && StringUtilities.IsNotEmpty(field.DefaultValueExpression)
                         ? DBNull.Value
-                        : CellValue(column, utcNow);
+                        : CellValue(utcNow);
                 }
             }
         }
@@ -181,9 +169,9 @@ namespace Bee.Business.Form
             var current = CaptureRow(row, DataRowVersion.Current);
             foreach (var (field, column) in fields)
             {
-                var storedValue = StoredCellValue(column, storedRow, field.FieldName);
+                var storedValue = StoredCellValue(storedRow, field.FieldName);
                 original[column.Ordinal] = storedValue;
-                current[column.Ordinal] = IsField(field, SysFields.UpdateTime) ? CellValue(column, utcNow) : storedValue;
+                current[column.Ordinal] = IsField(field, SysFields.UpdateTime) ? CellValue(utcNow) : storedValue;
             }
 
             row.RejectChanges();
@@ -205,7 +193,7 @@ namespace Bee.Business.Form
             row.RejectChanges();
             foreach (var (field, column) in fields)
             {
-                var storedValue = StoredCellValue(column, storedRow, field.FieldName);
+                var storedValue = StoredCellValue(storedRow, field.FieldName);
                 if (!Equals(row[column], storedValue)) { row[column] = storedValue; }
             }
             row.AcceptChanges();
@@ -239,22 +227,14 @@ namespace Bee.Business.Form
             }
         }
 
-        private static object StoredCellValue(DataColumn column, DataRow storedRow, string fieldName)
+        private static object StoredCellValue(DataRow storedRow, string fieldName)
         {
             var instant = ValueUtilities.CDateTime(storedRow[fieldName]);
-            return instant.HasValue ? CellValue(column, instant.Value) : DBNull.Value;
+            return instant.HasValue ? CellValue(instant.Value) : DBNull.Value;
         }
 
-        /// <summary>
-        /// Shapes an instant for the column it is written into.
-        /// </summary>
-        private static object CellValue(DataColumn column, DateTime instant)
-        {
-            var value = DateTime.SpecifyKind(instant, DateTimeKind.Unspecified);
-            return column.DataType == typeof(string)
-                ? value.ToString(SqliteInstantFormat, CultureInfo.InvariantCulture)
-                : value;
-        }
+        private static object CellValue(DateTime instant)
+            => DateTime.SpecifyKind(instant, DateTimeKind.Unspecified);
 
         private static bool IsTimestamp(FormField field)
             => IsField(field, SysFields.InsertTime) || IsField(field, SysFields.UpdateTime);

@@ -244,8 +244,18 @@ FormSchema 驅動的結果表另在 `MarkFromSchema` 就地把宣告為 Guid 卻
 而裸 `is T` 把「型別不符」和「值不存在」壓成同一個答案**。
 
 **正解**：轉型走 `ValueUtilities.CDateTime(object?)`（回 `DateTime?`，認 `DBNull`、
-空字串與可剖析的字串）。FormSchema 驅動的路徑不受影響 —— `MarkFromSchema` 已依宣告型別
-把欄位正規化過；受害的一律是**自己拼 SQL、自己讀 DataRow** 的 framework repository。
+空字串與可剖析的字串）。
+
+FormSchema 驅動的路徑（2026-09-12 起）由 `DataFormRepository.MarkFromSchema` 處理：宣告為
+Date / DateTime 卻裝 `string` 的欄位，就地換成真正的 `DateTime` 欄（與 Oracle Guid 欄同一處）。
+剖析不了的文字擲 `InvalidOperationException`，空字串讀成 `DBNull`。
+
+> **這段先前寫著「FormSchema 驅動的路徑不受影響 —— `MarkFromSchema` 已依宣告型別把欄位正規化過」，
+> 那不成立**：當時 `MarkFromSchema` 只加標記、只轉 Guid 欄。後果是 SQLite 上**同程序（Local）
+> 呼叫**讀回的表單時間欄完全不做 UTC → 使用者時區換算 —— `DateTimeZoneConverter` 只挑
+> `DataType == DateTime` 的欄。**Remote 呼叫看不出來**：wire 依宣告型別重建欄位，用戶端拿到的
+> 已是 `DateTime` 欄。釘住它的是 `DateTimeZoneFormReadTests`（同程序與兩條 wire 並列）。
+> 那句保證指不出任何執行它的機制，是 `code-style.md`「絕對語氣要指得出機制」的又一例。
 
 **為何拖到現在才發現**：`ApiKeyRepository` 走 `DbScope.Common`，而測試 fixture 把
 `common` 綁在 SQL Server —— 那幾支 `[DbFact(DatabaseType.SQLite)]` 實際跑的是 SQL Server。
