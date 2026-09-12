@@ -11,7 +11,7 @@
 
 ## 背景
 
-[ADR-032](../adr/adr-032-datetime-timezone.md) 採「雙向 UTC」：Connector 收到回應時 UTC → 使用者時區，
+[ADR-032](../../adr/adr-032-datetime-timezone.md) 採「雙向 UTC」：Connector 收到回應時 UTC → 使用者時區，
 送出請求前使用者時區 → UTC。這個設計在請求方向留下一串需要逐一補洞的問題，最近三個 commit 都在補：
 
 - DST 回撥重疊時段，一個牆上時間對應兩個 UTC 值，讀進再存回會晚一小時。
@@ -33,15 +33,15 @@
 
 | 項目 | 現況 | 位置 |
 |------|------|------|
-| 系統時間戳記 | **伺服端沒有寫入機制**。`SysFields.InsertTime` / `UpdateTime` 在 `src/` 零參照；表單存檔的 INSERT 與 UPDATE 寫入全部欄位，`sys_insert_time` 每次 UPDATE 都被 payload 覆寫，`sys_update_time` 從不更新 | [TableSchemaCommandBuilder.cs:59](../../src/Bee.Db/Dml/TableSchemaCommandBuilder.cs:59)、[:105](../../src/Bee.Db/Dml/TableSchemaCommandBuilder.cs:105) |
+| 系統時間戳記 | **伺服端沒有寫入機制**。`SysFields.InsertTime` / `UpdateTime` 在 `src/` 零參照；表單存檔的 INSERT 與 UPDATE 寫入全部欄位，`sys_insert_time` 每次 UPDATE 都被 payload 覆寫，`sys_update_time` 從不更新 | [TableSchemaCommandBuilder.cs:59](../../../src/Bee.Db/Dml/TableSchemaCommandBuilder.cs:59)、[:105](../../../src/Bee.Db/Dml/TableSchemaCommandBuilder.cs:105) |
 | DB 的 UTC `DEFAULT` | 表單存檔路徑永遠不生效，因為 INSERT 從不省略欄位 | 同上 |
-| 明細列的 `sys_insert_time` | 只來自用戶端 `FormRowDefaults`（`UserZone` 基準） | [FormDataObject.Events.cs:62](../../src/Bee.UI.Avalonia/DataObjects/FormDataObject.Events.cs:62) |
-| 稽核 DiffGram | 取 `args.DataSet.GetChanges()`，兩個版本的所有欄位都在內 | [FormBusinessObject.Write.cs:86](../../src/Bee.Business/Form/FormBusinessObject.Write.cs:86) |
+| 明細列的 `sys_insert_time` | 只來自用戶端 `FormRowDefaults`（`UserZone` 基準） | [FormDataObject.Events.cs:62](../../../src/Bee.UI.Avalonia/DataObjects/FormDataObject.Events.cs:62) |
+| 稽核 DiffGram | 取 `args.DataSet.GetChanges()`，兩個版本的所有欄位都在內 | [FormBusinessObject.Write.cs:86](../../../src/Bee.Business/Form/FormBusinessObject.Write.cs:86) |
 | 使用者輸入的 `DateTime` 欄位 | 零個；業務時間欄位全是 `Date` | Define 檔 |
-| UI 的 `DateTime` 編輯 | `Auto` 解析為 `DateEdit`，以 `yyyy-MM-dd` 寫回，改一次就截成午夜。AuditRule 版面上的 `sys_insert_time` 可編輯 | [LayoutColumnFactory.cs:69](../../src/Bee.Definition/Layouts/LayoutColumnFactory.cs:69) |
+| UI 的 `DateTime` 編輯 | `Auto` 解析為 `DateEdit`，以 `yyyy-MM-dd` 寫回，改一次就截成午夜。AuditRule 版面上的 `sys_insert_time` 可編輯 | [LayoutColumnFactory.cs:69](../../../src/Bee.Definition/Layouts/LayoutColumnFactory.cs:69) |
 | UI 組過濾條件 | 無；只有外部呼叫 `FormApiConnector.GetListAsync(filter)` 時會帶 | — |
-| in-process 呼叫端隔離 | 請求方向換算時會先深拷貝，順帶讓 `LocalApiProvider` 下伺服端改不到 UI 手上的 `DataSet` | [DateTimeZoneConverter.cs](../../src/Bee.Api.Core/JsonRpc/DateTimeZoneConverter.cs) `Convert` |
-| session 時區 | 用戶端在登入時快取；伺服端快取重建時重讀使用者 locale，兩者可能分岔 | [ClientInfo.cs:460](../../src/Bee.UI.Core/ClientInfo.cs:460)、[CacheDataSourceProvider.cs:85](../../src/Bee.Business/Providers/CacheDataSourceProvider.cs:85) |
+| in-process 呼叫端隔離 | 請求方向換算時會先深拷貝，順帶讓 `LocalApiProvider` 下伺服端改不到 UI 手上的 `DataSet` | [DateTimeZoneConverter.cs](../../../src/Bee.Api.Core/JsonRpc/DateTimeZoneConverter.cs) `Convert` |
+| session 時區 | 用戶端在登入時快取；伺服端快取重建時重讀使用者 locale，兩者可能分岔 | [ClientInfo.cs:460](../../../src/Bee.UI.Core/ClientInfo.cs:460)、[CacheDataSourceProvider.cs:85](../../../src/Bee.Business/Providers/CacheDataSourceProvider.cs:85) |
 
 最後一列是 ADR-032 選項 2（非對稱設計）的否決理由在今天仍然成立的具體路徑，也是過濾條件留在 Connector 轉換的主因。
 
@@ -126,9 +126,9 @@
 - **明細列的讀回**：`IDataFormRepository` 新增 `GetRowsByRowId(tableName, selectFields, rowIds)`，
   任一張表都以 `sys_rowid IN (...)` 讀回（每批 500 個，避開 Oracle 的 IN 清單上限與 SQL Server 的參數上限），
   不經主檔。這是介面新增成員，實作者要補（框架內只有 `DataFormRepository`；Northwind 的 `OrderRepository` 繼承它）。
-- 正規化邏輯在 [SaveDateTimeNormalizer.cs](../../src/Bee.Business/Form/SaveDateTimeNormalizer.cs)（internal），
+- 正規化邏輯在 [SaveDateTimeNormalizer.cs](../../../src/Bee.Business/Form/SaveDateTimeNormalizer.cs)（internal），
   `NormalizeDateTimes` 只是掛點。
-- 測試：[FormBusinessObjectDateTimeNormalizationTests](../../tests/Bee.Business.UnitTests/Form/FormBusinessObjectDateTimeNormalizationTests.cs)
+- 測試：[FormBusinessObjectDateTimeNormalizationTests](../../../tests/Bee.Business.UnitTests/Form/FormBusinessObjectDateTimeNormalizationTests.cs)
   （新增 / 修改與刪除 / 讀回找不到列，各五家資料庫；覆寫接縫在 SQLite）；
   `DateTimeZoneDstSaveRoundTripTests` 已改成把使用者時區的 `DataSet` 原樣交給 Save，不經請求方向換算，
   所以不依賴階段 2 要移除的東西。自訂表單與臨時建表的測試工具在 `tests/Bee.Tests.Shared/TransientForm.cs`。
@@ -144,14 +144,14 @@
 
 ## 階段 2：Connector 請求方向只轉過濾條件
 
-1. [PayloadZoneConverter.ToUtc](../../src/Bee.Api.Core/JsonRpc/PayloadZoneConverter.cs)：`SaveRequest` 改為只做 `DataSet.Copy()` 並照舊以 swap 還原，不換算；`GetListRequest` 的過濾條件照舊轉換。
+1. [PayloadZoneConverter.ToUtc](../../../src/Bee.Api.Core/JsonRpc/PayloadZoneConverter.cs)：`SaveRequest` 改為只做 `DataSet.Copy()` 並照舊以 swap 還原，不換算；`GetListRequest` 的過濾條件照舊轉換。
    方法名與 XML doc 要跟著改寫，它不再是「轉 UTC」而是「隔離呼叫端物件＋轉過濾條件」。
 2. 移除 `AmbiguousInstantMemory.cs`（階段 2 已移除），以及 `DateTimeZoneConverter` 裡只服務請求方向 `DataSet` 的 `CellShift` 分支。
    `UserToUtc(DataSet)` / `UserToUtc(DataTable)` 一併移除。留著等於替新原則開後門；屬破壞性變更，
    PublicAPI 異動與相容性判定寫進 commit message，依 ADR-032 D11 目前沒有外部消費者。
 3. `SkipSpringForwardGap` 與 `ConvertFilterValue` 保留。
-4. [DateTimeWireGuard](../../src/Bee.Api.Core/JsonRpc/DateTimeWireGuard.cs)：請求方向 `DataSet` 的 `DateTimeMode` 檢查與過濾條件的 `Kind=Local` 檢查都保留；guard 在換算之前執行的順序不變。
-5. [ApiConnector.ExecuteAsync](../../src/Bee.Api.Client/Connectors/ApiConnector.cs:123) 的註解改寫，不再宣稱「wire 兩個方向都是 UTC」。
+4. [DateTimeWireGuard](../../../src/Bee.Api.Core/JsonRpc/DateTimeWireGuard.cs)：請求方向 `DataSet` 的 `DateTimeMode` 檢查與過濾條件的 `Kind=Local` 檢查都保留；guard 在換算之前執行的順序不變。
+5. [ApiConnector.ExecuteAsync](../../../src/Bee.Api.Client/Connectors/ApiConnector.cs:123) 的註解改寫，不再宣稱「wire 兩個方向都是 UTC」。
 
 ### 測試調整
 
@@ -170,7 +170,7 @@
 - `PayloadZoneConverter.ToUtc` 改名為 `IsolateRequest`（移除舊名，屬破壞性變更）。
 - **`SaveRequest` 的 `DataSet` 不論有沒有使用者時區都複製**；原本時區空白時整個跳過。階段 1 之後伺服端會就地改寫
   存檔的 `DataSet`，in-process 呼叫時少了複製，改動會落到呼叫端手上那一份。過濾條件在時區空白時照舊不動。
-- in-process 隔離測試是 [ApiConnectorRequestIsolationTests](../../tests/Bee.Api.Client.UnitTests/Connectors/ApiConnectorRequestIsolationTests.cs)：
+- in-process 隔離測試是 [ApiConnectorRequestIsolationTests](../../../tests/Bee.Api.Client.UnitTests/Connectors/ApiConnectorRequestIsolationTests.cs)：
   以假 provider 在「伺服端」就地改寫收到的物件（provider 不經序列化，形狀與 `LocalApiProvider` 相同），
   沒有接真的 `LocalApiProvider` 與資料庫。
 - `PayloadZoneCoverageGuardTests` 改為依方向與載體分別斷言：回應轉換、請求的過濾條件轉換、請求的 `DataSet` 換成副本且不換算。
@@ -184,13 +184,13 @@
 
 目前只有 AuditRule 宣告了 `sys_insert_time`，沒有任何 FormSchema 宣告 `sys_update_time`。要改的檔案：
 
-- [src/Bee.Definition/Defaults/FormSchema/AuditRule.FormSchema.xml](../../src/Bee.Definition/Defaults/FormSchema/AuditRule.FormSchema.xml)
-- [src/Bee.Definition/Defaults/FormLayout/AuditRule.FormLayout.xml](../../src/Bee.Definition/Defaults/FormLayout/AuditRule.FormLayout.xml)（已產生的版面不會自動跟著 FormSchema 變）
+- [src/Bee.Definition/Defaults/FormSchema/AuditRule.FormSchema.xml](../../../src/Bee.Definition/Defaults/FormSchema/AuditRule.FormSchema.xml)
+- [src/Bee.Definition/Defaults/FormLayout/AuditRule.FormLayout.xml](../../../src/Bee.Definition/Defaults/FormLayout/AuditRule.FormLayout.xml)（已產生的版面不會自動跟著 FormSchema 變）
 - `apps/Bee.Northwind/Define/` 的對應兩份
 - `tests/Define/FormSchema/AuditRule.FormSchema.xml`（已查證沒有測試依賴該欄可編輯：`DefaultsTests` 只核對預設檔清單，`AuditRuleFormTests` 不碰這一欄）
 
 框架沒有「由 TableSchema 產生 FormSchema」的產生器，表單定義都是手寫或照 skill 建立，所以規則要寫進
-[bee-add-form skill](../../.claude/skills/bee-add-form/SKILL.md) 第 74 行一帶的 `FormField.ReadOnly` 慣例，
+[bee-add-form skill](../../../.claude/skills/bee-add-form/SKILL.md) 第 74 行一帶的 `FormField.ReadOnly` 慣例，
 把系統時間戳記欄列為必須唯讀的一類。
 
 不另設閘門測試：資料正確性由階段 1 的伺服端正規化保證，漏標 `ReadOnly` 只會讓使用者能在畫面上改一個存不進去的值，不會寫錯資料。
