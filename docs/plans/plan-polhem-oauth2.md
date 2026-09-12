@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1a | 本機建立 polhem-oauth2：純改名、拿掉 `Bee.Base`、加密移植與測試、CI、`.slnx` | ✅ 已完成（2026-09-13） |
-| 1b | 導入 bee-library 現行程式碼風格設定，整理既有程式碼（英文化、例外、命名、Nullable、編碼、SDK 格式）；完成後建立 repo 並推送 | 🚧 進行中 |
+| 1b | 導入 bee-library 現行程式碼風格設定，整理既有程式碼（英文化、例外、命名、Nullable、編碼、SDK 格式）；完成後建立 repo 並推送 | ✅ 已完成（2026-09-13） |
 | 2 | state 解密加強健壯性 | 📝 待做 |
 | 3 | JSON 改用 System.Text.Json | 📝 待做 |
 | 4 | 拿掉 WebView2，改用系統預設瀏覽器 + loopback 回呼；桌面流程併入核心，Desktop／WinForms 套件移除 | 📝 待做 |
@@ -75,7 +75,8 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | 程式碼風格 | 依 bee-library 現行設定導入，並整理既有程式碼（階段 1b） | 使用者決定。排在功能修改之前，後續新寫的程式碼一開始就受閘門把關 |
 | 語言政策 | **共同維護的部分一律英文**：程式碼、XML doc、程式內註解、測試方法名稱與 `[DisplayName]`、`.claude/`、commit message。**公開 `.md` 文件中英雙語**：`README.md` 英文為預設，`README.zh-TW.md` 為中文版。**ADR 同樣中英雙語** | Polhem 未來開放共同維護，共同開發者要讀得懂決策。與 bee-library 現行做法（中文 `[DisplayName]`、中文 commit、只有中文的 ADR）刻意不同 |
 | LICENSE 著作權人 | `Copyright (c) Polhem contributors`，不寫年份 | 使用者決定，符合開放共同維護的定位。Polhem 不是法律主體，細節見階段 1a |
-| 方案與專案格式 | 方案檔用 `.slnx`；所有專案一律 SDK 格式，WebForms sample 用 `MSBuild.SDK.SystemWeb` | 使用者決定。`.slnx` 只列專案與資料夾；全部改成 SDK 格式後，CI 可以直接建置整個方案 |
+| 方案與專案格式 | 方案檔用 `.slnx`；所有專案一律 SDK 格式 | 使用者決定。`.slnx` 只列專案與資料夾；全部改成 SDK 格式後，CI 可以直接建置整個方案 |
+| WebForms sample | **移除** OAuthAspNet | 使用者決定。`MSBuild.SDK.SystemWeb` 把「無法用 dotnet CLI 建置」列為已知限制；補救要加 2016 年的社群套件 `MSBuild.Microsoft.VisualStudio.Web.targets` 並關掉 `MvcBuildViews`，或讓 CI 另用 Visual Studio 的 MSBuild。傳統 ASP.NET 的用法改由 README 程式碼片段說明 |
 
 ---
 
@@ -128,9 +129,9 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 
 ### 本機驗證範圍
 
-macOS 只建得起 netstandard2.0 核心、AspNetCore 與測試專案。net48、net8.0-windows 與舊式 WebForms／WinForms sample
-**以 windows-latest CI 為準**。repo 要到 1b 完成後才建立，所以 1a 與 1b 對這些目標的驗證都等第一次推送；
-之後動到它們的階段（4、5）走分支 + PR，讓 CI 在合併前把關。
+**更正（2026-09-13 實測）**：macOS 上 net48 與 net8.0-windows 都建得起來，後者要加 `-p:EnableWindowsTargeting=true`。
+原本「只有 Windows 建得起來」的推測不成立，所以本機就能建置整個方案；windows-latest CI 仍是最後一道把關。
+repo 要到 1b 完成後才建立，Windows 上的第一次驗證要等第一次推送；之後動到 Windows 專用目標的階段（4、5）走分支 + PR。
 
 ---
 
@@ -160,16 +161,16 @@ macOS 只建得起 netstandard2.0 核心、AspNetCore 與測試專案。net48、
 
 **所有 sample 改為 SDK 格式**：
 - OAuthWinForms（net48）改用 `Microsoft.NET.Sdk` 加 `UseWindowsForms`。
-- OAuthAspNet（net48 WebForms）改用社群維護的 `MSBuild.SDK.SystemWeb`，只用在 sample，不進入發佈的套件。
-- 兩者的 `packages.config` 改為 `PackageReference`，`Properties/AssemblyInfo.cs` 改由 SDK 產生。
+- OAuthAspNet（net48 WebForms）**移除**，理由見決策紀錄。
+- `packages.config` 改為 `PackageReference`，`Properties/AssemblyInfo.cs` 改由 SDK 產生。
 - 轉換後，`build-ci.yml` 改為直接建置 `Polhem.OAuth2.slnx`、不再手動列專案；發佈 workflow 的 restore 也不會再碰到舊式專案。
 
 ### 整理既有程式碼（2026-09-13 盤點）
 
 1. **編碼與格式**
-   - 33 個 `.cs` 去除 BOM。
-   - 7 個檔案含無效 UTF-8 位元組：`IStateStorage.cs`、三個 `StateStorage.cs`、Desktop 的 `AuthorizationForm.cs`、
-     `samples/OAuthAspNet` 的 `AssemblyInfo.cs` 與 `Web.Release.config`。轉成 UTF-8 時逐一確認內容沒有損毀。
+   - 去除 BOM：不只 `.cs`，`.resx`、`.cshtml`、`.config`、`.json` 等也有，一併去除。
+   - **更正（2026-09-13）**：原本記載「7 個檔案含無效 UTF-8」是 macOS `iconv` 的誤判；改用 Python 實際解碼，
+     所有檔案都是合法的 UTF-8。
    - `samples/OAuthDesktop/Form1.cs` 的中文註解已損壞成替代字元（U+FFFD），依下一點重寫或刪除。
    - csproj 由 tab 改為 2 個空白。
 2. **註解改英文**
@@ -189,6 +190,7 @@ macOS 只建得起 netstandard2.0 核心、AspNetCore 與測試專案。net48、
 
 Desktop 與 WinForms 兩個專案會在階段 4 刪除，本階段只做第 1 點。兩個 csproj 暫時以專案內屬性關閉
 `TreatWarningsAsErrors` 與 `EnforceCodeStyleInBuild`，並附註刪除時機。
+OAuthDesktop 與 OAuthWinForms 兩個 sample 會在階段 4 依新流程改寫，同樣只做第 1 點。
 
 ### ADR
 
@@ -218,6 +220,8 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 - **格式不變**：先驗證總長度與欄位一致（`ivLength` 必為 16、`cipherLength` 為 16 的正倍數、
   `8 + ivLength + cipherLength + 32 == 總長度`），再以常數時間比較 HMAC，最後才解密。
 - 所有失敗一律擲 `CryptographicException`；`OAuth2StateCryptor` 的非 Base64 輸入一併收斂到同一例外型別。
+- **一併修正 `BaseOAuth2Client.ValidateState`**（1b 發現）：回傳的 state 與儲存的 state 都不存在時，`null == null`
+  會判定通過，削弱 CSRF 防護。改為任一方為空即失敗，並補測試。
 - 測試：截斷、長度欄位竄改（含極大值與負值）、HMAC 竄改、非 Base64、黃金樣本仍可解。
 
 ## 階段 3：JSON 改用 System.Text.Json
@@ -284,6 +288,7 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
   - 各 provider redirect URI 的登記方式，取自階段 4 實測結果。
   - 從 `Bee.OAuth2` 遷移：命名空間、桌面流程改變、redirect URI 需重新登記，
     以及 `AuthorizationResult.Exception` 不再收納非預期例外（見階段 1b）。
+  - 傳統 ASP.NET（System.Web）沒有可執行的 sample，用法以 README 裡的程式碼片段說明（見決策紀錄）。
 - **刪除各套件自己的 `README.md`**：比照 bee-library，所有套件都打包根目錄的 `README.md` 作為 NuGet 的 README。
   每個套件若各自雙語，就是每個套件兩份檔案要同步；集中後說明只有一個來源。
   NuGet 只顯示英文版，頂部的中文版連結要用 GitHub 絕對網址，因為 nuget.org 上的相對連結會失效。
@@ -326,3 +331,6 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 - SonarCloud 掃描：已遷移為編譯期規則的部分由 `.editorconfig` 把關，其餘不導入。
 - CONTRIBUTING、CODEOWNERS 等開放共同維護的文件：隨 Polhem 框架一併處理（見 future-work「開放共同維護」一節）。
 - 行動端（iOS／Android）登入流程。
+- 1b 發現、另案清理（程式碼已加 NOTE 註解）：
+  - `AzureOAuth2Provider` 在 token 請求帶 `response_mode`，但這個參數只屬於授權請求。
+  - AspNet 與 AspNetCore 的 state cookie 設成 `SameSite=None`；provider 以 GET 導回時 `Lax` 就會帶上 cookie。
