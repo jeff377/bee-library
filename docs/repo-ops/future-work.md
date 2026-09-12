@@ -437,7 +437,7 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 
 | 候選 | 結論 | 理由 |
 |------|------|------|
-| **Polhem** | 目前首選 | 瑞典工程師 Christopher Polhem（1661–1751）。「機械字母」以一套木製基本機構模型教工程師組合出各種機器；Stjärnsund 的水力自動化工廠以可互換零件生產時鐘與掛鎖。標準化、模組化、機制化三者都對得上。NuGet 無 `Polhem.` 套件、npm 可用、GitHub 需加後綴。缺點是瑞典以外辨識度低、無中文文化連結 |
+| **Polhem** | 首選，已占名（見下節） | 瑞典工程師 Christopher Polhem（1661–1751）。「機械字母」以一套木製基本機構模型教工程師組合出各種機器；Stjärnsund 的水力自動化工廠以可互換零件生產時鐘與掛鎖。標準化、模組化、機制化三者都對得上。NuGet 無 `Polhem.` 套件、npm 可用、GitHub 需加後綴。缺點是瑞典以外辨識度低、無中文文化連結 |
 | 畢昇（Bi Sheng） | 意象可取，名字不適合 | 活字印刷是最精準的比喻，但辨識度低、英文難念，GitHub 與 npm 已被占 |
 | 魯班（Luban） | 不採用 | 意義貼切，但 NuGet 已有他人的 `Luban.*` 套件，中文科技產品也大量使用 |
 | 孔明（Kongming／Zhuge Liang） | 不採用 | 形象是謀略而非標準化；API 領域有 Kong（API Gateway）會混淆 |
@@ -445,6 +445,23 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 | Combwise | 撤回 | 字典意思是「像梳子那樣梳直」，`comb` 的蜂巢義排第三，英文讀者讀不出本意 |
 | Melliform | 撤回 | 字義是「蜂蜜加 form」，沒抓到本意 |
 | Cellwise／Formcell | 避開 | 前者有同名軟體產品；後者撞 Formlabs Form Cell 與 SAP Fiori 的 `FormCell` 型別 |
+
+### 已占名（2026-09-12）
+
+名字還沒正式定案（商標檢索未做），但首選已隨 `d29e5fe8` 寫進公開 repo，因此先把名稱占下。
+`bee-net` 就是 2026 年初被人占走的。
+
+| 項目 | 名稱 | 狀態 |
+|------|------|------|
+| GitHub organization | `polhem-dev` | 已建立。`polhem` 本身是 2019 年建立的個人帳號，要不回來，故加後綴 |
+| NuGet 組織帳號 | `Polhem` | 已建立。組織 email 暫用個人信箱別名，有共同維護者時改成團隊收得到的地址 |
+| GitHub org profile（`.github` repo） | `polhem-dev/.github` | 已建立。只寫「準備中」與名稱由來，刻意不提 Bee.NET——名字未定案前不對外宣告兩者關係 |
+| NuGet 前綴保留 `Polhem.` | — | 未申請。實際發佈套件後寄 account@nuget.org 申請，審核會看套件的識別資訊 |
+| npm 組織 | — | 未建。connector-js 改名另開時再建 |
+| 商標檢索 | — | 未做。**發佈第一版之前必須完成** |
+
+檢索若不通過，換名時兩個組織一併刪除：GitHub org 可從組織設定刪除，NuGet 組織的刪除方式見
+[Organizations on NuGet.org](https://learn.microsoft.com/en-us/nuget/nuget-org/organizations-on-nuget-org)。
 
 ### 改名時編譯器抓不到的地方
 
@@ -477,8 +494,7 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
    專案層 `.claude/settings.json` 對它的宣告移到個人層；`.claude/CLAUDE.md` 裡指向 `plan-write` 的慣例，
    要判斷哪些屬於 repo 本身而該留在 repo 內。
 
-**要等什麼**：出現明確的共同維護者人選。名字不必急著定——舊 repo 保留、文章不受影響，
-改名成本不會隨時間明顯增加。**GitHub org 不要先用 `bee-dotnet` 占**，等新名字定案再占。
+**要等什麼**：出現明確的共同維護者人選。名稱已先占下，其餘不必急——舊 repo 保留、文章不受影響，
+改名成本不會隨時間明顯增加。
 
-**啟動時第一步**：定名 → 重跑平台可用性與商標檢索 → **立刻**建 GitHub org 與 NuGet 組織帳號占名
-（`bee-net` 就是 2026 年初被人占走的）→ 寫 plan。
+**啟動時第一步**：做商標檢索。通過就寫 plan；不通過就回到候選表換名，並刪除已占的兩個組織。
