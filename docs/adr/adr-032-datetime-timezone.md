@@ -11,7 +11,9 @@
 > 缺 tz 資料的失敗是裝置上的執行期例外，桌面建置與測試都攔不到。
 >
 > **修訂**：D9 於 2026-09-04 撤回「刻意不 UTC 化」，改為與寫入端同源；D6 於 2026-09-12 補上
-> 「請求方向的 guard 在時區換算之前」，並把 DTO 屬性那條從不變式改標為撰寫紀律。
+> 「請求方向的 guard 在時區換算之前」，並把 DTO 屬性那條從不變式改標為撰寫紀律；D12 於 2026-09-12
+> 補上「『現在』的基準由 `DataSet` 所在的那一側決定」，更正原殘餘風險的敘述，並在「負面 / 風險」
+> 記下 DST 回撥重疊時段的讀寫非恆等。
 
 ## 背景
 
@@ -137,7 +139,8 @@ MessagePack 與 JSON 都只搬運數值。轉換責任全在伺服端與用戶�
   某個牆鐘時刻不存在，使用者選 02:30 是正常操作；`ConvertTimeToUtc` 對此擲
   `ArgumentException` 且會原樣穿透 JSON-RPC。故轉 UTC 前先把落在缺口內的值前推該次
   轉換的 delta（02:30 → 03:30），與 iOS / Android / Google 日曆等主流選擇器一致。
-  反向的 fall-back 重疊時刻不需處理——`ConvertTimeToUtc` 會確定性地解析為標準時間。
+  反向的 fall-back 重疊時刻不會擲例外——`ConvertTimeToUtc` 會確定性地解析為標準時間。
+  但確定性不等於恆等，讀進再存回會位移，見「負面 / 風險」。
 - **時區來源為 `SessionInfo.TimeZone`，不使用裝置 OS 時區。** 權威來源是伺服端使用者設定，
   換裝置 / 出差不影響資料語意。「跟隨裝置時區」可作為使用者可選設定，但不是預設。
 
@@ -212,7 +215,7 @@ DTO 屬性不由 guard 檢查：guard 依訊息型別逐一比對載體，不走
 > 既有現象**（見背景章節：MessagePack 不保留 `Kind`）。屆時「值本身就是 UTC」是唯一
 > 不依賴序列化器是否保留偏移的基準。
 
-### D12：「今天」與「現在」以使用者時區為基準
+### D12：「今天」以使用者時區為基準，「現在」隨 `DataSet` 所在的那一側
 
 **「今天」= `SessionInfo.TimeZone` 的今天**，不是裝置 OS 的今天，也不是伺服端機器的今天。
 
@@ -227,19 +230,63 @@ DTO 屬性不由 guard 檢查：guard 依訊息型別逐一比對載體，不走
 `FieldDbTypeExtensions`、`DynamicExpressoEvaluator` 的 `Today()` / `Now()`），由該接縫依
 使用者時區推導。
 
-**兩條路徑最終都接上使用者時區**，因為 `Today()` 與欄位型別預設值共用同一個接縫
+**兩條路徑的「今天」都接上使用者時區**，因為 `Today()` 與欄位型別預設值共用同一個接縫
 （`FrameworkClock`），而時區沿呼叫鏈以引數傳遞（D13(b)）：伺服端由 BO 取 session 時區傳入，
 用戶端取 `ClientInfo.UserInfo.TimeZone`。
 
-運算式函式集為 `Today()`（傳入時區的今天，回 `DateOnly`）、`Now()`（同一時區的當下，`Kind`
-恆為 `Unspecified`）、`UtcNow()`（供作者明示 UTC 意圖）。共用接縫是刻意的：日曆日欄位絕不
-轉換（D4），共用不引入二次轉換問題；而讓同一個名字在兩處是兩種意思，是日後最容易踩的坑。
+#### 「現在」的基準由 `DataSet` 所在的那一側決定（2026-09-12 補）
+
+「今天」是日曆日，兩側都屬於使用者時區。「現在」是時間點，寫進 `DataSet` 或與儲存格比較時，
+必須與同一個 `DataSet` 裡既有的時間值同一基準，而兩側的基準不同：
+
+| 側 | `DataSet` 內 `DateTime` 的基準 | 原因 |
+|----|------|------|
+| 用戶端 | 使用者時區 | Connector 收到回應時已換算（D4） |
+| 伺服端 | UTC | 資料路徑不做轉換（D3） |
+
+因此接縫收兩個引數：時區決定「今天」，`DateTimeBasis` 決定「現在」以哪個基準表示。
+`FrameworkClock`、`FormRowDefaults` 與 `IExpressionEvaluator` 都帶這個引數，預設為 `UserZone`：
+
+| 呼叫端 | 基準 |
+|--------|------|
+| `DataFormRepository.GetNewData`（伺服端的新列預設值） | `Utc` |
+| `FormExpressionCalculator.ApplyFieldExpressions` / `ValidateRules`（伺服端存檔前的 pass） | `Utc`，於方法內固定 |
+| `FormExpressionCalculator.ApplyComputedRow` / `ApplyDefaultRow`（用戶端即時預覽） | `UserZone`，於方法內固定 |
+| 用戶端新增明細列時的 `FormRowDefaults.Apply` | `UserZone`（預設值） |
+
+執行它的是 `DataFormRepositoryTests.GetNewData_TimeDefaults_DateTimeIsUtcAndDateIsUserDay`、
+`FormRowDefaultsCoverageTests.Apply_OnAddColumnTable_SeedsDateOnUserDayAndDateTimeOnBasis`，
+以及 `FormExpressionCalculatorTests` 中伺服端與用戶端的 `Now()` 測試。
+
+> **原決策在此處有缺陷，而且被另一個缺陷遮住。** 原文寫「兩條路徑最終都接上使用者時區」，把「今天」
+> 與「現在」一併接上，於是伺服端存檔 pass 的 `Now()` 產出使用者時區的牆上時間，放進以 UTC 表示的
+> `DataSet`：寫入的值差一個時差，規則裡與儲存格的比較也差一個時差。**與伺服器主機的時區無關**——
+> 值是以 session 時區從 `DateTime.UtcNow` 換算出來的，主機跑 UTC 照樣發生。
+>
+> `FormRowDefaults` 的 `DateTime` 預設值有同一個問題，卻從未在 `GetNewData` 顯現：`AddColumn` 把建欄
+> 當下的 UTC 讀數寫進 `DataColumn.DefaultValue`，`NewRow()` 一建立就帶值，而 `FormRowDefaults` 遇到
+> 已有值的欄位會略過。那個 `DefaultValue` 本身另外造成三個錯誤：
+>
+> 1. 伺服端 `GetNewData` 的 `Date` 預設值是 UTC 的今天，不是 session 時區的今天。
+> 2. `DefaultValue` 隨表格送到用戶端——序列化依 D2 原樣搬運，Connector 只轉儲存格。用戶端在新單上
+>    新增明細列時，拿到的是伺服端建骨架那一刻凍結的 UTC 讀數，送出時被當成使用者時區值，以使用者時區落庫。
+> 3. 用戶端 `FormValueBinding.BuildEmptyDataSet` 建的空表同理，只是讀數凍結在用戶端建表那一刻。
+>
+> 因此 `AddColumn` 對 `Date` / `DateTime` 不再設預設值，新列的時間預設值只由 `FormRowDefaults` 產生。
+
+運算式函式集為 `Today()`（傳入時區的今天，回 `DateOnly`）、`Now()`（與所在 `DataSet` 同一基準的
+當下，`Kind` 恆為 `Unspecified`）、`UtcNow()`（UTC 當下的原始讀數，不隨基準變動）。共用接縫是刻意的：
+日曆日欄位絕不轉換（D4），共用不引入二次轉換問題；而讓同一個名字在兩處是兩種意思，是日後最容易踩的坑。
 
 唯一不接時區的是 `FieldDbTypeExtensions.GetDefaultValue`——無使用者情境可傳，見 D13 的例外條款。
 
-> **殘餘風險（刻意接受）**：用戶端求值的運算式若以 `Now()` / `UtcNow()` 填進 `DateTime` 儲存格，
-> 送出時仍會被 Connector 當成使用者時區值再轉一次。此處不設 guard——Connector 無從得知某儲存格
-> 是運算式填的。因 `DateTime` 運算式罕見而接受，作者需自行確認語意。
+> **殘餘風險（刻意接受）**：`UtcNow()` 不隨基準變動。用戶端求值的運算式若以 `UtcNow()` 填進 `DateTime`
+> 儲存格，送出時會被 Connector 當成使用者時區值再轉一次。此處不設 guard——Connector 無從得知某儲存格
+> 是運算式填的。要寫進 `DateTime` 儲存格或與之比較時，應使用 `Now()`。
+>
+> 此段原寫「以 `Now()` / `UtcNow()` 填進 `DateTime` 儲存格都會被再轉一次」，`Now()` 那一半是錯的：
+> 用戶端的 `Now()` 本來就是使用者時區的值，經 Connector 換算後正確。真正錯位的是伺服端的 `Now()`，
+> 已由上方的基準修正。
 
 ### D13：日期一律 `DateOnly`，`DataSet` 是唯一例外；時區一律以引數傳遞
 
@@ -268,9 +315,15 @@ DTO 屬性不由 guard 檢查：guard 依訊息型別逐一比對載體，不走
 - 傳 id 而非傳 `IUserInfo`，讓 `FrameworkClock` 得以留在 `Bee.Base`（在身分模型之下）；
   持有 `IUserInfo` 的呼叫端傳 `.TimeZone` 即可，介面照樣發揮作用。
 
-**例外**：`FieldDbTypeExtensions.GetDefaultValue` 無使用者情境可傳——`AddColumn` 與
-`DbParameterSpecCollection` 都是為 NOT NULL 欄位補值，屬**資料完整性後備**而非使用者讀到的
-值，故以 UTC 產生。使用者看得到的新列預設值走 `FormRowDefaults`，該處收時區引數。
+**例外**：`FieldDbTypeExtensions.GetDefaultValue` 無使用者情境可傳，故以 UTC 產生。它是替 NOT NULL
+參數補值的**資料完整性後備**，而非使用者讀到的值。使用者看得到的新列預設值走 `FormRowDefaults`，
+該處收時區引數與 `DateTimeBasis`。
+
+`AddColumn` 對 `Date` / `DateTime` **不**取用它（2026-09-12 修正，見 D12）：`DataColumn.DefaultValue`
+是建欄時固定的單一值，放進時鐘讀數，對之後的每一列都是舊值，還會遮住 `FormRowDefaults`。
+
+> 這個後備只在命令未繫結資料列時生效。表單存檔走 `DbDataAdapter.Update`，adapter 以 `SourceColumn`
+> 的列值覆蓋參數值，所以列裡的 `DBNull` 仍會以 NULL 送進資料庫，由 NOT NULL 約束擋下。
 
 ### D9：cache-notify 的時間基準與寫入端同源，一律 UTC（2026-09-04 修訂）
 
@@ -370,7 +423,7 @@ D1 對「`FieldDbType.DateTime` 欄位存 UTC」是**強制條件**，而 SQL �
 
 **正面**
 
-- 單一時區來源，兩個方向必為反函數，round-trip 恆等；時區設錯只降級為顯示偏移。
+- 單一時區來源，兩個方向互為反函數，round-trip 恆等（DST 回撥重疊時段除外，見下）；時區設錯只降級為顯示偏移。
 - Connector 完全 schema-less，報表 / AnyCode 等無 schema 場景同樣安全。
 - 轉換路徑單一：同時區時退化為恆等轉換，不需為「有沒有跨區」維護兩套行為。
 
@@ -382,6 +435,11 @@ D1 對「`FieldDbType.DateTime` 欄位存 UTC」是**強制條件**，而 SQL �
   guard 自己的單元測試全綠——它們只驗 guard，看不到它在呼叫路徑上的位置（2026-09-12 修正）。
 - **日曆日誤轉**：標記方案不能保證欄位一定有標記——BO 自寫 SQL 未以 `SetDateColumns` 宣告的
   日曆日欄位仍會被當時間點轉換（ADR-031 已載明此殘餘破口與 BO 作者的標記責任）。
+- **DST 回撥重疊時段，讀進再存回不是恆等（尚未處理）**。使用者時區的牆上時間不帶偏移，秋季回撥
+  那一小時對應兩個 UTC 值（例：美東 2026-11-01 的 05:30Z 與 06:30Z），經 `UtcToUser` 都成為 01:30，
+  `UserToUtc` 再一律解析為標準時間的 06:30Z。而 `TableSchemaCommandBuilder.BuildUpdateCommand` 以
+  Current 值寫回所有非鍵欄位，所以值落在較早那個 UTC 的欄位，只要所在的列被修改存回——即使改的是
+  別的欄位——就會靜默晚一小時。只影響有 DST 的時區，`Asia/Taipei` 不受影響。
 - **`TimeZoneInfo.FindSystemTimeZoneById` 在 WASM / iOS / Android 未經驗證**。
   依賴 ICU 與 tz database，trim + AOT 下失敗形態是 `TimeZoneNotFoundException`，
   桌面完全不重現。

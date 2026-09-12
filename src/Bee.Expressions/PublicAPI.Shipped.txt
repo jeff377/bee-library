@@ -1,6 +1,4 @@
 #nullable enable
 Bee.Expressions.DynamicExpressoEvaluator
 Bee.Expressions.DynamicExpressoEvaluator.DynamicExpressoEvaluator() -> void
-Bee.Expressions.DynamicExpressoEvaluator.Evaluate(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, System.Type! returnType, string! timeZoneId = "") -> object?
-Bee.Expressions.DynamicExpressoEvaluator.Evaluate<T>(string! expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! variables, string! timeZoneId = "") -> T
 Bee.Expressions.DynamicExpressoEvaluator.GetReferencedVariables(string! expression) -> System.Collections.Generic.IReadOnlyList<string!>!

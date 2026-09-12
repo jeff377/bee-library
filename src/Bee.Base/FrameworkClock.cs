@@ -51,6 +51,25 @@ namespace Bee.Base
         }
 
         /// <summary>
+        /// Gets the current instant on the basis of the data set it will be written into or compared
+        /// with, with <see cref="DateTimeKind.Unspecified"/>.
+        /// </summary>
+        /// <param name="timeZoneId">
+        /// An IANA time zone id (e.g. <c>Asia/Taipei</c>); blank means UTC. Read only for
+        /// <see cref="DateTimeBasis.UserZone"/>.
+        /// </param>
+        /// <param name="basis">The basis of the surrounding data set.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The basis is <see cref="DateTimeBasis.UserZone"/>, and the id is not blank and cannot be resolved.
+        /// </exception>
+        /// <remarks>
+        /// Unlike <see cref="Today"/>, "now" does not always belong to the user: a server-side data set is
+        /// in UTC (ADR-032 D3), so a user-zone reading placed there is off by the user's offset.
+        /// </remarks>
+        public static DateTime Now(string timeZoneId, DateTimeBasis basis)
+            => Now(basis == DateTimeBasis.Utc ? string.Empty : timeZoneId);
+
+        /// <summary>
         /// Resolves a time zone id, translating a lookup failure into a diagnosable error.
         /// </summary>
         /// <param name="timeZoneId">The IANA time zone id.</param>

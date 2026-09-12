@@ -30,19 +30,25 @@ namespace Bee.Definition.Forms
         /// a mismatched case would orphan the detail under a case-sensitive key comparison.
         /// </param>
         /// <param name="timeZoneId">
-        /// The user's IANA time zone id, used for the <c>Date</c> / <c>DateTime</c> defaults so a new
-        /// row opens on the user's own day (ADR-032 D12). Blank means UTC.
+        /// The user's IANA time zone id. It sets the day of the <c>Date</c> default, so a new row opens on
+        /// the user's own day (ADR-032 D12), and the zone of the <c>DateTime</c> default when
+        /// <paramref name="basis"/> is <see cref="DateTimeBasis.UserZone"/>. Blank means UTC.
         /// </param>
-        public static void Apply(FormTable formTable, DataRow row, object? masterRowId = null, string timeZoneId = "")
+        /// <param name="basis">
+        /// The basis of the data set the row belongs to: <see cref="DateTimeBasis.Utc"/> on the server,
+        /// <see cref="DateTimeBasis.UserZone"/> on a client.
+        /// </param>
+        public static void Apply(FormTable formTable, DataRow row, object? masterRowId = null, string timeZoneId = "",
+            DateTimeBasis basis = DateTimeBasis.UserZone)
         {
             ArgumentNullException.ThrowIfNull(row);
             if (formTable?.Fields is null) { return; }
 
             foreach (FormField field in formTable.Fields)
-                ApplyField(field, row, masterRowId, timeZoneId);
+                ApplyField(field, row, masterRowId, timeZoneId, basis);
         }
 
-        private static void ApplyField(FormField field, DataRow row, object? masterRowId, string timeZoneId)
+        private static void ApplyField(FormField field, DataRow row, object? masterRowId, string timeZoneId, DateTimeBasis basis)
         {
             // Persisted columns only: the database generates AutoIncrement, and
             // relation / virtual fields are never stored.
@@ -62,7 +68,7 @@ namespace Bee.Definition.Forms
             }
             if (row[field.FieldName] != DBNull.Value) { return; }
 
-            var value = DefaultForDbType(field.DbType, timeZoneId);
+            var value = DefaultForDbType(field.DbType, timeZoneId, basis);
             if (value != DBNull.Value) { row[field.FieldName] = value; }
         }
 
@@ -72,13 +78,15 @@ namespace Bee.Definition.Forms
         /// </summary>
         /// <param name="dbType">The field database type.</param>
         /// <param name="timeZoneId">The user's IANA time zone id; blank means UTC.</param>
+        /// <param name="basis">The basis of the data set the value is for; see <see cref="Apply"/>.</param>
         /// <remarks>
         /// The <c>Date</c> and <c>DateTime</c> cases widen the clock's value to <see cref="DateTime"/>
         /// because the caller is seeding a <c>DataSet</c> cell — the one place a date cannot be a
         /// <see cref="DateOnly"/>, since <c>DataColumn</c> coerces through <c>IConvertible</c>
         /// (ADR-032 D12, ADR-031).
         /// </remarks>
-        public static object DefaultForDbType(FieldDbType dbType, string timeZoneId = "") => dbType switch
+        public static object DefaultForDbType(FieldDbType dbType, string timeZoneId = "",
+            DateTimeBasis basis = DateTimeBasis.UserZone) => dbType switch
         {
             FieldDbType.String or FieldDbType.Text => string.Empty,
             FieldDbType.Boolean => false,
@@ -87,7 +95,7 @@ namespace Bee.Definition.Forms
             FieldDbType.Long => 0L,
             FieldDbType.Decimal or FieldDbType.Currency => 0m,
             FieldDbType.Date => FrameworkClock.Today(timeZoneId).ToDateTime(TimeOnly.MinValue),
-            FieldDbType.DateTime => FrameworkClock.Now(timeZoneId),
+            FieldDbType.DateTime => FrameworkClock.Now(timeZoneId, basis),
             FieldDbType.Guid => Guid.Empty,
             FieldDbType.Binary => Array.Empty<byte>(),
             _ => DBNull.Value,

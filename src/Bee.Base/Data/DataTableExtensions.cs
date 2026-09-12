@@ -44,9 +44,22 @@ namespace Bee.Base.Data
         /// <param name="table">The target table.</param>
         /// <param name="fieldName">The column name.</param>
         /// <param name="dbType">The field database type.</param>
+        /// <remarks>
+        /// <see cref="FieldDbType.Date"/> and <see cref="FieldDbType.DateTime"/> columns get no default value.
+        /// A new row's date values come from <c>FormRowDefaults</c>, which knows the user's time zone
+        /// and the basis of the data set.
+        /// </remarks>
         public static DataColumn AddColumn(this DataTable table, string fieldName, FieldDbType dbType)
         {
-            return AddColumn(table, fieldName, string.Empty, dbType, dbType.GetDefaultValue());
+            // WARNING: do not put a clock reading into a column default. `DataColumn.DefaultValue` is one
+            // value fixed when the column is built, so it is stale for every later row and in UTC on
+            // whichever side reads it. It also masks `FormRowDefaults`, which leaves a cell that already
+            // holds a value alone, and it travels with the table to the client without being converted
+            // (ADR-032 D12).
+            var defaultValue = dbType is FieldDbType.Date or FieldDbType.DateTime
+                ? DBNull.Value
+                : dbType.GetDefaultValue();
+            return AddColumn(table, fieldName, string.Empty, dbType, defaultValue);
         }
 
         /// <summary>

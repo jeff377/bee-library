@@ -93,11 +93,16 @@ namespace Bee.Definition.Forms
         /// <param name="schema">The form schema.</param>
         /// <param name="dataSet">The data set to apply expressions to.</param>
         /// <param name="roundingContext">The rounding context for computed numeric fields.</param>
-        /// <param name="timeZoneId">The user's IANA time zone id, seen by the <c>Today()</c> / <c>Now()</c> helpers; blank means UTC.</param>
+        /// <param name="timeZoneId">The user's IANA time zone id, seen by the <c>Today()</c> helper; blank means UTC.</param>
         /// <exception cref="InvalidOperationException">
         /// A computed quantity or weight field has no <see cref="FormField.UnitField"/>, or a computed amount
         /// resolves against a company with no default currency.
         /// </exception>
+        /// <remarks>
+        /// <c>Now()</c> is evaluated on the <see cref="DateTimeBasis.Utc"/> basis. This pass runs on the
+        /// server, where the data set is in UTC (ADR-032 D3), so a user-zone reading would be written off
+        /// by the user's offset.
+        /// </remarks>
         public void ApplyFieldExpressions(FormSchema schema, DataSet dataSet, RoundingContext roundingContext,
             string timeZoneId = "")
         {
@@ -112,7 +117,7 @@ namespace Bee.Definition.Forms
                 if (formTable.Fields == null) { continue; }
                 var dataTable = FindDataTable(dataSet, formTable.TableName);
                 if (dataTable == null) { continue; }
-                ApplyTableFieldExpressions(formTable, dataTable, schema, roundingContext, timeZoneId);
+                ApplyTableFieldExpressions(formTable, dataTable, schema, roundingContext, timeZoneId, DateTimeBasis.Utc);
             }
         }
 
@@ -121,7 +126,7 @@ namespace Bee.Definition.Forms
         /// added rows and recomputes value-expression fields on added/modified rows.
         /// </summary>
         private void ApplyTableFieldExpressions(FormTable formTable, DataTable dataTable, FormSchema schema,
-            RoundingContext roundingContext, string timeZoneId)
+            RoundingContext roundingContext, string timeZoneId, DateTimeBasis basis)
         {
             var defaultFields = formTable.Fields!
                 .Where(f => StringUtilities.IsNotEmpty(f.DefaultValueExpression)).ToList();
@@ -135,10 +140,10 @@ namespace Bee.Definition.Forms
                 if (state is DataRowState.Deleted or DataRowState.Detached) { continue; }
 
                 if (state == DataRowState.Added && defaultFields.Count > 0)
-                    ApplyDefaults(row, formTable, defaultFields, timeZoneId);
+                    ApplyDefaults(row, formTable, defaultFields, timeZoneId, basis);
 
                 if (state is DataRowState.Added or DataRowState.Modified && computedFields.Count > 0)
-                    ApplyComputed(row, formTable, schema, computedFields, roundingContext, timeZoneId);
+                    ApplyComputed(row, formTable, schema, computedFields, roundingContext, timeZoneId, basis);
             }
         }
 
@@ -152,7 +157,12 @@ namespace Bee.Definition.Forms
         /// <param name="dataSet">The data set to validate.</param>
         /// <param name="trigger">The rule trigger to evaluate.</param>
         /// <exception cref="UserMessageException">A rule's condition fails; carries the rule message.</exception>
-        /// <param name="timeZoneId">The user's IANA time zone id, seen by the <c>Today()</c> / <c>Now()</c> helpers; blank means UTC.</param>
+        /// <param name="timeZoneId">The user's IANA time zone id, seen by the <c>Today()</c> helper; blank means UTC.</param>
+        /// <remarks>
+        /// <c>Now()</c> is evaluated on the <see cref="DateTimeBasis.Utc"/> basis, for the same reason as
+        /// <see cref="ApplyFieldExpressions"/>: a rule comparing a cell with <c>Now()</c> must compare two
+        /// UTC values.
+        /// </remarks>
         public void ValidateRules(FormSchema schema, DataSet dataSet, FormRuleTrigger trigger, string timeZoneId = "")
         {
             ArgumentNullException.ThrowIfNull(schema);
@@ -171,7 +181,7 @@ namespace Bee.Definition.Forms
                 if (formTable == null) { continue; }
                 var dataTable = FindDataTable(dataSet, formTable.TableName);
                 if (dataTable == null) { continue; }
-                ValidateRuleRows(rule, formTable, dataTable, timeZoneId);
+                ValidateRuleRows(rule, formTable, dataTable, timeZoneId, DateTimeBasis.Utc);
             }
         }
 
@@ -180,7 +190,8 @@ namespace Bee.Definition.Forms
         /// applicability guard (<see cref="FormRule.When"/>) but fails its condition aborts with the message.
         /// </summary>
         /// <exception cref="UserMessageException">A row's condition fails; carries the rule message.</exception>
-        private void ValidateRuleRows(FormRule rule, FormTable formTable, DataTable dataTable, string timeZoneId)
+        private void ValidateRuleRows(FormRule rule, FormTable formTable, DataTable dataTable, string timeZoneId,
+            DateTimeBasis basis)
         {
             foreach (DataRow row in dataTable.Rows)
             {
@@ -188,11 +199,11 @@ namespace Bee.Definition.Forms
 
                 var variables = BuildVariables(row, formTable);
                 if (StringUtilities.IsNotEmpty(rule.When) &&
-                    !_evaluator.Evaluate<bool>(rule.When, NarrowVariables(rule.When, variables), timeZoneId))
+                    !_evaluator.Evaluate<bool>(rule.When, NarrowVariables(rule.When, variables), timeZoneId, basis))
                 {
                     continue;
                 }
-                if (!_evaluator.Evaluate<bool>(rule.Condition, NarrowVariables(rule.Condition, variables), timeZoneId))
+                if (!_evaluator.Evaluate<bool>(rule.Condition, NarrowVariables(rule.Condition, variables), timeZoneId, basis))
                     throw new UserMessageException(rule.Message);
             }
         }
@@ -208,7 +219,10 @@ namespace Bee.Definition.Forms
         /// <param name="row">The row to recompute.</param>
         /// <param name="roundingContext">The rounding context for computed numeric fields.</param>
         /// <returns>The names of the fields whose value changed (empty when nothing changed).</returns>
-        /// <param name="timeZoneId">The user's IANA time zone id, seen by the <c>Today()</c> / <c>Now()</c> helpers; blank means UTC.</param>
+        /// <param name="timeZoneId">
+        /// The user's IANA time zone id, seen by the <c>Today()</c> and <c>Now()</c> helpers; blank means UTC.
+        /// <c>Now()</c> uses the user's zone here because a client-side data set is held in it.
+        /// </param>
         /// <exception cref="InvalidOperationException">
         /// A computed quantity or weight field has no <see cref="FormField.UnitField"/>, or a computed amount
         /// resolves against a company with no default currency.
@@ -226,7 +240,7 @@ namespace Bee.Definition.Forms
                 .Where(f => StringUtilities.IsNotEmpty(f.ValueExpression)).ToList();
             if (computedFields.Count == 0) { return []; }
 
-            return ApplyComputed(row, formTable, schema, computedFields, roundingContext, timeZoneId);
+            return ApplyComputed(row, formTable, schema, computedFields, roundingContext, timeZoneId, DateTimeBasis.UserZone);
         }
 
         /// <summary>
@@ -237,7 +251,10 @@ namespace Bee.Definition.Forms
         /// <param name="formTable">The row's form table.</param>
         /// <param name="row">The new row to seed.</param>
         /// <returns>The names of the fields that were filled (empty when none).</returns>
-        /// <param name="timeZoneId">The user's IANA time zone id, seen by the <c>Today()</c> / <c>Now()</c> helpers; blank means UTC.</param>
+        /// <param name="timeZoneId">
+        /// The user's IANA time zone id, seen by the <c>Today()</c> and <c>Now()</c> helpers; blank means UTC.
+        /// <c>Now()</c> uses the user's zone here because a client-side data set is held in it.
+        /// </param>
         public IReadOnlyList<string> ApplyDefaultRow(FormTable formTable, DataRow row, string timeZoneId = "")
         {
             ArgumentNullException.ThrowIfNull(formTable);
@@ -248,7 +265,7 @@ namespace Bee.Definition.Forms
                 .Where(f => StringUtilities.IsNotEmpty(f.DefaultValueExpression)).ToList();
             if (defaultFields.Count == 0) { return []; }
 
-            return ApplyDefaults(row, formTable, defaultFields, timeZoneId);
+            return ApplyDefaults(row, formTable, defaultFields, timeZoneId, DateTimeBasis.UserZone);
         }
 
         /// <summary>
@@ -295,7 +312,8 @@ namespace Bee.Definition.Forms
         /// Fills each default-value field on a new row when it is currently empty, returning the filled
         /// field names.
         /// </summary>
-        private List<string> ApplyDefaults(DataRow row, FormTable formTable, List<FormField> defaultFields, string timeZoneId)
+        private List<string> ApplyDefaults(DataRow row, FormTable formTable, List<FormField> defaultFields, string timeZoneId,
+            DateTimeBasis basis)
         {
             var changed = new List<string>();
             var variables = BuildVariables(row, formTable);
@@ -309,7 +327,7 @@ namespace Bee.Definition.Forms
                 // make the engine reject its own helper. `CoerceValue` performs every widening the
                 // return type used to, plus that one.
                 var value = _evaluator.Evaluate<object?>(field.DefaultValueExpression,
-                    NarrowVariables(field.DefaultValueExpression, variables), timeZoneId);
+                    NarrowVariables(field.DefaultValueExpression, variables), timeZoneId, basis);
                 var newValue = value is null ? (object)DBNull.Value : ExpressionPolicy.CoerceValue(value, field.DbType);
                 if (Equals(newValue, row[field.FieldName])) { continue; }
                 row[field.FieldName] = newValue;
@@ -326,7 +344,7 @@ namespace Bee.Definition.Forms
         /// callers see no spurious change.
         /// </summary>
         private List<string> ApplyComputed(DataRow row, FormTable formTable, FormSchema schema,
-            List<FormField> computedFields, RoundingContext roundingContext, string timeZoneId)
+            List<FormField> computedFields, RoundingContext roundingContext, string timeZoneId, DateTimeBasis basis)
         {
             var changed = new List<string>();
             var variables = BuildVariables(row, formTable);
@@ -337,7 +355,7 @@ namespace Bee.Definition.Forms
                 // Coerced after evaluation rather than forced at parse time — see ApplyDefaults.
                 var result = ExpressionPolicy.CoerceValue(
                     _evaluator.Evaluate<object?>(field.ValueExpression,
-                        NarrowVariables(field.ValueExpression, variables), timeZoneId), field.DbType);
+                        NarrowVariables(field.ValueExpression, variables), timeZoneId, basis), field.DbType);
 
                 if (result is decimal numeric)
                 {

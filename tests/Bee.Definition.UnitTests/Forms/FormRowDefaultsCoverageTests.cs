@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Data;
+using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Definition.Forms;
@@ -127,6 +128,46 @@ namespace Bee.Definition.UnitTests.Forms
         public void DefaultForDbType_NoNaturalDefault_ReturnsDBNull(FieldDbType dbType)
         {
             Assert.Equal(DBNull.Value, FormRowDefaults.DefaultForDbType(dbType));
+        }
+
+        [Fact]
+        [DisplayName("DefaultForDbType：DateTime 依基準取當下，Utc 忽略時區、UserZone 取使用者時區")]
+        public void DefaultForDbType_DateTime_FollowsBasis()
+        {
+            const string kiritimati = "Pacific/Kiritimati";   // UTC+14：兩種基準必定相差 14 小時
+            var utcBefore = DateTime.UtcNow;
+            var zoneBefore = FrameworkClock.Now(kiritimati);
+
+            var utc = (DateTime)FormRowDefaults.DefaultForDbType(FieldDbType.DateTime, kiritimati, DateTimeBasis.Utc);
+            var userZone = (DateTime)FormRowDefaults.DefaultForDbType(FieldDbType.DateTime, kiritimati);
+
+            Assert.InRange(utc, utcBefore, DateTime.UtcNow);
+            Assert.InRange(userZone, zoneBefore, FrameworkClock.Now(kiritimati));
+        }
+
+        [Theory]
+        [InlineData("Pacific/Kiritimati")]
+        [InlineData("Pacific/Pago_Pago")]
+        [DisplayName("Apply：以 AddColumn 建立的表，Date 取使用者時區的今天、DateTime 依基準取當下")]
+        public void Apply_OnAddColumnTable_SeedsDateOnUserDayAndDateTimeOnBasis(string timeZoneId)
+        {
+            // 伺服端 GetNewData 與用戶端 BuildEmptyDataSet 都以 AddColumn 建表。欄位若帶建欄當下的時鐘
+            // 預設值，NewRow() 一建立就有值，Apply 會略過而留下 UTC 讀數（ADR-032 D12）。
+            // 兩個時區任何時刻至少有一個的「今天」與 UTC 不同，Date 斷言不會空轉。
+            var schema = new FormSchema("Order", "Order");
+            var formTable = schema.Tables!.Add("Order", "Order");
+            formTable.Fields!.Add("order_date", "Order Date", FieldDbType.Date);
+            formTable.Fields.Add("created_at", "Created At", FieldDbType.DateTime);
+            var table = new DataTable("Order");
+            table.AddColumn("order_date", FieldDbType.Date);
+            table.AddColumn("created_at", FieldDbType.DateTime);
+            var row = table.NewRow();
+            var utcBefore = DateTime.UtcNow;
+
+            FormRowDefaults.Apply(formTable, row, null, timeZoneId, DateTimeBasis.Utc);
+
+            Assert.Equal(FrameworkClock.Today(timeZoneId).ToDateTime(TimeOnly.MinValue), (DateTime)row["order_date"]);
+            Assert.InRange((DateTime)row["created_at"], utcBefore, DateTime.UtcNow);
         }
     }
 }

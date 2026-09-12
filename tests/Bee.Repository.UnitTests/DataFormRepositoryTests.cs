@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Data.Common;
 using System.Reflection;
+using Bee.Base;
 using Bee.Base.Data;
 using Bee.Db;
 using Bee.Db.Manager;
@@ -172,6 +173,32 @@ namespace Bee.Repository.UnitTests
             var masterRow = dataSet.Tables["Employee"]!.Rows[0];
             var rowId = (Guid)masterRow[SysFields.RowId];
             Assert.NotEqual(Guid.Empty, rowId);
+        }
+
+        [Theory]
+        [InlineData("Pacific/Kiritimati")]
+        [InlineData("Pacific/Pago_Pago")]
+        [DisplayName("GetNewData 新列的 DateTime 預設值為 UTC 當下，Date 預設值為使用者時區的今天")]
+        public void GetNewData_TimeDefaults_DateTimeIsUtcAndDateIsUserDay(string timeZoneId)
+        {
+            // 伺服端的 DataSet 以 UTC 表示（ADR-032 D3），回應經 Connector 時會被當成 UTC 換算。
+            // 骨架表經 AddColumn 建立；欄位若帶建欄當下的時鐘預設值，FormRowDefaults 會被略過。
+            // UTC+14 與 UTC-11：任何時刻至少有一個時區的「今天」與 UTC 不同，Date 斷言不會因為
+            // 剛好同一天而空轉；DateTime 則兩者都與 UTC 相差十小時以上。
+            var schema = new FormSchema("Employee", "Employee");
+            var master = schema.Tables!.Add("Employee", "Employee");
+            master.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
+            master.Fields.Add("hire_date", "Hire Date", FieldDbType.Date);
+            master.Fields.Add("created_at", "Created At", FieldDbType.DateTime);
+            var repo = CreateRepository(schema);
+            var utcBefore = DateTime.UtcNow;
+
+            var dataSet = repo.GetNewData(timeZoneId);
+
+            var utcAfter = DateTime.UtcNow;
+            var masterRow = dataSet.Tables["Employee"]!.Rows[0];
+            Assert.InRange((DateTime)masterRow["created_at"], utcBefore, utcAfter);
+            Assert.Equal(FrameworkClock.Today(timeZoneId).ToDateTime(TimeOnly.MinValue), (DateTime)masterRow["hire_date"]);
         }
 
         [Fact]

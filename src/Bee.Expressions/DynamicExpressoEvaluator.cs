@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using DynamicExpresso;
 using DynamicExpresso.Exceptions;
@@ -73,6 +74,11 @@ namespace Bee.Expressions
 #pragma warning disable IDE1006
         [ThreadStatic]
         private static string? t_timeZoneId;
+
+        // The basis travels through the same channel as the zone. `Now()` depends on the basis of the
+        // data set being evaluated, which only the caller knows (ADR-032 D12).
+        [ThreadStatic]
+        private static DateTimeBasis t_basis;
 #pragma warning restore IDE1006
 
         /// <summary>
@@ -89,18 +95,20 @@ namespace Bee.Expressions
             // like every other date in the framework; `ExpressionPolicy.CoerceValue` widens it when
             // the result lands in a DataSet cell, the one place a date must be a DateTime.
             interpreter.SetFunction("Today", (Func<DateOnly>)(() => FrameworkClock.Today(t_timeZoneId ?? string.Empty)));
-            // `Now()` deliberately does no time-zone work beyond the same lookup: an instant written
-            // into a DateTime cell is subject to the Connector's conversion, and expressions
-            // computing on instants are rare enough that the author picks the semantics (D12).
-            interpreter.SetFunction("Now", (Func<DateTime>)(() => FrameworkClock.Now(t_timeZoneId ?? string.Empty)));
+            // `Now()` follows the basis of the data set being evaluated, not the user's zone alone, so the
+            // value it writes or compares shares the basis of the cells around it: UTC in the server's
+            // pre-save pass, the user's zone in a client preview (ADR-032 D12).
+            interpreter.SetFunction("Now", (Func<DateTime>)(() => FrameworkClock.Now(t_timeZoneId ?? string.Empty, t_basis)));
             interpreter.SetFunction("UtcNow", (Func<DateTime>)(() => DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)));
             interpreter.SetFunction("IsNullOrEmpty", (Func<string?, bool>)string.IsNullOrEmpty);
             interpreter.SetFunction("IsNullOrWhiteSpace", (Func<string?, bool>)string.IsNullOrWhiteSpace);
         }
 
         /// <inheritdoc />
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters",
+            Justification = "The overload pair mirrors IExpressionEvaluator, which carries the same suppression. Both overloads gained the trailing basis parameter together (ADR-032 D12), so no caller can rebind from one to the other, which is the hazard RS0026 guards against.")]
         public object? Evaluate(string expression, IReadOnlyDictionary<string, object?> variables, Type returnType,
-            string timeZoneId = "")
+            string timeZoneId = "", DateTimeBasis basis = DateTimeBasis.UserZone)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(expression);
             ArgumentNullException.ThrowIfNull(variables);
@@ -118,38 +126,46 @@ namespace Bee.Expressions
                 arguments[i] = new Parameter(names[i], variables[names[i]] ?? (object)string.Empty);
             }
 
-            return InvokeWithZone(lambda, arguments, timeZoneId);
+            return InvokeWithZone(lambda, arguments, timeZoneId, basis);
         }
 
         /// <inheritdoc />
-        public T Evaluate<T>(string expression, IReadOnlyDictionary<string, object?> variables, string timeZoneId = "")
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters",
+            Justification = "See the justification on the non-generic overload above.")]
+        public T Evaluate<T>(string expression, IReadOnlyDictionary<string, object?> variables, string timeZoneId = "",
+            DateTimeBasis basis = DateTimeBasis.UserZone)
         {
-            var result = Evaluate(expression, variables, typeof(T), timeZoneId);
+            var result = Evaluate(expression, variables, typeof(T), timeZoneId, basis);
             return result is null ? default! : (T)result;
         }
 
         /// <summary>
-        /// Invokes a compiled lambda with <see cref="t_timeZoneId"/> set to <paramref name="timeZoneId"/>.
+        /// Invokes a compiled lambda with <see cref="t_timeZoneId"/> and <see cref="t_basis"/> set for
+        /// the call.
         /// </summary>
         /// <param name="lambda">The compiled expression to invoke.</param>
         /// <param name="arguments">The bound parameters.</param>
         /// <param name="timeZoneId">The zone the helper functions should observe for this invocation.</param>
+        /// <param name="basis">The data-set basis <c>Now()</c> should observe for this invocation.</param>
         /// <remarks>
-        /// The zone is scoped to this invocation only, and whatever an outer call had is restored: a
+        /// Both values are scoped to this invocation only, and whatever an outer call had is restored: a
         /// computed field's expression can be evaluated inside another evaluation. Kept static so the
-        /// whole read/write protocol for the ambient field sits next to the field itself.
+        /// whole read/write protocol for the ambient fields sits next to the fields themselves.
         /// </remarks>
-        private static object? InvokeWithZone(Lambda lambda, Parameter[] arguments, string timeZoneId)
+        private static object? InvokeWithZone(Lambda lambda, Parameter[] arguments, string timeZoneId, DateTimeBasis basis)
         {
-            var previous = t_timeZoneId;
+            var previousZone = t_timeZoneId;
+            var previousBasis = t_basis;
             t_timeZoneId = timeZoneId;
+            t_basis = basis;
             try
             {
                 return lambda.Invoke(arguments);
             }
             finally
             {
-                t_timeZoneId = previous;
+                t_timeZoneId = previousZone;
+                t_basis = previousBasis;
             }
         }
 

@@ -21,7 +21,10 @@ namespace Bee.Business.Form
         /// <param name="schema">The form schema.</param>
         /// <param name="dataSet">The data set being saved (mutated in place).</param>
         /// <param name="roundingContext">The rounding context used to round computed numeric fields.</param>
-        /// <param name="timeZoneId">The requesting user's IANA time zone id, seen by the <c>Today()</c> / <c>Now()</c> helpers; blank means UTC.</param>
+        /// <param name="timeZoneId">
+        /// The requesting user's IANA time zone id, seen by the <c>Today()</c> helper; blank means UTC.
+        /// <c>Now()</c> is evaluated in UTC, the basis of a server-side data set (ADR-032 D12).
+        /// </param>
         void ApplyBeforeSave(FormSchema schema, DataSet dataSet, RoundingContext roundingContext, string timeZoneId = "");
 
         /// <summary>
@@ -31,7 +34,10 @@ namespace Bee.Business.Form
         /// </summary>
         /// <param name="schema">The form schema.</param>
         /// <param name="snapshot">The pre-delete record snapshot (master + details).</param>
-        /// <param name="timeZoneId">The requesting user's IANA time zone id, seen by the <c>Today()</c> / <c>Now()</c> helpers; blank means UTC.</param>
+        /// <param name="timeZoneId">
+        /// The requesting user's IANA time zone id, seen by the <c>Today()</c> helper; blank means UTC.
+        /// <c>Now()</c> is evaluated in UTC, the basis of a server-side data set (ADR-032 D12).
+        /// </param>
         void ApplyBeforeDelete(FormSchema schema, DataSet snapshot, string timeZoneId = "");
     }
 }

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Base;
 using Bee.Base.Expressions;
 
 namespace Bee.Expressions.UnitTests
@@ -16,6 +17,34 @@ namespace Bee.Expressions.UnitTests
             var dict = new Dictionary<string, object?>(StringComparer.Ordinal);
             foreach (var (name, value) in pairs) { dict[name] = value; }
             return dict;
+        }
+
+        [Fact]
+        [DisplayName("Now()：Utc 基準忽略時區取 UTC 當下，UserZone 基準取該時區的當下")]
+        public void Evaluate_NowFunction_FollowsBasis()
+        {
+            const string kiritimati = "Pacific/Kiritimati";   // UTC+14：兩種基準必定相差 14 小時
+            var variables = Vars();
+            var utcBefore = DateTime.UtcNow;
+            var zoneBefore = FrameworkClock.Now(kiritimati);
+
+            var utc = _evaluator.Evaluate<DateTime>("Now()", variables, kiritimati, DateTimeBasis.Utc);
+            var userZone = _evaluator.Evaluate<DateTime>("Now()", variables, kiritimati);
+
+            Assert.InRange(utc, utcBefore, DateTime.UtcNow);
+            Assert.InRange(userZone, zoneBefore, FrameworkClock.Now(kiritimati));
+        }
+
+        [Theory]
+        [InlineData("Pacific/Kiritimati")]
+        [InlineData("Pacific/Pago_Pago")]
+        [DisplayName("Today()：Utc 基準下仍取使用者時區的今天，基準只影響 Now()")]
+        public void Evaluate_TodayFunction_IgnoresBasis(string timeZoneId)
+        {
+            // 兩個時區任何時刻至少有一個的「今天」與 UTC 不同，斷言不會空轉。
+            var result = _evaluator.Evaluate<DateOnly>("Today()", Vars(), timeZoneId, DateTimeBasis.Utc);
+
+            Assert.Equal(FrameworkClock.Today(timeZoneId), result);
         }
 
         [Fact]

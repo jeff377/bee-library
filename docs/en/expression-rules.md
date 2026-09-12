@@ -1,4 +1,4 @@
-<!-- source: zh-TW/expression-rules.md blob: 9793c6e63e694f44146507427747a26feb03fc01 -->
+<!-- source: zh-TW/expression-rules.md blob: 1fb36bde19944b1dd09e7e6547dcb726975c7912 -->
 # Expressions and Rules (Field Computation and Pre-Save / Pre-Delete Validation)
 
 [繁體中文](../zh-TW/expression-rules.md) · [← Docs Index](README.md)
@@ -28,12 +28,12 @@ For the background and the decision itself, see [ADR-028](../adr/adr-028-express
   | Function | Returns | Basis |
   |----------|---------|-------|
   | `Today()` | `DateOnly` | Today **in the user's time zone**. This is what you want for cases like defaulting a leave date to today — a user in New York filing against a Taipei company still gets the Taipei date |
-  | `Now()` | `DateTime` (`Kind` is `Unspecified`) | The current moment in that same zone |
-  | `UtcNow()` | `DateTime` (`Kind` is `Unspecified`) | The current UTC moment, for when UTC intent must be explicit |
+  | `Now()` | `DateTime` (`Kind` is `Unspecified`) | The current moment, on the same basis as the instants in the surrounding `DataSet`: the user's time zone during client-side live preview, UTC in the server's pre-save computation and validation. Use it to write into or compare with a `DateTime` field |
+  | `UtcNow()` | `DateTime` (`Kind` is `Unspecified`) | The raw current UTC reading, which does not change with the side it runs on |
 
   `Today()` returns `DateOnly` rather than `DateTime` because a calendar day is always expressed as `DateOnly` in the framework. The `DataSet` cell is the sole exception, since a `DataColumn` can only carry a calendar day as `DateTime`. You may write `Today()` into either a `Date` or a `DateTime` field; the framework performs the conversion when writing the cell.
 
-  > **Confirm the intent yourself when writing `Now()` / `UtcNow()` into a `DateTime` field.** An expression evaluated on the client still has its result treated as a user-zone value and converted once more on submission. The framework neither does — nor can — determine that a given cell was filled by an expression.
+  > **To write into or compare with a `DateTime` field, use `Now()`, not `UtcNow()`.** A client-side `DataSet` is held in the user's time zone, so a `UtcNow()` value is treated as a user-zone value and converted once more on submission. The framework neither does — nor can — determine that a given cell was filled by an expression.
 - **Forbidden**: reflection, IO, and loading arbitrary types. Any identifier outside the allowlist fails at parse time as a configuration error.
 - **Null handling**: an empty field (`DBNull`) is substituted with its type default (`0` for numbers, an empty string for text, `Guid.Empty`, …), so `unit_price * qty` evaluates to `0` on empty input rather than failing.
 

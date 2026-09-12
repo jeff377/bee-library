@@ -38,8 +38,9 @@ namespace Bee.Repository.Abstractions.Form
         /// <c>sys_rowid</c>; detail tables carry their full schema but no rows.
         /// </summary>
         /// <param name="timeZoneId">
-        /// The requesting user's IANA time zone id, used to seed date defaults on the user's own day
-        /// (ADR-032 D12). Blank means UTC.
+        /// The requesting user's IANA time zone id, used to seed <c>Date</c> defaults on the user's own
+        /// day (ADR-032 D12). Blank means UTC. <c>DateTime</c> defaults are the current UTC instant, the
+        /// basis of a server-side data set.
         /// </param>
         DataSet GetNewData(string timeZoneId = "");
 

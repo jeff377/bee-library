@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using System.Data;
+using Bee.Base;
 using Bee.Base.Data;
+using Bee.Base.Exceptions;
 using Bee.Definition.Forms;
 using Bee.Definition.Settings;
 using Bee.Expressions;
@@ -64,6 +66,89 @@ namespace Bee.Definition.UnitTests.Forms
             row["status"] = "Draft";
             table.Rows.Add(row);
             return table;
+        }
+
+        // UTC+14：使用者時區的當下與 UTC 當下必定相差 14 小時，斷言兩種基準時不會剛好重疊。
+        private const string Kiritimati = "Pacific/Kiritimati";
+
+        private static FormSchema BuildStampSchema()
+        {
+            var schema = new FormSchema("Stamp", "Stamp") { CategoryId = "company" };
+            var table = schema.Tables!.Add("Stamp", "Stamp");
+            table.Fields!.Add(new FormField("created_at", "CreatedAt", FieldDbType.DateTime)
+            {
+                DefaultValueExpression = "Now()",
+            });
+            table.Fields!.Add(new FormField("touched_at", "TouchedAt", FieldDbType.DateTime)
+            {
+                ValueExpression = "Now()",
+                ReadOnly = true,
+            });
+            table.Fields!.Add(new FormField("stamp_date", "StampDate", FieldDbType.Date)
+            {
+                DefaultValueExpression = "Today()",
+            });
+            return schema;
+        }
+
+        private static DataSet BuildStampDataSet()
+        {
+            var table = new DataTable("Stamp");
+            table.Columns.Add("created_at", typeof(DateTime));
+            table.Columns.Add("touched_at", typeof(DateTime));
+            table.Columns.Add("stamp_date", typeof(DateTime));
+            table.Rows.Add(table.NewRow());   // RowState = Added
+            var dataSet = new DataSet("Stamp");
+            dataSet.Tables.Add(table);
+            return dataSet;
+        }
+
+        [Fact]
+        [DisplayName("ApplyFieldExpressions（伺服端存檔）：Now() 以 UTC 為基準，Today() 仍取使用者時區的今天")]
+        public void ApplyFieldExpressions_NowIsUtcBasis_TodayIsUserDay()
+        {
+            // 伺服端存檔時 DataSet 已是 UTC（ADR-032 D3）。Now() 若取使用者時區的牆上時間，
+            // 寫進 DateTime 欄就會以使用者時區存進約定存 UTC 的欄位。
+            var dataSet = BuildStampDataSet();
+            var utcBefore = DateTime.UtcNow;
+
+            _calculator.ApplyFieldExpressions(BuildStampSchema(), dataSet, new RoundingContext(), Kiritimati);
+
+            var utcAfter = DateTime.UtcNow;
+            var row = dataSet.Tables["Stamp"]!.Rows[0];
+            Assert.InRange((DateTime)row["created_at"], utcBefore, utcAfter);
+            Assert.InRange((DateTime)row["touched_at"], utcBefore, utcAfter);
+            Assert.Equal(FrameworkClock.Today(Kiritimati).ToDateTime(TimeOnly.MinValue), (DateTime)row["stamp_date"]);
+        }
+
+        [Fact]
+        [DisplayName("ValidateRules（伺服端存檔）：規則裡的 Now() 與 UTC 儲存格以同一基準比較")]
+        public void ValidateRules_NowComparesAgainstUtcCells()
+        {
+            // 儲存格是 UTC 的一小時後，以 UTC 比較應判為晚於現在而擋下。
+            // Now() 若取 UTC+14 的牆上時間，這筆會被誤判為早於現在而放行。
+            var schema = BuildStampSchema();
+            schema.Rules!.Add("created_not_future", "created_at <= Now()", "建立時間不得晚於現在");
+            var dataSet = BuildStampDataSet();
+            dataSet.Tables["Stamp"]!.Rows[0]["created_at"] =
+                DateTime.SpecifyKind(DateTime.UtcNow.AddHours(1), DateTimeKind.Unspecified);
+
+            Assert.Throws<UserMessageException>(() =>
+                _calculator.ValidateRules(schema, dataSet, FormRuleTrigger.BeforeSave, Kiritimati));
+        }
+
+        [Fact]
+        [DisplayName("ApplyDefaultRow（用戶端預覽）：Now() 以使用者時區為基準，因為用戶端的 DataSet 以使用者時區呈現")]
+        public void ApplyDefaultRow_NowIsUserZoneBasis()
+        {
+            var schema = BuildStampSchema();
+            var row = BuildStampDataSet().Tables["Stamp"]!.Rows[0];
+            var before = FrameworkClock.Now(Kiritimati);
+
+            _calculator.ApplyDefaultRow(schema.MasterTable!, row, Kiritimati);
+
+            var after = FrameworkClock.Now(Kiritimati);
+            Assert.InRange((DateTime)row["created_at"], before, after);
         }
 
         [Fact]

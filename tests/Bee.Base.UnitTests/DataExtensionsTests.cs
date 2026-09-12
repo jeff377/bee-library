@@ -124,6 +124,20 @@ namespace Bee.Base.UnitTests
             Assert.False(col.AllowDBNull);
         }
 
+        [Theory]
+        [InlineData(FieldDbType.Date)]
+        [InlineData(FieldDbType.DateTime)]
+        [DisplayName("AddColumn 對日期欄不設預設值：時鐘讀數放進欄位預設值，對之後每一列都是舊值")]
+        public void AddColumn_DateTypes_HaveNoDefaultValue(FieldDbType dbType)
+        {
+            // 欄位預設值是建欄時固定的單一值，而且會遮住 FormRowDefaults（ADR-032 D12）。
+            var table = new DataTable();
+            var col = table.AddColumn("stamp", dbType);
+
+            Assert.Equal(DBNull.Value, col.DefaultValue);
+            Assert.Equal(DBNull.Value, table.NewRow()["stamp"]);
+        }
+
         [Fact]
         [DisplayName("AddColumn 指定預設值應影響 AllowDBNull")]
         public void AddColumn_WithExplicitDefault_SetsAllowDbNull()

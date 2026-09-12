@@ -191,8 +191,10 @@ namespace Bee.Repository.Form
 
             var masterRow = masterDataTable.NewRow();
             // Schema-driven non-null seeding (fresh sys_rowid + type defaults), then the
-            // FormSchema field defaults (e.g. a status of "Draft") which take precedence.
-            FormRowDefaults.Apply(masterTable, masterRow, null, timeZoneId);
+            // FormSchema field defaults (e.g. a status of "Draft") which take precedence. The data set
+            // is in UTC on this side (ADR-032 D3), so "now" is seeded in UTC while "today" still follows
+            // the user's zone.
+            FormRowDefaults.Apply(masterTable, masterRow, null, timeZoneId, DateTimeBasis.Utc);
             ApplyMasterDefaults(masterRow, masterTable);
             masterDataTable.Rows.Add(masterRow);
 
