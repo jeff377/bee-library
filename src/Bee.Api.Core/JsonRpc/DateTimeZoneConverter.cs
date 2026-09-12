@@ -21,6 +21,11 @@ namespace Bee.Api.Core.JsonRpc
     /// Both row versions are converted. A modified row carries Original alongside Current, and the
     /// server reads Original for concurrency checks and the audit DiffGram — converting only Current
     /// would leave the two versions in different zones and silently corrupt both.
+    ///
+    /// A wall-clock time inside a DST fall-back overlap stands for two instants. The user-zone direction
+    /// remembers which instant each such cell came from, keyed by the rows it returns, and the UTC
+    /// direction sends that instant back for as long as the cell still shows the same wall-clock time.
+    /// Rows the caller copies or builds itself carry no memory and resolve to standard time (ADR-032 D4).
     /// </remarks>
     public static class DateTimeZoneConverter
     {
@@ -123,8 +128,9 @@ namespace Bee.Api.Core.JsonRpc
         /// than assumed to be one hour — not every zone moves by exactly an hour.
         /// </para>
         /// <para>
-        /// The fall-back (ambiguous) direction needs no handling: <c>ConvertTimeToUtc</c> resolves a
-        /// repeated local time to standard time deterministically and does not throw.
+        /// The fall-back (ambiguous) direction does not throw: <c>ConvertTimeToUtc</c> resolves a
+        /// repeated local time to standard time. A cell that came from a converted response is sent
+        /// back as the instant it came from instead; see <see cref="CellShift"/>.
         /// </para>
         /// </remarks>
         private static DateTime SkipSpringForwardGap(DateTime naive, TimeZoneInfo zone)
@@ -135,15 +141,46 @@ namespace Bee.Api.Core.JsonRpc
             return gap > TimeSpan.Zero ? naive.Add(gap) : naive;
         }
 
+        /// <summary>
+        /// Returns the shift applied to one row's instant cells.
+        /// </summary>
+        /// <param name="copy">The row being rewritten, which is the one handed back to the caller.</param>
+        /// <param name="source">The caller's own row the copy was made from.</param>
+        /// <param name="zone">The user's time zone.</param>
+        /// <param name="toUtc">The direction of the shift.</param>
+        /// <remarks>
+        /// The user-zone direction remembers ambiguous cells against the copy, because the copy is what
+        /// the caller keeps and later sends back. The UTC direction therefore looks them up against the
+        /// source, which is that same row returning.
+        /// </remarks>
+        private static Func<DateTime, DataColumn, DataRowVersion, DateTime> CellShift(
+            DataRow copy, DataRow source, TimeZoneInfo zone, bool toUtc)
+        {
+            if (toUtc)
+            {
+                return (value, column, version) =>
+                    AmbiguousInstantMemory.TryRecall(source, column, version, value, zone, out var utc)
+                        ? utc
+                        : Shift(value, zone, toUtc: true);
+            }
+
+            return (value, column, version) =>
+            {
+                var local = Shift(value, zone, toUtc: false);
+                AmbiguousInstantMemory.Remember(copy, column, version, value, local, zone);
+                return local;
+            };
+        }
+
         private static DataSet? Convert(DataSet? dataSet, string timeZoneId, bool toUtc)
         {
             if (dataSet == null || IsNoOp(timeZoneId)) { return dataSet; }
 
             var zone = ResolveZone(timeZoneId);
             var copy = dataSet.Copy();
-            foreach (DataTable table in copy.Tables)
+            for (int i = 0; i < copy.Tables.Count; i++)
             {
-                ConvertInPlace(table, zone, toUtc);
+                ConvertInPlace(copy.Tables[i], dataSet.Tables[i], zone, toUtc);
             }
             return copy;
         }
@@ -153,7 +190,7 @@ namespace Bee.Api.Core.JsonRpc
             if (table == null || IsNoOp(timeZoneId)) { return table; }
 
             var copy = table.Copy();
-            ConvertInPlace(copy, ResolveZone(timeZoneId), toUtc);
+            ConvertInPlace(copy, table, ResolveZone(timeZoneId), toUtc);
             return copy;
         }
 
@@ -162,15 +199,19 @@ namespace Bee.Api.Core.JsonRpc
         /// both of its versions.
         /// </summary>
         /// <param name="table">A table the caller owns exclusively.</param>
+        /// <param name="source">The table <paramref name="table"/> was copied from; rows align by index.</param>
         /// <param name="zone">The user's time zone.</param>
         /// <param name="toUtc">The direction of the shift.</param>
-        private static void ConvertInPlace(DataTable table, TimeZoneInfo zone, bool toUtc)
+        private static void ConvertInPlace(DataTable table, DataTable source, TimeZoneInfo zone, bool toUtc)
         {
             var columns = InstantColumns(table);
             if (columns.Count == 0) { return; }
 
-            foreach (DataRow row in table.Rows)
+            for (int i = 0; i < table.Rows.Count; i++)
             {
+                var row = table.Rows[i];
+                var shift = CellShift(row, source.Rows[i], zone, toUtc);
+
                 // Writing a cell always marks the row Modified, so each state needs its own recovery:
                 // the value must change while the row's meaning to the server must not.
                 switch (row.RowState)
@@ -179,35 +220,34 @@ namespace Bee.Api.Core.JsonRpc
                         // A deleted row exposes only Original, and writing to it would first have to
                         // undo the delete. The server reads it for the audit trail, so it goes through
                         // reject / rewrite / re-delete.
-                        ConvertDeletedRow(row, columns, zone, toUtc);
+                        ConvertDeletedRow(row, columns, shift);
                         break;
 
                     case DataRowState.Modified:
-                        var original = CaptureVersion(row, columns, DataRowVersion.Original, zone, toUtc);
-                        WriteCurrent(row, columns, zone, toUtc);
-                        RewriteOriginal(row, columns, original);
+                        ConvertModifiedRow(row, columns, shift);
                         break;
 
                     case DataRowState.Unchanged:
                         // Accept afterwards so the converted value becomes the new Original too —
                         // otherwise the row would arrive at the server looking edited.
-                        WriteCurrent(row, columns, zone, toUtc);
+                        WriteCurrent(row, columns, shift);
                         row.AcceptChanges();
                         break;
 
                     default:
                         // Added: only Current exists, and it must stay Added.
-                        WriteCurrent(row, columns, zone, toUtc);
+                        WriteCurrent(row, columns, shift);
                         break;
                 }
             }
         }
 
-        private static void WriteCurrent(DataRow row, List<DataColumn> columns, TimeZoneInfo zone, bool toUtc)
+        private static void WriteCurrent(DataRow row, List<DataColumn> columns,
+            Func<DateTime, DataColumn, DataRowVersion, DateTime> shift)
         {
             foreach (var column in columns)
             {
-                if (row[column] is DateTime current) { row[column] = Shift(current, zone, toUtc); }
+                if (row[column] is DateTime current) { row[column] = shift(current, column, DataRowVersion.Current); }
             }
         }
 
@@ -226,41 +266,82 @@ namespace Bee.Api.Core.JsonRpc
         }
 
         private static Dictionary<string, object?> CaptureVersion(DataRow row, List<DataColumn> columns,
-            DataRowVersion version, TimeZoneInfo zone, bool toUtc)
+            DataRowVersion version, Func<DateTime, DataColumn, DataRowVersion, DateTime> shift)
         {
             var captured = new Dictionary<string, object?>(StringComparer.Ordinal);
             foreach (var column in columns)
             {
                 var value = row[column, version];
-                captured[column.ColumnName] = value is DateTime instant ? Shift(instant, zone, toUtc) : value;
+                captured[column.ColumnName] = value is DateTime instant ? shift(instant, column, version) : value;
             }
             return captured;
         }
 
         /// <summary>
-        /// Replaces a modified row's Original values with the converted ones, leaving it Modified.
+        /// Converts both versions of a modified row, leaving it Modified with every edit intact.
         /// </summary>
         /// <remarks>
         /// ADO.NET offers no way to write the Original version directly. The row is therefore
-        /// rejected back to Original, rewritten, accepted so those values become the new Original,
-        /// then given its Current values again — which returns it to Modified with both versions in
-        /// the target zone.
+        /// rejected back to Original, given the converted Original values, accepted so those become
+        /// the new Original, then given its converted Current values again.
+        /// <para>
+        /// WARNING: <see cref="DataRow.RejectChanges"/> reverts every column, not only the instant
+        /// ones, so both versions are captured across the whole row before it runs. Restoring only the
+        /// instant columns silently discarded every other edit on the row, in any time zone.
+        /// <c>DateTimeZoneConverterTests.Convert_ModifiedRowWithNonInstantEdit_KeepsTheEdit</c> pins this.
+        /// </para>
         /// </remarks>
-        private static void RewriteOriginal(DataRow row, List<DataColumn> columns,
-            Dictionary<string, object?> convertedOriginal)
+        private static void ConvertModifiedRow(DataRow row, List<DataColumn> instantColumns,
+            Func<DateTime, DataColumn, DataRowVersion, DateTime> shift)
         {
-            var current = new Dictionary<string, object?>(StringComparer.Ordinal);
-            foreach (var column in columns) { current[column.ColumnName] = row[column]; }
+            var original = CaptureRow(row, DataRowVersion.Original, instantColumns, shift);
+            var current = CaptureRow(row, DataRowVersion.Current, instantColumns, shift);
 
             row.RejectChanges();
-            foreach (var column in columns) { row[column] = convertedOriginal[column.ColumnName] ?? DBNull.Value; }
+            WriteRow(row, original);
             row.AcceptChanges();
-            foreach (var column in columns) { row[column] = current[column.ColumnName] ?? DBNull.Value; }
+            WriteRow(row, current);
+
+            // The server picks UPDATE from the row state alone, so a row whose two versions happen to
+            // hold equal values must stay Modified even though the write above changed nothing.
+            if (row.RowState == DataRowState.Unchanged) { row.SetModified(); }
         }
 
-        private static void ConvertDeletedRow(DataRow row, List<DataColumn> columns, TimeZoneInfo zone, bool toUtc)
+        private static object[] CaptureRow(DataRow row, DataRowVersion version, List<DataColumn> instantColumns,
+            Func<DateTime, DataColumn, DataRowVersion, DateTime> shift)
         {
-            var converted = CaptureVersion(row, columns, DataRowVersion.Original, zone, toUtc);
+            var values = new object[row.Table.Columns.Count];
+            foreach (DataColumn column in row.Table.Columns)
+            {
+                var value = row[column, version];
+                values[column.Ordinal] = value is DateTime instant && instantColumns.Contains(column)
+                    ? shift(instant, column, version)
+                    : value;
+            }
+            return values;
+        }
+
+        /// <summary>
+        /// Writes the columns whose value differs from what the row holds now.
+        /// </summary>
+        /// <remarks>
+        /// Skipping equal values is what lets this run over the whole row: an expression column
+        /// computes its own value and rejects a write, and a read-only column that did not change is
+        /// never assigned, so it cannot raise <see cref="ReadOnlyException"/>.
+        /// </remarks>
+        private static void WriteRow(DataRow row, object[] values)
+        {
+            foreach (DataColumn column in row.Table.Columns)
+            {
+                if (column.Expression.Length > 0 || Equals(row[column], values[column.Ordinal])) { continue; }
+                row[column] = values[column.Ordinal];
+            }
+        }
+
+        private static void ConvertDeletedRow(DataRow row, List<DataColumn> columns,
+            Func<DateTime, DataColumn, DataRowVersion, DateTime> shift)
+        {
+            var converted = CaptureVersion(row, columns, DataRowVersion.Original, shift);
 
             row.RejectChanges();
             foreach (var column in columns) { row[column] = converted[column.ColumnName] ?? DBNull.Value; }

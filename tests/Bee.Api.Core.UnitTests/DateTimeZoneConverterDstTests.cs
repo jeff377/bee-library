@@ -25,6 +25,22 @@ namespace Bee.Api.Core.UnitTests
         private static readonly DateTime s_springForwardGap = new(2026, 3, 8, 2, 30, 0, DateTimeKind.Unspecified);
         private static readonly DateTime s_fallBackAmbiguous = new(2026, 11, 1, 1, 30, 0, DateTimeKind.Unspecified);
 
+        // 回撥重疊時段的兩個 UTC 值：01:30 EDT 與 01:30 EST，牆上時間相同。
+        private static readonly DateTime s_firstOccurrenceUtc = new(2026, 11, 1, 5, 30, 0, DateTimeKind.Unspecified);
+
+        /// <summary>
+        /// 伺服端回應的形狀：UTC、Unchanged，另有一個可供「改別的欄位」的文字欄。
+        /// </summary>
+        private static DataTable BuildLoadedTable(DateTime utc)
+        {
+            var table = new DataTable("events");
+            table.AddColumn("occurred_at", FieldDbType.DateTime);
+            table.AddColumn("remark", FieldDbType.String);
+            table.Rows.Add(utc, "a");
+            table.AcceptChanges();
+            return table;
+        }
+
         private static DataTable BuildTableWithInstant(DateTime value)
         {
             var table = new DataTable("events");
@@ -58,6 +74,52 @@ namespace Bee.Api.Core.UnitTests
             var expected = TimeZoneInfo.ConvertTimeToUtc(s_fallBackAmbiguous, Zone);
             Assert.Equal(DateTime.SpecifyKind(expected, DateTimeKind.Unspecified),
                 (DateTime)converted.Rows[0]["occurred_at"]);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [DisplayName("重疊時刻讀進後只改別的欄位，送出時兩個版本都應是原本的 UTC 值")]
+        public void RoundTrip_AmbiguousInstantUntouched_SendsOriginalUtcBack(int hoursAfterFirstOccurrence)
+        {
+            var utc = s_firstOccurrenceUtc.AddHours(hoursAfterFirstOccurrence);
+            var onScreen = DateTimeZoneConverter.UtcToUser(BuildLoadedTable(utc), NewYork)!;
+            onScreen.Rows[0]["remark"] = "edited";
+
+            var sent = DateTimeZoneConverter.UserToUtc(onScreen, NewYork)!;
+
+            var row = sent.Rows[0];
+            Assert.Equal(DataRowState.Modified, row.RowState);
+            Assert.Equal(utc, (DateTime)row["occurred_at", DataRowVersion.Current]);
+            Assert.Equal(utc, (DateTime)row["occurred_at", DataRowVersion.Original]);
+        }
+
+        [Fact]
+        [DisplayName("使用者把重疊時刻改成別的牆上時間時，Current 依一般規則換算，Original 仍是原本的 UTC 值")]
+        public void RoundTrip_AmbiguousInstantEdited_ConvertsTheNewValue()
+        {
+            var onScreen = DateTimeZoneConverter.UtcToUser(BuildLoadedTable(s_firstOccurrenceUtc), NewYork)!;
+            var picked = new DateTime(2026, 11, 1, 1, 45, 0, DateTimeKind.Unspecified);
+            onScreen.Rows[0]["occurred_at"] = picked;
+
+            var sent = DateTimeZoneConverter.UserToUtc(onScreen, NewYork)!;
+
+            var expected = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeToUtc(picked, Zone), DateTimeKind.Unspecified);
+            Assert.Equal(expected, (DateTime)sent.Rows[0]["occurred_at", DataRowVersion.Current]);
+            Assert.Equal(s_firstOccurrenceUtc, (DateTime)sent.Rows[0]["occurred_at", DataRowVersion.Original]);
+        }
+
+        [Fact]
+        [DisplayName("刪除讀進的列時，Original 應送回原本的 UTC 值（稽核讀它）")]
+        public void RoundTrip_AmbiguousInstantOnDeletedRow_SendsOriginalUtcBack()
+        {
+            var onScreen = DateTimeZoneConverter.UtcToUser(BuildLoadedTable(s_firstOccurrenceUtc), NewYork)!;
+            onScreen.Rows[0].Delete();
+
+            var sent = DateTimeZoneConverter.UserToUtc(onScreen, NewYork)!;
+
+            Assert.Equal(DataRowState.Deleted, sent.Rows[0].RowState);
+            Assert.Equal(s_firstOccurrenceUtc, (DateTime)sent.Rows[0]["occurred_at", DataRowVersion.Original]);
         }
 
         [Fact]

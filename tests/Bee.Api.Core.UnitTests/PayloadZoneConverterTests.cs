@@ -40,6 +40,32 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
+        [DisplayName("GetData 回應轉入使用者時區後，同一份 DataSet 改別的欄位存檔，重疊時刻應送回原本的 UTC 值")]
+        public void ToUtc_SaveRequestFromConvertedResponse_KeepsAmbiguousInstant()
+        {
+            // 記憶以回應副本的資料列實例為鍵；Connector 若在任一方向多複製一次，這條就會紅。
+            const string NewYork = "America/New_York";
+            var firstOccurrence = new DateTime(2026, 11, 1, 5, 30, 0, DateTimeKind.Unspecified);
+            var table = new DataTable("orders");
+            table.AddColumn("created_at", FieldDbType.DateTime);
+            table.AddColumn("remark", FieldDbType.String);
+            table.Rows.Add(firstOccurrence, "a");
+            table.AcceptChanges();
+            using var dataSet = new DataSet("s");
+            dataSet.Tables.Add(table);
+
+            var response = new GetDataResponse { DataSet = dataSet };
+            PayloadZoneConverter.ToUserZone(response, NewYork);
+            response.DataSet!.Tables["orders"]!.Rows[0]["remark"] = "edited";
+            var request = new SaveRequest { DataSet = response.DataSet };
+
+            using (PayloadZoneConverter.ToUtc(request, NewYork))
+            {
+                Assert.Equal(firstOccurrence, (DateTime)request.DataSet!.Tables["orders"]!.Rows[0]["created_at"]);
+            }
+        }
+
+        [Fact]
         [DisplayName("回應方向：GetListResponse.Table 轉為使用者時區")]
         public void ToUserZone_GetListResponse_ConvertsTable()
         {

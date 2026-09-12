@@ -136,6 +136,27 @@ namespace Bee.Api.Core.UnitTests
             Assert.Equal(ExpectedInTaipei(s_utc9Am), (DateTime)row["created_at", DataRowVersion.Original]);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        [DisplayName("Modified 列只改了非時間點欄位時，該欄的修改必須保留")]
+        public void Convert_ModifiedRowWithNonInstantEdit_KeepsTheEdit(bool toUtc)
+        {
+            // 改寫 Original 要先 RejectChanges，而它會還原整列，不只時間點欄。
+            var table = BuildTableWithRow();
+            table.Rows[0]["remark"] = "edited";
+
+            var converted = toUtc
+                ? DateTimeZoneConverter.UserToUtc(table, Taipei)
+                : DateTimeZoneConverter.UtcToUser(table, Taipei);
+
+            Assert.NotNull(converted);
+            var row = converted.Rows[0];
+            Assert.Equal(DataRowState.Modified, row.RowState);
+            Assert.Equal("edited", row["remark", DataRowVersion.Current]);
+            Assert.Equal("a", row["remark", DataRowVersion.Original]);
+        }
+
         [Fact]
         [DisplayName("Added 列維持 Added，且值已轉換")]
         public void Convert_AddedRow_KeepsState()
