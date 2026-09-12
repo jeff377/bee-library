@@ -1,1 +1,2 @@
 #nullable enable
+Bee.Repository.Form.DataFormRepository.GetRowsByRowId(string! tableName, string! selectFields, System.Collections.Generic.IReadOnlyCollection<System.Guid>! rowIds) -> System.Data.DataTable!

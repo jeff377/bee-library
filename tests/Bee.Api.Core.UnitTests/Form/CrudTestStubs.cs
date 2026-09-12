@@ -44,6 +44,9 @@ namespace Bee.Api.Core.UnitTests.Form
             return GetDataResult;
         }
 
+        public DataTable GetRowsByRowId(string tableName, string selectFields, IReadOnlyCollection<Guid> rowIds)
+            => throw new NotSupportedException();
+
         public (DataSet? Refreshed, Dictionary<string, int> AffectedRows) Save(DataSet dataSet)
         {
             LastSavedDataSet = dataSet;

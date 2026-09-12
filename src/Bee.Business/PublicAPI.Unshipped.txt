@@ -1,3 +1,4 @@
 #nullable enable
 Bee.Business.AuditLog.GetChangeDetailResult.DataSet.get -> System.Data.DataSet?
 Bee.Business.AuditLog.GetChangeDetailResult.DataSet.set -> void
+virtual Bee.Business.Form.FormBusinessObject.NormalizeDateTimes(Bee.Business.Form.SaveContext! context) -> void

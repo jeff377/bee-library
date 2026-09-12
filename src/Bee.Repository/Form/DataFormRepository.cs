@@ -242,6 +242,61 @@ namespace Bee.Repository.Form
             return dataSet;
         }
 
+        /// <summary>
+        /// The most row identifiers bound into one <c>IN</c> list.
+        /// </summary>
+        /// <remarks>
+        /// Oracle rejects an <c>IN</c> list longer than 1000 expressions and SQL Server a command with
+        /// more than 2100 parameters, so a large batch is read in chunks below both limits.
+        /// </remarks>
+        private const int RowIdBatchSize = 500;
+
+        /// <inheritdoc/>
+        public DataTable GetRowsByRowId(string tableName, string selectFields, IReadOnlyCollection<Guid> rowIds)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(tableName);
+            ArgumentNullException.ThrowIfNull(rowIds);
+
+            var formTable = _schema.Tables != null && _schema.Tables.Contains(tableName)
+                ? _schema.Tables[tableName]
+                : throw new InvalidOperationException($"FormSchema '{ProgId}' has no table '{tableName}'.");
+
+            var result = new DataTable(tableName);
+            if (rowIds.Count == 0) { return result; }
+
+            var connInfo = Context.ConnectionManager.GetConnectionInfo(DatabaseId);
+            var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
+                .CreateFormCommandBuilder(_schema, Context.DefineAccess);
+            var dbAccess = Context.DbAccessFactory.Create(DatabaseId);
+            var fields = IncludeRowId(selectFields);
+
+            foreach (var chunk in rowIds.Distinct().Chunk(RowIdBatchSize))
+            {
+                var filter = FilterCondition.In(SysFields.RowId, chunk.Cast<object>());
+                var spec = builder.BuildSelect(tableName, fields, filter);
+                var table = MarkFromSchema(dbAccess.Execute(spec).Table, formTable);
+                if (table != null) { result.Merge(table); }
+            }
+
+            result.TableName = tableName;
+            result.AcceptChanges();
+            return result;
+        }
+
+        /// <summary>
+        /// Adds <c>sys_rowid</c> to a field list that names fields but leaves it out.
+        /// </summary>
+        /// <param name="selectFields">The comma-separated field list; empty means every field.</param>
+        private static string IncludeRowId(string selectFields)
+        {
+            if (StringUtilities.IsEmpty(selectFields)) { return string.Empty; }
+
+            var names = selectFields.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            return names.Contains(SysFields.RowId, StringComparer.OrdinalIgnoreCase)
+                ? selectFields
+                : SysFields.RowId + "," + selectFields;
+        }
+
         /// <inheritdoc/>
         public (DataSet? Refreshed, Dictionary<string, int> AffectedRows) Save(DataSet dataSet)
         {

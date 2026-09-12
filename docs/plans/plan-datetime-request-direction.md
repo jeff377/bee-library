@@ -4,7 +4,7 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 伺服端 Save 入口正規化 DateTime 欄，框架自動戳記 `sys_insert_time` / `sys_update_time` | 📝 待做 |
+| 1 | 伺服端 Save 入口正規化 DateTime 欄，框架自動戳記 `sys_insert_time` / `sys_update_time` | ✅ 已完成（2026-09-12） |
 | 2 | Connector 請求方向只轉過濾條件，DataSet 保留深拷貝但不轉換；移除 `AmbiguousInstantMemory` | 📝 待做 |
 | 3 | 定義檔：系統時間戳記欄（`sys_insert_time` / `sys_update_time`）一律標 `ReadOnly`，並寫進 bee-add-form 慣例 | 📝 待做 |
 | 4 | 文件：修訂 ADR-032，更新 datetime-timezone / temporal-types / expression-rules（zh-TW 源文件 + en 譯本） | 📝 待做 |
@@ -120,6 +120,27 @@
   - 伺服端直接呼叫 `Save`（不經 Connector）傳入的 `DateTime` 同樣不落庫。
 - 覆寫正規化方法的 BO 可以採用自己轉換過的值（原則 4 接縫的回歸測試）。
 - 既有 `DateTimeZoneDstSaveRoundTripTests`（讀進、改別的欄位、存回）改為驗證伺服端讀回機制，階段 2 移除 Connector 記憶後仍要綠。
+
+### 實作註記（2026-09-12）
+
+- **明細列的讀回**：`IDataFormRepository` 新增 `GetRowsByRowId(tableName, selectFields, rowIds)`，
+  任一張表都以 `sys_rowid IN (...)` 讀回（每批 500 個，避開 Oracle 的 IN 清單上限與 SQL Server 的參數上限），
+  不經主檔。這是介面新增成員，實作者要補（框架內只有 `DataFormRepository`；Northwind 的 `OrderRepository` 繼承它）。
+- 正規化邏輯在 [SaveDateTimeNormalizer.cs](../../src/Bee.Business/Form/SaveDateTimeNormalizer.cs)（internal），
+  `NormalizeDateTimes` 只是掛點。
+- 測試：[FormBusinessObjectDateTimeNormalizationTests](../../tests/Bee.Business.UnitTests/Form/FormBusinessObjectDateTimeNormalizationTests.cs)
+  （新增 / 修改與刪除 / 讀回找不到列，各五家資料庫；覆寫接縫在 SQLite）；
+  `DateTimeZoneDstSaveRoundTripTests` 已改成把使用者時區的 `DataSet` 原樣交給 Save，不經請求方向換算，
+  所以不依賴階段 2 要移除的東西。自訂表單與臨時建表的測試工具在 `tests/Bee.Tests.Shared/TransientForm.cs`。
+  反證：暫時停用正規化時，前者全紅、後者 SQL Server / PostgreSQL / MySQL / Oracle 紅。
+- **未解**：
+  - `Unchanged` 列不正規化（plan 範圍只有修改與刪除列）。它們不寫入、不進稽核，但 `ValidateRules` 會走訪
+    所有非刪除列，plugin 也看得到。階段 2 之後，詳情頁存檔時一起帶上來的 `Unchanged` 明細列時間欄會是使用者時區的值，
+    「規則與 plugin 都拿到 UTC」對這些列不成立。目前沒有使用者輸入的 `DateTime` 欄，規則也沒有比較時間欄的案例。
+    **決定（2026-09-12）**：維持 plan，不讀回 `Unchanged` 列；階段 4 在 ADR-032 列為殘餘風險。
+  - SQLite 讀回的 `DateTime` 欄是 `string` 型別（`DbDataAdapter.Fill` 依驅動回報的型別建欄），
+    回應方向的 `DateTimeZoneConverter` 只轉 `DateTime` 型別的欄，所以 SQLite 上的回應沒有轉進使用者時區；
+    SQLite 那支 DST 測試因此在停用正規化時也綠。與本 plan 無關、原本就存在，已另開任務查證。
 
 ## 階段 2：Connector 請求方向只轉過濾條件
 

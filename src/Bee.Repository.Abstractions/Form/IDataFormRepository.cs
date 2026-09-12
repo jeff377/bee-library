@@ -62,6 +62,26 @@ namespace Bee.Repository.Abstractions.Form
         DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null);
 
         /// <summary>
+        /// Reads the stored rows of one form table by their <c>sys_rowid</c>, master or detail alike.
+        /// </summary>
+        /// <param name="tableName">The form table name, as declared in the FormSchema.</param>
+        /// <param name="selectFields">
+        /// The comma-separated field names to read. <c>sys_rowid</c> is always included, so the caller
+        /// can match each result to its own row; an empty value reads every field.
+        /// </param>
+        /// <param name="rowIds">The row identifiers to read; an empty collection issues no query.</param>
+        /// <returns>
+        /// One row per identifier that still exists, in no particular order. A missing identifier has
+        /// no row, and no record-scope filter is applied.
+        /// </returns>
+        /// <remarks>
+        /// Unlike <see cref="GetData"/>, this reads rows of any table without loading the record they
+        /// belong to, which is what a save needs to recover the stored values of the rows it is about
+        /// to write.
+        /// </remarks>
+        DataTable GetRowsByRowId(string tableName, string selectFields, IReadOnlyCollection<Guid> rowIds);
+
+        /// <summary>
         /// Persists changes from a <see cref="DataSet"/> by dispatching
         /// INSERT / UPDATE / DELETE based on each row's <see cref="DataRow.RowState"/>;
         /// every command runs inside a single transaction.

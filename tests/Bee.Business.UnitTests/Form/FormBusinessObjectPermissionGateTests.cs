@@ -369,6 +369,7 @@ namespace Bee.Business.UnitTests.Form
                 => new() { Table = new DataTable() };
             public DataSet GetNewData(string timeZoneId = "") => new();
             public DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null) => new();
+            public DataTable GetRowsByRowId(string tableName, string selectFields, IReadOnlyCollection<Guid> rowIds) => new();
             public (DataSet? Refreshed, Dictionary<string, int> AffectedRows) Save(DataSet dataSet) => (dataSet, new Dictionary<string, int>());
             public int Delete(Guid rowId, FilterNode? scopeFilter = null) => 1;
             public bool ExistsInScope(Guid rowId, FilterNode? scopeFilter) => InScope;

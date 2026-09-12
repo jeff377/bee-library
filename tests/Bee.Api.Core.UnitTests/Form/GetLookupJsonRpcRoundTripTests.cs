@@ -175,6 +175,9 @@ namespace Bee.Api.Core.UnitTests.Form
 
             public DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null) => throw new NotSupportedException();
 
+            public DataTable GetRowsByRowId(string tableName, string selectFields, IReadOnlyCollection<Guid> rowIds)
+                => throw new NotSupportedException();
+
             public (DataSet? Refreshed, Dictionary<string, int> AffectedRows) Save(DataSet dataSet)
                 => throw new NotSupportedException();
 

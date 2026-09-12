@@ -1,3 +1,4 @@
+using Bee.Base;
 using Bee.Business.AuditLog;
 using Bee.Definition;
 using Bee.Definition.Attributes;
@@ -11,7 +12,7 @@ namespace Bee.Business.Form
     /// The write side: save and delete, with their before / do / after extension points.
     /// </summary>
     /// <remarks>
-    /// The six `protected virtual` hooks are the host's customization surface, so they belong together:
+    /// The `protected virtual` hooks are the host's customization surface, so they belong together:
     /// someone overriding `DoBeforeSave` needs `DoSave` and `DoAfterSave` in the same view.
     /// </remarks>
     public partial class FormBusinessObject
@@ -25,10 +26,11 @@ namespace Bee.Business.Form
         /// The pipeline, and where the database transaction sits in it:
         /// </para>
         /// <code>
-        /// DoBeforeSave    outside the transaction
-        /// DoSave          INSIDE the transaction
-        /// change audit    outside the transaction
-        /// DoAfterSave     outside the transaction
+        /// NormalizeDateTimes  outside the transaction
+        /// DoBeforeSave        outside the transaction
+        /// DoSave              INSIDE the transaction
+        /// change audit        outside the transaction
+        /// DoAfterSave         outside the transaction
         /// </code>
         /// <para>
         /// Customise by overriding one of those three, not this method: the authorization and
@@ -67,6 +69,9 @@ namespace Bee.Business.Form
             var schema = DefineAccess.GetFormSchema(ProgId);
             var context = new SaveContext(args, args.DataSet, repository, schema);
 
+            // Before any rule, plugin or audit capture reads the data set, so all of them see UTC.
+            NormalizeDateTimes(context);
+
             // One runner for the whole call: BeforeSave and AfterSave must see the same plugin
             // instances, so state computed in the first is still there in the second.
             var plugins = CreatePluginRunner();
@@ -104,6 +109,46 @@ namespace Bee.Business.Form
                 DataSet = context.RefreshedDataSet,
                 AffectedRows = context.AffectedRows,
             };
+        }
+
+        /// <summary>
+        /// Replaces the <see cref="Bee.Base.Data.FieldDbType.DateTime"/> values of the data set with the
+        /// values the server owns, before <see cref="DoBeforeSave"/> runs.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The base implementation handles every <c>DateTime</c> field the FormSchema declares:
+        /// </para>
+        /// <list type="bullet">
+        /// <item><description>New rows: <see cref="SysFields.InsertTime"/>, <see cref="SysFields.UpdateTime"/>
+        ///   and any field with no <see cref="Bee.Definition.Forms.FormField.DefaultValueExpression"/> receive
+        ///   the current UTC time; a field with one is cleared so the expression fills it.</description></item>
+        /// <item><description>Modified and deleted rows: both row versions receive the value stored in the
+        ///   database, and a modified row's <see cref="SysFields.UpdateTime"/> then receives the current
+        ///   UTC time.</description></item>
+        /// </list>
+        /// <para>
+        /// <b>The values the caller supplied are not used</b>, whoever the caller is: a client through the
+        /// API, or another business object calling <see cref="Save(SaveArgs)"/> in-process. A client holds
+        /// its data set in the user's time zone, and nothing in the payload says which zone a value is in.
+        /// </para>
+        /// <para>
+        /// To accept a caller-supplied <c>DateTime</c>, override this method: read the value first, call
+        /// the base implementation, then write the value back converted to UTC. The authorization and
+        /// write-scope checks have already run when this is called.
+        /// </para>
+        /// <para>
+        /// Reads the stored values in one query per table that has modified or deleted rows. A row that
+        /// is no longer in the database aborts the save with
+        /// <see cref="Bee.Base.Exceptions.UserMessageException"/> before anything is written.
+        /// </para>
+        /// </remarks>
+        /// <param name="context">The save context.</param>
+        protected virtual void NormalizeDateTimes(SaveContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+            SaveDateTimeNormalizer.Normalize(context.Schema, context.DataSet, context.Repository,
+                FrameworkClock.Now(string.Empty, DateTimeBasis.Utc));
         }
 
         /// <summary>
