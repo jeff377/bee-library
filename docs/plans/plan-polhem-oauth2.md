@@ -9,7 +9,7 @@
 | 2 | state 解密加強健壯性 | ✅ 已完成（2026-09-13） |
 | 3 | JSON 改用 System.Text.Json | ✅ 已完成（2026-09-13） |
 | 4 | 拿掉 WebView2，改用系統預設瀏覽器 + loopback 回呼；桌面流程併入核心，Desktop／WinForms 套件移除 | 📝 待做 |
-| 5 | 目標框架 net8.0 → net10.0 | 📝 待做 |
+| 5 | 目標框架 net8.0 → net10.0，核心多打 net10.0（提前到階段 4 之前） | ✅ 已完成（2026-09-13） |
 | 6 | 推廣準備：README、NuGet 中繼資料、org profile | 📝 待做 |
 | 7 | 首發 `Polhem.OAuth2.*` 1.0.0 | 📝 待做 |
 | 8 | 凍結舊套件與舊 repo | 📝 待做 |
@@ -78,6 +78,8 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | 方案與專案格式 | 方案檔用 `.slnx`；所有專案一律 SDK 格式 | 使用者決定。`.slnx` 只列專案與資料夾；全部改成 SDK 格式後，CI 可以直接建置整個方案 |
 | WebForms sample | **移除** OAuthAspNet | 使用者決定。`MSBuild.SDK.SystemWeb` 把「無法用 dotnet CLI 建置」列為已知限制；補救要加 2016 年的社群套件 `MSBuild.Microsoft.VisualStudio.Web.targets` 並關掉 `MvcBuildViews`，或讓 CI 另用 Visual Studio 的 MSBuild。傳統 ASP.NET 的用法改由 README 程式碼片段說明 |
 | JSON null 欄位 | 回傳 `null`，備援欄位生效 | 使用者決定。特性測試證實 Newtonsoft 對 JSON null 回傳空字串，連帶讓 Azure 的 `oid`→`sub`、Auth0 的 `name`→`nickname` 這類備援不生效。新語意與 1b 的 nullable 標註一致；差異寫進 README 遷移說明 |
+| 階段順序 | 階段 5 提前到階段 4 之前 | 使用者決定。階段 4 要先在各 provider 後台登記 loopback 回呼網址、準備測試憑證；階段 5 不需要外部帳號，可以先做。代價是 Desktop 專案暫時維持 net8.0-windows，等階段 4 刪除 |
+| 核心目標框架 | `netstandard2.0;net10.0`，`System.Text.Json` 套件只給 netstandard2.0 | 使用者決定。net10 的使用者（含 AspNetCore 套件）直接用框架內建的版本，這一組的相依清單是空的 |
 
 ---
 
@@ -277,8 +279,9 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 
 - `Polhem.OAuth2.AspNetCore`：net8.0 → net10.0。`Microsoft.AspNetCore.Http.Abstractions` 2.3.0 套件改為
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`，少一個套件相依。
-- 原本 net8.0-windows 的 Desktop 專案已在階段 4 移除，不需處理。
-- 核心：維持 netstandard2.0（net48 使用者需要）；決定是否多打 net10.0，讓 net10 使用者不必帶 `System.Text.Json` 套件。
+- **階段 5 提前到階段 4 之前**（見決策紀錄）：Desktop 專案與 OAuthDesktop sample 暫時維持 net8.0-windows，階段 4 刪除或改寫時處理，不另外升級。
+- OAuthAspNetCore sample 參照 AspNetCore 套件，一併升 net10.0。
+- 核心：`netstandard2.0;net10.0`，`System.Text.Json` 套件參照只套用在 netstandard2.0（見決策紀錄）。
 - AspNet（net48）不變。CI 的 setup-dotnet 補 10.0.x。
 
 ## 階段 6：推廣準備
