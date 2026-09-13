@@ -446,8 +446,6 @@ Master.key
 /samples/**/*.db-journal
 /samples/**/*.db-shm
 /samples/**/*.db-wal
-# Materialized at startup by DemoBackend from Bee.Definition embedded defaults
-/samples/Define/TableSchema/common/st_cache_notify.TableSchema.xml
 
 # Apps runtime artifacts (generated when running the demo apps; never committed)
 /apps/**/*.db

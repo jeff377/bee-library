@@ -51,8 +51,9 @@ public static class DemoSchemaSeeder
         builder.Execute("common", DepartmentTable);
         builder.Execute("common", ProjectTable);
         builder.Execute("common", ProjectMemberTable);
-        // Framework tables, all materialized from Bee.Definition embedded defaults by
-        // DemoBackend.AddBeeBackend. st_cache_notify is polled by CacheNotifyPoller;
+        // Framework tables, defined under Define/ like the tables above. The demo's own files are
+        // authoritative; `DemoBackend.AddBeeBackend` only fills in a missing one from the
+        // Bee.Definition embedded defaults. st_cache_notify is polled by CacheNotifyPoller;
         // st_session and st_user are both on the Login path — overriding authentication
         // avoids stored credentials, not the session seed or the user's locale row.
         builder.Execute("common", CacheNotifyTable);
