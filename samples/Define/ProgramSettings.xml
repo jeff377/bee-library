@@ -3,5 +3,9 @@
   <Items>
     <ProgramItem ProgId="System" DisplayName="System" BusinessObject="Bee.Samples.Shared.DemoAuthenticatingSystemBusinessObject, Bee.Samples.Shared" />
     <ProgramItem ProgId="AuditLog" DisplayName="AuditLog" BusinessObject="Bee.Business.AuditLog.LogBusinessObject, Bee.Business" />
+    <!-- No BusinessObject attribute: AuditRule is a framework-reserved progId and resolves to
+         AuditRuleBusinessObject on its own. The entry stays declared so startup self-registration
+         has nothing missing to add, since that path rewrites this whole file. -->
+    <ProgramItem ProgId="AuditRule" DisplayName="AuditRule" />
   </Items>
 </ProgramSettings>
