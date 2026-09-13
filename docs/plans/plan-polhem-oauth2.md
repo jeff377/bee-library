@@ -7,7 +7,7 @@
 | 1a | 本機建立 polhem-oauth2：純改名、拿掉 `Bee.Base`、加密移植與測試、CI、`.slnx` | ✅ 已完成（2026-09-13） |
 | 1b | 導入 bee-library 現行程式碼風格設定，整理既有程式碼（英文化、例外、命名、Nullable、編碼、SDK 格式）；完成後建立 repo 並推送 | ✅ 已完成（2026-09-13） |
 | 2 | state 解密加強健壯性 | ✅ 已完成（2026-09-13） |
-| 3 | JSON 改用 System.Text.Json | 📝 待做 |
+| 3 | JSON 改用 System.Text.Json | ✅ 已完成（2026-09-13） |
 | 4 | 拿掉 WebView2，改用系統預設瀏覽器 + loopback 回呼；桌面流程併入核心，Desktop／WinForms 套件移除 | 📝 待做 |
 | 5 | 目標框架 net8.0 → net10.0 | 📝 待做 |
 | 6 | 推廣準備：README、NuGet 中繼資料、org profile | 📝 待做 |
@@ -77,6 +77,7 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | LICENSE 著作權人 | `Copyright (c) Polhem contributors`，不寫年份 | 使用者決定，符合開放共同維護的定位。Polhem 不是法律主體，細節見階段 1a |
 | 方案與專案格式 | 方案檔用 `.slnx`；所有專案一律 SDK 格式 | 使用者決定。`.slnx` 只列專案與資料夾；全部改成 SDK 格式後，CI 可以直接建置整個方案 |
 | WebForms sample | **移除** OAuthAspNet | 使用者決定。`MSBuild.SDK.SystemWeb` 把「無法用 dotnet CLI 建置」列為已知限制；補救要加 2016 年的社群套件 `MSBuild.Microsoft.VisualStudio.Web.targets` 並關掉 `MvcBuildViews`，或讓 CI 另用 Visual Studio 的 MSBuild。傳統 ASP.NET 的用法改由 README 程式碼片段說明 |
+| JSON null 欄位 | 回傳 `null`，備援欄位生效 | 使用者決定。特性測試證實 Newtonsoft 對 JSON null 回傳空字串，連帶讓 Azure 的 `oid`→`sub`、Auth0 的 `name`→`nickname` 這類備援不生效。新語意與 1b 的 nullable 標註一致；差異寫進 README 遷移說明 |
 
 ---
 
@@ -228,8 +229,9 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 
 - 範圍：六個 provider 的 `ParseUserJson` 與 `OAuth2Provider.cs` 的兩處 token 解析。
 - **先寫特性測試再換**：以各 provider 的樣本 JSON 對現行 Newtonsoft 實作寫測試並通過，換成 `JsonDocument` 後同一組測試仍須通過。
-- 保留 `JToken?.ToString()` 的語意：欄位不存在或 null → `null`；字串 → 值；數字與布林 → 原文。
+- 取值語意：欄位不存在或值為 JSON null → `null`；字串 → 值；其他型別 → JSON 原文，所以數字 id 會保留原本的數字。
   以一個 internal helper 集中處理。
+- **與 Newtonsoft 的差異**：特性測試證實 Newtonsoft 對 JSON null 回傳空字串，備援欄位因此不生效；改採 `null`，見決策紀錄。
 - netstandard2.0 需參照 `System.Text.Json` 套件；是否另加 net10.0 target 以省掉這個相依，在階段 5 決定。
 - 移除 `Newtonsoft.Json` 參照。samples 若自身用到 Newtonsoft 則保留在 sample。
 
@@ -289,6 +291,7 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
   - 從 `Bee.OAuth2` 遷移：命名空間、桌面流程改變、redirect URI 需重新登記，
     以及 `AuthorizationResult.Exception` 不再收納非預期例外（見階段 1b）。
   - 傳統 ASP.NET（System.Web）沒有可執行的 sample，用法以 README 裡的程式碼片段說明（見決策紀錄）。
+  - 使用者資訊裡值為 JSON null 的欄位，現在對應為 `null`，Bee.OAuth2 是空字串；備援欄位也因此會生效。
 - **刪除各套件自己的 `README.md`**：比照 bee-library，所有套件都打包根目錄的 `README.md` 作為 NuGet 的 README。
   每個套件若各自雙語，就是每個套件兩份檔案要同步；集中後說明只有一個來源。
   NuGet 只顯示英文版，頂部的中文版連結要用 GitHub 絕對網址，因為 nuget.org 上的相對連結會失效。
