@@ -52,8 +52,9 @@ public static class XxxBackend
 
         var paths = new PathOptions { DefinePath = ResolveDefinePath() };
 
-        // AddBeeFramework 註冊的 cache-notify poller 會讀 st_cache_notify;其 TableSchema 是框架
-        // 內嵌預設,materialize 進 DefinePath(skip-if-exists)讓 IDefineAccess 找得到、seeder 建得出。
+        // AddBeeFramework 註冊的 cache-notify poller 會讀 st_cache_notify,所以 Define/ 下要有它的 TableSchema。
+        // 框架內嵌預設只是初次匯入的起點:skip-if-exists 只在缺檔時攤出,攤出的檔要入版控,之後以應用
+        // 這份為準(預設日後變更不會覆蓋它,兩者不同也不算漂移)。別改成 Overwrite,也別加進 .gitignore。
         Defaults.MaterializeTo(paths.DefinePath, new MaterializeOptions
         {
             Filter = rel => rel == "TableSchema/common/st_cache_notify.TableSchema.xml",

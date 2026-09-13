@@ -99,7 +99,8 @@ seeder 迭代這裡建表。加一張表 = 新增一個 `TableSchema` 檔 + 這�
 ## TableSchema/
 
 實體 DB schema，依 category 分資料夾：
-- `TableSchema/common/st_cache_notify.TableSchema.xml`（由 `Defaults.MaterializeTo` materialize，不用手寫）
+- `TableSchema/common/st_cache_notify.TableSchema.xml`（不用手寫：首次啟動由 `Defaults.MaterializeTo` 從框架內嵌預設攤出，
+  **攤出後入版控**，之後以應用這份為準；skip-if-exists 不會再覆蓋它）
 - `TableSchema/company/ft_xxx.TableSchema.xml`（你的業務表）
 
 每個檔定義 `<Fields>`（`<DbField FieldName DbType Length>`）與 `<Indexes>`。Bee 慣例欄位：`sys_no`
