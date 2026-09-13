@@ -8,7 +8,7 @@
 | 1b | 導入 bee-library 現行程式碼風格設定，整理既有程式碼（英文化、例外、命名、Nullable、編碼、SDK 格式）；完成後建立 repo 並推送 | ✅ 已完成（2026-09-13） |
 | 2 | state 解密加強健壯性 | ✅ 已完成（2026-09-13） |
 | 3 | JSON 改用 System.Text.Json | ✅ 已完成（2026-09-13） |
-| 4 | 拿掉 WebView2，改用系統預設瀏覽器 + loopback 回呼；桌面流程併入核心，Desktop／WinForms 套件移除 | 📝 待做 |
+| 4 | 拿掉 WebView2，改用系統預設瀏覽器 + loopback 回呼；桌面流程併入核心，Desktop／WinForms 套件移除 | 🚧 進行中 |
 | 5 | 目標框架 net8.0 → net10.0，核心多打 net10.0（提前到階段 4 之前） | ✅ 已完成（2026-09-13） |
 | 6 | 推廣準備：README、NuGet 中繼資料、org profile | 📝 待做 |
 | 7 | 首發 `Polhem.OAuth2.*` 1.0.0 | 📝 待做 |
@@ -257,6 +257,29 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
   - Auth0／Okta 的 `http://localhost/callback`：未寫 port 等於 80，Windows 上 `HttpListener` 綁 80 可能需要 URL ACL 或系統權限。
     需驗證；必要時要求明確寫 port，或改用 `TcpListener` 自行處理單次 HTTP 請求。
 - 實測發現某 provider 不支援 loopback 時，決定是文件標示限制，還是保留內嵌瀏覽器作為另一個套件。
+
+### 實測準備（2026-09-13 進度）
+
+實測工具 `tools/LoopbackRedirectProbe` 已寫好並在 macOS 建置通過，位於 polhem-oauth2 的分支 `claude/loopback-probe`
+（已 commit，尚未推送、尚未開 PR），用法見該資料夾的 README。它直接處理 TCP、不用 `HttpListener`，
+所以上面「綁 80 port 需要 URL ACL」的疑慮在工具裡不存在；正式實作是否沿用這個做法，階段 4 動工時再定。
+
+**要由使用者先做的事**：在各 provider 後台登記下表的回呼網址，並把 client 憑證填進
+`tools/LoopbackRedirectProbe/probe.settings.json`（已 gitignore，範本是同資料夾的 `probe.settings.example.json`）。
+
+| Provider | 後台位置 | 應用程式類型 | 要試的回呼網址 | 結果 |
+|---|---|---|---|---|
+| Google | Google Cloud Console → APIs & Services → Credentials | Desktop app | `http://127.0.0.1:0/callback`（任意 port）、`http://localhost:53682/callback` | 待實測 |
+| Microsoft Entra ID | App registrations → Authentication | Mobile and desktop applications | `http://localhost:0/callback`（任意 port）、`http://127.0.0.1:53682/callback` | 待實測 |
+| Auth0 | Dashboard → Applications | Native | `http://127.0.0.1:53682/callback`、`http://localhost:53682/callback` | 待實測 |
+| Okta | Admin Console → Applications | Native（PKCE） | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | 待實測 |
+| LINE | LINE Developers Console → LINE Login channel → Callback URL | — | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | 待實測 |
+| Facebook | Meta for Developers → Facebook Login → Settings → Valid OAuth Redirect URIs | — | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | 待實測 |
+
+- 表中的應用程式類型與「任意 port」都是**待實測的假設**，不是已知事實；不接受任意 port 的 provider 要登記完全相同的 port。
+- 每家先跑 `--pkce on`。token 交換失敗時再跑 `--pkce off`，判斷是否因為 PKCE 下沒送 client secret
+  （base 類別在 PKCE 下不送 client secret，只有 Google 例外）。
+- 結果回填本表；階段 4 的 ADR 與階段 6 的 README 會引用。
 
 ### 套件結構（已定案）
 
