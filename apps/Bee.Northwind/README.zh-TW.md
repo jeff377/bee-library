@@ -213,7 +213,8 @@ session 的客製化代碼，以及 [`NorthwindBackend`](Bee.Northwind.Server/No
 把這些組裝起來是 client 的工作、不是 server 的：API 一律把定義原樣送出，由
 `FormDefinitionLoader` 取回兩層、套用疊加，再把在地化後的 schema 交給畫面。這也是
 [`FormWorkspace`](Bee.Northwind.UI/Controls/FormWorkspace.cs) 兩個畫面都要給 loader 的原因
-—— 沒有 loader 的畫面只會拿到原樣的 schema、英文標題、以及自動產生的版面。
+—— 沒有 loader 的畫面只會拿到原樣的 schema 與英文標題；表單畫面還會略過租戶的版面，
+退回 `Define/FormLayout/` 裡的套裝版面。
 
 ## 終章：三十分鐘加一張 Region 表單，零程式碼
 

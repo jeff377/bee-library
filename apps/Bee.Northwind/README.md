@@ -220,7 +220,8 @@ Assembling all of this is the client's job, not the server's: the APIs serve def
 as stored, and `FormDefinitionLoader` fetches both layers, applies the overlay, and hands the view
 a localized schema. That is why both surfaces in
 [`FormWorkspace`](Bee.Northwind.UI/Controls/FormWorkspace.cs) are given a loader — a view without
-one renders the schema as stored, in English, with a generated layout.
+one renders the schema as stored, in English, and a record form without one also skips the
+tenant's layout and falls back to the packaged file in `Define/FormLayout/`.
 
 ## Closing chapter: add a Region form in 30 minutes, with zero code
 

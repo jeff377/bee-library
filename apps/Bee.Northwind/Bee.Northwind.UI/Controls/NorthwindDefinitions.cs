@@ -10,12 +10,12 @@ namespace Bee.Northwind.UI.Controls;
 /// company's number formats.
 /// </summary>
 /// <remarks>
-/// The framework leaves this opt-in — a view with no loader fetches the schema exactly as stored
-/// and generates a layout from it, which costs no round trips and works with no backend at all. The
-/// demo opts in, because everything it wants to show lives on the other side of that switch: the
-/// packaged zh-TW captions in <c>Define/Language/</c>, the tenant overrides in
-/// <c>Customize/northwind-demo/</c>, and the <c>Define/FormLayout/*.xml</c> files, which a
-/// generated layout ignores.
+/// The framework leaves this opt-in — a view with no loader renders the definitions exactly as
+/// stored: the schema's own English captions and, on a record form, the packaged
+/// <c>Define/FormLayout/*.xml</c> file. The demo opts in, because what it wants to show is layered on
+/// top of those stored files: the packaged zh-TW captions in <c>Define/Language/</c>, the tenant
+/// overrides in <c>Customize/northwind-demo/</c> (including a layout that replaces the packaged
+/// one), and the company's number formats.
 /// </remarks>
 internal static class NorthwindDefinitions
 {

@@ -61,13 +61,19 @@ public static class NorthwindBackend
             CustomizePath = ResolveCustomizePath(definePath),
         };
 
-        // The framework owns two whole categories of table the demo does not define itself: the
-        // cross-company tables in common (st_user, st_session, st_cache_notify, ...) and the audit
-        // trail in log. Their TableSchema ships as embedded defaults in Bee.Definition, so
-        // materialize both folders into the demo DefinePath (skip-if-exists) for IDefineAccess to
-        // resolve. DbCategorySettings then registers them like any other table, and the ordinary
-        // category loop builds them. Taking the folders wholesale rather than naming files is
-        // deliberate: see GetFrameworkCommonTables for why, and for what the demo pays in return.
+        // Two categories of table exist because the framework reaches for them: the cross-company
+        // tables in common (st_user, st_session, st_cache_notify, ...) and the audit trail in log.
+        // Their TableSchema files under Define/ are the demo's own definitions, committed like the
+        // company ones, and DbCategorySettings registers them so the ordinary category loop builds
+        // them. The embedded defaults in Bee.Definition are only the starting point those files were
+        // first imported from: once a file exists here it is authoritative, and a later change to
+        // the defaults is not meant to replace it.
+        //
+        // That is why this call keeps skip-if-exists. It fills in a table the demo does not define
+        // yet, such as one a newer framework starts reaching for, and leaves every existing file
+        // alone; a file it writes shows up untracked, to be reviewed and committed. The folders are
+        // taken wholesale rather than by name on purpose: see GetFrameworkCommonTables for why, and
+        // for what the demo pays in return.
         Defaults.MaterializeTo(paths.DefinePath, new MaterializeOptions
         {
             Filter = rel => NorthwindSchemaSeeder.FrameworkTableSchemaPrefixes

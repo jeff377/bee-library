@@ -454,8 +454,6 @@ Master.key
 /apps/**/*.db-journal
 /apps/**/*.db-shm
 /apps/**/*.db-wal
-# Materialized at startup by NorthwindBackend from Bee.Definition embedded defaults
-/apps/Bee.Northwind/Define/TableSchema/common/st_cache_notify.TableSchema.xml
 
 # macOS
 .DS_Store

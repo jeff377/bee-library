@@ -60,9 +60,10 @@ public sealed class FormWorkspace : UserControl
 
     private void ShowRecord(Func<FormView, Task> start)
     {
-        // The loader is what makes a record form read the packaged zh-TW captions, the tenant's
-        // overrides on top of them, and the Define/FormLayout/*.xml file — a form left without one
-        // fetches the schema as stored and generates its own layout, ignoring all three.
+        // The loader is what layers the packaged zh-TW captions and the tenant's overrides in
+        // `Customize/northwind-demo/` over the stored definitions. A form left without one still
+        // renders `Define/FormLayout/*.xml`, because `FormView` falls back to the stored base layout,
+        // but with that file's English captions and without the tenant's replacement layout.
         var record = new FormView
         {
             ProgId = _progId,
