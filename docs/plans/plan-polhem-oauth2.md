@@ -10,7 +10,7 @@
 | 3 | JSON 改用 System.Text.Json | ✅ 已完成（2026-09-13） |
 | 4 | 拿掉 WebView2，改用系統預設瀏覽器 + loopback 回呼；桌面流程併入核心，Desktop／WinForms 套件移除 | ✅ 已完成（2026-09-14） |
 | 5 | 目標框架 net8.0 → net10.0，核心多打 net10.0（提前到階段 4 之前） | ✅ 已完成（2026-09-13） |
-| 6 | 推廣準備：README、NuGet 中繼資料、org profile | 📝 待做 |
+| 6 | 推廣準備：README、NuGet 中繼資料、org profile | ✅ 已完成（2026-09-14）；org profile 的推送移到階段 7 發佈後 |
 | 7 | 首發 `Polhem.OAuth2.*` 1.0.0 | 📝 待做 |
 | 8 | 凍結舊套件與舊 repo | 📝 待做 |
 | 9 | 回寫 bee-library：future-work 與演練結果 | 📝 待做 |
@@ -87,6 +87,7 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | 桌面流程的 PKCE | `LoopbackOAuth2Client` 一律使用 PKCE，不看 `OAuth2Options.UsePkce`；web 套件不受影響 | 使用者決定（2026-09-14）。RFC 8252 要求原生應用程式使用 PKCE，且桌面 app 無法保密 client secret；實測的五家在 PKCE 下都能換到 token |
 | PKCE 下的 client secret | 維持現行：PKCE 下不送 client secret，只有 Google 照舊一律送 | 使用者決定（2026-09-14）。Facebook、LINE、Entra ID、Auth0 實測都不需要 secret 就能換到 token |
 | 不接受 loopback 的 provider | 不需處理 | 實測的五家都接受 loopback 回呼網址（2026-09-14），原本的待決問題不成立 |
+| org profile 推送時機 | 階段 7 發佈後才推 | 使用者決定（2026-09-14）。profile 連到 nuget.org 上的 `Polhem.OAuth2`，發佈前那個連結是 404 |
 
 ---
 
@@ -360,6 +361,24 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 - **org profile**（`polhem-dev/.github`）：`profile/README.md` 列出已發佈的 Polhem.OAuth2，框架本身仍標示準備中。
   中文版放 `profile/README.zh-TW.md`，由英文版頂部連過去，因為組織首頁只顯示 `README.md`。
 
+### 實作（2026-09-14 完成）
+
+polhem-oauth2 commit `a655b26`，直接推 `main`：
+
+- 根 `README.md`（英文）重寫，新增 `README.zh-TW.md`，涵蓋上列各點。另外寫進去的：
+  - 網頁套件的前提：state cookie 標 `Secure`，所以回呼頁面必須走 HTTPS；開啟 `UsePkce` 時必須啟用 session。
+  - `OAUTH2_STATE_KEY` 在每個行程只讀一次，所以要在啟動前設定；可能收到回呼的伺服器要用同一把。產生方式列 `openssl` 與 C# 兩種。
+  - 「結果與錯誤」一節說明 `AuthorizationResult.Exception` 的意義，並指向 ADR-003。
+  - 回呼網址登記表註明 2026-09-14 實測，並指向 ADR-004。補三點注意事項：Okta 需要存取政策、Facebook 拒絕 `127.0.0.1`、沒寫 port 等於 port 80。
+  - System.Web 範例不用 C# 8 以後的語法，因為傳統 ASP.NET 專案預設 C# 7.3。
+  - 舊 README 的「Contact & Follow」個人連結沒有保留，改成一行「延續自 Bee.OAuth2」。
+- 連結：英文版會打包進 NuGet，所以一律用 GitHub 絕對網址；中文版只在 GitHub 顯示，用相對連結並指向中文版 ADR。
+- 刪除三個套件各自的 `README.md` 與只用來打包它們的 `src/Directory.Build.targets`，改在 `src/Directory.Build.props` 打包根目錄 README。
+- `Description` 改寫並補齊 provider：Azure 改稱 Microsoft Entra ID，並補上 Okta。`PackageTags` 改為小寫、以連字號分隔，補 `openid-connect`、`pkce` 與各 provider，並移除 AspNetCore 誤植的 `WinForms`。
+- 宣告範圍外多動一檔：`samples/OAuthAspNetCore/Program.cs` 刪掉一行提到舊型別名 `TOAuth2Manager` 的註解。
+- 驗證：macOS clean build 0 警告 0 錯誤，112 個測試通過。三個 nupkg 都含根目錄 README 與圖示，nuspec 的 description、tags 與相依清單正確（核心的 netstandard2.0 只相依 System.Text.Json，net10.0 沒有相依）。README 的相對連結與指向 repo 內的絕對連結都對得到檔案。推送後 Windows 上的 Build CI 通過。
+- org profile：英文版加上套件一節，新增中文版。組織首頁的相對連結會失效，所以兩份互連用絕對網址。本機 commit `1176df0` 放在 `~/Desktop/repos/polhem-dev-github`，**尚未推送**，見決策紀錄與階段 7 第 7 步。
+
 ## 階段 7：首發 1.0.0
 
 1. **（使用者操作）** NuGet 組織帳號 `Polhem` 建立 API key：push 權限，glob 限定 `Polhem.OAuth2*`。
@@ -371,6 +390,8 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 5. **推送 `v1.0.0` tag 須使用者明確同意**，發佈後無法撤回。
 6. 驗證：nuget.org 上各套件的圖示、README、相依清單（不得出現 `Bee.Base`、Newtonsoft.Json）；
    在全新專案安裝並跑一次最小範例。
+7. **推送 org profile**：階段 6 已在本機 clone `~/Desktop/repos/polhem-dev-github` commit（`1176df0`，尚未推送）。
+   確認 nuget.org 的套件頁開得到之後，才推到 `polhem-dev/.github` 的 `main`，並確認組織首頁與中文版連結。
 
 ## 階段 8：凍結舊套件與舊 repo
 
