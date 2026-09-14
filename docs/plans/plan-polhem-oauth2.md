@@ -88,6 +88,7 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | PKCE 下的 client secret | 維持現行：PKCE 下不送 client secret，只有 Google 照舊一律送 | 使用者決定（2026-09-14）。Facebook、LINE、Entra ID、Auth0 實測都不需要 secret 就能換到 token |
 | 不接受 loopback 的 provider | 不需處理 | 實測的五家都接受 loopback 回呼網址（2026-09-14），原本的待決問題不成立 |
 | org profile 推送時機 | 階段 7 發佈後才推 | 使用者決定（2026-09-14）。profile 連到 nuget.org 上的 `Polhem.OAuth2`，發佈前那個連結是 404 |
+| 首發 CHANGELOG | 建雙語 `CHANGELOG.md`／`CHANGELOG.zh-TW.md`，GitHub Release 內文指向它 | 使用者決定（2026-09-14）。原 plan 沒列，發版流程有這一步；1.0.0 一節列出相對於 Bee.OAuth2 最後一版的差異，遷移細節指向 README |
 | NuGet 發佈授權 | Trusted Publishing，不用 API key | 使用者決定（2026-09-14）。nuget.org 會把 API Keys 頁導向 Trusted Publishing，並註明自動化發佈強烈不建議用 API key；API key 的期限最長只剩 30 天，每次發版都要重建 key、重設 secret。glob 維持 `Polhem.OAuth2*`：policy 本來就綁單一 repo 與 workflow，放寬成 `Polhem*` 不會少建 policy，只會讓這個 workflow 能推送將來其他 Polhem 套件。**bee-library 改名另開時沿用同一做法** |
 
 ---
@@ -390,10 +391,19 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
      `user` 讀 repo secret `NUGET_USER`（值為 `jeff377`）。不設 `NUGET_API_KEY`。polhem-oauth2 commit `e700927`。
    - **未驗證**：首發是第一次實際換 key，也是這條 policy 能否建立「尚不存在的套件 ID」的第一次驗證。失敗時先看 `Log in to NuGet` 那一步的訊息。
 2. 商標：依 future-work 規定，發佈第一版前重查一次（初步檢索為 2026-09-12）。
+   **2026-09-14 重查，未發現衝突**（非法律意見；結果於階段 9 回寫 future-work）：
+   - WIPO Global Brand Database，品牌名稱含 `POLHEM`：只有兩筆 POLHEM INFRA（歐盟註冊，第 35、36 類），與初查相同。
+   - USPTO，wordmark `polhem`：有效與失效案件都沒有結果。
+   - 智慧財產局，文字近似 `POLHEM`：共 280 筆，篩第 9、42 類剩 30 筆，沒有 POLHEM。最接近的 POLEYA、ProHSM、PROCHEM、POLYCHEM、POLIMA
+     字形與讀音都有明顯差異，不少已到期消滅。檢索系統網址已改為 `https://cloud.tipo.gov.tw/S282/S282WV1/`，舊網址是 404。
 3. 導入 `Microsoft.CodeAnalysis.PublicApiAnalyzers`（與 bee-library 相同），以 1.0.0 的公開 API 建立 `PublicAPI.Shipped.txt`。
    刻意等到首發才導入，避免功能修改期間 baseline 反覆改寫；首發之後，公開 API 的破壞性變更由它擋下。
+   **已完成（2026-09-14）**：版本 4.14.0。三個套件的 Shipped 由 RS0016 訊息產生，build 三輪收斂（第二輪才分析到兩個網頁套件），
+   netstandard2.0 與 net10.0 的公開表面一致；Unshipped 只有 `#nullable enable`。
 4. 發佈前 clean build 與測試全綠；紅燈是訊號，不為發版而改測試或原始碼。
-5. **推送 `v1.0.0` tag 須使用者明確同意**，發佈後無法撤回。
+   **通過（2026-09-14）**：clean build 0 警告 0 錯誤，112 個測試通過。發版 commit `0491c75`（CHANGELOG、analyzer 與基準檔、Release 內文指向 CHANGELOG）
+   推 `main` 後 Build CI 通過。
+5. **推送 `v1.0.0` tag 須使用者明確同意**，發佈後無法撤回。annotated tag `v1.0.0` 已在本機建立並指向 `0491c75`，尚未推送。
 6. 驗證：nuget.org 上各套件的圖示、README、相依清單（不得出現 `Bee.Base`、Newtonsoft.Json）；
    在全新專案安裝並跑一次最小範例。
 7. **推送 org profile**：階段 6 已在本機 clone `~/Desktop/repos/polhem-dev-github` commit（`1176df0`，尚未推送）。
