@@ -717,6 +717,7 @@ polhem-oauth2 的 commit 都直接推 `main`，Build CI（windows-latest）通�
    - `nuget-publish.yml` 加 `id-token: write`，推送前以 `NuGet/login`（pin v1.2.0 的 SHA）換取 1 小時有效的臨時 key；
      `user` 讀 repo secret `NUGET_USER`（值為 `jeff377`）。不設 `NUGET_API_KEY`。polhem-oauth2 commit `e700927`。
    - **未驗證**：首發是第一次實際換 key，也是這條 policy 能否建立「尚不存在的套件 ID」的第一次驗證。失敗時先看 `Log in to NuGet` 那一步的訊息。
+   - **2026-09-15 首發已驗證**：`Log in to NuGet` 成功換到臨時 key，三個原本不存在的套件 ID 都推送成功。
 2. 商標：依 future-work 規定，發佈第一版前重查一次（初步檢索為 2026-09-12）。
    **2026-09-14 重查，未發現衝突**（非法律意見；結果於階段 9 回寫 future-work）：
    - WIPO Global Brand Database，品牌名稱含 `POLHEM`：只有兩筆 POLHEM INFRA（歐盟註冊，第 35、36 類），與初查相同。
@@ -735,10 +736,18 @@ polhem-oauth2 的 commit 都直接推 `main`，Build CI（windows-latest）通�
      polhem-oauth2 commit `0370a62`，Build CI 通過；三個 nupkg 內的 `polhem.png` 都已確認是新圖示。
    - annotated tag `v1.0.0` 已在本機重建，改指向 `0370a62`，尚未推送。
    - **2026-09-14 階段 6b 批次 G** 再次重打，改指向 `4c655a3`；補測網頁登入後改指向 `182402b`，仍未推送。
+   - **2026-09-15 使用者同意後推送** `v1.0.0`（指向 `182402b`）。推送前確認 tag 與 `origin/main` 是同一個 commit、遠端沒有同名 tag、工作目錄乾淨。
 6. 驗證：nuget.org 上各套件的圖示、README、相依清單（不得出現 `Bee.Base`、Newtonsoft.Json）；
    在全新專案安裝並跑一次最小範例。
+   **通過（2026-09-15）**：
+   - 發佈 workflow run `34866155992` 每一步都成功。三個套件的 `.nupkg` 與 `.snupkg` 都顯示「Your package was pushed」，沒有被 `--skip-duplicate` 跳過。GitHub Release `v1.0.0` 已建立。
+   - nuget.org 上的 nuspec：作者 `Polhem contributors`、MIT、圖示 `polhem.png`、README、repository 指向 commit `182402b`。
+   - 相依清單：核心的 net10.0 沒有相依，netstandard2.0 只有 System.Text.Json 10.0.12；AspNet（net472）與 AspNetCore（net10.0）只相依 `Polhem.OAuth2 1.0.0`。沒有 `Bee.Base`，也沒有 Newtonsoft.Json。
+   - 套件頁的圖示與 repo 的 `polhem.png` 相同；README 正常顯示，含中文版連結與 Build CI 徽章。
+   - 在 scratchpad 建全新的 net10.0 主控台專案，以獨立的套件快取從 nuget.org 安裝 `Polhem.OAuth2 1.0.0`。建立 Google 授權請求，網址指向 `accounts.google.com/o/oauth2/v2/auth`，並帶 PKCE challenge。
 7. **推送 org profile**：階段 6 已在本機 clone `~/Desktop/repos/polhem-dev-github` commit（`1176df0`，尚未推送）。
    確認 nuget.org 的套件頁開得到之後，才推到 `polhem-dev/.github` 的 `main`，並確認組織首頁與中文版連結。
+   **已推送（2026-09-15）**：使用者同意後推到 `main`（`b14017d..1176df0`）。組織首頁已列出 Polhem.OAuth2；英文版與中文版 profile 裡的外部連結（repo、nuget.org 套件頁、中文版 profile、組織首頁）都回 200。
 
 ## 階段 8：凍結舊套件與舊 repo
 
