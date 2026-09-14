@@ -288,7 +288,8 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 
 ### 實作（2026-09-14 進度）
 
-位於 polhem-oauth2 的分支 `claude/system-browser-signin`，接在 `claude/loopback-probe` 之後，尚未推送。與 provider 無關的部分已完成：
+位於 polhem-oauth2 的分支 `claude/system-browser-signin`，接在 `claude/loopback-probe` 之後，已推送並開 draft PR
+[polhem-dev/polhem-oauth2#1](https://github.com/polhem-dev/polhem-oauth2/pull/1)。與 provider 無關的部分已完成：
 
 - 核心新增 `LoopbackOAuth2Client`（`src/Polhem.OAuth2/Loopback/`），提供 `SignInAsync(CancellationToken)`、`Timeout`（預設 5 分鐘）與 `OpenBrowser`。
   `OpenBrowser` 為 null 時用系統預設瀏覽器，且只接受 http／https 網址。port 為 0 時，每次登入會把 `Options.RedirectUri` 改成實際綁定的 port，結束後還原。
@@ -303,12 +304,12 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 - samples：OAuthDesktop（改為 net10.0-windows）與 OAuthWinForms（net48）改用 `LoopbackOAuth2Client`，設定檔改用 System.Text.Json 讀取；新增 OAuthConsole（net10.0）。
 - 實測工具改用 `LoopbackOAuth2Client`，刪除自帶的監聽程式碼。
 - 雙語 ADR-004 草稿，狀態為「提議中」，實測結果表目前只有 Google。
-- 驗證：macOS 上全方案建置 0 警告，單元測試全數通過；以改寫後的工具對 Google 實際登入成功。
+- 驗證：macOS 上全方案建置 0 警告，單元測試全數通過；以改寫後的工具與 OAuthConsole sample 對 Google 實際登入成功。
 
 尚未完成：
 - 其餘五家的實測、PKCE 預設值、PKCE 下是否送 client secret、ADR-004 定稿。
 - Windows 驗證：net48 與 net10.0-windows 只在 macOS 建置過；監聽程式碼的 netstandard2.0 組建沒有被測試執行到。
-- OAuthConsole 與兩個 WinForms sample 都還沒實際登入過。
+- 兩個 WinForms sample 還沒實際登入過。
 
 ### 套件結構（已定案）
 
