@@ -8,7 +8,7 @@
 | 1b | 導入 bee-library 現行程式碼風格設定，整理既有程式碼（英文化、例外、命名、Nullable、編碼、SDK 格式）；完成後建立 repo 並推送 | ✅ 已完成（2026-09-13） |
 | 2 | state 解密加強健壯性 | ✅ 已完成（2026-09-13） |
 | 3 | JSON 改用 System.Text.Json | ✅ 已完成（2026-09-13） |
-| 4 | 拿掉 WebView2，改用系統預設瀏覽器 + loopback 回呼；桌面流程併入核心，Desktop／WinForms 套件移除 | 🚧 進行中 |
+| 4 | 拿掉 WebView2，改用系統預設瀏覽器 + loopback 回呼；桌面流程併入核心，Desktop／WinForms 套件移除 | ✅ 已完成（2026-09-14） |
 | 5 | 目標框架 net8.0 → net10.0，核心多打 net10.0（提前到階段 4 之前） | ✅ 已完成（2026-09-13） |
 | 6 | 推廣準備：README、NuGet 中繼資料、org profile | 📝 待做 |
 | 7 | 首發 `Polhem.OAuth2.*` 1.0.0 | 📝 待做 |
@@ -290,10 +290,10 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
   決定 `LoopbackOAuth2Client` 一律使用 PKCE 後，工具的 `--pkce` 選項隨之移除（2026-09-14）。
 - 結果回填本表；階段 4 的 ADR 與階段 6 的 README 會引用。
 
-### 實作（2026-09-14 進度）
+### 實作（2026-09-14 完成）
 
-位於 polhem-oauth2 的分支 `claude/system-browser-signin`，接在 `claude/loopback-probe` 之後，已推送並開 draft PR
-[polhem-dev/polhem-oauth2#1](https://github.com/polhem-dev/polhem-oauth2/pull/1)。與 provider 無關的部分已完成：
+在 polhem-oauth2 的分支 `claude/system-browser-signin`（接在 `claude/loopback-probe` 之後）實作，經
+[polhem-dev/polhem-oauth2#1](https://github.com/polhem-dev/polhem-oauth2/pull/1) 以一般 merge 合併進 `main`（merge commit `1aeca99`，2026-09-14）。內容：
 
 - 核心新增 `LoopbackOAuth2Client`（`src/Polhem.OAuth2/Loopback/`），提供 `SignInAsync(CancellationToken)`、`Timeout`（預設 5 分鐘）與 `OpenBrowser`。
   `OpenBrowser` 為 null 時用系統預設瀏覽器，且只接受 http／https 網址。port 為 0 時，每次登入會把 `Options.RedirectUri` 改成實際綁定的 port，結束後還原。
@@ -312,8 +312,7 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
   `RedirectUri` 改由設定檔逐家指定，`--redirect` 改為選填，`--pkce` 移除。
 - 驗證：macOS 上全方案建置 0 警告，單元測試全數通過；以改寫後的工具與 OAuthConsole sample 對 Google 實際登入成功。
 
-尚未完成：
-- PR 轉為 Ready for review 並合併。
+合併時仍未驗證：
 - Windows 驗證：PR 的 Build CI（windows-latest）建置 net48 與 net10.0-windows 並跑測試已通過；監聽程式碼的 netstandard2.0 組建沒有被測試執行到。
 - 兩個 WinForms sample 還沒實際登入過。
 
