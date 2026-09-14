@@ -278,8 +278,8 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 | Microsoft Entra ID | App registrations → Authentication | Mobile and desktop applications | `http://localhost:0/callback`（任意 port）、`http://127.0.0.1:53682/callback` | 待實測 |
 | Auth0 | Dashboard → Applications | Native | `http://127.0.0.1:53682/callback`、`http://localhost:53682/callback` | 待實測 |
 | Okta | Admin Console → Applications | Native（PKCE） | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | 待實測 |
-| LINE | LINE Developers Console → LINE Login channel → Callback URL | — | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | 待實測 |
-| Facebook | Meta for Developers → Facebook Login → Settings → Valid OAuth Redirect URIs | — | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | 待實測 |
+| LINE | LINE Developers Console → LINE Login channel → Callback URL | — | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | ✅ 2026-09-14，PKCE on：後台加上 `http://localhost:53682/callback` 後，導回並換到 token，**沒送 client secret 也成功**；使用者資訊沒有 email。加上之前後台只有 `http://localhost/callback`（沒寫 port，即 80），`localhost:53682` ❌ 授權頁顯示 `400 Bad Request`「Invalid redirect_uri value」，port 必須與登記一致。`http://localhost/callback` 本身在 macOS 無法測：一般權限綁不了 port 80（`Permission denied`）。`127.0.0.1` 未登記、未測 |
+| Facebook | Meta for Developers → Facebook Login → Settings → Valid OAuth Redirect URIs | — | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | 2026-09-14，PKCE on：`localhost:53682` ✅ 導回並換到 token，**沒送 client secret 也成功**。`127.0.0.1:53682` ❌ Facebook 登入頁顯示該應用程式「傳遞資訊所使用的網路連線並不安全」，無法登入。`localhost:0` ✅ 實際以 `localhost:51464` 導回也被接受，`localhost` 不必與登記的 port 一致。app 模式（開發／上線）未確認，上線模式下 `localhost` 是否仍放行未測。舊版 sample 用的是 `http://localhost:5000/callback` |
 
 - 表中的應用程式類型與「任意 port」都是**待實測的假設**，不是已知事實；不接受任意 port 的 provider 要登記完全相同的 port。
 - 每家先跑 `--pkce on`。token 交換失敗時再跑 `--pkce off`，判斷是否因為 PKCE 下沒送 client secret
