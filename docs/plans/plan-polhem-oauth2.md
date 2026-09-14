@@ -102,6 +102,8 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | `OpenBrowser` 型別 | `Func<Uri, Task>?` | 使用者決定（2026-09-14）。Avalonia 與 MAUI 的 launcher 都接收 `Uri` 並回傳 Task |
 | refresh 放在哪裡 | `OAuth2Client` 與 `LoopbackOAuth2Client` 都提供 `RefreshTokenAsync` | 使用者決定（2026-09-14）。桌面 app 也要更新 token；loopback 是 public client，不送 client secret（Google 例外） |
 | 呼叫端取消 | `OAuth2Client.CompleteAuthorizationAsync` 往外拋 `OperationCanceledException`；`LoopbackOAuth2Client.SignInAsync` 維持轉成失敗結果；`HttpClient` 逾時在兩者都是失敗結果 | 使用者決定（2026-09-14）。網頁端傳入 `RequestAborted` 時，取消由框架處理，不算登入失敗。ADR-003 在批次 F 補上 |
+| 網頁套件的 client 註冊 | ASP.NET Core：`services.AddOAuth2Client(name, options)`，每家呼叫一次，同名重複時在呼叫當下擲 `InvalidOperationException`。System.Web：`OAuth2Manager.RegisterClient(name, options)`，另有選填的 `HttpClient` 參數 | 使用者決定（2026-09-14）。不必多一個 builder 型別；兩個套件都由 manager 以 options 建立 client，寫法一致 |
+| 網頁 manager 的方法名稱 | `CreateAuthorizationUrl`、`RedirectToAuthorization`、`CompleteAuthorizationAsync`、`GetClient`；ASP.NET Core 版接收 `HttpContext`，System.Web 版另有接收 `HttpContextBase` 的多載 | 使用者決定（2026-09-14）。與核心 `OAuth2Client` 對齊；建立網址時會寫入 cookie，所以用 Create 而不用 Get |
 
 ---
 
@@ -455,7 +457,7 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 | 批次 | 範圍（`R-xx` 對應健檢報告） | 狀態 |
 |------|----------------------------|------|
 | A | **provider 層**：<br>• 收成 internal；新增 `TokenResponse`<br>• client secret 依 client 類型決定（R-04）<br>• 端點驗證與 `Domain` 正規化（R-07、R-24）<br>• token 回應欄位的讀法（R-10）<br>• Facebook Graph API 版本，fields 拿掉未使用的 `picture`（R-14）<br>• Entra tenant、Okta org server、LINE email、Google 端點改現行路徑、刪除 Entra 的死碼（R-28）<br>• token 端點的錯誤代碼（R-29）<br>• 刪除 Azure token 請求的 `response_mode`（R-22）<br>• `ConfigureAwait(false)` 與 `CancellationToken`（R-09、R-17）<br>• `HttpClient` 注入（R-18）<br>**測試**：PKCE 的 RFC 7636 測試向量（R-30）、授權網址與 token 請求參數、成功路徑（R-34） | ✅ 2026-09-14 |
-| B | **client 層**：<br>• `OAuth2Client` 兩段式 API（R-20）<br>• 結果型別改唯讀（R-16、R-22）<br>• verifier 缺失時改擲例外（R-05）<br>• 複製 options（R-08）<br>• Loopback：非同步 `OpenBrowser`、傳給瀏覽器的網址、並行處理連線、Host 標頭與路徑正規化（R-36、R-37、R-38）<br>• XML doc 補列例外<br>• 自批次 A 移入：`UsePkce` 預設改 true、`HttpClient` 的公開注入點<br>• `BaseOAuth2Client` 與 `IStateStorage` 暫時保留給網頁套件，批次 C 刪除 | 📝 |
+| B | **client 層**：<br>• `OAuth2Client` 兩段式 API（R-20）<br>• 結果型別改唯讀（R-16、R-22）<br>• verifier 缺失時改擲例外（R-05）<br>• 複製 options（R-08）<br>• Loopback：非同步 `OpenBrowser`、傳給瀏覽器的網址、並行處理連線、Host 標頭與路徑正規化（R-36、R-37、R-38）<br>• XML doc 補列例外<br>• 自批次 A 移入：`UsePkce` 預設改 true、`HttpClient` 的公開注入點<br>• `BaseOAuth2Client` 與 `IStateStorage` 暫時保留給網頁套件，批次 C 刪除 | ✅ 2026-09-14 |
 | C | **網頁套件**：<br>• 每次登入一個加密 cookie，移除 session 與自帶加密（R-01、R-03、R-19、R-25、R-31）<br>• cookie 屬性（R-06）<br>• 統一兩個 manager 的行為；設定錯誤擲 `InvalidOperationException`；registry 執行緒安全（R-02、R-11、R-12、R-13）<br>• 回呼的 `error` 參數（R-29）<br>• AspNet 目標框架（R-35）<br>**測試**：AspNetCore 以 `DefaultHttpContext` 做單元測試（R-32） | 📝 |
 | D | **測試基礎**：<br>• 測試專案在 Windows 上多打 net48，AspNet 套件在 net48 下測試（R-32、R-33）<br>• CI 設 `timeout-minutes`<br>• 等待回呼的測試加逾時<br>• 沒有 IPv6 的環境改為明確略過（R-34） | 📝 |
 | E | **samples 與工具**：<br>• samples 與 `tools/LoopbackRedirectProbe` 改用新 API<br>• 清掉 samples 殘留的 `*Helper`、中文 XML doc、Newtonsoft（R-38） | 📝 |
@@ -493,6 +495,38 @@ polhem-oauth2 commit `696277e`，直接推 `main`；Build CI（windows-latest）
 - **平行路徑**：samples 與 probe 的設定檔都沒有寫死端點，Okta 也都明寫 `"AuthorizationServerId": "default"`，行為不受影響。README 對 `AuthorizationServerId` 的說明留給批次 F。
 - **範圍對帳**：實際變動與動工前宣告的清單一致（38 個檔案）。
 - **移到批次 B**：`UsePkce` 預設改 true（與 R-05 一起做）、`HttpClient` 的公開注入點（隨 `OAuth2Client` 加入）。
+
+#### 批次 B（2026-09-14 完成）
+
+polhem-oauth2 commit `59d4d6c`，直接推 `main`；Build CI（windows-latest）通過，248 個測試。
+
+- **新型別**（名稱見決策紀錄）：`OAuth2Client`、`AuthorizationRequest`、`PendingAuthorization`、`AuthorizationCallback`。
+  - 建立 client 時複製並驗證 options，失敗擲 `ArgumentException`：`ClientId` 必填；`RedirectUri` 必須是絕對 http 或 https URI；scope 不可為 null 或空白；端點必須是 https。`HttpClient` 從建構子注入，未注入時使用共用執行個體。
+  - `CompleteAuthorizationAsync` 依序檢查 state、`error`、code、PKCE verifier，任一不符就轉成失敗結果，且不發出請求。`HttpClient` 逾時轉成失敗結果，呼叫端取消往外拋。
+  - `UsePkce` 預設改為 true。
+- **結果型別**：
+  - `AuthorizationResult` 改 sealed、唯讀，以 `Success`／`Failure` 建立，`IsSuccess` 加 `[MemberNotNullWhen]`。netstandard2.0 沒有這個 attribute，在 `Polyfills/` 放 internal 版本，由 csproj 只編進 netstandard2.0。
+  - `UserInfo` 改 sealed，以建構子建立。
+- **Loopback**：
+  - `LoopbackOAuth2Client` 改 sealed，內部組合 `OAuth2Client`（public client、一律 PKCE）。每次登入的 redirect URI 隨請求傳遞，不再改寫 options；`MemoryStateStorage` 刪除。
+  - `OpenBrowser` 改為 `Func<Uri, Task>?`；取消會一併中止換 token；新增 `RefreshTokenAsync`。
+  - 連線改為並行讀取（同時最多 8 條）；要求 `Host` 標頭等於 redirect URI 的主機與 port；路徑先解百分比編碼再比對；傳給系統瀏覽器的是跳脫過的 `AbsoluteUri`。
+  - port 不是 0 時，redirect URI 仍送出設定的原字串，避免 `Uri` 正規化改變 provider 比對的值。
+- **過渡**：`BaseOAuth2Client`、`IStateStorage`，以及網頁套件的 `OAuth2Client`／`StateStorage`，保留到批次 C。核心新增 `OAuth2Client` 後與網頁套件的同名型別衝突，`samples/OAuthAspNetCore` 的註冊處暫時改用完整限定名。
+- **samples 與工具**：probe 為了能編譯改用新的 `OpenBrowser`，redirect URI 改從授權網址解析（R-08 的建議）。其餘整理仍在批次 E。
+- **測試**：`StubHttpMessageHandler` 改為非同步回應並新增 `Hang`。新增 `OAuth2ClientTests` 與結果型別的測試；loopback 補上 `Host` 標頭、百分比編碼路徑、閒置連線、換 token 途中取消、refresh。測試數 202 → 248。
+- **平行路徑**：README 對 `OpenBrowser` 與「`UsePkce` 需要 session」的敘述，留給批次 C、F；samples 設定檔都明寫 `UsePkce`，行為不變。
+- **範圍對帳**：實際變動與動工前宣告的清單一致（37 個檔案）。
+
+#### 批次 C 開工前已確認（2026-09-14）
+
+- 公開名稱已定，見決策紀錄的「網頁套件的 client 註冊」與「網頁 manager 的方法名稱」。
+- 預定做法（不涉及公開 API，實作時可調整）：
+  - 每次登入一個 `__Host-` 開頭的 cookie，名稱帶 state。值是加密後的 client 名稱、state、verifier、redirect URI 與建立時間：ASP.NET Core 用 Data Protection，System.Web 用 `MachineKey.Protect`。回呼時先刪 cookie 再換 token，超過 10 分鐘視為失效。
+  - 兩個網頁套件共用的 payload 格式與 cookie 命名，放在一個由兩個專案連結編譯的共用原始碼檔，不跨套件使用 InternalsVisibleTo。
+  - ASP.NET Core 的 `OAuth2Manager` 只由 DI 建立；`CompleteAuthorizationAsync` 同時觀察傳入的 token 與 `HttpContext.RequestAborted`。
+  - 評估讓核心 net10.0 的共用 `HttpClient` 設定 `PooledConnectionLifetime`，讓長時間執行的伺服器能跟上 DNS 變更。
+- 已在 scratchpad 驗證：macOS 可建置 net472，且參考組件有 `HttpCookie.SameSite`、`MachineKey.Protect`／`Unprotect`、`HttpContextBase`、`HttpResponseBase.Redirect(string, bool)`。
 
 ### 判定不做的項目
 
