@@ -113,7 +113,10 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | FIPS 模式下的 PKCE（R-38） | 程式碼不動。README 的桌面段落與 System.Web「部署前確認」註明：目標 .NET Framework 4.7.2 的應用程式在 FIPS 機器上，要把目標框架改為 4.8 以上，或把 `UseLegacyFipsThrow` 開關設為 `false` | 使用者決定（2026-09-14）。有 Microsoft 文件為依據；改用 CSP 實作無法在 CI 的 FIPS 環境驗證，還得處理取不到實作時的退路 |
 | `ConfigureAwait(false)` 的閘門（R-09） | 只對套件原始碼開 CA2007：`src/.editorconfig` 設為 warning，由 `TreatWarningsAsErrors` 擋下漏寫 | 使用者決定（2026-09-14）。測試與 sample 不受影響；xUnit 建議測試裡不要用 `ConfigureAwait(false)` |
 | 最終公開 API | 依批次 A～F 的結果定型：核心 95 項、AspNetCore 7 項、AspNet 9 項 | 使用者確認（2026-09-14）。名稱與形狀已在各批逐項決定；發佈後再改就是破壞性變更 |
-| 批次 G 的瀏覽器實測 | 六家用 probe 重跑桌面登入；網頁登入用 ASP.NET Core sample 對 Google 走一次 | 使用者決定（2026-09-14）。只跑 probe 的話，網頁登入只有單元測試，沒有實際經過瀏覽器與 provider。Google 的網頁 client 由 agent 依使用者指示操作 Chrome 建立，client secret 由使用者自己填進本機設定檔 |
+| 批次 G 的瀏覽器實測 | 六家用 probe 重跑桌面登入；網頁登入用 ASP.NET Core sample 對 Google 走一次（其餘五家後來補測，見下一列） | 使用者決定（2026-09-14）。只跑 probe 的話，網頁登入只有單元測試，沒有實際經過瀏覽器與 provider。Google 的網頁 client 由 agent 依使用者指示操作 Chrome 建立，client secret 由使用者自己填進本機設定檔 |
+| 網頁登入補測 | 推 tag 前補測 Facebook、LINE、Entra ID、Okta、Auth0 的網頁登入；sample 的登入路由改為可指定 provider，並 commit | 使用者決定（2026-09-14）。網頁 client 送 client secret 的規則只對 Google 實測過；sample 註冊了六家，登入路由卻寫死 Google |
+| sample 的設定檔 | 追蹤 `OAuthConfig.example.json`，`.gitignore` 排除 `samples/**/OAuthConfig.json`，比照 probe 的做法 | 使用者決定（2026-09-14）。原本追蹤的 `OAuthConfig.json` 填入實際憑證後顯示為已修改，`git add -A`、`git commit -a`、VS Code 在沒有暫存時的全部 commit 都會把它帶進去。`git add -f` 仍然可以強制加入 |
+| 實測用 app 的清除 | 只清正式系統 app 上的測試變更；其他測試 app 與回呼設定保留 | 使用者決定（2026-09-14）。之後的實測可以沿用 |
 
 ---
 
@@ -660,7 +663,39 @@ polhem-oauth2 commit `4c655a3`，直接推 `main`；Build CI（windows-latest）
   - 填好後登入成功，結果頁顯示 `ProviderName: Google`、使用者 ID、名稱與 email。
   - 重新整理同一個回呼網址被拒絕（找不到對應的登入），回呼無法重送。
   - 測完停止 sample，`OAuthConfig.json` 以 `git checkout` 還原，沒有 commit。
-- **tag**：刪除本機舊的 `v1.0.0`（指向 `0370a62`），在 `4c655a3` 重打 annotated tag，**尚未推送**。
+- **tag**：刪除本機舊的 `v1.0.0`（指向 `0370a62`），在 `4c655a3` 重打 annotated tag。補測網頁登入又多了三個 commit，tag 改打在 `182402b`（見下節），**尚未推送**。
+
+#### 批次 G 補測：其餘五家的網頁登入（2026-09-14）
+
+推 tag 前，使用者問網頁登入有沒有測過 Google 以外的 provider。只測過 Google，而批次 A 改的「網頁 client 設了 client secret 就送」對其他五家沒有實測；sample 的登入路由也寫死 Google。
+
+polhem-oauth2 的 commit 都直接推 `main`，Build CI（windows-latest）通過：
+
+- `16dccac`：sample 的登入路由改為 `/auth/login/{clientName}`，沒指定時仍是 Google。CI 測試 net10.0 250 個、net48 247 個。
+- `990f7da`：四個 sample 追蹤的設定檔改名為 `OAuthConfig.example.json`，`.gitignore` 排除 `OAuthConfig.json`。找不到設定檔時，sample 提示從範本複製；README 雙語同步。以 `git rm --cached` 處理，本機已填的值保留。CI 測試 net10.0 250 個、net48 247 個。
+- `182402b`：排除規則改為 `samples/**/OAuthConfig.json`，涵蓋更深的資料夾。
+
+| Provider | 後台設定 | 結果 |
+|---|---|---|
+| Facebook | 沿用 probe 的測試 app（開發模式），不必另外登記 `https://localhost:7032/auth/callback` | ✅ 取得名稱與 email |
+| LINE | 沿用 probe 的 channel，Callback URL 加上 `https://localhost:7032/auth/callback` | ✅ 取得名稱；email 是空的，與階段 4 的實測相同 |
+| Entra ID | 沿用 probe 的 app（使用者公司租用戶裡的正式系統 app）：Web 平台加上回呼網址，新建一組 90 天到期的測試 secret | ✅ 取得名稱與 email |
+| Okta | 新建 OIDC Web app「Polhem OAuth2 ASP.NET Core sample」（client secret、開放組織內所有人），並加入 `default` 授權伺服器既有的存取政策 | ✅ 取得名稱與 email |
+| Auth0 | 使用者登入的帳號只有 tenant `bee-net`，改在該 tenant 建 Regular Web Application「Polhem OAuth2 ASP.NET Core sample」並登記回呼網址；設定檔的 `Domain` 改為 `bee-net.us.auth0.com` | ✅ 取得名稱與 email |
+
+- **憑證的處理**：
+  - Facebook、LINE 的 secret 依使用者指示，由 agent 以程式從 `probe.settings.json` 複製進 `OAuthConfig.json`，沒有讀出或印出。
+  - Entra ID、Okta、Auth0 的 secret 由使用者自己貼上。agent 只檢查是否仍是範本值與長度。
+  - Okta、Auth0 的 client ID 是 agent 從後台網址取得後填入。
+- **操作分工**：
+  - Facebook 的同意畫面與 LINE 的登入頁擋住瀏覽器工具，由使用者操作。
+  - Okta、Auth0 的登入與多重驗證由使用者完成。
+  - 其餘同意畫面由 agent 按，使用者同意的範圍只限這次實測。
+- 五家測試期間，sample 的 log 沒有錯誤。
+- **清除**：
+  - 依決策紀錄，Entra ID 那個正式系統 app 上的測試 secret 與 `https://localhost:7032/auth/callback` 已刪除。
+  - Google 的網頁 client、Okta 與 Auth0 的網頁 app、LINE 的 localhost callback 保留。
+  - 本機的 `OAuthConfig.json` 已被 git 忽略，沒有還原；其中的 Entra ID secret 已經失效。
 
 ### 判定不做的項目
 
@@ -699,7 +734,7 @@ polhem-oauth2 commit `4c655a3`，直接推 `main`；Build CI（windows-latest）
    - 使用者 review 時發現套件圖示是舊的 Bee.* 圖示（見階段 1a 的更正），改用 polhem-brand 的 `png/nuget-package-icon-128.png`：
      polhem-oauth2 commit `0370a62`，Build CI 通過；三個 nupkg 內的 `polhem.png` 都已確認是新圖示。
    - annotated tag `v1.0.0` 已在本機重建，改指向 `0370a62`，尚未推送。
-   - **2026-09-14 階段 6b 批次 G** 再次重打，改指向 `4c655a3`，仍未推送。
+   - **2026-09-14 階段 6b 批次 G** 再次重打，改指向 `4c655a3`；補測網頁登入後改指向 `182402b`，仍未推送。
 6. 驗證：nuget.org 上各套件的圖示、README、相依清單（不得出現 `Bee.Base`、Newtonsoft.Json）；
    在全新專案安裝並跑一次最小範例。
 7. **推送 org profile**：階段 6 已在本機 clone `~/Desktop/repos/polhem-dev-github` commit（`1176df0`，尚未推送）。
