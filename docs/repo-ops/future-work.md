@@ -487,6 +487,9 @@ bee-oauth2 已先走完同一條路：
 - `Polhem.OAuth2` 三個套件的 1.0.0 已於 2026-09-15 發佈。
 - 五個 `Bee.OAuth2.*` 已凍結，`jeff377/bee-oauth2` 已 archive。
 
+完整的移植步驟、決策紀錄與實作紀錄見封存的 [plan-polhem-oauth2.md](../plans/archive/plan-polhem-oauth2.md)。
+bee-library 改名另開時，以它作為撰寫 plan 的參考。這份封存 plan **長期保留**，不隨一個月的封存期限清除。
+
 對照上一節「要一併決定的」：
 
 | 項目 | 結果 | bee-library 啟動時沿用 |

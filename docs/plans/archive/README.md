@@ -12,9 +12,12 @@
 > **保留期限**：封存滿一個月的 plan 會被清除，git 歷史仍可追溯。
 > 2026-08-20 首次清理，移除 20 份 2026-07-20 以前完成者。
 > 2026-09-06 第二次清理，移除 28 份 2026-08-06 以前完成者。
+>
+> **例外：說明欄標「長期保留」者不清除**，因為有其他文件把它當作參考而指向它。清理時略過這些 plan。
 
 | 計畫 | 完成日 | 說明 |
 |------|--------|------|
+| [bee-oauth2 改名為 Polhem.OAuth2 並移至 polhem-dev](plan-polhem-oauth2.md) | 2026-09-15 | **長期保留**：bee-library 改名另開的參考，`docs/repo-ops/future-work.md` 的「bee-oauth2 演練結果」指向本檔。<br>bee-oauth2 改名另開為 `polhem-dev/polhem-oauth2`，不帶舊歷史：<br>• 拿掉 `Bee.Base`，改用 System.Text.Json。<br>• WebView2 改為系統瀏覽器加 loopback 回呼。<br>• 套件由五個減為三個。<br>• 首發前依健檢結果重塑公開 API，網頁端改為每次登入一個加密 cookie。<br>`Polhem.OAuth2.*` 1.0.0 以 Trusted Publishing 發佈；五個 `Bee.OAuth2.*` 標 deprecated，舊 repo 已 archive。<br>另外演練了：語言政策（共同維護的部分一律英文）、org profile、商標重查 |
 | [DateTime 只接受伺服端寫入，DataSet 請求方向不轉換時區](plan-datetime-request-direction.md) | 2026-09-12 | 伺服端 `FormBusinessObject.Save` 入口正規化 `DateTime` 欄：新增列補伺服端讀數、修改與刪除列讀回資料庫原值、框架戳記 `sys_insert_time` / `sys_update_time`，明細列讀回靠新增的 `IDataFormRepository.GetRowsByRowId`。Connector 請求方向只轉過濾條件，移除 `DateTimeZoneConverter.UserToUtc` 與 `AmbiguousInstantMemory`，`ToUtc` 改名 `IsolateRequest` 且 `DataSet` 一律複製；AuditRule 的系統戳記欄標 `ReadOnly`。決策記入 [adr-032](../../adr/adr-032-datetime-timezone.md) 選項 5 與 D14。已知未處理：`Unchanged` 列不正規化；SQLite 讀回的時間欄是字串，回應方向本就未轉時區（另案查證） |
 | [公開文件改為語言資料夾結構，並建立譯本同步機制](plan-docs-multilingual-layout.md) | 2026-09-11 | 公開文件由後綴區分改為 `docs/<lang>/`，繁中為源；新增 `check-md-links.sh` 與 `check-docs-i18n.sh`（譯本 blob 檔頭、過期、缺譯、語言切換列，`--stamp`／`--fix-switch`），掛在獨立的 Docs Check workflow，pre-commit hook 只提示。原階段 4（個人文件移出 `docs/`）拆為 `plan-personal-docs-directory` |
 | [公開文件的定位由 ERP 改為以表單為基礎的企業資訊系統](plan-docs-positioning.md) | 2026-09-11 | 定位用語改為「企業資訊系統」（術語表新增詞條，LOB 為英文同義詞）；ERP 保留為複雜度基準並在架構總覽寫明涵蓋面向，把 ERP 當目標系統代稱的寫法改成通用說法，XML doc 同步；GitHub About 與 topics 一併更新 |

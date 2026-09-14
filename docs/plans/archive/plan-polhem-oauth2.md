@@ -18,7 +18,7 @@
 
 ## 背景
 
-[future-work.md「開放共同維護」](../repo-ops/future-work.md) 定案的方向是：bee-library **不轉移**，
+[future-work.md「開放共同維護」](../../repo-ops/future-work.md) 定案的方向是：bee-library **不轉移**，
 而是改名另開新框架於 `polhem-dev`，舊 repo 與 `Bee.*` 套件凍結。名稱與各平台帳號已於 2026-09-12 占下。
 
 bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一步走同一條路，目的有二：
