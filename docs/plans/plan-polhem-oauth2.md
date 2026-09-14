@@ -123,6 +123,9 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 3. **中繼資料**：`Version` 1.0.0；`Authors`／`Company`／`Product` → Polhem；`Copyright` 與 LICENSE 一致；
    `PackageIcon` 改用 bee-library 根目錄 `bee.png`（`67bfca83` 起為三格接點），更名 `polhem.png`；
    `RepositoryUrl` → `https://github.com/polhem-dev/polhem-oauth2`。描述與 tags 留到階段 6。
+   **更正（2026-09-14，使用者 review 時發現）**：這一步用錯了圖示。Polhem 自 2026-09-12 起採用「三件互換輪」，
+   三格接點轉作 bee-library 的 `bee.png`，所以 `polhem.png` 與 `bee.png` 位元組相同。首發前已改為 polhem-brand 的
+   `png/nuget-package-icon-128.png`，見階段 7。
 4. **測試**：新增 `tests/Polhem.OAuth2.UnitTests`（xUnit、net10.0），以 `InternalsVisibleTo` 測 internal 型別。
    測試方法名稱、`[DisplayName]` 與註解從一開始就用英文（見決策紀錄）。
    - 移植 v3.5.0 的 `AesCbcHmacCryptorTests.cs`、`AesCbcHmacKeyGeneratorTests.cs`，原本的中文 XML doc 與註解改寫為英文。
@@ -403,7 +406,10 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 4. 發佈前 clean build 與測試全綠；紅燈是訊號，不為發版而改測試或原始碼。
    **通過（2026-09-14）**：clean build 0 警告 0 錯誤，112 個測試通過。發版 commit `0491c75`（CHANGELOG、analyzer 與基準檔、Release 內文指向 CHANGELOG）
    推 `main` 後 Build CI 通過。
-5. **推送 `v1.0.0` tag 須使用者明確同意**，發佈後無法撤回。annotated tag `v1.0.0` 已在本機建立並指向 `0491c75`，尚未推送。
+5. **推送 `v1.0.0` tag 須使用者明確同意**，發佈後無法撤回。
+   - 使用者 review 時發現套件圖示是舊的 Bee.* 圖示（見階段 1a 的更正），改用 polhem-brand 的 `png/nuget-package-icon-128.png`：
+     polhem-oauth2 commit `0370a62`，Build CI 通過；三個 nupkg 內的 `polhem.png` 都已確認是新圖示。
+   - annotated tag `v1.0.0` 已在本機重建，改指向 `0370a62`，尚未推送。
 6. 驗證：nuget.org 上各套件的圖示、README、相依清單（不得出現 `Bee.Base`、Newtonsoft.Json）；
    在全新專案安裝並跑一次最小範例。
 7. **推送 org profile**：階段 6 已在本機 clone `~/Desktop/repos/polhem-dev-github` commit（`1176df0`，尚未推送）。
