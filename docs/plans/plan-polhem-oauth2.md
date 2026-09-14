@@ -107,6 +107,8 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | DI 擴充方法的類別 | `Microsoft.Extensions.DependencyInjection.OAuth2ServiceCollectionExtensions` | 使用者決定（2026-09-14）。與 `IServiceCollection` 同 namespace，Program.cs 不必多加 using；類別名加 OAuth2 前綴，因為許多函式庫在同一 namespace 都有 `ServiceCollectionExtensions` |
 | `AddOAuth2Client` 的 `HttpClient` | 加上選填的 `HttpClient` 參數 | 使用者決定（2026-09-14）。與 System.Web 版 `RegisterClient` 一致，可設逾時與 proxy，測試也靠它注入 stub |
 | System.Web 版回呼的多載 | `CompleteAuthorizationAsync()` 使用 `HttpContext.Current`、不支援取消；`CompleteAuthorizationAsync(HttpContextBase, CancellationToken = default)` 可取消 | 使用者決定（2026-09-14）。兩個多載都帶選填的 `CancellationToken` 會被 RS0026／RS0027 擋下 |
+| OAuthWinForms 的範本檔 | 刪除沒用到的 `Properties/` Resources 與 Settings；`Program.cs`、`Form1.Designer.cs` 的註解改為英文 | 使用者決定（2026-09-14）。工具產生的檔案不留在 repo，就不會在中文版 Visual Studio 重新產生出中文註解 |
+| ASP.NET Core sample 的設定讀取 | 以 System.Text.Json 讀 `OAuthConfig.json`，在 `Program.cs` 直接註冊 client；刪除 `OAuth2RegistrationHelper` 與 Newtonsoft.Json | 使用者決定（2026-09-14）。與其他三個 sample 的寫法一致 |
 
 ---
 
@@ -462,7 +464,7 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 | A | **provider 層**：<br>• 收成 internal；新增 `TokenResponse`<br>• client secret 依 client 類型決定（R-04）<br>• 端點驗證與 `Domain` 正規化（R-07、R-24）<br>• token 回應欄位的讀法（R-10）<br>• Facebook Graph API 版本，fields 拿掉未使用的 `picture`（R-14）<br>• Entra tenant、Okta org server、LINE email、Google 端點改現行路徑、刪除 Entra 的死碼（R-28）<br>• token 端點的錯誤代碼（R-29）<br>• 刪除 Azure token 請求的 `response_mode`（R-22）<br>• `ConfigureAwait(false)` 與 `CancellationToken`（R-09、R-17）<br>• `HttpClient` 注入（R-18）<br>**測試**：PKCE 的 RFC 7636 測試向量（R-30）、授權網址與 token 請求參數、成功路徑（R-34） | ✅ 2026-09-14 |
 | B | **client 層**：<br>• `OAuth2Client` 兩段式 API（R-20）<br>• 結果型別改唯讀（R-16、R-22）<br>• verifier 缺失時改擲例外（R-05）<br>• 複製 options（R-08）<br>• Loopback：非同步 `OpenBrowser`、傳給瀏覽器的網址、並行處理連線、Host 標頭與路徑正規化（R-36、R-37、R-38）<br>• XML doc 補列例外<br>• 自批次 A 移入：`UsePkce` 預設改 true、`HttpClient` 的公開注入點<br>• `BaseOAuth2Client` 與 `IStateStorage` 暫時保留給網頁套件，批次 C 刪除 | ✅ 2026-09-14 |
 | C | **網頁套件**：<br>• 每次登入一個加密 cookie，移除 session 與自帶加密（R-01、R-03、R-19、R-25、R-31）<br>• cookie 屬性（R-06）<br>• 統一兩個 manager 的行為；設定錯誤擲 `InvalidOperationException`；registry 執行緒安全（R-02、R-11、R-12、R-13）<br>• 回呼的 `error` 參數（R-29）<br>• AspNet 目標框架（R-35）<br>**測試**：AspNetCore 以 `DefaultHttpContext` 做單元測試（R-32） | ✅ 2026-09-14 |
-| D | **測試基礎**：<br>• 測試專案在 Windows 上多打 net48，AspNet 套件在 net48 下測試（R-32、R-33）<br>• CI 設 `timeout-minutes`<br>• 等待回呼的測試加逾時<br>• 沒有 IPv6 的環境改為明確略過（R-34） | 📝 |
+| D | **測試基礎**：<br>• 測試專案在 Windows 上多打 net48，AspNet 套件在 net48 下測試（R-32、R-33）<br>• CI 設 `timeout-minutes`<br>• 等待回呼的測試加逾時<br>• 沒有 IPv6 的環境改為明確略過（R-34） | ✅ 2026-09-14 |
 | E | **samples 與工具**：<br>• samples 與 `tools/LoopbackRedirectProbe` 改用新 API<br>• 清掉 samples 殘留的 `*Helper`、中文 XML doc、Newtonsoft（R-38） | 📝 |
 | F | **文件**：<br>• README 雙語重寫網頁段落並補部署前提（R-03、R-43、R-44、R-45）<br>• ADR-001 標註加密部分已被取代；ADR-003、ADR-004 依新行為改寫；新增 ADR-005 記錄網頁 state 的保存方式<br>• CHANGELOG 1.0.0 一節重寫（R-40、R-41、R-42） | 📝 |
 | G | **驗收**：<br>• 逐項回驗健檢報告的每個 `R-xx`：讀程式碼確認，不以狀態標記為準<br>• 用 probe 工具對六家重跑登入；用 ASP.NET Core sample 實際走一次網頁登入（需要使用者在瀏覽器操作）<br>• 重建 `PublicAPI.Shipped.txt`；clean build 與測試<br>• 刪除本機舊 tag，在新 commit 重打 `v1.0.0`。**推送前停下來問使用者** | 📝 |
@@ -562,6 +564,30 @@ polhem-oauth2 commit `8b11c84`，直接推 `main`；Build CI（windows-latest）
 - 本機沒有 mono，net48 的測試只能在 Windows CI 執行。本機以 `-p:TargetFrameworks="net10.0;net48"` 先確認 net48 編譯得過。
 - 測試程式碼有十幾處用到 .NET Framework 沒有的 API，要改寫：`CancelAsync`、`record`、陣列範圍語法、帶 `StringComparison` 的 `Replace`／`IndexOf`、非泛型 `TaskCompletionSource`、`Queue.TryDequeue`、`char.IsAsciiLetterOrDigit`、`Stream.WriteAsync(byte[])`、`ReadAsStringAsync(CancellationToken)`。AspNetCore 的測試在 net48 排除。
 - IPv6 測試目前以 `return` 靜默通過，兩處（`LoopbackListenerTests`）。等待外部訊號的地方有 `browser.Completed`、`handler.Hanging`、`opened.Task`。
+
+#### 批次 D（2026-09-14 完成）
+
+polhem-oauth2 commit `531128b`，直接推 `main`；Build CI（windows-latest）通過：net10.0 250 個、net48 247 個測試。
+
+- **測試專案的目標框架**：預設 net10.0；在 Windows 上，或指定 `-p:IncludeNetFrameworkTests=true` 時，多打 net48。
+  - net48 參照 System.Web 版套件，並補 `System.Net.Http` 的參考與 global using：.NET Framework 的隱含 using 不含它。
+  - net10.0 參照 ASP.NET Core 版套件。兩邊各自排除另一個網頁套件的測試檔。
+- **netstandard2.0 組建第一次在 .NET Framework 上執行**（R-33），包含 loopback listener 與 `HttpClient` 的路徑。
+- **System.Web 版 manager 的測試**：以 `FakeHttpContext`（繼承 `HttpContextBase`）搭配 `App.config` 裡的測試用 machine key，`MachineKey.Protect` 在測試主機裡直接可用。共用 cookie 格式的測試在兩個網頁套件都執行，所以 AspNet 套件補上 InternalsVisibleTo。
+- **相容性**：測試程式碼改用 .NET Framework 也有的 API（`CancelAsync`、`record`、陣列範圍語法、`TryDequeue` 等），net10.0 上的行為不變。
+- **IPv6**：兩個 IPv6 測試改用 `Ipv6Fact`，機器不支援時回報為略過。
+- **逾時**：等待假瀏覽器、listener、stub 請求的地方一律以 `WithTimeout`（30 秒）包住。CI 加上 `timeout-minutes: 20`。
+- **本機驗證**：macOS 以 `-p:IncludeNetFrameworkTests=true` 編譯 net48 目標。修掉兩個只在 net48 出現的錯誤：`TcpListener` 在 .NET Framework 不是 `IDisposable`；集合初始化的 IDE0028。net48 測試只能在 CI 執行。
+- **範圍對帳**：實際變動與動工前宣告的清單一致（15 個檔案），這次沒有被 IDE 改動的檔案。
+
+#### 批次 E 開工前已確認（2026-09-14）
+
+- 兩個 sample 的處理方式已定，見決策紀錄的「OAuthWinForms 的範本檔」與「ASP.NET Core sample 的設定讀取」。
+- 盤點結果：
+  - `*Helper` 與 Newtonsoft.Json 只剩 AspNetCore sample。
+  - 中文註解只剩 OAuthWinForms 由 Visual Studio 範本產生的檔案。
+  - OAuthWinForms 的 `Properties/` Resources 與 Settings 沒有被 sample 使用。
+- `tools/LoopbackRedirectProbe` 在批次 B 已改用新 API；README 與設定範例都沒有描述舊行為，不需要修改。
 
 ### 判定不做的項目
 
