@@ -405,10 +405,12 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 |------|------|------|
 | GitHub organization | `polhem-dev` | 已建立。`polhem` 本身是 2019 年建立的個人帳號，要不回來，故加後綴 |
 | NuGet 組織帳號 | `Polhem` | 已建立。組織 email 暫用個人信箱別名，有共同維護者時改成團隊收得到的地址 |
-| GitHub org profile（`.github` repo） | `polhem-dev/.github` | 已建立。目前只寫「準備中」與名稱由來。名稱定案後已不再刻意避開 Bee.NET；Polhem.OAuth2 首發時要把它列上去 |
-| NuGet 前綴保留 `Polhem.` | — | 未申請，**刻意等發佈第一版後**。官方條件不要求先有套件，但三條審核條件中「不保留會造成混淆」在沒有套件與使用者時難以舉證。申請寄 account@nuget.org，註明 owner `Polhem`、前綴 `Polhem.*` 與 `Polhem` 本身、non-public；可引用既有 `Bee.*` 的發佈紀錄佐證身分。有申請人寄兩次都無回音的前例（NuGetGallery #7816），沒回應就隔幾週追問 |
+| GitHub org profile（`.github` repo） | `polhem-dev/.github` | 已建立。2026-09-15 起列出 Polhem.OAuth2，並新增中文版 profile |
+| GitHub repo | `polhem-dev/polhem-oauth2` | 已公開（2026-09-13），是 Polhem 名下的第一個產品。由 `jeff377/bee-oauth2` 改名另開，舊 repo 已 archive（見下方演練結果） |
+| NuGet 套件 | `Polhem.OAuth2`、`Polhem.OAuth2.AspNet`、`Polhem.OAuth2.AspNetCore` | 1.0.0 已發佈（2026-09-15），由 GitHub Actions 以 Trusted Publishing 推送 |
+| NuGet 前綴保留 `Polhem.` | — | 未申請。原本**刻意等發佈第一版後**，而首個套件已於 2026-09-15 發佈，這個前提已成立。官方條件不要求先有套件，但三條審核條件中「不保留會造成混淆」在沒有套件與使用者時難以舉證。申請寄 account@nuget.org，註明 owner `Polhem`、前綴 `Polhem.*` 與 `Polhem` 本身、non-public；可引用既有 `Bee.*` 的發佈紀錄佐證身分。有申請人寄兩次都無回音的前例（NuGetGallery #7816），沒回應就隔幾週追問 |
 | npm 組織 | `@polhem` | 已建立。connector-js 改名另開後以 `@polhem/…` 發佈；scoped 名稱只有組織成員能發佈，不會被他人搶先註冊 |
-| 商標檢索 | — | 2026-09-12 做過初步檢索，軟體類別（第 9／42 類）無 POLHEM，見下方。**非法律意見**，發佈第一版前重查一次 |
+| 商標檢索 | — | 2026-09-12 做過初步檢索，2026-09-14 發佈第一版前重查，軟體類別（第 9／42 類）都沒有 POLHEM，見下方。**非法律意見** |
 
 **初步商標檢索（2026-09-12）**：
 
@@ -417,6 +419,12 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 | WIPO Global Brand Database（涵蓋 USPTO、EUIPO、瑞典 PRV 等） | 商標名稱含 `POLHEM` | 只有 **POLHEM INFRA**：瑞典 Polhem Infra Kommanditbolag 的歐盟註冊（2021-06-09），第 35、36 類（商業管理、金融），**非軟體類別** |
 | USPTO（直接查詢） | `polhem` 及近似字 | 無有效的 POLHEM；近似的 POLHAM 兩筆皆已放棄，POLHEMUS 一筆已放棄 |
 | 智慧財產局 | 文字近似 `POLHEM`，篩第 9、42 類 | 無 POLHEM；30 筆近似結果（POLEYA、PROHSM、POLICE 等）字形與讀音都有明顯差異，不少已到期消滅 |
+
+**發佈前重查（2026-09-14）**：結論與初查相同，未發現衝突。
+- WIPO，品牌名稱含 `POLHEM`：仍只有兩筆 POLHEM INFRA。
+- USPTO，wordmark `polhem`：有效與失效案件都沒有結果。
+- 智慧財產局，文字近似 `POLHEM`：共 280 筆，篩第 9、42 類後剩 30 筆，沒有 POLHEM。
+  檢索系統的網址已改為 `https://cloud.tipo.gov.tw/S282/S282WV1/`，舊網址會回 404。
 
 唯一需要留意的是 POLHEM INFRA：第 35 類含「企業經營管理」，與 ERP 的應用領域相鄰。
 框架本身是軟體（第 9／42 類），類別不重疊；但**不宜以商業管理服務的形式對外提供**，
@@ -471,3 +479,51 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 
 **啟動時第一步**：重跑一次商標檢索（初步結果會過期）。仍然乾淨就寫 plan；
 出現衝突就回到候選表換名，並刪除已占的兩個組織。
+
+### bee-oauth2 演練結果（2026-09-15）
+
+bee-oauth2 已先走完同一條路：
+- 改名後另開於 `polhem-dev/polhem-oauth2`，不帶舊的 git 歷史。
+- `Polhem.OAuth2` 三個套件的 1.0.0 已於 2026-09-15 發佈。
+- 五個 `Bee.OAuth2.*` 已凍結，`jeff377/bee-oauth2` 已 archive。
+
+對照上一節「要一併決定的」：
+
+| 項目 | 結果 | bee-library 啟動時沿用 |
+|------|------|------------------------|
+| 1. 新 repo 帶完整 git 歷史 | **演練不到**：bee-oauth2 刻意不帶 | — |
+| 2. 舊框架怎麼凍結 | 演練得到 | 見下方的凍結順序 |
+| 3. 型別名稱字串相容解析 | 不適用 | — |
+| 4. 開放共同維護的缺口 | 部分演練到：org 下的 GitHub Actions 與 NuGet 發佈授權 | 見下方的發佈授權 |
+| 5. `dev-workflow` plugin | 不適用 | — |
+
+**凍結順序**：
+1. 發佈新套件，確認套件頁開得到。
+2. 舊套件的所有版本標為 deprecated：原因選 Legacy，替代套件的版本選 Latest。NuGet API 約 5 分鐘內就反映出來。
+3. 舊 repo 的 README 頂部加上中英雙語的停止維護提醒，以及新舊套件對照表。
+4. 回覆仍開著的 issue，然後關閉。
+5. 最後才 archive。archive 之後 repo 變成唯讀，README 和 issue 都改不了。
+
+**發佈授權**：
+- 改用 NuGet **Trusted Publishing**，不用 API key：
+  - nuget.org 的 policy 綁定 repo 與 workflow。workflow 在推送前用 `NuGet/login` 換一把 1 小時有效的臨時 key。
+  - nuget.org 的 API key 期限最長 30 天，官方也不建議用在自動化發佈。
+- 首發已驗證，policy 可以建立原本不存在的套件 ID。
+- 「誰持有 NuGet key」這個問題，因此變成「誰能修改 workflow、誰能推 tag」。
+
+**踩到的雷**（下次直接避開）：
+- **首發前先做一次全面健檢，排在建立 PublicAPI 基準與打 tag 之前。**
+  - 公開 API 一發佈就鎖定。polhem-oauth2 在已打好本機 tag 之後才健檢，14 個面向平均 6.4 分，公開 API 表面最低。
+  - 結果是首發前重塑 API、修掉全部發現，PublicAPI 基準、CHANGELOG 與 tag 都重做了一次。
+- **每一種 client 類型都要實測。**
+  - 桌面 loopback（public client）的實測結論，被寫進與網頁（confidential client）共用的程式碼，規則因此寫錯。
+  - 網頁登入原本只測了 Google，推 tag 前才補測其餘五家。
+- **推 tag 前打開 nupkg 看一次**：圖示、README、nuspec。repo 沿用舊的 Bee 圖示，沒有任何檢查抓到，是使用者 review 時才看到。
+- **org profile 的中英版互連要用絕對網址**：組織首頁上的相對連結會失效。profile 會連到 nuget.org 的套件頁，發佈前那是 404，所以要等發佈後才推送。
+- **從 secret 的設定日期看不出 key 是否相同。**
+  - 舊 repo 的 `NUGET_API_KEY` 曾被推測為那個 repo 專用、準備撤銷，實際上其他 `Bee.*` 套件的發佈仍在用它。
+  - 撤銷任何 key 之前，先向使用者確認。
+- **samples 的設定檔**：只簽入 `*.example.json`，實際使用的設定檔由 `.gitignore` 排除。實測時填進去的 secret 就不會進版控。
+- **改專案檔要原地覆寫，不要先刪再建**：開著的 VS Code 會在檔案刪除的當下，把該專案從 `.slnx` 移除。
+
+**同樣演練不到**：SonarCloud、分支保護與 auto-merge、wire 合約與 connector-js。
