@@ -109,6 +109,7 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | System.Web 版回呼的多載 | `CompleteAuthorizationAsync()` 使用 `HttpContext.Current`、不支援取消；`CompleteAuthorizationAsync(HttpContextBase, CancellationToken = default)` 可取消 | 使用者決定（2026-09-14）。兩個多載都帶選填的 `CancellationToken` 會被 RS0026／RS0027 擋下 |
 | OAuthWinForms 的範本檔 | 刪除沒用到的 `Properties/` Resources 與 Settings；`Program.cs`、`Form1.Designer.cs` 的註解改為英文 | 使用者決定（2026-09-14）。工具產生的檔案不留在 repo，就不會在中文版 Visual Studio 重新產生出中文註解 |
 | ASP.NET Core sample 的設定讀取 | 以 System.Text.Json 讀 `OAuthConfig.json`，在 `Program.cs` 直接註冊 client；刪除 `OAuth2RegistrationHelper` 與 Newtonsoft.Json | 使用者決定（2026-09-14）。與其他三個 sample 的寫法一致 |
+| `openid-connect` 套件 tag | 三個套件都移除 | 使用者決定（2026-09-14）。函式庫不驗證 ID token，避免在 NuGet 搜尋時被誤認為會驗證；README 另外寫明如何識別使用者，以及 ID token 未經驗證 |
 
 ---
 
@@ -465,7 +466,7 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 | B | **client 層**：<br>• `OAuth2Client` 兩段式 API（R-20）<br>• 結果型別改唯讀（R-16、R-22）<br>• verifier 缺失時改擲例外（R-05）<br>• 複製 options（R-08）<br>• Loopback：非同步 `OpenBrowser`、傳給瀏覽器的網址、並行處理連線、Host 標頭與路徑正規化（R-36、R-37、R-38）<br>• XML doc 補列例外<br>• 自批次 A 移入：`UsePkce` 預設改 true、`HttpClient` 的公開注入點<br>• `BaseOAuth2Client` 與 `IStateStorage` 暫時保留給網頁套件，批次 C 刪除 | ✅ 2026-09-14 |
 | C | **網頁套件**：<br>• 每次登入一個加密 cookie，移除 session 與自帶加密（R-01、R-03、R-19、R-25、R-31）<br>• cookie 屬性（R-06）<br>• 統一兩個 manager 的行為；設定錯誤擲 `InvalidOperationException`；registry 執行緒安全（R-02、R-11、R-12、R-13）<br>• 回呼的 `error` 參數（R-29）<br>• AspNet 目標框架（R-35）<br>**測試**：AspNetCore 以 `DefaultHttpContext` 做單元測試（R-32） | ✅ 2026-09-14 |
 | D | **測試基礎**：<br>• 測試專案在 Windows 上多打 net48，AspNet 套件在 net48 下測試（R-32、R-33）<br>• CI 設 `timeout-minutes`<br>• 等待回呼的測試加逾時<br>• 沒有 IPv6 的環境改為明確略過（R-34） | ✅ 2026-09-14 |
-| E | **samples 與工具**：<br>• samples 與 `tools/LoopbackRedirectProbe` 改用新 API<br>• 清掉 samples 殘留的 `*Helper`、中文 XML doc、Newtonsoft（R-38） | 📝 |
+| E | **samples 與工具**：<br>• samples 與 `tools/LoopbackRedirectProbe` 改用新 API<br>• 清掉 samples 殘留的 `*Helper`、中文 XML doc、Newtonsoft（R-38） | ✅ 2026-09-14 |
 | F | **文件**：<br>• README 雙語重寫網頁段落並補部署前提（R-03、R-43、R-44、R-45）<br>• ADR-001 標註加密部分已被取代；ADR-003、ADR-004 依新行為改寫；新增 ADR-005 記錄網頁 state 的保存方式<br>• CHANGELOG 1.0.0 一節重寫（R-40、R-41、R-42） | 📝 |
 | G | **驗收**：<br>• 逐項回驗健檢報告的每個 `R-xx`：讀程式碼確認，不以狀態標記為準<br>• 用 probe 工具對六家重跑登入；用 ASP.NET Core sample 實際走一次網頁登入（需要使用者在瀏覽器操作）<br>• 重建 `PublicAPI.Shipped.txt`；clean build 與測試<br>• 刪除本機舊 tag，在新 commit 重打 `v1.0.0`。**推送前停下來問使用者** | 📝 |
 
@@ -588,6 +589,25 @@ polhem-oauth2 commit `531128b`，直接推 `main`；Build CI（windows-latest）
   - 中文註解只剩 OAuthWinForms 由 Visual Studio 範本產生的檔案。
   - OAuthWinForms 的 `Properties/` Resources 與 Settings 沒有被 sample 使用。
 - `tools/LoopbackRedirectProbe` 在批次 B 已改用新 API；README 與設定範例都沒有描述舊行為，不需要修改。
+
+#### 批次 E（2026-09-14 完成）
+
+polhem-oauth2 commit `a67a949`，直接推 `main`；Build CI（windows-latest）通過：net10.0 250 個、net48 247 個測試。
+
+- **OAuthAspNetCore**：`Program.cs` 以 System.Text.Json 讀取 `OAuthConfig.json`（路徑依 `ContentRootPath`），直接呼叫 `AddOAuth2Client`；刪除 `Extensions/OAuth2RegistrationHelper.cs` 與 Newtonsoft.Json 參照。
+- **OAuthWinForms**：刪除 `Properties/` 下的 Resources 與 Settings 四個檔案；`Program.cs` 與 `Form1.Designer.cs` 的註解改為英文，並拿掉 `Program.cs` 沒用到的 using。
+- **tools/LoopbackRedirectProbe**：不需修改。
+- **驗證**：samples 與 tools 已沒有中文字元、`*Helper` 型別與 Newtonsoft.Json，也沒有對已刪除檔案的參照（`wwwroot` 裡 Bootstrap 的 JavaScript 不列入）。
+- **範圍對帳**：實際變動與動工前宣告的清單一致（9 個檔案）。
+
+#### 批次 F 開工前已確認（2026-09-14）
+
+- `openid-connect` tag 的處理見決策紀錄。
+- **Google 文件查證**：
+  - native app 指南把 `client_secret` 列為已安裝應用程式的選填參數，並要求 redirect URI 與登記的一致。
+  - Cloud Console 說明頁則說，建立 Desktop app 時不需要其他資訊。
+  - 兩者說法不一，README 與 ADR-004 只寫實測狀況，並註明文件說法不一；程式碼對 Google 送 client secret 的例外維持不變。
+- 公開文件不寫弱點細節，也不寫「先前可以……」的比較，因為 Bee.OAuth2 仍在 NuGet 上。CHANGELOG 原有一行描述舊版行為的內容移除。
 
 ### 判定不做的項目
 
