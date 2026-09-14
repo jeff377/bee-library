@@ -88,6 +88,7 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | PKCE 下的 client secret | 維持現行：PKCE 下不送 client secret，只有 Google 照舊一律送 | 使用者決定（2026-09-14）。Facebook、LINE、Entra ID、Auth0 實測都不需要 secret 就能換到 token |
 | 不接受 loopback 的 provider | 不需處理 | 實測的五家都接受 loopback 回呼網址（2026-09-14），原本的待決問題不成立 |
 | org profile 推送時機 | 階段 7 發佈後才推 | 使用者決定（2026-09-14）。profile 連到 nuget.org 上的 `Polhem.OAuth2`，發佈前那個連結是 404 |
+| NuGet 發佈授權 | Trusted Publishing，不用 API key | 使用者決定（2026-09-14）。nuget.org 會把 API Keys 頁導向 Trusted Publishing，並註明自動化發佈強烈不建議用 API key；API key 的期限最長只剩 30 天，每次發版都要重建 key、重設 secret。glob 維持 `Polhem.OAuth2*`：policy 本來就綁單一 repo 與 workflow，放寬成 `Polhem*` 不會少建 policy，只會讓這個 workflow 能推送將來其他 Polhem 套件。**bee-library 改名另開時沿用同一做法** |
 
 ---
 
@@ -381,8 +382,13 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 
 ## 階段 7：首發 1.0.0
 
-1. **（使用者操作）** NuGet 組織帳號 `Polhem` 建立 API key：push 權限，glob 限定 `Polhem.OAuth2*`。
-   以 `gh secret set NUGET_API_KEY -R polhem-dev/polhem-oauth2` 自行輸入。
+1. **發佈授權改用 Trusted Publishing**（2026-09-14，見決策紀錄）：
+   - nuget.org 建立 policy `polhem-oauth2-release`：Package Owner `Polhem`、repo `polhem-dev/polhem-oauth2`、workflow `nuget-publish.yml`、
+     不設 environment、scope 只選 Push new packages and package versions、glob `Polhem.OAuth2*`。
+     建立後列表顯示 **Active**，repository owner 與 repository 已綁定 GitHub 的數字 ID，沒有進入 7 天暫時啟用期。
+   - `nuget-publish.yml` 加 `id-token: write`，推送前以 `NuGet/login`（pin v1.2.0 的 SHA）換取 1 小時有效的臨時 key；
+     `user` 讀 repo secret `NUGET_USER`（值為 `jeff377`）。不設 `NUGET_API_KEY`。polhem-oauth2 commit `e700927`。
+   - **未驗證**：首發是第一次實際換 key，也是這條 policy 能否建立「尚不存在的套件 ID」的第一次驗證。失敗時先看 `Log in to NuGet` 那一步的訊息。
 2. 商標：依 future-work 規定，發佈第一版前重查一次（初步檢索為 2026-09-12）。
 3. 導入 `Microsoft.CodeAnalysis.PublicApiAnalyzers`（與 bee-library 相同），以 1.0.0 的公開 API 建立 `PublicAPI.Shipped.txt`。
    刻意等到首發才導入，避免功能修改期間 baseline 反覆改寫；首發之後，公開 API 的破壞性變更由它擋下。
