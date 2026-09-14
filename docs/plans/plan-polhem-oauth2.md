@@ -83,6 +83,10 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | loopback 監聽實作 | `TcpListener`，不用 `HttpListener` | 使用者決定（2026-09-14）。Windows 上 `HttpListener` 走 http.sys：`127.0.0.1` 字首需要 URL ACL，且不支援 port 0（自動選空 port）。`TcpListener` 在一般權限下跨平台可用，實測工具已驗證 IPv4／IPv6 行為；代價是自行解析 HTTP request line |
 | 階段 4 實作時機 | 與 provider 無關的部分先實作；PKCE 預設值、PKCE 下是否送 client secret、ADR 定稿，等其餘 provider 實測完再定 | 使用者決定（2026-09-14）。原訂先實測再實作，但 Google 以外的 provider 還沒登記 |
 | 實測工具分支 | `claude/loopback-probe` 不單獨開 PR，與階段 4 的實作同一個 PR | 使用者決定（2026-09-14）。核心有了 loopback 流程後，工具改用核心 API、刪掉重複的監聽程式碼，一次審完 |
+| Okta 實測 | 使用者申請免費帳號後，由 agent 建 Native app 並實測；若無法申請，才標示未測、不擋 ADR-004 定稿 | 使用者決定（2026-09-14）。原本決定標示未測，得知個人可申請後改為補測 |
+| 桌面流程的 PKCE | `LoopbackOAuth2Client` 一律使用 PKCE，不看 `OAuth2Options.UsePkce`；web 套件不受影響 | 使用者決定（2026-09-14）。RFC 8252 要求原生應用程式使用 PKCE，且桌面 app 無法保密 client secret；實測的五家在 PKCE 下都能換到 token |
+| PKCE 下的 client secret | 維持現行：PKCE 下不送 client secret，只有 Google 照舊一律送 | 使用者決定（2026-09-14）。Facebook、LINE、Entra ID、Auth0 實測都不需要 secret 就能換到 token |
+| 不接受 loopback 的 provider | 不需處理 | 實測的五家都接受 loopback 回呼網址（2026-09-14），原本的待決問題不成立 |
 
 ---
 
@@ -276,14 +280,14 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 |---|---|---|---|---|
 | Google | Google Cloud Console → APIs & Services → Credentials | Desktop app | `http://127.0.0.1:0/callback`（任意 port）、`http://localhost:53682/callback` | ✅ 2026-09-14，PKCE on：兩個網址都成功導回並換到 token。Desktop app 類型有重新導向 URI 欄位，兩個網址都有登記；`:0` 那筆實際導回 `127.0.0.1:50666` 也被接受，port 不必與登記一致。完全不登記是否可行未測 |
 | Microsoft Entra ID | App registrations → Authentication | Mobile and desktop applications | `http://localhost:0/callback`（任意 port）、`http://127.0.0.1:53682/callback` | ✅ 2026-09-14，PKCE on：後台登記的是 `http://localhost`（沒有 port 與路徑），改以 `http://localhost:0` 測。實際導回 `http://localhost:52247/` 被接受並換到 token，**沒送 client secret**（設定檔有填，PKCE 下不送）。Entra 忽略 `localhost` 的 port，結尾的 `/` 也不影響比對。`/callback` 這類路徑是否必須一致、`127.0.0.1` 皆未測 |
-| Auth0 | Dashboard → Applications | Native | `http://127.0.0.1:53682/callback`、`http://localhost:53682/callback` | 待實測 |
-| Okta | Admin Console → Applications | Native（PKCE） | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | 待實測 |
+| Auth0 | Dashboard → Applications | Native | `http://127.0.0.1:53682/callback`、`http://localhost:53682/callback` | ✅ 2026-09-14，PKCE on：使用者重新申請帳號（tenant `polhem.us.auth0.com`），由 agent 在使用者已登入的 Chrome 建立 Native app「Polhem OAuth2 Loopback Probe」並登記這兩個網址。兩者都導回並換到 token，**沒送 client secret**（設定檔未填 secret）。`127.0.0.1:0` ❌ 實際導回 `127.0.0.1:53153` 時，Auth0 頁面顯示「Oops!, something went wrong」，port 必須與登記一致 |
+| Okta | Admin Console → Applications | Native（PKCE） | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | ⏭️ 未測：尚未申請 Okta 帳號，依使用者決定標示未測，不擋 ADR-004 定稿（2026-09-14） |
 | LINE | LINE Developers Console → LINE Login channel → Callback URL | — | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | ✅ 2026-09-14，PKCE on：後台加上 `http://localhost:53682/callback` 後，導回並換到 token，**沒送 client secret 也成功**；使用者資訊沒有 email。加上之前後台只有 `http://localhost/callback`（沒寫 port，即 80），`localhost:53682` ❌ 授權頁顯示 `400 Bad Request`「Invalid redirect_uri value」，port 必須與登記一致。`http://localhost/callback` 本身在 macOS 無法測：一般權限綁不了 port 80（`Permission denied`）。`127.0.0.1` 未登記、未測 |
 | Facebook | Meta for Developers → Facebook Login → Settings → Valid OAuth Redirect URIs | — | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | 2026-09-14，PKCE on：`localhost:53682` ✅ 導回並換到 token，**沒送 client secret 也成功**。`127.0.0.1:53682` ❌ Facebook 登入頁顯示該應用程式「傳遞資訊所使用的網路連線並不安全」，無法登入。`localhost:0` ✅ 實際以 `localhost:51464` 導回也被接受，`localhost` 不必與登記的 port 一致。app 模式（開發／上線）未確認，上線模式下 `localhost` 是否仍放行未測。舊版 sample 用的是 `http://localhost:5000/callback` |
 
 - 表中的應用程式類型與「任意 port」都是**待實測的假設**，不是已知事實；不接受任意 port 的 provider 要登記完全相同的 port。
-- 每家先跑 `--pkce on`。token 交換失敗時再跑 `--pkce off`，判斷是否因為 PKCE 下沒送 client secret
-  （base 類別在 PKCE 下不送 client secret，只有 Google 例外）。
+- 每家都以 PKCE 測試。沒有任何一家因為 PKCE 下沒送 client secret 而換 token 失敗，`--pkce off` 從未用上；
+  決定 `LoopbackOAuth2Client` 一律使用 PKCE 後，工具的 `--pkce` 選項隨之移除（2026-09-14）。
 - 結果回填本表；階段 4 的 ADR 與階段 6 的 README 會引用。
 
 ### 實作（2026-09-14 進度）
@@ -303,11 +307,13 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
   CI 與發佈 workflow 中的兩個套件與 8.0.x SDK 一併移除。
 - samples：OAuthDesktop（改為 net10.0-windows）與 OAuthWinForms（net48）改用 `LoopbackOAuth2Client`，設定檔改用 System.Text.Json 讀取；新增 OAuthConsole（net10.0）。
 - 實測工具改用 `LoopbackOAuth2Client`，刪除自帶的監聽程式碼。
-- 雙語 ADR-004 草稿，狀態為「提議中」，實測結果表目前只有 Google。
+- 雙語 ADR-004 草稿，狀態為「提議中」，實測結果表已填入 Google、Facebook、LINE、Entra ID、Auth0。
+- `LoopbackOAuth2Client` 一律使用 PKCE（`BaseOAuth2Client.UsePkce` 的 setter 改為 protected，並補測試）；實測工具的
+  `RedirectUri` 改由設定檔逐家指定，`--redirect` 改為選填，`--pkce` 移除。
 - 驗證：macOS 上全方案建置 0 警告，單元測試全數通過；以改寫後的工具與 OAuthConsole sample 對 Google 實際登入成功。
 
 尚未完成：
-- 其餘五家的實測、PKCE 預設值、PKCE 下是否送 client secret、ADR-004 定稿。
+- Okta 實測（等使用者申請帳號）、ADR-004 定稿。
 - Windows 驗證：net48 與 net10.0-windows 只在 macOS 建置過；監聽程式碼的 netstandard2.0 組建沒有被測試執行到。
 - 兩個 WinForms sample 還沒實際登入過。
 
