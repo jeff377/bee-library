@@ -11,7 +11,8 @@
 | 4 | 拿掉 WebView2，改用系統預設瀏覽器 + loopback 回呼；桌面流程併入核心，Desktop／WinForms 套件移除 | ✅ 已完成（2026-09-14） |
 | 5 | 目標框架 net8.0 → net10.0，核心多打 net10.0（提前到階段 4 之前） | ✅ 已完成（2026-09-13） |
 | 6 | 推廣準備：README、NuGet 中繼資料、org profile | ✅ 已完成（2026-09-14）；org profile 的推送移到階段 7 發佈後 |
-| 7 | 首發 `Polhem.OAuth2.*` 1.0.0 | 📝 待做 |
+| 6b | 首發前修正：依健檢結果修掉全部發現，公開 API 定型 | 📝 待做 |
+| 7 | 首發 `Polhem.OAuth2.*` 1.0.0 | 📝 待做（等階段 6b 完成；已完成的步驟 3–5 屆時重做） |
 | 8 | 凍結舊套件與舊 repo | 📝 待做 |
 | 9 | 回寫 bee-library：future-work 與演練結果 | 📝 待做 |
 
@@ -85,11 +86,16 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | 實測工具分支 | `claude/loopback-probe` 不單獨開 PR，與階段 4 的實作同一個 PR | 使用者決定（2026-09-14）。核心有了 loopback 流程後，工具改用核心 API、刪掉重複的監聽程式碼，一次審完 |
 | Okta 實測 | 使用者提供帳號後，由 agent 建 Native app 並實測（2026-09-14 完成）；若無法取得帳號，才標示未測、不擋 ADR-004 定稿 | 使用者決定（2026-09-14）。原本決定標示未測，得知個人可申請後改為補測 |
 | 桌面流程的 PKCE | `LoopbackOAuth2Client` 一律使用 PKCE，不看 `OAuth2Options.UsePkce`；web 套件不受影響 | 使用者決定（2026-09-14）。RFC 8252 要求原生應用程式使用 PKCE，且桌面 app 無法保密 client secret；實測的五家在 PKCE 下都能換到 token |
-| PKCE 下的 client secret | 維持現行：PKCE 下不送 client secret，只有 Google 照舊一律送 | 使用者決定（2026-09-14）。Facebook、LINE、Entra ID、Auth0 實測都不需要 secret 就能換到 token |
+| PKCE 下的 client secret | 維持現行：PKCE 下不送 client secret，只有 Google 照舊一律送 | 使用者決定（2026-09-14）。Facebook、LINE、Entra ID、Auth0 實測都不需要 secret 就能換到 token。**同日修正**：實測的是 loopback（public client），規則卻寫在共用基底，網頁的 confidential client 也被套用。階段 6b 改為依 client 類型決定：loopback 維持本列，網頁 client 只要設了 `ClientSecret` 就一律送 |
 | 不接受 loopback 的 provider | 不需處理 | 實測的五家都接受 loopback 回呼網址（2026-09-14），原本的待決問題不成立 |
 | org profile 推送時機 | 階段 7 發佈後才推 | 使用者決定（2026-09-14）。profile 連到 nuget.org 上的 `Polhem.OAuth2`，發佈前那個連結是 404 |
 | 首發 CHANGELOG | 建雙語 `CHANGELOG.md`／`CHANGELOG.zh-TW.md`，GitHub Release 內文指向它 | 使用者決定（2026-09-14）。原 plan 沒列，發版流程有這一步；1.0.0 一節列出相對於 Bee.OAuth2 最後一版的差異，遷移細節指向 README |
 | NuGet 發佈授權 | Trusted Publishing，不用 API key | 使用者決定（2026-09-14）。nuget.org 會把 API Keys 頁導向 Trusted Publishing，並註明自動化發佈強烈不建議用 API key；API key 的期限最長只剩 30 天，每次發版都要重建 key、重設 secret。glob 維持 `Polhem.OAuth2*`：policy 本來就綁單一 repo 與 workflow，放寬成 `Polhem*` 不會少建 policy，只會讓這個 workflow 能推送將來其他 Polhem 套件。**bee-library 改名另開時沿用同一做法** |
+| 首發前修正範圍 | 健檢發現全部在首發前修掉，修完才重打 `v1.0.0`（階段 6b） | 使用者決定（2026-09-14）。1.0.0 尚未發佈，現在改公開 API 不算破壞性變更；發佈後同樣的修改要等 2.0.0 |
+| 網頁端 state 保存 | 平台資料保護加密，每次登入各一個 cookie | 使用者決定（2026-09-14）。拿掉 session 與 `OAUTH2_STATE_KEY` 兩個部署前提，同一瀏覽器的多個登入不再互相覆蓋；ASP.NET Core 內建的 OAuth handler 用的也是這種做法。代價：自帶的 AES-CBC-HMAC 加密與 ADR-001 的位元組相容不再有用途，一併移除 |
+| token 回應 | 新增 `TokenResponse` | 使用者決定（2026-09-14）。只回傳 access token 的話，refresh 功能拿不到 refresh token |
+| provider 階層 | 收成 internal，具體 provider 加 sealed | 使用者決定（2026-09-14）。目前沒有擴充路徑卻全部公開。收成 internal 後再公開不算破壞性變更，反過來就是 |
+| 階段 6b 提交方式 | 直接提交 `main`，每批一個 commit | 使用者決定（2026-09-14）。本機可以驗證；tag 推送前都能重來 |
 
 ---
 
@@ -384,7 +390,87 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 - 驗證：macOS clean build 0 警告 0 錯誤，112 個測試通過。三個 nupkg 都含根目錄 README 與圖示，nuspec 的 description、tags 與相依清單正確（核心的 netstandard2.0 只相依 System.Text.Json，net10.0 沒有相依）。README 的相對連結與指向 repo 內的絕對連結都對得到檔案。推送後 Windows 上的 Build CI 通過。
 - org profile：英文版加上套件一節，新增中文版。組織首頁的相對連結會失效，所以兩份互連用絕對網址。本機 commit `1176df0` 放在 `~/Desktop/repos/polhem-dev-github`，**尚未推送**，見決策紀錄與階段 7 第 7 步。
 
+## 階段 6b：首發前修正
+
+使用者決定（2026-09-14）：1.0.0 還沒發佈、沒有外部使用者，**健檢發現全部在首發前修掉**，公開 API 趁這次定型，修完才重打 `v1.0.0`。
+
+健檢報告放在維護者本機的 `docs/internal/review-polhem-oauth2.md`，未入版控，因為內含尚未修正的弱點細節。
+本節只列修正項目與順序，`R-xx` 編號對應報告；**弱點細節不寫進本 plan**。
+
+### 已定案的設計
+
+| 項目 | 結論 |
+|------|------|
+| 網頁端 state 與 PKCE verifier（R-19） | state 改成每次登入產生的隨機值。client 名稱、verifier、redirect URI 用平台資料保護加密（ASP.NET Core Data Protection、System.Web `MachineKey.Protect`），放進 `__Host-` cookie，每次登入各一個。不再使用 session 與 `OAUTH2_STATE_KEY`，repo 自帶的 AES-CBC-HMAC 加密整批移除 |
+| token 回應（R-15） | 新增 `TokenResponse`（AccessToken、RefreshToken、IdToken、ExpiresIn 等），放進 `AuthorizationResult`；refresh 回傳新的 `TokenResponse` |
+| provider 階層（R-21） | `IOAuth2Provider`、`OAuth2Provider` 與六個具體 provider 收成 internal，具體型別加 sealed；使用者只會接觸 options 與 client |
+| 提交方式 | 直接提交 `main`，每批一個 commit |
+
+### 目標公開 API
+
+以下是方向。確切的成員名稱在實作時定稿，重建 `PublicAPI.Shipped.txt` 前再請使用者確認一次。
+
+核心 `Polhem.OAuth2`：
+- **options**：`OAuth2Options` 的建構子改 `private protected`，六個子型別加 sealed。
+  - client 建立時複製並驗證 options：端點必須是 https，`RedirectUri` 必填。之後修改原物件不影響 client。
+  - `AzureOAuth2Options` 加 `Tenant`，預設 `common`。
+  - `OktaOAuth2Options` 的 authorization server 設成空值時，改用 org authorization server。
+  - Auth0 與 Okta 的 `Domain` 正規化共用同一份實作，只接受 https。
+  - **`UsePkce` 預設改為 `true`**。
+- **`OAuth2Client`**：sealed，與 HTTP 無關，網頁與其他伺服器端框架共用。
+  - 兩段式流程：先建立授權請求，回傳網址與要保存的 state、verifier、redirect URI；回呼時帶著保存的值，換 token 並取得使用者資訊。
+  - state 比對、`error` 參數、code 或 verifier 缺失的判斷都在這裡做，兩個網頁套件不再各寫一份。
+  - 另提供 refresh。
+- **`LoopbackOAuth2Client`**：sealed，內部組合同一套流程。
+  - 每次登入的 redirect URI 由請求自己帶著，不再改寫 options。
+  - `OpenBrowser` 改為非同步委派。
+- **結果型別**：`AuthorizationResult`、`UserInfo`、`TokenResponse` 全部唯讀並加 sealed。
+  - `AuthorizationResult` 以工廠方法建立，並加 `[MemberNotNullWhen]`。
+- `OAuth2Exception` 加上 provider 回傳的 `error` 代碼。
+- 回傳 `Task` 的方法一律加 `Async` 後綴並帶 `CancellationToken`。
+- `HttpClient` 可從建構子注入，未注入時使用共用的執行個體。
+- **移除**：
+  - `BaseOAuth2Client`、`IStateStorage`、`Pkce`
+  - `OAuth2StateCryptor`、`AesCbcHmacCryptor`、`AesCbcHmacKeyGenerator`
+  - 兩個網頁套件的 `OAuth2Client` 與 `StateStorage`
+
+`Polhem.OAuth2.AspNetCore`：
+- `OAuth2Manager` 的方法改為接收 `HttpContext` 參數，不再依賴 `IHttpContextAccessor`。
+- 提供 `IServiceCollection` 擴充方法，註冊 manager 與 client，並呼叫 `AddDataProtection()`。client 在註冊時一次建好，執行期不能再新增。
+
+`Polhem.OAuth2.AspNet`：
+- 維持 static `OAuth2Manager`，另外提供接收 `HttpContextBase` 的多載，方便測試。
+- registry 改用 `ConcurrentDictionary`，重複註冊一律擲例外。
+- 目標框架從 net48 改為 net472，這是 `HttpCookie.SameSite` 要求的最低版本。
+- 導向授權頁時不再擲 `ThreadAbortException`。
+
+### 修正批次
+
+| 批次 | 範圍（`R-xx` 對應健檢報告） | 狀態 |
+|------|----------------------------|------|
+| A | **provider 層**：<br>• 收成 internal；新增 `TokenResponse`<br>• client secret 依 client 類型決定（R-04）<br>• 端點驗證與 `Domain` 正規化（R-07、R-24）<br>• token 回應欄位的讀法（R-10）<br>• Facebook Graph API 版本，fields 拿掉未使用的 `picture`（R-14）<br>• Entra tenant、Okta org server、LINE email、Google 端點改現行路徑、刪除 Entra 的死碼（R-28）<br>• token 端點的錯誤代碼（R-29）<br>• 刪除 Azure token 請求的 `response_mode`（R-22）<br>• `ConfigureAwait(false)` 與 `CancellationToken`（R-09、R-17）<br>• `HttpClient` 注入（R-18）<br>**測試**：PKCE 的 RFC 7636 測試向量（R-30）、授權網址與 token 請求參數、成功路徑（R-34） | 📝 |
+| B | **client 層**：<br>• `OAuth2Client` 兩段式 API（R-20）<br>• 結果型別改唯讀（R-16、R-22）<br>• verifier 缺失時改擲例外（R-05）<br>• 複製 options（R-08）<br>• Loopback：非同步 `OpenBrowser`、傳給瀏覽器的網址、並行處理連線、Host 標頭與路徑正規化（R-36、R-37、R-38）<br>• XML doc 補列例外 | 📝 |
+| C | **網頁套件**：<br>• 每次登入一個加密 cookie，移除 session 與自帶加密（R-01、R-03、R-19、R-25、R-31）<br>• cookie 屬性（R-06）<br>• 統一兩個 manager 的行為；設定錯誤擲 `InvalidOperationException`；registry 執行緒安全（R-02、R-11、R-12、R-13）<br>• 回呼的 `error` 參數（R-29）<br>• AspNet 目標框架（R-35）<br>**測試**：AspNetCore 以 `DefaultHttpContext` 做單元測試（R-32） | 📝 |
+| D | **測試基礎**：<br>• 測試專案在 Windows 上多打 net48，AspNet 套件在 net48 下測試（R-32、R-33）<br>• CI 設 `timeout-minutes`<br>• 等待回呼的測試加逾時<br>• 沒有 IPv6 的環境改為明確略過（R-34） | 📝 |
+| E | **samples 與工具**：<br>• samples 與 `tools/LoopbackRedirectProbe` 改用新 API<br>• 清掉 samples 殘留的 `*Helper`、中文 XML doc、Newtonsoft（R-38） | 📝 |
+| F | **文件**：<br>• README 雙語重寫網頁段落並補部署前提（R-03、R-43、R-44、R-45）<br>• ADR-001 標註加密部分已被取代；ADR-003、ADR-004 依新行為改寫；新增 ADR-005 記錄網頁 state 的保存方式<br>• CHANGELOG 1.0.0 一節重寫（R-40、R-41、R-42） | 📝 |
+| G | **驗收**：<br>• 逐項回驗健檢報告的每個 `R-xx`：讀程式碼確認，不以狀態標記為準<br>• 用 probe 工具對六家重跑登入；用 ASP.NET Core sample 實際走一次網頁登入（需要使用者在瀏覽器操作）<br>• 重建 `PublicAPI.Shipped.txt`；clean build 與測試<br>• 刪除本機舊 tag，在新 commit 重打 `v1.0.0`。**推送前停下來問使用者** | 📝 |
+
+每批的流程：
+1. 本機 `dotnet build -c Release` 0 警告，測試全綠。
+2. commit，推 `main`。
+3. Build CI 綠燈，才進下一批。
+
+### 判定不做的項目
+
+以下是健檢「其他觀察」中判定不改的項目。理由記在這裡，日後再有人提起時不必重查：
+
+- **只支援 `client_secret_post`**：六家都接受，改用 `client_secret_basic` 沒有好處。
+- **不檢查回呼帶回的 `iss` 參數（RFC 9207）**：新設計下，state 綁定已註冊的 client，而每個 client 只連一個 authorization server。要檢查的話，每家都得另外設定 issuer。等支援自訂 provider 時再評估。
+
 ## 階段 7：首發 1.0.0
+
+> **2026-09-14 更正**：使用者 review 後決定先做階段 6b。下面步驟 3–5 的結果（基準檔、clean build、本機 tag）與首發 CHANGELOG 都會在 6b 批次 F、G 重做；步驟 1、2 不受影響。
 
 1. **發佈授權改用 Trusted Publishing**（2026-09-14，見決策紀錄）：
    - nuget.org 建立 policy `polhem-oauth2-release`：Package Owner `Polhem`、repo `polhem-dev/polhem-oauth2`、workflow `nuget-publish.yml`、
@@ -438,6 +524,6 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 - SonarCloud 掃描：已遷移為編譯期規則的部分由 `.editorconfig` 把關，其餘不導入。
 - CONTRIBUTING、CODEOWNERS 等開放共同維護的文件：隨 Polhem 框架一併處理（見 future-work「開放共同維護」一節）。
 - 行動端（iOS／Android）登入流程。
-- 1b 發現、另案清理（程式碼已加 NOTE 註解）：
-  - `AzureOAuth2Provider` 在 token 請求帶 `response_mode`，但這個參數只屬於授權請求。
-  - AspNet 與 AspNetCore 的 state cookie 設成 `SameSite=None`；provider 以 GET 導回時 `Lax` 就會帶上 cookie。
+- ~~1b 發現、另案清理~~：已併入階段 6b。
+  - `AzureOAuth2Provider` 的 token 請求帶了 `response_mode`，由批次 A 處理。
+  - state cookie 的 `SameSite`，由批次 C 處理。
