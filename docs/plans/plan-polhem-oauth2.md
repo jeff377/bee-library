@@ -754,9 +754,19 @@ polhem-oauth2 的 commit 都直接推 `main`，Build CI（windows-latest）通�
 1. **（使用者操作，以 jeff377 身分於 nuget.org）** 五個 `Bee.OAuth2.*` 標 deprecated，原因選 Legacy，並填替代套件：
    `Bee.OAuth2`、`Bee.OAuth2.WinForms`、`Bee.OAuth2.Desktop` → `Polhem.OAuth2`；
    `Bee.OAuth2.AspNet` → `Polhem.OAuth2.AspNet`；`Bee.OAuth2.AspNetCore` → `Polhem.OAuth2.AspNetCore`。
+   **完成（2026-09-15）**：使用者改為要求 agent 在已登入 jeff377 的 Chrome 操作。
+   - 五個套件都選所有版本，原因 Legacy，替代套件版本選 Latest，不填自訂訊息。
+   - 五個公開套件頁都已出現 deprecated 橫幅，替代套件連結也都正確。
+   - 檢查當下，NuGet API 已反映前三個套件；最後存檔的 `Bee.OAuth2.AspNet` 與 `Bee.OAuth2.AspNetCore` 還在同步，nuget.org 註明可能要幾個小時。
 2. 舊 repo `README.md` 頂部以中英兩種語言加上新位置說明；issue #1 回覆指向新 README 的桌面範例後關閉。
+   **完成（2026-09-15）**：
+   - 舊 repo commit `8591dd3` 推上 `main`：README 標題下加上中英雙語的停止維護提醒、新 repo 與遷移章節的連結，以及舊套件對應新套件的表格。README 的 BOM 與換行格式保留原樣。
+   - issue #1 以使用者帳號留言後關閉。留言說明桌面登入改走系統瀏覽器與 loopback 回呼、不再需要 UI 套件，並附上新 README 的桌面範例、兩個 Windows Forms sample，以及新 repo 的 issues 連結。
+   - 送出前確認過所有連結與錨點都存在。
 3. `jeff377/bee-oauth2` archive（可逆）。**不刪除**：fork、星數與既有連結都依附在它上面。
+   **完成（2026-09-15）**：README 與 issue 處理完後才執行 `gh repo archive`，確認 `isArchived` 為 true；fork 5 個、星 18 顆都還在。
 4. 舊 repo 的 `NUGET_API_KEY` 若只給這個 repo 用，到 nuget.org 撤銷（使用者操作）。
+   **待使用者處理**：舊 repo 的這個 secret 設於 2025-06-25，與 bee-library、bee-api-aspnet、bee-ui-winforms 的 `NUGET_API_KEY` 設定日期都不同，推測是這個 repo 專用的 key。nuget.org 的 API key 最長一年到期，這把可能已經過期。使用者表示會自己到 nuget.org 確認並撤銷。
 
 ## 階段 9：回寫 bee-library
 
