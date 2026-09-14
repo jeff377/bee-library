@@ -11,7 +11,7 @@
 | 4 | 拿掉 WebView2，改用系統預設瀏覽器 + loopback 回呼；桌面流程併入核心，Desktop／WinForms 套件移除 | ✅ 已完成（2026-09-14） |
 | 5 | 目標框架 net8.0 → net10.0，核心多打 net10.0（提前到階段 4 之前） | ✅ 已完成（2026-09-13） |
 | 6 | 推廣準備：README、NuGet 中繼資料、org profile | ✅ 已完成（2026-09-14）；org profile 的推送移到階段 7 發佈後 |
-| 6b | 首發前修正：依健檢結果修掉全部發現，公開 API 定型 | 📝 待做 |
+| 6b | 首發前修正：依健檢結果修掉全部發現，公開 API 定型 | 🚧 進行中（2026-09-14） |
 | 7 | 首發 `Polhem.OAuth2.*` 1.0.0 | 📝 待做（等階段 6b 完成；已完成的步驟 3–5 屆時重做） |
 | 8 | 凍結舊套件與舊 repo | 📝 待做 |
 | 9 | 回寫 bee-library：future-work 與演練結果 | 📝 待做 |
@@ -96,6 +96,12 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | token 回應 | 新增 `TokenResponse` | 使用者決定（2026-09-14）。只回傳 access token 的話，refresh 功能拿不到 refresh token |
 | provider 階層 | 收成 internal，具體 provider 加 sealed | 使用者決定（2026-09-14）。目前沒有擴充路徑卻全部公開。收成 internal 後再公開不算破壞性變更，反過來就是 |
 | 階段 6b 提交方式 | 直接提交 `main`，每批一個 commit | 使用者決定（2026-09-14）。本機可以驗證；tag 推送前都能重來 |
+| 批次 A 的公開成員名稱 | `TokenResponse.ExpiresIn` 為 `TimeSpan?`；`AuthorizationResult.Token` 取代 `AccessToken`；`OAuth2Exception` 加 `Error`、`ErrorDescription`，`Message` 只帶錯誤代碼 | 使用者決定（2026-09-14）。單位寫在型別裡；token 只留一個存取來源；名稱照 RFC 6749。描述文字由 provider 撰寫，回呼時任何送連結的人都能設定，所以不放進 `Message` |
+| LINE 的 email | 本機解 ID token 的 payload，不驗簽章，但檢查 `aud` 等於 client ID | 使用者決定（2026-09-14）。ID token 是經 TLS 直接從 token 端點取得，OIDC Core 3.1.3.7 允許以此取代簽章驗證；不必多一次 HTTP 請求 |
+| 兩段式 API 形狀 | `CreateAuthorizationRequest()` 回傳 `AuthorizationRequest`（`Url`、`Pending`）；回呼時以 `AuthorizationCallback` 與可重建的 `PendingAuthorization` 呼叫 `CompleteAuthorizationAsync`；另有 `RefreshTokenAsync` | 使用者決定（2026-09-14）。要保存的值集中在一個型別；回呼參數也是型別，日後要加 `iss` 只需加屬性，不必加多載 |
+| `OpenBrowser` 型別 | `Func<Uri, Task>?` | 使用者決定（2026-09-14）。Avalonia 與 MAUI 的 launcher 都接收 `Uri` 並回傳 Task |
+| refresh 放在哪裡 | `OAuth2Client` 與 `LoopbackOAuth2Client` 都提供 `RefreshTokenAsync` | 使用者決定（2026-09-14）。桌面 app 也要更新 token；loopback 是 public client，不送 client secret（Google 例外） |
+| 呼叫端取消 | `OAuth2Client.CompleteAuthorizationAsync` 往外拋 `OperationCanceledException`；`LoopbackOAuth2Client.SignInAsync` 維持轉成失敗結果；`HttpClient` 逾時在兩者都是失敗結果 | 使用者決定（2026-09-14）。網頁端傳入 `RequestAborted` 時，取消由框架處理，不算登入失敗。ADR-003 在批次 F 補上 |
 
 ---
 
@@ -448,8 +454,8 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 
 | 批次 | 範圍（`R-xx` 對應健檢報告） | 狀態 |
 |------|----------------------------|------|
-| A | **provider 層**：<br>• 收成 internal；新增 `TokenResponse`<br>• client secret 依 client 類型決定（R-04）<br>• 端點驗證與 `Domain` 正規化（R-07、R-24）<br>• token 回應欄位的讀法（R-10）<br>• Facebook Graph API 版本，fields 拿掉未使用的 `picture`（R-14）<br>• Entra tenant、Okta org server、LINE email、Google 端點改現行路徑、刪除 Entra 的死碼（R-28）<br>• token 端點的錯誤代碼（R-29）<br>• 刪除 Azure token 請求的 `response_mode`（R-22）<br>• `ConfigureAwait(false)` 與 `CancellationToken`（R-09、R-17）<br>• `HttpClient` 注入（R-18）<br>**測試**：PKCE 的 RFC 7636 測試向量（R-30）、授權網址與 token 請求參數、成功路徑（R-34） | 📝 |
-| B | **client 層**：<br>• `OAuth2Client` 兩段式 API（R-20）<br>• 結果型別改唯讀（R-16、R-22）<br>• verifier 缺失時改擲例外（R-05）<br>• 複製 options（R-08）<br>• Loopback：非同步 `OpenBrowser`、傳給瀏覽器的網址、並行處理連線、Host 標頭與路徑正規化（R-36、R-37、R-38）<br>• XML doc 補列例外 | 📝 |
+| A | **provider 層**：<br>• 收成 internal；新增 `TokenResponse`<br>• client secret 依 client 類型決定（R-04）<br>• 端點驗證與 `Domain` 正規化（R-07、R-24）<br>• token 回應欄位的讀法（R-10）<br>• Facebook Graph API 版本，fields 拿掉未使用的 `picture`（R-14）<br>• Entra tenant、Okta org server、LINE email、Google 端點改現行路徑、刪除 Entra 的死碼（R-28）<br>• token 端點的錯誤代碼（R-29）<br>• 刪除 Azure token 請求的 `response_mode`（R-22）<br>• `ConfigureAwait(false)` 與 `CancellationToken`（R-09、R-17）<br>• `HttpClient` 注入（R-18）<br>**測試**：PKCE 的 RFC 7636 測試向量（R-30）、授權網址與 token 請求參數、成功路徑（R-34） | ✅ 2026-09-14 |
+| B | **client 層**：<br>• `OAuth2Client` 兩段式 API（R-20）<br>• 結果型別改唯讀（R-16、R-22）<br>• verifier 缺失時改擲例外（R-05）<br>• 複製 options（R-08）<br>• Loopback：非同步 `OpenBrowser`、傳給瀏覽器的網址、並行處理連線、Host 標頭與路徑正規化（R-36、R-37、R-38）<br>• XML doc 補列例外<br>• 自批次 A 移入：`UsePkce` 預設改 true、`HttpClient` 的公開注入點<br>• `BaseOAuth2Client` 與 `IStateStorage` 暫時保留給網頁套件，批次 C 刪除 | 📝 |
 | C | **網頁套件**：<br>• 每次登入一個加密 cookie，移除 session 與自帶加密（R-01、R-03、R-19、R-25、R-31）<br>• cookie 屬性（R-06）<br>• 統一兩個 manager 的行為；設定錯誤擲 `InvalidOperationException`；registry 執行緒安全（R-02、R-11、R-12、R-13）<br>• 回呼的 `error` 參數（R-29）<br>• AspNet 目標框架（R-35）<br>**測試**：AspNetCore 以 `DefaultHttpContext` 做單元測試（R-32） | 📝 |
 | D | **測試基礎**：<br>• 測試專案在 Windows 上多打 net48，AspNet 套件在 net48 下測試（R-32、R-33）<br>• CI 設 `timeout-minutes`<br>• 等待回呼的測試加逾時<br>• 沒有 IPv6 的環境改為明確略過（R-34） | 📝 |
 | E | **samples 與工具**：<br>• samples 與 `tools/LoopbackRedirectProbe` 改用新 API<br>• 清掉 samples 殘留的 `*Helper`、中文 XML doc、Newtonsoft（R-38） | 📝 |
@@ -460,6 +466,33 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 1. 本機 `dotnet build -c Release` 0 警告，測試全綠。
 2. commit，推 `main`。
 3. Build CI 綠燈，才進下一批。
+
+### 實作紀錄
+
+#### 批次 A（2026-09-14 完成）
+
+polhem-oauth2 commit `696277e`，直接推 `main`；Build CI（windows-latest）通過，202 個測試。
+
+- **公開成員定名**（見決策紀錄）：`TokenResponse.ExpiresIn` 為 `TimeSpan?`；`AuthorizationResult.Token` 取代 `AccessToken`；`OAuth2Exception` 新增 `Error`、`ErrorDescription` 與對應建構子。
+- **provider 階層**：
+  - `IOAuth2Provider` 刪除：收成 internal 後只剩 `OAuth2Provider` 一個實作，介面沒有用途。
+  - `OAuth2Provider`、六個 provider 與 `Pkce` 改 internal；provider 與 options 的子型別加 sealed；`OAuth2Options` 建構子改 `private protected`。
+  - provider 的建立集中到 `OAuth2Provider.Create`，批次 B 的 `OAuth2Client` 沿用。
+  - `ParseUserJson` 改為 template method：基底處理空值與解析，各 provider 只對應欄位（R-26 的一部分）。
+- **client secret**：confidential client 設了就送；public client 不送，Google 例外。以 internal 的 `BaseOAuth2Client.IsPublicClient` 區分，`LoopbackOAuth2Client` 設為 true；refresh 套用同一規則。
+- **端點**：建立 provider 時，三個端點都必須是絕對 https URI，否則擲 `ArgumentException`。Auth0 與 Okta 的 `Domain` 共用 internal 的 `ProviderDomain.Normalize`，只接受 https 主機名稱；設空值會清空端點。
+- **token 回應**：協定欄位只接受 JSON 字串，`expires_in` 接受數字或數字字串。token 端點回非成功狀態時，body 有 `error` 字串就擲 `OAuth2Exception`，否則擲 `HttpRequestException`。
+- **provider 規格**：
+  - Facebook 三個端點共用 v26.0（2026-09-14 查 Meta 版本頁，為最新版），userinfo 的 fields 拿掉 `picture`。
+  - Google 端點依 discovery 文件改為 `/o/oauth2/v2/auth` 與 `openidconnect.googleapis.com/v1/userinfo`。
+  - Entra 新增 `Tenant`（預設 `common`）。`oid` 與 `userPrincipalName` 兩個備援一併刪除：OIDC userinfo 端點只回標準 claims。
+  - Okta 的 `AuthorizationServerId` 設空值時改用 org authorization server（`/oauth2/v1/…`）。
+  - LINE 從 ID token 讀 email。
+- **`HttpClient` 與非同步**：provider 以 internal 建構子注入 `HttpClient`，未注入時共用同一個執行個體。所有 await 加 `ConfigureAwait(false)`，兩個網頁 manager 也補上；provider 的方法接收 `CancellationToken`。
+- **測試**：`FakeTokenEndpoint`（真的開 socket，且只回 400）換成注入 `HttpClient` 的 `StubHttpMessageHandler`。新增 RFC 7636 附錄 B 測試向量、授權網址與 token／refresh 請求參數、成功路徑、token 與錯誤回應解析、options 正規化、LINE ID token。測試數 112 → 202。
+- **平行路徑**：samples 與 probe 的設定檔都沒有寫死端點，Okta 也都明寫 `"AuthorizationServerId": "default"`，行為不受影響。README 對 `AuthorizationServerId` 的說明留給批次 F。
+- **範圍對帳**：實際變動與動工前宣告的清單一致（38 個檔案）。
+- **移到批次 B**：`UsePkce` 預設改 true（與 R-05 一起做）、`HttpClient` 的公開注入點（隨 `OAuth2Client` 加入）。
 
 ### 判定不做的項目
 
