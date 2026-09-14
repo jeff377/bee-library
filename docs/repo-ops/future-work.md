@@ -357,81 +357,18 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 而是**以當時最新版為起點，在 organization 下另開一個改名的新框架**，命名空間全換。
 舊 repo 與已發佈的 `Bee.*` 套件原地保留、凍結。
 
-### 為什麼要改名，而不只是搬家
+### 名稱與帳號
 
-`Bee` 這個名字在各平台都擠：
+名稱 **Polhem** 已定案並公開：polhem-oauth2 以此名發佈，舊的 `Bee.OAuth2.*` 已指向它。
 
-- **NuGet 前綴保留不到**：審核條件要求前綴至少四個字元、且不是常見單字
-  （[ID Prefix Reservation](https://learn.microsoft.com/en-us/nuget/nuget-org/id-prefix-reservation)），
-  `Bee` 兩條都不符。另有其他 owner 發佈 `Bee.*` 套件，其中 `etherna` 的 `Bee.Net.*`
-  在搜尋時與 Bee.NET 容易混淆。
-- **GitHub 好名字被占**：`beenet`、`bee-net`、`beedotnet`、`bee-framework` 皆已被他人使用（2026-09-11 查詢）。
-
-保留舊 repo 讓整件事變單純：**不需轉移 GitHub repo、不需移轉 NuGet owner、不需搬 SonarCloud 專案**，
-文章連結與 README badge 維持有效。
-
-### 命名條件
-
-名字要表達 Bee.NET 的本意：**標準化、模組化、機制化，以此有效率地組成大系統**。
-
-1. **先確認字義表達本意，再查平台可用性。** 2026-09-11 那輪一度反過來做，推薦出 Combwise，
-   事後才發現字典意思是「像梳子那樣梳直」—— 順序反了就會這樣。
-2. **NuGet 前綴審核**：至少四個字元、非常見單字、能識別出 owner。
-3. **平台可用**：GitHub org（可加後綴，如 `AvaloniaUI`、`abpframework` 的做法）、
-   NuGet 組織帳號名（與個人帳號共用命名空間，email 也須全站唯一）、NuGet 上無人使用該前綴、npm。
-4. **不撞名**：BCL 命名空間末段（CA1724）、UI 框架常見型別名、同領域的既有產品。
-5. **發佈前另做商標檢索**：智慧財產局第 9／42 類；要國際化則加查 USPTO／EUIPO。
-
-### 評估過的候選（2026-09-11 查詢結果，啟動時須重查）
-
-| 候選 | 結論 | 理由 |
+| 項目 | 名稱 | 備註 |
 |------|------|------|
-| **Polhem** | 首選，已占名（見下節） | 瑞典工程師 Christopher Polhem（1661–1751）。「機械字母」以一套木製基本機構模型教工程師組合出各種機器；Stjärnsund 的水力自動化工廠以可互換零件生產時鐘與掛鎖。標準化、模組化、機制化三者都對得上。NuGet 無 `Polhem.` 套件、npm 可用、GitHub 需加後綴。缺點是瑞典以外辨識度低、無中文文化連結 |
-| 畢昇（Bi Sheng） | 意象可取，名字不適合 | 活字印刷是最精準的比喻，但辨識度低、英文難念，GitHub 與 npm 已被占 |
-| 魯班（Luban） | 不採用 | 意義貼切，但 NuGet 已有他人的 `Luban.*` 套件，中文科技產品也大量使用 |
-| 孔明（Kongming／Zhuge Liang） | 不採用 | 形象是謀略而非標準化；API 領域有 Kong（API Gateway）會混淆 |
-| Hex 系列（六角） | 不採用，六角適合當 logo | 會被讀成六角架構（Ports & Adapters）；.NET 已有 `Hexalith` 微服務框架；短名全被占 |
-| Combwise | 撤回 | 字典意思是「像梳子那樣梳直」，`comb` 的蜂巢義排第三，英文讀者讀不出本意 |
-| Melliform | 撤回 | 字義是「蜂蜜加 form」，沒抓到本意 |
-| Cellwise／Formcell | 避開 | 前者有同名軟體產品；後者撞 Formlabs Form Cell 與 SAP Fiori 的 `FormCell` 型別 |
+| GitHub organization | `polhem-dev` | 組織 profile 放在 `polhem-dev/.github` |
+| NuGet 組織帳號 | `Polhem` | 組織 email 暫用個人信箱的別名，有共同維護者時改成團隊收得到的地址。前綴 `Polhem.` 的保留已申請；若一直沒有回音，隔幾週追問 |
+| npm 組織 | `@polhem` | connector-js 改名另開後，以 `@polhem/…` 發佈 |
 
-### 已占名（2026-09-12）
-
-**名稱已於 2026-09-13 定案**：polhem-oauth2 以此名公開，舊的 `Bee.OAuth2.*` 會指向它，Bee 與 Polhem 的關係因此公開。
-當初是因為首選已隨 `d29e5fe8` 寫進公開 repo，才先把名稱占下。
-`bee-net` 就是 2026 年初被人占走的。
-
-| 項目 | 名稱 | 狀態 |
-|------|------|------|
-| GitHub organization | `polhem-dev` | 已建立。`polhem` 本身是 2019 年建立的個人帳號，要不回來，故加後綴 |
-| NuGet 組織帳號 | `Polhem` | 已建立。組織 email 暫用個人信箱別名，有共同維護者時改成團隊收得到的地址 |
-| GitHub org profile（`.github` repo） | `polhem-dev/.github` | 已建立。2026-09-15 起列出 Polhem.OAuth2，並新增中文版 profile |
-| GitHub repo | `polhem-dev/polhem-oauth2` | 已公開（2026-09-13），是 Polhem 名下的第一個產品。由 `jeff377/bee-oauth2` 改名另開，舊 repo 已 archive（見下方演練結果） |
-| NuGet 套件 | `Polhem.OAuth2`、`Polhem.OAuth2.AspNet`、`Polhem.OAuth2.AspNetCore` | 1.0.0 已發佈（2026-09-15），由 GitHub Actions 以 Trusted Publishing 推送 |
-| NuGet 前綴保留 `Polhem.` | — | 未申請。原本**刻意等發佈第一版後**，而首個套件已於 2026-09-15 發佈，這個前提已成立。官方條件不要求先有套件，但三條審核條件中「不保留會造成混淆」在沒有套件與使用者時難以舉證。申請寄 account@nuget.org，註明 owner `Polhem`、前綴 `Polhem.*` 與 `Polhem` 本身、non-public；可引用既有 `Bee.*` 的發佈紀錄佐證身分。有申請人寄兩次都無回音的前例（NuGetGallery #7816），沒回應就隔幾週追問 |
-| npm 組織 | `@polhem` | 已建立。connector-js 改名另開後以 `@polhem/…` 發佈；scoped 名稱只有組織成員能發佈，不會被他人搶先註冊 |
-| 商標檢索 | — | 2026-09-12 做過初步檢索，2026-09-14 發佈第一版前重查，軟體類別（第 9／42 類）都沒有 POLHEM，見下方。**非法律意見** |
-
-**初步商標檢索（2026-09-12）**：
-
-| 資料庫 | 查法 | 結果 |
-|--------|------|------|
-| WIPO Global Brand Database（涵蓋 USPTO、EUIPO、瑞典 PRV 等） | 商標名稱含 `POLHEM` | 只有 **POLHEM INFRA**：瑞典 Polhem Infra Kommanditbolag 的歐盟註冊（2021-06-09），第 35、36 類（商業管理、金融），**非軟體類別** |
-| USPTO（直接查詢） | `polhem` 及近似字 | 無有效的 POLHEM；近似的 POLHAM 兩筆皆已放棄，POLHEMUS 一筆已放棄 |
-| 智慧財產局 | 文字近似 `POLHEM`，篩第 9、42 類 | 無 POLHEM；30 筆近似結果（POLEYA、PROHSM、POLICE 等）字形與讀音都有明顯差異，不少已到期消滅 |
-
-**發佈前重查（2026-09-14）**：結論與初查相同，未發現衝突。
-- WIPO，品牌名稱含 `POLHEM`：仍只有兩筆 POLHEM INFRA。
-- USPTO，wordmark `polhem`：有效與失效案件都沒有結果。
-- 智慧財產局，文字近似 `POLHEM`：共 280 筆，篩第 9、42 類後剩 30 筆，沒有 POLHEM。
-  檢索系統的網址已改為 `https://cloud.tipo.gov.tw/S282/S282WV1/`，舊網址會回 404。
-
-唯一需要留意的是 POLHEM INFRA：第 35 類含「企業經營管理」，與 ERP 的應用領域相鄰。
-框架本身是軟體（第 9／42 類），類別不重疊；但**不宜以商業管理服務的形式對外提供**，
-例如用 Polhem 名義銷售 ERP 導入顧問服務。
-
-檢索若不通過，換名時兩個組織一併刪除：GitHub org 可從組織設定刪除，NuGet 組織的刪除方式見
-[Organizations on NuGet.org](https://learn.microsoft.com/en-us/nuget/nuget-org/organizations-on-nuget-org)。
+**商標的限制**：軟體類別（第 9、42 類）沒有 POLHEM。唯一相鄰的是瑞典 POLHEM INFRA 的歐盟註冊，類別為第 35、36 類（商業管理、金融）。
+因此**不宜以 Polhem 名義對外提供商業管理服務**，例如銷售 ERP 導入顧問服務。
 
 ### 改名時編譯器抓不到的地方
 
@@ -474,11 +411,11 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
    專案層 `.claude/settings.json` 對它的宣告移到個人層；`.claude/CLAUDE.md` 裡指向 `plan-write` 的慣例，
    要判斷哪些屬於 repo 本身而該留在 repo 內。
 
-**要等什麼**：出現明確的共同維護者人選。名稱已先占下，其餘不必急——舊 repo 保留、文章不受影響，
+**要等什麼**：出現明確的共同維護者人選。名稱已經定案，其餘不必急。舊 repo 會保留、文章不受影響，
 改名成本不會隨時間明顯增加。
 
-**啟動時第一步**：重跑一次商標檢索（初步結果會過期）。仍然乾淨就寫 plan；
-出現衝突就回到候選表換名，並刪除已占的兩個組織。
+**啟動時第一步**：重跑一次商標檢索，上次是 2026-09-14，智慧財產局的檢索系統在 `https://cloud.tipo.gov.tw/S282/S282WV1/`。
+仍然乾淨就寫 plan。出現衝突時，名稱已經隨 Polhem.OAuth2 公開發佈，要先評估影響範圍，再決定是否換名。
 
 ### bee-oauth2 演練結果（2026-09-15）
 
