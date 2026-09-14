@@ -1,6 +1,6 @@
 # 計畫：bee-oauth2 改名為 Polhem.OAuth2 並移至 polhem-dev
 
-**狀態：🚧 進行中（2026-09-13）**
+**狀態：🚧 進行中（2026-09-14）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -80,6 +80,9 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | JSON null 欄位 | 回傳 `null`，備援欄位生效 | 使用者決定。特性測試證實 Newtonsoft 對 JSON null 回傳空字串，連帶讓 Azure 的 `oid`→`sub`、Auth0 的 `name`→`nickname` 這類備援不生效。新語意與 1b 的 nullable 標註一致；差異寫進 README 遷移說明 |
 | 階段順序 | 階段 5 提前到階段 4 之前 | 使用者決定。階段 4 要先在各 provider 後台登記 loopback 回呼網址、準備測試憑證；階段 5 不需要外部帳號，可以先做。代價是 Desktop 專案暫時維持 net8.0-windows，等階段 4 刪除 |
 | 核心目標框架 | `netstandard2.0;net10.0`，`System.Text.Json` 套件只給 netstandard2.0 | 使用者決定。net10 的使用者（含 AspNetCore 套件）直接用框架內建的版本，這一組的相依清單是空的 |
+| loopback 監聽實作 | `TcpListener`，不用 `HttpListener` | 使用者決定（2026-09-14）。Windows 上 `HttpListener` 走 http.sys：`127.0.0.1` 字首需要 URL ACL，且不支援 port 0（自動選空 port）。`TcpListener` 在一般權限下跨平台可用，實測工具已驗證 IPv4／IPv6 行為；代價是自行解析 HTTP request line |
+| 階段 4 實作時機 | 與 provider 無關的部分先實作；PKCE 預設值、PKCE 下是否送 client secret、ADR 定稿，等其餘 provider 實測完再定 | 使用者決定（2026-09-14）。原訂先實測再實作，但 Google 以外的 provider 還沒登記 |
+| 實測工具分支 | `claude/loopback-probe` 不單獨開 PR，與階段 4 的實作同一個 PR | 使用者決定（2026-09-14）。核心有了 loopback 流程後，工具改用核心 API、刪掉重複的監聽程式碼，一次審完 |
 
 ---
 
@@ -262,14 +265,16 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 
 實測工具 `tools/LoopbackRedirectProbe` 已寫好並在 macOS 建置通過，位於 polhem-oauth2 的分支 `claude/loopback-probe`
 （已 commit，尚未推送、尚未開 PR），用法見該資料夾的 README。它直接處理 TCP、不用 `HttpListener`，
-所以上面「綁 80 port 需要 URL ACL」的疑慮在工具裡不存在；正式實作是否沿用這個做法，階段 4 動工時再定。
+所以上面「綁 80 port 需要 URL ACL」的疑慮在工具裡不存在；正式實作沿用這個做法（見決策紀錄）。
+監聽邏輯另以 scratchpad 程式單獨驗證（2026-09-14）：IPv6 port 被占用時退回只聽 IPv4、其他路徑回 404、query 解碼、逾時、
+拒絕非 loopback 位址、IPv4 port 被占用時擲 `SocketException`。尚未在沒有 IPv6 的機器與 Windows 上執行。
 
 **要由使用者先做的事**：在各 provider 後台登記下表的回呼網址，並把 client 憑證填進
 `tools/LoopbackRedirectProbe/probe.settings.json`（已 gitignore，範本是同資料夾的 `probe.settings.example.json`）。
 
 | Provider | 後台位置 | 應用程式類型 | 要試的回呼網址 | 結果 |
 |---|---|---|---|---|
-| Google | Google Cloud Console → APIs & Services → Credentials | Desktop app | `http://127.0.0.1:0/callback`（任意 port）、`http://localhost:53682/callback` | 待實測 |
+| Google | Google Cloud Console → APIs & Services → Credentials | Desktop app | `http://127.0.0.1:0/callback`（任意 port）、`http://localhost:53682/callback` | ✅ 2026-09-14，PKCE on：兩個網址都成功導回並換到 token。Desktop app 類型有重新導向 URI 欄位，兩個網址都有登記；`:0` 那筆實際導回 `127.0.0.1:50666` 也被接受，port 不必與登記一致。完全不登記是否可行未測 |
 | Microsoft Entra ID | App registrations → Authentication | Mobile and desktop applications | `http://localhost:0/callback`（任意 port）、`http://127.0.0.1:53682/callback` | 待實測 |
 | Auth0 | Dashboard → Applications | Native | `http://127.0.0.1:53682/callback`、`http://localhost:53682/callback` | 待實測 |
 | Okta | Admin Console → Applications | Native（PKCE） | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | 待實測 |
@@ -280,6 +285,30 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 - 每家先跑 `--pkce on`。token 交換失敗時再跑 `--pkce off`，判斷是否因為 PKCE 下沒送 client secret
   （base 類別在 PKCE 下不送 client secret，只有 Google 例外）。
 - 結果回填本表；階段 4 的 ADR 與階段 6 的 README 會引用。
+
+### 實作（2026-09-14 進度）
+
+位於 polhem-oauth2 的分支 `claude/system-browser-signin`，接在 `claude/loopback-probe` 之後，尚未推送。與 provider 無關的部分已完成：
+
+- 核心新增 `LoopbackOAuth2Client`（`src/Polhem.OAuth2/Loopback/`），提供 `SignInAsync(CancellationToken)`、`Timeout`（預設 5 分鐘）與 `OpenBrowser`。
+  `OpenBrowser` 為 null 時用系統預設瀏覽器，且只接受 http／https 網址。port 為 0 時，每次登入會把 `Options.RedirectUri` 改成實際綁定的 port，結束後還原。
+- 與實測工具不同的行為：
+  - 只有帶著本次 state 的請求才會結束等待，其他請求回 400 或 404 後忽略。
+  - `localhost` 在 IPv6 上的同一 port 被其他程式占用時，直接啟動失敗（工具是略過 IPv6），避免授權碼被送到那個程式。
+  - 連線逐一處理；連上後 5 秒沒送出 request line 的連線（瀏覽器預先建立的）會被放棄。
+- 失敗語意：逾時轉成 `TimeoutException`、取消轉成 `OperationCanceledException`、provider 帶 error 導回轉成 `OAuth2Exception`，三者都成為失敗結果；
+  `SocketException`、同一個 client 重複登入、授權網址不是 http(s) 則往外拋。
+- 刪除 Desktop／WinForms 兩個專案；1b 加的閘門排除設定隨 csproj 一起刪除，全 repo 搜尋確認沒有殘留。`.claude/CLAUDE.md` 的相關說明、
+  CI 與發佈 workflow 中的兩個套件與 8.0.x SDK 一併移除。
+- samples：OAuthDesktop（改為 net10.0-windows）與 OAuthWinForms（net48）改用 `LoopbackOAuth2Client`，設定檔改用 System.Text.Json 讀取；新增 OAuthConsole（net10.0）。
+- 實測工具改用 `LoopbackOAuth2Client`，刪除自帶的監聽程式碼。
+- 雙語 ADR-004 草稿，狀態為「提議中」，實測結果表目前只有 Google。
+- 驗證：macOS 上全方案建置 0 警告，單元測試全數通過；以改寫後的工具對 Google 實際登入成功。
+
+尚未完成：
+- 其餘五家的實測、PKCE 預設值、PKCE 下是否送 client secret、ADR-004 定稿。
+- Windows 驗證：net48 與 net10.0-windows 只在 macOS 建置過；監聽程式碼的 netstandard2.0 組建沒有被測試執行到。
+- OAuthConsole 與兩個 WinForms sample 都還沒實際登入過。
 
 ### 套件結構（已定案）
 
