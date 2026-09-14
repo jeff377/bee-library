@@ -275,7 +275,7 @@ build 與測試全綠，1a 的黃金樣本與加密測試不變。例外語意�
 | Provider | 後台位置 | 應用程式類型 | 要試的回呼網址 | 結果 |
 |---|---|---|---|---|
 | Google | Google Cloud Console → APIs & Services → Credentials | Desktop app | `http://127.0.0.1:0/callback`（任意 port）、`http://localhost:53682/callback` | ✅ 2026-09-14，PKCE on：兩個網址都成功導回並換到 token。Desktop app 類型有重新導向 URI 欄位，兩個網址都有登記；`:0` 那筆實際導回 `127.0.0.1:50666` 也被接受，port 不必與登記一致。完全不登記是否可行未測 |
-| Microsoft Entra ID | App registrations → Authentication | Mobile and desktop applications | `http://localhost:0/callback`（任意 port）、`http://127.0.0.1:53682/callback` | 待實測 |
+| Microsoft Entra ID | App registrations → Authentication | Mobile and desktop applications | `http://localhost:0/callback`（任意 port）、`http://127.0.0.1:53682/callback` | ✅ 2026-09-14，PKCE on：後台登記的是 `http://localhost`（沒有 port 與路徑），改以 `http://localhost:0` 測。實際導回 `http://localhost:52247/` 被接受並換到 token，**沒送 client secret**（設定檔有填，PKCE 下不送）。Entra 忽略 `localhost` 的 port，結尾的 `/` 也不影響比對。`/callback` 這類路徑是否必須一致、`127.0.0.1` 皆未測 |
 | Auth0 | Dashboard → Applications | Native | `http://127.0.0.1:53682/callback`、`http://localhost:53682/callback` | 待實測 |
 | Okta | Admin Console → Applications | Native（PKCE） | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | 待實測 |
 | LINE | LINE Developers Console → LINE Login channel → Callback URL | — | `http://localhost:53682/callback`、`http://127.0.0.1:53682/callback` | ✅ 2026-09-14，PKCE on：後台加上 `http://localhost:53682/callback` 後，導回並換到 token，**沒送 client secret 也成功**；使用者資訊沒有 email。加上之前後台只有 `http://localhost/callback`（沒寫 port，即 80），`localhost:53682` ❌ 授權頁顯示 `400 Bad Request`「Invalid redirect_uri value」，port 必須與登記一致。`http://localhost/callback` 本身在 macOS 無法測：一般權限綁不了 port 80（`Permission denied`）。`127.0.0.1` 未登記、未測 |
