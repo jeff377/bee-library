@@ -467,7 +467,7 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 | C | **網頁套件**：<br>• 每次登入一個加密 cookie，移除 session 與自帶加密（R-01、R-03、R-19、R-25、R-31）<br>• cookie 屬性（R-06）<br>• 統一兩個 manager 的行為；設定錯誤擲 `InvalidOperationException`；registry 執行緒安全（R-02、R-11、R-12、R-13）<br>• 回呼的 `error` 參數（R-29）<br>• AspNet 目標框架（R-35）<br>**測試**：AspNetCore 以 `DefaultHttpContext` 做單元測試（R-32） | ✅ 2026-09-14 |
 | D | **測試基礎**：<br>• 測試專案在 Windows 上多打 net48，AspNet 套件在 net48 下測試（R-32、R-33）<br>• CI 設 `timeout-minutes`<br>• 等待回呼的測試加逾時<br>• 沒有 IPv6 的環境改為明確略過（R-34） | ✅ 2026-09-14 |
 | E | **samples 與工具**：<br>• samples 與 `tools/LoopbackRedirectProbe` 改用新 API<br>• 清掉 samples 殘留的 `*Helper`、中文 XML doc、Newtonsoft（R-38） | ✅ 2026-09-14 |
-| F | **文件**：<br>• README 雙語重寫網頁段落並補部署前提（R-03、R-43、R-44、R-45）<br>• ADR-001 標註加密部分已被取代；ADR-003、ADR-004 依新行為改寫；新增 ADR-005 記錄網頁 state 的保存方式<br>• CHANGELOG 1.0.0 一節重寫（R-40、R-41、R-42） | 📝 |
+| F | **文件**：<br>• README 雙語重寫網頁段落並補部署前提（R-03、R-43、R-44、R-45）<br>• ADR-001 標註加密部分已被取代；ADR-003、ADR-004 依新行為改寫；新增 ADR-005 記錄網頁 state 的保存方式<br>• CHANGELOG 1.0.0 一節重寫（R-40、R-41、R-42） | ✅ 2026-09-14 |
 | G | **驗收**：<br>• 逐項回驗健檢報告的每個 `R-xx`：讀程式碼確認，不以狀態標記為準<br>• 用 probe 工具對六家重跑登入；用 ASP.NET Core sample 實際走一次網頁登入（需要使用者在瀏覽器操作）<br>• 重建 `PublicAPI.Shipped.txt`；clean build 與測試<br>• 刪除本機舊 tag，在新 commit 重打 `v1.0.0`。**推送前停下來問使用者** | 📝 |
 
 每批的流程：
@@ -608,6 +608,32 @@ polhem-oauth2 commit `a67a949`，直接推 `main`；Build CI（windows-latest）
   - Cloud Console 說明頁則說，建立 Desktop app 時不需要其他資訊。
   - 兩者說法不一，README 與 ADR-004 只寫實測狀況，並註明文件說法不一；程式碼對 Google 送 client secret 的例外維持不變。
 - 公開文件不寫弱點細節，也不寫「先前可以……」的比較，因為 Bee.OAuth2 仍在 NuGet 上。CHANGELOG 原有一行描述舊版行為的內容移除。
+
+#### 批次 F（2026-09-14 完成）
+
+polhem-oauth2 commit `ba782d5`，直接推 `main`；Build CI（windows-latest）通過：net10.0 250 個、net48 247 個測試。
+
+- **README（雙語）**：
+  - 網頁段落改寫為 `AddOAuth2Client` 與新的 manager 方法。
+  - 新增幾節：options 的規則；System.Web 的部署前提（`httpRuntime targetFramework`、binding redirect、`machineKey`）；網頁登入狀態的保存方式；以 `OAuth2Client` 支援其他伺服器端框架；結果、token 與錯誤；識別使用者。
+  - 遷移章節依最終 API 更新。Google 的註記改為只寫實測狀況；AspNet 的目標框架改為 net472。
+  - 桌面範例改成不用模式比對的寫法，並指向 OAuthWinForms sample。
+- **CHANGELOG（雙語）**：1.0.0 一節依最終 API 重寫。安全性一節只描述現行設計，原本描述舊版行為的一行移除。
+- **ADR**：
+  - 新增 ADR-005（網頁登入的 cookie）。
+  - ADR-001 標註部分被取代；ADR-003、ADR-004 依現行行為修訂，狀態列註明是首發前的修訂。
+  - ADR 索引加上 ADR-005。
+- **套件 tag**：三個套件移除 `openid-connect`，已從 nupkg 的 nuspec 確認。
+- **驗證**：
+  - 相對連結、錨點、指向 repo 的絕對網址全部對得到檔案；中英版的章節數一致。
+  - 已移除的 API 名稱只出現在遷移章節、CHANGELOG 的移除清單，以及 ADR-001 的歷史本文。
+- **範圍對帳**：實際變動與動工前宣告的清單一致（17 個檔案）。
+
+#### 批次 G 準備（2026-09-14）
+
+- 逐項回驗 `R-xx`，交由唯讀的背景子代理讀程式碼進行；結果出來後，先處理未修正的項目。
+- 最終公開 API：核心 95 項、AspNetCore 7 項、AspNet 9 項，三個 `PublicAPI.Unshipped.txt` 都是空的。重打 tag 之前請使用者確認。
+- probe 的設定檔 `tools/LoopbackRedirectProbe/probe.settings.json` 仍在本機（已 gitignore，未讀取內容），provider 實測可以沿用。
 
 ### 判定不做的項目
 
