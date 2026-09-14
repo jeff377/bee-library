@@ -110,6 +110,10 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | OAuthWinForms 的範本檔 | 刪除沒用到的 `Properties/` Resources 與 Settings；`Program.cs`、`Form1.Designer.cs` 的註解改為英文 | 使用者決定（2026-09-14）。工具產生的檔案不留在 repo，就不會在中文版 Visual Studio 重新產生出中文註解 |
 | ASP.NET Core sample 的設定讀取 | 以 System.Text.Json 讀 `OAuthConfig.json`，在 `Program.cs` 直接註冊 client；刪除 `OAuth2RegistrationHelper` 與 Newtonsoft.Json | 使用者決定（2026-09-14）。與其他三個 sample 的寫法一致 |
 | `openid-connect` 套件 tag | 三個套件都移除 | 使用者決定（2026-09-14）。函式庫不驗證 ID token，避免在 NuGet 搜尋時被誤認為會驗證；README 另外寫明如何識別使用者，以及 ID token 未經驗證 |
+| FIPS 模式下的 PKCE（R-38） | 程式碼不動。README 的桌面段落與 System.Web「部署前確認」註明：目標 .NET Framework 4.7.2 的應用程式在 FIPS 機器上，要把目標框架改為 4.8 以上，或把 `UseLegacyFipsThrow` 開關設為 `false` | 使用者決定（2026-09-14）。有 Microsoft 文件為依據；改用 CSP 實作無法在 CI 的 FIPS 環境驗證，還得處理取不到實作時的退路 |
+| `ConfigureAwait(false)` 的閘門（R-09） | 只對套件原始碼開 CA2007：`src/.editorconfig` 設為 warning，由 `TreatWarningsAsErrors` 擋下漏寫 | 使用者決定（2026-09-14）。測試與 sample 不受影響；xUnit 建議測試裡不要用 `ConfigureAwait(false)` |
+| 最終公開 API | 依批次 A～F 的結果定型：核心 95 項、AspNetCore 7 項、AspNet 9 項 | 使用者確認（2026-09-14）。名稱與形狀已在各批逐項決定；發佈後再改就是破壞性變更 |
+| 批次 G 的瀏覽器實測 | 六家用 probe 重跑桌面登入；網頁登入用 ASP.NET Core sample 對 Google 走一次 | 使用者決定（2026-09-14）。只跑 probe 的話，網頁登入只有單元測試，沒有實際經過瀏覽器與 provider。Google 的網頁 client 由 agent 依使用者指示操作 Chrome 建立，client secret 由使用者自己填進本機設定檔 |
 
 ---
 
@@ -468,7 +472,7 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 | D | **測試基礎**：<br>• 測試專案在 Windows 上多打 net48，AspNet 套件在 net48 下測試（R-32、R-33）<br>• CI 設 `timeout-minutes`<br>• 等待回呼的測試加逾時<br>• 沒有 IPv6 的環境改為明確略過（R-34） | ✅ 2026-09-14 |
 | E | **samples 與工具**：<br>• samples 與 `tools/LoopbackRedirectProbe` 改用新 API<br>• 清掉 samples 殘留的 `*Helper`、中文 XML doc、Newtonsoft（R-38） | ✅ 2026-09-14 |
 | F | **文件**：<br>• README 雙語重寫網頁段落並補部署前提（R-03、R-43、R-44、R-45）<br>• ADR-001 標註加密部分已被取代；ADR-003、ADR-004 依新行為改寫；新增 ADR-005 記錄網頁 state 的保存方式<br>• CHANGELOG 1.0.0 一節重寫（R-40、R-41、R-42） | ✅ 2026-09-14 |
-| G | **驗收**：<br>• 逐項回驗健檢報告的每個 `R-xx`：讀程式碼確認，不以狀態標記為準<br>• 用 probe 工具對六家重跑登入；用 ASP.NET Core sample 實際走一次網頁登入（需要使用者在瀏覽器操作）<br>• 重建 `PublicAPI.Shipped.txt`；clean build 與測試<br>• 刪除本機舊 tag，在新 commit 重打 `v1.0.0`。**推送前停下來問使用者** | 📝 |
+| G | **驗收**：<br>• 逐項回驗健檢報告的每個 `R-xx`：讀程式碼確認，不以狀態標記為準<br>• 用 probe 工具對六家重跑登入；用 ASP.NET Core sample 實際走一次網頁登入（需要使用者在瀏覽器操作）<br>• 重建 `PublicAPI.Shipped.txt`；clean build 與測試<br>• 刪除本機舊 tag，在新 commit 重打 `v1.0.0`。**推送前停下來問使用者** | ✅ 2026-09-14（tag 未推送） |
 
 每批的流程：
 1. 本機 `dotnet build -c Release` 0 警告，測試全綠。
@@ -635,12 +639,37 @@ polhem-oauth2 commit `ba782d5`，直接推 `main`；Build CI（windows-latest）
 - 最終公開 API：核心 95 項、AspNetCore 7 項、AspNet 9 項，三個 `PublicAPI.Unshipped.txt` 都是空的。重打 tag 之前請使用者確認。
 - probe 的設定檔 `tools/LoopbackRedirectProbe/probe.settings.json` 仍在本機（已 gitignore，未讀取內容），provider 實測可以沿用。
 
+#### 批次 G（2026-09-14 完成）
+
+polhem-oauth2 commit `4c655a3`，直接推 `main`；Build CI（windows-latest）通過：net10.0 250 個、net48 247 個測試。
+
+- **回驗 `R-xx`**：背景子代理逐項讀程式碼確認。除了下列三項（在 `4c655a3` 處理），以及列入判定不做的 R-22（`Scopes` 的型別）與 R-35，其餘全部已修正，或因設計改變而不再適用。
+  - CHANGELOG 把 `OAuth2Exception` 本身列為新型別。
+  - README 列出 `ProviderName` 的值，並註明 FIPS 機器上的設定（見決策紀錄）。
+  - `src/.editorconfig` 開啟 CA2007。暫時加入一個漏寫 `ConfigureAwait(false)` 的檔案，確認 build 失敗後移除。
+- **公開 API**：使用者確認定型（見決策紀錄）。基準檔在改公開 API 的批次已清空後由 RS0016 訊息重新產生；這次 clean build 沒有 RS0016／RS0017，三份 `PublicAPI.Shipped.txt` 與公開表面一致，排序也已確認。三份 `PublicAPI.Unshipped.txt` 都是空的。
+- **clean build 與測試**：刪除 `src`、`tests`、`samples` 的 `bin`／`obj` 後，build 0 警告 0 錯誤；本機 net10.0 250 個測試通過。net48 只在 CI 上跑（本機沒有 mono）。
+- **發佈 workflow**：`nuget-publish.yml` 在 6b 期間未改動；repo 沒有 lock 檔時，`dotnet restore --locked-mode` 照樣能 restore。
+- **probe 實測**（22:20–22:23）：六家都接受 loopback 回呼網址並換到 token。
+  - 回呼網址：Google `127.0.0.1` 隨機 port；Facebook、LINE、Okta `localhost:53682`；Entra ID `localhost` 隨機 port；Auth0 `127.0.0.1:53682`。
+  - 使用者資訊那幾行在輸出時濾掉了，LINE 有沒有回傳 email 沒有確認。
+- **ASP.NET Core sample 網頁登入（Google）**：
+  - 使用者要求由 agent 操作 Chrome。agent 在 GoogleNET 專案（probe 用的桌面 client 也在這裡）建立網頁應用程式 client `Polhem OAuth2 ASP.NET Core sample`，登記 `https://localhost:7032/auth/callback`。
+  - Google 只在建立當下顯示 client secret。secret 由使用者自己複製進本機 `OAuthConfig.json`；agent 只檢查它不是範本值，沒有讀出內容。
+  - 第一次嘗試回 `invalid_client`，原因是本機 `OAuthConfig.json` 還是範本值，與函式庫無關。
+  - 填好後登入成功，結果頁顯示 `ProviderName: Google`、使用者 ID、名稱與 email。
+  - 重新整理同一個回呼網址被拒絕（找不到對應的登入），回呼無法重送。
+  - 測完停止 sample，`OAuthConfig.json` 以 `git checkout` 還原，沒有 commit。
+- **tag**：刪除本機舊的 `v1.0.0`（指向 `0370a62`），在 `4c655a3` 重打 annotated tag，**尚未推送**。
+
 ### 判定不做的項目
 
-以下是健檢「其他觀察」中判定不改的項目。理由記在這裡，日後再有人提起時不必重查：
+以下是健檢中判定不改的項目。理由記在這裡，日後再有人提起時不必重查：
 
 - **只支援 `client_secret_post`**：六家都接受，改用 `client_secret_basic` 沒有好處。
 - **不檢查回呼帶回的 `iss` 參數（RFC 9207）**：新設計下，state 綁定已註冊的 client，而每個 client 只連一個 authorization server。要檢查的話，每家都得另外設定 issuer。等支援自訂 provider 時再評估。
+- **System.Text.Json 在 .NET Framework 帶入的傳遞相依（R-35）**：要拿掉，就得自己寫 JSON 解析或改用其他函式庫，兩者都比相依清單更糟。降到較舊的版本，相依清單差不多，還拿不到較新的安全修正。README 已註明要保留 binding redirect。
+- **`OAuth2Options.Scopes` 維持 `string[]`（R-22）**：client 建立時會複製 options，之後改原陣列沒有影響。`string[]` 在設定繫結與 `new[] { ... }` 的寫法最直觀；改成唯讀介面，System.Text.Json、設定繫結與 sample 的寫法都要跟著改。
 
 ## 階段 7：首發 1.0.0
 
@@ -670,6 +699,7 @@ polhem-oauth2 commit `ba782d5`，直接推 `main`；Build CI（windows-latest）
    - 使用者 review 時發現套件圖示是舊的 Bee.* 圖示（見階段 1a 的更正），改用 polhem-brand 的 `png/nuget-package-icon-128.png`：
      polhem-oauth2 commit `0370a62`，Build CI 通過；三個 nupkg 內的 `polhem.png` 都已確認是新圖示。
    - annotated tag `v1.0.0` 已在本機重建，改指向 `0370a62`，尚未推送。
+   - **2026-09-14 階段 6b 批次 G** 再次重打，改指向 `4c655a3`，仍未推送。
 6. 驗證：nuget.org 上各套件的圖示、README、相依清單（不得出現 `Bee.Base`、Newtonsoft.Json）；
    在全新專案安裝並跑一次最小範例。
 7. **推送 org profile**：階段 6 已在本機 clone `~/Desktop/repos/polhem-dev-github` commit（`1176df0`，尚未推送）。
