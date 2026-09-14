@@ -104,6 +104,9 @@ bee-oauth2（`jeff377/bee-oauth2`）是跨平台的 OAuth2 輕量套件，先一
 | 呼叫端取消 | `OAuth2Client.CompleteAuthorizationAsync` 往外拋 `OperationCanceledException`；`LoopbackOAuth2Client.SignInAsync` 維持轉成失敗結果；`HttpClient` 逾時在兩者都是失敗結果 | 使用者決定（2026-09-14）。網頁端傳入 `RequestAborted` 時，取消由框架處理，不算登入失敗。ADR-003 在批次 F 補上 |
 | 網頁套件的 client 註冊 | ASP.NET Core：`services.AddOAuth2Client(name, options)`，每家呼叫一次，同名重複時在呼叫當下擲 `InvalidOperationException`。System.Web：`OAuth2Manager.RegisterClient(name, options)`，另有選填的 `HttpClient` 參數 | 使用者決定（2026-09-14）。不必多一個 builder 型別；兩個套件都由 manager 以 options 建立 client，寫法一致 |
 | 網頁 manager 的方法名稱 | `CreateAuthorizationUrl`、`RedirectToAuthorization`、`CompleteAuthorizationAsync`、`GetClient`；ASP.NET Core 版接收 `HttpContext`，System.Web 版另有接收 `HttpContextBase` 的多載 | 使用者決定（2026-09-14）。與核心 `OAuth2Client` 對齊；建立網址時會寫入 cookie，所以用 Create 而不用 Get |
+| DI 擴充方法的類別 | `Microsoft.Extensions.DependencyInjection.OAuth2ServiceCollectionExtensions` | 使用者決定（2026-09-14）。與 `IServiceCollection` 同 namespace，Program.cs 不必多加 using；類別名加 OAuth2 前綴，因為許多函式庫在同一 namespace 都有 `ServiceCollectionExtensions` |
+| `AddOAuth2Client` 的 `HttpClient` | 加上選填的 `HttpClient` 參數 | 使用者決定（2026-09-14）。與 System.Web 版 `RegisterClient` 一致，可設逾時與 proxy，測試也靠它注入 stub |
+| System.Web 版回呼的多載 | `CompleteAuthorizationAsync()` 使用 `HttpContext.Current`、不支援取消；`CompleteAuthorizationAsync(HttpContextBase, CancellationToken = default)` 可取消 | 使用者決定（2026-09-14）。兩個多載都帶選填的 `CancellationToken` 會被 RS0026／RS0027 擋下 |
 
 ---
 
@@ -458,7 +461,7 @@ polhem-oauth2 commit `a655b26`，直接推 `main`：
 |------|----------------------------|------|
 | A | **provider 層**：<br>• 收成 internal；新增 `TokenResponse`<br>• client secret 依 client 類型決定（R-04）<br>• 端點驗證與 `Domain` 正規化（R-07、R-24）<br>• token 回應欄位的讀法（R-10）<br>• Facebook Graph API 版本，fields 拿掉未使用的 `picture`（R-14）<br>• Entra tenant、Okta org server、LINE email、Google 端點改現行路徑、刪除 Entra 的死碼（R-28）<br>• token 端點的錯誤代碼（R-29）<br>• 刪除 Azure token 請求的 `response_mode`（R-22）<br>• `ConfigureAwait(false)` 與 `CancellationToken`（R-09、R-17）<br>• `HttpClient` 注入（R-18）<br>**測試**：PKCE 的 RFC 7636 測試向量（R-30）、授權網址與 token 請求參數、成功路徑（R-34） | ✅ 2026-09-14 |
 | B | **client 層**：<br>• `OAuth2Client` 兩段式 API（R-20）<br>• 結果型別改唯讀（R-16、R-22）<br>• verifier 缺失時改擲例外（R-05）<br>• 複製 options（R-08）<br>• Loopback：非同步 `OpenBrowser`、傳給瀏覽器的網址、並行處理連線、Host 標頭與路徑正規化（R-36、R-37、R-38）<br>• XML doc 補列例外<br>• 自批次 A 移入：`UsePkce` 預設改 true、`HttpClient` 的公開注入點<br>• `BaseOAuth2Client` 與 `IStateStorage` 暫時保留給網頁套件，批次 C 刪除 | ✅ 2026-09-14 |
-| C | **網頁套件**：<br>• 每次登入一個加密 cookie，移除 session 與自帶加密（R-01、R-03、R-19、R-25、R-31）<br>• cookie 屬性（R-06）<br>• 統一兩個 manager 的行為；設定錯誤擲 `InvalidOperationException`；registry 執行緒安全（R-02、R-11、R-12、R-13）<br>• 回呼的 `error` 參數（R-29）<br>• AspNet 目標框架（R-35）<br>**測試**：AspNetCore 以 `DefaultHttpContext` 做單元測試（R-32） | 📝 |
+| C | **網頁套件**：<br>• 每次登入一個加密 cookie，移除 session 與自帶加密（R-01、R-03、R-19、R-25、R-31）<br>• cookie 屬性（R-06）<br>• 統一兩個 manager 的行為；設定錯誤擲 `InvalidOperationException`；registry 執行緒安全（R-02、R-11、R-12、R-13）<br>• 回呼的 `error` 參數（R-29）<br>• AspNet 目標框架（R-35）<br>**測試**：AspNetCore 以 `DefaultHttpContext` 做單元測試（R-32） | ✅ 2026-09-14 |
 | D | **測試基礎**：<br>• 測試專案在 Windows 上多打 net48，AspNet 套件在 net48 下測試（R-32、R-33）<br>• CI 設 `timeout-minutes`<br>• 等待回呼的測試加逾時<br>• 沒有 IPv6 的環境改為明確略過（R-34） | 📝 |
 | E | **samples 與工具**：<br>• samples 與 `tools/LoopbackRedirectProbe` 改用新 API<br>• 清掉 samples 殘留的 `*Helper`、中文 XML doc、Newtonsoft（R-38） | 📝 |
 | F | **文件**：<br>• README 雙語重寫網頁段落並補部署前提（R-03、R-43、R-44、R-45）<br>• ADR-001 標註加密部分已被取代；ADR-003、ADR-004 依新行為改寫；新增 ADR-005 記錄網頁 state 的保存方式<br>• CHANGELOG 1.0.0 一節重寫（R-40、R-41、R-42） | 📝 |
@@ -527,6 +530,38 @@ polhem-oauth2 commit `59d4d6c`，直接推 `main`；Build CI（windows-latest）
   - ASP.NET Core 的 `OAuth2Manager` 只由 DI 建立；`CompleteAuthorizationAsync` 同時觀察傳入的 token 與 `HttpContext.RequestAborted`。
   - 評估讓核心 net10.0 的共用 `HttpClient` 設定 `PooledConnectionLifetime`，讓長時間執行的伺服器能跟上 DNS 變更。
 - 已在 scratchpad 驗證：macOS 可建置 net472，且參考組件有 `HttpCookie.SameSite`、`MachineKey.Protect`／`Unprotect`、`HttpContextBase`、`HttpResponseBase.Redirect(string, bool)`。
+
+#### 批次 C（2026-09-14 完成）
+
+polhem-oauth2 commit `8b11c84`，直接推 `main`；Build CI（windows-latest）通過，250 個測試。
+
+- **網頁端的登入狀態**（名稱見決策紀錄）：
+  - 每次登入一個 cookie，名稱是 `__Host-oauth2.` 加上 state。值是加密後的 client 名稱、state、verifier、redirect URI 與建立時間：ASP.NET Core 用 Data Protection，System.Web 用 `MachineKey.Protect`。
+  - cookie 屬性：Secure、HttpOnly、SameSite=Lax、Path=/、10 分鐘；ASP.NET Core 另設 `IsEssential`。
+  - 回呼時先在回應刪除 cookie 再換 token。超過 10 分鐘（容許 1 分鐘時鐘誤差）視為失效。
+  - 格式與 cookie 命名放在 `src/Shared/PendingAuthorizationCookie.cs`，兩個套件連結編譯。
+- **兩個 manager 的行為一致**：
+  - 依序檢查 state、cookie、解密、payload。state 缺少、重複、格式不符或找不到 cookie 時，轉成失敗結果（`OAuth2Exception`）；解密失敗轉成 `CryptographicException` 的失敗結果。
+  - 回呼的 `error` 參數交由核心轉成帶錯誤代碼的失敗結果。
+  - 設定錯誤一律擲 `InvalidOperationException`：client 未註冊、cookie 裡的 client 已不再註冊、沒有目前的 HTTP context。
+- **ASP.NET Core**：`AddOAuth2Client` 在呼叫當下建立 client，同名重複時直接擲例外；`OAuth2Manager` 只由 DI 建立；方法接收 `HttpContext`；回呼同時觀察傳入的 token 與 `RequestAborted`。
+- **System.Web**：
+  - `RegisterClient` 改收 options，registry 改用 `ConcurrentDictionary`，重複註冊擲例外；另有接收 `HttpContextBase` 的多載。
+  - 導向改用 `Redirect(url, false)` 加 `CompleteRequest()`，不再擲 `ThreadAbortException`。
+  - 目標框架改為 net472。net472 的隱含 using 不含 `System.Net.Http`，補上組件參考與 using；nupkg 已宣告 `System.Web` 與 `System.Net.Http` 兩個 framework assembly。
+- **移除**：`BaseOAuth2Client`、`IStateStorage`、`OAuth2StateCryptor`、`AesCbcHmacCryptor`、`AesCbcHmacKeyGenerator` 與對應測試（含 Bee.Base 黃金樣本），以及兩個網頁套件的 `OAuth2Client`、`StateStorage`。
+- **共用 `HttpClient`**：核心 net10.0 組建設定 `PooledConnectionLifetime` 為 5 分鐘。不用 `#if`：以 `*.Net.cs`／`*.NetStandard.cs` 分檔，由 csproj 依目標框架排除。
+- **samples**：AspNetCore sample 改用 `AddOAuth2Client` 與新的 manager 方法，移除 session。其餘整理仍在批次 E。
+- **測試**：新增 ASP.NET Core manager 的測試（`DefaultHttpContext` 搭配 `EphemeralDataProtectionProvider`）與 cookie 格式的測試；`BaseOAuth2ClientTests` 中仍有價值的兩個案例移到 `OAuth2ClientTests`。測試數 248 → 250。
+- **建置時的意外**：重寫三個 csproj 時先刪後建，開著的 VS Code 在刪除的同一秒，把這三個專案從 `Polhem.OAuth2.slnx` 移除，也拿掉了 sample 對 AspNetCore 的參照。比對修改時間，確認不是使用者的修改後，還原成已 commit 的版本。之後改專案檔一律原地覆寫。
+- **平行路徑**：README、CHANGELOG、ADR-001、ADR-003 仍描述 session、`OAUTH2_STATE_KEY` 與已移除的型別，留給批次 F。
+- **範圍對帳**：實際變動與動工前宣告的清單一致（被 IDE 改動後已還原的兩個檔案不計）。
+
+#### 批次 D 開工前已確認（2026-09-14）
+
+- 本機沒有 mono，net48 的測試只能在 Windows CI 執行。本機以 `-p:TargetFrameworks="net10.0;net48"` 先確認 net48 編譯得過。
+- 測試程式碼有十幾處用到 .NET Framework 沒有的 API，要改寫：`CancelAsync`、`record`、陣列範圍語法、帶 `StringComparison` 的 `Replace`／`IndexOf`、非泛型 `TaskCompletionSource`、`Queue.TryDequeue`、`char.IsAsciiLetterOrDigit`、`Stream.WriteAsync(byte[])`、`ReadAsStringAsync(CancellationToken)`。AspNetCore 的測試在 net48 排除。
+- IPv6 測試目前以 `return` 靜默通過，兩處（`LoopbackListenerTests`）。等待外部訊號的地方有 `browser.Completed`、`handler.Hanging`、`opened.Task`。
 
 ### 判定不做的項目
 
