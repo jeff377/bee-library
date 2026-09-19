@@ -52,7 +52,8 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
 | `jeff377/bee-northwind-avalonia` | `apps/Bee.Northwind` 的鏡像，以 NuGet 消費 `Bee.*`，有自己的 CI | 改名另開為 `polhem-dev/polhem-northwind`（階段 9） |
 | `jeff377/bee-jsonrpc-sample` | 停在 `Bee.*` 4.1.0／4.3.0，最後更新 2026-05 | 不移植，只凍結（階段 10） |
 | `jeff377/claude-plugins`（`dev-workflow`） | 與框架無直接關係 | 不搬；新 repo 不宣告（見決策紀錄） |
-| `jeff377/bee-library-private` | 同步 `docs/blogs/`、`docs/internal/` 的私有鏡像 | 範圍外，見 [plan-personal-docs-directory.md](plan-personal-docs-directory.md) |
+| `jeff377/bee-blogs` | `docs/blogs/` 本身的 private repo（部落格草稿與鐵人賽工作檔），clone 在 bee-library 裡 | 更名為 `jeff377/blogs`，移出程式碼 repo，clone 到 `~/Desktop/repos/blogs`（階段 0） |
+| `jeff377/bee-library-private` | 以同步腳本鏡像 `docs/blogs/`、`docs/internal/` 等 gitignored 檔案的私有 repo | 由 `jeff377/polhem-local` 與獨立的 `jeff377/blogs` 取代，停止同步後 archive（階段 10） |
 
 ### 演練得到與演練不到的
 
@@ -91,6 +92,8 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
 | 語言政策 | 共同維護的部分一律英文：程式碼、XML doc、程式內註解、測試方法名稱與 `[DisplayName]`、`.claude/`、commit message、維運文件。公開 `.md` 與 ADR 中英雙語 | future-work 已定案（2026-09-13），polhem-oauth2 先行 |
 | 公開文件的源語言 | `docs/<lang>/` 改以**英文為源**，ADR 一併納入雙語檢查 | 使用者決定（2026-09-19）。共同維護者改的是源文件 |
 | plan 目錄 | 新 repo 的計畫目錄為 **gitignored 的 `local/plans/`**，不入版控 | 使用者決定（2026-09-19）。plan 是個人當時的打算；長效決策一律升格 ADR。bee-library 進行中的 plan 由維護者自行複製到本機 `local/plans/` |
+| 個人文件 | 比照 polhem-oauth2：repo 根目錄的 `local/` 由 `.gitignore` 排除，放 plans、internal（含未修安全項的審查紀錄）與筆記；`local/` 本身是 private repo **`jeff377/polhem-local`**，直接 clone 在 `local/` 底下，不是 submodule。`docs/` 下不再有 gitignored 的內容 | 使用者決定（2026-09-20）。取代 [plan-personal-docs-directory.md](plan-personal-docs-directory.md) 原訂在 bee-library 內的搬移——舊 repo 即將凍結，先搬一次是白工 |
+| 部落格草稿 | **移出程式碼 repo**：`jeff377/bee-blogs` 更名為 `jeff377/blogs`，clone 到 `~/Desktop/repos/blogs`，不放在 polhem 的 `local/`，與程式碼脫鉤 | 使用者決定（2026-09-20）。名稱不綁定 Bee 或 Polhem。部落格與框架的生命週期不同，不隨程式碼 repo 走 |
 | CHANGELOG | 不帶 `CHANGELOG*` 與 `docs/changelogs/`，從 1.0.0 重起；1.0.0 一節列出相對於 `Bee.*` 最後一版的差異，遷移細節指向 README | 使用者決定（2026-09-19）。比照 polhem-oauth2 |
 | `dev-workflow` plugin | 新 repo 的 `.claude/settings.json` 不宣告；屬於 repo 本身的慣例（計畫目錄、公開文件不引用 plan、發版的兩條防護欄）寫進 repo 的 `CLAUDE.md`／`CONTRIBUTING.md` | 使用者決定（2026-09-19）。plugin 與框架無直接關係，各開發者習慣不同 |
 | LICENSE 著作權人 | `Copyright (c) Polhem contributors`，不寫年份 | future-work 已定案，比照 polhem-oauth2 |
@@ -144,7 +147,14 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
    仍然乾淨才往下；出現衝突時名稱已隨 Polhem.OAuth2 公開，先評估影響範圍再決定是否換名。
 2. **凍結起點**：選定 bee-library 的起點 commit，記下 hash。起點之後 bee-library 只收本 plan 的回寫，不再有功能變更。
    起點前先處理進行中的 plan：要在 Bee 做完的做完，其餘複製到 polhem 本機的 `local/plans/` 繼續。
-3. **外部帳號與授權的事前確認**（只確認，不建立）：
+3. **個人文件**：
+   - 建立 private repo `jeff377/polhem-local`，`README.md` 與 `.gitignore` 比照 `jeff377/polhem-oauth2-local`（`.gitignore` 擋常見的憑證副檔名，當作第二道防線）。
+   - `docs/internal/` 裡與 Polhem 相關的文件複製到 `local/internal/`；進行中的 plan 見上一步。
+   - `docs/blogs/`（`jeff377/bee-blogs`）移出 bee-library：GitHub 上更名為 `jeff377/blogs`（GitHub 會轉址舊網址），clone 到 `~/Desktop/repos/blogs`，更新 remote；
+     確認新 clone 與 `docs/blogs/` 的工作樹一致、沒有未推送的 commit 後，才刪除 `docs/blogs/`。
+     使用者層 skill 的工作檔路徑要跟著改：`ithome-publish`、`medium-publish`（含 `git -C docs/blogs` 那段檢查）、`hackmd-blog`。
+   - 以 `git status` 看不出 gitignored 目錄的內容，搬完以 `ls` 與兩個 private repo 的 `git log` 確認。
+4. **外部帳號與授權的事前確認**（只確認，不建立）：
    - NuGet `Polhem.` 前綴保留的申請狀態。
    - SonarCloud 能否以 `polhem-dev` 建立 organization，以及 `jeff377` org 在 UI 上的 quality profile／gate 設定，要記下來以便重建。
    - `AUTOMERGE_PAT` 在 org 下的替代做法（fine-grained PAT 需 org 核准，或改用 GitHub App）。
@@ -174,7 +184,9 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
    以英文**複製**進 `.claude/rules/`（使用者層仍供其他 repo 使用，不刪）。`pull-request` 改為 PR + 分支保護的工作流。
 2. **`.claude/` 英文化**：`CLAUDE.md`、`rules/`、`skills/`（`bee-*` 改名 `polhem-*`）、`commands/`、`hooks/` 的訊息與註解。
    `CLAUDE.md` **明文覆寫**使用者層「敘述文字全部繁體中文」的預設。
-3. **plan 慣例寫進 repo**：`.gitignore` 加 `local/`；`CLAUDE.md` 寫明計畫目錄與「公開文件不引用 plan」；
+3. **plan 與個人文件慣例寫進 repo**：`.gitignore` 加 `/local/` 與 `CLAUDE.local.md`，拿掉 `docs/blogs/`、`docs/internal/` 兩條；`CLAUDE.md` 比照 polhem-oauth2 的「Local working documents」一節，
+   寫明 `local/` 的用途、計畫目錄、不 commit 也不 `git add -f`、不從已 commit 的檔案連過去、worktree 讀不到 `local/`；
+   `.claude/rules/public-docs.md` 的「哪些不是」表、`check-md-links.sh` 與 `check-public-docs.sh` 對 `docs/blogs/`、`docs/internal/` 的排除一併改寫；
    `settings.json` 移除 `dev-workflow` 的 marketplace 與啟用宣告。`check-public-docs.sh` 的 (7) 死指標檢查改對 `local/plans/` 或移除，實作時判斷。
 4. **commit hash 引用**：`.claude/`、`docs/repo-ops/` 等處以 hash 引用的證據，改寫為舊 repo 的完整 commit 網址。
 5. **協作文件**：`LICENSE.txt` 改為 `Copyright (c) Polhem contributors`；新增雙語 `CONTRIBUTING.md` 與 `.github/CODEOWNERS`。
@@ -255,11 +267,11 @@ CI 綠燈，各 head 至少啟動一次。
 5. 最後才 archive 四個舊 repo。不刪除：fork、星數與既有連結都依附在它上面。
 6. 舊的 `NUGET_API_KEY`：**撤銷前先向使用者確認**，secret 的設定日期看不出 key 是否相同，也看不出還有誰在用。
 7. 舊 SonarCloud 專案的處置：詢問使用者。
+8. `jeff377/bee-library-private`：卸載同步用的 launchd agent（`bootstrap/install-sync-agent.sh` 裝的那個），確認 `docs/internal/` 與部落格都已在新位置、兩個 private repo 都有最新 commit 後，archive。
 
 ## 範圍外
 
 - 申請或追問 NuGet `Polhem.` 前綴保留（階段 0 只確認狀態）。
 - connector-js 發佈到 npm。
 - 發文公告。
-- 個人文件目錄與 `bee-library-private`：見 [plan-personal-docs-directory.md](plan-personal-docs-directory.md)。
 - 套件重組與命名調整：階段 1 刻意不做，由階段 7 健檢提出。

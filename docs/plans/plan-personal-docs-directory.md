@@ -1,6 +1,11 @@
 # 計畫：個人文件移出 docs/，改放獨立的個人目錄
 
-**狀態：📝 擬定中（2026-09-11）**
+**狀態：⛔ 已取代（2026-09-20）**
+
+> 使用者於 2026-09-20 決定不在 bee-library 內搬移，併入 [plan-polhem-framework.md](plan-polhem-framework.md)：
+> 個人文件比照 polhem-oauth2 放在 polhem 的 `local/`（private repo `jeff377/polhem-local`），
+> 部落格草稿（`jeff377/bee-blogs`）更名為 `jeff377/blogs`，移出程式碼 repo、clone 到 `~/Desktop/repos/blogs`。下文保留作為當時的盤點紀錄；
+> 其中「受影響位置」與「個人文件內指向 docs 的路徑」兩節，執行 polhem plan 時仍可當作重掃的起點。
 
 ## 背景
 
