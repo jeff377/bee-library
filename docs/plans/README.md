@@ -10,7 +10,7 @@
 
 | 計畫 | 狀態 | 說明 |
 |------|------|------|
-| [bee-library 改名為 Polhem 並另開於 polhem-dev](plan-polhem-framework.md) | 🚧 進行中（2026-09-26） | 不帶歷史另開 `polhem-dev/polhem`，1:1 前綴替換、首版 1.0.0；共同維護的缺口（英文化、規則入 repo、PR 工作流）首發前完成；connector-js 與 northwind 一併改名另開，舊框架比照 polhem-oauth2 凍結。**凍結起點 `7d6cc9d9`；階段 0～5 已完成（polhem 初始 commit `5242933`，repo `polhem-dev/polhem`），下一步階段 6**；分 11 階段 |
+| [bee-library 改名為 Polhem 並另開於 polhem-dev](plan-polhem-framework.md) | 🚧 進行中（2026-09-26） | 不帶歷史另開 `polhem-dev/polhem`，1:1 前綴替換、首版 1.0.0；共同維護的缺口（英文化、規則入 repo、PR 工作流）首發前完成；connector-js 與 northwind 一併改名另開，舊框架比照 polhem-oauth2 凍結。**凍結起點 `7d6cc9d9`；階段 0～5 已完成（repo `polhem-dev/polhem` 已建立），階段 6 進行中**；分 11 階段 |
 | [個人文件移出 docs/，改放獨立的個人目錄](plan-personal-docs-directory.md) | ⛔ 已取代（2026-09-20） | 併入 polhem-framework plan：個人文件改放 polhem 的 `local/`（`jeff377/polhem-local`），部落格草稿移出程式碼 repo。待使用者要求時封存 |
 | [捨入政策可設定化](plan-rounding-mode.md) | ⛔ 已移交 polhem（2026-09-26） | **未動工，已移交 polhem 繼續（`jeff377/polhem-local` 的 `plans/`）**。明細計算欄的捨入模式（`MidpointRounding` / 方向）由硬編改為可設定；**階段 0 是「要不要做」的決策點**——現況全 `src/` 只有兩處 `Math.Round`、production 呼叫點僅計算欄一處，若判定 `AwayFromZero` 足夠即可只補文件結案。與多幣別加總無關（round-then-sum 之下對合計再捨是 no-op） |
 | [PropertyGridControl：用宣告式 metadata 驅動屬性編輯](plan-property-grid-control.md) | ⛔ 已移交 polhem（2026-09-26） | **未動工，已移交 polhem 繼續（`jeff377/polhem-local` 的 `plans/`）**。交付吃 `System.ComponentModel` 標註（`[Description]` / `[Category]` / `[Browsable]` / `[TypeConverter]`）的 Avalonia PropertyGrid 控件；分 2 階段。承接 2026-08-07 體檢移交的 D-3 / D-5，與 TreeView 那份可並行 |
