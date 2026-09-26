@@ -241,13 +241,14 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
 
 ### 實作紀錄（2026-09-26）
 
-polhem 位於 `~/Desktop/repos/polhem`，`git init` 建立、沒有 remote，共三個 commit：
+polhem 位於 `~/Desktop/repos/polhem`，`git init` 建立、沒有 remote。階段 1 共三個 commit，完成後另有一個：
 
 | commit | 內容 |
 |--------|------|
 | `5242933` | 初始 commit：純改名，來源 `jeff377/bee-library@7d6cc9d9`，2517 個檔案 |
 | `5f7c066` | 修正依賴執行順序的測試（只改測試，見「測試」） |
 | `863edc4` | 補上「改錯會紅」的測試（只改測試，見「各類的檢查方式」） |
+| `54fd32e` | 階段 1 完成後，主方案檔 `Polhem.Library.slnx` 改名為 `Polhem.slnx`（使用者要求，2026-09-26），引用處一併更新；下方紀錄裡的舊檔名是當時的狀態 |
 
 `~/Desktop/repos/polhem-local` 未移動，依決策紀錄留到階段 2。
 
