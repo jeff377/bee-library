@@ -10,7 +10,7 @@
 | 3 | 英文化：測試方法名稱與 `[DisplayName]`、程式內殘留的中文、維運文件與 gotchas | ✅ 已完成（2026-09-26） |
 | 4 | 公開文件：`docs/` 改以英文為源、ADR 補英文版並納入雙語檢查、README 遷移說明 | ✅ 已完成（2026-09-26） |
 | 5 | 建立 repo 與 CI：推送、SonarCloud、分支保護與 PR 工作流、auto-merge、Trusted Publishing policy | ✅ 已完成（2026-09-26） |
-| 6 | polhem-connector-js 改名另開，接上新的 wire 合約 | 🚧 進行中 |
+| 6 | polhem-connector-js 改名另開，接上新的 wire 合約 | ✅ 已完成（2026-09-26） |
 | 7 | 首發前健檢與修正，公開 API 定型 | 📝 待做 |
 | 8 | 首發 `Polhem.*` 1.0.0，更新 org profile | 📝 待做 |
 | 9 | polhem-northwind 改名另開，改用 `Polhem.*` 1.0.0 | 📝 待做 |
@@ -847,6 +847,71 @@ repo：**https://github.com/polhem-dev/polhem**（public，GitHub repo ID `13890
 2. 需實測：兩個 repo 的 CI 互相依賴的順序——框架先推新 fixtures，connector-js 再跟上；中間 connector-js 紅燈是預期的。
 3. 框架端 `.claude/rules/serialization.md`、`wire-contracts/README.md`、`wire-fixtures/README.md` 的連結改指新 repo。
 4. npm 發佈：現況是 `private`，本 plan 不發佈；是否發佈另行決定。
+
+### 實作紀錄（2026-09-26）
+
+repo：**https://github.com/polhem-dev/polhem-connector-js**（public，GitHub repo ID `1389117104`），本機位於 `~/Desktop/repos/polhem-connector-js`。
+
+| repo | commit | 內容 |
+|------|--------|------|
+| polhem-connector-js | `9451601` | 初始 commit：來源 `jeff377/bee-connector-js@2dbb4cc`，不帶歷史，37 個檔案（快照 37 個，扣掉 `docs/plans/` 的 1 個，加上 `README.zh-TW.md`） |
+| polhem-connector-js | `308aa92` | PR [#1](https://github.com/polhem-dev/polhem-connector-js/pull/1)：README 兩處與程式不符的說法（中英同步），同時是分支保護下的第一個 PR |
+| polhem | `304239f` | PR [#2](https://github.com/polhem-dev/polhem/pull/2)：`.claude/rules/serialization.md`、`wire-contracts/README.md`、`wire-fixtures/README.md` 改指新 repo（精簡模式） |
+| polhem-local | `6d09c9c` | 移交 connector-js 的 DataTable plan |
+
+bee-connector-js 本身沒有改動，凍結在階段 10。
+
+#### 使用者決定（2026-09-26）
+
+- **README 中英雙語**：`README.md` 英文為源、新增 `README.zh-TW.md`，頂部互相切換。英文版連結用絕對網址（會打進 npm tarball），比照框架。
+- **中文 plan `docs/plans/plan-datatable-support.md`**：新 repo 不帶，比照框架「plan 不入版控」，`.gitignore` 加 `/local/`。
+  原檔以 `cmp` 確認後複製為 polhem-local 的 `plans/plan-connector-js-datatable-support.md`，內文未改（仍是 Bee 時期的名稱與行號）；polhem-local 的 `README.md` 目錄表補一句說明前綴。
+  `test/wire-fixtures.test.ts` 原本點名這份 plan，改為直接寫出缺口（兩種 wire 形狀）。
+- **repo 治理**：分支保護＋PR 工作流，**不接 SonarCloud**。
+- **版號**：沿用 `0.0.1`，`private` 不變。
+- **固定測試向量以 Polhem 重生**：`aes-cbc-hmac.test.ts`、`gzip.test.ts` 的明文原為 `Bee.NET wire compatibility vector — 跨語言驗證`，改為 `Polhem …`（保留非 ASCII），密文與壓縮文以 polhem 的實作重新產生（見實測 4）。
+
+#### 替換
+
+- 腳本（scratchpad，不進 repo）規則依序為：特例（`jeff377/bee-connector-js` → `polhem-dev/polhem-connector-js`、`jeff377/bee-library` → `polhem-dev/polhem`、`bee-library` → `polhem`、`Bee.NET` → `Polhem`）；
+  通則 `Bee`／`bee`／`BEE` → `Polhem`／`polhem`／`POLHEM`，**前後都不能是英數字**。比階段 1 的詞界嚴格，因為 `package-lock.json` 的 integrity 雜湊裡有 `Zbee5`；lockfile 只改套件本身的 `name`。
+  `src/contracts/` 不在腳本內，另以 `npm run contracts:update` 重生。
+- 機械替換的結果：`BeeClient` → `PolhemClient`；環境變數 `POLHEM_FIXTURES_REF`、`POLHEM_CONTRACTS_REF`、`POLHEM_ENDPOINT`、`POLHEM_API_KEY`；`DB_NULL` 的 `Symbol.for('polhem.dbnull')`；`ping()` 預設的 `clientName` 為 `polhem-connector`。
+- 個別處理：`package.json` 的 `name` 為 `@polhem/connector`、`author` 為 `Polhem contributors`、keyword `bee-net` → `polhem`；`LICENSE` 改為 `Copyright (c) Polhem contributors`；`src/index.ts` 檔頭的套件名。
+  README 的安裝段拿掉「npm 上的 `bee-connector` 不是本專案發佈的」警告（`@polhem` scope 屬於本專案，沒有被冒用的問題），改為「尚未發佈」；ADR-014 改為連結。`npm pack` 的 tarball 名為 `polhem-connector-0.0.1.tgz`，與 README 相符。
+- **反向正規化 diff**：新樹（不含 `src/contracts/`）反向替換後與快照比對，殘差只有：
+  - 名稱、網址、中繼資料：`Bee.NET` 等品牌字串、`@polhem/connector` 套件名、repo 網址、`LICENSE`、`author`、keyword。
+  - 依上述決定而生的：README 的切換列、CI 徽章、安裝段、ADR-014 連結、`README.zh-TW.md`；`.gitignore` 的 `/local/`；不帶的 `docs/plans/`；兩組測試向量；`wire-fixtures.test.ts` 那段註解。
+  - **沒有預期外的殘差。**
+- `src/contracts/` 兩個檔案由 `contracts:update` 從 `polhem-dev/polhem@main` 重生，與「把快照機械替換」的結果**逐位元組相同**；`type-names.ts` 扣掉同步標頭後與 polhem 的 `wire-contracts/type-names.ts` 相同。
+
+#### 實測結果
+
+1. **兩個 repo 的 CI 相依順序**：框架在階段 5 已推上 `Polhem.*` 的 fixtures 與 contracts，「框架先推」這一步在本階段開始前就完成了，connector-js 只需跟上。中間狀態以本機重現：
+   - `REPO` 改指 polhem、但 `src/contracts/` 還是舊的：`contracts:check` **exit 1**（兩個檔案都報 differs）。
+   - 同一狀態下 **`test:wire` 仍通過**（28 項）：wire 測試只看 body 的形狀，**不比對 fixture 的 `type`**。所以型別名稱漂移只有 `contracts:check` 會紅，wire 測試抓不到。
+   - 重生 contracts 後兩者都通過。新 repo 第一次 CI（run `36240008783`，`9451601`）Node 20、22 兩個 job 都綠：`Contracts match polhem-dev/polhem@main`、`Fetched 27 fixtures from polhem-dev/polhem@main`。
+   - PR #1 合併後 `main` 的 CI（run `36240313673`）也綠。
+2. **測試**：改名前的快照在 scratchpad 跑，單元測試 43 項、wire 測試 28 項（對 bee-library）、`contracts:check` 一致；改名後單元測試 43 項、wire 測試 28 項（對 polhem，27 個 fixture）全過，`typecheck` exit 0，`build` 成功。
+3. **對真實後端的 smoke**：啟動 polhem 的 `samples/QuickStart.Server`，`npm run smoke` 三項（Plain、Encoded＋`codec: json`、`SystemConnector.ping`）都通過。
+   另以**改名前的 Bee 版 connector** 打同一台伺服端：Plain 通過，Encoded 以 `-32099`「Payload type 'Bee.Api.Core.Messages.System.PingRequest, Bee.Api.Core' is not in the allowed type whitelist」被拒——框架 README 遷移說明「wire 型別名稱不相容、客戶端與伺服端要一起升級」的實證。
+4. **測試向量**：scratchpad 的 console 專案參考 polhem 的 `Polhem.Api.Core`，先以 `AesCbcHmacCryptor.Decrypt` 解開**舊向量**得到原明文，確認金鑰切分（前 32 位元組 AES、後 32 位元組 HMAC）與 TS 端一致，再產生新密文與 `GzipPayloadCompressor` 的壓縮文，並確認 round-trip。
+5. **分支保護**：以 PR #1 實測，兩個必要 check 都有回報、`mergeStateStatus` 為 `CLEAN`，由 jeff377 以 squash 合併成功、分支自動刪除——check 名稱對得上，維護者自己的 PR 在 `enforce_admins` 下能走完。沒有實際嘗試直推 `main`（設定以 API 回讀確認）。
+
+#### 分支保護與 repo 設定
+
+- `main`：必要 check **`build (20)`、`build (22)`**，strict，`enforce_admins` 開，`required_pull_request_reviews` 為 0 核准、不要求 Code Owners，禁止 force push 與刪除。
+- repo：只允許 squash、`squash_merge_commit_title=PR_TITLE`、`squash_merge_commit_message=COMMIT_MESSAGES`（與框架相同）、`delete_branch_on_merge`、`allow_auto_merge` 開。沒有設任何 secret。
+- **必要 check 名稱是 CI matrix 產生的 job 名稱**：改 `ci.yml` 的 Node 版本清單時，分支保護的 contexts 要一起改，否則之後的 PR 會一直等不到 check。這條目前只記在這裡，新 repo 裡沒有維運文件。
+
+#### 未做、移交後續階段
+
+- **階段 7**：
+  - connector-js 沒有 `.claude/`、`CLAUDE.md`、`CONTRIBUTING`、`CODEOWNERS`，也沒有記錄分支保護設定的維運文件（上一節的 matrix 名稱約束）。要不要比照框架補，一併決定。
+  - JS client 實測（第 4 步）涵蓋 connector-js：本階段已對 QuickStart.Server 跑過 smoke，登入與加密路徑（`login`、`getList`）尚未對真實後端跑。
+  - `fetch-fixtures.mjs`、`contracts.mjs` 釘在 polhem 的 `main`；註解寫「框架發版後改釘 release tag」，階段 8 首發後處理。
+- **階段 10**：bee-connector-js 的 README 指路與 archive。
+- 移交的 DataTable plan 內文仍是 Bee 時期的，動工前依現況改寫（polhem-local 的 README 已註明）。
 
 ## 階段 7：首發前健檢與修正
 
