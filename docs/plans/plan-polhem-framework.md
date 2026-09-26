@@ -6,7 +6,7 @@
 |------|------|------|
 | 0 | 啟動前置：商標重查、凍結起點、外部帳號與授權的事前確認 | ✅ 已完成（2026-09-26） |
 | 1 | 本機建立 polhem：純改名（1:1 前綴替換，含編譯器抓不到的字串），diff 驗證零行為變更 | ✅ 已完成（2026-09-26） |
-| 2 | agent 設定與協作文件：共用規則搬進 repo、`.claude/` 英文化、plan 慣例、LICENSE／CONTRIBUTING／CODEOWNERS | 🚧 進行中 |
+| 2 | agent 設定與協作文件：共用規則搬進 repo、`.claude/` 英文化、plan 慣例、LICENSE／CONTRIBUTING／CODEOWNERS | ✅ 已完成（2026-09-26） |
 | 3 | 英文化：測試方法名稱與 `[DisplayName]`、程式內殘留的中文、維運文件與 gotchas | 📝 待做 |
 | 4 | 公開文件：`docs/` 改以英文為源、ADR 補英文版並納入雙語檢查、README 遷移說明 | 📝 待做 |
 | 5 | 建立 repo 與 CI：推送、SonarCloud、分支保護與 PR 工作流、auto-merge、Trusted Publishing policy | 📝 待做 |
@@ -104,6 +104,12 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
 | 進行中的 plan | `plan-row-level-tenancy`、`plan-rounding-mode`、`plan-property-grid-control`、`plan-tree-view-builder` 四份**都帶到 polhem**，不在 Bee 做 | 使用者決定（2026-09-26）。四份都還沒動工；在 Bee 做完只會延後凍結 |
 | 凍結起點 | `7d6cc9d9` | 使用者決定（2026-09-26）。之後的 commit 只動 `docs/plans/`，階段 1 不帶這個目錄，快照內容相同 |
 | polhem-local 的暫放位置 | 階段 1 之前 clone 在 `~/Desktop/repos/polhem-local`，階段 2 第 3 步 `.gitignore` 加上 `/local/` 之後才移為 `polhem/local` | 使用者決定（2026-09-26）。先移進去的話，階段 1 的初始 commit 有可能把它收進去 |
+| 階段 2～4 的提交方式 | polhem 在階段 5 建立 remote 之前，**直接 commit 本機 `main`**；`pull-request` 規則只寫目標工作流（分支 + PR + 分支保護），不寫過渡條款 | 使用者決定（2026-09-26）。repo 內不留日後要刪的暫時性文字；階段 5 推送後分支保護生效，自然轉為 PR |
+| CODEOWNERS 與 CONTRIBUTING | CODEOWNERS 只列 `* @jeff377`，不預留共同維護者的寫法；CONTRIBUTING 寫給外部貢獻者 | 使用者決定（2026-09-26）。有共同維護者時再改，不預寫尚不存在的角色 |
+| `check-public-docs.sh` 的 (7) | 改為**全 repo 禁止點名 plan 檔**，並新增「不得指向 `local/` 底下的檔案」；不再驗 plan 存不存在 | 使用者決定（2026-09-26）。plan 永遠不在 repo 內，CI 與其他人的 clone 也看不到 `local/`，任何點名對其他人都是死指標 |
+| repo 內的 skill | 全部保留、只改名翻譯；清掉已停用 Routine 的殘留（`sonar-fix` 的 daily 模式、`.gitignore` 的 `.claude/logs/` 例外） | 使用者決定（2026-09-26） |
+| 巢狀 `CLAUDE.md` | `src/Polhem.{Api.Core,Business,Definition,UI.Avalonia}/CLAUDE.md` 與 `tests/CLAUDE.md` **併入階段 2** 英文化 | 使用者決定（2026-09-26）。同屬 agent 設定，與 `.claude/rules/` 互相指路 |
+| `CLAUDE.local.md` | 比照 polhem-oauth2 建立（gitignored），說明 `local/` 是私有 repo | 使用者決定（2026-09-26） |
 | `docs/internal/` 的去處 | `open-source-promotion-assessment.md`、`avalonia-controls.md` 放 polhem-local 的 `internal/`（後者在階段 3 併入維運文件後從 local 刪除）；兩份 `routine-bee-*-fix.md` 與 `ai-agent-devloop-design-internal.md` 放 `internal/archive/` | 使用者決定（2026-09-26）。Routine 已停用；`bee-library-private` 的鏡像停在 2026-04-23，靠不住 |
 
 ## 編譯器抓不到的地方（2026-09-19 查證）
@@ -369,7 +375,7 @@ wire fixtures 與 contracts 以 `POLHEM_REGENERATE_WIRE_*` 重生，結果與機
 1. **共用規則搬進 repo**：使用者層 `~/.claude/rules/` 的 `code-style`、`scanning`、`single-source`、`pull-request`、`releasing`
    以英文**複製**進 `.claude/rules/`（使用者層仍供其他 repo 使用，不刪）。`pull-request` 改為 PR + 分支保護的工作流。
 2. **`.claude/` 英文化**：`CLAUDE.md`、`rules/`、`skills/`（`bee-*` 改名 `polhem-*`）、`commands/`、`hooks/` 的訊息與註解。
-   `CLAUDE.md` **明文覆寫**使用者層「敘述文字全部繁體中文」的預設。
+   `CLAUDE.md` **明文覆寫**使用者層「敘述文字全部繁體中文」的預設。巢狀的 `CLAUDE.md` 一併處理（見決策紀錄）。
 3. **plan 與個人文件慣例寫進 repo**：`.gitignore` 加 `/local/` 與 `CLAUDE.local.md`，拿掉 `docs/internal/` 那條（`docs/blogs/` 已於 2026-09-26 在 bee-library 移除）；
    `.gitignore` 生效後，把暫放的 `~/Desktop/repos/polhem-local` 移為 `local/`，以 `git status` 確認它沒有出現；`CLAUDE.md` 比照 polhem-oauth2 的「Local working documents」一節，
    寫明 `local/` 的用途、計畫目錄、不 commit 也不 `git add -f`、不從已 commit 的檔案連過去、worktree 讀不到 `local/`；
@@ -378,6 +384,87 @@ wire fixtures 與 contracts 以 `POLHEM_REGENERATE_WIRE_*` 重生，結果與機
 4. **commit hash 引用**：`.claude/`、`docs/repo-ops/` 等處以 hash 引用的證據，改寫為舊 repo 的完整 commit 網址。
 5. **協作文件**：`LICENSE.txt` 改為 `Copyright (c) Polhem contributors`；新增雙語 `CONTRIBUTING.md` 與 `.github/CODEOWNERS`。
 6. **ADR**：新增一份 ADR 記錄語言政策、plan 不入版控與長效決策升格 ADR 的約定（polhem-oauth2 有同類 ADR 可參考）。
+
+### 實作紀錄（2026-09-26）
+
+polhem 階段 2 共七個 commit，依序直接提交本機 `main`（見決策紀錄）。每個 commit 前以 `Polhem.slnx` 的 clean Release build
+（`--no-incremental`）確認 0 錯誤，警告只有「存放庫沒有遠端」的 SourceLink 兩則。
+
+| commit | 內容 |
+|--------|------|
+| `bdc4f31` | `.gitignore`：加 `/local/`、`CLAUDE.local.md`，拿掉 `docs/internal/` 與 `.claude/logs/` 例外，中文註解改英文 |
+| `cab8260` | commit hash 引用改為 bee-library 的完整 commit 網址 |
+| `2fbd2df` | `check-public-docs.sh` 改寫、`check-md-links.sh` 檔頭英文化並拿掉 `docs/plans/archive/` 排除、7 個死連結與 plan 點名、`rules/public-docs.md` 改寫 |
+| `f174c6b` | ADR-045（中英兩份）與 ADR 索引 |
+| `0f3382f` | `.claude/` 與五份巢狀 `CLAUDE.md` 英文化、五條共用規則搬進 `.claude/rules/`、`settings.json` 移除 `dev-workflow` |
+| `b1df16b` | `CONTRIBUTING.md`／`CONTRIBUTING.zh-TW.md`、`.github/CODEOWNERS` |
+| `320e3e3` | `docs/repo-ops/future-work.md` 檔頭改指 `local/plans/`（查證項 3 查到的殘留） |
+
+#### 各步驟
+
+1. **共用規則**：`code-style`、`scanning`、`single-source` 由使用者層翻譯後調整為本 repo 的規則（語言段落對齊語言政策、`Bee.*` 範例改 `Polhem.*`，
+   事件發生地的 bee-library 保留）。`pull-request` 重寫為分支 + PR + 分支保護；`releasing` 只留兩條防護欄，原本指向 `/dev-workflow:release` 的完整流程不再引用。
+   `.claude/CLAUDE.md` 以 `@` 載入這五份，並寫明「與個人或使用者層規則同主題時，以 repo 的為準」。
+2. **英文化**：由平行子代理依同一份翻譯要點逐檔翻譯，主 session 驗收。驗收內容：
+   - 殘留中文只剩資料（`polhem-scaffold-from-formschema` 的中文 caption 與對照表、`polhem-framework-review` 的狀態列樣本）。
+   - 所有 skill 與 command 的 frontmatter 以 YAML parser 載入成功；`§` 章節引用逐一對到實際標題。
+   - `[DisplayName]` 的語言：`rules/testing.md` 已寫「新測試用英文」，`polhem-scaffold-from-formschema` 的樣板一併改英文；既有測試的中文 `[DisplayName]` 仍待階段 3。
+   - 個人 memory 的引用（`categoryid-is-db-scope-selector` 等）改指 `.claude/rules/database.md`／`definition.md`。
+   - hook 的阻擋與提示訊息改英文；`skills/README.md` 拿掉 plugin 一節，並去掉 `polhem-add-form` 的處數（與 skill 本文不一致）。
+3. **plan 與個人文件慣例**：
+   - `.gitignore` 生效（`git check-ignore -v local/plans/x.md` 命中 `/local/`）後，以 `mv` 把 `~/Desktop/repos/polhem-local` 移為 `polhem/local`。
+     移動前後 polhem-local 的工作樹乾淨、沒有 stash，remote 仍是 `jeff377/polhem-local`、`git log` 仍是 `2dd279b`、`git fetch` 後與 `origin/main` 同步；
+     polhem 的 `git status` 看不到 `local/`（`--ignored` 列為 `!! local/`）。
+   - `CLAUDE.local.md` 比照 polhem-oauth2 建立（gitignored）。`.claude/CLAUDE.md` 新增「Plan before you build」與「Local working documents」兩節。
+   - `check-public-docs.sh` 改為四道：(1) 全 repo 點名 plan 檔、(2) 全 repo 指向 `local/` 底下的檔案、(3) 公開文件指向 `.claude/` 底下的檔案、(4) 公開文件以散文提到 plan（提示性質，有已知誤報）。
+     (1)～(3) 有命中時 exit 1（原本一律 exit 0）。指向 bee-library 的外部網址不算命中。三道都以暫時的探針檔確認會抓到。
+     (3) 原本連目錄名稱都報，改為只報指向檔案，目錄名稱用來描述慣例時放行（ADR-045 需要提到 `.claude/`）。
+   - `CONTRIBUTING` 的讀者是貢獻者而非套件使用者，在 `rules/public-docs.md` 列為「非公開文件」，可以指向 `.claude/`，但維持雙語。
+   - 移交項的 7 個死連結：`docs/<lang>/README.md` 的 `changelogs/` 列與 `plans/` 說明刪除；`framework-reserved-names.md` 的 CHANGELOG 連結改為純文字；
+     `docs/repo-ops/` 下指向封存 plan 的連結改為釘在凍結起點的網址 `https://github.com/jeff377/bee-library/blob/7d6cc9d9/docs/plans/archive/<檔名>`（四份都確認在 `7d6cc9d9` 存在）；
+     已移交 local 的 `plan-rounding-mode`、`plan-tree-view-builder` 改寫為「另案規劃」。完成後 `check-md-links.sh` 0 筆。
+4. **commit hash 引用**：共 21 個不重複的 hash、28 處，其中 adr-009 的 3 處原本就是完整網址，其餘 25 處改寫
+   （`.claude/rules/definition.md`、`build-ci.yml` 的註解、7 份 ADR、`docs/repo-ops/` 6 份）。
+5. **協作文件**：`LICENSE.txt` 在階段 1 已是 `Copyright (c) Polhem contributors`，未再改動。
+6. **ADR**：`docs/adr/adr-045-language-policy-and-local-plans.md`（英文）與 `.zh-TW.md`（中文），檔名比照 polhem-oauth2 的慣例；索引只補一列。
+
+#### 查證項目的結論
+
+1. **commit hash**：21 個 hash 都以 `git merge-base --is-ancestor <hash> origin/main` 確認在 bee-library 的 `main` 上，
+   再以 `gh api repos/jeff377/bee-library/commits/<hash>` 確認 GitHub 能解析，逐一比對 commit 訊息與引用處的脈絡相符。
+2. **hook**：從本 session（cwd 為 bee-library）以 `cd /Users/jeff/Desktop/repos/polhem && git commit ...` 的 payload 直接執行 polhem 的 hook：
+   放一個語法錯誤的 `.cs` 時 exit 2 並印出英文阻擋訊息，移除後 exit 0。
+   **注意**：本 session 實際執行 commit 時生效的是 bee-library 的 hook，它會跟著 `cd` 找到 polhem，但找不到 `Bee.Library.slnx` 就放行，
+   所以每個 commit 前都手動跑 clean build。在 polhem 開的 session 才會由 polhem 自己的 hook 把關。
+3. **`dev-workflow` 殘留**：`settings.json` 移除宣告後，全 repo 只剩 `future-work.md`「開放共同維護」一節提到 `dev-workflow`、`plan-write` 與使用者層規則，
+   那一節依階段 1 的決定維持原文、留給階段 3；檔頭那句指示已修正（`320e3e3`）。
+
+#### 移交後續階段
+
+- **階段 3**：
+  - `docs/repo-ops/`（含 `future-work.md`「開放共同維護」一節）、`test.sh`、`check-docs-i18n.sh`、`check-xmldoc-refs.sh` 的中文註解。
+  - 既有測試的中文 `[DisplayName]`；`rules/testing.md` 已先寫「新測試用英文」，`tests/CLAUDE.md` 沒有指定語言。
+- **階段 4**：
+  - ADR 索引 `docs/adr/README.md` 仍只有中文；ADR-045 已採 `name.md` 英文、`name.zh-TW.md` 中文的檔名，其餘 ADR 補英文版時可比照。
+  - CHANGELOG 建立後，`docs/*/framework-reserved-names.md` 可恢復 CHANGELOG 連結；README 可加 CONTRIBUTING 的連結。
+- **階段 5**：
+  - `rules/pull-request.md` 寫的是目標狀態：`main` 要求 `build` check 且 `enforce_admins` 開啟。建 repo 時要讓設定與它一致。
+  - CODEOWNERS 只會發出審查請求；要不要開「Require review from Code Owners」一併決定。
+  - `check-public-docs.sh` 還沒進 CI（`docs-check.yml` 只跑 `check-md-links.sh` 與 `check-docs-i18n.sh`），要不要加入一併決定。
+  - `/sonar-fix` 的 SonarCloud key 仍是 `jeff377_bee-library`，與 `build-ci.yml` 一起改。
+- **過渡期的已知現象**：在 polhem 開的 session 仍會載入使用者層 `~/.claude/rules/`（中文），與 repo 內的英文規則重複；
+  使用者層 `pull-request` 的「桌面環境直接推 main」與 repo 的 PR 工作流衝突。`.claude/CLAUDE.md` 已寫明以 repo 規則為準。
+- **翻譯時發現、未修的內容問題**（子代理回報、照原意翻譯，建議在階段 7 健檢時一併處理）。除標「未查證」者外，都已對照原始碼確認：
+  - `polhem-add-bo-method`：wire DTO 樣板仍用 `[MessagePackObject(keyAsPropertyName: true)]`，沒提 `WireContracts.*.cs` 顯式註冊（adr-036／037）；
+    `[Key(n)]` 與同步 wrapper 的說法前後矛盾；`[ApiAccessControl]` 的選項漏了 `LocalOnly`；有寫死行號的引用。
+  - `polhem-add-cache-object`：兩個 CacheNotify 測試 stub「必補」與同檔 2026-08-06 覆核「已不存在」矛盾。
+  - `polhem-add-form`：完成 checklist 寫 4 個檔案，本文寫 5 處。
+  - `polhem-framework-review`：寫死 17 個專案、30 條相依邊等清點數字；「預設 wire 是 MessagePack」可能已過時（adr-044）。
+  - `polhem-jsonrpc-backend`：`ApiServiceOptions.Initialize` 與 `SystemSettings.xml` 被描述為決定 payload codec，需對照 adr-044 的逐請求協商重新確認（未查證）；引用 Bee 時期的版號 4.14.0、4.12。
+  - `polhem-sample-add`：自訂 TableSchema 放 `samples/Define/TableSchema/common/`，與「業務資料一律 company」的規則看似衝突，是否為 samples 刻意的設計未查證；README 樣板沒有 `README.zh-TW.md`。
+  - `/sonar-fix`：列出不存在的路徑（`Polhem.Base/Cryptor/*`、`Polhem.Api.Core/Session/*`），寫死模型名稱。
+  - `src/Polhem.Definition/CLAUDE.md` 提到的 `MessagePackKeyCollectionBase`／`MessagePackCollectionBase` 已不在 `src/`。
+  - 已退役的 analyzer 代號 `BEE4001`–`BEE4004` 隨階段 1 機械替換成 `POLHEM4001`–`POLHEM4004`（含 `AnalyzerReleases.Shipped.md`），這些代號在 Polhem 從未存在過。
 
 ## 階段 3：英文化
 
