@@ -8,7 +8,7 @@
 | 1 | 本機建立 polhem：純改名（1:1 前綴替換，含編譯器抓不到的字串），diff 驗證零行為變更 | ✅ 已完成（2026-09-26） |
 | 2 | agent 設定與協作文件：共用規則搬進 repo、`.claude/` 英文化、plan 慣例、LICENSE／CONTRIBUTING／CODEOWNERS | ✅ 已完成（2026-09-26） |
 | 3 | 英文化：測試方法名稱與 `[DisplayName]`、程式內殘留的中文、維運文件與 gotchas | ✅ 已完成（2026-09-26） |
-| 4 | 公開文件：`docs/` 改以英文為源、ADR 補英文版並納入雙語檢查、README 遷移說明 | 🚧 進行中 |
+| 4 | 公開文件：`docs/` 改以英文為源、ADR 補英文版並納入雙語檢查、README 遷移說明 | ✅ 已完成（2026-09-26） |
 | 5 | 建立 repo 與 CI：推送、SonarCloud、分支保護與 PR 工作流、auto-merge、Trusted Publishing policy | 📝 待做 |
 | 6 | polhem-connector-js 改名另開，接上新的 wire 合約 | 📝 待做 |
 | 7 | 首發前健檢與修正，公開 API 定型 | 📝 待做 |
@@ -662,6 +662,86 @@ polhem 階段 3 共 12 個 commit，依序直接提交本機 `main`（見決策�
    - 階段 1 查到的三項：舊稽核資料的 `msprop:Bee.FieldDbType` 不再被讀取（讀出的欄位值不變）；專案檔裡的 `Bee*` MSBuild 設定
      （`BeeDefinitionFilesGlob` 等）會被靜默忽略；DefineEditor 的使用者設定資料夾改名，舊設定不再讀取。
 4. **CHANGELOG** 雙語 1.0.0 草稿（定稿在階段 7）。
+
+### 實作紀錄（2026-09-26）
+
+polhem 階段 4 共五個 commit，依序直接提交本機 `main`（見決策紀錄），每個都經過 polhem 自己的 pre-commit hook（clean Release build）。
+每個 commit 前 `check-md-links.sh`、`check-public-docs.sh`（(1)～(3) 為 0 筆）、`check-docs-i18n.sh` 都通過。
+
+| commit | 內容 |
+|--------|------|
+| `5c0bf45` | `docs/<lang>/` 改以英文為源：`SOURCE_LANG="en"`、`TRANSLATIONS="zh-TW:strict"`；en 拿掉譯本標頭、zh-TW 蓋章、切換列改為英文在前；`rules/public-docs.md`、`.claude/CLAUDE.md`、`rules/database.md`、`future-work.md` 對「源」的說法同步 |
+| `3acdd0d` | ADR 雙語：44 份中文 ADR 與索引改名為 `.zh-TW.md`，`<name>.md` 放英文版；`check-docs-i18n.sh` 加入後綴配對；中文文件改連中文 ADR；ADR-045 補「實作演進」；`CONTRIBUTING` 雙語同步 |
+| `c05307d` | README：根目錄加遷移說明、安裝指令、新徽章、ADR／CONTRIBUTING／授權連結；DemoCenter、DefineEditor 改英文並補中文版，Northwind.Browser 補中文版；中文文件改連中文 README |
+| `714ac6d` | CHANGELOG 雙語 1.0.0 草稿與 `docs/changelogs/1.0.0(.zh-TW).md`；`docs/changelogs/` 納入後綴配對；恢復文件索引的 `changelogs/` 列與 `framework-reserved-names.md` 的 CHANGELOG 連結 |
+| `da5240c` | 英文文件引用 ADR-010 章節時改用英文章節名（全面掃描英文公開文件殘留中文時查到） |
+
+#### 使用者決定（2026-09-26）
+
+- **ADR 檔案結構：後綴慣例**（`name.md` 英文、`name.zh-TW.md` 中文），與 ADR-045、polhem-oauth2 一致。docs/adr 以外約 200 處對 ADR 的引用路徑不變，只有中文文件改指 `.zh-TW.md`。
+- **zh-TW 政策：strict。**
+- **CHANGELOG：根目錄＋`docs/changelogs/` 逐版明細**（沿用 Bee 時期的兩層結構）。`nuget-publish.yml` 的 release notes 本來就連 `docs/changelogs/<版號>.md`，建立 `1.0.0.md` 後即可解析，workflow 未改。
+- **各專案 README：補三份中文版**（DemoCenter、DefineEditor、Northwind.Browser）；`wire-contracts`、`wire-fixtures` 維持只有英文。
+
+#### 查證項目的結論
+
+1. **`docs/en/` 沒有落後**：
+   - 在凍結起點 `7d6cc9d9` 的 clone 上跑 `check-docs-i18n.sh`，exit 0，當時全部譯本都是新鮮的。
+   - 把 polhem 的兩種語言反向正規化回 Bee 後，與凍結起點逐檔比對：zh-TW 與 en 改動的檔案、行數一一對應，內容都是品牌殘留（`Bee.NET`→`Polhem`）與階段 2 拿掉 `changelogs/`／`plans/`／CHANGELOG 連結，兩邊是同一批改動。
+   - 所以英文改為源之前，內容確實同步；zh-TW 以此為據蓋章。
+2. **遷移說明的每一項都對照原始碼**：
+   - 型別與成員改名清單取自凍結起點與 polhem 的 `PublicAPI.*.txt`（`Bee` → `Polhem` 的 11 個型別與 3 個方法）。
+   - `ProgramItem` 的 `BusinessObject`／`Repository` 屬性、`SystemSettings.xml` 的 `BackendComponents`（預設值來自 `BackendDefaultTypes`）。
+   - `MasterKeyProvider` 在變數名稱空白時用 `POLHEM_MASTER_KEY`；Bee 的 `Defaults/SystemSettings.xml` 明寫 `<Value>BEE_MASTER_KEY</Value>`，所以以 `materialize` 產生設定的部署會繼續讀舊變數名。
+   - MSBuild 屬性取自 `buildTransitive/Polhem.Definition.targets`；Blazor CSS class 取自 `Polhem.Web.Blazor.Server`；HKDF 標籤與「衍生金鑰不儲存」取自 `DerivedApiEncryptionKeyProvider`；wire 白名單為 `SysInfo.AllowedTypeNamespaces`；`FieldDbType` key 與 `st_log_change.changes_xml` 對照階段 1 的結論；DefineEditor 設定資料夾取自 `UserSettings.DirectoryName`（凍結起點為 `Bee.DefineEditor`）。
+   - 框架預設定義檔與 SQL 中沒有含 bee 的資料表或欄位名稱，所以寫「不需要資料遷移」。
+   - 遷移說明附的 grep 指令：在凍結起點的樹上命中 8863 行，在 polhem 上（排除 `local/`、建置產物與 bee-library 網址）0 行；另以放了 `.editorconfig`、`ProgramSettings.xml`、`Dockerfile` 的暫存目錄確認各 `--include` 都抓得到。
+   - 「套件程式碼等於 4.33.0」的依據：bee-library 在 `v4.33.0` 與 `7d6cc9d9` 之間，`src/`、`tools/Bee.Cli`、`Directory.Build.props`、`Version.props` 沒有差異（之後的 42 個 commit 只動 plan、文件、samples 與 skill）；polhem 在初始 commit 之後對 `src/` 的改動只有註解、`.editorconfig` 註解與巢狀 `CLAUDE.md`。
+3. **ADR 內指向 bee-library 的 12 個 commit 網址**都以 `gh api repos/jeff377/bee-library/commits/<hash>` 解析成功、且在 `origin/main` 上；英文版原樣保留網址。
+
+#### ADR 英文化
+
+- 由六個平行子代理依同一份翻譯要點翻譯，主 session 驗收：
+  - 每份英文版與中文版的標題數、code fence 數、表格列數逐一相同；英文版除切換列外沒有中文與全形標點。
+  - 翻譯期間中文原檔的改動（改連中文 ADR／文件）逐檔比對，確認只有連結。
+  - 抽查譯文品質。
+- ADR-045 原本寫「先前的 ADR 只有中文、雙語同步沒有自動檢查」。依 ADR 不改寫原文的慣例，在文末加「實作演進」一節記錄現況，中英兩份都加。
+- 兩處帶錨點的跨語言連結手動處理（ADR-011 中文版改連中文 cookbook 的 `#框架初始化順序`；ADR-019 英文版由子代理對到英文錨點）。
+- 反引號中的 `docs/en/...` 路徑（中文 ADR 內、非連結）是當時的紀錄，保留。
+
+#### `check-docs-i18n.sh` 的後綴配對
+
+- 檔頭新增 `SUFFIX_DIRS="adr changelogs"`：這些資料夾內，`<name>.md` 為源、同目錄的 `<name>.<lang>.md` 為譯本，只看資料夾第一層。
+- 譯本標頭一律寫「相對於 `docs/` 的源路徑」（`<!-- source: adr/adr-001-x.md blob: … -->`），與語言資料夾的 `en/caching.md` 同一規則。
+- 檢查項目與語言資料夾相同（標頭、過期、缺譯本、切換列），另加：後綴為未宣告語言的檔案報錯、`SUFFIX_DIRS` 名稱像語言代碼時設定錯誤。
+- 以 scratchpad 的 clone 做正反測試：只切到語言資料夾模式時結果與改前相同；孤兒譯本、缺譯本、源文件帶標頭、未宣告語言後綴、子資料夾不配對都如預期。
+- ADR-045 的切換列原本是 `**English** | [繁體中文](…)`，改為腳本產生的格式。
+
+#### README
+
+- 英文根 README 會打包進每個套件，連結全部改為 `https://github.com/polhem-dev/polhem/(blob|tree)/main/…`；中文版維持相對連結。
+- 徽章改為 Build CI（`polhem-dev/polhem` 的 `build-ci.yml`）與 SonarCloud `polhem-dev_polhem`（比照 polhem-oauth2 的 key 慣例）。**Sonar 專案要到階段 5 才建立，屆時 key 若不同要改 README 兩份。**
+- 標題的 🐝 改為 🌟。個人的「Contact & Follow」一節保留，只把全形分隔號改為半形。
+- 各 `src/` 套件 README 沒有徽章或安裝指令，名稱在階段 1 已改，未改動。
+- DemoCenter 主題表依 `DemoModuleRegistry` 的註冊順序與各模組的 `Category`／`Title` 重建，補上原本缺的 Number formatting、Multi-currency amounts、Multi-unit quantities、Permission Capability；「FormLayout 自動產生」依現況改為設計階段由 `FormLayoutGenerator.Generate` 產生；README 指向已不存在的 `Avalonia.Demo`，改指 `apps/Polhem.Northwind`。
+- 中文版的分類與案例名稱照 App 顯示的英文列出（App 介面已是英文）。
+
+#### 與 plan 原文不符、查證後更正的地方
+
+- 「編譯器抓不到的地方」第 7 類寫 `BEE_MASTER_KEY`（與 `_FILE`）：原始碼中**沒有** `_FILE` 版本的環境變數，遷移說明只寫 `POLHEM_MASTER_KEY`。
+- 移交項「CHANGELOG 建立後恢復 `framework-reserved-names.md` 的連結」：兩種語言都已恢復，連到各自語言的 CHANGELOG。
+
+#### 未做、移交後續階段
+
+- **階段 5**：README 徽章的 SonarCloud key（見上）。`docs-check.yml` 未改，它跑的 `check-docs-i18n.sh` 已涵蓋 ADR 與 `docs/changelogs/`。
+- **階段 6**：`wire-contracts/README.md`、`wire-fixtures/README.md` 仍連 `bee-connector-js`（原本就排在階段 6）。
+- **階段 7**：
+  - 決策紀錄「型別名稱字串相容解析」寫「解析失敗的例外訊息順帶指出可能是舊的 Bee 名稱」，但 `src/` 中**沒有**這樣的訊息（全 repo 找不到 `Bee` 字樣）。屬程式碼修改，不在階段 4 範圍。遷移說明沒有宣稱例外訊息會提示。
+  - `Version.props` 仍是 4.33.0；1.0.0 的版號在發版時改。CHANGELOG 的 1.0.0 標為 `Unreleased`，發佈日與定稿在階段 7／8。
+  - DemoCenter `MasterDetailModule` 的 `Description` 仍寫「見 Avalonia.Demo」（該專案已不存在，程式內的 UI 文字）。
+  - DefineEditor README 與程式不符之處（子代理回報、照原文翻譯）：headless smoke 的預期輸出少了 `[smoke:formlayout-gen]`、`[smoke:menu]` 與 tab commands；`publish.sh` 從 `src/Directory.Build.props` 找 `<Version>`，但版號在 `Version.props`，`VERSION` 可能是空值（疑似 bug）；`.app` 結構圖少了 `Contents/Resources/AppIcon.icns`；README 說的「每個編輯器共用的工具列」不存在（儲存、驗證在 File 選單，新增、刪除在右鍵選單）。
+  - 翻譯 ADR 時子代理回報的內容疑點（ADR 是紀錄，照原文翻譯；要不要加「實作演進」由階段 7 決定），例如：ADR-035 決策五與 ADR-034 2026-08-16 修訂矛盾（BO 型別載不到時退回或直接拋）；ADR-021 後果第二點與決策矛盾；ADR-017「四個核心不變式」但決策列了五個；ADR-026 參考資料列了外部讀者開不到的 agent memory 名稱；ADR-029 狀態段與決策表的遷移狀態矛盾；ADR-012 列出不存在的 `src/Polhem.Definition.Identity` 等路徑。
+  - `check-public-docs.sh` 第 (4) 道的新命中都是已知誤判：ADR-045 描述慣例本身、ADR-016 的「the plan was most concerned about」（不指向文件）、ADR-023 的「另立 plan」、`database-schema-upgrade` 的 API 名稱 `plan`。
 
 ## 階段 5：建立 repo 與 CI
 
