@@ -925,6 +925,69 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 5. **打開 nupkg 檢查**：圖示、README、nuspec 的作者／授權／repository、相依清單不得出現任何 `Bee.*`。
 6. CHANGELOG 1.0.0 定稿。
 
+### 實作紀錄（進行中）
+
+#### 健檢（2026-09-26）
+
+- 以 `polhem-framework-review` 執行：範圍 `src/` 17 個專案＋`tools/Polhem.Cli`；十一個預設維度，加上使用者選的首發就緒度、trim/AOT、i18n；13 個唯讀子代理，文件維度另派 5 個。
+- **報告放在 polhem-local 的 `internal/health-2026-09-26/`（commit `e77b991`）**，內含未修的弱點細節，本 plan 只列編號。
+  - 子代理原本寫在 scratchpad，完成後 scratchpad 被清空，各代理依既有結果重寫（未重掃）；其中兩份的重寫被安全分類器擋下，由主 session 依代理回覆整理。量測用的 probe 專案已隨 scratchpad 刪除。
+- 分數（上次為 bee-library 2026-08-07）：架構 8.5、相依 9.0、安全 6.0、可維護性 7.0、零散類別 6.8、序列化 6.5、公開 API 7.5、測試 7.4、文件約 5.5、效能 7.0、並行 6.5；新增的首發就緒度 7.5、trim/AOT 6.5、i18n 5.0。十一維平均約 7.1（上次 7.69）。各代理歸因為掃描加深（首次量測 JSON／Plain 路徑、首次逐項對照文件可編譯性），polhem 沒有歷史可分辨退步。
+- P0 共 15 項：SEC-01、MAINT-01、SER-01、SER-02、PERF-15、CONC-01、TRIM-AOT-01、TRIM-AOT-02、I18N-01、SCATTERED-01、TESTS-01、RELEASE-01（DOCS-01）、docs/en 與 src README 的範例不能編譯／與程式不符。P1 約 20 項。
+- **移交清單（階段 1～6）幾乎全部仍未處理**；編號 H-01～H-62 與報告的對照在報告的 `README.md`。已由階段 5、6 處理掉的：`branch-protection-setup`、`ci-sonarcloud-setup`、`SonarQube.Analysis.xml`、`wire-contracts` README、DemoCenter README。
+
+#### 使用者決定（2026-09-26）
+
+| 項目 | 結論 |
+|------|------|
+| 修正範圍 | **全部修，含 P4** |
+| H-01 POLHEM4001–4004 | `AnalyzerReleases.Shipped.md` 收斂為 `## Release 1.0.0`，只列現行規則；4001–4004 在文件中標為保留、永不重用 |
+| H-02 內建定義的基底語言 | **改英文基底**，中文移入 `Language/zh-TW` |
+| H-03 Bee 舊名提示 | 照決策紀錄實作 |
+| 客戶端 CancellationToken（PUBLIC-API-01） | 全面加上 |
+| 伺服端同步 DB 路徑（PERF-03／PUBLIC-API-08） | 1.0 維持同步，以 ADR 寫明定位 |
+| 行程共用的 static 設定（PUBLIC-API-07、CONC-04／05） | 保留 static 模型，修掉危險處（客戶端覆寫伺服端設定、設定錯誤延後失敗等），文件寫明「一個行程一個 host」 |
+| `ID` 與 `Id`（PUBLIC-API-06） | 全面統一為 `Id`，含 wire；connector-js 跟進 |
+| DataTable 的 MessagePack wire 形狀（PERF-04） | 1.0 前改為欄位表＋列陣列 |
+| sealed（PUBLIC-API-14） | 非擴充點一律 sealed；清單動工前給使用者看 |
+| designer attribute（SCATTERED-03） | 保留，列入健檢基準的「刻意保留」（PropertyGrid plan 的消費者） |
+| 區域預設（MAINT-04、PUBLIC-API-09） | **維持 `Asia/Taipei`、`zh-TW`**，只修 XML doc 的理由與措辭 |
+| 表單權限的 fail-open 預設（SEC-17） | GetDefine 改白名單、GetList 一律套分頁上限、新增與更新的新值也檢查範圍、無權限模型的表單啟動時警告 |
+| 密碼雜湊（SEC-21） | 提高次數，**移除 SHA1 舊格式**（舊雜湊的帳號需重設密碼，寫進遷移說明） |
+| `GetFormSchema`／`GetFormLayout`／`GetLanguage`（SCATTERED-11、PUBLIC-API-11） | 保留，修正文件與 XML doc |
+| 自製 tracing 子系統（SCATTERED-15） | 移除 |
+| 命名（MAINT-05、PUBLIC-API-12） | `IPolhemContext` → `IBusinessObjectContext`、`PolhemStringLocalizer` → `LanguageResourceStringLocalizer`、Log 軸 → `AuditLog*`；`Define`／`Customize` 不改 |
+| 可替換介面的演進（PUBLIC-API-19） | ADR 寫明「minor 版本可增加成員」 |
+| 未宣告 codec 的常數（SER-09） | 拆成 `RegisterPayloadCodec`，未宣告時固定 MessagePack |
+| 即時切換語言（I18N-11） | 不做，文件寫明需重開 view |
+| enum（PUBLIC-API-13） | 只修 `PermissionAction` 與 zero 值；`DatabaseType` 不改 |
+| 共用交易的承諾（ARCH-DEPS-07） | 刪除承諾，寫明 Save／Delete 各自一個交易 |
+| `ApiClientInfo.LocalServiceProvider`（ARCH-DEPS-06） | `LocalApiProvider` 改收建構子參數，移除該 static |
+| `PolhemStringLocalizer`（I18N-12） | 接上 DI，內建 UI 字串改走它（搭配 I18N-05） |
+| 批次、CI、合併 | 依下表；每批一個 PR，標「完整」的 PR 標題帶 `[all-db]`，實作時碰到 Db／Repository／SQL 產生就升為完整並告知；開 PR 後以 `gh pr merge --auto` 合併 |
+
+#### 修正批次
+
+編號對應健檢報告。
+
+| 批次 | 範圍 | CI | 狀態 |
+|------|------|----|------|
+| A 工具與 CI | RELEASE-01／DOCS-01、DOCS-02／MAINT-11、H-60、RELEASE-07、ARCH-DEPS-09／10／13；實走原生 auto-merge（H-61） | 精簡 | 📝 |
+| B 安全 | SEC-01～22、MAINT-01、SER-01、SER-07、PERF-01／02、ApiKey 方法的 replay 防護（ADR-042 審查）、TESTS-01～03 | 完整 | 📝 |
+| C 正確性 | CONC-01～03／06／07／09／10／12、SER-02～06、PERF-15、SCATTERED-01、TRIM-AOT-01～04、I18N-01、RELEASE-12、MAINT-02 | 完整 | 📝 |
+| D API 定型（一）移除與改名 | MAINT-03、PUBLIC-API-03／04／05／15～18、SCATTERED-02／04～06／13～15、SEC-15／16、TESTS-08、SER-08／09、CONC-11、ARCH-DEPS-01～04／06／12／14、MAINT-05（決定的三項）、PUBLIC-API-06／12／13、H-01、H-03 | 完整 | 📝 |
+| E API 定型（二） | PUBLIC-API-01／02／10／14／19、PERF-03（ADR）、PERF-04、TRIM-AOT-05 | 完整 | 📝 |
+| F 效能與其餘整理 | PERF-05～14／18、SCATTERED-07～10／12、MAINT-06～18、CONC 其餘 | 完整 | 📝 |
+| G i18n | H-02、I18N-02～10／12／13／15／16 | 精簡 | 📝 |
+| H 測試整頓 | TESTS-04～18（H-30～39） | 完整 | 📝 |
+| I trim/AOT | TRIM-AOT-06／07／10／11 | 精簡 | 📝 |
+| J agent 設定與維運文件 | H-10～28 及各報告的 `[agent-docs]`／`[repo-ops]` | 精簡 | 📝 |
+| K 公開文件 | docs/en＋zh-TW、各 README、ADR（H-40）、CHANGELOG、H-50／51 | 精簡 | 📝 |
+| L connector-js | 跟進 wire 變更、協作文件（H-62） | 該 repo 的 CI | 📝 |
+| M 驗收 | 逐項回驗、重建 PublicAPI（先請使用者確認）、client 實測、nupkg、CHANGELOG 定稿 | 完整 | 📝 |
+
+每批流程：從最新 `origin/main` 開 `claude/<topic>` 分支 → 本機 clean Release build 0 警告＋相關測試 → PR → `gh pr merge --auto` → 合併後才開下一批。
+
 ## 階段 8：首發 1.0.0
 
 1. **NuGet `Polhem.` 前綴保留重新申請**（使用者決定，2026-09-26）：寄信到 `account@nuget.org`，**由使用者寄出**。
