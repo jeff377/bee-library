@@ -1,6 +1,9 @@
 # PropertyGridControl：用宣告式 metadata 驅動屬性編輯
 
-**狀態：📝 擬定中（2026-08-17）**
+**狀態：⛔ 已移交 polhem（2026-09-26）**
+
+> 未在 bee-library 動工。依 [plan-polhem-framework.md](plan-polhem-framework.md) 階段 0 的決定，改在 polhem 繼續：
+> 副本在 private repo `jeff377/polhem-local` 的 `plans/`，之後的修訂只在那邊進行。本檔保留為移交時的內容。
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|

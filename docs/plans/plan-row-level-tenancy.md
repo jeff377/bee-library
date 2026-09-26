@@ -1,6 +1,9 @@
 # 計畫：列級租戶隔離（`sys_company_id`）
 
-**狀態：📝 擬定中（2026-07-30）**
+**狀態：⛔ 已移交 polhem（2026-09-26）**
+
+> 未在 bee-library 動工。依 [plan-polhem-framework.md](plan-polhem-framework.md) 階段 0 的決定，改在 polhem 繼續：
+> 副本在 private repo `jeff377/polhem-local` 的 `plans/`，之後的修訂只在那邊進行。本檔保留為移交時的內容。
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|

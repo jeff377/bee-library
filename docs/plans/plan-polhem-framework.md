@@ -4,7 +4,7 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 0 | 啟動前置：商標重查、凍結起點、外部帳號與授權的事前確認 | 🚧 進行中 |
+| 0 | 啟動前置：商標重查、凍結起點、外部帳號與授權的事前確認 | ✅ 已完成（2026-09-26） |
 | 1 | 本機建立 polhem：純改名（1:1 前綴替換，含編譯器抓不到的字串），diff 驗證零行為變更 | 📝 待做 |
 | 2 | agent 設定與協作文件：共用規則搬進 repo、`.claude/` 英文化、plan 慣例、LICENSE／CONTRIBUTING／CODEOWNERS | 📝 待做 |
 | 3 | 英文化：測試方法名稱與 `[DisplayName]`、程式內殘留的中文、維運文件與 gotchas | 📝 待做 |
@@ -101,6 +101,10 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
 | LICENSE 著作權人 | `Copyright (c) Polhem contributors`，不寫年份 | future-work 已定案，比照 polhem-oauth2 |
 | 發佈授權 | NuGet Trusted Publishing，不用 API key | future-work 已定案，比照 polhem-oauth2 |
 | 本 plan 涵蓋的 repo 與套件 | 只處理本機 `~/Desktop/repos` 下的 repo；NuGet 只凍結凍結起點時 bee-library 會產出的套件，其餘 `Bee.*` 列在範圍外 | 使用者決定（2026-09-26） |
+| 進行中的 plan | `plan-row-level-tenancy`、`plan-rounding-mode`、`plan-property-grid-control`、`plan-tree-view-builder` 四份**都帶到 polhem**，不在 Bee 做 | 使用者決定（2026-09-26）。四份都還沒動工；在 Bee 做完只會延後凍結 |
+| 凍結起點 | `7d6cc9d9` | 使用者決定（2026-09-26）。之後的 commit 只動 `docs/plans/`，階段 1 不帶這個目錄，快照內容相同 |
+| polhem-local 的暫放位置 | 階段 1 之前 clone 在 `~/Desktop/repos/polhem-local`，階段 2 第 3 步 `.gitignore` 加上 `/local/` 之後才移為 `polhem/local` | 使用者決定（2026-09-26）。先移進去的話，階段 1 的初始 commit 有可能把它收進去 |
+| `docs/internal/` 的去處 | `open-source-promotion-assessment.md`、`avalonia-controls.md` 放 polhem-local 的 `internal/`（後者在階段 3 併入維運文件後從 local 刪除）；兩份 `routine-bee-*-fix.md` 與 `ai-agent-devloop-design-internal.md` 放 `internal/archive/` | 使用者決定（2026-09-26）。Routine 已停用；`bee-library-private` 的鏡像停在 2026-04-23，靠不住 |
 
 ## 編譯器抓不到的地方（2026-09-19 查證）
 
@@ -171,6 +175,48 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
    - SonarCloud 能否以 `polhem-dev` 建立 organization，以及 `jeff377` org 在 UI 上的 quality profile／gate 設定，要記下來以便重建。
    - `AUTOMERGE_PAT` 在 org 下的替代做法（fine-grained PAT 需 org 核准，或改用 GitHub App）。
 
+### 實作紀錄（2026-09-26）
+
+**凍結起點：`7d6cc9d9`**（`docs(plans): polhem plan 階段 0 開始執行`），隨本階段的 commit 一起推上 `origin/main`。
+階段 1 以這個 commit 的 `git ls-files` 為準；之後 bee-library 只收本 plan 的回寫。
+
+1. **商標重查，未發現衝突**（非法律意見）：
+   - WIPO Global Brand Database，品牌名稱含 `POLHEM`：2 筆，都是 Polhem Infra Kommanditbolag 的 POLHEM INFRA
+     （歐盟註冊 018383987、018383992，第 35、36 類），與 2026-09-14 相同。
+   - USPTO，wordmark `polhem`：有效（Live）與失效（Dead）案件都是 0 筆。
+   - 智慧局，文字近似 `POLHEM`：共 280 筆（資料更新至 2026-09-25），篩第 9、42 類剩 30 筆，與上次筆數相同，沒有 POLHEM。
+     最接近的仍是 POLEYA、ProHSM、ProEKM、PROCHEM、POLYCHEM、POLIMA，字形與讀音都有明顯差異。
+2. **進行中的 plan**：四份都帶到 polhem（見決策紀錄）。複製到 polhem-local 的 `plans/`；bee-library 的原檔狀態改為「⛔ 已移交 polhem」，
+   索引同步更新。原檔不刪，內文未改。
+3. **個人文件**：
+   - 建立 private repo `jeff377/polhem-local`，本機暫放 `~/Desktop/repos/polhem-local`（見決策紀錄），初始 commit `2dd279b`。
+     `.gitignore` 與 `polhem-oauth2-local` 相同；`README.md` 比照它，另加目錄說明。
+   - `docs/internal/` 五份依決策複製到 `internal/` 與 `internal/archive/`，以 `cmp` 確認與來源相同；`internal/archive/README.md` 記錄封存原因。
+     bee-library 的原檔保留（gitignored）。
+   - **發現**：`bee-library-private` 最後一次同步是 2026-04-23。同步用的 plist `~/Library/LaunchAgents/com.jeff377.bee-library-sync.plist`
+     在本機不存在，階段 10 第 8 步的「卸載 launchd agent」在本機沒有對象。鏡像裡的兩份 routine 文件是舊版，
+     `avalonia-controls.md` 與 `open-source-promotion-assessment.md` 不在鏡像裡；這五份現在以 polhem-local 為準。
+4. **外部帳號與授權**（只確認，未建立任何東西）：
+   - **雲端 Routine**：`bee-coverage-fix`、`bee-sonar-fix` 都還在，但 `enabled` 為 false，最後觸發 2026-06-14。
+     `auto-merge.yml` 最後一次執行也在 2026-06-14，帶 `auto-merge` label 的 PR 都是這兩個 Routine 開的。
+   - **NuGet `Polhem.` 前綴**：Search API 上三個 `Polhem.OAuth2*` 套件的 `verified` 都是 false，前綴**尚未核准**。
+     future-work 寫「已申請」，但 Gmail（含寄件備份）查不到寄給 `account@nuget.org` 的申請信或回覆，NuGet 的 GitHub issue 也查不到。
+     **申請是否已送出、經由哪個管道送出，待使用者確認**。追問或重新申請列在範圍外。
+   - **SonarCloud**：
+     - organization key `polhem-dev` 目前沒有人使用（`api/organizations/search` 回 0 筆）。GitHub org `polhem-dev` 是 free plan，jeff377 為 admin。
+       以 `gh` 查 org 已安裝的 GitHub App 為 0 筆，SonarCloud 的 app 尚未安裝。實際能否建立要到階段 5 才驗證。
+     - `jeff377` org 的設定（公開 API 查得）：quality gate 是內建的 **Sonar way**（預設），條件為新程式碼的 security、reliability、
+       maintainability rating 劣於 A 即失敗，新程式碼覆蓋率 < 80%、重複率 > 3%、security hotspot 審查率 < 100% 失敗。
+       quality profile 全部語言都是內建的 **Sonar way comprehensive**（C# 379 條規則），沒有自訂 profile。
+     - 專案 `jeff377_bee-library` 唯一不是繼承來的設定是 `sonar.autoscan.enabled=false`（改由 CI 分析）。
+     - 未確認：new code definition（API 查不到，要看 UI），以及新 org 的預設 profile 是否也是 Sonar way comprehensive。
+   - **`AUTOMERGE_PAT` 的替代做法**：依 GitHub 文件，org 的 fine-grained PAT 預設要 owner 核准，但 **owner 自己建立的 token 不需核准**；
+     jeff377 是 `polhem-dev` 的 owner。可選的做法：
+     - owner 的 fine-grained PAT，resource owner 選 `polhem-dev`、只給該 repo：不必核准，但綁個人帳號、有期限。
+     - GitHub App，workflow 以 `actions/create-github-app-token` 換取 token：屬於 org、不綁個人。
+     - 只用 `GITHUB_TOKEN`：由它觸發的事件不會啟動新的 workflow run（GitHub 文件），合併後 `main` 的 CI 不會跑。
+     現行 auto-merge 只服務已停用的 Routine；polhem 要不要 auto-merge、用哪一種，在階段 5 決定。
+
 ## 階段 1：本機建立 polhem（純改名）
 
 本機位置 `~/Desktop/repos/polhem`，以階段 0 起點的 `git ls-files` 追蹤檔為準（不含 `.git`、gitignored 與建置產物）。
@@ -197,7 +243,8 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
    以英文**複製**進 `.claude/rules/`（使用者層仍供其他 repo 使用，不刪）。`pull-request` 改為 PR + 分支保護的工作流。
 2. **`.claude/` 英文化**：`CLAUDE.md`、`rules/`、`skills/`（`bee-*` 改名 `polhem-*`）、`commands/`、`hooks/` 的訊息與註解。
    `CLAUDE.md` **明文覆寫**使用者層「敘述文字全部繁體中文」的預設。
-3. **plan 與個人文件慣例寫進 repo**：`.gitignore` 加 `/local/` 與 `CLAUDE.local.md`，拿掉 `docs/internal/` 那條（`docs/blogs/` 已於 2026-09-26 在 bee-library 移除）；`CLAUDE.md` 比照 polhem-oauth2 的「Local working documents」一節，
+3. **plan 與個人文件慣例寫進 repo**：`.gitignore` 加 `/local/` 與 `CLAUDE.local.md`，拿掉 `docs/internal/` 那條（`docs/blogs/` 已於 2026-09-26 在 bee-library 移除）；
+   `.gitignore` 生效後，把暫放的 `~/Desktop/repos/polhem-local` 移為 `local/`，以 `git status` 確認它沒有出現；`CLAUDE.md` 比照 polhem-oauth2 的「Local working documents」一節，
    寫明 `local/` 的用途、計畫目錄、不 commit 也不 `git add -f`、不從已 commit 的檔案連過去、worktree 讀不到 `local/`；
    `.claude/rules/public-docs.md` 的「哪些不是」表、`check-md-links.sh` 與 `check-public-docs.sh` 對 `docs/internal/` 的排除一併改寫；
    `settings.json` 移除 `dev-workflow` 的 marketplace 與啟用宣告。`check-public-docs.sh` 的 (7) 死指標檢查改對 `local/plans/` 或移除，實作時判斷。
@@ -281,7 +328,7 @@ CI 綠燈，各 head 至少啟動一次。
 5. 最後才 archive 四個舊 repo。不刪除：fork、星數與既有連結都依附在它上面。
 6. 舊的 `NUGET_API_KEY`：**撤銷前先向使用者確認**，secret 的設定日期看不出 key 是否相同，也看不出還有誰在用。
 7. 舊 SonarCloud 專案的處置：詢問使用者。
-8. `jeff377/bee-library-private`：卸載同步用的 launchd agent（`bootstrap/install-sync-agent.sh` 裝的那個），確認 `docs/internal/` 與部落格都已在新位置、兩個 private repo 都有最新 commit 後，archive。
+8. `jeff377/bee-library-private`：卸載同步用的 launchd agent（`bootstrap/install-sync-agent.sh` 裝的那個；2026-09-26 查過，本機沒有安裝），確認 `docs/internal/` 與部落格都已在新位置、兩個 private repo 都有最新 commit 後，archive。
 
 ## 範圍外
 
