@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 0 | 啟動前置：商標重查、凍結起點、外部帳號與授權的事前確認 | ✅ 已完成（2026-09-26） |
-| 1 | 本機建立 polhem：純改名（1:1 前綴替換，含編譯器抓不到的字串），diff 驗證零行為變更 | 🚧 進行中 |
+| 1 | 本機建立 polhem：純改名（1:1 前綴替換，含編譯器抓不到的字串），diff 驗證零行為變更 | ✅ 已完成（2026-09-26） |
 | 2 | agent 設定與協作文件：共用規則搬進 repo、`.claude/` 英文化、plan 慣例、LICENSE／CONTRIBUTING／CODEOWNERS | 📝 待做 |
 | 3 | 英文化：測試方法名稱與 `[DisplayName]`、程式內殘留的中文、維運文件與 gotchas | 📝 待做 |
 | 4 | 公開文件：`docs/` 改以英文為源、ADR 補英文版並納入雙語檢查、README 遷移說明 | 📝 待做 |
@@ -127,12 +127,14 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
    - `src/Bee.Base/SysInfo.cs` 的組件名清單。
    - `DefinitionCollectionPropertyAnalyzer` 的 `DefinitionAssemblyName`。
    - `src/Bee.Definition/ILLink.Descriptors.xml` 的 `<assembly fullname="Bee.Definition">`：**只在 Apple Release trim 才顯現**，桌面與測試都看不出來。
+     **更正（2026-09-26 實測）**：iOS head 預設 `TrimMode=partial`，連 Apple Release 也看不出來，改以單元測試把關，見階段 1 實作紀錄的待查項 4。
    - 嵌入資源：`Bee.Definition.csproj` 的 `LogicalName` 前綴 `Bee.Definition.Defaults/` 與 `Defaults.cs` 的 `ResourcePrefix`；
      DefineEditor 的 resx base name `Bee.DefineEditor.Resources.Strings`。
    - logger category（`BeeFrameworkApplicationBuilderExtensions` 的 `"Bee.Api.AspNetCore"`）與 analyzer 的 `category`。
 6. **資料 key**：`DataColumnExtensions` 存進 `DataColumn.ExtendedProperties` 的 `"Bee.FieldDbType"`、
    `SerializationErrorData.FilePath` 的 `"Bee.FilePath"`（`Exception.Data` key）。
    **待查**：前者是否會隨 DataSet 的 XML 或 wire 序列化傳出去；會的話，新舊版本之間就是資料格式的差異。
+   **已查（2026-09-26）**：會隨稽核 payload 落 DB，不會上 wire，見階段 1 實作紀錄的待查項 1。
 7. **環境變數**：`BEE_MASTER_KEY`（與 `_FILE`，部署環境依賴它）、`BEE_TEST_CONNSTR_*`、`BEE_LOADTEST_CONNSTR_*`、
    `BEE_REGENERATE_WIRE_*`、`BEE_TEST_*_CONTAINER`；出現在原始碼、`test.sh`、CI workflow 與文件。
 8. **診斷代號與 MSBuild 名稱**：analyzer 的 `BEE1xxx`–`BEE4xxx`、`src/Directory.Build.targets` 的 `BEE9xxx` 閘門；
@@ -237,6 +239,130 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
    DefineEditor、Northwind 各 head 至少啟動一次；**iOS 以 Release 建置並在模擬器跑**，驗證 `ILLink.Descriptors.xml`（見 `rules/apple-mobile-trim.md`）。
 6. **初始 commit**：英文 message，註明來源 `jeff377/bee-library@<起點 hash>`。建立 GitHub repo 延到階段 5。
 
+### 實作紀錄（2026-09-26）
+
+polhem 位於 `~/Desktop/repos/polhem`，`git init` 建立、沒有 remote，共三個 commit：
+
+| commit | 內容 |
+|--------|------|
+| `5242933` | 初始 commit：純改名，來源 `jeff377/bee-library@7d6cc9d9`，2517 個檔案 |
+| `5f7c066` | 修正依賴執行順序的測試（只改測試，見「測試」） |
+| `863edc4` | 補上「改錯會紅」的測試（只改測試，見「各類的檢查方式」） |
+
+`~/Desktop/repos/polhem-local` 未移動，依決策紀錄留到階段 2。
+
+#### 替換
+
+- 快照：以 `git archive 7d6cc9d9` 取出，刪去「不帶」的檔案後共 2517 個，與起點的 `git ls-files` 扣掉不帶的部分一致。
+  `.claude/settings.local.json` 本來就沒進版控。
+- 腳本（scratchpad，不進 repo）以位元組處理，保留 BOM 與編碼；binary 檔不動。內容改了 2259 個檔案，路徑以 `os.rename` 原地改名 144 處，沒有先刪再建。
+  規則依序為：
+  1. 保護區段不動。
+  2. 特例：`https://github.com/jeff377/bee-library` → `https://github.com/polhem-dev/polhem`；`bee-library` → `polhem`；
+     `Bee.NET`／`Bee.Net`／`BeeNET` → `Polhem`，`bee.net` → `polhem`；markdown 錨點裡的 `beedb`、`beeui` 等 → `polhem…`。
+  3. 通則：`Bee`（後面不接小寫字母）→ `Polhem`、`bee`（前後都不是小寫字母）→ `polhem`、`BEE`（前後都不是大寫字母）→ `POLHEM`。
+- 非品牌的命中只有英文的 `been`（62 處）與 `beers`（2 處），規則本來就不會改到。
+- 使用者決定（2026-09-26）：
+  - **指向現存外部實體的維持原樣**，屬於保護區段：bee-library 的 commit 網址、SonarCloud key `jeff377_bee-library`（含 README 徽章）、
+    `bee-connector-js`、`bee-northwind-avalonia`、`bee-oauth2`／`Bee.OAuth2`。
+    本機 Android AVD 名稱 `bee_pixel` 依同一原則保留，這是執行時才發現的。
+  - **內文的 repo 名 `bee-library` → `polhem`**（約 45 處，含兩則執行期錯誤訊息）。
+  - **`docs/repo-ops/future-work.md` 的「開放共同維護」一節整節維持原文**，留給階段 3。
+- 個別處理（第 2 步）：`LICENSE.txt` 與套件中繼資料比照 polhem-oauth2，`Authors` 與 `Copyright` 都寫 `Polhem contributors`，
+  `Company`／`Product` 寫 `Polhem`，`RepositoryUrl`／`PackageProjectUrl` 指 `polhem-dev/polhem`；`polhem.png` 取自 polhem-brand 的
+  `png/nuget-package-icon-128.png`。`auto-merge.yml` 的 `jeff377` 與 Sonar 的 `/k:`、`/o:` 保留結構，留待階段 5。
+- 環境變數、CI 容器名（`polhem-pg` 等）、測試密碼字串隨通則一併改名，**階段 5 第 2 步的 CI 改名大半已由機械替換完成**，階段 5 只需驗證。
+  維護者本機的持久容器名是 `sql2025`／`pgvector-db`／`mysql8`／`oracle23ai`，不含 bee，**不需要重建**。
+  本機 `.runsettings`（gitignored）由 bee-library 複製後以同一支腳本改名。
+
+#### 零行為變更的 diff 驗證
+
+把新樹複製一份，反向正規化（`Polhem`→`Bee`、`polhem`→`bee`、`POLHEM`→`BEE`，路徑同步反轉）後與快照 diff。
+以字詞層級歸納，殘差只有以下幾類：
+
+- 不可逆的品牌字串：`Bee.NET` 等變體 130 餘處、`bee-library` 約 45 處、repo 網址。
+- `LICENSE.txt`、兩處中繼資料（`src/Directory.Build.props`、`tools/Polhem.Cli/Polhem.Cli.csproj`）與圖示。
+
+再把這幾類不可逆的對映也套到快照上後重新比對，剩下的只有 LICENSE、中繼資料與圖示，**沒有 plan 沒預期的殘差**。
+另外以同一支腳本重建一份到 scratchpad，與 polhem 比對一致（只差 Finder 產生的 `.DS_Store`），確認替換可重現。
+
+wire fixtures 與 contracts 以 `POLHEM_REGENERATE_WIRE_*` 重生，結果與機械替換的內容逐位元組相同。
+
+#### 各類的檢查方式（對應「編譯器抓不到的地方」）
+
+以突變測試查證：每次只把一處改回 `Bee`，跑對應的測試專案，看會不會紅。「補測試」欄指 `863edc4` 新增或加強的測試，也都以同樣方式確認過會紅。
+
+| 類別 | 既有的檢查 | 補測試 |
+|------|-----------|--------|
+| 1 定義檔的型別名 | 無自動檢查；Northwind 四個 head 實際跑過 | `DefinitionFileTypeReferenceGateTests`：掃描各 `Define/` 目錄，型別名要能對到存在的專案與型別宣告 |
+| 2 `BackendDefaultTypes` | PublicAPI analyzer（RS0016／RS0017）；連同 PublicAPI 一致地改錯時由 `BackendDefaultTypesGateTests` 擋下 | — |
+| 3 wire 內容 | Wire 測試（fixture 與 `type-names.ts` 各改一處都會紅） | — |
+| 4 型別全名字串 | `DefineTypeExtensions`；analyzer 11 個名稱中的 9 個 | analyzer 的 `KeyCollectionBase`1`、`KeyCollectionItem` 各補一個案例 |
+| 5 組件名與資源名 | SysInfo 白名單（Api.Core 72 項紅）、`Defaults` 資源前綴、`DefinitionAssemblyName` | ILLink descriptor（`TrimmerDescriptorGateTests`）、DefineEditor resx base name、logger category |
+| 6 資料 key | `FilePath`：PublicAPI | `FieldDbType` key（含寫進 XML schema 的 `msprop` 名稱） |
+| 7 環境變數 | — | `POLHEM_MASTER_KEY` 預設名稱；**`POLHEM_TEST_CONNSTR_*` 移交階段 5**（見下） |
+| 8 診斷代號與 MSBuild 名稱 | 診斷代號：analyzer release tracking（RS2000／RS2003）；POLHEM9001 閘門見待查項 3 | `DiagnosticIdDocumentationTests`：`docs/*/analyzer-rules.md` 與 `DiagnosticIds`、閘門 targets 一致 |
+| 9 HKDF 標籤 | — | 以字面標籤獨立重算金鑰（known-answer） |
+| 10 工具、檔案系統與 UI 名稱 | — | `dotnet-polhem` 與說明文字一致、DefineEditor 設定資料夾、Blazor Demo 樣式表的選擇器都對得到元件的 class |
+| 11 外部服務識別 | 階段 5／6 | — |
+| 12 品牌字串與圖示 | diff 驗證；nupkg 檢查在階段 7 | — |
+
+與 plan 原文不符、實測後更正的地方：
+
+- 第 1 類：`tests/Define/` **沒有**組件限定的型別名，只出現在 `samples/Define/` 與 `apps/Polhem.Northwind/Define/` 的 `ProgramSettings.xml`。
+- 第 8 類：repo 內的 `.editorconfig` **沒有**任何 POLHEM 代號。消費端是照 `analyzer-rules.md` 抄代號進自己的 `.editorconfig`，所以檢查對象改為該文件。
+
+#### 建置與測試
+
+- clean Release build（`--no-incremental`）：`Polhem.Library.slnx`、`Polhem.Tools.slnx`、`Polhem.Samples.slnx` 都是 0 錯誤。
+  polhem 目前每個專案有兩則 SourceLink 警告（「存放庫沒有遠端」），scratchpad 的 clone 設好 remote 之後就是 **0 警告**；階段 5 加上 remote 即消失。
+- Northwind 方案（含 iOS／Android head）0 錯誤；警告全在 iOS head，種類與數量逐項和原快照相同，沒有出現 IL2007。
+- `./test.sh` 四種資料庫：原快照在同一台機器上 18 個測試專案共 6293 項、略過 1 項、全數通過；
+  初始 commit 的測試數與略過數逐專案相同，但 `ApiServiceOptionsTests.DefaultImplementations_AreBuiltInTypes` 穩定失敗。
+  - 根因是早就存在的缺陷：`ApiServiceOptions.Initialize(serializer, compressor, encryptor)` 依序賦值，`Initialize_NullEncryptor_Throws` 在丟例外前
+    已裝上 `NoCompressionCompressor` 且沒有還原。xUnit 在同一類別內依測試 ID 排序，命名空間改名後順序改變，問題才浮現。production 行為沒有變。
+  - 使用者決定（2026-09-26）：初始 commit 維持純改名，修正另成 commit（`5f7c066`，只改測試）。
+  - 修正後 Api.Core 870 項全過。補測試後（`863edc4`）再跑一次完整 `./test.sh`，結果見下方「最終測試」。
+- DefineEditor：headless smoke 全部 OK，視窗版能開出主視窗。
+- Northwind 各 head 都實際啟動：Server（Release）；iOS（Release，模擬器）、Browser（WASM）、Android（Release，emulator `bee_pixel`，以 `adb reverse` 連回 5100 埠）
+  都走完連線 → 登入 → 選單 → 清單；iOS 另外開了主從明細。Desktop 行程有開出主視窗，但沒有螢幕錄製權限，截不到畫面內容。
+
+#### 待查項目的結論
+
+1. **`Bee.FieldDbType` 會落 DB，不會上 wire**。JSON 與 MessagePack 的 DataTable 各自帶 type 欄，不帶 ExtendedProperties 的 key。
+   稽核的 `AuditDiffGram` 以 `WriteXmlSchema` 寫出 `msprop:Polhem.FieldDbType="Date"`，存進 `st_log_change.changes_xml`（以實際 payload 確認）。
+   把 key 換回舊名後照 `ChangeDiffGramReader` 的讀法載入，欄位型別與新舊值都相同，只有 `GetDeclaredFieldDbType()` 由 `Date` 變成 `null`，
+   而讀取端以 CLR 型別輸出文字、不使用這個標記。使用者決定照決策改名，舊稽核資料留著 `Bee.FieldDbType`，成為沒有作用的註記。**寫進階段 4 的遷移說明。**
+2. **analyzer 名稱錯時，11 個中有 2 個（`KeyCollectionBase`1`、`KeyCollectionItem`）不會讓 `Polhem.Analyzers.UnitTests` 紅**，已補測試。
+3. **POLHEM9001 閘門**：
+   - 啟用條件的屬性名或受鎖專案名不一致時，build 閘門會靜默關閉（0 錯誤），但 `DefinitionDependencyGateTests` 會紅（4 項中 3 項）。
+   - allowlist 的項目名不一致時，清單變空、把所有參考都判為違規，build 直接紅。
+   - 所以改錯都有東西會紅，只是前者要到測試才會。
+   - `Polhem.Definition.targets` 的消費端設定（`PolhemDefinitionFilesGlob` 等）在 repo 內沒有專案匯入，只能透過 NuGet 的 `buildTransitive` 驗證，
+     留給階段 7／8 的 nupkg 實裝測試。沿用舊名 `Bee*` 的消費端設定會被靜默忽略，**寫進階段 4 的遷移說明**。
+4. **ILLink descriptor 的組件名，plan 原本的「只有 iOS Release trim 看得出錯」不成立**：
+   - iOS head 的 `TrimMode` 是 `partial`，Polhem 組件不會被修剪。bundle 內 `Polhem.Definition` 與未修剪前同為 310 個型別，descriptor 寫錯也看不出來。
+     正確版本在模擬器上實測可用。
+   - 以 `TrimMode=full` 建置時，組件名留成 `Bee.Definition` 會只剩 54 個型別，建置仍是 0 錯誤，只多一則 IL2007 警告。
+   - 全 trim 下 Northwind 不論 descriptor 對錯都會在啟動時顯示 `View not found`（App 自己的 ViewLocator 被修剪），所以在模擬器上跑 App 分辨不出對錯。
+   - 因此改用單元測試直接斷言 descriptor 的內容（`TrimmerDescriptorGateTests`）。
+
+#### 移交後續階段
+
+- **階段 2**：`check-md-links.sh` 有 7 個死連結，都指向沒帶的 `docs/plans/`、`CHANGELOG*`、`docs/changelogs/`。`check-public-docs.sh` 的 (1) 仍說明 `plans/` 資料夾。
+- **階段 4**：
+  - 遷移說明補三項：`FieldDbType` 舊 key、`Bee*` MSBuild 設定名、DefineEditor 設定資料夾改名後舊設定不再讀取。
+  - `check-docs-i18n.sh` 在 polhem 判定全部譯本過期：蓋章與 git 歷史綁定，而新 repo 沒有歷史。改以英文為源時一併重新蓋章。
+- **階段 5**：
+  - `POLHEM_TEST_CONNSTR_*` 名稱對不上時，`DbFact` 會把 DB 測試全部略過而維持綠燈。這次本機有直接證據（略過數與基準相同），但 CI 上沒有機制會紅。
+    使用者決定在階段 5 改 CI 時處理（見階段 5 第 2 步）。
+  - SourceLink 警告在加上 remote 後消失，第一次 CI 要確認是 0 警告。
+- `check-xmldoc-refs.sh` 回報的 3 筆（`DECAN`、`IXmlSerializable`、`ReadXmlDiffgram`）在 bee-library 起點就有，與改名無關。
+
+#### 最終測試
+
+`863edc4` 上的 `./test.sh`（四種資料庫）：18 個測試專案全數通過，共 6311 項（原快照 6293 項，加上新增的 18 項），略過 1 項，與基準相同。
+
 ## 階段 2：agent 設定與協作文件
 
 1. **共用規則搬進 repo**：使用者層 `~/.claude/rules/` 的 `code-style`、`scanning`、`single-source`、`pull-request`、`releasing`
@@ -269,12 +395,16 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
    - 要手動改的字串類別與 grep 指令：定義檔的 `BusinessObject`、自訂的組件限定型別名稱、`BEE_MASTER_KEY` 等環境變數、`.editorconfig` 裡的 `BEE` 診斷代號、`dotnet-bee`。
    - 遷移當下線上 session 會失效（HKDF 標籤改名）。
    - wire 的型別名稱不相容：客戶端與伺服端要一起升級。
+   - 階段 1 查到的三項：舊稽核資料的 `msprop:Bee.FieldDbType` 不再被讀取（讀出的欄位值不變）；專案檔裡的 `Bee*` MSBuild 設定
+     （`BeeDefinitionFilesGlob` 等）會被靜默忽略；DefineEditor 的使用者設定資料夾改名，舊設定不再讀取。
 4. **CHANGELOG** 雙語 1.0.0 草稿（定稿在階段 7）。
 
 ## 階段 5：建立 repo 與 CI
 
 1. 建立 `polhem-dev/polhem`（public），推送階段 1–4 的 commit。
 2. **CI 改名**：`build-ci.yml`、`docs-check.yml`、`nuget-publish.yml` 的環境變數與路徑。第一次推送以 `[all-db]` 跑完整模式。
+   - 階段 1 的機械替換已改好環境變數與容器名，這一步以驗證為主。第一次 CI 確認 SourceLink 警告已消失、建置為 0 警告。
+   - `POLHEM_TEST_CONNSTR_*` 名稱對不上時 DB 測試會靜默略過，要加上 CI 會紅的機制，例如 CI 上要求該跑的資料庫不得略過（使用者決定，2026-09-26）。
 3. **SonarCloud**（需實測）：`polhem-dev` organization 綁定 GitHub org、建立專案、設定 `SONAR_TOKEN`，重建 quality profile／gate；
    `build-ci.yml` 的 `/k:`、`/o:` 改寫。確認 S125、S3776 等在舊專案標過的 False Positive／Won't Fix 要不要重標。
 4. **分支保護與 PR 工作流**（需實測）：`main` 要求 `build` check 並開啟 `enforce_admins`；確認維護者自己的 PR 能走完。
