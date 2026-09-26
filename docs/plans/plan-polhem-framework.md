@@ -11,7 +11,7 @@
 | 4 | 公開文件：`docs/` 改以英文為源、ADR 補英文版並納入雙語檢查、README 遷移說明 | ✅ 已完成（2026-09-26） |
 | 5 | 建立 repo 與 CI：推送、SonarCloud、分支保護與 PR 工作流、auto-merge、Trusted Publishing policy | ✅ 已完成（2026-09-26） |
 | 6 | polhem-connector-js 改名另開，接上新的 wire 合約 | ✅ 已完成（2026-09-26） |
-| 7 | 首發前健檢與修正，公開 API 定型 | 📝 待做 |
+| 7 | 首發前健檢與修正，公開 API 定型 | 🚧 進行中 |
 | 8 | 首發 `Polhem.*` 1.0.0，更新 org profile | 📝 待做 |
 | 9 | polhem-northwind 改名另開，改用 `Polhem.*` 1.0.0 | 📝 待做 |
 | 10 | 回寫 bee-library，凍結舊框架與下游 repo | 📝 待做 |
