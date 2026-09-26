@@ -20,7 +20,7 @@
 |------|------|
 | `docs/plans/`（含 `archive/`） | **階段性工作文件**，隨版本演進，舊 plan 未必符合現行行為 |
 | `docs/repo-ops/` | 本 repo 的維運文件（CI / 分支保護），與框架使用者無關 |
-| `docs/internal/`、`docs/blogs/` | gitignored，內部設計稿 / 部落格草稿 |
+| `docs/internal/` | gitignored，內部設計稿 |
 | `.claude/`（`CLAUDE.md`、`rules/`、`skills/`、`commands/`） | 給 agent 的工程規範，非產品文件 |
 
 ## 硬性規則

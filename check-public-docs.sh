@@ -20,7 +20,7 @@ SRC_EXT=(--include="*.cs" --include="*.axaml" --include="*.razor"
 # docs/repo-ops 是維運文件、不是公開文件，引用 plan 合法，故排除
 # 這三個 helper 一律回 0：它們是過濾器，`grep -v` 濾光全部時會回 1，那不是錯誤。
 exclude_md() {
-  grep -v "^docs/plans/" | grep -v "^docs/internal/" | grep -v "^docs/blogs/" | grep -v "^docs/repo-ops/"
+  grep -v "^docs/plans/" | grep -v "^docs/internal/" | grep -v "^docs/repo-ops/"
   return 0
 }
 

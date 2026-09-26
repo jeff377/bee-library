@@ -3,7 +3,7 @@
 #
 # 為什麼要有：編譯器不看文件、測試不跑它，文件搬移或改名後連結集體失效，沒有任何機制會發現。
 #
-# 範圍：git 追蹤中、以及未追蹤但未被忽略的 .md。gitignored 的 docs/blogs、docs/internal、
+# 範圍：git 追蹤中、以及未追蹤但未被忽略的 .md。gitignored 的 docs/internal、
 # bin、obj 因此自然排除。另外排除 docs/plans/archive/：封存 plan 是凍結的歷史紀錄，
 # 它指向當時存在、後來被移走的檔案是正常的。active 的 docs/plans/*.md 要掃，那些還會有人照著做。
 #

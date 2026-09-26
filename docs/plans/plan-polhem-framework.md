@@ -52,7 +52,7 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
 | `jeff377/bee-northwind-avalonia` | `apps/Bee.Northwind` 的鏡像，以 NuGet 消費 `Bee.*`，有自己的 CI | 改名另開為 `polhem-dev/polhem-northwind`（階段 9） |
 | `jeff377/bee-jsonrpc-sample` | 停在 `Bee.*` 4.1.0／4.3.0，最後更新 2026-05 | 不移植，只凍結（階段 10） |
 | `jeff377/claude-plugins`（`dev-workflow`） | 與框架無直接關係 | 不搬；新 repo 不宣告（見決策紀錄） |
-| `jeff377/bee-blogs` | `docs/blogs/` 本身的 private repo（部落格草稿與鐵人賽工作檔），clone 在 bee-library 裡 | 更名為 `jeff377/blogs`，移出程式碼 repo，clone 到 `~/Desktop/repos/blogs`（階段 0） |
+| `jeff377/bee-blogs` | `docs/blogs/` 本身的 private repo（部落格草稿與鐵人賽工作檔），clone 在 bee-library 裡 | 更名為 `jeff377/blogs`，移出程式碼 repo，放在 `~/Desktop/repos/blogs`。**已提前完成（2026-09-26）**，見階段 0 |
 | `jeff377/bee-library-private` | 以同步腳本鏡像 `docs/blogs/`、`docs/internal/` 等 gitignored 檔案的私有 repo | 由 `jeff377/polhem-local` 與獨立的 `jeff377/blogs` 取代，停止同步後 archive（階段 10） |
 
 ### 演練得到與演練不到的
@@ -150,9 +150,18 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
 3. **個人文件**：
    - 建立 private repo `jeff377/polhem-local`，`README.md` 與 `.gitignore` 比照 `jeff377/polhem-oauth2-local`（`.gitignore` 擋常見的憑證副檔名，當作第二道防線）。
    - `docs/internal/` 裡與 Polhem 相關的文件複製到 `local/internal/`；進行中的 plan 見上一步。
-   - `docs/blogs/`（`jeff377/bee-blogs`）移出 bee-library：GitHub 上更名為 `jeff377/blogs`（GitHub 會轉址舊網址），clone 到 `~/Desktop/repos/blogs`，更新 remote；
-     確認新 clone 與 `docs/blogs/` 的工作樹一致、沒有未推送的 commit 後，才刪除 `docs/blogs/`。
-     使用者層 skill 的工作檔路徑要跟著改：`ithome-publish`、`medium-publish`（含 `git -C docs/blogs` 那段檢查）、`hackmd-blog`。
+   - ~~`docs/blogs/` 移出 bee-library~~ **已提前完成（2026-09-26，使用者要求）**：
+     - GitHub 上 `jeff377/bee-blogs` 更名為 `jeff377/blogs`（舊網址由 GitHub 轉址）。
+     - 搬移前確認工作樹乾淨、沒有未推送的 commit、沒有 stash；改以 `mv` 整個目錄搬到 `~/Desktop/repos/blogs`，
+       不是 clone 再刪，未追蹤的檔案也一併保留。remote 改為新網址，`git fetch` 確認與 `origin/main` 同步。
+     - 使用者層 skill `ithome-publish`、`medium-publish`、`hackmd-blog` 改用新的絕對路徑；
+       「確認沒開在 worktree」那道閘門改為「確認 blogs repo 的位置」，因為 blogs 已不在 bee-library 裡。
+     - blogs repo 內的 `publishing-playbook.md` §0 同步改寫；`decision-log.md` 是紀錄，不改。
+     - memory：部落格專用的 `medium-english-edition-decisions` 移到 `~/Desktop/repos/blogs` 的 project memory，
+       `deliver-files-as-links` 兩邊各一份。
+     - bee-library 的 `.gitignore`、`check-md-links.sh`、`check-public-docs.sh`、`.claude/rules/public-docs.md` 拿掉 `docs/blogs/`。
+     - 未處理：排程任務 `ithome-2026-daily-post` 仍寫舊路徑（連載已完結，任務本身寫明完賽後可刪）；
+       `bee-library-private` 的同步腳本仍列 `docs/blogs/`，來源不存在時只記 log、不會清鏡像，階段 10 一併處理。
    - 以 `git status` 看不出 gitignored 目錄的內容，搬完以 `ls` 與兩個 private repo 的 `git log` 確認。
 4. **外部帳號與授權的事前確認**（只確認，不建立）：
    - NuGet `Polhem.` 前綴保留的申請狀態。
@@ -184,9 +193,9 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
    以英文**複製**進 `.claude/rules/`（使用者層仍供其他 repo 使用，不刪）。`pull-request` 改為 PR + 分支保護的工作流。
 2. **`.claude/` 英文化**：`CLAUDE.md`、`rules/`、`skills/`（`bee-*` 改名 `polhem-*`）、`commands/`、`hooks/` 的訊息與註解。
    `CLAUDE.md` **明文覆寫**使用者層「敘述文字全部繁體中文」的預設。
-3. **plan 與個人文件慣例寫進 repo**：`.gitignore` 加 `/local/` 與 `CLAUDE.local.md`，拿掉 `docs/blogs/`、`docs/internal/` 兩條；`CLAUDE.md` 比照 polhem-oauth2 的「Local working documents」一節，
+3. **plan 與個人文件慣例寫進 repo**：`.gitignore` 加 `/local/` 與 `CLAUDE.local.md`，拿掉 `docs/internal/` 那條（`docs/blogs/` 已於 2026-09-26 在 bee-library 移除）；`CLAUDE.md` 比照 polhem-oauth2 的「Local working documents」一節，
    寫明 `local/` 的用途、計畫目錄、不 commit 也不 `git add -f`、不從已 commit 的檔案連過去、worktree 讀不到 `local/`；
-   `.claude/rules/public-docs.md` 的「哪些不是」表、`check-md-links.sh` 與 `check-public-docs.sh` 對 `docs/blogs/`、`docs/internal/` 的排除一併改寫；
+   `.claude/rules/public-docs.md` 的「哪些不是」表、`check-md-links.sh` 與 `check-public-docs.sh` 對 `docs/internal/` 的排除一併改寫；
    `settings.json` 移除 `dev-workflow` 的 marketplace 與啟用宣告。`check-public-docs.sh` 的 (7) 死指標檢查改對 `local/plans/` 或移除，實作時判斷。
 4. **commit hash 引用**：`.claude/`、`docs/repo-ops/` 等處以 hash 引用的證據，改寫為舊 repo 的完整 commit 網址。
 5. **協作文件**：`LICENSE.txt` 改為 `Copyright (c) Polhem contributors`；新增雙語 `CONTRIBUTING.md` 與 `.github/CODEOWNERS`。
