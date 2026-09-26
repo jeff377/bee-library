@@ -46,6 +46,8 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
 
 ### 下游（2026-09-19 盤點）
 
+盤點範圍只限本機 `~/Desktop/repos` 下的 repo（使用者決定，2026-09-26），GitHub 上沒有 clone 到本機的不納入。
+
 | repo | 關係 | 本 plan |
 |------|------|---------|
 | `jeff377/bee-connector-js` | wire 合約的 TypeScript 客戶端。`scripts/fetch-fixtures.mjs` 寫死 `REPO = 'jeff377/bee-library'` 抓 `wire-fixtures/`；`package.json` 標 `private`，尚未發佈到 npm | 改名另開為 `polhem-dev/polhem-connector-js`，套件名 `@polhem/connector`（階段 6） |
@@ -98,6 +100,7 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
 | `dev-workflow` plugin | 新 repo 的 `.claude/settings.json` 不宣告；屬於 repo 本身的慣例（計畫目錄、公開文件不引用 plan、發版的兩條防護欄）寫進 repo 的 `CLAUDE.md`／`CONTRIBUTING.md` | 使用者決定（2026-09-19）。plugin 與框架無直接關係，各開發者習慣不同 |
 | LICENSE 著作權人 | `Copyright (c) Polhem contributors`，不寫年份 | future-work 已定案，比照 polhem-oauth2 |
 | 發佈授權 | NuGet Trusted Publishing，不用 API key | future-work 已定案，比照 polhem-oauth2 |
+| 本 plan 涵蓋的 repo 與套件 | 只處理本機 `~/Desktop/repos` 下的 repo；NuGet 只凍結凍結起點時 bee-library 會產出的套件，其餘 `Bee.*` 列在範圍外 | 使用者決定（2026-09-26） |
 
 ## 編譯器抓不到的地方（2026-09-19 查證）
 
@@ -178,6 +181,7 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
 
 1. **替換腳本**：以詞界比對替換 `Bee`→`Polhem`、`bee`→`polhem`、`BEE`→`POLHEM`，並涵蓋資料夾名、檔名、方案檔、csproj。
    `Bee.NET` 改為 `Polhem`。腳本放在 scratchpad，不進 repo；替換結果要逐類對照上一節清點，非品牌的命中逐一人工判讀。
+   **專案檔與方案檔要原地覆寫或以 `git mv`／`mv` 改名，不要先刪再建**：開著的 VS Code 會在檔案刪除的當下，把該專案從 `.slnx` 移除（polhem-oauth2 踩過）。執行期間最好關掉開著這個 repo 的 IDE。
 2. **不在替換之內、要個別處理的**：LICENSE、套件中繼資料（`RepositoryUrl` → `https://github.com/polhem-dev/polhem`）、圖示、
    SonarCloud key 與 organization、`auto-merge.yml` 的作者判斷（階段 5 定案，這一步先保留結構）。
 3. **重生產生物**：wire fixtures 與 contracts 以環境變數重生；`PublicAPI.*.txt` 隨替換更新（基準的重建在階段 7）。
@@ -270,7 +274,8 @@ CI 綠燈，各 head 至少啟動一次。
 
 1. **回寫 bee-library**：`docs/repo-ops/future-work.md` 的「開放共同維護」一節改為結果摘要，指向新 repo；
    「要等什麼」與「帶完整 git 歷史」兩處依本 plan 的決策更正。本 plan 標記完成、更新索引。
-2. **（使用者操作或經同意後由 agent 操作）** 所有 `Bee.*` 套件（含 `Bee.Cli`）全版本 deprecated：原因 Legacy，替代套件為對應的 `Polhem.*`，版本選 Latest。
+2. **（使用者操作或經同意後由 agent 操作）** 凍結起點時 bee-library 會產出的 `Bee.*` 套件（含 `Bee.Cli`）全版本 deprecated：原因 Legacy，替代套件為對應的 `Polhem.*`，版本選 Latest。
+   清單以凍結起點時 `src/` 與 `tools/Bee.Cli` 的可打包專案為準，不以 NuGet 上 `jeff377` 名下的套件清單為準。
 3. 舊 repo README 頂部加中英雙語停止維護提醒與新舊套件對照表：`bee-library`、`bee-connector-js`、`bee-northwind-avalonia`、`bee-jsonrpc-sample`。
 4. 仍開著的 issue 回覆指路後關閉。
 5. 最後才 archive 四個舊 repo。不刪除：fork、星數與既有連結都依附在它上面。
@@ -284,3 +289,7 @@ CI 綠燈，各 head 至少啟動一次。
 - connector-js 發佈到 npm。
 - 發文公告。
 - 套件重組與命名調整：階段 1 刻意不做，由階段 7 健檢提出。
+- 本機 `~/Desktop/repos` 以外的 `bee-*` repo（使用者決定，2026-09-26）。
+- 不由現行 bee-library 產出的 `Bee.*` 套件，是否 deprecated、替代套件指向哪裡，另行決定：
+  舊版的舊名（例如停在 3.6.2 的 `Bee.Define`、`Bee.Cache`）、已從 repo 移除的套件、由其他 repo 發佈的套件，以及與框架無關的套件。
+  2026-09-26 查 NuGet，`jeff377` 名下有這幾類；`Bee.OAuth2.*` 已由 polhem-oauth2 處理。
