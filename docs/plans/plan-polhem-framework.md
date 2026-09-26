@@ -9,7 +9,7 @@
 | 2 | agent 設定與協作文件：共用規則搬進 repo、`.claude/` 英文化、plan 慣例、LICENSE／CONTRIBUTING／CODEOWNERS | ✅ 已完成（2026-09-26） |
 | 3 | 英文化：測試方法名稱與 `[DisplayName]`、程式內殘留的中文、維運文件與 gotchas | ✅ 已完成（2026-09-26） |
 | 4 | 公開文件：`docs/` 改以英文為源、ADR 補英文版並納入雙語檢查、README 遷移說明 | ✅ 已完成（2026-09-26） |
-| 5 | 建立 repo 與 CI：推送、SonarCloud、分支保護與 PR 工作流、auto-merge、Trusted Publishing policy | 🚧 進行中 |
+| 5 | 建立 repo 與 CI：推送、SonarCloud、分支保護與 PR 工作流、auto-merge、Trusted Publishing policy | ✅ 已完成（2026-09-26） |
 | 6 | polhem-connector-js 改名另開，接上新的 wire 合約 | 📝 待做 |
 | 7 | 首發前健檢與修正，公開 API 定型 | 📝 待做 |
 | 8 | 首發 `Polhem.*` 1.0.0，更新 org profile | 📝 待做 |
@@ -755,6 +755,90 @@ polhem 階段 4 共五個 commit，依序直接提交本機 `main`（見決策�
 5. **auto-merge**（需實測）：依階段 0 的結果改寫 `auto-merge.yml` 的作者判斷與權杖。
 6. **Trusted Publishing policy**（需實測）：比照 polhem-oauth2 階段 7，workflow 綁 `polhem-dev/polhem`。
    glob 不能涵蓋 `Polhem.OAuth2*`（那是另一個 repo 的 policy）；確認 dotnet tool 套件也能以同一條 policy 推送。**首發前不設任何發佈用 secret。**
+
+### 實作紀錄（2026-09-26）
+
+repo：**https://github.com/polhem-dev/polhem**（public，GitHub repo ID `1389037817`）。
+
+推送前在本機 `main` 直接提交四個 commit（見決策紀錄「階段 2～4 的提交方式」），第一次推送共 32 個 commit；之後改走 PR：
+
+| commit | 內容 |
+|--------|------|
+| `0558429` | DB 測試不得靜默略過的閘門；`build-ci.yml` 的 PR 觸發拿掉 paths 過濾；Sonar `/k:polhem-dev_polhem`、`/o:polhem-dev` |
+| `bbcf799` | `/sonar-fix` 與 `gotchas/test-ci-release.md` 的 Sonar key |
+| `691c047` | `check-public-docs.sh` 加入 `docs-check.yml`；`rules/pull-request.md`、`CONTRIBUTING`（中英）改寫為 `build`＋`docs` 兩個必要 check |
+| `534ce09` | `nuget-publish.yml` 改用 Trusted Publishing；刪除 `auto-merge.yml`（第一次推送的 HEAD，訊息帶 `[all-db]`） |
+| `6e4cc5f` | PR [#1](https://github.com/polhem-dev/polhem/pull/1)：改寫 `branch-protection-setup.md`、`ci-sonarcloud-setup.md`，拿掉 `SonarQube.Analysis.xml` 的 Blazor 重複排除 |
+
+推送前以 `git log --all --name-only` 掃過整段歷史：沒有 `local/`、`.runsettings`、`CLAUDE.local.md` 或憑證類副檔名。
+
+#### 使用者決定（2026-09-26）
+
+- **auto-merge**：刪除 `auto-merge.yml`、不設 `AUTOMERGE_PAT`，改開 repo 的原生 Allow auto-merge（以啟用者身分合併，合併後 `main` 的 workflow 正常觸發）。
+- **審查**：要求 PR、0 個核准、不開 Require review from Code Owners。
+- **`check-public-docs.sh`**：加入 `docs-check.yml`。
+- **paths 過濾**（本階段發現：`build` 設為必要 check 後，只改文件的 PR 會永遠等不到 `build`）：`pull_request` 觸發拿掉 paths 過濾，`push` 的保留。
+- **必要 check**：`build`＋`docs`。**合併方式**：只允許 squash、strict 開、合併後刪分支；squash 標題改為一律用 PR 標題（見下方實測 3）。
+- **SonarCloud new code**：Previous version（沿用預設）。
+- **Trusted Publishing**：逐一列出 17 個套件全名，不用 glob。
+
+#### 各步驟
+
+1. **建立 repo、第一次推送**：`gh repo create polhem-dev/polhem --public`，加上 remote 後本機建置的 SourceLink 警告消失。
+2. **CI 改名與 DB 略過閘門**：
+   - 環境變數與容器名在階段 1 已改好，CI 上確認可用（見實測 3）。
+   - 閘門：`build-ci.yml` 依模式把 `POLHEM_TEST_REQUIRED_DATABASES` 寫入 `$GITHUB_ENV`（精簡 `SQLServer,SQLite`、完整五種）；
+     `tests/Polhem.Db.UnitTests/RequiredTestDatabaseGateTests` 對清單中的每一種，以 `TestDbConventions.GetConnectionStringEnvVar` 推導的名稱檢查連線字串。
+     `GITHUB_ACTIONS=true`（runner 自己設的）而清單為空時也會紅，所以清單變數本身改名也擋得住；本機兩者都沒設時不檢查。
+   - 本機以四種情境實測：完整清單齊全 → 通過；連線字串名稱為 `BEE_TEST_CONNSTR_SQLSERVER` → 紅；CI 但沒有清單 → 紅；本機 → 通過。
+   - 本機基準因此由 6311 項變為 **6315 項**（新增 4 項），略過仍為 1 項。
+3. **SonarCloud**：
+   - organization `polhem-dev` **已由 polhem-oauth2 於 2026-09-26 建立**（階段 0 查時還不存在），GitHub App `sonarqubecloud` 裝在 org 的全部 repo。
+     quality gate 為內建 Sonar way、quality profile 全部語言為內建 Sonar way comprehensive，與 `jeff377` org 相同，**不需重建**。
+   - **專案在 GitHub repo 建立後自動出現**，key 為 **`polhem-dev_polhem`**（與 README 徽章相同，中英兩份不用改），`sonar.autoscan.enabled=false`、new code 為 previous_version。沒有在 UI 上做任何變更。
+   - 舊專案 `jeff377_bee-library` 的 False Positive、Won't Fix、security hotspot 都是 **0 筆**，沒有要重標的。
+   - `SONAR_TOKEN` 由使用者自行產生並以 `gh secret set` 設定（agent 不經手）。
+   - `SonarQube.Analysis.xml` 的 Blazor 排除：PR #1 拿掉後，main 的完整分析中 `Components/`、`DataObjects/` 共 11 個檔案的重複行數都是 0，整體重複率維持 1.0%。
+4. **分支保護與 repo 設定**：
+   - `main`：必要 check `build`、`docs`，strict，`enforce_admins` 開，`required_pull_request_reviews` 為 0 核准、不要求 Code Owners，禁止 force push 與刪除。
+   - repo：只允許 squash、`delete_branch_on_merge`、`allow_auto_merge` 開、`squash_merge_commit_title=PR_TITLE`。
+   - 設定寫在 `docs/repo-ops/branch-protection-setup.md`，`rules/pull-request.md` 指向它。
+5. **auto-merge**：見使用者決定；沒有建立任何 token。
+6. **Trusted Publishing**：nuget.org 建立 policy **`polhem-release`**：Package owner `Polhem`、GitHub Actions、repo `polhem-dev/polhem`、workflow `nuget-publish.yml`、不設 environment、
+   scope 只選 Push new packages and package versions，套件清單為 `Polhem.Base`、`Polhem.Expressions`、`Polhem.Definition`、`Polhem.ObjectCaching`、`Polhem.Db`、`Polhem.Api.Contracts`、
+   `Polhem.Business`、`Polhem.Api.Core`、`Polhem.Api.Client`、`Polhem.UI.Core`、`Polhem.UI.Avalonia`、`Polhem.Repository.Abstractions`、`Polhem.Repository`、`Polhem.Hosting`、
+   `Polhem.Api.AspNetCore`、`Polhem.Web.Blazor.Server`、`Polhem.Cli`（與 `nuget-publish.yml` 的 pack 清單、`IsPackable` 逐一核對）。
+   建立後列表顯示 **Active**，repository owner 與 repository 已綁定 GitHub 數字 ID（`328209386`、`1389037817`，與 `gh api` 相符）。
+   `nuget-publish.yml` 比照 polhem-oauth2：publish job 加 `id-token: write`，以 `NuGet/login`（v1.2.0 SHA）換臨時 key，`user` 讀 `secrets.NUGET_USER`；release job 明寫 `contents: write`。
+
+#### 實測結果
+
+1. **SonarCloud**：organization 可用（已存在，見上）；第一次完整掃描（`main` 的 `534ce09`）成功：
+   覆蓋率 90.5%（舊專案 90.5%）、重複率 1.0%（舊 1.1%）、bug 與 vulnerability 0、code smell 57（舊 30）。
+   多出的幾乎都是根目錄 shell 腳本的 `shelldre:S7688`／`S7682`／`S7679`（階段 2～4 擴充了 `check-*.sh`），**留給階段 7**。
+   第一次分析的 quality gate 為 NONE（還沒有 new code）；PR #1 與之後 main 的分析為 **OK**。PR 分析在 free plan 的 public 專案可以讀取。
+2. **分支保護**：開啟後以 PR #1 實測，三個 check（`build` 完整模式、`docs`、SonarCloud Code Analysis）通過後，由 jeff377 以 squash 合併成功，分支自動刪除：**維護者自己的 PR 在 `enforce_admins` 下能走完**。
+   沒有實際嘗試直推 `main`（設定以 API 回讀確認）。
+3. **第一次完整模式 CI**（run `36236954807`，`534ce09`）：
+   - **第一次推送沒有觸發 `build-ci.yml`**：`docs-check.yml`（沒有 paths 過濾）有跑，`build-ci.yml`（push 有 paths 過濾）沒有。改以 `workflow_dispatch`（`db_scope=all`）執行。已寫進 `branch-protection-setup.md`。
+   - 建置：Strict build（閘門）**0 警告、0 錯誤**，沒有 SourceLink 警告。另外 SonarScanner 包起來的建置有 101 則，都是 Sonar 規則診斷（S1192、S3776 等），不是編譯警告。
+   - 測試：18 個測試專案共 **6315 項、略過 1 項**（`SystemBusinessObjectTests.Login_WithRsaKeyPair_ReturnsDecryptableSessionKey`），失敗 0，等於本機基準 6311 加上新增的 4 項。
+     CI log 只有逐專案的總數，沒有逐資料庫的分項，所以比對的是總數與略過數。
+   - **DB 測試沒有被靜默略過**：五種資料庫的 `SharedDatabaseState: common_* connection verified` 都有出現，沒有任何 `requires POLHEM_TEST_CONNSTR_*` 的略過訊息，`RequiredTestDatabaseGateTests` 通過。
+   - Mobile AOT gate：3 個專案共 2582 項、略過 1 項。
+   - **squash 標題**：PR #1 只有一個 commit，預設的 `COMMIT_OR_PR_TITLE` 取了 commit 標題，PR 標題裡的 `[all-db]` 沒有進 `main`，main 那一輪是精簡模式。
+     使用者決定改為 `PR_TITLE`，並手動 dispatch 一次完整模式（run `36238311069`，成功）。
+4. **Trusted Publishing 與 `Polhem.Cli`**：policy 以套件 ID 列出，表單接受 `Polhem.Cli` 與其他套件同列，設定面沒有區分 dotnet tool。**實際能否推送 dotnet tool、能否建立尚不存在的套件 ID，要到首發才驗證**。
+
+#### 移交後續階段
+
+- **階段 8**：
+  - **推 tag 之前要設 repo secret `NUGET_USER`**（值為 nuget.org 帳號 `jeff377`，比照 polhem-oauth2）。本階段依指示沒有設任何發佈用 secret；沒設的話 `Log in to NuGet` 那一步會失敗。
+  - 首發同時驗證 Trusted Publishing 能建立 17 個新套件 ID（含 dotnet tool `Polhem.Cli`）。失敗時先看 `Log in to NuGet` 那一步。
+  - 新增可發佈的套件時，`nuget-publish.yml` 的清單與 nuget.org policy 的清單要一起改（workflow 的註解已寫明）。
+  - NuGet `Polhem.` 前綴保留的申請信尚未寄出（使用者動作，見第 1 步）。
+- **階段 7**：code smell 中根目錄 shell 腳本的 55 則；原生 auto-merge（`gh pr merge --auto`）還沒有實際用過。
+- 使用者層 `~/.claude/rules/pull-request.md` 的「桌面環境直接推 main」在 polhem 已行不通（分支保護擋下），以 repo 的規則為準（`.claude/CLAUDE.md` 已寫明）。
 
 ## 階段 6：polhem-connector-js
 
