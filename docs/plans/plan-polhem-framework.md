@@ -9,7 +9,7 @@
 | 2 | agent 設定與協作文件：共用規則搬進 repo、`.claude/` 英文化、plan 慣例、LICENSE／CONTRIBUTING／CODEOWNERS | ✅ 已完成（2026-09-26） |
 | 3 | 英文化：測試方法名稱與 `[DisplayName]`、程式內殘留的中文、維運文件與 gotchas | ✅ 已完成（2026-09-26） |
 | 4 | 公開文件：`docs/` 改以英文為源、ADR 補英文版並納入雙語檢查、README 遷移說明 | ✅ 已完成（2026-09-26） |
-| 5 | 建立 repo 與 CI：推送、SonarCloud、分支保護與 PR 工作流、auto-merge、Trusted Publishing policy | 📝 待做 |
+| 5 | 建立 repo 與 CI：推送、SonarCloud、分支保護與 PR 工作流、auto-merge、Trusted Publishing policy | 🚧 進行中 |
 | 6 | polhem-connector-js 改名另開，接上新的 wire 合約 | 📝 待做 |
 | 7 | 首發前健檢與修正，公開 API 定型 | 📝 待做 |
 | 8 | 首發 `Polhem.*` 1.0.0，更新 org profile | 📝 待做 |
