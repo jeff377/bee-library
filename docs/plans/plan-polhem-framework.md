@@ -972,7 +972,7 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 
 | 批次 | 範圍 | CI | 狀態 |
 |------|------|----|------|
-| A 工具與 CI | RELEASE-01／DOCS-01、DOCS-02／MAINT-11、H-60、RELEASE-07、ARCH-DEPS-09／10／13；實走原生 auto-merge（H-61） | 精簡 | 📝 |
+| A 工具與 CI | RELEASE-01／DOCS-01、DOCS-02／MAINT-11、H-60、RELEASE-07、ARCH-DEPS-09／10／13；實走原生 auto-merge（H-61） | 精簡 | ✅ PR #3 |
 | B 安全 | SEC-01～22、MAINT-01、SER-01、SER-07、PERF-01／02、ApiKey 方法的 replay 防護（ADR-042 審查）、TESTS-01～03 | 完整 | 📝 |
 | C 正確性 | CONC-01～03／06／07／09／10／12、SER-02～06、PERF-15、SCATTERED-01、TRIM-AOT-01～04、I18N-01、RELEASE-12、MAINT-02 | 完整 | 📝 |
 | D API 定型（一）移除與改名 | MAINT-03、PUBLIC-API-03／04／05／15～18、SCATTERED-02／04～06／13～15、SEC-15／16、TESTS-08、SER-08／09、CONC-11、ARCH-DEPS-01～04／06／12／14、MAINT-05（決定的三項）、PUBLIC-API-06／12／13、H-01、H-03 | 完整 | 📝 |
@@ -987,6 +987,28 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 | M 驗收 | 逐項回驗、重建 PublicAPI（先請使用者確認）、client 實測、nupkg、CHANGELOG 定稿 | 完整 | 📝 |
 
 每批流程：從最新 `origin/main` 開 `claude/<topic>` 分支 → 本機 clean Release build 0 警告＋相關測試 → PR → `gh pr merge --auto` → 合併後才開下一批。
+
+#### 批次 A（2026-09-26 完成）
+
+polhem PR [#3](https://github.com/polhem-dev/polhem/pull/3)，squash 後為 `3e3b152`。
+
+- 新增根目錄 `Package.props`（套件 metadata、SourceLink、symbols），`src/Directory.Build.props` 與 `tools/Polhem.Cli` 都匯入；Cli 因此補上圖示、repository、SourceLink、snupkg，並開啟 `TreatWarningsAsErrors`／`EnforceCodeStyleInBuild`；新增雙語 `tools/Polhem.Cli/README*.md` 並打包。Cli 的 `Program` 改 internal（exe，沒有程式庫介面）。
+- 刪除根目錄 `Directory.Build.props`：其設定只在 `GITHUB_ACTIONS` 下生效，而且只會被 samples／apps 繼承，對 `src/`、`tests/`、`tools/` 從未生效。CI 的建置步驟改為不打包（`GeneratePackageOnBuild` 在 CI 為 false）。
+- csproj 過時註解與 metadata（MessagePack 說明、退役代號、tag 錯字、description）。
+- `publish.sh` 改以 `dotnet msbuild -getProperty:Version` 取版號；`--app-bundle` 隱含 `--single-file`。實跑 `--app-bundle osx-arm64` 產出 `.app`，`CFBundleShortVersionString` 為 4.33.0。
+- `check-xmldoc-refs.sh` 補三個外部名稱，加入 `docs-check.yml`。
+- Sonar code smell：shell 55 則與 C# 2 則。`check-docs-i18n.sh`、`check-public-docs.sh` 改寫前後，對通過與故意製造的失敗輸入（過期譯本、缺譯本、未宣告語言、`--stamp`、點名 plan）輸出逐字相同。
+- 驗證：`Polhem.slnx`、`Polhem.Tools.slnx` clean Release build 0 警告；Cli 10、Api.Core 870、Business 687（略過 1）項測試通過；打開 `Polhem.Cli`、`Polhem.Base` 的 nupkg 確認圖示、README、LICENSE、repository。
+- **H-61 原生 auto-merge 實測**：`gh pr merge 3 --auto --squash` 於 16:02 啟用，`build`、`docs` 通過後 16:05 由 jeff377 身分 squash 合併、分支刪除；合併後 `main` 的 Build CI 與 Docs Check 都有觸發並通過。
+
+#### 批次 B 的追加決定（使用者，2026-09-26）
+
+| 項目 | 結論 |
+|------|------|
+| SEC-04 Blazor Local 模式的信任 | 只寫文件警告（Local 模式僅限可信使用者） |
+| SEC-07 replay | 文件更正為「僅 Encrypted」＋有 `UniqueSequence` 方法但 `RequireWireFrame` 關閉時啟動警告；行為不變 |
+| SEC-06 token 儲存 | log 與 `st_session` 都改存雜湊：鍵欄位存 SHA-256(token) 前 16 bytes（仍為 Guid）、`session_user_xml` 不再存 token（讀回時由請求補上）、log 存前 8 bytes 指紋。查證：session 重建一律從請求帶來的 token 出發，資料庫不需還原 token |
+| SEC-10 反序列化型別 | 以方法參數型別解碼，TypeName 只作一致性檢查；另篩組件名、伺服端 MessagePack 加 `UntrustedData` |
 
 ## 階段 8：首發 1.0.0
 
