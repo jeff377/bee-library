@@ -7,7 +7,7 @@
 | 0 | 啟動前置：商標重查、凍結起點、外部帳號與授權的事前確認 | ✅ 已完成（2026-09-26） |
 | 1 | 本機建立 polhem：純改名（1:1 前綴替換，含編譯器抓不到的字串），diff 驗證零行為變更 | ✅ 已完成（2026-09-26） |
 | 2 | agent 設定與協作文件：共用規則搬進 repo、`.claude/` 英文化、plan 慣例、LICENSE／CONTRIBUTING／CODEOWNERS | ✅ 已完成（2026-09-26） |
-| 3 | 英文化：測試方法名稱與 `[DisplayName]`、程式內殘留的中文、維運文件與 gotchas | 🚧 進行中 |
+| 3 | 英文化：測試方法名稱與 `[DisplayName]`、程式內殘留的中文、維運文件與 gotchas | ✅ 已完成（2026-09-26） |
 | 4 | 公開文件：`docs/` 改以英文為源、ADR 補英文版並納入雙語檢查、README 遷移說明 | 📝 待做 |
 | 5 | 建立 repo 與 CI：推送、SonarCloud、分支保護與 PR 工作流、auto-merge、Trusted Publishing policy | 📝 待做 |
 | 6 | polhem-connector-js 改名另開，接上新的 wire 合約 | 📝 待做 |
@@ -473,6 +473,182 @@ polhem 階段 2 共七個 commit，依序直接提交本機 `main`（見決策�
 3. `docs/repo-ops/`（含 `gotchas/`、`future-work.md`）改英文。`future-work.md` 裡屬於 Bee 時期、與 Polhem 無關的段落（本 plan 所在的「開放共同維護」一節）刪除或改寫為現況。
 
 量大，依專案分批提交；每批 build 與測試全綠。
+
+### 實作紀錄（2026-09-26）
+
+polhem 階段 3 共 12 個 commit，依序直接提交本機 `main`（見決策紀錄），761 個檔案。翻譯由平行子代理依同一份翻譯要點逐檔進行，主 session 驗收。
+
+驗證方式：子代理同時在工作樹上改檔，工作樹不能拿來逐批建置。所以每一批先套到 scratchpad 裡的另一份 clone（只含已驗證的批次）並在那裡 commit：
+- clean Release build（`--no-incremental`）0 錯誤，警告只有 SourceLink 的「存放庫沒有遠端」。
+- 跑該批相關的測試專案，以 TRX 比對改前改後：測試數、略過數、以「類別＋方法名」計的測試清單都相同；顯示名稱（Theory 的參數以外）沒有中文。
+
+全部完成後，確認 polhem 工作樹與 clone 的 HEAD 無差異，再以相同的檔案清單與順序提交到 polhem 的 `main`（每次都經過 polhem 自己的 pre-commit hook），
+最後確認 12 個 commit 的 tree hash 與 clone 逐一相同。
+
+| commit | 內容 | 測試（改前＝改後） |
+|--------|------|------|
+| `47dfd8b` | 建置設定、`.editorconfig`、`SonarQube.Analysis.xml`、三個 workflow、`test.sh`、`check-docs-i18n.sh`、`check-xmldoc-refs.sh`、`docs/.sonar-fix-state/skip.json`、`JsonRpcErrorContract` 的一處 XML doc | Api.Core 870、Analyzers 116；兩支腳本的輸出行數與改前相同 |
+| `31c1948` | Avalonia.DemoCenter（註解與全部 UI 文字、`.smoke.yaml`）、DefineEditor、`tools/Directory.Build.*`、DefineEditor 測試 | DefineEditor 12；tools、samples 方案建置 0 錯誤；DefineEditor headless smoke OK |
+| `c3569d7` | `docs/repo-ops/`（含 gotchas），`future-work.md` 刪去「開放共同維護」一節 | `check-md-links.sh`、`check-public-docs.sh` 0 筆 |
+| `966e107` | Polhem.Definition 測試 | 1120 |
+| `d71cbe7` | UI.Avalonia、UI.Core、Web.Blazor.Server 測試 | 582 |
+| `958e607` | ObjectCaching、Hosting 測試 | 297 |
+| `786f977` | Business 測試 | 688（略過 1） |
+| `26c6c9c` | Repository、Api.Client、Api.AspNetCore 測試 | 453 |
+| `7103f7b` | Db 測試 | 1422 |
+| `041890b` | Api.Core 測試 | 870 |
+| `4ac7025` | Base、Expressions、Cli、LoadTests、Analyzers 測試、`Polhem.Tests.Shared`、`tests/Directory.Build.props` | 867 |
+| `b3aa1dc` | `tests/CLAUDE.md` 寫明 `[DisplayName]` 的寫法：英文一句、sentence case、現在式、不加句點 | — |
+
+`rules/testing.md` 在階段 2 已寫「英文」，這次只在 `tests/CLAUDE.md` 補寫法，不重複。
+
+#### 範圍的決定（使用者，2026-09-26）
+
+- `future-work.md` 的「開放共同維護」一節**整節刪除**，包含名稱與帳號表、商標限制、bee-oauth2 演練結果。
+- `docs/repo-ops/` 內容過時或與程式碼矛盾時，**只翻譯並記錄**，留給階段 7（見下方「未修的內容問題」）。
+- samples 與 tools 裡寫死的中文 UI 文字**翻成英文**：
+  - DemoCenter 全部模組，`.smoke.yaml` 同步。
+  - DefineEditor 屬性明細的全形冒號改為 `: `。
+  - DefineEditor `Smoke.cs` 的樣本資料視同測試資料，保留。
+- 框架內建定義檔 `src/Polhem.Definition/Defaults/` 與各 `Define/` 的中文 Caption／DisplayName **保留為資料，交給階段 7**。
+  那是隨 NuGet 出貨的預設顯示文字，另有 zh-TW Language 檔；基底語言用哪一種屬於產品決策。
+
+#### 刻意保留的中文（全 repo 掃描確認）
+
+- 掃描範圍是 git 追蹤的所有文字檔。
+- 唯一不是 UTF-8 的文字檔是 `tests/Polhem.Api.Client.UnitTests/HttpSamples/jsonrpc.http`（Big5），已對 `320e3e3` 的所有 blob 確認；它唯一一行中文註解譯掉後已是 ASCII，所以以 UTF-8 掃描不會漏檔。
+- `tests/`、`src/`、`tools/`、`samples/`、`apps/` 裡，字串常值以外的中文與 `[DisplayName]` 裡的中文為 0 處。
+  例外是兩處刻意引用資料的英文註解（下方第 3、8 類）。
+
+保留的類別：
+
+1. **公開文件（階段 4）**：`docs/zh-TW/`、`docs/adr/`、`docs/README.md`、`docs/en/` 的語言切換列、各 `README*.md`、`CONTRIBUTING*.md`。
+2. **zh-TW 在地化資源**：DefineEditor 的 `Strings.zh-TW.resx`；`Language/zh-TW/*.xml`（`Defaults/`、`tests/Define/`、Northwind）。
+3. **語言自稱**：`繁體中文` 等（`check-docs-i18n.sh`、DefineEditor 的 `Strings.resx` 與 `App.axaml.cs`、`nuget-publish.yml` 的 release notes 連結）。
+4. **定義資料**：`src/Polhem.Definition/Defaults/`、`tests/Define/`、`samples/Define/`、Northwind 的 `Define/` 與 `Customize/`（見上方使用者決定）。
+5. **測試輸入與預期值**：caption、種子資料、在地化值、Unicode 與控制字元輸入、內嵌 XML、與 SQL 或例外訊息比對的字串。
+6. **程式的輸入資料**：`ValueUtilities` 把 `是`、`真` 解析為 true。
+7. **掃描規則本身**：`check-public-docs.sh` 第 (4) 道以中文片語比對文件。
+8. **英文散文裡引用的資料**：
+   - `LocalizedListView.cs` 引用的 UI 值。
+   - gotchas 裡中文語系的 `ORA-00932` 原文，以及文件圖上的字面文字。
+   - `future-work.md` 的多語幣別名稱範例。
+9. **`.claude/skills/`**：階段 2 已驗收為資料。
+
+#### 測試
+
+- 改前基準：`320e3e3` 的 clone 跑 `./test.sh`（四種資料庫），18 個測試專案共 6311 項、略過 1 項、全數通過，與階段 1 的最終測試相同。
+  第一次改用 git worktree 跑，`TestProcessBootstrap.FindRepoRoot` 找的是 `.git` **目錄**，而 worktree 的 `.git` 是檔案，所以大量失敗；改用 clone 後正常。
+- 完成後在 polhem 的 `b3aa1dc` 跑 `./test.sh`（四種資料庫）：共 6311 項、略過 1 項、全數通過；TRX 比對，測試清單與基準逐項相同。
+- 被略過的 1 項是 `SystemBusinessObjectTests` 的 `Login_WithRsaKeyPair_...`，見下方未修的內容問題。
+
+#### 註解、`[DisplayName]` 與程式碼不符之處（已照實際行為改寫）
+
+以下只列實質落差。另外，大量清點數字（「三個」「五家」等）依規則改為列名稱或不寫數字，不逐一列。
+
+- **Base／Expressions／Cli／LoadTests**：
+  - `DataTableJsonConverterCoverageTests` 說涵蓋所有 FieldDbType，實際是每種基本 CLR 型別各一欄。
+  - `SplitMenuMigrationTests` 被加序號的是項目 Id，不是分類 Id。
+  - `VirtualUserPoolTests` 說虛擬使用者索引會繞回帳號池，但 `SignInAllAsync` 遇到第一個失敗（user 0）就停，繞回從未被檢查。
+  - `AnalyzerRunner` 的 `<returns>` 說診斷依 ID 與位置排序，實際沒有排序。
+- **Api.Core**：
+  - `WireFormatterTests` 說檢查成員數，實際沒有檢查。
+  - `MessagePackTests` 用舊型別名 `TListItemCollection` 等；`DataTable_SerializeWithDbNull_PreservesValues` 說「可寫回資料庫」，實際不碰資料庫也不經 MessagePack。
+  - Logout 測試只斷言 session 被移除。
+  - `EnterCompanyMessagePackTests` 只檢查三個欄位，而且 formatter 是手寫的，不是靠 `[Key]`。
+- **Definition**：
+  - `DtoPropertyTests` 斷言 Culture 與 TimeZone 為空字串，不是 zh-TW。
+  - `MasterKeyProviderTests` 傳入的是空白字串 `"   "`，不是空字串，且斷言的是擲例外。
+  - `FilterGroupTests` 用的是 `Contains`，不是開頭或結尾比對。
+  - `CompanyInfoTests` 只有 XML 與 JSON 兩種 round-trip。
+  - 已移除的 `DefinePathInfo` 不再以 cref 引用。
+- **UI**：
+  - `FormLiveComputationTests` 沒有測到重入。
+  - `GridControlLookupTests` 綁的是唯讀的明細 grid，不是 list 模式。
+  - `LookupPanelTests` 沒有檢查錯誤是否顯示。
+- **ObjectCaching／Hosting**：
+  - ObjectCaching 組件設了 `DisableTestParallelization`，各類別「可與其他類別平行」的說法拿掉。
+  - `ObjectCacheTests` 的 fake 其實有 override `CreateInstance`。
+  - 已移除的 `CacheContainer` static facade 不再被描述為存在。
+- **Business**：
+  - `IsLocalCall` 預設 true 的是 fake `TestableBusinessObject`，真正的預設是 false。
+  - 無變更的 Save 是 no-op，不是擲例外。
+  - `BoApiSurfaceTests` 那一項只比對 baseline，比對文件的是另外兩個 Theory。
+- **Repository／Api.Client／AspNetCore**：
+  - `ApiConnectorFinalizeResponseTests` 用的是 `MethodNotFound`，不是 ParseError。
+  - `ApiKeyRepositoryTests` 檢查的是寫入前後，清理之後沒有檢查；summary 提到的「停用列被查詢層排除」測試不存在。
+  - Api.Client 的 `AssemblyInfo.cs` 引用的行號已過時，已刪除。
+- **Db**：Oracle 預設值測試只涵蓋「與內建預設相同」的情況。
+- **工具與腳本**：
+  - `.editorconfig` 的欄位命名規則順序是 const → static → 其餘（原文寫 static readonly）。
+  - `check-xmldoc-refs.sh` 成功時會印一行 OK（原文寫完全無輸出）。
+  - DefineEditor `Program.cs` 引用的 `App.ConfigureNativeAppMenu` 不存在，實際是 `App.ConfigureApplicationMenu`。
+
+**方法名稱沒有改**（翻譯要點禁止改名），以下三組名稱本身仍帶著不符的宣稱：
+- `Logout_AfterEnteredCompany_ClearsThenRemoves`
+- `TListItemCollection_*` 等帶舊 `T` 前綴的方法
+- `DataTableJsonConverterCoverageTests` 的 `…InStringColumn`
+
+#### 移除的 plan 指涉
+
+- 程式內有指向 Bee 時期 plan、PR 編號或階段的註解，例如「主計畫 §範圍邊界」「PR 5.7 後」「Phase 4 之後」「決策 L7」「原則 4」「計畫 §1.3」。都保留了實質內容，拿掉指涉。
+- `check-public-docs.sh` 只抓點名 plan 檔的寫法，這類散文指涉它抓不到。
+- 保留一處：`docs/repo-ops/gotchas/test-ci-release.md` 說明 bee-library 時期的健檢結果放在舊 repo 的 `docs/plans/archive/`。那是描述歷史的位置，不是點名某份 plan。
+
+#### 未修的內容問題（建議階段 7 處理，除另註明者）
+
+**維運文件**（依使用者決定只翻譯）：
+- `gotchas/serialization-and-expressions.md`：
+  - 說 `AddColumn` 存大寫，實際是 `ToLowerInvariant`。
+  - `[Union]` 一節與 `FilterNodeFormatter` 的現況（手寫 formatter 加 `Kind` 判別碼）矛盾。
+- `gotchas/northwind-heads.md`：
+  - `SyncExecutor`、`RemoteDefineAccess` 已不存在。
+  - 記的 Xcode 版本已過時。
+  - 「三 head 一致」與同文的四個 head 不符。
+- `gotchas/mobile-trim-aot.md`：iOS 專案路徑少了 `Polhem.Northwind/` 一層。
+- `gotchas/definition-and-customization.md` 與 `gotchas/README.md`：仍寫舊的 `.zh-TW.md` 後綴與 `docs/` 根目錄。
+- `gotchas/test-ci-release.md`：新增套件時要改「N 個專案」的步驟，本身違反 single-source，而且那些數字已不存在。
+- `gotchas/database.md`：`TryCoerceToGuid` 那段的現況不明；另有「全部 5 個 provider」這個清點數字。
+- `branch-protection-setup.md`：以 `enforce_admins: false`、直接推 `main` 為前提，與 `rules/pull-request.md` 矛盾。**階段 5 設分支保護時一併改寫。**
+- `ci-sonarcloud-setup.md`：寫 Windows runner 加 PowerShell，實際是 `ubuntu-latest`；token 範例名稱新舊混用。**階段 5 一併改寫。**
+- `testing-patterns.md`：
+  - `[DbFact]` 樣板用的 `new DbAccess("common_sqlserver")` 已不存在（現在必須傳 `IDbConnectionManager`）。
+  - `[LocalOnlyTheory]` 範例用的 API 名稱不對。
+- `uom-decimals-prior-art.md`：
+  - `ANDEC`／`DECAN` 的說明過時。
+  - 「沒綁單位的數量退到公司位數」已不成立：現在沒有 `UnitField` 會擲例外。
+- `future-work.md`：外部開發者 skill 包一節寫的錨點 repo 仍是 `bee-northwind-avalonia`。
+
+**測試**：
+- **`BuildSelectTests.BuildSelect_WithFilterAndSort_ReturnsCommands` 是真的缺陷**：建了 `command3` 卻斷言 `command2`，所以 `command3` 從未被檢查。只刪了註解，測試沒動。
+- `SystemBusinessObjectTests` 被略過的 `Login_WithRsaKeyPair_...` 寫著「等有測試用子類別再啟用」，但 `Fakes/TestableSystemBusinessObject.cs` 已存在，這個 Skip 看來已過時。
+- `JsonRpcExecutorCoverageTests` 的 remarks 說 fixture 必須是 `SharedDbFixture`，實際用的是 `PolhemTestFixture`；是否違反 `rules/testing.md` 第 1 條待查。
+- `SysInfoStaticCollection` 的說明暗示有編譯期保護，但使用端寫的是字串常值 `[Collection("SysInfoStatic")]`，正是 `tests/CLAUDE.md` 警告的寫法。
+- `SystemBusinessObjectDefineTests` 的斷言失敗訊息會印出密碼值（可能牴觸 `rules/scanning.md`）。
+- 測試專案的 XML doc 警告被關掉，指向已移除型別的 cref 不會讓建置失敗，例如 `FileDefineStorageTests` 約第 330 行的 `DefinePathInfo`。
+  另有兩處 `<remarks>` 以 `</summary>` 結束：`FormBusinessObjectPermissionGateTests`、`CacheNotifyReaderUnitTests`。
+- 原本就是英文、這次沒動的錯誤說法：
+  - `CustomizeDefineReaderTests` 說可平行執行。
+  - `FormLiveComputationTests` 說 `AddColumn` 存大寫。
+  - `VirtualUserPoolTests` 第 55–57 行說索引會繞回。
+  - `DbDefineStorageTests` 有「out of this phase」。
+- Blazor 測試裡「留待 bUnit 整合測試」的說法可能已過時：專案已經在用 bUnit。
+- `ApiContractSerializationTests` 指向 sibling repo 的 `SoarCloud.Api.Core.Tests/...`。
+
+**其他**：
+- `nuget-publish.yml` 的 release notes 連到 `docs/changelogs/<版號>.md`，polhem 不帶這個目錄。**階段 4 建 CHANGELOG 時一併決定。**
+- `SonarQube.Analysis.xml` 對 Blazor 元件的重複偵測排除，檔案自己寫著已無依據。**階段 5 第一次完整掃描後處理。**
+- 內建定義檔的中文 Caption（見上方使用者決定）。
+
+#### 移交後續階段
+
+- **階段 4**：
+  - 公開文件的中文仍在（上方第 1 類）。
+  - `nuget-publish.yml` 的 changelogs 連結。
+  - `samples/Avalonia.DemoCenter/README.md`（檔名是英文版，內容仍是中文）的主題表與說明，列的是舊的中文分類名（「控件類型」「資料繫結」「FormMode 顯示狀態」等）。
+    App 裡已改為 `Control Types`、`Data Binding`、`FormMode States` 等，README 要跟著改（這次沒動 README）。
+- **階段 5**：`branch-protection-setup.md`、`ci-sonarcloud-setup.md` 依實際設定改寫；`SonarQube.Analysis.xml` 的 Blazor 排除。
+- **階段 7**：上方「未修的內容問題」。
 
 ## 階段 4：公開文件
 
