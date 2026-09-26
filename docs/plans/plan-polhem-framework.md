@@ -973,7 +973,7 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 | 批次 | 範圍 | CI | 狀態 |
 |------|------|----|------|
 | A 工具與 CI | RELEASE-01／DOCS-01、DOCS-02／MAINT-11、H-60、RELEASE-07、ARCH-DEPS-09／10／13；實走原生 auto-merge（H-61） | 精簡 | ✅ PR #3 |
-| B 安全 | SEC-01～22、MAINT-01、SER-01、SER-07、PERF-01／02、ApiKey 方法的 replay 防護（ADR-042 審查）、TESTS-01～03 | 完整 | 📝 |
+| B 安全 | SEC-01～22、MAINT-01、SER-01、SER-07、PERF-01／02、ApiKey 方法的 replay 防護（ADR-042 審查）、TESTS-01～03。拆成 B1（記錄範圍與資料層）、B2（驗證、session、token）、B3（傳輸與 wire：SEC-07／08／09／10／18／20、SER-01、SER-07） | 完整 | 🚧 |
 | C 正確性 | CONC-01～03／06／07／09／10／12、SER-02～06、PERF-15、SCATTERED-01、TRIM-AOT-01～04、I18N-01、RELEASE-12、MAINT-02 | 完整 | 📝 |
 | D API 定型（一）移除與改名 | MAINT-03、PUBLIC-API-03／04／05／15～18、SCATTERED-02／04～06／13～15、SEC-15／16、TESTS-08、SER-08／09、CONC-11、ARCH-DEPS-01～04／06／12／14、MAINT-05（決定的三項）、PUBLIC-API-06／12／13、H-01、H-03 | 完整 | 📝 |
 | E API 定型（二） | PUBLIC-API-01／02／10／14／19、PERF-03（ADR）、PERF-04、TRIM-AOT-05 | 完整 | 📝 |
@@ -1009,6 +1009,13 @@ polhem PR [#3](https://github.com/polhem-dev/polhem/pull/3)，squash 後為 `3e3
 | SEC-07 replay | 文件更正為「僅 Encrypted」＋有 `UniqueSequence` 方法但 `RequireWireFrame` 關閉時啟動警告；行為不變 |
 | SEC-06 token 儲存 | log 與 `st_session` 都改存雜湊：鍵欄位存 SHA-256(token) 前 16 bytes（仍為 Guid）、`session_user_xml` 不再存 token（讀回時由請求補上）、log 存前 8 bytes 指紋。查證：session 重建一律從請求帶來的 token 出發，資料庫不需還原 token |
 | SEC-10 反序列化型別 | 以方法參數型別解碼，TypeName 只作一致性檢查；另篩組件名、伺服端 MessagePack 加 `UntrustedData` |
+
+#### 暫停點（2026-09-27，使用者要求休息）
+
+- **B1**：PR [#4](https://github.com/polhem-dev/polhem/pull/4)（分支 `claude/stage7-b1-record-scope`，commit `ab3308d`，標題帶 `[all-db]`），已啟用 `gh pr merge --auto`。範圍：SEC-01、02、03、14、SEC-17 四項、MAINT-01；本機 clean build 0 警告、相關測試全過。CI 紅燈時依 `rules/pull-request.md` 處理。
+- **B2**：分支 `claude/stage7-b2-auth-session` 疊在 B1 之上，實作子代理在暫停時仍在進行、**尚未 commit**。範圍：SEC-04（文件）、05、06（雜湊設計見上表）、11、12、13、19、21、22、PERF-01、02、ApiKey 三個方法的 replay 防護、TESTS-01～03。接手時：審查工作樹 diff 與測試結果 → B1 合併後 `git rebase --onto origin/main ab3308d` → commit → PR（`[all-db]`）。
+- **接著**：B3，然後 C～M 依批次表。
+- bee-library 的本 plan commit 尚未推送（推送前要問 CI 模式）。
 
 ## 階段 8：首發 1.0.0
 
