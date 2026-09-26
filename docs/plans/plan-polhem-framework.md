@@ -201,7 +201,7 @@ bee-oauth2 已先走完同一條路，完整紀錄見封存的 [plan-polhem-oaut
      `auto-merge.yml` 最後一次執行也在 2026-06-14，帶 `auto-merge` label 的 PR 都是這兩個 Routine 開的。
    - **NuGet `Polhem.` 前綴**：Search API 上三個 `Polhem.OAuth2*` 套件的 `verified` 都是 false，前綴**尚未核准**。
      future-work 寫「已申請」，但 Gmail（含寄件備份）查不到寄給 `account@nuget.org` 的申請信或回覆，NuGet 的 GitHub issue 也查不到。
-     **申請是否已送出、經由哪個管道送出，待使用者確認**。追問或重新申請列在範圍外。
+     使用者確認（2026-09-26）：記不得當初如何申請，**首發前重新申請**，見階段 8 第 1 步。
    - **SonarCloud**：
      - organization key `polhem-dev` 目前沒有人使用（`api/organizations/search` 回 0 筆）。GitHub org `polhem-dev` 是 free plan，jeff377 為 admin。
        以 `gh` 查 org 已安裝的 GitHub App 為 0 筆，SonarCloud 的 app 尚未安裝。實際能否建立要到階段 5 才驗證。
@@ -304,10 +304,12 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 
 ## 階段 8：首發 1.0.0
 
-1. clean build 與完整模式 CI 全綠；紅燈是訊號，不為發版而改測試或原始碼。
-2. **推送 `v1.0.0` tag 須使用者明確同意**，發佈後無法撤回。
-3. 驗證 nuget.org 上各套件頁、相依清單；在全新專案安裝並跑最小範例（含 `dotnet tool install Polhem.Cli`）。
-4. 更新 org profile（`polhem-dev/.github`）：框架由「準備中」改為已發佈；中英互連用絕對網址，發佈後才推送。
+1. **NuGet `Polhem.` 前綴保留重新申請**（使用者決定，2026-09-26）：寄信到 `account@nuget.org`，**由使用者寄出**。
+   核准不是首發的前提，未核准也能發佈，只是套件不會顯示 verified；核准需要時間，所以提早在階段 5 前後寄出較好。
+2. clean build 與完整模式 CI 全綠；紅燈是訊號，不為發版而改測試或原始碼。
+3. **推送 `v1.0.0` tag 須使用者明確同意**，發佈後無法撤回。
+4. 驗證 nuget.org 上各套件頁、相依清單；在全新專案安裝並跑最小範例（含 `dotnet tool install Polhem.Cli`）。
+5. 更新 org profile（`polhem-dev/.github`）：框架由「準備中」改為已發佈；中英互連用絕對網址，發佈後才推送。
 
 ## 階段 9：polhem-northwind
 
@@ -332,7 +334,6 @@ CI 綠燈，各 head 至少啟動一次。
 
 ## 範圍外
 
-- 申請或追問 NuGet `Polhem.` 前綴保留（階段 0 只確認狀態）。
 - connector-js 發佈到 npm。
 - 發文公告。
 - 套件重組與命名調整：階段 1 刻意不做，由階段 7 健檢提出。
