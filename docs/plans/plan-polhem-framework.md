@@ -974,8 +974,8 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 |------|------|----|------|
 | A 工具與 CI | RELEASE-01／DOCS-01、DOCS-02／MAINT-11、H-60、RELEASE-07、ARCH-DEPS-09／10／13；實走原生 auto-merge（H-61） | 精簡 | ✅ PR #3 |
 | B 安全 | SEC-01～22、MAINT-01、SER-01、SER-07、PERF-01／02、ApiKey 方法的 replay 防護（ADR-042 審查）、TESTS-01～03。拆成 B1（記錄範圍與資料層）、B2（驗證、session、token）、B3（傳輸與 wire：SEC-07／08／09／10／18／20、SER-01、SER-07） | 完整 | ✅ PR #4、#5、#6 |
-| C 正確性 | CONC-01～03／06／07／09／10／12、SER-02～06、PERF-15、SCATTERED-01、TRIM-AOT-01～04、I18N-01、RELEASE-12、MAINT-02。拆成 C1（並行）、C2（序列化與 wire）、C3（行動端與 UI） | 完整 | 🚧 |
-| D API 定型（一）移除與改名 | MAINT-03、PUBLIC-API-03／04／05／15～18、SCATTERED-02／04～06／13～15、SEC-15／16、TESTS-08、SER-08／09、CONC-11、ARCH-DEPS-01～04／06／12／14、MAINT-05（決定的三項）、PUBLIC-API-06／12／13、H-01、H-03 | 完整 | 📝 |
+| C 正確性 | CONC-01～03／06／07／09／10／12、SER-02～06、PERF-15、SCATTERED-01、TRIM-AOT-01～04、I18N-01、RELEASE-12、MAINT-02。拆成 C1（並行）、C2（序列化與 wire）、C3（行動端與 UI） | 完整 | ✅ PR #7、#8、#9 |
+| D API 定型（一）移除與改名 | MAINT-03、PUBLIC-API-03／04／05／15～18、SCATTERED-02／04～06／13～15、SEC-15／16、TESTS-08、SER-08／09、CONC-11、ARCH-DEPS-01～04／06／12／14、MAINT-05（決定的三項）、PUBLIC-API-06／12／13、H-01、H-03 | 完整 | 🚧 D1 PR #10、D2 PR #11 |
 | E API 定型（二） | PUBLIC-API-01／02／10／14／19、PERF-03（ADR）、PERF-04、TRIM-AOT-05 | 完整 | 📝 |
 | F 效能與其餘整理 | PERF-05～14／18、SCATTERED-07～10／12、MAINT-06～18、CONC 其餘 | 完整 | 📝 |
 | G i18n | H-02、I18N-02～10／12／13／15／16 | 精簡 | 📝 |
@@ -1025,12 +1025,23 @@ polhem PR [#3](https://github.com/polhem-dev/polhem/pull/3)，squash 後為 `3e3
 - 使用者決定（B3）：驗證失敗維持「由 `[ApiAccessControl]` 單一判定」，但錯誤碼改回 -32001（原實作為 -32099）。
 - 查核：B2 刪掉的「被略過的 RSA 登入測試」已改寫為可執行版本並移到 `SystemBusinessObjectAuthenticationTests`，不是刪除覆蓋。
 
-#### 批次 C（進行中）
+#### 批次 C（2026-09-27 完成）
 
 - **C3** PR [#7](https://github.com/polhem-dev/polhem/pull/7) `3c39120` 已合併：TRIM-AOT-01～04、I18N-01、SCATTERED-01。在 scratchpad 的獨立 clone 與 C1 平行開發。trimmed console 實測：沒有 descriptor 時 18 條運算式失敗 8 條，有則 0。QuickStart.Server 以 demo/demo 登入成功（改前被拒）。`AuditRule` 的 caption 一併改英文（與 H-02 方向一致，其餘表留給批次 G）。公開 API 無變動。
-- **C1** PR [#8](https://github.com/polhem-dev/polhem/pull/8)：CONC-01、02、03、06、07、09、10、12、MAINT-02、RELEASE-12。空集合省略改用 `XSpecified`（`ShouldSerializeX` 在 iOS 反射模式的 XmlSerializer 宣告於基底類別時會擲 NRE，被 AOT gate 抓到）；173 份定義 XML 重新序列化逐位元組相同。移除 `IObjectSerialize` 系列、`SessionInfo` 公司欄位 setter；新增 `SessionCompanyScope`、公開 `IAuditLogSink`。
+- **C1** PR [#8](https://github.com/polhem-dev/polhem/pull/8) `808a718` 已合併：CONC-01、02、03、06、07、09、10、12、MAINT-02、RELEASE-12。空集合省略改用 `XSpecified`（`ShouldSerializeX` 在 iOS 反射模式的 XmlSerializer 宣告於基底類別時會擲 NRE，被 AOT gate 抓到）；173 份定義 XML 重新序列化逐位元組相同。移除 `IObjectSerialize` 系列、`SessionInfo` 公司欄位 setter；新增 `SessionCompanyScope`、公開 `IAuditLogSink`。
   - rebase 到 C3 之上後以 `dotnet test -p:DynamicCodeSupport=false` 跑 AOT gate，Api.Core 有 5 項失敗；原因是沒帶 `--settings .runsettings`，這 5 項是 TESTS-04（以 `[Fact]` 碰資料庫）。帶上設定後全過。
-- **C2**：SER-02～06、PERF-15，實作中。SER-03 會改 `wire-contracts/messages.d.ts`，connector-js 在批次 L 跟進。
+- **C2** PR [#9](https://github.com/polhem-dev/polhem/pull/9) `519ecd0` 已合併：SER-02～06、PERF-15，以及（範圍含 P4）SER-17 各項與 SER-11 的程式註解。Plain 的 `object` 值依 JSON 種類綁定；非預設初始值的成員一律寫出（drift 測試把關）；`WireCodecParityTests` 逐成員比對兩種 codec；新增 `XmlSerializerShapeGateTests`。全套 7138 項通過。`messages.d.ts` 改為 FilterCondition／FilterGroup 聯集、字典為 `Record`、值型別成員標示可省略；fixtures 不變。
+
+#### 批次 D
+
+- **D1** PR [#10](https://github.com/polhem-dev/polhem/pull/10) `e37dd1f` 已合併：相容殘留、死碼、零呼叫端成員（依使用者決定只留 `RoundCash`）、tracing 子系統、一次性 session、`BusinessObject.SessionInfo`、`JsonRpcExecutor.Execute` 移除；實作型別與 11 個 repository 改 internal；快取型別改 init-only；`RegisterPayloadCodec`；`BeeNameHint`（H-03）；Cli `keys protect`；`AnalyzerReleases.Shipped.md` 收斂為 `## Release 1.0.0`，4001–4004 列為保留（H-01）。Shipped 行數合計 5896 → 5588（逐專案見 PR）。
+  - 子代理的判斷（主 session 接受）：保留 `defines split-menu` 的舊格式偵測與「尚未發 key 前只檢查 `X-Api-Key` 存在」（移除會鎖住所有還沒發 key 的部署）；`HasNumericField` 改用來略過烘焙與公司查詢，而非略過 clone（clone 是為了不回傳共用快取實例）；新增公開型別 `BeeNameHint`（跨組件使用），公開 API 確認時特別標出。
+- **D2** PR [#11](https://github.com/polhem-dev/polhem/pull/11)：ARCH-DEPS-01～04／06／12、MAINT-05 決定的兩項、PUBLIC-API-06／12／13。`LocalApiProvider` 改收 `IServiceProvider`，原生 head 的行程層級位置改放在 `ClientInfo.LocalServiceProvider`。wire：`userID` → `userId`、AuditLog 回應型別改名、`PermissionActions`、三個 enum 加 `None`。
+  - **使用者決定（2026-09-27）：ARCH-DEPS-14 不做**，兩個 `FormDataObject` 不改名，命名空間已區分（UI.Avalonia 與 Web.Blazor.Server），單一 head 不會同時引用兩者。
+
+#### 批次 E（進行中）
+
+- 拆成 E1（CancellationToken、`IReplayWindowStore`、connector 層、DataTable MessagePack wire 形狀、`FileEndpointStorage` 搬到 UI.Core 並設為預設、ADR 記錄 1.0 的同步定位與介面演進政策）與 E2（sealed，依使用者確認後的清單）。E1 產出 sealed 候選清單放在 polhem-local 的 `plans/sealing-proposal.md`。
 
 ## 階段 8：首發 1.0.0
 
