@@ -973,8 +973,8 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 | 批次 | 範圍 | CI | 狀態 |
 |------|------|----|------|
 | A 工具與 CI | RELEASE-01／DOCS-01、DOCS-02／MAINT-11、H-60、RELEASE-07、ARCH-DEPS-09／10／13；實走原生 auto-merge（H-61） | 精簡 | ✅ PR #3 |
-| B 安全 | SEC-01～22、MAINT-01、SER-01、SER-07、PERF-01／02、ApiKey 方法的 replay 防護（ADR-042 審查）、TESTS-01～03。拆成 B1（記錄範圍與資料層）、B2（驗證、session、token）、B3（傳輸與 wire：SEC-07／08／09／10／18／20、SER-01、SER-07） | 完整 | 🚧 |
-| C 正確性 | CONC-01～03／06／07／09／10／12、SER-02～06、PERF-15、SCATTERED-01、TRIM-AOT-01～04、I18N-01、RELEASE-12、MAINT-02 | 完整 | 📝 |
+| B 安全 | SEC-01～22、MAINT-01、SER-01、SER-07、PERF-01／02、ApiKey 方法的 replay 防護（ADR-042 審查）、TESTS-01～03。拆成 B1（記錄範圍與資料層）、B2（驗證、session、token）、B3（傳輸與 wire：SEC-07／08／09／10／18／20、SER-01、SER-07） | 完整 | ✅ PR #4、#5、#6 |
+| C 正確性 | CONC-01～03／06／07／09／10／12、SER-02～06、PERF-15、SCATTERED-01、TRIM-AOT-01～04、I18N-01、RELEASE-12、MAINT-02。拆成 C1（並行）、C2（序列化與 wire）、C3（行動端與 UI） | 完整 | 🚧 |
 | D API 定型（一）移除與改名 | MAINT-03、PUBLIC-API-03／04／05／15～18、SCATTERED-02／04～06／13～15、SEC-15／16、TESTS-08、SER-08／09、CONC-11、ARCH-DEPS-01～04／06／12／14、MAINT-05（決定的三項）、PUBLIC-API-06／12／13、H-01、H-03 | 完整 | 📝 |
 | E API 定型（二） | PUBLIC-API-01／02／10／14／19、PERF-03（ADR）、PERF-04、TRIM-AOT-05 | 完整 | 📝 |
 | F 效能與其餘整理 | PERF-05～14／18、SCATTERED-07～10／12、MAINT-06～18、CONC 其餘 | 完整 | 📝 |
@@ -1010,12 +1010,27 @@ polhem PR [#3](https://github.com/polhem-dev/polhem/pull/3)，squash 後為 `3e3
 | SEC-06 token 儲存 | log 與 `st_session` 都改存雜湊：鍵欄位存 SHA-256(token) 前 16 bytes（仍為 Guid）、`session_user_xml` 不再存 token（讀回時由請求補上）、log 存前 8 bytes 指紋。查證：session 重建一律從請求帶來的 token 出發，資料庫不需還原 token |
 | SEC-10 反序列化型別 | 以方法參數型別解碼，TypeName 只作一致性檢查；另篩組件名、伺服端 MessagePack 加 `UntrustedData` |
 
-#### 暫停點（2026-09-27，使用者要求休息）
+#### 批次 B（2026-09-27 完成）
 
-- **B1**：PR [#4](https://github.com/polhem-dev/polhem/pull/4)（分支 `claude/stage7-b1-record-scope`，commit `ab3308d`，標題帶 `[all-db]`），已啟用 `gh pr merge --auto`。範圍：SEC-01、02、03、14、SEC-17 四項、MAINT-01；本機 clean build 0 警告、相關測試全過。CI 紅燈時依 `rules/pull-request.md` 處理。
-- **B2**：分支 `claude/stage7-b2-auth-session` 疊在 B1 之上，實作子代理在暫停時仍在進行、**尚未 commit**。範圍：SEC-04（文件）、05、06（雜湊設計見上表）、11、12、13、19、21、22、PERF-01、02、ApiKey 三個方法的 replay 防護、TESTS-01～03。接手時：審查工作樹 diff 與測試結果 → B1 合併後 `git rebase --onto origin/main ab3308d` → commit → PR（`[all-db]`）。
-- **接著**：B3，然後 C～M 依批次表。
-- bee-library 的本 plan commit 尚未推送（推送前要問 CI 模式）。
+拆成三個 PR，都以完整模式（`[all-db]`）通過 CI 後由 auto-merge 合併。實作交給子代理，主 session 審查 diff、確認測試並 commit。
+
+| PR | 範圍 | 驗證 |
+|----|------|------|
+| [#4](https://github.com/polhem-dev/polhem/pull/4) `012bbb9` | B1：SEC-01、02、03、14、SEC-17 四項、MAINT-01 | clean build 0 警告；Business 722、Db 1464、Repository 231 等全過；寫入範圍的回歸測試在拿掉修正時轉紅（13 項）；DB 寫入範圍測試五種資料庫都跑 |
+| [#5](https://github.com/polhem-dev/polhem/pull/5) `ea16849` | B2：SEC-04（文件）、05、06、11、12、13、19、21、22、PERF-01、02、ApiKey 三方法 replay、TESTS-01～03 | 全套 `./test.sh` 6485 項全過、0 略過 |
+| [#6](https://github.com/polhem-dev/polhem/pull/6) `843040c` | B3：SEC-07（文件＋警告）、08、09、10、18、20、SER-01、SER-07、docs/en 的免 Bearer P0 | 全套 6556 項全過；AOT gate 通過；wire contracts 與 fixtures 逐位元組不變 |
+
+- 公開 API：多為新增；移除 `AuditEntry.AccessToken`（改 `TokenFingerprint`）。
+- 行為變更（遷移說明與 CHANGELOG 要寫，批次 K）：GetList 無分頁時上限 1000、GetDefine 遠端白名單、GetLookup 套記錄範圍、儲存新值檢查範圍、受保護欄位不可讀／篩選、DDL 預設值驗證、`st_session` 存雜湊鍵（既有 session 失效）、log 改存 `token_fingerprint`、SHA-1 密碼雜湊不再可驗證、`CreateSession` 拒絕非本機呼叫、ApiKey 三方法需 frame、DB 異常 log 需部署管理員、BCL 例外改送固定訊息、驗證失敗回 -32001（`AuthenticationRequiredException`）、不帶 `Authorization` header 視為匿名呼叫、Blazor Local 模式僅限可信使用者（文件）。
+- 使用者決定（B3）：驗證失敗維持「由 `[ApiAccessControl]` 單一判定」，但錯誤碼改回 -32001（原實作為 -32099）。
+- 查核：B2 刪掉的「被略過的 RSA 登入測試」已改寫為可執行版本並移到 `SystemBusinessObjectAuthenticationTests`，不是刪除覆蓋。
+
+#### 批次 C（進行中）
+
+- **C3** PR [#7](https://github.com/polhem-dev/polhem/pull/7) `3c39120` 已合併：TRIM-AOT-01～04、I18N-01、SCATTERED-01。在 scratchpad 的獨立 clone 與 C1 平行開發。trimmed console 實測：沒有 descriptor 時 18 條運算式失敗 8 條，有則 0。QuickStart.Server 以 demo/demo 登入成功（改前被拒）。`AuditRule` 的 caption 一併改英文（與 H-02 方向一致，其餘表留給批次 G）。公開 API 無變動。
+- **C1** PR [#8](https://github.com/polhem-dev/polhem/pull/8)：CONC-01、02、03、06、07、09、10、12、MAINT-02、RELEASE-12。空集合省略改用 `XSpecified`（`ShouldSerializeX` 在 iOS 反射模式的 XmlSerializer 宣告於基底類別時會擲 NRE，被 AOT gate 抓到）；173 份定義 XML 重新序列化逐位元組相同。移除 `IObjectSerialize` 系列、`SessionInfo` 公司欄位 setter；新增 `SessionCompanyScope`、公開 `IAuditLogSink`。
+  - rebase 到 C3 之上後以 `dotnet test -p:DynamicCodeSupport=false` 跑 AOT gate，Api.Core 有 5 項失敗；原因是沒帶 `--settings .runsettings`，這 5 項是 TESTS-04（以 `[Fact]` 碰資料庫）。帶上設定後全過。
+- **C2**：SER-02～06、PERF-15，實作中。SER-03 會改 `wire-contracts/messages.d.ts`，connector-js 在批次 L 跟進。
 
 ## 階段 8：首發 1.0.0
 
