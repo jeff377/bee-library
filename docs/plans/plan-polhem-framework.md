@@ -979,8 +979,8 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 | E API 定型（二） | PUBLIC-API-01／02／10／14／19、PERF-03（ADR）、PERF-04、TRIM-AOT-05 | 完整 | ✅ PR #12、#13 |
 | F 效能與其餘整理 | PERF-05～14／18、SCATTERED-07～10／12、MAINT-06～18、CONC 其餘 | 完整 | ✅ PR #14 |
 | G i18n | H-02、I18N-02～10／12／13／15／16 | 精簡 | ✅ PR #15 |
-| H 測試整頓 | TESTS-04～18（H-30～39） | 完整 | 🚧 PR #16 |
-| I trim/AOT | TRIM-AOT-06／07／10／11 | 精簡 | 🚧 |
+| H 測試整頓 | TESTS-04～18（H-30～39） | 完整 | ✅ PR #16 |
+| I trim/AOT | TRIM-AOT-06／07／10／11 | 精簡 | 🚧 PR #17 |
 | J agent 設定與維運文件 | H-10～28 及各報告的 `[agent-docs]`／`[repo-ops]` | 精簡 | 📝 |
 | K 公開文件 | docs/en＋zh-TW、各 README、ADR（H-40）、CHANGELOG、H-50／51 | 精簡 | 📝 |
 | L connector-js | 跟進 wire 變更、協作文件（H-62） | 該 repo 的 CI | 📝 |
@@ -1059,14 +1059,25 @@ PR [#15](https://github.com/polhem-dev/polhem/pull/15) `07c0606`，在 clone 與
 - zh-TW 部署的差異：資料庫欄位註解與權限模型名稱改為英文（沒有語言層），既有資料庫在下次 schema 升級時同步（SQLite 除外）。
 - 因 TableSchema caption 會進 DDL，PR 升為完整模式。
 
-#### 批次 H（進行中）
+#### 批次 H（2026-09-27 完成）
 
-PR [#16](https://github.com/polhem-dev/polhem/pull/16)：TESTS-04～18 與移交的 10 項。沒有發現 production bug。不帶 runsettings 的 `dotnet test` 全過、DB 測試顯示略過。合併 G 之後新寫的 FormPage bUnit 測試因按鈕文字在地化失敗 5 項，改為透過 localizer 取標籤並固定文化後通過。
+PR [#16](https://github.com/polhem-dev/polhem/pull/16) `a5f5e60`：TESTS-04～18 與移交的 10 項。沒有發現 production bug。不帶 runsettings 的 `dotnet test` 全過、DB 測試顯示略過。合併 G 之後新寫的 FormPage bUnit 測試因按鈕文字在地化失敗 5 項，改為透過 localizer 取標籤並固定文化後通過。
 - 列為不做：36 個 NotNull-only 測試（存在性或 DI 解析本身就是被測行為等，理由分組記在 PR 描述）、51 個以反射讀 private 成員的測試檔。
 
-#### 批次 I（進行中）
+#### 批次 I
 
-TRIM-AOT-06／07／08／09／10／11，在 clone 開發。
+PR [#17](https://github.com/polhem-dev/polhem/pull/17)（已啟用 auto-merge）：新增 `POLHEM9004`（NativeAOT、full trim、關閉 STJ 反射時警告，`PolhemSuppressTrimSupportWarning` 可關閉；以打包後的 `Polhem.Definition` 實測）、AOT gate 由 3 個專案擴大到 7 個、`ToClrType` 補齊（`Language` 未對應導致客戶端 `SaveLanguageAsync` 必定失敗）、行動端用平台預設 HTTP handler。另補了 `docs/*/analyzer-rules.md` 的 POLHEM9004 列。
+- 給 M 批 client 實測的重點：iOS／Android 的 Order 表單按 Lookup 應以 overlay 開啟；Release 行動端 `Math.Round` 等運算式要能即時計算；iOS 預設 MessagePack 下 ExecFunc 回傳 Polhem enum；改用平台 handler 後的遠端連線；`.WithInterFont()` 在 iOS 模擬器未驗證。
+
+#### 暫停點（2026-09-27，使用者要求關機）
+
+- polhem `main` 在 `a5f5e60`（PR #16）；PR #17 以 auto-merge 等 CI，合併後即為批次 I 完成，接手時先確認它的狀態（紅燈依 `rules/pull-request.md` 處理）。
+- **剩下的批次**：J（agent 設定與維運文件）、K（公開文件）、L（connector-js）、M（驗收：逐項回驗、公開 API 確認與重建 PublicAPI、client 實測、nupkg、CHANGELOG 定稿）。
+- **J／K 的待更新清單已彙整**在 polhem-local 的 `plans/stage7-docs-todo.md`（各批子代理回報的「需要更新的文件」，原本只存在對話中）。sealed 清單在同目錄 `sealing-proposal.md`（已套用）。
+- **L 要跟進的 wire 變更**：`messages.d.ts` 的 FilterNode 聯集、`Record` 字典、可省略的值型別成員（C2）；移除 `CreateSessionRequest.oneTime`（D1）；`userID` → `userId`、AuditLog 回應型別改名、`PermissionActions`、三個 enum 加 `None`（D2）；`LoginResponse.culture`（G）；錯誤碼 -32001 驗證失敗（B3）；不帶 `Authorization` header 即匿名呼叫（B3）。另補 connector-js 的協作文件（H-62）。
+- **M 要請使用者確認的公開 API 注意點**：新增的 `BeeNameHint`（D1）；D1 保留的兩個相容檢查（`split-menu` 的舊格式偵測、未發 key 前只檢查 `X-Api-Key` 存在）。
+- 工作方式：每批交給實作子代理（不 commit），主 session 審查、建置、測試、commit、開 PR（`gh pr merge --auto --squash`）；不互相衝突的批次在 scratchpad 的 clone 平行開發。scratchpad 在 session 結束後可能被清空，clone 內沒有未推送的東西。
+- bee-library 本 plan 的 commit 尚未推送（推送前要問 CI 模式）。
 
 ## 階段 8：首發 1.0.0
 
