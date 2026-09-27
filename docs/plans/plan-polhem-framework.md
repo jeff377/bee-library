@@ -980,10 +980,10 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 | F 效能與其餘整理 | PERF-05～14／18、SCATTERED-07～10／12、MAINT-06～18、CONC 其餘 | 完整 | ✅ PR #14 |
 | G i18n | H-02、I18N-02～10／12／13／15／16 | 精簡 | ✅ PR #15 |
 | H 測試整頓 | TESTS-04～18（H-30～39） | 完整 | ✅ PR #16 |
-| I trim/AOT | TRIM-AOT-06／07／10／11 | 精簡 | 🚧 PR #17 |
-| J agent 設定與維運文件 | H-10～28 及各報告的 `[agent-docs]`／`[repo-ops]` | 精簡 | 📝 |
-| K 公開文件 | docs/en＋zh-TW、各 README、ADR（H-40）、CHANGELOG、H-50／51 | 精簡 | 📝 |
-| L connector-js | 跟進 wire 變更、協作文件（H-62） | 該 repo 的 CI | 📝 |
+| I trim/AOT | TRIM-AOT-06／07／10／11 | 精簡 | ✅ PR #17 |
+| J agent 設定與維運文件 | H-10～28 及各報告的 `[agent-docs]`／`[repo-ops]` | 精簡 | ✅ PR #20 |
+| K 公開文件 | docs/en＋zh-TW、各 README、ADR（H-40）、CHANGELOG、H-50／51 | 精簡 | 🚧 K1 PR #19（auto-merge 中）、K2 分支已推送未開 PR |
+| L connector-js | 跟進 wire 變更、協作文件（H-62） | 該 repo 的 CI | ✅ connector-js PR #3、polhem PR #18 |
 | M 驗收 | 逐項回驗、重建 PublicAPI（先請使用者確認）、client 實測、nupkg、CHANGELOG 定稿 | 完整 | 📝 |
 
 每批流程：從最新 `origin/main` 開 `claude/<topic>` 分支 → 本機 clean Release build 0 警告＋相關測試 → PR → `gh pr merge --auto` → 合併後才開下一批。
@@ -1069,15 +1069,23 @@ PR [#16](https://github.com/polhem-dev/polhem/pull/16) `a5f5e60`：TESTS-04～18
 PR [#17](https://github.com/polhem-dev/polhem/pull/17)（已啟用 auto-merge）：新增 `POLHEM9004`（NativeAOT、full trim、關閉 STJ 反射時警告，`PolhemSuppressTrimSupportWarning` 可關閉；以打包後的 `Polhem.Definition` 實測）、AOT gate 由 3 個專案擴大到 7 個、`ToClrType` 補齊（`Language` 未對應導致客戶端 `SaveLanguageAsync` 必定失敗）、行動端用平台預設 HTTP handler。另補了 `docs/*/analyzer-rules.md` 的 POLHEM9004 列。
 - 給 M 批 client 實測的重點：iOS／Android 的 Order 表單按 Lookup 應以 overlay 開啟；Release 行動端 `Math.Round` 等運算式要能即時計算；iOS 預設 MessagePack 下 ExecFunc 回傳 Polhem enum；改用平台 handler 後的遠端連線；`.WithInterFont()` 在 iOS 模擬器未驗證。
 
-#### 暫停點（2026-09-27，使用者要求關機）
+#### 批次 J、K、L（2026-09-28）
 
-- polhem `main` 在 `a5f5e60`（PR #16）；PR #17 以 auto-merge 等 CI，合併後即為批次 I 完成，接手時先確認它的狀態（紅燈依 `rules/pull-request.md` 處理）。
-- **剩下的批次**：J（agent 設定與維運文件）、K（公開文件）、L（connector-js）、M（驗收：逐項回驗、公開 API 確認與重建 PublicAPI、client 實測、nupkg、CHANGELOG 定稿）。
-- **J／K 的待更新清單已彙整**在 polhem-local 的 `plans/stage7-docs-todo.md`（各批子代理回報的「需要更新的文件」，原本只存在對話中）。sealed 清單在同目錄 `sealing-proposal.md`（已套用）。
-- **L 要跟進的 wire 變更**：`messages.d.ts` 的 FilterNode 聯集、`Record` 字典、可省略的值型別成員（C2）；移除 `CreateSessionRequest.oneTime`（D1）；`userID` → `userId`、AuditLog 回應型別改名、`PermissionActions`、三個 enum 加 `None`（D2）；`LoginResponse.culture`（G）；錯誤碼 -32001 驗證失敗（B3）；不帶 `Authorization` header 即匿名呼叫（B3）。另補 connector-js 的協作文件（H-62）。
-- **M 要請使用者確認的公開 API 注意點**：新增的 `BeeNameHint`（D1）；D1 保留的兩個相容檢查（`split-menu` 的舊格式偵測、未發 key 前只檢查 `X-Api-Key` 存在）。
-- 工作方式：每批交給實作子代理（不 commit），主 session 審查、建置、測試、commit、開 PR（`gh pr merge --auto --squash`）；不互相衝突的批次在 scratchpad 的 clone 平行開發。scratchpad 在 session 結束後可能被清空，clone 內沒有未推送的東西。
-- bee-library 本 plan 的 commit 尚未推送（推送前要問 CI 模式）。
+- 四批平行：J 在主工作樹，K1／K2 各在一個 clone，L 在 connector-js。
+- **L**：connector-js PR [#3](https://github.com/polhem-dev/polhem-connector-js/pull/3) 已合併，對齊 1.0 wire 合約，`AuthenticationRequiredError`（-32001），補 CONTRIBUTING、CODEOWNERS、分支保護筆記、CLAUDE.md。**對真實後端的 smoke 7 項通過**（Plain／Encoded ping、登入前 -32001、RSA 登入、加密 `getFormSchema`、登出後 token 被拒）——移交項 H-63 完成。使用者決定：TS 客戶端登入前不送 header，**.NET 客戶端比照**（polhem PR [#18](https://github.com/polhem-dev/polhem/pull/18) 已合併）；TS 未實作重放 frame，README 寫明並開 [connector-js#2](https://github.com/polhem-dev/polhem-connector-js/issues/2)。
+- **J**：PR [#20](https://github.com/polhem-dev/polhem/pull/20) 已合併（`.claude/`、各 `CLAUDE.md`、`docs/repo-ops/`；review skill 基準與方法論更新；Trusted Publishing 維運紀錄；sonar-fix skip 清空）。
+- **K1**：PR [#19](https://github.com/polhem-dev/polhem/pull/19)（`docs/en`＋`docs/zh-TW`、新增 `platform-support.md`），暫停時 auto-merge 等 CI。
+- **K2**：分支 `claude/stage7-k2-docs`（`a900cc0`，ADR、所有 README、CHANGELOG 1.0.0 草稿）已推送，**尚未開 PR**：它連到 K1 新增的 `platform-support.md`，要等 #19 合併後 rebase 再開。
+
+#### 暫停點（2026-09-28，使用者 usage 96%）
+
+接手步驟：
+1. 確認 PR #19 已合併；K2 分支 rebase 到 `main`、跑三支 docs 檢查、開 PR（精簡模式）。
+2. 批次 R：清單與使用者決定在 polhem-local 的 `plans/stage7-batch-r.md`（R1 框架程式、R2 samples／apps／tools、R3 文件收尾；另列判定不做的三項）。R3 要在 K2 合併後做。
+3. 批次 M（驗收）：逐項回驗健檢報告（polhem-local `internal/health-2026-09-26/`）、請使用者確認最終公開 API（特別標出 `BeeNameHint` 與 D1 保留的兩個相容檢查）後重建 `PublicAPI.Shipped.txt`、Unshipped 清空、`AnalyzerReleases` 確認；client 實測（桌面 Avalonia、iOS、Android、Browser、Blazor Server、JS 的 `Web.Js.Demo`，Local 與 Remote；I 批列的實測重點）；打開每個 nupkg（圖示、README、nuspec、無 `Bee.*` 相依、`buildTransitive` 在消費端生效）；CHANGELOG 定稿。
+4. 完成後更新本 plan、用 SendMessage 回報「擬定 bee-library 改名另開移至 polhem-dev 的 plan」session。
+
+工作方式同前：實作交給子代理（不 commit），主 session 審查、建置、測試、commit、開 PR 並 `gh pr merge --auto --squash`。bee-library 的 plan commit 以精簡模式推送，不再逐次詢問（使用者決定，2026-09-27）。
 
 ## 階段 8：首發 1.0.0
 
