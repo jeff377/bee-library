@@ -975,12 +975,12 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 | A 工具與 CI | RELEASE-01／DOCS-01、DOCS-02／MAINT-11、H-60、RELEASE-07、ARCH-DEPS-09／10／13；實走原生 auto-merge（H-61） | 精簡 | ✅ PR #3 |
 | B 安全 | SEC-01～22、MAINT-01、SER-01、SER-07、PERF-01／02、ApiKey 方法的 replay 防護（ADR-042 審查）、TESTS-01～03。拆成 B1（記錄範圍與資料層）、B2（驗證、session、token）、B3（傳輸與 wire：SEC-07／08／09／10／18／20、SER-01、SER-07） | 完整 | ✅ PR #4、#5、#6 |
 | C 正確性 | CONC-01～03／06／07／09／10／12、SER-02～06、PERF-15、SCATTERED-01、TRIM-AOT-01～04、I18N-01、RELEASE-12、MAINT-02。拆成 C1（並行）、C2（序列化與 wire）、C3（行動端與 UI） | 完整 | ✅ PR #7、#8、#9 |
-| D API 定型（一）移除與改名 | MAINT-03、PUBLIC-API-03／04／05／15～18、SCATTERED-02／04～06／13～15、SEC-15／16、TESTS-08、SER-08／09、CONC-11、ARCH-DEPS-01～04／06／12／14、MAINT-05（決定的三項）、PUBLIC-API-06／12／13、H-01、H-03 | 完整 | 🚧 D1 PR #10、D2 PR #11 |
-| E API 定型（二） | PUBLIC-API-01／02／10／14／19、PERF-03（ADR）、PERF-04、TRIM-AOT-05 | 完整 | 📝 |
-| F 效能與其餘整理 | PERF-05～14／18、SCATTERED-07～10／12、MAINT-06～18、CONC 其餘 | 完整 | 📝 |
-| G i18n | H-02、I18N-02～10／12／13／15／16 | 精簡 | 📝 |
-| H 測試整頓 | TESTS-04～18（H-30～39） | 完整 | 📝 |
-| I trim/AOT | TRIM-AOT-06／07／10／11 | 精簡 | 📝 |
+| D API 定型（一）移除與改名 | MAINT-03、PUBLIC-API-03／04／05／15～18、SCATTERED-02／04～06／13～15、SEC-15／16、TESTS-08、SER-08／09、CONC-11、ARCH-DEPS-01～04／06／12／14、MAINT-05（決定的三項）、PUBLIC-API-06／12／13、H-01、H-03 | 完整 | ✅ PR #10、#11 |
+| E API 定型（二） | PUBLIC-API-01／02／10／14／19、PERF-03（ADR）、PERF-04、TRIM-AOT-05 | 完整 | ✅ PR #12、#13 |
+| F 效能與其餘整理 | PERF-05～14／18、SCATTERED-07～10／12、MAINT-06～18、CONC 其餘 | 完整 | ✅ PR #14 |
+| G i18n | H-02、I18N-02～10／12／13／15／16 | 精簡 | ✅ PR #15 |
+| H 測試整頓 | TESTS-04～18（H-30～39） | 完整 | 🚧 PR #16 |
+| I trim/AOT | TRIM-AOT-06／07／10／11 | 精簡 | 🚧 |
 | J agent 設定與維運文件 | H-10～28 及各報告的 `[agent-docs]`／`[repo-ops]` | 精簡 | 📝 |
 | K 公開文件 | docs/en＋zh-TW、各 README、ADR（H-40）、CHANGELOG、H-50／51 | 精簡 | 📝 |
 | L connector-js | 跟進 wire 變更、協作文件（H-62） | 該 repo 的 CI | 📝 |
@@ -1039,9 +1039,34 @@ polhem PR [#3](https://github.com/polhem-dev/polhem/pull/3)，squash 後為 `3e3
 - **D2** PR [#11](https://github.com/polhem-dev/polhem/pull/11)：ARCH-DEPS-01～04／06／12、MAINT-05 決定的兩項、PUBLIC-API-06／12／13。`LocalApiProvider` 改收 `IServiceProvider`，原生 head 的行程層級位置改放在 `ClientInfo.LocalServiceProvider`。wire：`userID` → `userId`、AuditLog 回應型別改名、`PermissionActions`、三個 enum 加 `None`。
   - **使用者決定（2026-09-27）：ARCH-DEPS-14 不做**，兩個 `FormDataObject` 不改名，命名空間已區分（UI.Avalonia 與 Web.Blazor.Server），單一 head 不會同時引用兩者。
 
-#### 批次 E（進行中）
+#### 批次 E（2026-09-27 完成）
 
-- 拆成 E1（CancellationToken、`IReplayWindowStore`、connector 層、DataTable MessagePack wire 形狀、`FileEndpointStorage` 搬到 UI.Core 並設為預設、ADR 記錄 1.0 的同步定位與介面演進政策）與 E2（sealed，依使用者確認後的清單）。E1 產出 sealed 候選清單放在 polhem-local 的 `plans/sealing-proposal.md`。
+- **E1** PR [#12](https://github.com/polhem-dev/polhem/pull/12) `a54efd9`：CancellationToken（`ClientAsyncSurfaceTests` 把關）、`IReplayWindowStore.TryAcceptAsync`、connector 補 `GetFormSchema/Layout/Language/CommonConfiguration` 並一致化（`ConnectorSurfaceTests`；connector 的 action 方法一律 virtual，因為測試替身依賴覆寫）、DataTable MessagePack 形狀、`FileEndpointStorage` 搬到 UI.Core 並設為預設、ADR-046（1.0 的 API 演進政策）。
+  - **DataTable 量測（使用者要求 20 欄 × 10,000 筆）**：原始 5.69 → 2.45 MB（−57%）、gzip 後 1.21 → 1.09 MB（−10%）、序列化 25.8 → 3.5 ms／配置 28.9 → 4.9 MB、反序列化 36.4 → 15.8 ms／31.9 → 13.5 MB；10% Modified 列的降幅相近。網路位元組的節省被 gzip 吃掉大半，主要效益在 CPU 與記憶體配置。
+- **E2** PR [#13](https://github.com/polhem-dev/polhem/pull/13) `7359250`：依使用者確認的清單 seal 386 個類別（提案 388，E1 刪了 2 個型別），保留 18 個擴充點；`KeyCollectionBase<T>` 改 abstract；改寫 4 個測試替身（多出的 `DbFieldForTest` 是掃描漏掉的 `global::` 寫法）。PR 誤標精簡模式，改標 `[all-db]`，合併後 `main` 跑完整模式。
+  - 使用者決定：B1–B8 全依建議（`AuditLogApiConnector`、`AuditRuleBusinessObject` 保留）、B9／B10 政策接受、`KeyCollectionBase<T>` 改 abstract。
+
+#### 批次 F（2026-09-27 完成）
+
+PR [#14](https://github.com/polhem-dev/polhem/pull/14) `1c21195`。使用者決定：gzip 預設 Fastest、不加門檻旗標（PERF-07）；builder 只抽逐字相同的部分（SCATTERED-10）；**MAINT-06 不做**（`SortDirection`、`CollectionExtensions` 不改名）；samples 與 Northwind 補呼叫 `UsePolhemFramework`（SCATTERED-12）。
+- 量測：檔案 token 快取命中 1216 → 62 ns；gzip 570 KB 1.67 → 0.48 ms（輸出 80 → 110 KB）；加密配置 694 → 174 KB；存取控制查找 506 → 20 ns。
+- 行為變更：定義檔的變更偵測每項每秒最多一次；稽核批次單一交易；Short／Long／Decimal／Binary 預設值有型別、不再可為 NULL；`ICacheDataSourceProvider.GetCompanyAuditRules` 移除預設實作。
+- 判定不做：PERF-10（要改公開契約或重新引入刻意不做的 session 負向快取，只影響帶失效 token 的請求）、PERF-14（實測 6.9 µs、每次開表單一次）、PERF-13 的 SelectContext 快取與 PERF-09 的 repository 型別快取（報告列為觀察）、SCATTERED-09 的 `CustomizeOnlyStorage` 包裝（語意不同）、SCATTERED-10 其餘需樣板基底的部分（使用者排除）。
+
+#### 批次 G（2026-09-27 完成）
+
+PR [#15](https://github.com/polhem-dev/polhem/pull/15) `07c0606`，在 clone 與 F 平行開發。使用者決定：登入回傳 Culture 並合併 `DefaultLang`／`DefaultLanguage`（預設仍 zh-TW）、伺服端訊息加 key 並在地化、數字與日期依使用者文化顯示與輸入、`FormRule.Message` 解析 key、`CBool` 移除中文字面值；**fallback 鏈遇到 `en*` 直接用英文基底**（定義檔與框架文字共用 `LanguageFallback`）。
+- zh-TW 部署的差異：資料庫欄位註解與權限模型名稱改為英文（沒有語言層），既有資料庫在下次 schema 升級時同步（SQLite 除外）。
+- 因 TableSchema caption 會進 DDL，PR 升為完整模式。
+
+#### 批次 H（進行中）
+
+PR [#16](https://github.com/polhem-dev/polhem/pull/16)：TESTS-04～18 與移交的 10 項。沒有發現 production bug。不帶 runsettings 的 `dotnet test` 全過、DB 測試顯示略過。合併 G 之後新寫的 FormPage bUnit 測試因按鈕文字在地化失敗 5 項，改為透過 localizer 取標籤並固定文化後通過。
+- 列為不做：36 個 NotNull-only 測試（存在性或 DI 解析本身就是被測行為等，理由分組記在 PR 描述）、51 個以反射讀 private 成員的測試檔。
+
+#### 批次 I（進行中）
+
+TRIM-AOT-06／07／08／09／10／11，在 clone 開發。
 
 ## 階段 8：首發 1.0.0
 
