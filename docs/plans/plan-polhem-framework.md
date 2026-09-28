@@ -1085,7 +1085,19 @@ PR [#17](https://github.com/polhem-dev/polhem/pull/17)（已啟用 auto-merge）
   - samples 業務表**搬到 company**（使用者決定）；Northwind 加 zh-TW 帳號 `demo-tw`、截圖搬進 repo；DefineEditor 非 macOS 視窗內選單；WASM 不內嵌 CJK 字型（README 註明 Browser 用英文帳號）。
   - 判定不做：各套件打包自己的 README、CI 建置 Browser／iOS／Android head、sys_id 唯一索引命名統一。
 - **R1** PR [#22](https://github.com/polhem-dev/polhem/pull/22)（`[all-db]`）、**R2** PR [#23](https://github.com/polhem-dev/polhem/pull/23)：開 PR、auto-merge 中。R2 在 clone 開發，與 K2 的 README 衝突由其子代理解決；samples 實際跑通登入 → 進公司 → 清單。
-- **R3**（文件收尾）待 #22、#23 合併後進行，接著批次 M。
+- **R1** PR #22、**R2** PR #23 已合併；**R3** PR [#24](https://github.com/polhem-dev/polhem/pull/24)（文件收尾）開 PR、auto-merge 中。R3 判斷 ADR-014 不標「部分被取代」（演進段只補細節、未推翻決策），其餘 004、010、028、030、036 已標。
+
+#### 回驗（2026-09-28）
+
+- 逐項回驗健檢報告全部 557 項（對 `main` `cd0a578`）：FIXED 504、NOT-DOING 19、SUPERSEDED 2、OPEN 32。所有 P0／P1 除 MAINT-01 外均已修且有回歸測試；MAINT-01 只修了一半（未登錄 ProgramSettings 的表單仍可用大小寫繞過稽核規則）。報告在 polhem-local `internal/health-2026-09-26/verification-2026-09-28.md`。
+- 剩餘 32 項與使用者決定（Required 伺服端驗證、samples `Employee` 改名 `Staff`、PERF-08 判定不做、可調整的 public const 改 `static readonly`、README Contact 改指向組織、`zh-Hant-TW` 別名）整理為批次 **M0**，清單在 polhem-local `plans/stage7-batch-m.md`，同檔列出批次 M（驗收）步驟。
+
+#### 交接點（2026-09-28，session context 91%）
+
+接手步驟（新 session，local only，工作目錄 `~/Desktop/repos/polhem`）：
+1. 確認 PR #24 已合併（若 BEHIND 就 `gh pr update-branch 24`）。
+2. 讀 polhem-local `plans/stage7-batch-m.md`，實作 M0（可拆多個 PR；碰到 SQL／Repository 用 `[all-db]`），全部合併後做 M。
+3. 其餘約定同前：實作交給子代理（不 commit），主 session 審查、建置、測試、commit、PR、`gh pr merge --auto --squash`；strict 分支保護下後合併的 PR 需 `gh pr update-branch`；不互相衝突的批次可在 scratchpad clone 平行開發，但**子代理的報告與結果一律寫到 polhem-local**（scratchpad 已被清空三次）。
 
 ## 階段 8：首發 1.0.0
 
