@@ -11,7 +11,7 @@
 | 4 | 公開文件：`docs/` 改以英文為源、ADR 補英文版並納入雙語檢查、README 遷移說明 | ✅ 已完成（2026-09-26） |
 | 5 | 建立 repo 與 CI：推送、SonarCloud、分支保護與 PR 工作流、auto-merge、Trusted Publishing policy | ✅ 已完成（2026-09-26） |
 | 6 | polhem-connector-js 改名另開，接上新的 wire 合約 | ✅ 已完成（2026-09-26） |
-| 7 | 首發前健檢與修正，公開 API 定型 | 🚧 進行中 |
+| 7 | 首發前健檢與修正，公開 API 定型 | ✅ 已完成（2026-09-28） |
 | 8 | 首發 `Polhem.*` 1.0.0，更新 org profile | 📝 待做 |
 | 9 | polhem-northwind 改名另開，改用 `Polhem.*` 1.0.0 | 📝 待做 |
 | 10 | 回寫 bee-library，凍結舊框架與下游 repo | 📝 待做 |
@@ -925,7 +925,7 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 5. **打開 nupkg 檢查**：圖示、README、nuspec 的作者／授權／repository、相依清單不得出現任何 `Bee.*`。
 6. CHANGELOG 1.0.0 定稿。
 
-### 實作紀錄（進行中）
+### 實作紀錄（2026-09-28 完成）
 
 #### 健檢（2026-09-26）
 
@@ -984,7 +984,7 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 | J agent 設定與維運文件 | H-10～28 及各報告的 `[agent-docs]`／`[repo-ops]` | 精簡 | ✅ PR #20 |
 | K 公開文件 | docs/en＋zh-TW、各 README、ADR（H-40）、CHANGELOG、H-50／51 | 精簡 | ✅ PR #19、#21 |
 | L connector-js | 跟進 wire 變更、協作文件（H-62） | 該 repo 的 CI | ✅ connector-js PR #3、polhem PR #18 |
-| M 驗收 | 逐項回驗、重建 PublicAPI（先請使用者確認）、client 實測、nupkg、CHANGELOG 定稿 | 完整 | 📝 |
+| M 驗收 | 逐項回驗、重建 PublicAPI（先請使用者確認）、client 實測、nupkg、CHANGELOG 定稿；拆成 M0a～M0d、M1～M3 與基準 PR | 依批 | ✅ PR #25～#30、#33、#34 |
 
 每批流程：從最新 `origin/main` 開 `claude/<topic>` 分支 → 本機 clean Release build 0 警告＋相關測試 → PR → `gh pr merge --auto` → 合併後才開下一批。
 
@@ -1098,6 +1098,75 @@ PR [#17](https://github.com/polhem-dev/polhem/pull/17)（已啟用 auto-merge）
 1. 確認 PR #24 已合併（若 BEHIND 就 `gh pr update-branch 24`）。
 2. 讀 polhem-local `plans/stage7-batch-m.md`，實作 M0（可拆多個 PR；碰到 SQL／Repository 用 `[all-db]`），全部合併後做 M。
 3. 其餘約定同前：實作交給子代理（不 commit），主 session 審查、建置、測試、commit、PR、`gh pr merge --auto --squash`；strict 分支保護下後合併的 PR 需 `gh pr update-branch`；不互相衝突的批次可在 scratchpad clone 平行開發，但**子代理的報告與結果一律寫到 polhem-local**（scratchpad 已被清空三次）。
+
+#### 批次 M（2026-09-28 完成）
+
+polhem-local 的 `plans/stage7-batch-m.md` 與 `work/m*/`（各批子代理報告、回驗、實測、nupkg 檢查）是明細；這裡只記結論。
+
+**修正批次**
+
+| PR | 範圍 | CI |
+|----|------|----|
+| [#25](https://github.com/polhem-dev/polhem/pull/25) M0c | samples `Employee`→`Staff`、`Department`→`Team`（避開框架保留 progId）；根 README 聯絡與截圖；README／ADR 漂移；CI 打包 `Polhem.Cli` | 精簡 |
+| [#26](https://github.com/polhem-dev/polhem/pull/26) M0a | Required 伺服端驗證；MAINT-01（稽核規則不分大小寫、紀錄用 schema 拼法）；SEC-17 第 4 項；錯誤訊息不含伺服器路徑；`ActivatorUtilities`；可調整常數改 `static readonly`；zh-Hant／zh-Hans 別名；Sonar 21 則 | `[all-db]` |
+| [#27](https://github.com/polhem-dev/polhem/pull/27) M0b | 儲存前必填提示（伺服端與 UI 共用 `RequiredFieldCheck`）；Blazor 預設在地化；UI 的 `CancellationToken`；`Layout` 複本 | 精簡 |
+| [#28](https://github.com/polhem-dev/polhem/pull/28) M0d | 刪除 Bee 相容（`BeeNameHint`、舊 Categories 偵測＋`split-menu`、`BEE_MASTER_KEY` 提示）；回驗殘項 | `[all-db]` |
+| [#29](https://github.com/polhem-dev/polhem/pull/29) M1 | macOS／Linux 的 Local 連線（`IsLocalPath`）；內建 layout 依產生器重產＋`LayoutControlTypeGateTests`；卡片格式；Blazor Remote 需 `ApiClientInfo.ApiKey`（文件） | 精簡 |
+| [#30](https://github.com/polhem-dev/polhem/pull/30) M2 | **iOS 閃退**：運算式改經 `Func<object?[], object?>` 求值＋`InterpretedInvokerGateTests`；明細編輯 overlay 即時計算 | 精簡 |
+| [#33](https://github.com/polhem-dev/polhem/pull/33) M3 | 清單顯示選項文字與布林；`ControlType.DateTimeEdit`；手機 overlay 版面 | 精簡 |
+| [#34](https://github.com/polhem-dev/polhem/pull/34) `f5dc0e6` | `PublicAPI.Shipped.txt` 重建（Unshipped 清空）、CHANGELOG 1.0.0 定稿（仍 Unreleased） | 精簡 |
+
+CI 失敗一次：#26 在 Linux 抓到 `UnguardedFormWarningService` 以 ProgramSettings 拼法讀檔（大小寫敏感檔案系統讀不到），改為儲存拼法優先。
+
+**使用者決定（2026-09-28）**
+- M0 清單的六項決定照 `stage7-batch-m.md` 執行；追加：samples `Department` 也改名（`Team`）、開啟 GitHub Discussions。
+- 公開 API 確認時：**不考慮 Bee.NET 相容**——刪 `BeeNameHint`、舊 ProgramSettings 格式偵測與 CLI `split-menu`、`BEE_MASTER_KEY` 提示；**保留**「尚未發 key 前只檢查 `X-Api-Key` 存在」（新部署啟動需要，非 Bee 相容）；`LanguageEnum` 不改名。
+- 實測觀察：1.0 前修「清單顯示下拉選項文字」「DateTime 編輯器」「手機 overlay 版面」；延後並開 issue：Blazor `DynamicForm` 的 ButtonEdit／NumericEdit（[#31](https://github.com/polhem-dev/polhem/issues/31)）、刪除確認（[#32](https://github.com/polhem-dev/polhem/issues/32)）。
+
+**判定不做（含理由）**
+- PERF-08 payload 管線複製：屬最佳化，加解密 span 化已做（使用者決定）。
+- PUBLIC-API-21 `LanguageEnum` 命名：對應 XML `<Enums>`，改名會改 XML 元素名（使用者決定）。
+- Sonar S3871（`InvalidParamsException`／`MethodNotFoundException` 維持 internal：只在 executor 內部丟出與對應，公開只多出無用 API）、S2292 `DepartmentNode.Children`（內部組樹需 backing field）：Won't Fix，**需使用者在 SonarCloud UI 標記**。
+- `FormApiConnector.ExecuteAsync<T>` 維持 public（getting-started 與 QuickStart 用它呼叫自訂 BO 動作）。
+- 回驗 32 項 OPEN 中延後到階段 8：RELEASE-O02（NuGet 前綴保留，使用者寄信）、RELEASE-H03／DOCS-13（`Version.props` 與 CHANGELOG 日期、`docs/changelogs/1.0.0*.md` 開頭的 draft 句）。
+
+**client 實測**（Local 只適用於桌面與 Blazor，其餘 head 設計上只有 Remote，見 `docs/en/platform-support.md`）
+
+| Client | Local | Remote |
+|--------|-------|--------|
+| 桌面 Avalonia（Northwind Desktop；Local 以不 commit 的 harness） | ✅（M1 修正前 macOS 無法連：`IsLocalPath` 只認 Windows 路徑） | ✅ demo-tw：zh-TW 欄名、租戶客製、日期、規則訊息、必填提示 |
+| iOS（iPhone 17 模擬器，Release） | — | ✅ Inter 字型正常、平台 HTTP handler、Lookup overlay、明細即時計算；**M2 修正前改明細按 OK 即閃退**（`ExecutionEngineException`），修正後 4050、不閃退；M3 後 overlay 不裁切、鍵盤不蓋按鈕 |
+| Android（bee_pixel 模擬器，Release） | — | ✅ 連線、清單、編輯、明細 OK 後重算（JIT，無閃退） |
+| Browser（WASM） | — | ✅ Lookup overlay、即時計算、儲存、必填提示 |
+| Blazor Server（samples） | ✅ | ✅（需設 `ApiClientInfo.ApiKey`，照原 README 會 401 → M1 補文件） |
+| JS（Web.Js.Demo） | — | ✅ 登入、EnterCompany、CRUD、依定義動態表單 |
+
+nupkg（17 個）：作者、MIT、`polhem.png`、README、repository 皆正確，相依無任何 `Bee.*`；buildTransitive 經 transitive 引用生效（POLHEM1001），POLHEM9004 在 full trim／NativeAOT／關閉 STJ 反射時警告、可關閉；桌面 partial trim 需 `JsonSerializerIsReflectionEnabledByDefault=true`（預期行為）。
+
+**最終公開 API（`PublicAPI.Shipped.txt`，#34；型別數／成員行數，量測於 2026-09-28）**
+
+| 套件 | 型別 | 行 |
+|------|------|----|
+| Polhem.Api.AspNetCore | 2 | 12 |
+| Polhem.Api.Client | 21 | 204 |
+| Polhem.Api.Contracts | 67 | 215 |
+| Polhem.Api.Core | 109 | 660 |
+| Polhem.Base | 61 | 340 |
+| Polhem.Business | 106 | 698 |
+| Polhem.Db | 105 | 601 |
+| Polhem.Definition | 268 | 2118 |
+| Polhem.Expressions | 1 | 5 |
+| Polhem.Hosting | 2 | 5 |
+| Polhem.ObjectCaching | 44 | 244 |
+| Polhem.Repository.Abstractions | 23 | 156 |
+| Polhem.Repository | 8 | 57 |
+| Polhem.UI.Avalonia | 28 | 299 |
+| Polhem.UI.Core | 5 | 53 |
+| Polhem.Web.Blazor.Server | 11 | 85 |
+
+`AnalyzerReleases.Shipped.md` 為單一 `## Release 1.0.0`，POLHEM4001–4004 保留。逐型別清單在 polhem-local `work/m/public-api-summary.md`（確認時版本）。
+
+**留給階段 8**：`Version.props` → 1.0.0、CHANGELOG 填日期並移除 draft 句、NuGet 前綴保留、SonarCloud 標記兩則 Won't Fix；發版前依規則跑一次完整模式 CI。
 
 ## 階段 8：首發 1.0.0
 
