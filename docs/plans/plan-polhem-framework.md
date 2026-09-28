@@ -12,7 +12,7 @@
 | 5 | 建立 repo 與 CI：推送、SonarCloud、分支保護與 PR 工作流、auto-merge、Trusted Publishing policy | ✅ 已完成（2026-09-26） |
 | 6 | polhem-connector-js 改名另開，接上新的 wire 合約 | ✅ 已完成（2026-09-26） |
 | 7 | 首發前健檢與修正，公開 API 定型 | ✅ 已完成（2026-09-28） |
-| 8 | 首發 `Polhem.*` 1.0.0，更新 org profile | 🚧 進行中 |
+| 8 | 首發 `Polhem.*` 1.0.0，更新 org profile | ✅ 已完成（2026-09-28） |
 | 9 | polhem-northwind 改名另開，改用 `Polhem.*` 1.0.0 | 📝 待做 |
 | 10 | 回寫 bee-library，凍結舊框架與下游 repo | 📝 待做 |
 
@@ -1176,6 +1176,62 @@ nupkg（17 個）：作者、MIT、`polhem.png`、README、repository 皆正確�
 3. **推送 `v1.0.0` tag 須使用者明確同意**，發佈後無法撤回。
 4. 驗證 nuget.org 上各套件頁、相依清單；在全新專案安裝並跑最小範例（含 `dotnet tool install Polhem.Cli`）。
 5. 更新 org profile（`polhem-dev/.github`）：框架由「準備中」改為已發佈；中英互連用絕對網址，發佈後才推送。
+
+### 實作紀錄（2026-09-28 完成）
+
+**已發佈**：`Polhem.*` 1.0.0 共 17 個套件，tag `v1.0.0` 指向 polhem `6b8e5af`。
+套件頁：https://www.nuget.org/profiles/Polhem ；GitHub Release：https://github.com/polhem-dev/polhem/releases/tag/v1.0.0
+
+| repo | PR／commit | 內容 | CI |
+|------|-----------|------|----|
+| polhem | [#35](https://github.com/polhem-dev/polhem/pull/35) `6b8e5af` | `Version.props` 4.33.0 → 1.0.0；CHANGELOG（中英）`[1.0.0] - 2026-09-28`；`docs/changelogs/1.0.0*.md` 拿掉 draft 句並重新 stamp 譯本；根 README（中英）拿掉 M0d 已刪除的 `split-menu` 說明 | 完整 |
+| polhem-connector-js | [#4](https://github.com/polhem-dev/polhem-connector-js/pull/4) `b11b6d8` | 新增 `scripts/framework-ref.mjs`（`v1.0.0`），`contracts.mjs`、`fetch-fixtures.mjs` 都讀它；CONTRIBUTING（中英）、`CLAUDE.md` 寫明框架發新版時改 tag | 該 repo 的 CI |
+| polhem | [#36](https://github.com/polhem-dev/polhem/pull/36) `b37c927` | 釘 tag 的連帶修正：`rules/serialization.md`、`wire-contracts/README.md`、`wire-fixtures/README.md`、`polhem-add-bo-method` skill 原本寫「wire diff 會讓 connector-js CI 轉紅」，改為「發佈且 connector-js 改 tag 時才轉紅，跟進要排進同一版」 | 精簡 |
+| polhem-dev/.github | `fd0c4be`（`1176df0..fd0c4be`） | 套件清單加入 Polhem 框架、拿掉「準備中」，中英同步 | — |
+
+#### 使用者決定（2026-09-28）
+
+- **NuGet `Polhem.` 前綴**：發佈時**尚未寄出**申請信，由使用者之後自己寄。17 個套件的 `verified` 都是 false（Search API），與預期相同。
+- `NUGET_USER` 由 agent 以 `gh secret set` 設定（值 `jeff377`）；SonarCloud 的 Won't Fix 由 agent 以 Claude in Chrome 標記。
+- org profile：套件清單先列框架、再列 Polhem.OAuth2，NuGet 連結指向 nuget.org 的 Polhem 組織頁；不列 connector-js。
+- connector-js 改釘 tag 後，polhem 描述「紅燈即通知」的四處一起改（PR #36）。
+
+#### 各步驟
+
+1. **前綴申請**：見上，使用者動作，未完成。
+2. **CI**：
+   - 動工前 `main`（`f5dc0e6`）的 Build CI、Docs Check 都綠。
+   - PR #35 的完整模式（run `36392438046`）：五種資料庫都出現 `connection verified`、測試 7277 項全過、Mobile AOT gate 3919 項（略過 3）、strict build 0 警告、SonarCloud 通過。
+   - 合併後 `main` 的完整模式（run `36393293021`，`6b8e5af`，squash 標題帶 `[all-db]`）結果相同，Docs Check 綠。
+   - 本機：`Polhem.slnx`、`tools/Polhem.Tools.slnx` clean Release build 0 警告；`Version`／`AssemblyVersion`／`FileVersion` 以 `dotnet msbuild -getProperty` 確認為 1.0.0／1.0.0.0。
+   - 其餘 `4.33.0` 的出現處都是「Bee.NET 最後一版」的紀錄，保留。所有 `PublicAPI.Unshipped.txt` 與 `AnalyzerReleases.Unshipped.md` 在 #34 之後已為空，本階段不需搬基準。
+   - **發現**：根 README 會打進 16 個框架套件，卻仍描述已刪除的 `defines split-menu`，發佈後就會定在 nuget.org 上，所以併進 #35 修正。README 其他以反引號標示的識別字逐一比對程式碼，找不到的都是遷移表裡的舊名。
+3. **SonarCloud Won't Fix**：以 UI 的 **Accept**（新版 UI 對 Won't Fix 的名稱）標記三筆並附理由，未勾「分享給 Sonar」：
+   S3871 `InvalidParamsException`、`MethodNotFoundException`（兩個檔案各一筆），S2292 `DepartmentNode.Children`。API 回讀三筆都是 `ACCEPTED`／`WONTFIX`、各有一則留言。
+4. **推 tag**：推送前確認 tag（annotated）與 `origin/main` 都是 `6b8e5af`、遠端沒有同名 tag、工作目錄乾淨、`main` 最新一輪完整模式 CI 全綠；**使用者同意後推送**。
+5. **發佈**（run `36394335133`）：
+   - publish 與 release 兩個 job 每一步都成功，含 `Log in to NuGet`。
+   - 17 個 `.nupkg` 與 17 個 `.snupkg` 都顯示「Your package was pushed」，**沒有被 `--skip-duplicate` 跳過**。
+   - **Trusted Publishing policy `polhem-release` 能建立全新的套件 ID**，dotnet tool `Polhem.Cli` 也可以。
+   - GitHub Release `v1.0.0` 已建立，列出 17 個套件與 CLI 的安裝指令。
+6. **nuget.org 驗證**：
+   - 17 個 nuspec 由 flat container 下載：作者 `Polhem contributors`、MIT（expression）、圖示 `polhem.png`、README、repository `https://github.com/polhem-dev/polhem` commit `6b8e5af`；`Polhem.Cli` 的 packageType 是 `DotnetTool`。
+   - 相依清單沒有任何 `Bee.*`。外部相依只有 `MessagePack` 3.1.7、`DynamicExpresso.Core` 2.19.3、`Avalonia`／`Avalonia.Controls.DataGrid` 12.0.0，以及 `Microsoft.Extensions.*` 抽象層與 `Caching.Memory`。
+   - 17 個套件頁都回 200；`Polhem.Base`、`Polhem.Cli` 的 nupkg 內 `polhem.png` 與 repo 的 `polhem.png` 雜湊相同，README 與 repo 內容相同。`Polhem.Base` 套件頁顯示 README 內容與圖示。
+7. **全新專案實測**（scratchpad，`NUGET_PACKAGES` 指向獨立目錄，`nuget.config` 只留 nuget.org）：
+   - `dotnet new tool-manifest` 後 `dotnet tool install Polhem.Cli --version 1.0.0`（local tool，未動全域工具）。`dotnet polhem --help` 列出 `defines`、`keys`；`--version` 為 `1.0.0+6b8e5af…`。
+   - 照 `docs/en/getting-started.md` 第 1～7 步：`Polhem.Api.AspNetCore`、`Polhem.Db` 1.0.0 加 `Microsoft.Data.Sqlite`，以 CLI materialize `Define/`，改 `SystemSettings.xml`（File 金鑰）、`DatabaseSettings.xml`（SQLite），加 `ProgramSettings.xml` 與 `EchoBusinessObject`。server 建置 0 警告、啟動後自動補上保留 progId、產生 `Master.key` 與 `myapp.db`。
+   - client 以 `Polhem.Api.Client` 1.0.0 呼叫，印出 **`echo: hello`**。13 個函式庫套件的 `.nupkg.metadata` 來源都是 `https://api.nuget.org/v3/index.json`。
+8. **org profile**：本機 commit `fd0c4be`；確認套件頁開得到之後，**使用者同意才推送**。推送後組織首頁顯示新內容、不再有「in preparation」，中文版同步。
+   profile 內 6 個外部連結都回 200：組織首頁、中文版 profile、兩個 repo、`Polhem.OAuth2` 套件頁、nuget.org 的 Polhem 組織頁。
+9. **connector-js 改釘 release tag**：PR #4 的 CI 兩個 Node 版本都顯示 `Contracts match polhem-dev/polhem@v1.0.0.`、`Fetched 27 fixtures from polhem-dev/polhem@v1.0.0`；本機單元測試 50 項、wire 測試 28 項通過，`typecheck`、`build` 通過。
+   `src/contracts/` 沒有變動（`v1.0.0` 就是當時的框架 `main`）。合併後該 repo `main` 的 CI 綠。
+   - 觀察：connector-js 的 PR 上有 `SonarCloud Code Analysis` check 並通過。階段 6 記為「不接 SonarCloud」，此處只記錄看到的現象，未查它從何而來。
+
+#### 移交後續階段
+
+- **使用者**：寄出 NuGet `Polhem.` 前綴申請信（核准後套件才顯示 verified）。
+- **之後每次框架發版**：connector-js 的 `scripts/framework-ref.mjs` 改到新 tag，再 `contracts:update`（該 repo 的 CONTRIBUTING 已寫明）。
 
 ## 階段 9：polhem-northwind
 
