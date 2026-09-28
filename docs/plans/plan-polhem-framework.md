@@ -1239,6 +1239,18 @@ nupkg（17 個）：作者、MIT、`polhem.png`、README、repository 皆正確�
 `PackageReference` 改為 `Polhem.*` 1.0.0；框架內 `apps/Polhem.Northwind` 與鏡像的同步方式沿用 `docs/repo-ops/gotchas/northwind-heads.md`。
 CI 綠燈，各 head 至少啟動一次。
 
+### 使用者決定（2026-09-28）
+
+| 項目 | 結論 |
+|------|------|
+| 內容來源 | **改以 polhem `v1.0.0` 的 `apps/Polhem.Northwind` 為內容**，推翻上面「以鏡像的追蹤檔為起點」。依 `northwind-heads.md` 的同步方式把 ProjectReference 換成 `PackageReference` 1.0.0；鏡像專屬的檔案（CI、`.gitignore`、`.vscode`、`LICENSE`）取自 bee-northwind-avalonia 再改名 |
+| README | 中英雙語，比照框架（英文為源、`README.zh-TW.md`、頂部切換列），Browser 的 README 也是兩份 |
+| repo 治理 | 分支保護＋PR 工作流，比照 connector-js；**不接 SonarCloud** |
+
+內容來源的依據：鏡像最後一次同步的是 bee-library `04513b24`，比凍結起點還舊。把鏡像機械改名後，與 polhem `v1.0.0` 的副本相比，有 52 個檔案有實質差異：
+- 鏡像版對 1.0.0 編不過：`IBeeContext` 已改名、`AddPolhemFramework` 要加 `using`、`FileEndpointStorage` 已搬移並改為預設，`LocalizedListView`／`NorthwindDefinitions` 已由 `ClientInfo.UseDefinitionLoader` 取代。
+- 鏡像版少了階段 7 的修正：`demo-tw` 帳號、`UsePolhemFramework`、選單在地化、內建 TableSchema 英文基底、AuditRule 的 layout，以及已實測過的截圖。
+
 ## 階段 10：回寫 bee-library 並凍結
 
 **回寫要在 archive 之前**，archive 後 repo 唯讀。
