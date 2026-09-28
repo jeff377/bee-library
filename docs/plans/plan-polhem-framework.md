@@ -982,7 +982,7 @@ polhem-oauth2 的教訓：**健檢排在建立 PublicAPI 基準與打 tag 之前
 | H 測試整頓 | TESTS-04～18（H-30～39） | 完整 | ✅ PR #16 |
 | I trim/AOT | TRIM-AOT-06／07／10／11 | 精簡 | ✅ PR #17 |
 | J agent 設定與維運文件 | H-10～28 及各報告的 `[agent-docs]`／`[repo-ops]` | 精簡 | ✅ PR #20 |
-| K 公開文件 | docs/en＋zh-TW、各 README、ADR（H-40）、CHANGELOG、H-50／51 | 精簡 | 🚧 K1 PR #19（auto-merge 中）、K2 分支已推送未開 PR |
+| K 公開文件 | docs/en＋zh-TW、各 README、ADR（H-40）、CHANGELOG、H-50／51 | 精簡 | ✅ PR #19、#21 |
 | L connector-js | 跟進 wire 變更、協作文件（H-62） | 該 repo 的 CI | ✅ connector-js PR #3、polhem PR #18 |
 | M 驗收 | 逐項回驗、重建 PublicAPI（先請使用者確認）、client 實測、nupkg、CHANGELOG 定稿 | 完整 | 📝 |
 
@@ -1077,15 +1077,15 @@ PR [#17](https://github.com/polhem-dev/polhem/pull/17)（已啟用 auto-merge）
 - **K1**：PR [#19](https://github.com/polhem-dev/polhem/pull/19)（`docs/en`＋`docs/zh-TW`、新增 `platform-support.md`），暫停時 auto-merge 等 CI。
 - **K2**：分支 `claude/stage7-k2-docs`（`a900cc0`，ADR、所有 README、CHANGELOG 1.0.0 草稿）已推送，**尚未開 PR**：它連到 K1 新增的 `platform-support.md`，要等 #19 合併後 rebase 再開。
 
-#### 暫停點（2026-09-28，使用者 usage 96%）
+#### 批次 K 完成、批次 R（2026-09-28）
 
-接手步驟：
-1. 確認 PR #19 已合併；K2 分支 rebase 到 `main`、跑三支 docs 檢查、開 PR（精簡模式）。
-2. 批次 R：清單與使用者決定在 polhem-local 的 `plans/stage7-batch-r.md`（R1 框架程式、R2 samples／apps／tools、R3 文件收尾；另列判定不做的三項）。R3 要在 K2 合併後做。
-3. 批次 M（驗收）：逐項回驗健檢報告（polhem-local `internal/health-2026-09-26/`）、請使用者確認最終公開 API（特別標出 `BeeNameHint` 與 D1 保留的兩個相容檢查）後重建 `PublicAPI.Shipped.txt`、Unshipped 清空、`AnalyzerReleases` 確認；client 實測（桌面 Avalonia、iOS、Android、Browser、Blazor Server、JS 的 `Web.Js.Demo`，Local 與 Remote；I 批列的實測重點）；打開每個 nupkg（圖示、README、nuspec、無 `Bee.*` 相依、`buildTransitive` 在消費端生效）；CHANGELOG 定稿。
-4. 完成後更新本 plan、用 SendMessage 回報「擬定 bee-library 改名另開移至 polhem-dev 的 plan」session。
-
-工作方式同前：實作交給子代理（不 commit），主 session 審查、建置、測試、commit、開 PR 並 `gh pr merge --auto --squash`。bee-library 的 plan commit 以精簡模式推送，不再逐次詢問（使用者決定，2026-09-27）。
+- **K1** PR [#19](https://github.com/polhem-dev/polhem/pull/19)、**K2** PR [#21](https://github.com/polhem-dev/polhem/pull/21) 已合併（#19 一度因 strict 分支保護落後 `main` 而卡住，以 `gh pr update-branch` 解決）。
+- **J／K 審查時發現的程式問題與使用者決定**（2026-09-28）整理為批次 R，清單在 polhem-local 的 `plans/stage7-batch-r.md`：
+  - `DefaultValueExpression` 改為優先生效（原本只補空值，實際幾乎不生效）；`UseDefinitionLoader` 預設開啟；Plain 綁定 `*Args` 查證（36 種 Args 無契約外屬性，仍加防護與 gate 測試）；啟動時呼叫 `ValidateRequired`；未知 action 回 -32601；SQLite rebuild 檢查縮窄；開窗 JOIN 表名；移除 `ClientSettings` 系列。
+  - samples 業務表**搬到 company**（使用者決定）；Northwind 加 zh-TW 帳號 `demo-tw`、截圖搬進 repo；DefineEditor 非 macOS 視窗內選單；WASM 不內嵌 CJK 字型（README 註明 Browser 用英文帳號）。
+  - 判定不做：各套件打包自己的 README、CI 建置 Browser／iOS／Android head、sys_id 唯一索引命名統一。
+- **R1** PR [#22](https://github.com/polhem-dev/polhem/pull/22)（`[all-db]`）、**R2** PR [#23](https://github.com/polhem-dev/polhem/pull/23)：開 PR、auto-merge 中。R2 在 clone 開發，與 K2 的 README 衝突由其子代理解決；samples 實際跑通登入 → 進公司 → 清單。
+- **R3**（文件收尾）待 #22、#23 合併後進行，接著批次 M。
 
 ## 階段 8：首發 1.0.0
 
