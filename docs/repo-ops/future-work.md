@@ -320,7 +320,7 @@ company-scope 資料庫相依快取那一族是現成 pattern，`bee-add-cache-o
 
 **啟動時第一步**：先寫一個 throw-away test 實跑上面那條純定義換算鏈（確認靜態推導成立），
 再定資料模型（第三題），然後依 `bee-add-cache-object` 開匯率快取物件。
-捨入政策本身另有 `docs/plans/plan-rounding-mode.md`。
+捨入政策本身另有 `docs/plans/archive/plan-rounding-mode.md`（已移交 polhem）。
 
 ## BPM／Workflow：簽核流程與單據狀態轉換
 
@@ -353,69 +353,37 @@ BPM／Workflow（簽核流程、單據狀態轉換）是未來的發展方向。
 
 ## 開放共同維護：改名另開新框架於 GitHub organization
 
-**構想（2026-09-11 使用者評估未來開放共同維護時提出）**：不把 `jeff377/bee-library` 轉移出去，
-而是**以當時最新版為起點，在 organization 下另開一個改名的新框架**，命名空間全換。
-舊 repo 與已發佈的 `Bee.*` 套件原地保留、凍結。
+**已完成（2026-09-28），bee-library 已凍結。** 構想（2026-09-11）是不把 `jeff377/bee-library` 轉移出去，
+而是以當時最新版為起點，在 organization 下另開一個改名的新框架，命名空間全換；舊 repo 與 `Bee.*` 套件凍結。
+結果如下，完整的決策、步驟與實測見封存的 [plan-polhem-framework.md](../plans/archive/plan-polhem-framework.md)。
+
+| 項目 | 結果 |
+|------|------|
+| 新框架 | [`polhem-dev/polhem`](https://github.com/polhem-dev/polhem)，以凍結起點 `7d6cc9d9` 為起點；`Polhem.*` 1.0.0 共 17 個套件（含 dotnet tool `Polhem.Cli`）於 2026-09-28 發佈 |
+| 下游 | `bee-connector-js` → [`polhem-dev/polhem-connector-js`](https://github.com/polhem-dev/polhem-connector-js)（`@polhem/connector`，尚未發佈到 npm）；`bee-northwind-avalonia` → [`polhem-dev/polhem-northwind`](https://github.com/polhem-dev/polhem-northwind)；`bee-jsonrpc-sample` 不移植，只凍結 |
+| 舊框架 | `Bee.*` 17 個套件全版本標為 deprecated（Legacy，替代套件為對應的 `Polhem.*`）；四個舊 repo 的 README 加上停止維護提醒後 archive |
+| 遷移說明 | 新框架 README 的「Migrating from Bee.NET」一節 |
+
+### 與原構想不同的地方
+
+- **要等什麼**：原本寫「等出現明確的共同維護者人選」。使用者於 2026-09-19 決定**排入近期執行，不等共同維護者**。
+- **git 歷史**：原本寫「新 repo 帶完整 git 歷史」。使用者於 2026-09-19 決定**不帶**，比照 polhem-oauth2。
+  規則與 gotchas 以 commit hash 引用的證據，改寫為 `https://github.com/jeff377/bee-library/commit/<hash>` 的完整網址，舊 repo archive 後仍可讀。
+- **型別名稱字串相容解析**：不做，只寫遷移說明。
+- **開放共同維護的缺口**：共用規則搬進 repo、PR＋分支保護工作流、CODEOWNERS 與 CONTRIBUTING、語言政策、LICENSE 著作權人，全部在首發前完成。
+  auto-merge 改用 GitHub 原生的 auto-merge，不再用 PAT；發佈改用 NuGet Trusted Publishing，不再用 API key。
+- **`dev-workflow` plugin**：新 repo 不宣告；屬於 repo 本身的慣例寫進 repo 的 `CLAUDE.md` 與 `CONTRIBUTING`。
 
 ### 名稱與帳號
-
-名稱 **Polhem** 已定案並公開：polhem-oauth2 以此名發佈，舊的 `Bee.OAuth2.*` 已指向它。
 
 | 項目 | 名稱 | 備註 |
 |------|------|------|
 | GitHub organization | `polhem-dev` | 組織 profile 放在 `polhem-dev/.github` |
-| NuGet 組織帳號 | `Polhem` | 組織 email 暫用個人信箱的別名，有共同維護者時改成團隊收得到的地址。前綴 `Polhem.` 的保留已申請；若一直沒有回音，隔幾週追問 |
-| npm 組織 | `@polhem` | connector-js 改名另開後，以 `@polhem/…` 發佈 |
+| NuGet 組織帳號 | `Polhem` | 組織 email 暫用個人信箱的別名，有共同維護者時改成團隊收得到的地址。前綴 `Polhem.` 的保留**尚未申請**（2026-09-28），由使用者寄信到 `account@nuget.org`；未核准前套件不顯示 verified |
+| npm 組織 | `@polhem` | connector-js 已改名另開，套件名 `@polhem/connector`，尚未發佈 |
 
 **商標的限制**：軟體類別（第 9、42 類）沒有 POLHEM。唯一相鄰的是瑞典 POLHEM INFRA 的歐盟註冊，類別為第 35、36 類（商業管理、金融）。
-因此**不宜以 Polhem 名義對外提供商業管理服務**，例如銷售 ERP 導入顧問服務。
-
-### 改名時編譯器抓不到的地方
-
-命名空間與套件 ID 是機械式替換，真正的風險在字串裡：
-
-- **定義檔的組件限定型別名稱**：ProgramSettings 的
-  `BusinessObject="Bee.Business.AuditLog.LogBusinessObject, Bee.Business"` 這類寫法，
-  消費端自己的 Define 檔也有，漏改要到執行期才壞。
-- **wire 內容帶 .NET 型別名稱**：`wire-fixtures/` 裡的
-  `"type": "Bee.Definition.Collections.Parameter, Bee.Definition"`。這是跨語言合約，
-  `bee-connector-js` 要一併改名另開。
-- **寫死的組件名字串**：`src/Bee.Base/SysInfo.cs`。
-- **環境變數與代號**：`BEE_MASTER_KEY`（部署環境依賴它）、`BEE_TEST_CONNSTR_*`、`BEE1001`／`BEE9001` 這類診斷代號。
-
-### 要一併決定的
-
-1. **新 repo 帶完整 git 歷史。** 規則與 gotchas 引用的 commit hash 要在新 repo 查得到；
-   ADR 裡寫成完整 URL 的連結仍指向舊 repo，不受影響。
-2. **舊框架怎麼凍結。** README 指向新框架、GitHub 設為 archive、NuGet 標 deprecated 並填替代套件
-   （等新框架首版發佈後才有東西可指）。分出去之後不雙邊修。
-3. **型別名稱字串要不要做相容解析。** Odoo 改名時保留過舊套件名的相容匯入；
-   本框架的使用者目前多為自有 repo，不做也說得過去，但要明確決定，不能是漏掉。
-4. **開放共同維護才會浮現的缺口**，與改名無關、搬到哪都一樣要處理：
-   - 跨專案共用規則（code-style、scanning 等）放在使用者層 `~/.claude/rules/`，協作者讀不到，須搬進 repo。
-   - 「本機可驗證就直接推 main」的工作流改為 PR + branch protection。
-   - `.github/workflows/auto-merge.yml` 寫死只認 `jeff377`。
-   - 缺 CODEOWNERS 與 CONTRIBUTING。
-   - **語言政策**（2026-09-13 定案，polhem-oauth2 先行）：
-     - **共同維護的部分一律英文**：程式碼、XML doc、程式內註解、測試方法名稱與 `[DisplayName]`、
-       agent 設定（`.claude/`）、commit message、維運文件。
-     - **公開的 `.md` 文件維持中英雙語，ADR 也是**：讓共同開發者讀得懂決策。bee-library 的 `docs/adr/` 目前只有中文，
-       而且不在 `check-docs-i18n.sh` 的檢查範圍內，改名另開時要補英文版，並一併納入雙語檢查。
-     - bee-library 現行的中文 `[DisplayName]`、中文 `.claude/`、中文 commit 與維運文件，改名另開時都要改。
-     - 使用者層 `~/.claude/CLAUDE.md` 的「敘述文字全部繁體中文」必須由 repo 層設定明文覆寫。
-   - 發版權限：誰持有 NuGet key、誰能推 tag。
-   - LICENSE 著作權人：bee-library 目前是 `Copyright (c) 2025 Bee.NET`，但 Bee.NET 不是法律主體。
-     polhem-oauth2 採 `Copyright (c) Polhem contributors`，不寫年份（2026-09-13 定案）。Polhem 同樣不是法律主體，這一列標示的是權利人群體；
-     沒有簽 CLA 時，每位貢獻者對自己的貢獻保有著作權。改名另開時比照這個做法決定，將來若成立法人再評估轉讓。
-5. **`dev-workflow` plugin 不隨框架搬**（與框架無直接關係，且各開發者習慣不同）。
-   專案層 `.claude/settings.json` 對它的宣告移到個人層；`.claude/CLAUDE.md` 裡指向 `plan-write` 的慣例，
-   要判斷哪些屬於 repo 本身而該留在 repo 內。
-
-**要等什麼**：出現明確的共同維護者人選。名稱已經定案，其餘不必急。舊 repo 會保留、文章不受影響，
-改名成本不會隨時間明顯增加。
-
-**啟動時第一步**：重跑一次商標檢索，上次是 2026-09-14，智慧財產局的檢索系統在 `https://cloud.tipo.gov.tw/S282/S282WV1/`。
-仍然乾淨就寫 plan。出現衝突時，名稱已經隨 Polhem.OAuth2 公開發佈，要先評估影響範圍，再決定是否換名。
+因此**不宜以 Polhem 名義對外提供商業管理服務**，例如銷售 ERP 導入顧問服務。2026-09-26 啟動前重查，結果相同。
 
 ### bee-oauth2 演練結果（2026-09-15）
 

@@ -1,6 +1,6 @@
 # 計畫：bee-library 改名為 Polhem 並另開於 polhem-dev
 
-**狀態：🚧 進行中（2026-09-26）**
+**狀態：✅ 已完成（2026-09-28）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -14,7 +14,7 @@
 | 7 | 首發前健檢與修正，公開 API 定型 | ✅ 已完成（2026-09-28） |
 | 8 | 首發 `Polhem.*` 1.0.0，更新 org profile | ✅ 已完成（2026-09-28） |
 | 9 | polhem-northwind 改名另開，改用 `Polhem.*` 1.0.0 | ✅ 已完成（2026-09-28） |
-| 10 | 回寫 bee-library，凍結舊框架與下游 repo | 🚧 進行中 |
+| 10 | 回寫 bee-library，凍結舊框架與下游 repo | ✅ 已完成（2026-09-28） |
 
 ## 背景
 
@@ -1332,6 +1332,72 @@ bee-northwind-avalonia 本身沒有改動，凍結在階段 10。
 6. 舊的 `NUGET_API_KEY`：**撤銷前先向使用者確認**，secret 的設定日期看不出 key 是否相同，也看不出還有誰在用。
 7. 舊 SonarCloud 專案的處置：詢問使用者。
 8. `jeff377/bee-library-private`：卸載同步用的 launchd agent（`bootstrap/install-sync-agent.sh` 裝的那個；2026-09-26 查過，本機沒有安裝），確認 `docs/internal/` 與部落格都已在新位置、兩個 private repo 都有最新 commit 後，archive。
+
+### 實作紀錄（2026-09-28 完成）
+
+順序：`Bee.*` deprecated → 三個下游舊 repo 的 README 推送、archive → `bee-library-private` archive → 刪除 bee-library 的 secret →
+本紀錄與 bee-library 的 README、`future-work.md` 一起推送，Docs Check 綠燈後才 archive bee-library。
+**bee-library 的 archive 是最後一步，發生在本紀錄推送之後**，repo 唯讀後無法再寫入，結果只回報在對話中。
+
+#### 使用者決定（2026-09-28）
+
+| 項目 | 結論 |
+|------|------|
+| plan 封存 | 本 plan 與其餘 5 份 ⛔ plan（已取代 1 份、已移交 polhem 4 份）在 bee-library archive 前一起移入 `docs/plans/archive/`，兩份索引同步；`docs/plans/` 只剩 `README.md` |
+| 舊的 `NUGET_API_KEY` | **nuget.org 上的 key 不撤銷**（可能仍供其他 `Bee.*` 套件使用），只刪 bee-library 的 repo secret |
+| SonarCloud `jeff377_bee-library` | 保留不動：舊 README 的徽章仍連到它，歷史分析保留 |
+| `bee-jsonrpc-sample` 的指路 | 指向 polhem 的 getting-started、`samples/QuickStart.Server`／`QuickStart.Console` 與遷移說明，並註明停在 4.1.0／4.3.0、不移植 |
+
+#### 各步驟
+
+1. **回寫 bee-library**：
+   - `docs/repo-ops/future-work.md` 的「開放共同維護」一節改為結果摘要：新框架與下游的去處、舊框架的凍結、遷移說明的位置，指向本 plan。
+     「與原構想不同的地方」更正「要等什麼」（不等共同維護者）與「帶完整 git 歷史」（不帶），並補上相容解析、共同維護缺口、`dev-workflow` 的結果。
+     「名稱與帳號」表的前綴保留由「已申請」改為「尚未申請」（階段 0 查證）。「改名時編譯器抓不到的地方」刪除，細節以本 plan 為準。「bee-oauth2 演練結果」是紀錄，未改。
+   - 同檔指向 `docs/plans/plan-rounding-mode.md` 的路徑改為封存位置。
+   - 本 plan 標記完成；6 份 plan 移入 `archive/`，彼此的相對連結不變。`.claude/skills/bee-framework-review/SKILL.md` 提到 `plan-tree-view-builder.md` 是當時的紀錄，未改。
+2. **`Bee.*` deprecated**：以 Claude in Chrome（jeff377 登入）在 nuget.org 逐一操作 17 個套件：全部版本、原因 Legacy、替代套件為對應的 `Polhem.*`、版本 Latest、不填自訂訊息。
+   - 清單以凍結起點 `7d6cc9d9` 為準：`src/` 下除 `Bee.Analyzers`（`IsPackable=false`）外的 16 個專案，加上 `tools/Bee.Cli`（`PackAsTool`），與當時 `nuget-publish.yml` 的 pack 清單相同。
+     `tools/Bee.LoadTests`、`DefineEditor` 由 `tools/Directory.Build.props` 設為不可打包。
+   - 動工前確認 17 個 `Polhem.*` 在 nuget.org 都有 1.0.0（flat container），17 個 `Bee.*` 最新版都是 4.33.0、原本都沒有 deprecated。
+   - 第 2 個套件起以腳本填表，存檔前檢查替代套件名稱正確、版本下拉已載入 1.0.0、選的是 All versions、只勾 Legacy，不符就不存；17 個都通過並出現「Your packages have been deprecated」。
+   - **NuGet API（registration）依存檔順序陸續反映**，最後一個套件存檔後數分鐘內全部反映（三次查詢依序為 8、12、17 個）：17 個套件共 765 個版本，都是 Legacy、替代套件為對應的 `Polhem.<名稱>`（版本範圍 `*`）。`Bee.Base`、`Bee.Cli` 的套件頁顯示 deprecated 橫幅與 Suggested Alternatives。
+3. **README 停止維護提醒**（中英雙語，放在標題與語言切換列之後）：
+
+   | repo | commit | 內容 |
+   |------|--------|------|
+   | `bee-library` | 本紀錄的 commit | `README.md`、`README.zh-TW.md`：指向 polhem 與遷移說明，17 列新舊套件對照（連到 nuget.org 套件頁），註明 4.33.0 為最後一版 |
+   | `bee-connector-js` | `75548b1` | 指向 polhem-connector-js；對照 `bee-connector` → `@polhem/connector`（兩者都未發佈到 npm）、`BeeClient` → `PolhemClient`；註明 Encoded 與加密的呼叫會被 Polhem 伺服端拒絕（階段 6 實測 3） |
+   | `bee-northwind-avalonia` | `7e208cf` | 兩份 README：指向 polhem-northwind 與遷移說明 |
+   | `bee-jsonrpc-sample` | `97fc6e7` | 見使用者決定 |
+
+   - 送出前以 `curl` 確認提醒內 28 個不重複網址都回 200；兩個錨點 `#migrating-from-beenet`、`#從-beenet-遷移` 以 GitHub 渲染後的頁面確認存在。
+   - 推送後 `bee-connector-js` 的 CI（run `36417450862`）與 `bee-northwind-avalonia` 的 Build CI（run `36417453757`）都是綠燈才 archive；`bee-jsonrpc-sample` 沒有 CI。
+4. **issue 與 PR**：交接時與 archive 前各查一次，五個 repo 都沒有開著的 issue 或 PR，不需處理。
+5. **archive**：每個 repo 都在 archive 前再查一次 issue／PR，archive 後以 `gh repo view` 確認：
+
+   | repo | `isArchived` | 星 | fork |
+   |------|--------------|----|------|
+   | `bee-connector-js` | true | 0 | 0 |
+   | `bee-northwind-avalonia` | true | 2 | 0 |
+   | `bee-jsonrpc-sample` | true | 1 | 0 |
+   | `bee-library-private` | true | 0 | 0 |
+   | `bee-library` | 本紀錄推送後執行（交接時 11 星、5 fork） | | |
+
+6. **`NUGET_API_KEY`**：見使用者決定。bee-library 的 repo secret 原有四個，全部以 `gh secret delete` 刪除（`AUTOMERGE_PAT`、`NUGET_API_KEY`、`SONAR_TOKEN`，以及一個名稱看起來像是把 NuGet API key 貼進名稱欄的 secret，與 `NUGET_API_KEY` 同日設定）。
+   刪除後 `gh secret list` 為 0 筆。這次推送只會觸發 Docs Check（`build-ci.yml` 的 push 有 paths 過濾，不含文件），不需要任何 secret。
+   **那個名稱像 key 的 secret**：名稱只有 repo 權限者看得到，但若它確實是某把 key，是否到 nuget.org 重新產生由使用者判斷（agent 無法辨認它對應哪把 key）。
+7. **SonarCloud**：見使用者決定，未做任何變更。
+8. **`bee-library-private`**：
+   - 同步用的 launchd agent 在本機不存在（`~/Library/LaunchAgents` 沒有相關 plist，`launchctl list` 也沒有），與階段 0 相同，沒有東西可卸載。
+   - 鏡像的內容都已在新位置：`docs/blogs/` 3 篇與 `~/Desktop/repos/blogs` 逐位元組相同；`docs/internal/` 3 份在 polhem-local 的 `internal/archive/`（`ai-agent-devloop-design-internal.md` 相同，兩份 routine 文件鏡像版較舊，以 polhem-local 為準）。
+   - `blogs`、`polhem-local` 的本機與 `origin/main` 同步。之後 archive（見第 5 步）。本機 clone 的未追蹤 `.DS_Store` 未處理。
+
+#### 留給使用者
+
+- 寄出 NuGet `Polhem.` 前綴保留的申請信到 `account@nuget.org`（核准後 `Polhem.*` 才顯示 verified）。
+- 上一步提到的那把疑似 key 是否重新產生。
+- 本 plan 的「範圍外」仍成立：不由凍結起點 bee-library 產出的 `Bee.*` 套件（例如 `Bee.Define`、`Bee.Cache` 等舊名）沒有處理。
 
 ## 範圍外
 

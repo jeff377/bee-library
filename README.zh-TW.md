@@ -2,6 +2,35 @@
 
 [English](README.md)
 
+> [!IMPORTANT]
+> **This repository is no longer maintained.** Bee.NET continues as
+> [Polhem](https://github.com/polhem-dev/polhem), and every `Bee.*` package is renamed to `Polhem.*`. See
+> [Migrating from Bee.NET](https://github.com/polhem-dev/polhem#migrating-from-beenet) for what changed.
+> `Bee.*` 4.33.0 is the last release; all versions are deprecated on NuGet.
+>
+> **本 repo 已停止維護。** Bee.NET 由 [Polhem](https://github.com/polhem-dev/polhem) 接續，所有 `Bee.*` 套件改名為 `Polhem.*`，
+> 變更內容見[從 Bee.NET 遷移](https://github.com/polhem-dev/polhem/blob/main/README.zh-TW.md#從-beenet-遷移)。`Bee.*` 最後一版為 4.33.0，NuGet 上的所有版本都已標為 deprecated。
+
+| Bee.NET package | Replacement |
+|-----------------|-------------|
+| `Bee.Base` | [`Polhem.Base`](https://www.nuget.org/packages/Polhem.Base) |
+| `Bee.Expressions` | [`Polhem.Expressions`](https://www.nuget.org/packages/Polhem.Expressions) |
+| `Bee.Definition` | [`Polhem.Definition`](https://www.nuget.org/packages/Polhem.Definition) |
+| `Bee.ObjectCaching` | [`Polhem.ObjectCaching`](https://www.nuget.org/packages/Polhem.ObjectCaching) |
+| `Bee.Db` | [`Polhem.Db`](https://www.nuget.org/packages/Polhem.Db) |
+| `Bee.Api.Contracts` | [`Polhem.Api.Contracts`](https://www.nuget.org/packages/Polhem.Api.Contracts) |
+| `Bee.Business` | [`Polhem.Business`](https://www.nuget.org/packages/Polhem.Business) |
+| `Bee.Api.Core` | [`Polhem.Api.Core`](https://www.nuget.org/packages/Polhem.Api.Core) |
+| `Bee.Api.Client` | [`Polhem.Api.Client`](https://www.nuget.org/packages/Polhem.Api.Client) |
+| `Bee.UI.Core` | [`Polhem.UI.Core`](https://www.nuget.org/packages/Polhem.UI.Core) |
+| `Bee.UI.Avalonia` | [`Polhem.UI.Avalonia`](https://www.nuget.org/packages/Polhem.UI.Avalonia) |
+| `Bee.Repository.Abstractions` | [`Polhem.Repository.Abstractions`](https://www.nuget.org/packages/Polhem.Repository.Abstractions) |
+| `Bee.Repository` | [`Polhem.Repository`](https://www.nuget.org/packages/Polhem.Repository) |
+| `Bee.Hosting` | [`Polhem.Hosting`](https://www.nuget.org/packages/Polhem.Hosting) |
+| `Bee.Api.AspNetCore` | [`Polhem.Api.AspNetCore`](https://www.nuget.org/packages/Polhem.Api.AspNetCore) |
+| `Bee.Web.Blazor.Server` | [`Polhem.Web.Blazor.Server`](https://www.nuget.org/packages/Polhem.Web.Blazor.Server) |
+| `Bee.Cli` | [`Polhem.Cli`](https://www.nuget.org/packages/Polhem.Cli) |
+
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jeff377_bee-library&metric=alert_status)](https://sonarcloud.io/project/overview?id=jeff377_bee-library)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=jeff377_bee-library&metric=bugs)](https://sonarcloud.io/project/overview?id=jeff377_bee-library)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=jeff377_bee-library&metric=vulnerabilities)](https://sonarcloud.io/project/overview?id=jeff377_bee-library)
