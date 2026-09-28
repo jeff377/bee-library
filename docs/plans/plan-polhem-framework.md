@@ -13,7 +13,7 @@
 | 6 | polhem-connector-js 改名另開，接上新的 wire 合約 | ✅ 已完成（2026-09-26） |
 | 7 | 首發前健檢與修正，公開 API 定型 | ✅ 已完成（2026-09-28） |
 | 8 | 首發 `Polhem.*` 1.0.0，更新 org profile | ✅ 已完成（2026-09-28） |
-| 9 | polhem-northwind 改名另開，改用 `Polhem.*` 1.0.0 | 🚧 進行中 |
+| 9 | polhem-northwind 改名另開，改用 `Polhem.*` 1.0.0 | ✅ 已完成（2026-09-28） |
 | 10 | 回寫 bee-library，凍結舊框架與下游 repo | 📝 待做 |
 
 ## 背景
@@ -1250,6 +1250,73 @@ CI 綠燈，各 head 至少啟動一次。
 內容來源的依據：鏡像最後一次同步的是 bee-library `04513b24`，比凍結起點還舊。把鏡像機械改名後，與 polhem `v1.0.0` 的副本相比，有 52 個檔案有實質差異：
 - 鏡像版對 1.0.0 編不過：`IBeeContext` 已改名、`AddPolhemFramework` 要加 `using`、`FileEndpointStorage` 已搬移並改為預設，`LocalizedListView`／`NorthwindDefinitions` 已由 `ClientInfo.UseDefinitionLoader` 取代。
 - 鏡像版少了階段 7 的修正：`demo-tw` 帳號、`UsePolhemFramework`、選單在地化、內建 TableSchema 英文基底、AuditRule 的 layout，以及已實測過的截圖。
+
+### 實作紀錄（2026-09-28 完成）
+
+repo：**https://github.com/polhem-dev/polhem-northwind**（public，GitHub repo ID `1392283960`），本機位於 `~/Desktop/repos/polhem-northwind`。
+
+| repo | PR／commit | 內容 | CI |
+|------|-----------|------|----|
+| polhem-northwind | `8200d60` | 初始 commit：內容取自 `polhem-dev/polhem@v1.0.0`（`6b8e5af`）的 `apps/Polhem.Northwind`，鏡像專屬檔案取自 `jeff377/bee-northwind-avalonia@c6fb5d7`，不帶歷史，144 個檔案 | 綠（run `36401450592`） |
+| polhem-northwind | [#1](https://github.com/polhem-dev/polhem-northwind/pull/1) `8ca1eec` | `build-ci.yml` 在 job 旁註明 job 名稱就是必要 check；同時是分支保護下的第一個 PR | 綠 |
+| polhem | [#37](https://github.com/polhem-dev/polhem/pull/37) `1cd0331` | `gotchas/northwind-heads.md` 改指新 repo（現況、同步流程改走 PR、Server csproj 的差異、CI 一節改名），`future-work.md` 的開發者 skill 包錨點改為「已存在」 | 精簡 |
+
+bee-northwind-avalonia 本身沒有改動，凍結在階段 10。
+
+#### 建立方式
+
+- 內容：`git archive v1.0.0 apps/Polhem.Northwind`。鏡像專屬的 `.github/workflows/build-ci.yml`、`.gitignore`、`.vscode/` 由 bee-northwind-avalonia 的 `git archive HEAD` 取出，把 `Bee.Northwind` 換成 `Polhem.Northwind`；`LICENSE` 改用 polhem 的 `LICENSE.txt` 內文（`Copyright (c) Polhem contributors`，檔名沿用 `LICENSE`）。另外加入 polhem 的 `.gitattributes`（LF），鏡像原本沒有這個檔。
+- 依 `northwind-heads.md` 個別處理的檔案：
+  - csproj：UI 改為 `PackageReference` `Polhem.UI.Avalonia` 1.0.0。Server 改回鏡像的寫法：直接參考 `Polhem.Definition`、`Api.AspNetCore`、`Business`、`Db`、`Hosting` 1.0.0，加上 `PolhemDefinitionFilesGlob`，拿掉 analyzer 的 ProjectReference 與 `AdditionalFiles`。註解改寫，拿掉 Bee 時期 4.21／4.22 的歷史。iOS、Android、Browser 的註解原本以 repo 內路徑指向框架文件（`docs/repo-ops/gotchas/mobile-trim-aot.md`、`ADR-032`），改為註明是 Polhem repo 的文件。
+  - `.smoke.yaml`、README（中英）、Browser README（中英）：路徑拿掉 `apps/Polhem.Northwind/`。README 的框架連結改為絕對網址並補「純以 NuGet 套件引用」，加上 CI 徽章；截圖改用 repo 內的 `docs/images/`（相對路徑）。
+  - CI 註解：「heads 的 Release／trim-safe 打包另案處理」已不符 1.0 的 csproj 註解，改為只說 Debug 是 README 教讀者跑的組態。
+- `Define/FormSchema/AuditRule.FormSchema.xml` 的註解提到 `src/Polhem.Definition/Defaults/...`。它在同步時會被整批覆寫，而且看得出是框架套件的路徑，所以不改。
+
+#### 反向正規化 diff
+
+- **對內容來源**（polhem `v1.0.0` 的 `apps/Polhem.Northwind`）：只多了 `.github/`、`.gitignore`、`.vscode/`、`LICENSE`、`.gitattributes`，並且只有上一節列的個別處理檔案有差異。其餘檔案逐位元組相同。
+- **對鏡像**（新樹 `Polhem`→`Bee` 反向替換，再與 `c6fb5d7` 比對；比對時忽略 CRLF）：
+  - 有差異的檔案中，48 個與反向替換後的 polhem 來源逐位元組相同，也就是階段 3～7 在 polhem 的改動。
+  - 其餘都是預期的差異：個別處理的 csproj 與 README、`build-ci.yml` 的兩處註解、`LICENSE`、新增的 `.gitattributes` 與 Browser `README.zh-TW.md`、polhem 已刪除的 `LocalizedListView.cs`／`NorthwindDefinitions.cs`。
+  - `.gitignore`、`.vscode/`、`.smoke.yaml` 反向後與鏡像相同。
+  - **沒有預期外的殘差。**
+
+#### 實測結果
+
+1. **以 NuGet 還原與建置**：本機 NuGet 來源只有 nuget.org，全域快取原本沒有 `Polhem.*` 框架套件，所以還原時實際由 nuget.org 下載（`.nupkg.metadata` 的 source 為 `https://api.nuget.org/v3/index.json`）。repo 內沒有任何 ProjectReference 指向 `src/`。
+   - Server、UI、Desktop、Browser、Android：Debug 建置 0 警告、0 錯誤。
+   - iOS：0 錯誤，警告只有 trim analysis 的 IL2026／IL2057／IL2104，csproj 已註明為預期。
+2. **analyzer 經由 NuGet 生效（突變測試）**：把 `Category.FormSchema.xml` 的 `CategoryId` 改成不合法的值，建置出現 `error POLHEM1001`。拿掉 `PolhemDefinitionFilesGlob` 後，同樣的錯誤值建置綠燈，所以 Server csproj 註解寫的「沒有 glob 時不報任何東西」屬實。拿掉 `Polhem.Definition` 的直接參考（只剩遞移參考）時，POLHEM1001 仍然出現。
+3. **CI**：
+   - 第一次推送就觸發了 `build-ci.yml`（`push` 沒有 paths 過濾）。兩個 job 都綠，smoke 的 7 項斷言全部 ok（訂單 5、明細 12、產品 15、客戶 10、員工 5、10252 合計 2235.0、無缺明細的訂單）。
+   - iOS job 由 SDK 讀出需要 **Xcode 26.6**，並在 runner 上選到 `Xcode_26.6.app`。本機的 workload 需要的是 26.5，與 `northwind-heads.md` 記錄的 runner 與本機差異一致。
+   - PR #1 與合併後 `main` 的 CI 都綠。
+4. **各 head 實際啟動**（Server 以 Debug 啟動，全新的 `northwind.db`，種子含 `demo`／en-US、`demo-tw`／zh-TW）：
+
+   | Head | 結果 |
+   |------|------|
+   | Server | 啟動、建表、種子完成，監聽 5100 |
+   | iOS（iPhone 17 模擬器，Debug，`DEVELOPER_DIR` 指 Xcode 26.5） | 連線 → 登入 → 選單 → Audit Rules 與 Orders 清單。bundle 內 `Polhem.UI.Avalonia.dll` 與 NuGet 套件的雜湊相同 |
+   | Android（`bee_pixel`，Debug，`adb reverse tcp:5100`） | 連線 → 登入 → 選單與 Categories 清單 → Orders 清單 |
+   | Browser（WASM，內建瀏覽器） | 連線 → 登入 → 選單 → Orders 清單（5 筆，10252 為 2235） |
+   | Desktop（macOS） | 連線 → 登入 → Categories 清單 → Orders 清單 |
+
+   - **Desktop 第一次啟動失敗**：`Avalonia.Native was not able to start the RenderTimer. Native error code is: -6661`（CoreVideo 的 `kCVReturnInvalidDisplay`）。當時顯示器休眠、螢幕鎖定，與程式無關。使用者解鎖後即可正常啟動。
+   - 未打包的 Desktop 程序不在 computer-use 的 app 清單內，`screencapture` 也沒有螢幕錄製權限。改在 scratchpad 把建置輸出暫時包成 `.app`（只加 `Info.plist`），以 computer-use 操作，測完即刪。這個 `.app` 沒有進 repo。
+5. **分支保護**：PR #1 的兩個必要 check 都有回報，`mergeStateStatus` 為 `CLEAN`，由 jeff377 以 squash 合併成功，分支自動刪除。沒有實際嘗試直推 `main`，設定以 API 回讀確認。PR 上**沒有**出現 SonarCloud check；階段 8 在 connector-js 看到過，這次沒有。
+
+#### 分支保護與 repo 設定
+
+- `main`：必要 check 為 **`Build (Server / UI / Desktop / Browser / Android)`、`Build (iOS)`**（CI 的 job 名稱），strict、`enforce_admins` 開，`required_pull_request_reviews` 為 0 核准、不要求 Code Owners，禁止 force push 與刪除。
+- repo：只允許 squash，`squash_merge_commit_title=PR_TITLE`、`squash_merge_commit_message=COMMIT_MESSAGES`，`delete_branch_on_merge`、`allow_auto_merge` 開。沒有設任何 secret，不接 SonarCloud。
+- job 名稱與必要 check 的綁定寫在 `build-ci.yml` 的註解（PR #1）。新 repo 沒有獨立的維運文件；同步方式以 polhem 的 `northwind-heads.md` 為準。
+
+#### 未做、移交後續階段
+
+- **階段 10**：bee-northwind-avalonia 的 README 指路與 archive（已在階段 10 第 3、5 步）。
+- polhem 中提到 `bee-northwind-avalonia` 的地方，`gotchas/mobile-trim-aot.md` 的量測表與 `BuildAssetPackagingGateTests` 的註解都是 Bee 時期的紀錄，保留。
+- 新 repo 沒有 `.claude/`、`CLAUDE.md`、`CONTRIBUTING`、`CODEOWNERS`。connector-js 在階段 7 補過，這次不在階段 9 的範圍，要不要補另行決定。
+- 之後每次框架發版，依 `northwind-heads.md` 同步：先發版，再以 PR 同步到 polhem-northwind，並把 1.0.0 改成新版號。
 
 ## 階段 10：回寫 bee-library 並凍結
 
