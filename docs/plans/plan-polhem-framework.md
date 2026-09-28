@@ -13,7 +13,7 @@
 | 6 | polhem-connector-js 改名另開，接上新的 wire 合約 | ✅ 已完成（2026-09-26） |
 | 7 | 首發前健檢與修正，公開 API 定型 | ✅ 已完成（2026-09-28） |
 | 8 | 首發 `Polhem.*` 1.0.0，更新 org profile | ✅ 已完成（2026-09-28） |
-| 9 | polhem-northwind 改名另開，改用 `Polhem.*` 1.0.0 | 📝 待做 |
+| 9 | polhem-northwind 改名另開，改用 `Polhem.*` 1.0.0 | 🚧 進行中 |
 | 10 | 回寫 bee-library，凍結舊框架與下游 repo | 📝 待做 |
 
 ## 背景
